@@ -46,7 +46,9 @@ interface ModbusTCPDebugState {
     write_data: string;
     timeout: number;
     byte_order: number;
-    response: string;
+    waiting: boolean;
+    cookie: number;
+    result: string;
 }
 
 function printable_ascii(x: number) {
@@ -71,8 +73,55 @@ export class ModbusTCPDebug extends Component<{}, ModbusTCPDebugState> {
             write_data: "",
             timeout: 2000,
             byte_order: 0,
-            response: "",
+            waiting: false,
+            cookie: null,
+            result: "",
         } as any;
+
+        util.addApiEventListener('modbus_tcp_debug/transact_result', () => {
+            let transact_result = API.get('modbus_tcp_debug/transact_result');
+
+            if (!this.state.waiting || transact_result.cookie !== this.state.cookie) {
+                return;
+            }
+
+            let result = "<unknown>";
+
+            if (transact_result.error !== null) {
+                result = transact_result.error;
+            }
+            if (transact_result.read_data !== null) {
+                let header = " Addr  Off   Hex   UInt";
+
+                result = header + "\n";
+
+                for (let r = 0; r < transact_result.read_data.length / 4; ++r) {
+                    let a_pad = "    " + (this.state.start_address + r);
+
+                    a_pad = a_pad.substring(a_pad.length - 5);
+
+                    let r_pad = "  " + r;
+
+                    r_pad = r_pad.substring(r_pad.length - 3);
+
+                    let hex = transact_result.read_data.substring(r * 4, r * 4 + 4);
+                    let int_pad = "    " + parseInt(hex, 16);
+
+                    int_pad = int_pad.substring(int_pad.length - 5);
+
+                    let ascii_0 = printable_ascii(parseInt(hex.substring(0, 2), 16));
+                    let ascii_1 = printable_ascii(parseInt(hex.substring(2, 4), 16));
+
+                    result += "\n" + a_pad + "  " + r_pad + "  " + hex + "  " + int_pad + "  " + ascii_0 + ascii_1;
+
+                    if (r % 20 == 19 && r < transact_result.read_data.length / 4 - 1) {
+                        result += "\n\n" + header + "\n";
+                    }
+                }
+            }
+
+            this.setState({waiting: false, cookie: null, result: result});
+        });
     }
 
     render() {
@@ -127,67 +176,45 @@ export class ModbusTCPDebug extends Component<{}, ModbusTCPDebugState> {
                         value={this.state.data_count}
                         onValue={(v) => this.setState({data_count: v})} />
                 </FormRow>
+                <FormRow label={__("modbus_tcp_debug.content.transact_timeout")}>
+                    <InputNumber
+                        value={this.state.timeout}
+                        onValue={(v) => this.setState({timeout: v})}
+                        unit="ms" />
+                </FormRow>
                 <FormRow label="">
                     <Button variant="primary" className="form-control" onClick={async () => {
-                        this.setState({response: "Waiting..."});
+                        let cookie: number = Math.floor(Math.random() * 0xFFFFFFFF);
 
-                        let response;
+                        this.setState({waiting: true, cookie: cookie, result: ""}, async () => {
+                            let result;
 
-                        try {
-                            response = await (await util.put('modbus_tcp_debug/transact', {
-                                host: this.state.host,
-                                port: this.state.port,
-                                device_address: this.state.device_address,
-                                function_code: this.state.function_code,
-                                start_address: this.state.start_address,
-                                data_count: this.state.data_count,
-                                write_data: this.state.write_data,
-                                timeout: this.state.timeout,
-                                byte_order: this.state.byte_order})).text();
-                        } catch (e) {
-                            this.setState({response: "" + e});
-                            console.log('Modbus/TCP Debug: Could not transact: ' + e);
-                            return;
-                        }
-
-                        let output = response;
-
-                        if (response.startsWith("READDATA:")) {
-                            let readdata = response.substring(9);
-                            let header = " Addr  Off   Hex   UInt";
-
-                            output = header + "\n";
-
-                            for (let r = 0; r < readdata.length / 4; ++r) {
-                                let a_pad = "    " + (this.state.start_address + r);
-
-                                a_pad = a_pad.substring(a_pad.length - 5);
-
-                                let r_pad = "  " + r;
-
-                                r_pad = r_pad.substring(r_pad.length - 3);
-
-                                let hex = readdata.substring(r * 4, r * 4 + 4);
-                                let int_pad = "    " + parseInt(hex, 16);
-
-                                int_pad = int_pad.substring(int_pad.length - 5);
-
-                                let ascii_0 = printable_ascii(parseInt(hex.substring(0, 2), 16));
-                                let ascii_1 = printable_ascii(parseInt(hex.substring(2, 4), 16));
-
-                                output += "\n" + a_pad + "  " + r_pad + "  " + hex + "  " + int_pad + "  " + ascii_0 + ascii_1;
-
-                                if (r % 20 == 19 && r < readdata.length / 4 - 1) {
-                                    output += "\n\n" + header + "\n";
-                                }
+                            try {
+                                result = await (await util.put("/modbus_tcp_debug/transact", {
+                                    host: this.state.host,
+                                    port: this.state.port,
+                                    device_address: this.state.device_address,
+                                    function_code: this.state.function_code,
+                                    start_address: this.state.start_address,
+                                    data_count: this.state.data_count,
+                                    write_data: this.state.write_data,
+                                    timeout: this.state.timeout,
+                                    byte_order: this.state.byte_order,
+                                    cookie: cookie,
+                                })).text();
                             }
-                        }
+                            catch (e) {
+                                result = "Error: " + e.message.replace("400(Bad Request) ", "");
+                            }
 
-                        this.setState({response: output});
+                            if (result.length > 0) {
+                                this.setState({waiting: false, cookie: null, result: result});
+                            }
+                        });
                     }} >{__("modbus_tcp_debug.content.execute")}</Button>
                 </FormRow>
                 <FormRow label={__("modbus_tcp_debug.content.response")}>
-                    <OutputTextarea rows={35} resize='vertical' value={this.state.response} />
+                    <OutputTextarea rows={35} resize="vertical" value={this.state.waiting ? "Waiting..." : this.state.result} />
                 </FormRow>
             </SubPage>
         );

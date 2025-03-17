@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <TFJson.h>
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
@@ -38,33 +39,36 @@ void ModbusTCPDebug::pre_setup()
         {"write_data", Config::Str("", 0, TF_MODBUS_TCP_MAX_WRITE_REGISTER_COUNT * 4)},
         {"timeout", Config::Uint(2000)},
         {"byte_order", Config::Uint8(0)},
+        {"cookie", Config::Uint32(0)},
     });
 }
 
-[[gnu::format(__printf__, 4, 5)]] static void report_errorf(IChunkedResponse *response, Ownership *ownership, uint32_t owner_id, const char *fmt, ...);
-static void report_errorf(IChunkedResponse *response, Ownership *ownership, uint32_t owner_id, const char *fmt, ...)
+[[gnu::format(__printf__, 2, 3)]] static void report_errorf(uint32_t cookie, const char *fmt, ...);
+static void report_errorf(uint32_t cookie, const char *fmt, ...)
 {
-    OwnershipGuard ownership_guard(ownership, owner_id);
-
-    if (!ownership_guard.have_ownership()) {
-        return;
-    }
-
     va_list args;
+    char buf[256];
+    TFJsonSerializer json{buf, sizeof(buf)};
 
-    response->begin(true);
+    json.addObject();
+    json.addMemberNumber("cookie", cookie);
     va_start(args, fmt);
-    response->vwritef(fmt, args);
+    json.addMemberStringVF("error", fmt, args);
+    json.addMemberNull("read_data");
     va_end(args);
-    response->flush();
-    response->end("");
+    json.endObject();
+    json.end();
+
+    ws.pushRawStateUpdate(buf, "modbus_tcp_debug/transact_result");
 }
 
 void ModbusTCPDebug::register_urls()
 {
-    api.addResponse("modbus_tcp_debug/transact", &transact, {}, [this](IChunkedResponse *response, Ownership *ownership, uint32_t owner_id) {
+    api.addCommand("modbus_tcp_debug/transact", &transact, {}, [this](String &errmsg) {
+        uint32_t cookie = transact.get("cookie")->asUint();
+
         if (client != nullptr) {
-            report_errorf(response, ownership, owner_id, "Another transaction is already in progress");
+            report_errorf(cookie, "Another transaction is already in progress");
             return;
         }
 
@@ -81,7 +85,7 @@ void ModbusTCPDebug::register_urls()
         switch (function_code) {
         case TFModbusTCPFunctionCode::ReadCoils:
         case TFModbusTCPFunctionCode::ReadDiscreteInputs:
-            report_errorf(response, ownership, owner_id, "Function code %u is not supported yet", static_cast<uint8_t>(function_code));
+            report_errorf(cookie, "Function code %u is not supported yet", static_cast<uint8_t>(function_code));
             return;
 
         case TFModbusTCPFunctionCode::ReadHoldingRegisters:
@@ -92,19 +96,19 @@ void ModbusTCPDebug::register_urls()
         case TFModbusTCPFunctionCode::WriteSingleRegister:
         case TFModbusTCPFunctionCode::WriteMultipleCoils:
         case TFModbusTCPFunctionCode::WriteMultipleRegisters:
-            report_errorf(response, ownership, owner_id, "Function code %u is not supported yet", static_cast<uint8_t>(function_code));
+            report_errorf(cookie, "Function code %u is not supported yet", static_cast<uint8_t>(function_code));
             return;
         }
 
         client = new TFModbusTCPClient(byte_order);
 
         client->connect(host.c_str(), port,
-        [this, response, ownership, owner_id, host, port, device_address, function_code, start_address, data_count, write_data, timeout](TFGenericTCPClientConnectResult connect_result, int error_number) {
+        [this, cookie, host, port, device_address, function_code, start_address, data_count, write_data, timeout](TFGenericTCPClientConnectResult connect_result, int error_number) {
             if (connect_result != TFGenericTCPClientConnectResult::Connected) {
                 char connect_error[256] = "";
 
                 GenericTCPClientConnectorBase::format_connect_error(connect_result, error_number, host.c_str(), port, connect_error, sizeof(connect_error));
-                report_errorf(response, ownership, owner_id, "%s", connect_error);
+                report_errorf(cookie, "%s", connect_error);
 
                 delete client;
                 client = nullptr;
@@ -115,10 +119,9 @@ void ModbusTCPDebug::register_urls()
             // FIXME: write data into buffer for write function codes
 
             client->transact(device_address, function_code, start_address, data_count, transact_buffer, timeout,
-            [this, response, ownership, owner_id, data_count](TFModbusTCPClientTransactionResult transact_result) {
+            [this, cookie, data_count](TFModbusTCPClientTransactionResult transact_result) {
                 if (transact_result != TFModbusTCPClientTransactionResult::Success) {
-                    report_errorf(response, ownership, owner_id,
-                                  "Transaction failed: %s (%d)",
+                    report_errorf(cookie, "Transaction failed: %s (%d)",
                                   get_tf_modbus_tcp_client_transaction_result_name(transact_result),
                                   static_cast<int>(transact_result));
 
@@ -126,32 +129,30 @@ void ModbusTCPDebug::register_urls()
                     return;
                 }
 
-                OwnershipGuard ownership_guard(ownership, owner_id);
-
-                if (!ownership_guard.have_ownership()) {
-                    client_disconnect = true;
-                    return;
-                }
-
                 // FIXME: format coils for coil function codes
 
                 static const char *lookup = "0123456789abcdef";
-
-                response->begin(true);
-                response->write("READDATA:");
+                char read_data[TF_MODBUS_TCP_MAX_READ_REGISTER_COUNT * 4 + 1];
 
                 for (size_t i = 0; i < data_count; ++i) {
-                    char nibbles[4];
-
                     for (size_t n = 0; n < 4; ++n) {
-                        nibbles[n] = lookup[(transact_buffer[i] >> (12 - 4 * n)) & 0x0f];
+                        read_data[i * 4 + n] = lookup[(transact_buffer[i] >> (12 - 4 * n)) & 0x0f];
                     }
-
-                    response->write(nibbles, 4);
                 }
 
-                response->flush();
-                response->end("");
+                read_data[data_count * 4] = '\0';
+
+                char buf[64 + sizeof(read_data)];
+                TFJsonSerializer json{buf, sizeof(buf)};
+
+                json.addObject();
+                json.addMemberNumber("cookie", cookie);
+                json.addMemberNull("error");
+                json.addMemberString("read_data", read_data);
+                json.endObject();
+                json.end();
+
+                ws.pushRawStateUpdate(buf, "modbus_tcp_debug/transact_result");
 
                 client_disconnect = true;
             });
@@ -161,7 +162,7 @@ void ModbusTCPDebug::register_urls()
             client = nullptr;
             client_disconnect = false;
         });
-    });
+    }, true);
 }
 
 void ModbusTCPDebug::loop()
