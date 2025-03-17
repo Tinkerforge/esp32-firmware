@@ -76,6 +76,17 @@ public:
     };
     static_assert(METERS_MAX_VALUES_PER_METER <= 256, "Increase size of input_id_count and output_id_count");
 
+    enum class ExtraValueDirection : uint8_t {
+        Positive,
+        Negative,
+    };
+
+    struct extra_value_id {
+        uint16_t value_id;
+        uint8_t source_index;
+        ExtraValueDirection direction;
+    };
+
     Meters(){}
     void pre_setup() override;
     void setup() override;
@@ -91,7 +102,9 @@ public:
     bool meter_has_value_changed(uint32_t slot, micros_t max_age_us);
 
     MeterValueAvailability get_value_ids(uint32_t slot, const Config **value_ids);
+    MeterValueAvailability get_value_ids_extended(uint32_t slot, MeterValueID *value_ids_out, size_t *value_ids_length);
     MeterValueAvailability get_values(uint32_t slot, const Config **values, micros_t max_age = 0_us);
+    MeterValueAvailability get_values_with_cache(uint32_t slot, float *values, const uint32_t *index_cache, size_t value_count, micros_t max_age = 0_us);
     MeterValueAvailability get_value_by_index(uint32_t slot, uint32_t index, float *value, micros_t max_age = 0_us);
     MeterValueAvailability get_power(uint32_t slot, float *power_w, micros_t max_age = 0_us);
     MeterValueAvailability get_energy_import(uint32_t slot, float *total_import_kwh, micros_t max_age = 0_us);
@@ -127,6 +140,9 @@ private:
         size_t base_value_count;
         uint32_t value_combiner_filters_bitmask;
         const value_combiner_filter_data *value_combiner_filters_data;
+
+        extra_value_id *extra_value_ids;
+        size_t extra_value_id_count;
 
         // Caches must be initialized to UINT32_MAX in setup().
         uint32_t index_cache_single_values[INDEX_CACHE_SINGLE_VALUES_COUNT];

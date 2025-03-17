@@ -628,6 +628,180 @@ MeterValueAvailability Meters::get_value_ids(uint32_t slot, const Config **value
     }
 }
 
+static bool contains_value_id(const MeterValueID *value_ids, size_t value_id_count, MeterValueID needle)
+{
+    if (needle == MeterValueID::NotSupported) {
+        return false;
+    }
+
+    for (size_t i = 0; i < value_id_count; i++) {
+        if (value_ids[i] == needle) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool mvid_matching_direction(MeterValueID needle, MeterValueID blade, MeterValueDirection direction)
+{
+    //MeterValueMeasurand needle_meas = getMeterValueMeasurand(needle);
+    //MeterValueSubmeasurand needle_sub = getMeterValueSubmeasurand(needle);
+    //MeterValuePhase needle_phase = getMeterValuePhase(needle);
+
+    //MeterValueMeasurand blade_meas = getMeterValueMeasurand(blade);
+    //MeterValueSubmeasurand blade_sub = getMeterValueSubmeasurand(blade);
+    //MeterValuePhase blade_phase = getMeterValuePhase(blade);
+    //MeterValueKind blade_kind = getMeterValueKind(blade);
+    //MeterValueDirection blade_dir = getMeterValueDirection(blade);
+
+    //logger.printfln("Looking for %lu %lu, meas %lu %lu, sub %lu %lu, ph %lu %lu, kind %lu %lu, dir %lu %lu",
+    //    static_cast<uint32_t>(needle), static_cast<uint32_t>(blade),
+    //    static_cast<uint32_t>(needle_meas), static_cast<uint32_t>(blade_meas),
+    //    static_cast<uint32_t>(needle_sub), static_cast<uint32_t>(blade_sub),
+    //    static_cast<uint32_t>(needle_phase), static_cast<uint32_t>(blade_phase),
+    //    static_cast<uint32_t>(needle_kind), static_cast<uint32_t>(blade_kind),
+    //    static_cast<uint32_t>(direction), static_cast<uint32_t>(blade_dir));
+
+    if (getMeterValueDirection(blade)    != direction
+     || getMeterValueMeasurand(blade)    != getMeterValueMeasurand(needle)
+     || getMeterValueSubmeasurand(blade) != getMeterValueSubmeasurand(needle)
+     || getMeterValuePhase(blade)        != getMeterValuePhase(needle)) {
+        return false;
+    }
+
+    MeterValueKind needle_kind = getMeterValueKind(needle);
+    if (needle_kind == MeterValueKind::Now || needle_kind == MeterValueKind::Virtual) {
+        needle_kind = MeterValueKind::None;
+    }
+
+    if (getMeterValueKind(blade) != needle_kind) {
+        return false;
+    }
+
+    return true;
+}
+
+static MeterValueID mvid_search_all(MeterValueID needle, MeterValueDirection direction, const int32_t *offsets, size_t offset_count)
+{
+    for (size_t i = 0; i < offset_count; i++) {
+        MeterValueID blade = static_cast<MeterValueID>(static_cast<int32_t>(needle) + offsets[i]);
+        if (mvid_matching_direction(needle, blade, direction)) {
+            //logger.printfln("Matching direction: %lu for %s -> %s", static_cast<uint32_t>(direction), getMeterValueName(needle), getMeterValueName(blade));
+            return blade;
+        }
+    }
+
+    return MeterValueID::NotSupported;
+}
+
+static MeterValueID mvid_find_import(MeterValueID needle)
+{
+    const int32_t offsets[] = {-3, -6};
+    return mvid_search_all(needle, MeterValueDirection::Import, offsets, ARRAY_SIZE(offsets));
+}
+
+static MeterValueID mvid_find_export(MeterValueID needle)
+{
+    const int32_t offsets[] = {-2, -4, -1};
+    return mvid_search_all(needle, MeterValueDirection::Export, offsets, ARRAY_SIZE(offsets));
+}
+
+static void generate_extra_value_ids(Meters::extra_value_id **extra_value_ids_, size_t *extra_value_id_count_, const Config *value_ids_config)
+{
+    MeterValueID value_ids[METERS_MAX_VALUES_PER_METER];
+    const size_t value_id_count = value_ids_config->count();
+
+    for (size_t i = 0; i < value_id_count; i++) {
+        value_ids[i] = value_ids_config->get(i)->asEnum<MeterValueID>();
+    }
+
+    Meters::extra_value_id *extra_value_ids = static_cast<Meters::extra_value_id *>(malloc(2 * value_id_count * sizeof(Meters::extra_value_id)));
+    size_t extra_value_id_count = 0;
+
+    for (uint8_t i = 0; i < value_id_count; i++) {
+        const MeterValueID value_id = value_ids[i];
+        if (getMeterValueDirection(value_id) != MeterValueDirection::ImExDiff) {
+            continue;
+        }
+
+        const MeterValueID value_id_import = mvid_find_import(value_id);
+        const MeterValueID value_id_export = mvid_find_export(value_id);
+
+        if (value_id_import != MeterValueID::NotSupported && !contains_value_id(value_ids, value_id_count, value_id_import)) {
+            Meters::extra_value_id *extra_value_id = &extra_value_ids[extra_value_id_count];
+            extra_value_id->value_id     = static_cast<uint16_t>(value_id_import);
+            extra_value_id->source_index = i;
+            extra_value_id->direction    = Meters::ExtraValueDirection::Positive;
+
+            extra_value_id_count++;
+        }
+
+        if (value_id_export != MeterValueID::NotSupported && !contains_value_id(value_ids, value_id_count, value_id_export)) {
+            Meters::extra_value_id *extra_value_id = &extra_value_ids[extra_value_id_count];
+            extra_value_id->value_id     = static_cast<uint16_t>(value_id_export);
+            extra_value_id->source_index = i;
+            extra_value_id->direction    = Meters::ExtraValueDirection::Negative;
+
+            extra_value_id_count++;
+        }
+
+        //logger.printfln("%s is ImExDiff, %zu extra value IDs", getMeterValueName(value_id), extra_value_id_count);
+    }
+
+    // Shrink array
+    *extra_value_ids_ = static_cast<Meters::extra_value_id *>(realloc(extra_value_ids, extra_value_id_count * sizeof(Meters::extra_value_id)));
+    *extra_value_id_count_ = extra_value_id_count;
+}
+
+MeterValueAvailability Meters::get_value_ids_extended(uint32_t slot, MeterValueID *value_ids_out, size_t *value_ids_length)
+{
+    if (slot >= METERS_SLOTS) {
+        *value_ids_length = 0;
+        return MeterValueAvailability::Unavailable;
+    }
+
+    MeterSlot &meter_slot = meter_slots[slot];
+    const Config &value_ids = meter_slot.value_ids;
+
+    if (value_ids.count() == 0) {
+        return MeterValueAvailability::CurrentlyUnknown;
+    }
+
+    if (!meter_slot.extra_value_ids) {
+        generate_extra_value_ids(&meter_slot.extra_value_ids, &meter_slot.extra_value_id_count, &value_ids);
+    }
+
+    const size_t value_ids_count = std::min(value_ids.count(), *value_ids_length);
+
+    for (size_t i = 0; i < value_ids_count; i++) {
+        value_ids_out[i] = value_ids.get(i)->asEnum<MeterValueID>();
+    }
+
+    const extra_value_id *extra_value_ids = meter_slot.extra_value_ids;
+    const size_t extra_value_ids_count = std::min(meter_slot.extra_value_id_count, *value_ids_length - value_ids_count);
+    value_ids_out += value_ids_count;
+
+    for (size_t i = 0; extra_value_ids_count; i++) {
+        value_ids_out[i] = static_cast<MeterValueID>(extra_value_ids[i].value_id);
+    }
+
+    *value_ids_length = value_ids_count + extra_value_ids_count;
+
+    return MeterValueAvailability::Fresh;
+}
+
+static float get_extended_value(const Config *values, const Meters::extra_value_id *extra_value)
+{
+    const float base_value = values->get(extra_value->source_index)->asFloat();
+
+    if (extra_value->direction == Meters::ExtraValueDirection::Positive) {
+        return base_value > 0 ? base_value : 0;
+    } else {
+        return base_value < 0 ? base_value : 0;
+    }
+}
+
 MeterValueAvailability Meters::get_values(uint32_t slot, const Config **values, micros_t max_age)
 {
     if (slot >= METERS_SLOTS) {
@@ -646,6 +820,42 @@ MeterValueAvailability Meters::get_values(uint32_t slot, const Config **values, 
     }
 }
 
+MeterValueAvailability Meters::get_values_with_cache(uint32_t slot, float *values, const uint32_t *index_cache, size_t value_count, micros_t max_age)
+{
+    if (slot >= METERS_SLOTS) {
+        return MeterValueAvailability::Unavailable;
+    }
+
+    const MeterSlot &meter_slot = meter_slots[slot];
+    const uint32_t meter_value_count = static_cast<uint32_t>(meter_slot.values.count());
+
+    for (size_t i = 0; i < value_count; i++) {
+        uint32_t index = index_cache[i];
+
+        if (index == UINT32_MAX) {
+            values[i] = NAN;
+        } else if (index < meter_value_count) {
+            values[i] = meter_slot.values.get(index)->asFloat();
+        } else {
+            uint32_t extra_value_index = index - meter_value_count;
+
+            if (extra_value_index < meter_slot.extra_value_id_count) {
+                values[i] = get_extended_value(&meter_slot.values, &(meter_slot.extra_value_ids[extra_value_index]));
+            } else {
+                logger.printfln_meter("Attempted to get index %lu via cache but have only %lu values and %u extra values", index, meter_value_count, meter_slot.extra_value_id_count);
+                values[i] = NAN;
+                return MeterValueAvailability::Unavailable;
+            }
+        }
+    }
+
+    if (!this->meter_is_fresh(slot, max_age)) {
+        return MeterValueAvailability::Stale;
+    } else {
+        return MeterValueAvailability::Fresh;
+    }
+}
+
 MeterValueAvailability Meters::get_value_by_index(uint32_t slot, uint32_t index, float *value_out, micros_t max_age)
 {
     if (slot >= METERS_SLOTS || index == UINT32_MAX) {
@@ -654,8 +864,21 @@ MeterValueAvailability Meters::get_value_by_index(uint32_t slot, uint32_t index,
     }
 
     const MeterSlot &meter_slot = meter_slots[slot];
+    const uint32_t value_count = static_cast<uint32_t>(meter_slot.values.count());
 
-    *value_out = meter_slot.values.get(index)->asFloat();
+    if (index < value_count) {
+        *value_out = meter_slot.values.get(index)->asFloat();
+    } else {
+        uint32_t extra_value_index = index - value_count;
+
+        if (extra_value_index < meter_slot.extra_value_id_count) {
+            *value_out = get_extended_value(&meter_slot.values, &(meter_slot.extra_value_ids[extra_value_index]));
+        } else {
+            logger.printfln_meter("Attempted to get index %lu but have only %lu values and %u extra values", index, value_count, meter_slot.extra_value_id_count);
+            *value_out = NAN;
+            return MeterValueAvailability::Unavailable;
+        }
+    }
 
     if (!this->meter_is_fresh(slot, max_age)) {
         return MeterValueAvailability::Stale;
@@ -1076,19 +1299,42 @@ void Meters::fill_index_cache(uint32_t slot, size_t find_value_count, const Mete
         return;
     }
 
-    Config &value_ids = meter_slots[slot].value_ids;
+    const MeterSlot &meter_slot = meter_slots[slot];
+    const Config &value_ids = meter_slot.value_ids;
+    const size_t value_id_count = value_ids.count();
 
-    size_t value_id_count = value_ids.count();
-    MeterValueID *value_ids_arr = static_cast<MeterValueID *>(malloc(value_id_count * sizeof(MeterValueID)));
+    // Cache value IDs in a simple array to avoid excessive get() calls.
+    MeterValueID value_ids_arr[METERS_MAX_VALUES_PER_METER];
     for (size_t i = 0; i < value_id_count; i++) {
-        value_ids_arr[i] = static_cast<MeterValueID>(value_ids.get(i)->asUint());
+        value_ids_arr[i] = value_ids.get(i)->asEnum<MeterValueID>();
     }
 
-    for (size_t i = 0; i < find_value_count; i++) {
-        index_cache[i] = meters_find_id_index(value_ids_arr, value_id_count, find_value_ids[i]);
-    }
+    for (size_t fv_i = 0; fv_i < find_value_count; fv_i++) {
+        const MeterValueID mvid_to_find = find_value_ids[fv_i];
 
-    free(value_ids_arr);
+        for (uint32_t vid_i = 0; vid_i < value_id_count; vid_i++) {
+            if (value_ids_arr[vid_i] == mvid_to_find) {
+                index_cache[fv_i] = vid_i;
+                goto mvid_found;
+            }
+        }
+
+        {
+            const extra_value_id *extra_value_ids = meter_slot.extra_value_ids;
+            const uint32_t extra_value_id_count = meter_slot.extra_value_id_count;
+
+            for (uint32_t evid_i = 0; evid_i < extra_value_id_count; evid_i++) {
+                if (static_cast<MeterValueID>(extra_value_ids[evid_i].value_id) == mvid_to_find) {
+                    index_cache[fv_i] = evid_i + value_id_count;
+                    goto mvid_found;
+                }
+            }
+        }
+
+        index_cache[fv_i] = UINT32_MAX;
+
+        mvid_found: {}
+    }
 }
 
 static const char *meters_path_postfixes[] = {"", "config", "state", "value_ids", "values", "errors", "reset", "last_reset"};
