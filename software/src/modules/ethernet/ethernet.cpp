@@ -204,6 +204,9 @@ void Ethernet::setup()
 
             uint32_t now = millis();
 
+            // Restart DHCP to make sure that the GOT_IP event fires when receiving the same address as before.
+            ETH.config((uint32_t)0, (uint32_t)0, (uint32_t)0);
+
             connection_state = EthernetState::Connecting;
 
             task_scheduler.scheduleOnce([this, now](){
