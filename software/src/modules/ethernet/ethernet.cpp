@@ -154,7 +154,7 @@ void Ethernet::setup()
             if ((uint32_t)ip != 0) {
                 ETH.config(ip, gateway, subnet, dns, dns2);
             } else {
-                ETH.config((uint32_t)0, (uint32_t)0, (uint32_t)0);
+                ETH.config();
             }
 
             connection_state = EthernetState::Connecting;
@@ -204,6 +204,9 @@ void Ethernet::setup()
             this->print_con_duration();
 
             auto now = now_us();
+
+            // Restart DHCP to make sure that the GOT_IP event fires when receiving the same address as before.
+            ETH.config();
 
             connection_state = EthernetState::Connecting;
 
