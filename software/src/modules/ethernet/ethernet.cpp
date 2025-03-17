@@ -130,7 +130,7 @@ void Ethernet::setup()
 
             connection_state = EthernetState::NotConnected;
 
-            task_scheduler.scheduleOnce([this](){
+            task_scheduler.scheduleOnce([this]() {
                 state.get("connection_state")->updateEnum(connection_state);
             });
         },
@@ -159,7 +159,7 @@ void Ethernet::setup()
 
             connection_state = EthernetState::Connecting;
 
-            task_scheduler.scheduleOnce([this, link_speed, full_duplex](){
+            task_scheduler.scheduleOnce([this, link_speed, full_duplex]() {
                 state.get("connection_state")->updateEnum(connection_state);
                 state.get("link_speed" )->updateUint(link_speed);
                 state.get("full_duplex")->updateBool(full_duplex);
@@ -179,17 +179,19 @@ void Ethernet::setup()
             auto subnet = ETH.subnetMask();
             logger.printfln("Got IP address: %s/%u", ip.c_str(), WiFiGenericClass::calculateSubnetCIDR(subnet));
 
-            auto now = now_us();
+            micros_t now = now_us();
             was_connected = true;
             last_connected = now;
 
             connection_state = EthernetState::Connected;
 
-            task_scheduler.scheduleOnce([this, now, ip, subnet](){
+            uint32_t now_ms = now.to<millis_t>().as<uint32_t>();
+
+            task_scheduler.scheduleOnce([this, now_ms, ip, subnet]() {
                 state.get("connection_state")->updateEnum(connection_state);
                 state.get("ip")->updateString(ip);
                 state.get("subnet")->updateString(subnet.toString());
-                state.get("connection_start")->updateUint(now.to<millis_t>().as<uint32_t>());
+                state.get("connection_start")->updateUint(now_ms);
             });
         },
         ARDUINO_EVENT_ETH_GOT_IP);
@@ -203,18 +205,18 @@ void Ethernet::setup()
             logger.printfln("Lost IP address.");
             this->print_con_duration();
 
-            auto now = now_us();
+            uint32_t now_ms = now_us().to<millis_t>().as<uint32_t>();
 
             // Restart DHCP to make sure that the GOT_IP event fires when receiving the same address as before.
             ETH.config();
 
             connection_state = EthernetState::Connecting;
 
-            task_scheduler.scheduleOnce([this, now](){
+            task_scheduler.scheduleOnce([this, now_ms]() {
                 state.get("connection_state")->updateEnum(connection_state);
                 state.get("ip")->updateString("0.0.0.0");
                 state.get("subnet")->updateString("0.0.0.0");
-                state.get("connection_end")->updateUint(now.to<millis_t>().as<uint32_t>());
+                state.get("connection_end")->updateUint(now_ms);
             });
         },
         ARDUINO_EVENT_ETH_LOST_IP);
@@ -223,15 +225,15 @@ void Ethernet::setup()
             logger.printfln("Disconnected");
             this->print_con_duration();
 
-            auto now = now_us();
+            uint32_t now_ms = now_us().to<millis_t>().as<uint32_t>();
 
             connection_state = EthernetState::NotConnected;
 
-            task_scheduler.scheduleOnce([this, now](){
+            task_scheduler.scheduleOnce([this, now_ms]() {
                 state.get("connection_state")->updateEnum(connection_state);
                 state.get("ip")->updateString("0.0.0.0");
                 state.get("subnet")->updateString("0.0.0.0");
-                state.get("connection_end")->updateUint(now.to<millis_t>().as<uint32_t>());
+                state.get("connection_end")->updateUint(now_ms);
             });
         },
         ARDUINO_EVENT_ETH_DISCONNECTED);
@@ -240,13 +242,13 @@ void Ethernet::setup()
             logger.printfln("Stopped");
             this->print_con_duration();
 
-            auto now = now_us();
+            uint32_t now_ms = now_us().to<millis_t>().as<uint32_t>();
 
             connection_state = EthernetState::NotConnected;
 
-            task_scheduler.scheduleOnce([this, now](){
+            task_scheduler.scheduleOnce([this, now_ms]() {
                 state.get("connection_state")->updateEnum(connection_state);
-                state.get("connection_end")->updateUint(now.to<millis_t>().as<uint32_t>());
+                state.get("connection_end")->updateUint(now_ms);
             });
         },
         ARDUINO_EVENT_ETH_STOP);
