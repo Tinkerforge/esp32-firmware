@@ -526,59 +526,63 @@ def main():
 
     q = queue.Queue()
 
-    qt_thread = ThreadWithReturnValue(target=lambda: run_gui(q))
-    qt_thread.start()
-    thread_ids[qt_thread.ident] = -1
-    qt_thread.start_semaphore.release()
+    try:
+        qt_thread = ThreadWithReturnValue(target=lambda: run_gui(q))
+        qt_thread.start()
+        thread_ids[qt_thread.ident] = -1
+        qt_thread.start_semaphore.release()
 
-    q.put("Connecting to Brick Daemon")
+        q.put("Connecting to Brick Daemon")
 
-    global reprint_enabled
+        global reprint_enabled
 
-    ipcon = IPConnection()
-    ipcon.connect("localhost", 4223)
+        ipcon = IPConnection()
+        ipcon.connect("localhost", 4223)
 
-    q.put("Searching " + BrickletIndustrialQuadRelayV2.DEVICE_DISPLAY_NAME)
+        q.put("Searching " + BrickletIndustrialQuadRelayV2.DEVICE_DISPLAY_NAME)
 
-    iqr_uid = None
+        iqr_uid = None
 
-    def search_iqr(uid, connected_uid, position, hardware_version, firmware_version,
-                 device_identifier, enumeration_type):
-        nonlocal iqr_uid
-        if device_identifier == BrickletIndustrialQuadRelayV2.DEVICE_IDENTIFIER and uid not in IQR_UID_BLACKLIST:
-            iqr_uid = uid
+        def search_iqr(uid, connected_uid, position, hardware_version, firmware_version,
+                    device_identifier, enumeration_type):
+            nonlocal iqr_uid
+            if device_identifier == BrickletIndustrialQuadRelayV2.DEVICE_IDENTIFIER and uid not in IQR_UID_BLACKLIST:
+                iqr_uid = uid
 
-    start = time.time()
-    ipcon.register_callback(IPConnection.CALLBACK_ENUMERATE, search_iqr)
-    for i in range(100):
-        if iqr_uid is not None:
-            break
+        start = time.time()
+        ipcon.register_callback(IPConnection.CALLBACK_ENUMERATE, search_iqr)
+        for i in range(100):
+            if iqr_uid is not None:
+                break
 
-        if i % 10 == 0:
-            ipcon.enumerate()
-        time.sleep(0.1)
-    else:
-        fatal_error("Industrial quad relay not found.")
+            if i % 10 == 0:
+                ipcon.enumerate()
+            time.sleep(0.1)
+        else:
+            fatal_error("Industrial quad relay not found.")
 
-    iqr = BrickletIndustrialQuadRelayV2(iqr_uid, ipcon)
-    iqr.set_response_expected_all(True)
+        iqr = BrickletIndustrialQuadRelayV2(iqr_uid, ipcon)
+        iqr.set_response_expected_all(True)
 
-    q.put("Powering off testers")
+        q.put("Powering off testers")
 
-    # This clears the RGB LEDs by powering down the ESP bricks.
-    iqr.set_value([False] * 4)
-    time.sleep(1)
+        # This clears the RGB LEDs by powering down the ESP bricks.
+        iqr.set_value([False] * 4)
+        time.sleep(1)
 
-    q.put("Powering on testers")
+        q.put("Powering on testers")
 
-    iqr.set_value([True] * 4)
-    time.sleep(3)
+        iqr.set_value([True] * 4)
+        time.sleep(3)
 
-    relay_to_serial = {k: f"/dev/ttyUSBESPTESTER{k}" for k in range(4) if os.path.exists(f"/dev/ttyUSBESPTESTER{k}")}
+        relay_to_serial = {k: f"/dev/ttyUSBESPTESTER{k}" for k in range(4) if os.path.exists(f"/dev/ttyUSBESPTESTER{k}")}
 
-    q.put(f"Found {len(relay_to_serial)} testers. Starting GUI.")
+        q.put(f"Found {len(relay_to_serial)} testers. Starting GUI.")
 
-    q.put(list(relay_to_serial.keys()))
+        q.put(list(relay_to_serial.keys()))
+    except Exception:
+        q.put([])
+        raise
 
     config = json.loads(Path("provision_warp_esp32_ethernet.config").read_text())
     static_ips = config["static_ips"]
@@ -730,4 +734,8 @@ def main():
 if __name__ == "__main__":
     with contextlib.redirect_stdout(StdoutWrapper()):
         with contextlib.redirect_stderr(StderrWrapper()):
-            os._exit(main())
+            try:
+                os._exit(main())
+            except Exception:
+                logs[-1][1].write(traceback.format_exc())
+                raise
