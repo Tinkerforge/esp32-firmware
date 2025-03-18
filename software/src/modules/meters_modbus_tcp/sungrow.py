@@ -330,7 +330,6 @@ specs = [
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 5083,
                 'value_type': 'S32LE',
-                'scale_factor': -1.0,
                 'variant': 'String',
             },
             {
@@ -338,7 +337,6 @@ specs = [
                 'value_id': 'PowerActiveL1ImExDiff',
                 'start_address': 5085,
                 'value_type': 'S32LE',
-                'scale_factor': -1.0,
                 'variant': 'String',
             },
             {
@@ -346,7 +344,6 @@ specs = [
                 'value_id': 'PowerActiveL2ImExDiff',
                 'start_address': 5087,
                 'value_type': 'S32LE',
-                'scale_factor': -1.0,
                 'variant': 'String',
             },
             {
@@ -354,7 +351,6 @@ specs = [
                 'value_id': 'PowerActiveL3ImExDiff',
                 'start_address': 5089,
                 'value_type': 'S32LE',
-                'scale_factor': -1.0,
                 'variant': 'String',
             },
             {
