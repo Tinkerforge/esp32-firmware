@@ -28,8 +28,6 @@ from provisioning.tinkerforge.bricklet_temperature_v2 import BrickletTemperature
 
 from provisioning.provision_common.provision_common import *
 
-SERIAL_SETTLE_DELAY = 2
-
 main_thread = threading.get_ident()
 original_stdout = sys.stdout
 original_stderr = sys.stderr
@@ -569,12 +567,12 @@ def main():
 
     # This clears the RGB LEDs by powering down the ESP bricks.
     iqr.set_value([False] * 4)
-    time.sleep(SERIAL_SETTLE_DELAY)
+    time.sleep(1)
 
     q.put("Powering on testers")
 
     iqr.set_value([True] * 4)
-    time.sleep(SERIAL_SETTLE_DELAY)
+    time.sleep(3)
 
     relay_to_serial = {k: f"/dev/ttyUSBESPTESTER{k}" for k in range(4) if os.path.exists(f"/dev/ttyUSBESPTESTER{k}")}
 
@@ -587,9 +585,6 @@ def main():
     subnet = config["subnet"]
     gateway = config["gateway"]
     dns = config["dns"]
-
-    iqr.set_value([True] * 4)
-    time.sleep(SERIAL_SETTLE_DELAY)
 
     print(green(f"Flashing {len(relay_to_serial)} ESPs..."))
     #fixme does capturing v work here?
