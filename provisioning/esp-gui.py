@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-from PyQt5.QtCore import QTimer
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QComboBox
+from PySide6.QtCore import QTimer
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QComboBox
 
 from collections import namedtuple
 import functools
@@ -126,7 +126,7 @@ def main():
 
     window.setLayout(layout)
     window.show()
-    app.exec_()
+    app.exec()
     work_queue.put(None)
     t.join()
 
