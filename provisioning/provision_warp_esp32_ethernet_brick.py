@@ -395,9 +395,10 @@ def print_label(ssid, passphrase, stage_1_test_report, relay_to_rgb_led):
 
 
 IQR_UID_BLACKLIST = [
-    "RVG",  # Front Switch, CP B, CP C, CP D
-    "RNW",  # PP 13A, 20A, 32A, 63A
-    "RzF",  # Enable, 230V, Contactor Check 0, Contactor Check 1
+    "2dVX",
+    "2bnK",
+    "2bmW",
+    "2bmU"
 ]
 
 def ansi_escape_to_html(s):
