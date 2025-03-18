@@ -2,6 +2,7 @@ specs = [
     {
         'name': 'Eastron SDM630 TCP',
         'register_type': 'InputRegister',
+        'start_address_offset': 1,
         'values': [
             {
                 'name': 'Phase 1 line to neutral volts [V]',
