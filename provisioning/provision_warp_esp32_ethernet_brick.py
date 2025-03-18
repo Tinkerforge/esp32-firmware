@@ -4,14 +4,22 @@ import tinkerforge_util as tfutil
 
 tfutil.create_parent_module(__file__, 'provisioning')
 
+from PySide6.QtCore import QTimer, Qt
+from PySide6.QtGui import QPixmap, QColorConstants
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QTextEdit, QAbstractSlider, QLabel, QSplashScreen
+
+import io
 import os
+import signal
 import sys
 import time
 import traceback
-from threading import Thread
+from threading import Thread, get_ident
 from pathlib import Path
 import termios
 import fcntl
+import contextlib
+import queue
 
 from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58, Error
 from provisioning.tinkerforge.bricklet_industrial_quad_relay_v2 import BrickletIndustrialQuadRelayV2
@@ -22,50 +30,54 @@ from provisioning.provision_common.provision_common import *
 
 SERIAL_SETTLE_DELAY = 2
 
-class NonBlockingInput:
-    def __enter__(self):
-        # canonical mode, no echo
-        self.old = termios.tcgetattr(sys.stdin)
-        new = termios.tcgetattr(sys.stdin)
-        new[3] = new[3] & ~(termios.ICANON | termios.ECHO)
-        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, new)
+main_thread = threading.get_ident()
+original_stdout = sys.stdout
+original_stderr = sys.stderr
 
-        # set for non-blocking io
-        self.orig_fl = fcntl.fcntl(sys.stdin, fcntl.F_GETFL)
-        fcntl.fcntl(sys.stdin, fcntl.F_SETFL, self.orig_fl | os.O_NONBLOCK)
+logs = {
+    -1: [io.StringIO(""), io.StringIO("")],
+    0: [io.StringIO(""), io.StringIO("")],
+    1: [io.StringIO(""), io.StringIO("")],
+    2: [io.StringIO(""), io.StringIO("")],
+    3: [io.StringIO(""), io.StringIO("")]
+}
 
-    def __exit__(self, *args):
-        # restore terminal to previous state
-        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.old)
-        fcntl.fcntl(sys.stdin, fcntl.F_SETFL, self.orig_fl)
+thread_ids = {
+}
 
+class StdoutWrapper:
+    def __getattribute__(self, name):
+        if threading.get_ident() == main_thread or threading.get_ident() not in thread_ids:
+            f = logs[-1][0]
+        else:
+            f = logs[thread_ids[threading.get_ident()]][0]
 
-def drop_stdin_buffer():
-    with NonBlockingInput():
-        c = '1'
+        return f.__getattribute__(name)
 
-        while len(c) > 0:
-            c = sys.stdin.read(1)
+    def __setattr__(self, name, value):
+        if threading.get_ident() == main_thread or threading.get_ident() not in thread_ids:
+            f = logs[-1][0]
+        else:
+            f = logs[thread_ids[threading.get_ident()]][0]
 
-def nonblocking_input(prompt, generator):
-    drop_stdin_buffer()
-    print(prompt, end="")
+        return f.__setattr__(name, value)
 
-    result = ""
-    with NonBlockingInput():
-        while True:
-            c = sys.stdin.read(1)
-            sys.stdout.write(c)
-            sys.stdout.flush()
+class StderrWrapper:
+    def __getattribute__(self, name):
+        if threading.get_ident() == main_thread or threading.get_ident() not in thread_ids:
+            f = logs[-1][1]
+        else:
+            f = logs[thread_ids[threading.get_ident()]][1]
 
-            if c == "\n":
-                return result, None
-            result += c
+        return f.__getattribute__(name)
 
-            if (x := next(generator)) is not None:
-                sys.stdout.write("y\n")
-                sys.stdout.flush()
-                return "y", x
+    def __setattr__(self, name, value):
+        if threading.get_ident() == main_thread or threading.get_ident() not in thread_ids:
+            f = logs[-1][1]
+        else:
+            f = logs[thread_ids[threading.get_ident()]][1]
+
+        return f.__setattr__(name, value)
 
 class ThreadWithReturnValue(Thread):
     def __init__(self, group=None, target=None, name=None,
@@ -74,8 +86,11 @@ class ThreadWithReturnValue(Thread):
         self._return = None
         self._success = False
         self._exception = None
+        self.start_semaphore = threading.Semaphore(0)
+
 
     def run(self):
+        self.start_semaphore.acquire()
         if self._target is not None:
             try:
                 self._return = self._target(*self._args, **self._kwargs)
@@ -343,45 +358,41 @@ def run_stage_1_tests(serial_port, ethernet_ip, power_off_fn, power_on_fn, resul
     return ipcon, rgb_led_uid
 
 
-def print_label(ssid, passphrase, stage_1_test_report, generator_fn):
+def print_label(ssid, passphrase, stage_1_test_report, relay_to_rgb_led):
+    global restart_clicked
+    global reprint_clicked
     with open("{}_{}_report_stage_1.json".format(ssid, now().replace(":", "-")), "w") as f:
         json.dump(stage_1_test_report, f, indent=4)
 
-    label_success = "n"
     removed_brick = None
-    while label_success != "y":
+    while removed_brick is None and not restart_clicked:
+        if restart_clicked:
+            return
+        reprint_clicked = False
         run(["python3", "print-esp32-label.py", ssid, passphrase, "-c", "4"])
-        label_prompt = "Stick one label on the ESP, put ESP{} in the ESD bag. Press n to retry printing the label{}. Press y or remove next ESP to continue [y/n]".format(
+        label_prompt = "Stick one label on the ESP, put ESP{} in the ESD bag. Press 'Print label again' button to retry printing the label{}. Remove next ESP to continue. Press 'Restart' when all finished ESPs are removed and new ESPs are inserted.".format(
                 " and the other three labels",
                 "s")
 
-        label_success, removed_brick = nonblocking_input(label_prompt, generator_fn())
-        while label_success not in ("y", "n"):
-            label_success, removed_brick = nonblocking_input(label_prompt, generator_fn())
+        try:
+            while not restart_clicked and not reprint_clicked:
+                for k, rgb in list(relay_to_rgb_led.items()):
+                    rgb.set_rgb_value(0,63,0)
+
+                time.sleep(0.5)
+
+                for k, rgb in list(relay_to_rgb_led.items()):
+                    rgb.set_rgb_value(0,0,0)
+
+                time.sleep(0.5)
+        except Error as e:
+            if e.value in (Error.TIMEOUT, Error.NOT_CONNECTED):
+                return k
+            else:
+                raise
 
     return removed_brick
 
-def brick_removed(relay_to_rgb_led):
-    try:
-        while True:
-            for k, rgb in list(relay_to_rgb_led.items()):
-                rgb.set_rgb_value(0,63,0)
-
-            for i in range(5):
-                yield
-                time.sleep(0.1)
-
-            for k, rgb in list(relay_to_rgb_led.items()):
-                rgb.set_rgb_value(0,0,0)
-
-            for i in range(5):
-                yield
-                time.sleep(0.1)
-    except Error as e:
-        if e.value in (Error.TIMEOUT, Error.NOT_CONNECTED):
-            yield k
-        else:
-            raise
 
 IQR_UID_BLACKLIST = [
     "RVG",  # Front Switch, CP B, CP C, CP D
@@ -389,34 +400,197 @@ IQR_UID_BLACKLIST = [
     "RzF",  # Enable, 230V, Contactor Check 0, Contactor Check 1
 ]
 
+def ansi_escape_to_html(s):
+    return s.replace(colors["blue"],  '<font color="#0000FF">')\
+            .replace(colors["cyan"],  '<font color="#00FFFF">')\
+            .replace(colors["green"], '<font color="#00AA00">')\
+            .replace(colors["red"],   '<font color="#FF0000">')\
+            .replace(colors["gray"],  '<font color="#555555">')\
+            .replace(colors["blink"], '<font>')\
+            .replace(colors["off"], '</font>')\
+            .replace("\n", "<br/>")
+
+reprint_enabled = False
+reprint_clicked = False
+def reprint_label():
+    global reprint_clicked
+    reprint_clicked = True
+
+restart_enabled = False
+restart_clicked = False
+def restart(app):
+    global restart_clicked
+    restart_clicked = True
+    original_stdout.write("vor disconnect")
+    app.aboutToQuit.disconnect(quit)
+    original_stdout.write("nach disconnect")
+    app.quit()
+
+def update_logs(edits, restart_button, reprint_button):
+    global restart_enabled
+    global reprint_enabled
+    restart_button.setEnabled(restart_enabled)
+    reprint_button.setEnabled(reprint_enabled)
+
+    for k, v in edits.items():
+        v.setHtml(ansi_escape_to_html(logs[k][0].getvalue() + "\n---\n" + logs[k][1].getvalue()))
+        v.verticalScrollBar().triggerAction(QAbstractSlider.SliderToMaximum)
+
+def quit():
+    global restart_clicked
+    os.killpg(0, signal.SIGKILL)
+    #os._exit(42 if restart_clicked else 0)
+
+def run_gui(q: queue.Queue):
+    try:
+        app = QApplication([])
+
+        splash = QSplashScreen(QPixmap("./favicon_512.png"))
+        splash.showMessage("Hallo Welt!", Qt.AlignCenter | Qt.AlignBottom, QColorConstants.White)
+        splash.show()
+        while True:
+            app.processEvents()
+            try:
+                x = q.get(timeout=0.1)
+                if isinstance(x, str):
+                    splash.showMessage(x, Qt.AlignCenter | Qt.AlignBottom, QColorConstants.White)
+                else:
+                    testers = x
+                    break
+            except queue.Empty:
+                pass
+
+        app.aboutToQuit.connect(quit)
+
+        window = QWidget()
+        window.setWindowTitle('WARP ESP32 Provisioning')
+        layout = QVBoxLayout()
+
+        tester_widget = QWidget()
+        tester_layout = QHBoxLayout()
+
+        buttons_widget = QWidget()
+        buttons_layout = QHBoxLayout()
+
+        reprint_button = QPushButton("Print label again")
+        reprint_button.clicked.connect(reprint_label)
+        reprint_button.setEnabled(reprint_enabled)
+
+        restart_button = QPushButton("Restart")
+        restart_button.clicked.connect(lambda: restart(app))
+        restart_button.setEnabled(restart_enabled)
+
+        buttons_layout.addWidget(reprint_button)
+        buttons_layout.addWidget(restart_button)
+
+        buttons_widget.setLayout(buttons_layout)
+
+        if len(testers) == 0:
+            tester_layout.addWidget(QLabel("NO ESP TESTERS ATTACHED!"))
+
+        edits = {
+            -1: QTextEdit()
+        }
+        edits[-1].setReadOnly(True)
+
+        for i in range(4):
+            if i in testers:
+                edits[i] = QTextEdit()
+                edits[i].setReadOnly(True)
+                tester_layout.addWidget(edits[i])
+            else:
+                tester_layout.addWidget(QLabel(f"Tester {i} not attached"))
+
+        tester_widget.setLayout(tester_layout)
+
+        layout.addWidget(tester_widget)
+        layout.addWidget(buttons_widget)
+
+        layout.addWidget(edits[-1])
+
+        window.setLayout(layout)
+        window.show()
+        splash.finish(window)
+
+        log_timer = QTimer(window)
+        log_timer.timeout.connect(lambda: update_logs(edits, restart_button, reprint_button))
+        log_timer.setInterval(100)
+        log_timer.start()
+    except Exception as e:
+        original_stdout.write(traceback.format_exc())
+        original_stdout.flush()
+
+    app.exec()
+
 def main():
-    config = json.loads(Path("provision_warp_esp32_ethernet_config.json").read_text())
+    os.setpgrp()
+
+    q = queue.Queue()
+
+    qt_thread = ThreadWithReturnValue(target=lambda: run_gui(q))
+    qt_thread.start()
+    thread_ids[qt_thread.ident] = -1
+    qt_thread.start_semaphore.release()
+
+    q.put("Connecting to Brick Daemon")
+
+    global reprint_enabled
+
+    ipcon = IPConnection()
+    ipcon.connect("localhost", 4223)
+
+    q.put("Searching " + BrickletIndustrialQuadRelayV2.DEVICE_DISPLAY_NAME)
+
+    iqr_uid = None
+
+    def search_iqr(uid, connected_uid, position, hardware_version, firmware_version,
+                 device_identifier, enumeration_type):
+        nonlocal iqr_uid
+        if device_identifier == BrickletIndustrialQuadRelayV2.DEVICE_IDENTIFIER and uid not in IQR_UID_BLACKLIST:
+            iqr_uid = uid
+
+    start = time.time()
+    ipcon.register_callback(IPConnection.CALLBACK_ENUMERATE, search_iqr)
+    for i in range(100):
+        if iqr_uid is not None:
+            break
+
+        if i % 10 == 0:
+            ipcon.enumerate()
+        time.sleep(0.1)
+    else:
+        fatal_error("Industrial quad relay not found.")
+
+    iqr = BrickletIndustrialQuadRelayV2(iqr_uid, ipcon)
+    iqr.set_response_expected_all(True)
+
+    q.put("Powering off testers")
+
+    # This clears the RGB LEDs by powering down the ESP bricks.
+    iqr.set_value([False] * 4)
+    time.sleep(SERIAL_SETTLE_DELAY)
+
+    q.put("Powering on testers")
+
+    iqr.set_value([True] * 4)
+    time.sleep(SERIAL_SETTLE_DELAY)
+
+    relay_to_serial = {k: f"/dev/ttyUSBESPTESTER{k}" for k in range(4) if os.path.exists(f"/dev/ttyUSBESPTESTER{k}")}
+
+    q.put(f"Found {len(relay_to_serial)} testers. Starting GUI.")
+
+    q.put(list(relay_to_serial.keys()))
+
+    config = json.loads(Path("provision_warp_esp32_ethernet.config").read_text())
     static_ips = config["static_ips"]
     subnet = config["subnet"]
     gateway = config["gateway"]
     dns = config["dns"]
 
-    ipcon = IPConnection()
-    ipcon.connect("localhost", 4223)
-
-    devs = enumerate_devices(ipcon)
-    iqr_uids = [x.uid for x in devs if x.device_identifier == BrickletIndustrialQuadRelayV2.DEVICE_IDENTIFIER and x.uid not in IQR_UID_BLACKLIST]
-    if len(iqr_uids) != 1:
-        fatal_error("Industrial quad relay not found. Found the following devices:", enumerate_devices(ipcon))
-
-    iqr = BrickletIndustrialQuadRelayV2(iqr_uids[0], ipcon)
-    iqr.set_response_expected_all(True)
-
-    iqr.set_value([True, True, True, True])
-    time.sleep(SERIAL_SETTLE_DELAY)
-
-    relay_to_serial = {k: f"/dev/ttyUSBESPTESTER{k}" for k in range(4) if os.path.exists(f"/dev/ttyUSBESPTESTER{k}")}
-
-    iqr.set_value([True, True, True, True])
+    iqr.set_value([True] * 4)
     time.sleep(SERIAL_SETTLE_DELAY)
 
     print(green(f"Flashing {len(relay_to_serial)} ESPs..."))
-
     #fixme does capturing v work here?
     threads = []
     for k, v in relay_to_serial.items():
@@ -426,16 +600,18 @@ def main():
                 capture_output=True,
                 encoding='utf-8'))
         t.start()
+        thread_ids[t.ident] = k
+        t.start_semaphore.release()
         threads.append((k, v, t))
 
     for k, v, t in threads:
         success, result, exception = t.join()
         if not success:
-            print(red(f"Failed to run stage 0 for {k} {v}: {exception}"))
+            print(red(f"Failed to run stage 0 for {k} {v}: {exception}"), file=logs[k][1])
             relay_to_serial.pop(k)
 
         if result.returncode != 0:
-            print(red(f"Failed to run stage 0 for {k} {v}: {result.stdout}\n{result.stderr}"))
+            print(red(f"Failed to run stage 0 for {k} {v}: {result.stdout}\n{result.stderr}"), file=logs[k][1])
             relay_to_serial.pop(k)
 
     threads.clear()
@@ -453,12 +629,14 @@ def main():
     for k, v in relay_to_serial.items():
         t = ThreadWithReturnValue(target=get_esp_ssid_fn(v, test_reports[k]))
         t.start()
+        thread_ids[t.ident] = k
+        t.start_semaphore.release()
         threads.append((k, v, t))
 
     for k, v, t in threads:
         success, result, exception = t.join()
         if not success:
-            print(red(f"Failed to run get_esp_ssid for {k} {v}: {exception}"))
+            print(red(f"Failed to run get_esp_ssid for {k} {v}: {exception}"), file=logs[k][1])
             relay_to_serial.pop(k)
         else:
             relay_to_ssid[k] = result[0]
@@ -472,11 +650,13 @@ def main():
     run(["sudo", "iw", "reg", "set", "DE"])
 
     for k, v in list(relay_to_serial.items()):
-        try:
-            test_wifi(relay_to_ssid[k], relay_to_passphrase[k], static_ips[k], gateway, subnet, dns, test_reports[k])
-        except BaseException as e:
-            print(red(f"Failed to test WiFi for {k} {v}: {e}"))
-            relay_to_serial.pop(k)
+        with contextlib.redirect_stdout(logs[k][0]):
+            with contextlib.redirect_stdout(logs[k][1]):
+                try:
+                    test_wifi(relay_to_ssid[k], relay_to_passphrase[k], static_ips[k], gateway, subnet, dns, test_reports[k])
+                except BaseException as e:
+                    print(red(f"Failed to test WiFi for {k} {v}: {e}"))
+                    relay_to_serial.pop(k)
 
     def run_stage_1_tests_fn(serial_port, ethernet_ip, relay_pin, test_report):
         return lambda: run_stage_1_tests(serial_port, ethernet_ip, lambda: iqr.set_selected_value(relay_pin, False), lambda: iqr.set_selected_value(relay_pin, True), test_report)
@@ -485,6 +665,8 @@ def main():
         print(green(f"{k}: {static_ips[k]}"))
         t = ThreadWithReturnValue(target=run_stage_1_tests_fn(v, static_ips[k], k, test_reports[k]))
         t.start()
+        thread_ids[t.ident] = k
+        t.start_semaphore.release()
         threads.append((k, v, t))
 
     relay_to_rgb_led = {}
@@ -492,7 +674,7 @@ def main():
     for k, v, t in threads:
         success, result, exception = t.join()
         if not success:
-            print(red(f"Failed to run run_stage_1_tests for {k} {v}: {exception}"))
+            print(red(f"Failed to run run_stage_1_tests for {k} {v}: {exception}"), file=logs[k][1])
             relay_to_serial.pop(k)
         else:
             ipcon, rgb_led_uid = result
@@ -502,10 +684,20 @@ def main():
 
             relay_to_rgb_led[k] = rgb_led
 
-    while len(relay_to_rgb_led) > 0:
+    threads.clear()
+
+    global restart_clicked
+    global restart_enabled
+    restart_clicked = False
+    restart_enabled = True
+
+    while len(relay_to_rgb_led) > 0 and not restart_clicked:
+        if restart_clicked:
+            return
+
         print(green(f"ESPs in testers {', '.join(str(x) for x in relay_to_rgb_led.keys())} tested successfully. Remove one of the ESPs to print its label!"))
         try:
-            while True:
+            while not restart_clicked:
                 for k, rgb in list(relay_to_rgb_led.items()):
                     rgb.set_rgb_value(0,63,0)
 
@@ -517,18 +709,29 @@ def main():
                 time.sleep(0.5)
         except Error as e:
             if e.value in (Error.TIMEOUT, Error.NOT_CONNECTED):
+                reprint_enabled = True
                 next_brick = k
-                while next_brick is not None and len(relay_to_rgb_led) > 0:
+                while next_brick is not None and len(relay_to_rgb_led) > 0 and not restart_clicked:
+                    if restart_clicked:
+                        print("restart")
+                        return
                     print(green(f"Removed {next_brick}"))
+                    iqr.set_selected_value(next_brick, False)
                     rgb_led = relay_to_rgb_led.pop(next_brick)
                     rgb_led.ipcon.disconnect()
-                    next_brick = print_label(relay_to_ssid[next_brick], relay_to_passphrase[next_brick], test_reports[next_brick], lambda: brick_removed(relay_to_rgb_led))
+                    next_brick = print_label(relay_to_ssid[next_brick], relay_to_passphrase[next_brick], test_reports[next_brick], relay_to_rgb_led)
+                    print("Next brick", next_brick)
             else:
                 raise
+    original_stdout.write("before join")
+    qt_thread.join()
 
-    threads.clear()
+    result = 42 if restart_clicked else 0
+    original_stdout.write("returning" + str(result) + "\n")
+    original_stdout.flush()
+    return result
 
 if __name__ == "__main__":
-    while True:
-        main()
-        input("Done! Press enter to start next run")
+    with contextlib.redirect_stdout(StdoutWrapper()):
+        with contextlib.redirect_stderr(StderrWrapper()):
+            os._exit(main())
