@@ -106,6 +106,6 @@ private:
     char *pending_ptr();
 
     IBaseChunkedResponse *internal;
-    char pending[256];
+    char pending[1024];
     size_t pending_used = 0;
 };
