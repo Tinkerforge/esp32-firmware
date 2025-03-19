@@ -22,6 +22,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "sun_spec_model_specs.h"
+#include "tools/hexdump.h"
 #include "modules/meters/meter_location.enum.h"
 #include "modules/modbus_tcp_client/modbus_tcp_tools.h"
 #include "modules/meters_sun_spec/models/model_001.h"
@@ -163,19 +164,6 @@ void MeterSunSpec::read_start(size_t model_regcount)
     start_generic_read();
 }
 
-static const char *lookup = "0123456789abcdef";
-
-static void registers_to_string(uint16_t *data, size_t data_len, char *buf, size_t *buf_used)
-{
-    for (size_t i = 0; i < data_len; ++i) {
-        for (size_t n = 0; n < 4; ++n) {
-            buf[4 * i + n] = lookup[(data[i] >> (12 - 4 * n)) & 0x0f];
-        }
-    }
-
-    *buf_used = 4 * data_len;
-}
-
 void MeterSunSpec::read_done_callback()
 {
     read_allowed = true;
@@ -200,14 +188,13 @@ void MeterSunSpec::read_done_callback()
 
     for (size_t i = 0; i < 2; ++i) {
         if (generic_read_request.data[i] != nullptr) {
-            registers_to_string(generic_read_request.data[i], generic_read_request.register_count, data_buf, &data_buf_used);
-
             trace("m%lu a%zu c%zu d%zu",
                   slot,
                   generic_read_request.start_address,
                   generic_read_request.register_count,
                   i);
 
+            data_buf_used = hexdump(generic_read_request.data[i], generic_read_request.register_count, data_buf, ARRAY_SIZE(data_buf), HexdumpCase::Lower);
             data_buf[data_buf_used] = '\n';
             ++data_buf_used;
 

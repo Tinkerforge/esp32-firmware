@@ -22,7 +22,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "bindings/errors.h"
-#include "tools.h"
+#include "tools/hexdump.h"
 #include "nfc_bricklet_firmware_bin.embedded.h"
 
 #if defined(BOARD_HAS_PSRAM)
@@ -299,28 +299,10 @@ void NFC::tag_seen(tag_info_t *tag, bool injected)
 #endif
 }
 
-const char *lookup = "0123456789ABCDEF";
-
-void tag_id_bytes_to_string(const uint8_t *tag_id, uint8_t tag_id_len, char buf[NFC_TAG_ID_STRING_LENGTH + 1])
-{
-    for (int i = 0; i < tag_id_len; ++i) {
-        uint8_t b = tag_id[i];
-        uint8_t hi = (b & 0xF0) >> 4;
-        uint8_t lo = b & 0x0F;
-        buf[3 * i] = lookup[hi];
-        buf[3 * i + 1] = lookup[lo];
-        buf[3 * i + 2] = ':';
-    }
-    if (tag_id_len == 0)
-        buf[0] = '\0';
-    else
-        buf[3 * tag_id_len - 1] = '\0';
-}
-
 void NFC::update_seen_tags()
 {
     for (int i = 0; i < TAG_LIST_LENGTH - 1; ++i) {
-        uint8_t tag_id_bytes[10];
+        uint8_t tag_id_bytes[NFC_TAG_ID_LENGTH];
         uint8_t tag_id_len = 0;
         int result = tf_nfc_simple_get_tag_id(&device, i, &new_tags[i].tag_type, tag_id_bytes, &tag_id_len, &new_tags[i].last_seen);
         if (result != TF_E_OK) {
@@ -330,7 +312,7 @@ void NFC::update_seen_tags()
             continue;
         }
 
-        tag_id_bytes_to_string(tag_id_bytes, tag_id_len, new_tags[i].tag_id);
+        hexdump(tag_id_bytes, tag_id_len, new_tags[i].tag_id, ARRAY_SIZE(new_tags[i].tag_id), HexdumpCase::Upper, ':');
     }
 
     // The NFC bricklet removes tags after 24h. Do the same with injected tags.

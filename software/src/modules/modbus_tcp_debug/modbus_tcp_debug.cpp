@@ -25,6 +25,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "tools/hexdump.h"
 #include "modules/modbus_tcp_client/generic_tcp_client_connector_base.h"
 
 void ModbusTCPDebug::pre_setup()
@@ -131,24 +132,16 @@ void ModbusTCPDebug::register_urls()
 
                 // FIXME: format coils for coil function codes
 
-                static const char *lookup = "0123456789abcdef";
-                char read_data[TF_MODBUS_TCP_MAX_READ_REGISTER_COUNT * 4 + 1];
+                char data_hexdump[TF_MODBUS_TCP_MAX_READ_REGISTER_COUNT * 4 + 1];
+                hexdump(transact_buffer, data_count, data_hexdump, ARRAY_SIZE(data_hexdump), HexdumpCase::Lower);
 
-                for (size_t i = 0; i < data_count; ++i) {
-                    for (size_t n = 0; n < 4; ++n) {
-                        read_data[i * 4 + n] = lookup[(transact_buffer[i] >> (12 - 4 * n)) & 0x0f];
-                    }
-                }
-
-                read_data[data_count * 4] = '\0';
-
-                char buf[64 + sizeof(read_data)];
+                char buf[64 + sizeof(data_hexdump)];
                 TFJsonSerializer json{buf, sizeof(buf)};
 
                 json.addObject();
                 json.addMemberNumber("cookie", cookie);
                 json.addMemberNull("error");
-                json.addMemberString("read_data", read_data);
+                json.addMemberString("read_data", data_hexdump);
                 json.endObject();
                 json.end();
 
