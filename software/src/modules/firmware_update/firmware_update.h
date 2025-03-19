@@ -88,7 +88,7 @@ private:
     InstallState check_firmware_info(bool detect_downgrade, bool log, TFJsonSerializer *json_ptr);
     void check_for_update();
     void install_firmware(const char *url);
-    void check_for_rollback();
+    void read_app_partition_state();
 
     ConfigRoot config;
     ConfigRoot state;

@@ -66,12 +66,70 @@
 static_assert(signature_sodium_public_key_length == crypto_sign_PUBLICKEYBYTES);
 #endif
 
-extern const char *get_esp_ota_img_state_name(esp_ota_img_states_t ota_state);
-
 // override weakly linked arduino-esp32 function to stop arduino-esp32
 // initArduino() from calling esp_ota_mark_app_valid_cancel_rollback()
 extern "C" bool verifyRollbackLater()
 {
+    return true;
+}
+
+static const char *get_esp_ota_img_state_name(esp_ota_img_states_t ota_state)
+{
+    switch (ota_state) {
+    case ESP_OTA_IMG_NEW:            return "new";            // Monitor the first boot. In bootloader this state is changed to ESP_OTA_IMG_PENDING_VERIFY.
+    case ESP_OTA_IMG_PENDING_VERIFY: return "pending-verify"; // First boot for this app was. If while the second boot this state is then it will be changed to ABORTED.
+    case ESP_OTA_IMG_VALID:          return "valid";          // App was confirmed as workable. App can boot and work without limits.
+    case ESP_OTA_IMG_INVALID:        return "invalid";        // App was confirmed as non-workable. This app will not selected to boot at all.
+    case ESP_OTA_IMG_ABORTED:        return "aborted";        // App could not confirm the workable or non-workable. In bootloader IMG_PENDING_VERIFY state will be changed to IMG_ABORTED. This app will not selected to boot at all.
+    case ESP_OTA_IMG_UNDEFINED:      return "undefined";      // Undefined. App can boot and work without limits.
+    default:                         return "<unknown>";
+    }
+}
+
+static const char *get_partition_ota_state_name(const esp_partition_t *partition, esp_ota_img_states_t *ota_state)
+{
+    esp_err_t err = esp_ota_get_state_partition(partition, ota_state);
+
+    if (err != ESP_OK) {
+        logger.printfln("Could not get %s partition state: %d", partition->label, err);
+        return "<error>";
+    }
+    else {
+        return get_esp_ota_img_state_name(*ota_state);
+    }
+}
+
+static bool read_custom_app_desc(const esp_partition_t *partition, build_custom_app_desc_t *custom_app_desc, char *version, size_t version_len)
+{
+    esp_err_t err = esp_partition_read(partition,
+                                       sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t) + sizeof(esp_app_desc_t),
+                                       custom_app_desc,
+                                       sizeof(build_custom_app_desc_t));
+
+    if (err != ESP_OK) {
+        logger.printfln("Could not read %s partition custom app description: %d", partition->label, err);
+        return false;
+    }
+
+    if (custom_app_desc->magic != BUILD_CUSTOM_APP_DESC_MAGIC) {
+        logger.printfln("Custom app description of %s partition has wrong magic: 0x%08lx", partition->label, custom_app_desc->magic);
+        return false;
+    }
+
+    if (custom_app_desc->version < 1) {
+        logger.printfln("Custom app description of %s partition has unknown version: %u", partition->label, custom_app_desc->version);
+        return false;
+    }
+
+    char beta[12] = "";
+
+    if (custom_app_desc->fw_version[3] != 255) {
+        snprintf(beta, ARRAY_SIZE(beta), "-beta.%u", custom_app_desc->fw_version[3]);
+    }
+
+    snprintf(version, version_len, "%u.%u.%u%s+%lx",
+             custom_app_desc->fw_version[0], custom_app_desc->fw_version[1], custom_app_desc->fw_version[2], beta, custom_app_desc->fw_build_time);
+
     return true;
 }
 
@@ -168,6 +226,11 @@ void FirmwareUpdate::pre_setup()
         {"update_version", Config::Str("", 0, MAX_VERSION_STRING_LENGTH)},
         {"install_progress", Config::Uint(0, 0, 100)},
         {"install_state", Config::Uint8(static_cast<uint8_t>(InstallState::Idle))},
+        {"running_partition", Config::Str("", 0, 16)},
+        {"app0_state", Config::Uint(ESP_OTA_IMG_INVALID)},
+        {"app0_version", Config::Str("", 0, MAX_VERSION_STRING_LENGTH)},
+        {"app1_state", Config::Uint(ESP_OTA_IMG_INVALID)},
+        {"app1_version", Config::Str("", 0, MAX_VERSION_STRING_LENGTH)},
         {"rolled_back_version", Config::Str("", 0, MAX_VERSION_STRING_LENGTH)},
     });
 
@@ -212,7 +275,7 @@ void FirmwareUpdate::setup()
     logger.printfln("Firmware is not signed");
 #endif
 
-    check_for_rollback();
+    read_app_partition_state();
 
     task_scheduler.scheduleOnce([this]() {
         change_running_partition_from_pending_verify_to_valid();
@@ -1302,66 +1365,101 @@ void FirmwareUpdate::install_firmware(const char *url)
 #endif
 }
 
-static bool read_custom_app_desc(const esp_partition_t *partition, build_custom_app_desc_t *custom_app_desc)
+void FirmwareUpdate::read_app_partition_state()
 {
-    esp_err_t err = esp_partition_read(partition, sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t) + sizeof(esp_app_desc_t), custom_app_desc, sizeof(build_custom_app_desc_t));
+    bool app0_running = false;
+    esp_ota_img_states_t app0_state = ESP_OTA_IMG_INVALID;
+    const char *app0_state_name = "<unknown>";
+    build_custom_app_desc_t app0_custom_desc;
+    char app0_version[MAX_VERSION_STRING_LENGTH + 1] = "<unknown>";
 
-    if (err != ESP_OK) {
-        logger.printfln("Could not read %s partition custom app description: %d", partition->label, err);
-        return false;
+    bool app1_running = false;
+    esp_ota_img_states_t app1_state = ESP_OTA_IMG_INVALID;
+    const char *app1_state_name = "<unknown>";
+    build_custom_app_desc_t app1_custom_desc;
+    char app1_version[MAX_VERSION_STRING_LENGTH + 1] = "<unknown>";
+
+    const esp_partition_t *running_partition = esp_ota_get_running_partition();
+
+    if (running_partition == nullptr) {
+        logger.printfln("Could not get running partition");
+    }
+    else {
+        state.get("running_partition")->updateString(running_partition->label);
+
+        if (strcmp(running_partition->label, "app0") == 0) {
+            app0_running = true;
+        }
+        else if (strcmp(running_partition->label, "app1") == 0) {
+            app1_running = true;
+        }
+        else {
+            logger.printfln("Unexpected running partition: %s", running_partition->label);
+        }
     }
 
-    if (custom_app_desc->magic != BUILD_CUSTOM_APP_DESC_MAGIC) {
-        logger.printfln("Custom app description of %s partition has wrong magic: 0x%08lx", partition->label, custom_app_desc->magic);
-        return false;
+    esp_partition_iterator_t it = esp_partition_find(ESP_PARTITION_TYPE_APP,
+                                                     ESP_PARTITION_SUBTYPE_ANY,
+                                                     nullptr);
+
+    while (it != nullptr) {
+        const esp_partition_t *partition = esp_partition_get(it);
+
+        esp_ota_img_states_t ota_state;
+        esp_err_t err = esp_ota_get_state_partition(partition, &ota_state);
+
+        if (err != ESP_OK) {
+            logger.printfln("Could not get %s partition state: %d", partition->label, err);
+        }
+        else if (strcmp(partition->label, "app0") == 0) {
+            app0_state_name = get_partition_ota_state_name(partition, &app0_state);
+            state.get("app0_state")->updateUint(app0_state);
+            read_custom_app_desc(partition, &app0_custom_desc, app0_version, ARRAY_SIZE(app0_version));
+            state.get("app0_version")->updateString(app0_version);
+        }
+        else if (strcmp(partition->label, "app1") == 0) {
+            app1_state_name = get_partition_ota_state_name(partition, &app1_state);
+            state.get("app1_state")->updateUint(app1_state);
+            read_custom_app_desc(partition, &app1_custom_desc, app1_version, ARRAY_SIZE(app1_version));
+            state.get("app1_version")->updateString(app1_version);
+        }
+        else {
+            logger.printfln("Unexpected app partition: %s", partition->label);
+        }
+
+        it = esp_partition_next(it);
     }
 
-    if (custom_app_desc->version != BUILD_CUSTOM_APP_DESC_VERSION) {
-        logger.printfln("Custom app description of %s partition has wrong version: %u", partition->label, custom_app_desc->version);
-        return false;
-    }
-
-    return true;
-}
-
-void FirmwareUpdate::check_for_rollback()
-{
+    const char *rolled_back_version = nullptr;
     const esp_partition_t *update_partition = esp_ota_get_next_update_partition(nullptr);
 
     if (update_partition == nullptr) {
         logger.printfln("Could not get update partition");
-        return;
     }
-
-    esp_ota_img_states_t ota_state;
-    esp_err_t err = esp_ota_get_state_partition(update_partition, &ota_state);
-
-    if (err != ESP_OK) {
-        logger.printfln("Could not get update %s partition state: %d", update_partition->label, err);
-        return;
-    }
-
-    char version[MAX_VERSION_STRING_LENGTH + 1] = "";
-
-    if (ota_state == ESP_OTA_IMG_ABORTED) {
-        build_custom_app_desc_t custom_app_desc;
-
-        if (!read_custom_app_desc(update_partition, &custom_app_desc)) {
-            snprintf(version, MAX_VERSION_STRING_LENGTH, "0.0.0+00000000");
+    else if (strcmp(update_partition->label, "app0") == 0) {
+        if (app0_state == ESP_OTA_IMG_ABORTED) {
+            rolled_back_version = app0_version;
         }
-        else {
-            char beta[12] = "";
-
-            if (custom_app_desc.fw_version[3] != 255) {
-                snprintf(beta, ARRAY_SIZE(beta), "-beta.%u", custom_app_desc.fw_version[3]);
-            }
-
-            snprintf(version, ARRAY_SIZE(version), "%u.%u.%u%s+%lx",
-                     custom_app_desc.fw_version[0], custom_app_desc.fw_version[1], custom_app_desc.fw_version[2], beta, custom_app_desc.fw_build_time);
+    }
+    else if (strcmp(update_partition->label, "app1") == 0) {
+        if (app1_state == ESP_OTA_IMG_ABORTED) {
+            rolled_back_version = app1_version;
         }
-
-        logger.printfln("Firmware %s rolled back to %s", version, build_version_full_str());
+    }
+    else {
+        logger.printfln("Unexpected update partition: %s", update_partition->label);
     }
 
-    state.get("rolled_back_version")->updateString(version);
+    logger.printfln("Partitions: app0 (%s%s, %s), app1 (%s%s, %s)",
+                    app0_state_name,
+                    app0_running ? ", running" : "",
+                    app0_version,
+                    app1_state_name,
+                    app1_running ? ", running" : "",
+                    app1_version);
+
+    if (rolled_back_version != nullptr) {
+        logger.printfln("Firmware %s rolled back to %s", rolled_back_version, build_version_full_str());
+        state.get("rolled_back_version")->updateString(rolled_back_version);
+    }
 }

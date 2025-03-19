@@ -21,8 +21,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <esp_partition.h>
-#include <esp_ota_ops.h>
 #include <esp_task.h>
 
 #include "event_log_prefix.h"
@@ -226,96 +224,6 @@ static void register_default_urls() {
     });
 }
 
-[[gnu::const]] const char *get_esp_ota_img_state_name(esp_ota_img_states_t ota_state);
-
-[[gnu::const]] const char *get_esp_ota_img_state_name(esp_ota_img_states_t ota_state)
-{
-    switch (ota_state) {
-    case ESP_OTA_IMG_NEW:            return "new";            // Monitor the first boot. In bootloader this state is changed to ESP_OTA_IMG_PENDING_VERIFY.
-    case ESP_OTA_IMG_PENDING_VERIFY: return "pending-verify"; // First boot for this app was. If while the second boot this state is then it will be changed to ABORTED.
-    case ESP_OTA_IMG_VALID:          return "valid";          // App was confirmed as workable. App can boot and work without limits.
-    case ESP_OTA_IMG_INVALID:        return "invalid";        // App was confirmed as non-workable. This app will not selected to boot at all.
-    case ESP_OTA_IMG_ABORTED:        return "aborted";        // App could not confirm the workable or non-workable. In bootloader IMG_PENDING_VERIFY state will be changed to IMG_ABORTED. This app will not selected to boot at all.
-    case ESP_OTA_IMG_UNDEFINED:      return "undefined";      // Undefined. App can boot and work without limits.
-    default:                         return "<unknown>";
-    }
-}
-
-static void print_app_partitions()
-{
-    bool app0_found = false;
-    esp_ota_img_states_t app0_state = ESP_OTA_IMG_INVALID;
-    bool app0_running = false;
-    bool app0_boot = false;
-    bool app1_found = false;
-    esp_ota_img_states_t app1_state = ESP_OTA_IMG_INVALID;
-    bool app1_running = false;
-    bool app1_boot = false;
-
-    const esp_partition_t *running_partition = esp_ota_get_running_partition();
-
-    if (running_partition == nullptr) {
-        logger.printfln("Could not get running partition");
-    }
-    else if (strcmp(running_partition->label, "app0") == 0) {
-        app0_running = true;
-    }
-    else if (strcmp(running_partition->label, "app1") == 0) {
-        app1_running = true;
-    }
-    else {
-        logger.printfln("Unexpected running partition: %s", running_partition->label);
-    }
-
-    const esp_partition_t *boot_partition = esp_ota_get_boot_partition();
-
-    if (boot_partition == nullptr) {
-        logger.printfln("Could not get boot partition");
-    }
-    else if (strcmp(boot_partition->label, "app0") == 0) {
-        app0_boot = true;
-    }
-    else if (strcmp(boot_partition->label, "app1") == 0) {
-        app1_boot = true;
-    }
-    else {
-        logger.printfln("Unexpected boot partition: %s", boot_partition->label);
-    }
-
-    esp_partition_iterator_t it = esp_partition_find(ESP_PARTITION_TYPE_APP,
-                                                     ESP_PARTITION_SUBTYPE_ANY,
-                                                     nullptr);
-
-    while (it != nullptr) {
-        const esp_partition_t *partition = esp_partition_get(it);
-
-        esp_ota_img_states_t ota_state;
-        esp_err_t err = esp_ota_get_state_partition(partition, &ota_state);
-
-        if (err != ESP_OK) {
-            logger.printfln("Could not get %s partition state: %d", partition->label, err);
-        }
-        else if (strcmp(partition->label, "app0") == 0) {
-            app0_found = true;
-            app0_state = ota_state;
-        }
-        else if (strcmp(partition->label, "app1") == 0) {
-            app1_found = true;
-            app1_state = ota_state;
-        }
-
-        it = esp_partition_next(it);
-    }
-
-    logger.printfln("Firmware partitions: app0 (%s%s%s), app1 (%s%s%s)",
-                    app0_found ? get_esp_ota_img_state_name(app0_state) : "<unknown>",
-                    app0_running ? ", running" : "",
-                    app0_boot ? ", boot" : "",
-                    app1_found ? get_esp_ota_img_state_name(app1_state) : "<unknown>",
-                    app1_running ? ", running" : "",
-                    app1_boot ? ", boot" : "");
-}
-
 void setup()
 {
     set_main_task_handle();
@@ -332,8 +240,6 @@ void setup()
     for (IModule *imodule : imodules) {
         imodule->pre_init();
     }
-
-    print_app_partitions();
 
     if (!mount_or_format_spiffs()) {
         logger.printfln("Failed to mount SPIFFS.");
