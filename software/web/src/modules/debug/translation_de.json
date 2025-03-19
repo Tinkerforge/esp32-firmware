@@ -27,7 +27,6 @@
             "psram": "PSRAM",
 
             "stack_hwm_header": "Stack-Hochwassermarken",
-            "task_name": "Taskname",
             "free_stack": "Freier Stack",
             "used_stack": "Genutzter Stack",
             "stack_size": "Stackgröße",

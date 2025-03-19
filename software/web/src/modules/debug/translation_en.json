@@ -44,7 +44,6 @@
             "slots_holes": "Holes",
 
             "stack_hwm_header": "Stack high water marks",
-            "task_name": "Task name",
             "free_stack": "Free stack",
             "used_stack": "Used stack",
             "stack_size": "Stack size",
