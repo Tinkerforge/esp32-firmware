@@ -1884,7 +1884,7 @@ bool update_from_client_packet(
         requested_current = std::min(requested_current, (uint16_t)max_phase_current);
     }
     if (abs((int)target.requested_current - (int)requested_current) > 1500) {
-        trace("RECV %d: requested %u -> %u mA (lines %.3f %.3f %.3f)", client_id, target.requested_current, requested_current, v1->line_currents[0], v1->line_currents[1], v1->line_currents[2]);
+        trace("RECV %d: requested %u -> %u mA (measured %.3fA %.3fA %.3fA)", client_id, target.requested_current, requested_current, v1->line_currents[0], v1->line_currents[1], v1->line_currents[2]);
     }
 
     target.requested_current = requested_current;
