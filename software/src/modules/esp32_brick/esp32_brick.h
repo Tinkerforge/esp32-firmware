@@ -30,5 +30,4 @@ public:
     bool destroyHAL();
 
     void setup() override;
-    void loop() override;
 };

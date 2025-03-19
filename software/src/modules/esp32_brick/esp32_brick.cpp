@@ -100,34 +100,34 @@ void ESP32Brick::setup()
 
     task_scheduler.scheduleWithFixedDelay([](){
 #if MODULE_WATCHDOG_AVAILABLE()
-    static int watchdog_handle = watchdog.add("esp_led_blink", "Main thread blocked");
-    watchdog.reset(watchdog_handle);
+        static int watchdog_handle = watchdog.add("esp_led_blink", "Main thread blocked");
+        watchdog.reset(watchdog_handle);
 #endif
         led_blink(BLUE_LED, 2000, 1, 0);
     }, 100_ms);
 
-    initialized = true;
-}
 
-void ESP32Brick::loop()
-{
 #if MODULE_SYSTEM_AVAILABLE()
-    static bool last_btn_value = false;
-    static micros_t last_btn_change = 0_us;
+    task_scheduler.scheduleWithFixedDelay([](){
+        static bool last_btn_value = false;
+        static micros_t last_btn_change = 0_us;
 
-    bool btn = digitalRead(BUTTON);
-    digitalWrite(GREEN_LED, btn);
+        bool btn = digitalRead(BUTTON);
+        digitalWrite(GREEN_LED, btn);
 
-    if (btn != last_btn_value) {
-        last_btn_change = now_us();
-    }
+        if (btn != last_btn_value) {
+            last_btn_change = now_us();
+        }
 
-    last_btn_value = btn;
+        last_btn_value = btn;
 
-    if (!btn && deadline_elapsed(last_btn_change + 10_s)) {
-        logger.printfln("IO0 button was pressed for 10 seconds. Resetting to factory defaults.");
-        last_btn_change = now_us();
-        system_.factory_reset();
-    }
+        if (!btn && deadline_elapsed(last_btn_change + 10_s)) {
+            logger.printfln("IO0 button was pressed for 10 seconds. Resetting to factory defaults.");
+            last_btn_change = now_us();
+            system_.factory_reset();
+        }
+    }, 10_ms);
 #endif
+
+    initialized = true;
 }
