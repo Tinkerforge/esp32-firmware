@@ -175,7 +175,7 @@ bool DeviceModuleBase::setup_device()
 
     if (!task_started) {
         task_scheduler.scheduleWithFixedDelay([this]() {
-            if (device_found && !initialized) {
+            if (!initialized) {
                 if (!is_in_bootloader(TF_E_TIMEOUT)) {
                     setup_function();
                 }
