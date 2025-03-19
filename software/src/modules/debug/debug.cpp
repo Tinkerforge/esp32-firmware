@@ -361,6 +361,103 @@ const char * const fs_browser_footer =
     "<br>"
     "<button type=button onClick=createFile()>Create file</button>"
 "</div>";
+
+
+static WebServerRequestReturnProtect browse_get(WebServerRequest request, String path) {
+    if (path.length() > 1 && path[path.length() - 1] == '/')
+        path = path.substring(0, path.length() - 1);
+
+    if (!LittleFS.exists(path))
+        return request.send(404, "text/plain", ("File " + path + " not found").c_str());
+
+    File f = LittleFS.open(path);
+    if (!f.isDirectory()) {
+        char buf[256];
+        request.beginChunkedResponse(200);
+        while (f.available()) {
+            size_t read = f.read(reinterpret_cast<uint8_t *>(buf), ARRAY_SIZE(buf));
+            request.sendChunk(buf, static_cast<ssize_t>(read));
+        }
+        return request.endChunkedResponse();
+    } else {
+        request.beginChunkedResponse(200, "text/html; charset=utf-8");
+        request.sendChunk(fs_browser_header, strlen(fs_browser_header));
+        String header = "<h1>" + String(f.path()) + "</h1><br>\n";
+        request.sendChunk(header.c_str(), static_cast<ssize_t>(header.length()));
+
+        if (path.length() > 1) {
+            int idx = path.lastIndexOf('/');
+            String up = "<button type=button onclick=\"\" style=\"visibility: hidden;\">Delete</button>&nbsp;&nbsp;&nbsp;<a href=/debug/fs" + path.substring(0, static_cast<unsigned int>(idx + 1)) + ">..</a><br>\n";
+
+            request.sendChunk(up.c_str(), static_cast<ssize_t>(up.length()));
+        }
+
+        File file = f.openNextFile();
+        while(file) {
+            String s = "<button type=button onclick=\"deleteFile('" + String(file.path()) + "')\">Delete</button>&nbsp;&nbsp;&nbsp;<a href=/debug/fs" + String(file.path()) + (file.isDirectory() ? "/" : "") + ">"+ file.name() + (file.isDirectory() ? "/" : "") +"</a><br>\n";
+            request.sendChunk(s.c_str(), static_cast<ssize_t>(s.length()));
+            file = f.openNextFile();
+        }
+
+        request.sendChunk(fs_browser_footer, strlen(fs_browser_footer));
+
+        return request.endChunkedResponse();
+    }
+}
+
+static WebServerRequestReturnProtect browse_delete(WebServerRequest request, String path) {
+    if (path.length() > 1 && path[path.length() - 1] == '/')
+        path = path.substring(0, path.length() - 1);
+
+    if (!LittleFS.exists(path))
+        return request.send(404, "text/plain", ("File " + path + " not found").c_str());
+
+    File f = LittleFS.open(path);
+    if (!f.isDirectory()) {
+        f.close();
+        LittleFS.remove(path);
+        return request.send(200, "text/plain", ("File " + path + " deleted").c_str());
+    } else {
+        f.close();
+        remove_directory(path.c_str());
+        return request.send(200, "text/plain", ("Directory " + path + " and all contents deleted").c_str());
+    }
+}
+
+static WebServerRequestReturnProtect browse_put(WebServerRequest request, String path) {
+    bool create_directory = path.length() > 1 && path[path.length() - 1] == '/';
+    if (create_directory)
+        path = path.substring(0, path.length() - 1);
+
+    if (LittleFS.exists(path)) {
+        File f = LittleFS.open(path);
+        if (!f.isDirectory() && create_directory)
+            return request.send(400, "text/plain", ("File " + path + " already exists and is not a directory").c_str());
+        if (f.isDirectory() && !create_directory)
+            return request.send(400, "text/plain", ("Directory " + path + " already exists").c_str());
+        if (f.isDirectory())
+            return request.send(200, "text/plain", ("Directory " + path + " already exists").c_str());
+        else {
+            f.close();
+            LittleFS.remove(path);
+        }
+    }
+
+    if (create_directory) {
+        LittleFS.mkdir(path);
+        return request.send(200, "text/plain", ("Directory " + path + " created").c_str());
+    }
+
+    File f = LittleFS.open(path, "w");
+
+    auto size = request.contentLength();
+    auto payload = heap_alloc_array<char>(size);
+    if (request.receive(payload.get(), size) < 0)
+        return request.send(500, "text/plain", "failed to receive");
+
+    f.write(reinterpret_cast<uint8_t *>(payload.get()), size);
+    return request.send(200, "text/plain", ("File " + path + " created.").c_str());
+}
 #endif
 
 void Debug::register_urls()
@@ -398,101 +495,32 @@ void Debug::register_urls()
 
     server.on_HTTPThread("/debug/fs/*", HTTP_GET, [this](WebServerRequest request) {
         String path = request.uri().substring(ARRAY_SIZE("/debug/fs") - 1);
-        if (path.length() > 1 && path[path.length() - 1] == '/')
-            path = path.substring(0, path.length() - 1);
 
-        if (!LittleFS.exists(path))
-            return request.send(404, "text/plain", ("File " + path + " not found").c_str());
-
-        File f = LittleFS.open(path);
-        if (!f.isDirectory()) {
-            char buf[256];
-            request.beginChunkedResponse(200);
-            while (f.available()) {
-                size_t read = f.read(reinterpret_cast<uint8_t *>(buf), ARRAY_SIZE(buf));
-                request.sendChunk(buf, static_cast<ssize_t>(read));
-            }
-            return request.endChunkedResponse();
-        } else {
-            request.beginChunkedResponse(200, "text/html; charset=utf-8");
-            request.sendChunk(fs_browser_header, strlen(fs_browser_header));
-            String header = "<h1>" + String(f.path()) + "</h1><br>\n";
-            request.sendChunk(header.c_str(), static_cast<ssize_t>(header.length()));
-
-            if (path.length() > 1) {
-                int idx = path.lastIndexOf('/');
-                String up = "<button type=button onclick=\"\" style=\"visibility: hidden;\">Delete</button>&nbsp;&nbsp;&nbsp;<a href=/debug/fs" + path.substring(0, static_cast<unsigned int>(idx + 1)) + ">..</a><br>\n";
-
-                request.sendChunk(up.c_str(), static_cast<ssize_t>(up.length()));
-            }
-
-            File file = f.openNextFile();
-            while(file) {
-                String s = "<button type=button onclick=\"deleteFile('" + String(file.path()) + "')\">Delete</button>&nbsp;&nbsp;&nbsp;<a href=/debug/fs" + String(file.path()) + (file.isDirectory() ? "/" : "") + ">"+ file.name() + (file.isDirectory() ? "/" : "") +"</a><br>\n";
-                request.sendChunk(s.c_str(), static_cast<ssize_t>(s.length()));
-                file = f.openNextFile();
-            }
-
-            request.sendChunk(fs_browser_footer, strlen(fs_browser_footer));
-
-            return request.endChunkedResponse();
-        }
+        return browse_get(request, path);
     });
 
     server.on_HTTPThread("/debug/fs/*", HTTP_DELETE, [this](WebServerRequest request) {
         String path = request.uri().substring(ARRAY_SIZE("/debug/fs") - 1);
-        if (path.length() > 1 && path[path.length() - 1] == '/')
-            path = path.substring(0, path.length() - 1);
 
-        if (!LittleFS.exists(path))
-            return request.send(404, "text/plain", ("File " + path + " not found").c_str());
-
-        File f = LittleFS.open(path);
-        if (!f.isDirectory()) {
-            f.close();
-            LittleFS.remove(path);
-            return request.send(200, "text/plain", ("File " + path + " deleted").c_str());
-        } else {
-            f.close();
-            remove_directory(path.c_str());
-            return request.send(200, "text/plain", ("Directory " + path + " and all contents deleted").c_str());
-        }
+        return browse_delete(request, path);
     });
 
     server.on_HTTPThread("/debug/fs/*", HTTP_PUT, [this](WebServerRequest request) {
         String path = request.uri().substring(ARRAY_SIZE("/debug/fs") - 1);
-        bool create_directory = path.length() > 1 && path[path.length() - 1] == '/';
-        if (create_directory)
-            path = path.substring(0, path.length() - 1);
 
-        if (LittleFS.exists(path)) {
-            File f = LittleFS.open(path);
-            if (!f.isDirectory() && create_directory)
-                return request.send(400, "text/plain", ("File " + path + " already exists and is not a directory").c_str());
-            if (f.isDirectory() && !create_directory)
-                return request.send(400, "text/plain", ("Directory " + path + " already exists").c_str());
-            if (f.isDirectory())
-                return request.send(200, "text/plain", ("Directory " + path + " already exists").c_str());
-            else {
-                f.close();
-                LittleFS.remove(path);
-            }
-        }
+        return browse_put(request, path);
+    });
 
-        if (create_directory) {
-            LittleFS.mkdir(path);
-            return request.send(200, "text/plain", ("Directory " + path + " created").c_str());
-        }
+    server.on_HTTPThread("/debug/fs", HTTP_GET, [this](WebServerRequest request) {
+        return browse_get(request, "/");
+    });
 
-        File f = LittleFS.open(path, "w");
+    server.on_HTTPThread("/debug/fs", HTTP_DELETE, [this](WebServerRequest request) {
+        return browse_delete(request, "/");
+    });
 
-        auto size = request.contentLength();
-        auto payload = heap_alloc_array<char>(size);
-        if (request.receive(payload.get(), size) < 0)
-            return request.send(500, "text/plain", "failed to receive");
-
-        f.write(reinterpret_cast<uint8_t *>(payload.get()), size);
-        return request.send(200, "text/plain", ("File " + path + " created.").c_str());
+    server.on_HTTPThread("/debug/fs", HTTP_PUT, [this](WebServerRequest request) {
+        return browse_put(request, "/");
     });
 #endif
 }
