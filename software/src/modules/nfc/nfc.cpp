@@ -81,7 +81,7 @@ void NFC::pre_setup()
             tags->get(tag)->get("tag_id")->updateString(id_copy);
 
             if (id_copy.length() != 0 && id_copy.length() % 3 != 2)
-                return "Tag ID has unexpected length. Expected format is hex bytes separated by colons. For example \"01:23:ab:3d\".";
+                return "Tag ID has unexpected length. Expected format is uppercase hex bytes separated by colons. For example \"01:23:AB:3D\".";
 
             for(int i = 0; i < id_copy.length(); ++i) {
                 char c = id_copy.charAt(i);
@@ -89,7 +89,7 @@ void NFC::pre_setup()
                     continue;
                 if (i % 3 == 2 && c == ':')
                     continue;
-                return "Tag ID contains unexpected character. Expected format is hex bytes separated by colons. For example \"01:23:ab:3d\".";
+                return "Tag ID contains unexpected character. Expected format is uppercase hex bytes separated by colons. For example \"01:23:AB:3D\".";
             }
         }
 
@@ -132,7 +132,7 @@ void NFC::pre_setup()
         cfg.get("tag_id")->updateString(id_copy);
 
         if (id_copy.length() != 0 && id_copy.length() % 3 != 2)
-            return "Tag ID has unexpected length. Expected format is hex bytes separated by colons. For example \"01:23:ab:3d\".";
+            return "Tag ID has unexpected length. Expected format is uppercase hex bytes separated by colons. For example \"01:23:AB:3D\".";
 
         for(int i = 0; i < id_copy.length(); ++i) {
             char c = id_copy.charAt(i);
@@ -140,7 +140,7 @@ void NFC::pre_setup()
                 continue;
             if (i % 3 == 2 && c == ':')
                 continue;
-            return "Tag ID contains unexpected character. Expected format is hex bytes separated by colons. For example \"01:23:ab:3d\".";
+            return "Tag ID contains unexpected character. Expected format is uppercase hex bytes separated by colons. For example \"01:23:AB:3D\".";
         }
 
         return "";
@@ -231,7 +231,7 @@ void NFC::check_nfc_state()
         return;
     }
     if (mode != TF_NFC_MODE_SIMPLE) {
-        logger.printfln("NFC mode invalid. Did the bricklet reset?");
+        logger.printfln("NFC mode invalid. Did the Bricklet reset?");
         setup_nfc();
     }
 }
@@ -325,7 +325,7 @@ void NFC::update_seen_tags()
         int result = tf_nfc_simple_get_tag_id(&device, i, &new_tags[i].tag_type, tag_id_bytes, &tag_id_len, &new_tags[i].last_seen);
         if (result != TF_E_OK) {
             if (!is_in_bootloader(result)) {
-                logger.printfln("Failed to get tag id %d, rc: %d", i, result);
+                logger.printfln("Failed to get tag ID %d, rc: %d", i, result);
             }
             continue;
         }
