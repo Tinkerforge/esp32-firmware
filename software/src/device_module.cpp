@@ -173,14 +173,15 @@ bool DeviceModuleBase::setup_device()
         }
     }
 
-    if (this->task_id != 0) {
-        this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
+    if (!task_started) {
+        task_scheduler.scheduleWithFixedDelay([this]() {
             if (device_found && !initialized) {
                 if (!is_in_bootloader(TF_E_TIMEOUT)) {
                     setup_function();
                 }
             }
         }, 10_s);
+        task_started = true;
     }
 
     char uid[7] = {0};

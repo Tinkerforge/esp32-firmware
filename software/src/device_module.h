@@ -74,7 +74,7 @@ private:
 
     bool log_message_printed = false;
 
-    uint64_t task_id = 0;
+    bool task_started = false;
 
 protected:
     bool device_found = false;
