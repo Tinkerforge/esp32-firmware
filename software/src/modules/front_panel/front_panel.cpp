@@ -269,11 +269,6 @@ void FrontPanel::register_urls()
 #endif
 }
 
-void FrontPanel::loop()
-{
-    this->DeviceModule::loop();
-}
-
 void FrontPanel::pre_reboot()
 {
     // Stop the update() task from accessing the display

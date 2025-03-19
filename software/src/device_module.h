@@ -49,7 +49,6 @@ public:
 
     void pre_setup() override;
     void register_urls() override;
-    void loop() override;
 
 protected:
     uint16_t get_device_id();
@@ -63,7 +62,6 @@ private:
     virtual int destroy() = 0;
     virtual int get_bootloader_mode(uint8_t *mode) = 0;
 
-    micros_t next_check = 0_us;
     ConfigRoot identity;
 
     const uint8_t *firmware;
@@ -75,6 +73,8 @@ private:
     bool mandatory;
 
     bool log_message_printed = false;
+
+    uint64_t task_id = 0;
 
 protected:
     bool device_found = false;

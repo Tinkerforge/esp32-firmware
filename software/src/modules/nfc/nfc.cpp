@@ -471,11 +471,6 @@ void NFC::register_urls()
     this->DeviceModule::register_urls();
 }
 
-void NFC::loop()
-{
-    this->DeviceModule::loop();
-}
-
 #if MODULE_AUTOMATION_AVAILABLE()
 bool NFC::has_triggered(const Config *conf, void *data)
 {

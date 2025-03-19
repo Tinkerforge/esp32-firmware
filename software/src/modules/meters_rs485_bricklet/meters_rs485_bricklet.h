@@ -48,7 +48,6 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
-    void loop() override;
 
     // for IMeterGenerator
     [[gnu::const]] MeterClassID get_class() const override;

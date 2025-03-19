@@ -67,17 +67,6 @@ void DeviceModuleBase::register_urls()
     api.addState(url_prefix_str + "/identity", &identity);
 }
 
-void DeviceModuleBase::loop()
-{
-    if (device_found && !initialized && deadline_elapsed(next_check)) {
-        next_check = now_us() + 10_s;
-
-        if (!is_in_bootloader(TF_E_TIMEOUT)) {
-            setup_function();
-        }
-    }
-}
-
 uint16_t DeviceModuleBase::get_device_id()
 {
     return static_cast<uint16_t>(firmware[firmware_len - FIRMWARE_DEVICE_IDENTIFIER_OFFSET] | (firmware[firmware_len - FIRMWARE_DEVICE_IDENTIFIER_OFFSET + 1] << 8));
@@ -182,6 +171,16 @@ bool DeviceModuleBase::setup_device()
             device_found = false;
             return false;
         }
+    }
+
+    if (this->task_id != 0) {
+        this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
+            if (device_found && !initialized) {
+                if (!is_in_bootloader(TF_E_TIMEOUT)) {
+                    setup_function();
+                }
+            }
+        }, 10_s);
     }
 
     char uid[7] = {0};

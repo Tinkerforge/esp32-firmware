@@ -149,11 +149,6 @@ void MetersRS485Bricklet::register_urls()
     this->DeviceModule::register_urls();
 }
 
-void MetersRS485Bricklet::loop()
-{
-    this->DeviceModule::loop();
-}
-
 [[gnu::const]]
 MeterClassID MetersRS485Bricklet::get_class() const
 {

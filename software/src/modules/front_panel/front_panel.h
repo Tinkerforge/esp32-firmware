@@ -53,7 +53,6 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
-    void loop() override;
     void pre_reboot() override;
 
     void setup_bricklet();
