@@ -41,19 +41,19 @@ specs = [
             },
             {
                 'name': 'Strom L1 [A]',
-                'value_id': 'CurrentL1ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL1ImExSum',
                 'start_address': 13,
                 'value_type': 'F32BE',
             },
             {
                 'name': 'Strom L2 [A]',
-                'value_id': 'CurrentL2ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL2ImExSum',
                 'start_address': 15,
                 'value_type': 'F32BE',
             },
             {
                 'name': 'Strom L3 [A]',
-                'value_id': 'CurrentL3ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL3ImExSum',
                 'start_address': 17,
                 'value_type': 'F32BE',
             },
@@ -149,7 +149,7 @@ specs = [
             },
             {
                 'name': 'Mittelwert Strom [A]',
-                'value_id': 'CurrentLAvgImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentLAvgImExSum',
                 'start_address': 61,
                 'value_type': 'F32BE',
             },
@@ -179,7 +179,7 @@ specs = [
             },
             {
                 'name': 'Neutralleiterstrom [A]',
-                'value_id': 'CurrentNImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentNImExSum',
                 'start_address': 71,
                 'value_type': 'F32BE',
             },
@@ -367,19 +367,19 @@ specs = [
             },
             {
                 'name': 'Strom L1 [A]',
-                'value_id': 'CurrentL1ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL1ImExSum',
                 'start_address': 13,
                 'value_type': 'F32BE',
             },
             {
                 'name': 'Strom L2 [A]',
-                'value_id': 'CurrentL2ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL2ImExSum',
                 'start_address': 15,
                 'value_type': 'F32BE',
             },
             {
                 'name': 'Strom L3 [A]',
-                'value_id': 'CurrentL3ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL3ImExSum',
                 'start_address': 17,
                 'value_type': 'F32BE',
             },
@@ -511,7 +511,7 @@ specs = [
             },
             {
                 'name': 'Mittelwert Strom [A]',
-                'value_id': 'CurrentLAvgImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentLAvgImExSum',
                 'start_address': 61,
                 'value_type': 'F32BE',
             },
@@ -541,7 +541,7 @@ specs = [
             },
             {
                 'name': 'Strom N [A]',
-                'value_id': 'CurrentNImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentNImExSum',
                 'start_address': 223,
                 'value_type': 'F32BE',
             },
@@ -729,19 +729,19 @@ specs = [
             },
             {
                 'name': 'Strom L1 [A]',
-                'value_id': 'CurrentL1ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL1ImExSum',
                 'start_address': 13,
                 'value_type': 'F32BE',
             },
             {
                 'name': 'Strom L2 [A]',
-                'value_id': 'CurrentL2ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL2ImExSum',
                 'start_address': 15,
                 'value_type': 'F32BE',
             },
             {
                 'name': 'Strom L3 [A]',
-                'value_id': 'CurrentL3ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL3ImExSum',
                 'start_address': 17,
                 'value_type': 'F32BE',
             },
@@ -873,7 +873,7 @@ specs = [
             },
             {
                 'name': 'Mittelwert Strom [A]',
-                'value_id': 'CurrentLAvgImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentLAvgImExSum',
                 'start_address': 61,
                 'value_type': 'F32BE',
             },
@@ -980,19 +980,19 @@ specs = [
             },
             {
                 'name': 'Strom L1 [A]',
-                'value_id': 'CurrentL1ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL1ImExSum',
                 'start_address': 13,
                 'value_type': 'F32BE',
             },
             {
                 'name': 'Strom L2 [A]',
-                'value_id': 'CurrentL2ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL2ImExSum',
                 'start_address': 15,
                 'value_type': 'F32BE',
             },
             {
                 'name': 'Strom L3 [A]',
-                'value_id': 'CurrentL3ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL3ImExSum',
                 'start_address': 17,
                 'value_type': 'F32BE',
             },
@@ -1088,7 +1088,7 @@ specs = [
             },
             {
                 'name': 'Mittelwert Strom [A]',
-                'value_id': 'CurrentLAvgImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentLAvgImExSum',
                 'start_address': 61,
                 'value_type': 'F32BE',
             },
@@ -1154,7 +1154,7 @@ specs = [
             },
             {
                 'name': 'Neutralleiterstrom [A]',
-                'value_id': 'CurrentNImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentNImExSum',
                 'start_address': 295,
                 'value_type': 'F32BE',
             },
@@ -1237,19 +1237,19 @@ specs = [
             },
             {
                 'name': 'Strom L1 [A]',
-                'value_id': 'CurrentL1ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL1ImExSum',
                 'start_address': 13,
                 'value_type': 'F32BE',
             },
             {
                 'name': 'Strom L2 [A]',
-                'value_id': 'CurrentL2ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL2ImExSum',
                 'start_address': 15,
                 'value_type': 'F32BE',
             },
             {
                 'name': 'Strom L3 [A]',
-                'value_id': 'CurrentL3ImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentL3ImExSum',
                 'start_address': 17,
                 'value_type': 'F32BE',
             },
@@ -1345,7 +1345,7 @@ specs = [
             },
             {
                 'name': 'Drei-Phasen-Durchschnitt Strom [A]',
-                'value_id': 'CurrentLAvgImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentLAvgImExSum',
                 'start_address': 61,
                 'value_type': 'F32BE',
             },
@@ -1375,7 +1375,7 @@ specs = [
             },
             {
                 'name': 'Neutralleiterstrom [A]',
-                'value_id': 'CurrentNImExDiff',  # FIXME: direction?
+                'value_id': 'CurrentNImExSum',
                 'start_address': 295,
                 'value_type': 'F32BE',
             },
