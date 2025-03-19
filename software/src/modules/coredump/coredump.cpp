@@ -75,7 +75,15 @@ bool Coredump::build_coredump_info(JsonDocument &tf_coredump_json)
 
 void Coredump::pre_setup()
 {
-    bool coredump_available = esp_core_dump_image_check() == ESP_OK;
+    bool coredump_available;
+    esp_err_t status = esp_core_dump_image_check();
+
+    if (status == ESP_ERR_INVALID_CRC) {
+        printf("Core dump image invalid");
+        coredump_available = false;
+    } else {
+        coredump_available = status == ESP_OK;
+    }
 
     state = Config::Object({
         {"coredump_available", Config::Bool(coredump_available)}
