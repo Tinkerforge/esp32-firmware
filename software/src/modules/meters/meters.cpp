@@ -772,6 +772,11 @@ MeterValueAvailability Meters::get_value_ids_extended(uint32_t slot, MeterValueI
         generate_extra_value_ids(&meter_slot.extra_value_ids, &meter_slot.extra_value_id_count, &value_ids);
     }
 
+    if (!value_ids_out) {
+        *value_ids_length = value_ids.count() + meter_slot.extra_value_id_count;
+        return MeterValueAvailability::Fresh;
+    }
+
     const size_t value_ids_count = std::min(value_ids.count(), *value_ids_length);
 
     for (size_t i = 0; i < value_ids_count; i++) {
