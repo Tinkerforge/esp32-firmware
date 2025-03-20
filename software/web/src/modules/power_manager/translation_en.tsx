@@ -40,8 +40,6 @@ let x = {
             "meter_slot_grid_power_in_use_by_battery": "selected as battery storage power meter",
             "guaranteed_power": "Min + PV: Minimum charging power",
             "guaranteed_power_muted": "Charging power that is allowed to be drawn from the grid to charge vehicles.",
-            "target_power_from_grid": "Target grid power draw",
-            "target_power_from_grid_muted": "target grid draw for excess charging",
             "control_behavior": "Control behavior",
             "control_behavior_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
             "target_power_n200": "Very conservative (− 200 W)",

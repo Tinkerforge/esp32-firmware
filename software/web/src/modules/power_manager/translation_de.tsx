@@ -40,8 +40,6 @@ let x = {
             "meter_slot_grid_power_in_use_by_battery": "als Batteriespeicher-Stromzähler ausgewählt",
             "guaranteed_power": "Min + PV: Mindestladeleistung",
             "guaranteed_power_muted": "Leistung, die im Min + PV-Modus zum Laden von Fahrzeugen aus dem Netz bezogen werden darf.",
-            "target_power_from_grid": "Soll-Netzbezug",
-            "target_power_from_grid_muted": "Sollwert für Überschussregelung",
             "control_behavior": "Regelverhalten",
             "control_behavior_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
             "target_power_n200": "Sehr konservativ (− 200 W)",

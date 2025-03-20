@@ -229,8 +229,6 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
         // On a charger, the power manager is enabled iff excess charging is enabled.
         let enabled = is_em ? s.enabled : s.excess_charging_enable;
 
-        let debug_mode = API.hasModule("debug");
-
         const phase_switching_mode = API.hasModule("em_phase_switcher") ? <FormRow label={__("power_manager.content.phase_switching_mode")}>
                 <InputSelect
                     items={[
@@ -336,26 +334,13 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                                 />
                             </FormRow>
 
-                            {debug_mode ?
-                                <FormRow label={__("power_manager.content.target_power_from_grid")} label_muted={__("power_manager.content.target_power_from_grid_muted")}>
-                                    <InputFloat
-                                        unit="kW"
-                                        value={s.target_power_from_grid}
-                                        onValue={this.set('target_power_from_grid')}
-                                        digits={3}
-                                        min={-63 * 230 * 3}
-                                        max={500 * 230 * 3}
-                                    />
-                                </FormRow>
-                            : <>
-                                <FormRow label={__("power_manager.content.control_behavior")} label_muted={__("power_manager.content.control_behavior_muted")}>
-                                    <InputSelect
-                                        items={control_behavior_items}
-                                        value={s.target_power_from_grid}
-                                        onValue={(v) => this.setState({target_power_from_grid: parseInt(v)})}
-                                    />
-                                </FormRow>
-                            </>}
+                            <FormRow label={__("power_manager.content.control_behavior")} label_muted={__("power_manager.content.control_behavior_muted")}>
+                                <InputSelect
+                                    items={control_behavior_items}
+                                    value={s.target_power_from_grid}
+                                    onValue={(v) => this.setState({target_power_from_grid: parseInt(v)})}
+                                />
+                            </FormRow>
 
                             <FormRow label={__("power_manager.content.cloud_filter")} label_muted={__("power_manager.content.cloud_filter_muted")}>
                                 <InputSelect
