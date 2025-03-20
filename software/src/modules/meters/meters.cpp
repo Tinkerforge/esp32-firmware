@@ -787,7 +787,7 @@ MeterValueAvailability Meters::get_value_ids_extended(uint32_t slot, MeterValueI
     const size_t extra_value_ids_count = std::min(meter_slot.extra_value_id_count, *value_ids_length - value_ids_count);
     value_ids_out += value_ids_count;
 
-    for (size_t i = 0; extra_value_ids_count; i++) {
+    for (size_t i = 0; i < extra_value_ids_count; i++) {
         value_ids_out[i] = static_cast<MeterValueID>(extra_value_ids[i].value_id);
     }
 
