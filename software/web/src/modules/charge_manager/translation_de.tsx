@@ -64,7 +64,7 @@ let x = {
             "minimum_current_auto_desc": "Minimaler Ladestrom wird abhängig vom gewählten Fahrzeugmodell eingestellt.",
             "minimum_current_vehicle_type": "Fahrzeugmodell",
             "minimum_current_vehicle_type_other": "Standard",
-            "minimum_current_vehicle_type_zoe": "Renault ZOE R135, ZOE R110 oder Twingo Z.E.",
+            "minimum_current_vehicle_type_zoe": "Renault ZOE R135, ZOE R110, Twingo Z.E. oder Smart ED/EQ",
             "minimum_current_1p": "Minimaler einphasiger Ladestrom",
             "minimum_current_1p_muted": "geringster Ladestrom, der vom Fahrzeug für einphasiges Laden unterstützt wird",
             "minimum_current_3p": "Minimaler dreiphasiger Ladestrom",
