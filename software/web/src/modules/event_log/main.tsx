@@ -177,7 +177,8 @@ export class EventLog extends Component<{}, EventLogState> {
             debug_log += "\n\n";
             debug_log += this.state.log;
 
-            let trace_log = (await util.download("/trace_log", 20000).then(blob => blob.text())).replace(/\s+$/, "");
+            const trace_log_uri = "/trace_log" + (util.remoteAccessMode ? "/10020" : ""); // Use greedy level 20 compression to download the trace log when in remote access mode.
+            const trace_log = (await util.download(trace_log_uri, 20000).then(blob => blob.text())).replace(/\s+$/, "");
 
             if (trace_log.length > 0) {
                 debug_log += "\n\n___TRACE_LOG_START___\n\n";

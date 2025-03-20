@@ -34,11 +34,31 @@
 #include <time.h>
 #include <inttypes.h>
 #include <TFJson.h>
+#include <esp_rom_crc.h>
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
 #include "tools.h"
+#include "tools/miniz/miniz_tdef.h"
+
+struct deflate_outbuf {
+    char outbuf[1384]; // 1500 - 8 (PPPoE) - 40 (IP) - 60 (max TCP) - 8 (HTTP nonsense)
+    char printbuf[128];
+};
+
+static constexpr const char gzip_header[] = {
+    0x1F, // ID1 (magic)
+    0x8B, // ID2
+    0x08, // CM  (deflate)
+    0x00, // FLG (no extra info)
+    0,    // mtime
+    0,
+    0,
+    0,
+    0x04, // XFL (fastest compression was used)
+    0x03, // OS  (Unix)
+};
 
 void EventLog::pre_init()
 {
@@ -142,6 +162,186 @@ void EventLog::register_urls()
 #endif
     });
 
+    server.on_HTTPThread("/trace_log/*", HTTP_GET, [this](WebServerRequest request) {
+#if defined(BOARD_HAS_PSRAM)
+        int tdefl_flags = TDEFL_NONDETERMINISTIC_PARSING_FLAG;
+        int dictionary_probes = atoi(request.uriCStr() + 11);
+
+        if (dictionary_probes > 100000) {
+            tdefl_flags |= TDEFL_FORCE_ALL_STATIC_BLOCKS;
+            dictionary_probes -= 100000;
+        }
+
+        if (dictionary_probes > 10000) {
+            tdefl_flags |= TDEFL_GREEDY_PARSING_FLAG;
+            dictionary_probes -= 10000;
+        }
+
+        if (static_cast<uint32_t>(dictionary_probes) > 4095u) {
+            return request.send(400, "text/plain", "Compression level out of range [0,4095] and [10000,14095]");
+        }
+
+        tdefl_flags |= dictionary_probes;
+
+        tdefl_compressor *deflator = nullptr;
+        deflate_outbuf *buf = nullptr;
+
+        defer {
+            free(deflator);
+            deflator = nullptr;
+
+            free(buf);
+            buf = nullptr;
+        };
+
+        deflator = static_cast<tdefl_compressor *>(malloc(sizeof(tdefl_compressor)));
+        if (!deflator) {
+            return request.send(500, "text/plain", "Failed to allocate compressor");
+        }
+
+        buf = static_cast<decltype(buf)>(malloc(sizeof(*buf)));
+        if (!buf) {
+            return request.send(500, "text/plain", "Failed to allocate output buffer");
+        }
+
+        // Initialize the low-level compressor
+        tdefl_status t_status = tdefl_init(deflator, nullptr, nullptr, tdefl_flags);
+        if (t_status != TDEFL_STATUS_OKAY) {
+            return request.send(500, "text/plain", "Failed to initialize compressor");
+        }
+
+        request.addResponseHeader("Content-Encoding", "gzip");
+        request.beginChunkedResponse(200);
+
+        int result = request.sendChunk(gzip_header, sizeof(gzip_header));
+        if (result != ESP_OK) {
+            printfln_prefixed("event_log", 9, "trace_log gzip header sending failed: %i", result);
+            return request.endChunkedResponse();
+        }
+
+        size_t uncompressed_len = 0;
+        uint32_t crc32 = 0;
+
+        char *next_out = buf->outbuf;
+        size_t avail_out = ARRAY_SIZE(buf->outbuf);
+
+        constexpr   uint32_t HEADER_PREPARE = 0;
+        //constexpr uint32_t HEADER_SEND    = 1;
+        constexpr   uint32_t FIRST_PREPARE  = 2;
+        //constexpr uint32_t FIRST_SEND     = 3;
+        constexpr   uint32_t SECOND_PREPARE = 4;
+        //constexpr uint32_t SECOND_SEND    = 5;
+        //constexpr uint32_t FOOTER_PREPARE = 6;
+        constexpr   uint32_t FOOTER_SEND    = 7;
+
+        for (size_t i = 0; i < trace_buffers_in_use; ++i) {
+            auto &trace_buffer = trace_buffers[i];
+            std::lock_guard<std::mutex> lock{trace_buffer.mutex};
+
+            char *first_chunk, *second_chunk;
+            size_t first_len, second_len;
+            trace_buffer.buf.get_chunks(&first_chunk, &first_len, &second_chunk, &second_len);
+
+            uint32_t state = HEADER_PREPARE;
+            char *next_in;
+            size_t avail_in;
+
+            for (;;) {
+                if ((state & 1) == 0) { // One of the prepare states
+                    if (state == FIRST_PREPARE) {
+                        next_in = first_chunk;
+                        avail_in = first_len;
+                    } else if (state == SECOND_PREPARE) {
+                        next_in = second_chunk;
+                        avail_in = second_len;
+                    } else {
+                        next_in = buf->printbuf;
+
+                        const char *label = state == HEADER_PREPARE ? "begin" : "end";
+                        avail_in = snprintf_u(buf->printbuf, ARRAY_SIZE(buf->printbuf), "__%s_%.100s__\n", label, trace_buffer.name);
+                    }
+
+                    crc32 = esp_rom_crc32_le(crc32, reinterpret_cast<const uint8_t *>(next_in), avail_in);
+
+                    uncompressed_len += avail_in;
+
+                    state++; // Advance to send state
+                }
+
+                size_t in_bytes = avail_in;
+                size_t out_bytes = avail_out;
+                t_status = tdefl_compress(deflator, next_in, &in_bytes, next_out, &out_bytes, TDEFL_NO_FLUSH);
+
+                if (t_status != TDEFL_STATUS_OKAY) {
+                    printfln_prefixed("event_log", 9, "trace_log compression failed: %i", static_cast<int>(t_status));
+                    return request.endChunkedResponse();
+                }
+
+                next_in += in_bytes;
+                avail_in -= in_bytes;
+
+                next_out += out_bytes;
+                avail_out -= out_bytes;
+
+                if (avail_out == 0) {
+                    result = request.sendChunk(buf->outbuf, ARRAY_SIZE(buf->outbuf));
+
+                    if (result != ESP_OK) {
+                        printfln_prefixed("event_log", 9, "trace_log compressed chunk sending failed: %i", result);
+                        return request.endChunkedResponse();
+                    }
+
+                    next_out = buf->outbuf;
+                    avail_out = ARRAY_SIZE(buf->outbuf);
+                }
+
+                // Insert a small delay after every compressed block so that the main task has a chance to run.
+                vTaskDelay(2);
+
+                if (avail_in == 0) {
+                    if (state == FOOTER_SEND) {
+                        break;
+                    } else {
+                        state++; // Advance to next prepare state
+                    }
+                }
+            }
+        }
+
+        // Flush compression buffer
+        do {
+            size_t out_bytes = avail_out;
+            t_status = tdefl_compress(deflator, nullptr, nullptr, next_out, &out_bytes, TDEFL_FINISH);
+
+            avail_out -= out_bytes;
+
+            result = request.sendChunk(buf->outbuf, static_cast<ssize_t>(ARRAY_SIZE(buf->outbuf) - avail_out));
+
+            next_out = buf->outbuf;
+            avail_out = ARRAY_SIZE(buf->outbuf);
+
+            if (result != ESP_OK) {
+                printfln_prefixed("event_log", 9, "trace_log final compressed chunk sending failed: %i", result);
+                return request.endChunkedResponse();
+            }
+        } while (t_status != TDEFL_STATUS_DONE);
+
+        {
+            uint32_t gzip_tail[2] = {crc32, uncompressed_len};
+
+            result = request.sendChunk(reinterpret_cast<const char *>(gzip_tail), sizeof(gzip_tail));
+
+            if (result != ESP_OK) {
+                printfln_prefixed("event_log", 9, "trace_log gzip tail sending failed: %i", result);
+                return request.endChunkedResponse();
+            }
+        }
+
+        return request.endChunkedResponse();
+#else
+        return request.send(200);
+#endif
+    });
 
     api.addState("event_log/boot_id", &boot_id);
 }
