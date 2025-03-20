@@ -1016,9 +1016,9 @@ void migrate_config()
 
         write_version_file = true;
     } else {
-        current.major = OLDEST_VERSION_MAJOR;
-        current.minor = OLDEST_VERSION_MINOR;
-        current.patch = OLDEST_VERSION_PATCH;
+        current.major = BUILD_VERSION_OLDEST_MAJOR;
+        current.minor = BUILD_VERSION_OLDEST_MINOR;
+        current.patch = BUILD_VERSION_OLDEST_PATCH;
 
         write_version_file = true;
     }

@@ -79,9 +79,9 @@ def get_changelog_version(name):
     if len(versions) == 0:
         raise Exception('No version found in {}'.format(path))
 
-    oldest_version = (str(versions[0][0]), str(versions[0][1]), str(versions[0][2]), str(versions[0][3]))
+    version_oldest = (str(versions[0][0]), str(versions[0][1]), str(versions[0][2]), str(versions[0][3]))
     version = (str(versions[-1][0]), str(versions[-1][1]), str(versions[-1][2]), str(versions[-1][3]))
-    return oldest_version, version
+    return version_oldest, version
 
 def write_firmware_info(display_name, major, minor, patch, beta, build_time):
     buf = bytearray([0xFF] * 4096)
@@ -650,7 +650,7 @@ def main():
             dirty_suffix = '_' + git_commit_id + "_" + branch_name.replace("_", "-")
 
     try:
-        oldest_version, version = get_changelog_version(name)
+        version_oldest, version = get_changelog_version(name)
     except Exception as e:
         print('Error: Could not get changelog version: {0}'.format(e))
         sys.exit(1)
@@ -733,10 +733,10 @@ def main():
     build_lines = []
     build_lines.append('#pragma once')
     build_lines.append('#include <stdint.h>')
-    build_lines.append('#define OLDEST_VERSION_MAJOR {}'.format(oldest_version[0]))
-    build_lines.append('#define OLDEST_VERSION_MINOR {}'.format(oldest_version[1]))
-    build_lines.append('#define OLDEST_VERSION_PATCH {}'.format(oldest_version[2]))
-    build_lines.append('#define OLDEST_VERSION_BETA {}'.format(oldest_version[3]))
+    build_lines.append('#define BUILD_VERSION_OLDEST_MAJOR {}'.format(version_oldest[0]))
+    build_lines.append('#define BUILD_VERSION_OLDEST_MINOR {}'.format(version_oldest[1]))
+    build_lines.append('#define BUILD_VERSION_OLDEST_PATCH {}'.format(version_oldest[2]))
+    build_lines.append('#define BUILD_VERSION_OLDEST_BETA {}'.format(version_oldest[3]))
     build_lines.append('#define BUILD_VERSION_MAJOR {}'.format(version[0]))
     build_lines.append('#define BUILD_VERSION_MINOR {}'.format(version[1]))
     build_lines.append('#define BUILD_VERSION_PATCH {}'.format(version[2]))
