@@ -1402,7 +1402,7 @@ void RemoteAccess::resolve_management()
         serializer.addMemberString("id", config.get("uuid")->asEphemeralCStr());
         serializer.addMemberString("password", config.get("password")->asEphemeralCStr());
         serializer.addMemberNumber("port", network.get_web_server_port());
-        serializer.addMemberString("firmware_version", BUILD_VERSION_STRING);
+        serializer.addMemberString("firmware_version", build_version_full_str());
         serializer.addMemberArray("configured_users");
         for (auto &user : config.get("users")) {
             serializer.addObject();
