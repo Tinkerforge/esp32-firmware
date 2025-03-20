@@ -1384,7 +1384,7 @@ void RemoteAccess::resolve_management()
         serializer.addMemberObject("data");
         serializer.addMemberObject("V1");
         serializer.addMemberNumber("port", network.get_web_server_port());
-        serializer.addMemberString("firmware_version", BUILD_VERSION_STRING);
+        serializer.addMemberString("firmware_version", build_version_full_str());
         serializer.addMemberArray("configured_connections");
         for (auto &user : config.get("users")) {
             uint32_t user_id = user.get("id")->asUint() - 1;
