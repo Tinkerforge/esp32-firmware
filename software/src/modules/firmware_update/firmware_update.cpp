@@ -678,7 +678,7 @@ void FirmwareUpdate::register_urls()
         }
     }, true);
 
-    api.addCommand("firmware_update/validate_firmware_now", Config::Null(), {}, [this](String &errmsg) {
+    api.addCommand("firmware_update/validate", Config::Null(), {}, [this](String &errmsg) {
         change_running_partition_from_pending_verify_to_valid();
     }, true);
 
