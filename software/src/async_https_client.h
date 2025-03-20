@@ -84,6 +84,7 @@ public:
     void delete_async(const char *url, int cert_id, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback);
     void abort_async();
     void set_header(const char *key, const char *value);
+    void set_header(const String &key, const String &value);
     bool is_busy() const { return in_progress; }
     void fetch(const char *url, int cert_id, esp_http_client_method_t method, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback);
 

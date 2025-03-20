@@ -274,6 +274,10 @@ void AsyncHTTPSClient::delete_async(const char *url, int cert_id, const char *bo
     fetch(url, cert_id, HTTP_METHOD_DELETE, body, body_size, std::move(callback));
 }
 
+void AsyncHTTPSClient::set_header(const String &key, const String &value) {
+    headers.emplace_back(std::pair<String, String>(key, value));
+}
+
 void AsyncHTTPSClient::set_header(const char *key, const char *value) {
     if (key == nullptr || value == nullptr) {
         return;
@@ -327,5 +331,5 @@ void AsyncHTTPSClient::abort_async()
 }
 
 void AsyncHTTPSClient::add_default_headers() {
-    this->set_header("User-Agent", BUILD_MANUFACTURER_USER_AGENT "-" BUILD_DISPLAY_NAME_USER_AGENT "/" BUILD_VERSION_STRING);
+    this->set_header("User-Agent", String(BUILD_MANUFACTURER_USER_AGENT "-" BUILD_DISPLAY_NAME_USER_AGENT "/") + build_version_full_str());
 }
