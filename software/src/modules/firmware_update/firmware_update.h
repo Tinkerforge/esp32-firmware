@@ -22,6 +22,8 @@
 #include <stdint.h>
 #include <FS.h> // FIXME: without this include here there is a problem with the IPADDR_NONE define in <lwip/ip4_addr.h>
 #include <esp_http_client.h>
+#include <esp_partition.h>
+#include <esp_ota_ops.h>
 #include <sodium.h>
 
 #include "module.h"
@@ -83,6 +85,7 @@ public:
     int change_update_partition_from_aborted_to_invalid(bool silent = false);
 
 private:
+    int change_partition_ota_state_from_to(const esp_partition_t *partition, esp_ota_img_states_t old_ota_state, esp_ota_img_states_t new_ota_state, bool silent);
     bool is_vehicle_blocking_update() const;
     InstallState handle_firmware_chunk(size_t chunk_offset, uint8_t *chunk, size_t chunk_len, size_t complete_len, bool is_complete, TFJsonSerializer *json_ptr);
     InstallState check_firmware_info(bool detect_downgrade, bool log, TFJsonSerializer *json_ptr);

@@ -19,8 +19,6 @@
 
 #include "firmware_update.h"
 
-#include <esp_partition.h>
-#include <esp_ota_ops.h>
 #include <esp_app_format.h>
 #include <spi_flash_mmap.h>
 #include <Update.h>
@@ -874,15 +872,18 @@ static bool write_ota_data(size_t ota_index, esp_ota_select_entry_t *ota_data, b
     return true;
 }
 
-static int change_partition_ota_state_from_to(const esp_partition_t *partition, esp_ota_img_states_t old_ota_state, esp_ota_img_states_t new_ota_state, bool silent)
+int FirmwareUpdate::change_partition_ota_state_from_to(const esp_partition_t *partition, esp_ota_img_states_t old_ota_state, esp_ota_img_states_t new_ota_state, bool silent)
 {
     size_t ota_index;
+    const char *app_state_key;
 
     if (strcmp(partition->label, "app0") == 0) {
         ota_index = 0;
+        app_state_key = "app0_state";
     }
     else if (strcmp(partition->label, "app1") == 0) {
         ota_index = 1;
+        app_state_key = "app1_state";
     }
     else {
         if (!silent) {
@@ -918,6 +919,8 @@ static int change_partition_ota_state_from_to(const esp_partition_t *partition, 
 
         return -1;
     }
+
+    state.get(app_state_key)->updateUint(new_ota_state);
 
     if (!silent) {
         logger.printfln("Changed %s partition OTA state from %s to %s",
