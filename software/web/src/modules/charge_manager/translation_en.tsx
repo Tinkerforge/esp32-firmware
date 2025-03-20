@@ -64,7 +64,7 @@ let x = {
             "minimum_current_auto_desc": "Automatically set minimum charge current based on selected vehicle model",
             "minimum_current_vehicle_type": "Vehicle model",
             "minimum_current_vehicle_type_other": "Default",
-            "minimum_current_vehicle_type_zoe": "Renault ZOE R135, ZOE R110 or Twingo Z.E.",
+            "minimum_current_vehicle_type_zoe": "Renault ZOE R135, ZOE R110, Twingo Z.E. or Smart ED/EQ",
             "minimum_current_1p": "Minimum single-phase charge current",
             "minimum_current_1p_muted": "lowest charge current supported by your vehicle when charging in single-phase mode",
             "minimum_current_3p": "Minimum three-phase charge current",
