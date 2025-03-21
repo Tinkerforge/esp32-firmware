@@ -652,9 +652,6 @@ void Wifi::setup()
 
     if (enable_ap && !ap_fallback_only) {
         apply_soft_ap_config_and_start();
-    } else {
-        LogSilencer ls;
-        WiFi.softAPdisconnect(true);
     }
 
     if (enable_ap) {
