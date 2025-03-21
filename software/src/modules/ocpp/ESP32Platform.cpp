@@ -358,42 +358,72 @@ bool platform_get_signed_meter_value(int32_t connectorId, SampledValueMeasurand 
     return false;
 }
 
-static struct {
+struct PlatformMeterCache {
     std::unique_ptr<MeterValueID[]> value_ids = nullptr;
     size_t value_ids_length = 0;
     uint32_t charger_meter_slot = UINT32_MAX;
     std::unique_ptr<uint32_t[]> idx_cache = nullptr;
-} meter_cache;
+    uint32_t power_offered_l1_idx;
+    uint32_t power_offered_l2_idx;
+    uint32_t power_offered_l3_idx;
+    uint32_t current_offered_l1_idx;
+    uint32_t current_offered_l2_idx;
+    uint32_t current_offered_l3_idx;
+};
 
-bool platform_meter_available(int32_t connector_id) {
+static bool platform_meter_available(int32_t connector_id, PlatformMeterCache *meter_cache) {
     if (connector_id != 1)
         return false;
 
-    if (meter_cache.value_ids != nullptr)
+    if (meter_cache->value_ids != nullptr)
         return true;
 
-    if (meter_cache.charger_meter_slot == UINT32_MAX) {
+    if (meter_cache->charger_meter_slot == UINT32_MAX) {
         REQUIRE_FEATURE(evse, false);
-        meter_cache.charger_meter_slot = evse_common.get_charger_meter();
+        meter_cache->charger_meter_slot = evse_common.get_charger_meter();
     }
 
     size_t value_ids_length;
-    auto result = meters.get_value_ids_extended(meter_cache.charger_meter_slot, nullptr, &value_ids_length);
+    auto result = meters.get_value_ids_extended(meter_cache->charger_meter_slot, nullptr, &value_ids_length);
     if (result != MeterValueAvailability::Fresh)
         return false;
 
     auto value_ids = heap_alloc_array<MeterValueID>(value_ids_length);
-    result = meters.get_value_ids_extended(meter_cache.charger_meter_slot, value_ids.get(), &value_ids_length);
+    result = meters.get_value_ids_extended(meter_cache->charger_meter_slot, value_ids.get(), &value_ids_length);
 
     if (result != MeterValueAvailability::Fresh)
         return false;
 
-    meter_cache.value_ids = std::move(value_ids);
-    meter_cache.value_ids_length = value_ids_length;
+    meter_cache->value_ids = std::move(value_ids);
+    meter_cache->value_ids_length = value_ids_length;
     return true;
 }
 
-static MeterValueID get_mvid_for_measurand(int32_t connector_id, SampledValueMeasurand m, SampledValuePhase p) {
+static constexpr MeterValueID POWER_OFFERED_L1   = (MeterValueID)((size_t)(MeterValueID::_max) + 1);
+static constexpr MeterValueID POWER_OFFERED_L2   = (MeterValueID)((size_t)(MeterValueID::_max) + 2);
+static constexpr MeterValueID POWER_OFFERED_L3   = (MeterValueID)((size_t)(MeterValueID::_max) + 3);
+static constexpr MeterValueID CURRENT_OFFERED_L1 = (MeterValueID)((size_t)(MeterValueID::_max) + 4);
+static constexpr MeterValueID CURRENT_OFFERED_L2 = (MeterValueID)((size_t)(MeterValueID::_max) + 5);
+static constexpr MeterValueID CURRENT_OFFERED_L3 = (MeterValueID)((size_t)(MeterValueID::_max) + 6);
+
+static MeterValueID get_mvid_for_measurand(int32_t connector_id, SampledValueMeasurand m, SampledValuePhase p, PlatformMeterCache *meter_cache) {
+    if (m == SampledValueMeasurand::POWER_OFFERED) {
+        if (p == SampledValuePhase::L1)
+            return POWER_OFFERED_L1;
+        if (p == SampledValuePhase::L2)
+            return POWER_OFFERED_L2;
+        if (p == SampledValuePhase::L3)
+            return POWER_OFFERED_L3;
+    }
+    if (m == SampledValueMeasurand::CURRENT_OFFERED) {
+        if (p == SampledValuePhase::L1)
+            return CURRENT_OFFERED_L1;
+        if (p == SampledValuePhase::L2)
+            return CURRENT_OFFERED_L2;
+        if (p == SampledValuePhase::L3)
+            return CURRENT_OFFERED_L3;
+    }
+
     for (size_t mvidx = 0; mvidx < ARRAY_SIZE(mvid_to_measurand); ++mvidx) {
         const auto entry = mvid_to_measurand[mvidx];
         if (entry.measurand == SampledValueMeasurand::NONE)
@@ -402,20 +432,20 @@ static MeterValueID get_mvid_for_measurand(int32_t connector_id, SampledValueMea
         if (entry.measurand != m || entry.phase != p)
             continue;
 
-        for (size_t i = 0; i < meter_cache.value_ids_length; ++i)
-            if (meter_cache.value_ids[i] == (MeterValueID)mvidx)
+        for (size_t i = 0; i < meter_cache->value_ids_length; ++i)
+            if (meter_cache->value_ids[i] == (MeterValueID)mvidx)
                 return (MeterValueID) mvidx;
     }
 
     return MeterValueID::NotSupported;
 }
 
-bool platform_supports_measurand(int32_t connector_id, SampledValueMeasurand m, SampledValuePhase p) {
-    return get_mvid_for_measurand(connector_id, m, p) != MeterValueID::NotSupported;
+bool platform_supports_measurand(int32_t connector_id, SampledValueMeasurand m, SampledValuePhase p, PlatformMeterCache *meter_cache) {
+    return get_mvid_for_measurand(connector_id, m, p, meter_cache) != MeterValueID::NotSupported;
 }
 
-size_t platform_get_supported_measurand_count(int32_t connector_id, SampledValueMeasurand *measurands, SampledValuePhase *phases, size_t len) {
-    if (!platform_meter_available(connector_id))
+static size_t platform_get_supported_measurand_count(int32_t connector_id, SampledValueMeasurand *measurands, SampledValuePhase *phases, size_t len, PlatformMeterCache *meter_cache) {
+    if (!platform_meter_available(connector_id, meter_cache))
         return 0;
 
     size_t result = 0;
@@ -425,7 +455,7 @@ size_t platform_get_supported_measurand_count(int32_t connector_id, SampledValue
         auto phase = phases == nullptr ? SampledValuePhase::NONE : phases[i];
 
         if (phase != SampledValuePhase::NONE) {
-            if (platform_supports_measurand(connector_id, measurand, phase)) {
+            if (platform_supports_measurand(connector_id, measurand, phase, meter_cache)) {
                 ++result;
                 continue;
             }
@@ -435,7 +465,7 @@ size_t platform_get_supported_measurand_count(int32_t connector_id, SampledValue
         // If this is the case, only use those.
         bool supports_phase_values = false;
         for (size_t p = (size_t)SampledValuePhase::L1; p < (size_t)SampledValuePhase::NONE; ++p) {
-            if (platform_supports_measurand(connector_id, measurand, (SampledValuePhase)p)) {
+            if (platform_supports_measurand(connector_id, measurand, (SampledValuePhase)p, meter_cache)) {
                 ++result;
                 supports_phase_values = true;
             }
@@ -445,7 +475,7 @@ size_t platform_get_supported_measurand_count(int32_t connector_id, SampledValue
             continue;
 
         // If no phase values are supported, use the NONE value as fallback
-        if (platform_supports_measurand(connector_id, measurand, SampledValuePhase::NONE)) {
+        if (platform_supports_measurand(connector_id, measurand, SampledValuePhase::NONE, meter_cache)) {
             ++result;
         }
     }
@@ -479,11 +509,53 @@ const SampledValueUnit measurand_to_unit[(int)SampledValueMeasurand::NONE + 1] {
     SampledValueUnit::NONE, /*NONE*/
 };
 
-size_t platform_prepare_meter_cache(int32_t connector_id, SampledValueMeasurand *measurands, SampledValuePhase *phases, size_t len, SupportedMeasurand *result, size_t result_len) {
-    if (!platform_meter_available(connector_id))
-        return 0;
+void add_custom_value_to_cache(SampledValueMeasurand m, SampledValuePhase p, uint32_t index, PlatformMeterCache *meter_cache) {
+    if (m == SampledValueMeasurand::POWER_OFFERED) {
+        if (p == SampledValuePhase::L1)
+            meter_cache->power_offered_l1_idx = index;
+        if (p == SampledValuePhase::L2)
+            meter_cache->power_offered_l2_idx = index;
+        if (p == SampledValuePhase::L3)
+            meter_cache->power_offered_l3_idx = index;
+    }
+    if (m == SampledValueMeasurand::CURRENT_OFFERED) {
+        if (p == SampledValuePhase::L1)
+            meter_cache->current_offered_l1_idx = index;
+        if (p == SampledValuePhase::L2)
+            meter_cache->current_offered_l2_idx = index;
+        if (p == SampledValuePhase::L3)
+            meter_cache->current_offered_l3_idx = index;
+    }
+}
 
-    meter_cache.idx_cache = heap_alloc_array<uint32_t>(result_len);
+float get_custom_value(uint32_t index, PlatformMeterCache *meter_cache) {
+    // WARP1 is either
+    //  - Smart -> we don't know the number of phases connected
+    //  - or Pro -> we've sold those only with the SDM72 (V1) that can only be used with three phases connected.
+    // So we assume that we always offer three-phase charging.
+    auto phases = evse_common.get_evse_version() >= 20 ? evse_common.get_low_level_state().get("phases_current")->asUint() : 3;
+
+    float current = evse_common.get_state().get("allowed_charging_current")->asUint() / 1000.0f;
+
+    if (index == meter_cache->power_offered_l1_idx)
+        return current * (phases >= 1 ? 1 : 0) * 230;
+    if (index == meter_cache->power_offered_l2_idx)
+        return current * (phases >= 2 ? 1 : 0) * 230;
+    if (index == meter_cache->power_offered_l3_idx)
+        return current * (phases >= 3 ? 1 : 0) * 230;
+
+    if (index == meter_cache->current_offered_l1_idx)
+        return current * (phases >= 1 ? 1 : 0);
+    if (index == meter_cache->current_offered_l2_idx)
+        return current * (phases >= 2 ? 1 : 0);
+    if (index == meter_cache->current_offered_l3_idx)
+        return current * (phases >= 3 ? 1 : 0);
+
+    return 0.0f;
+}
+
+static size_t platform_prepare_meter_cache(int32_t connector_id, SampledValueMeasurand *measurands, SampledValuePhase *phases, size_t len, SupportedMeasurand *result, size_t result_len, PlatformMeterCache *meter_cache) {
+    meter_cache->idx_cache = heap_alloc_array<uint32_t>(result_len);
 
     auto mvids = heap_alloc_array<MeterValueID>(result_len);
 
@@ -494,13 +566,16 @@ size_t platform_prepare_meter_cache(int32_t connector_id, SampledValueMeasurand 
         auto phase = phases == nullptr ? SampledValuePhase::NONE : phases[i];
 
         if (phase != SampledValuePhase::NONE) {
-            MeterValueID mvid = get_mvid_for_measurand(connector_id, measurand, phase);
+            MeterValueID mvid = get_mvid_for_measurand(connector_id, measurand, phase, meter_cache);
             if (mvid != MeterValueID::NotSupported) {
                 if (written >= result_len)
                     goto done;
 
                 mvids[written] = mvid;
                 result[written] = SupportedMeasurand{measurand, phase, SampledValueLocation::OUTLET, measurand_to_unit[(size_t)measurand], false};
+                if (mvid > MeterValueID::_max)
+                    add_custom_value_to_cache(measurand, phase, written, meter_cache);
+
                 ++written;
                 continue;
             }
@@ -510,13 +585,16 @@ size_t platform_prepare_meter_cache(int32_t connector_id, SampledValueMeasurand 
         // If this is the case, only use those.
         bool supports_phase_values = false;
         for (size_t p = (size_t)SampledValuePhase::L1; p < (size_t)SampledValuePhase::NONE; ++p) {
-            MeterValueID mvid = get_mvid_for_measurand(connector_id, measurand, (SampledValuePhase)p);
+            MeterValueID mvid = get_mvid_for_measurand(connector_id, measurand, (SampledValuePhase)p, meter_cache);
             if (mvid != MeterValueID::NotSupported) {
                 if (written >= result_len)
                     goto done;
 
                 mvids[written] = mvid;
                 result[written] = SupportedMeasurand{measurand, (SampledValuePhase)p, SampledValueLocation::OUTLET, measurand_to_unit[(size_t)measurand], false};
+                if (mvid > MeterValueID::_max)
+                    add_custom_value_to_cache(measurand, (SampledValuePhase)p, written, meter_cache);
+
                 ++written;
 
                 supports_phase_values = true;
@@ -527,29 +605,54 @@ size_t platform_prepare_meter_cache(int32_t connector_id, SampledValueMeasurand 
             continue;
 
         // If no phase values are supported, use the NONE value as fallback
-        MeterValueID mvid = get_mvid_for_measurand(connector_id, measurand, SampledValuePhase::NONE);
+        MeterValueID mvid = get_mvid_for_measurand(connector_id, measurand, SampledValuePhase::NONE, meter_cache);
         if (mvid != MeterValueID::NotSupported) {
             if (written >= result_len)
                 goto done;
 
             mvids[written] = mvid;
             result[written] = SupportedMeasurand{measurand, SampledValuePhase::NONE, SampledValueLocation::OUTLET, measurand_to_unit[(size_t)measurand], false};
+            if (mvid > MeterValueID::_max)
+                add_custom_value_to_cache(measurand, phase, written, meter_cache);
+
             ++written;
         }
     }
 
 done:
-    meters.fill_index_cache(meter_cache.charger_meter_slot, written, mvids.get(), meter_cache.idx_cache.get());
-
+    meters.fill_index_cache(meter_cache->charger_meter_slot, written, mvids.get(), meter_cache->idx_cache.get());
     return written;
 }
 
-float platform_get_raw_meter_value(int32_t connectorId, size_t measurand_idx) {
-    if (meter_cache.idx_cache == nullptr)
+bool platform_prepare_meter(int32_t connector_id, SampledValueMeasurand *measurands, SampledValuePhase *phases, size_t measurand_count, SupportedMeasurand **out_supported_measurands, size_t *out_supported_measurand_count, void **out_platform_meter_cache) {
+    if (*out_platform_meter_cache == nullptr)
+        *out_platform_meter_cache = new PlatformMeterCache();
+
+    if (!platform_meter_available(connector_id, (PlatformMeterCache *)*out_platform_meter_cache))
+        return false;
+
+    *out_supported_measurand_count = platform_get_supported_measurand_count(connector_id, measurands, phases, measurand_count, (PlatformMeterCache *)*out_platform_meter_cache);
+    *out_supported_measurands = heap_alloc_array<SupportedMeasurand>(*out_supported_measurand_count).release();
+
+    auto written = platform_prepare_meter_cache(connector_id, measurands, phases, measurand_count, *out_supported_measurands, *out_supported_measurand_count, (PlatformMeterCache *)*out_platform_meter_cache);
+
+    if (*out_supported_measurand_count != written)
+        printf("!!!! %zu != %zu und jetzt?", measurand_count, written);
+
+    return true;
+}
+
+
+float platform_get_raw_meter_value(int32_t connectorId, size_t measurand_idx, void *platform_meter_cache) {
+    PlatformMeterCache *meter_cache = (PlatformMeterCache *)platform_meter_cache;
+    if (meter_cache->idx_cache == nullptr)
         return 0.0f;
 
+    if (meter_cache->idx_cache[measurand_idx] == UINT32_MAX)
+        return get_custom_value(measurand_idx, meter_cache);
+
     float result = 0.0f;
-    meters.get_value_by_index(meter_cache.charger_meter_slot, meter_cache.idx_cache[measurand_idx], &result);
+    meters.get_value_by_index(meter_cache->charger_meter_slot, meter_cache->idx_cache[measurand_idx], &result);
     return result;
 }
 
