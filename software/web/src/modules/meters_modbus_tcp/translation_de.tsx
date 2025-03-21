@@ -48,6 +48,7 @@ let x = {
             "table_carlo_gavazzi_em540": "Carlo Gavazzi EM540",
             "table_solaredge_inverter": "Solaredge Wechselrichter",
             "table_eastron_sdm630_tcp": "Eastron SDM630 TCP",
+            "table_tinkerforge_warp_charger": "Tinkerforge WARP Charger",
             "virtual_meter": "Virtueller Zähler",
             "virtual_meter_inverter": "Wechselrichter",
             "virtual_meter_grid": "Netzanschluss",
