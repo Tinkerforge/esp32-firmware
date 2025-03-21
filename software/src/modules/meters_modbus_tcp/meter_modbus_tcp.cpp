@@ -1054,6 +1054,12 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         table = &eastron_sdm630_tcp_table;
         break;
 
+    case MeterModbusTCPTableID::TinkerforgeWARPCharger:
+        device_address = 1;
+        table = &tinkerforge_warp_charger_table;
+        default_location = MeterLocation::Load;
+        break;
+
     default:
         logger.printfln_meter("Unknown table: %u", static_cast<uint8_t>(table_id));
         return;
