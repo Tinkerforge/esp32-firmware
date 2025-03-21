@@ -89,7 +89,7 @@ static void print_alloc(int stage, const StageContext &sc) {
     logger.printfln("%s", buf);
 }
 
-static void trace_alloc(int stage, StageContext &sc) {
+static void trace_alloc(int stage, const StageContext &sc) {
 #if defined(BOARD_HAS_PSRAM)
     char buf[768] = {};
     trace("%d: raw(%d %d %d %d) min(%d %d %d %d) spread(%d %d %d %d) max_pv %d",
@@ -218,7 +218,7 @@ Cost get_cost(int current_to_allocate,
 }
 
 // Checks stage-specific limits.
-bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage, bool observe_pv_limit, uint32_t guaranteed_pv_current)
+bool cost_exceeds_limits(const Cost &cost, const CurrentLimits* limits, int stage, bool observe_pv_limit, uint32_t guaranteed_pv_current)
 {
     bool phases_exceeded = false;
     for (size_t i = (size_t)GridPhase::L1; i <= (size_t)GridPhase::L3; ++i) {
@@ -250,7 +250,7 @@ bool cost_exceeds_limits(Cost cost, const CurrentLimits* limits, int stage, bool
     }
 }
 
-void apply_cost(Cost cost, CurrentLimits* limits) {
+void apply_cost(const Cost &cost, CurrentLimits* limits) {
     limits->raw -= cost;
     limits->min -= cost;
     limits->spread -= cost;
@@ -730,7 +730,7 @@ static constexpr int CHECK_IMPROVEMENT = 4;
 static constexpr int CHECK_IMPROVEMENT_ALL_PHASE = 8;
 static constexpr int CHECK_SPREAD = 16;
 
-static bool can_activate(StringWriter &sw, Cost check_phase, const Cost new_cost, const Cost new_enable_cost, const Cost wnd_min, const Cost wnd_max, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg, bool is_unknown_rotated_1p_3p_switch, uint16_t guaranteed_pv_current) {
+static bool can_activate(StringWriter &sw, const Cost &check_phase, const Cost &new_cost, const Cost &new_enable_cost, const Cost &wnd_min, const Cost &wnd_max, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg, bool is_unknown_rotated_1p_3p_switch, uint16_t guaranteed_pv_current) {
     // Spread
     bool check_spread = ((check_phase.pv | check_phase.l1 | check_phase.l2 | check_phase.l3) & CHECK_SPREAD) != 0;
     bool check_improvement = ((check_phase.pv | check_phase.l1 | check_phase.l2 | check_phase.l3) & (CHECK_IMPROVEMENT | CHECK_IMPROVEMENT_ALL_PHASE)) != 0;
@@ -843,7 +843,7 @@ static int get_enable_cost(const ChargerState *state, bool activate_3p, bool hav
 // Activates the charger if possible.
 // Returns false if the charger can't be activated (see can_activate).
 // If true is returned, *spent is the cost that was spent to enable the charger.
-static bool try_activate(StringWriter &sw, const ChargerState *state, bool activate_3p, bool have_active_chargers, Cost *spent, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg,const CurrentAllocatorState *ca_state) {
+static bool try_activate(StringWriter &sw, const ChargerState *state, bool activate_3p, bool have_active_chargers, Cost *spent, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg, const CurrentAllocatorState *ca_state) {
     Cost wnd_min = ca_state->control_window_min;
     Cost wnd_max = ca_state->control_window_max;
 
@@ -1134,7 +1134,7 @@ static int current_capacity(const CurrentLimits *limits, const ChargerState *sta
     return allocated_phases * capacity;
 }
 
-static Cost get_fair_current(int matched, int start, int *idx_array, uint8_t *phase_allocation, CurrentLimits *limits, const ChargerState *charger_state) {
+static Cost get_fair_current(int matched, int start, int *idx_array, uint8_t *phase_allocation, const CurrentLimits *limits, const ChargerState *charger_state) {
     Cost active_on_phase{0, 0, 0, 0};
     for (int i = start; i < matched; ++i) {
         const auto *state = &charger_state[idx_array[i]];
