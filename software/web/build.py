@@ -116,6 +116,8 @@ def main():
     scss_args = [
         'npx',
         'sass',
+        '--silence-deprecation',
+        'color-functions,import,global-builtin,abs-percent,mixed-decls' # still used by bootstrap 4
     ]
 
     if not args.css_source_map:
