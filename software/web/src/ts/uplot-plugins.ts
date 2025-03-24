@@ -201,7 +201,7 @@ export function uPlotTimelinePlugin(options: any) {
 
                     for (let i = 1; i < u.series.length; i++) {
                         if (u.series[i].show) {
-                            let label = u.series[i].label;
+                            let label = u.series[i].label as string;
 
                             if (label.length > 15) {
                                 label = label.slice(0, 12) + '\u2026';
