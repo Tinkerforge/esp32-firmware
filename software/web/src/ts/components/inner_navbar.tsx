@@ -9,13 +9,13 @@ import { RemoteCloseButton } from "./remote_close_button";
 import { range, is_native_median_app } from "../util";
 
 interface NavbarProps {
-    children: VNode<any> | VNode<any>[],
+    children?: VNode<any> | VNode<any>[],
     logo?: string,
     visible: boolean,
     mode: string,
 }
 
-function generateAppMenu(elements:  VNode<any> | VNode<any>[], nesting?: number): any {
+function generateAppMenu(elements: VNode<any> | VNode<any>[], nesting?: number): any {
     const appElements = [];
     if (!Array.isArray(elements))
         elements = [elements];
@@ -54,7 +54,7 @@ export function InnerNavbar(props: NavbarProps) {
             label: __("main.navbar_status"),
             url: "javascript:window.switchTo('status')",
         }];
-        appMenuItems.push(...generateAppMenu(props.children));
+        appMenuItems.push(...generateAppMenu(props.children ?? []));
         appMenuItems.push({
             label: __("component.remote_close_button.close"),
             url: "javascript:window.close()",
