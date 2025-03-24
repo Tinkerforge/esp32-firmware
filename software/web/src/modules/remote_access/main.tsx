@@ -566,6 +566,8 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
         if (!util.render_allowed())
             return <></>
 
+        const [authToken, setAuthToken] = useState("");
+
         const cert_config = API.get("certs/state");
         const cert_items: [string, string][] = [["-1", __("remote_access.content.not_used")]];
         for (const cert of cert_config.certs) {
@@ -623,16 +625,22 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, Re
                             rows={users}
                             addEnabled={users.length < 5}
                             addTitle={__("remote_access.content.add_user")}
-                            onAddShow={async () => this.setState({addUser: {email: "", password: "", auth_token: "", public_key: "", note: "", user_id: ""}})}
+                            onAddShow={async () => {
+                                this.setState({addUser: {email: "", password: "", auth_token: "", public_key: "", note: "", user_id: ""}});
+                                setAuthToken("");
+                            }}
                             addMessage={users.length < 5 ? __("remote_access.content.user_add_message")(users.length, 5) : __("remote_access.content.all_users_in_use")}
                             onAddGetChildren={() => {
                                 const [authMethod, setAuthMethod] = useState("password");
                                 const [invalidFeedback, setInvalidFeedback] = useState("");
-                                const [authToken, setAuthToken] = useState("");
 
                                 return <>
                                     <FormRow label={__("remote_access.content.auth_method")}>
-                                        <InputSelect items={[["password", __("remote_access.content.password")], ["token", __("remote_access.content.auth_token")]]} value={authMethod} onValue={(v) => setAuthMethod(v)}/>
+                                        <InputSelect items={[["password", __("remote_access.content.password")], ["token", __("remote_access.content.auth_token")]]} value={authMethod} onValue={(v) => {
+                                            setAuthMethod(v);
+                                            setAuthToken("");
+                                            this.setState({addUser: {email: "", password: "", auth_token: "", public_key: "", note: "", user_id: ""}});
+                                        }}/>
                                     </FormRow>
                                     <Collapse in={authMethod === "token"}>
                                        <div>
