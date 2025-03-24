@@ -179,7 +179,12 @@ export class EcoChart extends Component<{charger_id: number, departure?: Departu
         });
 
         // Update vertical "now" line on time change
-        effect(() => this.update_uplot());
+        // Calling async functions in effect is not supported
+        // because signal accesses will not be tracked under await.
+        // However update_uplot does access the 1 minute signal only
+        // blocking, so this should be fine (tm)
+        // See: https://github.com/preactjs/signals/issues/284#issuecomment-1871915973
+        effect(() => this.update_uplot() as unknown as void);
     }
 
     async update_uplot() {
