@@ -314,6 +314,73 @@ file_lines.append('}\n')
 
 tfutil.write_file_if_different('../../../web/src/modules/meters/meter_value_id.ts', ''.join(file_lines))
 
+def extract_without_kind(sub_tree):
+    if isinstance(sub_tree, dict):
+        for sub_sub_id in sub_tree.items():
+            if sub_sub_id[0] == "now" or sub_sub_id[0] == "absolute":
+                return sub_sub_id[1]
+        return None
+    else:
+        return sub_tree
+
+def format_imexdiff_set(imexdiff, im, ex):
+    result  =  '    {\n'
+    result += f'        MeterValueID::{imexdiff},\n'
+    result += f'        MeterValueID::{im},\n'
+    result += f'        MeterValueID::{ex},\n'
+    result +=  '    },\n'
+    return result
+
+def format_imexdiff(sub_tree):
+    result = ""
+    result_count = 0
+    im = "NotSupported"
+    ex = "NotSupported"
+    imexdiff = None
+    cha = "NotSupported"
+    dis = "NotSupported"
+    chadisdiff = None
+
+    for sub_id in sub_tree.items():
+        if sub_id[0] == "import" or sub_id[0] == "inductive":
+            im = extract_without_kind(sub_id[1])
+        elif sub_id[0] == "export" or sub_id[0] == "capacitive":
+            ex = extract_without_kind(sub_id[1])
+        elif sub_id[0] == "im_ex_diff" or sub_id[0] == "ind_cap_diff":
+            imexdiff = extract_without_kind(sub_id[1])
+        elif sub_id[0] == "charge":
+            cha = extract_without_kind(sub_id[1])
+        elif sub_id[0] == "discharge":
+            dis = extract_without_kind(sub_id[1])
+        elif sub_id[0] == "cha_dis_diff":
+            chadisdiff = extract_without_kind(sub_id[1])
+        elif isinstance(sub_id[1], dict):
+            sub_result, sub_result_count = format_imexdiff(sub_id[1])
+            result += sub_result
+            result_count += sub_result_count
+
+    if imexdiff is not None:
+        result += format_imexdiff_set(imexdiff, im, ex)
+        result_count += 1
+
+    if chadisdiff is not None:
+        result += format_imexdiff_set(chadisdiff, cha, dis)
+        result_count += 1
+
+    return result, result_count
+
+imexdiff_mappings, imexdiff_mappings_count = format_imexdiff(value_id_tree)
+
+file_lines = []
+file_lines.append('// WARNING: This file is generated.\n\n')
+file_lines.append('#include "meter_value_imexdiff.h"\n\n')
+file_lines.append('extern const imexdiff_mapping meter_value_imexdiff_mappings[] = {\n')
+file_lines.append(imexdiff_mappings)
+file_lines.append('};\n\n')
+file_lines.append(f'extern const size_t meter_value_imexdiff_mappings_count = {imexdiff_mappings_count};\n')
+
+tfutil.write_file_if_different('meter_value_imexdiff.cpp', ''.join(file_lines))
+
 for lang in translation_values:
     tfutil.specialize_template(f'../../../web/src/modules/meters/translation_{lang}.tsx.template', f'../../../web/src/modules/meters/translation_{lang}.tsx', {
         '{{{values}}}': ',\n            '.join(translation_values[lang]),

@@ -22,6 +22,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "meter_class_none.h"
+#include "meter_value_imexdiff.h"
 #include "tools.h"
 #include "string_builder.h"
 
@@ -643,68 +644,15 @@ static bool contains_value_id(const MeterValueID *value_ids, size_t value_id_cou
     return false;
 }
 
-static bool mvid_matching_direction(MeterValueID needle, MeterValueID blade, MeterValueDirection direction)
+static const imexdiff_mapping *mvid_find_imexdiff_mapping(MeterValueID needle)
 {
-    //MeterValueMeasurand needle_meas = getMeterValueMeasurand(needle);
-    //MeterValueSubmeasurand needle_sub = getMeterValueSubmeasurand(needle);
-    //MeterValuePhase needle_phase = getMeterValuePhase(needle);
-
-    //MeterValueMeasurand blade_meas = getMeterValueMeasurand(blade);
-    //MeterValueSubmeasurand blade_sub = getMeterValueSubmeasurand(blade);
-    //MeterValuePhase blade_phase = getMeterValuePhase(blade);
-    //MeterValueKind blade_kind = getMeterValueKind(blade);
-    //MeterValueDirection blade_dir = getMeterValueDirection(blade);
-
-    //logger.printfln("Looking for %lu %lu, meas %lu %lu, sub %lu %lu, ph %lu %lu, kind %lu %lu, dir %lu %lu",
-    //    static_cast<uint32_t>(needle), static_cast<uint32_t>(blade),
-    //    static_cast<uint32_t>(needle_meas), static_cast<uint32_t>(blade_meas),
-    //    static_cast<uint32_t>(needle_sub), static_cast<uint32_t>(blade_sub),
-    //    static_cast<uint32_t>(needle_phase), static_cast<uint32_t>(blade_phase),
-    //    static_cast<uint32_t>(needle_kind), static_cast<uint32_t>(blade_kind),
-    //    static_cast<uint32_t>(direction), static_cast<uint32_t>(blade_dir));
-
-    if (getMeterValueDirection(blade)    != direction
-     || getMeterValueMeasurand(blade)    != getMeterValueMeasurand(needle)
-     || getMeterValueSubmeasurand(blade) != getMeterValueSubmeasurand(needle)
-     || getMeterValuePhase(blade)        != getMeterValuePhase(needle)) {
-        return false;
-    }
-
-    MeterValueKind needle_kind = getMeterValueKind(needle);
-    if (needle_kind == MeterValueKind::Now || needle_kind == MeterValueKind::Virtual) {
-        needle_kind = MeterValueKind::None;
-    }
-
-    if (getMeterValueKind(blade) != needle_kind) {
-        return false;
-    }
-
-    return true;
-}
-
-static MeterValueID mvid_search_all(MeterValueID needle, MeterValueDirection direction, const int32_t *offsets, size_t offset_count)
-{
-    for (size_t i = 0; i < offset_count; i++) {
-        MeterValueID blade = static_cast<MeterValueID>(static_cast<int32_t>(needle) + offsets[i]);
-        if (mvid_matching_direction(needle, blade, direction)) {
-            //logger.printfln("Matching direction: %lu for %s -> %s", static_cast<uint32_t>(direction), getMeterValueName(needle), getMeterValueName(blade));
-            return blade;
+    for (size_t i = 0; i < meter_value_imexdiff_mappings_count; i++) {
+        if (meter_value_imexdiff_mappings[i].imexdiff == needle) {
+            return &meter_value_imexdiff_mappings[i];
         }
     }
 
-    return MeterValueID::NotSupported;
-}
-
-static MeterValueID mvid_find_import(MeterValueID needle)
-{
-    const int32_t offsets[] = {-3, -6};
-    return mvid_search_all(needle, MeterValueDirection::Import, offsets, ARRAY_SIZE(offsets));
-}
-
-static MeterValueID mvid_find_export(MeterValueID needle)
-{
-    const int32_t offsets[] = {-2, -4, -1};
-    return mvid_search_all(needle, MeterValueDirection::Export, offsets, ARRAY_SIZE(offsets));
+    return nullptr;
 }
 
 static void generate_extra_value_ids(Meters::extra_value_id **extra_value_ids_, size_t *extra_value_id_count_, const Config *value_ids_config)
@@ -721,12 +669,18 @@ static void generate_extra_value_ids(Meters::extra_value_id **extra_value_ids_, 
 
     for (uint8_t i = 0; i < value_id_count; i++) {
         const MeterValueID value_id = value_ids[i];
-        if (getMeterValueDirection(value_id) != MeterValueDirection::ImExDiff) {
+        const MeterValueDirection direction = getMeterValueDirection(value_id);
+        if (direction != MeterValueDirection::ImExDiff && direction != MeterValueDirection::IndCapDiff && direction != MeterValueDirection::ChaDisDiff) {
             continue;
         }
 
-        const MeterValueID value_id_import = mvid_find_import(value_id);
-        const MeterValueID value_id_export = mvid_find_export(value_id);
+        const imexdiff_mapping *const mapping = mvid_find_imexdiff_mapping(value_id);
+        if (!mapping) {
+            continue;
+        }
+
+        const MeterValueID value_id_import = mapping->im;
+        const MeterValueID value_id_export = mapping->ex;
 
         if (value_id_import != MeterValueID::NotSupported && !contains_value_id(value_ids, value_id_count, value_id_import)) {
             Meters::extra_value_id *extra_value_id = &extra_value_ids[extra_value_id_count];
@@ -751,6 +705,8 @@ static void generate_extra_value_ids(Meters::extra_value_id **extra_value_ids_, 
 
     // Shrink array
     *extra_value_ids_ = static_cast<Meters::extra_value_id *>(realloc(extra_value_ids, extra_value_id_count * sizeof(Meters::extra_value_id)));
+    extra_value_ids = nullptr;
+
     *extra_value_id_count_ = extra_value_id_count;
 }
 
@@ -763,8 +719,9 @@ MeterValueAvailability Meters::get_value_ids_extended(uint32_t slot, MeterValueI
 
     MeterSlot &meter_slot = meter_slots[slot];
     const Config &value_ids = meter_slot.value_ids;
+    const size_t value_ids_count = value_ids.count();
 
-    if (value_ids.count() == 0) {
+    if (value_ids_count == 0) {
         return MeterValueAvailability::CurrentlyUnknown;
     }
 
@@ -773,25 +730,25 @@ MeterValueAvailability Meters::get_value_ids_extended(uint32_t slot, MeterValueI
     }
 
     if (!value_ids_out) {
-        *value_ids_length = value_ids.count() + meter_slot.extra_value_id_count;
+        *value_ids_length = value_ids_count + meter_slot.extra_value_id_count;
         return MeterValueAvailability::Fresh;
     }
 
-    const size_t value_ids_count = std::min(value_ids.count(), *value_ids_length);
+    const size_t value_ids_count_limited = std::min(value_ids_count, *value_ids_length);
 
-    for (size_t i = 0; i < value_ids_count; i++) {
+    for (size_t i = 0; i < value_ids_count_limited; i++) {
         value_ids_out[i] = value_ids.get(i)->asEnum<MeterValueID>();
     }
 
     const extra_value_id *extra_value_ids = meter_slot.extra_value_ids;
-    const size_t extra_value_ids_count = std::min(meter_slot.extra_value_id_count, *value_ids_length - value_ids_count);
-    value_ids_out += value_ids_count;
+    const size_t extra_value_ids_count = std::min(meter_slot.extra_value_id_count, *value_ids_length - value_ids_count_limited);
+    value_ids_out += value_ids_count_limited;
 
     for (size_t i = 0; i < extra_value_ids_count; i++) {
         value_ids_out[i] = static_cast<MeterValueID>(extra_value_ids[i].value_id);
     }
 
-    *value_ids_length = value_ids_count + extra_value_ids_count;
+    *value_ids_length = value_ids_count_limited + extra_value_ids_count;
 
     return MeterValueAvailability::Fresh;
 }
@@ -1289,6 +1246,9 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
         api.addFeature("meters");
         meters_feature_declared = true;
     }
+
+    size_t value_ids_length = 0;
+    get_value_ids_extended(slot, nullptr, &value_ids_length); // TODO remove
 }
 
 bool Meters::get_cached_power_index(uint32_t slot, uint32_t *index)
