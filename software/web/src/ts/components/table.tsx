@@ -101,7 +101,7 @@ export class Table extends Component<TableProps, TableState> {
         return names.map((name, i) => name ?
             <FormRow label={name}>
                 {!util.hasValue(row.fieldWithBox) || row.fieldWithBox[i + 1] ?
-                    <span class="form-control" style="height: unset;" readonly>{value_or_else(values[i], <>&nbsp;</>)}</span>
+                    <span class="form-control" style="height: unset;">{value_or_else(values[i], <>&nbsp;</>)}</span>
                     : <>{values[i]}</>}
             </FormRow>
             : (value_or_else(values[i], undefined)));

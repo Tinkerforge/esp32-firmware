@@ -249,7 +249,7 @@ export class Ocpp extends ConfigComponent<'ocpp/config', {status_ref?: RefObject
                                 <FormRow label={k.replace(/([a-z])([A-Z])/g, "$1\u00AD$2")}>
                                     <InputText value={state.configuration[k]}
                                             onValue={(v) => this.setState({configuration: {...this.state.configuration, [k]: v}})}
-                                            onfocusout={() => API.call("ocpp/change_configuration", {
+                                            onFocusOut={() => API.call("ocpp/change_configuration", {
                                                     key: k,
                                                     value: state.configuration[k]
                                             }, () => "")} />

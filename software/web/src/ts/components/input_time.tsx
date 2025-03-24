@@ -19,14 +19,14 @@
 
 import { h, Context, Fragment, ComponentChildren } from "preact";
 import { useId, useContext, useRef } from "preact/hooks";
-import { JSXInternal } from "preact/src/jsx";
+import { JSX } from 'preact';
 //import { Button } from "react-bootstrap";
 //import { ArrowLeft, ArrowRight } from "react-feather";
 import { register_id_context_component_type } from "./form_row";
 
 import * as util from "../../ts/util";
 
-interface InputTimeProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>, "value" | "class" | "id" | "type" | "onInput"> {
+interface InputTimeProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "value" | "class" | "id" | "type" | "onInput"> {
     idContext?: Context<string>
     date: Date
     onDate?: (value: Date) => void

@@ -19,7 +19,7 @@
 
 import { h, Component, Context, Fragment } from "preact";
 import { useId, useContext } from "preact/hooks";
-import { JSXInternal } from "preact/src/jsx";
+import { JSX } from 'preact';
 import { Button } from "react-bootstrap";
 import { Eye, EyeOff, Trash2 } from "react-feather";
 import { __ } from "../translation";
@@ -27,7 +27,7 @@ import { register_id_context_component_type } from "./form_row";
 
 import * as util from "../../ts/util";
 
-interface InputPasswordProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "value" | "disabled"> {
+interface InputPasswordProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "value" | "disabled"> {
     idContext?: Context<string>
     value: string | null
     onValue: (value: string | null) => void

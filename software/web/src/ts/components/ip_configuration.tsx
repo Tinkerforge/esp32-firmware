@@ -18,7 +18,7 @@
  */
 
 import { h, Component, Fragment } from "preact";
-import { JSXInternal } from "preact/src/jsx";
+import { JSX } from 'preact';
 import { __ } from "../translation";
 import { FormRow } from "./form_row";
 import { InputIP } from "./input_ip";
@@ -36,7 +36,7 @@ export interface IPConfig {
     dns2?: string;
 }
 
-interface IPConfigurationProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "value" | "disabled"> {
+interface IPConfigurationProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "value" | "disabled"> {
     showAnyAddress: boolean,
     showDhcp?: boolean,
     showDns?: boolean,

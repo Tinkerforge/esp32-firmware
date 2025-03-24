@@ -19,10 +19,10 @@
 
 import { h, Context, Fragment, ComponentChildren } from "preact";
 import { useId, useContext } from "preact/hooks";
-import { JSXInternal } from "preact/src/jsx";
+import { JSX } from 'preact';
 import { register_id_context_component_type } from "./form_row";
 
-interface InputIPProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "minLength" | "maxLength" | "size" | "pattern" | "onInput"> {
+interface InputIPProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "minLength" | "maxLength" | "size" | "pattern" | "onInput"> {
     idContext?: Context<string>
     onValue: (value: string) => void
     invalidFeedback: ComponentChildren

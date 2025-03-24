@@ -19,12 +19,12 @@
 
 import { h, Context } from "preact";
 import { useId, useContext } from "preact/hooks";
-import { JSXInternal } from "preact/src/jsx";
+import { JSX } from 'preact';
 import { register_id_context_component_type } from "./form_row";
 
 import * as util from "../../ts/util";
 
-interface OutputDatetimeProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>, "value" | "class" | "id" | "type" | "onInput" | "disabled"> {
+interface OutputDatetimeProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "value" | "class" | "id" | "type" | "onInput" | "disabled"> {
     idContext?: Context<string>;
     date: Date;
     onClick?: () => void;

@@ -19,9 +19,9 @@
 
 import { h, Component, createRef } from "preact";
 import { useId } from "preact/hooks";
-import { JSXInternal } from "preact/src/jsx";
+import { JSX } from 'preact';
 
-interface OutputTextareaProps extends Omit<JSXInternal.HTMLAttributes<HTMLTextAreaElement>, "readonly" | "onScroll" | "ref"> {
+interface OutputTextareaProps extends Omit<JSX.TextareaHTMLAttributes<HTMLTextAreaElement>, "readonly" | "onScroll" | "ref"> {
     value: string;
     moreClass?: string;
     resize?: "both" | "horizontal" | "vertical" | "none";
@@ -50,7 +50,7 @@ export class OutputTextarea extends Component<OutputTextareaProps, {}> {
              ...rest} = props;
 
         return <textarea class={"text-monospace form-control " + (props.moreClass ?? "")}
-                         readonly
+                         readOnly
                          id={useId()}
                          rows={rows}
                          style={style}

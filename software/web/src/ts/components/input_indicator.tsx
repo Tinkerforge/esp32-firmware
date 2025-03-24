@@ -19,13 +19,13 @@
 
 import { h, Context } from "preact";
 import { useId, useContext } from "preact/hooks";
-import { JSXInternal } from "preact/src/jsx";
+import { JSX } from 'preact';
 import { Button } from "react-bootstrap";
 import { register_id_context_component_type } from "./form_row";
 
 type variant = "primary" | "secondary" | "success" | "warning" | "danger" | "light" | "link"
 
-interface InputIndicatorProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput"> {
+interface InputIndicatorProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput"> {
     idContext?: Context<string>
     onValue?: (value: string) => void
     variant: variant

@@ -19,10 +19,9 @@
 
 import { h, JSX, Context } from "preact";
 import { useId, useContext } from "preact/hooks";
-import { JSXInternal } from "preact/src/jsx";
 import { register_id_context_component_type } from "./form_row";
 
-interface SwitchableInputSelectProps extends Omit<JSXInternal.HTMLAttributes<HTMLSelectElement>, "id" | "type" | "onInput"> {
+interface SwitchableInputSelectProps extends Omit<JSX.InputHTMLAttributes<HTMLSelectElement>, "id" | "type" | "onInput"> {
     idContext?: Context<string>
     items: [string, string][];
     onValue: (value: string) => void;

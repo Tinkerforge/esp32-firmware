@@ -19,10 +19,10 @@
 
 import { h, Context, Fragment } from "preact";
 import { useId, useContext } from "preact/hooks";
-import { JSXInternal } from "preact/src/jsx";
+import { JSX } from 'preact';
 import { register_id_context_component_type } from "./form_row";
 
-export interface InputSelectProps extends Omit<JSXInternal.HTMLAttributes<HTMLSelectElement>, "id" | "type" | "onInput"> {
+export interface InputSelectProps extends Omit<JSX.InputHTMLAttributes<HTMLSelectElement>, "id" | "type" | "onInput"> {
     idContext?: Context<string>
     items: [string, string][];
     onValue?: (value: string) => void;
@@ -63,7 +63,6 @@ export function InputSelect(props: InputSelectProps) {
         <>
             <select
                 {...p}
-                readOnly={onValue === undefined || p.readOnly}
                 disabled={onValue === undefined || p.disabled}
                 value={value}
                 class={(className ?? "") + " form-control custom-select"}

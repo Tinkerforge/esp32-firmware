@@ -125,7 +125,7 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
                 if (e.key == 'Enter')
                     sendInFlight();
                }}
-               onfocusout={'onValue' in props ? () => sendInFlight() : undefined}
+               onFocusOut={'onValue' in props ? () => sendInFlight() : undefined}
                value={value}
                readonly={!('onValue' in props) || props.readonly}
                disabled={props.disabled}

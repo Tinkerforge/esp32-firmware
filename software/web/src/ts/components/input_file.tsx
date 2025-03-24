@@ -21,13 +21,13 @@ import * as util from "../../ts/util";
 
 import { h, Context, Fragment } from "preact";
 import { useId, useContext, useState } from "preact/hooks";
-import { JSXInternal } from "preact/src/jsx";
+import { JSX } from 'preact';
 import { Button } from "react-bootstrap";
 import { Progress } from "./progress";
 import { __ } from "../../ts/translation";
 import { register_id_context_component_type } from "./form_row";
 
-interface InputFileProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "accept"> {
+interface InputFileProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "accept"> {
     idContext?: Context<string>
     onUploadStart?: (f: File) => Promise<boolean>,
     onUploadSuccess: () => void,

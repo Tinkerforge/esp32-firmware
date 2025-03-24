@@ -19,14 +19,14 @@
 
 import { h, Context, Fragment, ComponentChildren } from "preact";
 import { useId, useContext, useRef, useState } from "preact/hooks";
-import { JSXInternal } from "preact/src/jsx";
+import { JSX } from 'preact';
 import { Button } from "react-bootstrap";
 import { ArrowLeft, ArrowRight } from "react-feather";
 import { register_id_context_component_type } from "./form_row";
 
 import * as util from "../../ts/util";
 
-interface InputDateProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>, "value" | "class" | "id" | "type" | "onInput"> {
+interface InputDateProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "value" | "class" | "id" | "type" | "onInput"> {
     idContext?: Context<string>
     date: Date
     onDate?: (value: Date) => void
@@ -98,7 +98,7 @@ export function InputDate(props: InputDateProps) {
                    onClick={() => {
                        setLastEvent('click');
                    }}
-                   onfocusout={props.onDate ? () => sendInFlight() : undefined}
+                   onFocusOut={props.onDate ? () => sendInFlight() : undefined}
                    readonly={!props.onDate || props.readonly}
                    disabled={props.disabled}
                    value={value} />

@@ -19,13 +19,13 @@
 
 import { h, Context, Fragment, ComponentChildren } from "preact";
 import { useId, useContext } from "preact/hooks";
-import { JSXInternal } from "preact/src/jsx";
+import { JSX } from 'preact';
 import { __ } from "../translation";
 import { register_id_context_component_type } from "./form_row";
 
 import * as util from "../util";
 
-interface InputTextProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "pattern" | "className"> {
+interface InputTextProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "pattern" | "className"> {
     idContext?: Context<string>
     onValue?: (value: string) => void
     invalidFeedback?: string
@@ -34,7 +34,7 @@ interface InputTextProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElemen
     prefixChildren?: ComponentChildren
 }
 
-interface InputTextPatternedProps extends Omit<JSXInternal.HTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "className"> {
+interface InputTextPatternedProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput" | "className"> {
     idContext?: Context<string>
     onValue?: (value: string) => void
     invalidFeedback: string
@@ -44,7 +44,7 @@ interface InputTextPatternedProps extends Omit<JSXInternal.HTMLAttributes<HTMLIn
     prefixChildren?: ComponentChildren
 }
 
-interface InputTextInternalProps extends JSXInternal.HTMLAttributes<HTMLInputElement> {
+interface InputTextInternalProps extends JSX.InputHTMLAttributes<HTMLInputElement> {
     idContext?: Context<string>
     onValue?: (value: string) => void
     invalidFeedback?: string

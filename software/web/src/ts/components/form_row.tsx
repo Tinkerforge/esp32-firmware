@@ -118,11 +118,11 @@ export class FormRow extends Component<FormRowProps, {help_expanded: boolean}> {
 
         let label = null;
         if (child_using_id_context != null) {
-            label = <label for={child_using_id_context != null ? this.id : undefined} class={"col col-form-label " + (props.small ? "col-form-label-sm " : "") + "pt-0 pt-lg-col-form-label"}>
+            label = <label for={this.id} class={"col col-form-label " + (props.small ? "col-form-label-sm " : "") + "pt-0 pt-lg-col-form-label"}>
                             {label_content}
                     </label>
         } else {
-            label = <div for={child_using_id_context != null ? this.id : undefined} class={"col col-form-label " + (props.small ? "col-form-label-sm " : "") + "pt-0 pt-lg-col-form-label"}>
+            label = <div class={"col col-form-label " + (props.small ? "col-form-label-sm " : "") + "pt-0 pt-lg-col-form-label"}>
                             {label_content}
                     </div>
         }

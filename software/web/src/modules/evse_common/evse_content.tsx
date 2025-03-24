@@ -456,7 +456,7 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
 
                             <FormRow label={__("evse.content.user_calibration_description")} label_muted={__("evse.content.user_calibration_description_muted")}>
                                 <div class="input-group pb-2">
-                                    <Button variant="primary" className="form-control rounded-right mr-2" href="evse/user_calibration" download="calibration.json">{__("evse.content.user_calibration_download")}</Button>
+                                    <Button as="a" variant="primary" className="form-control rounded-right mr-2" href="evse/user_calibration" download="calibration.json">{__("evse.content.user_calibration_download")}</Button>
                                     <Button variant="primary" className="form-control rounded-left"
                                         onClick={async () =>  API.save("evse/user_calibration", {
                                                 "user_calibration_active": false,
