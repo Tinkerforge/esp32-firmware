@@ -170,7 +170,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         const [usernames, display_names] = await getAllUsernames()
             .catch(err => {
                 util.add_alert("download-usernames", "danger", () => __("charge_tracker.script.download_usernames_failed"), err);
-                return [null, null];
+                return [null, null] as string[][];
             });
 
         if (usernames == null || display_names == null)

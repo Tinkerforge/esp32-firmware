@@ -29,6 +29,6 @@
     "median-js-bridge": "^2.5.0",
     "postcss-cli": "^11.0.1",
     "sass": "1.86.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.8.2"
   }
 }
