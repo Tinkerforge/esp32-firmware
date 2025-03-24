@@ -767,6 +767,7 @@ void platform_register_stop_callback(void *ctx, void (*cb)(int32_t, StopReason, 
 
 const char *platform_get_charge_point_vendor()
 {
+    static_assert(constexpr_strnlen(BUILD_MANUFACTURER_FULL, 21) <= 20, "OCPP: BUILD_MANUFACTURER_FULL \"" BUILD_MANUFACTURER_FULL "\" is too long for platform_get_charge_point_vendor!");
     return BUILD_MANUFACTURER_FULL;
 }
 

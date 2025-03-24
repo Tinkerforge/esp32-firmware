@@ -176,3 +176,8 @@ i2c_cmd_handle_t i2c_master_prepare_write_read_device(uint8_t device_address,
 
 time_t get_localtime_midnight_in_utc(time_t timestamp);
 Option<time_t> get_localtime_today_midnight_in_utc();
+
+constexpr size_t constexpr_strnlen(const char *s, size_t maxlen) {
+    return (maxlen == 0 || s == nullptr || s[0] == '\0') ? 0
+            : (constexpr_strnlen(&s[1], maxlen - 1) + 1);
+}
