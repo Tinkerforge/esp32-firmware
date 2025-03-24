@@ -1246,9 +1246,6 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
         api.addFeature("meters");
         meters_feature_declared = true;
     }
-
-    size_t value_ids_length = 0;
-    get_value_ids_extended(slot, nullptr, &value_ids_length); // TODO remove
 }
 
 bool Meters::get_cached_power_index(uint32_t slot, uint32_t *index)
