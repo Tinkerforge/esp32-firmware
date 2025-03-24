@@ -24,7 +24,7 @@
     "autoprefixer": "^10.4.16",
     "cssnano": "^6.0.1",
     "cssnano-preset-advanced": "^6.0.1",
-    "esbuild": "^0.25.0",
+    "esbuild": "^0.25.1",
     "html-minifier-terser": "^7.2.0",
     "median-js-bridge": "^2.5.0",
     "postcss-cli": "^10.1.0",
