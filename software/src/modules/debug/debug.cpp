@@ -298,38 +298,41 @@ void Debug::setup()
 
 #ifdef DEBUG_FS_ENABLE
 const char * const fs_browser_header = "<script>"
+"if (!window.location.toString().endsWith('/')) {"
+    "window.location = window.location + '/';"
+"}"
 "async function uploadFile() {"
     "let file = document.getElementById('upload').files[0];"
-    "await fetch(window.location +(window.location.toString().endsWith('/') ? '' : '/') + file.name, {"
+    "await fetch(window.location + (window.location.toString().endsWith('/') ? '' : '/') + file.name, {"
         "method: 'PUT',"
         "credentials: 'same-origin',"
         "body: file"
     "});"
-    "window.location.reload(true);"
+    "window.location.reload();"
 "}"
 "async function createFile() {"
     "let filename = document.getElementById('newFileName').value;"
     "let content = document.getElementById('newFileContent').value;"
-    "await fetch(window.location + filename, {"
+    "await fetch(window.location + (window.location.toString().endsWith('/') ? '' : '/') + filename, {"
         "method: 'PUT',"
         "credentials: 'same-origin',"
         "body: content"
     "});"
-    "window.location.reload(true);"
+    "window.location.reload();"
 "}"
 "async function createDirectory() {"
     "let dirname = document.getElementById('dirname').value;"
-    "await fetch(window.location + dirname + (dirname.endsWith('/') ? '' : '/'), {"
+    "await fetch(window.location + (window.location.toString().endsWith('/') ? '' : '/') + dirname + (dirname.endsWith('/') ? '' : '/'), {"
         "method: 'PUT',"
         "credentials: 'same-origin'"
     "});"
-    "window.location.reload(true);"
+    "window.location.reload();"
 "}"
 "async function deleteFile(name) {"
     "if (!window.confirm('Delete file ' + name + ' ?'))"
         "return;"
-    "await fetch('/debug/fs' + name, {method: 'DELETE'});"
-    "window.location.reload(true);"
+    "await fetch(window.location + name, {method: 'DELETE'});"
+    "window.location.reload();"
 "}"
 "</script>";
 
@@ -386,15 +389,14 @@ static WebServerRequestReturnProtect browse_get(WebServerRequest request, String
         request.sendChunk(header.c_str(), static_cast<ssize_t>(header.length()));
 
         if (path.length() > 1) {
-            int idx = path.lastIndexOf('/');
-            String up = "<button type=button onclick=\"\" style=\"visibility: hidden;\">Delete</button>&nbsp;&nbsp;&nbsp;<a href=/debug/fs" + path.substring(0, static_cast<unsigned int>(idx + 1)) + ">..</a><br>\n";
+            String up = "<button type=button onclick=\"\" style=\"visibility: hidden;\">Delete</button>&nbsp;&nbsp;&nbsp;<a href='..'>..</a><br>\n";
 
             request.sendChunk(up.c_str(), static_cast<ssize_t>(up.length()));
         }
 
         File file = f.openNextFile();
         while(file) {
-            String s = "<button type=button onclick=\"deleteFile('" + String(file.path()) + "')\">Delete</button>&nbsp;&nbsp;&nbsp;<a href=/debug/fs" + String(file.path()) + (file.isDirectory() ? "/" : "") + ">"+ file.name() + (file.isDirectory() ? "/" : "") +"</a><br>\n";
+            String s = "<button type=button onclick=\"deleteFile('/" + String(file.name()) + "')\">Delete</button>&nbsp;&nbsp;&nbsp;<a href=" + String(file.name()) + (file.isDirectory() ? "/" : "") + ">"+ file.name() + (file.isDirectory() ? "/" : "") +"</a><br>\n";
             request.sendChunk(s.c_str(), static_cast<ssize_t>(s.length()));
             file = f.openNextFile();
         }
