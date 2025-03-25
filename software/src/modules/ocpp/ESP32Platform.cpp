@@ -820,7 +820,7 @@ void platform_update_chargepoint_state(OcppState state,
 
    ocpp.state.get("charge_point_state")->updateUint((uint8_t)state);
    ocpp.state.get("charge_point_status")->updateUint((uint8_t)last_sent_status);
-   ocpp.state.get("next_profile_eval")->updateInt((int32_t)next_profile_eval);
+   ocpp.state.get("next_profile_eval")->updateInt52(next_profile_eval);
 }
 
 void platform_update_connector_state(int32_t connector_id,
@@ -849,7 +849,7 @@ void platform_update_connector_state(int32_t connector_id,
     ocpp.state.get("tag_timeout")->updateUint(tag_deadline == 0 ? 0xFFFFFFFF : (tag_deadline - now));
     ocpp.state.get("cable_timeout")->updateUint(cable_deadline == 0 ? 0xFFFFFFFF : (cable_deadline - now));
     ocpp.state.get("txn_id")->updateInt(txn_id);
-    ocpp.state.get("txn_start_time")->updateInt((int32_t)transaction_start_time);
+    ocpp.state.get("txn_start_time")->updateInt52(transaction_start_time);
     ocpp.state.get("current")->updateUint(current_allowed);
     ocpp.state.get("txn_with_invalid_id")->updateBool(txn_with_invalid_id);
     ocpp.state.get("unavailable_requested")->updateBool(unavailable_requested);
@@ -879,7 +879,7 @@ void platform_update_connection_state(CallAction message_in_flight_type,
     ocpp.state.get("message_queue_depth")->updateUint(message_queue_depth);
     ocpp.state.get("status_queue_depth")->updateUint(status_notification_queue_depth);
     ocpp.state.get("connected")->updateBool(connected);
-    ocpp.state.get("connected_change_time")->updateUint(connected_change_time);
+    ocpp.state.get("connected_change_time")->updateInt52(connected_change_time);
     ocpp.state.get("last_ping_sent")->updateUint(now - last_ping_sent);
     ocpp.state.get("pong_timeout")->updateUint(pong_deadline == 0 ? 0xFFFFFFFF : (pong_deadline - now));
 }
