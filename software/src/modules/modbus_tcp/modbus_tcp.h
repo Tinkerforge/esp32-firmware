@@ -26,10 +26,10 @@
 
 #include <TFTools/Option.h>
 
-class ModbusTcp final : public IModule
+class ModbusTCP final : public IModule
 {
 public:
-    ModbusTcp();
+    ModbusTCP();
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
