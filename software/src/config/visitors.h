@@ -1237,7 +1237,7 @@ struct api_info {
     }
     void operator()(const Config::ConfUint53 &x)
     {
-        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"uint64\",\"val\":%llu,\"min\":%llu,\"max\":%lul}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
+        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"uint64\",\"val\":%llu,\"min\":%llu,\"max\":%llu}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
     }
     void operator()(const Config::ConfBool &x)
     {
