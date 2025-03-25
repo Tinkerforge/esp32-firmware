@@ -1,4 +1,6 @@
 #!/bin/bash
+
+# The last two directories of the cwd. For example esp32-firmware/software if this script is in /home/pio/tf/esp32-firmware/software
 DIRNAME2=$(basename "$(dirname " $(realpath .)")")/$(basename " $(realpath .)")
 
 if [[ -v PLATFORMIO_BUILD_FLAGS ]]; then
@@ -8,11 +10,12 @@ else
 fi
 
 PIO_CACHE_DIR=${PLATFORMIO_WORKSPACE_DIR:-.pio}
+PIO_DIR=$(realpath ${DPIO_DIR:-~/.platformio})
 
 docker run \
        --rm \
        -v $(realpath ../..):/tf \
-       -v ~/.platformio:/home/pio/.platformio \
+       -v $PIO_DIR:/home/pio/.platformio \
        $PIO_FLAGS \
        -e PLATFORMIO_WORKSPACE_DIR=$PIO_CACHE_DIR\
        tinkerforge/build_environment_esp32 \
