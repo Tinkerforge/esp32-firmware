@@ -365,8 +365,8 @@ TSX_FUNCTION_PATTERN = re.compile(r'/\*[SF]FN\*/.*?/\*NF\*/', re.MULTILINE | re.
 TSX_FUNCTION_ARGS_PATTERN = re.compile(r'FN\*/\s*\(([^\)]*)\)', re.MULTILINE | re.DOTALL)
 
 TSX_JSON_REPLACEMENTS = [# Escape nested fragments in functions
-    ('<>', '___START_FRAGMENT___'),
-    ('</>', '___END_FRAGMENT___'),
+    ('<>', '***START_FRAGMENT***'),
+    ('</>', '***END_FRAGMENT***'),
 ]
 
 def tsx_to_json(match):
@@ -442,7 +442,7 @@ HYPHENATE_THRESHOLD = 9
 missing_hyphenations = {}
 
 def should_be_hyphenated(x):
-    return x not in allowed_missing and not x.startswith("___START_FRAGMENT___") and not x.endswith("___END_FRAGMENT___")
+    return x not in allowed_missing and not x.startswith("***START_FRAGMENT***") and not x.endswith("***END_FRAGMENT***")
 
 def hyphenate(s, key, lang):
     if '\u00AD' in s:
@@ -458,12 +458,12 @@ def hyphenate(s, key, lang):
     # "escape" them with a string that is probably not used in keys but does not form a word boundary: 'ÄÖÜÄÖÜ'
     s = re.sub(r'__\("([^"]+)"\)', lambda match: f'__("{match.group(1).replace(".", "ÄÖÜÄÖÜ")}")', s)
 
-    # Replace longest words first. This prevents replacing parts of longer words.
-    for word in sorted(re.split(r'\W+', s), key=lambda x: len(x), reverse=True):
+    def repl(m: re.Match):
+        word = m.group(0)
+
         for l, r in hyphenations:
             if word == l:
-                s = s.replace(l, r)
-                break
+                return r
         else:
             is_too_long = len(word) > HYPHENATE_THRESHOLD
             is_camel_case = re.search(r'[a-z][A-Z]', word) is not None
@@ -474,6 +474,9 @@ def hyphenate(s, key, lang):
 
                 if word not in missing_hyphenation:
                     missing_hyphenation.append(word)
+            return word
+
+    s = re.sub(r'\w+', repl, s)
 
     # Reverse escaping of translation keys.
     s = re.sub(r'__\("([^"]+)"\)', lambda match: f'__("{match.group(1).replace("ÄÖÜÄÖÜ", ".")}")', s)
@@ -1253,7 +1256,7 @@ def main():
             if isinstance(value, dict):
                 output += format_translation(language, value, type_only, indent + '    ')
             else:
-                is_fragment = value.startswith("___START_FRAGMENT___") and value.endswith("___END_FRAGMENT___")
+                is_fragment = value.startswith("***START_FRAGMENT***") and value.endswith("***END_FRAGMENT***")
                 is_string_function = value.startswith("/*SFN*/") and value.endswith("/*NF*/")
                 is_fragment_function = value.startswith("/*FFN*/") and value.endswith("/*NF*/")
                 is_string = not is_fragment and not is_string_function and not is_fragment_function

@@ -1215,7 +1215,6 @@ allowed_missing = set([
     "indication_number",
     "indication_text",
     "meter_all_values_any",
-    "return___START_FRAGMENT___show",
     "start_address",
     "value_id_name",
     "actual_publisher",
