@@ -91,6 +91,24 @@ template<> struct SlotConfig<Config::ConfUnion> {
     static_assert((slots_per_block & (slots_per_block - 1)) == 0);
 };
 
+template<> struct SlotConfig<Config::ConfUint53> {
+    static constexpr const size_t slots_per_superblock  = 128;
+    static constexpr const size_t slots_per_block       =  16;
+    static constexpr const size_t blocks_per_superblock = slots_per_superblock / slots_per_block;;
+
+    static_assert(slots_per_superblock % slots_per_block == 0);
+    static_assert((slots_per_block & (slots_per_block - 1)) == 0);
+};
+
+template<> struct SlotConfig<Config::ConfInt52> {
+    static constexpr const size_t slots_per_superblock  = 128;
+    static constexpr const size_t slots_per_block       =  16;
+    static constexpr const size_t blocks_per_superblock = slots_per_superblock / slots_per_block;;
+
+    static_assert(slots_per_superblock % slots_per_block == 0);
+    static_assert((slots_per_block & (slots_per_block - 1)) == 0);
+};
+
 template<typename ConfigT>
 struct Superblock {
     typename ConfigT::Slot *blocks[SlotConfig<ConfigT>::blocks_per_superblock];
@@ -125,6 +143,8 @@ extern template size_t nextSlot<Config::ConfString>();
 extern template size_t nextSlot<Config::ConfArray>();
 extern template size_t nextSlot<Config::ConfObject>();
 extern template size_t nextSlot<Config::ConfUnion>();
+extern template size_t nextSlot<Config::ConfInt52>();
+extern template size_t nextSlot<Config::ConfUint53>();
 
 #if MODULE_DEBUG_AVAILABLE()
 template<typename ConfigT>
@@ -197,6 +217,8 @@ extern template Config::ConfString::Slot *get_slot<Config::ConfString>(size_t id
 extern template Config::ConfArray::Slot  *get_slot<Config::ConfArray>(size_t idx);
 extern template Config::ConfObject::Slot *get_slot<Config::ConfObject>(size_t idx);
 extern template Config::ConfUnion::Slot  *get_slot<Config::ConfUnion>(size_t idx);
+extern template Config::ConfUint53::Slot   *get_slot<Config::ConfUint53>(size_t idx);
+extern template Config::ConfInt52::Slot    *get_slot<Config::ConfInt52>(size_t idx);
 
 template<typename ConfigT>
 size_t get_allocated_slot_memory()

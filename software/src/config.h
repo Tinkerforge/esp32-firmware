@@ -61,6 +61,8 @@ struct ConfUintSlot;
 struct ConfArraySlot;
 struct ConfObjectSlot;
 struct ConfUnionSlot;
+struct ConfInt52Slot;
+struct ConfUint53Slot;
 
 struct ConfUnionPrototypeInternal;
 
@@ -188,6 +190,60 @@ struct Config {
         ConfUint &operator=(ConfUint &&cpy);
     };
 
+    struct ConfInt52 {
+        friend struct api_info;
+        using Slot = ConfInt52Slot;
+
+    private:
+        uint16_t idx;
+        Slot *getSlot();
+
+    public:
+        static bool slotEmpty(const Slot *slot);
+        static constexpr const char *variantName = "ConfInt52";
+        static Slot *allocSlotBuf(size_t elements);
+
+        int64_t *getVal();
+        const int64_t *getVal() const;
+        const Slot *getSlot() const;
+
+        ConfInt52(int64_t val);
+        ConfInt52(const ConfInt52 &cpy);
+        ~ConfInt52();
+
+        ConfInt52 &operator=(const ConfInt52 &cpy);
+
+        ConfInt52(ConfInt52 &&cpy);
+        ConfInt52 &operator=(ConfInt52 &&cpy);
+    };
+
+    struct ConfUint53 {
+        friend struct api_info;
+        using Slot = ConfUint53Slot;
+
+    private:
+        uint16_t idx;
+        Slot *getSlot();
+
+    public:
+        static bool slotEmpty(const Slot *slot);
+        static constexpr const char *variantName = "ConfUint53";
+        static Slot *allocSlotBuf(size_t elements);
+
+        uint64_t *getVal();
+        const uint64_t *getVal() const;
+        const Slot *getSlot() const;
+
+        ConfUint53(uint64_t val);
+        ConfUint53(const ConfUint53 &cpy);
+        ~ConfUint53();
+
+        ConfUint53 &operator=(const ConfUint53 &cpy);
+
+        ConfUint53(ConfUint53 &&cpy);
+        ConfUint53 &operator=(ConfUint53 &&cpy);
+    };
+
     struct ConfBool {
         bool value;
         bool *getVal();
@@ -295,7 +351,9 @@ struct Config {
         bool,
         ConfUpdateArray,
         ConfUpdateObject,
-        ConfUpdateUnion
+        ConfUpdateUnion,
+        int64_t,
+        uint64_t
     > ConfUpdate;
     // This is necessary as we can't use get to distinguish between
     // a get<std::nullptr_t>() that returned nullptr because the variant
@@ -327,7 +385,9 @@ struct Config {
             BOOL,
             ARRAY,
             OBJECT,
-            UNION
+            UNION,
+            INT64,
+            UINT64
         };
         Tag tag;
         uint8_t updated;
@@ -342,6 +402,8 @@ struct Config {
             ConfArray a;
             ConfObject o;
             ConfUnion un;
+            ConfInt52 i64;
+            ConfUint53 u64;
             ~Val();
         } val;
 
@@ -353,6 +415,8 @@ struct Config {
         ConfVariant(ConfArray a);
         ConfVariant(ConfObject o);
         ConfVariant(ConfUnion un);
+        ConfVariant(ConfInt52 un);
+        ConfVariant(ConfUint53 un);
 
         ConfVariant();
 
@@ -392,6 +456,10 @@ struct Config {
                 return visitor(v.val.o);
             case ConfVariant::Tag::UNION:
                 return visitor(v.val.un);
+            case ConfVariant::Tag::INT64:
+                return visitor(v.val.i64);
+            case ConfVariant::Tag::UINT64:
+                return visitor(v.val.u64);
         }
         esp_system_abort("apply_visitor: ConfVariant has unknown type!");
     }
@@ -418,6 +486,10 @@ struct Config {
                 return visitor(v.val.o);
             case ConfVariant::Tag::UNION:
                 return visitor(v.val.un);
+            case ConfVariant::Tag::INT64:
+                return visitor(v.val.i64);
+            case ConfVariant::Tag::UINT64:
+                return visitor(v.val.u64);
         }
         esp_system_abort("apply_visitor: const ConfVariant has unknown type!");
     }
@@ -449,6 +521,10 @@ struct Config {
             return (int)ConfVariant::Tag::OBJECT;
         if (std::is_same<T, ConfUnion>())
             return (int)ConfVariant::Tag::UNION;
+        if (std::is_same<T, ConfInt52>())
+            return (int)ConfVariant::Tag::INT64;
+        if (std::is_same<T, ConfUint53>())
+            return (int)ConfVariant::Tag::UINT64;
         return -1;
     }
 
@@ -494,6 +570,10 @@ struct Config {
                         int variantType);
 
     static Config Object(std::initializer_list<std::pair<const char *, Config>> obj);
+
+    static Config Int52(int64_t i);
+
+    static Config Uint53(uint64_t u);
 
     template<typename T>
     static Config Enum(T u, T min, T max) {
@@ -669,6 +749,10 @@ public:
 
     int32_t asInt() const;
 
+    uint64_t asUint53() const;
+
+    int64_t asInt52() const;
+
     template<typename T>
     T asEnum() const {
         if (this->is<ConfUint>()) {
@@ -712,6 +796,8 @@ public:
     bool updateUint(uint32_t value);
     bool updateFloat(float value);
     bool updateBool(bool value);
+    bool updateInt52(int64_t value);
+    bool updateUint53(uint64_t value);
 
     template<typename T>
     bool updateEnum(T value) {

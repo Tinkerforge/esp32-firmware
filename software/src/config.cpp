@@ -156,6 +156,22 @@ Config Config::Union(Config value, uint8_t tag, const ConfUnionPrototypeInternal
     return Config{ConfUnion{value, tag, prototypes_len, prototypes}};
 }
 
+Config Config::Int52(int64_t i)
+{
+    if (boot_stage < BootStage::PRE_SETUP)
+        esp_system_abort("constructing configs before the pre_setup is not allowed!");
+
+    return Config{ConfInt52{i}};
+}
+
+Config Config::Uint53(uint64_t u)
+{
+    if (boot_stage < BootStage::PRE_SETUP)
+        esp_system_abort("constructing configs before the pre_setup is not allowed!");
+
+    return Config{ConfUint53{u}};
+}
+
 ConfigRoot *Config::Null()
 {
     // Allow constructing null configs:
@@ -494,6 +510,19 @@ const std::vector<Config> &Config::asArray() const
     return *this->get<ConfArray>()->getVal();
 }
 
+uint64_t Config::asUint53() const
+{
+    // Asserts checked in ::get.
+    return *this->get<ConfUint53>()->getVal();
+}
+
+int64_t Config::asInt52() const
+{
+    // Asserts checked in ::get.
+    return *this->get<ConfInt52>()->getVal();
+}
+
+
 bool Config::clearString()
 {
     // Asserts checked in ::is.
@@ -578,6 +607,18 @@ bool Config::updateBool(bool value)
 {
     // Asserts checked in ::update_value.
     return update_value<bool, ConfBool>(value, "bool");
+}
+
+bool Config::updateInt52(int64_t value)
+{
+    // Asserts checked in ::update_value.
+    return update_value<int64_t, ConfInt52>(value, "int64_t");
+}
+
+bool Config::updateUint53(uint64_t value)
+{
+    // Asserts checked in ::update_value.
+    return update_value<uint64_t, ConfUint53>(value, "uint64_t");
 }
 
 size_t Config::fillFloatArray(float *arr, size_t elements)

@@ -46,7 +46,9 @@ struct OwnedConfig {
         bool,
         OwnedConfigArray,
         OwnedConfigObject,
-        OwnedConfigUnion
+        OwnedConfigUnion,
+        uint64_t,
+        int64_t
     > OwnedConfigVariant;
 
     struct OwnedConfigArray {
@@ -101,6 +103,10 @@ struct OwnedConfig {
     uint32_t asUint() const;
 
     int32_t asInt() const;
+
+    uint64_t asUint53() const;
+
+    int64_t asInt52() const;
 
     template<typename T>
     T asEnum() const {

@@ -82,3 +82,15 @@ struct ConfUnionSlot {
     Config val;
     const ConfUnionPrototypeInternal *prototypes = nullptr;
 };
+
+struct ConfInt52Slot {
+    int64_t val = std::numeric_limits<int64_t>::max();
+    static constexpr const int64_t min = -(1ll << 52ll) - 1;
+    static constexpr const int64_t max =  (1ll << 52ll) - 1;
+};
+
+struct ConfUint53Slot {
+    uint64_t val = std::numeric_limits<uint64_t>::max();
+    static constexpr const int64_t min = 0;
+    static constexpr const int64_t max = (1ll << 53ll) - 1;
+};

@@ -76,7 +76,9 @@ static void malloc_failed_hook(size_t size, uint32_t caps, const char *function_
     }
 }
 
-static void (*const slot_debug_info_fns[7])(SlotDebugInfo *slot_info) = {
+static constexpr int CONFIG_TYPES = 9;
+
+static void (*const slot_debug_info_fns[CONFIG_TYPES])(SlotDebugInfo *slot_info) = {
     &get_slot_debug_info<Config::ConfUint>,
     &get_slot_debug_info<Config::ConfInt>,
     &get_slot_debug_info<Config::ConfFloat>,
@@ -84,6 +86,8 @@ static void (*const slot_debug_info_fns[7])(SlotDebugInfo *slot_info) = {
     &get_slot_debug_info<Config::ConfArray>,
     &get_slot_debug_info<Config::ConfObject>,
     &get_slot_debug_info<Config::ConfUnion>,
+    &get_slot_debug_info<Config::ConfUint53>,
+    &get_slot_debug_info<Config::ConfInt52>,
 };
 
 void Debug::pre_setup()
@@ -166,6 +170,8 @@ void Debug::pre_setup()
         {"conf_array_buf_size", Config::Uint32(0)},
         {"conf_object_buf_size", Config::Uint32(0)},
         {"conf_union_buf_size", Config::Uint32(0)},
+        {"conf_uint53_buf_size", Config::Uint32(0)},
+        {"conf_int52_buf_size", Config::Uint32(0)},
     });
 
     state_slots_prototype = Config::Array({},
@@ -175,10 +181,10 @@ void Debug::pre_setup()
 
     state_slots = Config::Array({},
         &state_slots_prototype,
-        7, 7, Config::type_id<Config::ConfArray>()
+        CONFIG_TYPES, CONFIG_TYPES, Config::type_id<Config::ConfArray>()
     );
 
-    for (size_t i = 0; i < 7; i++) {
+    for (size_t i = 0; i < CONFIG_TYPES; i++) {
         state_slots.add();
         for (size_t j = 0; j < 5; j++) {
             // add() can trigger a move of ConfObjects, so get() must be called inside the loop.
@@ -243,8 +249,10 @@ void Debug::setup()
         state_slow.get("conf_array_buf_size" )->updateUint(get_allocated_slot_memory<Config::ConfArray>());
         state_slow.get("conf_object_buf_size")->updateUint(get_allocated_slot_memory<Config::ConfObject>());
         state_slow.get("conf_union_buf_size" )->updateUint(get_allocated_slot_memory<Config::ConfUnion>());
+        state_slow.get("conf_uint53_buf_size")->updateUint(get_allocated_slot_memory<Config::ConfUint53>());
+        state_slow.get("conf_int52_buf_size" )->updateUint(get_allocated_slot_memory<Config::ConfInt52>());
 
-        for (size_t i = 0; i < 7; i++) {
+        for (size_t i = 0; i < CONFIG_TYPES; i++) {
             SlotDebugInfo slot_info;
             slot_debug_info_fns[i](&slot_info);
             auto arr = state_slots.get(i);

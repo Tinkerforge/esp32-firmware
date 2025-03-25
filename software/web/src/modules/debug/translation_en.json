@@ -34,6 +34,8 @@
             "conf_array_buf": "ConfArray",
             "conf_object_buf": "ConfObject",
             "conf_union_buf": "ConfUnion",
+            "conf_uint53_buf": "ConfUint53",
+            "conf_int52_buf": "ConfInt52",
 
             "config_slots": "Config slots",
             "slots_used": "Used",

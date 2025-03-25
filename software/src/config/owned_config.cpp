@@ -154,6 +154,16 @@ bool OwnedConfig::asBool() const
     return *this->as<bool>();
 }
 
+uint64_t OwnedConfig::asUint53() const
+{
+    return *this->as<uint64_t>();
+}
+
+int64_t OwnedConfig::asInt52() const
+{
+    return *this->as<int64_t>();
+}
+
 size_t OwnedConfig::fillFloatArray(float *arr, size_t elements) const
 {
     return fillArray<float, float>(arr, elements);

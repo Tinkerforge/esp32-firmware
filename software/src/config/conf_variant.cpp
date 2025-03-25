@@ -22,14 +22,16 @@
 Config::ConfVariant::Val::Val() : e(Empty{}) {}
 Config::ConfVariant::Val::~Val() {}
 
-Config::ConfVariant::ConfVariant(ConfString s) : tag(Tag::STRING), updated(0xFF), val() {new(&val.s)  ConfString{s};}
-Config::ConfVariant::ConfVariant(ConfFloat f)  : tag(Tag::FLOAT),  updated(0xFF), val() {new(&val.f)  ConfFloat{f};}
-Config::ConfVariant::ConfVariant(ConfInt i)    : tag(Tag::INT),    updated(0xFF), val() {new(&val.i)  ConfInt{i};}
-Config::ConfVariant::ConfVariant(ConfUint u)   : tag(Tag::UINT),   updated(0xFF), val() {new(&val.u)  ConfUint{u};}
-Config::ConfVariant::ConfVariant(ConfBool b)   : tag(Tag::BOOL),   updated(0xFF), val() {new(&val.b)  ConfBool{b};}
-Config::ConfVariant::ConfVariant(ConfArray a)  : tag(Tag::ARRAY),  updated(0xFF), val() {new(&val.a)  ConfArray{a};}
-Config::ConfVariant::ConfVariant(ConfObject o) : tag(Tag::OBJECT), updated(0xFF), val() {new(&val.o)  ConfObject{o};}
-Config::ConfVariant::ConfVariant(ConfUnion un) : tag(Tag::UNION),  updated(0xFF), val() {new(&val.un) ConfUnion{un};}
+Config::ConfVariant::ConfVariant(ConfString s) : tag(Tag::STRING), updated(0xFF), val() {new(&val.s)   ConfString{s};}
+Config::ConfVariant::ConfVariant(ConfFloat f)  : tag(Tag::FLOAT),  updated(0xFF), val() {new(&val.f)   ConfFloat{f};}
+Config::ConfVariant::ConfVariant(ConfInt i)    : tag(Tag::INT),    updated(0xFF), val() {new(&val.i)   ConfInt{i};}
+Config::ConfVariant::ConfVariant(ConfUint u)   : tag(Tag::UINT),   updated(0xFF), val() {new(&val.u)   ConfUint{u};}
+Config::ConfVariant::ConfVariant(ConfBool b)   : tag(Tag::BOOL),   updated(0xFF), val() {new(&val.b)   ConfBool{b};}
+Config::ConfVariant::ConfVariant(ConfArray a)  : tag(Tag::ARRAY),  updated(0xFF), val() {new(&val.a)   ConfArray{a};}
+Config::ConfVariant::ConfVariant(ConfObject o) : tag(Tag::OBJECT), updated(0xFF), val() {new(&val.o)   ConfObject{o};}
+Config::ConfVariant::ConfVariant(ConfUnion un) : tag(Tag::UNION),  updated(0xFF), val() {new(&val.un)  ConfUnion{un};}
+Config::ConfVariant::ConfVariant(ConfInt52 i)  : tag(Tag::INT64),  updated(0xFF), val() {new(&val.i64) ConfInt52{i};}
+Config::ConfVariant::ConfVariant(ConfUint53 u) : tag(Tag::UINT64), updated(0xFF), val() {new(&val.u64) ConfUint53{u};}
 
 Config::ConfVariant::ConfVariant() : tag(Tag::EMPTY), updated(0xFF), val() {}
 
@@ -62,6 +64,12 @@ Config::ConfVariant::ConfVariant(const ConfVariant &cpy)
             break;
         case ConfVariant::Tag::UNION:
             new(&val.un) ConfUnion(cpy.val.un);
+            break;
+        case ConfVariant::Tag::INT64:
+            new(&val.i64) ConfInt52(cpy.val.i64);
+            break;
+        case ConfVariant::Tag::UINT64:
+            new(&val.u64) ConfUint53(cpy.val.u64);
             break;
     }
     this->tag = cpy.tag;
@@ -105,6 +113,12 @@ Config::ConfVariant &Config::ConfVariant::operator=(const ConfVariant &cpy)
         case ConfVariant::Tag::UNION:
             new(&val.un) ConfUnion(cpy.val.un);
             break;
+        case ConfVariant::Tag::INT64:
+            new(&val.i64) ConfInt52(cpy.val.i64);
+            break;
+        case ConfVariant::Tag::UINT64:
+            new(&val.u64) ConfUint53(cpy.val.u64);
+            break;
     }
     this->tag = cpy.tag;
     this->updated = cpy.updated;
@@ -142,6 +156,12 @@ void Config::ConfVariant::destroyUnionMember()
         case ConfVariant::Tag::UNION:
             val.un.~ConfUnion();
             break;
+        case ConfVariant::Tag::INT64:
+            val.i64.~ConfInt52();
+            break;
+        case ConfVariant::Tag::UINT64:
+            val.u64.~ConfUint53();
+            break;
     }
 }
 
@@ -171,6 +191,10 @@ const char *Config::ConfVariant::getVariantName() const
             return val.o.variantName;
         case ConfVariant::Tag::UNION:
             return val.un.variantName;
+        case ConfVariant::Tag::INT64:
+            return val.i64.variantName;
+        case ConfVariant::Tag::UINT64:
+            return val.u64.variantName;
     }
     esp_system_abort("getVariantName: ConfVariant has unknown type!");
 }
@@ -203,6 +227,12 @@ Config::ConfVariant::ConfVariant(ConfVariant &&cpy) {
             break;
         case ConfVariant::Tag::UNION:
             new(&val.un) ConfUnion(std::move(cpy.val.un));
+            break;
+        case ConfVariant::Tag::INT64:
+            new(&val.i64) ConfInt52(std::move(cpy.val.i64));
+            break;
+        case ConfVariant::Tag::UINT64:
+            new(&val.u64) ConfUint53(std::move(cpy.val.u64));
             break;
     }
     this->tag = cpy.tag;
@@ -242,6 +272,12 @@ Config::ConfVariant &Config::ConfVariant::operator=(ConfVariant &&cpy) {
             break;
         case ConfVariant::Tag::UNION:
             new(&val.un) ConfUnion(std::move(cpy.val.un));
+            break;
+        case ConfVariant::Tag::INT64:
+            new(&val.i64) ConfInt52(std::move(cpy.val.i64));
+            break;
+        case ConfVariant::Tag::UINT64:
+            new(&val.u64) ConfUint53(std::move(cpy.val.u64));
             break;
     }
     this->tag = cpy.tag;

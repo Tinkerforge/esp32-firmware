@@ -43,6 +43,8 @@ export interface state_slow {
     conf_array_buf_size: number;
     conf_object_buf_size: number;
     conf_union_buf_size: number;
+    conf_uint53_buf_size: number;
+    conf_int52_buf_size: number;
 }
 
 type slot_info = number[];

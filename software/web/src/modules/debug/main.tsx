@@ -67,6 +67,8 @@ export class Debug extends Component {
             __("debug.content.conf_array_buf"),
             __("debug.content.conf_object_buf"),
             __("debug.content.conf_union_buf"),
+            __("debug.content.conf_uint53_buf"),
+            __("debug.content.conf_int52_buf"),
         ];
 
         return (
@@ -173,6 +175,12 @@ export class Debug extends Component {
 
                 <Row label={__("debug.content.conf_union_buf")}
                      l={<OutputFloat value={state_slow.conf_union_buf_size} digits={0} scale={0} unit="B"/>}/>
+
+                <Row label={__("debug.content.conf_uint53_buf")}
+                     c={<OutputFloat value={state_slow.conf_uint53_buf_size} digits={0} scale={0} unit="B"/>}/>
+
+                <Row label={__("debug.content.conf_int52_buf")}
+                     c={<OutputFloat value={state_slow.conf_int52_buf_size} digits={0} scale={0} unit="B"/>}/>
 
                 <FormSeparator heading={__("debug.content.config_slots")} first={false} />
 
