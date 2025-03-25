@@ -354,6 +354,9 @@ def format_imexdiff(sub_tree):
             dis = extract_without_kind(sub_id[1])
         elif sub_id[0] == "cha_dis_diff":
             chadisdiff = extract_without_kind(sub_id[1])
+        elif sub_id[0] == "energy":
+            # Accumulated energy counters cannot be separated into import and export.
+            continue
         elif isinstance(sub_id[1], dict):
             sub_result, sub_result_count = format_imexdiff(sub_id[1])
             result += sub_result
