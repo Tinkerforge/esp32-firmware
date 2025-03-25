@@ -972,16 +972,16 @@ static void stage_4(StageContext &sc) {
             phase_alloc = 1;
         }
 
-        // Only allow the first charger to be activated with the minimum current. Require the enable current now.
-        have_active_chargers = true;
-
         sc.phase_allocation[sc.idx_array[i]] = phase_alloc;
 
         sw.printf(" (%dp)", sc.phase_allocation[sc.idx_array[i]]);
         trace("%s", buf);
 
-        if (phase_alloc > 0)
+        if (phase_alloc > 0) {
+            // Only allow the first charger to be activated with the minimum current. Require the enable current now.
+            have_active_chargers = true;
             calculate_window(true, sc);
+        }
     }
 }
 
