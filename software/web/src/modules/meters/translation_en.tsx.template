@@ -6,17 +6,7 @@ let x = {
             "power_history": null,
             "current_power": "Power",
             "power_sums": "Powers",
-            "meters_without_location": /*FFN*/(meter_names: string[]) => <p>No location is configured for the following {meter_names.length > 1 ? <>energy meters</> : <>energy meter</>}. Please select a location for {meter_names.length > 1 ? <>these <a href="/#meters">energy meters</a></> : <>this <a href="/#meters">energy meter</a></>}, to include {meter_names.length > 1 ? <>them</> : <>it</>} in the powers and power history:</p>/*NF*/,
-            "inverter_power_sum": "Inverter power",
-            "inverter_power_sum_muted": "sum",
-            "grid_power_sum": "Grid power",
-            "grid_power_sum_muted": "sum",
-            "battery_power_sum": "Battery power",
-            "battery_power_sum_muted": "sum",
-            "battery_soc_avg": "Battery state of charge",
-            "battery_soc_avg_muted": "average",
-            "load_power_sum": "Load power",
-            "load_power_sum_muted": "sum"
+            "meters_without_location": /*FFN*/(meter_names: string[]) => <p>No location is configured for the following {meter_names.length > 1 ? <>energy meters</> : <>energy meter</>}. Please select a location for {meter_names.length > 1 ? <>these <a href="/#meters">energy meters</a></> : <>this <a href="/#meters">energy meter</a></>}, to include {meter_names.length > 1 ? <>them</> : <>it</>} in the powers and power history:</p>/*NF*/
         },
         "navbar": {
             "meters": "Energy Meters"

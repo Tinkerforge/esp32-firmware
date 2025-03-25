@@ -34,7 +34,6 @@ let x = {
             "price_ct_per_kwh": "Price [ct/kWh]",
             "current_price": "Current market price",
             "average_price": "Average price",
-            "undefined": "Undefined",
             "now": "Now",
             "vat": "Value-added tax",
             "vat_muted": "on market price",
@@ -79,8 +78,7 @@ let x = {
             "current_electricity_price": "Current electricity price"
         },
         "script": {
-            "save_failed": "Failed to save the day ahead prices settings",
-            "reboot_content_changed": "day ahead prices settings"
+            "save_failed": "Failed to save the day ahead prices settings"
         }
     }
 }

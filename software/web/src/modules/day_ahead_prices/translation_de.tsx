@@ -34,7 +34,6 @@ let x = {
             "price_ct_per_kwh": "Preis [ct/kWh]",
             "current_price": "Aktueller Börsenpreis",
             "average_price": "Durchschnittspreis",
-            "undefined": "Unbekannt",
             "now": "Jetzt",
             "vat": "Mehrwertsteuer",
             "vat_muted": "auf Börsenstrompreis",
@@ -79,8 +78,7 @@ let x = {
             "current_electricity_price": "Aktueller Strompreis"
         },
         "script": {
-            "save_failed": "Speichern der Strompreiseinstellungen fehlgeschlagen",
-            "reboot_content_changed": "Strompreiseinstellungen"
+            "save_failed": "Speichern der Strompreiseinstellungen fehlgeschlagen"
         }
     }
 }
