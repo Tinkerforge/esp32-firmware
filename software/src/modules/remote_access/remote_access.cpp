@@ -1100,7 +1100,7 @@ void RemoteAccess::run_request_with_next_stage(const char *url,
                     default:
                         if (strstr(url_capture.c_str(), "/management") != nullptr) {
                             if (!this->management_request_failed) {
-                                logger.printfln("Management request failed with internal error code %i", (int)event->error);
+                                logger.printfln("Management request failed with internal error: %s (%u)", translate_error(event), (uint8_t)event->error);
                                 this->management_request_failed = true;
                             }
                         } else {

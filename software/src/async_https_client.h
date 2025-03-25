@@ -72,6 +72,8 @@ struct AsyncHTTPSClientEvent
     };
 };
 
+const char *translate_error(AsyncHTTPSClientEvent *event);
+
 class AsyncHTTPSClient final
 {
 public:

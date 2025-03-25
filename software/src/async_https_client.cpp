@@ -333,3 +333,49 @@ void AsyncHTTPSClient::abort_async()
 void AsyncHTTPSClient::add_default_headers() {
     this->set_header("User-Agent", String(BUILD_MANUFACTURER_USER_AGENT "-" BUILD_DISPLAY_NAME_USER_AGENT "/") + build_version_full_str());
 }
+
+const char *translate_error(AsyncHTTPSClientEvent *event) {
+    if (event->type != AsyncHTTPSClientEventType::Error) {
+        return "";
+    }
+
+    switch (event->error) {
+        case AsyncHTTPSClientError::NoHTTPSURL:
+            return "Not a HTTPS url";
+
+        case AsyncHTTPSClientError::Busy:
+            return "AsyncHTTPSClient busy";
+
+        case AsyncHTTPSClientError::NoCert:
+            return "Certificate not found";
+
+        case AsyncHTTPSClientError::NoResponse:
+            return "No response from server";
+
+        case AsyncHTTPSClientError::ShortRead:
+            return "Received incomplete response";
+
+        case AsyncHTTPSClientError::HTTPError:
+            return "Error during execution";
+
+        case AsyncHTTPSClientError::HTTPClientInitFailed:
+            return "Initializing HTTP-Client failed";
+
+        case AsyncHTTPSClientError::HTTPClientSetCookieFailed:
+            return "Setting request-cookie failed";
+
+        case AsyncHTTPSClientError::HTTPClientSetHeaderFailed:
+            return "Setting request-header failed";
+
+        case AsyncHTTPSClientError::HTTPClientSetBodyFailed:
+            return "Setting request-body failed";
+
+        case AsyncHTTPSClientError::HTTPClientError:
+            return strerror(event->error_http_client);
+
+        case AsyncHTTPSClientError::HTTPStatusError:
+            return "Received HTTP-Error status-code";
+    }
+
+    return "";
+}
