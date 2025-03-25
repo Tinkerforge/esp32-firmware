@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "module_available.inc"
+
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { h,  Fragment } from "preact";
@@ -31,6 +33,10 @@ import { EVSE_SLOT_MODBUS_TCP } from "../evse_common/api";
 import { RegisterTable } from "./register_table.enum";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { NavbarItem } from "../../ts/components/navbar_item";
+//#if MODULE_MODBUS_TCP_DEBUG_AVAILABLE
+import { ModbusTCPDebugTool } from "../modbus_tcp_debug/main";
+//#endif
+import { CollapsedSection } from "../../ts/components/collapsed_section";
 
 export function ModbusTCPNavbar() {
     return (
@@ -76,13 +82,6 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
         if (!util.render_allowed())
             return <SubPage name="modbus_tcp" />;
 
-        let docu = <>
-            <FormSeparator heading={__("modbus_tcp.content.table_docu")} />
-            <table class="table table-bordered table-sm">
-                {__("modbus_tcp.content.table_content")}
-            </table>
-        </>;
-
         return (
             <SubPage name="modbus_tcp">
                 <ConfigForm id="modbus_tcp_config_form" title={__("modbus_tcp.content.modbus_tcp")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
@@ -116,9 +115,26 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
                         }}/>
                     </FormRow>
                 </ConfigForm>
-                {
-                    this.state.table == 0 ? docu : <></>
+                {this.state.table == 0 ?
+                    <>
+{/*#if MODULE_MODBUS_TCP_DEBUG_AVAILABLE*/}
+                        <CollapsedSection heading={__("modbus_tcp.content.table_docu")}>
+{/*#else*/}
+                        <FormSeparator heading={__("modbus_tcp.content.table_docu")} />
+{/*#endif*/}
+                        <table class="table table-bordered table-sm">
+                            {__("modbus_tcp.content.table_content")}
+                        </table>
+{/*#if MODULE_MODBUS_TCP_DEBUG_AVAILABLE*/}
+                        </CollapsedSection>
+{/*#endif*/}
+                    </> : undefined
                 }
+{/*#if MODULE_MODBUS_TCP_DEBUG_AVAILABLE*/}
+                    <CollapsedSection heading={__("modbus_tcp.content.debug")}>
+                        <ModbusTCPDebugTool />
+                    </CollapsedSection>
+{/*#endif*/}
             </SubPage>
         );
     }

@@ -3,11 +3,14 @@
         "status": {
         },
         "navbar": {
-            "modbus_tcp_debug": "Modbus/TCP Debug"
+            "modbus_tcp": "Modbus/TCP"
         },
         "content": {
-            "modbus_tcp_debug": "Modbus/TCP Debug",
+            "modbus_tcp": "Modbus/TCP",
 
+            "server_missing": "Der Modbus/TCP-Server ist nicht verfügbar und wird voraussichtlich mit einer zukünftigen Firmware-Aktualisierung hinzugefügt werden.",
+
+            "debug": "Debug",
             "host": "Hostname oder IP-Adresse",
             "port": "Port",
             "port_muted": "typischerweise 502",

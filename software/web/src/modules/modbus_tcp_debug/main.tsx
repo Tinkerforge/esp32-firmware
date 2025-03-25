@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2020-2023 Erik Fleckstein <erik@tinkerforge.com>
+ * Copyright (C) 2025 Matthias Bolte <matthias@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,7 @@ import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
 import { h, Fragment, Component } from "preact";
-import { Button } from "react-bootstrap";
+import { Button, Alert } from "react-bootstrap";
 import { FormRow } from "../../ts/components/form_row";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
@@ -30,13 +30,16 @@ import { OutputTextarea } from "../../ts/components/output_textarea";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { PageHeader } from "../../ts/components/page_header";
 import { SubPage } from "../../ts/components/sub_page";
-import { Terminal } from "react-feather";
+import { CollapsedSection } from "../../ts/components/collapsed_section";
 
 export function ModbusTCPDebugNavbar() {
-    return <NavbarItem name="modbus_tcp_debug" module="modbus_tcp_debug" title={__("modbus_tcp_debug.navbar.modbus_tcp_debug")} symbol={<Terminal />} />;
+    return (
+        <NavbarItem name="modbus_tcp" module="modbus_tcp_debug" title={__("modbus_tcp_debug.navbar.modbus_tcp")} symbol={
+            <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><g><g stroke="currentColor"><path d="M19.587 12a7.442 7.442 0 1 1-7.442-7.441A7.441 7.441 0 0 1 19.587 12" fill="#fff" stroke-width="1.674"/><path d="M22.192 16.242a2.79 2.79 0 1 1-2.79-2.79 2.79 2.79 0 0 1 2.79 2.79" fill="#fff" stroke-width="1.674"/><path d="M7.68 16.242a2.79 2.79 0 1 1-2.791-2.79 2.79 2.79 0 0 1 2.79 2.79" fill="#fff" stroke-width="1.674"/><path d="M7.568 7.814a2.79 2.79 0 1 1-2.79-2.79 2.79 2.79 0 0 1 2.79 2.79" fill="#fff" stroke-width="1.674"/><path d="M22.192 7.814a2.79 2.79 0 1 1-2.79-2.79 2.79 2.79 0 0 1 2.79 2.79" fill="#fff" stroke-width="1.674"/><path d="M14.936 20.373a2.79 2.79 0 1 1-2.79-2.79 2.79 2.79 0 0 1 2.79 2.79" fill="#fff" stroke-width="1.674"/><path d="M14.936 3.628a2.79 2.79 0 1 1-2.79-2.79 2.79 2.79 0 0 1 2.79 2.79" fill="#fff" stroke-width="1.674"/><path class="cls-3" d="M5.533 8.44 11.698 12c0-.595.893-.595.894 0l6.165-3.56-.224-.388-6.165 3.56c-.024.032 0-7.119 0-7.119-.094-.006-.446 0-.446 0s.01 7.146 0 7.12L5.755 8.054c-.067.106-.222.386-.222.386z" stroke-width=".5" fill="#000"/><path class="cls-3" d="M18.758 15.56 12.591 12c0 .595-.893.595-.893 0l-6.165 3.56.226.388s6.174-3.578 6.163-3.562v7.121s.426.002.446 0c0 0-.019-7.138 0-7.12l6.168 3.56s.208-.36.222-.387z" stroke-width=".5"/></g></g></svg>
+        } />);
 }
 
-interface ModbusTCPDebugState {
+interface ModbusTCPDebugToolState {
     host: string;
     port: number;
     device_address: number;
@@ -59,7 +62,7 @@ function printable_ascii(x: number) {
     return '.';
 }
 
-export class ModbusTCPDebug extends Component<{}, ModbusTCPDebugState> {
+export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
     constructor() {
         super();
 
@@ -125,97 +128,109 @@ export class ModbusTCPDebug extends Component<{}, ModbusTCPDebugState> {
     }
 
     render() {
+        return <>
+            <FormRow label={__("modbus_tcp_debug.content.host")}>
+                <InputHost
+                    value={this.state.host}
+                    onValue={(v) => this.setState({host: v})}
+                    required />
+            </FormRow>
+            <FormRow label={__("modbus_tcp_debug.content.port")} label_muted={__("modbus_tcp_debug.content.port_muted")}>
+                <InputNumber
+                    min={1}
+                    max={65535}
+                    value={this.state.port}
+                    onValue={(v) => this.setState({port: v})} />
+            </FormRow>
+            <FormRow label={__("modbus_tcp_debug.content.device_address")}>
+                <InputNumber
+                    min={0}
+                    max={255}
+                    value={this.state.device_address}
+                    onValue={(v) => this.setState({device_address: v})} />
+            </FormRow>
+            <FormRow label={__("modbus_tcp_debug.content.function_code")}>
+                <InputSelect
+                    items={[
+                        ["3", __("modbus_tcp_debug.content.function_code_read_holding_registers")],
+                        ["4", __("modbus_tcp_debug.content.function_code_read_input_registers")],
+                    ]}
+                    placeholder={__("select")}
+                    value={this.state.function_code.toString()}
+                    onValue={(v) => this.setState({function_code: parseInt(v)})} />
+            </FormRow>
+            <FormRow label={__("modbus_tcp_debug.content.start_address")} label_muted={__("modbus_tcp_debug.content.start_address_muted")}>
+                <InputNumber
+                    min={0}
+                    max={65535}
+                    value={this.state.start_address}
+                    onValue={(v) => this.setState({start_address: v})} />
+            </FormRow>
+            <FormRow label={__("modbus_tcp_debug.content.data_count")}>
+                <InputNumber
+                    min={1}
+                    max={65535 /* FIXME: depends on function code */}
+                    value={this.state.data_count}
+                    onValue={(v) => this.setState({data_count: v})} />
+            </FormRow>
+            <FormRow label={__("modbus_tcp_debug.content.transact_timeout")}>
+                <InputNumber
+                    value={this.state.timeout}
+                    onValue={(v) => this.setState({timeout: v})}
+                    unit="ms" />
+            </FormRow>
+            <FormRow label="">
+                <Button variant="primary" className="form-control" onClick={async () => {
+                    let cookie: number = Math.floor(Math.random() * 0xFFFFFFFF);
+
+                    this.setState({waiting: true, cookie: cookie, result: ""}, async () => {
+                        let result;
+
+                        try {
+                            result = await (await util.put("/modbus_tcp_debug/transact", {
+                                host: this.state.host,
+                                port: this.state.port,
+                                device_address: this.state.device_address,
+                                function_code: this.state.function_code,
+                                start_address: this.state.start_address,
+                                data_count: this.state.data_count,
+                                write_data: this.state.write_data,
+                                timeout: this.state.timeout,
+                                byte_order: this.state.byte_order,
+                                cookie: cookie,
+                            })).text();
+                        }
+                        catch (e) {
+                            result = "Error: " + e.message.replace("400(Bad Request) ", "");
+                        }
+
+                        if (result.length > 0) {
+                            this.setState({waiting: false, cookie: null, result: result});
+                        }
+                    });
+                }} >{__("modbus_tcp_debug.content.execute")}</Button>
+            </FormRow>
+            <FormRow label={__("modbus_tcp_debug.content.response")}>
+                <OutputTextarea rows={15} resize="vertical" value={this.state.waiting ? "Waiting..." : this.state.result} />
+            </FormRow>
+        </>;
+    }
+}
+
+export class ModbusTCPDebug extends Component {
+    render() {
         if (!util.render_allowed())
-            return <SubPage name="modbus_tcp_debug" />;
+            return <SubPage name="modbus_tcp" />;
 
         return (
-            <SubPage name="modbus_tcp_debug">
-                <PageHeader title={__("modbus_tcp_debug.content.modbus_tcp_debug")} />
+            <SubPage name="modbus_tcp">
+                <PageHeader title={__("modbus_tcp_debug.content.modbus_tcp")} />
 
-                <FormRow label={__("modbus_tcp_debug.content.host")}>
-                    <InputHost
-                        value={this.state.host}
-                        onValue={(v) => this.setState({host: v})}
-                        required />
-                </FormRow>
-                <FormRow label={__("modbus_tcp_debug.content.port")} label_muted={__("modbus_tcp_debug.content.port_muted")}>
-                    <InputNumber
-                        min={1}
-                        max={65535}
-                        value={this.state.port}
-                        onValue={(v) => this.setState({port: v})} />
-                </FormRow>
-                <FormRow label={__("modbus_tcp_debug.content.device_address")}>
-                    <InputNumber
-                        min={0}
-                        max={255}
-                        value={this.state.device_address}
-                        onValue={(v) => this.setState({device_address: v})} />
-                </FormRow>
-                <FormRow label={__("modbus_tcp_debug.content.function_code")}>
-                    <InputSelect
-                        items={[
-                            ["3", __("modbus_tcp_debug.content.function_code_read_holding_registers")],
-                            ["4", __("modbus_tcp_debug.content.function_code_read_input_registers")],
-                        ]}
-                        placeholder={__("select")}
-                        value={this.state.function_code.toString()}
-                        onValue={(v) => this.setState({function_code: parseInt(v)})} />
-                </FormRow>
-                <FormRow label={__("modbus_tcp_debug.content.start_address")} label_muted={__("modbus_tcp_debug.content.start_address_muted")}>
-                    <InputNumber
-                        min={0}
-                        max={65535}
-                        value={this.state.start_address}
-                        onValue={(v) => this.setState({start_address: v})} />
-                </FormRow>
-                <FormRow label={__("modbus_tcp_debug.content.data_count")}>
-                    <InputNumber
-                        min={1}
-                        max={65535 /* FIXME: depends on function code */}
-                        value={this.state.data_count}
-                        onValue={(v) => this.setState({data_count: v})} />
-                </FormRow>
-                <FormRow label={__("modbus_tcp_debug.content.transact_timeout")}>
-                    <InputNumber
-                        value={this.state.timeout}
-                        onValue={(v) => this.setState({timeout: v})}
-                        unit="ms" />
-                </FormRow>
-                <FormRow label="">
-                    <Button variant="primary" className="form-control" onClick={async () => {
-                        let cookie: number = Math.floor(Math.random() * 0xFFFFFFFF);
+                <Alert variant="warning"> {__("modbus_tcp_debug.content.server_missing")}</Alert>
 
-                        this.setState({waiting: true, cookie: cookie, result: ""}, async () => {
-                            let result;
-
-                            try {
-                                result = await (await util.put("/modbus_tcp_debug/transact", {
-                                    host: this.state.host,
-                                    port: this.state.port,
-                                    device_address: this.state.device_address,
-                                    function_code: this.state.function_code,
-                                    start_address: this.state.start_address,
-                                    data_count: this.state.data_count,
-                                    write_data: this.state.write_data,
-                                    timeout: this.state.timeout,
-                                    byte_order: this.state.byte_order,
-                                    cookie: cookie,
-                                })).text();
-                            }
-                            catch (e) {
-                                result = "Error: " + e.message.replace("400(Bad Request) ", "");
-                            }
-
-                            if (result.length > 0) {
-                                this.setState({waiting: false, cookie: null, result: result});
-                            }
-                        });
-                    }} >{__("modbus_tcp_debug.content.execute")}</Button>
-                </FormRow>
-                <FormRow label={__("modbus_tcp_debug.content.response")}>
-                    <OutputTextarea rows={35} resize="vertical" value={this.state.waiting ? "Waiting..." : this.state.result} />
-                </FormRow>
+                <CollapsedSection heading={__("modbus_tcp_debug.content.debug")}>
+                    <ModbusTCPDebugTool />
+                </CollapsedSection>
             </SubPage>
         );
     }
