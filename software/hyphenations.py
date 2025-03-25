@@ -860,7 +860,7 @@ de_hyph = [
     "öko-lo-gisch",
     "ein-be-zie-hen",
     "kon-fi-gu-rier-ba-rer",
-    "Mit-a-r-bei-tern",
+    "Mit-ar-bei-tern",
     "Ar-beits-zeit",
     "kon-fi-gu-rier-te",
     "ver-gli-chen",
@@ -880,6 +880,9 @@ de_hyph = [
     "bi-di-rek-tio-nal",
     "Er-wei-te-rung",
     "mit-ein-zu-be-zie-hen",
+    "Tin-ker-forge",
+    "Aus-füh-rung",
+    "Ver-zö-ge-rung",
 ]
 
 en_hyph = [
@@ -1107,6 +1110,7 @@ en_hyph = [
     "fore-cast-ed",
     "con-fig-urable",
     "bi-di-rec-tion-al",
+    "Tin-ker-forge",
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
