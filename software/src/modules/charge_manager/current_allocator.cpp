@@ -1010,6 +1010,9 @@ static void stage_5(StageContext &sc) {
     // - If there are more than one charger active, require the enable current on the PV phase.
     // - If there is only one charger active, this could be the one charger that is about to be switched to 3p.
     //   In that case require only the minimum current on the PV phase.
+    // check_pv_min does not have to be set to false after switching one charger to 3p:
+    // either it was already false, or there is no chargers active (then the loop does nothing)
+    // or there is exactly one charger active, then the loop only runs once.
     auto check_pv_min = active_chargers < 2 ? CHECK_MIN_WINDOW_MIN : CHECK_MIN_WINDOW_ENABLE;
 
     trace(check_pv_min ? "5: <2 active. pv reqs min" : "5: >1 active. pv reqs ena");
