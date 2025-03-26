@@ -177,27 +177,66 @@ void DIN70121::handle_session_setup_req()
         api_state.get("evcc_id")->add()->updateUint(req->EVCCID.bytes[i]);
     }
 
-    // TODO: Check session id. If not 0 use it, if it is known [V2G-DC-872]
+    // [V2G-DC-993] When receiving the SessionSetupReq with the parameter SessionID equal to zero (0), the
+    // SECC shall generate a new (not stored) SessionID value different from zero (0) and return
+    // this value in the SessionSetupRes message header.
+    bool all_zero = true;
+    for (size_t i = 0; i < dinDocDec.V2G_Message.Header.SessionID.bytesLen; i++) {
+        if (dinDocDec.V2G_Message.Header.SessionID.bytes[i] != 0x00) {
+            all_zero = false;
+            break;
+        }
+    }
+
+    // [V2G-DC-872] If the SECC receives a SessionSetupReq including a SessionID value which is not equal
+    // to zero (0) and not equal to the SessionID value stored from the preceding V2G commu-
+    // nication session, it shall send a SessionID value in the SessionSetupRes message that is
+    // unequal to ʺ0ʺ and unequal to the SessionID value stored from the preceding V2G com-
+    // munication session and indicate the new V2G communication session with the Respon-
+    // seCode set to ʺOK_NewSessionEstablishedʺ (refer also to [V2G-DC-393] for applicability
+    // of this response code).
+    bool different_to_known = true;
+    // [V2G-DC-934] If the SessionID is checked during the V2G communication session, the EVCC shall first
+    // compare the length and then the actual value.
+    if (dinDocDec.V2G_Message.Header.SessionID.bytesLen == SESSION_ID_LENGTH) {
+        for (uint16_t i = 0; i < SESSION_ID_LENGTH; i++) {
+            if (dinDocDec.V2G_Message.Header.SessionID.bytes[i] == iso15118.common.session_id[i]) {
+                different_to_known = false;
+                break;
+            }
+        }
+    }
 
     // The SessionId is set up here it is used by the EV in future communication
-    iso15118.common.session_id[0] = static_cast<uint8_t>(random(256));
-    iso15118.common.session_id[1] = static_cast<uint8_t>(random(256));
-    iso15118.common.session_id[2] = static_cast<uint8_t>(random(256));
-    iso15118.common.session_id[3] = static_cast<uint8_t>(random(256));
+    if (all_zero || different_to_known) {
+        iso15118.common.session_id[0] = static_cast<uint8_t>(random(256));
+        iso15118.common.session_id[1] = static_cast<uint8_t>(random(256));
+        iso15118.common.session_id[2] = static_cast<uint8_t>(random(256));
+        iso15118.common.session_id[3] = static_cast<uint8_t>(random(256));
+        res->ResponseCode = din_responseCodeType_OK_NewSessionEstablished;
+    } else {
+        // keep saved session id, nothing to do here.
+        // TODO: Strangely i can't find "OK_OldSessionJoined" implemented anywhere else.
+        //       Should we always use "OK_NewSessionEstablished"?
+        res->ResponseCode = din_responseCodeType_OK_OldSessionJoined;
+    }
 
     for (uint16_t i = 0; i < SESSION_ID_LENGTH; i++) {
         api_state.get("session_id")->get(i)->updateUint(iso15118.common.session_id[i]);
     }
 
     dinDocEnc.V2G_Message.Body.SessionSetupRes_isUsed = 1;
-    res->ResponseCode = din_responseCodeType_OK_NewSessionEstablished;
 
     // EVSEID needs to be according to DIN SPEC 91286, it can be 0x00 if not available
     // Example EVSEID according to DIN SPEC 91286: +49*810*000*438
 
-    res->DateTimeNow_isUsed = 0;
+    // [V2G-DC-876] If the SECC wants to send zero, it shall send the EVSEID as single hexBinary value: ʺ0x00ʺ.
     res->EVSEID.bytes[0] = 0;
     res->EVSEID.bytesLen = 1;
+
+    // [V2G-DC-878] An EVCC shall not expect a transmitted timestamp to be correct or a timestamp to be sent at all.
+    // An EVSE may not send the timestamp.
+    res->DateTimeNow_isUsed = 0;
 
     iso15118.common.send_exi(Common::ExiType::Din);
     state = 2;
