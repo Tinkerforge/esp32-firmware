@@ -39,6 +39,11 @@ void SLAC::pre_setup()
         {"modem_found", Config::Bool(false)},
         {"modem_initialization_tries", Config::Uint8(0)},
         {"atten_char_indication_tries", Config::Uint8(0)},
+        // DIN/TS 70121:2024-11 Annex C (informative)
+        // typical value ranges:
+        // < 20: not valid
+        // 20-35: reasonable range for robust link
+        // > 40: poor signal quality
         {"attenuation_profile", Config::Array({
                 Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0),
                 Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0),

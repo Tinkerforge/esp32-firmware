@@ -248,13 +248,13 @@ void DIN70121::handle_service_discovery_req()
     din_ServiceDiscoveryResType *res = &dinDocEnc.V2G_Message.Body.ServiceDiscoveryRes;
 
     // TODO: Stop session if session ID does not match?
+    //       Or just keep going? For now we log it and keep going.
     if (dinDocDec.V2G_Message.Header.SessionID.bytesLen != SESSION_ID_LENGTH) {
         logger.printfln("DIN70121: Session ID length mismatch");
     }
     if (memcmp(dinDocDec.V2G_Message.Header.SessionID.bytes, iso15118.common.session_id, SESSION_ID_LENGTH) != 0) {
         logger.printfln("DIN70121: Session ID mismatch");
     }
-
 
     dinDocEnc.V2G_Message.Body.ServiceDiscoveryRes_isUsed = 1;
     res->ResponseCode = din_responseCodeType_OK;
@@ -273,6 +273,12 @@ void DIN70121::handle_service_discovery_req()
     // DC charging with CCS connector (normal DC charging)
     res->ChargeService.EnergyTransferType = din_EVSESupportedEnergyTransferType_DC_extended;
 
+    // [V2G-DC-622] In the scope of this document, the optional element ServiceScope shall not be used.
+    res->ChargeService.ServiceTag.ServiceScope_isUsed = 0;
+
+    // [V2G-DC-549] In the scope of this document, the element “ServiceList” shall not be used.
+    res->ServiceList_isUsed = 0;
+
     iso15118.common.send_exi(Common::ExiType::Din);
     state = 3;
 }
@@ -283,7 +289,6 @@ void DIN70121::handle_service_payment_selection_req()
     din_ServicePaymentSelectionResType *res = &dinDocEnc.V2G_Message.Body.ServicePaymentSelectionRes;
 
     if (req->SelectedPaymentOption == din_paymentOptionType_ExternalPayment) {
-
         dinDocEnc.V2G_Message.Body.ServicePaymentSelectionRes_isUsed = 1;
         res->ResponseCode = din_responseCodeType_OK;
 
@@ -296,9 +301,14 @@ void DIN70121::handle_contract_authentication_req()
 {
     din_ContractAuthenticationResType *res = &dinDocEnc.V2G_Message.Body.ContractAuthenticationRes;
 
+    // [V2G-DC-550] In the scope of this document, the element “GenChallenge” shall not be used.
+    // [V2G-DC-545] In the scope of this document, the element “Id” shall not be used.
+    // -> None of the request parameters are used in DIN SPEC 70121.
+
     dinDocEnc.V2G_Message.Body.ContractAuthenticationRes_isUsed = 1;
 
-    // Set Authorisation to Finished
+    // Set Authorisation to Finished here.
+    // We want to go on ChargeParameteryDiscovery to read the SoC and then use Ongoing.
     res->EVSEProcessing = din_EVSEProcessingType_Finished;
     iso15118.common.send_exi(Common::ExiType::Din);
 
@@ -329,7 +339,6 @@ void DIN70121::handle_charge_parameter_discovery_req()
     api_state.get("ev_energy_capacity_is_used")->updateBool(req->DC_EVChargeParameter.EVEnergyCapacity_isUsed);
     api_state.get("ev_energy_request_val")->updateInt(req->DC_EVChargeParameter.EVEnergyRequest.Value);
     api_state.get("ev_energy_request_mul")->updateInt(req->DC_EVChargeParameter.EVEnergyRequest.Multiplier);
-    logger.printfln("DIN70121: Energy Request unit: %d", req->DC_EVChargeParameter.EVEnergyRequest.Unit);
     api_state.get("ev_energy_request_is_used")->updateBool(req->DC_EVChargeParameter.EVEnergyRequest_isUsed);
     api_state.get("full_soc")->updateInt(req->DC_EVChargeParameter.FullSOC);
     api_state.get("full_soc_is_used")->updateBool(req->DC_EVChargeParameter.FullSOC_isUsed);
@@ -338,76 +347,108 @@ void DIN70121::handle_charge_parameter_discovery_req()
 
     logger.printfln("DIN70121: Current SoC %d", req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
 
+    // Here we try to get the EV into a loop that calls ChargeParameterDiscoveryReq again and again
+    // to be able to continously read the SoC.
+
     dinDocEnc.V2G_Message.Body.ChargeParameterDiscoveryRes_isUsed = 1;
 
     // [V2G-DC-493] After the EVCC has successfully processed a received ChargeParameterDiscoveryRes
-    // message with ResponseCode equal to “OK” and EVSEProcessing equal to
-    // “Ongoing”, the EVCC shall ignore the values of SAScheduleList and DC_EVSEChar-
-    // geParameter contained in this ChargeParameterDiscoveryRes message, and shall
-    // send another ChargeParameterDiscoveryReq message and shall then wait for a
-    // ChargeParameterDiscoveryRes message. This following ChargeParameterDisco-
-    // veryReq message, if any, may contain different values for the contained parame-
-    // ters than the preceding ChargeParameterDiscoveryReq message.
+    // message with ResponseCode equal to “OK” and EVSEProcessing equal to“Ongoing”, the EVCC shall
+    // ignore the values of SAScheduleList and DC_EVSEChargeParameter contained in this
+    // ChargeParameterDiscoveryRes message, and shall send another ChargeParameterDiscoveryReq
+    // message and shall then wait for a ChargeParameterDiscoveryRes message. This following ChargeParameterDiscoveryReq message,
+    // if any, may contain different values for the contained parameters than the preceding ChargeParameterDiscoveryReq message.
 
 
     // Get EV to send ChargeParameterDiscoveryReq again by using EVSE_IsolationMonitoringActive with EVSEProcessingType_Ongoing
     // See DIN/TS:70121:2024 [V2G-DC-966]
     res->ResponseCode = din_responseCodeType_OK;
-	res->EVSEProcessing = din_EVSEProcessingType_Ongoing;
+
+    // [V2G-DC-863] If the EVCC receives a V2G response message with parameter EVSEProcessing equal to
+    // ’Ongoing’ for the first time in a response message it shall start the timer V2G_EVCC_Ongo-
+    // ing_Timer and wait for parameter EVSEProcessing equal to ’Finished’.
+
+    // [V2G-DC-864] If [V2G-DC-863] applies, the EVCC shall stop the V2G communication session when
+    // V2G_EVCC_Ongoing_Timer is equal or larger than V2G_EVCC_Ongoing_Timeout and no
+    // parameter EVSEProcessing equal to ’Finished’ has been received.
+
+    // [V2G-DC-1004] If [V2G-DC-863] applies, when the EVCC receives parameter EVSEProcessing equal to
+    // ’Finished’, it shall stop the V2G_EVCC_Ongoing_Timer and end monitoring it.
+
+    // TODO: Does [V2G-DC-863] + [V2G-DC-864] mean that we can only delay with EVSEProcessingType_Ongoing once?
+    res->EVSEProcessing = din_EVSEProcessingType_Ongoing;
+
+    // Invalid: An isolation test has not been carried out.
     res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus_isUsed = 1;
     res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus = din_isolationLevelType_Invalid;
+
+    // [V2G-DC-500] For DC charging according to this document, the value of EVSENotification shall always be set to “None”.
     res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSENotification = din_EVSENotificationType_None;
     res->DC_EVSEChargeParameter.DC_EVSEStatus.NotificationMaxDelay = 0;
+
+    // EVSE_IsolationMonitoringActive: After the charging station has confirmed HV isolation internally, it will remain in this state until the cable isolation integrity is checked
+    // TODO: Try EVSEReady instead?
     res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEStatusCode = din_DC_EVSEStatusCodeType_EVSE_IsolationMonitoringActive;
 
     // Mandatory charge parameters
     res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Unit = din_unitSymbolType_A;
     res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Unit_isUsed = 1;
-    res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Value = 32; // 32A
-    res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Multiplier = 1;
+    res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Value = 500; // 500A
+    res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Multiplier = 0;
 
     res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Unit = din_unitSymbolType_V;
     res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Unit_isUsed = 1;
     res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Value = 400; // 400V
-    res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Multiplier = 1;
+    res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Multiplier = 0;
 
-    res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Unit = din_unitSymbolType_A;
-    res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Unit_isUsed = 1;
-    res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Value = 6; // 6A
-    res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Multiplier = 1;
+    res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Unit = din_unitSymbolType_A;
+    res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Unit_isUsed = 1;
+    res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Value = 6; // 6A
+    res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Multiplier = 0;
 
     res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Unit = din_unitSymbolType_V;
     res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Unit_isUsed = 1;
     res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Value = 200; // 200V
-    res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Multiplier = 1;
+    res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Multiplier = 0;
 
     res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Unit = din_unitSymbolType_A;
     res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Unit_isUsed = 1;
     res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Value = 1; // 1A
-    res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Multiplier = 1;
+    res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Multiplier = 0;
 
-	res->DC_EVSEChargeParameter_isUsed = 1;
+    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Unit = din_unitSymbolType_W;
+    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Unit_isUsed = 1;
+    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Value = 20000; // 20000W * 10^1 = 200kW
+    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Multiplier = 1;
+    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit_isUsed = 1; // Mandatory according to the list?
+
+    res->DC_EVSEChargeParameter_isUsed = 1;
 
     // Optinal charge parameters
-    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit_isUsed = 0;
     res->DC_EVSEChargeParameter.EVSECurrentRegulationTolerance_isUsed = 0;
     res->DC_EVSEChargeParameter.EVSEEnergyToBeDelivered_isUsed = 0;
-    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit_isUsed = 0;
-    res->DC_EVSEChargeParameter.EVSEEnergyToBeDelivered_isUsed = 0;
 
+    // [V2G-DC-559] Since for DC charging according to this document, the EVCC is not able to provide a planned
+    // departure time, SAScheduleList shall provide PMaxSchedule (refer to 9.5.2.10) covering at least 24 hours.
     res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax = SHRT_MAX;
-    res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration = 86400; // Must cover 24 hours
+
+    // [V2G-DC-338] The value of the duration element shall be defined as period in seconds.
+    res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration = 86400;
     res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.duration_isUsed = 1; // Must be used in DIN
-    res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.start = 0;
+
+    // [V2G-DC-336] The value of the start element shall be defined in seconds from NOW.
+    res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval.start = 0; // Start of the interval, in seconds from NOW.
     res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].RelativeTimeInterval_isUsed = 1;
+
     res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].TimeInterval_isUsed = 0; // no content
-    res->SAScheduleList.SAScheduleTuple.array[0].SalesTariff_isUsed = 0; // In the scope of DIN 70121, this optional element shall not be used. DIN/TS:70121:2024 [V2G-DC-554]
     res->SAScheduleList.SAScheduleTuple.array[0].SAScheduleTupleID = 1;
     res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.arrayLen = 1;
     res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleID = 1;
+
+    // [V2G-DC-554] In the scope of this document, the element “SalesTariff” shall not be used.
+    res->SAScheduleList.SAScheduleTuple.array[0].SalesTariff_isUsed = 0;
     res->SAScheduleList.SAScheduleTuple.arrayLen = 1;
     res->SAScheduleList_isUsed = 1;
-
 
     // [V2G-DC-882] The EV shall ignore the SASchedule received in ChargeParameterDiscoveryRes
     res->SASchedules_isUsed = 0;
@@ -416,8 +457,7 @@ void DIN70121::handle_charge_parameter_discovery_req()
     res->EVSEChargeParameter_isUsed = 0;
 
     // [V2G-DC-552] In the scope of this document, the element “AC_EVSEChargeParameter” shall not be used
-	res->AC_EVSEChargeParameter_isUsed = 0;
-
+    res->AC_EVSEChargeParameter_isUsed = 0;
 
     iso15118.common.send_exi(Common::ExiType::Din);
     state = 6;
