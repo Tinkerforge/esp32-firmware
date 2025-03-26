@@ -5,7 +5,7 @@
         },
         "status": {
             "time": "Systemzeit",
-            "disabled": "Disabled",
+            "disabled": "Deaktivert",
             "not_synced": "Nicht synchronisiert",
             "synced": "Synchronisiert"
         },
