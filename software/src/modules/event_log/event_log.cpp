@@ -44,7 +44,7 @@
 #include "tools/miniz/miniz_tdef.h"
 
 struct deflate_outbuf {
-    char outbuf[1384]; // 1500 - 8 (PPPoE) - 40 (IP) - 60 (max TCP) - 8 (HTTP nonsense)
+    char outbuf[1384]; // 1500 - 8 (PPPoE) - 40 (IP) - 60 (max TCP) - 8 (HTTP chunk metadata)
     char printbuf[128];
 };
 
@@ -214,17 +214,15 @@ void EventLog::register_urls()
         request.addResponseHeader("Content-Encoding", "gzip");
         request.beginChunkedResponse(200);
 
-        int result = request.sendChunk(gzip_header, sizeof(gzip_header));
-        if (result != ESP_OK) {
-            printfln_prefixed("event_log", 9, "trace_log gzip header sending failed: %i", result);
-            return request.endChunkedResponse();
-        }
+        // Copy gzip header to output buffer
+        static_assert(ARRAY_SIZE(buf->outbuf) >= sizeof(gzip_header));
+        memcpy(buf->outbuf, gzip_header, sizeof(gzip_header));
+
+        char *next_out = buf->outbuf + sizeof(gzip_header);
+        size_t avail_out = ARRAY_SIZE(buf->outbuf) - sizeof(gzip_header);
 
         size_t uncompressed_len = 0;
         uint32_t crc32 = 0;
-
-        char *next_out = buf->outbuf;
-        size_t avail_out = ARRAY_SIZE(buf->outbuf);
 
         constexpr   uint32_t HEADER_PREPARE = 0;
         //constexpr uint32_t HEADER_SEND    = 1;
@@ -285,7 +283,7 @@ void EventLog::register_urls()
                 avail_out -= out_bytes;
 
                 if (avail_out == 0) {
-                    result = request.sendChunk(buf->outbuf, ARRAY_SIZE(buf->outbuf));
+                    int result = request.sendChunk(buf->outbuf, ARRAY_SIZE(buf->outbuf));
 
                     if (result != ESP_OK) {
                         printfln_prefixed("event_log", 9, "trace_log compressed chunk sending failed: %i", result);
@@ -316,7 +314,7 @@ void EventLog::register_urls()
 
             avail_out -= out_bytes;
 
-            result = request.sendChunk(buf->outbuf, static_cast<ssize_t>(ARRAY_SIZE(buf->outbuf) - avail_out));
+            int result = request.sendChunk(buf->outbuf, static_cast<ssize_t>(ARRAY_SIZE(buf->outbuf) - avail_out));
 
             next_out = buf->outbuf;
             avail_out = ARRAY_SIZE(buf->outbuf);
@@ -330,7 +328,7 @@ void EventLog::register_urls()
         {
             uint32_t gzip_tail[2] = {crc32, uncompressed_len};
 
-            result = request.sendChunk(reinterpret_cast<const char *>(gzip_tail), sizeof(gzip_tail));
+            int result = request.sendChunk(reinterpret_cast<const char *>(gzip_tail), sizeof(gzip_tail));
 
             if (result != ESP_OK) {
                 printfln_prefixed("event_log", 9, "trace_log gzip tail sending failed: %i", result);
