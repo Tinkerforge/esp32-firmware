@@ -39,6 +39,8 @@ interface InputNumberProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement
 export function InputNumber(props: InputNumberProps) {
     const id = !props.idContext ? useId() : useContext(props.idContext);
 
+    delete props.idContext;
+
     const input = useRef<HTMLInputElement>();
     const value = parseInt(props.value?.toString(), 10);
 
