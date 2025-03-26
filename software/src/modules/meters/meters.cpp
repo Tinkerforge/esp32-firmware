@@ -236,7 +236,7 @@ void Meters::setup()
     }
 
     const Config last_reset_prototype = Config::Object({
-        {"last_reset", Config::Uint32(0)}
+        {"last_reset", Config::Uint53(0)}
     });
 
     for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
@@ -428,14 +428,13 @@ void Meters::register_urls()
                 struct timeval tv_now;
 
                 if (rtc.clock_synced(&tv_now)) {
-                    //FIXME not Y2038-safe
-                    meter_slot.last_reset.get("last_reset")->updateUint(static_cast<uint32_t>(tv_now.tv_sec));
+                    meter_slot.last_reset.get("last_reset")->updateUint53(static_cast<uint64_t>(tv_now.tv_sec));
                 } else {
-                    uint32_t last = meter_slot.last_reset.get("last_reset")->asUint();
+                    uint64_t last = meter_slot.last_reset.get("last_reset")->asUint53();
                     if (last < 1000000000) {
-                        meter_slot.last_reset.get("last_reset")->updateUint(last + 1);
+                        meter_slot.last_reset.get("last_reset")->updateUint53(last + 1);
                     } else {
-                        meter_slot.last_reset.get("last_reset")->updateUint(1);
+                        meter_slot.last_reset.get("last_reset")->updateUint53(1);
                     }
                 }
                 api.writeConfig(get_path(slot, Meters::PathType::LastReset), &meter_slot.last_reset);

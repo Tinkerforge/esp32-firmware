@@ -106,7 +106,7 @@ void MetersLegacyAPI::setup()
     );
 
     legacy_last_reset = Config::Object({
-        {"last_reset", Config::Uint32(0)}
+        {"last_reset", Config::Uint53(0)}
     });
     // END from old meter.cpp pre_setup()
 
@@ -581,5 +581,5 @@ void MetersLegacyAPI::on_values_change(const Config *values)
 
 void MetersLegacyAPI::on_last_reset_change(const Config *last_reset)
 {
-    legacy_last_reset.get("last_reset")->updateUint(last_reset->get("last_reset")->asUint());
+    legacy_last_reset.get("last_reset")->updateUint53(last_reset->get("last_reset")->asUint53());
 }
