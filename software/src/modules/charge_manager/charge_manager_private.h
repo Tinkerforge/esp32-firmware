@@ -65,6 +65,17 @@ namespace ChargeMode {
         Fast = 8,
         _max = 8
     };
+    const char * const Strings[Type::_max + 1] {
+        "Off",
+        "PV",
+        "Min",
+        "Min+PV",
+        "Eco",
+        "Eco+PV",
+        "Eco+Min",
+        "Eco+Min+PV",
+        "Fast"
+    };
 }
 
 // Check alignment/padding when adding stuff.

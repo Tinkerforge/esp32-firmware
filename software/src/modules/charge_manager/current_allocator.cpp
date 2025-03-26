@@ -114,10 +114,15 @@ static void trace_alloc(int stage, const StageContext &sc) {
     char *ptr = buf;
     ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "%d: ", stage);
     for(size_t i = 0; i < sc.charger_count; ++i) {
-        if (sc.phase_allocation[i] == 0 && sc.current_allocation[i] == 0 && stage != 0)
-            ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "[        %2zu        ]", i);
-        else
-            ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "[%2zu %5d@%dp       ]", i, sc.current_allocation[i], sc.phase_allocation[i]);
+        if (stage == 0) {
+            ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "[%2zu %dp %11s ]", i, sc.phase_allocation[i], ChargeMode::Strings[sc.charger_state[i].charge_mode]);
+        } else {
+            if (sc.phase_allocation[i] == 0 && sc.current_allocation[i] == 0)
+                ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "[        %2zu        ]", i);
+            else
+                ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "[%2zu %5d@%dp       ]", i, sc.current_allocation[i], sc.phase_allocation[i]);
+        }
+
         if (i % 8 == 7 && i != sc.charger_count - 1) {
             trace("%s", buf);
             ptr = buf;
@@ -1565,6 +1570,7 @@ int allocate_current(
     };
 
     trace_alloc(0, sc);
+    trace("__all__");
     stage_1(sc);
     stage_2(sc);
     stage_3(sc);
@@ -1573,8 +1579,12 @@ int allocate_current(
     for (ChargeMode::Type mode = ChargeMode::_max; mode >= ChargeMode::Min; mode = (ChargeMode::Type)((int)mode >> 1)) {
         sc.charge_mode_filter = mode;
         // Run Min and PV as one mode.
-        if (mode == ChargeMode::Min)
+        if (mode == ChargeMode::Min) {
             sc.charge_mode_filter |= ChargeMode::PV;
+            trace("__only [Min,PV,Min+PV]__");
+        } else {
+            trace("__only %s__", ChargeMode::Strings[(size_t)mode]);
+        }
 
         stage_4(sc);
         stage_5(sc);
@@ -1583,6 +1593,7 @@ int allocate_current(
         stage_8(sc);
     }
 
+    trace("__all__");
     stage_9(sc);
     trace_alloc(9, sc);
     //logger.printfln("Took %u µs", end - start);
