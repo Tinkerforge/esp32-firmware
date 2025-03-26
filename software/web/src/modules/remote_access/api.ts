@@ -73,6 +73,14 @@ interface registration_config {
     cert_id: number,
 }
 
+interface StateUser {
+    state: number,
+    user: number,
+    connection: number,
+    last_state_change: number,
+}
+
+export type state = StateUser[];
 export type get_login_salt = registration_config;
 export type get_secret_salt = registration_config;
 export type config_update = registration_config;

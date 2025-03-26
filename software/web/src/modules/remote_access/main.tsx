@@ -19,7 +19,7 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, Fragment, ComponentChildren } from "preact";
+import { h, Fragment, ComponentChildren, Component, RefObject } from "preact";
 import { Smartphone } from "react-feather";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
@@ -32,7 +32,7 @@ import { Switch } from "../../ts/components/switch";
 import { InputHost } from "../../ts/components/input_host";
 import { __ } from "../../ts/translation";
 import "./wireguard";
-import { add_user, config, RegistrationState, config_update, register } from "./api";
+import { add_user, RegistrationState, config_update, register, config, } from "./api";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { ArgonType, hash } from "argon2-browser";
@@ -40,9 +40,54 @@ import { CollapsedSection } from "../../ts/components/collapsed_section";
 import { Collapse, Container, Modal, Row, Spinner } from "react-bootstrap";
 import { Table, TableRow } from "ts/components/table";
 import { useState } from "preact/hooks";
+import { StatusSection } from "ts/components/status_section";
+import { IndicatorGroup } from "ts/components/indicator_group";
 
 export function RemoteAccessNavbar() {
     return <NavbarItem name="remote_access" module="remote_access" title={__("remote_access.navbar.remote_access")} symbol={<Smartphone />} />;
+}
+
+interface RemoteAccessStatusState {
+    state: API.getType["remote_access/state"],
+    config: API.getType["remote_access/config"],
+}
+
+export class RemoteAccessStatus extends Component<{}, RemoteAccessStatusState> {
+    constructor() {
+        super();
+
+        util.addApiEventListener("remote_access/state",() => {
+            this.setState({state: [...API.get("remote_access/state")]});
+        });
+        util.addApiEventListener("remote_access/config", () => {
+            this.setState({config: API.get("remote_access/config")});
+        });
+    }
+
+    render(props: never, state: RemoteAccessStatusState) {
+        if (!util.render_allowed || !state.config || !state.config.enable) {
+            return <StatusSection name="remote_access" />;
+        }
+
+        const label_muted = state.state[0].last_state_change !== 0 ?
+            __("remote_access.status.label_muted")(util.timestamp_min_to_date(state.state[0].last_state_change / 60, "")) :
+            __("remote_access.status.since_start");
+
+        return <StatusSection name="remote_access">
+            <FormRow label={__("remote_access.status.remote_access")}
+                label_muted={label_muted}>
+                <IndicatorGroup
+                    style="width: 100%"
+                    class="flex-wrap"
+                    value={state.state[0].state}
+                    items={[
+                        ["danger", __("remote_access.status.disabled")],
+                        ["warning", __("remote_access.status.disconnected")],
+                        ["success", __("remote_access.status.connected")]
+                    ]}/>
+            </FormRow>
+        </StatusSection>;
+    }
 }
 
 interface RemoteAccessState {
@@ -59,7 +104,7 @@ interface RemoteAccessState {
     removeUsers: number[],
 }
 
-export class RemoteAccess extends ConfigComponent<"remote_access/config", {}, RemoteAccessState> {
+export class RemoteAccess extends ConfigComponent<"remote_access/config", {status_ref: RefObject<RemoteAccessStatus>}, RemoteAccessState> {
 
     resolve: ((arg0?: any) => void);
     reject: (arg0?: any) => void;
