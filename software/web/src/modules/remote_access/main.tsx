@@ -73,17 +73,20 @@ export class RemoteAccessStatus extends Component<{}, RemoteAccessStatusState> {
             __("remote_access.status.label_muted")(util.timestamp_min_to_date(state.state[0].last_state_change / 60, "")) :
             __("remote_access.status.since_start");
 
+        const active_clients = state.state.slice(1).filter((c) => c.state !== 1).length;
+        const active_btn = active_clients > 0 ? 2 : state.state[0].state - 1;
+
         return <StatusSection name="remote_access">
             <FormRow label={__("remote_access.status.remote_access")}
                 label_muted={label_muted}>
                 <IndicatorGroup
                     style="width: 100%"
                     class="flex-wrap"
-                    value={state.state[0].state}
+                    value={active_btn}
                     items={[
-                        ["danger", __("remote_access.status.disabled")],
                         ["warning", __("remote_access.status.disconnected")],
-                        ["success", __("remote_access.status.connected")]
+                        ["success", __("remote_access.status.connected")],
+                        ["success", __("remote_access.status.connected_to_clients")(active_clients)],
                     ]}/>
             </FormRow>
         </StatusSection>;

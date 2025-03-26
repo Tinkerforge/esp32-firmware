@@ -8,7 +8,8 @@ let x = {
             "remote_access": "Fernzugriff",
             "label_muted": /*SFN*/ (since: string) => `seit ${since}`/*NF*/,
             "since_start": "seit Neustart",
-            "connected": "Verbunden",
+            "connected": "Verbunden zum Server",
+            "connected_to_clients": /*SFN*/ (clients: number) => `${clients} Client${clients == 1 ? "" : "s"} verbunden` /*NF*/,
             "disconnected": "Getrennt",
             "disabled": "Deaktiviert"
         },
