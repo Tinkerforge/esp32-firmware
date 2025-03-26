@@ -1,4 +1,6 @@
-{
+/** @jsxImportSource preact */
+import { h } from "preact";
+let x = {
     "modbus_tcp_debug": {
         "status": {
         },
@@ -8,9 +10,9 @@
         "content": {
             "modbus_tcp": "Modbus/TCP",
 
-            "server_missing": "Der Modbus/TCP-Server ist nicht verfügbar und wird voraussichtlich mit einer zukünftigen Firmware-Aktualisierung hinzugefügt werden.",
+            "server_missing": <>__("The_device") verfügt aktuell nicht über einen Modbus/TCP-Server. Dieser wird voraussichtlich mit einer zukünftigen Firmware-Aktualisierung hinzugefügt werden, siehe <a href="https://github.com/Tinker%66orge/esp32-firmware/issues/215">GitHub Issue #215</a>.</>,
 
-            "debug": "Debug",
+            "debug": "Debug-Client",
             "host": "Hostname oder IP-Adresse",
             "port": "Port",
             "port_muted": "typischerweise 502",
