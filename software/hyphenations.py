@@ -193,7 +193,6 @@ de_hyph = [
     'Limi-tie-rung',
     'Manage-ment-fehler',
     'Maximal-strom',
-    'meter_all_values',
     'Milli-ampere',
     'min-des-tens',
     'Min-des-tens',
@@ -1228,5 +1227,6 @@ allowed_missing = set([
     "device_address",
     "expected_publisher",
     "firmware_version",
-    "installed_version"
+    "installed_version",
+    'meter_all_values',
 ])
