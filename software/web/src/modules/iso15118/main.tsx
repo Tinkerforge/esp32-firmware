@@ -52,6 +52,7 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
 
         const state_slac     = API.get('iso15118/state_slac');
         const state_sdp      = API.get('iso15118/state_sdp');
+        const state_common   = API.get('iso15118/state_common');
         const state_din70121 = API.get('iso15118/state_din70121');
         const state_iso2     = API.get('iso15118/state_iso2');
         const state_iso20    = API.get('iso15118/state_iso20');
@@ -168,18 +169,23 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
                         <InputText value={transport_protocol_to_string(state_sdp.ev_tranport_protocol)}/>
                     </FormRow>
 
+                    <FormSeparator heading="Common"/>
+                    <FormRow label="State">
+                        <InputNumber value={state_common.state}/>
+                    </FormRow>
+                    <FormRow label="Supported Protocols">
+                        <InputText value={state_common.supported_protocols.join(' and ')}/>
+                    </FormRow>
+                    <FormRow label="Protocol">
+                        <InputText value={state_common.protocol}/>
+                    </FormRow>
+
                     <FormSeparator heading="DIN SPEC 70121"/>
                     <FormRow label="State">
                         <InputNumber value={state_din70121.state}/>
                     </FormRow>
                     <FormRow label="Session ID">
                         <InputText value={array8_to_hexstring(state_din70121.session_id, '')}/>
-                    </FormRow>
-                    <FormRow label="Supported Protocols">
-                        <InputText value={state_din70121.supported_protocols.join(' and ')}/>
-                    </FormRow>
-                    <FormRow label="Protocol">
-                        <InputText value={state_din70121.protocol}/>
                     </FormRow>
                     <FormRow label="EVCC ID">
                         <InputText value={array8_to_hexstring(state_din70121.evcc_id, '')}/>

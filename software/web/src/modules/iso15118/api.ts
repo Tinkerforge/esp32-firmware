@@ -28,11 +28,15 @@ export interface state_sdp {
     ev_tranport_protocol: number;
 }
 
+export interface state_common {
+    state: number;
+    supported_protocols: string[];
+    protocol: string;
+}
+
 export interface state_din70121 {
     state: number;
     session_id: number[];
-    supported_protocols: string[];
-    protocol: string;
     evcc_id: number[];
     soc: number;
     ev_ready: number;
