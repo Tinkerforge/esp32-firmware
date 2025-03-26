@@ -110,18 +110,18 @@ int encodeUnsignedInteger16(bitstream_t* stream, uint16_t n) {
 			if (errn != 0) {
 				break;
 			}
-			/* no break */
+			/* fallthrough */
 		case 2:
 			errn = encode(stream, (uint8_t) (128 | n));
 			n = n >> 7;
 			if (errn != 0) {
 				break;
 			}
-			/* no break */
+			/* fallthrough */
 		case 1:
 			/* 0 .. 7 (last byte) */
 			errn = encode(stream, (uint8_t) (0 | n));
-			/* no break */
+			/* fallthrough */
 		}
 	}
 
@@ -149,32 +149,32 @@ int encodeUnsignedInteger32(bitstream_t* stream, uint32_t n) {
 			if (errn != 0) {
 				break;
 			}
-			/* no break */
+			/* fallthrough */
 		case 4:
 			errn = encode(stream, (uint8_t) (128 | n));
 			n = n >> 7;
 			if (errn != 0) {
 				break;
 			}
-			/* no break */
+			/* fallthrough */
 		case 3:
 			errn = encode(stream, (uint8_t) (128 | n));
 			n = n >> 7;
 			if (errn != 0) {
 				break;
 			}
-			/* no break */
+			/* fallthrough */
 		case 2:
 			errn = encode(stream, (uint8_t) (128 | n));
 			n = n >> 7;
 			if (errn != 0) {
 				break;
 			}
-			/* no break */
+			/* fallthrough */
 		case 1:
 			/* 0 .. 7 (last byte) */
 			errn = encode(stream, (uint8_t) (0 | n));
-			/* no break */
+			/* fallthrough */
 		}
 	}
 
@@ -549,7 +549,7 @@ int encodeDateTime(bitstream_t* stream, exi_datetime_t* datetime) {
 				break;
 			}
 		}
-		/* no break */
+		/* fallthrough */
 	case EXI_DATETIME_TIME: /* Time, [FractionalSecs], [TimeZone] */
 		errn = encodeNBitUnsignedInteger(stream, DATETIME_NUMBER_BITS_TIME,
 				datetime->time);
