@@ -77,6 +77,11 @@ int tf_hal_destroy(TF_HAL *hal) {
 }
 
 int tf_hal_chip_select(TF_HAL *hal, uint8_t port_id, bool enable) {
+    if (port_id == 0) {
+        return TF_E_OK;
+    }
+    port_id = port_id & 0x7f;
+
     if (enable) {
         hal->hspi->beginTransaction(hal->spi_settings);
         select_demux(port_id);
@@ -89,6 +94,12 @@ int tf_hal_chip_select(TF_HAL *hal, uint8_t port_id, bool enable) {
 }
 
 int tf_hal_transceive(TF_HAL *hal, uint8_t port_id, const uint8_t *write_buffer, uint8_t *read_buffer, uint32_t length) {
+    if (port_id == 0) {
+        memset(read_buffer, 0, length);
+        return TF_E_OK;
+    }
+    port_id = port_id & 0x7f;
+
     memcpy(read_buffer, write_buffer, length);
     hal->hspi->transfer(read_buffer, length);
 
