@@ -198,6 +198,7 @@ void RemoteAccess::pre_setup()
         {"state", Config::Uint8(1)},
         {"user", Config::Uint8(255)},
         {"connection", Config::Uint8(255)},
+        // unix timestamp
         {"last_state_change", Config::Uint53(0)},
     });
 
