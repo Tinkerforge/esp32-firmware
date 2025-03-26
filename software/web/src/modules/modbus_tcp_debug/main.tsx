@@ -128,7 +128,42 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
     }
 
     render() {
-        return <>
+        return <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    if (!(e.target as HTMLFormElement).checkValidity() || (e.target as HTMLFormElement).querySelector(".is-invalid")) {
+                        return;
+                    }
+
+                    let cookie: number = Math.floor(Math.random() * 0xFFFFFFFF);
+
+                    this.setState({waiting: true, cookie: cookie, result: ""}, async () => {
+                        let result;
+
+                        try {
+                            result = await (await util.put("/modbus_tcp_debug/transact", {
+                                host: this.state.host,
+                                port: this.state.port,
+                                device_address: this.state.device_address,
+                                function_code: this.state.function_code,
+                                start_address: this.state.start_address,
+                                data_count: this.state.data_count,
+                                write_data: this.state.write_data,
+                                timeout: this.state.timeout,
+                                byte_order: this.state.byte_order,
+                                cookie: cookie,
+                            })).text();
+                        }
+                        catch (e) {
+                            result = "Error: " + e.message.replace("400(Bad Request) ", "");
+                        }
+
+                        if (result.length > 0) {
+                            this.setState({waiting: false, cookie: null, result: result});
+                        }
+                    });
+                }}>
             <FormRow label={__("modbus_tcp_debug.content.host")}>
                 <InputHost
                     value={this.state.host}
@@ -180,40 +215,12 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     unit="ms" />
             </FormRow>
             <FormRow label="">
-                <Button variant="primary" className="form-control" onClick={async () => {
-                    let cookie: number = Math.floor(Math.random() * 0xFFFFFFFF);
-
-                    this.setState({waiting: true, cookie: cookie, result: ""}, async () => {
-                        let result;
-
-                        try {
-                            result = await (await util.put("/modbus_tcp_debug/transact", {
-                                host: this.state.host,
-                                port: this.state.port,
-                                device_address: this.state.device_address,
-                                function_code: this.state.function_code,
-                                start_address: this.state.start_address,
-                                data_count: this.state.data_count,
-                                write_data: this.state.write_data,
-                                timeout: this.state.timeout,
-                                byte_order: this.state.byte_order,
-                                cookie: cookie,
-                            })).text();
-                        }
-                        catch (e) {
-                            result = "Error: " + e.message.replace("400(Bad Request) ", "");
-                        }
-
-                        if (result.length > 0) {
-                            this.setState({waiting: false, cookie: null, result: result});
-                        }
-                    });
-                }} >{__("modbus_tcp_debug.content.execute")}</Button>
+                <Button variant="primary" className="form-control" type="submit">{__("modbus_tcp_debug.content.execute")}</Button>
             </FormRow>
             <FormRow label={__("modbus_tcp_debug.content.response")}>
                 <OutputTextarea rows={15} resize="vertical" value={this.state.waiting ? "Waiting..." : this.state.result} />
             </FormRow>
-        </>;
+        </form>;
     }
 }
 
