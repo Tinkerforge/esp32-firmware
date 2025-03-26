@@ -14,7 +14,7 @@ let x = {
             "bender_emulate": "Open Modbus Charge Control Interface (OMCCI); Kompatibel zu Bender CC613",
             "keba_emulate": "Kompatibel zu Keba P30 C-Series",
             "modbus_tcp": "Modbus/TCP",
-            "enable": "Modbus/TCP-Modus",
+            "enable": "Modbus/TCP-Server-Modus",
             "port": "Port",
             "port_muted": "typischerweise 502",
             "debug": "Debug",

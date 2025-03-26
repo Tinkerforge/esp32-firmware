@@ -883,6 +883,11 @@ de_hyph = [
     "Tin-ker-forge",
     "Aus-füh-rung",
     "Ver-zö-ge-rung",
+    "vor-aus-sicht-lich",
+    "zu-künf-ti-gen",
+    "Funk-ti-ons-co-de",
+    "Aus-füh-rungs",
+    "ver-trau-ens-wür-dig",
 ]
 
 en_hyph = [
@@ -1111,6 +1116,8 @@ en_hyph = [
     "con-fig-urable",
     "bi-di-rec-tion-al",
     "Tin-ker-forge",
+    "Pre-sum-ably",
+    "con-tain-ing",
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
