@@ -1,5 +1,5 @@
 /*
-2025a;2025-02-11T10:08:00.517055+00:00
+2025b;2025-03-25T14:55:05.641852+00:00
 */
 /* esp32-firmware
  * Copyright (C) 2020-2021 Erik Fleckstein <erik@tinkerforge.com>
@@ -256,6 +256,7 @@ static const char * const America_keys[] = {
     "Coral_Harbour",
     "Cordoba",
     "Costa_Rica",
+    "Coyhaique",
     "Creston",
     "Cuiaba",
     "Curacao",
@@ -405,6 +406,7 @@ static const TableValue America_vals[] = {
     {true, {"EST5"}},
     {true, {"<-03>3"}},
     {true, {"CST6"}},
+    {true, {"<-03>3"}},
     {true, {"MST7"}},
     {true, {"<-04>4"}},
     {true, {"AST4"}},
@@ -520,7 +522,7 @@ static const TableValue America_vals[] = {
     {true, {"MST7MDT,M3.2.0,M11.1.0"}},
 };
 
-static const Table America = {America_keys, America_vals, 146};
+static const Table America = {America_keys, America_vals, 147};
 
 static const char * const Antarctica_keys[] = {
     "Casey",
