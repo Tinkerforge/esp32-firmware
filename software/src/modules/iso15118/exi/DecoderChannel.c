@@ -942,7 +942,7 @@ int decodeDateTime(bitstream_t* stream, exi_datetime_type_t type, exi_datetime_t
 				break;
 			}
 		}
-		/* no break */
+		/* fallthrough */
 	case EXI_DATETIME_TIME: /* Time, [FractionalSecs], [TimeZone] */
 		/* e.g. "12:34:56.135"  */
 		errn = decodeNBitUnsignedInteger(stream, DATETIME_NUMBER_BITS_TIME, &datetime->time);
