@@ -27,7 +27,7 @@
 // * IPv6/TCP/ISO-15118-2,
 // * IPv6/TCP/ISO-15118-20
 // and the EVSE that runs on a different board (the EVSE Bricklet).
-// The EXI message encoding/decoding is based on libcbv2g / OpenV2G.
+// The EXI message encoding/decoding is based on libcbv2g.
 // The objective is to *robustly* be able to
 // * fingerprint the EV for authentication,
 // * read SOC from the EV and
@@ -89,6 +89,7 @@ void ISO15118::pre_setup()
 
     slac.pre_setup();
     sdp.pre_setup();
+    common.pre_setup();
     din70121.pre_setup();
     iso2.pre_setup();
     iso20.pre_setup();
@@ -102,7 +103,7 @@ void ISO15118::setup()
 
     qca700x.setup_netif();
     sdp.setup_socket();
-    din70121.setup_socket();
+    common.setup_socket();
 }
 
 void ISO15118::register_urls()
@@ -110,6 +111,7 @@ void ISO15118::register_urls()
     api.addPersistentConfig("iso15118/config", &config);
     api.addState("iso15118/state_slac",     &slac.api_state);
     api.addState("iso15118/state_sdp",      &sdp.api_state);
+    api.addState("iso15118/state_common",   &common.api_state);
     api.addState("iso15118/state_din70121", &din70121.api_state);
     api.addState("iso15118/state_iso2",     &iso2.api_state);
     api.addState("iso15118/state_iso20",    &iso20.api_state);
@@ -125,5 +127,6 @@ void ISO15118::state_machines_loop()
     qca700x.state_machine_loop();
     slac.state_machine_loop();
     sdp.state_machine_loop();
-    din70121.state_machine_loop();
+    common.state_machine_loop();
+    // common calls din70121, iso2 and iso20 state machines
 }

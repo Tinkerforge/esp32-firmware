@@ -23,6 +23,7 @@
 #include "config.h"
 #include "slac.h"
 #include "sdp.h"
+#include "common.h"
 #include "din70121.h"
 #include "iso2.h"
 #include "iso20.h"
@@ -31,6 +32,7 @@ class ISO15118 final : public IModule
 {
 private:
     ConfigRoot config;
+    ConfigRoot state_common;
     ConfigRoot state_din70121;
     ConfigRoot state_iso2;
     ConfigRoot state_iso20;
@@ -48,6 +50,7 @@ public:
 
     SLAC slac;
     SDP sdp;
+    Common common;
     DIN70121 din70121;
     ISO2 iso2;
     ISO20 iso20;

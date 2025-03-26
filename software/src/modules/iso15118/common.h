@@ -25,31 +25,48 @@
 #include "lwip/sockets.h"
 
 #include "sdp.h"
+#include "cbv2g/app_handshake/appHand_Decoder.h"
+#include "cbv2g/app_handshake/appHand_Encoder.h"
 
-#include "cbv2g/common/exi_bitstream.h"
-#include "cbv2g/din/din_msgDefDecoder.h"
-#include "cbv2g/din/din_msgDefEncoder.h"
+#define SESSION_ID_LENGTH 4
 
-class DIN70121 final
+class Common final
 {
 public:
-    DIN70121(){}
+    Common(){}
+    void setup_socket();
+    void state_machine_loop();
     void pre_setup();
-    void handle_bitstream(exi_bitstream *exi);
+
 
     ConfigRoot api_state;
+    Config supported_protocols_prototype;
 
-    struct din_exiDocument dinDocDec;
-    struct din_exiDocument dinDocEnc;
+    uint8_t session_id[SESSION_ID_LENGTH];
+    enum class ExiType : uint8_t {
+        AppHand,
+        Din
+    };
+
+    void send_exi(ExiType type);
+    void prepare_din_header(struct din_MessageHeaderType *header);
 
 private:
     void handle_session_setup_req();
     void handle_supported_app_protocol_req();
-    void handle_service_discovery_req();
-    void handle_service_payment_selection_req();
-    void handle_contract_authentication_req();
-    void handle_charge_parameter_discovery_req();
-    void handle_session_stop_req();
+
+    void decode(uint8_t *data, const size_t length);
+
+    struct appHand_exiDocument appHandDec;
+    struct appHand_exiDocument appHandEnc;
+
+    int listen_socket = -1;
+    int active_socket = -1;
+    struct sockaddr_storage source_addr;
+    socklen_t addr_len = sizeof(source_addr);
+
+    uint8_t exi_data[1024] = {0};
 
     uint8_t state = 0;
+
 };
