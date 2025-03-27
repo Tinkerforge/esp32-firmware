@@ -31,6 +31,7 @@
 #define SUN_SPEC_ID 0x53756E53
 #define COMMON_MODEL_ID 1
 #define NON_IMPLEMENTED_UINT16 0xFFFF
+#define SUCCESSFUL_PARSE_TIMEOUT 1_m
 
 #define trace(fmt, ...) \
     do { \
@@ -82,6 +83,12 @@ void MeterSunSpec::setup(Config *ephemeral_config)
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         if (read_allowed) {
+            if (deadline_elapsed(last_successful_parse + SUCCESSFUL_PARSE_TIMEOUT)) {
+                logger.printfln("Last successful parse occurred too long ago, reconnecting to %s:%u", host.c_str(), port);
+                force_reconnect();
+                return;
+            }
+
             read_allowed = false;
             start_generic_read();
         }
@@ -114,6 +121,8 @@ void MeterSunSpec::pre_reboot()
 void MeterSunSpec::connect_callback()
 {
     GenericModbusTCPClient::connect_callback();
+
+    last_successful_parse = now_us();
 
     scan_start();
 }
@@ -260,6 +269,9 @@ void MeterSunSpec::read_done_callback()
         // TODO: Read again if parsing failed?
         return;
     }
+    else {
+        last_successful_parse = now_us();
+    }
 
     if (check_phase_voltages) {
         bool parse_again = false;
@@ -294,6 +306,9 @@ void MeterSunSpec::read_done_callback()
                 auto inconsistency = errors->get("inconsistency");
                 inconsistency->updateUint(inconsistency->asUint() + 1);
                 // TODO: Read again if parsing failed?
+            }
+            else {
+                last_successful_parse = now_us();
             }
         }
     }

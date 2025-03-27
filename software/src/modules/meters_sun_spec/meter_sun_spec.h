@@ -97,6 +97,8 @@ private:
 
     bool check_phase_voltages = false;
     uint32_t phase_voltage_index_cache[3];
+
+    micros_t last_successful_parse = 0_us;
 };
 
 #if defined(__GNUC__)
