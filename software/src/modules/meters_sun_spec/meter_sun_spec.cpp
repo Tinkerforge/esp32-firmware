@@ -278,7 +278,7 @@ void MeterSunSpec::read_done_callback()
                 quirks |= SUN_SPEC_QUIRKS_FLOAT_IS_LE32;
                 parse_again = true;
             }
-            else if (value > 200) {
+            else if (value > 100) {
                 logger.printfln_meter("Check for float-is-le32 quirk completed due to normal L%zu-N voltage value: %.1f V", i + 1, static_cast<double>(value));
             }
             else {
