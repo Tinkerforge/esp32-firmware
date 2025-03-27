@@ -84,7 +84,7 @@ export class RemoteAccessStatus extends Component<{}, RemoteAccessStatusState> {
                     class="flex-wrap"
                     value={active_btn}
                     items={[
-                        ["warning", __("remote_access.status.disconnected")],
+                        ["danger", __("remote_access.status.disconnected")],
                         ["success", __("remote_access.status.connected")],
                         ["success", __("remote_access.status.connected_to_clients")(active_clients)],
                     ]}/>
