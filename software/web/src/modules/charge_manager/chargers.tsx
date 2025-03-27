@@ -313,8 +313,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
         const ap_subnet = util.parseIP(API.get("wifi/ap_config").subnet);
         const ap_network = ap_ip & ap_subnet;
         const ap_broadcast =  (~ap_subnet) | ap_network;
-        if (API.get("wifi/ap_config").subnet != "255.255.255.254" && (v == this.intToIP(ap_network) || v == this.intToIP(ap_broadcast)))
-            return true;
+        return API.get("wifi/ap_config").subnet != "255.255.255.254" && (v == this.intToIP(ap_network) || v == this.intToIP(ap_broadcast))
     }
 
     render(props: {}, state: ChargeManagerConfig & ChargersState) {

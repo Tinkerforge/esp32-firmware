@@ -155,7 +155,7 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                                             no_variant: "secondary",
                                             yes_variant: "danger",
                                         }))
-                                        return false;
+                                            return;
 
                                         await API.call('evse/reset_dc_fault_current_state',
                                                     {"password": 0xDC42FA23},

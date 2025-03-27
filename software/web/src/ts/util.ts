@@ -835,6 +835,7 @@ export function hexToRgb(hex: string): {r: number, g: number, b: number, a?: num
             a: parseInt(hex.slice(6, 8), 16)
         };
     }
+    return {r: 0, g: 0, b: 0, a: 0};
 }
 
 // From https://axonflux.com/handy-rgb-to-hsl-and-rgb-to-hsv-color-model-c

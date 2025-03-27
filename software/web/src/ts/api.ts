@@ -190,7 +190,7 @@ export async function call_unchecked(topic: string, payload: any, error_string?:
                     no_variant: "secondary",
                     yes_variant: "danger"
                 }))
-                return;
+                return blob;
 
             util.reboot();
         }

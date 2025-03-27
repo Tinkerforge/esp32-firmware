@@ -107,11 +107,11 @@ export class UplotWrapperB extends Component<UplotWrapperBProps, {}> {
     y2_other_size: number = 0;
     y2_label_size: number = 20;
 
-    shouldComponentUpdate() {
+    override shouldComponentUpdate() {
         return false;
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         if (this.uplot) {
             return;
         }
@@ -501,7 +501,7 @@ export class UplotWrapperB extends Component<UplotWrapperBProps, {}> {
                 },
             });
 
-            options.scales.y2 = {
+            options.scales['y2'] = {
                 range: (self: uPlot, initMin: number, initMax: number, scaleKey: string): uPlot.Range.MinMax => {
                     return uPlot.rangeNum(this.y2_min, this.y2_max, {min: {}, max: {}});
                 }

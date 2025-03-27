@@ -364,7 +364,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
         });
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         if (this.props.status_ref) {
             this.props.status_ref.current.set_on_mount(() => this.update_status_uplot());
         }
@@ -1234,7 +1234,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
         }
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         if (this.power_sum_interval_id !== null) {
             return;
         }
@@ -1284,7 +1284,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
         }, 1000);
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this.power_sum_interval_id === null) {
             return;
         }
@@ -1444,8 +1444,8 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                                         {pv_power_sum !== null ?
                                             <div class="col-auto px-2 mb-2 text-nowrap">
                                                 <div class="meters-status-power-sums-icon pr-2"><Sun/></div>
-                                                <div class="text-right" style={"display: inline-block; min-width: " + this.state.power_sum_min_width.pv + "px;"}>
-                                                    <div ref={this.power_sum_ref.pv} class="meters-status-power-sums-text-main">{util.toLocaleFixed(Math.abs(pv_power_sum))} W</div>
+                                                <div class="text-right" style={"display: inline-block; min-width: " + this.state.power_sum_min_width['pv'] + "px;"}>
+                                                    <div ref={this.power_sum_ref['pv']} class="meters-status-power-sums-text-main">{util.toLocaleFixed(Math.abs(pv_power_sum))} W</div>
                                                 </div>
                                             </div> : undefined}
                                         {grid_power_sum !== null ?
@@ -1458,23 +1458,23 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                                                         <path d="m4 15s0-3 3-3h10c3 0 3 3 3 3"/>
                                                     </svg>
                                                 </div>
-                                                <div class="text-right" style={"display: inline-block; min-width: " + this.state.power_sum_min_width.grid + "px;"}>
-                                                    <div ref={this.power_sum_ref.grid} class="meters-status-power-sums-text-main">{util.toLocaleFixed(grid_power_sum)} W</div>
+                                                <div class="text-right" style={"display: inline-block; min-width: " + this.state.power_sum_min_width['grid'] + "px;"}>
+                                                    <div ref={this.power_sum_ref['grid']} class="meters-status-power-sums-text-main">{util.toLocaleFixed(grid_power_sum)} W</div>
                                                 </div>
                                             </div> : undefined}
                                         {battery_power_sum !== null || battery_soc_avg !== null ?
                                             <div class="col-auto px-2 mb-2 text-nowrap">
                                                 <div class="meters-status-power-sums-icon pr-2">{battery_power_sum !== null && battery_power_sum > 0 ? <BatteryCharging/> : <Battery/>}</div>
-                                                <div style={"display: inline-block; vertical-align: middle; min-width: " + this.state.power_sum_min_width.battery + "px;"}>
+                                                <div style={"display: inline-block; vertical-align: middle; min-width: " + this.state.power_sum_min_width['battery'] + "px;"}>
                                                     <div class="row no-gutters">
                                                         <div class="col"></div>
                                                         <div class="col-auto">
                                                             {battery_power_sum !== null && battery_soc_avg !== null
-                                                                ? <><div ref={this.power_sum_ref.battery} class="meters-status-power-sums-text-main text-left">{util.toLocaleFixed(battery_soc_avg)} %</div>
+                                                                ? <><div ref={this.power_sum_ref['battery']} class="meters-status-power-sums-text-main text-left">{util.toLocaleFixed(battery_soc_avg)} %</div>
                                                                     <div class="meters-status-power-sums-text-sub text-left">{util.toLocaleFixed(battery_power_sum)} W</div></>
                                                                 : (battery_soc_avg !== null
-                                                                    ? <div ref={this.power_sum_ref.battery} class="meters-status-power-sums-text-main">{util.toLocaleFixed(battery_soc_avg)} %</div>
-                                                                    : <div ref={this.power_sum_ref.battery} class="meters-status-power-sums-text-main">{util.toLocaleFixed(battery_power_sum)} W</div>
+                                                                    ? <div ref={this.power_sum_ref['battery']} class="meters-status-power-sums-text-main">{util.toLocaleFixed(battery_soc_avg)} %</div>
+                                                                    : <div ref={this.power_sum_ref['battery']} class="meters-status-power-sums-text-main">{util.toLocaleFixed(battery_power_sum)} W</div>
                                                                 )}
                                                         </div>
                                                     </div>
@@ -1483,8 +1483,8 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                                         {load_power_sum !== null ?
                                             <div class="col-auto px-2 mb-2 text-nowrap">
                                                 <div class="meters-status-power-sums-icon pr-2"><Home/></div>
-                                                <div class="text-right" style={"display: inline-block; min-width: " + this.state.power_sum_min_width.load + "px;"}>
-                                                    <div ref={this.power_sum_ref.load} class="meters-status-power-sums-text-main">{util.toLocaleFixed(load_power_sum)} W</div>
+                                                <div class="text-right" style={"display: inline-block; min-width: " + this.state.power_sum_min_width['load'] + "px;"}>
+                                                    <div ref={this.power_sum_ref['load']} class="meters-status-power-sums-text-main">{util.toLocaleFixed(load_power_sum)} W</div>
                                                 </div>
                                             </div> : undefined}
                                     </div>
