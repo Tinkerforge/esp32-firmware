@@ -60,11 +60,11 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
     y2_size_offset: number = 22;
     y2_other_size: number = 0;
 
-    shouldComponentUpdate() {
+    override shouldComponentUpdate() {
         return false;
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         if (this.uplot) {
             return;
         }

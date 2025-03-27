@@ -93,7 +93,7 @@ export function SwitchableInputNumber(props: SwitchableInputNumberProps) {
                 disabled={!props.checked || props.disabled}
             />
             <div class="input-group-append">
-                {props.unit ? <div class="form-control input-group-text">{this.props.unit}</div> : undefined}
+                {props.unit ? <div class="form-control input-group-text">{props.unit}</div> : undefined}
                 <Button variant="primary"
                         disabled={!props.checked || props.value == props.min || props.disabled}
                         className="form-control px-1"

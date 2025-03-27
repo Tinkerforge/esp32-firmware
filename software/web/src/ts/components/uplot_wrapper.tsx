@@ -77,11 +77,11 @@ export class UplotWrapperA extends Component<UplotWrapperAProps, {}> {
     y_size_offset: number = 22;
     y_label_size: number = 20;
 
-    shouldComponentUpdate() {
+    override shouldComponentUpdate() {
         return false;
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         if (this.uplot) {
             return;
         }

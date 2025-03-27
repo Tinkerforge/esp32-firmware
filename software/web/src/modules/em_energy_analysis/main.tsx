@@ -711,7 +711,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         });
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this.props.status_ref.current.set_on_mount(() => this.update_status_uplot());
     }
 
@@ -1689,7 +1689,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     response = await (await util.put('energy_manager/history_wallbox_5min', {uid: uid, year: year, month: month, day: day})).text();
                 } catch (e) {
                     console.log('Energy Analysis: Could not get wallbox 5min data: ' + e);
-                    return false;
+                    resolve(false);
+                    return;
                 }
 
                 // reload now timestamp, because of the await call before, the previous value is
@@ -1947,7 +1948,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         let key = this.date_to_daily_key(date);
 
         if (key == null) {
-            return;
+            return true;
         }
 
         if (this.wallbox_daily_cache[uid]

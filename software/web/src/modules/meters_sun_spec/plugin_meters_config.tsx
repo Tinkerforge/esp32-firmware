@@ -207,7 +207,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
         });
     }
 
-    async componentWillUnmount() {
+    override async componentWillUnmount() {
         await this.abort_scan();
     }
 

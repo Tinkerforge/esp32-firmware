@@ -1,6 +1,16 @@
 {
     "compilerOptions": {
+        "allowUnusedLabels": false,
+        "alwaysStrict": true,
+        "noFallthroughCasesInSwitch": true,
         "noImplicitAny": true,
+        "noImplicitOverride": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "noUncheckedIndexedAccess": true,
+        "strictBindCallApply": true,
+        "strictBuiltinIteratorReturn": true,
         "esModuleInterop": true,
         "target": "es6",
         "jsx": "react",

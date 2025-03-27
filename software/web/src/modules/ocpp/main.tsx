@@ -325,6 +325,7 @@ export class OcppStatus extends Component<{}, OcppStatusState> {
             // txn running
             return translate_unchecked(`ocpp.content.status_${ocpp.connector_status}`);
         }
+        return "unknown status";
     }
 
     getStatusLine() {
