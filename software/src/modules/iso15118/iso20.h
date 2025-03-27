@@ -22,11 +22,16 @@
 #include "module.h"
 #include "config.h"
 
+#include "cbv2g/common/exi_bitstream.h"
+#include "cbv2g/iso_2/iso2_msgDefDecoder.h"
+#include "cbv2g/iso_2/iso2_msgDefEncoder.h"
+
 class ISO20 final
 {
 public:
     ISO20(){}
     void pre_setup();
+    void handle_bitstream(exi_bitstream *exi);
 
     ConfigRoot api_state;
 

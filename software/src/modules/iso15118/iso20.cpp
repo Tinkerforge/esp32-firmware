@@ -26,3 +26,8 @@ void ISO20::pre_setup()
     api_state = Config::Object({
     });
 }
+
+void ISO20::handle_bitstream(exi_bitstream *exi)
+{
+    // TBD
+}
