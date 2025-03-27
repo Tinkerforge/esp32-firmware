@@ -23,8 +23,10 @@
 #include "config.h"
 
 #include "cbv2g/common/exi_bitstream.h"
-#include "cbv2g/iso_2/iso2_msgDefDecoder.h"
-#include "cbv2g/iso_2/iso2_msgDefEncoder.h"
+#include "cbv2g/iso_20/iso20_CommonMessages_Decoder.h"
+#include "cbv2g/iso_20/iso20_CommonMessages_Encoder.h"
+#include "cbv2g/iso_20/iso20_AC_Decoder.h"
+#include "cbv2g/iso_20/iso20_AC_Encoder.h"
 
 class ISO20 final
 {
