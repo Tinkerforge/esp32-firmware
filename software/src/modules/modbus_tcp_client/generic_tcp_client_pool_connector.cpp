@@ -23,6 +23,10 @@
 
 void GenericTCPClientPoolConnector::connect_internal()
 {
+    if (connected_client != nullptr) {
+        return;
+    }
+
     pool->acquire(host.c_str(), port,
     [this](TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPSharedClient *shared_client) {
         if (result == TFGenericTCPClientConnectResult::Connected) {
@@ -32,6 +36,10 @@ void GenericTCPClientPoolConnector::connect_internal()
         connect_callback_common(result, error_number);
     },
     [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client) {
+        if (connected_client != shared_client) {
+            return;
+        }
+
         connected_client = nullptr;
 
         disconnect_callback_common(reason, error_number);
