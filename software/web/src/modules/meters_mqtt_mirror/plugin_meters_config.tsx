@@ -73,7 +73,9 @@ export function init() {
                         <Switch desc={__("meters_mqtt_mirror.content.auto_desc")}
                             checked={config[1].auto}
                             disabled={true}
-                            onClick={() => this.setState({auto: !this.config[1].auto})}
+                            onClick={() => {
+                                on_config(util.get_updated_union(config, {auto: !config[1].auto}));
+                            }}
                         />
                     </FormRow>,
                     <FormRow label={__("meters_mqtt_mirror.content.meter_path")}>
