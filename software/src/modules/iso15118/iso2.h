@@ -22,11 +22,29 @@
 #include "module.h"
 #include "config.h"
 
+#include "cbv2g/common/exi_bitstream.h"
+#include "cbv2g/iso_2/iso2_msgDefDecoder.h"
+#include "cbv2g/iso_2/iso2_msgDefEncoder.h"
+
 class ISO2 final
 {
 public:
     ISO2(){}
     void pre_setup();
+    void handle_bitstream(exi_bitstream *exi);
 
     ConfigRoot api_state;
+    struct iso2_exiDocument iso2DocDec;
+    struct iso2_exiDocument iso2DocEnc;
+
+private:
+    void handle_session_setup_req();
+    void handle_supported_app_protocol_req();
+    void handle_service_discovery_req();
+    void handle_payment_service_selection_req();
+    void handle_authorization_req();
+    void handle_charge_parameter_discovery_req();
+    void handle_session_stop_req();
+
+    uint8_t state = 0;
 };

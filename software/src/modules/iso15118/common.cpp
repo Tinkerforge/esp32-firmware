@@ -144,6 +144,16 @@ void Common::prepare_din_header(struct din_MessageHeaderType *header)
     header->SessionID.bytesLen = SESSION_ID_LENGTH;
 }
 
+void Common::prepare_iso2_header(struct iso2_MessageHeaderType *header)
+{
+    header->Notification_isUsed = 0;
+    header->Signature_isUsed = 0;
+    for (uint8_t i = 0; i < SESSION_ID_LENGTH; i++) {
+        header->SessionID.bytes[i] = session_id[i];
+    }
+    header->SessionID.bytesLen = SESSION_ID_LENGTH;
+}
+
 void Common::send_exi(ExiType type)
 {
     memset(exi_data, 0, sizeof(exi_data));
@@ -151,11 +161,21 @@ void Common::send_exi(ExiType type)
     exi_bitstream exi;
     exi_bitstream_init(&exi, &exi_data[sizeof(V2GTP_Header)], 1024 - sizeof(V2GTP_Header), 0, nullptr);
 
-    if (type == ExiType::Din) {
-        prepare_din_header(&iso15118.din70121.dinDocEnc.V2G_Message.Header);
-        encode_din_exiDocument(&exi, &iso15118.din70121.dinDocEnc);
-    } else if (type == ExiType::AppHand) {
-        encode_appHand_exiDocument(&exi, &appHandEnc);
+    switch(type) {
+        case ExiType::AppHand:
+            encode_appHand_exiDocument(&exi, &appHandEnc);
+            break;
+        case ExiType::Din:
+            prepare_din_header(&iso15118.din70121.dinDocEnc.V2G_Message.Header);
+            encode_din_exiDocument(&exi, &iso15118.din70121.dinDocEnc);
+            break;
+        case ExiType::Iso2:
+            prepare_iso2_header(&iso15118.iso2.iso2DocEnc.V2G_Message.Header);
+            encode_iso2_exiDocument(&exi, &iso15118.iso2.iso2DocEnc);
+            break;
+        case ExiType::Iso20:
+            // TBD
+            break;
     }
 
     const size_t length = exi_bitstream_get_length(&exi);
@@ -194,7 +214,7 @@ void Common::decode(uint8_t *data, const size_t length)
     exi_bitstream exi;
     exi_bitstream_init(&exi, &data[sizeof(V2GTP_Header)], length - sizeof(V2GTP_Header), 0, nullptr);
 
-    if (state == 0) {
+    if (exi_in_use == ExiType::AppHand) {
         memset(&appHandDec, 0, sizeof(appHandDec));
         memset(&appHandEnc, 0, sizeof(appHandEnc));
         int ret = decode_appHand_exiDocument(&exi, &appHandDec);
@@ -205,9 +225,12 @@ void Common::decode(uint8_t *data, const size_t length)
             handle_supported_app_protocol_req();
             appHandDec.supportedAppProtocolReq_isUsed = 0;
         }
-    } else {
-        // TODO: Use din70121, iso2 or iso20 depending on handshake above
+    } else if (exi_in_use == ExiType::Din) {
         iso15118.din70121.handle_bitstream(&exi);
+    } else if (exi_in_use == ExiType::Iso2) {
+        iso15118.iso2.handle_bitstream(&exi);
+    } else if (exi_in_use == ExiType::Iso20) {
+        iso15118.iso20.handle_bitstream(&exi);
     }
 
     api_state.get("state")->updateUint(state);
@@ -218,29 +241,53 @@ void Common::handle_supported_app_protocol_req()
     struct appHand_supportedAppProtocolReq *req = &appHandDec.supportedAppProtocolReq;
     struct appHand_supportedAppProtocolRes *res = &appHandEnc.supportedAppProtocolRes;
 
-    // process data when no errors occured during decoding
-    int8_t schema_id = -1;
-    uint8_t index = 0;
-
-    // check all schemas for DIN
+    // check all schemas for DIN, ISO2 and ISO20
     logger.printfln("EV supports %u protocols", req->AppProtocol.arrayLen);
     api_state.get("supported_protocols")->removeAll();
 
+    int8_t  din70121_schema_id = -1;
+    uint8_t din70121_index     =  0;
+    int8_t  iso2_schema_id     = -1;
+    uint8_t iso2_index         =  0;
+    int8_t  iso20_schema_id    = -1;
+    uint8_t iso20_index        =  0;
+
     for(uint16_t i = 0; i < req->AppProtocol.arrayLen; i++) {
         if (strnstr(req->AppProtocol.array[i].ProtocolNamespace.characters, ":din:70121:", req->AppProtocol.array[i].ProtocolNamespace.charactersLen) != nullptr) {
-            schema_id = req->AppProtocol.array[i].SchemaID;
-            index = i;
+            din70121_schema_id = req->AppProtocol.array[i].SchemaID;
+            din70121_index     = i;
+        } else if (strnstr(req->AppProtocol.array[i].ProtocolNamespace.characters, "iso:15118:2:", req->AppProtocol.array[i].ProtocolNamespace.charactersLen) != nullptr) {
+            iso2_schema_id = req->AppProtocol.array[i].SchemaID;
+            iso2_index     = i;
+        } else if(strnstr(req->AppProtocol.array[i].ProtocolNamespace.characters, "iso:15118:20:", req->AppProtocol.array[i].ProtocolNamespace.charactersLen) != nullptr) {
+            iso20_schema_id = req->AppProtocol.array[i].SchemaID;
+            iso20_index     = i;
         }
+
         logger.printfln_continue("%d: %s", req->AppProtocol.array[i].SchemaID, req->AppProtocol.array[i].ProtocolNamespace.characters);
+        iso15118.trace(" found %d: %s", req->AppProtocol.array[i].SchemaID, req->AppProtocol.array[i].ProtocolNamespace.characters);
         api_state.get("supported_protocols")->add()->updateString(req->AppProtocol.array[i].ProtocolNamespace.characters);
     }
 
-    if (schema_id == -1) {
-        logger.printfln("EV does not support DIN 70121");
+    if ((din70121_schema_id == -1) && (iso2_schema_id == -1)) {
+        logger.printfln("EV does not support DIN 70121 or ISO 15118-2");
         api_state.get("protocol")->updateString("-");
         return;
     } else {
-        logger.printfln("Using DIN 70121");
+        // Prefer ISO 15118-2 (if available) over DIN 70121
+        uint8_t schema_id = 0;
+        uint8_t index     = 0;
+        if (iso2_schema_id != -1) {
+            schema_id  = iso2_schema_id;
+            index      = iso2_index;
+            exi_in_use = ExiType::Iso2;
+            logger.printfln("Using ISO 15118-2");
+        } else {
+            schema_id  = din70121_schema_id;
+            index      = din70121_index;
+            exi_in_use = ExiType::Din;
+            logger.printfln("Using DIN 70121");
+        }
         api_state.get("protocol")->updateString(req->AppProtocol.array[index].ProtocolNamespace.characters);
 
         appHandEnc.supportedAppProtocolRes_isUsed = 1;
@@ -251,5 +298,8 @@ void Common::handle_supported_app_protocol_req()
 
         send_exi(Common::ExiType::AppHand);
         state = 1;
+
+        iso15118.trace("SupportedAppProtocolRes sent");
+        iso15118.trace(" use %d: %s", schema_id, req->AppProtocol.array[index].ProtocolNamespace.characters);
     }
 }

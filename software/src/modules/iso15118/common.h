@@ -45,11 +45,15 @@ public:
     uint8_t session_id[SESSION_ID_LENGTH];
     enum class ExiType : uint8_t {
         AppHand,
-        Din
+        Din,
+        Iso2,
+        Iso20
     };
+    ExiType exi_in_use = ExiType::AppHand;
 
     void send_exi(ExiType type);
     void prepare_din_header(struct din_MessageHeaderType *header);
+    void prepare_iso2_header(struct iso2_MessageHeaderType *header);
 
 private:
     void handle_session_setup_req();
