@@ -84,7 +84,7 @@ void MeterSunSpec::setup(Config *ephemeral_config)
     task_scheduler.scheduleWithFixedDelay([this]() {
         if (read_allowed) {
             if (deadline_elapsed(last_successful_parse + SUCCESSFUL_PARSE_TIMEOUT)) {
-                logger.printfln("Last successful parse occurred too long ago, reconnecting to %s:%u", host.c_str(), port);
+                logger.printfln("Last successful parse occurred too long ago, reconnecting to %s:%u", host_name.c_str(), port);
                 force_reconnect();
                 return;
             }

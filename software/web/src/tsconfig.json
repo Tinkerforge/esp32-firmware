@@ -10,7 +10,6 @@
         "noPropertyAccessFromIndexSignature": true,
         "noUncheckedIndexedAccess": true,
         "strictBindCallApply": true,
-        "strictBuiltinIteratorReturn": true,
         "esModuleInterop": true,
         "target": "es6",
         "jsx": "react",
