@@ -44,6 +44,8 @@ private:
     void handle_payment_service_selection_req();
     void handle_authorization_req();
     void handle_charge_parameter_discovery_req();
+    void handle_power_delivery_req();
+    void handle_charging_status_req();
     void handle_session_stop_req();
 
     uint8_t state = 0;
