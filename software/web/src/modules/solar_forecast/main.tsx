@@ -424,7 +424,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                 let diff    = Math.max(0, state.state.next_api_call - now);
                 let hours   = Math.floor(diff / 60);
                 let minutes = Math.floor(diff % 60);
-                let update_string = (hours == 0) ? `${minutes}m`:`${hours}h ${minutes}m`;
+                let update_string = (hours == 0) ? `${minutes}min`:`${hours}h ${minutes}min`;
                 if ((state.state.rate_limit != -1) && (state.state.rate_remaining != -1)) {
                     update_string += " " + __("solar_forecast.content.remaining_queries")(state.state.rate_remaining, state.state.rate_limit);
                 }
