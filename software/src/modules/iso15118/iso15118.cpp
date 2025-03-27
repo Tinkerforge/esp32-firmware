@@ -50,20 +50,31 @@
 void ISO15118::trace_array(const char *array_name, const uint8_t *array, const size_t array_size)
 {
 #if defined(BOARD_HAS_PSRAM)
-    trace("%s: %d bytes", array_name, array_size);
+    trace_ll("%s: %d bytes", array_name, array_size);
     for (size_t i = 0; i < array_size; i+=8) {
         switch(std::min(static_cast<size_t>(8), array_size - i)) {
-            case 1: trace("  %02x", array[i]); break;
-            case 2: trace("  %02x %02x", array[i], array[i+1]); break;
-            case 3: trace("  %02x %02x %02x", array[i], array[i+1], array[i+2]); break;
-            case 4: trace("  %02x %02x %02x %02x", array[i], array[i+1], array[i+2], array[i+3]); break;
-            case 5: trace("  %02x %02x %02x %02x %02x", array[i], array[i+1], array[i+2], array[i+3], array[i+4]); break;
-            case 6: trace("  %02x %02x %02x %02x %02x %02x", array[i], array[i+1], array[i+2], array[i+3], array[i+4], array[i+5]); break;
-            case 7: trace("  %02x %02x %02x %02x %02x %02x %02x", array[i], array[i+1], array[i+2], array[i+3], array[i+4], array[i+5], array[i+6]); break;
-            case 8: trace("  %02x %02x %02x %02x %02x %02x %02x %02x", array[i], array[i+1], array[i+2], array[i+3], array[i+4], array[i+5], array[i+6], array[i+7]); break;
+            case 1: trace_ll("  %02x", array[i]); break;
+            case 2: trace_ll("  %02x %02x", array[i], array[i+1]); break;
+            case 3: trace_ll("  %02x %02x %02x", array[i], array[i+1], array[i+2]); break;
+            case 4: trace_ll("  %02x %02x %02x %02x", array[i], array[i+1], array[i+2], array[i+3]); break;
+            case 5: trace_ll("  %02x %02x %02x %02x %02x", array[i], array[i+1], array[i+2], array[i+3], array[i+4]); break;
+            case 6: trace_ll("  %02x %02x %02x %02x %02x %02x", array[i], array[i+1], array[i+2], array[i+3], array[i+4], array[i+5]); break;
+            case 7: trace_ll("  %02x %02x %02x %02x %02x %02x %02x", array[i], array[i+1], array[i+2], array[i+3], array[i+4], array[i+5], array[i+6]); break;
+            case 8: trace_ll("  %02x %02x %02x %02x %02x %02x %02x %02x", array[i], array[i+1], array[i+2], array[i+3], array[i+4], array[i+5], array[i+6], array[i+7]); break;
             default: case 0: break;
         }
     }
+#endif
+}
+
+void ISO15118::trace_ll(const char *fmt, ...)
+{
+#if defined(BOARD_HAS_PSRAM)
+    va_list args;
+
+    va_start(args, fmt);
+    logger.vtracefln_plain(trace_buffer_index_ll, fmt, args);
+    va_end(args);
 #endif
 }
 
@@ -80,7 +91,8 @@ void ISO15118::trace(const char *fmt, ...)
 
 void ISO15118::pre_setup()
 {
-    this->trace_buffer_index = logger.alloc_trace_buffer("iso15118", 1 << 20);
+    this->trace_buffer_index    = logger.alloc_trace_buffer("iso15118", 1 << 19);
+    this->trace_buffer_index_ll = logger.alloc_trace_buffer("iso15118_ll", 1 << 19);
 
     config = ConfigRoot{Config::Object({
     }), [this](Config &update, ConfigSource source) -> String {
