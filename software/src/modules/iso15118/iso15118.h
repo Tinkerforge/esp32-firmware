@@ -38,6 +38,7 @@ private:
     ConfigRoot state_iso20;
 
     size_t trace_buffer_index;
+    size_t trace_buffer_index_ll;
 
 public:
     ISO15118(){}
@@ -46,6 +47,7 @@ public:
     void register_urls() override;
     void state_machines_loop();
     void trace(const char *fmt, ...);
+    void trace_ll(const char *fmt, ...);
     void trace_array(const char *array_name, const uint8_t *array, const size_t array_size);
 
     SLAC slac;
