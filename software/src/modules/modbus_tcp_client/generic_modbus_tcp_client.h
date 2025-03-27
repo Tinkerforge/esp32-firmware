@@ -52,7 +52,6 @@ private:
     void read_next();
 
     micros_t last_successful_read = 0_us;
-    micros_t successful_read_timeout = 1_min;
 
     uint8_t read_buffer_num;
     uint16_t read_block_size;
