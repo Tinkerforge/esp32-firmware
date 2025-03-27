@@ -551,9 +551,6 @@ void SLAC::poll_modem(void)
                     state = SLAC::State::LinkDetected;
                 }
 
-                logger.printfln("IPv6 packet received: %d", ethernet_frame_length);
-                iso15118.trace_array("IPv6 packet", buffer + QCA700X_RECV_HEADER_SIZE, ethernet_frame_length);
-
                 qca700x.received_data_to_netif(buffer + QCA700X_RECV_HEADER_SIZE, ethernet_frame_length);
                 break;
             }
