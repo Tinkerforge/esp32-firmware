@@ -24,17 +24,6 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
-#include "esp_netif.h"
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include "lwip/ip_addr.h"
-#include "lwip/sockets.h"
-#include "cbv2g/exi_v2gtp.h"
-#include "cbv2g/app_handshake/appHand_Decoder.h"
-#include "cbv2g/app_handshake/appHand_Encoder.h"
-#include "cbv2g/din/din_msgDefDecoder.h"
-#include "cbv2g/din/din_msgDefEncoder.h"
-#include "cbv2g/common/exi_bitstream.h"
 
 void DIN70121::pre_setup()
 {
@@ -82,7 +71,10 @@ void DIN70121::handle_bitstream(exi_bitstream *exi)
     memset(&dinDocDec, 0, sizeof(dinDocDec));
     memset(&dinDocEnc, 0, sizeof(dinDocEnc));
     int ret = decode_din_exiDocument(exi, &dinDocDec);
-    logger.printfln("DIN70121: decode_din_exiDocument: %d", ret);
+    if (ret != 0) {
+        logger.printfln("DIN70121: Could not decode EXI document: %d", ret);
+        return;
+    }
 
     if (dinDocDec.V2G_Message.Body.SessionSetupReq_isUsed) {
         iso15118.trace("DIN70121: SessionSetupReq received");
@@ -240,6 +232,10 @@ void DIN70121::handle_session_setup_req()
 
     iso15118.common.send_exi(Common::ExiType::Din);
     state = 2;
+
+    iso15118.trace("DIN70121: SessionSetupRes sent");
+    iso15118.trace(" ResponseCode: %d", res->ResponseCode);
+    iso15118.trace(" SessionID %02x%02x%02x%02x", iso15118.common.session_id[0], iso15118.common.session_id[1], iso15118.common.session_id[2], iso15118.common.session_id[3]);
 }
 
 void DIN70121::handle_service_discovery_req()
@@ -281,12 +277,21 @@ void DIN70121::handle_service_discovery_req()
 
     iso15118.common.send_exi(Common::ExiType::Din);
     state = 3;
+
+    iso15118.trace("DIN70121: ServiceDiscoveryRes sent");
+    iso15118.trace(" ResponseCode: %d", res->ResponseCode);
+    iso15118.trace(" PaymentOption: %d", res->PaymentOptions.PaymentOption.array[0]);
+    iso15118.trace(" ServiceID: %d", res->ChargeService.ServiceTag.ServiceID);
+    iso15118.trace(" ServiceCategory: %d", res->ChargeService.ServiceTag.ServiceCategory);
+    iso15118.trace(" FreeService: %d", res->ChargeService.FreeService);
+    iso15118.trace(" EnergyTransferType: %d", res->ChargeService.EnergyTransferType);
 }
 
 void DIN70121::handle_service_payment_selection_req()
 {
     din_ServicePaymentSelectionReqType *req = &dinDocDec.V2G_Message.Body.ServicePaymentSelectionReq;
     din_ServicePaymentSelectionResType *res = &dinDocEnc.V2G_Message.Body.ServicePaymentSelectionRes;
+    iso15118.trace(" SelectedPaymentOption: %d", req->SelectedPaymentOption);
 
     if (req->SelectedPaymentOption == din_paymentOptionType_ExternalPayment) {
         dinDocEnc.V2G_Message.Body.ServicePaymentSelectionRes_isUsed = 1;
@@ -294,6 +299,9 @@ void DIN70121::handle_service_payment_selection_req()
 
         iso15118.common.send_exi(Common::ExiType::Din);
         state = 4;
+
+        iso15118.trace("DIN70121: ServicePaymentSelectionRes sent");
+        iso15118.trace(" ResponseCode: %d", res->ResponseCode);
     }
 }
 
@@ -309,16 +317,46 @@ void DIN70121::handle_contract_authentication_req()
 
     // Set Authorisation to Finished here.
     // We want to go on ChargeParameteryDiscovery to read the SoC and then use Ongoing.
+    res->ResponseCode = din_responseCodeType_OK;
     res->EVSEProcessing = din_EVSEProcessingType_Finished;
     iso15118.common.send_exi(Common::ExiType::Din);
 
     state = 5;
+
+    iso15118.trace("DIN70121: ContractAuthenticationRes sent");
+    iso15118.trace(" ResponseCode: %d", res->ResponseCode);
+    iso15118.trace(" EVSEProcessing: %d", res->EVSEProcessing);
 }
 
 void DIN70121::handle_charge_parameter_discovery_req()
 {
     din_ChargeParameterDiscoveryReqType* req = &dinDocDec.V2G_Message.Body.ChargeParameterDiscoveryReq;
     din_ChargeParameterDiscoveryResType* res = &dinDocDec.V2G_Message.Body.ChargeParameterDiscoveryRes;
+
+    iso15118.trace(" DC_EVStatus.EVRESSSOC: %d", req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
+    iso15118.trace(" DC_EVStatus.EVReady: %d", req->DC_EVChargeParameter.DC_EVStatus.EVReady);
+    iso15118.trace(" DC_EVStatus.EVCabinConditioning: %d", req->DC_EVChargeParameter.DC_EVStatus.EVCabinConditioning);
+    iso15118.trace(" DC_EVStatus.EVCabinConditioning_isUsed: %d", req->DC_EVChargeParameter.DC_EVStatus.EVCabinConditioning_isUsed);
+    iso15118.trace(" DC_EVStatus.EVRESSConditioning: %d", req->DC_EVChargeParameter.DC_EVStatus.EVRESSConditioning);
+    iso15118.trace(" DC_EVStatus.EVRESSConditioning_isUsed: %d", req->DC_EVChargeParameter.DC_EVStatus.EVRESSConditioning_isUsed);
+    iso15118.trace(" DC_EVStatus.EVErrorCode: %d", req->DC_EVChargeParameter.DC_EVStatus.EVErrorCode);
+    iso15118.trace(" EVMaximumCurrentLimit.Value: %d", req->DC_EVChargeParameter.EVMaximumCurrentLimit.Value);
+    iso15118.trace(" EVMaximumCurrentLimit.Multiplier: %d", req->DC_EVChargeParameter.EVMaximumCurrentLimit.Multiplier);
+    iso15118.trace(" EVMaximumPowerLimit.Value: %d", req->DC_EVChargeParameter.EVMaximumPowerLimit.Value);
+    iso15118.trace(" EVMaximumPowerLimit.Multiplier: %d", req->DC_EVChargeParameter.EVMaximumPowerLimit.Multiplier);
+    iso15118.trace(" EVMaximumPowerLimit_isUsed: %d", req->DC_EVChargeParameter.EVMaximumPowerLimit_isUsed);
+    iso15118.trace(" EVMaximumVoltageLimit.Value: %d", req->DC_EVChargeParameter.EVMaximumVoltageLimit.Value);
+    iso15118.trace(" EVMaximumVoltageLimit.Multiplier: %d", req->DC_EVChargeParameter.EVMaximumVoltageLimit.Multiplier);
+    iso15118.trace(" EVEnergyCapacity.Value: %d", req->DC_EVChargeParameter.EVEnergyCapacity.Value);
+    iso15118.trace(" EVEnergyCapacity.Multiplier: %d", req->DC_EVChargeParameter.EVEnergyCapacity.Multiplier);
+    iso15118.trace(" EVEnergyCapacity_isUsed: %d", req->DC_EVChargeParameter.EVEnergyCapacity_isUsed);
+    iso15118.trace(" EVEnergyRequest.Value: %d", req->DC_EVChargeParameter.EVEnergyRequest.Value);
+    iso15118.trace(" EVEnergyRequest.Multiplier: %d", req->DC_EVChargeParameter.EVEnergyRequest.Multiplier);
+    iso15118.trace(" EVEnergyRequest_isUsed: %d", req->DC_EVChargeParameter.EVEnergyRequest_isUsed);
+    iso15118.trace(" FullSOC: %d", req->DC_EVChargeParameter.FullSOC);
+    iso15118.trace(" FullSOC_isUsed: %d", req->DC_EVChargeParameter.FullSOC_isUsed);
+    iso15118.trace(" BulkSOC: %d", req->DC_EVChargeParameter.BulkSOC);
+    iso15118.trace(" BulkSOC_isUsed: %d", req->DC_EVChargeParameter.BulkSOC_isUsed);
 
     api_state.get("soc")->updateInt(req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
     api_state.get("ev_ready")->updateInt(req->DC_EVChargeParameter.DC_EVStatus.EVReady);
@@ -378,6 +416,7 @@ void DIN70121::handle_charge_parameter_discovery_req()
     // TODO: Does [V2G-DC-863] + [V2G-DC-864] mean that we can only delay with EVSEProcessingType_Ongoing once?
     res->EVSEProcessing = din_EVSEProcessingType_Ongoing;
 
+#if 0
     // Invalid: An isolation test has not been carried out.
     res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus_isUsed = 1;
     res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus = din_isolationLevelType_Invalid;
@@ -398,7 +437,7 @@ void DIN70121::handle_charge_parameter_discovery_req()
 
     res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Unit = din_unitSymbolType_V;
     res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Unit_isUsed = 1;
-    res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Value = 400; // 400V
+    res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Value = 800; // 800V
     res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Multiplier = 0;
 
     res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Unit = din_unitSymbolType_A;
@@ -418,8 +457,8 @@ void DIN70121::handle_charge_parameter_discovery_req()
 
     res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Unit = din_unitSymbolType_W;
     res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Unit_isUsed = 1;
-    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Value = 20000; // 20000W * 10^1 = 200kW
-    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Multiplier = 1;
+    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Value = 4000; // 2000W * 10^2 = 400kW
+    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Multiplier = 2;
     res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit_isUsed = 1; // Mandatory according to the list?
 
     res->DC_EVSEChargeParameter_isUsed = 1;
@@ -459,8 +498,14 @@ void DIN70121::handle_charge_parameter_discovery_req()
     // [V2G-DC-552] In the scope of this document, the element “AC_EVSEChargeParameter” shall not be used
     res->AC_EVSEChargeParameter_isUsed = 0;
 
+#endif
+
     iso15118.common.send_exi(Common::ExiType::Din);
     state = 6;
+
+    iso15118.trace("DIN70121: ChargeParameterDiscoveryRes sent");
+    iso15118.trace(" ResponseCode: %d", res->ResponseCode);
+    iso15118.trace(" EVSEProcessing: %d", res->EVSEProcessing);
 }
 
 void DIN70121::handle_session_stop_req()
@@ -472,4 +517,7 @@ void DIN70121::handle_session_stop_req()
 
     iso15118.common.send_exi(Common::ExiType::Din);
     state = 7;
+
+    iso15118.trace("DIN70121: SessionStopRes sent");
+    iso15118.trace(" ResponseCode: %d", res->ResponseCode);
 }
