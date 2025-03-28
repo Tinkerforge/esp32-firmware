@@ -19,14 +19,14 @@
 
 #include "ship_connection.h"
 
-#include <time.h>
 #include <esp_https_server.h>
+#include <time.h>
 
+#include "build.h"
+#include "eebus.h"
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
-#include "build.h"
 #include "tools.h"
-#include "eebus.h"
 
 extern EEBus eebus;
 
@@ -54,12 +54,14 @@ void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
 
 void ShipConnection::schedule_close(const millis_t delay_ms)
 {
-    task_scheduler.scheduleOnce([this]() {
-        // Close socket and
-        ws_client.close_HTTPThread();
-        // remove this ShipConnection from vector of ShipConnections in Ship
-        eebus.ship.remove(*this);
-    }, delay_ms);
+    task_scheduler.scheduleOnce(
+        [this]() {
+            // Close socket and
+            ws_client.close_HTTPThread();
+            // remove this ShipConnection from vector of ShipConnections in Ship
+            eebus.ship.remove(*this);
+        },
+        delay_ms);
 }
 
 void ShipConnection::send_cmi_message(uint8_t type, uint8_t value)
@@ -74,7 +76,7 @@ void ShipConnection::send_current_outgoing_message()
         return;
     }
 
-    ws_client.sendOwnedNoFreeBlocking_HTTPThread((char*)message_outgoing->data, message_outgoing->length, HTTPD_WS_TYPE_BINARY);
+    ws_client.sendOwnedNoFreeBlocking_HTTPThread((char *)message_outgoing->data, message_outgoing->length, HTTPD_WS_TYPE_BINARY);
 }
 
 ShipConnection::CMIMessage ShipConnection::get_cmi_message()
@@ -98,15 +100,15 @@ ShipConnection::ProtocolState ShipConnection::get_protocol_state()
 
     if (strncmp((char *)&message_incoming->data[start_pos], "connectionHello", strlen("connectionHello")) == 0) {
         return ProtocolState::ConnectionHello;
-    } else if(strncmp((char *)&message_incoming->data[start_pos], "messageProtocolHandshake", strlen("messageProtocolHandshake")) == 0) {
+    } else if (strncmp((char *)&message_incoming->data[start_pos], "messageProtocolHandshake", strlen("messageProtocolHandshake")) == 0) {
         return ProtocolState::MessageProtocolHandshake;
-    } else if(strncmp((char *)&message_incoming->data[start_pos], "connectionPinState", strlen("connectionPinState")) == 0) {
+    } else if (strncmp((char *)&message_incoming->data[start_pos], "connectionPinState", strlen("connectionPinState")) == 0) {
         return ProtocolState::ConnectionPinState;
-    } else if(strncmp((char *)&message_incoming->data[start_pos], "accessMethodsRequest", strlen("accessMethodsRequest")) == 0) {
+    } else if (strncmp((char *)&message_incoming->data[start_pos], "accessMethodsRequest", strlen("accessMethodsRequest")) == 0) {
         return ProtocolState::AccessMethodsRequest;
-    } else if(strncmp((char *)&message_incoming->data[start_pos], "accessMethods", strlen("accessMethods")) == 0) {
+    } else if (strncmp((char *)&message_incoming->data[start_pos], "accessMethods", strlen("accessMethods")) == 0) {
         return ProtocolState::AccessMethods;
-    } else if(strncmp((char *)&message_incoming->data[start_pos], "data", strlen("data")) == 0) {
+    } else if (strncmp((char *)&message_incoming->data[start_pos], "data", strlen("data")) == 0) {
         return ProtocolState::Data;
     }
 
@@ -116,13 +118,11 @@ ShipConnection::ProtocolState ShipConnection::get_protocol_state()
 void ShipConnection::set_state(State state)
 {
     State old_state = this->state;
-    logger.printfln(
-        "State Change %s(%d) -> %s(%d)",
-        get_state_name(old_state),
-        static_cast<std::underlying_type<State>::type>(old_state),
-        get_state_name(state),
-        static_cast<std::underlying_type<State>::type>(state)
-    );
+    logger.printfln("State Change %s(%d) -> %s(%d)",
+                    get_state_name(old_state),
+                    static_cast<std::underlying_type<State>::type>(old_state),
+                    get_state_name(state),
+                    static_cast<std::underlying_type<State>::type>(state));
 
     this->state = state;
 }
@@ -133,56 +133,147 @@ void ShipConnection::set_and_schedule_state(State state)
     schedule_state_machine_next_step();
 }
 
+void ShipConnection::set_and_schedule_state(State state, millis_t delay_ms)
+{
+    task_scheduler.scheduleOnce(
+        [this, state]() {
+            this->set_and_schedule_state(state);
+        },
+        delay_ms);
+}
+
 void ShipConnection::schedule_state_machine_next_step()
 {
-    task_scheduler.scheduleOnce([this]() {
-        this->state_machine_next_step();
-    }, 0_ms);
+    task_scheduler.scheduleOnce(
+        [this]() {
+            this->state_machine_next_step();
+        },
+        0_ms);
 }
 
 void ShipConnection::state_machine_next_step()
 {
-    switch(state) {
-        case State::CmiInitStart:                             state_cme_init_start();                                break;
-        case State::CmiClientSend:                            state_cmi_client_send();                               break;
-        case State::CmiClientWait:                            state_cmi_client_wait();                               break;
-        case State::CmiClientEvaluate:                        state_cmi_client_evaluate();                           break;
-        case State::CmiServerWait:                            state_cmi_server_wait();                               break;
-        case State::CmiServerEvaluate:                        state_cmi_server_evaluate();                           break;
-        case State::SmeConnectionDataPreparation:             state_sme_connection_data_preparation();               break;
-        case State::SmeHello:                                 state_sme_hello();                                     break;
-        case State::SmeHelloReadyInit:                        state_sme_hello_ready_init();                          break;
-        case State::SmeHelloReadyListen:                      state_sme_hello_ready_listen();                        break;
-        case State::SmeHelloReadyTimeout:                     state_sme_hello_ready_timeout();                       break;
-        case State::SmeHelloPendingInit:                      state_sme_hello_pending_init();                        break;
-        case State::SmeHelloPendingListen:                    state_sme_hello_pending_listen();                      break;
-        case State::SmeHelloPendingTimeout:                   state_sme_hello_pending_timeout();                     break;
-        case State::SmeHelloOk:                               state_sme_hello_ok();                                  break;
-        case State::SmeHelloAbort:                            state_sme_hello_abort();                               break;
-        case State::SmeHelloAbortDone:                        state_sme_hello_abort_done();                          break;
-        case State::SmeHelloRemoteAbortDone:                  state_sme_hello_remote_abort_done();                   break;
-        case State::SmeHelloRejected:                         state_sme_hello_rejected();                            break;
-        case State::SmeProtocolHandshakeServerInit:           state_sme_protocol_handshake_server_init();            break;
-        case State::SmeProtocolHandshakeClientInit:           state_sme_protocol_handshake_client_init();            break;
-        case State::SmeProtocolHandshakeServerListenProposal: state_sme_protocol_handshake_server_listen_proposal(); break;
-        case State::SmeProtocolHandshakeServerListenConfirm:  state_sme_protocol_handshake_server_listen_confirm();  break;
-        case State::SmeProtocolHandshakeClientListenChoice:   state_sme_protocol_handshake_client_listen_choice();   break;
-        case State::SmeProtocolHandshakeTimeout:              state_sme_protocol_handshake_timeout();                break;
-        case State::SmeProtocolHandshakeClientOk:             state_sme_protocol_handshake_client_ok();              break;
-        case State::SmeProtocolHandshakeServerOk:             state_sme_protocol_handshake_server_ok();              break;
-        case State::SmePinCheckInit:                          state_sme_pin_check_init();                            break;
-        case State::SmePinCheckListen:                        state_sme_pin_check_listen();                          break;
-        case State::SmePinCheckError:                         state_sme_pin_check_error();                           break;
-        case State::SmePinCheckBusyInit:                      state_sme_pin_check_busy_init();                       break;
-        case State::SmePinCheckBusyWait:                      state_sme_pin_check_busy_wait();                       break;
-        case State::SmePinCheckOk:                            state_sme_pin_check_ok();                              break;
-        case State::SmePinAskInit:                            state_sme_pin_ask_init();                              break;
-        case State::SmePinAskProcess:                         state_sme_pin_ask_process();                           break;
-        case State::SmePinAskRestricted:                      state_sme_pin_ask_restricted();                        break;
-        case State::SmePinAskOk:                              state_sme_pin_ask_ok();                                break;
-        case State::SmeAccessMethodRequest:                   state_sme_access_method_request();                     break;
-        case State::Done:                                     state_done();                                          break;
-        default:                                              state_is_not_implemented();                            break;
+    switch (state) {
+        case State::CmiInitStart:
+            state_cme_init_start();
+            break;
+        case State::CmiClientSend:
+            state_cmi_client_send();
+            break;
+        case State::CmiClientWait:
+            state_cmi_client_wait();
+            break;
+        case State::CmiClientEvaluate:
+            state_cmi_client_evaluate();
+            break;
+        case State::CmiServerWait:
+            state_cmi_server_wait();
+            break;
+        case State::CmiServerEvaluate:
+            state_cmi_server_evaluate();
+            break;
+        case State::SmeConnectionDataPreparation:
+            state_sme_connection_data_preparation();
+            break;
+        case State::SmeHello:
+            state_sme_hello();
+            break;
+        case State::SmeHelloReadyInit:
+            state_sme_hello_ready_init();
+            break;
+        case State::SmeHelloReadyListen:
+            state_sme_hello_ready_listen();
+            break;
+        case State::SmeHelloReadyTimeout:
+            state_sme_hello_ready_timeout();
+            break;
+        case State::SmeHelloPendingInit:
+            state_sme_hello_pending_init();
+            break;
+        case State::SmeHelloPendingListen:
+            state_sme_hello_pending_listen();
+            break;
+        case State::SmeHelloPendingTimeout:
+            state_sme_hello_pending_timeout();
+            break;
+        case State::SmeHelloOk:
+            state_sme_hello_ok();
+            break;
+        case State::SmeHelloAbort:
+            state_sme_hello_abort();
+            break;
+        case State::SmeHelloAbortDone:
+            state_sme_hello_abort_done();
+            break;
+        case State::SmeHelloRemoteAbortDone:
+            state_sme_hello_remote_abort_done();
+            break;
+        case State::SmeHelloRejected:
+            state_sme_hello_rejected();
+            break;
+        case State::SmeProtocolHandshakeServerInit:
+            state_sme_protocol_handshake_server_init();
+            break;
+        case State::SmeProtocolHandshakeClientInit:
+            state_sme_protocol_handshake_client_init();
+            break;
+        case State::SmeProtocolHandshakeServerListenProposal:
+            state_sme_protocol_handshake_server_listen_proposal();
+            break;
+        case State::SmeProtocolHandshakeServerListenConfirm:
+            state_sme_protocol_handshake_server_listen_confirm();
+            break;
+        case State::SmeProtocolHandshakeClientListenChoice:
+            state_sme_protocol_handshake_client_listen_choice();
+            break;
+        case State::SmeProtocolHandshakeTimeout:
+            state_sme_protocol_handshake_timeout();
+            break;
+        case State::SmeProtocolHandshakeClientOk:
+            state_sme_protocol_handshake_client_ok();
+            break;
+        case State::SmeProtocolHandshakeServerOk:
+            state_sme_protocol_handshake_server_ok();
+            break;
+        case State::SmePinCheckInit:
+            state_sme_pin_check_init();
+            break;
+        case State::SmePinCheckListen:
+            state_sme_pin_check_listen();
+            break;
+        case State::SmePinCheckError:
+            state_sme_pin_check_error();
+            break;
+        case State::SmePinCheckBusyInit:
+            state_sme_pin_check_busy_init();
+            break;
+        case State::SmePinCheckBusyWait:
+            state_sme_pin_check_busy_wait();
+            break;
+        case State::SmePinCheckOk:
+            state_sme_pin_check_ok();
+            break;
+        case State::SmePinAskInit:
+            state_sme_pin_ask_init();
+            break;
+        case State::SmePinAskProcess:
+            state_sme_pin_ask_process();
+            break;
+        case State::SmePinAskRestricted:
+            state_sme_pin_ask_restricted();
+            break;
+        case State::SmePinAskOk:
+            state_sme_pin_ask_ok();
+            break;
+        case State::SmeAccessMethodRequest:
+            state_sme_access_method_request();
+            break;
+        case State::Done:
+            state_done();
+            break;
+        default:
+            state_is_not_implemented();
+            break;
     }
 }
 
@@ -195,14 +286,17 @@ void ShipConnection::state_cme_init_start()
             // * Set state to CmiClientSend
             // * Write init message to websocket connection
             // * Set state to CmiClientWait
+            set_and_schedule_state(State::CmiClientSend);
             break;
         }
 
         case Role::Server: {
             set_state(State::CmiServerWait);
-            timeout_task = task_scheduler.scheduleOnce([this]() {
-                schedule_close(0_ms);
-            }, SHIP_CONNECTION_CMI_TIMEOUT);
+            timeout_task = task_scheduler.scheduleOnce(
+                [this]() {
+                    schedule_close(0_ms);
+                },
+                SHIP_CONNECTION_CMI_TIMEOUT);
 
             break;
         }
@@ -211,18 +305,36 @@ void ShipConnection::state_cme_init_start()
 
 void ShipConnection::state_cmi_client_send()
 {
-    // SHIP 13.4.3 2.2.1
-    state_is_not_implemented();
+    // SHIP 13.4.3 1.1
+
+    send_cmi_message(0, 0);
+    set_state(State::CmiClientWait);
+    timeout_task = task_scheduler.scheduleOnce(
+        [this]() {
+            schedule_close(0_ms);
+        },
+        SHIP_CONNECTION_CMI_TIMEOUT);
+
+    // TODO: Schedule timeout
 }
 
 void ShipConnection::state_cmi_client_wait()
 {
-    state_is_not_implemented();
+    // SHIP 13.4.3 3.1
+    task_scheduler.cancel(timeout_task);
+    set_and_schedule_state(State::CmiClientEvaluate);
 }
 
 void ShipConnection::state_cmi_client_evaluate()
 {
-    state_is_not_implemented();
+    auto cmi_message = get_cmi_message();
+    if (cmi_message.type == 0 && cmi_message.value == 0) {
+        // SHIP 13.4.3 3.2.2
+        set_and_schedule_state(State::SmeConnectionDataPreparation);
+    } else {
+        // SHIP 13.4.3 3.2.1 and 3.2.3
+        schedule_close(0_ms);
+    }
 }
 
 void ShipConnection::state_cmi_server_wait()
@@ -234,6 +346,7 @@ void ShipConnection::state_cmi_server_wait()
 
 void ShipConnection::state_cmi_server_evaluate()
 {
+    // SHIP 13.4.3 2.2
     auto cmi_message = get_cmi_message();
     if (cmi_message.valid) {
         if ((cmi_message.type == 0) && (cmi_message.value == 0)) {
@@ -243,7 +356,7 @@ void ShipConnection::state_cmi_server_evaluate()
         } else {
             // SHIP 13.4.3 2.2.1 and 2.2.3
             send_cmi_message(0, 0);
-            schedule_close(1000_ms);
+            schedule_close(0_ms);
         }
     }
 }
@@ -256,14 +369,16 @@ void ShipConnection::state_sme_connection_data_preparation()
 
 void ShipConnection::state_sme_hello()
 {
+    // TODO: This differs between server and client role
     logger.printfln("hello: %d (len %d)-> %s", message_incoming->data[0], message_incoming->length, &message_incoming->data[1]);
     auto hello = ConnectionHelloType();
     json_to_type_connection_hello(&hello);
 
     // SHIP 13.4.4.1.2
-    switch(hello.phase) {
+    switch (hello.phase) {
         case ConnectionHelloPhase::Type::Pending: {
             // TODO
+            // - Wait for a
             state_is_not_implemented();
             break;
         }
@@ -310,12 +425,15 @@ void ShipConnection::state_sme_hello_ready_init()
 
 void ShipConnection::state_sme_hello_ready_listen()
 {
-    logger.printfln("state_sme_hello_ready_listen: %d (len %d)-> %s", message_incoming->data[0], message_incoming->length, &message_incoming->data[1]);
+    logger.printfln("state_sme_hello_ready_listen: %d (len %d)-> %s",
+                    message_incoming->data[0],
+                    message_incoming->length,
+                    &message_incoming->data[1]);
     auto hello = ConnectionHelloType();
     json_to_type_connection_hello(&hello);
 
     // SHIP 13.4.4.1.3 Sub-state SME_HELLO_STATE_READY_LISTEN
-    switch(hello.phase) {
+    switch (hello.phase) {
         case ConnectionHelloPhase::Type::Pending: {
             // TODO
             state_is_not_implemented();
@@ -366,7 +484,6 @@ void ShipConnection::state_sme_hello_ok()
     } else {
         set_and_schedule_state(State::SmeProtocolHandshakeServerInit);
     }
-
 }
 
 void ShipConnection::state_sme_hello_abort()
@@ -402,17 +519,16 @@ void ShipConnection::state_sme_protocol_handshake_client_init()
 
 void ShipConnection::state_sme_protocol_handshake_server_listen_proposal()
 {
-    logger.printfln("state_sme_protocol_handshake_server_listen_proposal: %d (len %d)-> %s", message_incoming->data[0], message_incoming->length, &message_incoming->data[1]);
+    logger.printfln("state_sme_protocol_handshake_server_listen_proposal: %d (len %d)-> %s",
+                    message_incoming->data[0],
+                    message_incoming->length,
+                    &message_incoming->data[1]);
     // 13.4.4.2.3 "State SME_PROT_H_STATE_SERVER_LISTEN_PROPOSAL"
     auto handshake = ProtocolHandshakeType();
     json_to_type_handshake_type(&handshake);
     switch (handshake.handshakeType) {
         case ProtocolHandshake::Type::AnnounceMax: {
-            ProtocolHandshakeType hst = {
-                .handshakeType = ProtocolHandshake::Type::Select,
-                .version_major = 1,
-                .version_minor = 0
-            };
+            ProtocolHandshakeType hst = {.handshakeType = ProtocolHandshake::Type::Select, .version_major = 1, .version_minor = 0};
             type_to_json_handshake_type(&hst);
             set_state(State::SmeProtocolHandshakeServerListenConfirm);
             send_current_outgoing_message();
@@ -433,13 +549,12 @@ void ShipConnection::state_sme_protocol_handshake_server_listen_confirm()
     auto handshake = ProtocolHandshakeType();
     json_to_type_handshake_type(&handshake);
 
-    if((handshake.handshakeType == ProtocolHandshake::Type::Select) && (handshake.version_major == 1) && (handshake.version_minor == 0)) {
+    if ((handshake.handshakeType == ProtocolHandshake::Type::Select) && (handshake.version_major == 1) && (handshake.version_minor == 0)) {
         set_state(State::SmeProtocolHandshakeServerOk);
     } else {
         // TODO: Abort
         state_is_not_implemented();
     }
-
 }
 
 void ShipConnection::state_sme_protocol_handshake_client_listen_choice()
@@ -522,7 +637,10 @@ void ShipConnection::state_sme_pin_ask_ok()
 
 void ShipConnection::state_sme_access_method_request()
 {
-    logger.printfln("state_sme_access_method_request: %d (len %d)-> %s", message_incoming->data[0], message_incoming->length, &message_incoming->data[1]);
+    logger.printfln("state_sme_access_method_request: %d (len %d)-> %s",
+                    message_incoming->data[0],
+                    message_incoming->length,
+                    &message_incoming->data[1]);
     auto protocol_state = get_protocol_state();
     if (protocol_state == ProtocolState::AccessMethodsRequest) {
         to_json_access_methods_type();
@@ -545,17 +663,17 @@ void ShipConnection::state_done()
     if (protocol_state == ProtocolState::AccessMethodsRequest) {
         set_and_schedule_state(State::SmeAccessMethodRequest);
     } else if (protocol_state != ProtocolState::None) {
-        logger.printfln("Ignoring '%s' (protocol state %d)", &message_incoming->data[1], static_cast<std::underlying_type<ProtocolHandshake::Type>::type>(protocol_state));
+        logger.printfln("Ignoring '%s' (protocol state %d)",
+                        &message_incoming->data[1],
+                        static_cast<std::underlying_type<ProtocolHandshake::Type>::type>(protocol_state));
     }
 }
 
 void ShipConnection::state_is_not_implemented()
 {
-    logger.printfln(
-        "State %s(%d) was triggered, but is not implemented yet",
-        get_state_name(state),
-        static_cast<std::underlying_type<State>::type>(state)
-    );
+    logger.printfln("State %s(%d) was triggered, but is not implemented yet",
+                    get_state_name(state),
+                    static_cast<std::underlying_type<State>::type>(state));
 
     schedule_close(0_ms);
 }
@@ -563,46 +681,86 @@ void ShipConnection::state_is_not_implemented()
 const char *ShipConnection::get_state_name(State state)
 {
     switch (state) {
-        case State::CmiInitStart:                             return "CmiInitStart";
-        case State::CmiClientSend:                            return "CmiClientSend";
-        case State::CmiClientWait:                            return "CmiClientWait";
-        case State::CmiClientEvaluate:                        return "CmiClientEvaluate";
-        case State::CmiServerWait:                            return "CmiServerWait";
-        case State::CmiServerEvaluate:                        return "CmiServerEvaluate";
-        case State::SmeConnectionDataPreparation:             return "SmeConnectionDataPreparation";
-        case State::SmeHello:                                 return "SmeHello";
-        case State::SmeHelloReadyInit:                        return "SmeHelloReadyInit";
-        case State::SmeHelloReadyListen:                      return "SmeHelloReadyListen";
-        case State::SmeHelloReadyTimeout:                     return "SmeHelloReadyTimeout";
-        case State::SmeHelloPendingInit:                      return "SmeHelloPendingInit";
-        case State::SmeHelloPendingListen:                    return "SmeHelloPendingListen";
-        case State::SmeHelloPendingTimeout:                   return "SmeHelloPendingTimeout";
-        case State::SmeHelloOk:                               return "SmeHelloOk";
-        case State::SmeHelloAbort:                            return "SmeHelloAbort";
-        case State::SmeHelloAbortDone:                        return "SmeHelloAbortDone";
-        case State::SmeHelloRemoteAbortDone:                  return "SmeHelloRemoteAbortDone";
-        case State::SmeHelloRejected:                         return "SmeHelloRejected";
-        case State::SmeProtocolHandshakeServerInit:           return "SmeProtocolHandshakeServerInit";
-        case State::SmeProtocolHandshakeClientInit:           return "SmeProtocolHandshakeClientInit";
-        case State::SmeProtocolHandshakeServerListenProposal: return "SmeProtocolHandshakeServerListenProposal";
-        case State::SmeProtocolHandshakeServerListenConfirm:  return "SmeProtocolHandshakeServerListenConfirm";
-        case State::SmeProtocolHandshakeClientListenChoice:   return "SmeProtocolHandshakeClientListenChoice";
-        case State::SmeProtocolHandshakeTimeout:              return "SmeProtocolHandshakeTimeout";
-        case State::SmeProtocolHandshakeClientOk:             return "SmeProtocolHandshakeClientOk";
-        case State::SmeProtocolHandshakeServerOk:             return "SmeProtocolHandshakeServerOk";
-        case State::SmePinCheckInit:                          return "SmePinCheckInit";
-        case State::SmePinCheckListen:                        return "SmePinCheckListen";
-        case State::SmePinCheckError:                         return "SmePinCheckError";
-        case State::SmePinCheckBusyInit:                      return "SmePinCheckBusyInit";
-        case State::SmePinCheckBusyWait:                      return "SmePinCheckBusyWait";
-        case State::SmePinCheckOk:                            return "SmePinCheckOk";
-        case State::SmePinAskInit:                            return "SmePinAskInit";
-        case State::SmePinAskProcess:                         return "SmePinAskProcess";
-        case State::SmePinAskRestricted:                      return "SmePinAskRestricted";
-        case State::SmePinAskOk:                              return "SmePinAskOk";
-        case State::SmeAccessMethodRequest:                   return "SmeAccessMethodRequest";
-        case State::Done:                                     return "Done";
-        default:                                              return "Unknown";
+        case State::CmiInitStart:
+            return "CmiInitStart";
+        case State::CmiClientSend:
+            return "CmiClientSend";
+        case State::CmiClientWait:
+            return "CmiClientWait";
+        case State::CmiClientEvaluate:
+            return "CmiClientEvaluate";
+        case State::CmiServerWait:
+            return "CmiServerWait";
+        case State::CmiServerEvaluate:
+            return "CmiServerEvaluate";
+        case State::SmeConnectionDataPreparation:
+            return "SmeConnectionDataPreparation";
+        case State::SmeHello:
+            return "SmeHello";
+        case State::SmeHelloReadyInit:
+            return "SmeHelloReadyInit";
+        case State::SmeHelloReadyListen:
+            return "SmeHelloReadyListen";
+        case State::SmeHelloReadyTimeout:
+            return "SmeHelloReadyTimeout";
+        case State::SmeHelloPendingInit:
+            return "SmeHelloPendingInit";
+        case State::SmeHelloPendingListen:
+            return "SmeHelloPendingListen";
+        case State::SmeHelloPendingTimeout:
+            return "SmeHelloPendingTimeout";
+        case State::SmeHelloOk:
+            return "SmeHelloOk";
+        case State::SmeHelloAbort:
+            return "SmeHelloAbort";
+        case State::SmeHelloAbortDone:
+            return "SmeHelloAbortDone";
+        case State::SmeHelloRemoteAbortDone:
+            return "SmeHelloRemoteAbortDone";
+        case State::SmeHelloRejected:
+            return "SmeHelloRejected";
+        case State::SmeProtocolHandshakeServerInit:
+            return "SmeProtocolHandshakeServerInit";
+        case State::SmeProtocolHandshakeClientInit:
+            return "SmeProtocolHandshakeClientInit";
+        case State::SmeProtocolHandshakeServerListenProposal:
+            return "SmeProtocolHandshakeServerListenProposal";
+        case State::SmeProtocolHandshakeServerListenConfirm:
+            return "SmeProtocolHandshakeServerListenConfirm";
+        case State::SmeProtocolHandshakeClientListenChoice:
+            return "SmeProtocolHandshakeClientListenChoice";
+        case State::SmeProtocolHandshakeTimeout:
+            return "SmeProtocolHandshakeTimeout";
+        case State::SmeProtocolHandshakeClientOk:
+            return "SmeProtocolHandshakeClientOk";
+        case State::SmeProtocolHandshakeServerOk:
+            return "SmeProtocolHandshakeServerOk";
+        case State::SmePinCheckInit:
+            return "SmePinCheckInit";
+        case State::SmePinCheckListen:
+            return "SmePinCheckListen";
+        case State::SmePinCheckError:
+            return "SmePinCheckError";
+        case State::SmePinCheckBusyInit:
+            return "SmePinCheckBusyInit";
+        case State::SmePinCheckBusyWait:
+            return "SmePinCheckBusyWait";
+        case State::SmePinCheckOk:
+            return "SmePinCheckOk";
+        case State::SmePinAskInit:
+            return "SmePinAskInit";
+        case State::SmePinAskProcess:
+            return "SmePinAskProcess";
+        case State::SmePinAskRestricted:
+            return "SmePinAskRestricted";
+        case State::SmePinAskOk:
+            return "SmePinAskOk";
+        case State::SmeAccessMethodRequest:
+            return "SmeAccessMethodRequest";
+        case State::Done:
+            return "Done";
+        default:
+            return "Unknown";
     }
 }
 
@@ -611,7 +769,7 @@ void ShipConnection::json_to_type_connection_hello(ConnectionHelloType *connecti
     logger.printfln("J2T ConnectionHello json: %s", &message_incoming->data[1]);
 
     DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
-    DeserializationError error = deserializeJson(json_doc, &message_incoming->data[1], message_incoming->length-1);
+    DeserializationError error = deserializeJson(json_doc, &message_incoming->data[1], message_incoming->length - 1);
     if (error) {
         logger.printfln("Error during JSON deserialization: %s", error.c_str());
     } else {
@@ -625,7 +783,8 @@ void ShipConnection::json_to_type_connection_hello(ConnectionHelloType *connecti
         // This will overwrite the optional fields if they are present
         for (JsonObject obj : json_doc["connectionHello"].as<JsonArray>()) {
             if (obj.containsKey("phase")) {
-                connection_hello->phase = static_cast<ConnectionHelloPhase::Type>(ConnectionHelloPhase::from_str(obj["phase"].as<String>().c_str()));
+                connection_hello->phase =
+                    static_cast<ConnectionHelloPhase::Type>(ConnectionHelloPhase::from_str(obj["phase"].as<String>().c_str()));
             } else if (obj.containsKey("waiting")) {
                 connection_hello->waiting = obj["waiting"].as<uint32_t>();
                 connection_hello->waiting_valid = true;
@@ -635,16 +794,13 @@ void ShipConnection::json_to_type_connection_hello(ConnectionHelloType *connecti
             }
         }
 
-        logger.printfln(
-            "J2T ConnectionHello Type: phase %d, waiting %ld(%d), prolongation_request %d(%d)'",
-            static_cast<std::underlying_type<ConnectionHelloPhase::Type>::type>(connection_hello->phase),
-            connection_hello->waiting,
-            connection_hello->waiting_valid,
-            connection_hello->prolongation_request,
-            connection_hello->prolongation_request_valid
-        );
+        logger.printfln("J2T ConnectionHello Type: phase %d, waiting %ld(%d), prolongation_request %d(%d)'",
+                        static_cast<std::underlying_type<ConnectionHelloPhase::Type>::type>(connection_hello->phase),
+                        connection_hello->waiting,
+                        connection_hello->waiting_valid,
+                        connection_hello->prolongation_request,
+                        connection_hello->prolongation_request_valid);
     }
-
 }
 
 void ShipConnection::type_to_json_connection_hello(ConnectionHelloType *connection_hello)
@@ -666,7 +822,7 @@ void ShipConnection::type_to_json_connection_hello(ConnectionHelloType *connecti
     }
 
     message_outgoing->data[0] = 1;
-    size_t length = serializeJson(json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE-1);
+    size_t length = serializeJson(json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE - 1);
     message_outgoing->length = length + 1;
 
     logger.printfln("T2J ConnectionHello json: %s", &message_outgoing->data[1]);
@@ -677,29 +833,28 @@ void ShipConnection::json_to_type_handshake_type(ProtocolHandshakeType *handshak
     logger.printfln("J2T ProtocolHandshakeType json: %s", &message_incoming->data[1]);
 
     DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
-    DeserializationError error = deserializeJson(json_doc, &message_incoming->data[1], message_incoming->length-1);
+    DeserializationError error = deserializeJson(json_doc, &message_incoming->data[1], message_incoming->length - 1);
     if (error) {
         logger.printfln("Error during JSON deserialization: %s", error.c_str());
     } else {
         for (JsonObject obj : json_doc["messageProtocolHandshake"].as<JsonArray>()) {
             if (obj.containsKey("handshakeType")) {
-                handshake_type->handshakeType = static_cast<ProtocolHandshake::Type>(ProtocolHandshake::from_str(obj["handshakeType"].as<String>().c_str()));
-            } else if(obj.containsKey("version")) {
+                handshake_type->handshakeType =
+                    static_cast<ProtocolHandshake::Type>(ProtocolHandshake::from_str(obj["handshakeType"].as<String>().c_str()));
+            } else if (obj.containsKey("version")) {
                 for (JsonObject version : obj["version"].as<JsonArray>()) {
                     if (version.containsKey("major")) {
                         handshake_type->version_major = version["major"].as<uint32_t>();
-                    } else if(version.containsKey("minor")) {
+                    } else if (version.containsKey("minor")) {
                         handshake_type->version_minor = version["minor"].as<uint32_t>();
                     }
                 }
             }
         }
-        logger.printfln(
-            "J2T ProtocolHandshakeType Type: handshakeType %d, version %ld.%ld",
-            static_cast<std::underlying_type<ProtocolHandshake::Type>::type>(handshake_type->handshakeType),
-            handshake_type->version_major,
-            handshake_type->version_minor
-        );
+        logger.printfln("J2T ProtocolHandshakeType Type: handshakeType %d, version %ld.%ld",
+                        static_cast<std::underlying_type<ProtocolHandshake::Type>::type>(handshake_type->handshakeType),
+                        handshake_type->version_major,
+                        handshake_type->version_minor);
     }
 }
 
@@ -725,7 +880,7 @@ void ShipConnection::type_to_json_handshake_type(ProtocolHandshakeType *handshak
     format_list.add("JSON-UTF8");
 
     message_outgoing->data[0] = 1;
-    size_t length = serializeJson(json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE-1);
+    size_t length = serializeJson(json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE - 1);
     message_outgoing->length = length + 1;
 
     logger.printfln("T2J ProtocolHandshakeType json: %s", &message_outgoing->data[1]);
@@ -749,7 +904,7 @@ void ShipConnection::to_json_access_methods_type()
 #endif
 
     message_outgoing->data[0] = 1;
-    size_t length = serializeJson(json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE-1);
+    size_t length = serializeJson(json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE - 1);
     message_outgoing->length = length + 1;
 
     logger.printfln("2J AccessMethods json: %s", &message_outgoing->data[1]);

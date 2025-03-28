@@ -155,6 +155,7 @@ public:
     // State machine functions
     void set_state(State state);
     void set_and_schedule_state(State state);
+    void set_and_schedule_state(State state, millis_t delay_ms);
     void state_machine_next_step();
     void schedule_state_machine_next_step();
 

@@ -222,7 +222,7 @@ Ship_Discovery_State Ship::scan_skis()
     mdns_result_t *results = NULL;
     esp_err_t err = mdns_query_ptr(service, proto, 3000, 20, &results);
     if (err) {
-        logger.printfln("EEBUS MDNS Query Failed");
+        logger.printfln("EEBUS MDNS Query Failed. Error %d", err);
         discovery_state = Ship_Discovery_State::ERROR;
         return discovery_state;
     }
