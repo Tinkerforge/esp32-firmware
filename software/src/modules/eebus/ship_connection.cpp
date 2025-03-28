@@ -282,10 +282,6 @@ void ShipConnection::state_cme_init_start()
     // SHIP 13.4.3
     switch (role) {
         case Role::Client: {
-            // TODO:
-            // * Set state to CmiClientSend
-            // * Write init message to websocket connection
-            // * Set state to CmiClientWait
             set_and_schedule_state(State::CmiClientSend);
             break;
         }
@@ -306,7 +302,6 @@ void ShipConnection::state_cme_init_start()
 void ShipConnection::state_cmi_client_send()
 {
     // SHIP 13.4.3 1.1
-
     send_cmi_message(0, 0);
     set_state(State::CmiClientWait);
     timeout_task = task_scheduler.scheduleOnce(
@@ -314,8 +309,6 @@ void ShipConnection::state_cmi_client_send()
             schedule_close(0_ms);
         },
         SHIP_CONNECTION_CMI_TIMEOUT);
-
-    // TODO: Schedule timeout
 }
 
 void ShipConnection::state_cmi_client_wait()
@@ -371,14 +364,13 @@ void ShipConnection::state_sme_hello()
 {
     // TODO: This differs between server and client role
     logger.printfln("hello: %d (len %d)-> %s", message_incoming->data[0], message_incoming->length, &message_incoming->data[1]);
-    auto hello = ConnectionHelloType();
-    json_to_type_connection_hello(&hello);
 
+    json_to_type_connection_hello(&peer_hello_phase);
     // SHIP 13.4.4.1.2
-    switch (hello.phase) {
+    switch (peer_hello_phase.phase) {
         case ConnectionHelloPhase::Type::Pending: {
             // TODO
-            // - Wait for a
+
             state_is_not_implemented();
             break;
         }
@@ -405,7 +397,7 @@ void ShipConnection::state_sme_hello_ready_init()
 {
     // 13.4.4.1.3 "Update Message"
     ConnectionHelloType hello = {
-        .phase = ConnectionHelloPhase::Type::Ready,
+        .phase = ConnectionHelloPhase::Type::Ready, // TODO: Figure out if we are ready
         .waiting = 0,
         .waiting_valid = false, // TODO add waiting timer and set waiting properly
         .prolongation_request = 0,
@@ -488,12 +480,25 @@ void ShipConnection::state_sme_hello_ok()
 
 void ShipConnection::state_sme_hello_abort()
 {
-    state_is_not_implemented();
+    // SHIP 13.4.4.1.3 Common "abort" procedure
+    task_scheduler.cancel(hello_wait_for_ready_timer);
+    task_scheduler.cancel(hello_send_prolongation_request_timer);
+    task_scheduler.cancel(hello_send_prolongation_reply_timer);
+    ConnectionHelloType abort_msg = {
+        .phase = ConnectionHelloPhase::Type::Aborted,
+        .waiting = 0,
+        .waiting_valid = false,
+        .prolongation_request = 0,
+        .prolongation_request_valid = false,
+    };
+    type_to_json_connection_hello(&abort_msg);
+    send_current_outgoing_message();
+    set_and_schedule_state(State::SmeHelloAbortDone);
 }
 
 void ShipConnection::state_sme_hello_abort_done()
 {
-    state_is_not_implemented();
+    schedule_close(0_ms);
 }
 
 void ShipConnection::state_sme_hello_remote_abort_done()
