@@ -123,7 +123,7 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
             return;
         }
 
-        this.debugTimeout = setInterval(this.resetDebugWd, 15000);
+        this.debugTimeout = setInterval(this.resetDebugWd, 60000);
 
         this.setState({debug_status: __("component.debug_logger.debug_running")});
     }
