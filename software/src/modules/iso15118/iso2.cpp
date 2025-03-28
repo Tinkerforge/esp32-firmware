@@ -537,10 +537,10 @@ void ISO2::handle_power_delivery_req()
 
     switch (req->ChargeProgress) {
         case iso2_chargeProgressType_Start:
-            // TODO: Open contactor
+            // TODO: Close contactor
             break;
         case iso2_chargeProgressType_Stop:
-            // TODO: Close contactor
+            // TODO: Open contactor
             break;
         case iso2_chargeProgressType_Renegotiate:
             break;
