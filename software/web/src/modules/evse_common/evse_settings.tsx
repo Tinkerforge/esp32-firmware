@@ -371,7 +371,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                                     onClick={async () => this.setState({ev_wakeup: {enabled: !ev_wakeup.enabled}})}/>
                         </FormRow>
 
-                        {!this.state.is_evse_v3 || !this.state.have_meter ? undefined :
+                        {!this.state.have_meter ? undefined :
                             <FormRow label={__("evse.content.phase_auto_switch_desc")} label_muted={__("evse.content.phase_auto_switch_desc_muted")}>
                                 <Switch desc={__("evse.content.phase_auto_switch")}
                                         checked={phase_auto_switch.enabled}
