@@ -30,6 +30,7 @@ import { FormRow } from "../../ts/components/form_row";
 import { InputText } from "../../ts/components/input_text";
 import { InputSelect } from '../../ts/components/input_select';
 import { SwitchableInputSelect } from "../../ts/components/switchable_input_select";
+import { PRESET_VALUE_IDS, PRESET_DEFAULT_LOCATIONS } from "./presets";
 
 const MAX_VALUES = 96;
 
@@ -241,46 +242,25 @@ interface PresetSelectorProps {
 }
 
 interface PresetSelectorState {
-    preset: string
-}
-
-function get_default_location(preset: string) {
-    switch (preset) {
-    case "1":
-    case "2":
-    case "3":
-        return MeterLocation.Grid;
-    }
-
-    return MeterLocation.Unknown;
+    preset_key: string
 }
 
 class PresetSelector extends Component<PresetSelectorProps, PresetSelectorState> {
-    presets: Readonly<number[][]> = [
-        [],
-        [74],
-        [14, 18, 22],
-        [74, 14, 18, 22],
-        [74,209,211,213,214,210,212],
-        [1,2,3,13,17,21,39,48,57,122,130,138,83,91,99,353,354,355,365,366,367,7,29,33,74,154,115,356,368,364,209,211,273,275,341,388,4,5,6,8,25,369,370,371,377,378,379,375,380,372,373,374,376,213,277,161,177,193,163,179,195,165,181,197,225,241,257,227,243,259,229,245,261,214,210,212],
-        [1,2,3,13,17,21,39,48,57,122,130,138,83,91,99,353,354,355,7,29,33,74,154,115,356,364,209,211,4,5,6,8,25,213,277,214,210,212]
-    ];
-
     constructor(props: PresetSelectorProps) {
         super(props);
 
         let needle = props.config[1].value_ids.toString();
-        let preset = "0";
+        let preset_key = "none";
 
-        for (let i = 0; i < this.presets.length; ++i) {
-            if (needle == this.presets[i].toString()) {
-                preset = i.toString();
+        for (let key in PRESET_VALUE_IDS) {
+            if (needle == PRESET_VALUE_IDS[key].toString()) {
+                preset_key = key;
                 break;
             }
         }
 
         this.state = {
-            preset: preset
+            preset_key: preset_key
         } as any;
     }
 
@@ -289,20 +269,19 @@ class PresetSelector extends Component<PresetSelectorProps, PresetSelectorState>
             <FormRow label={__("meters_api.content.api_meter_preset")}>
                 <InputSelect
                     items={[
-                        ["0", __("meters_api.content.api_meter_no_preset")],
-                        ["1", __("meters_api.content.meter_type_pv_only")],
-                        ["2", __("meters_api.content.meter_type_dlm_only")],
-                        ["3", __("meters_api.content.meter_type_pv_dlm_only")],
-                        ["4", __("meters.script.meter_type_1")],
-                        ["5", __("meters.script.meter_type_2")],
-                        ["6", __("meters.script.meter_type_3")]
+                        ["none", __("meters_api.content.api_meter_no_preset")],
+                        ["pve", __("meters_api.content.meter_type_pv_only")],
+                        ["dlm", __("meters_api.content.meter_type_dlm_only")],
+                        ["pve_dlm", __("meters_api.content.meter_type_pv_dlm_only")],
+                        ["eastron_sdm72", __("meters.script.meter_type_1")],
+                        ["eastron_sdm630", __("meters.script.meter_type_2")],
+                        ["eastron_sdm72v2", __("meters.script.meter_type_3")]
                     ]}
-                    value={this.state.preset}
-                    onValue={async (v) => {
-                        let preset = parseInt(v);
-                        let value_ids: number[] = isNaN(preset) ? [] : this.presets[preset];
+                    value={this.state.preset_key}
+                    onValue={async (preset_key) => {
+                        let value_ids = PRESET_VALUE_IDS[preset_key];
 
-                        if (this.props.config[1].value_ids.toString() !== this.presets[parseInt(this.state.preset)].toString()) {
+                        if (this.props.config[1].value_ids.toString() !== PRESET_VALUE_IDS[this.state.preset_key].toString()) {
                             if (!await util.async_modal_ref.current.show({
                                 title: () => __("meters_api.content.override_modal_title"),
                                 body: () => __("meters_api.content.override_modal_body"),
@@ -312,18 +291,18 @@ class PresetSelector extends Component<PresetSelectorProps, PresetSelectorState>
                                 no_variant: "secondary",
                                 nestingDepth: 2
                             })) {
-                                this.setState({preset: this.state.preset});
+                                this.setState({preset_key: this.state.preset_key});
                                 return;
                             }
                         }
 
-                        this.setState({preset: v});
-                        this.props.on_config(util.get_updated_union(this.props.config, {value_ids: value_ids, location: get_default_location(v)}));
+                        this.setState({preset_key: preset_key});
+                        this.props.on_config(util.get_updated_union(this.props.config, {value_ids: value_ids, location: PRESET_DEFAULT_LOCATIONS[preset_key]}));
                     }}/>
             </FormRow>,
         ];
 
-        let default_location = get_default_location(this.state.preset);
+        let default_location = PRESET_DEFAULT_LOCATIONS[this.state.preset_key];
 
         if (default_location == MeterLocation.Unknown) {
             children.push(
