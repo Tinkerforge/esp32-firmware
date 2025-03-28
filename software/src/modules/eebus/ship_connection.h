@@ -27,9 +27,17 @@
 #include "config.h"
 #include "modules/ws/web_sockets.h"
 
+// Values and Timeouts as defined by SHIP document
 #define SHIP_CONNECTION_CMI_TIMEOUT 30_s // SHIP 13.4.3 Timneout procedure
+#define SHIP_CONNECTION_SME_INIT_TIMEOUT 60_s
+
+
+
 #define SHIP_CONNECTION_MAX_JSON_SIZE 8192 // TODO: What is a sane value here?
 #define SHIP_CONNECTION_MAX_BUFFER_SIZE (1024*10) // TODO: What is a sane value here?
+
+
+
 
 class ShipConnection
 {
@@ -245,6 +253,13 @@ public:
     };
     void json_to_type_connection_hello(ConnectionHelloType *connection_hello);
     void type_to_json_connection_hello(ConnectionHelloType *connection_hello);
+
+    // TODO: is it safe to set these timers to undefined values? Or set them to 0 or max value?
+    uint64_t hello_wait_for_ready_timer;
+    uint64_t hello_send_prolongation_request_timer;
+    uint64_t hello_send_prolongation_reply_timer;
+
+    ConnectionHelloType peer_hello_phase;
 
     class ProtocolHandshake {
     public:
