@@ -121,8 +121,8 @@ void DebugProtocol::register_backend(IDebugProtocolBackend *backend)
 void DebugProtocol::check_debug()
 {
     task_scheduler.scheduleOnce([this](){
-        if (deadline_elapsed(last_debug_keep_alive + 60_s) && debug) {
-            logger.printfln("Debug protocol creation canceled because no continue call was received for more than 60 seconds.");
+        if (deadline_elapsed(last_debug_keep_alive + 180_s) && debug) {
+            logger.printfln("Debug protocol creation canceled because no continue call was received for more than 180 seconds.");
             debug = false;
         }
         else if (debug) {
