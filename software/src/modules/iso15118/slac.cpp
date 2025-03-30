@@ -257,6 +257,11 @@ void SLAC::handle_cm_set_key_confirmation(const CM_SetKeyConfirmation &cm_set_ke
 // ISO 15118-3 A.9.1.2 Table A.2
 void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_request)
 {
+    // Assume that the ethernet link has died when we get a CM_SLAC_PARM.REQ
+    // TODO: Should we do it like this?
+    //       We have to test this when several WARP Charger are used in parallel.
+    qca700x.link_down();
+
     // This is the first time we see the MAC and run_id of the PEV, we save it
     memcpy(pev_mac, cm_slac_parm_request.header.source_mac, SLAC_MAC_ADDRESS_LENGTH);
     for (size_t i = 0; i < SLAC_MAC_ADDRESS_LENGTH; i++) {
