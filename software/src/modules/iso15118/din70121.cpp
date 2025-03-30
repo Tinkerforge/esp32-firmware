@@ -48,13 +48,13 @@ void DIN70121::pre_setup()
         {"ev_ress_conditioning", Config::Int32(0)},
         {"ev_ress_conditioning_is_used", Config::Bool(false)},
         {"ev_error_code", Config::Uint8(0)},
-        {"ev_maximum_current_limit_val", Config::Int16(0)},
-        {"ev_maximum_current_limit_mul", Config::Int8(0)},
-        {"ev_maximum_power_limit_val", Config::Int16(0)},
-        {"ev_maximum_power_limit_mul", Config::Int8(0)},
-        {"ev_maximum_power_limit_is_used", Config::Bool(0)},
-        {"ev_maximum_voltage_limit_val", Config::Int16(0)},
-        {"ev_maximum_voltage_limit_mul", Config::Int8(0)},
+        {"ev_max_current_limit_val", Config::Int16(0)},
+        {"ev_max_current_limit_mul", Config::Int8(0)},
+        {"ev_max_power_limit_val", Config::Int16(0)},
+        {"ev_max_power_limit_mul", Config::Int8(0)},
+        {"ev_max_power_limit_is_used", Config::Bool(0)},
+        {"ev_max_voltage_limit_val", Config::Int16(0)},
+        {"ev_max_voltage_limit_mul", Config::Int8(0)},
         {"ev_energy_capacity_val", Config::Int16(0)},
         {"ev_energy_capacity_mul", Config::Int8(0)},
         {"ev_energy_capacity_is_used", Config::Bool(0)},
@@ -379,13 +379,13 @@ void DIN70121::handle_charge_parameter_discovery_req()
     api_state.get("ev_ress_conditioning")->updateInt(req->DC_EVChargeParameter.DC_EVStatus.EVRESSConditioning);
     api_state.get("ev_ress_conditioning_is_used")->updateBool(req->DC_EVChargeParameter.DC_EVStatus.EVRESSConditioning_isUsed);
     api_state.get("ev_error_code")->updateUint(req->DC_EVChargeParameter.DC_EVStatus.EVErrorCode);
-    api_state.get("ev_maximum_current_limit_val")->updateInt(req->DC_EVChargeParameter.EVMaximumCurrentLimit.Value);
-    api_state.get("ev_maximum_current_limit_mul")->updateInt(req->DC_EVChargeParameter.EVMaximumCurrentLimit.Multiplier);
-    api_state.get("ev_maximum_power_limit_val")->updateInt(req->DC_EVChargeParameter.EVMaximumPowerLimit.Value);
-    api_state.get("ev_maximum_power_limit_mul")->updateInt(req->DC_EVChargeParameter.EVMaximumPowerLimit.Multiplier);
-    api_state.get("ev_maximum_power_limit_is_used")->updateBool(req->DC_EVChargeParameter.EVMaximumPowerLimit_isUsed);
-    api_state.get("ev_maximum_voltage_limit_val")->updateInt(req->DC_EVChargeParameter.EVMaximumVoltageLimit.Value);
-    api_state.get("ev_maximum_voltage_limit_mul")->updateInt(req->DC_EVChargeParameter.EVMaximumVoltageLimit.Multiplier);
+    api_state.get("ev_max_current_limit_val")->updateInt(req->DC_EVChargeParameter.EVMaximumCurrentLimit.Value);
+    api_state.get("ev_max_current_limit_mul")->updateInt(req->DC_EVChargeParameter.EVMaximumCurrentLimit.Multiplier);
+    api_state.get("ev_max_power_limit_val")->updateInt(req->DC_EVChargeParameter.EVMaximumPowerLimit.Value);
+    api_state.get("ev_max_power_limit_mul")->updateInt(req->DC_EVChargeParameter.EVMaximumPowerLimit.Multiplier);
+    api_state.get("ev_max_power_limit_is_used")->updateBool(req->DC_EVChargeParameter.EVMaximumPowerLimit_isUsed);
+    api_state.get("ev_max_voltage_limit_val")->updateInt(req->DC_EVChargeParameter.EVMaximumVoltageLimit.Value);
+    api_state.get("ev_max_voltage_limit_mul")->updateInt(req->DC_EVChargeParameter.EVMaximumVoltageLimit.Multiplier);
     api_state.get("ev_energy_capacity_val")->updateInt(req->DC_EVChargeParameter.EVEnergyCapacity.Value);
     api_state.get("ev_energy_capacity_mul")->updateInt(req->DC_EVChargeParameter.EVEnergyCapacity.Multiplier);
     api_state.get("ev_energy_capacity_is_used")->updateBool(req->DC_EVChargeParameter.EVEnergyCapacity_isUsed);

@@ -30,7 +30,6 @@ void ISO20::pre_setup()
 
 void ISO20::handle_bitstream(exi_bitstream *exi)
 {
-    // TBD
     // Increment state on first call
     if (state == 0) {
         state = 1;
