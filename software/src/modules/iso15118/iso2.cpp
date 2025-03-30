@@ -372,9 +372,12 @@ void ISO2::handle_charge_parameter_discovery_req()
     iso2_ChargeParameterDiscoveryReqType* req = &iso2DocDec->V2G_Message.Body.ChargeParameterDiscoveryReq;
     iso2_ChargeParameterDiscoveryResType* res = &iso2DocEnc->V2G_Message.Body.ChargeParameterDiscoveryRes;
 
-    api_state.get("ac")->get("is_used")->updateInt(req->AC_EVChargeParameter_isUsed);
+    api_state.get("max_entries_sa_schedule_tuple")->updateUint(req->MaxEntriesSAScheduleTuple);
+    api_state.get("requested_energy_transfer_mode")->updateUint(req->RequestedEnergyTransferMode);
+
+    api_state.get("ac")->get("is_used")->updateBool(req->AC_EVChargeParameter_isUsed);
     if (req->AC_EVChargeParameter_isUsed) {
-        api_state.get("ac")->get("departure_time")->updateInt(req->AC_EVChargeParameter.DepartureTime);
+        api_state.get("ac")->get("departure_time")->updateUint(req->AC_EVChargeParameter.DepartureTime);
         api_state.get("ac")->get("departure_time_is_used")->updateBool(req->AC_EVChargeParameter.DepartureTime_isUsed);
         api_state.get("ac")->get("eamount_val")->updateInt(req->AC_EVChargeParameter.EAmount.Value);
         api_state.get("ac")->get("eamount_mul")->updateInt(req->AC_EVChargeParameter.EAmount.Multiplier);
@@ -386,9 +389,9 @@ void ISO2::handle_charge_parameter_discovery_req()
         api_state.get("ac")->get("ev_min_current_mul")->updateInt(req->AC_EVChargeParameter.EVMinCurrent.Multiplier);
     }
 
-    api_state.get("dc")->get("is_used")->updateInt(req->DC_EVChargeParameter_isUsed);
+    api_state.get("dc")->get("is_used")->updateBool(req->DC_EVChargeParameter_isUsed);
     if (req->DC_EVChargeParameter_isUsed) {
-        api_state.get("dc")->get("departure_time")->updateInt(req->DC_EVChargeParameter.DepartureTime);
+        api_state.get("dc")->get("departure_time")->updateUint(req->DC_EVChargeParameter.DepartureTime);
         api_state.get("dc")->get("departure_time_is_used")->updateBool(req->DC_EVChargeParameter.DepartureTime_isUsed);
         api_state.get("dc")->get("soc")->updateInt(req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
         api_state.get("dc")->get("ev_ready")->updateInt(req->DC_EVChargeParameter.DC_EVStatus.EVReady);
