@@ -25,6 +25,13 @@
 #include "module_dependencies.h"
 #include "build.h"
 
+#include "cbv2g/exi_v2gtp.h"
+#include "cbv2g/app_handshake/appHand_Decoder.h"
+#include "cbv2g/app_handshake/appHand_Encoder.h"
+#include "cbv2g/din/din_msgDefDecoder.h"
+#include "cbv2g/din/din_msgDefEncoder.h"
+#include "cbv2g/common/exi_bitstream.h"
+
 void DIN70121::pre_setup()
 {
     api_state = Config::Object({
@@ -68,91 +75,97 @@ void DIN70121::handle_bitstream(exi_bitstream *exi)
         state = 1;
     }
 
-    memset(&dinDocDec, 0, sizeof(dinDocDec));
-    memset(&dinDocEnc, 0, sizeof(dinDocEnc));
-    int ret = decode_din_exiDocument(exi, &dinDocDec);
-    if (ret != 0) {
-        logger.printfln("DIN70121: Could not decode EXI document: %d", ret);
-        return;
+    // We alloc the din buffers the very first time they are used.
+    // This way it is not allocated if ISO15118 is not used.
+    // If it is used once we can assume that it will be used all the time, so it stays allocated.
+    if (dinDocDec == nullptr) {
+        dinDocDec = (struct din_exiDocument*)heap_caps_calloc_prefer(sizeof(struct din_exiDocument), 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
     }
+    if (dinDocEnc == nullptr) {
+        dinDocEnc = (struct din_exiDocument*)heap_caps_calloc_prefer(sizeof(struct din_exiDocument), 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+    }
+    memset(dinDocDec, 0, sizeof(struct din_exiDocument));
+    memset(dinDocEnc, 0, sizeof(struct din_exiDocument));
+    int ret = decode_din_exiDocument(exi, dinDocDec);
+    logger.printfln("DIN70121: decode_din_exiDocument: %d", ret);
 
-    if (dinDocDec.V2G_Message.Body.SessionSetupReq_isUsed) {
+    if (dinDocDec->V2G_Message.Body.SessionSetupReq_isUsed) {
         iso15118.trace("DIN70121: SessionSetupReq received");
         handle_session_setup_req();
-        dinDocDec.V2G_Message.Body.SessionSetupReq_isUsed = 0;
+        dinDocDec->V2G_Message.Body.SessionSetupReq_isUsed = 0;
     }
 
-    if (dinDocDec.V2G_Message.Body.ServiceDiscoveryReq_isUsed) {
+    if (dinDocDec->V2G_Message.Body.ServiceDiscoveryReq_isUsed) {
         iso15118.trace("DIN70121: ServiceDiscoveryReq received");
         handle_service_discovery_req();
-        dinDocDec.V2G_Message.Body.ServiceDiscoveryReq_isUsed = 0;
+        dinDocDec->V2G_Message.Body.ServiceDiscoveryReq_isUsed = 0;
     }
 
-    if (dinDocDec.V2G_Message.Body.ServiceDetailReq_isUsed) {
+    if (dinDocDec->V2G_Message.Body.ServiceDetailReq_isUsed) {
         iso15118.trace("DIN70121: ServiceDetailReq received (not implemented)");
     }
 
-    if (dinDocDec.V2G_Message.Body.ServicePaymentSelectionReq_isUsed) {
+    if (dinDocDec->V2G_Message.Body.ServicePaymentSelectionReq_isUsed) {
         iso15118.trace("DIN70121: ServicePaymentSelectionReq received");
         handle_service_payment_selection_req();
-        dinDocDec.V2G_Message.Body.ServicePaymentSelectionReq_isUsed = 0;
+        dinDocDec->V2G_Message.Body.ServicePaymentSelectionReq_isUsed = 0;
     }
 
-    if (dinDocDec.V2G_Message.Body.PaymentDetailsReq_isUsed) {
+    if (dinDocDec->V2G_Message.Body.PaymentDetailsReq_isUsed) {
         iso15118.trace("DIN70121: PaymentDetailsReq received (not implemented)");
     }
 
-    if (dinDocDec.V2G_Message.Body.ContractAuthenticationReq_isUsed) {
+    if (dinDocDec->V2G_Message.Body.ContractAuthenticationReq_isUsed) {
         iso15118.trace("DIN70121: ContractAuthenticationReq received");
         handle_contract_authentication_req();
-        dinDocDec.V2G_Message.Body.ContractAuthenticationReq_isUsed = 0;
+        dinDocDec->V2G_Message.Body.ContractAuthenticationReq_isUsed = 0;
     }
 
-    if (dinDocDec.V2G_Message.Body.ChargeParameterDiscoveryReq_isUsed) {
+    if (dinDocDec->V2G_Message.Body.ChargeParameterDiscoveryReq_isUsed) {
         iso15118.trace("DIN70121: ChargeParameterDiscoveryReq received");
         handle_charge_parameter_discovery_req();
-        dinDocDec.V2G_Message.Body.ChargeParameterDiscoveryReq_isUsed = 0;
+        dinDocDec->V2G_Message.Body.ChargeParameterDiscoveryReq_isUsed = 0;
     }
 
-    if (dinDocDec.V2G_Message.Body.PowerDeliveryReq_isUsed) {
+    if (dinDocDec->V2G_Message.Body.PowerDeliveryReq_isUsed) {
         iso15118.trace("DIN70121: PowerDeliveryReq received (not implemented)");
     }
 
-    if (dinDocDec.V2G_Message.Body.ChargingStatusReq_isUsed) {
+    if (dinDocDec->V2G_Message.Body.ChargingStatusReq_isUsed) {
         iso15118.trace("DIN70121: ChargingStatusReq received (not implemented)");
     }
 
-    if (dinDocDec.V2G_Message.Body.MeteringReceiptReq_isUsed) {
+    if (dinDocDec->V2G_Message.Body.MeteringReceiptReq_isUsed) {
         iso15118.trace("DIN70121: MeteringReceiptReq received (not implemented)");
     }
 
-    if (dinDocDec.V2G_Message.Body.SessionStopReq_isUsed) {
+    if (dinDocDec->V2G_Message.Body.SessionStopReq_isUsed) {
         iso15118.trace("DIN70121: SessionStopReq received");
         handle_session_stop_req();
-        dinDocDec.V2G_Message.Body.SessionStopReq_isUsed = 0;
+        dinDocDec->V2G_Message.Body.SessionStopReq_isUsed = 0;
     }
 
-    if (dinDocDec.V2G_Message.Body.CertificateUpdateReq_isUsed) {
+    if (dinDocDec->V2G_Message.Body.CertificateUpdateReq_isUsed) {
         iso15118.trace("DIN70121: CertificateUpdateReq received (not implemented)");
     }
 
-    if (dinDocDec.V2G_Message.Body.CertificateInstallationReq_isUsed) {
+    if (dinDocDec->V2G_Message.Body.CertificateInstallationReq_isUsed) {
         iso15118.trace("DIN70121: CertificateInstallationReq received (not implemented)");
     }
 
-    if (dinDocDec.V2G_Message.Body.CableCheckReq_isUsed) {
+    if (dinDocDec->V2G_Message.Body.CableCheckReq_isUsed) {
         iso15118.trace("DIN70121: CableCheckReq received (not implemented)");
     }
 
-    if (dinDocDec.V2G_Message.Body.PreChargeReq_isUsed) {
+    if (dinDocDec->V2G_Message.Body.PreChargeReq_isUsed) {
         iso15118.trace("DIN70121: PreChargeReq received (not implemented)");
     }
 
-    if (dinDocDec.V2G_Message.Body.CurrentDemandReq_isUsed) {
+    if (dinDocDec->V2G_Message.Body.CurrentDemandReq_isUsed) {
         iso15118.trace("DIN70121: CurrentDemandReq received (not implemented)");
     }
 
-    if (dinDocDec.V2G_Message.Body.WeldingDetectionReq_isUsed) {
+    if (dinDocDec->V2G_Message.Body.WeldingDetectionReq_isUsed) {
         iso15118.trace("DIN70121: WeldingDetectionReq received (not implemented)");
     }
 
@@ -161,8 +174,8 @@ void DIN70121::handle_bitstream(exi_bitstream *exi)
 
 void DIN70121::handle_session_setup_req()
 {
-    din_SessionSetupReqType *req = &dinDocDec.V2G_Message.Body.SessionSetupReq;
-    din_SessionSetupResType *res = &dinDocEnc.V2G_Message.Body.SessionSetupRes;
+    din_SessionSetupReqType *req = &dinDocDec->V2G_Message.Body.SessionSetupReq;
+    din_SessionSetupResType *res = &dinDocEnc->V2G_Message.Body.SessionSetupRes;
 
     api_state.get("evcc_id")->removeAll();
     for (uint16_t i = 0; i < std::min(static_cast<uint16_t>(sizeof(req->EVCCID.bytes)), req->EVCCID.bytesLen); i++) {
@@ -173,8 +186,8 @@ void DIN70121::handle_session_setup_req()
     // SECC shall generate a new (not stored) SessionID value different from zero (0) and return
     // this value in the SessionSetupRes message header.
     bool all_zero = true;
-    for (size_t i = 0; i < dinDocDec.V2G_Message.Header.SessionID.bytesLen; i++) {
-        if (dinDocDec.V2G_Message.Header.SessionID.bytes[i] != 0x00) {
+    for (size_t i = 0; i < dinDocDec->V2G_Message.Header.SessionID.bytesLen; i++) {
+        if (dinDocDec->V2G_Message.Header.SessionID.bytes[i] != 0x00) {
             all_zero = false;
             break;
         }
@@ -190,9 +203,9 @@ void DIN70121::handle_session_setup_req()
     bool different_to_known = true;
     // [V2G-DC-934] If the SessionID is checked during the V2G communication session, the EVCC shall first
     // compare the length and then the actual value.
-    if (dinDocDec.V2G_Message.Header.SessionID.bytesLen == SESSION_ID_LENGTH) {
+    if (dinDocDec->V2G_Message.Header.SessionID.bytesLen == SESSION_ID_LENGTH) {
         for (uint16_t i = 0; i < SESSION_ID_LENGTH; i++) {
-            if (dinDocDec.V2G_Message.Header.SessionID.bytes[i] == iso15118.common.session_id[i]) {
+            if (dinDocDec->V2G_Message.Header.SessionID.bytes[i] == iso15118.common.session_id[i]) {
                 different_to_known = false;
                 break;
             }
@@ -217,7 +230,7 @@ void DIN70121::handle_session_setup_req()
         api_state.get("session_id")->get(i)->updateUint(iso15118.common.session_id[i]);
     }
 
-    dinDocEnc.V2G_Message.Body.SessionSetupRes_isUsed = 1;
+    dinDocEnc->V2G_Message.Body.SessionSetupRes_isUsed = 1;
 
     // EVSEID needs to be according to DIN SPEC 91286, it can be 0x00 if not available
     // Example EVSEID according to DIN SPEC 91286: +49*810*000*438
@@ -240,19 +253,19 @@ void DIN70121::handle_session_setup_req()
 
 void DIN70121::handle_service_discovery_req()
 {
-    din_ServiceDiscoveryReqType *req = &dinDocDec.V2G_Message.Body.ServiceDiscoveryReq;
-    din_ServiceDiscoveryResType *res = &dinDocEnc.V2G_Message.Body.ServiceDiscoveryRes;
+    din_ServiceDiscoveryReqType *req = &dinDocDec->V2G_Message.Body.ServiceDiscoveryReq;
+    din_ServiceDiscoveryResType *res = &dinDocEnc->V2G_Message.Body.ServiceDiscoveryRes;
 
     // TODO: Stop session if session ID does not match?
     //       Or just keep going? For now we log it and keep going.
-    if (dinDocDec.V2G_Message.Header.SessionID.bytesLen != SESSION_ID_LENGTH) {
+    if (dinDocDec->V2G_Message.Header.SessionID.bytesLen != SESSION_ID_LENGTH) {
         logger.printfln("DIN70121: Session ID length mismatch");
     }
-    if (memcmp(dinDocDec.V2G_Message.Header.SessionID.bytes, iso15118.common.session_id, SESSION_ID_LENGTH) != 0) {
+    if (memcmp(dinDocDec->V2G_Message.Header.SessionID.bytes, iso15118.common.session_id, SESSION_ID_LENGTH) != 0) {
         logger.printfln("DIN70121: Session ID mismatch");
     }
 
-    dinDocEnc.V2G_Message.Body.ServiceDiscoveryRes_isUsed = 1;
+    dinDocEnc->V2G_Message.Body.ServiceDiscoveryRes_isUsed = 1;
     res->ResponseCode = din_responseCodeType_OK;
 
     // One payment option: EVSE handles payment
@@ -289,12 +302,13 @@ void DIN70121::handle_service_discovery_req()
 
 void DIN70121::handle_service_payment_selection_req()
 {
-    din_ServicePaymentSelectionReqType *req = &dinDocDec.V2G_Message.Body.ServicePaymentSelectionReq;
-    din_ServicePaymentSelectionResType *res = &dinDocEnc.V2G_Message.Body.ServicePaymentSelectionRes;
+    din_ServicePaymentSelectionReqType *req = &dinDocDec->V2G_Message.Body.ServicePaymentSelectionReq;
+    din_ServicePaymentSelectionResType *res = &dinDocEnc->V2G_Message.Body.ServicePaymentSelectionRes;
+
     iso15118.trace(" SelectedPaymentOption: %d", req->SelectedPaymentOption);
 
     if (req->SelectedPaymentOption == din_paymentOptionType_ExternalPayment) {
-        dinDocEnc.V2G_Message.Body.ServicePaymentSelectionRes_isUsed = 1;
+        dinDocEnc->V2G_Message.Body.ServicePaymentSelectionRes_isUsed = 1;
         res->ResponseCode = din_responseCodeType_OK;
 
         iso15118.common.send_exi(Common::ExiType::Din);
@@ -307,13 +321,13 @@ void DIN70121::handle_service_payment_selection_req()
 
 void DIN70121::handle_contract_authentication_req()
 {
-    din_ContractAuthenticationResType *res = &dinDocEnc.V2G_Message.Body.ContractAuthenticationRes;
+    din_ContractAuthenticationResType *res = &dinDocEnc->V2G_Message.Body.ContractAuthenticationRes;
 
     // [V2G-DC-550] In the scope of this document, the element “GenChallenge” shall not be used.
     // [V2G-DC-545] In the scope of this document, the element “Id” shall not be used.
     // -> None of the request parameters are used in DIN SPEC 70121.
 
-    dinDocEnc.V2G_Message.Body.ContractAuthenticationRes_isUsed = 1;
+    dinDocEnc->V2G_Message.Body.ContractAuthenticationRes_isUsed = 1;
 
     // Set Authorisation to Finished here.
     // We want to go on ChargeParameteryDiscovery to read the SoC and then use Ongoing.
@@ -330,8 +344,8 @@ void DIN70121::handle_contract_authentication_req()
 
 void DIN70121::handle_charge_parameter_discovery_req()
 {
-    din_ChargeParameterDiscoveryReqType* req = &dinDocDec.V2G_Message.Body.ChargeParameterDiscoveryReq;
-    din_ChargeParameterDiscoveryResType* res = &dinDocDec.V2G_Message.Body.ChargeParameterDiscoveryRes;
+    din_ChargeParameterDiscoveryReqType* req = &dinDocDec->V2G_Message.Body.ChargeParameterDiscoveryReq;
+    din_ChargeParameterDiscoveryResType* res = &dinDocEnc->V2G_Message.Body.ChargeParameterDiscoveryRes;
 
     iso15118.trace(" DC_EVStatus.EVRESSSOC: %d", req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
     iso15118.trace(" DC_EVStatus.EVReady: %d", req->DC_EVChargeParameter.DC_EVStatus.EVReady);
@@ -388,7 +402,7 @@ void DIN70121::handle_charge_parameter_discovery_req()
     // Here we try to get the EV into a loop that calls ChargeParameterDiscoveryReq again and again
     // to be able to continously read the SoC.
 
-    dinDocEnc.V2G_Message.Body.ChargeParameterDiscoveryRes_isUsed = 1;
+    dinDocEnc->V2G_Message.Body.ChargeParameterDiscoveryRes_isUsed = 1;
 
     // [V2G-DC-493] After the EVCC has successfully processed a received ChargeParameterDiscoveryRes
     // message with ResponseCode equal to “OK” and EVSEProcessing equal to“Ongoing”, the EVCC shall
@@ -416,7 +430,6 @@ void DIN70121::handle_charge_parameter_discovery_req()
     // TODO: Does [V2G-DC-863] + [V2G-DC-864] mean that we can only delay with EVSEProcessingType_Ongoing once?
     res->EVSEProcessing = din_EVSEProcessingType_Ongoing;
 
-#if 0
     // Invalid: An isolation test has not been carried out.
     res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus_isUsed = 1;
     res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus = din_isolationLevelType_Invalid;
@@ -427,7 +440,7 @@ void DIN70121::handle_charge_parameter_discovery_req()
 
     // EVSE_IsolationMonitoringActive: After the charging station has confirmed HV isolation internally, it will remain in this state until the cable isolation integrity is checked
     // TODO: Try EVSEReady instead?
-    res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEStatusCode = din_DC_EVSEStatusCodeType_EVSE_IsolationMonitoringActive;
+    res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEStatusCode = din_DC_EVSEStatusCodeType_EVSE_Ready;
 
     // Mandatory charge parameters
     res->DC_EVSEChargeParameter.EVSEMaximumCurrentLimit.Unit = din_unitSymbolType_A;
@@ -437,17 +450,17 @@ void DIN70121::handle_charge_parameter_discovery_req()
 
     res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Unit = din_unitSymbolType_V;
     res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Unit_isUsed = 1;
-    res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Value = 800; // 800V
+    res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Value = 800; // 400V
     res->DC_EVSEChargeParameter.EVSEMaximumVoltageLimit.Multiplier = 0;
 
     res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Unit = din_unitSymbolType_A;
     res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Unit_isUsed = 1;
-    res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Value = 6; // 6A
+    res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Value = 0; // 0A
     res->DC_EVSEChargeParameter.EVSEMinimumCurrentLimit.Multiplier = 0;
 
     res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Unit = din_unitSymbolType_V;
     res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Unit_isUsed = 1;
-    res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Value = 200; // 200V
+    res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Value = 0; // 0V
     res->DC_EVSEChargeParameter.EVSEMinimumVoltageLimit.Multiplier = 0;
 
     res->DC_EVSEChargeParameter.EVSEPeakCurrentRipple.Unit = din_unitSymbolType_A;
@@ -457,8 +470,8 @@ void DIN70121::handle_charge_parameter_discovery_req()
 
     res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Unit = din_unitSymbolType_W;
     res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Unit_isUsed = 1;
-    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Value = 4000; // 2000W * 10^2 = 400kW
-    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Multiplier = 2;
+    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Value = 20000; // 20000W * 10^1 = 200kW
+    res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Multiplier = 1;
     res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit_isUsed = 1; // Mandatory according to the list?
 
     res->DC_EVSEChargeParameter_isUsed = 1;
@@ -498,8 +511,6 @@ void DIN70121::handle_charge_parameter_discovery_req()
     // [V2G-DC-552] In the scope of this document, the element “AC_EVSEChargeParameter” shall not be used
     res->AC_EVSEChargeParameter_isUsed = 0;
 
-#endif
-
     iso15118.common.send_exi(Common::ExiType::Din);
     state = 6;
 
@@ -510,9 +521,9 @@ void DIN70121::handle_charge_parameter_discovery_req()
 
 void DIN70121::handle_session_stop_req()
 {
-    din_SessionStopResType *res = &dinDocEnc.V2G_Message.Body.SessionStopRes;
+    din_SessionStopResType *res = &dinDocEnc->V2G_Message.Body.SessionStopRes;
 
-    dinDocEnc.V2G_Message.Body.SessionStopRes_isUsed = 1;
+    dinDocEnc->V2G_Message.Body.SessionStopRes_isUsed = 1;
     res->ResponseCode = din_responseCodeType_OK;
 
     iso15118.common.send_exi(Common::ExiType::Din);

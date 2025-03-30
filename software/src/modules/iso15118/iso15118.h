@@ -56,4 +56,11 @@ public:
     DIN70121 din70121;
     ISO2 iso2;
     ISO20 iso20;
+
+    enum class ChargeType : uint8_t {
+        DC_ReadSocOnce,
+        DC_ReadSocInLoop,
+        AC_Charging
+    };
+    ChargeType charge_type = ChargeType::DC_ReadSocInLoop;
 };

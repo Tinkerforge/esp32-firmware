@@ -29,6 +29,7 @@
 #include "cbv2g/app_handshake/appHand_Encoder.h"
 
 #define SESSION_ID_LENGTH 4
+#define EXI_DATA_SIZE (10*1024) // TODO: How much do we need here?
 
 class Common final
 {
@@ -61,15 +62,15 @@ private:
 
     void decode(uint8_t *data, const size_t length);
 
-    struct appHand_exiDocument appHandDec;
-    struct appHand_exiDocument appHandEnc;
+    struct appHand_exiDocument *appHandDec;
+    struct appHand_exiDocument *appHandEnc;
 
     int listen_socket = -1;
     int active_socket = -1;
     struct sockaddr_storage source_addr;
     socklen_t addr_len = sizeof(source_addr);
 
-    uint8_t exi_data[1024] = {0};
+    uint8_t *exi_data = nullptr;
 
     uint8_t state = 0;
 
