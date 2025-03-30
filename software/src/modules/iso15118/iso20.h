@@ -37,4 +37,6 @@ public:
 
     ConfigRoot api_state;
 
+private:
+    uint8_t state = 0;
 };
