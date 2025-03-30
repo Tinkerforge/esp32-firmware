@@ -318,7 +318,9 @@ void QCA700x::link_up()
 
 void QCA700x::link_down()
 {
-    esp_netif_action_stop(netif, 0, 0, nullptr);
+    if (esp_netif_is_netif_up(netif)) {
+        esp_netif_action_stop(netif, 0, 0, nullptr);
+    }
 
 }
 
