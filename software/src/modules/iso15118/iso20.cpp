@@ -24,10 +24,18 @@
 void ISO20::pre_setup()
 {
     api_state = Config::Object({
+        {"state", Config::Uint8(0)},
     });
 }
 
 void ISO20::handle_bitstream(exi_bitstream *exi)
 {
     // TBD
+    // Increment state on first call
+    if (state == 0) {
+        state = 1;
+    }
+
+
+    api_state.get("state")->updateUint(state);
 }
