@@ -118,6 +118,8 @@ public:
     bool reset_energy_meter_relative_energy();
     uint8_t get_energy_meter_type();
 
+    void set_charging_protocol(uint8_t charging_protocol, uint16_t cp_duty_cycle);
+
 private:
     ConfigRoot reset_dc_fault_current_state;
     ConfigRoot gpio_configuration;

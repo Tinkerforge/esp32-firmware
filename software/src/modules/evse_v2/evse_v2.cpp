@@ -1277,6 +1277,11 @@ uint8_t EVSEV2::get_energy_meter_type()
     return evse_common.hardware_configuration.get("energy_meter_type")->asUint();
 }
 
+void EVSEV2::set_charging_protocol(uint8_t charging_protocol, uint16_t cp_duty_cycle)
+{
+    tf_evse_v2_set_charging_protocol(&device, charging_protocol, cp_duty_cycle);
+}
+
 static void energy_meter_values_callback(struct TF_EVSEV2 * /*evse_v2*/, float power, float current[3], bool phases_active[3], bool phases_connected[3], void *user_data)
 {
 #if MODULE_METERS_EVSE_V2_AVAILABLE()

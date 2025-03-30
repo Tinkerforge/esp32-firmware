@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-12-04.      *
+ * This file was automatically generated on 2025-03-30.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -266,6 +266,16 @@ typedef struct TF_EVSEV2 {
  * \ingroup TF_EVSEV2
  */
 #define TF_EVSE_V2_FUNCTION_GET_PHASES_CONNECTED 44
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_SET_CHARGING_PROTOCOL 46
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_FUNCTION_GET_CHARGING_PROTOCOL 47
 
 /**
  * \ingroup TF_EVSEV2
@@ -764,6 +774,16 @@ typedef struct TF_EVSEV2 {
 /**
  * \ingroup TF_EVSEV2
  */
+#define TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851 0
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118 1
+
+/**
+ * \ingroup TF_EVSEV2
+ */
 #define TF_EVSE_V2_BOOTLOADER_MODE_BOOTLOADER 0
 
 /**
@@ -1254,6 +1274,20 @@ int tf_evse_v2_set_phases_connected(TF_EVSEV2 *evse_v2, uint8_t phases_connected
  * TODO
  */
 int tf_evse_v2_get_phases_connected(TF_EVSEV2 *evse_v2, uint8_t *ret_phases_connected);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_set_charging_protocol(TF_EVSEV2 *evse_v2, uint8_t charging_protocol, uint16_t cp_duty_cycle);
+
+/**
+ * \ingroup TF_EVSEV2
+ *
+ * TODO
+ */
+int tf_evse_v2_get_charging_protocol(TF_EVSEV2 *evse_v2, uint8_t *ret_charging_protocol, uint16_t *ret_cp_duty_cycle);
 
 /**
  * \ingroup TF_EVSEV2
