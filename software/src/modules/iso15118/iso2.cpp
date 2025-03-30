@@ -36,7 +36,7 @@ void ISO2::pre_setup()
         {"max_entries_sa_schedule_tuple", Config::Uint16(0)},
         {"requested_energy_transfer_mode", Config::Uint8(0)},
         {"ac", Config::Object({
-            {"is_used", Config::Bool(0)},
+            {"is_used", Config::Bool(false)},
             {"departure_time", Config::Uint32(0)},
             {"departure_time_is_used", Config::Bool(false)},
             {"eamount_val", Config::Int16(0)},
@@ -49,7 +49,7 @@ void ISO2::pre_setup()
             {"ev_min_current_mul", Config::Int8(0)}
         })},
         {"dc", Config::Object({
-            {"is_used", Config::Bool(0)},
+            {"is_used", Config::Bool(false)},
             {"departure_time", Config::Uint32(0)},
             {"departure_time_is_used", Config::Bool(false)},
             {"soc", Config::Int8(0)},
@@ -59,19 +59,19 @@ void ISO2::pre_setup()
             {"ev_max_current_limit_mul", Config::Int8(0)},
             {"ev_max_power_limit_val", Config::Int16(0)},
             {"ev_max_power_limit_mul", Config::Int8(0)},
-            {"ev_max_power_limit_is_used", Config::Bool(0)},
+            {"ev_max_power_limit_is_used", Config::Bool(false)},
             {"ev_max_voltage_limit_val", Config::Int16(0)},
             {"ev_max_voltage_limit_mul", Config::Int8(0)},
             {"ev_energy_capacity_val", Config::Int16(0)},
             {"ev_energy_capacity_mul", Config::Int8(0)},
-            {"ev_energy_capacity_is_used", Config::Bool(0)},
+            {"ev_energy_capacity_is_used", Config::Bool(false)},
             {"ev_energy_request_val", Config::Int16(0)},
             {"ev_energy_request_mul", Config::Int8(0)},
-            {"ev_energy_request_is_used", Config::Bool(0)},
+            {"ev_energy_request_is_used", Config::Bool(false)},
             {"full_soc", Config::Int8(0)},
-            {"full_soc_is_used", Config::Bool(0)},
+            {"full_soc_is_used", Config::Bool(false)},
             {"bulk_soc", Config::Int8(0)},
-            {"bulk_soc_is_used", Config::Bool(0)}
+            {"bulk_soc_is_used", Config::Bool(false)}
         })},
     });
 }
