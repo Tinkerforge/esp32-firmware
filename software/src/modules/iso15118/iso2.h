@@ -34,8 +34,8 @@ public:
     void handle_bitstream(exi_bitstream *exi);
 
     ConfigRoot api_state;
-    struct iso2_exiDocument iso2DocDec;
-    struct iso2_exiDocument iso2DocEnc;
+    struct iso2_exiDocument *iso2DocDec;
+    struct iso2_exiDocument *iso2DocEnc;
 
 private:
     void handle_session_setup_req();

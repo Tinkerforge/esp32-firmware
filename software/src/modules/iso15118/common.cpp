@@ -29,6 +29,7 @@
 #include <arpa/inet.h>
 #include "lwip/ip_addr.h"
 #include "lwip/sockets.h"
+
 #include "cbv2g/exi_v2gtp.h"
 #include "cbv2g/app_handshake/appHand_Decoder.h"
 #include "cbv2g/app_handshake/appHand_Encoder.h"
@@ -44,6 +45,10 @@ void Common::pre_setup()
         {"supported_protocols", Config::Array({}, &supported_protocols_prototype, 0, 4, Config::type_id<Config::ConfString>())},
         {"protocol", Config::Str("", 0, 32)}
     });
+
+    if (exi_data == nullptr) {
+        exi_data = (uint8_t*)heap_caps_calloc_prefer(EXI_DATA_SIZE, sizeof(uint8_t), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+    }
 }
 
 void Common::setup_socket()
@@ -108,8 +113,11 @@ void Common::state_machine_loop()
             return;
         }
     } else {
-        uint8_t data[1024] = {0};
-        ssize_t length = recv(active_socket, data, sizeof(data), 0);
+        // TODO: We assume that we always read the whole packet in one go here.
+        //       This is of course not necessarily true with TCP.
+        //       Instead read the V2GTP header first, then determine the length of the payload,
+        //       then read the payload.
+        ssize_t length = recv(active_socket, exi_data, EXI_DATA_SIZE, 0);
 
         if(length < 0) {
             if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
@@ -129,7 +137,7 @@ void Common::state_machine_loop()
             close(active_socket);
             active_socket = -1;
         } else {
-            decode(data, length);
+            decode(exi_data, length);
         }
     }
 }
@@ -156,26 +164,32 @@ void Common::prepare_iso2_header(struct iso2_MessageHeaderType *header)
 
 void Common::send_exi(ExiType type)
 {
-    memset(exi_data, 0, sizeof(exi_data));
+    memset(exi_data, 0, EXI_DATA_SIZE);
 
     exi_bitstream exi;
-    exi_bitstream_init(&exi, &exi_data[sizeof(V2GTP_Header)], 1024 - sizeof(V2GTP_Header), 0, nullptr);
+    exi_bitstream_init(&exi, exi_data, EXI_DATA_SIZE, sizeof(V2GTP_Header), nullptr);
 
+    int ret = -1;
     switch(type) {
         case ExiType::AppHand:
-            encode_appHand_exiDocument(&exi, &appHandEnc);
+            ret = encode_appHand_exiDocument(&exi, appHandEnc);
             break;
         case ExiType::Din:
-            prepare_din_header(&iso15118.din70121.dinDocEnc.V2G_Message.Header);
-            encode_din_exiDocument(&exi, &iso15118.din70121.dinDocEnc);
+            prepare_din_header(&iso15118.din70121.dinDocEnc->V2G_Message.Header);
+            ret = encode_din_exiDocument(&exi, iso15118.din70121.dinDocEnc);
             break;
         case ExiType::Iso2:
-            prepare_iso2_header(&iso15118.iso2.iso2DocEnc.V2G_Message.Header);
-            encode_iso2_exiDocument(&exi, &iso15118.iso2.iso2DocEnc);
+            prepare_iso2_header(&iso15118.iso2.iso2DocEnc->V2G_Message.Header);
+            ret = encode_iso2_exiDocument(&exi, iso15118.iso2.iso2DocEnc);
             break;
         case ExiType::Iso20:
             // TBD
             break;
+    }
+
+    if (ret != 0) {
+        logger.printfln("Common: Failed to encode EXI document: %d", ret);
+        return;
     }
 
     const size_t length = exi_bitstream_get_length(&exi);
@@ -186,9 +200,10 @@ void Common::send_exi(ExiType type)
     header->payload_type             = htons(0x8001), // 0x8001 = EXI data
     header->payload_length           = htonl(length);
 
-    ssize_t ret = send(active_socket, exi_data, length + sizeof(V2GTP_Header), 0);
-    if(ret < 0) {
-        logger.printfln("Common: Failed to send data: %d (errno %d)", ret, errno);
+    ssize_t send_ret = send(active_socket, exi_data, length + sizeof(V2GTP_Header), 0);
+    logger.printfln("Common: Sent %u bytes", length + sizeof(V2GTP_Header));
+    if(send_ret < 0) {
+        logger.printfln("Common: Failed to send data: %d (errno %d)", send_ret, errno);
         close(active_socket);
         active_socket = -1;
         return;
@@ -215,15 +230,27 @@ void Common::decode(uint8_t *data, const size_t length)
     exi_bitstream_init(&exi, &data[sizeof(V2GTP_Header)], length - sizeof(V2GTP_Header), 0, nullptr);
 
     if (exi_in_use == ExiType::AppHand) {
-        memset(&appHandDec, 0, sizeof(appHandDec));
-        memset(&appHandEnc, 0, sizeof(appHandEnc));
-        int ret = decode_appHand_exiDocument(&exi, &appHandDec);
-        logger.printfln("Common: decode_appHand_exiDocument: %d", ret);
+        // We alloc the appHand buffers the very first time they are used.
+        // This way it is not allocated if ISO15118 is not used.
+        // If it is used once we can assume that it will be used all the time, so it stays allocated.
+        if (appHandDec == nullptr) {
+            appHandDec = (struct appHand_exiDocument*)heap_caps_calloc_prefer(sizeof(struct appHand_exiDocument), 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        }
+        if (appHandEnc == nullptr) {
+            appHandEnc = (struct appHand_exiDocument*)heap_caps_calloc_prefer(sizeof(struct appHand_exiDocument), 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+        }
+        memset(appHandDec, 0, sizeof(struct appHand_exiDocument));
+        memset(appHandEnc, 0, sizeof(struct appHand_exiDocument));
+        int ret = decode_appHand_exiDocument(&exi, appHandDec);
+        if (ret != 0) {
+            logger.printfln("Common: Failed to decode EXI document: %d", ret);
+            return;
+        }
 
-        if (appHandDec.supportedAppProtocolReq_isUsed) {
+        if (appHandDec->supportedAppProtocolReq_isUsed) {
             iso15118.trace("Common: SupportedAppProtocolReq received");
             handle_supported_app_protocol_req();
-            appHandDec.supportedAppProtocolReq_isUsed = 0;
+            appHandDec->supportedAppProtocolReq_isUsed = 0;
         }
     } else if (exi_in_use == ExiType::Din) {
         iso15118.din70121.handle_bitstream(&exi);
@@ -238,8 +265,8 @@ void Common::decode(uint8_t *data, const size_t length)
 
 void Common::handle_supported_app_protocol_req()
 {
-    struct appHand_supportedAppProtocolReq *req = &appHandDec.supportedAppProtocolReq;
-    struct appHand_supportedAppProtocolRes *res = &appHandEnc.supportedAppProtocolRes;
+    struct appHand_supportedAppProtocolReq *req = &appHandDec->supportedAppProtocolReq;
+    struct appHand_supportedAppProtocolRes *res = &appHandEnc->supportedAppProtocolRes;
 
     // check all schemas for DIN, ISO2 and ISO20
     logger.printfln("EV supports %u protocols", req->AppProtocol.arrayLen);
@@ -252,6 +279,8 @@ void Common::handle_supported_app_protocol_req()
     int8_t  iso20_schema_id    = -1;
     uint8_t iso20_index        =  0;
 
+    // TODO: Differentiate between iso:151118:2:2010 and iso:151118:2:2013
+    //       iso:151118:2:2010 is the same as din:70121?
     for(uint16_t i = 0; i < req->AppProtocol.arrayLen; i++) {
         if (strnstr(req->AppProtocol.array[i].ProtocolNamespace.characters, ":din:70121:", req->AppProtocol.array[i].ProtocolNamespace.charactersLen) != nullptr) {
             din70121_schema_id = req->AppProtocol.array[i].SchemaID;
@@ -290,7 +319,7 @@ void Common::handle_supported_app_protocol_req()
         }
         api_state.get("protocol")->updateString(req->AppProtocol.array[index].ProtocolNamespace.characters);
 
-        appHandEnc.supportedAppProtocolRes_isUsed = 1;
+        appHandEnc->supportedAppProtocolRes_isUsed = 1;
         res->ResponseCode = appHand_responseCodeType_OK_SuccessfulNegotiation;
 
         res->SchemaID = schema_id;
@@ -298,6 +327,8 @@ void Common::handle_supported_app_protocol_req()
 
         send_exi(Common::ExiType::AppHand);
         state = 1;
+
+        evse_v2.set_charging_protocol(1, 50);
 
         iso15118.trace("SupportedAppProtocolRes sent");
         iso15118.trace(" use %d: %s", schema_id, req->AppProtocol.array[index].ProtocolNamespace.characters);

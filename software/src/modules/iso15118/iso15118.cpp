@@ -81,8 +81,12 @@ void ISO15118::trace_ll(const char *fmt, ...)
 void ISO15118::trace(const char *fmt, ...)
 {
 #if defined(BOARD_HAS_PSRAM)
-    va_list args;
+    uint32_t secs = now_us().to<millis_t>().as<uint32_t>();
+    char buffer[32] = {0};
+    sprintf(buffer, "%04lu ", secs % 10000);
+    logger.trace_plain(trace_buffer_index, buffer, strlen(buffer));
 
+    va_list args;
     va_start(args, fmt);
     logger.vtracefln_plain(trace_buffer_index, fmt, args);
     va_end(args);
@@ -127,6 +131,10 @@ void ISO15118::register_urls()
     api.addState("iso15118/state_din70121", &din70121.api_state);
     api.addState("iso15118/state_iso2",     &iso2.api_state);
     api.addState("iso15118/state_iso20",    &iso20.api_state);
+
+    // Enable ISO15118 on the EVSE Bricklet
+    // TODO: This probably needs to be a user configuration
+    evse_v2.set_charging_protocol(1, 50);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         this->state_machines_loop();

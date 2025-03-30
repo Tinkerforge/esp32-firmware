@@ -39,8 +39,8 @@ public:
 
     ConfigRoot api_state;
 
-    struct din_exiDocument dinDocDec;
-    struct din_exiDocument dinDocEnc;
+    struct din_exiDocument *dinDocDec;
+    struct din_exiDocument *dinDocEnc;
 
 private:
     void handle_session_setup_req();
