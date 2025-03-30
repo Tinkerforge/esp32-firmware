@@ -52,7 +52,7 @@ void DIN70121::pre_setup()
         {"ev_max_current_limit_mul", Config::Int8(0)},
         {"ev_max_power_limit_val", Config::Int16(0)},
         {"ev_max_power_limit_mul", Config::Int8(0)},
-        {"ev_max_power_limit_is_used", Config::Bool(0)},
+        {"ev_max_power_limit_is_used", Config::Bool(false)},
         {"ev_max_voltage_limit_val", Config::Int16(0)},
         {"ev_max_voltage_limit_mul", Config::Int8(0)},
         {"ev_energy_capacity_val", Config::Int16(0)},
@@ -60,11 +60,11 @@ void DIN70121::pre_setup()
         {"ev_energy_capacity_is_used", Config::Bool(0)},
         {"ev_energy_request_val", Config::Int16(0)},
         {"ev_energy_request_mul", Config::Int8(0)},
-        {"ev_energy_request_is_used", Config::Bool(0)},
+        {"ev_energy_request_is_used", Config::Bool(false)},
         {"full_soc", Config::Int8(0)},
-        {"full_soc_is_used", Config::Bool(0)},
+        {"full_soc_is_used", Config::Bool(false)},
         {"bulk_soc", Config::Int8(0)},
-        {"bulk_soc_is_used", Config::Bool(0)}
+        {"bulk_soc_is_used", Config::Bool(false)}
     });
 }
 
