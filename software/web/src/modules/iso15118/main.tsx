@@ -212,16 +212,16 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
                         <InputNumber value={state_din70121.ev_error_code}/>
                     </FormRow>
                     <FormRow label="EV Maximum Current Limit">
-                        <InputText value={state_din70121.ev_maximum_current_limit_val + " * 10^" + state_din70121.ev_maximum_current_limit_mul}/>
+                        <InputText value={state_din70121.ev_max_current_limit_val + " * 10^" + state_din70121.ev_max_current_limit_mul}/>
                     </FormRow>
                     <FormRow label="EV Maximum Power Limit">
-                        <InputText value={state_din70121.ev_maximum_power_limit_val + " * 10^" + state_din70121.ev_maximum_power_limit_mul}/>
+                        <InputText value={state_din70121.ev_max_power_limit_val + " * 10^" + state_din70121.ev_max_power_limit_mul}/>
                     </FormRow>
                     <FormRow label="EV Maximum Power Limit Is Used">
-                        <InputText value={state_din70121.ev_maximum_power_limit_is_used ? "Yes" : "No"}/>
+                        <InputText value={state_din70121.ev_max_power_limit_is_used ? "Yes" : "No"}/>
                     </FormRow>
                     <FormRow label="EV Maximum Voltage Limit">
-                        <InputText value={state_din70121.ev_maximum_voltage_limit_val + " * 10^" + state_din70121.ev_maximum_voltage_limit_mul}/>
+                        <InputText value={state_din70121.ev_max_voltage_limit_val + " * 10^" + state_din70121.ev_max_voltage_limit_mul}/>
                     </FormRow>
                     <FormRow label="EV Energy Capacity">
                         <InputText value={state_din70121.ev_energy_capacity_val + " * 10^" + state_din70121.ev_energy_capacity_mul}/>
@@ -249,8 +249,98 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
                     </FormRow>
 
                     <FormSeparator heading="ISO 15118-2"/>
+                    <FormRow label="State">
+                        <InputNumber value={state_iso2.state}/>
+                    </FormRow>
+                    <FormRow label="Session ID">
+                        <InputText value={array8_to_hexstring(state_iso2.session_id, '')}/>
+                    </FormRow>
+                    <FormRow label="EVCC ID">
+                        <InputText value={array8_to_hexstring(state_iso2.evcc_id, '')}/>
+                    </FormRow>
+                    <FormRow label="Max Entries SA Schedule Tuple">
+                        <InputNumber value={state_iso2.max_entries_sa_schedule_tuple}/>
+                    </FormRow>
+                    <FormRow label="Requested Energy Transfer Mode">
+                        <InputText value={state_iso2.requested_energy_transfer_mode}/>
+                    </FormRow>
+                    <FormRow label="AC Is Used">
+                        <InputText value={state_iso2.ac.is_used ? "Yes" : "No"}/>
+                    </FormRow>
+                    <FormRow label="AC Departure Time">
+                        <InputText value={state_iso2.ac.departure_time}/>
+                    </FormRow>
+                    <FormRow label="AC Departure Time Is Used">
+                        <InputText value={state_iso2.ac.departure_time_is_used ? "Yes" : "No"}/>
+                    </FormRow>
+                    <FormRow label="AC EAmount">
+                        <InputText value={state_iso2.ac.eamount_val + " * 10^" + state_iso2.ac.eamount_mul}/>
+                    </FormRow>
+                    <FormRow label="AC EV Max Voltage">
+                        <InputText value={state_iso2.ac.ev_max_voltage_val + " * 10^" + state_iso2.ac.ev_max_voltage_mul}/>
+                    </FormRow>
+                    <FormRow label="AC EV Min Current">
+                        <InputText value={state_iso2.ac.ev_min_current_val + " * 10^" + state_iso2.ac.ev_min_current_mul}/>
+                    </FormRow>
+                    <FormRow label="DC Is Used">
+                        <InputText value={state_iso2.dc.is_used ? "Yes" : "No"}/>
+                    </FormRow>
+                    <FormRow label="DC Departure Time">
+                        <InputText value={state_iso2.dc.departure_time}/>
+                    </FormRow>
+                    <FormRow label="DC Departure Time Is Used">
+                        <InputText value={state_iso2.dc.departure_time_is_used ? "Yes" : "No"}/>
+                    </FormRow>
+                    <FormRow label="DC SOC">
+                        <InputText value={state_iso2.dc.soc}/>
+                    </FormRow>
+                    <FormRow label="DC EV Ready">
+                        <InputText value={state_iso2.dc.ev_ready}/>
+                    </FormRow>
+                    <FormRow label="DC EV Error Code">
+                        <InputText value={state_iso2.dc.ev_error_code}/>
+                    </FormRow>
+                    <FormRow label="DC EV Max Current Limit">
+                        <InputText value={state_iso2.dc.ev_max_current_limit_val + " * 10^" + state_iso2.dc.ev_max_current_limit_mul}/>
+                    </FormRow>
+                    <FormRow label="DC EV Max Power Limit">
+                        <InputText value={state_iso2.dc.ev_max_power_limit_val + " * 10^" + state_iso2.dc.ev_max_power_limit_mul}/>
+                    </FormRow>
+                    <FormRow label="DC EV Max Power Limit Is Used">
+                        <InputText value={state_iso2.dc.ev_max_power_limit_is_used ? "Yes" : "No"}/>
+                    </FormRow>
+                    <FormRow label="DC EV Max Voltage Limit">
+                        <InputText value={state_iso2.dc.ev_max_voltage_limit_val + " * 10^" + state_iso2.dc.ev_max_voltage_limit_mul}/>
+                    </FormRow>
+                    <FormRow label="DC EV Energy Capacity">
+                        <InputText value={state_iso2.dc.ev_energy_capacity_val + " * 10^" + state_iso2.dc.ev_energy_capacity_mul}/>
+                    </FormRow>
+                    <FormRow label="DC EV Energy Capacity Is Used">
+                        <InputText value={state_iso2.dc.ev_energy_capacity_is_used ? "Yes" : "No"}/>
+                    </FormRow>
+                    <FormRow label="DC EV Energy Request">
+                        <InputText value={state_iso2.dc.ev_energy_request_val + " * 10^" + state_iso2.dc.ev_energy_request_mul}/>
+                    </FormRow>
+                    <FormRow label="DC EV Energy Request Is Used">
+                        <InputText value={state_iso2.dc.ev_energy_request_is_used ? "Yes" : "No"}/>
+                    </FormRow>
+                    <FormRow label="DC Full SOC">
+                        <InputText value={state_iso2.dc.full_soc}/>
+                    </FormRow>
+                    <FormRow label="DC Full SOC Is Used">
+                        <InputText value={state_iso2.dc.full_soc_is_used ? "Yes" : "No"}/>
+                    </FormRow>
+                    <FormRow label="DC Bulk SOC">
+                        <InputText value={state_iso2.dc.bulk_soc}/>
+                    </FormRow>
+                    <FormRow label="DC Bulk SOC Is Used">
+                        <InputText value={state_iso2.dc.bulk_soc_is_used ? "Yes" : "No"}/>
+                    </FormRow>
 
                     <FormSeparator heading="ISO 15118-20"/>
+                    <FormRow label="State">
+                        <InputNumber value={state_common.state}/>
+                    </FormRow>
                 </ConfigForm>
             </SubPage>
         );

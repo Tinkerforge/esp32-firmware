@@ -45,13 +45,13 @@ export interface state_din70121 {
     ev_ress_conditioning: number;
     ev_ress_conditioning_is_used: boolean;
     ev_error_code: number;
-    ev_maximum_current_limit_val: number;
-    ev_maximum_current_limit_mul: number;
-    ev_maximum_power_limit_val: number;
-    ev_maximum_power_limit_mul: number;
-    ev_maximum_power_limit_is_used: boolean;
-    ev_maximum_voltage_limit_val: number;
-    ev_maximum_voltage_limit_mul: number;
+    ev_max_current_limit_val: number;
+    ev_max_current_limit_mul: number;
+    ev_max_power_limit_val: number;
+    ev_max_power_limit_mul: number;
+    ev_max_power_limit_is_used: boolean;
+    ev_max_voltage_limit_val: number;
+    ev_max_voltage_limit_mul: number;
     ev_energy_capacity_val: number;
     ev_energy_capacity_mul: number;
     ev_energy_capacity_is_used: boolean;
@@ -65,6 +65,47 @@ export interface state_din70121 {
 }
 
 export interface state_iso2 {
+    state: number;
+    session_id: number[];
+    evcc_id: number[];
+    max_entries_sa_schedule_tuple: number;
+    requested_energy_transfer_mode: number;
+    'ac': {
+        is_used: boolean;
+        departure_time: number;
+        departure_time_is_used: boolean;
+        eamount_val: number;
+        eamount_mul: number;
+        ev_max_voltage_val: number;
+        ev_max_voltage_mul: number;
+        ev_min_current_val: number;
+        ev_min_current_mul: number;
+    };
+    'dc': {
+        is_used: boolean;
+        departure_time: number;
+        departure_time_is_used: boolean;
+        soc: number;
+        ev_ready: number;
+        ev_error_code: number;
+        ev_max_current_limit_val: number;
+        ev_max_current_limit_mul: number;
+        ev_max_power_limit_val: number;
+        ev_max_power_limit_mul: number;
+        ev_max_power_limit_is_used: boolean;
+        ev_max_voltage_limit_val: number;
+        ev_max_voltage_limit_mul: number;
+        ev_energy_capacity_val: number;
+        ev_energy_capacity_mul: number;
+        ev_energy_capacity_is_used: boolean;
+        ev_energy_request_val: number;
+        ev_energy_request_mul: number;
+        ev_energy_request_is_used: boolean;
+        full_soc: number;
+        full_soc_is_used: boolean;
+        bulk_soc: number;
+        bulk_soc_is_used: boolean;
+    };
 }
 
 export interface state_iso20 {

@@ -33,7 +33,46 @@ void ISO2::pre_setup()
             }, Config::get_prototype_uint8_0(), 4, 4, Config::type_id<Config::ConfUint>())
         },
         {"evcc_id", Config::Array({}, Config::get_prototype_uint8_0(), 0, 8, Config::type_id<Config::ConfUint>())},
-        {"soc", Config::Int8(0)}
+        {"max_entries_sa_schedule_tuple", Config::Uint16(0)},
+        {"requested_energy_transfer_mode", Config::Uint8(0)},
+        {"ac", Config::Object({
+            {"is_used", Config::Bool(0)},
+            {"departure_time", Config::Uint32(0)},
+            {"departure_time_is_used", Config::Bool(false)},
+            {"eamount_val", Config::Int16(0)},
+            {"eamount_mul", Config::Int8(0)},
+            {"ev_max_voltage_val", Config::Int16(0)},
+            {"ev_max_voltage_mul", Config::Int8(0)},
+            {"ev_max_current_val", Config::Int16(0)},
+            {"ev_max_current_mul", Config::Int8(0)},
+            {"ev_min_current_val", Config::Int16(0)},
+            {"ev_min_current_mul", Config::Int8(0)}
+        })},
+        {"dc", Config::Object({
+            {"is_used", Config::Bool(0)},
+            {"departure_time", Config::Uint32(0)},
+            {"departure_time_is_used", Config::Bool(false)},
+            {"soc", Config::Int8(0)},
+            {"ev_ready", Config::Int32(0)},
+            {"ev_error_code", Config::Uint8(0)},
+            {"ev_max_current_limit_val", Config::Int16(0)},
+            {"ev_max_current_limit_mul", Config::Int8(0)},
+            {"ev_max_power_limit_val", Config::Int16(0)},
+            {"ev_max_power_limit_mul", Config::Int8(0)},
+            {"ev_max_power_limit_is_used", Config::Bool(0)},
+            {"ev_max_voltage_limit_val", Config::Int16(0)},
+            {"ev_max_voltage_limit_mul", Config::Int8(0)},
+            {"ev_energy_capacity_val", Config::Int16(0)},
+            {"ev_energy_capacity_mul", Config::Int8(0)},
+            {"ev_energy_capacity_is_used", Config::Bool(0)},
+            {"ev_energy_request_val", Config::Int16(0)},
+            {"ev_energy_request_mul", Config::Int8(0)},
+            {"ev_energy_request_is_used", Config::Bool(0)},
+            {"full_soc", Config::Int8(0)},
+            {"full_soc_is_used", Config::Bool(0)},
+            {"bulk_soc", Config::Int8(0)},
+            {"bulk_soc_is_used", Config::Bool(0)}
+        })},
     });
 }
 
@@ -417,34 +456,46 @@ void ISO2::handle_charge_parameter_discovery_req()
     iso15118.trace("  DepartureTime: %d", req->EVChargeParameter.DepartureTime);
     iso15118.trace("  DepartureTime_isUsed: %d", req->EVChargeParameter.DepartureTime_isUsed);
 
-    if (req->DC_EVChargeParameter_isUsed) {
-        api_state.get("soc")->updateInt(req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
+    api_state.get("ac")->get("is_used")->updateInt(req->AC_EVChargeParameter_isUsed);
+    if (req->AC_EVChargeParameter_isUsed) {
+        api_state.get("ac")->get("departure_time")->updateInt(req->AC_EVChargeParameter.DepartureTime);
+        api_state.get("ac")->get("departure_time_is_used")->updateBool(req->AC_EVChargeParameter.DepartureTime_isUsed);
+        api_state.get("ac")->get("eamount_val")->updateInt(req->AC_EVChargeParameter.EAmount.Value);
+        api_state.get("ac")->get("eamount_mul")->updateInt(req->AC_EVChargeParameter.EAmount.Multiplier);
+        api_state.get("ac")->get("ev_max_voltage_val")->updateInt(req->AC_EVChargeParameter.EVMaxVoltage.Value);
+        api_state.get("ac")->get("ev_max_voltage_mul")->updateInt(req->AC_EVChargeParameter.EVMaxVoltage.Multiplier);
+        api_state.get("ac")->get("ev_max_current_val")->updateInt(req->AC_EVChargeParameter.EVMaxCurrent.Value);
+        api_state.get("ac")->get("ev_max_current_mul")->updateInt(req->AC_EVChargeParameter.EVMaxCurrent.Multiplier);
+        api_state.get("ac")->get("ev_min_current_val")->updateInt(req->AC_EVChargeParameter.EVMinCurrent.Value);
+        api_state.get("ac")->get("ev_min_current_mul")->updateInt(req->AC_EVChargeParameter.EVMinCurrent.Multiplier);
     }
-    #if 0
-    api_state.get("ev_ready")->updateInt(req->DC_EVChargeParameter.DC_EVStatus.EVReady);
-    api_state.get("ev_cabin_conditioning")->updateInt(req->DC_EVChargeParameter.DC_EVStatus.EVCabinConditioning);
-    api_state.get("ev_cabin_conditioning_is_used")->updateBool(req->DC_EVChargeParameter.DC_EVStatus.EVCabinConditioning_isUsed);
-    api_state.get("ev_ress_conditioning")->updateInt(req->DC_EVChargeParameter.DC_EVStatus.EVRESSConditioning);
-    api_state.get("ev_ress_conditioning_is_used")->updateBool(req->DC_EVChargeParameter.DC_EVStatus.EVRESSConditioning_isUsed);
-    api_state.get("ev_error_code")->updateUint(req->DC_EVChargeParameter.DC_EVStatus.EVErrorCode);
-    api_state.get("ev_maximum_current_limit_val")->updateInt(req->DC_EVChargeParameter.EVMaximumCurrentLimit.Value);
-    api_state.get("ev_maximum_current_limit_mul")->updateInt(req->DC_EVChargeParameter.EVMaximumCurrentLimit.Multiplier);
-    api_state.get("ev_maximum_power_limit_val")->updateInt(req->DC_EVChargeParameter.EVMaximumPowerLimit.Value);
-    api_state.get("ev_maximum_power_limit_mul")->updateInt(req->DC_EVChargeParameter.EVMaximumPowerLimit.Multiplier);
-    api_state.get("ev_maximum_power_limit_is_used")->updateBool(req->DC_EVChargeParameter.EVMaximumPowerLimit_isUsed);
-    api_state.get("ev_maximum_voltage_limit_val")->updateInt(req->DC_EVChargeParameter.EVMaximumVoltageLimit.Value);
-    api_state.get("ev_maximum_voltage_limit_mul")->updateInt(req->DC_EVChargeParameter.EVMaximumVoltageLimit.Multiplier);
-    api_state.get("ev_energy_capacity_val")->updateInt(req->DC_EVChargeParameter.EVEnergyCapacity.Value);
-    api_state.get("ev_energy_capacity_mul")->updateInt(req->DC_EVChargeParameter.EVEnergyCapacity.Multiplier);
-    api_state.get("ev_energy_capacity_is_used")->updateBool(req->DC_EVChargeParameter.EVEnergyCapacity_isUsed);
-    api_state.get("ev_energy_request_val")->updateInt(req->DC_EVChargeParameter.EVEnergyRequest.Value);
-    api_state.get("ev_energy_request_mul")->updateInt(req->DC_EVChargeParameter.EVEnergyRequest.Multiplier);
-    api_state.get("ev_energy_request_is_used")->updateBool(req->DC_EVChargeParameter.EVEnergyRequest_isUsed);
-    api_state.get("full_soc")->updateInt(req->DC_EVChargeParameter.FullSOC);
-    api_state.get("full_soc_is_used")->updateBool(req->DC_EVChargeParameter.FullSOC_isUsed);
-    api_state.get("bulk_soc")->updateInt(req->DC_EVChargeParameter.BulkSOC);
-    api_state.get("bulk_soc_is_used")->updateBool(req->DC_EVChargeParameter.BulkSOC_isUsed);
-#endif
+
+    api_state.get("dc")->get("is_used")->updateInt(req->DC_EVChargeParameter_isUsed);
+    if (req->DC_EVChargeParameter_isUsed) {
+        api_state.get("dc")->get("departure_time")->updateInt(req->DC_EVChargeParameter.DepartureTime);
+        api_state.get("dc")->get("departure_time_is_used")->updateBool(req->DC_EVChargeParameter.DepartureTime_isUsed);
+        api_state.get("dc")->get("soc")->updateInt(req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
+        api_state.get("dc")->get("ev_ready")->updateInt(req->DC_EVChargeParameter.DC_EVStatus.EVReady);
+        api_state.get("dc")->get("ev_error_code")->updateUint(req->DC_EVChargeParameter.DC_EVStatus.EVErrorCode);
+        api_state.get("dc")->get("ev_max_current_limit_val")->updateInt(req->DC_EVChargeParameter.EVMaximumCurrentLimit.Value);
+        api_state.get("dc")->get("ev_max_current_limit_mul")->updateInt(req->DC_EVChargeParameter.EVMaximumCurrentLimit.Multiplier);
+        api_state.get("dc")->get("ev_max_power_limit_val")->updateInt(req->DC_EVChargeParameter.EVMaximumPowerLimit.Value);
+        api_state.get("dc")->get("ev_max_power_limit_mul")->updateInt(req->DC_EVChargeParameter.EVMaximumPowerLimit.Multiplier);
+        api_state.get("dc")->get("ev_max_power_limit_is_used")->updateBool(req->DC_EVChargeParameter.EVMaximumPowerLimit_isUsed);
+        api_state.get("dc")->get("ev_max_voltage_limit_val")->updateInt(req->DC_EVChargeParameter.EVMaximumVoltageLimit.Value);
+        api_state.get("dc")->get("ev_max_voltage_limit_mul")->updateInt(req->DC_EVChargeParameter.EVMaximumVoltageLimit.Multiplier);
+        api_state.get("dc")->get("ev_energy_capacity_val")->updateInt(req->DC_EVChargeParameter.EVEnergyCapacity.Value);
+        api_state.get("dc")->get("ev_energy_capacity_mul")->updateInt(req->DC_EVChargeParameter.EVEnergyCapacity.Multiplier);
+        api_state.get("dc")->get("ev_energy_capacity_is_used")->updateBool(req->DC_EVChargeParameter.EVEnergyCapacity_isUsed);
+        api_state.get("dc")->get("ev_energy_request_val")->updateInt(req->DC_EVChargeParameter.EVEnergyRequest.Value);
+        api_state.get("dc")->get("ev_energy_request_mul")->updateInt(req->DC_EVChargeParameter.EVEnergyRequest.Multiplier);
+        api_state.get("dc")->get("ev_energy_request_is_used")->updateBool(req->DC_EVChargeParameter.EVEnergyRequest_isUsed);
+        api_state.get("dc")->get("full_soc")->updateInt(req->DC_EVChargeParameter.FullSOC);
+        api_state.get("dc")->get("full_soc_is_used")->updateBool(req->DC_EVChargeParameter.FullSOC_isUsed);
+        api_state.get("dc")->get("bulk_soc")->updateInt(req->DC_EVChargeParameter.BulkSOC);
+        api_state.get("dc")->get("bulk_soc_is_used")->updateBool(req->DC_EVChargeParameter.BulkSOC_isUsed);
+    }
+
 
     // TODO: Check if EnergyTransferMode is as configured
 
