@@ -48,5 +48,8 @@ private:
     void handle_charging_status_req();
     void handle_session_stop_req();
 
+    void trace_header(struct iso2_MessageHeaderType *header);
+    void trace_request_response();
+
     uint8_t state = 0;
 };
