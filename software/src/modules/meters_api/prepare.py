@@ -157,6 +157,50 @@ presets = [
     ]),
 ]
 
+with open('presets.inc', 'w', encoding='utf-8') as f:
+    f.write('// WARNING: This file is generated\n\n')
+    f.write('#include "../meters/meter_value_id.h"\n')
+    f.write('#include "../meters/meter_location.enum.h"\n\n')
+
+    for preset in presets:
+        if preset[1] == 'Unknown':
+            continue
+
+        f.write(f'static const MeterValueID preset_value_ids_{preset[0]}[] = {{\n')
+
+        for mvid in preset[2]:
+            f.write(f'    MeterValueID::{mvid.name},\n')
+
+        f.write('};\n\n')
+
+    f.write('static const MeterValueID *preset_value_ids[] = {\n')
+
+    for preset in presets:
+        if preset[1] == 'Unknown':
+            continue
+
+        f.write(f"    preset_value_ids_{preset[0]},\n")
+
+    f.write('};\n\n')
+    f.write('static const size_t preset_value_ids_count[] = {\n')
+
+    for preset in presets:
+        if preset[1] == 'Unknown':
+            continue
+
+        f.write(f"    {len(preset[2])},\n")
+
+    f.write('};\n\n')
+    f.write('static const MeterLocation preset_default_locations[] = {\n')
+
+    for preset in presets:
+        if preset[1] == 'Unknown':
+            continue
+
+        f.write(f"    MeterLocation::{preset[1]},\n")
+
+    f.write('};\n')
+
 with open('../../../web/src/modules/meters_api/presets.ts', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated\n\n')
     f.write('import { MeterValueID } from "../meters/meter_value_id"\n')
