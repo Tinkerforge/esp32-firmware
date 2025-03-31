@@ -35,7 +35,7 @@ struct ShipNode {
     // Basic information about the node
     std::vector<IPAddress> ip_addresses;
     uint16_t port = 0;
-    bool registered = false;
+    bool trusted = false;
     bool connected = false;
     // Stuff that is Mandatory in the TXT record
     String dns_name = "";

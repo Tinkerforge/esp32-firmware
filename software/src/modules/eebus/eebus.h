@@ -34,6 +34,10 @@ public:
     void setup() override;
     void register_urls() override;
 
+
+    Config ship_peer_prototye;
+    ConfigRoot add_ship_peer;
+    ConfigRoot remove_ship_peer;
     ConfigRoot config;
     ConfigRoot state;
     ConfigRoot peers; // TODO: Merge this into config once i figure out the frontend
@@ -41,5 +45,4 @@ public:
     Ship ship;
 private:
     
-    ConfigRoot ship_peer;
 };

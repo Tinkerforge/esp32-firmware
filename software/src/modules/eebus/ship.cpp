@@ -159,7 +159,7 @@ void Ship::setup_wss()
     }
 
     web_sockets.onConnect_HTTPThread([this](WebSocketsClient ws_client) {
-        ship_connections.push_back(ShipConnection{ws_client, ShipConnection::Role::Server});
+        ship_connections.push_back(ShipConnection{ws_client, ShipConnection::Role::Server});        
         logger.printfln("WebSocketsClient connected");
 
         return true;
