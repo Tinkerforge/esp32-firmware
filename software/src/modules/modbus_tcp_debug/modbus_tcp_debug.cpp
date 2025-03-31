@@ -116,6 +116,15 @@ void ModbusTCPDebug::register_urls()
                 return;
             }
 
+            transact_buffer = static_cast<uint16_t *>(malloc(sizeof(uint16_t) * TF_MODBUS_TCP_MAX_READ_REGISTER_COUNT));
+
+            if (transact_buffer == nullptr) {
+                report_errorf(cookie, "Cannot allocate transaction buffer");
+
+                client_disconnect = true;
+                return;
+            }
+
             // FIXME: write data into buffer for write function codes
 
             client->transact(device_address, function_code, start_address, data_count, transact_buffer, timeout,
@@ -161,6 +170,9 @@ void ModbusTCPDebug::register_urls()
             delete client;
             client = nullptr;
             client_disconnect = false;
+
+            free(transact_buffer);
+            transact_buffer = nullptr;
         });
     }, true);
 }
