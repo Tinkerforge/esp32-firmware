@@ -20,6 +20,7 @@
 #pragma once
 
 #include <stdlib.h>
+#include <type_traits>
 
 enum class HexdumpCase
 {
@@ -30,6 +31,8 @@ enum class HexdumpCase
 template <typename T>
 size_t hexdump(T *data, size_t data_len, char *buf, size_t buf_len, HexdumpCase case_, char separator = '\0')
 {
+    static_assert(std::is_arithmetic<T>::value, "data has to be an arithmetic type");
+
     static const char *alphabet_lower = "0123456789abcdef";
     static const char *alphabet_upper = "0123456789ABCDEF";
 

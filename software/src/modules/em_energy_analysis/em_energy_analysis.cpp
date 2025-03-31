@@ -27,6 +27,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "modules/charge_manager/charge_manager_private.h"
+#include "tools/hexdump.h"
 
 static constexpr micros_t MAX_DATA_AGE = 30_s;
 #define DATA_INTERVAL_5MIN 5 // minutes
@@ -570,6 +571,8 @@ void EMEnergyAnalysis::load_persistent_data_v1(uint8_t *buf)
     PersistentDataV1 zero_v1;
     memset(&zero_v1, 0, sizeof(zero_v1));
 
+    char data_v1_hexdump[sizeof(data_v1) * 2 + 1];
+
     if (memcmp(&data_v1, &zero_v1, sizeof(data_v1)) == 0) {
         logger.printfln("Persistent data v1 all zero, first boot?");
         return;
@@ -577,11 +580,15 @@ void EMEnergyAnalysis::load_persistent_data_v1(uint8_t *buf)
 
     if (internet_checksum((uint8_t *)&data_v1, sizeof(data_v1)) != 0) {
         logger.printfln("Checksum mismatch for persistent data v1");
+        hexdump((uint8_t *)&data_v1, sizeof(data_v1), data_v1_hexdump, ARRAY_SIZE(data_v1_hexdump), HexdumpCase::Lower);
+        logger.printfln_plain("Persistent data v1: %s", data_v1_hexdump);
         return;
     }
 
     if (data_v1.version != 1) {
         logger.printfln("Unexpected version %u for persistent data v1", data_v1.version);
+        hexdump((uint8_t *)&data_v1, sizeof(data_v1), data_v1_hexdump, ARRAY_SIZE(data_v1_hexdump), HexdumpCase::Lower);
+        logger.printfln_plain("Persistent data v1: %s", data_v1_hexdump);
         return;
     }
 
@@ -598,6 +605,8 @@ void EMEnergyAnalysis::load_persistent_data_v2(uint8_t *buf)
     PersistentDataV2 zero_v2;
     memset(&zero_v2, 0, sizeof(zero_v2));
 
+    char data_v2_hexdump[sizeof(data_v2) * 2 + 1];
+
     if (memcmp(&data_v2, &zero_v2, sizeof(data_v2)) == 0) {
         logger.printfln("Persistent data v2 all zero, first boot?");
         return;
@@ -605,11 +614,15 @@ void EMEnergyAnalysis::load_persistent_data_v2(uint8_t *buf)
 
     if (internet_checksum((uint8_t *)&data_v2, sizeof(data_v2)) != 0) {
         logger.printfln("Checksum mismatch for persistent data v2");
+        hexdump((uint8_t *)&data_v2, sizeof(data_v2), data_v2_hexdump, ARRAY_SIZE(data_v2_hexdump), HexdumpCase::Lower);
+        logger.printfln_plain("Persistent data v2: %s", data_v2_hexdump);
         return;
     }
 
     if (data_v2.version != 2) {
         logger.printfln("Unexpected version %u for persistent data v2", data_v2.version);
+        hexdump((uint8_t *)&data_v2, sizeof(data_v2), data_v2_hexdump, ARRAY_SIZE(data_v2_hexdump), HexdumpCase::Lower);
+        logger.printfln_plain("Persistent data v2: %s", data_v2_hexdump);
         return;
     }
 
