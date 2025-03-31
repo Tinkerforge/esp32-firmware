@@ -279,10 +279,19 @@ void Wifi::apply_soft_ap_config_and_start()
     gateway.fromString(ap_config_in_use.get("gateway")->asEphemeralCStr());
     subnet.fromString(ap_config_in_use.get("subnet")->asEphemeralCStr());
 
-    WiFi.softAP(ap_config_in_use.get("ssid")->asEphemeralCStr(),
-                ap_config_in_use.get("passphrase")->asEphemeralCStr(),
-                channel_to_use,
-                ap_config_in_use.get("hide_ssid")->asBool());
+    // AP must be enabled before the bandwidth can be set.
+    WiFi.enableAP(true);
+
+    // We don't need the additional speed of HT40 and it only causes more errors.
+    esp_err_t err = esp_wifi_set_bandwidth(WIFI_IF_AP, WIFI_BW_HT20);
+    if (err != ESP_OK) {
+        logger.printfln("Setting HT20 for AP failed: %s (%i)", esp_err_to_name(err), err);
+    }
+
+    WiFi.AP.create(ap_config_in_use.get("ssid")->asEphemeralCStr(),
+                   ap_config_in_use.get("passphrase")->asEphemeralCStr(),
+                   channel_to_use,
+                   ap_config_in_use.get("hide_ssid")->asBool());
 
     int ap_config_attempts = 0;
     do {
@@ -297,9 +306,13 @@ void Wifi::apply_soft_ap_config_and_start()
     if (ap_config_attempts != 1) {
         logger.printfln("Had to configure soft AP IP address %d times.", ap_config_attempts);
     }
+
+    String ap_bssid = WiFi.softAPmacAddress();
+    state.get("ap_bssid")->updateString(ap_bssid);
+
     logger.printfln("Soft AP started");
     logger.printfln_continue("SSID: %s", ap_config_in_use.get("ssid")->asEphemeralCStr());
-    logger.printfln_continue("MAC address: %s", WiFi.softAPmacAddress().c_str());
+    logger.printfln_continue("MAC address: %s", ap_bssid.c_str());
     logger.printfln_continue("IP address: %s", ip.toString().c_str());
 }
 
@@ -312,6 +325,12 @@ bool Wifi::apply_sta_config_and_connect()
     WiFi.persistent(false);
     WiFi.setAutoReconnect(false);
     WiFi.disconnect(false, true);
+
+    // We don't need the additional speed of HT40 and it only causes more errors.
+    esp_err_t err = esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW_HT20);
+    if (err != ESP_OK) {
+        logger.printfln("Setting HT20 for station failed: %s (%i)", esp_err_to_name(err), err);
+    }
 
     const char *ssid = sta_config_in_use.get("ssid")->asEphemeralCStr();
 
@@ -629,20 +648,8 @@ void Wifi::setup()
     esp_wifi_set_country_code("DE", true);
     esp_wifi_set_ps(WIFI_PS_NONE);
 
-    // We don't need the additional speed of HT40 and it only causes more errors.
-    // Always disable on both interfaces but only print warnings for interfaces we care about.
-    esp_err_t err;
-    err = esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW_HT20);
-    if (enable_sta && err != ESP_OK)
-        logger.printfln("Setting HT20 for station failed: %i", err);
-
-    err = esp_wifi_set_bandwidth(WIFI_IF_AP, WIFI_BW_HT20);
-    if (enable_ap && err != ESP_OK)
-        logger.printfln("Setting HT20 for AP failed: %i", err);
-
-    WiFi.setTxPower(WIFI_POWER_19_5dBm);
-
-    state.get("ap_bssid")->updateString(WiFi.softAPmacAddress());
+    // Request max TX power. The actual power will be limited by the country setting above.
+    WiFi.setTxPower(WIFI_POWER_21dBm);
 
     if (enable_ap && !ap_fallback_only) {
         apply_soft_ap_config_and_start();
