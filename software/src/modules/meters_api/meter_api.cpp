@@ -21,6 +21,8 @@
 
 #include "module_dependencies.h"
 #include "modules/meters/meter_value_id.h"
+#include "modules/meters/meter_location.enum.h"
+#include "presets.inc"
 
 #include "gcc_warnings.h"
 
@@ -40,6 +42,22 @@ void MeterAPI::setup(Config *ephemeral_config)
         ids[i] = value_ids->get(i)->asEnum<MeterValueID>();
         this->reset_supported |= getMeterValueKind(ids[i]) == MeterValueKind::Resettable;
     }
+
+    if (ephemeral_config->get("location")->asEnum<MeterLocation>() == MeterLocation::Unknown) {
+        MeterLocation default_location = MeterLocation::Unknown;
+
+        for (size_t i = 0; i < ARRAY_SIZE(preset_value_ids); i++) {
+            if (preset_value_ids_count[i] == value_count && memcmp(preset_value_ids[i], ids, value_count) == 0) {
+                default_location = preset_default_locations[i];
+                break;
+            }
+        }
+
+        if (default_location != MeterLocation::Unknown) {
+            ephemeral_config->get("location")->updateEnum(default_location);
+        }
+    }
+
     meters.declare_value_ids(slot, ids, value_count);
     free(ids);
 
