@@ -617,14 +617,8 @@ void Wifi::setup()
     WiFi.setHostname((String(BUILD_HOST_PREFIX) + "-" + local_uid_str).c_str());
 #endif
 
-    if (enable_sta && enable_ap) {
-        WiFi.mode(WIFI_AP_STA);
-    } else if (enable_ap) {
-        WiFi.mode(WIFI_AP);
-    } else {
-        WiFi.mode(WIFI_STA);
-    }
-
+    // STA mode is always on so that we can scan for WiFis and the HWRNG has entropy.
+    WiFi.mode(WIFI_STA);
     WiFi.setAutoReconnect(false);
 
     // Check if WiFi connected automatically and erase configuration in that case.
