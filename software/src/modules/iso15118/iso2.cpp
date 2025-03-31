@@ -643,16 +643,55 @@ void ISO2::handle_session_stop_req()
     state = 9;
 }
 
-void ISO2::trace_header(struct iso2_MessageHeaderType *header)
+void ISO2::trace_header(const struct iso2_MessageHeaderType *header, const char *name)
 {
-    iso15118.trace("V2G_Message");
+    iso15118.trace("V2G_Message (%s)", name);
     iso15118.trace(" Header");
     iso15118.trace("  SessionID.bytes: %02x%02x%02x%02x", header->SessionID.bytes[0], header->SessionID.bytes[1], header->SessionID.bytes[2], header->SessionID.bytes[3]);
     iso15118.trace("  SessionID.bytesLen: %d", header->SessionID.bytesLen);
-    iso15118.trace("  Notification: %d", header->Notification);
     iso15118.trace("  Notification_isUsed: %d", header->Notification_isUsed);
-    iso15118.trace("  Signature: %d", header->Notification);
+    if (header->Notification_isUsed) {
+        iso15118.trace("  Notification: %d", header->Notification);
+    }
     iso15118.trace("  Signature_isUsed: %d", header->Signature_isUsed);
+    if (header->Signature_isUsed) {
+        iso15118.trace("  Signature.Id_isUsed: %d", header->Signature.Id_isUsed);
+        if (header->Signature.Id_isUsed) {
+            iso15118.trace("  Signature.Id.characters: %s", header->Signature.Id.characters);
+            iso15118.trace("  Signature.Id.charactersLen: %s", header->Signature.Id.charactersLen);
+        }
+        iso15118.trace("  Signature.SignatureValue.Id_isUsed: %d", header->Signature.SignatureValue.Id_isUsed);
+        if (header->Signature.SignatureValue.Id_isUsed) {
+            iso15118.trace("  Signature.SignatureValue.Id.characters: %s", header->Signature.SignatureValue.Id.characters);
+            iso15118.trace("  Signature.SignatureValue.Id.charactersLen: %d", header->Signature.SignatureValue.Id.charactersLen);
+        }
+        iso15118.trace("  Signature.KeyInfo_isUsed: %d", header->Signature.KeyInfo_isUsed);
+        if (header->Signature.KeyInfo_isUsed) {
+            iso15118.trace("  Signature.KeyInfo.Id_isUsed: %d", header->Signature.KeyInfo.Id_isUsed);
+            if (header->Signature.KeyInfo.Id_isUsed) {
+                iso15118.trace("  Signature.KeyInfo.Id.characters: %s", header->Signature.KeyInfo.Id.characters);
+                iso15118.trace("  Signature.KeyInfo.Id.charactersLen: %d", header->Signature.KeyInfo.Id.charactersLen);
+            }
+            iso15118.trace("  Signature.KeyInfo.KeyValue_isUsed: %d", header->Signature.KeyInfo.KeyValue_isUsed);
+            if (header->Signature.KeyInfo.KeyValue_isUsed) {
+                iso15118.trace("  Signature.KeyInfo.KeyValue.RSAKeyValue_isUsed: %d", header->Signature.KeyInfo.KeyValue.RSAKeyValue_isUsed);
+                if (header->Signature.KeyInfo.KeyValue.RSAKeyValue_isUsed) {
+                    iso15118.trace("  Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytes: %02x%02x%02x%02x...", 
+                                   header->Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytes[0], 
+                                   header->Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytes[1], 
+                                   header->Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytes[2], 
+                                   header->Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytes[3]);
+                    iso15118.trace("  Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytesLen: %d", header->Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytesLen);
+                    iso15118.trace("  Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytes: %02x%02x%02x%02x...", 
+                                   header->Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytes[0], 
+                                   header->Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytes[1], 
+                                   header->Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytes[2], 
+                                   header->Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytes[3]);
+                    iso15118.trace("  Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytesLen: %d", header->Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytesLen);
+                }
+            }
+        }
+    }
 };
 
 void ISO2::trace_request_response()
@@ -660,7 +699,7 @@ void ISO2::trace_request_response()
     if (iso2DocDec->V2G_Message.Body.SessionSetupReq_isUsed) {
         iso2_SessionSetupReqType *req = &iso2DocDec->V2G_Message.Body.SessionSetupReq;
 
-        trace_header(&iso2DocDec->V2G_Message.Header);
+        trace_header(&iso2DocDec->V2G_Message.Header, "SessionSetup Request");
         iso15118.trace(" Body");
         iso15118.trace("  SessionSetupReq");
         iso15118.trace("   EVCCID: %02x%02x%02x%02x%02x%02x", req->EVCCID.bytes[0], req->EVCCID.bytes[1], req->EVCCID.bytes[2], req->EVCCID.bytes[3], req->EVCCID.bytes[4], req->EVCCID.bytes[5]);
@@ -668,16 +707,21 @@ void ISO2::trace_request_response()
     } else if (iso2DocDec->V2G_Message.Body.ServiceDiscoveryReq_isUsed) {
         iso2_ServiceDiscoveryReqType *req = &iso2DocDec->V2G_Message.Body.ServiceDiscoveryReq;
 
-        trace_header(&iso2DocDec->V2G_Message.Header);
+        trace_header(&iso2DocDec->V2G_Message.Header, "ServiceDiscovery Request");
         iso15118.trace(" Body");
         iso15118.trace("  ServiceDiscoveryReq");
-        iso15118.trace("   ServiceCategory: %d", req->ServiceCategory);
-        iso15118.trace("   ServiceScope: %s", req->ServiceScope.characters);
         iso15118.trace("   ServiceCategory_isUsed: %d", req->ServiceCategory_isUsed);
+        if (req->ServiceCategory_isUsed) {
+            iso15118.trace("   ServiceCategory: %d", req->ServiceCategory);
+        }
+        iso15118.trace("   ServiceScope_isUsed: %d", req->ServiceScope_isUsed);
+        if (req->ServiceScope_isUsed) {
+            iso15118.trace("   ServiceScope: %s", req->ServiceScope.characters);
+        }
     } else if (iso2DocDec->V2G_Message.Body.PaymentServiceSelectionReq_isUsed) {
         iso2_PaymentServiceSelectionReqType *req = &iso2DocDec->V2G_Message.Body.PaymentServiceSelectionReq;
 
-        trace_header(&iso2DocDec->V2G_Message.Header);
+        trace_header(&iso2DocDec->V2G_Message.Header, "PaymentServiceSelection Request");
         iso15118.trace(" Body");
         iso15118.trace("  PaymentServiceSelectionReq");
         iso15118.trace("   SelectedPaymentOption: %d", req->SelectedPaymentOption);
@@ -692,24 +736,27 @@ void ISO2::trace_request_response()
     } else if (iso2DocDec->V2G_Message.Body.AuthorizationReq_isUsed) {
         iso2_AuthorizationReqType *req = &iso2DocDec->V2G_Message.Body.AuthorizationReq;
 
-        trace_header(&iso2DocDec->V2G_Message.Header);
+        trace_header(&iso2DocDec->V2G_Message.Header, "Authorization Request");
         iso15118.trace(" Body");
         iso15118.trace("  AuthorizationReq");
         iso15118.trace("  GenChallenge_isUsed: %d", req->GenChallenge_isUsed);
         if (req->GenChallenge_isUsed) {
             iso15118.trace("   GenChallenge: %02x%02x%02x%02x...", req->GenChallenge.bytes[0], req->GenChallenge.bytes[1], req->GenChallenge.bytes[2], req->GenChallenge.bytes[3]);
         }
+        iso15118.trace("   Id_isUsed: %d", req->Id_isUsed);
         if (req->Id_isUsed) {
             iso15118.trace("   Id: %s", req->Id.characters);
         }
     } else if (iso2DocDec->V2G_Message.Body.ChargeParameterDiscoveryReq_isUsed) {
         iso2_ChargeParameterDiscoveryReqType *req = &iso2DocDec->V2G_Message.Body.ChargeParameterDiscoveryReq;
 
-        trace_header(&iso2DocDec->V2G_Message.Header);
+        trace_header(&iso2DocDec->V2G_Message.Header, "ChargeParameterDiscovery Request");
         iso15118.trace(" Body");
         iso15118.trace("  ChargeParameterDiscoveryReq");
-        iso15118.trace("   MaxEntriesSAScheduleTuple: %d", req->MaxEntriesSAScheduleTuple);
         iso15118.trace("   MaxEntriesSAScheduleTuple_isUsed: %d", req->MaxEntriesSAScheduleTuple_isUsed);
+        if (req->MaxEntriesSAScheduleTuple_isUsed) {
+            iso15118.trace("   MaxEntriesSAScheduleTuple: %d", req->MaxEntriesSAScheduleTuple);
+        }
         iso15118.trace("   RequestedEnergyTransferMode: %d", req->RequestedEnergyTransferMode);
         iso15118.trace("   AC_EVChargeParameter_isUsed: %d", req->AC_EVChargeParameter_isUsed);
         if (req->AC_EVChargeParameter_isUsed) {
@@ -748,11 +795,12 @@ void ISO2::trace_request_response()
             iso15118.trace("    FullSOC: %d", req->DC_EVChargeParameter.FullSOC);
             iso15118.trace("    FullSOC_isUsed: %d", req->DC_EVChargeParameter.FullSOC_isUsed);
             iso15118.trace("    BulkSOC: %d", req->DC_EVChargeParameter.BulkSOC);
+            iso15118.trace("    BulkSOC_isUsed: %d", req->DC_EVChargeParameter.BulkSOC_isUsed);
         }
     } else if (iso2DocDec->V2G_Message.Body.PowerDeliveryReq_isUsed) {
         iso2_PowerDeliveryReqType *req = &iso2DocDec->V2G_Message.Body.PowerDeliveryReq;
 
-        trace_header(&iso2DocDec->V2G_Message.Header);
+        trace_header(&iso2DocDec->V2G_Message.Header, "PowerDelivery Request");
         iso15118.trace(" Body");
         iso15118.trace("  PowerDeliveryReq");
         iso15118.trace("   ChargeProgress: %d", req->ChargeProgress);
@@ -781,13 +829,13 @@ void ISO2::trace_request_response()
             iso15118.trace("    ChargingComplete: %d", req->DC_EVPowerDeliveryParameter.ChargingComplete);
         }
     } else if (iso2DocDec->V2G_Message.Body.ChargingStatusReq_isUsed) {
-        trace_header(&iso2DocDec->V2G_Message.Header);
+        trace_header(&iso2DocDec->V2G_Message.Header, "ChargingStatus Request");
         iso15118.trace(" Body");
         iso15118.trace("  ChargingStatusReq");
     } else if (iso2DocDec->V2G_Message.Body.SessionStopReq_isUsed) {
         iso2_SessionStopReqType *req = &iso2DocDec->V2G_Message.Body.SessionStopReq;
 
-        trace_header(&iso2DocDec->V2G_Message.Header);
+        trace_header(&iso2DocDec->V2G_Message.Header, "SessionStop Request");
         iso15118.trace(" Body");
         iso15118.trace("  SessionStopReq");
         iso15118.trace("   ChargingSession: %d", req->ChargingSession);
@@ -796,7 +844,7 @@ void ISO2::trace_request_response()
     if (iso2DocEnc->V2G_Message.Body.SessionSetupRes_isUsed) {
         iso2_SessionSetupResType *res = &iso2DocEnc->V2G_Message.Body.SessionSetupRes;
 
-        trace_header(&iso2DocEnc->V2G_Message.Header);
+        trace_header(&iso2DocEnc->V2G_Message.Header, "SessionSetup Response");
         iso15118.trace(" Body");
         iso15118.trace("  SessionSetupRes");
         iso15118.trace("   ResponseCode: %d", res->ResponseCode);
@@ -807,7 +855,7 @@ void ISO2::trace_request_response()
     } else if (iso2DocEnc->V2G_Message.Body.ServiceDiscoveryRes_isUsed) {
         iso2_ServiceDiscoveryResType *res = &iso2DocEnc->V2G_Message.Body.ServiceDiscoveryRes;
 
-        trace_header(&iso2DocEnc->V2G_Message.Header);
+        trace_header(&iso2DocEnc->V2G_Message.Header, "ServiceDiscovery Response");
         iso15118.trace(" Body");
         iso15118.trace("  ServiceDiscoveryRes");
         iso15118.trace("   ResponseCode: %d", res->ResponseCode);
@@ -816,14 +864,14 @@ void ISO2::trace_request_response()
     } else if (iso2DocEnc->V2G_Message.Body.PaymentServiceSelectionRes_isUsed) {
         iso2_PaymentServiceSelectionResType *res = &iso2DocEnc->V2G_Message.Body.PaymentServiceSelectionRes;
 
-        trace_header(&iso2DocEnc->V2G_Message.Header);
+        trace_header(&iso2DocEnc->V2G_Message.Header, "PaymentServiceSelection Response");
         iso15118.trace(" Body");
         iso15118.trace("  PaymentServiceSelectionRes");
         iso15118.trace("   ResponseCode: %d", res->ResponseCode);
     } else if (iso2DocEnc->V2G_Message.Body.AuthorizationRes_isUsed) {
         iso2_AuthorizationResType *res = &iso2DocEnc->V2G_Message.Body.AuthorizationRes;
 
-        trace_header(&iso2DocEnc->V2G_Message.Header);
+        trace_header(&iso2DocEnc->V2G_Message.Header, "Authorization Response");
         iso15118.trace(" Body");
         iso15118.trace("  AuthorizationRes");
         iso15118.trace("   ResponseCode: %d", res->ResponseCode);
@@ -831,12 +879,12 @@ void ISO2::trace_request_response()
     } else if (iso2DocEnc->V2G_Message.Body.ChargeParameterDiscoveryRes_isUsed) {
         iso2_ChargeParameterDiscoveryResType *res = &iso2DocEnc->V2G_Message.Body.ChargeParameterDiscoveryRes;
 
-        trace_header(&iso2DocEnc->V2G_Message.Header);
+        trace_header(&iso2DocEnc->V2G_Message.Header, "ChargeParameterDiscovery Response");
         iso15118.trace(" Body");
         iso15118.trace("  ChargeParameterDiscoveryRes");
         iso15118.trace("   ResponseCode: %d", res->ResponseCode);
         iso15118.trace("   EVSEProcessing: %d", res->EVSEProcessing);
-        iso15118.trace("   AC_EVSEChargeParameter_isUsed: %d", res->AC_EVSEChargeParameter_isUsed);
+        iso15118.trace("   SAScheduleList_isUsed: %d", res->SAScheduleList_isUsed);
         if (res->SAScheduleList_isUsed) {
             iso15118.trace("   SAScheduleList");
             for (int i = 0; i < res->SAScheduleList.SAScheduleTuple.arrayLen; i++) {
@@ -851,6 +899,7 @@ void ISO2::trace_request_response()
                         iso15118.trace("       PMax.Multiplier: %d", res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].PMax.Multiplier);
                         iso15118.trace("       PMax.Unit: %d", res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].PMax.Unit);
 
+                        iso15118.trace("       RelativeTimeInterval_isUsed: %d", res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].RelativeTimeInterval_isUsed);
                         if (res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].RelativeTimeInterval_isUsed) {
                             iso15118.trace("       RelativeTimeInterval");
                             iso15118.trace("        start: %d", res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].RelativeTimeInterval.start);
@@ -862,6 +911,7 @@ void ISO2::trace_request_response()
             }
         }
 
+        iso15118.trace("   AC_EVSEChargeParameter_isUsed: %d", res->AC_EVSEChargeParameter_isUsed);
         if (res->AC_EVSEChargeParameter_isUsed) {
             iso15118.trace("    EVSEMaxCurrent.Value: %d", res->AC_EVSEChargeParameter.EVSEMaxCurrent.Value);
             iso15118.trace("    EVSEMaxCurrent.Multiplier: %d", res->AC_EVSEChargeParameter.EVSEMaxCurrent.Multiplier);
@@ -869,6 +919,10 @@ void ISO2::trace_request_response()
             iso15118.trace("    EVSENominalVoltage.Value: %d", res->AC_EVSEChargeParameter.EVSENominalVoltage.Value);
             iso15118.trace("    EVSENominalVoltage.Multiplier: %d", res->AC_EVSEChargeParameter.EVSENominalVoltage.Multiplier);
             iso15118.trace("    EVSENominalVoltage.Unit: %d", res->AC_EVSEChargeParameter.EVSENominalVoltage.Unit);
+            iso15118.trace("    AC_EVSEStatus");
+            iso15118.trace("     RCD: %d", res->AC_EVSEChargeParameter.AC_EVSEStatus.RCD);
+            iso15118.trace("     NotificationMaxDelay: %d", res->AC_EVSEChargeParameter.AC_EVSEStatus.NotificationMaxDelay);
+            iso15118.trace("     EVSENotification: %d", res->AC_EVSEChargeParameter.AC_EVSEStatus.EVSENotification);
         }
 
         iso15118.trace("   DC_EVSEChargeParameter_isUsed: %d", res->DC_EVSEChargeParameter_isUsed);
@@ -891,14 +945,23 @@ void ISO2::trace_request_response()
             iso15118.trace("    EVSEMaximumPowerLimit.Value: %d", res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Value);
             iso15118.trace("    EVSEMaximumPowerLimit.Multiplier: %d", res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Multiplier);
             iso15118.trace("    EVSEMaximumPowerLimit.Unit: %d", res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Unit);
+            iso15118.trace("    DC_EVSEStatus");
+            iso15118.trace("     EVSEIsolationStatus_isUsed: %d", res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus_isUsed);
+            if (res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus_isUsed) {
+                iso15118.trace("      EVSEIsolationStatus: %d", res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus);
+            }
+            iso15118.trace("      EVSENotification: %d", res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSENotification);
+            iso15118.trace("      NotificationMaxDelay: %d", res->DC_EVSEChargeParameter.DC_EVSEStatus.NotificationMaxDelay);
+            iso15118.trace("      EVSEStatusCode: %d", res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEStatusCode);
         }
     } else if (iso2DocEnc->V2G_Message.Body.PowerDeliveryRes_isUsed) {
         iso2_PowerDeliveryResType *res = &iso2DocEnc->V2G_Message.Body.PowerDeliveryRes;
 
-        trace_header(&iso2DocEnc->V2G_Message.Header);
+        trace_header(&iso2DocEnc->V2G_Message.Header, "PowerDelivery Response");
         iso15118.trace(" Body");
         iso15118.trace("  PowerDeliveryRes");
         iso15118.trace("   ResponseCode: %d", res->ResponseCode);
+        iso15118.trace("   AC_EVSEStatus_isUsed: %d", res->AC_EVSEStatus_isUsed);
         if (res->AC_EVSEStatus_isUsed) {
             iso15118.trace("   AC_EVSEStatus");
             iso15118.trace("    RCD: %d", res->AC_EVSEStatus.RCD);
@@ -906,6 +969,7 @@ void ISO2::trace_request_response()
             iso15118.trace("    EVSENotification: %d", res->AC_EVSEStatus.EVSENotification);
         }
 
+        iso15118.trace("   DC_EVSEStatus_isUsed: %d", res->DC_EVSEStatus_isUsed);
         if (res->DC_EVSEStatus_isUsed) {
             iso15118.trace("   DC_EVSEStatus");
             iso15118.trace("    EVSEIsolationStatus: %d", res->DC_EVSEStatus.EVSEIsolationStatus);
@@ -916,7 +980,7 @@ void ISO2::trace_request_response()
     } else if (iso2DocEnc->V2G_Message.Body.ChargingStatusRes_isUsed) {
         iso2_ChargingStatusResType *res = &iso2DocEnc->V2G_Message.Body.ChargingStatusRes;
 
-        trace_header(&iso2DocEnc->V2G_Message.Header);
+        trace_header(&iso2DocEnc->V2G_Message.Header, "ChargingStatus Response");
         iso15118.trace(" Body");
         iso15118.trace("  ChargingStatusRes");
         iso15118.trace("   ResponseCode: %d", res->ResponseCode);
@@ -934,7 +998,7 @@ void ISO2::trace_request_response()
     } else if (iso2DocEnc->V2G_Message.Body.SessionStopRes_isUsed) {
         iso2_SessionStopResType *res = &iso2DocEnc->V2G_Message.Body.SessionStopRes;
 
-        trace_header(&iso2DocEnc->V2G_Message.Header);
+        trace_header(&iso2DocEnc->V2G_Message.Header, "SessionStop Response");
         iso15118.trace(" Body");
         iso15118.trace("  SessionStopRes");
         iso15118.trace("   ResponseCode: %d", res->ResponseCode);
