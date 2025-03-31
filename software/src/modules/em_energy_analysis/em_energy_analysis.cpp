@@ -505,6 +505,7 @@ static_assert(sizeof(PersistentDataV2) == 104);
 bool EMEnergyAnalysis::load_persistent_data()
 {
     uint8_t buf[DATA_STORAGE_PAGE_SIZE * DATA_STORAGE_PAGE_COUNT] = {0};
+    bool all_not_found = true;
 
     for (uint8_t page = 0; page < DATA_STORAGE_PAGE_COUNT; ++page) {
         uint8_t status = WEM_DATA_STORAGE_STATUS_BUSY;
@@ -519,16 +520,21 @@ bool EMEnergyAnalysis::load_persistent_data()
             return false;
 
         case WEM_DATA_STORAGE_STATUS_NOT_FOUND:
-            logger.printfln("Persistent data page %u not found, first boot?", page);
-            return true;
+            break;
 
         case WEM_DATA_STORAGE_STATUS_OK:
+            all_not_found = false;
             break;
 
         default:
             logger.printfln("Persistent data page %u has unknown status, trying again later: %d", page, status);
             return false;
         }
+    }
+
+    if (all_not_found) {
+        logger.printfln("All persistent data pages not found, first boot?");
+        return true;
     }
 
     load_persistent_data_v1(buf);
