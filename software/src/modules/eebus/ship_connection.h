@@ -30,7 +30,7 @@
 // Values and Timeouts as defined by SHIP document
 #define SHIP_CONNECTION_CMI_TIMEOUT 30_s // SHIP 13.4.3 Timneout procedure
 #define SHIP_CONNECTION_SME_INIT_TIMEOUT 60_s
-
+#define SHIP_CONNECTION_SME_T_hello_prolong_thr_inc 30_s
 
 
 #define SHIP_CONNECTION_MAX_JSON_SIZE 8192 // TODO: What is a sane value here?
@@ -147,7 +147,7 @@ public:
 
     State state = State::CmiInitStart;
     SubState sub_state = SubState::Init;
-    uint64_t timeout_task;
+    uint64_t timeout_task = 0;
 
 
     // Implement operator== so that we can easily remove ShipConnections from the vector in Ship
@@ -255,11 +255,19 @@ public:
     void type_to_json_connection_hello(ConnectionHelloType *connection_hello);
 
     // TODO: is it safe to set these timers to undefined values? Or set them to 0 or max value?
-    uint64_t hello_wait_for_ready_timer;
-    uint64_t hello_send_prolongation_request_timer;
-    uint64_t hello_send_prolongation_reply_timer;
+    uint64_t hello_wait_for_ready_timer = 0;
+    uint64_t hello_wait_for_ready_timestamp = 0;
+    uint64_t hello_send_prolongation_request_timer = 0;
+    uint64_t hello_send_prolongation_reply_timer = 0;
 
-    ConnectionHelloType peer_hello_phase;
+    // Current Peer Hello Phase
+    ConnectionHelloType peer_hello_phase = {};
+    // Our Hello Phase
+    ConnectionHelloType this_hello_phase = {};
+
+    void hello_send_sme_update();
+    void hello_set_wait_for_ready_timer(State target);
+    void hello_decide_prolongation();
 
     class ProtocolHandshake {
     public:
