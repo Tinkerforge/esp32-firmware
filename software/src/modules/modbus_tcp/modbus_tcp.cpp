@@ -28,6 +28,7 @@
 #include "event_log_prefix.h"
 #include "build.h"
 #include "string_builder.h"
+#include "tools/net.h"
 
 #include "module_dependencies.h"
 #include "register_table.enum.h"
@@ -1052,10 +1053,14 @@ void ModbusTCP::start_server() {
     server.start(
         0, config.get("port")->asUint(),
         [](uint32_t peer_address, uint16_t port) {
-            logger.printfln("client connected: peer_address=%lu port=%u", peer_address, port);
+            char peer_str[16];
+            tf_ip4addr_ntoa(&peer_address, peer_str, sizeof(peer_str));
+            logger.printfln("Client %s:%u connected", peer_str, port);
         },
         [](uint32_t peer_address, uint16_t port, TFModbusTCPServerDisconnectReason reason, int error_number) {
-            logger.printfln("client disconnected: peer_address=%lu port=%u reason=%s error_number=%d", peer_address, port, get_tf_modbus_tcp_server_client_disconnect_reason_name(reason), error_number);
+            char peer_str[16];
+            tf_ip4addr_ntoa(&peer_address, peer_str, sizeof(peer_str));
+            logger.printfln("Client %s:%u disconnected: %s (error %d)", peer_str, port, get_tf_modbus_tcp_server_client_disconnect_reason_name(reason), error_number);
         },
         [this, table](uint8_t unit_id, TFModbusTCPFunctionCode function_code, uint16_t start_address, uint16_t data_count, void *data_values) {
             switch(function_code) {

@@ -72,6 +72,12 @@ extern inline void tf_ip4addr_ntoa(const esp_ip_addr_t *addr, char *buf, int buf
     tf_ip4addr_ntoa(reinterpret_cast<const ip_addr_t *>(addr), buf, buflen);
 }
 
+// TFModbusTCP
+
+extern inline void tf_ip4addr_ntoa(const uint32_t *addr, char *buf, int buflen) {
+    ip4addr_ntoa_r(reinterpret_cast<const ip4_addr_t *>(addr), buf, buflen);
+}
+
 #if defined(__GNUC__)
     #pragma GCC diagnostic pop
 #endif
