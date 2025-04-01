@@ -123,7 +123,7 @@ void evse_v2_button_recovery_handler()
     uint8_t buf[63] = {0};
     tf_evse_v2_get_data_storage(&evse, DATA_STORE_PAGE_RECOVERY, buf);
 
-    if (internet_checksum(buf, sizeof(FactoryResetData)) != 0) {
+    if (internet_checksum_u16(reinterpret_cast<const uint16_t *>(buf), sizeof(FactoryResetData) / sizeof(uint16_t)) != 0) {
         logger.printfln("Checksum mismatch while reading recovery info from EVSE RAM. Assuming stage 0.");
         stage = 0;
     }
@@ -148,7 +148,7 @@ void evse_v2_button_recovery_handler()
         data.padding = 0;
         data.checksum = 0;
         memcpy(buf, &data, sizeof(data));
-        data.checksum = internet_checksum(buf, sizeof(data));
+        data.checksum = internet_checksum_u16(reinterpret_cast<const uint16_t *>(buf), sizeof(data) / sizeof(uint16_t));
 
         memcpy(buf, &data, sizeof(data));
         tf_evse_v2_set_data_storage(&evse, DATA_STORE_PAGE_RECOVERY, buf);
