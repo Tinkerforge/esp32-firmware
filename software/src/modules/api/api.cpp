@@ -31,6 +31,7 @@
 #include "tools.h"
 #include "tools/fs.h"
 #include "tools/memory.h"
+#include "string_builder.h"
 
 extern TF_HAL hal;
 
@@ -500,19 +501,18 @@ void API::register_urls()
 
         request.beginChunkedResponse(200, "application/json; charset=utf-8");
 
-        // meter/X/values can be ~ 12k because FLT_MIN and _MAX are printed 96 times.
-        constexpr size_t BUF_SIZE = 16384;
+        // meter/X/config can be > 16k because of the Modbus register table unions.
+        constexpr size_t BUF_SIZE = 32768;
 
         auto buf = heap_alloc_array<char>(BUF_SIZE);
-        auto ptr = buf.get();
-        size_t written = 0;
+        StringWriter sw{buf.get(), BUF_SIZE};
 
-        written += snprintf_u((ptr + written), BUF_SIZE - written, "[");
+        sw.printf("[");
 
         size_t i = 0;
         bool done = false;
         while (!done) {
-            auto result = task_scheduler.await([ptr, &written, &i, &done, this](){
+            auto result = task_scheduler.await([&sw, &i, &done, this](){
                 // There could be 0 states registered.
                 done = i >= states.size();
                 if (done)
@@ -520,43 +520,45 @@ void API::register_urls()
 
                 const auto &reg = states[i];
 
-                written += snprintf_u((ptr + written), BUF_SIZE - written, "{\"path\":\"%.*s\",\"type\":\"state\",\"low_latency\":%s,\"keys_to_censor\":[",
+                sw.printf("{\"path\":\"%.*s\",\"type\":\"state\",\"low_latency\":%s,\"keys_to_censor\":[",
                                     reg.path_len, reg.path,
                                     reg.low_latency ? "true" : "false");
 
                 for (int key = 0; key < reg.keys_to_censor_len; ++key)
                     if (key != reg.keys_to_censor_len - 1)
-                        written += snprintf_u((ptr + written), BUF_SIZE - written, "\"%s\",", reg.keys_to_censor[key]);
+                        sw.printf("\"%s\",", reg.keys_to_censor[key]);
                     else
-                        written += snprintf_u((ptr + written), BUF_SIZE - written, "\"%s\"", reg.keys_to_censor[key]);
+                        sw.printf("\"%s\"", reg.keys_to_censor[key]);
 
-                written += snprintf_u((ptr + written), BUF_SIZE - written, "],\"content\":");
-                reg.config->print_api_info(ptr, BUF_SIZE, written);
+                sw.printf("],\"content\":");
+                reg.config->print_api_info(sw);
 
                 ++i;
                 done = i >= states.size();
 
                 if (!done)
-                    written += snprintf_u((ptr + written), BUF_SIZE - written, "},\n");
+                    sw.printf("},\n");
                 else
-                    written += snprintf_u((ptr + written), BUF_SIZE - written, "}\n");
+                    sw.printf("}\n");
             });
             if (result != TaskScheduler::AwaitResult::Done) {
                 return request.endChunkedResponse();
             }
 
-            if (written != 0)
-                request.sendChunk(ptr, written);
-            written = 0;
+            if (sw.getRemainingLength() == 0)
+                esp_system_abort("API info buffer was too small!");
+            else if (sw.getLength() != 0)
+                request.sendChunk(sw.getPtr(), sw.getLength());
+            sw.clear();
         }
 
         i = 0;
         done = false;
-        written = 0;
+        sw.clear();
         while (!done) {
-            auto result = task_scheduler.await([ptr, &written, &i, &done, this](){
+            auto result = task_scheduler.await([&sw, &i, &done, this](){
                 if (i == 0 &&  states.size() != 0)
-                    written += snprintf_u((ptr + written), BUF_SIZE - written, ",");
+                    sw.printf(",");
 
                 // There could be 0 commands registered.
                 done = i >= commands.size();
@@ -565,44 +567,46 @@ void API::register_urls()
 
                 const auto &reg = commands[i];
 
-                written += snprintf_u((ptr + written), BUF_SIZE - written, "{\"path\":\"%.*s\",\"type\":\"command\",\"is_action\":%s,\"keys_to_censor\":[",
+                sw.printf("{\"path\":\"%.*s\",\"type\":\"command\",\"is_action\":%s,\"keys_to_censor\":[",
                                 reg.path_len, reg.path,
                                 reg.is_action ? "true" : "false");
 
                 for (int key = 0; key < reg.keys_to_censor_in_debug_report_len; ++key)
                     if (key != reg.keys_to_censor_in_debug_report_len - 1)
-                        written += snprintf_u((ptr + written), BUF_SIZE - written, "\"%s\",", reg.keys_to_censor_in_debug_report[key]);
+                        sw.printf("\"%s\",", reg.keys_to_censor_in_debug_report[key]);
                     else
-                        written += snprintf_u((ptr + written), BUF_SIZE - written, "\"%s\"", reg.keys_to_censor_in_debug_report[key]);
+                        sw.printf("\"%s\"", reg.keys_to_censor_in_debug_report[key]);
 
-                written += snprintf_u((ptr + written), BUF_SIZE - written, "],\"content\":");
-                reg.config->print_api_info(ptr, BUF_SIZE, written);
+                sw.printf("],\"content\":");
+                reg.config->print_api_info(sw);
 
                 ++i;
                 done = i >= commands.size();
 
                 if (!done)
-                    written += snprintf_u((ptr + written), BUF_SIZE - written, "},\n");
+                    sw.printf("},\n");
                 else
-                    written += snprintf_u((ptr + written), BUF_SIZE - written, "}\n");
+                    sw.printf("}\n");
             });
 
             if (result != TaskScheduler::AwaitResult::Done) {
                 return request.endChunkedResponse();
             }
 
-            if (written != 0)
-                request.sendChunk(ptr, written);
-            written = 0;
+            if (sw.getRemainingLength() == 0)
+                esp_system_abort("API info buffer was too small!");
+            else if (sw.getLength() != 0)
+                request.sendChunk(sw.getPtr(), sw.getLength());
+            sw.clear();
         }
 
         i = 0;
         done = false;
-        written = 0;
+        sw.clear();
         while (!done) {
-            auto result = task_scheduler.await([ptr, &written, &i, &done, this](){
+            auto result = task_scheduler.await([&sw, &i, &done, this](){
                 if (i == 0 && commands.size() != 0)
-                    written += snprintf_u((ptr + written), BUF_SIZE - written, ",");
+                    sw.printf(",");
 
                 // There could be 0 responses registered.
                 done = i >= responses.size();
@@ -611,46 +615,48 @@ void API::register_urls()
 
                 const auto &reg = responses[i];
 
-                written += snprintf_u((ptr + written), BUF_SIZE - written, "{\"path\":\"%.*s\",\"type\":\"response\",\"keys_to_censor\":[",
+                sw.printf("{\"path\":\"%.*s\",\"type\":\"response\",\"keys_to_censor\":[",
                                 reg.path_len, reg.path);
 
                 for (int key = 0; key < reg.keys_to_censor_in_debug_report_len; ++key)
                     if (key != reg.keys_to_censor_in_debug_report_len - 1)
-                        written += snprintf_u((ptr + written), BUF_SIZE - written, "\"%s\",", reg.keys_to_censor_in_debug_report[key]);
+                        sw.printf("\"%s\",", reg.keys_to_censor_in_debug_report[key]);
                     else
-                        written += snprintf_u((ptr + written), BUF_SIZE - written, "\"%s\"", reg.keys_to_censor_in_debug_report[key]);
+                        sw.printf("\"%s\"", reg.keys_to_censor_in_debug_report[key]);
 
-                written += snprintf_u((ptr + written), BUF_SIZE - written, "],\"content\":");
-                reg.config->print_api_info(ptr, BUF_SIZE, written);
+                sw.printf("],\"content\":");
+                reg.config->print_api_info(sw);
 
                 ++i;
                 done = i >= responses.size();
 
                 if (!done)
-                    written += snprintf_u((ptr + written), BUF_SIZE - written, "},\n");
+                    sw.printf("},\n");
                 else
-                    written += snprintf_u((ptr + written), BUF_SIZE - written, "}\n");
+                    sw.printf("}\n");
             });
 
             if (result != TaskScheduler::AwaitResult::Done) {
                 return request.endChunkedResponse();
             }
 
-            if (written != 0)
-                request.sendChunk(ptr, written);
-            written = 0;
+            if (sw.getRemainingLength() == 0)
+                esp_system_abort("API info buffer was too small!");
+            else if (sw.getLength() != 0)
+                request.sendChunk(sw.getPtr(), sw.getLength());
+            sw.clear();
         }
 
         std::forward_list<WebServerHandler>::iterator it;
         bool first = true;
         done = false;
-        written = 0;
+        sw.clear();
         while (!done) {
-            auto result = task_scheduler.await([ptr, &written, &i, &done, first, &it, this](){
+            auto result = task_scheduler.await([&sw, &i, &done, first, &it, this](){
                 if (first) {
                     it = server.handlers.begin();
                     if (responses.size() != 0)
-                        written += snprintf_u((ptr + written), BUF_SIZE - written, ",");
+                        sw.printf(",");
                 }
 
                 // There could be 0 handlers registered.
@@ -660,16 +666,16 @@ void API::register_urls()
 
                 const auto &handler = *it;
 
-                written += snprintf_u((ptr + written), BUF_SIZE - written, "{\"path\":\"%s\",\"type\":\"http_only\",\"method\":%d,\"accepts_upload\":%s}",
+                sw.printf("{\"path\":\"%s\",\"type\":\"http_only\",\"method\":%d,\"accepts_upload\":%s}",
                                 handler.uri + 1, handler.method, handler.accepts_upload ? "true" : "false"); // Skip first /
 
                 ++it;
                 done = it == server.handlers.end();
 
                 if (!done)
-                    written += snprintf_u((ptr + written), BUF_SIZE - written, ",\n");
+                    sw.printf(",\n");
                 else
-                    written += snprintf_u((ptr + written), BUF_SIZE - written, "\n");
+                    sw.printf("\n");
             });
 
             if (result != TaskScheduler::AwaitResult::Done) {
@@ -677,15 +683,17 @@ void API::register_urls()
             }
 
             first = false;
-            if (written != 0)
-                request.sendChunk(ptr, written);
-            written = 0;
+            if (sw.getRemainingLength() == 0)
+                esp_system_abort("API info buffer was too small!");
+            else if (sw.getLength() != 0)
+                request.sendChunk(sw.getPtr(), sw.getLength());
+            sw.clear();
         }
-        written = 0;
+        sw.clear();
 
         // Be nice and end the file with a \n.
-        written += snprintf_u((ptr + written), BUF_SIZE - written, "]\n");
-        request.sendChunk(ptr, written);
+        sw.printf("]\n");
+        request.sendChunk(sw.getPtr(), sw.getLength());
 
         return request.endChunkedResponse();
     });

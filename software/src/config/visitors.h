@@ -1217,93 +1217,91 @@ struct to_owned {
 struct api_info {
     void operator()(const Config::ConfString &x)
     {
-        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"string\",\"val\":\"%s\",\"minChars\":%hu,\"maxChars\":%hu}", x.getSlot()->val.c_str(), x.getSlot()->minChars, x.getSlot()->maxChars);
+        sw.printf("{\"type\":\"string\",\"val\":\"%s\",\"minChars\":%hu,\"maxChars\":%hu}", x.getSlot()->val.c_str(), x.getSlot()->minChars, x.getSlot()->maxChars);
     }
     void operator()(const Config::ConfFloat &x)
     {
-        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"float\",\"val\":%f,\"min\":%f,\"max\":%f}", isnan(x.getVal()) ? 0.0f : x.getVal(), x.getMin(), x.getMax());
+        sw.printf("{\"type\":\"float\",\"val\":%f,\"min\":%f,\"max\":%f}", isnan(x.getVal()) ? 0.0f : x.getVal(), x.getMin(), x.getMax());
     }
     void operator()(const Config::ConfInt &x)
     {
-        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"int\",\"val\":%li,\"min\":%li,\"max\":%li}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
+        sw.printf("{\"type\":\"int\",\"val\":%li,\"min\":%li,\"max\":%li}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
     }
     void operator()(const Config::ConfUint &x)
     {
-        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"uint\",\"val\":%lu,\"min\":%lu,\"max\":%lu}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
+        sw.printf("{\"type\":\"uint\",\"val\":%lu,\"min\":%lu,\"max\":%lu}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
     }
     void operator()(const Config::ConfInt52 &x)
     {
-        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"int64\",\"val\":%lli,\"min\":%lli,\"max\":%lli}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
+        sw.printf("{\"type\":\"int64\",\"val\":%lli,\"min\":%lli,\"max\":%lli}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
     }
     void operator()(const Config::ConfUint53 &x)
     {
-        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"uint64\",\"val\":%llu,\"min\":%llu,\"max\":%llu}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
+        sw.printf("{\"type\":\"uint64\",\"val\":%llu,\"min\":%llu,\"max\":%llu}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
     }
     void operator()(const Config::ConfBool &x)
     {
-        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"bool\",\"val\":%s}", x.value ? "true" : "false");
+        sw.printf("{\"type\":\"bool\",\"val\":%s}", x.value ? "true" : "false");
     }
     void operator()(const Config::ConfVariant::Empty &x)
     {
-        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"null\"}");
+        sw.printf("{\"type\":\"null\"}");
     }
     void operator()(const Config::ConfArray &x)
     {
-        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"array\",\"prototype\":");
-        Config::apply_visitor(api_info{buf, buf_size, written}, x.getSlot()->prototype->value);
-        written += snprintf_u(buf + written, buf_size - written, ",\"minElements\":%u,\"maxElements\":%u,\"variantType\":%d,\"content\":[", x.getSlot()->minElements, x.getSlot()->maxElements, x.getSlot()->variantType);
+        sw.printf("{\"type\":\"array\",\"prototype\":");
+        Config::apply_visitor(api_info{sw}, x.getSlot()->prototype->value);
+        sw.printf(",\"minElements\":%u,\"maxElements\":%u,\"variantType\":%d,\"content\":[", x.getSlot()->minElements, x.getSlot()->maxElements, x.getSlot()->variantType);
         bool first = true;
         for (const Config &c : *x.getVal()) {
             if (!first) {
-                written += snprintf_u(buf + written, buf_size - written, ",");
+                sw.printf(",");
             }
             first = false;
-            Config::apply_visitor(api_info{buf, buf_size, written}, c.value);
+            Config::apply_visitor(api_info{sw}, c.value);
         }
-        written += snprintf_u(buf + written, buf_size - written, "]}");
+        sw.printf("]}");
     }
     void operator()(const Config::ConfObject &x)
     {
         const auto *slot = x.getSlot();
         const auto size = slot->schema->length;
 
-        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"object\",\"length\":%u,\"entries\":[", size);
+        sw.printf("{\"type\":\"object\",\"length\":%u,\"entries\":[", size);
 
         bool first = true;
         for (size_t i = 0; i < size; ++i) {
             if (!first) {
-                written += snprintf_u(buf + written, buf_size - written, ",");
+                sw.printf(",");
             }
             first = false;
-            written += snprintf_u(buf + written, buf_size - written, "{\"key\":\"%.*s\",\"value\":", slot->schema->keys[i].length, slot->schema->keys[i].val);
-            Config::apply_visitor(api_info{buf, buf_size, written}, slot->values[i].value);
-            written += snprintf_u(buf + written, buf_size - written, "}");
+            sw.printf("{\"key\":\"%.*s\",\"value\":", slot->schema->keys[i].length, slot->schema->keys[i].val);
+            Config::apply_visitor(api_info{sw}, slot->values[i].value);
+            sw.printf("}");
         }
-        written += snprintf_u(buf + written, buf_size - written, "]}");
+        sw.printf("]}");
     }
     void operator()(const Config::ConfUnion &x)
     {
-        written += snprintf_u(buf + written, buf_size - written, "{\"type\":\"union\",\"tag\":%u,\"prototypes_len\":%u,\"prototypes\":[", x.getSlot()->tag, x.getSlot()->prototypes_len);
+        sw.printf("{\"type\":\"union\",\"tag\":%u,\"prototypes_len\":%u,\"prototypes\":[", x.getSlot()->tag, x.getSlot()->prototypes_len);
 
         bool first = true;
         for (size_t i = 0; i < x.getSlot()->prototypes_len; ++i) {
             if (!first) {
-                written += snprintf_u(buf + written, buf_size - written, ",");
+                sw.printf(",");
             }
             first = false;
-            written += snprintf_u(buf + written, buf_size - written, "{\"tag\": %u,\"value\":", x.getSlot()->prototypes[i].tag);
-            Config::apply_visitor(api_info{buf, buf_size, written}, x.getSlot()->prototypes[i].config.value);
-            written += snprintf_u(buf + written, buf_size - written, "}");
+            sw.printf("{\"tag\": %u,\"value\":", x.getSlot()->prototypes[i].tag);
+            Config::apply_visitor(api_info{sw}, x.getSlot()->prototypes[i].config.value);
+            sw.printf("}");
         }
-        written += snprintf_u(buf + written, buf_size - written, "],\"val\":");
+        sw.printf("],\"val\":");
 
         auto &value = x.getVal()->value;
-        Config::apply_visitor(api_info{buf, buf_size, written}, value);
-        written += snprintf_u(buf + written, buf_size - written, "}");
+        Config::apply_visitor(api_info{sw}, value);
+        sw.printf("}");
     }
 
-    char *buf;
-    size_t buf_size;
-    size_t &written;
+    StringWriter &sw;
 };
 #endif
