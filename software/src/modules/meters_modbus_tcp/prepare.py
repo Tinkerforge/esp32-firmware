@@ -16,6 +16,7 @@ import carlo_gavazzi
 import solaredge
 import eastron
 import tinkerforge
+import sax_power
 
 tfutil.create_parent_module(__file__, 'software')
 
@@ -23,7 +24,7 @@ from software import util
 
 specs = sungrow.specs + solarmax.specs + victron_energy.specs + deye.specs + alpha_ess.specs + shelly.specs + goodwe.specs \
       + solax.specs + fronius.specs + hailei.specs + fox_ess.specs + siemens.specs + carlo_gavazzi.specs + solaredge.specs \
-      + eastron.specs + tinkerforge.specs
+      + eastron.specs + tinkerforge.specs + sax_power.specs
 spec_values = []
 
 for spec in specs:

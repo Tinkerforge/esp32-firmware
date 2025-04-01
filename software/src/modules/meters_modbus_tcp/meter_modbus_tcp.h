@@ -48,6 +48,7 @@
 #include "carlo_gavazzi_em270_virtual_meter.enum.h"
 #include "carlo_gavazzi_em280_virtual_meter.enum.h"
 #include "solaredge_inverter_virtual_meter.enum.h"
+#include "sax_power_virtual_meter.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -274,6 +275,11 @@ private:
             float battery_1_import_energy;
             float battery_1_state_of_charge;
         } solaredge;
+
+        // SAX Power
+        struct {
+            SAXPowerVirtualMeter virtual_meter;
+        } sax_power;
     };
 };
 

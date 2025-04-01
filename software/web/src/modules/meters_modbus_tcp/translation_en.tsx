@@ -49,6 +49,8 @@ let x = {
             "table_solaredge_inverter": "Solaredge inverter",
             "table_eastron_sdm630_tcp": "Eastron SDM630 TCP",
             "table_tinkerforge_warp_charger": "Tinkerforge WARP Charger",
+            "table_sax_power_home_basic_mode": "SAX Power Home (basic mode)",
+            "table_sax_power_home_extended_mode": "SAX Power Home (extended mode)",
             "virtual_meter": "Virtual meter",
             "virtual_meter_inverter": "Inverter",
             "virtual_meter_grid": "Grid",
