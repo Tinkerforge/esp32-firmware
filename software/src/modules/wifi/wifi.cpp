@@ -359,10 +359,12 @@ bool Wifi::apply_sta_config_and_connect()
     EapConfigID eap_config_id = static_cast<EapConfigID>(sta_config_in_use.get("wpa_eap_config")->as<OwnedConfig::OwnedConfigUnion>()->tag);
     switch (eap_config_id) {
         case EapConfigID::None:
+            WiFi.setMinSecurity(WIFI_AUTH_WPA_WPA2_PSK);
             WiFi.begin(ssid, passphrase, 0, bssid_lock ? bssid : nullptr, true);
             break;
 
         case EapConfigID::TLS:
+            WiFi.setMinSecurity(WIFI_AUTH_WPA2_ENTERPRISE);
             WiFi.begin(ssid,
                     wpa2_auth_method_t::WPA2_AUTH_TLS,
                     eap_identity.c_str(),
@@ -387,6 +389,7 @@ bool Wifi::apply_sta_config_and_connect()
          * The user cert and key are unused because using them breaks it atm.
         */
         case EapConfigID::PEAP_TTLS:
+            WiFi.setMinSecurity(WIFI_AUTH_WPA2_ENTERPRISE);
             WiFi.begin(ssid,
                     wpa2_auth_method_t::WPA2_AUTH_PEAP,
                     eap_identity.c_str(),
