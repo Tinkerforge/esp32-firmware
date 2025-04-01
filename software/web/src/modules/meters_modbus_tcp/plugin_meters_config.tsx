@@ -47,6 +47,7 @@ import { CarloGavazziPhase } from "./carlo_gavazzi_phase.enum";
 import { CarloGavazziEM270VirtualMeter } from "./carlo_gavazzi_em270_virtual_meter.enum";
 import { CarloGavazziEM280VirtualMeter } from "./carlo_gavazzi_em280_virtual_meter.enum";
 import { SolaredgeInverterVirtualMeter } from "./solaredge_inverter_virtual_meter.enum";
+import { SAXPowerVirtualMeter } from "./sax_power_virtual_meter.enum";
 import { InputText } from "../../ts/components/input_text";
 import { InputHost } from "../../ts/components/input_host";
 import { InputNumber } from "../../ts/components/input_number";
@@ -339,6 +340,22 @@ type TableConfigTinkerforgeWARPCharger = [
     {},
 ];
 
+type TableConfigSAXPowerHomeBasicMode = [
+    MeterModbusTCPTableID.SAXPowerHomeBasicMode,
+    {
+        virtual_meter: number;
+        device_address: number;
+    },
+];
+
+type TableConfigSAXPowerHomeExtendedMode = [
+    MeterModbusTCPTableID.SAXPowerHomeExtendedMode,
+    {
+        virtual_meter: number;
+        device_address: number;
+    },
+];
+
 type TableConfig = TableConfigNone |
                    TableConfigCustom |
                    TableConfigSungrowHybridInverter |
@@ -374,7 +391,9 @@ type TableConfig = TableConfigNone |
                    TableConfigCarloGavazziEM540 |
                    TableConfigSolaredgeInverter |
                    TableConfigEastronSDM630TCP |
-                   TableConfigTinkerforgeWARPCharger;
+                   TableConfigTinkerforgeWARPCharger |
+                   TableConfigSAXPowerHomeBasicMode |
+                   TableConfigSAXPowerHomeExtendedMode;
 
 export type ModbusTCPMetersConfig = [
     MeterClassID.ModbusTCP,
@@ -493,6 +512,12 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
 
         case MeterModbusTCPTableID.TinkerforgeWARPCharger:
             return [MeterModbusTCPTableID.TinkerforgeWARPCharger, null];
+
+        case MeterModbusTCPTableID.SAXPowerHomeBasicMode:
+            return [MeterModbusTCPTableID.SAXPowerHomeBasicMode, {virtual_meter: null, device_address: 40}];
+
+        case MeterModbusTCPTableID.SAXPowerHomeExtendedMode:
+            return [MeterModbusTCPTableID.SAXPowerHomeExtendedMode, {virtual_meter: null, device_address: 64}];
 
         default:
             return [MeterModbusTCPTableID.None, null];
@@ -718,6 +743,8 @@ export function init() {
                                 [MeterModbusTCPTableID.FroniusGEN24PlusHybridInverter.toString(), __("meters_modbus_tcp.content.table_fronius_gen24_plus_hybrid_inverter")],
                                 [MeterModbusTCPTableID.GoodweHybridInverter.toString(), __("meters_modbus_tcp.content.table_goodwe_hybrid_inverter")],
                                 [MeterModbusTCPTableID.HaileiHybridInverter.toString(), __("meters_modbus_tcp.content.table_hailei_hybrid_inverter")],
+                                [MeterModbusTCPTableID.SAXPowerHomeBasicMode.toString(), __("meters_modbus_tcp.content.table_sax_power_home_basic_mode")],
+                                [MeterModbusTCPTableID.SAXPowerHomeExtendedMode.toString(), __("meters_modbus_tcp.content.table_sax_power_home_extended_mode")],
                                 [MeterModbusTCPTableID.ShellyProEM.toString(), __("meters_modbus_tcp.content.table_shelly_pro_em")],
                                 [MeterModbusTCPTableID.ShellyPro3EM.toString(), __("meters_modbus_tcp.content.table_shelly_pro_3em")],
                                 [MeterModbusTCPTableID.SiemensPAC2200.toString(), __("meters_modbus_tcp.content.table_siemens_pac2200")],
@@ -784,7 +811,9 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM540
                   || config[1].table[0] == MeterModbusTCPTableID.SolaredgeInverter
                   || config[1].table[0] == MeterModbusTCPTableID.EastronSDM630TCP
-                  || config[1].table[0] == MeterModbusTCPTableID.TinkerforgeWARPCharger)) {
+                  || config[1].table[0] == MeterModbusTCPTableID.TinkerforgeWARPCharger
+                  || config[1].table[0] == MeterModbusTCPTableID.SAXPowerHomeBasicMode
+                  || config[1].table[0] == MeterModbusTCPTableID.SAXPowerHomeExtendedMode)) {
                     let virtual_meter_items: [string, string][] = [];
                     let default_location: MeterLocation = undefined; // undefined: there is no default location, null: default location is not known yet
                     let get_default_location = (virtual_meter: number): MeterLocation => undefined;
@@ -1026,6 +1055,40 @@ export function init() {
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.TinkerforgeWARPCharger) {
                         default_location = MeterLocation.Load;
+                    }
+                    else if (config[1].table[0] == MeterModbusTCPTableID.SAXPowerHomeBasicMode) {
+                        virtual_meter_items = [
+                            [SAXPowerVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
+                            [SAXPowerVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                        ];
+
+                        get_default_location = (virtual_meter: number) => {
+                            switch (virtual_meter) {
+                            case SAXPowerVirtualMeter.Grid: return MeterLocation.Grid;
+                            case SAXPowerVirtualMeter.Battery: return MeterLocation.Battery;
+                            }
+
+                            return MeterLocation.Unknown;
+                        }
+
+                        default_device_address = 40;
+                    }
+                    else if (config[1].table[0] == MeterModbusTCPTableID.SAXPowerHomeExtendedMode) {
+                        virtual_meter_items = [
+                            [SAXPowerVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
+                            [SAXPowerVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                        ];
+
+                        get_default_location = (virtual_meter: number) => {
+                            switch (virtual_meter) {
+                            case SAXPowerVirtualMeter.Grid: return MeterLocation.Grid;
+                            case SAXPowerVirtualMeter.Battery: return MeterLocation.Battery;
+                            }
+
+                            return MeterLocation.Unknown;
+                        }
+
+                        default_device_address = 64;
                     }
 
                     if (virtual_meter_items.length > 0) {
