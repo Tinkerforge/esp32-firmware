@@ -44,7 +44,8 @@ private:
     void set_pending_data_points();
     bool load_persistent_data();
     void load_persistent_data_v1(uint8_t *buf);
-    void load_persistent_data_v2(uint8_t *buf);
+    bool load_persistent_data_v2(uint8_t *buf);
+    void load_persistent_data_v3(uint8_t *buf, uint32_t start_slot);
     void save_persistent_data();
     void history_wallbox_5min_response(IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
     void history_wallbox_daily_response(IChunkedResponse *response, Ownership *response_ownership, uint32_t response_owner_id);
