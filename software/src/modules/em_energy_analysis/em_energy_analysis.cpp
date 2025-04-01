@@ -475,7 +475,7 @@ void EMEnergyAnalysis::set_pending_data_points()
 }
 
 #define DATA_STORAGE_PAGE_SIZE 63
-#define DATA_STORAGE_PAGE_COUNT 3
+#define DATA_STORAGE_PAGE_COUNT 5
 
 // this struct is 8 byte larger than initially expected, because the 8 byte
 // alignment requirement for the double values was missed. but explicitly
@@ -506,12 +506,28 @@ struct PersistentDataV2 {
     uint32_t padding1;
 };
 
+struct PersistentDataV3 {
+    double history_meter_energy_import[3];
+    double history_meter_energy_export[3];
+    uint8_t version;
+    uint8_t padding0;
+    uint16_t checksum;
+    uint32_t padding1;
+};
+
+// Page 0: PersistentDataV1 + PersistentDataV2[0..22]
+// Page 1: PersistentDataV2[23..85]
+// Page 2: PersistentDataV2[86..103]
+// Page 3: PersistentDataV3
+// Page 4: PersistentDataV3
+
 static_assert(sizeof(PersistentDataV1) == 40);
 static_assert(sizeof(PersistentDataV2) == 104);
+static_assert(sizeof(PersistentDataV3) == 56);
 
 bool EMEnergyAnalysis::load_persistent_data()
 {
-    uint8_t buf[DATA_STORAGE_PAGE_SIZE * DATA_STORAGE_PAGE_COUNT] = {0};
+    uint8_t buf[DATA_STORAGE_PAGE_SIZE * DATA_STORAGE_PAGE_COUNT] = {};
     bool all_not_found = true;
 
     for (uint8_t page = 0; page < DATA_STORAGE_PAGE_COUNT; ++page) {
@@ -545,7 +561,11 @@ bool EMEnergyAnalysis::load_persistent_data()
     }
 
     load_persistent_data_v1(buf);
-    load_persistent_data_v2(buf + sizeof(PersistentDataV1));
+
+    if (!load_persistent_data_v2(buf + sizeof(PersistentDataV1))) {
+        load_persistent_data_v3(buf + (DATA_STORAGE_PAGE_SIZE * 3), 1);
+        load_persistent_data_v3(buf + (DATA_STORAGE_PAGE_SIZE * 4), 4);
+    }
 
 #ifdef DEBUG_LOGGING
     logger.printfln("load_persistent_data: 5min slot %u, energy %f/%f %f/%f %f/%f %f/%f %f/%f %f/%f %f/%f",
@@ -571,6 +591,8 @@ bool EMEnergyAnalysis::load_persistent_data()
 
 void EMEnergyAnalysis::load_persistent_data_v1(uint8_t *buf)
 {
+    logger.printfln("Loading persistent data v1");
+
     PersistentDataV1 data_v1;
     memcpy(&data_v1, buf, sizeof(data_v1));
 
@@ -603,8 +625,10 @@ void EMEnergyAnalysis::load_persistent_data_v1(uint8_t *buf)
     history_meter_energy_export[0] = data_v1.history_meter_energy_export;
 }
 
-void EMEnergyAnalysis::load_persistent_data_v2(uint8_t *buf)
+bool EMEnergyAnalysis::load_persistent_data_v2(uint8_t *buf)
 {
+    logger.printfln("Loading persistent data v2");
+
     PersistentDataV2 data_v2;
     memcpy(&data_v2, buf, sizeof(data_v2));
 
@@ -615,26 +639,65 @@ void EMEnergyAnalysis::load_persistent_data_v2(uint8_t *buf)
 
     if (memcmp(&data_v2, &zero_v2, sizeof(data_v2)) == 0) {
         logger.printfln("Persistent data v2 all zero, first boot?");
-        return;
+        return false; // try loading persistent data v3
     }
 
     if (internet_checksum((uint8_t *)&data_v2, sizeof(data_v2)) != 0) {
         logger.printfln("Checksum mismatch for persistent data v2");
         hexdump((uint8_t *)&data_v2, sizeof(data_v2), data_v2_hexdump, ARRAY_SIZE(data_v2_hexdump), HexdumpCase::Lower);
         logger.printfln_plain("Persistent data v2: %s", data_v2_hexdump);
-        return;
+        return false; // try loading persistent data v3
     }
 
     if (data_v2.version != 2) {
         logger.printfln("Unexpected version %u for persistent data v2", data_v2.version);
         hexdump((uint8_t *)&data_v2, sizeof(data_v2), data_v2_hexdump, ARRAY_SIZE(data_v2_hexdump), HexdumpCase::Lower);
         logger.printfln_plain("Persistent data v2: %s", data_v2_hexdump);
-        return;
+        return false; // try loading persistent data v3
     }
 
     for (uint32_t slot = 1; slot < METERS_SLOTS; ++slot) {
         history_meter_energy_import[slot] = data_v2.history_meter_energy_import[slot - 1];
         history_meter_energy_export[slot] = data_v2.history_meter_energy_export[slot - 1];
+    }
+
+    return true; // skip loading persistent data v3
+}
+
+void EMEnergyAnalysis::load_persistent_data_v3(uint8_t *buf, uint32_t start_slot)
+{
+    logger.printfln("Loading persistent data v3 for start slot %u", start_slot);
+
+    PersistentDataV3 data_v3;
+    memcpy(&data_v3, buf, sizeof(data_v3));
+
+    PersistentDataV3 zero_v3;
+    memset(&zero_v3, 0, sizeof(zero_v3));
+
+    char data_v3_hexdump[sizeof(data_v3) * 2 + 1];
+
+    if (memcmp(&data_v3, &zero_v3, sizeof(data_v3)) == 0) {
+        logger.printfln("Persistent data v3 for start slot %u all zero, first boot?", start_slot);
+        return;
+    }
+
+    if (internet_checksum((uint8_t *)&data_v3, sizeof(data_v3)) != 0) {
+        logger.printfln("Checksum mismatch for persistent data v3 for start slot %u", start_slot);
+        hexdump((uint8_t *)&data_v3, sizeof(data_v3), data_v3_hexdump, ARRAY_SIZE(data_v3_hexdump), HexdumpCase::Lower);
+        logger.printfln_plain("Persistent data v3 start slot %u: %s", start_slot, data_v3_hexdump);
+        return;
+    }
+
+    if (data_v3.version != 3) {
+        logger.printfln("Unexpected version %u for persistent data v3 for start slot %u", data_v3.version, start_slot);
+        hexdump((uint8_t *)&data_v3, sizeof(data_v3), data_v3_hexdump, ARRAY_SIZE(data_v3_hexdump), HexdumpCase::Lower);
+        logger.printfln_plain("Persistent data v3 start slot %u: %s", start_slot, data_v3_hexdump);
+        return;
+    }
+
+    for (uint32_t slot = start_slot; slot < start_slot + 3 && slot < METERS_SLOTS; ++slot) {
+        history_meter_energy_import[slot] = data_v3.history_meter_energy_import[slot - start_slot];
+        history_meter_energy_export[slot] = data_v3.history_meter_energy_export[slot - start_slot];
     }
 }
 
@@ -645,6 +708,12 @@ void EMEnergyAnalysis::save_persistent_data()
 
     PersistentDataV2 data_v2;
     memset(&data_v2, 0, sizeof(data_v2));
+
+    PersistentDataV3 data_v3a;
+    memset(&data_v3a, 0, sizeof(data_v3a));
+
+    PersistentDataV3 data_v3b;
+    memset(&data_v3b, 0, sizeof(data_v3b));
 
 #ifdef DEBUG_LOGGING
     logger.printfln("save_persistent_data: 5min slot %u, energy %f/%f %f/%f %f/%f %f/%f %f/%f %f/%f %f/%f",
@@ -680,9 +749,27 @@ void EMEnergyAnalysis::save_persistent_data()
     data_v2.version = 2;
     data_v2.checksum = internet_checksum((uint8_t *)&data_v2, sizeof(data_v2));
 
-    uint8_t buf[DATA_STORAGE_PAGE_SIZE * DATA_STORAGE_PAGE_COUNT] = {0};
+    for (uint32_t slot = 1; slot < 4 && slot < METERS_SLOTS; ++slot) {
+        data_v3a.history_meter_energy_import[slot - 1] = history_meter_energy_import[slot];
+        data_v3a.history_meter_energy_export[slot - 1] = history_meter_energy_export[slot];
+    }
+
+    data_v3a.version = 3;
+    data_v3a.checksum = internet_checksum((uint8_t *)&data_v3a, sizeof(data_v3a));
+
+    for (uint32_t slot = 4; slot < METERS_SLOTS; ++slot) {
+        data_v3b.history_meter_energy_import[slot - 4] = history_meter_energy_import[slot];
+        data_v3b.history_meter_energy_export[slot - 4] = history_meter_energy_export[slot];
+    }
+
+    data_v3b.version = 3;
+    data_v3b.checksum = internet_checksum((uint8_t *)&data_v3b, sizeof(data_v3b));
+
+    uint8_t buf[DATA_STORAGE_PAGE_SIZE * DATA_STORAGE_PAGE_COUNT] = {};
     memcpy(buf, &data_v1, sizeof(data_v1));
     memcpy(buf + sizeof(data_v1), &data_v2, sizeof(data_v2));
+    memcpy(buf + (DATA_STORAGE_PAGE_SIZE * 3), &data_v3a, sizeof(data_v3a));
+    memcpy(buf + (DATA_STORAGE_PAGE_SIZE * 4), &data_v3b, sizeof(data_v3b));
 
     for (uint8_t page = 0; page < DATA_STORAGE_PAGE_COUNT; ++page) {
         em_common.wem_set_data_storage(page, buf + (DATA_STORAGE_PAGE_SIZE * page));
