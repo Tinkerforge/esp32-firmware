@@ -252,7 +252,7 @@ void EMEnergyAnalysis::collect_data_points()
             }
 #ifdef DEBUG_LOGGING
             else {
-                logger.printfln("collect_data_points: skipping 5min u%u, data too old %lu",
+                logger.printfln("collect_data_points: skipping 5min u%lu, data too old %lu",
                                 charger->uid, last_update.to<millis_t>().as<uint32_t>());
             }
 #endif
@@ -353,14 +353,14 @@ void EMEnergyAnalysis::collect_data_points()
                 }
 #ifdef DEBUG_LOGGING
                 else {
-                    logger.printfln("collect_data_points: skipping daily u%u, no data",
+                    logger.printfln("collect_data_points: skipping daily u%lu, no data",
                                     charger->uid);
                 }
 #endif
             }
 #ifdef DEBUG_LOGGING
             else {
-                logger.printfln("collect_data_points: skipping daily u%u, data too old %lu",
+                logger.printfln("collect_data_points: skipping daily u%lu, data too old %lu",
                                 charger->uid, last_update.to<millis_t>().as<uint32_t>());
             }
 #endif
@@ -562,7 +562,7 @@ bool EMEnergyAnalysis::load_persistent_data()
     }
 
 #ifdef DEBUG_LOGGING
-    logger.printfln("load_persistent_data: 5min slot %u, energy %f/%f %f/%f %f/%f %f/%f %f/%f %f/%f %f/%f",
+    logger.printfln("load_persistent_data: 5min slot %lu, energy %f/%f %f/%f %f/%f %f/%f %f/%f %f/%f %f/%f",
                     last_history_5min_slot,
                     history_meter_energy_import[0],
                     history_meter_energy_export[0],
@@ -660,7 +660,7 @@ bool EMEnergyAnalysis::load_persistent_data_v2(uint8_t *buf)
 
 void EMEnergyAnalysis::load_persistent_data_v3(uint8_t *buf, uint32_t start_slot)
 {
-    logger.printfln("Loading persistent data v3 for start slot %u", start_slot);
+    logger.printfln("Loading persistent data v3 for start slot %lu", start_slot);
 
     PersistentDataV3 data_v3;
     memcpy(&data_v3, buf, sizeof(data_v3));
@@ -671,21 +671,21 @@ void EMEnergyAnalysis::load_persistent_data_v3(uint8_t *buf, uint32_t start_slot
     char data_v3_hexdump[sizeof(data_v3) * 2 + 1];
 
     if (memcmp(&data_v3, &zero_v3, sizeof(data_v3)) == 0) {
-        logger.printfln("Persistent data v3 for start slot %u all zero, first boot?", start_slot);
+        logger.printfln("Persistent data v3 for start slot %lu all zero, first boot?", start_slot);
         return;
     }
 
     if (internet_checksum((uint8_t *)&data_v3, sizeof(data_v3)) != 0) {
-        logger.printfln("Checksum mismatch for persistent data v3 for start slot %u", start_slot);
+        logger.printfln("Checksum mismatch for persistent data v3 for start slot %lu", start_slot);
         hexdump((uint8_t *)&data_v3, sizeof(data_v3), data_v3_hexdump, ARRAY_SIZE(data_v3_hexdump), HexdumpCase::Lower);
-        logger.printfln_plain("Persistent data v3 start slot %u: %s", start_slot, data_v3_hexdump);
+        logger.printfln_plain("Persistent data v3 start slot %lu: %s", start_slot, data_v3_hexdump);
         return;
     }
 
     if (data_v3.version != 3) {
-        logger.printfln("Unexpected version %u for persistent data v3 for start slot %u", data_v3.version, start_slot);
+        logger.printfln("Unexpected version %u for persistent data v3 for start slot %lu", data_v3.version, start_slot);
         hexdump((uint8_t *)&data_v3, sizeof(data_v3), data_v3_hexdump, ARRAY_SIZE(data_v3_hexdump), HexdumpCase::Lower);
-        logger.printfln_plain("Persistent data v3 start slot %u: %s", start_slot, data_v3_hexdump);
+        logger.printfln_plain("Persistent data v3 start slot %lu: %s", start_slot, data_v3_hexdump);
         return;
     }
 
@@ -710,7 +710,7 @@ void EMEnergyAnalysis::save_persistent_data()
     memset(&data_v3b, 0, sizeof(data_v3b));
 
 #ifdef DEBUG_LOGGING
-    logger.printfln("save_persistent_data: 5min slot %u, energy %f/%f %f/%f %f/%f %f/%f %f/%f %f/%f %f/%f",
+    logger.printfln("save_persistent_data: 5min slot %lu, energy %f/%f %f/%f %f/%f %f/%f %f/%f %f/%f %f/%f",
                     last_history_5min_slot,
                     history_meter_energy_import[0],
                     history_meter_energy_export[0],
@@ -789,7 +789,7 @@ bool EMEnergyAnalysis::set_wallbox_5min_data_point(const struct tm *utc, const s
                                                      &status);
 
 #ifdef DEBUG_LOGGING
-    logger.printfln("set_wallbox_5min_data_point: u%u %d-%02d-%02d %02d:%02d f%u p%u",
+    logger.printfln("set_wallbox_5min_data_point: u%lu %d-%02d-%02d %02d:%02d f%u p%u",
                     uid, 2000 + utc_year, utc_month, utc_day, utc_hour, utc_minute, flags, power);
 #endif
 
@@ -861,7 +861,7 @@ bool EMEnergyAnalysis::set_wallbox_daily_data_point(const struct tm *local, uint
     int rc = em_common.wem_set_sd_wallbox_daily_data_point(uid, year, month, day, energy, &status);
 
 #ifdef DEBUG_LOGGING
-    logger.printfln("set_wallbox_daily_data_point: u%u %d-%02d-%02d e%u",
+    logger.printfln("set_wallbox_daily_data_point: u%lu %d-%02d-%02d e%lu",
                     uid, 2000 + year, month, day, energy);
 #endif
 
@@ -943,7 +943,7 @@ bool EMEnergyAnalysis::set_energy_manager_5min_data_point(const struct tm *utc,
                                                             &status);
 
 #ifdef DEBUG_LOGGING
-    logger.printfln("set_energy_manager_5min_data_point: %d-%02d-%02d %02d:%02d f%u po%d,%d,%d,%d,%d,%d,%d pr%d",
+    logger.printfln("set_energy_manager_5min_data_point: %d-%02d-%02d %02d:%02d f%u po%ld,%ld,%ld,%ld,%ld,%ld,%ld pr%ld",
                     2000 + utc_year, utc_month, utc_day, utc_hour, utc_minute, flags, power[0], power[1], power[2], power[3], power[4], power[5], power[6], price);
 #endif
 
@@ -1064,7 +1064,7 @@ bool EMEnergyAnalysis::set_energy_manager_daily_data_point(const struct tm *loca
                                                                   &status);
 
 #ifdef DEBUG_LOGGING
-    logger.printfln("set_energy_manager_daily_data_point: %d-%02d-%02d ei%u,%u,%u,%u,%u,%u,%u ee%u,%u,%u,%u,%u,%u,%u p%d,%d,%d",
+    logger.printfln("set_energy_manager_daily_data_point: %d-%02d-%02d ei%lu,%lu,%lu,%lu,%lu,%lu,%lu ee%lu,%lu,%lu,%lu,%lu,%lu,%lu p%ld,%ld,%ld",
                     2000 + year, month, day,
                     energy_import[0], energy_import[1], energy_import[2], energy_import[3], energy_import[4], energy_import[5], energy_import[6],
                     energy_export[0], energy_export[1], energy_export[2], energy_export[3], energy_export[4], energy_export[5], energy_export[6],
