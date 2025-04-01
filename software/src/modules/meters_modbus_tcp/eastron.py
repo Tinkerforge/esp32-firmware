@@ -95,19 +95,19 @@ specs = [
                 'value_type': 'F32BE',
             },
             {
-                'name': 'Phase 1  power factor',
+                'name': 'Phase 1 power factor',
                 'value_id': 'PowerFactorL1Directional',
                 'start_address': 31,
                 'value_type': 'F32BE',
             },
             {
-                'name': 'Phase 2  power factor',
+                'name': 'Phase 2 power factor',
                 'value_id': 'PowerFactorL2Directional',
                 'start_address': 33,
                 'value_type': 'F32BE',
             },
             {
-                'name': 'Phase 3  power factor',
+                'name': 'Phase 3 power factor',
                 'value_id': 'PowerFactorL3Directional',
                 'start_address': 35,
                 'value_type': 'F32BE',
