@@ -26,6 +26,8 @@
 #include "cbv2g/iso_2/iso2_msgDefDecoder.h"
 #include "cbv2g/iso_2/iso2_msgDefEncoder.h"
 
+#define ISO2_SECC_SEQUENCE_TIMEOUT 60_s
+
 class ISO2 final
 {
 public:
@@ -52,4 +54,5 @@ private:
     void trace_request_response();
 
     uint8_t state = 0;
+    uint64_t next_timeout = 0;
 };
