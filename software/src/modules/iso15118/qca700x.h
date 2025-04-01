@@ -103,5 +103,3 @@ public:
     void link_down();
     void state_machine_loop();
 };
-
-extern QCA700x qca700x;

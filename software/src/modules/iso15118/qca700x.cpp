@@ -37,8 +37,6 @@
 
 extern TF_HAL hal;
 
-QCA700x qca700x;
-
 void QCA700x::spi_select()
 {
     int rc = tf_hal_chip_select(&hal, QCA700X_HAL_SPI_PORT, true);
@@ -231,7 +229,7 @@ void QCA700x::setup_netif()
             }
             memcpy(data_copy, buffer, length);
             task_scheduler.scheduleOnce([data_copy, length]() {
-                qca700x.write_burst(static_cast<const uint8_t *>(data_copy), length);
+                iso15118.qca700x.write_burst(static_cast<const uint8_t *>(data_copy), length);
                 free(data_copy);
             }, 0_ms);
             return ESP_OK;
@@ -244,7 +242,7 @@ void QCA700x::setup_netif()
             }
             memcpy(data_copy, buffer, length);
             task_scheduler.scheduleOnce([data_copy, length]() {
-                qca700x.write_burst(static_cast<const uint8_t *>(data_copy), length);
+                iso15118.qca700x.write_burst(static_cast<const uint8_t *>(data_copy), length);
                 free(data_copy);
             }, 0_ms);
             return ESP_OK;

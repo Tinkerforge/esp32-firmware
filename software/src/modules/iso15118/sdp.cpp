@@ -136,7 +136,7 @@ void SDP::state_machine_loop()
         api_state.get("ev_tranport_protocol")->updateInt(request->tranport_protocol);
 
         esp_ip6_addr_t ip6;
-        qca700x.get_ip6_linklocal(&ip6);
+        iso15118.qca700x.get_ip6_linklocal(&ip6);
 
         SDP_DiscoveryResponse response = {
             .v2gtp = {
