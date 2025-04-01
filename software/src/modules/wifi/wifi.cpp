@@ -325,6 +325,7 @@ bool Wifi::apply_sta_config_and_connect()
     WiFi.persistent(false);
     WiFi.setAutoReconnect(false);
     WiFi.disconnect(false, true);
+    WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
 
     // We don't need the additional speed of HT40 and it only causes more errors.
     esp_err_t err = esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW_HT20);
