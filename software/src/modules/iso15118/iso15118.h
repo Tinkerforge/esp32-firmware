@@ -47,8 +47,7 @@ public:
     void register_urls() override;
     void state_machines_loop();
     void trace(const char *fmt, ...);
-    void trace_ll(const char *fmt, ...);
-    void trace_array(const char *array_name, const uint8_t *array, const size_t array_size);
+    void trace_packet(const uint8_t *packet, const size_t packet_size);
 
     SLAC slac;
     SDP sdp;
