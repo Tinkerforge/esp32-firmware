@@ -454,6 +454,11 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
 
     log_cm_slac_match_request(cm_slac_match_request);
     log_cm_slac_match_confirmation(cm_slac_match_confirmation);
+
+    // Trigger link_up minimum wait time (A.9.6.3.1 Figure A.8)
+    task_scheduler.scheduleOnce([] {
+        iso15118.qca700x.link_up();
+    }, SLAC_TP_LINK_READY_NOTIFCATION_MIN);
 }
 
 void SLAC::handle_cm_qualcomm_get_sw_request()
@@ -552,6 +557,8 @@ void SLAC::poll_modem(void)
                 // If we are in state WaitForSDP and we get our first IPv6 package, we know that
                 // the IPv6 connection is established and we can issue a link up to the higher layer.
                 if (state == SLAC::State::WaitForSDP) {
+                    // Usually link_up should have already been triggered here by the task scheduler
+                    // If we get a IPv6 packet before the timer expires, we can trigger it here as well.
                     iso15118.qca700x.link_up();
                     state = SLAC::State::LinkDetected;
                 }
