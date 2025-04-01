@@ -21,6 +21,7 @@
 
 #include "module.h"
 #include "config.h"
+#include "qca700x.h"
 #include "slac.h"
 #include "sdp.h"
 #include "common.h"
@@ -49,6 +50,7 @@ public:
     void trace(const char *fmt, ...);
     void trace_packet(const uint8_t *packet, const size_t packet_size);
 
+    QCA700x qca700x;
     SLAC slac;
     SDP sdp;
     Common common;

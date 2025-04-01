@@ -147,8 +147,8 @@ void SLAC::fill_header(SLAC_HomeplugMessageHeader *header, const uint8_t *destin
 void SLAC::handle_modem_reset(void)
 {
     logger.printfln("Reset QCA700X Modem");
-    const uint16_t spi_config = qca700x.read_register(QCA700X_SPI_REG_SPI_CONFIG) | QCA700X_SPI_INT_CPU_ON;
-    qca700x.write_register(QCA700X_SPI_REG_SPI_CONFIG, spi_config);
+    const uint16_t spi_config = iso15118.qca700x.read_register(QCA700X_SPI_REG_SPI_CONFIG) | QCA700X_SPI_INT_CPU_ON;
+    iso15118.qca700x.write_register(QCA700X_SPI_REG_SPI_CONFIG, spi_config);
 
     next_timeout = {};
     state = SLAC::State::ModemInitialization;
@@ -169,7 +169,7 @@ void SLAC::handle_modem_initialization(void)
     std::fill_n(aag_list, SLAC_AAG_LIST_LENGTH, 0);
 
     // To check if QCA700x is ready we read the signature and check the write space
-    const uint16_t signature = qca700x.read_register(QCA700X_SPI_REG_SIGNATURE);
+    const uint16_t signature = iso15118.qca700x.read_register(QCA700X_SPI_REG_SIGNATURE);
     if (signature != QCA700X_SPI_GOOD_SIGNATURE) {
         const uint8_t modem_initialization_tries = api_state.get("modem_initialization_tries")->asUint() + 1;
         api_state.get("modem_initialization_tries")->updateUint(modem_initialization_tries);
@@ -185,7 +185,7 @@ void SLAC::handle_modem_initialization(void)
     }
     api_state.get("modem_found")->updateBool(true);
 
-    const uint16_t write_space = qca700x.read_register(QCA700X_SPI_REG_WRBUF_SPC_AVA);
+    const uint16_t write_space = iso15118.qca700x.read_register(QCA700X_SPI_REG_WRBUF_SPC_AVA);
     if (write_space != QCA700X_BUFFER_SIZE) {
         logger.printfln("QCA700X modem not ready: Write space is %d (expected %d)", write_space, QCA700X_BUFFER_SIZE);
         state = SLAC::State::ModemReset;
@@ -193,7 +193,7 @@ void SLAC::handle_modem_initialization(void)
     }
 
     // Use QCA700x MAC adress for EVSE (it is derived from ethernet MAC)
-    memcpy(evse_mac, qca700x.mac, SLAC_MAC_ADDRESS_LENGTH);
+    memcpy(evse_mac, iso15118.qca700x.mac, SLAC_MAC_ADDRESS_LENGTH);
     for (size_t i = 0; i < SLAC_MAC_ADDRESS_LENGTH; i++) {
         api_state.get("evse_mac")->get(i)->updateUint(evse_mac[i]);
     }
@@ -223,8 +223,8 @@ void SLAC::handle_cm_set_key_request(void)
     memcpy(cm_set_key_request.nid, nid, SLAC_NID_LENGTH);
 
     uint8_t *data = reinterpret_cast<uint8_t*>(&cm_set_key_request);
-    qca700x.write_burst(data, sizeof(cm_set_key_request));
-    //write(qca700x.tap, data, sizeof(cm_set_key_request));
+    iso15118.qca700x.write_burst(data, sizeof(cm_set_key_request));
+    //write(iso15118.qca700x.tap, data, sizeof(cm_set_key_request));
 
     log_cm_set_key_request(cm_set_key_request);
     next_timeout = now_us() + 100_ms; // This is internal communication with the modem, there is not timing defined in the spec. 100ms seems reasonable.
@@ -260,7 +260,7 @@ void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_re
     // Assume that the ethernet link has died when we get a CM_SLAC_PARM.REQ
     // TODO: Should we do it like this?
     //       We have to test this when several WARP Charger are used in parallel.
-    qca700x.link_down();
+    iso15118.qca700x.link_down();
 
     // This is the first time we see the MAC and run_id of the PEV, we save it
     memcpy(pev_mac, cm_slac_parm_request.header.source_mac, SLAC_MAC_ADDRESS_LENGTH);
@@ -278,7 +278,7 @@ void SLAC::handle_cm_slac_parm_request(const CM_SLACParmRequest &cm_slac_parm_re
     memcpy(cm_slac_parm_confirmation.forwarding_sta, pev_mac, SLAC_MAC_ADDRESS_LENGTH);
     memcpy(cm_slac_parm_confirmation.run_id, pev_run_id, SLAC_RUN_ID_LENGTH);
 
-    qca700x.write_burst(reinterpret_cast<uint8_t*>(&cm_slac_parm_confirmation), sizeof(cm_slac_parm_confirmation));
+    iso15118.qca700x.write_burst(reinterpret_cast<uint8_t*>(&cm_slac_parm_confirmation), sizeof(cm_slac_parm_confirmation));
 
     // Wait for CM_START_ATTEN_CHAR.IND from the EV
     next_timeout = now_us() + SLAC_TT_MATCH_SEQUENCE;
@@ -373,7 +373,7 @@ void SLAC::handle_cm_atten_profile_indication(const CM_AttenProfileIndication &c
             api_state.get("attenuation_profile")->get(i)->updateUint(cm_atten_char_indication.attenuation_profile.aag[i]);
         }
 
-        qca700x.write_burst(reinterpret_cast<uint8_t*>(&cm_atten_char_indication), sizeof(cm_atten_char_indication));
+        iso15118.qca700x.write_burst(reinterpret_cast<uint8_t*>(&cm_atten_char_indication), sizeof(cm_atten_char_indication));
 
         next_timeout = now_us() + SLAC_TT_MATCH_RESPONSE;
         state = SLAC::State::WaitForAttenChar;
@@ -447,7 +447,7 @@ void SLAC::handle_cm_slac_match_request(const CM_SLACMatchRequest &cm_slac_match
     memcpy(cm_slac_match_confirmation.nid, nid, SLAC_NID_LENGTH);
     memcpy(cm_slac_match_confirmation.nmk, nmk, SLAC_NMK_LENGTH);
 
-    qca700x.write_burst(reinterpret_cast<uint8_t*>(&cm_slac_match_confirmation), sizeof(cm_slac_match_confirmation));
+    iso15118.qca700x.write_burst(reinterpret_cast<uint8_t*>(&cm_slac_match_confirmation), sizeof(cm_slac_match_confirmation));
     // Here we are done with SLAC. We now wait for "Link detected", which basically means we wait for the first IPV6/SDP packet from the EV.
     next_timeout = now_us() + SLAC_TT_MATCH_JOIN + SLAC_TP_LINK_READY_NOTIFCATION_MAX;
     state = SLAC::State::WaitForSDP;
@@ -460,7 +460,7 @@ void SLAC::handle_cm_qualcomm_get_sw_request()
 {
     CM_QualcommGetSwRequest cm_qualcomm_get_sw_request;
     fill_header_v0(&cm_qualcomm_get_sw_request.header, slac_mac_broadcast, evse_mac, SLAC_MMTYPE_QUALCOMM_GET_SW | SLAC_MMTYPE_MODE_REQUEST);
-    qca700x.write_burst(reinterpret_cast<uint8_t*>(&cm_qualcomm_get_sw_request), sizeof(cm_qualcomm_get_sw_request));
+    iso15118.qca700x.write_burst(reinterpret_cast<uint8_t*>(&cm_qualcomm_get_sw_request), sizeof(cm_qualcomm_get_sw_request));
 
     log_cm_qualcomm_get_sw_request(cm_qualcomm_get_sw_request);
     next_timeout = now_us() + 2500_ms;
@@ -471,7 +471,7 @@ void SLAC::handle_cm_qualcomm_link_status_request()
 {
     CM_QualcommLinkStatusRequest cm_qualcomm_link_status_request;
     fill_header_v0(&cm_qualcomm_link_status_request.header, slac_mac_broadcast, evse_mac, SLAC_MMTYPE_QUALCOMM_LINK_STATUS | SLAC_MMTYPE_MODE_REQUEST);
-    qca700x.write_burst(reinterpret_cast<uint8_t*>(&cm_qualcomm_link_status_request), sizeof(cm_qualcomm_link_status_request));
+    iso15118.qca700x.write_burst(reinterpret_cast<uint8_t*>(&cm_qualcomm_link_status_request), sizeof(cm_qualcomm_link_status_request));
 
     log_cm_qualcomm_link_status_request(cm_qualcomm_link_status_request);
     next_timeout = now_us() + 2500_ms;
@@ -482,7 +482,7 @@ void SLAC::handle_cm_qualcomm_op_attr_request()
 {
     CM_QualcommOpAttrRequest cm_qualcomm_op_attr_request;
     fill_header_v0(&cm_qualcomm_op_attr_request.header, slac_mac_broadcast, evse_mac, SLAC_MMTYPE_QUALCOMM_OP_ATTR | SLAC_MMTYPE_MODE_REQUEST);
-    qca700x.write_burst(reinterpret_cast<uint8_t*>(&cm_qualcomm_op_attr_request), sizeof(cm_qualcomm_op_attr_request));
+    iso15118.qca700x.write_burst(reinterpret_cast<uint8_t*>(&cm_qualcomm_op_attr_request), sizeof(cm_qualcomm_op_attr_request));
 
     log_cm_qualcomm_op_attr_request(cm_qualcomm_op_attr_request);
     next_timeout = now_us() + 2500_ms;
@@ -514,11 +514,11 @@ void SLAC::handle_cm_qualcomm_op_attr_confirmation(const CM_QualcommOpAttrConfir
 void SLAC::poll_modem(void)
 {
     // Poll modem for data
-    uint16_t length = qca700x.read_burst(buffer, QCA700X_BUFFER_SIZE + QCA700X_HW_PKT_SIZE);
-    //int16_t length = read(qca700x.tap, buffer, QCA700X_BUFFER_SIZE + QCA700X_HW_PKT_SIZE);
+    uint16_t length = iso15118.qca700x.read_burst(buffer, QCA700X_BUFFER_SIZE + QCA700X_HW_PKT_SIZE);
+    //int16_t length = read(iso15118.qca700x.tap, buffer, QCA700X_BUFFER_SIZE + QCA700X_HW_PKT_SIZE);
 
     while (length > 0) {
-        int16_t ethernet_frame_length = qca700x.check_receive_frame(buffer, length);
+        int16_t ethernet_frame_length = iso15118.qca700x.check_receive_frame(buffer, length);
         if (ethernet_frame_length < 0) {
             state = SLAC::State::ModemReset;
             break;
@@ -552,11 +552,11 @@ void SLAC::poll_modem(void)
                 // If we are in state WaitForSDP and we get our first IPv6 package, we know that
                 // the IPv6 connection is established and we can issue a link up to the higher layer.
                 if (state == SLAC::State::WaitForSDP) {
-                    qca700x.link_up();
+                    iso15118.qca700x.link_up();
                     state = SLAC::State::LinkDetected;
                 }
 
-                qca700x.received_data_to_netif(buffer + QCA700X_RECV_HEADER_SIZE, ethernet_frame_length);
+                iso15118.qca700x.received_data_to_netif(buffer + QCA700X_RECV_HEADER_SIZE, ethernet_frame_length);
                 break;
             }
 
@@ -627,7 +627,7 @@ void SLAC::state_machine_loop()
                 api_state.get("attenuation_profile")->get(i)->updateUint(cm_atten_char_indication.attenuation_profile.aag[i]);
             }
 
-            qca700x.write_burst(reinterpret_cast<uint8_t*>(&cm_atten_char_indication), sizeof(cm_atten_char_indication));
+            iso15118.qca700x.write_burst(reinterpret_cast<uint8_t*>(&cm_atten_char_indication), sizeof(cm_atten_char_indication));
 
             next_timeout = now_us() + SLAC_TT_MATCH_RESPONSE;
             state = SLAC::State::WaitForAttenChar;
