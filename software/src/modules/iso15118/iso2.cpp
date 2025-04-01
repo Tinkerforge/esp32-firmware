@@ -692,16 +692,16 @@ void ISO2::trace_header(const struct iso2_MessageHeaderType *header, const char 
             if (header->Signature.KeyInfo.KeyValue_isUsed) {
                 iso15118.trace("  Signature.KeyInfo.KeyValue.RSAKeyValue_isUsed: %d", header->Signature.KeyInfo.KeyValue.RSAKeyValue_isUsed);
                 if (header->Signature.KeyInfo.KeyValue.RSAKeyValue_isUsed) {
-                    iso15118.trace("  Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytes: %02x%02x%02x%02x...", 
-                                   header->Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytes[0], 
-                                   header->Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytes[1], 
-                                   header->Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytes[2], 
+                    iso15118.trace("  Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytes: %02x%02x%02x%02x...",
+                                   header->Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytes[0],
+                                   header->Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytes[1],
+                                   header->Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytes[2],
                                    header->Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytes[3]);
                     iso15118.trace("  Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytesLen: %d", header->Signature.KeyInfo.KeyValue.RSAKeyValue.Modulus.bytesLen);
-                    iso15118.trace("  Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytes: %02x%02x%02x%02x...", 
-                                   header->Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytes[0], 
-                                   header->Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytes[1], 
-                                   header->Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytes[2], 
+                    iso15118.trace("  Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytes: %02x%02x%02x%02x...",
+                                   header->Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytes[0],
+                                   header->Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytes[1],
+                                   header->Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytes[2],
                                    header->Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytes[3]);
                     iso15118.trace("  Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytesLen: %d", header->Signature.KeyInfo.KeyValue.RSAKeyValue.Exponent.bytesLen);
                 }
