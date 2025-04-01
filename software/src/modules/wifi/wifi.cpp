@@ -536,13 +536,45 @@ void Wifi::setup()
         ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+            wifi_ap_record_t wifi_info;
+            if (esp_wifi_sta_get_ap_info(&wifi_info) != ESP_OK) {
+                logger.printfln("Connected to WiFi");
+            } else {
+                char buf[128];
+                StringWriter sw(buf, ARRAY_SIZE(buf));
+                sw.printf("'%s', ch.%hhu 11", reinterpret_cast<const char *>(wifi_info.ssid), wifi_info.primary);
+
+                if (wifi_info.phy_11a)       sw.printf("a");
+                if (wifi_info.phy_11b)       sw.printf("b");
+                if (wifi_info.phy_11g)       sw.printf("g");
+                if (wifi_info.phy_11n)       sw.printf("n");
+                if (wifi_info.phy_11ac)      sw.printf("+ac");
+                if (wifi_info.phy_11ax)      sw.printf("+ax");
+
+                if      (wifi_info.bandwidth == WIFI_BW_HT20)   sw.printf(" HT20");
+                else if (wifi_info.bandwidth == WIFI_BW_HT40)   sw.printf(" HT40");
+                else if (wifi_info.bandwidth == WIFI_BW80)      sw.printf(" VHT80");
+                else if (wifi_info.bandwidth == WIFI_BW160)     sw.printf(" VHT160");
+                else if (wifi_info.bandwidth == WIFI_BW80_BW80) sw.printf(" VHT80+80");
+
+                if (wifi_info.phy_lr)        sw.printf(" lr");
+                if (wifi_info.wps)           sw.printf(" WPS");
+                if (wifi_info.ftm_responder) sw.printf(" FTMr");
+                if (wifi_info.ftm_initiator) sw.printf(" FTMi");
+
+                sw.printf(" [%.3s] %hhidBm, BSSID %02X:%02X:%02X:%02X:%02X:%02X",
+                          wifi_info.country.cc,
+                          wifi_info.rssi,
+                          wifi_info.bssid[0], wifi_info.bssid[1], wifi_info.bssid[2], wifi_info.bssid[3], wifi_info.bssid[4], wifi_info.bssid[5]);
+
+                logger.printfln("Connected to %s", buf);
+            }
+
             this->was_connected = true;
+            this->last_connected = now_us();
 
-            logger.printfln("Connected to '%s', BSSID %s", WiFi.SSID().c_str(), WiFi.BSSIDstr().c_str());
-            last_connected = now_us();
-
-            uint32_t now_ms = last_connected.to<millis_t>().as<uint32_t>();
-            task_scheduler.scheduleOnce([this, now_ms](){
+            uint32_t now_ms = this->last_connected.to<millis_t>().as<uint32_t>();
+            task_scheduler.scheduleOnce([this, now_ms]() {
                 state.get("connection_start")->updateUint(now_ms);
             });
         },
