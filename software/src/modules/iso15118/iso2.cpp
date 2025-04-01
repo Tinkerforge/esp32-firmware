@@ -492,7 +492,10 @@ void ISO2::handle_charge_parameter_discovery_req()
             iso15118.common.send_exi(Common::ExiType::Iso2);
             state = 6;
         }, 1_s);
-    } else {
+    } else if (iso15118.charge_type == ISO15118::ChargeType::AC_Charging) {
+        // Calculate minimum possible power
+        const uint16_t minimum_power = static_cast<int16_t>(float_from_physical_value(&req->AC_EVChargeParameter.EVMinCurrent)*230.0f + 1.0f);
+
         res->ResponseCode = iso2_responseCodeType_OK;
         res->EVSEProcessing = iso2_EVSEProcessingType_Finished;
 
@@ -508,7 +511,8 @@ void ISO2::handle_charge_parameter_discovery_req()
         //       outlet the vehicle is connected to. This value represents the total power over all selected phases.
         // V2G2-315] The PMax element shall define the maximum amount of power to be drawn from the EVSE
         //           power outlet when the element of type PMaxScheduleEntryType is active.
-        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax.Value = 1500; // TODO: Use user configuration
+
+        res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax.Value = minimum_power;
         res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax.Multiplier = 0;
         res->SAScheduleList.SAScheduleTuple.array[0].PMaxSchedule.PMaxScheduleEntry.array[0].PMax.Unit = iso2_unitSymbolType_W;
 
@@ -544,7 +548,7 @@ void ISO2::handle_charge_parameter_discovery_req()
         // ratio is set to 5% ratio then this is the only line current restriction processed by
         // the EVCC. Otherwise the EVCC applies the smaller current constraint from the
         // EVSEMaxCurrent value and the PWM ratio information.
-        res->AC_EVSEChargeParameter.EVSEMaxCurrent.Value = 32;
+        res->AC_EVSEChargeParameter.EVSEMaxCurrent.Value = 6; // TODO: Use value from EVSE
         res->AC_EVSEChargeParameter.EVSEMaxCurrent.Multiplier = 0;
         res->AC_EVSEChargeParameter.EVSEMaxCurrent.Unit = iso2_unitSymbolType_A;
 
@@ -661,6 +665,22 @@ void ISO2::handle_session_stop_req()
 
     iso15118.common.send_exi(Common::ExiType::Iso2);
     state = 9;
+}
+
+float ISO2::float_from_physical_value(iso2_PhysicalValueType *value)
+{
+    switch (value->Multiplier) {
+        case -3: return value->Value / 1000.0f;
+        case -2: return value->Value / 100.0f;
+        case -1: return value->Value / 10.0f;
+        case  0: return value->Value;
+        case  1: return value->Value * 10.0f;
+        case  2: return value->Value * 100.0f;
+        case  3: return value->Value * 1000.0f;
+    }
+
+    logger.printfln("ISO2: Unallowed Multiplier %d", value->Multiplier);
+    return 0.0f;
 }
 
 void ISO2::trace_header(const struct iso2_MessageHeaderType *header, const char *name)
