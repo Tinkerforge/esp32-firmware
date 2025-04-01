@@ -100,6 +100,11 @@ void ISO2::handle_bitstream(exi_bitstream *exi)
         return;
     }
 
+    if (next_timeout != 0) {
+        task_scheduler.cancel(next_timeout);
+        next_timeout = 0;
+    }
+
     if (iso2DocDec->V2G_Message.Body.SessionSetupReq_isUsed) {
         handle_session_setup_req();
     }
@@ -171,6 +176,17 @@ void ISO2::handle_bitstream(exi_bitstream *exi)
     trace_request_response();
 
     api_state.get("state")->updateUint(state);
+
+    // [V2G2-443] The SECC shall stop waiting for a request message and stop monitoring the
+    //            V2G_SECC_Sequence_Timer when V2G_SECC_Sequence_Timer is equal or larger than
+    //            V2G_SECC_Sequence_Timeout and no request message was received. It shall then stop the
+    //            V2G Communication Session.
+    next_timeout = task_scheduler.scheduleOnce([this]() {
+        iso15118.qca700x.link_down();
+        iso15118.slac.state = SLAC::State::ModemReset;
+        logger.printfln("ISO2 Timeout: Link down, SLAC reset");
+        next_timeout = 0;
+    }, ISO2_SECC_SEQUENCE_TIMEOUT);
 }
 
 void ISO2::handle_session_setup_req()
