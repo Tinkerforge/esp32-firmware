@@ -141,7 +141,7 @@ uint16_t QCA700x::read_burst(uint8_t *data, const uint16_t length)
         spi_read(data, length);
         spi_deselect();
 
-        iso15118.trace_array("QCA700x packet recv", data, available);
+        iso15118.trace_packet(data, available);
         return available;
     } else {
         logger.printfln("read_burst error: available %u > max length %u", available, length);
@@ -161,7 +161,7 @@ void QCA700x::write_burst(const uint8_t *data, const uint16_t length)
     spi_write_footer();
     spi_deselect();
 
-    iso15118.trace_array("QCA700x packet send", data, length);
+    iso15118.trace_packet(data, length);
 }
 
 // Returns ethernet frame length if frame is valid, otherwise negative number
