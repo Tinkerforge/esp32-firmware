@@ -29,6 +29,7 @@
 
 #include "cool_string.h"
 #include "tools.h"
+#include "string_builder.h"
 #include "config/owned_config.h"
 
 struct Config;
@@ -833,7 +834,7 @@ public:
     OwnedConfig get_owned_copy();
 
 #ifdef DEBUG_FS_ENABLE
-    void print_api_info(char *buf, size_t buf_size, size_t &written);
+    void print_api_info(StringWriter &sw);
 #endif
 
 private:
