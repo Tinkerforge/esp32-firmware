@@ -453,8 +453,8 @@ void ISO2::handle_charge_parameter_discovery_req()
         res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus_isUsed = 1;
         res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEIsolationStatus = iso2_isolationLevelType_Invalid;
 
-        res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSENotification = iso2_EVSENotificationType_ReNegotiation;
-        res->DC_EVSEChargeParameter.DC_EVSEStatus.NotificationMaxDelay = 10;
+        res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSENotification = iso2_EVSENotificationType_None;
+        res->DC_EVSEChargeParameter.DC_EVSEStatus.NotificationMaxDelay = 0;
 
         // EVSE_Ready here seems to work, maybe test iso2_DC_EVSEStatusCodeType_EVSE_IsolationMonitoringActive if other EVs send StopRequest after this.
         res->DC_EVSEChargeParameter.DC_EVSEStatus.EVSEStatusCode = iso2_DC_EVSEStatusCodeType_EVSE_Ready;
@@ -483,11 +483,15 @@ void ISO2::handle_charge_parameter_discovery_req()
         res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Value = 20000; // 20000W * 10^1 = 200kW
         res->DC_EVSEChargeParameter.EVSEMaximumPowerLimit.Multiplier = 1;
 
-        res->DC_EVSEChargeParameter_isUsed = 1;
-
         // Optinal charge parameters
         res->DC_EVSEChargeParameter.EVSECurrentRegulationTolerance_isUsed = 0;
         res->DC_EVSEChargeParameter.EVSEEnergyToBeDelivered_isUsed = 0;
+
+        // Delay send_exi by 1s to slow down the Req/Res-Loop
+        task_scheduler.scheduleOnce([this]() {
+            iso15118.common.send_exi(Common::ExiType::Iso2);
+            state = 6;
+        }, 1_s);
     } else {
         res->ResponseCode = iso2_responseCodeType_OK;
         res->EVSEProcessing = iso2_EVSEProcessingType_Finished;
@@ -550,10 +554,10 @@ void ISO2::handle_charge_parameter_discovery_req()
         res->AC_EVSEChargeParameter.EVSENominalVoltage.Value = 230;
         res->AC_EVSEChargeParameter.EVSENominalVoltage.Multiplier = 0;
         res->AC_EVSEChargeParameter.EVSENominalVoltage.Unit = iso2_unitSymbolType_V;
-    }
 
-    iso15118.common.send_exi(Common::ExiType::Iso2);
-    state = 6;
+        iso15118.common.send_exi(Common::ExiType::Iso2);
+        state = 6;
+    }
 }
 
 void ISO2::handle_power_delivery_req()
