@@ -44,7 +44,7 @@
 #include "tools/miniz/miniz_tdef.h"
 
 struct deflate_outbuf {
-    char outbuf[1384]; // 1500 - 8 (PPPoE) - 40 (IP) - 60 (max TCP) - 8 (HTTP chunk metadata)
+    char outbuf[1274]; // 1390 (conservative optimal WireGuard MTU) - 8 (PPPoE) - 40 (IP) - 60 (max TCP) - 8 (HTTP chunk metadata)
     char printbuf[128];
 };
 
