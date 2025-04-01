@@ -124,6 +124,7 @@ void ShipConnection::set_state(State state)
                     get_state_name(state),
                     static_cast<std::underlying_type<State>::type>(state));
 
+    this->previous_state = old_state;
     this->state = state;
 }
 
@@ -366,7 +367,7 @@ void ShipConnection::state_sme_hello()
     this_hello_phase = {
         .phase = ConnectionHelloPhase::Type::Ready, // TODO: Figure out if we are ready
         .waiting = 0,
-        .waiting_valid = false, // TODO add waiting timer and set waiting properly
+        .waiting_valid = false,
         .prolongation_request = 0,
         .prolongation_request_valid = false,
     };
@@ -375,9 +376,7 @@ void ShipConnection::state_sme_hello()
     // Depending on if we trust the peer we either go pending, ready or abort
     switch (this_hello_phase.phase) {
         case ConnectionHelloPhase::Type::Pending: {
-            // TODO
-
-            state_is_not_implemented();
+            set_and_schedule_state(State::SmeHelloPendingInit);
             break;
         }
         case ConnectionHelloPhase::Type::Ready: {
@@ -391,8 +390,7 @@ void ShipConnection::state_sme_hello()
             break;
         }
         case ConnectionHelloPhase::Type::Unknown: {
-            // TODO
-            state_is_not_implemented();
+            set_and_schedule_state(State::SmeHelloAbort);
             break;
         }
     }
@@ -400,6 +398,7 @@ void ShipConnection::state_sme_hello()
 
 void ShipConnection::hello_send_sme_update()
 {
+    // SHIP 13.4.4.1.3 "Common Procedure for Sending an SME "hello" Update Message:"
     uint64_t timer_end = hello_wait_for_ready_timestamp + millis_t{SHIP_CONNECTION_SME_INIT_TIMEOUT}.as<uint64_t>();
     if (timer_end < millis()) {
         this_hello_phase.waiting = 0;
@@ -414,7 +413,8 @@ void ShipConnection::hello_set_wait_for_ready_timer(State target)
 {
     task_scheduler.cancel(hello_wait_for_ready_timer);
     hello_wait_for_ready_timer = task_scheduler.scheduleOnce(
-        [this, target]() { 
+        [this, target]() {
+            hello_timer_expiry = 1;
             set_and_schedule_state(target);
         },
         SHIP_CONNECTION_SME_INIT_TIMEOUT);
@@ -423,6 +423,7 @@ void ShipConnection::hello_set_wait_for_ready_timer(State target)
 
 void ShipConnection::hello_decide_prolongation()
 {
+    // SHIP 13.4.4.1.3 "Common Procedure to Decide an Incoming Prolongation Request"
     // We always decide to prolong the connection so we just reset the timer
     if (peer_hello_phase.phase == ConnectionHelloPhase::Type::Pending) {
         if (this_hello_phase.phase == ConnectionHelloPhase::Type::Pending) {
@@ -455,7 +456,7 @@ void ShipConnection::state_sme_hello_ready_listen()
     json_to_type_connection_hello(&peer_hello_phase);
 
     // SHIP 13.4.4.1.3 Sub-state SME_HELLO_STATE_READY_LISTEN
-    // What is the state of the peer
+
     switch (peer_hello_phase.phase) {
         case ConnectionHelloPhase::Type::Pending: {
             if (peer_hello_phase.prolongation_request && peer_hello_phase.prolongation_request_valid) {
@@ -475,8 +476,7 @@ void ShipConnection::state_sme_hello_ready_listen()
             break;
         }
         case ConnectionHelloPhase::Type::Unknown: {
-            // TODO
-            state_is_not_implemented();
+            set_and_schedule_state(State::SmeHelloAbort);
             break;
         }
     }
@@ -489,7 +489,8 @@ void ShipConnection::state_sme_hello_ready_timeout()
 
 void ShipConnection::state_sme_hello_pending_init()
 {
-    hello_set_wait_for_ready_timer();
+    // SHIP 13.4.4.1.3 "Sub-state SME_HELLO_STATE_PENDING_INIT"
+    hello_set_wait_for_ready_timer(State::SmeHelloPendingTimeout);
     task_scheduler.cancel(hello_send_prolongation_reply_timer);
     task_scheduler.cancel(hello_send_prolongation_request_timer);
     hello_send_sme_update();
@@ -498,24 +499,64 @@ void ShipConnection::state_sme_hello_pending_init()
 
 void ShipConnection::state_sme_hello_pending_listen()
 {
+    // SHIP 13.4.4.1.3 "Sub-state SME_HELLO_STATE_PENDING_LISTEN"
     json_to_type_connection_hello(&peer_hello_phase);
     switch (peer_hello_phase.phase) {
         case ConnectionHelloPhase::Type::Ready: {
-            // Peer is ready but we are not
-            if (!peer_hello_phase.waiting_valid) { 
-                // Peer is not waiting so connection is aborted
+            // SHIP 13.4.4.1.3 "Sub-state SME_HELLO_STATE_PENDING_LISTEN" 1.
+            if (!peer_hello_phase.waiting_valid) {
+                // Peer is not waiting anymore so connection is aborted
                 set_and_schedule_state(State::SmeHelloAbort);
+                break;
             }
-            
+            // SHIP 13.4.4.1.3 "Sub-state SME_HELLO_STATE_PENDING_LISTEN" 2.
+            if (peer_hello_phase.waiting_valid) {
 
+                // Peer is still waiting for us
+                task_scheduler.cancel(hello_wait_for_ready_timer);
+                task_scheduler.cancel(hello_send_prolongation_reply_timer);
+                if (peer_hello_phase.waiting >= static_cast<millis_t>(SHIP_CONNECTION_SME_T_hello_prolong_thr_inc).as<uint64_t>()) {
+                    hello_send_prolongation_request_timer = task_scheduler.scheduleOnce(
+                        [this]() {
+                            set_and_schedule_state(State::SmeHelloPendingTimeout);
+                            hello_timer_expiry = 2;
+                        },
+                        millis_t(peer_hello_phase.waiting) - SHIP_CONNECTION_SME_T_hello_prolong_waiting_gap);
+                }
+                break;
+            }
             break;
         }
         case ConnectionHelloPhase::Type::Pending: {
-            // Peer is still pending so we wait for it
-            if (peer_hello_phase.prolongation_request && peer_hello_phase.prolongation_request_valid) {
+            // SHIP 13.4.4.1.3 "Sub-state SME_HELLO_STATE_PENDING_LISTEN" 3.
+            if (!peer_hello_phase.prolongation_request_valid && peer_hello_phase.waiting_valid) {
+                task_scheduler.cancel(hello_send_prolongation_reply_timer);
+                if (peer_hello_phase.waiting >= static_cast<millis_t>(SHIP_CONNECTION_SME_T_hello_prolong_thr_inc).as<uint64_t>()) {
+                    hello_send_prolongation_request_timer = task_scheduler.scheduleOnce(
+                        [this]() {
+                        set_and_schedule_state(State::SmeHelloPendingTimeout);
+                        hello_timer_expiry = 2;
+                        },
+                        millis_t(peer_hello_phase.waiting)-SHIP_CONNECTION_SME_T_hello_prolong_waiting_gap));
+                }
+                break;
+            }
+            // SHIP 13.4.4.1.3 "Sub-state SME_HELLO_STATE_PENDING_LISTEN" 4.
+            if (peer_hello_phase.prolongation_request_valid && !peer_hello_phase.waiting_valid) {
                 hello_decide_prolongation();
                 hello_send_sme_update();
+                break;
             }
+            break;
+        }
+        case ConnectionHelloPhase::Type::Aborted: {
+            // SHIP 13.4.4.1.3 "Sub-state SME_HELLO_STATE_PENDING_LISTEN" 5.
+            set_and_schedule_state(State::SmeHelloAbort);
+            break;
+        }
+        case ConnectionHelloPhase::Type::Unknown: {
+            // SHIP 13.4.4.1.3 "Sub-state SME_HELLO_STATE_PENDING_LISTEN" 6.
+            set_and_schedule_state(State::SmeHelloAbort);
             break;
         }
     }
@@ -523,7 +564,34 @@ void ShipConnection::state_sme_hello_pending_listen()
 
 void ShipConnection::state_sme_hello_pending_timeout()
 {
-    set_and_schedule_state(State::SmeHelloAbort);
+    // SHIP 13.4.4.1.3 "Sub-state SME_HELLO_STATE_PENDING_TIMEOUT" 2.
+    if (hello_timer_expiry == 2) {
+
+        this_hello_phase.phase = ConnectionHelloPhase::Type::Pending;
+        this_hello_phase.waiting_valid = false;
+        this_hello_phase.prolongation_request = true;
+        this_hello_phase.prolongation_request_valid = true;
+        hello_send_sme_update();
+
+        uint64_t waiting_time =
+            peer_hello_phase.waiting_valid ?
+                peer_hello_phase.waiting :
+                SHIP_CONNECTION_SME_INIT_TIMEOUT.as<
+                    uint64_t>(); // Using SHIP_CONNECTION_SME_INIT_TIMEOUT here is not 100% to the spec but its close enough and saves a bit of calculation time
+
+        hello_send_prolongation_reply_timer = task_scheduler.scheduleOnce(
+            [this]() {
+                hello_timer_expiry = 3;
+                set_and_schedule_state(State::SmeHelloPendingTimeout);
+            },
+            waiting_time);
+        set_state(this->previous_state);
+
+    } else {
+        // SHIP 13.4.4.1.3 "Sub-state SME_HELLO_STATE_PENDING_TIMEOUT" 1.
+        // SHIP 13.4.4.1.3 "Sub-state SME_HELLO_STATE_PENDING_TIMEOUT" 3.
+        set_and_schedule_state(State::SmeHelloAbort);
+    }
 }
 
 void ShipConnection::state_sme_hello_ok()
@@ -564,12 +632,12 @@ void ShipConnection::state_sme_hello_abort_done()
 
 void ShipConnection::state_sme_hello_remote_abort_done()
 {
-    state_is_not_implemented();
+    set_and_schedule_state(State::SmeHelloAbortDone);
 }
 
 void ShipConnection::state_sme_hello_rejected()
 {
-    state_is_not_implemented();
+    set_and_schedule_state(State::SmeHelloAbort);
 }
 
 void ShipConnection::state_sme_protocol_handshake_server_init()

@@ -31,7 +31,7 @@
 #define SHIP_CONNECTION_CMI_TIMEOUT 30_s // SHIP 13.4.3 Timneout procedure
 #define SHIP_CONNECTION_SME_INIT_TIMEOUT 60_s
 #define SHIP_CONNECTION_SME_T_hello_prolong_thr_inc 30_s
-
+#define SHIP_CONNECTION_SME_T_hello_prolong_waiting_gap 15_s
 
 #define SHIP_CONNECTION_MAX_JSON_SIZE 8192 // TODO: What is a sane value here?
 #define SHIP_CONNECTION_MAX_BUFFER_SIZE (1024*10) // TODO: What is a sane value here?
@@ -146,6 +146,7 @@ public:
 
 
     State state = State::CmiInitStart;
+    State previous_state = State::CmiInitStart;
     SubState sub_state = SubState::Init;
     uint64_t timeout_task = 0;
 
@@ -254,11 +255,13 @@ public:
     void json_to_type_connection_hello(ConnectionHelloType *connection_hello);
     void type_to_json_connection_hello(ConnectionHelloType *connection_hello);
 
-    // TODO: is it safe to set these timers to undefined values? Or set them to 0 or max value?
     uint64_t hello_wait_for_ready_timer = 0;
-    uint64_t hello_wait_for_ready_timestamp = 0;
+    uint64_t hello_wait_for_ready_timestamp = 0; // To calculate the waiting part in messages
     uint64_t hello_send_prolongation_request_timer = 0;
     uint64_t hello_send_prolongation_reply_timer = 0;
+
+    /// @brief Which timer expire. 1=wait_for_ready, 2=prolongation_request, 3=prolongation_reply
+    uint8_t hello_timer_expiry = 0; 
 
     // Current Peer Hello Phase
     ConnectionHelloType peer_hello_phase = {};
