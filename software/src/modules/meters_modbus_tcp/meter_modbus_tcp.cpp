@@ -1060,68 +1060,6 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         default_location = MeterLocation::Load;
         break;
 
-    case MeterModbusTCPTableID::SAXPowerHomeBasicMode:
-        sax_power.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<SAXPowerVirtualMeter>();
-        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (sax_power.virtual_meter) {
-        case SAXPowerVirtualMeter::None:
-            logger.printfln_meter("No SAX Power Home Basic Mode Virtual Meter selected");
-            return;
-
-        case SAXPowerVirtualMeter::InverterUnused:
-            logger.printfln_meter("Invalid SAX Power Home Basic Mode Virtual Meter: %u", static_cast<uint8_t>(sax_power.virtual_meter));
-            default_location = MeterLocation::Inverter;
-            return;
-
-        case SAXPowerVirtualMeter::Grid:
-            table = &sax_power_home_basic_mode_grid_table;
-            default_location = MeterLocation::Grid;
-            break;
-
-        case SAXPowerVirtualMeter::Battery:
-            table = &sax_power_home_basic_mode_battery_table;
-            default_location = MeterLocation::Battery;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown SAX Power Home Basic Mode Virtual Meter: %u", static_cast<uint8_t>(sax_power.virtual_meter));
-            return;
-        }
-
-        break;
-
-    case MeterModbusTCPTableID::SAXPowerHomeExtendedMode:
-        sax_power.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<SAXPowerVirtualMeter>();
-        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-
-        switch (sax_power.virtual_meter) {
-        case SAXPowerVirtualMeter::None:
-            logger.printfln_meter("No SAX Power Home Extended Mode Virtual Meter selected");
-            return;
-
-        case SAXPowerVirtualMeter::InverterUnused:
-            logger.printfln_meter("Invalid SAX Power Home Extended Mode Virtual Meter: %u", static_cast<uint8_t>(sax_power.virtual_meter));
-            default_location = MeterLocation::Inverter;
-            return;
-
-        case SAXPowerVirtualMeter::Grid:
-            table = &sax_power_home_extended_mode_grid_table;
-            default_location = MeterLocation::Grid;
-            break;
-
-        case SAXPowerVirtualMeter::Battery:
-            table = &sax_power_home_extended_mode_battery_table;
-            default_location = MeterLocation::Battery;
-            break;
-
-        default:
-            logger.printfln_meter("Unknown SAX Power Home Extended Mode Virtual Meter: %u", static_cast<uint8_t>(sax_power.virtual_meter));
-            return;
-        }
-
-        break;
-
     default:
         logger.printfln_meter("Unknown table: %u", static_cast<uint8_t>(table_id));
         return;

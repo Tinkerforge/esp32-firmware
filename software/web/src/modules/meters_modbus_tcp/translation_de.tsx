@@ -49,8 +49,6 @@ let x = {
             "table_solaredge_inverter": "Solaredge Wechselrichter",
             "table_eastron_sdm630_tcp": "Eastron SDM630 TCP",
             "table_tinkerforge_warp_charger": "Tinkerforge WARP Charger",
-            "table_sax_power_home_basic_mode": "SAX Power Home (Basic Mode)",
-            "table_sax_power_home_extended_mode": "SAX Power Home (Extended Mode)",
             "virtual_meter": "Virtueller Zähler",
             "virtual_meter_inverter": "Wechselrichter",
             "virtual_meter_grid": "Netzanschluss",
