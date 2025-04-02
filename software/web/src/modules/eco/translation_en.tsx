@@ -50,7 +50,6 @@ let x = {
         },
         "script": {
             "save_failed": "Failed to save the eco settings",
-            "reboot_content_changed": "eco settings",
 
             "charge_plan": /*FFN*/(charge_plan: {departure: number, enable: boolean, time: Date, amount: number}, charger_zero_start: number, charger_zero_amount: number) => {
                 let day = "until today at";
