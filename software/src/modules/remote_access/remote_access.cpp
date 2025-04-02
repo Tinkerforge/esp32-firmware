@@ -1894,7 +1894,7 @@ void RemoteAccess::run_management()
 void RemoteAccess::close_all_remote_connections() {
     for (uint8_t i = 0; i < 5; i++) {
         if (remote_connections[i].conn != nullptr) {
-            logger.printfln("Closing connection %lu for user %lu",
+            logger.printfln("Closing connection %u for user %u",
                             connection_state.get(i + 1)->get("connection")->asUint(),
                             connection_state.get(i + 1)->get("user")->asUint());
             remote_connections[i].conn->end();
