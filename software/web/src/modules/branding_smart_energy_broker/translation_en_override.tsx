@@ -35,6 +35,11 @@ let x = {
             "meter_class": "Connected to Smart Energy Broker"
         }
     },
+    "modbus_tcp_debug": {
+        "content": {
+            "server_missing_github": <></>
+        }
+    },
     "branding": {
         "device": "SEB"
     }

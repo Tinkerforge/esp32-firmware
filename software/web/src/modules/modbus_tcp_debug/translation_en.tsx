@@ -10,7 +10,8 @@ let x = {
         "content": {
             "modbus_tcp": "Modbus/TCP",
 
-            "server_missing": <>__("The_device") currently has no Modbus/TCP server. Presumably it will be added by a future firmware update, see <a href="https://github.com/Tinker%66orge/esp32-firmware/issues/215">GitHub issue #215</a>.</>,
+            "server_missing": <>__("The_device") currently has no Modbus/TCP server. Presumably it will be added by a future firmware update__("modbus_tcp_debug.content.server_missing_github").</>,
+            "server_missing_github": <>, see <a href="https://github.com/Tinker%66orge/esp32-firmware/issues/215">GitHub issue #215</a></>,
 
             "debug": "Debug client",
             "host": "Hostname or IP address",
