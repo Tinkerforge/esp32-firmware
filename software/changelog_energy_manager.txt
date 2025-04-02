@@ -374,7 +374,7 @@
 - Fix MQTT over WS(S)
 - Fix colors of disabled inputs in web interface
 
-2025-04-02: 2.3.6 (<unknown>)
+2025-04-02: 2.3.6 (04ac71ae)
 - Charge Manager: Make sure chargers in one of the "Min" modes are always activated if possible
 - Charge Manager: Don't stop all chargers if some are not reachable
 - Remote Access: Changed format of authorization token to be more fault tolerant
