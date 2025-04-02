@@ -887,6 +887,7 @@ de_hyph = [
     "Funk-ti-ons-co-de",
     "Aus-füh-rungs",
     "ver-trau-ens-wür-dig",
+    "zu-rück-ge-wech-selt",
 ]
 
 en_hyph = [
