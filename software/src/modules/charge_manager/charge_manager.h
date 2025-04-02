@@ -107,6 +107,10 @@ private:
 
     ConfigRoot charge_mode;
 
+#ifdef DEBUG_FS_ENABLE
+    ConfigRoot debug_limits_update;
+#endif
+
     CurrentLimits limits, limits_post_allocation;
     Cost allocated_currents;
 

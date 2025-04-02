@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PowerManagerEmu</class>
+ <widget class="QMainWindow" name="PowerManagerEmu">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>730</width>
+    <height>440</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Power Manager Emulator</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="11" column="1">
+       <spacer name="verticalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="9" column="3">
+       <widget class="QSpinBox" name="spin_min_l2"/>
+      </item>
+      <item row="8" column="1">
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="12" column="2">
+       <widget class="QSpinBox" name="spin_spread_l1"/>
+      </item>
+      <item row="10" column="4">
+       <widget class="QSlider" name="slider_min_l3">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="3">
+       <widget class="QSlider" name="slider_raw_l2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="1">
+       <widget class="QSpinBox" name="spin_spread_pv"/>
+      </item>
+      <item row="12" column="3">
+       <widget class="QSpinBox" name="spin_spread_l2"/>
+      </item>
+      <item row="6" column="1">
+       <widget class="QSpinBox" name="spin_raw_pv"/>
+      </item>
+      <item row="6" column="2">
+       <widget class="QSpinBox" name="spin_raw_l1"/>
+      </item>
+      <item row="3" column="1">
+       <widget class="QSpinBox" name="spin_max_pv"/>
+      </item>
+      <item row="0" column="1" colspan="4">
+       <widget class="QLineEdit" name="edit_host"/>
+      </item>
+      <item row="10" column="3">
+       <widget class="QSlider" name="slider_min_l2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="2">
+       <widget class="QSlider" name="slider_min_l1">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="4">
+       <widget class="QSpinBox" name="spin_raw_l3"/>
+      </item>
+      <item row="2" column="2">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>L1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>PV</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="2">
+       <widget class="QSlider" name="slider_raw_l1">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="4">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>L3</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>Host</string>
+        </property>
+       </widget>
+      </item>
+      <item row="13" column="1">
+       <widget class="QSlider" name="slider_spread_pv">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="2">
+       <widget class="QSpinBox" name="spin_min_l1"/>
+      </item>
+      <item row="4" column="1">
+       <widget class="QSlider" name="slider_max_pv">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="1">
+       <widget class="QSpinBox" name="spin_min_pv"/>
+      </item>
+      <item row="13" column="2">
+       <widget class="QSlider" name="slider_spread_l1">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="3">
+       <widget class="QSpinBox" name="spin_raw_l2"/>
+      </item>
+      <item row="9" column="4">
+       <widget class="QSpinBox" name="spin_min_l3"/>
+      </item>
+      <item row="3" column="0" rowspan="2">
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>Max</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <spacer name="verticalSpacer_3">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="2" column="3">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>L2</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="0" rowspan="2">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Min</string>
+        </property>
+       </widget>
+      </item>
+      <item row="13" column="4">
+       <widget class="QSlider" name="slider_spread_l3">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="0" rowspan="2">
+       <widget class="QLabel" name="label_7">
+        <property name="text">
+         <string>Spread</string>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="1">
+       <widget class="QSlider" name="slider_min_pv">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0" rowspan="2">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Raw</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="4">
+       <widget class="QSlider" name="slider_raw_l3">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="1">
+       <widget class="QSlider" name="slider_raw_pv">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="4">
+       <widget class="QSpinBox" name="spin_spread_l3"/>
+      </item>
+      <item row="13" column="3">
+       <widget class="QSlider" name="slider_spread_l2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="5">
+       <widget class="Line" name="line">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <tabstops>
+  <tabstop>edit_host</tabstop>
+  <tabstop>spin_max_pv</tabstop>
+  <tabstop>slider_max_pv</tabstop>
+  <tabstop>spin_raw_pv</tabstop>
+  <tabstop>spin_raw_l1</tabstop>
+  <tabstop>spin_raw_l2</tabstop>
+  <tabstop>spin_raw_l3</tabstop>
+  <tabstop>slider_raw_pv</tabstop>
+  <tabstop>slider_raw_l1</tabstop>
+  <tabstop>slider_raw_l2</tabstop>
+  <tabstop>slider_raw_l3</tabstop>
+  <tabstop>spin_min_pv</tabstop>
+  <tabstop>spin_min_l1</tabstop>
+  <tabstop>spin_min_l2</tabstop>
+  <tabstop>spin_min_l3</tabstop>
+  <tabstop>slider_min_pv</tabstop>
+  <tabstop>slider_min_l1</tabstop>
+  <tabstop>slider_min_l2</tabstop>
+  <tabstop>slider_min_l3</tabstop>
+  <tabstop>spin_spread_pv</tabstop>
+  <tabstop>spin_spread_l1</tabstop>
+  <tabstop>spin_spread_l2</tabstop>
+  <tabstop>spin_spread_l3</tabstop>
+  <tabstop>slider_spread_pv</tabstop>
+  <tabstop>slider_spread_l1</tabstop>
+  <tabstop>slider_spread_l2</tabstop>
+  <tabstop>slider_spread_l3</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

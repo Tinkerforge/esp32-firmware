@@ -271,6 +271,39 @@ void ChargeManager::pre_setup()
         {"mode", Config::Enum(ConfigChargeMode::Fast)},
     });
 
+#ifdef DEBUG_FS_ENABLE
+    debug_limits_update = Config::Object({
+        {"raw", Config::Array({
+                Config::Int32(0),
+                Config::Int32(0),
+                Config::Int32(0),
+                Config::Int32(0)
+            },
+            config_prototype_int32_0,
+            4, 4, Config::type_id<Config::ConfInt>())
+        },
+        {"min", Config::Array({
+                Config::Int32(0),
+                Config::Int32(0),
+                Config::Int32(0),
+                Config::Int32(0)
+            },
+            config_prototype_int32_0,
+            4, 4, Config::type_id<Config::ConfInt>())
+        },
+        {"spread", Config::Array({
+                Config::Int32(0),
+                Config::Int32(0),
+                Config::Int32(0),
+                Config::Int32(0)
+            },
+            config_prototype_int32_0,
+            4, 4, Config::type_id<Config::ConfInt>())
+        },
+        {"max_pv", Config::Int32(0)},
+    });
+#endif
+
 #if MODULE_AUTOMATION_AVAILABLE()
     automation.register_trigger(
         AutomationTriggerID::ChargeManagerWd,
@@ -682,6 +715,17 @@ void ChargeManager::register_urls()
         this->limits.max_pv = 3 * current; //TODO: unlimited?
 
     }, false);
+
+#ifdef DEBUG_FS_ENABLE
+    api.addCommand("charge_manager/debug_limits_update", &debug_limits_update, {}, [this](String &/*errmsg*/) {
+        for(size_t i = 0; i < 4; ++i) {
+            this->limits.raw[i] = debug_limits_update.get("raw")->get(i)->asInt();
+            this->limits.min[i] = debug_limits_update.get("min")->get(i)->asInt();
+            this->limits.spread[i] = debug_limits_update.get("spread")->get(i)->asInt();
+        }
+        this->limits.max_pv = debug_limits_update.get("max_pv")->asInt();
+    }, false);
+#endif
 
     // This is power_manager API that is now handled by the charge manager.
     api.addState("power_manager/charge_mode", &charge_mode);
