@@ -66,8 +66,7 @@ let x = {
         },
         "script": {
             "power": "Power",
-            "save_failed": "Failed to save the solar forecast settings",
-            "reboot_content_changed": "solar forecast settings"
+            "save_failed": "Failed to save the solar forecast settings"
         }
     }
 }

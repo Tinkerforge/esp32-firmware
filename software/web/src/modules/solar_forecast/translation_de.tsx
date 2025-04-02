@@ -66,8 +66,7 @@ let x = {
         },
         "script": {
             "power": "Leistung",
-            "save_failed": "Speichern der PV-Ertragsprognose-Einstellungen fehlgeschlagen",
-            "reboot_content_changed": "PV-Ertragsprognose-Einstellungen"
+            "save_failed": "Speichern der PV-Ertragsprognose-Einstellungen fehlgeschlagen"
         }
     }
 }

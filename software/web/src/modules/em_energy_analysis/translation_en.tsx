@@ -3,8 +3,7 @@ import { h } from "preact";
 let x = {
     "em_energy_analysis": {
         "status": {
-            "power_history": "Power history",
-            "current_power": "Power"
+            "power_history": "Power history"
         },
         "navbar": {
             "em_energy_analysis": "Energy Analysis"
