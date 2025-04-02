@@ -17,7 +17,7 @@ let x = {
             "enable": "Modbus/TCP-Server-Modus",
             "port": "Port",
             "port_muted": "typischerweise 502",
-            "debug": "Debug",
+            "debug": "Debug-Client",
             "table_docu": "WARP Register-Dokumentation",
             "table_content": <>
                 <thead class="thead-light">
