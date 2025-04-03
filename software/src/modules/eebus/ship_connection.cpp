@@ -32,6 +32,8 @@ extern EEBus eebus;
 
 void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
 {
+
+    // TODO: Does the ws_client implement some kind of keepalive? Like sending ping/pong frames? Otherwise we need to implement something like that here
     if (ws_pkt->fragmented) {
         logger.printfln("ShipConnection ws_frame_received: fragmented %d, final %d", ws_pkt->fragmented, ws_pkt->final);
         logger.printfln("Not yet implemented...");
@@ -47,7 +49,7 @@ void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
     memset(message_incoming->data, 0, SHIP_CONNECTION_MAX_BUFFER_SIZE);
     memcpy(message_incoming->data, ws_pkt->payload, ws_pkt->len);
     message_incoming->length = ws_pkt->len;
-    state_machine_next_step();
+    state_machine_next_step();    
 
     logger.printfln("ShipConnection ws_frame_received: %x %x", ws_pkt->payload[0], ws_pkt->payload[1]);
 }
@@ -56,12 +58,14 @@ void ShipConnection::schedule_close(const millis_t delay_ms)
 {
     task_scheduler.scheduleOnce(
         [this]() {
+            logger.printfln("Closing socket");
             // Close socket and
             ws_client.close_HTTPThread();
             // remove this ShipConnection from vector of ShipConnections in Ship
             eebus.ship.remove(*this);
         },
         delay_ms);
+
 }
 
 void ShipConnection::send_cmi_message(uint8_t type, uint8_t value)
@@ -596,7 +600,6 @@ void ShipConnection::state_sme_hello_pending_timeout()
 
 void ShipConnection::state_sme_hello_ok()
 {
-    // TODO: Cancel all Hello timers
     task_scheduler.cancel(hello_wait_for_ready_timer);
     task_scheduler.cancel(hello_send_prolongation_request_timer);
     task_scheduler.cancel(hello_send_prolongation_reply_timer);
@@ -1018,6 +1021,24 @@ void ShipConnection::type_to_json_handshake_type(ProtocolHandshakeType *handshak
     message_outgoing->length = length + 1;
 
     logger.printfln("T2J ProtocolHandshakeType json: %s", &message_outgoing->data[1]);
+}
+
+void ShipConnection::sme_protocol_abort_procedure(ProtocolAbortReason reason)
+{
+    task_scheduler.cancel(protocol_handshake_timer);
+
+    DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
+    JsonArray json_handshake = json_doc.createNestedArray("messageProtocolHandshakeError");
+
+    JsonObject ht = json_handshake.createNestedObject();
+
+    ht["error"] = static_cast<int>(reason);
+    message_outgoing->data[0] = 1;
+    size_t length = serializeJson(json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE - 1);
+    message_outgoing->length = length + 1;
+
+    logger.printfln("T2J ProtocolHandshakeError json: %s", &message_outgoing->data[1]);
+
 }
 
 void ShipConnection::to_json_access_methods_type()

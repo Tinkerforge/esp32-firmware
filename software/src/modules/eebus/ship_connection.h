@@ -211,6 +211,9 @@ public:
     void state_is_not_implemented();
     const char *get_state_name(State state);
 
+
+    //--------------------------------------------------------------------------------
+    // Hello Phase Specific stuff
     // Types from EEBus SHIP TS TransferProtocol xsd (v1.0.1) with corresponding conversion functions
     // The json_to_type and type_to_json functions operatore on the message_incoming and message_outgoing variables.
     // json_to_type will read from message_incoming (and may modify it while doing so) and write to the Type
@@ -272,6 +275,12 @@ public:
     void hello_set_wait_for_ready_timer(State target);
     void hello_decide_prolongation();
 
+
+    //--------------------------------------------------------------------------------
+    // Protocol Handshake Specific stuff
+
+    uint64_t protocol_handshake_timer = 0;
+
     class ProtocolHandshake {
     public:
         enum Type : uint8_t {
@@ -304,10 +313,18 @@ public:
         uint32_t version_major;
         uint32_t version_minor;
         // Hint: We ignore "formats" parameter completly since we only support UTF-8 and UTF-8 ist mandatory to support for the receiver
-        //       Changing the character enconding in the middle of the communication also seems like a bad idea...
+        //       Changing the character enconding in the middle of the communication also seems like a bad idea... 
     };
     void json_to_type_handshake_type(ProtocolHandshakeType *handshake_type);
     void type_to_json_handshake_type(ProtocolHandshakeType *handshake_type);
+
+    enum ProtocolAbortReason : uint8_t {
+        Timeout = 1,
+        UnexpectedMessage = 2,
+        SelectionMismatch = 3,
+        RFU
+    };
+    void sme_protocol_abort_procedure(ProtocolAbortReason reason);
 
     // We don't intend to use accessMethodsRequest ourself,
     // so we only have to implement a function that
