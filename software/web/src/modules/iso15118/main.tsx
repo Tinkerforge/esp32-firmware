@@ -186,7 +186,7 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
                                     y_unit="dB"
                                     y_digits={2}
                                     only_show_visible={true}
-                                    padding={[null, null, -50, null]}
+                                    padding={[null, null, null, null]}
                                 />
                             </UplotLoader>
                         </div>
