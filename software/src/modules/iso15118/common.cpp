@@ -61,8 +61,7 @@ void Common::setup_socket()
 
     if(fcntl(listen_socket, F_SETFL, fcntl(listen_socket, F_GETFL) | O_NONBLOCK) < 0) {
         logger.printfln("Common: Failed to set non-blocking mode (listen socket)");
-        close(listen_socket);
-        active_socket = -1;
+        reset_active_socket();
         return;
     }
 
@@ -108,10 +107,12 @@ void Common::state_machine_loop()
 
         if(fcntl(active_socket, F_SETFL, fcntl(active_socket, F_GETFL) | O_NONBLOCK) < 0) {
             logger.printfln("Common: Failed to set non-blocking mode (active socket)");
-            close(active_socket);
-            active_socket = -1;
+            reset_active_socket();
             return;
         }
+
+        // If a new socket is opened we expect a new handshake
+        exi_in_use = ExiType::AppHand;
     } else {
         // TODO: We assume that we always read the whole packet in one go here.
         //       This is of course not necessarily true with TCP.
@@ -125,21 +126,28 @@ void Common::state_machine_loop()
                 return;
             } else if(errno == ECONNRESET) {
                 logger.printfln("Common: Connection reset by peer");
-                close(active_socket);
-                active_socket = -1;
+                reset_active_socket();
                 return;
             }
             logger.printfln("Common: Failed to receive data: %d (errno %d [%s])", length, errno, strerror_r(errno, nullptr, 0));
-            close(active_socket);
-            active_socket = -1;
+            reset_active_socket();
         } else if(length == 0) {
             logger.printfln("Common: Connection closed");
-            close(active_socket);
-            active_socket = -1;
+            reset_active_socket();
         } else {
             decode(exi_data, length);
         }
     }
+}
+
+void Common::reset_active_socket()
+{
+    if (active_socket >= 0) {
+        close(active_socket);
+        active_socket = -1;
+    }
+    state = 0;
+    exi_in_use = ExiType::AppHand;
 }
 
 void Common::prepare_din_header(struct din_MessageHeaderType *header)
@@ -204,8 +212,7 @@ void Common::send_exi(ExiType type)
     logger.printfln("Common: Sent %u bytes", length + sizeof(V2GTP_Header));
     if(send_ret < 0) {
         logger.printfln("Common: Failed to send data: %d (errno %d)", send_ret, errno);
-        close(active_socket);
-        active_socket = -1;
+        reset_active_socket();
         return;
     }
 }
