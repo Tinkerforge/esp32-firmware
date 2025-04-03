@@ -226,14 +226,16 @@ void ISO2::handle_session_setup_req()
     // message header including the SessionID value from the previously paused V2G
     // Communication Session, the SECC shall compare this value to the value stored from the
     // preceding V2G Communication Session.
-    bool different_to_known = true;
+    bool different_to_known = false;
     if (iso2DocDec->V2G_Message.Header.SessionID.bytesLen == SESSION_ID_LENGTH) {
         for (uint16_t i = 0; i < SESSION_ID_LENGTH; i++) {
-            if (iso2DocDec->V2G_Message.Header.SessionID.bytes[i] == iso15118.common.session_id[i]) {
-                different_to_known = false;
+            if (iso2DocDec->V2G_Message.Header.SessionID.bytes[i] != iso15118.common.session_id[i]) {
+                different_to_known = true;
                 break;
             }
         }
+    } else {
+        different_to_known = true;
     }
 
     // The SessionId is set up here it is used by the EV in future communication
