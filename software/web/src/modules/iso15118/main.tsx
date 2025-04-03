@@ -20,7 +20,7 @@
 
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
-import { h, Fragment, Component, RefObject } from "preact";
+import { h, createRef, Fragment, Component, RefObject } from "preact";
 import { __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
@@ -32,6 +32,8 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Activity } from "react-feather";
 import { InputNumber } from "../../ts/components/input_number";
 import { FormSeparator } from "../../ts/components/form_separator";
+import { UplotData, UplotWrapperB, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
+import { UplotLoader } from "../../ts/components/uplot_loader";
 
 export function ISO15118Navbar() {
     return <NavbarItem name="iso15118" module="iso15118" title="ISO15118" symbol={<Activity />} />;
@@ -40,10 +42,49 @@ export function ISO15118Navbar() {
 type ISO15118Config = API.getType["iso15118/config"];
 
 export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
+    uplot_loader_ref        = createRef();
+    uplot_wrapper_ref       = createRef();
+
     constructor() {
         super('iso15118/config',
               () => __("iso15118.script.save_failed"),
               () => __("iso15118.script.reboot_content_changed"));
+
+        util.addApiEventListener("iso15118/state_slac", () => {
+            // Update chart every time new price data comes in
+            this.update_uplot();
+        });
+    }
+
+    update_uplot() {
+        if (this.uplot_wrapper_ref.current == null) {
+            return;
+        }
+
+        const state_slac = API.get('iso15118/state_slac');
+
+        const data: UplotData = {
+            keys: [null, 'index'],
+            names: [null, 'Attenuation'],
+            values: [[], []],
+            stacked: [null, true],
+            paths: [null, UplotPath.Bar],
+            // Only enable the electricity price by default.
+            // The chart with only electricity price is the most useful in most cases.
+            default_visibilty: [null, true],
+            lines_vertical: []
+        };
+
+        for (let i = 0; i < state_slac.attenuation_profile.length; i++) {
+            data.values[0].push(i);
+            data.values[1].push(state_slac.attenuation_profile[i]);
+        }
+        data.values[0].push(state_slac.attenuation_profile.length);
+        data.values[1].push(0);
+
+        // Show loader or data depending on the availability of data
+        this.uplot_loader_ref.current.set_data(data && data.keys.length > 1);
+        this.uplot_wrapper_ref.current.set_data(data);
     }
 
     render(props: {}, state: Readonly<ISO15118Config>) {
@@ -119,6 +160,38 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
                         <InputNumber value={state_slac.received_aag_lists}/>
                     </FormRow>
                     <FormRow label="Attenuation Profile">
+                        <div style="position: relative;">
+                            <UplotLoader
+                                ref={this.uplot_loader_ref}
+                                show={true}
+                                marker_class={'h4'}
+                                no_data={"No Data"}
+                                loading={"Loading"}>
+                                <UplotWrapperB
+                                    ref={this.uplot_wrapper_ref}
+                                    class="attenuation-profile-chart"
+                                    sub_page="iso15118"
+                                    color_cache_group="iso15118.default"
+                                    show={true}
+                                    on_mount={() => this.update_uplot()}
+                                    legend_time_label={"Index"}
+                                    legend_time_with_minutes={false}
+                                    legend_show={false}
+                                    aspect_ratio={3}
+                                    x_format={null}
+                                    x_padding_factor={0}
+                                    x_include_date={false}
+                                    y_min={0}
+                                    y_label={"Attenuation (dB)"}
+                                    y_unit="dB"
+                                    y_digits={2}
+                                    only_show_visible={true}
+                                    padding={[null, null, -50, null]}
+                                />
+                            </UplotLoader>
+                        </div>
+                    </FormRow>
+                    <FormRow label="">
                         <InputText value={state_slac.attenuation_profile.slice(0,  16).toString()}/>
                         <InputText value={state_slac.attenuation_profile.slice(16, 32).toString()}/>
                         <InputText value={state_slac.attenuation_profile.slice(32, 48).toString()}/>
