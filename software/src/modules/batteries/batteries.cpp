@@ -79,7 +79,7 @@ void Batteries::pre_setup()
                     String action_name = batteries_path_postfixes[static_cast<uint32_t>(path_type)];
                     action_name.replace("_", " ");
 
-                    logger.printfln("Automation couldn't %s for battery slot %u: %s", action_name.c_str(), battery_slot, errmsg.c_str());
+                    logger.printfln("Automation couldn't %s for battery slot %lu: %s", action_name.c_str(), battery_slot, errmsg.c_str());
                 }
             }
         );
@@ -135,7 +135,7 @@ void Batteries::setup()
         IBattery *battery = new_battery_of_class(configured_battery_class, slot, battery_state, battery_errors);
 
         if (!battery) {
-            logger.printfln("Failed to create battery of class %u in slot %u.", static_cast<uint32_t>(configured_battery_class), slot);
+            logger.printfln("Failed to create battery of class %lu in slot %lu.", static_cast<uint32_t>(configured_battery_class), slot);
             battery = new_battery_of_class(BatteryClassID::None, slot, battery_state, battery_errors);
         }
 
@@ -176,7 +176,7 @@ void Batteries::setup()
 
                 next_blocked_update = now_us() + seconds_t{this->low_level_config.get("rewrite_period")->asUint()};
             }
-        }, 3_s, 1_s);
+        }, 5_s, 1_s);
     }
 }
 
@@ -239,7 +239,7 @@ void Batteries::register_battery_generator(BatteryClassID battery_class, IBatter
         BatteryClassID known_class = std::get<0>(generator_tuple);
 
         if (battery_class == known_class) {
-            logger.printfln("Tried to register battery generator for already registered battery class %u.",
+            logger.printfln("Tried to register battery generator for already registered battery class %lu.",
                             static_cast<uint32_t>(battery_class));
             return;
         }
@@ -263,7 +263,7 @@ IBatteryGenerator *Batteries::get_generator_for_class(BatteryClassID battery_cla
         return nullptr;
     }
 
-    logger.printfln("No generator for battery class %u.", static_cast<uint32_t>(battery_class));
+    logger.printfln("No generator for battery class %lu.", static_cast<uint32_t>(battery_class));
     return get_generator_for_class(BatteryClassID::None);
 }
 
@@ -287,7 +287,7 @@ IBattery *Batteries::get_battery(uint32_t slot)
     return battery_slots[slot].battery;
 }
 
-uint32_t Batteries::get_batterys(BatteryClassID battery_class, IBattery **found_batterys, uint32_t found_batterys_capacity)
+uint32_t Batteries::get_batteries(BatteryClassID battery_class, IBattery **found_batteries, uint32_t found_batteries_capacity)
 {
     uint32_t found_count = 0;
 
@@ -295,8 +295,8 @@ uint32_t Batteries::get_batterys(BatteryClassID battery_class, IBattery **found_
         IBattery *battery = battery_slots[i].battery;
 
         if (battery->get_class() == battery_class) {
-            if (found_count < found_batterys_capacity) {
-                found_batterys[found_count] = battery;
+            if (found_count < found_batteries_capacity) {
+                found_batteries[found_count] = battery;
             }
 
             ++found_count;
@@ -332,7 +332,18 @@ void Batteries::start_action_all(IBattery::Action action)
         IBattery *battery = battery_slots[i].battery;
 
         if (!battery->start_action(action)) {
-            logger.printfln("Battery %zu failed to start action %u", i, static_cast<uint32_t>(action));
+            logger.printfln("Battery %zu failed to start action %lu", i, static_cast<uint32_t>(action));
         }
     }
+}
+
+char *format_battery_slot(uint32_t slot)
+{
+    char *result;
+
+    if (asprintf(&result, "Battery %lu: ", slot) < 0) {
+        result = strdup("Battery ?: ");
+    }
+
+    return result;
 }

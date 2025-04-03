@@ -45,7 +45,7 @@ public:
     };
 
     BatteryModbusTCP(uint32_t slot_, Config *state_, Config *errors_, TFModbusTCPClientPool *pool_) :
-        GenericTCPClientPoolConnector("batteries_mbtcp", pool_), slot(slot_), state(state_), errors(errors_) {}
+        GenericTCPClientPoolConnector("batteries_mbtcp", format_battery_slot(slot_), pool_), slot(slot_), state(state_), errors(errors_) {}
 
     [[gnu::const]] BatteryClassID get_class() const override;
     void setup(const Config &ephemeral_config) override;
