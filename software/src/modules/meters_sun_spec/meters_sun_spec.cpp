@@ -404,12 +404,14 @@ void MetersSunSpec::loop()
                 scan->state = ScanState::ReadModelID;
             }
             else {
+                // this is not an error, this might just be no SunSpec device
                 scan_printfln("No SunSpec ID found (sun-spec-id: 0x%08lx)", sun_spec_id);
 
                 scan->state = ScanState::NextBaseAddress;
             }
         }
         else {
+            // this is not an error, this might just be no SunSpec device
             scan_printfln("Could not read SunSpec ID (error: %s [%d])",
                           get_tf_modbus_tcp_client_transaction_result_name(scan->read_result),
                           static_cast<int>(scan->read_result));
@@ -473,11 +475,12 @@ void MetersSunSpec::loop()
             scan->state = ScanState::ReadModelID;
         }
         else {
-            scan_printfln("Could not read Common Model block (error: %s [%d])",
+            scan_printfln("Error: Could not read Common Model block (error: %s [%d])",
                           get_tf_modbus_tcp_client_transaction_result_name(scan->read_result),
                           static_cast<int>(scan->read_result));
 
-            scan->state = scan_get_next_state_after_read_error();
+            scan->error_state = scan_get_next_state_after_read_error();
+            scan->state = ScanState::ReportError;
         }
 
         break;
@@ -532,11 +535,12 @@ void MetersSunSpec::loop()
             }
         }
         else {
-            scan_printfln("Could not read Model ID (error: %s [%d])",
+            scan_printfln("Error: Could not read Model ID (error: %s [%d])",
                           get_tf_modbus_tcp_client_transaction_result_name(scan->read_result),
                           static_cast<int>(scan->read_result));
 
-            scan->state = scan_get_next_state_after_read_error();
+            scan->error_state = scan_get_next_state_after_read_error();
+            scan->state = ScanState::ReportError;
         }
 
         break;
@@ -564,19 +568,34 @@ void MetersSunSpec::loop()
         if (scan->read_result == TFModbusTCPClientTransactionResult::Success) {
             size_t block_length = scan->deserializer.read_uint16();
 
-            if (scan->model_id == NON_IMPLEMENTED_UINT16 && (block_length == 0 || block_length == NON_IMPLEMENTED_UINT16)) {
-                // accept non-implemented block length as a SUNGROW quirk
+            if (scan->model_id == NON_IMPLEMENTED_UINT16) {
                 scan_printfln("End Model found (model-id: %u, block-length: %zu)", scan->model_id, block_length);
 
-                scan->state = ScanState::NextDeviceAddress;
+                if (block_length != 0 && block_length != NON_IMPLEMENTED_UINT16) { // accept non-implemented block length as Sungrow quirk
+                    scan_printfln("Error: End Model has unsupported block length");
+
+                    scan->error_state = ScanState::NextDeviceAddress;
+                    scan->state = ScanState::ReportError;
+                }
+                else {
+                    scan->state = ScanState::NextDeviceAddress;
+                }
             }
-            else if (scan->model_id == COMMON_MODEL_ID && (block_length == 65 || block_length == 66)) {
+            else if (scan->model_id == COMMON_MODEL_ID) {
                 scan_printfln("Common Model found (model-id: %u, block-length: %zu)", scan->model_id, block_length);
 
-                scan->model_instances.clear();
+                if (block_length != 65 && block_length != 66) {
+                    scan_printfln("Error: Common Model has unsupported block length");
 
-                scan->block_length = block_length;
-                scan->state = ScanState::ReadCommonModelBlock;
+                    scan->error_state = scan_get_next_state_after_read_error();
+                    scan->state = ScanState::ReportError;
+                }
+                else {
+                    scan->model_instances.clear();
+
+                    scan->block_length = block_length;
+                    scan->state = ScanState::ReadCommonModelBlock;
+                }
             }
             else {
                 const char *model_name = nullptr;
@@ -607,17 +626,20 @@ void MetersSunSpec::loop()
                 scan_printfln("%s Model found (model-id/instance: %u/%u, block-length: %zu)",
                               model_name, scan->model_id, scan->model_instances.at(scan->model_id), block_length);
 
+                // FIXME: validate block length
+
                 scan->block_length = block_length;
                 scan->state = ScanState::ReportModelResult;
             }
         }
         else {
-            scan_printfln("Could not read Model %u block length (error: %s [%d])",
+            scan_printfln("Error: Could not read Model %u block length (error: %s [%d])",
                           scan->model_id,
                           get_tf_modbus_tcp_client_transaction_result_name(scan->read_result),
                           static_cast<int>(scan->read_result));
 
-            scan->state = scan_get_next_state_after_read_error();
+            scan->error_state = scan_get_next_state_after_read_error();
+            scan->state = ScanState::ReportError;
         }
 
         break;
@@ -648,6 +670,29 @@ void MetersSunSpec::loop()
 
             scan->read_address += scan->block_length; // skip block
             scan->state = ScanState::ReadModelID;
+        }
+
+        break;
+
+    case ScanState::ReportError: {
+            if (scan->abort) {
+                scan->state = ScanState::Disconnect;
+                break;
+            }
+
+            char buf[64];
+            TFJsonSerializer json{buf, sizeof(buf)};
+
+            json.addObject();
+            json.addMemberNumber("cookie", scan->cookie);
+            json.endObject();
+            json.end();
+
+            if (!ws.pushRawStateUpdate(buf, "meters_sun_spec/scan_error")) {
+                break; // need to report the scan error before doing something else
+            }
+
+            scan->state = scan->error_state;
         }
 
         break;

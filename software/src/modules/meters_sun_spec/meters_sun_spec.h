@@ -76,6 +76,7 @@ private:
         ReadModelBlockLength,
         ReadModelBlockLengthDone,
         ReportModelResult,
+        ReportError,
     };
 
     ScanState scan_get_next_state_after_read_error();
@@ -112,6 +113,7 @@ private:
         micros_t read_timeout = 1_s;
         uint16_t read_timeout_burst = 0;
         ScanState read_state;
+        ScanState error_state;
         bool abort = false;
         ModbusDeserializer deserializer;
         TFModbusTCPClientTransactionResult read_result;

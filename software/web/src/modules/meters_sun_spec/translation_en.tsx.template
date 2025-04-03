@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { removeUnicodeHacks } from "../../ts/translation";
 let x = {
     "meters_sun_spec": {
         "status": {
@@ -27,6 +28,15 @@ let x = {
             "scan_title_muted": "first device address, last device address",
             "scan": "Start search",
             "scan_abort": "Abort search",
+            "scan_error": /*FFN*/() => {
+                let result = [<>An error occurred during the device search.</>];
+
+                if ("{{{support_email}}}".length > 0) {
+                    result.push(<> Please download the log and send it to <a href={removeUnicodeHacks("mailto:{{{support_email}}}?subject=Error during SunSpec device search")}>{{{support_email}}}</a>.</>);
+                }
+
+                return <>{result}</>;
+            }/*NF*/,
             "scan_results": "Discovered devices",
             "scan_log": "Log",
             "scan_log_file": "SunSpec-scan-log",

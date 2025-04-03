@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { removeUnicodeHacks } from "../../ts/translation";
 let x = {
     "meters_sun_spec": {
         "status": {
@@ -27,6 +28,15 @@ let x = {
             "scan_title_muted": "erste Geräteadresse, letzte Geräteadresse",
             "scan": "Suche starten",
             "scan_abort": "Suche abbrechen",
+            "scan_error": /*FFN*/() => {
+                let result = [<>Während der Gerätesuche ist ein Fehler aufgetreten.</>];
+
+                if ("{{{support_email}}}".length > 0) {
+                    result.push(<> Bitte das Log herunterladen und an <a href={removeUnicodeHacks("mailto:{{{support_email}}}?subject=Fehler bei SunSpec-Gerätesuche")}>{{{support_email}}}</a> schicken.</>);
+                }
+
+                return <>{result}</>;
+            }/*NF*/,
             "scan_results": "Gefundene Geräte",
             "scan_log": "Log",
             "scan_log_file": "SunSpec-Gerätesuche",

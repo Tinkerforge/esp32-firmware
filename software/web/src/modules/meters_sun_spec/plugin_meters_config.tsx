@@ -34,7 +34,7 @@ import { SwitchableInputSelect } from "../../ts/components/switchable_input_sele
 import { FormRow } from "../../ts/components/form_row";
 import { Progress } from "../../ts/components/progress";
 import { OutputTextarea } from "../../ts/components/output_textarea";
-import { Button, ListGroup, ListGroupItem } from "react-bootstrap";
+import { Button, ListGroup, ListGroupItem, Alert } from "react-bootstrap";
 import { Download } from 'react-feather';
 import { SUN_SPEC_MODEL_INFOS, SUN_SPEC_MODEL_IS_METER_LIKE, SUN_SPEC_MODEL_METER_LOCATION, SUN_SPEC_MODEL_IS_SUPPORTED } from "./sun_spec_model_specs";
 
@@ -79,6 +79,7 @@ interface DeviceScannerState {
     scan_device_address_last: number;
     scan_running: boolean;
     scan_cookie: number;
+    scan_error: boolean;
     scan_progress: number;
     scan_log: string;
     scan_show_log: boolean;
@@ -96,6 +97,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
             scan_device_address_last: 247,
             scan_running: false,
             scan_cookie: null,
+            scan_error: false,
             scan_progress: 0,
             scan_log: '',
             scan_show_log: false,
@@ -112,7 +114,17 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
             this.setState({scan_log: this.state.scan_log + scan_log.message})
         });
 
-        util.addApiEventListener('meters_sun_spec/scan_progress', (e) => {
+        util.addApiEventListener('meters_sun_spec/scan_error', () => {
+            let scan_error = API.get('meters_sun_spec/scan_error');
+
+            if (!this.state.scan_running || scan_error.cookie !== this.state.scan_cookie) {
+                return;
+            }
+
+            this.setState({scan_error: true});
+        });
+
+        util.addApiEventListener('meters_sun_spec/scan_progress', () => {
             let scan_progress = API.get('meters_sun_spec/scan_progress');
 
             if (!this.state.scan_running || scan_progress.cookie !== this.state.scan_cookie) {
@@ -311,6 +323,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                             this.setState({
                                 scan_running: true,
                                 scan_cookie: scan_cookie,
+                                scan_error: false,
                                 scan_show_log: true,
                                 scan_progress: 0,
                                 scan_log: '',
@@ -372,6 +385,13 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                 <><FormRow label="">
                     <OutputTextarea rows={10} resize='vertical' value={this.state.scan_log} />
                 </FormRow>
+
+                {this.state.scan_error ?
+                    <FormRow label="">
+                        <Alert variant="warning" className="mb-0">{__("meters_sun_spec.content.scan_error")()}</Alert>
+                    </FormRow>
+                    : undefined}
+
                 <FormRow label="">
                     <Button variant="primary"
                             disabled={this.state.scan_running || this.state.scan_log.length == 0}
