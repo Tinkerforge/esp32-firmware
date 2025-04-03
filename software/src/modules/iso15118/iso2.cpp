@@ -181,12 +181,24 @@ void ISO2::handle_bitstream(exi_bitstream *exi)
     //            V2G_SECC_Sequence_Timer when V2G_SECC_Sequence_Timer is equal or larger than
     //            V2G_SECC_Sequence_Timeout and no request message was received. It shall then stop the
     //            V2G Communication Session.
-    next_timeout = task_scheduler.scheduleOnce([this]() {
-        iso15118.qca700x.link_down();
-        iso15118.slac.state = SLAC::State::ModemReset;
-        logger.printfln("ISO2 Timeout: Link down, SLAC reset");
-        next_timeout = 0;
-    }, ISO2_SECC_SEQUENCE_TIMEOUT);
+    if (!pause_active) {
+        next_timeout = task_scheduler.scheduleOnce([this]() {
+            iso15118.qca700x.link_down();
+            iso15118.slac.state = SLAC::State::ModemReset;
+            logger.printfln("ISO2 Timeout: Link down, SLAC reset");
+            next_timeout = 0;
+        }, ISO2_SECC_SEQUENCE_TIMEOUT);
+    // [V2G2-725] If the SECC received the message SessionStopReq with parameter ChargingSession equal to
+    //            "Pause" it shall pause the Data-Link (D-LINK_PAUSE.request()) after sending the message
+    //            SessionStopRes and continue with [V2G2-721].
+    } else {
+        // No timeout in case auf pausing by EVCC
+        // We just wait for new SLAC or new SDP message
+        if (next_timeout != 0) {
+            task_scheduler.cancel(next_timeout);
+            next_timeout = 0;
+        }
+    }
 }
 
 void ISO2::handle_session_setup_req()
@@ -671,7 +683,18 @@ void ISO2::handle_charging_status_req()
 
 void ISO2::handle_session_stop_req()
 {
+    iso2_SessionStopReqType *req = &iso2DocDec->V2G_Message.Body.SessionStopReq;
     iso2_SessionStopResType *res = &iso2DocEnc->V2G_Message.Body.SessionStopRes;
+
+    switch (req->ChargingSession) {
+        case iso2_chargingSessionType_Terminate:
+            pause_active = false;
+            break;
+        case iso2_chargingSessionType_Pause:
+            pause_active = true;
+            break;
+        default: break;
+    }
 
     iso2DocEnc->V2G_Message.Body.SessionStopRes_isUsed = 1;
     res->ResponseCode = iso2_responseCodeType_OK;

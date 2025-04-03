@@ -57,4 +57,5 @@ private:
 
     uint8_t state = 0;
     uint64_t next_timeout = 0;
+    bool pause_active = false;
 };
