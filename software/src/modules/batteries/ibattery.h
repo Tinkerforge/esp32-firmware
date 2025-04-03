@@ -25,6 +25,8 @@
 #include "battery_class_id.enum.h"
 #include "config.h"
 
+char *format_battery_slot(uint32_t slot);
+
 class IBattery
 {
 public:
