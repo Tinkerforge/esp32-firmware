@@ -448,4 +448,5 @@ private:
     void log_cm_qualcomm_op_attr_confirmation(const CM_QualcommOpAttrConfirmation &cm_qualcomm_op_attr_confirmation);
 
     uint8_t *buffer = nullptr;
+    uint16_t current_buffer_length = 0;
 };
