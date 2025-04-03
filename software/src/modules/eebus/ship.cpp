@@ -168,7 +168,7 @@ void Ship::setup_wss()
         logger.printfln("WebSocketsClient connected from %s:%d", client_ip, ntohs(addr.sin6_port));
 
         ship_connections.push_back(ShipConnection{ws_client, ShipConnection::Role::Server});        
-        logger.printfln("WebSocketsClient connected");
+        logger.printfln("WebSocketClient connected");
 
         return true;
     });
@@ -204,6 +204,7 @@ void Ship::setup_mdns()
     logger.printfln("mdns_service_txt_item_set");
     mdns_service_txt_item_set("_ship", "_tcp", "txtvers", "1");
     // TODO: Use UID instead of 12345
+    
     mdns_service_txt_item_set("_ship", "_tcp", "id", "Tinkerforge-WARP3-12345"); // ManufaturerName-Model-UniqueID (max 63 bytes)
     mdns_service_txt_item_set("_ship", "_tcp", "path", "/ship/");
     mdns_service_txt_item_set("_ship",
