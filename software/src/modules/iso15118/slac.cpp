@@ -519,13 +519,18 @@ void SLAC::handle_cm_qualcomm_op_attr_confirmation(const CM_QualcommOpAttrConfir
 void SLAC::poll_modem(void)
 {
     // Poll modem for data
-    uint16_t length = iso15118.qca700x.read_burst(buffer, QCA700X_BUFFER_SIZE + QCA700X_HW_PKT_SIZE);
+    current_buffer_length += iso15118.qca700x.read_burst(&buffer[current_buffer_length], QCA700X_BUFFER_SIZE + QCA700X_HW_PKT_SIZE - current_buffer_length);
     //int16_t length = read(iso15118.qca700x.tap, buffer, QCA700X_BUFFER_SIZE + QCA700X_HW_PKT_SIZE);
 
-    while (length > 0) {
-        int16_t ethernet_frame_length = iso15118.qca700x.check_receive_frame(buffer, length);
+    while (current_buffer_length >= QCA700X_RECV_BUFFER_MIN_SIZE) {
+        int16_t ethernet_frame_length = iso15118.qca700x.check_receive_frame(buffer, current_buffer_length);
         if (ethernet_frame_length < 0) {
-            state = SLAC::State::ModemReset;
+            // TODO: Do link down if ModemReset?
+            //       For now i think it is better to just remove bad data.
+            //       The upper layers will close the connection and trigger a modem reset if no valid data goes through.
+            // state = SLAC::State::ModemReset;
+            logger.printfln("Ethernet frame length error: %d", ethernet_frame_length);
+            current_buffer_length = 0;
             break;
         }
         SLAC_HomeplugMessageHeader *header = reinterpret_cast<SLAC_HomeplugMessageHeader*>(buffer + QCA700X_RECV_HEADER_SIZE);
@@ -575,13 +580,14 @@ void SLAC::poll_modem(void)
 
         // there might be more data still in the buffer. Check if there is another packet.
         const uint16_t frame_length     = ethernet_frame_length + QCA700X_RECV_HEADER_SIZE + QCA700X_RECV_FOOTER_SIZE;
-        const int16_t  remaining_length = length - frame_length;
-        if (remaining_length >= QCA700X_RECV_BUFFER_MIN_SIZE) {
+        const int32_t  remaining_length = current_buffer_length - frame_length;
+
+        if (remaining_length > 0) {
             // Copy remaining data to the beginning of the buffer
             memcpy(buffer, buffer+frame_length, remaining_length);
-            length = remaining_length;
+            current_buffer_length = remaining_length;
         } else {
-            length = 0;
+            current_buffer_length = 0;
         }
     }
 }
