@@ -354,7 +354,11 @@ let x = """
 TSX_ADDITIONAL_HEADER_LINES = [
     'import { toLocaleFixed } from "../../ts/util";',
     'import { __ } from "../../ts/translation";',
-    'import { __ } from "./src/ts/translation";'
+    'import { __ } from "./src/ts/translation";',
+    'import { removeUnicodeHacks } from "../../ts/translation";',
+    'import { removeUnicodeHacks } from "./src/ts/translation";',
+    'import { __, removeUnicodeHacks } from "../../ts/translation";',
+    'import { __, removeUnicodeHacks } from "./src/ts/translation";',
 ]
 
 TSX_LINE_COMMENT_PATTERN = re.compile(r'^[ \t]*//.*$', re.MULTILINE)
