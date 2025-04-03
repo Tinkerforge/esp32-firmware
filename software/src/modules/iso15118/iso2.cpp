@@ -607,7 +607,14 @@ void ISO2::handle_power_delivery_req()
             evse_v2.set_charging_protocol(1, 50);
             break;
         case iso2_chargeProgressType_Stop:
-            evse_v2.set_charging_protocol(1, 1000); // TODO: should we go to 100% duty cycle here or not?
+            // Go to 100% PWM to signal to the ev that we accepted the stop,
+            // but we need to go back to 5% PWM, so the ev can resume charging
+            // if it wants to.
+            // TODO: The timing here is unclear, are 5 seconds OK?
+            evse_v2.set_charging_protocol(1, 1000);
+            task_scheduler.scheduleOnce([this]() {
+                evse_v2.set_charging_protocol(1, 50);
+            }, 5_s);
             break;
         case iso2_chargeProgressType_Renegotiate:
             break;
