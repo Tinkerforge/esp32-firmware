@@ -27,9 +27,6 @@
 #include "ibattery_generator.h"
 #include "module.h"
 
-#include "TFTools/Micros.h"
-#include "tools/tristate_bool.h"
-
 class Batteries final : public IModule
 {
 public:
@@ -59,6 +56,7 @@ public:
     IBattery *get_battery(uint32_t slot);
     uint32_t get_batteries(BatteryClassID battery_class, IBattery **found_batteries, uint32_t found_batteries_capacity);
     BatteryClassID get_battery_class(uint32_t slot);
+    void start_action_all(IBattery::Action action);
 
     String get_path(uint32_t slot, PathType path_type);
 
@@ -76,16 +74,7 @@ private:
     IBatteryGenerator *get_generator_for_class(BatteryClassID battery_class);
     IBattery *new_battery_of_class(BatteryClassID battery_class, uint32_t slot, Config *state, Config *errors);
 
-    void start_action_all(IBattery::Action action);
-
-    ConfigRoot config;
-    ConfigRoot low_level_config;
-    ConfigRoot state;
-
     BatterySlot battery_slots[OPTIONS_BATTERIES_MAX_SLOTS()];
 
     std::vector<std::tuple<BatteryClassID, IBatteryGenerator *>> generators;
-
-    micros_t next_blocked_update = 0_us;
-    TristateBool discharge_blocked = TristateBool::Undefined;
 };
