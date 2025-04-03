@@ -136,7 +136,7 @@ uint16_t QCA700x::read_burst(uint8_t *data, const uint16_t length)
 
         spi_select();
         spi_write_16bit_value(QCA700X_SPI_READ | QCA700X_SPI_EXTERNAL);
-        spi_read(data, length);
+        spi_read(data, available);
         spi_deselect();
 
         iso15118.trace_packet(data, available);
