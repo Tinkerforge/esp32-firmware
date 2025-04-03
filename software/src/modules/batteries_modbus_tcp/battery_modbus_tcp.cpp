@@ -60,7 +60,7 @@ BatteryClassID BatteryModbusTCP::get_class() const
 
 void BatteryModbusTCP::setup(const Config &ephemeral_config)
 {
-    host_name = ephemeral_config.get("host")->asString();
+    host      = ephemeral_config.get("host")->asString();
     port      = static_cast<uint16_t>(ephemeral_config.get("port")->asUint());
     table_id  = ephemeral_config.get("table")->getTag<BatteryModbusTCPTableID>();
 
@@ -198,7 +198,7 @@ void BatteryModbusTCP::write_next()
 
         if (result != TFModbusTCPClientTransactionResult::Success) {
             logger.printfln("Modbus write error (host='%s' port=%u devaddr=%u fcode=%d regaddr=%u value=%u): %s (%d)",
-                            host_name.c_str(),
+                            host.c_str(),
                             port,
                             table->device_address,
                             static_cast<int>(function_code),
