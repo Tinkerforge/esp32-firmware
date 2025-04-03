@@ -494,7 +494,8 @@ void ISO2::handle_charge_parameter_discovery_req()
         }, 1_s);
     } else if (iso15118.charge_type == ISO15118::ChargeType::AC_Charging) {
         // Calculate minimum possible power
-        const uint16_t minimum_power = static_cast<int16_t>(float_from_physical_value(&req->AC_EVChargeParameter.EVMinCurrent)*230.0f + 1.0f);
+        uint16_t minimum_power = static_cast<int16_t>(float_from_physical_value(&req->AC_EVChargeParameter.EVMinCurrent)*230.0f + 100.0f);
+        minimum_power = minimum_power - (minimum_power % 100); // round up to 100W
 
         res->ResponseCode = iso2_responseCodeType_OK;
         res->EVSEProcessing = iso2_EVSEProcessingType_Finished;
@@ -649,8 +650,20 @@ void ISO2::handle_charging_status_req()
 
     res->SAScheduleTupleID = 1;
 
-    res->ReceiptRequired_isUsed = 0;
+    res->EVSEMaxCurrent_isUsed = 1;
+    res->EVSEMaxCurrent.Value = 22;
+    res->EVSEMaxCurrent.Multiplier = -1;
+    res->EVSEMaxCurrent.Unit = iso2_unitSymbolType_A;
+
     res->MeterInfo_isUsed = 0;
+    //res->MeterInfo.MeterID.characters[0] = '1';
+    //res->MeterInfo.MeterID.charactersLen = 1;
+    res->MeterInfo.MeterReading_isUsed = 0; // Meter reading in Wh
+    res->MeterInfo.TMeter_isUsed = 0; // Unix timestamp
+    res->MeterInfo.SigMeterReading_isUsed = 0;
+
+
+    res->ReceiptRequired_isUsed = 0;
 
     iso15118.common.send_exi(Common::ExiType::Iso2);
     state = 8;
@@ -872,6 +885,7 @@ void ISO2::trace_request_response()
         trace_header(&iso2DocDec->V2G_Message.Header, "ChargingStatus Request");
         iso15118.trace(" Body");
         iso15118.trace("  ChargingStatusReq");
+
     } else if (iso2DocDec->V2G_Message.Body.SessionStopReq_isUsed) {
         iso2_SessionStopReqType *req = &iso2DocDec->V2G_Message.Body.SessionStopReq;
 

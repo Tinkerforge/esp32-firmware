@@ -63,5 +63,5 @@ public:
         DC_ReadSocInLoop,
         AC_Charging
     };
-    ChargeType charge_type = ChargeType::DC_ReadSocInLoop;
+    ChargeType charge_type = ChargeType::AC_Charging;
 };
