@@ -25,7 +25,6 @@
 #include "battery_class_none.h"
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
-#include "tools.h"
 
 static BatteryGeneratorNone battery_generator_none;
 
@@ -44,19 +43,6 @@ static_assert(ARRAY_SIZE(batteries_path_postfixes) == static_cast<uint32_t>(Batt
 
 void Batteries::pre_setup()
 {
-    config = Config::Object({
-        {"block_discharge_during_fast_charge", Config::Bool(false)},
-    });
-
-    low_level_config = Config::Object({
-        {"rewrite_period", Config::Uint(60, 5, 99999)}, // in seconds
-    });
-
-    state = Config::Object({
-        {"grid_charge_allowed", Config::Bool(false)},
-        {"discharge_blocked", Config::Bool(false)},
-    });
-
     generators.reserve(BATTERY_CLASS_ID_COUNT);
     register_battery_generator(BatteryClassID::None, &battery_generator_none);
 
@@ -89,10 +75,6 @@ void Batteries::pre_setup()
 
 void Batteries::setup()
 {
-    api.restorePersistentConfig("battery_control/config", &config);
-
-    initialized = true;
-
     generators.shrink_to_fit();
 
     // Create config prototypes, depending on available generators.
@@ -139,53 +121,16 @@ void Batteries::setup()
             battery = new_battery_of_class(BatteryClassID::None, slot, battery_state, battery_errors);
         }
 
-        if (battery->get_class() != BatteryClassID::None) {
-            have_battery = true;
-        }
-
         battery->setup(*static_cast<const Config *>(battery_slot.config_union.get()));
 
         battery_slot.battery = battery;
     }
 
-    const bool block_discharge = config.get("block_discharge_during_fast_charge")->asBool();
-
-    if (block_discharge && have_battery && charge_manager.get_charger_count() > 0) {
-        task_scheduler.scheduleWithFixedDelay([this]() {
-            bool want_blocked = charge_manager.fast_charger_in_c;
-            bool changed = this->discharge_blocked != static_cast<TristateBool>(want_blocked);
-
-            if (changed || deadline_elapsed(next_blocked_update)) {
-                if (want_blocked) {
-                    // Block
-                    if (changed) {
-                        logger.printfln("Blocking discharge");
-                    }
-                    this->start_action_all(IBattery::Action::ForbidDischarge);
-                    this->discharge_blocked = TristateBool::True;
-                } else {
-                    // Unblock
-                    if (changed) {
-                        logger.printfln("Unblocking discharge");
-                    }
-                    this->start_action_all(IBattery::Action::RevokeDischargeOverride);
-                    this->discharge_blocked = TristateBool::False;
-                }
-
-                this->state.get("discharge_blocked")->updateBool(static_cast<bool>(this->discharge_blocked));
-
-                next_blocked_update = now_us() + seconds_t{this->low_level_config.get("rewrite_period")->asUint()};
-            }
-        }, 5_s, 1_s);
-    }
+    initialized = true;
 }
 
 void Batteries::register_urls()
 {
-    api.addPersistentConfig("battery_control/config", &config);
-    api.addPersistentConfig("battery_control/low_level_config", &low_level_config);
-    api.addState("battery_control/state", &state);
-
     for (uint32_t slot = 0; slot < OPTIONS_BATTERIES_MAX_SLOTS(); slot++) {
         BatterySlot &battery_slot = battery_slots[slot];
         IBattery *battery = battery_slot.battery;
