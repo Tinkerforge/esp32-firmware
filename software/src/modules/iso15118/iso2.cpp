@@ -678,6 +678,11 @@ void ISO2::handle_session_stop_req()
 
     iso15118.common.send_exi(Common::ExiType::Iso2);
     state = 9;
+
+    // Reset the socket, so the ev can reconnect when it wants to resume from the pause
+    // If the ev wants to terminate we reset the active socket anyway.
+    // Reset after data has been sent.
+    iso15118.common.reset_active_socket();
 }
 
 float ISO2::float_from_physical_value(iso2_PhysicalValueType *value)

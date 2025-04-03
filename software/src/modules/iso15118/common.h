@@ -55,6 +55,7 @@ public:
     void send_exi(ExiType type);
     void prepare_din_header(struct din_MessageHeaderType *header);
     void prepare_iso2_header(struct iso2_MessageHeaderType *header);
+    void reset_active_socket();
 
 private:
     void handle_session_setup_req();
