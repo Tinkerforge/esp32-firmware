@@ -57,7 +57,7 @@ public:
 
     void register_battery_generator(BatteryClassID battery_class, IBatteryGenerator *generator);
     IBattery *get_battery(uint32_t slot);
-    uint32_t get_batterys(BatteryClassID battery_class, IBattery **found_batterys, uint32_t found_batterys_capacity);
+    uint32_t get_batteries(BatteryClassID battery_class, IBattery **found_batteries, uint32_t found_batteries_capacity);
     BatteryClassID get_battery_class(uint32_t slot);
 
     String get_path(uint32_t slot, PathType path_type);
