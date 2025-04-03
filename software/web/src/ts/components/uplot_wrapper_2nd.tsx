@@ -61,7 +61,7 @@ interface UplotWrapperBProps {
     legend_time_with_minutes: boolean;
     legend_div_ref?: RefObject<HTMLDivElement>;
     aspect_ratio: number;
-    x_format: Intl.DateTimeFormatOptions;
+    x_format: Intl.DateTimeFormatOptions | null;
     x_padding_factor: number;
     x_include_date: boolean;
     y_min?: number;
@@ -184,6 +184,10 @@ export class UplotWrapperB extends Component<UplotWrapperBProps, {}> {
                     ],
                     values: (self: uPlot, splits: number[], axisIdx: number, foundSpace: number, foundIncr: number) => {
                         let values: string[] = new Array(splits.length);
+                        if (this.props.x_format == null) {
+                            return values;
+                        }
+
                         let last_year: string = null;
                         let last_month_and_day: string = null;
 
