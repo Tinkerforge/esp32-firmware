@@ -591,12 +591,13 @@ def main():
     dns = config["dns"]
 
     print(green(f"Flashing {len(relay_to_serial)} ESPs..."))
-    #fixme does capturing v work here?
+
     threads = []
     for k, v in relay_to_serial.items():
-        t = ThreadWithReturnValue(target=lambda: \
+        # lambda with default parameter value to fix the late binding issue. If v was used directly, it would behave as if "captured by reference" -> fun with multithreading.
+        t = ThreadWithReturnValue(target=lambda port=v: \
             subprocess.run(
-                ['python', 'provision_stage_0_warp2.py', '../../firmwares/bricks/warp3_charger/brick_warp3_charger_firmware_latest.bin', v, "warp3"],
+                ['python', 'provision_stage_0_warp2.py', '../../firmwares/bricks/warp3_charger/brick_warp3_charger_firmware_latest.bin', port, "warp3"],
                 capture_output=True,
                 encoding='utf-8'))
         t.start()
