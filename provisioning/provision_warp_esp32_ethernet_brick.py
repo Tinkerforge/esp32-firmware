@@ -25,6 +25,7 @@ from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, b
 from provisioning.tinkerforge.bricklet_industrial_quad_relay_v2 import BrickletIndustrialQuadRelayV2
 from provisioning.tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
 from provisioning.tinkerforge.bricklet_temperature_v2 import BrickletTemperatureV2
+from provisioning.tinkerforge.bricklet_piezo_speaker_v2 import BrickletPiezoSpeakerV2
 
 from provisioning.provision_common.provision_common import *
 
@@ -539,30 +540,43 @@ def main():
         ipcon = IPConnection()
         ipcon.connect("localhost", 4223)
 
-        q.put("Searching " + BrickletIndustrialQuadRelayV2.DEVICE_DISPLAY_NAME)
+        q.put(f"Searching {BrickletIndustrialQuadRelayV2.DEVICE_DISPLAY_NAME} and {BrickletPiezoSpeakerV2.DEVICE_DISPLAY_NAME}")
 
         iqr_uid = None
+        ps_uid = None
 
-        def search_iqr(uid, connected_uid, position, hardware_version, firmware_version,
+        def search_devices(uid, connected_uid, position, hardware_version, firmware_version,
                     device_identifier, enumeration_type):
             nonlocal iqr_uid
+            nonlocal ps_uid
             if device_identifier == BrickletIndustrialQuadRelayV2.DEVICE_IDENTIFIER and uid not in IQR_UID_BLACKLIST:
                 iqr_uid = uid
 
+            if device_identifier == BrickletPiezoSpeakerV2.DEVICE_IDENTIFIER:
+                ps_uid = uid
+
         start = time.time()
-        ipcon.register_callback(IPConnection.CALLBACK_ENUMERATE, search_iqr)
+        ipcon.register_callback(IPConnection.CALLBACK_ENUMERATE, search_devices)
         for i in range(100):
-            if iqr_uid is not None:
+            if iqr_uid is not None and ps_uid is not None:
                 break
 
             if i % 10 == 0:
                 ipcon.enumerate()
             time.sleep(0.1)
         else:
-            fatal_error("Industrial quad relay not found.")
+            if iqr_uid is None:
+                fatal_error(f"{BrickletIndustrialQuadRelayV2.DEVICE_DISPLAY_NAME} not found.")
+            elif ps_uid is None:
+                fatal_error(f"{BrickletPiezoSpeakerV2.DEVICE_DISPLAY_NAME} not found.")
+            else:
+                fatal_error("Should be unreachable")
 
         iqr = BrickletIndustrialQuadRelayV2(iqr_uid, ipcon)
         iqr.set_response_expected_all(True)
+
+        ps = BrickletPiezoSpeakerV2(ps_uid, ipcon)
+        ps.set_response_expected_all(True)
 
         q.put("Powering off testers")
 
@@ -691,6 +705,14 @@ def main():
     global restart_enabled
     restart_clicked = False
     restart_enabled = True
+
+    ps.set_beep(262, 0, 250)
+    time.sleep(0.25)
+    ps.set_beep(330, 0, 250)
+    time.sleep(0.25)
+    ps.set_beep(392, 0, 250)
+    time.sleep(0.25)
+    ps.set_beep(523, 0, 1000)
 
     while len(relay_to_rgb_led) > 0 and not restart_clicked:
         if restart_clicked:
