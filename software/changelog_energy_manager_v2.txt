@@ -81,5 +81,5 @@
 - Update timezone database
 - Improve translations
 
-2025-04-04: 1.2.7 (<unknown>)
+2025-04-04: 1.2.7 (61deb81d)
 - Remote Access: Fix crash when downloading debug report (trace log)
