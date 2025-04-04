@@ -4,7 +4,7 @@ import os
 import argparse
 import re
 import tempfile
-import shlex
+import subprocess
 
 def main():
     parser = argparse.ArgumentParser()
@@ -26,7 +26,7 @@ def main():
                 os.write(csv_fd, line.encode('utf-8'))
 
     os.close(csv_fd)
-    os.system(f'libreoffice --calc {shlex.quote(csv_path)} --infilter="CSV:44"')
+    subprocess.Popen(['libreoffice', '--calc', csv_path, '--infilter="CSV:44"'], start_new_session=True)
 
 if __name__ == '__main__':
     main()
