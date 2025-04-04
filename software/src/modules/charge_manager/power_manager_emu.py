@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import sys
@@ -59,10 +60,13 @@ class SliderSpinSyncer:
 
 
 class PowerManagerEmu(QMainWindow, Ui_PowerManagerEmu):
-    def __init__(self):
+    def __init__(self, host):
         super().__init__()
 
         self.setupUi(self)
+
+        if host:
+            self.edit_host.setText(host)
 
         self.limits = [
             [0, 0, 0, 0],
@@ -135,8 +139,13 @@ class PowerManagerEmu(QMainWindow, Ui_PowerManagerEmu):
             traceback.print_exc()
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--host', nargs='?', default=None)
+
+    args = parser.parse_args()
+
     app = QApplication(sys.argv)
-    window = PowerManagerEmu()
+    window = PowerManagerEmu(args.host)
 
     window.show()
 
