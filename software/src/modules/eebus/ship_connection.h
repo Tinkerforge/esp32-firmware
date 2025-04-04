@@ -32,6 +32,7 @@
 #define SHIP_CONNECTION_SME_INIT_TIMEOUT 60_s
 #define SHIP_CONNECTION_SME_T_hello_prolong_thr_inc 30_s
 #define SHIP_CONNECTION_SME_T_hello_prolong_waiting_gap 15_s
+#define SHIP_CONNECTION_PROTOCOL_HANDSHAKE_TIMEOUT 10_s
 
 #define SHIP_CONNECTION_MAX_JSON_SIZE 8192 // TODO: What is a sane value here?
 #define SHIP_CONNECTION_MAX_BUFFER_SIZE (1024*10) // TODO: What is a sane value here?
@@ -212,6 +213,7 @@ public:
     const char *get_state_name(State state);
 
 
+
     //--------------------------------------------------------------------------------
     // Hello Phase Specific stuff
     // Types from EEBus SHIP TS TransferProtocol xsd (v1.0.1) with corresponding conversion functions
@@ -279,7 +281,14 @@ public:
     //--------------------------------------------------------------------------------
     // Protocol Handshake Specific stuff
 
+    // What version is supported by the device. Unless some changes are done this should be 1.0
+    uint32_t protocol_handshake_version_major = 1;
+    uint32_t protocol_handshake_version_minor = 0;
+
     uint64_t protocol_handshake_timer = 0;
+
+    uint32_t protocol_handshake_version_selected[2] = {1,0};
+    
 
     class ProtocolHandshake {
     public:
@@ -325,6 +334,8 @@ public:
         RFU
     };
     void sme_protocol_abort_procedure(ProtocolAbortReason reason);
+
+    void common_procedure_enable_data_exchange();
 
     // We don't intend to use accessMethodsRequest ourself,
     // so we only have to implement a function that
