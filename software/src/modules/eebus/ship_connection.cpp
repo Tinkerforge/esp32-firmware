@@ -44,14 +44,14 @@ void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
         logger.printfln("ShipConnection ws_frame_received: payload too short: %d", ws_pkt->len);
         return;
     }
-
+    logger.printfln("ShipConnection ws_frame_received: %x %x", ws_pkt->payload[0], ws_pkt->payload[1]);
     // Copy new message and trigger next SHIP state machine step
     memset(message_incoming->data, 0, SHIP_CONNECTION_MAX_BUFFER_SIZE);
     memcpy(message_incoming->data, ws_pkt->payload, ws_pkt->len);
     message_incoming->length = ws_pkt->len;
-    state_machine_next_step();    
+    state_machine_next_step();
 
-    logger.printfln("ShipConnection ws_frame_received: %x %x", ws_pkt->payload[0], ws_pkt->payload[1]);
+    
 }
 
 void ShipConnection::schedule_close(const millis_t delay_ms)
@@ -65,7 +65,6 @@ void ShipConnection::schedule_close(const millis_t delay_ms)
             eebus.ship.remove(*this);
         },
         delay_ms);
-
 }
 
 void ShipConnection::send_cmi_message(uint8_t type, uint8_t value)
@@ -645,13 +644,30 @@ void ShipConnection::state_sme_hello_rejected()
 
 void ShipConnection::state_sme_protocol_handshake_server_init()
 {
-    // TODO: Start timer
-    set_and_schedule_state(State::SmeProtocolHandshakeServerListenProposal);
+    // SHIP 13.4.4.2.3 State SME_PROT_H_STATE_SERVER_INIT
+    protocol_handshake_timer = task_scheduler.scheduleOnce(
+        [this]() {
+            set_and_schedule_state(State::SmeProtocolHandshakeTimeout);
+        },
+        SHIP_CONNECTION_PROTOCOL_HANDSHAKE_TIMEOUT);
+
+    set_state(State::SmeProtocolHandshakeServerListenProposal);
 }
 
 void ShipConnection::state_sme_protocol_handshake_client_init()
 {
-    state_is_not_implemented();
+    // SHIP 13.4.4.2.3 State SME_PROT_H_STATE_CLIENT_INIT
+    ProtocolHandshakeType handshake = {.handshakeType = ProtocolHandshake::Type::AnnounceMax,
+                                       .version_major = protocol_handshake_version_major,
+                                       .version_minor = protocol_handshake_version_minor};
+    type_to_json_handshake_type(&handshake);
+    send_current_outgoing_message();
+    set_state(State::SmeProtocolHandshakeClientListenChoice);
+    protocol_handshake_timer = task_scheduler.scheduleOnce(
+        [this]() {
+            set_and_schedule_state(State::SmeProtocolHandshakeTimeout);
+        },
+        SHIP_CONNECTION_PROTOCOL_HANDSHAKE_TIMEOUT);
 }
 
 void ShipConnection::state_sme_protocol_handshake_server_listen_proposal()
@@ -660,21 +676,34 @@ void ShipConnection::state_sme_protocol_handshake_server_listen_proposal()
                     message_incoming->data[0],
                     message_incoming->length,
                     &message_incoming->data[1]);
+
     // 13.4.4.2.3 "State SME_PROT_H_STATE_SERVER_LISTEN_PROPOSAL"
     auto handshake = ProtocolHandshakeType();
     json_to_type_handshake_type(&handshake);
     switch (handshake.handshakeType) {
         case ProtocolHandshake::Type::AnnounceMax: {
-            ProtocolHandshakeType hst = {.handshakeType = ProtocolHandshake::Type::Select, .version_major = 1, .version_minor = 0};
+            task_scheduler.cancel(protocol_handshake_timer);
+
+            protocol_handshake_version_selected[0] = min(protocol_handshake_version_major, handshake.version_major);
+            protocol_handshake_version_selected[1] = min(protocol_handshake_version_minor, handshake.version_minor);
+            // We always select 1.0 as the protocol version. JSON-UTF8 has to be supported by all participants so its always selected by default.
+            ProtocolHandshakeType hst = {.handshakeType = ProtocolHandshake::Type::Select,
+                                         .version_major = protocol_handshake_version_selected[0],
+                                         .version_minor = protocol_handshake_version_selected[1]};
+
             type_to_json_handshake_type(&hst);
             set_state(State::SmeProtocolHandshakeServerListenConfirm);
             send_current_outgoing_message();
+            protocol_handshake_timer = task_scheduler.scheduleOnce(
+                [this]() {
+                    set_and_schedule_state(State::SmeProtocolHandshakeTimeout);
+                },
+                SHIP_CONNECTION_PROTOCOL_HANDSHAKE_TIMEOUT);
             break;
         }
         case ProtocolHandshake::Type::Select:
         case ProtocolHandshake::Type::Unknown: {
-            // TODO: Error handshakeType not allowed
-            state_is_not_implemented();
+            sme_protocol_abort_procedure(ProtocolAbortReason::UnexpectedMessage);
             break;
         }
     }
@@ -683,33 +712,63 @@ void ShipConnection::state_sme_protocol_handshake_server_listen_proposal()
 void ShipConnection::state_sme_protocol_handshake_server_listen_confirm()
 {
     // 13.4.4.2.3 "State SME_PROT_H_STATE_SERVER_LISTEN_CONFIRM"
+    task_scheduler.cancel(protocol_handshake_timer);
     auto handshake = ProtocolHandshakeType();
     json_to_type_handshake_type(&handshake);
 
-    if ((handshake.handshakeType == ProtocolHandshake::Type::Select) && (handshake.version_major == 1) && (handshake.version_minor == 0)) {
+    // Maybe verify format aswell?
+    if ((handshake.handshakeType == ProtocolHandshake::Type::Select) && (handshake.version_major == protocol_handshake_version_selected[0])
+        && (handshake.version_minor == protocol_handshake_version_selected[1])) {
         set_state(State::SmeProtocolHandshakeServerOk);
-    } else {
-        // TODO: Abort
-        state_is_not_implemented();
+    } else if ((handshake.version_major == 1) || (handshake.version_minor == 0)) {
+        sme_protocol_abort_procedure(ProtocolAbortReason::SelectionMismatch);
+    }
+    else {
+        sme_protocol_abort_procedure(ProtocolAbortReason::UnexpectedMessage);
     }
 }
 
 void ShipConnection::state_sme_protocol_handshake_client_listen_choice()
 {
-    state_is_not_implemented();
+    auto handshake = ProtocolHandshakeType();
+    json_to_type_handshake_type(&handshake);
+    switch(handshake.handshakeType) {
+        case ProtocolHandshake::Type::Select: {
+            task_scheduler.cancel(protocol_handshake_timer);
+            if ((handshake.version_major <= protocol_handshake_version_major) && (handshake.version_minor <= protocol_handshake_version_minor)) {
+                // TODO: Check format. This is not done yet because the format is not parsed by the json parser
+                type_to_json_handshake_type(&handshake);
+                send_current_outgoing_message();
+                set_state(State::SmeProtocolHandshakeClientOk);
+            } else {
+                sme_protocol_abort_procedure(ProtocolAbortReason::SelectionMismatch);
+            }
+            break;
+        }
+        case ProtocolHandshake::Type::AnnounceMax:
+        case ProtocolHandshake::Type::Unknown: {
+            sme_protocol_abort_procedure(ProtocolAbortReason::UnexpectedMessage);
+            break;
+        }
+    }
 }
 
 void ShipConnection::state_sme_protocol_handshake_timeout()
 {
-    state_is_not_implemented();
+    sme_protocol_abort_procedure(ProtocolAbortReason::Timeout);
 }
 
 void ShipConnection::state_sme_protocol_handshake_client_ok()
 {
-    state_is_not_implemented();
+    set_and_schedule_state(State::SmePinCheckInit);
 }
 
 void ShipConnection::state_sme_protocol_handshake_server_ok()
+{
+    set_and_schedule_state(State::SmePinCheckInit);
+}
+
+void ShipConnection::state_sme_pin_check_init()
 {
     // Currently we don't support the PIN verification.
     // So we just report that wie don't support it and move on.
@@ -720,11 +779,6 @@ void ShipConnection::state_sme_protocol_handshake_server_ok()
 
     set_state(State::Done);
     send_current_outgoing_message();
-}
-
-void ShipConnection::state_sme_pin_check_init()
-{
-    state_is_not_implemented();
 }
 
 void ShipConnection::state_sme_pin_check_listen()
@@ -1038,7 +1092,8 @@ void ShipConnection::sme_protocol_abort_procedure(ProtocolAbortReason reason)
     message_outgoing->length = length + 1;
 
     logger.printfln("T2J ProtocolHandshakeError json: %s", &message_outgoing->data[1]);
-
+    send_current_outgoing_message();
+    schedule_close(0_ms);
 }
 
 void ShipConnection::to_json_access_methods_type()
@@ -1063,4 +1118,9 @@ void ShipConnection::to_json_access_methods_type()
     message_outgoing->length = length + 1;
 
     logger.printfln("2J AccessMethods json: %s", &message_outgoing->data[1]);
+}
+
+
+void ShipConnection::common_procedure_enable_data_exchange() {
+    
 }
