@@ -991,7 +991,7 @@ static void stage_4(StageContext &sc) {
 }
 
 // Stage 5: Switch 1p -> 3p if possible
-// - This is conceptionally similar to stage 3 except that chargers already have one phase allocated
+// - This is conceptionally similar to stage 4 except that chargers already have one phase allocated
 // - If there are still phases with a limit greater than the window maximum,
 //   switch chargers that have 1 phase allocated to 3 phases if possible
 // - Only chargers that _currently_ support the phase switch are considered
@@ -1622,6 +1622,8 @@ int allocate_current(
 
             }
 
+            // This detects a phase switch even if the charger is currently not activated:
+            // charger.phases is 1 or 3, never 0.
             if (charger.phases != phases_to_set && phases_to_set != 0) {
                 charger.last_phase_switch = now;
             }
@@ -1866,6 +1868,9 @@ bool update_from_client_packet(
 
     // If this charger just switched to state C (i.e. the contactor switched on)
     // set last_phase_switch to now to make sure we don't immediately switch again.
+    // The delay between the phase switch and the car requesting current again
+    // could be longer than the hysteresis. In that case we would be able to
+    // immediately phase switch again after switching to C, if we don't prevent this here.
     if (target.charger_state != v1->charger_state && v1->charger_state == 3)
         target.last_phase_switch = now_us();
 

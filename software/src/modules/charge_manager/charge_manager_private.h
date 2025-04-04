@@ -126,7 +126,16 @@ struct ChargerState {
     float allocated_energy;
     float allocated_average_power;
 
+    // The last time we've allocated more than 0 phases to this charger.
     micros_t last_switch_on;
+
+    // This is the last time that either
+    // - we've changed the phase allocation of this charger
+    // - the contactor is switched on
+    // In both cases, we block another phase switch
+    // (i.e. change of the phase allocation except to/from 0)
+    // for one hysteresis, to make sure the vehicle does not
+    // observe a phase switch directly after the contactor is switched on.
     micros_t last_phase_switch;
 
     // The last time a vehicle was plugged in.
