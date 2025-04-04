@@ -26,6 +26,7 @@
 #include "module.h"
 #include "config.h"
 #include "modules/ws/web_sockets.h"
+#include "ship_types.h"
 
 // Values and Timeouts as defined by SHIP document
 #define SHIP_CONNECTION_CMI_TIMEOUT 30_s // SHIP 13.4.3 Timneout procedure
