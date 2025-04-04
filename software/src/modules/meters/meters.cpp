@@ -606,6 +606,15 @@ MeterClassID Meters::get_meter_class(uint32_t slot)
     return meter_slots[slot].meter->get_class();
 }
 
+MeterLocation Meters::get_meter_location(uint32_t slot)
+{
+    if (slot >= METERS_SLOTS || get_meter_class(slot) == MeterClassID::None) {
+        return MeterLocation::Unknown;
+    }
+
+    return meter_slots[slot].config_union.get()->get("location")->asEnum<MeterLocation>();
+}
+
 bool Meters::meter_is_fresh(uint32_t slot, micros_t max_age_us)
 {
     return max_age_us == 0_us || !deadline_elapsed(meter_slots[slot].values_last_updated_at + max_age_us);

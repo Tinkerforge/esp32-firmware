@@ -26,6 +26,7 @@
 #include "options.h"
 #include "imeter.h"
 #include "imeter_generator.h"
+#include "meter_location.enum.h"
 #include "meter_value_availability.h"
 #include "value_history.h"
 #include "meter_value_id.h"
@@ -94,6 +95,7 @@ public:
     IMeter *get_meter(uint32_t slot);
     uint32_t get_meters(MeterClassID meter_class, IMeter **found_meters, uint32_t found_meters_capacity);
     MeterClassID get_meter_class(uint32_t slot);
+    MeterLocation get_meter_location(uint32_t slot);
     bool meter_is_fresh(uint32_t slot, micros_t max_age_us);
     bool meter_has_value_changed(uint32_t slot, micros_t max_age_us);
 
