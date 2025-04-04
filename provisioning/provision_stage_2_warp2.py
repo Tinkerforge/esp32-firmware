@@ -459,12 +459,13 @@ class ContentTypeRemover(urllib.request.BaseHandler):
     https_request = http_request
 
 def factory_reset(ssid):
+    host = ssid + ".local"
     print("Triggering factory reset")
-    print("Connecting via ethernet to {}".format(ssid), end="")
+    print("Connecting via ethernet to {}".format(host), end="")
     for i in range(45):
         start = time.monotonic()
         try:
-            req = urllib.request.Request("http://{}{}/factory_reset".format(ssid, "" if i % 2 == 0 else ".local"),
+            req = urllib.request.Request(f"http://{host}/factory_reset",
                                          data=json.dumps({"do_i_know_what_i_am_doing": True}).encode("utf-8"),
                                          method='PUT',
                                          headers={"Content-Type": "application/json"})
@@ -483,11 +484,12 @@ def factory_reset(ssid):
     time.sleep(10)
 
 def connect_to_ethernet(ssid, url):
-    print("Connecting via ethernet to {}".format(ssid), end="")
+    host = ssid + ".local"
+    print("Connecting via ethernet to {}".format(host), end="")
     for i in range(45):
         start = time.monotonic()
         try:
-            with urllib.request.urlopen("http://{}{}/{}".format(ssid, "" if i % 2 == 0 else ".local", url), timeout=1) as f:
+            with urllib.request.urlopen(f"http://{host}/{url}", timeout=1) as f:
                 result = f.read()
                 break
         except:
@@ -496,9 +498,9 @@ def connect_to_ethernet(ssid, url):
         time.sleep(t)
         print(".", end="")
     else:
-        fatal_error("Failed to connect via ethernet! Is the router's DHCP cache full?")
+        fatal_error("Failed to connect via ethernet!")
     print(" Connected.")
-    return result, ssid + ("" if i % 2 == 0 else ".local")
+    return result, host
 
 def collect_nfc_tag_ids(stage3, getter, beep_notify):
     print(green("Waiting for NFC tags"), end="")
@@ -770,11 +772,12 @@ def main(stage3, scanner):
 
     if scanner.qr_variant != "B":
         print("Removing tracked charges")
-        print("Connecting via ethernet to {}".format(ssid), end="")
+        host = ssid + ".local"
+        print("Connecting via ethernet to {}".format(host), end="")
         for i in range(45):
             start = time.monotonic()
             try:
-                req = urllib.request.Request("http://{}{}/charge_tracker/remove_all_charges".format(ssid, "" if i % 2 == 0 else ".local"),
+                req = urllib.request.Request(f"http://{host}/charge_tracker/remove_all_charges",
                                              data=json.dumps({"do_i_know_what_i_am_doing":True}).encode("utf-8"),
                                              method='PUT',
                                              headers={"Content-Type": "application/json"})
