@@ -1465,4 +1465,24 @@ void FirmwareUpdate::read_app_partition_state()
         logger.printfln("Firmware %s rolled back to %s", rolled_back_version, build_version_full_str());
         state.get("rolled_back_version")->updateString(rolled_back_version);
     }
+
+    // if a power cycle happens while the running app partition is in pending-verify state then it gets
+    // marked as aborted, even if the firmware is actually stable. this can happen to both app partitions.
+    // in this case the bootloader will boot the aborted app partition anyway, as it doesn't have a better
+    // choice. but the system is now stuck on one of the app partitions. if the firmware in the running app
+    // partition is unstable and crashes the bootloader will not try the other app partition, even if that
+    // one might actually contain a stable firmware. changing from aborted/aborted app partition state to
+    // pending-verify/new results in the bootloader chosing the other partition if the running app partition
+    // crashes. this way the system can find the stable firmware, if there is one.
+    if (app0_state == ESP_OTA_IMG_ABORTED && app1_state == ESP_OTA_IMG_ABORTED) {
+        logger.printfln("Trying to recover from an aborted/aborted app partition state");
+
+        if (running_partition != nullptr) {
+            change_partition_ota_state_from_to(running_partition, ESP_OTA_IMG_ABORTED, ESP_OTA_IMG_PENDING_VERIFY, false);
+        }
+
+        if (update_partition != nullptr) {
+            change_partition_ota_state_from_to(update_partition, ESP_OTA_IMG_ABORTED, ESP_OTA_IMG_NEW, false);
+        }
+    }
 }
