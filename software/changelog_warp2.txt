@@ -787,3 +787,7 @@
 - Improve remote access stability
 - Update timezone database
 - Improve translations
+
+2025-04-04: 2.7.8 (<unknown>)
+- Remote Access: Fix crash when downloading debug report (trace log)
+- OCPP: Fix disconnect due to wrong pong timeout for non-standard ping timeout

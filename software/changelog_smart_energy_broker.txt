@@ -92,3 +92,6 @@
 - Improve robustness of power to energy accumulation
 - Update timezone database
 - Improve translations
+
+2025-04-04: 1.2.7 (<unknown>)
+- Remote Access: Fix crash when downloading debug report (trace log)
