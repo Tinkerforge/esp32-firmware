@@ -4,6 +4,7 @@ import os
 import sys
 import urllib.request
 import traceback
+import datetime
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
 
@@ -135,6 +136,7 @@ class PowerManagerEmu(QMainWindow, Ui_PowerManagerEmu):
         try:
             with urllib.request.urlopen(req, timeout=1) as f:
                 f.read()
+            print(datetime.datetime.now().isoformat(), "Sent", data)
         except Exception as e:
             traceback.print_exc()
 
