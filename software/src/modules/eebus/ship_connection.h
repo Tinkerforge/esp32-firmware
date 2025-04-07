@@ -112,13 +112,14 @@ public:
         Timeout
     };
 
-    enum class ProtocolState : uint8_t {
+    enum class ProtocolState : uint16_t {
         ConnectionHello,
         MessageProtocolHandshake,
         ConnectionPinState,
         AccessMethodsRequest,
         AccessMethods,
         Data,
+        Terminate,
         None,
         Unknown
     };
@@ -160,6 +161,8 @@ public:
     void schedule_close(const millis_t delay_ms);
     void send_cmi_message(uint8_t type, uint8_t value);
     void send_current_outgoing_message();
+    void send_string(String str);
+
     CMIMessage get_cmi_message();
     ProtocolState get_protocol_state();
 
@@ -343,4 +346,6 @@ public:
     // generates a proper json for the accessMethods
     // that is returned on accessMethodsRequest
     void to_json_access_methods_type();
+
+    
 };
