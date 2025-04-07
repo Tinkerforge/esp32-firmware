@@ -50,8 +50,6 @@ void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
     memcpy(message_incoming->data, ws_pkt->payload, ws_pkt->len);
     message_incoming->length = ws_pkt->len;
     state_machine_next_step();
-
-    
 }
 
 void ShipConnection::schedule_close(const millis_t delay_ms)
@@ -82,6 +80,14 @@ void ShipConnection::send_current_outgoing_message()
     ws_client.sendOwnedNoFreeBlocking_HTTPThread((char *)message_outgoing->data, message_outgoing->length, HTTPD_WS_TYPE_BINARY);
 }
 
+void ShipConnection::send_string(String str)
+{
+    message_outgoing->data[0] = 1;
+    memcpy(&message_outgoing->data[1], str.c_str(), str.length());
+    message_outgoing->length = str.length() + 1;
+    send_current_outgoing_message();
+}
+
 ShipConnection::CMIMessage ShipConnection::get_cmi_message()
 {
     if (message_incoming->length != 2) {
@@ -93,6 +99,9 @@ ShipConnection::CMIMessage ShipConnection::get_cmi_message()
 
 ShipConnection::ProtocolState ShipConnection::get_protocol_state()
 {
+    if (message_incoming->data[0] == 3) {
+        return ProtocolState::Terminate;
+    }
     if ((message_incoming->data[0] != 1) || (message_incoming->length < 3)) {
         return ProtocolState::None;
     }
@@ -722,8 +731,7 @@ void ShipConnection::state_sme_protocol_handshake_server_listen_confirm()
         set_state(State::SmeProtocolHandshakeServerOk);
     } else if ((handshake.version_major == 1) || (handshake.version_minor == 0)) {
         sme_protocol_abort_procedure(ProtocolAbortReason::SelectionMismatch);
-    }
-    else {
+    } else {
         sme_protocol_abort_procedure(ProtocolAbortReason::UnexpectedMessage);
     }
 }
@@ -732,10 +740,11 @@ void ShipConnection::state_sme_protocol_handshake_client_listen_choice()
 {
     auto handshake = ProtocolHandshakeType();
     json_to_type_handshake_type(&handshake);
-    switch(handshake.handshakeType) {
+    switch (handshake.handshakeType) {
         case ProtocolHandshake::Type::Select: {
             task_scheduler.cancel(protocol_handshake_timer);
-            if ((handshake.version_major <= protocol_handshake_version_major) && (handshake.version_minor <= protocol_handshake_version_minor)) {
+            if ((handshake.version_major <= protocol_handshake_version_major)
+                && (handshake.version_minor <= protocol_handshake_version_minor)) {
                 // TODO: Check format. This is not done yet because the format is not parsed by the json parser
                 type_to_json_handshake_type(&handshake);
                 send_current_outgoing_message();
@@ -781,6 +790,7 @@ void ShipConnection::state_sme_pin_check_init()
     send_current_outgoing_message();
 }
 
+// We do not support PIN verification so these will not be implemented
 void ShipConnection::state_sme_pin_check_listen()
 {
     state_is_not_implemented();
@@ -851,12 +861,41 @@ void ShipConnection::state_done()
     // which will then come back here.
 
     auto protocol_state = get_protocol_state();
-    if (protocol_state == ProtocolState::AccessMethodsRequest) {
-        set_and_schedule_state(State::SmeAccessMethodRequest);
-    } else if (protocol_state != ProtocolState::None) {
-        logger.printfln("Ignoring '%s' (protocol state %d)",
-                        &message_incoming->data[1],
-                        static_cast<std::underlying_type<ProtocolHandshake::Type>::type>(protocol_state));
+    switch (protocol_state) {
+        case ProtocolState::Data: {
+            SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
+            if (data.json_to_type(&message_incoming->data[1], message_incoming->length - 1) == SHIP_TYPES::DeserializationResult::SUCCESS) {
+                logger.printfln("DATA received: %d (len %d)-> %s",
+                                message_incoming->data[0],
+                                message_incoming->length,
+                                &message_incoming->data[1]);
+            }
+            break;
+        }
+        case ProtocolState::MessageProtocolHandshake: {
+            set_and_schedule_state(State::SmeProtocolHandshakeClientInit);
+            break;
+        }
+        case ProtocolState::ConnectionPinState: {
+            set_and_schedule_state(State::SmePinCheckInit);
+            break;
+        }
+        case ProtocolState::AccessMethodsRequest: {
+            logger.printfln("AccessMethodsRequest received: %d (len %d)-> %s",
+                            message_incoming->data[0],
+                            message_incoming->length,
+                            &message_incoming->data[1]);
+            SHIP_TYPES::ShipMessageAccessMethods access_methods = SHIP_TYPES::ShipMessageAccessMethods();
+            access_methods.id = DNS_SD_UUID;
+            send_string(access_methods.type_to_json());
+            break;
+        }
+        case ProtocolState::AccessMethods: {
+
+            break;
+        }
+        default:
+            break;
     }
 }
 
@@ -1120,7 +1159,6 @@ void ShipConnection::to_json_access_methods_type()
     logger.printfln("2J AccessMethods json: %s", &message_outgoing->data[1]);
 }
 
-
-void ShipConnection::common_procedure_enable_data_exchange() {
-    
+void ShipConnection::common_procedure_enable_data_exchange()
+{
 }

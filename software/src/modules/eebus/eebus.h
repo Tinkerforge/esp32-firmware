@@ -25,6 +25,7 @@
 #include <TFJson.h>
 
 #define MAX_SHIP_PEER_REMEMBERED 64 // How man ship peers configured to be remembered
+#define DNS_SD_UUID "Tinkerforge-WARP3-12345"
 
 class EEBus final : public IModule
 {

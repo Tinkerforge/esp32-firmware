@@ -1,3 +1,22 @@
+/* esp32-firmware
+ * Copyright (C) 2025 Julius Dill <julius@tinkerforge.com>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
 #include "ship_types.h"
 
 #include "build.h"
@@ -5,16 +24,15 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "tools.h"
-#include <ArduinoJson.h>
 
 namespace SHIP_TYPES
 {
 
-DeserializationResult ShipMessageDataType::json_to_type(String json)
+DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, size_t length)
 {
     DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
 
-    DeserializationError error = deserializeJson(doc, json);
+    DeserializationError error = deserializeJson(doc, incoming_data, length);
     doc.shrinkToFit(); // Make this a bit smaller
     if (error) {
         logger.printfln("J2T ShipMessageData Error during JSON deserialization : %s", error.c_str());
@@ -62,7 +80,7 @@ String ShipMessageDataType::type_to_json()
         if (extension_binary_valid) {
             JsonArray data_extension_binary = data_extension.createNestedArray("binary");
             for (const auto &value : extension_binary) {
-                data_extension_binary.add(value);
+                data_extension_binary.add(String(value));
             }
         }
         if (extension_string_valid) {
@@ -86,6 +104,7 @@ void DeserializeOptionalField(JsonObject *data, const char *field_name, bool *fi
     }
 }
 
+// TODO: This generic causes warnings i think 
 template <typename T>
 void DeserializeOptionalField(JsonObject *data, const char *field_name, bool *field_valid, std::vector<T> *field_value)
 {
@@ -97,5 +116,81 @@ void DeserializeOptionalField(JsonObject *data, const char *field_name, bool *fi
     } else {
         *field_valid = false;
     }
+}
+DeserializationResult ShipMessageAccessMethodsRequest::json_to_type(uint8_t *data, size_t length)
+
+{
+    DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
+    logger.printfln("J2T ShipMessageAccessMethodsRequest json: %s", data);
+    DeserializationError error = deserializeJson(doc, data, length);
+    doc.shrinkToFit(); // Make this a bit smaller
+    if (error) {
+        logger.printfln("J2T ShipMessageAccessMethodsRequest Error during JSON deserialization : %s", error.c_str());
+        return DeserializationResult::ERROR;
+    }
+    JsonObject accessMethodsRequest = doc["accessMethodsRequest"];
+    if (accessMethodsRequest.isNull()) {
+        logger.printfln("J2T ShipMessageAccessMethodsShipMessageAccessMethodsRequest Error: Invalid accessMethodsRequest");
+        return DeserializationResult::ERROR;
+    }
+    request = accessMethodsRequest["request"].as<String>();
+    return DeserializationResult::SUCCESS;
+}
+String ShipMessageAccessMethodsRequest::type_to_json()
+{
+    DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
+    JsonObject accessMethodsRequest = doc["accessMethodsRequest"].to<JsonObject>();
+    accessMethodsRequest["request"] = request;
+    String output;
+    doc.shrinkToFit();
+    serializeJson(doc, output);
+    logger.printfln("T2J ShipMessageAccessMethods json: %s", output.c_str());
+    return output;
+}
+
+DeserializationResult ShipMessageAccessMethods::json_to_type(uint8_t *data, size_t length)
+{
+    DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
+    DeserializationError error = deserializeJson(doc, data, length);
+    doc.shrinkToFit(); // Make this a bit smaller
+    if (error) {
+        logger.printfln("J2T ShipMessageAccessMethods Error during JSON deserialization : %s. Data: %s", error.c_str(), data);
+        return DeserializationResult::ERROR;
+    }
+    JsonObject accessMethods = doc["accessMethods"];
+    if (accessMethods.isNull() || accessMethods["id"] == nullptr) {
+        logger.printfln("J2T ShipMessageAccessMethods Error: Invalid accessMethods");
+        return DeserializationResult::ERROR;
+    }
+    id = accessMethods["id"].as<String>();
+    DeserializeOptionalField(&accessMethods, "dns_sd_mdns", &dns_sd_mdns_valid, &dns_sd_mdns);
+    DeserializeOptionalField(&accessMethods, "dns", &dns_valid, &dns);
+    DeserializeOptionalField(&accessMethods, "dns_uri", &dns_uri_valid, &dns_uri);
+    return DeserializationResult::SUCCESS;
+}
+String ShipMessageAccessMethods::type_to_json()
+{
+    DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
+    JsonArray json_am = doc.createNestedArray("accessMethods");
+    JsonObject access_methods = json_am.createNestedObject();
+    access_methods["id"] = id;
+    
+    json_am.createNestedObject().createNestedArray("dnsSd_mDns");
+    for(auto &value : dns_sd_mdns) {
+        access_methods["dns_sd_mdns"].add(value);
+    }
+    /* This is standard conform, but ship-go does not accept it. remove it for now..
+    JsonArray dns = json_am.createNestedObject().createNestedArray("dns");
+    for (const auto &value : dns) {
+        access_methods["dns"].add(value);
+    }
+    JsonObject uri = dns.createNestedObject();
+    uri["uri"] =  dns_uri; //"wss://192.168.0.33:4712/ship/"; // TODO
+    */
+    String output;
+    doc.shrinkToFit();
+    serializeJson(doc, output);
+    logger.printfln("T2J ShipMessageAccessMethods json: %s", output.c_str());
+    return output;
 }
 } // namespace SHIP_TYPES
