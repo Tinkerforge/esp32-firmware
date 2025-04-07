@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2024 Julius Dill <julius@tinkerforge.com>
+ * Copyright (C) 2025 Julius Dill <julius@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,6 +21,7 @@
 
 #include "module.h"
 #include "config.h"
+#include <ArduinoJson.h>
 
 #define SHIP_TYPES_MAX_JSON_SIZE 8192 // TODO: What is a sane value here?
 
@@ -58,7 +59,31 @@ namespace SHIP_TYPES {
         std::vector<bool> extension_binary{}; // This technically an array of integers
         CoolString extension_string{};
 
-        DeserializationResult json_to_type(String json);
+        DeserializationResult json_to_type(uint8_t *data, size_t length);
+        String type_to_json();
+
+    };
+
+    struct ShipMessageAccessMethodsRequest {
+        String request; // There is no datatype defined for this yet
+
+        DeserializationResult json_to_type(uint8_t *data, size_t length);
+        String type_to_json();
+
+    };
+
+    struct ShipMessageAccessMethods {
+        String id; 
+
+        std::vector<String> dns_sd_mdns;
+        bool dns_sd_mdns_valid = false;
+        std::vector<String> dns{};
+        bool dns_valid = false;
+        String dns_uri{};
+        bool dns_uri_valid = false;
+
+
+        DeserializationResult json_to_type(uint8_t *data, size_t length);
         String type_to_json();
 
     };
