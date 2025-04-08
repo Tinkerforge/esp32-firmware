@@ -262,6 +262,10 @@ void SolarForecast::handle_new_data()
                     struct tm tm;
                     strptime(first_date.c_str(), "%Y-%m-%d %H:%M:%S", &tm);
 
+                    // mktime needs tm_isdst to be set, but strptime doesn't set it.
+                    // Use -1 to have mktime figure out if DST is in effect.
+                    tm.tm_isdst = -1;
+
                     // Set first date as unix time in minutes
                     plane_current->forecast.get("first_date")->updateUint(mktime(&tm) / 60);
                 }
