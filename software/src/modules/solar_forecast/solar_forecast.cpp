@@ -145,6 +145,12 @@ void SolarForecast::register_urls()
 }
 
 void SolarForecast::next_update() {
+    // Don't re-schedule task if it hasn't been scheduled yet.
+    // That is the case when the config is initially loaded during setup.
+    if (!task_id) {
+        return;
+    }
+
     // Find smallest next check time.
     // But we wait for at least CHECK_DELAY_MIN ms before the next check.
     // This way we avoid hammering the server and also the ESP has some time in-between.
