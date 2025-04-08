@@ -241,10 +241,16 @@ void SolarForecast::handle_new_data()
             char day_start0 = 0;
             char day_start1 = 0;
 
-            plane_current->forecast.get("forecast")->removeAll();
-            while(plane_current->forecast.get("forecast")->count() < 48) {
-                plane_current->forecast.get("forecast")->add();
+            Config *forecast_cfg = static_cast<Config *>(plane_current->forecast.get("forecast"));
+
+            size_t forecast_count = forecast_cfg->count();
+            for (size_t i = 0; i < forecast_count; i++) {
+                forecast_cfg->get(i)->updateUint(0);
             }
+            for (size_t i = forecast_count; i < 48; i++) {
+                forecast_cfg->add();
+            }
+
             for (JsonPair pair : js_wh_period) {
                 String key(pair.key().c_str());
                 uint32_t value = pair.value().as<int>();
@@ -279,8 +285,9 @@ void SolarForecast::handle_new_data()
                 }
                 // We add up all kWh values that correspond to the same hour
                 // The data is sometimes split up in two values for the same hour
-                const uint32_t old_value = plane_current->forecast.get("forecast")->get(index)->asUint();
-                plane_current->forecast.get("forecast")->get(index)->updateUint(value + old_value);
+                auto forecast_value = forecast_cfg->get(index);
+                const uint32_t old_value = forecast_value->asUint();
+                forecast_value->updateUint(value + old_value);
             }
 
             const uint32_t current_minutes = rtc.timestamp_minutes();
