@@ -66,7 +66,7 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
 
     switch (table_id) {
     case BatteryModbusTCPTableID::None:
-        logger.printfln("No table selected");
+        logger.printfln_battery("No table selected");
         return;
 
     case BatteryModbusTCPTableID::Custom: {
@@ -86,7 +86,7 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
         break;
 
     default:
-        logger.printfln("Unknown table: %u", static_cast<uint8_t>(table_id));
+        logger.printfln_battery("Unknown table: %u", static_cast<uint8_t>(table_id));
         return;
     }
 }
@@ -118,12 +118,12 @@ bool BatteryModbusTCP::supports_action(Action /*action*/)
 bool BatteryModbusTCP::start_action(Action action)
 {
     if (connected_client == nullptr) {
-        logger.printfln("Not connected, cannot start action");
+        logger.printfln_battery("Not connected, cannot start action");
         return false;
     }
 
     if (has_current_action) {
-        logger.printfln("Another action is already in progress");
+        logger.printfln_battery("Another action is already in progress");
         return false;
     }
 
@@ -195,17 +195,16 @@ void BatteryModbusTCP::write_next()
                                                                        const_cast<uint16_t *>(&spec->value),
                                                                        2_s,
     [this, table, spec, function_code](TFModbusTCPClientTransactionResult result) {
-
         if (result != TFModbusTCPClientTransactionResult::Success) {
-            logger.printfln("Modbus write error (host='%s' port=%u devaddr=%u fcode=%d regaddr=%u value=%u): %s (%d)",
-                            host.c_str(),
-                            port,
-                            table->device_address,
-                            static_cast<int>(function_code),
-                            spec->start_address,
-                            spec->value,
-                            get_tf_modbus_tcp_client_transaction_result_name(result),
-                            static_cast<int>(result));
+            logger.printfln_battery("Modbus write error (host='%s' port=%u devaddr=%u fcode=%d regaddr=%u value=%u): %s (%d)",
+                                    host.c_str(),
+                                    port,
+                                    table->device_address,
+                                    static_cast<int>(function_code),
+                                    spec->start_address,
+                                    spec->value,
+                                    get_tf_modbus_tcp_client_transaction_result_name(result),
+                                    static_cast<int>(result));
 
             // FIXME: maybe retry on error in the middle of an action, instead of aborting
             has_current_action = false;
