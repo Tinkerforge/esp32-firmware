@@ -1038,7 +1038,7 @@ static void stage_4(StageContext &sc) {
     trace(have_active_chargers ? "4: have active chargers." : "4: don't have active chargers.");
 
     for (int i = 0; i < matched; ++i) {
-        // If we can allocate all available current to the currently active set of chargers
+        /*// If we can allocate all available current to the currently active set of chargers
         // and the spread limit is exceeded, short-circuit. We won't enable more chargers.
         if (   sc.ca_state->control_window_max.l1 >= sc.limits->raw.l1
             && sc.ca_state->control_window_max.l2 >= sc.limits->raw.l2
@@ -1057,7 +1057,7 @@ static void stage_4(StageContext &sc) {
             && sc.limits->min.l3 - sc.ca_state->control_window_min.l3 < std::min(sc.cfg->minimum_current_1p, sc.cfg->minimum_current_3p)) {
             trace("4: min - wnd_min < min_1p");
             break;
-        }
+        }*/
 
         const auto *state = &sc.charger_state[sc.idx_array[i]];
 
