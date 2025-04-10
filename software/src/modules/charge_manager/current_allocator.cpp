@@ -266,7 +266,7 @@ void apply_cost(const Cost &cost, CurrentLimits* limits) {
 // - it wants to charge (i.e. a vehicle is plugged in and no other slot blocks) or is charging (i.e. is in state C) or the car blocks and we've just activated or phase-switched the charger
 // - we are not currently attempting to wake up a "full" vehicle:
 //   We don't consider this as active because the wake-up stage will allocate to this charger anyway, but this has the lowest priority.
-//   If this was considered active, a wake-up could steal current from the following states
+//   If this was considered active, a wake-up could steal current from the following stages
 static bool is_active(uint8_t allocated_phases, const ChargerState *state) {
     return allocated_phases > 0 && (state->wants_to_charge || state->is_charging) && state->last_wakeup == 0_us;
 }
@@ -277,6 +277,7 @@ static int get_highest_charge_mode_bit(const ChargerState *state) {
             case ChargeMode::Fast:
                 return (int)ChargeMode::Fast;
             case ChargeMode::Eco:
+                // Ignore eco bit if eco module decided that this time-slot is not cheap.
                 if (state->eco_fast)
                     return (int)ChargeMode::Eco;
                 break;
@@ -335,14 +336,23 @@ static void clear_global_decision(StageContext &sc, GlobalAllocatorDecision deci
     sc.global_decision->param_3 = 0;
 }
 
-// Stage 1: Rotate chargers
-// If there is any charger that wants to charge but doesn't have current allocated,
-// temporarily disable chargers that are currently active (see is_active) but have been allocated
-// ALLOCATED_ENERGY_ROTATION_THRESHOLD energy since being activated.
+// Stage 1: Deactivate non-active chargers and handle rotation.
 //
-// Also deallocate phases if the charger is not active anymore.
-// We want to dealloc a charger if the connected vehicle is currently being woken up.
+// If there are more chargers that want to charge (or are charging) than we can activate
+// at the same time, distribute current in a round-robin fashion:
+//
+// Every (clock-aligned) cfg->rotation_interval (default 15 minutes),
+// disable charging chargers until we've made space for all waiting (state B1) chargers
+//
+// This stage will deactivate chargers if there are other chargers that want to charge or are charging with a higher charge mode.
+// For example all PV chargers are deactivated here if there is at least one Fast charger active.
+// This does not mean that PV chargers are blocked forever:
+// If there is enough current available to allocate the maximum current to all Fast chargers,
+// then PV chargers will be reactivated in the same iteration and thus not be interrupted.
+//
+// Also disable phases if the charger is not active anymore but is being woken up by stage 9:
 // If there is current left over at the end, we will reallocate some to this charger.
+// This makes sure that current that can be allocated to active chargers is not used to wake up potentially full vehicles.
 static void stage_1(StageContext &sc) {
     // Only rotate if there is at least one charger that does want to charge but doesn't have current allocated.
     // This charger also has to be plugged in for at least one allocation iteration, to make sure
