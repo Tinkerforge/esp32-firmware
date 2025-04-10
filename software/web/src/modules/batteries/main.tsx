@@ -35,6 +35,7 @@ import { BatteryClassID } from "./battery_class_id.enum";
 import { BatteryConfig, BatteryConfigPlugin } from "./types";
 import { plugins_init } from "./plugins";
 import { NavbarItem } from "../../ts/components/navbar_item";
+import { Table } from "../../ts/components/table";
 import { Battery } from "react-feather";
 
 export function BatteriesNavbar() {
@@ -45,6 +46,20 @@ let config_plugins: {[battery_class: number]: BatteryConfigPlugin} = {};
 
 interface BatteriesState {
     configs: {[battery_slot: number]: BatteryConfig};
+    add_battery_slot: number;
+    add_battery_config: BatteryConfig;
+    edit_battery_slot: number;
+    edit_battery_config: BatteryConfig;
+}
+
+function get_battery_name(battery_configs: {[battery_slot: number]: BatteryConfig}, battery_slot: number) {
+    let battery_name = __("batteries.script.battery")(util.hasValue(battery_slot) ? battery_slot : '?');
+
+    if (util.hasValue(battery_slot) && util.hasValue(battery_configs) && util.hasValue(battery_configs[battery_slot]) && util.hasValue(battery_configs[battery_slot][1])) {
+        battery_name = battery_configs[battery_slot][1].display_name;
+    }
+
+    return battery_name;
 }
 
 export class Batteries extends ConfigComponent<'battery_control/config', {}, BatteriesState> {
@@ -53,6 +68,10 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
               () => __("batteries.script.save_failed"),
               () => __("batteries.script.reboot_content_changed"), {
                   configs: {},
+                  add_battery_slot: null,
+                  add_battery_config: [BatteryClassID.None, null],
+                  edit_battery_slot: null,
+                  edit_battery_config: [BatteryClassID.None, null],
               });
 
         for (let battery_slot = 0; battery_slot < options.BATTERIES_MAX_SLOTS; ++battery_slot) {
@@ -99,18 +118,20 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
         return super.getIsModified(topic);
     }
 
-    render(props: {}, s: Readonly<API.getType['battery_control/config']>) {
+    render() {
         if (!util.render_allowed())
             return <SubPage name="batteries" />;
 
         const bc_state = API.get("battery_control/state");
 
-        let classes: [string, string][] = [[BatteryClassID.None.toString(), __("batteries.content.battery_class_none")]];
+        /*let classes: [string, string][] = [[BatteryClassID.None.toString(), __("batteries.content.battery_class_none")]];
         let battery_slot = 0
 
         for (let battery_class in config_plugins) {
             classes.push([battery_class.toString(), config_plugins[battery_class].name()])
-        }
+        }*/
+
+        let active_battery_slots = Object.keys(this.state.configs).filter((battery_slot_str) => this.state.configs[parseInt(battery_slot_str)][0] != BatteryClassID.None);
 
         return (
             <SubPage name="batteries">
@@ -128,35 +149,171 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
 
                     <FormRow label={__("batteries.content.block_discharge_during_fast_charge")}>
                         <Switch desc={__("batteries.content.block_discharge_during_fast_charge_desc")}
-                            checked={s.block_discharge_during_fast_charge}
+                            checked={this.state.block_discharge_during_fast_charge}
                             onClick={this.toggle("block_discharge_during_fast_charge")}
                         />
                     </FormRow>
 
-                    <FormSeparator heading={__("batteries.content.header_battery")} />
+                    <FormRow label={__("batteries.content.managed_batteries")}>
+                        <Table
+                            columnNames={[__("batteries.content.table_display_name"), __("batteries.content.table_class")]}
+                            rows={active_battery_slots.map((battery_slot_str) => {
+                                let battery_slot = parseInt(battery_slot_str);
+                                let config = this.state.configs[battery_slot];
 
-                    <FormRow label={__("batteries.content.battery_class")}>
-                        <InputSelect
-                            items={classes}
-                            onValue={(v) => {
-                                let battery_class = parseInt(v);
+                                return {
+                                    columnValues: [
+                                        get_battery_name(this.state.configs, battery_slot),
+                                        config_plugins[config[0]].name()
+                                    ],
+                                    editTitle: __("batteries.content.edit_battery_title"),
+                                    onEditShow: async () => {
+                                        let config_plugin = config_plugins[config[0]];
+                                        if (!config_plugin) {
+                                            console.log("No config plugin available for battery class", config[0]);
+                                            this.setState({edit_battery_slot: battery_slot, edit_battery_config: [BatteryClassID.None, null]});
+                                            return;
+                                        }
+                                        this.setState({edit_battery_slot: battery_slot, edit_battery_config: config_plugin.clone_config(config)});
+                                    },
+                                    onEditGetChildren: () => {
+                                        let slots: [string, string][] = [];
+                                        let classes: [string, string][] = [];
 
-                                if (battery_class != this.state.configs[battery_slot][0]) {
-                                    if (battery_class == BatteryClassID.None) {
+                                        for (let free_battery_slot = 0; free_battery_slot < BATTERIES_SLOTS; ++free_battery_slot) {
+                                            if (this.state.configs[free_battery_slot][0] == BatteryClassID.None || free_battery_slot == battery_slot) {
+                                                slots.push([free_battery_slot.toString(), free_battery_slot.toString()]);
+                                            }
+                                        }
+
+                                        for (let battery_class in config_plugins) {
+                                            classes.push([battery_class.toString(), config_plugins[battery_class].name()])
+                                        }
+
+                                        let rows: ComponentChild[] = [<>
+                                            <FormRow label={__("batteries.content.edit_battery_slot")}>
+                                                <InputSelect
+                                                    items={slots}
+                                                    onValue={(v) => this.setState({edit_battery_slot: parseInt(v)})}
+                                                    value={this.state.edit_battery_slot.toString()} />
+                                            </FormRow>
+                                            <FormRow label={__("batteries.content.edit_battery_class")}>
+                                                <InputSelect
+                                                    placeholder={__("select")}
+                                                    items={classes}
+                                                    onValue={(v) => {
+                                                        let battery_class = parseInt(v);
+
+                                                        if (battery_class != this.state.edit_battery_config[0]) {
+                                                            if (battery_class == BatteryClassID.None) {
+                                                                this.setState({edit_battery_config: [BatteryClassID.None, null]});
+                                                            }
+                                                            else {
+                                                                this.setState({edit_battery_config: config_plugins[battery_class].new_config()});
+                                                            }
+                                                        }
+                                                    }}
+                                                    value={this.state.edit_battery_config[0].toString()} />
+                                            </FormRow>
+                                        </>]
+
+                                        if (this.state.edit_battery_config[0] != BatteryClassID.None) {
+                                            rows = rows.concat(<Fragment key={`edit_children_${this.state.edit_battery_config[0]}`}>{config_plugins[this.state.edit_battery_config[0]].get_edit_children(this.state.edit_battery_config, (battery_config) => this.setState({edit_battery_config: battery_config}))}</Fragment>);
+                                        }
+
+                                        return rows;
+                                    },
+                                    onEditSubmit: async () => {
+                                        this.setState({configs: {...this.state.configs, [battery_slot]: [BatteryClassID.None, null], [this.state.edit_battery_slot]: this.state.edit_battery_config}});
+                                        this.setDirty(true);
+                                    },
+                                    onEditHide: async () => {
+                                        if (this.state.edit_battery_config[0] != BatteryClassID.None && config_plugins[this.state.edit_battery_config[0]].hide) {
+                                            config_plugins[this.state.edit_battery_config[0]].hide();
+                                        }
+                                    },
+                                    onRemoveClick: async () => {
                                         this.setState({configs: {...this.state.configs, [battery_slot]: [BatteryClassID.None, null]}});
-                                    }
-                                    else {
-                                        this.setState({configs: {...this.state.configs, [battery_slot]: config_plugins[battery_class].new_config()}});
+                                        this.setDirty(true);
                                     }
                                 }
-                            }}
-                            value={this.state.configs[battery_slot][0].toString()} />
-                    </FormRow>
+                            })}
+                            addEnabled={active_battery_slots.length < BATTERIES_SLOTS}
+                            addTitle={__("batteries.content.add_battery_title")}
+                            addMessage={__("batteries.content.add_battery_prefix") + active_battery_slots.length + __("batteries.content.add_battery_infix") + BATTERIES_SLOTS + __("batteries.content.add_battery_suffix")}
+                            onAddShow={async () => {
+                                let add_battery_slot = null;
 
-                    {this.state.configs[battery_slot][0] != BatteryClassID.None ?
-                        config_plugins[this.state.configs[battery_slot][0]].get_edit_children(this.state.configs[battery_slot], (battery_config) => this.setState({configs: {...this.state.configs, [battery_slot]: battery_config}}))
-                        : undefined
-                    }
+                                for (let battery_slot = 0; battery_slot < BATTERIES_SLOTS; ++battery_slot) {
+                                    if (this.state.configs[battery_slot][0] == BatteryClassID.None) {
+                                        add_battery_slot = battery_slot;
+                                        break;
+                                    }
+                                }
+
+                                this.setState({add_battery_slot: add_battery_slot, add_battery_config: [BatteryClassID.None, null]});
+                            }}
+                            onAddGetChildren={() => {
+                                let slots: [string, string][] = [];
+                                let classes: [string, string][] = [];
+
+                                for (let free_battery_slot = 0; free_battery_slot < BATTERIES_SLOTS; ++free_battery_slot) {
+                                    if (this.state.configs[free_battery_slot][0] == BatteryClassID.None) {
+                                        slots.push([free_battery_slot.toString(), free_battery_slot.toString()]);
+                                    }
+                                }
+
+                                for (let battery_class in config_plugins) {
+                                    classes.push([battery_class.toString(), config_plugins[battery_class].name()])
+                                }
+
+                                let rows: ComponentChild[] = [
+                                    <FormRow label={__("batteries.content.add_battery_slot")}>
+                                        <InputSelect
+                                            placeholder={__("select")}
+                                            items={slots}
+                                            onValue={(v) => this.setState({add_battery_slot: parseInt(v)})}
+                                            value={this.state.add_battery_slot !== null ? this.state.add_battery_slot.toString() : null}
+                                            required />
+                                    </FormRow>,
+                                    <FormRow label={__("batteries.content.add_battery_class")}>
+                                        <InputSelect
+                                            placeholder={__("select")}
+                                            items={classes}
+                                            onValue={(v) => {
+                                                let battery_class = parseInt(v);
+
+                                                if (battery_class != this.state.add_battery_config[0]) {
+                                                    if (battery_class == BatteryClassID.None) {
+                                                        this.setState({add_battery_config: [BatteryClassID.None, null]});
+                                                    }
+                                                    else {
+                                                        this.setState({add_battery_config: config_plugins[battery_class].new_config()});
+                                                    }
+                                                }
+                                            }}
+                                            value={this.state.add_battery_config[0].toString()}
+                                            required />
+                                    </FormRow>
+                                ];
+
+                                if (this.state.add_battery_config[0] != BatteryClassID.None) {
+                                    rows = rows.concat(<Fragment key={`edit_children_${this.state.edit_battery_config[0]}`}>{config_plugins[this.state.add_battery_config[0]].get_edit_children(this.state.add_battery_config, (battery_config) => this.setState({add_battery_config: battery_config}))}</Fragment>);
+                                }
+
+                                return rows;
+                            }}
+                            onAddSubmit={async () => {
+                                this.setState({configs: {...this.state.configs, [this.state.add_battery_slot]: this.state.add_battery_config}});
+                                this.setDirty(true);
+                            }}
+                            onAddHide={async () => {
+                                if (this.state.add_battery_config[0] != BatteryClassID.None && config_plugins[this.state.add_battery_config[0]].hide) {
+                                    await config_plugins[this.state.add_battery_config[0]].hide();
+                                }
+                            }}
+                            />
+                    </FormRow>
                 </ConfigForm>
             </SubPage>
         );
