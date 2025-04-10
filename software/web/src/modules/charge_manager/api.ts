@@ -1,6 +1,30 @@
 import { ConfigChargeMode } from "modules/charge_manager/config_charge_mode.enum";
+import { AllocatorDecision } from "modules/charge_manager/allocator_decision.enum";
+import { GlobalAllocatorDecision } from "modules/charge_manager/global_allocator_decision.enum";
 
-interface ChargerState {
+type alloc_desc =
+{ d: AllocatorDecision.None0 } |
+{ d: AllocatorDecision.WaitingForRotation0 } |
+{ d: AllocatorDecision.ShuttingDownUnknown0 } |
+{ d: AllocatorDecision.ShuttingDownNotActive0 } |
+{ d: AllocatorDecision.ShuttingDownRotatedForB10 } |
+{ d: AllocatorDecision.ShuttingDownRotatedForHigherPrio0 } |
+{ d: AllocatorDecision.ShuttingDownOffOrError0 } |
+{ d: AllocatorDecision.WelcomeChargeUntil2, d1: number, d2: number } |
+{ d: AllocatorDecision.ShuttingDownPhaseOverload2, d1: number, d2: number } |
+{ d: AllocatorDecision.CantActivatePhaseMinimum3, d1: number, d2: number, d3: number } |
+{ d: AllocatorDecision.Activating1, d1: number } |
+{ d: AllocatorDecision.PhaseSwitching0 } |
+{ d: AllocatorDecision.PhaseSwitchingUnblockedAt2, d1: number, d2: number } |
+{ d: AllocatorDecision.WakingUp0 };
+
+type global_alloc_desc =
+{ d: GlobalAllocatorDecision.None0 } |
+{ d: GlobalAllocatorDecision.NextRotationAt2, d1: number, d2: number } |
+{ d: GlobalAllocatorDecision.PVExcessOverloadedHysteresisElapsesAt3, d1: number, d2: number, d3: number } |
+{ d: GlobalAllocatorDecision.HysteresisElapsesAt2, d1: number, d2: number };
+
+type ChargerState = {
     s: number,
     e: number,
     ac: number,
@@ -10,7 +34,7 @@ interface ChargerState {
     lu: number,
     n: string,
     u: number
-}
+} & alloc_desc;
 
 interface ServCharger {
     hostname: string;
@@ -22,7 +46,7 @@ interface ServCharger {
 
 export type scan_result = ServCharger[] | string;
 
-export interface state {
+export type state = {
     state: number,
     uptime: number,
     chargers: ChargerState[],
@@ -31,7 +55,7 @@ export interface state {
     l_spread: number[],
     l_max_pv: number,
     alloc: number[]
-}
+} & global_alloc_desc
 
 interface ChargerConfig {
     host: string,
