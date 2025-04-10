@@ -123,14 +123,6 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
             return <SubPage name="batteries" />;
 
         const bc_state = API.get("battery_control/state");
-
-        /*let classes: [string, string][] = [[BatteryClassID.None.toString(), __("batteries.content.battery_class_none")]];
-        let battery_slot = 0
-
-        for (let battery_class in config_plugins) {
-            classes.push([battery_class.toString(), config_plugins[battery_class].name()])
-        }*/
-
         let active_battery_slots = Object.keys(this.state.configs).filter((battery_slot_str) => this.state.configs[parseInt(battery_slot_str)][0] != BatteryClassID.None);
 
         return (
