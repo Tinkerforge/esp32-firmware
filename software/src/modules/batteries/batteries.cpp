@@ -71,15 +71,15 @@ void Batteries::pre_setup()
                 {"battery_slot", Config::Uint(0, 0, BATTERIES_SLOTS - 1)}
             }),
             [this, path_type](const Config *config) {
-                uint32_t battery_slot = config->get("battery_slot")->asUint();
-                const String path = get_path(battery_slot, path_type);
+                uint32_t slot = config->get("battery_slot")->asUint();
+                const String path = get_path(slot, path_type);
                 const String errmsg = api.callCommand(path.c_str());
 
                 if (!errmsg.isEmpty()) {
                     String action_name = batteries_path_postfixes[static_cast<uint32_t>(path_type)];
                     action_name.replace("_", " ");
 
-                    logger.printfln("Automation couldn't %s for battery slot %lu: %s", action_name.c_str(), battery_slot, errmsg.c_str());
+                    logger.printfln_battery("Automation couldn't %s: %s", action_name.c_str(), errmsg.c_str());
                 }
             }
         );
@@ -134,8 +134,8 @@ void Batteries::setup()
 
         IBattery *battery = new_battery_of_class(configured_battery_class, slot, battery_state, battery_errors);
 
-        if (!battery) {
-            logger.printfln("Failed to create battery of class %lu in slot %lu.", static_cast<uint32_t>(configured_battery_class), slot);
+        if (battery == nullptr) {
+            logger.printfln_battery("Failed to create battery of class %lu", static_cast<uint32_t>(configured_battery_class));
             battery = new_battery_of_class(BatteryClassID::None, slot, battery_state, battery_errors);
         }
 
@@ -328,11 +328,11 @@ String Batteries::get_path(uint32_t slot, Batteries::PathType path_type)
 
 void Batteries::start_action_all(IBattery::Action action)
 {
-    for (size_t i = 0; i < BATTERIES_SLOTS; i++) {
-        IBattery *battery = battery_slots[i].battery;
+    for (uint32_t slot = 0; slot < BATTERIES_SLOTS; slot++) {
+        IBattery *battery = battery_slots[slot].battery;
 
         if (!battery->start_action(action)) {
-            logger.printfln("Battery %zu failed to start action %lu", i, static_cast<uint32_t>(action));
+            logger.printfln_battery("Failed to start action %lu", static_cast<uint32_t>(action));
         }
     }
 }

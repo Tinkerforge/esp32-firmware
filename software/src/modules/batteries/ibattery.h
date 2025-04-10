@@ -25,6 +25,8 @@
 #include "battery_class_id.enum.h"
 #include "config.h"
 
+#define printfln_battery(fmt, ...) printfln("Battery %lu: " fmt, slot __VA_OPT__(,) __VA_ARGS__)
+
 char *format_battery_slot(uint32_t slot);
 
 class IBattery
