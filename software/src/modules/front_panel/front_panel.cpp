@@ -567,23 +567,26 @@ int FrontPanel::update_front_page_solar_forecast(const uint8_t index, const Tile
     uint32_t icon_index = SPRITE_ICON_SUN;
 
 #if MODULE_SOLAR_FORECAST_AVAILABLE()
-    Option<uint32_t> kwh{};
+    float wh_f;
     switch (param) {
         case SFType::ForecastToday:
             str1 = get_i18n_string("Today", "Heute");
-            kwh = solar_forecast.get_wh_today();
+            wh_f = solar_forecast.get_cached_wh_today();
             break;
         case SFType::ForecastTomorrow:
             str1 = get_i18n_string("Tmrw", "Morgen");
-            kwh = solar_forecast.get_wh_tomorrow();
+            wh_f = solar_forecast.get_cached_wh_tomorrow();
             break;
+        default: // Can't happen but makes GCC happy.
+            wh_f = NAN;
     }
 
-    if (kwh.is_some()) {
-        str2 = watt_hour_value_to_display_string(kwh.unwrap());
+    if (!isnan(wh_f)) {
+        uint32_t wh = static_cast<uint32_t>(wh_f);
+        str2 = watt_hour_value_to_display_string(wh);
         // If 5 kWh is a high or a low value of course depends on the size of the pv system.
         // On average, 5 kWh in a day sounds low enough to show some clouds.
-        if (kwh.unwrap() <= 5) {
+        if (wh <= 5000) {
             icon_index = SPRITE_ICON_CLOUD_SUN;
         }
     }
