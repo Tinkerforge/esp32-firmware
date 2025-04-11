@@ -27,6 +27,7 @@ specs = [
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 47,
                 'value_type': 'U16',
+                'scale_factor': -1.0,
                 'offset': -16384.0,
             },
         ],
@@ -117,7 +118,7 @@ specs = [
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 109,
                 'value_type': 'S16',
-                'scale_factor': 10.0,
+                'scale_factor': 10.0,  # FIXME: sign?
             },
         ],
     },
@@ -179,7 +180,7 @@ specs = [
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 84,
                 'value_type': 'S16',
-                'scale_factor': 10.0,
+                'scale_factor': 10.0,  # FIXME: sign?
             },
             {
                 'name': 'Netzfrequenz [0.1 Hz]',
@@ -193,14 +194,14 @@ specs = [
                 'value_id': 'PowerApparentLSumImExDiff',
                 'start_address': 88,
                 'value_type': 'S16',
-                'scale_factor': 10.0,
+                'scale_factor': 10.0,  # FIXME: sign?
             },
             {
                 'name': 'Summenleistung AC Blind [10 var]',
                 'value_id': 'PowerReactiveLSumIndCapDiff',
                 'start_address': 90,
                 'value_type': 'S16',
-                'scale_factor': 10.0,
+                'scale_factor': 10.0,  # FIXME: sign?
             },
             {
                 'name': 'Leistungsfaktor [0.1]',
