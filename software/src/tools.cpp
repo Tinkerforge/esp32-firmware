@@ -418,16 +418,17 @@ error:
 time_t get_localtime_midnight_in_utc(time_t timestamp)
 {
     // Local time for timestamp
-    struct tm *tm  = localtime(&timestamp);
+    struct tm tm;
+    localtime_r(&timestamp, &tm);
 
     // Local time to today midnight
-    tm->tm_hour  =  0;
-    tm->tm_min   =  0;
-    tm->tm_sec   =  0;
-    tm->tm_isdst = -1; // isdst = -1 => let mktime figure out if DST is in effect
+    tm.tm_hour  =  0;
+    tm.tm_min   =  0;
+    tm.tm_sec   =  0;
+    tm.tm_isdst = -1; // isdst = -1 => let mktime figure out if DST is in effect
 
     // Return midnight in UTC
-    return mktime(tm);
+    return mktime(&tm);
 }
 
 Option<time_t> get_localtime_today_midnight_in_utc()

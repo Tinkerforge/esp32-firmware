@@ -218,9 +218,11 @@ void Heating::update()
     if(!yield_forecast && !extended && !blocking && !pv_excess_control) {
         extended_logging("No control active.");
     } else {
-        const time_t now                      = time(NULL);
-        const struct tm *current_time         = localtime(&now);
-        const uint16_t minutes_since_midnight = current_time->tm_hour * 60 + current_time->tm_min;
+        const time_t now = time(NULL);
+        struct tm current_time;
+        localtime_r(&now, &current_time);
+
+        const uint16_t minutes_since_midnight = current_time.tm_hour * 60 + current_time.tm_min;
         if (minutes_since_midnight >= 24*60) {
             extended_logging("Too many minutes since midnight: %d.", minutes_since_midnight);
             return;

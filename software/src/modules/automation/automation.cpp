@@ -371,10 +371,10 @@ Automation::ConfigVec Automation::get_configured_triggers(AutomationTriggerID nu
 
 static bool is_last_day(struct tm time)
 {
-    const int mon = time.tm_mon;
-    time_t next_day = mktime(&time) + 86400;
-    time = *localtime(&next_day);
-    return time.tm_mon != mon;
+    const time_t next_day = mktime(&time) + 24 * 60 * 60;
+    tm tm_next_day;
+    localtime_r(&next_day, &tm_next_day);
+    return time.tm_mon != tm_next_day.tm_mon;
 }
 
 bool Automation::has_triggered(const Config *conf, void *data)
