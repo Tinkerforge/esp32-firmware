@@ -18,6 +18,7 @@
  */
 #include "solar_forecast.h"
 
+#include <math.h>
 #include <time.h>
 #include <lwip/inet.h>
 
@@ -65,9 +66,12 @@ void SolarForecast::pre_setup()
     }};
 
     state = Config::Object({
-        {"rate_limit", Config::Int8(-1)},
-        {"rate_remaining", Config::Int8(-1)},
-        {"next_api_call",  Config::Uint32(0)}, // unix timestamp in minutes
+        {"wh_today",           Config::Float(NAN)},
+        {"wh_today_remaining", Config::Float(NAN)},
+        {"wh_tomorrow",        Config::Float(NAN)},
+        {"rate_limit",         Config::Int8(-1)  },
+        {"rate_remaining",     Config::Int8(-1)  },
+        {"next_api_call",      Config::Uint32(0) }, // unix timestamp in minutes
     });
 
     for (size_t plane_index = 0; plane_index < SOLAR_FORECAST_PLANES; plane_index++) {
@@ -90,6 +94,7 @@ void SolarForecast::pre_setup()
             p.forecast.get("first_date")->updateUint(0);
             p.forecast.get("forecast")->removeAll();
 
+            this->update_cached_wh_state();
             this->next_update();
             return "";
         }};
@@ -141,6 +146,10 @@ void SolarForecast::register_urls()
         this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
             this->update();
         }, 100_ms, millis_t{CHECK_INTERVAL});
+
+        task_scheduler.scheduleWallClock([this]() {
+            this->update_cached_wh_state();
+        }, 60_min, 0_ms, false);
     });
 }
 
@@ -297,7 +306,9 @@ void SolarForecast::handle_new_data()
             // For the next check we take the period given by the server and multiply it by two
             // to be a good "free tier user" and not hit the server too often.
             // Usually the period is 3600 seconds (one hour), so we will check every two hours.
-            plane_current->state.get("next_check")->updateUint(current_minutes + (period/60)*2);
+            plane_current->state.get("next_check")->updateUint(current_minutes + period*2/60);
+
+            update_cached_wh_state();
         }
     }
 }
@@ -551,32 +562,59 @@ String SolarForecast::get_path(const SolarForecastPlane &plane, const SolarForec
     return path;
 }
 
-bool SolarForecast::forecast_time_between(const uint32_t first_date, const uint32_t index, const uint32_t start, const uint32_t end) {
-    const uint32_t forecast_time = first_date + index * 60;
-
-    return (forecast_time >= start) && (forecast_time <= end);
-}
-
 Option<uint32_t> SolarForecast::get_wh_range(const uint32_t start, const uint32_t end)
 {
+    if (start > end) {
+        return {};
+    }
+
     uint32_t wh    = 0;
-    uint32_t count = 0;
+    bool found_any_data = false;
+
     for (size_t plane_index = 0; plane_index < SOLAR_FORECAST_PLANES; plane_index++) {
-        SolarForecastPlane &plane = planes[plane_index];
+        const SolarForecastPlane &plane = planes[plane_index];
         if (plane.config.get("enable")->asBool()) {
             const uint32_t first_date = plane.forecast.get("first_date")->asUint();
-            for (size_t index = 0; index < plane.forecast.get("forecast")->count(); index++) {
-                if (forecast_time_between(first_date, index, start, end)) {
-                    wh += plane.forecast.get("forecast")->get(index)->asUint();
-                    count++;
+
+            if (!first_date) {
+                // Plane enabled but no data yet
+                continue;
+            }
+
+            const Config *forecast_cfg = static_cast<const Config *>(plane.forecast.get("forecast"));
+            const uint32_t forecast_length = static_cast<uint32_t>(forecast_cfg->count());
+
+            uint32_t i_start; // First included forecast index
+            if (start <= first_date) {
+                i_start = 0;
+            } else {
+                i_start = (start - first_date) / 60;
+                if (i_start >= forecast_length) {
+                    continue;
                 }
             }
+
+            uint32_t i_end; // Last included forecast index
+            if (end < first_date) {
+                continue;
+            } else {
+                i_end = (end - first_date) / 60;
+                if (i_end >= forecast_length) {
+                    i_end = forecast_length - 1;
+                }
+            }
+
+            for (uint32_t i = i_start; i <= i_end; i++) {
+                wh += forecast_cfg->get(i)->asUint();
+            }
+
+            found_any_data = true;
         }
     }
 
     // We assume that we have valid data for the day if
     // there is at least one data point today
-    if (count == 0) {
+    if (!found_any_data) {
         return {};
     }
 
@@ -595,6 +633,18 @@ Option<uint32_t> SolarForecast::get_wh_today()
     return get_wh_range(start, end);
 }
 
+Option<uint32_t> SolarForecast::get_wh_today_remaining()
+{
+    time_t midnight;
+    if (!get_localtime_today_midnight_in_utc().try_unwrap(&midnight)) {
+        return {};
+    }
+
+    const uint32_t start = rtc.timestamp_minutes();
+    const uint32_t end   = midnight / 60 + 60*24 - 1;
+    return get_wh_range(start, end);
+}
+
 Option<uint32_t> SolarForecast::get_wh_tomorrow()
 {
     time_t midnight;
@@ -605,4 +655,30 @@ Option<uint32_t> SolarForecast::get_wh_tomorrow()
     const uint32_t start = midnight / 60 + 60*24;
     const uint32_t end   = start + 60*24 - 1;
     return get_wh_range(start, end);
+}
+
+float SolarForecast::get_cached_wh_today()
+{
+    return state.get("wh_today")->asFloat();
+}
+
+float SolarForecast::get_cached_wh_today_remaining()
+{
+    return state.get("wh_today_remaining")->asFloat();
+}
+
+float SolarForecast::get_cached_wh_tomorrow()
+{
+    return state.get("wh_tomorrow")->asFloat();
+}
+
+void SolarForecast::update_cached_wh_state()
+{
+    Option<uint32_t> wh_today = get_wh_today();
+    Option<uint32_t> wh_today_remaining = get_wh_today_remaining();
+    Option<uint32_t> wh_tomorrow = get_wh_tomorrow();
+
+    state.get("wh_today"          )->updateFloat(wh_today.is_some()           ? static_cast<float>(wh_today.unwrap())           : NAN);
+    state.get("wh_today_remaining")->updateFloat(wh_today_remaining.is_some() ? static_cast<float>(wh_today_remaining.unwrap()) : NAN);
+    state.get("wh_tomorrow"       )->updateFloat(wh_tomorrow.is_some()        ? static_cast<float>(wh_tomorrow.unwrap())        : NAN);
 }

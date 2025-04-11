@@ -35,7 +35,6 @@ import { FormSeparator } from "../../ts/components/form_separator";
 import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapperB } from "../../ts/components/uplot_wrapper_2nd";
 import { InputText } from "../../ts/components/input_text";
-import { CollapsedSection } from "../../ts/components/collapsed_section";
 import { StatusSection } from "../../ts/components/status_section";
 
 const SOLAR_FORECAST_PLANES = 6;
@@ -51,96 +50,16 @@ function get_active_planes() {
     return active_planes;
 }
 
-function does_forecast_exist() {
-    for (let i = 0; i < SOLAR_FORECAST_PLANES; i++) {
-        const plane_forecast = API.get_unchecked(`solar_forecast/planes/${i}/forecast`);
-        if (plane_forecast.length > 0) {
-            return true;
-        }
-    }
-    return false;
-}
-
-function get_timestamp_today_00_00_in_seconds() {
-    return Math.floor(new Date(util.get_date_now_1m_update_rate()).setHours(0, 0, 0, 0) / 1000);
-}
-
-function forecast_time_between(first_date: number, index: number, start: number, end: number) {
-    let index_timestamp_seconds = (first_date + index*60)*60;
-    return (index_timestamp_seconds >= start) && (index_timestamp_seconds <= end);
-}
-
-function get_kwh_now_to_midnight() {
-    let start         = Math.floor(new Date(util.get_date_now_1m_update_rate()).setMinutes(0, 0, 0) / 1000);
-    let end           = get_timestamp_today_00_00_in_seconds() + 60*60*24 - 1;
-    let active_planes = get_active_planes();
-    let wh            = 0.0;
-    let count         = 0
-    for (const plane of active_planes) {
-        const plane_forecast = API.get_unchecked(`solar_forecast/planes/${plane}/forecast`);
-        for (let index = 0; index < plane_forecast.forecast.length; index++) {
-            if (forecast_time_between(plane_forecast.first_date, index, start, end)) {
-                wh += plane_forecast.forecast[index] || 0.0;
-                count++;
-            }
-        }
-    }
-
-    if (count == 0) {
-        return NaN;
-    }
-
-    return wh/1000.0;
-}
-
 export function is_solar_forecast_enabled() {
     return API.get("solar_forecast/config").enable;
 }
 
 export function get_kwh_today() {
-    let start         = get_timestamp_today_00_00_in_seconds();
-    let end           = start + 60*60*24 - 1;
-    let active_planes = get_active_planes();
-    let wh            = 0.0;
-    let count         = 0;
-    for (const plane of active_planes) {
-        const plane_forecast = API.get_unchecked(`solar_forecast/planes/${plane}/forecast`);
-        for (let index = 0; index < plane_forecast.forecast.length; index++) {
-            if (forecast_time_between(plane_forecast.first_date, index, start, end)) {
-                wh += plane_forecast.forecast[index] || 0.0;
-                count++;
-            }
-        }
-    }
-
-    if (count == 0) {
-        return NaN;
-    }
-
-    return wh/1000.0;
+    return API.get("solar_forecast/state").wh_today;
 }
 
 export function get_kwh_tomorrow() {
-    let start         = get_timestamp_today_00_00_in_seconds() + 60*60*24;
-    let end           = start + 60*60*24 - 1;
-    let active_planes = get_active_planes();
-    let wh            = 0.0;
-    let count         = 0;
-    for (const plane of active_planes) {
-        const plane_forecast = API.get_unchecked(`solar_forecast/planes/${plane}/forecast`);
-        for (let index = 0; index < plane_forecast.forecast.length; index++) {
-            if (forecast_time_between(plane_forecast.first_date, index, start, end)) {
-                wh += plane_forecast.forecast[index] || 0.0;
-                count++;
-            }
-        }
-    }
-
-    if (count == 0) {
-        return NaN;
-    }
-
-    return wh/1000.0;
+    return API.get("solar_forecast/state").wh_tomorrow;
 }
 
 export function SolarForecastNavbar() {
@@ -499,7 +418,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                     </FormRow>
                 <FormRow label={__("solar_forecast.content.solar_forecast_now_label")} label_muted={("0" + new Date(util.get_date_now_1m_update_rate()).getHours()).slice(-2) + ":00 " + __("solar_forecast.content.time_to") + " 23:59"}>
                     <InputText
-                        value={util.get_value_with_unit(get_kwh_now_to_midnight(), "kWh", 2)}
+                        value={util.get_value_with_unit(this.state.state.wh_today_remaining / 1000, "kWh", 2)}
                     />
                 </FormRow>
                 <FormRow label={__("solar_forecast.content.solar_forecast_days_label")} label_muted={__("solar_forecast.content.solar_forecast_today_label_muted")}>
@@ -508,7 +427,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                             <div class="input-group">
                                 <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("solar_forecast.content.solar_forecast_today_label")}</span></div>
                                 <InputText
-                                    value={util.get_value_with_unit(get_kwh_today(), "kWh", 2)}
+                                    value={util.get_value_with_unit(this.state.state.wh_today / 1000, "kWh", 2)}
                                 />
                             </div>
                         </div>
@@ -516,7 +435,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                             <div class="input-group">
                                 <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("solar_forecast.content.solar_forecast_tomorrow_label")}</span></div>
                                 <InputText
-                                    value={util.get_value_with_unit(get_kwh_tomorrow(), "kWh", 2)}
+                                    value={util.get_value_with_unit(this.state.state.wh_tomorrow / 1000, "kWh", 2)}
                                 />
                             </div>
                         </div>
@@ -565,10 +484,12 @@ export class SolarForecastStatus extends Component
         if (!util.render_allowed() || !config.enable)
             return <StatusSection name="solar_forecast" />
 
+        const state = API.get("solar_forecast/state");
+
         return <StatusSection name="solar_forecast">
             <FormRow label={__("solar_forecast.content.solar_forecast_now_label")} label_muted={("0" + new Date(util.get_date_now_1m_update_rate()).getHours()).slice(-2) + ":00 " + __("solar_forecast.content.time_to") + " 23:59"}>
                 <InputText
-                    value={util.get_value_with_unit(get_kwh_now_to_midnight(), "kWh", 2)}
+                    value={util.get_value_with_unit(state.wh_today_remaining / 1000, "kWh", 2)}
                 />
             </FormRow>
             <FormRow label={__("solar_forecast.content.solar_forecast_days_label")} label_muted={__("solar_forecast.content.solar_forecast_today_label_muted")}>
@@ -577,7 +498,7 @@ export class SolarForecastStatus extends Component
                         <div class="input-group">
                             <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("solar_forecast.content.solar_forecast_today_label")}</span></div>
                             <InputText
-                                value={util.get_value_with_unit(get_kwh_today(), "kWh", 2)}
+                                value={util.get_value_with_unit(state.wh_today / 1000, "kWh", 2)}
                             />
                         </div>
                     </div>
@@ -585,7 +506,7 @@ export class SolarForecastStatus extends Component
                         <div class="input-group">
                             <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("solar_forecast.content.solar_forecast_tomorrow_label")}</span></div>
                             <InputText
-                                value={util.get_value_with_unit(get_kwh_tomorrow(), "kWh", 2)}
+                                value={util.get_value_with_unit(state.wh_tomorrow / 1000, "kWh", 2)}
                             />
                         </div>
                     </div>

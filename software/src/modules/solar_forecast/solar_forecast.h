@@ -61,7 +61,11 @@ public:
     // start and end in minutes since epoch
     Option<uint32_t> get_wh_range(const uint32_t start, const uint32_t end);
     Option<uint32_t> get_wh_today();
+    Option<uint32_t> get_wh_today_remaining();
     Option<uint32_t> get_wh_tomorrow();
+    float get_cached_wh_today();
+    float get_cached_wh_today_remaining();
+    float get_cached_wh_tomorrow();
 
     ConfigRoot config;
     ConfigRoot state;
@@ -83,9 +87,9 @@ private:
     String get_path(const SolarForecastPlane &plane, const PathType path_type);
     String get_api_url_with_path(const SolarForecastPlane &plane);
     uint32_t get_timestamp_today_00_00_in_minutes();
-    bool forecast_time_between(const uint32_t first_date, const uint32_t index, const uint32_t start, const uint32_t end);
     void handle_new_data();
     void handle_cleanup();
+    void update_cached_wh_state();
 
     SolarForecastPlane *plane_current;
 
