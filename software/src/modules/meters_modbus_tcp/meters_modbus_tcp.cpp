@@ -178,12 +178,12 @@ void MetersModbusTCP::pre_setup()
 
     table_prototypes.push_back({MeterModbusTCPTableID::SAXPowerHomeBasicMode, Config::Object({
         {"virtual_meter", Config::Enum(SolaredgeInverterVirtualMeter::None)},
-        {"device_address", Config::Uint(40, 1, 247)},
+        {"device_address", Config::Uint(64, 1, 247)},
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::SAXPowerHomeExtendedMode, Config::Object({
         {"virtual_meter", Config::Enum(SolaredgeInverterVirtualMeter::None)},
-        {"device_address", Config::Uint(64, 1, 247)},
+        {"device_address", Config::Uint(40, 1, 247)},
     })});
 
     config_prototype = Config::Object({

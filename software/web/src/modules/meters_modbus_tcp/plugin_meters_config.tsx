@@ -514,10 +514,10 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
             return [MeterModbusTCPTableID.TinkerforgeWARPCharger, null];
 
         case MeterModbusTCPTableID.SAXPowerHomeBasicMode:
-            return [MeterModbusTCPTableID.SAXPowerHomeBasicMode, {virtual_meter: null, device_address: 40}];
+            return [MeterModbusTCPTableID.SAXPowerHomeBasicMode, {virtual_meter: null, device_address: 64}];
 
         case MeterModbusTCPTableID.SAXPowerHomeExtendedMode:
-            return [MeterModbusTCPTableID.SAXPowerHomeExtendedMode, {virtual_meter: null, device_address: 64}];
+            return [MeterModbusTCPTableID.SAXPowerHomeExtendedMode, {virtual_meter: null, device_address: 40}];
 
         default:
             return [MeterModbusTCPTableID.None, null];
