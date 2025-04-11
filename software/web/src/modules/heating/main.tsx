@@ -211,9 +211,6 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
             data.values[0].push(dap_prices.first_date * 60 + dap_prices.prices.length * 60 * resolution_multiplier - 1);
             data.values[1].push(get_price_from_index(dap_prices.prices.length - 1) / 1000.0 + grid_costs_and_taxes_and_supplier_markup);
 
-            const solar_forecast_today     = get_kwh_today();
-            const solar_forecast_tomorrow  = get_kwh_tomorrow();
-            const solar_forecast_threshold = this.state.yield_forecast_threshold;
             const hour_multiplier = 60/resolution_multiplier;
             const num_per_day     = 24*hour_multiplier;
             const extended        = this.state.extended ? extended_hours*hour_multiplier : 0;
