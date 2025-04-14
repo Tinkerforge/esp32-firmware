@@ -25,6 +25,7 @@ import { Button, Alert } from "react-bootstrap";
 import { FormRow } from "../../ts/components/form_row";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
+import { InputTextPatterned } from "../../ts/components/input_text";
 import { InputHost } from "../../ts/components/input_host";
 import { OutputTextarea } from "../../ts/components/output_textarea";
 import { NavbarItem } from "../../ts/components/navbar_item";
@@ -88,12 +89,12 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                 return;
             }
 
-            let result = "<unknown>";
+            let result = "Success";
 
             if (transact_result.error !== null) {
-                result = transact_result.error;
+                result = "Error: " + transact_result.error;
             }
-            if (transact_result.read_data !== null) {
+            else if (transact_result.read_data !== null) {
                 let header = " Addr  Off   Hex   UInt";
 
                 result = header + "\n";
@@ -139,7 +140,31 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     let cookie: number = Math.floor(Math.random() * 0xFFFFFFFF);
 
                     this.setState({waiting: true, cookie: cookie, result: ""}, async () => {
-                        let result;
+                        let data_count = this.state.data_count;
+                        let values_hex: string[] = [];
+
+                        if (this.state.function_code == 6 || this.state.function_code == 16) {
+                            for (let value_dec of this.state.write_data.split(",")) {
+                                let value = parseInt(value_dec);
+
+                                if (value > 65535) {
+                                    this.setState({waiting: false, cookie: null, result: "Error: Value too big"});
+                                    return;
+                                }
+
+                                let value_hex = value.toString(16).toUpperCase();
+
+                                while (value_hex.length < 4) {
+                                    value_hex = "0" + value_hex;
+                                }
+
+                                values_hex.push(value_hex);
+                            }
+
+                            data_count = values_hex.length;
+                        }
+
+                        let result = "<unknown>";
 
                         try {
                             result = await (await util.put("/modbus_tcp_debug/transact", {
@@ -148,30 +173,31 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                                 device_address: this.state.device_address,
                                 function_code: this.state.function_code,
                                 start_address: this.state.start_address,
-                                data_count: this.state.data_count,
-                                write_data: this.state.write_data,
+                                data_count: data_count,
+                                write_data: values_hex.join(""),
                                 timeout: this.state.timeout,
                                 byte_order: this.state.byte_order,
                                 cookie: cookie,
                             })).text();
                         }
                         catch (e) {
-                            result = "Error: " + e.message.replace("400(Bad Request) ", "");
+                            result = e.message.replace("400(Bad Request) ", "");
                         }
 
                         if (result.length > 0) {
-                            this.setState({waiting: false, cookie: null, result: result});
+                            this.setState({waiting: false, cookie: null, result: "Error: " + result});
                         }
                     });
                 }}>
             <FormRow label={__("modbus_tcp_debug.content.host")}>
                 <InputHost
+                    required
                     value={this.state.host}
-                    onValue={(v) => this.setState({host: v})}
-                    required />
+                    onValue={(v) => this.setState({host: v})} />
             </FormRow>
             <FormRow label={__("modbus_tcp_debug.content.port")} label_muted={__("modbus_tcp_debug.content.port_muted")}>
                 <InputNumber
+                    required
                     min={1}
                     max={65535}
                     value={this.state.port}
@@ -179,6 +205,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
             </FormRow>
             <FormRow label={__("modbus_tcp_debug.content.device_address")}>
                 <InputNumber
+                    required
                     min={0}
                     max={255}
                     value={this.state.device_address}
@@ -186,9 +213,12 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
             </FormRow>
             <FormRow label={__("modbus_tcp_debug.content.function_code")}>
                 <InputSelect
+                    required
                     items={[
                         ["3", __("modbus_tcp_debug.content.function_code_read_holding_registers")],
                         ["4", __("modbus_tcp_debug.content.function_code_read_input_registers")],
+                        ["6", __("modbus_tcp_debug.content.function_code_write_single_register")],
+                        ["16", __("modbus_tcp_debug.content.function_code_write_multiple_registers")],
                     ]}
                     placeholder={__("select")}
                     value={this.state.function_code.toString()}
@@ -196,20 +226,51 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
             </FormRow>
             <FormRow label={__("modbus_tcp_debug.content.start_address")} label_muted={__("modbus_tcp_debug.content.start_address_muted")}>
                 <InputNumber
+                    required
                     min={0}
                     max={65535}
                     value={this.state.start_address}
                     onValue={(v) => this.setState({start_address: v})} />
             </FormRow>
-            <FormRow label={__("modbus_tcp_debug.content.data_count")}>
-                <InputNumber
-                    min={1}
-                    max={65535 /* FIXME: depends on function code */}
-                    value={this.state.data_count}
-                    onValue={(v) => this.setState({data_count: v})} />
-            </FormRow>
+
+            {this.state.function_code == 3 || this.state.function_code == 4 ?
+                <FormRow label={__("modbus_tcp_debug.content.data_count")}>
+                    <InputNumber
+                        required
+                        min={1}
+                        max={65535 /* FIXME: depends on function code */}
+                        value={this.state.data_count}
+                        onValue={(v) => this.setState({data_count: v})} />
+                </FormRow>
+                : undefined}
+
+            {this.state.function_code == 6 ?
+                <FormRow label={__("modbus_tcp_debug.content.write_data_single_register")}>
+                    <InputTextPatterned
+                        required
+                        pattern="^[0-9]+$"
+                        value={this.state.write_data}
+                        onValue={(v) => this.setState({write_data: v})}
+                        invalidFeedback={__("modbus_tcp_debug.content.write_data_single_register_invalid")}
+                        />
+                </FormRow>
+                : undefined}
+
+            {this.state.function_code == 16 ?
+                <FormRow label={__("modbus_tcp_debug.content.write_data_multiple_registers")} label_muted={__("modbus_tcp_debug.content.write_data_multiple_registers_muted")}>
+                    <InputTextPatterned
+                        required
+                        pattern="^[0-9]+(,[0-9]+)*$"
+                        value={this.state.write_data}
+                        onValue={(v) => this.setState({write_data: v})}
+                        invalidFeedback={__("modbus_tcp_debug.content.write_data_multiple_registers_invalid")}
+                        />
+                </FormRow>
+                : undefined}
+
             <FormRow label={__("modbus_tcp_debug.content.transact_timeout")}>
                 <InputNumber
+                    required
                     value={this.state.timeout}
                     onValue={(v) => this.setState({timeout: v})}
                     unit="ms" />

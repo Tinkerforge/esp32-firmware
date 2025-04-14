@@ -82,6 +82,8 @@ void ModbusTCPDebug::register_urls()
         String write_data = transact.get("write_data")->asString();
         millis_t timeout = millis_t{transact.get("timeout")->asUint()};
         TFModbusTCPByteOrder byte_order = transact.get("byte_order")->asEnum<TFModbusTCPByteOrder>();
+        bool hexload_registers = false;
+        bool hexdump_registers = false;
 
         switch (function_code) {
         case TFModbusTCPFunctionCode::ReadCoils:
@@ -91,20 +93,30 @@ void ModbusTCPDebug::register_urls()
 
         case TFModbusTCPFunctionCode::ReadHoldingRegisters:
         case TFModbusTCPFunctionCode::ReadInputRegisters:
+            hexdump_registers = true;
             break;
 
         case TFModbusTCPFunctionCode::WriteSingleCoil:
-        case TFModbusTCPFunctionCode::WriteSingleRegister:
-        case TFModbusTCPFunctionCode::WriteMultipleCoils:
-        case TFModbusTCPFunctionCode::WriteMultipleRegisters:
             report_errorf(cookie, "Function code %u is not supported yet", static_cast<uint8_t>(function_code));
             return;
+
+        case TFModbusTCPFunctionCode::WriteSingleRegister:
+            hexload_registers = true;
+            break;
+
+        case TFModbusTCPFunctionCode::WriteMultipleCoils:
+            report_errorf(cookie, "Function code %u is not supported yet", static_cast<uint8_t>(function_code));
+            return;
+
+        case TFModbusTCPFunctionCode::WriteMultipleRegisters:
+            hexload_registers = true;
+            break;
         }
 
         client = new TFModbusTCPClient(byte_order);
 
         client->connect(host.c_str(), port,
-        [this, cookie, host, port, device_address, function_code, start_address, data_count, write_data, timeout](TFGenericTCPClientConnectResult connect_result, int error_number) {
+        [this, cookie, host, port, device_address, function_code, start_address, data_count, write_data, timeout, hexload_registers, hexdump_registers](TFGenericTCPClientConnectResult connect_result, int error_number) {
             if (connect_result != TFGenericTCPClientConnectResult::Connected) {
                 char connect_error[256] = "";
 
@@ -126,10 +138,51 @@ void ModbusTCPDebug::register_urls()
                 return;
             }
 
-            // FIXME: write data into buffer for write function codes
+            // FIXME: hexload coils for coil function codes
+
+            if (hexload_registers) {
+                size_t nibble_count = write_data.length();
+
+                if (nibble_count > TF_MODBUS_TCP_MAX_WRITE_REGISTER_COUNT * 4) {
+                    report_errorf(cookie, "Write data is too long");
+
+                    client_disconnect = true;
+                    return;
+                }
+
+                if ((nibble_count % 4) != 0) {
+                    report_errorf(cookie, "Write data length must be multiple of 4");
+
+                    client_disconnect = true;
+                    return;
+                }
+
+                if (nibble_count != data_count * 4) {
+                    report_errorf(cookie, "Write data nibble count mismatch");
+
+                    client_disconnect = true;
+                    return;
+                }
+
+                ssize_t data_hexload_len = hexload<uint16_t>(write_data.c_str(), nibble_count, transact_buffer, TF_MODBUS_TCP_MAX_WRITE_REGISTER_COUNT);
+
+                if (data_hexload_len < 0) {
+                    report_errorf(cookie, "Write data is malformed");
+
+                    client_disconnect = true;
+                    return;
+                }
+
+                if (data_hexload_len != data_count) {
+                    report_errorf(cookie, "Write data register count mismatch");
+
+                    client_disconnect = true;
+                    return;
+                }
+            }
 
             client->transact(device_address, function_code, start_address, data_count, transact_buffer, timeout,
-            [this, cookie, data_count](TFModbusTCPClientTransactionResult transact_result) {
+            [this, cookie, data_count, hexdump_registers](TFModbusTCPClientTransactionResult transact_result) {
                 if (transact_result != TFModbusTCPClientTransactionResult::Success) {
                     report_errorf(cookie, "Transaction failed: %s (%d)",
                                   get_tf_modbus_tcp_client_transaction_result_name(transact_result),
@@ -139,18 +192,24 @@ void ModbusTCPDebug::register_urls()
                     return;
                 }
 
-                // FIXME: format coils for coil function codes
-
                 char data_hexdump[TF_MODBUS_TCP_MAX_READ_REGISTER_COUNT * 4 + 1];
-                hexdump(transact_buffer, data_count, data_hexdump, ARRAY_SIZE(data_hexdump), HexdumpCase::Lower);
-
                 char buf[64 + sizeof(data_hexdump)];
                 TFJsonSerializer json{buf, sizeof(buf)};
 
                 json.addObject();
                 json.addMemberNumber("cookie", cookie);
                 json.addMemberNull("error");
-                json.addMemberString("read_data", data_hexdump);
+
+                // FIXME: hexdump coils for coil function codes
+
+                if (hexdump_registers) {
+                    hexdump<uint16_t>(transact_buffer, data_count, data_hexdump, ARRAY_SIZE(data_hexdump), HexdumpCase::Lower);
+                    json.addMemberString("read_data", data_hexdump);
+                }
+                else {
+                    json.addMemberNull("read_data");
+                }
+
                 json.endObject();
                 json.end();
 
