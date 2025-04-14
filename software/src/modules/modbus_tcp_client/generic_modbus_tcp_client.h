@@ -47,6 +47,7 @@ protected:
 
     uint8_t device_address = 0;
     ReadRequest generic_read_request;
+    bool log_read_errors = true;
 
 private:
     void read_next();

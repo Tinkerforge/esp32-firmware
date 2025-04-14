@@ -330,6 +330,7 @@ void MeterSunSpec::scan_start()
         return;
     }
 
+    log_read_errors = false; // don't log errors while probing for the correct base address
     scan_base_address_index = 0;
     scan_state = ScanState::Idle;
     scan_state_next = ScanState::ReadSunSpecID;
@@ -354,6 +355,23 @@ void MeterSunSpec::scan_read_delay()
     }, 1_s + (millis_t{esp_random() % 4000}));
 }
 
+void MeterSunSpec::scan_next_base_address()
+{
+    ++scan_base_address_index;
+
+    if (scan_base_address_index >= ARRAY_SIZE(scan_base_addresses)) {
+        logger.printfln_meter("No SunSpec device found at %s:%u:%u", host.c_str(), port, device_address);
+        scan_start_delay();
+    }
+    else {
+        generic_read_request.start_address = scan_base_addresses[scan_base_address_index];
+        generic_read_request.register_count = 2;
+        scan_state_next = ScanState::ReadSunSpecID;
+
+        start_generic_read();
+    }
+}
+
 void MeterSunSpec::scan_next()
 {
     trace_response();
@@ -364,7 +382,13 @@ void MeterSunSpec::scan_next()
             timeout->updateUint(timeout->asUint() + 1);
         }
 
-        scan_read_delay();
+        if (scan_state_next == ScanState::ReadSunSpecID) {
+            scan_next_base_address();
+        }
+        else {
+            scan_read_delay();
+        }
+
         return;
     }
 
@@ -381,24 +405,13 @@ void MeterSunSpec::scan_next()
                 if (sun_spec_id == SUN_SPEC_ID) {
                     generic_read_request.start_address += generic_read_request.register_count;
                     generic_read_request.register_count = 2;
+                    log_read_errors = true; // log errors again after the correct base address was found
                     scan_state_next = ScanState::ReadModelHeader;
 
                     start_generic_read();
                 }
                 else {
-                    ++scan_base_address_index;
-
-                    if (scan_base_address_index >= ARRAY_SIZE(scan_base_addresses)) {
-                        logger.printfln_meter("No SunSpec device found at %s:%u:%u", host.c_str(), port, device_address);
-                        scan_start_delay();
-                    }
-                    else {
-                        generic_read_request.start_address = scan_base_addresses[scan_base_address_index];
-                        generic_read_request.register_count = 2;
-                        scan_state_next = ScanState::ReadSunSpecID;
-
-                        start_generic_read();
-                    }
+                    scan_next_base_address();
                 }
             }
 

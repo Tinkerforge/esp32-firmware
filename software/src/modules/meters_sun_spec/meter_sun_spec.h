@@ -70,6 +70,7 @@ private:
     void scan_start_delay();
     void scan_start();
     void scan_read_delay();
+    void scan_next_base_address();
     void scan_next();
 
     uint32_t slot;

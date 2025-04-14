@@ -108,7 +108,7 @@ void GenericModbusTCPClient::read_next()
         }
 
         if (result != TFModbusTCPClientTransactionResult::Success) {
-            if (result != TFModbusTCPClientTransactionResult::Timeout || (last_read_result_burst_length % 10) == 0) {
+            if (log_read_errors && (result != TFModbusTCPClientTransactionResult::Timeout || (last_read_result_burst_length % 10) == 0)) {
                 logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
                                          "%sModbus read error (host='%s' port=%u devaddr=%u fcode=%d regaddr=%u regcnt=%u burstlen=%zu): %s (%d)",
                                          event_log_message_prefix,
