@@ -1,0 +1,147 @@
+
+
+import json
+
+import xmlschema
+import os
+from pprint import pprint
+
+from xmlschema import XMLSchema10
+
+cpp_datatypes = []
+
+
+
+class Ship_type:
+    #@brief: Type_name: either "define", "using", "enum", "struct" or "class"
+    type_name = ""
+    depends_on = []
+    name = ""
+    code = ""
+    to_json_code = ""
+    from_json_code = ""
+    upper_limit = None
+    lower_limit = None
+    #this is technically required but we dont check it
+    regex_restriction = None
+
+    def __init__(self, type_name, name, code):
+        self.type = type_name
+        self.name = name
+        self.code = code
+        self.depends_on = []
+
+def remove_namespace(name):
+    if name is not None:
+        if "}" in name:
+            return name.split("}", 1)[1]  # Entfernt den Namespace-URI
+    else:
+        print("none name")
+    return name
+
+def to_cpp_datatype(type_name):
+    type_name = str(type_name.__name__)
+    type_mapping = {
+        "string": "std::string",
+        "str": "std::string",
+        "int": "int",
+        "float": "float",
+        "double": "double",
+        "boolean": "bool",
+        "bool": "bool",
+        "Duration": "int",
+        # Fügen Sie hier weitere Typzuordnungen hinzu
+    }
+    if type_name not in type_mapping:
+        print("Unknown datatype:", type_name)
+    return type_mapping.get(type_name, "Null")
+
+def remove_duplicate_lines(input_string):
+    seen = set()
+    result = []
+    for line in input_string.splitlines():
+        if line not in seen:
+            seen.add(line)
+            result.append(line)
+    return "\n".join(result)
+
+def make_variable_name(name: str):
+    # Entferne alle nicht-alphanumerischen Zeichen und ersetze sie durch Unterstriche
+    name = ''.join(char if char.isalnum() else '_' for char in name)
+    # Stelle sicher, dass der Name mit einem Buchstaben beginnt
+    if not name[0].isalpha():
+        name = 'var_' + name
+    return name
+
+
+def process_schema(xml_schema):
+
+    unprocessed_elements = 0
+
+    print("Generating code...")
+    for simple_type in schema.simple_types:
+
+        if simple_type.derivation == "restriction":
+            if simple_type.enumeration is not None:
+                new_type = Ship_type("enum", remove_namespace(simple_type.name), "")
+                new_type.code = "enum " + remove_namespace(simple_type.name) + " {\n"
+
+                for enumeration in simple_type.enumeration:
+                    new_type.code += "  " + make_variable_name(str(enumeration)) + ",\n"
+                new_type.code += "};\n"
+
+            elif hasattr(simple_type, 'base_type'):
+                datatype = "using " + remove_namespace(simple_type.name) + " = " + to_cpp_datatype(simple_type.base_type.python_type) + ";\n"
+                if simple_type.base_type.max_value is not None:
+                    cpp_defines.append("#define SPINE_TYPES_" + remove_namespace(simple_type.name) + "_MAX " + str(simple_type.base_type.max_value) + "\n")
+                if simple_type.base_type.min_value is not None:
+                    cpp_defines.append("#define SPINE_TYPES_" + remove_namespace(simple_type.name) + "_MIN " + str(simple_type.base_type.min_value) + "\n")
+                if simple_type.base_type.max_value is None and simple_type.base_type.min_value is None and to_cpp_datatype(simple_type.base_type.python_type) != "std::string":
+                    print("Unknown restriction to basetype", simple_type.name)
+                cpp_datatypes.append(datatype)
+            else:
+                unprocessed_elements += 1
+                print("simple type: " + simple_type.name + " has restriction but no enumeration")
+        else:
+            if hasattr(simple_type, 'member_types'):
+                struct_type = "struct " + remove_namespace(simple_type.name) + " {\n"
+                for member_type in simple_type.member_types:
+                    struct_type += " " + to_cpp_datatype(member_type.python_type) + " " + member_type.local_name  +";\n"
+                struct_type += "};\n"
+                cpp_defines.append(struct_type)
+            else:
+                print("No restriction to basetype", simple_type.name)
+                unprocessed_elements += 1
+    print("not processed "+ str(unprocessed_elements) + " of " + str(len(schema.simple_types)) + " simple types")
+    for complex_type in schema.complex_types:
+        print("Generating code for complex type", remove_namespace(complex_type.name))
+
+    for name, enum_type in ccp_enums:
+        #print(enum_type)
+        pass
+    return cpp_datatypes, ccp_enums
+
+
+
+print("Loading schema...")
+
+schema_path  = os.path.join("SPINE", "EEBus_SPINE_TS_NodeManagement.xsd")
+
+
+# Schema laden
+schema = xmlschema.XMLSchema(schema_path)
+process_schema(schema)
+#print("Deduplicating code...")
+#cpp_datatypes = remove_duplicate_lines(cpp_datatypes)
+with open("spine_types.h", "w") as f:
+    f.write("// This file is generated by pre_generator.py\n")
+    for define in cpp_defines:
+        f.write(define)
+    for enum_type in ccp_enums:
+        f.write(enum_type[1])
+    for simple_type in cpp_datatypes:
+        f.write(simple_type)
+
+
+
+print("Done!")
