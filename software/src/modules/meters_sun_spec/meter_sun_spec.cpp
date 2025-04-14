@@ -160,6 +160,37 @@ bool MeterSunSpec::alloc_read_buffer(size_t model_regcount)
     return true;
 }
 
+void MeterSunSpec::trace_response()
+{
+    if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
+        trace("m%lu a%zu c%zu e%lu",
+              slot,
+              generic_read_request.start_address,
+              generic_read_request.register_count,
+              static_cast<uint32_t>(generic_read_request.result));
+    }
+    else {
+        char data_buf[125 * 4 + 1]; // 4 nibble per register for 125 registers plus \n
+        size_t data_buf_used;
+
+        for (size_t i = 0; i < 2; ++i) {
+            if (generic_read_request.data[i] != nullptr) {
+                trace("m%lu a%zu c%zu d%zu",
+                      slot,
+                      generic_read_request.start_address,
+                      generic_read_request.register_count,
+                      i);
+
+                data_buf_used = hexdump(generic_read_request.data[i], generic_read_request.register_count, data_buf, ARRAY_SIZE(data_buf), HexdumpCase::Lower);
+                data_buf[data_buf_used] = '\n';
+                ++data_buf_used;
+
+                logger.trace_plain(trace_buffer_index, data_buf, data_buf_used);
+            }
+        }
+    }
+}
+
 void MeterSunSpec::read_start(size_t model_regcount)
 {
     if (!alloc_read_buffer(model_regcount)) {
@@ -177,38 +208,15 @@ void MeterSunSpec::read_done_callback()
 {
     read_allowed = true;
 
-    if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
-        trace("m%lu a%zu c%zu e%lu",
-              slot,
-              generic_read_request.start_address,
-              generic_read_request.register_count,
-              static_cast<uint32_t>(generic_read_request.result));
+    trace_response();
 
+    if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
         if (generic_read_request.result == TFModbusTCPClientTransactionResult::Timeout) {
             auto timeout = errors->get("timeout");
             timeout->updateUint(timeout->asUint() + 1);
         }
 
         return;
-    }
-
-    char data_buf[125 * 4 + 1]; // 4 nibble per register for 125 registers plus \n
-    size_t data_buf_used;
-
-    for (size_t i = 0; i < 2; ++i) {
-        if (generic_read_request.data[i] != nullptr) {
-            trace("m%lu a%zu c%zu d%zu",
-                  slot,
-                  generic_read_request.start_address,
-                  generic_read_request.register_count,
-                  i);
-
-            data_buf_used = hexdump(generic_read_request.data[i], generic_read_request.register_count, data_buf, ARRAY_SIZE(data_buf), HexdumpCase::Lower);
-            data_buf[data_buf_used] = '\n';
-            ++data_buf_used;
-
-            logger.trace_plain(trace_buffer_index, data_buf, data_buf_used);
-        }
     }
 
     if (!values_declared) {
@@ -348,6 +356,8 @@ void MeterSunSpec::scan_read_delay()
 
 void MeterSunSpec::scan_next()
 {
+    trace_response();
+
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
         if (generic_read_request.result == TFModbusTCPClientTransactionResult::Timeout) {
             auto timeout = errors->get("timeout");
