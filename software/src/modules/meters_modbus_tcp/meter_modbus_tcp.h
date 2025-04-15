@@ -49,6 +49,7 @@
 #include "carlo_gavazzi_em280_virtual_meter.enum.h"
 #include "solaredge_inverter_virtual_meter.enum.h"
 #include "sax_power_virtual_meter.enum.h"
+#include "e3dc_virtual_meter.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -114,6 +115,7 @@ private:
     bool is_carlo_gavazzi_em100_or_et100() const;
     bool is_carlo_gavazzi_em510() const;
     bool is_solaredge_inverter_battery_meter() const;
+    bool is_e3dc_pv_meter() const;
 
     uint32_t slot;
     Config *state;
@@ -280,6 +282,11 @@ private:
         struct {
             SAXPowerVirtualMeter virtual_meter;
         } sax_power;
+
+        // E3/DC
+        struct {
+            E3DCVirtualMeter virtual_meter;
+        } e3dc;
     };
 };
 

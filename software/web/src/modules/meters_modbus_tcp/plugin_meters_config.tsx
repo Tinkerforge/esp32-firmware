@@ -48,6 +48,7 @@ import { CarloGavazziEM270VirtualMeter } from "./carlo_gavazzi_em270_virtual_met
 import { CarloGavazziEM280VirtualMeter } from "./carlo_gavazzi_em280_virtual_meter.enum";
 import { SolaredgeInverterVirtualMeter } from "./solaredge_inverter_virtual_meter.enum";
 import { SAXPowerVirtualMeter } from "./sax_power_virtual_meter.enum";
+import { E3DCVirtualMeter } from "./e3dc_virtual_meter.enum";
 import { InputText } from "../../ts/components/input_text";
 import { InputHost } from "../../ts/components/input_host";
 import { InputNumber } from "../../ts/components/input_number";
@@ -356,6 +357,14 @@ type TableConfigSAXPowerHomeExtendedMode = [
     },
 ];
 
+type TableConfigE3DC = [
+    MeterModbusTCPTableID.E3DC,
+    {
+        virtual_meter: number;
+        device_address: number;
+    },
+];
+
 type TableConfig = TableConfigNone |
                    TableConfigCustom |
                    TableConfigSungrowHybridInverter |
@@ -393,7 +402,8 @@ type TableConfig = TableConfigNone |
                    TableConfigEastronSDM630TCP |
                    TableConfigTinkerforgeWARPCharger |
                    TableConfigSAXPowerHomeBasicMode |
-                   TableConfigSAXPowerHomeExtendedMode;
+                   TableConfigSAXPowerHomeExtendedMode |
+                   TableConfigE3DC;
 
 export type ModbusTCPMetersConfig = [
     MeterClassID.ModbusTCP,
@@ -518,6 +528,9 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
 
         case MeterModbusTCPTableID.SAXPowerHomeExtendedMode:
             return [MeterModbusTCPTableID.SAXPowerHomeExtendedMode, {virtual_meter: null, device_address: 40}];
+
+        case MeterModbusTCPTableID.E3DC:
+            return [MeterModbusTCPTableID.E3DC, {virtual_meter: null, device_address: 1}];
 
         default:
             return [MeterModbusTCPTableID.None, null];
@@ -738,6 +751,7 @@ export function init() {
                                 [MeterModbusTCPTableID.CarloGavazziEM530.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em530")],
                                 [MeterModbusTCPTableID.CarloGavazziEM540.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em540")],
                                 [MeterModbusTCPTableID.DeyeHybridInverter.toString(), __("meters_modbus_tcp.content.table_deye_hybrid_inverter")],
+                                [MeterModbusTCPTableID.E3DC.toString(), __("meters_modbus_tcp.content.table_e3dc")],
                                 [MeterModbusTCPTableID.EastronSDM630TCP.toString(), __("meters_modbus_tcp.content.table_eastron_sdm630_tcp")],
                                 [MeterModbusTCPTableID.FoxESSH3HybridInverter.toString(), __("meters_modbus_tcp.content.table_fox_ess_h3_hybrid_inverter")],
                                 [MeterModbusTCPTableID.FroniusGEN24PlusHybridInverter.toString(), __("meters_modbus_tcp.content.table_fronius_gen24_plus_hybrid_inverter")],
@@ -813,7 +827,8 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.EastronSDM630TCP
                   || config[1].table[0] == MeterModbusTCPTableID.TinkerforgeWARPCharger
                   || config[1].table[0] == MeterModbusTCPTableID.SAXPowerHomeBasicMode
-                  || config[1].table[0] == MeterModbusTCPTableID.SAXPowerHomeExtendedMode)) {
+                  || config[1].table[0] == MeterModbusTCPTableID.SAXPowerHomeExtendedMode
+                  || config[1].table[0] == MeterModbusTCPTableID.E3DC)) {
                     let virtual_meter_items: [string, string][] = [];
                     let default_location: MeterLocation = undefined; // undefined: there is no default location, null: default location is not known yet
                     let get_default_location = (virtual_meter: number): MeterLocation => undefined;
@@ -1089,6 +1104,27 @@ export function init() {
                         }
 
                         default_device_address = 64;
+                    }
+                    else if (config[1].table[0] == MeterModbusTCPTableID.E3DC) {
+                        virtual_meter_items = [
+                            [E3DCVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
+                            [E3DCVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                            [E3DCVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
+                            [E3DCVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
+                            [E3DCVirtualMeter.AdditionalGeneration.toString(), __("meters_modbus_tcp.content.virtual_meter_additional_generation")],
+                        ];
+
+                        get_default_location = (virtual_meter: number) => {
+                            switch (virtual_meter) {
+                            case E3DCVirtualMeter.Grid: return MeterLocation.Grid;
+                            case E3DCVirtualMeter.Battery: return MeterLocation.Battery;
+                            case E3DCVirtualMeter.Load: return MeterLocation.Load;
+                            case E3DCVirtualMeter.PV: return MeterLocation.PV;
+                            case E3DCVirtualMeter.AdditionalGeneration: return MeterLocation.PV;
+                            }
+
+                            return MeterLocation.Unknown;
+                        }
                     }
 
                     if (virtual_meter_items.length > 0) {

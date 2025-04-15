@@ -186,6 +186,11 @@ void MetersModbusTCP::pre_setup()
         {"device_address", Config::Uint(40, 1, 247)},
     })});
 
+    table_prototypes.push_back({MeterModbusTCPTableID::E3DC, Config::Object({
+        {"virtual_meter", Config::Enum(E3DCVirtualMeter::None)},
+        {"device_address", Config::Uint(1, 1, 247)},
+    })});
+
     config_prototype = Config::Object({
         {"display_name",   Config::Str("", 0, 32)},
         {"location",       Config::Enum(MeterLocation::Unknown)},

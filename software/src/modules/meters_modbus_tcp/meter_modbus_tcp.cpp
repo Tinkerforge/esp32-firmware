@@ -114,6 +114,8 @@
 #define SOLAREDGE_INVERTER_BATTERY_2_IMPORT_ENERGY                         static_cast<size_t>(SolaredgeInverterBatteryAddress::Battery2LifetimeImportEnergyCounter)
 #define SOLAREDGE_INVERTER_BATTERY_2_STATE_OF_CHARGE                       static_cast<size_t>(SolaredgeInverterBatteryAddress::Battery2StateOfEnergy)
 
+#define E3DC_PHOTOVOLTAIK_LEISTUNG_ADDRESS                                 static_cast<size_t>(E3DCPVAddress::PhotovoltaikLeistung)
+
 #define MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(x) (static_cast<uint8_t>(x) & 0x07)
 #define MODBUS_VALUE_TYPE_TO_REGISTER_ORDER_LE(x) ((static_cast<uint8_t>(x) >> 5) & 1)
 
@@ -1139,6 +1141,51 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         break;
 
+    case MeterModbusTCPTableID::E3DC:
+        e3dc.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<E3DCVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
+
+        switch (e3dc.virtual_meter) {
+        case E3DCVirtualMeter::None:
+            logger.printfln_meter("No E3/DC Virtual Meter selected");
+            return;
+
+        case E3DCVirtualMeter::InverterUnused:
+            logger.printfln_meter("Invalid E3/DC Virtual Meter: %u", static_cast<uint8_t>(e3dc.virtual_meter));
+            default_location = MeterLocation::Inverter;
+            return;
+
+        case E3DCVirtualMeter::Grid:
+            table = &e3dc_grid_table;
+            default_location = MeterLocation::Grid;
+            break;
+
+        case E3DCVirtualMeter::Battery:
+            table = &e3dc_battery_table;
+            default_location = MeterLocation::Battery;
+            break;
+
+        case E3DCVirtualMeter::Load:
+            table = &e3dc_load_table;
+            default_location = MeterLocation::Load;
+            break;
+
+        case E3DCVirtualMeter::PV:
+            table = &e3dc_pv_table;
+            default_location = MeterLocation::PV;
+            break;
+
+        case E3DCVirtualMeter::AdditionalGeneration:
+            table = &e3dc_additional_generation_table;
+            default_location = MeterLocation::PV;
+            break;
+        default:
+            logger.printfln_meter("Unknown E3/DC Virtual Meter: %u", static_cast<uint8_t>(e3dc.virtual_meter));
+            return;
+        }
+
+        break;
+
     default:
         logger.printfln_meter("Unknown table: %u", static_cast<uint8_t>(table_id));
         return;
@@ -1329,6 +1376,12 @@ bool MeterModbusTCP::is_solaredge_inverter_battery_meter() const
 {
     return table_id == MeterModbusTCPTableID::SolaredgeInverter
         && solaredge.inverter_virtual_meter == SolaredgeInverterVirtualMeter::Battery;
+}
+
+bool MeterModbusTCP::is_e3dc_pv_meter() const
+{
+    return table_id == MeterModbusTCPTableID::E3DC
+        && e3dc.virtual_meter == E3DCVirtualMeter::PV;
 }
 
 void MeterModbusTCP::read_done_callback()
@@ -1985,6 +2038,11 @@ void MeterModbusTCP::parse_next()
         }
         else if (register_start_address == SOLAREDGE_INVERTER_BATTERY_2_STATE_OF_CHARGE) {
             value = nan_safe_avg(solaredge.battery_1_state_of_charge, value);
+        }
+    }
+    else if (is_e3dc_pv_meter()) {
+        if (register_start_address == E3DC_PHOTOVOLTAIK_LEISTUNG_ADDRESS) {
+            meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(value));
         }
     }
 
