@@ -282,7 +282,12 @@ void Wifi::apply_soft_ap_config_and_start()
     // AP must be enabled before the bandwidth can be set.
     WiFi.enableAP(true);
 
+    if (!WiFi.AP.waitStatusBits(ESP_NETIF_STARTED_BIT, 1000)) {
+        logger.printfln("AP netif not started after 1s. Expect problems.");
+    }
+
     // We don't need the additional speed of HT40 and it only causes more errors.
+    // Must be set directly after enabling the interface because it might clobber some other settings.
     esp_err_t err = esp_wifi_set_bandwidth(WIFI_IF_AP, WIFI_BW_HT20);
     if (err != ESP_OK) {
         logger.printfln("Setting HT20 for AP failed: %s (%i)", esp_err_to_name(err), err);
@@ -326,12 +331,6 @@ bool Wifi::apply_sta_config_and_connect()
     WiFi.setAutoReconnect(false);
     WiFi.disconnect(false, true);
     WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
-
-    // We don't need the additional speed of HT40 and it only causes more errors.
-    esp_err_t err = esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW_HT20);
-    if (err != ESP_OK) {
-        logger.printfln("Setting HT20 for station failed: %s (%i)", esp_err_to_name(err), err);
-    }
 
     const char *ssid = sta_config_in_use.get("ssid")->asEphemeralCStr();
 
@@ -679,6 +678,14 @@ void Wifi::setup()
     // Check if WiFi connected automatically and erase configuration in that case.
     if (WiFi.status() != WL_STOPPED) {
         WiFi.disconnect(false, true);
+    }
+
+    // We don't need the additional speed of HT40 and it only causes more errors.
+    // Cannot be set in apply_sta_config_and_connect() and must be set directly after enabling station mode
+    // because it apparently clobbers some interface settings, including IGMP memberships.
+    esp_err_t err = esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW_HT20);
+    if (err != ESP_OK) {
+        logger.printfln("Setting HT20 for station failed: %s (%i)", esp_err_to_name(err), err);
     }
 
     esp_wifi_set_country_code("DE", true);
