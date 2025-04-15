@@ -333,12 +333,13 @@ bool Wifi::apply_sta_config_and_connect()
     WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
 
     const char *ssid = sta_config_in_use.get("ssid")->asEphemeralCStr();
+    const char *passphrase = sta_config_in_use.get("passphrase")->asEphemeralCStr();
+    const bool bssid_lock = sta_config_in_use.get("bssid_lock")->asBool();
 
     uint8_t bssid[6];
-    sta_config_in_use.get("bssid")->fillUint8Array(bssid, ARRAY_SIZE(bssid));
-
-    const char *passphrase = sta_config_in_use.get("passphrase")->asEphemeralCStr();
-    bool bssid_lock = sta_config_in_use.get("bssid_lock")->asBool();
+    if (bssid_lock) {
+        sta_config_in_use.get("bssid")->fillUint8Array(bssid, ARRAY_SIZE(bssid));
+    }
 
     IPAddress ip, subnet, gateway, dns, dns2;
 
@@ -354,7 +355,11 @@ bool Wifi::apply_sta_config_and_connect()
         WiFi.config((uint32_t)0, (uint32_t)0, (uint32_t)0);
     }
 
-    logger.printfln("Connecting to '%s'", ssid);
+    if (bssid_lock) {
+        logger.printfln("Connecting to '%s', locked to BSSID %02X:%02X:%02X:%02X:%02X:%02X", ssid, bssid[0], bssid[1], bssid[2], bssid[3], bssid[4], bssid[5]);
+    } else {
+        logger.printfln("Connecting to '%s'", ssid);
+    }
     EapConfigID eap_config_id = static_cast<EapConfigID>(sta_config_in_use.get("wpa_eap_config")->as<OwnedConfig::OwnedConfigUnion>()->tag);
     switch (eap_config_id) {
         case EapConfigID::None:
