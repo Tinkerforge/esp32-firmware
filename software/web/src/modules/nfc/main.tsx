@@ -44,9 +44,12 @@ interface NFCState {
     userCfg: API.getType["users/config"];
     addTag: NFCConfig["authorized_tags"][0];
     editTag: NFCConfig["authorized_tags"][0];
+    hasDoubledTags: boolean;
 }
 
 export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
+    currentlyEditing: string;
+
     constructor() {
         super('nfc/config',
               () => __("nfc.script.save_failed"),
@@ -61,7 +64,10 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
                     user_id: 0,
                     tag_type: "" as any,
                 },
+                hasDoubledTags: false,
             });
+
+        this.currentlyEditing = "";
 
         util.addApiEventListener('users/config', () => {
             this.setState({userCfg: API.get('users/config')});
@@ -80,6 +86,11 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
 
             this.setState({seen_tags: x});
         });*/
+    }
+
+    checkDoubleTags = (tag_id: string) => {
+        const doubleTags = this.state.authorized_tags.filter((tag) => tag.tag_id == tag_id && tag.tag_id != this.currentlyEditing);
+        this.setState({hasDoubledTags: doubleTags.length > 0});
     }
 
     render(props: {}, state: NFCConfig & NFCState) {
@@ -149,14 +160,21 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
                                         auth_seen_ids.indexOf(i) >= 0 ? __("nfc.content.last_seen") + util.format_timespan_ms(auth_seen_tags[auth_seen_ids.indexOf(i)].last_seen) + __("nfc.content.last_seen_suffix") : __("nfc.script.not_seen")
                                     ],
                                     editTitle: __("nfc.content.edit_tag_title"),
-                                    onEditShow: async () => this.setState({editTag: {tag_id: tag.tag_id, user_id: tag.user_id, tag_type: tag.tag_type}}),
+                                    onEditShow: async () => {
+                                        this.setState({hasDoubledTags: false, editTag: {tag_id: tag.tag_id, user_id: tag.user_id, tag_type: tag.tag_type}});
+                                        this.currentlyEditing = tag.tag_id;
+                                    },
                                     onEditGetChildren: () => [<>
                                         <FormRow label={__("nfc.content.edit_tag_tag_id")}>
                                              <InputTextPatterned value={state.editTag.tag_id}
-                                                onValue={(v) => this.setState({editTag: {...state.editTag, tag_id: v}})}
+                                                onValue={(v) => {
+                                                    this.checkDoubleTags(v);
+                                                    this.setState({editTag: {...state.editTag, tag_id: v}});
+                                                }}
                                                 minLength={8} maxLength={29}
                                                 pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
-                                                invalidFeedback={__("nfc.content.tag_id_invalid_feedback")}
+                                                class={state.hasDoubledTags ? "is-invalid" : ""}
+                                                invalidFeedback={state.hasDoubledTags ? __("nfc.content.tag_id_already_exists") : __("nfc.content.tag_id_invalid_feedback")}
                                                 required />
                                         </FormRow>
                                         <FormRow label={__("nfc.content.edit_tag_tag_type")}>
@@ -192,7 +210,10 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
                             addEnabled={state.authorized_tags.length < MAX_AUTHORIZED_TAGS}
                             addTitle={__("nfc.content.add_tag_title")}
                             addMessage={__("nfc.content.add_tag_prefix") + state.authorized_tags.length + __("nfc.content.add_tag_infix") + MAX_AUTHORIZED_TAGS + __("nfc.content.add_tag_suffix")}
-                            onAddShow={async () => this.setState({addTag: {tag_id: "", user_id: 0, tag_type: "" as any}})}
+                            onAddShow={async () => {
+                                this.currentlyEditing = "";
+                                this.setState({addTag: {tag_id: "", user_id: 0, tag_type: "" as any}, hasDoubledTags: false});
+                            }}
                             onAddGetChildren={() => [<>
                                 <FormRow label={__("nfc.content.add_tag_seen_tags")}>
                                     {unauth_seen_tags.length > 0 ?
@@ -210,10 +231,14 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
                                 <FormRow label={__("nfc.content.add_tag_tag_id")}>
                                     <InputTextPatterned
                                         value={state.addTag.tag_id}
-                                        onValue={(v) => this.setState({addTag: {...state.addTag, tag_id: v}})}
+                                        onValue={(v) => {
+                                            this.checkDoubleTags(v);
+                                            this.setState({addTag: {...state.addTag, tag_id: v}});
+                                        }}
                                         minLength={8} maxLength={29}
                                         pattern="^([0-9a-fA-F]{2}:?){3,9}[0-9a-fA-F]{2}$"
-                                        invalidFeedback={__("nfc.content.tag_id_invalid_feedback")}
+                                                class={state.hasDoubledTags ? "is-invalid" : ""}
+                                                invalidFeedback={state.hasDoubledTags ? __("nfc.content.tag_id_already_exists") : __("nfc.content.tag_id_invalid_feedback")}
                                         required />
                                 </FormRow>
                                 <FormRow label={__("nfc.content.add_tag_tag_type")}>
