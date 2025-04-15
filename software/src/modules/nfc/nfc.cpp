@@ -91,6 +91,12 @@ void NFC::pre_setup()
                     continue;
                 return "Tag ID contains unexpected character. Expected format is uppercase hex bytes separated by colons. For example \"01:23:AB:3D\".";
             }
+
+            for (size_t tag2 = tag + 1; tag2 < tags->count(); ++tag2) {
+                if (tags->get(tag)->get("tag_id")->asString() == tags->get(tag2)->get("tag_id")->asString()) {
+                    return "Tag ID " + tags->get(tag)->get("tag_id")->asString() + " is used multiple times.";
+                }
+            }
         }
 
         // Add more validation above this block!
