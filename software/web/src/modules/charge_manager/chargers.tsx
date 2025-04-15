@@ -353,7 +353,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
             modes.splice(1, 0, ["1", translate_unchecked("charge_manager.content.mode_managed" + charge_manager_mode_suffix)]);
         }
 
-        let charge_manager_mode = <FormRow label={__("charge_manager.content.enable_charge_manager")} label_muted={__("charge_manager.content.enable_charge_manager_muted")}>
+        let charge_manager_mode = <FormRow label={__("charge_manager.content.enable_charge_manager")} help={__("charge_manager.content.enable_charge_manager_help")}>
             <InputSelect
                     items={modes}
                     value={state.enable_charge_manager ? "2" : state.managementEnabled ? "1" : "0"}
