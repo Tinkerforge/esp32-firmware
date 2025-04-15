@@ -188,6 +188,23 @@ static float nan_safe_avg(float a, float b)
     return (a + b) / 2.0f;
 }
 
+static float zero_safe_negation(float f)
+{
+    #if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
+    if (f != 0.0f) { // Really compare exactly with 0.0f
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
+        // Don't convert 0.0f into -0.0f
+        f *= -1.0f;
+    }
+
+    return f;
+}
+
 MeterClassID MeterModbusTCP::get_class() const
 {
     return MeterClassID::ModbusTCP;
@@ -1711,7 +1728,7 @@ void MeterModbusTCP::parse_next()
     }
     else if (is_sungrow_inverter_meter()) {
         if (register_start_address == SUNGROW_STRING_INVERTER_TOTAL_ACTIVE_POWER_ADDRESS) {
-            meters.update_value(slot, table->index[read_index + 1], -value);
+            meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(value));
         }
     }
     else if (is_sungrow_battery_meter()) {
@@ -1720,12 +1737,12 @@ void MeterModbusTCP::parse_next()
         }
         else if (register_start_address == SUNGROW_HYBRID_INVERTER_BATTERY_CURRENT_ADDRESS) {
             if ((sungrow.hybrid_inverter_running_state & (1 << 2)) != 0) {
-                value = -value;
+                value = zero_safe_negation(value);
             }
         }
         else if (register_start_address == SUNGROW_HYBRID_INVERTER_BATTERY_POWER_ADDRESS) {
             if ((sungrow.hybrid_inverter_running_state & (1 << 2)) != 0) {
-                value = -value;
+                value = zero_safe_negation(value);
             }
         }
     }
@@ -1934,7 +1951,7 @@ void MeterModbusTCP::parse_next()
             solaredge.battery_1_voltage = value;
         }
         else if (register_start_address == SOLAREDGE_INVERTER_BATTERY_1_CURRENT) {
-            solaredge.battery_1_current = -value; // current is negative while charging
+            solaredge.battery_1_current = zero_safe_negation(value); // current is negative while charging
         }
         else if (register_start_address == SOLAREDGE_INVERTER_BATTERY_1_POWER) {
             solaredge.battery_1_power = value;
@@ -1955,7 +1972,7 @@ void MeterModbusTCP::parse_next()
             value = nan_safe_avg(solaredge.battery_1_voltage, value);
         }
         else if (register_start_address == SOLAREDGE_INVERTER_BATTERY_2_CURRENT) {
-            value = nan_safe_sum(solaredge.battery_1_current, -value); // current is negative while charging
+            value = nan_safe_sum(solaredge.battery_1_current, zero_safe_negation(value)); // current is negative while charging
         }
         else if (register_start_address == SOLAREDGE_INVERTER_BATTERY_2_POWER) {
             value = nan_safe_sum(solaredge.battery_1_power, value);
