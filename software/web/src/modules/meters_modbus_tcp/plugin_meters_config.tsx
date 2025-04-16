@@ -40,13 +40,13 @@ import { ShellyEMMonophaseChannel } from "./shelly_em_monophase_channel.enum";
 import { ShellyEMMonophaseMapping } from "./shelly_em_monophase_mapping.enum";
 import { GoodweHybridInverterVirtualMeter } from "./goodwe_hybrid_inverter_virtual_meter.enum";
 import { SolaxHybridInverterVirtualMeter } from "./solax_hybrid_inverter_virtual_meter.enum";
-import { FroniusGEN24PlusHybridInverterVirtualMeter } from "./fronius_gen24_plus_hybrid_inverter_virtual_meter.enum";
+import { FroniusGEN24PlusVirtualMeter } from "./fronius_gen24_plus_virtual_meter.enum";
 import { HaileiHybridInverterVirtualMeter } from "./hailei_hybrid_inverter_virtual_meter.enum";
 import { FoxESSH3HybridInverterVirtualMeter } from "./fox_ess_h3_hybrid_inverter_virtual_meter.enum";
 import { CarloGavazziPhase } from "./carlo_gavazzi_phase.enum";
 import { CarloGavazziEM270VirtualMeter } from "./carlo_gavazzi_em270_virtual_meter.enum";
 import { CarloGavazziEM280VirtualMeter } from "./carlo_gavazzi_em280_virtual_meter.enum";
-import { SolaredgeInverterVirtualMeter } from "./solaredge_inverter_virtual_meter.enum";
+import { SolaredgeVirtualMeter } from "./solaredge_virtual_meter.enum";
 import { SAXPowerVirtualMeter } from "./sax_power_virtual_meter.enum";
 import { E3DCVirtualMeter } from "./e3dc_virtual_meter.enum";
 import { InputText } from "../../ts/components/input_text";
@@ -166,8 +166,8 @@ type TableConfigSolaxHybridInverter = [
     },
 ];
 
-type TableConfigFroniusGEN24PlusHybridInverter = [
-    MeterModbusTCPTableID.FroniusGEN24PlusHybridInverter,
+type TableConfigFroniusGEN24Plus = [
+    MeterModbusTCPTableID.FroniusGEN24Plus,
     {
         virtual_meter: number;
         device_address: number;
@@ -321,8 +321,8 @@ type TableConfigCarloGavazziEM540 = [
     },
 ];
 
-type TableConfigSolaredgeInverter = [
-    MeterModbusTCPTableID.SolaredgeInverter,
+type TableConfigSolaredge = [
+    MeterModbusTCPTableID.Solaredge,
     {
         virtual_meter: number;
         device_address: number;
@@ -377,7 +377,7 @@ type TableConfig = TableConfigNone |
                    TableConfigShellyPro3EM |
                    TableConfigGoodweHybridInverter |
                    TableConfigSolaxHybridInverter |
-                   TableConfigFroniusGEN24PlusHybridInverter |
+                   TableConfigFroniusGEN24Plus |
                    TableConfigHaileiHybridInverter |
                    TableConfigFoxESSH3HybridInverter |
                    TableConfigSiemensPAC2200 |
@@ -398,7 +398,7 @@ type TableConfig = TableConfigNone |
                    TableConfigCarloGavazziEM510 |
                    TableConfigCarloGavazziEM530 |
                    TableConfigCarloGavazziEM540 |
-                   TableConfigSolaredgeInverter |
+                   TableConfigSolaredge |
                    TableConfigEastronSDM630TCP |
                    TableConfigTinkerforgeWARPCharger |
                    TableConfigSAXPowerHomeBasicMode |
@@ -451,8 +451,8 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
         case MeterModbusTCPTableID.SolaxHybridInverter:
             return [MeterModbusTCPTableID.SolaxHybridInverter, {virtual_meter: null, device_address: 1}];
 
-        case MeterModbusTCPTableID.FroniusGEN24PlusHybridInverter:
-            return [MeterModbusTCPTableID.FroniusGEN24PlusHybridInverter, {virtual_meter: null, device_address: 1}];
+        case MeterModbusTCPTableID.FroniusGEN24Plus:
+            return [MeterModbusTCPTableID.FroniusGEN24Plus, {virtual_meter: null, device_address: 1}];
 
         case MeterModbusTCPTableID.HaileiHybridInverter:
             return [MeterModbusTCPTableID.HaileiHybridInverter, {virtual_meter: null, device_address: 85}];
@@ -514,8 +514,8 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
         case MeterModbusTCPTableID.CarloGavazziEM540:
             return [MeterModbusTCPTableID.CarloGavazziEM540, {device_address: 1}];
 
-        case MeterModbusTCPTableID.SolaredgeInverter:
-            return [MeterModbusTCPTableID.SolaredgeInverter, {virtual_meter: null, device_address: 1}];
+        case MeterModbusTCPTableID.Solaredge:
+            return [MeterModbusTCPTableID.Solaredge, {virtual_meter: null, device_address: 1}];
 
         case MeterModbusTCPTableID.EastronSDM630TCP:
             return [MeterModbusTCPTableID.EastronSDM630TCP, {device_address: 1}];
@@ -754,7 +754,7 @@ export function init() {
                                 [MeterModbusTCPTableID.E3DC.toString(), __("meters_modbus_tcp.content.table_e3dc")],
                                 [MeterModbusTCPTableID.EastronSDM630TCP.toString(), __("meters_modbus_tcp.content.table_eastron_sdm630_tcp")],
                                 [MeterModbusTCPTableID.FoxESSH3HybridInverter.toString(), __("meters_modbus_tcp.content.table_fox_ess_h3_hybrid_inverter")],
-                                [MeterModbusTCPTableID.FroniusGEN24PlusHybridInverter.toString(), __("meters_modbus_tcp.content.table_fronius_gen24_plus_hybrid_inverter")],
+                                [MeterModbusTCPTableID.FroniusGEN24Plus.toString(), __("meters_modbus_tcp.content.table_fronius_gen24_plus")],
                                 [MeterModbusTCPTableID.GoodweHybridInverter.toString(), __("meters_modbus_tcp.content.table_goodwe_hybrid_inverter")],
                                 [MeterModbusTCPTableID.HaileiHybridInverter.toString(), __("meters_modbus_tcp.content.table_hailei_hybrid_inverter")],
                                 [MeterModbusTCPTableID.SAXPowerHomeBasicMode.toString(), __("meters_modbus_tcp.content.table_sax_power_home_basic_mode")],
@@ -767,7 +767,7 @@ export function init() {
                                 [MeterModbusTCPTableID.SiemensPAC3220.toString(), __("meters_modbus_tcp.content.table_siemens_pac3220")],
                                 [MeterModbusTCPTableID.SiemensPAC4200.toString(), __("meters_modbus_tcp.content.table_siemens_pac4200")],
                                 [MeterModbusTCPTableID.SiemensPAC4220.toString(), __("meters_modbus_tcp.content.table_siemens_pac4220")],
-                                [MeterModbusTCPTableID.SolaredgeInverter.toString(), __("meters_modbus_tcp.content.table_solaredge_inverter")],
+                                [MeterModbusTCPTableID.Solaredge.toString(), __("meters_modbus_tcp.content.table_solaredge")],
                                 [MeterModbusTCPTableID.SolarmaxMaxStorage.toString(), __("meters_modbus_tcp.content.table_solarmax_max_storage")],
                                 [MeterModbusTCPTableID.SolaxHybridInverter.toString(), __("meters_modbus_tcp.content.table_solax_hybrid_inverter")],
                                 [MeterModbusTCPTableID.SungrowHybridInverter.toString(), __("meters_modbus_tcp.content.table_sungrow_hybrid_inverter")],
@@ -802,7 +802,7 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.ShellyPro3EM
                   || config[1].table[0] == MeterModbusTCPTableID.GoodweHybridInverter
                   || config[1].table[0] == MeterModbusTCPTableID.SolaxHybridInverter
-                  || config[1].table[0] == MeterModbusTCPTableID.FroniusGEN24PlusHybridInverter
+                  || config[1].table[0] == MeterModbusTCPTableID.FroniusGEN24Plus
                   || config[1].table[0] == MeterModbusTCPTableID.HaileiHybridInverter
                   || config[1].table[0] == MeterModbusTCPTableID.FoxESSH3HybridInverter
                   || config[1].table[0] == MeterModbusTCPTableID.SiemensPAC2200
@@ -823,7 +823,7 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM510
                   || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM530
                   || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM540
-                  || config[1].table[0] == MeterModbusTCPTableID.SolaredgeInverter
+                  || config[1].table[0] == MeterModbusTCPTableID.Solaredge
                   || config[1].table[0] == MeterModbusTCPTableID.EastronSDM630TCP
                   || config[1].table[0] == MeterModbusTCPTableID.TinkerforgeWARPCharger
                   || config[1].table[0] == MeterModbusTCPTableID.SAXPowerHomeBasicMode
@@ -990,14 +990,14 @@ export function init() {
                             return MeterLocation.Unknown;
                         }
                     }
-                    else if (config[1].table[0] == MeterModbusTCPTableID.FroniusGEN24PlusHybridInverter) {
+                    else if (config[1].table[0] == MeterModbusTCPTableID.FroniusGEN24Plus) {
                         virtual_meter_items = [
-                            [FroniusGEN24PlusHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                            [FroniusGEN24PlusVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
                         ];
 
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
-                            case FroniusGEN24PlusHybridInverterVirtualMeter.Battery: return MeterLocation.Battery;
+                            case FroniusGEN24PlusVirtualMeter.Battery: return MeterLocation.Battery;
                             }
 
                             return MeterLocation.Unknown;
@@ -1055,14 +1055,14 @@ export function init() {
                             [CarloGavazziEM280VirtualMeter.CurrentTransformer2.toString(), __("meters_modbus_tcp.content.virtual_meter_current_transformer_2")],
                         ];
                     }
-                    else if (config[1].table[0] == MeterModbusTCPTableID.SolaredgeInverter) {
+                    else if (config[1].table[0] == MeterModbusTCPTableID.Solaredge) {
                         virtual_meter_items = [
-                            [SolaredgeInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                            [SolaredgeVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
                         ];
 
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
-                            case SolaredgeInverterVirtualMeter.Battery: return MeterLocation.Battery;
+                            case SolaredgeVirtualMeter.Battery: return MeterLocation.Battery;
                             }
 
                             return MeterLocation.Unknown;

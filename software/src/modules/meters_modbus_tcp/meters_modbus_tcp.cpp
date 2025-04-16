@@ -108,8 +108,8 @@ void MetersModbusTCP::pre_setup()
         {"device_address", Config::Uint(1, 1, 247)},
     })});
 
-    table_prototypes.push_back({MeterModbusTCPTableID::FroniusGEN24PlusHybridInverter, Config::Object({
-        {"virtual_meter", Config::Enum(FroniusGEN24PlusHybridInverterVirtualMeter::None)},
+    table_prototypes.push_back({MeterModbusTCPTableID::FroniusGEN24Plus, Config::Object({
+        {"virtual_meter", Config::Enum(FroniusGEN24PlusVirtualMeter::None)},
         {"device_address", Config::Uint(1, 1, 247)},
     })});
 
@@ -165,8 +165,8 @@ void MetersModbusTCP::pre_setup()
     table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziEM530, carlo_gavazzi});
     table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziEM540, carlo_gavazzi});
 
-    table_prototypes.push_back({MeterModbusTCPTableID::SolaredgeInverter, Config::Object({
-        {"virtual_meter", Config::Enum(SolaredgeInverterVirtualMeter::None)},
+    table_prototypes.push_back({MeterModbusTCPTableID::Solaredge, Config::Object({
+        {"virtual_meter", Config::Enum(SolaredgeVirtualMeter::None)},
         {"device_address", Config::Uint(1, 1, 247)},
     })});
 
