@@ -336,14 +336,25 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
         }
 
         function get_next_update_string() {
-            let now = util.get_date_now_1m_update_rate()/(60*1000);
             if ((state.state.next_api_call == 0) || (get_active_planes().length == 0)) {
                 return __("util.not_yet_known");
             } else {
-                let diff    = Math.max(0, state.state.next_api_call - now);
-                let hours   = Math.floor(diff / 60);
-                let minutes = Math.floor(diff % 60);
-                let update_string = (hours == 0) ? `${minutes}min`:`${hours}h ${minutes}min`;
+                const now     = util.get_date_now_1m_update_rate()/(60*1000);
+                const diff    = state.state.next_api_call - now;
+                const hours   = Math.floor(diff / 60);
+                const minutes = Math.floor(diff % 60);
+
+                let update_string;
+                if (diff < 0) {
+                    update_string = __("util.not_yet_known");
+                } else if (hours > 0) {
+                    update_string = `${hours} h ${minutes} min`;
+                } else if (minutes > 0) {
+                    update_string = `${minutes} min`;
+                } else {
+                    update_string = "< 1 min";
+                }
+
                 if ((state.state.rate_limit != -1) && (state.state.rate_remaining != -1)) {
                     update_string += " " + __("solar_forecast.content.remaining_queries")(state.state.rate_remaining, state.state.rate_limit);
                 }
