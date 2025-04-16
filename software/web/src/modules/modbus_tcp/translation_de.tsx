@@ -206,7 +206,7 @@ let x = {
                         <td>weitere Stromzähler-Werte</td>
                         <td>float32 (85x)</td>
                         <td>all_values</td>
-                        <td>Siehe <a href="https://docs.warp-charger.com/docs/mqtt_http/api_reference/meter/#meter_all_values_any">API-Dokumentation</a></td>
+                        <td>Siehe <a href="{{{doc_base_url}}}/docs/mqtt_http/api_reference/meter/#meter_all_values_any">API-Dokumentation</a></td>
                     </tr>
                     <tr>
                         <td>3100</td>

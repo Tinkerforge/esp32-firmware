@@ -29,7 +29,7 @@ let x = {
 
             "header_excess_charging": "Photovoltaik-Überschussladen",
             "enable_excess_charging": "Überschussladen aktiviert",
-            "enable_excess_charging_help": <><p>Das <a href="https://docs.warp-charger.com/docs/tutorials/pv_excess_charging/">Tutorial PV-Überschussladen</a> hilft dir bei der Ersteinrichtung</p></>,
+            "enable_excess_charging_help": <><p>Das <a href="{{{doc_base_url}}}/docs/tutorials/pv_excess_charging/">Tutorial PV-Überschussladen</a> hilft dir bei der Ersteinrichtung</p></>,
             "enable_excess_charging_desc": "Regelt die kontrollierten Wallboxen abhängig vom gemessenen Überschuss einer Photovoltaikanlage und vom Lademodus.",
             "default_mode": "Standardlademodus",
             "default_mode_muted": "wird nach Neustart verwendet",

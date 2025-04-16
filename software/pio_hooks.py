@@ -601,6 +601,7 @@ def main():
 
     manual_url = env.GetProjectOption("custom_manual_url")
     apidoc_url = env.GetProjectOption("custom_apidoc_url")
+    doc_base_url = env.GetProjectOption("custom_doc_base_url")
     firmware_url = env.GetProjectOption("custom_firmware_url")
     firmware_update_url = env.GetProjectOption("custom_firmware_update_url")
     remote_access_host = env.GetProjectOption("custom_remote_access_host")
@@ -1184,6 +1185,7 @@ def main():
     translation_data = json.dumps(translation, indent=4, ensure_ascii=False)
     translation_data = translation_data.replace('{{{display_name}}}', display_name)
     translation_data = translation_data.replace('{{{manual_url}}}', manual_url)
+    translation_data = translation_data.replace('{{{doc_base_url}}}', doc_base_url)
     translation_data = translation_data.replace('{{{apidoc_url}}}', apidoc_url)
     translation_data = translation_data.replace('{{{firmware_url}}}', firmware_url)
     translation_data = translation_data.replace('{{{support_email}}}', support_email)
@@ -1314,6 +1316,7 @@ def main():
                     if '{{{' in string:
                         string = string.replace('{{{display_name}}}', display_name)
                         string = string.replace('{{{manual_url}}}', manual_url)
+                        string = string.replace('{{{doc_base_url}}}', doc_base_url)
                         string = string.replace('{{{apidoc_url}}}', apidoc_url)
                         string = string.replace('{{{firmware_url}}}', firmware_url)
                         string = string.replace('{{{support_email}}}', support_email)

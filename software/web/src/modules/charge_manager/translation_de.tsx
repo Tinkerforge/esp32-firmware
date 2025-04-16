@@ -50,11 +50,11 @@ let x = {
             "charge_manager_chargers": "Wallboxen",
             "enable_charge_manager": "Fremdsteuerung",
             "enable_charge_manager_help": <>
-                <p><strong>Auf dieser Seite werden die kontrollierten Wallboxen konfiguriert. Die hier vorgenommenen Einstellungen beeinflussen das <a href="https://docs.warp-charger.com/docs/tutorials/chargemanagement">Lastmanagement</a> zwischen den Wallboxen.</strong></p>
+                <p><strong>Auf dieser Seite werden die kontrollierten Wallboxen konfiguriert. Die hier vorgenommenen Einstellungen beeinflussen das <a href="{{{doc_base_url}}}/docs/tutorials/chargemanagement">Lastmanagement</a> zwischen den Wallboxen.</strong></p>
                 <ul class="mb-0">
                     <li><strong>Deaktiviert:</strong> Es findet kein Lastmanagement statt. Die Wallbox ist vollständig eigenständig.</li>
                     <li><strong>Fremdgesteuert:</strong> Die Wallbox wird von einem anderen Lastmanager verwaltet. Es müssen keine weiteren Einstellungen vorgenommen werden.</li>
-                    <li><strong>Lastmanager/PV-Überschussladen:</strong> Die Wallbox arbeitet als Lastmanager. Dies ist auch der Fall, wenn sie nur eigenständig die Funktion <a href="https://docs.warp-charger.com/docs/tutorials/pv_excess_charging/">PV-Überschussladen</a> ausführen soll. Es sind weitere Einstellungen vorzunehmen.</li>
+                    <li><strong>Lastmanager/PV-Überschussladen:</strong> Die Wallbox arbeitet als Lastmanager. Dies ist auch der Fall, wenn sie nur eigenständig die Funktion <a href="{{{doc_base_url}}}/docs/tutorials/pv_excess_charging/">PV-Überschussladen</a> ausführen soll. Es sind weitere Einstellungen vorzunehmen.</li>
                 </ul>
             </>,
             "enable_watchdog": "Watchdog aktiviert",

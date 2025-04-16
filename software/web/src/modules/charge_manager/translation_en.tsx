@@ -50,11 +50,11 @@ let x = {
             "charge_manager_chargers": "Chargers",
             "enable_charge_manager": "Charge management mode",
             "enable_charge_manager_help": <>
-                <p><strong>On this page the controlled chargers are configured. The settings applied here affect the <a href="https://docs.warp-charger.com/docs/tutorials/chargemanagement">charge management</a> among the chargers.</strong></p>
+                <p><strong>On this page the controlled chargers are configured. The settings applied here affect the <a href="{{{doc_base_url}}}/docs/tutorials/chargemanagement">charge management</a> among the chargers.</strong></p>
                 <ul class="mb-0">
                     <li><strong>Disabled:</strong> No charge management is performed. The charger operates completely independently.</li>
                     <li><strong>Externally controlled:</strong> The charger is managed by another charge manager. No further settings are required.</li>
-                    <li><strong>Charge manager / PV excess charging:</strong> The charger functions as a charge manager. This also applies when it is solely used for <a href="https://docs.warp-charger.com/docs/tutorials/pv_excess_charging/">PV excess charging</a>. Additional settings must be configured.</li>
+                    <li><strong>Charge manager / PV excess charging:</strong> The charger functions as a charge manager. This also applies when it is solely used for <a href="{{{doc_base_url}}}/docs/tutorials/pv_excess_charging/">PV excess charging</a>. Additional settings must be configured.</li>
                 </ul>
             </>,
             "enable_watchdog": "Watchdog enabled",
