@@ -35,7 +35,10 @@ let x = {
 
             "ap_settings": "WiFi Access Point",
             "ap_enable": "Access point",
-            "ap_enable_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
+            "ap_enable_help": <>
+                <p>The access-point can be run in two different modes: Always on, and only active in case no other network is available.</p>
+                <p><strong>We strongly advise to never switch it completely off, since you wont be able to access the device once the default network is unavailable.</strong></p>
+            </>,
             "ap_enabled": "Enabled",
             "ap_fallback_only": "As fallback only",
             "ap_disabled": "Disabled",

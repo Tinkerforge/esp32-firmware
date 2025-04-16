@@ -35,7 +35,10 @@ let x = {
 
             "ap_settings": "WLAN-Access-Point",
             "ap_enable": "Access Point",
-            "ap_enable_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
+            "ap_enable_help": <>
+                <p>Der Access-Point kann in einem von zwei Modi betrieben werden: Entweder kann er immer aktiv sein oder nur dann, wenn die Verbindung zu einem anderen WLAN bzw. zu einem LAN nicht konfiguriert oder fehlgeschlagen ist. </p>
+                <p><strong>Wir empfehlen, den Access-Point nie komplett zu deaktivieren, da sonst bei einer fehlgeschlagenen Verbindung zu einem anderen Netzwerk das Webinterface nicht mehr erreicht werden kann.</strong></p>
+            </>,
             "ap_enabled": "Aktiviert",
             "ap_fallback_only": "Nur als Fallback",
             "ap_disabled": "Deaktiviert",
