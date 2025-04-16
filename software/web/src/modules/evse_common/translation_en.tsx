@@ -208,7 +208,7 @@ let x = {
 
             // EVSE V2 and V3
             "energy_meter_type": "Energy meter type",
-            "gpio_shutdown_help": <><p>At the shutdown input, for example, a round tax recipient can be connected. Here you can configure how changes to the shutdown input are handled. In the wallbox's standard configuration, power is limited to 4200 W when the shutdown input is closed. See <a href="https://docs.warp-charger.com/docs/tutorials/verbrauchseinrichtung">controllable consumption device according to §14a EnWG</a>.</p></>,
+            "gpio_shutdown_help": <><p>At the shutdown input, for example, a ripple control receiver can be connected. Here you can configure how changes to the shutdown input are handled. In the wallbox's standard configuration, power is limited to 4200 W when the shutdown input is closed. See <a href="https://docs.warp-charger.com/docs/tutorials/verbrauchseinrichtung">controllable consumption device according to §14a EnWG</a>.</p></>,
             "gpio_shutdown_not_configured": "Not configured",
             "gpio_shutdown_on_open": "Shut down on open",
             "gpio_shutdown_on_close": "Shut down on close",
