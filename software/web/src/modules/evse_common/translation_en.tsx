@@ -47,25 +47,25 @@ let x = {
                 <ul class="mb-0">
                     <li>
                         <p>
-                            <strong>Switch error: </strong>
+                            <strong>Switch error:</strong>
                             The wallbox was not installed correctly. The charge controller's switch setting remains at its factory default. See <a href={removeUnicodeHacks("{{{doc_base_url}}}/docs/warp_charger/assembly_and_installation#einstellen-des-ladestroms")}>Charging current configuration</a>.
                         </p>
                     </li>
                     <li>
                         <p>
-                            <strong>DC error: </strong>
+                            <strong>DC error:</strong>
                             A DC fault current has been detected. The error can be reset either via the wallbox's website or by briefly disconnecting the wallbox's power supply.
                         </p>
                     </li>
                     <li>
                         <p>
-                            <strong>Contactor/PE error: </strong>
+                            <strong>Contactor/PE error:</strong>
                             One of the contactors is not switching correctly (see contactor check/status), phase L1 is de-energized, or an earth fault is present.
                         </p>
                     </li>
                     <li>
                         <p>
-                            <strong>Communication error: </strong>
+                            <strong>Communication error:</strong>
                             An error occurred during communication with the electric vehicle. On first occurrence, disconnect the charging cable from the vehicle, wait 10 seconds, and then reconnect the cable (restart the charging process). If the problem persists, see the <a href={removeUnicodeHacks("{{{doc_base_url}}}/docs/warp_charger/troubleshooting#led-blinkt-f%C3%BCnfmal-rot-im-intervall-dass-webinterface-zeigt-kommunikationsfehler")}>instructions</a>.
                         </p>
                     </li>

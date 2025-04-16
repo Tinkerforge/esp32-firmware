@@ -50,7 +50,7 @@ let x = {
             "charge_manager_chargers": "Chargers",
             "enable_charge_manager": "Charge management mode",
             "enable_charge_manager_help": <>
-                <p><strong>On this page the controlled chargers are configured. The settings applied here affect the <a href={removeUnicodeHacks("{{{doc_base_url}}}/docs/tutorials/chargemanagement")}>charge management</a> among the chargers.</strong></p>
+                <p>On this page the controlled chargers are configured. The settings applied here affect the <a href={removeUnicodeHacks("{{{doc_base_url}}}/docs/tutorials/chargemanagement")}>charge management</a> among the chargers.</p>
                 <ul class="mb-0">
                     <li><strong>Disabled:</strong> No charge management is performed. The charger operates completely independently.</li>
                     <li><strong>Externally controlled:</strong> The charger is managed by another charge manager. No further settings are required.</li>

@@ -50,7 +50,7 @@ let x = {
             "charge_manager_chargers": "Wallboxen",
             "enable_charge_manager": "Fremdsteuerung",
             "enable_charge_manager_help": <>
-                <p><strong>Auf dieser Seite werden die kontrollierten Wallboxen konfiguriert. Die hier vorgenommenen Einstellungen beeinflussen das <a href={removeUnicodeHacks("{{{doc_base_url}}}/docs/tutorials/chargemanagement")}>Lastmanagement</a> zwischen den Wallboxen.</strong></p>
+                <p>Auf dieser Seite werden die kontrollierten Wallboxen konfiguriert. Die hier vorgenommenen Einstellungen beeinflussen das <a href={removeUnicodeHacks("{{{doc_base_url}}}/docs/tutorials/chargemanagement")}>Lastmanagement</a> zwischen den Wallboxen.</p>
                 <ul class="mb-0">
                     <li><strong>Deaktiviert:</strong> Es findet kein Lastmanagement statt. Die Wallbox ist vollständig eigenständig.</li>
                     <li><strong>Fremdgesteuert:</strong> Die Wallbox wird von einem anderen Lastmanager verwaltet. Es müssen keine weiteren Einstellungen vorgenommen werden.</li>
