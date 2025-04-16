@@ -18,8 +18,8 @@ let x = {
             "charge_plan_enable": "Ladeplanung aktiviert",
             "charge_plan_enable_desc": "Optimiert Ladevorgänge ökonomisch und ökologisch anhand der gewünschten Abfahrtszeit, dynamischer Strompreise und PV-Ertragsprognose. Ladepläne werden in jedem der \"Eco\"-Lademodi verwendet.",
             "park_time": "Maximale Standzeit",
-            "charge_below": "Immer laden wenn Preis unter",
-            "block_above": "Nie laden wenn Preis über",
+            "charge_below": "Immer laden, wenn Preis unter",
+            "block_above": "Nie laden, wenn Preis über",
             "yield_forecast_threshold": "Nur wenn PV-Ertragsprognose unter",
             "kwh_per_day": "kWh/Tag",
 
@@ -30,7 +30,7 @@ let x = {
             "charge_plan_enable_help": "Wenn die Ladeplanung aktiviert ist, wird auf der Status-Seite ein konfigurierbarer Ladeplan angezeigt, wenn als Lademodus einer der \"Eco\"-Lademodi ausgewählt ist.",
             "park_time_help": <>
                 <p>Gibt an, für wie viele Stunden <strong>nach Anstecken eines Fahrzeugs</strong> ein Ladeplan erstellt wird.</p>
-                <p>Beispiel: Es ist 08:00, der Ladeplan ist konfiguriert auf 'Nutze die günstigsten <strong>4 Stunden</strong> bis <strong>Heute um 20:00 Uhr</strong>' und die maximale <strong>Standzeit</strong> ist auf <strong>8 Stunden</strong> eingestellt. Der Ladevorgang wird dann für die <strong>günstigsten 4 Stunden</strong>, aber <strong>bevor die maximale Standzeit abläuft</strong>, geplant, also z.B. bis 16:00 wenn das Auto um 08:00 eingesteckt wird, aber bis 18:00 wenn das Auto um 10:00 eingesteckt wird.</p>
+                <p>Beispiel: Es ist 08:00, der Ladeplan ist konfiguriert auf 'Nutze die günstigsten <strong>4 Stunden</strong> bis <strong>Heute um 20:00 Uhr</strong>' und die maximale <strong>Standzeit</strong> ist auf <strong>8 Stunden</strong> eingestellt. Der Ladevorgang wird dann für die <strong>günstigsten 4 Stunden</strong>, aber <strong>bevor die maximale Standzeit abläuft</strong>, geplant, also z.B. bis 16:00, wenn das Auto um 08:00 eingesteckt wird, aber bis 18:00 wenn das Auto um 10:00 eingesteckt wird.</p>
                 <p>Mit dieser Konfiguration kann z.B. die Arbeitszeit von Mitarbeitern berücksichtigt werden.</p>
             </>,
             "charge_below_help": <>
@@ -43,8 +43,8 @@ let x = {
             </>,
             "yield_forecast_threshold_help": <>
                 <p>Gibt einen Schwellwert in Kilowattstunden an, über dem ein Ladevorgang nur bei PV-Überschuss freigegeben wird (der Ladeplan wird ignoriert).</p>
-                <p>Beispiel: 'Nur wenn PV-Ertragsprognose unter' ist auf <strong>75 kWh/Tag</strong> konfiguriert und die <strong>PV-Ertragsprognose für heute liegt bei 80 kWh/Tag</strong>. In diesem Fall würde der <strong>Ladeplan nicht ausgeführt</strong> und nur geladen wenn PV-Überschuss verfügbar ist.</p>
-                <p>Es wird also kein Strom eingekauft, auch nicht wenn er sehr günstig wäre, wenn bekannt ist, dass genug PV-Überschuss verfügbar sein wird.</p>
+                <p>Beispiel: 'Nur wenn PV-Ertragsprognose unter' ist auf <strong>75 kWh/Tag</strong> konfiguriert und die <strong>PV-Ertragsprognose für heute liegt bei 80 kWh/Tag</strong>. In diesem Fall würde der <strong>Ladeplan nicht ausgeführt</strong> und nur geladen, wenn PV-Überschuss verfügbar ist.</p>
+                <p>Es wird also kein Strom eingekauft, auch nicht, wenn er sehr günstig wäre, wenn bekannt ist, dass genug PV-Überschuss verfügbar sein wird.</p>
             </>
         },
         "script": {

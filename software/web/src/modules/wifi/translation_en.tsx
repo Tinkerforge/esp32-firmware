@@ -22,7 +22,7 @@ let x = {
         "content": {
             "sta_settings": "WiFi Connection",
             "sta_enable_sta": "WiFi connection enabled",
-            "sta_enable_sta_desc": <>Automatically connects to the configured network on start-up</>,
+            "sta_enable_sta_desc": <>Automatically connects to the configured network on start-up.</>,
             "sta_ssid": "Network name (SSID)",
             "sta_scan": "Search for networks",
             "sta_bssid": "BSSID",
