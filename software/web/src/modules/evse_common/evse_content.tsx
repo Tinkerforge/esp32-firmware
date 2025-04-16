@@ -86,7 +86,7 @@ export class EVSE extends Component<{status_ref?: RefObject<EVSEStatus>}, {}> {
                         <InputText value={toDisplayCurrent(state.allowed_charging_current)}/>
                     </FormRow>
 
-                    <FormRow label={__("evse.content.error_state")} label_muted={__("evse.content.error_state_desc")}>
+                    <FormRow label={__("evse.content.error_state")} help={__("evse.content.error_state_help")}>
                         <IndicatorGroup
                             value={state.error_state == 0 ? 0 : state.error_state - 1}
                             items={[

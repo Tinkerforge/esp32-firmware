@@ -244,7 +244,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
 
         return <SubPage name="evse_settings">
                 <ConfigForm id="evse_settings" title={__("evse.content.evse_settings")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
-                    <FormRow label={__("evse.content.auto_start_description")} label_muted={__("evse.content.auto_start_description_muted")}>
+                    <FormRow label={__("evse.content.auto_start_description")} help={__("evse.content.auto_start_description_help")}>
                         <Switch desc={__("evse.content.auto_start_enable")}
                                 checked={!auto_start_charging.auto_start_charging}
                                 onClick={async () => this.setState({auto_start_charging: {...auto_start_charging, auto_start_charging: !auto_start_charging.auto_start_charging}})}/>
@@ -256,7 +256,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                                 desc={__("evse.content.enable_led_api_desc")}/>
                     </FormRow>
 
-                    <FormRow label={__("evse.content.boost_mode_desc")} label_muted={__("evse.content.boost_mode_desc_muted")}>
+                    <FormRow label={__("evse.content.boost_mode_desc")} help={__("evse.content.boost_mode_desc_help")}>
                         <Switch desc={__("evse.content.boost_mode")}
                                 checked={boost_mode.enabled}
                                 onClick={async () => this.setState({boost_mode: {enabled: !boost_mode.enabled}})}/>
@@ -299,7 +299,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                             />
                         </FormRow>
 
-                        <FormRow label={__("evse.content.gpio_shutdown")} label_muted={__("evse.content.gpio_shutdown_muted")}>
+                        <FormRow label={__("evse.content.gpio_shutdown")} help={__("evse.content.gpio_shutdown_help")}>
                             <InputSelect items={[
                                             ["0",__("evse.content.gpio_shutdown_not_configured")],
                                             ["1",__("evse.content.gpio_shutdown_on_open")],
@@ -365,14 +365,14 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                         </>
                         }
 
-                        <FormRow label={__("evse.content.ev_wakeup_desc")} label_muted={__("evse.content.ev_wakeup_desc_muted")}>
+                        <FormRow label={__("evse.content.ev_wakeup_desc")} help={__("evse.content.ev_wakeup_desc_help")}>
                             <Switch desc={__("evse.content.ev_wakeup")}
                                     checked={ev_wakeup.enabled}
                                     onClick={async () => this.setState({ev_wakeup: {enabled: !ev_wakeup.enabled}})}/>
                         </FormRow>
 
                         {!this.state.have_meter ? undefined :
-                            <FormRow label={__("evse.content.phase_auto_switch_desc")} label_muted={__("evse.content.phase_auto_switch_desc_muted")}>
+                            <FormRow label={__("evse.content.phase_auto_switch_desc")} help={__("evse.content.phase_auto_switch_desc_help")}>
                                 <Switch desc={__("evse.content.phase_auto_switch")}
                                         checked={phase_auto_switch.enabled}
                                         onClick={async () => this.setState({phase_auto_switch: {enabled: !phase_auto_switch.enabled}})}/>
@@ -380,7 +380,7 @@ export class EVSESettings extends ConfigComponent<"charge_limits/default_limits"
                         }
 
                         {!this.state.is_evse_v2 ? undefined :
-                            <FormRow label={__("evse.content.phases_connected")} label_muted={__("evse.content.phases_connected_muted")}>
+                            <FormRow label={__("evse.content.phases_connected")} help={__("evse.content.phases_connected_help")}>
                                 <InputSelect items={[
                                                 ["1",__("evse.content.phases_connected_1")],
                                                 [disable_three_phase_entry ? "3_disabled" : "3",__("evse.content.phases_connected_3")]

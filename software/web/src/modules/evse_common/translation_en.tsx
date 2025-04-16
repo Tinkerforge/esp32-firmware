@@ -42,7 +42,34 @@ let x = {
                 }/*NF*/,
             "allowed_charging_current": "Allowed charging current",
             "error_state": "Error state",
-            "error_state_desc": <><a href="{{{manual_url}}}">see manual for details</a></>,
+            "error_state_help": <>
+                <ul class="mb-0">
+                    <li>
+                        <p>
+                            <strong>Switch error: </strong>
+                            The wallbox was not installed correctly. The charge controller's switch setting remains at its factory default. See <a href="https://docs.warp-charger.com/docs/warp_charger/assembly_and_installation#einstellen-des-ladestroms">Charging current configuration</a>.
+                        </p>
+                    </li>
+                    <li>
+                        <p>
+                            <strong>DC error: </strong>
+                            A DC fault current has been detected. The error can be reset either via the wallbox's website or by briefly disconnecting the wallbox's power supply.
+                        </p>
+                    </li>
+                    <li>
+                        <p>
+                            <strong>Contactor/PE error: </strong>
+                            One of the contactors is not switching correctly (see contactor check/status), phase L1 is de-energized, or an earth fault is present.
+                        </p>
+                    </li>
+                    <li>
+                        <p>
+                            <strong>Communication error: </strong>
+                            An error occurred during communication with the electric vehicle. On first occurrence, disconnect the charging cable from the vehicle, wait 10 seconds, and then reconnect the cable (restart the charging process). If the problem persists, see the <a href="https://docs.warp-charger.com/docs/warp_charger/troubleshooting#led-blinkt-f%C3%BCnfmal-rot-im-intervall-dass-webinterface-zeigt-kommunikationsfehler">instructions</a>.
+                        </p>
+                    </li>
+                </ul>
+            </>,
             "error_ok": "OK",
             "error_switch": "Switch",
             "error_contactor": /*SFN*/(pe_error: boolean, contactor_error: boolean) => (contactor_error == pe_error ? "Contactor/PE" : (pe_error ? "PE" : "Contactor"))/*NF*/,
@@ -95,7 +122,11 @@ let x = {
             "button_configuration": "Button configuration",
 
             "auto_start_description": "Manual charge release",
-            "auto_start_description_muted": <><a href="https://www.warp-charger.com/evcc.html?v=2">see manual for details</a></>,
+            "auto_start_description_help": <>
+                <p>
+                    If manual charge release is enabled, a charging process will never begin automatically. Every charging process must be initiated via the web interface, the API, or (depending on the button configuration) the physical button. Manual charge release also prevents any other active charge current limits from taking effect. This means it does not need to be enabled if charging is controlled via NFC tag user release or through OCPP.
+                </p>
+            </>,
             "auto_start_enable": "Requires that charges are always manually released via the web interface, the API or (depending on the button configuration) the button.",
 
             "external_description": "External control",
@@ -103,7 +134,11 @@ let x = {
             "external_enable": <>Enables an external control system (for example <a href="https://evcc.io/">EVCC</a>) to control this charger</>,
 
             "boost_mode_desc": "Boost Mode",
-            "boost_mode_desc_muted": <><a href="https://www.warp-charger.com/evcc.html?v=2">see manual for details</a></>,
+            "boost_mode_desc_help": <>
+                <p>
+                    Some vehicles' charging electronics may interpret the prescribed current from the WARP3 Charger as too low. Boost mode compensates for this by communicating a slightly higher charging current.
+                </p>
+            </>,
             "boost_mode": "Allows the vehicle's charge controller a slightly higher charge current (+ 0.24 A) to compensate measurement errors of the vehicle. Use only if your vehicle charges with less than the allowed charge current!",
 
             "reset_description": "Actions",
@@ -173,7 +208,7 @@ let x = {
 
             // EVSE V2 and V3
             "energy_meter_type": "Energy meter type",
-            "gpio_shutdown_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
+            "gpio_shutdown_help": <><p>At the shutdown input, for example, a round tax recipient can be connected. Here you can configure how changes to the shutdown input are handled. In the wallbox's standard configuration, power is limited to 4200 W when the shutdown input is closed. See <a href="https://docs.warp-charger.com/docs/tutorials/verbrauchseinrichtung">controllable consumption device according to §14a EnWG</a>.</p></>,
             "gpio_shutdown_not_configured": "Not configured",
             "gpio_shutdown_on_open": "Shut down on open",
             "gpio_shutdown_on_close": "Shut down on close",
@@ -197,11 +232,19 @@ let x = {
             "button_configuration_start_and_stop_charging": "Start or stop charging",
 
             "ev_wakeup_desc": "EV Wakeup",
-            "ev_wakeup_desc_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
+            "ev_wakeup_desc_help": <>
+                <p>
+                    Some vehicles' charging electronics enter a power-saving mode if a charging process is not initiated within a certain time. The vehicle wakeup function attempts to automatically wake up such electronics if the vehicle does not respond within 30 seconds when power is available. This is implemented by temporarily disconnecting the Control Pilot (CP) signal.
+                </p>
+            </>,
             "ev_wakeup": "Attempts to wake up the charge controller of the connected vehicle by fake-un and -re-plugging the charge cable.",
 
             "phase_auto_switch_desc": "Automatic phase switch",
-            "phase_auto_switch_desc_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
+            "phase_auto_switch_desc_help": <>
+                <p>
+                    If enabled, the internal current meter will determine during an ongoing charging process whether the vehicle is charging on a single phase. If that is the case, the charging station will automatically switch to single-phase charging.
+                </p>
+            </>,
             "phase_auto_switch": "Automatically switches to single phase charging if the connected vehicle only draws current on L1.",
 
             "dc_fault_current_state": "DC fault protector state",
@@ -234,7 +277,11 @@ let x = {
             "phases_state": "Phase switching state",
 
             "phases_connected": "Supply",
-            "phases_connected_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
+            "phases_connected_help": <>
+                <p>
+                    This setting determines whether the charging station is connected in three-phase or single-phase. If it is connected as single-phase and configured accordingly here, the second relay for phases L2 and L3 will never be activated, and the charging power limit according to §14 EnWG will be applied accordingly.
+                </p>
+            </>,
             "phases_connected_1": "Single-phase",
             "phases_connected_3": "Three-phase"
         },

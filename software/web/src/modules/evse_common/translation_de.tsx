@@ -42,7 +42,14 @@ let x = {
                 }/*NF*/,
             "allowed_charging_current": "Erlaubter Ladestrom",
             "error_state": "Fehlerzustand",
-            "error_state_desc": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
+            "error_state_help": <>
+                <ul class="mb-0">
+                    <li><p><strong>Schalterfehler: </strong>Die Wallbox wurde nicht korrekt installiert. Die Schaltereinstellung des Ladecontrollers ist noch auf dem Werkszustand. Siehe <a href="https://docs.warp-charger.com/docs/warp_charger/assembly_and_installation#einstellen-des-ladestroms">Einstellen des Ladestroms</a>.</p></li>
+                    <li><p><strong>DC-Fehler: Ein DC-Fehlerstrom wurde erkannt. Der Fehler kann entweder über die Webseite der Wallbox oder über ein kurzzeitiges Trennen der Stromversorgung der Wallbox zurückgesetzt werden.</strong></p></li>
+                    <li><p><strong>Schützfehler/PE-Fehler: </strong>Eines der Schütze schaltet nicht korrekt (Siehe Schützprüfung/-zustand), Phase L1 ist stromlos oder Erdungsfehler.</p></li>
+                    <li><p><strong>Kommunikationsfehler: </strong>Fehler bei der Kommunikation mit dem Elektrofahrzeug. Bei erstmaligem Auftreten das Ladekabel vom Fahrzeug trennen, 10 Sekunden warten und das Ladekabel erneut mit dem Fahrzeug verbinden (erneuter Ladevorgang). Sollte das Problem bestehen bleiben siehe <a href="https://docs.warp-charger.com/docs/warp_charger/troubleshooting#led-blinkt-f%C3%BCnfmal-rot-im-intervall-dass-webinterface-zeigt-kommunikationsfehler">Anleitung</a>.</p></li>
+                </ul>
+            </>,
             "error_ok": "OK",
             "error_switch": "Schalter",
             "error_contactor": /*SFN*/(pe_error: boolean, contactor_error: boolean) => (contactor_error == pe_error ? "Schütz/PE" : (pe_error ? "PE" : "Schütz"))/*NF*/,
@@ -95,7 +102,7 @@ let x = {
             "button_configuration": "Tastereinstellung",
 
             "auto_start_description": "Manuelle Ladefreigabe",
-            "auto_start_description_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
+            "auto_start_description_help": <><p>Wenn die manuelle Ladefreigabe aktiviert wird, wird ein Ladevorgang niemals automatisch begonnen. Jeder Ladevorgang muss über das Webinterface, die API oder (je nach Tastereinstellung) den Taster gestartet werden. Die manuelle Ladefreigabe blockiert zusätzlich zu eventuell anderen aktiven Ladestromgrenzen. Das heißt, dass sie nicht aktiviert werden muss, wenn Ladevorgänge beispielsweise mit der Benutzerfreigabe per NFC-Tag, oder der Steuerung per OCPP kontrolliert werden.</p></>,
             "auto_start_enable": "Erzwingt dass Ladevorgänge immer über das Webinterface, die API oder (je nach Tastereinstellung) den Taster manuell gestartet werden müssen.",
 
             "external_description": "Externe Steuerung",
@@ -103,7 +110,7 @@ let x = {
             "external_enable": <>Erlaubt einer externen Steuerung (z.B. <a href="https://evcc.io/">EVCC</a>) diese Wallbox zu steuern</>,
 
             "boost_mode_desc": "Boost-Modus",
-            "boost_mode_desc_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
+            "boost_mode_desc_help": <><p>Die Ladeelektronik mancher Fahrzeuge interpretiert einen vom WARP3 Charger vorgeschriebenen Ladestrom zu niedrig. Der Boost-Modus versucht, diesen Effekt auszugleichen, indem ein leicht höherer Ladestrom kommuniziert wird.</p></>,
             "boost_mode": "Gibt der Ladeelektronik des Fahrzeugs einen leicht höheren Ladestrom vor (+ 0,24 A) um Messfehler der Ladeelektronik zu kompensieren. Nur Verwenden, falls ein Fahrzeug mit einem kleineren als dem erlaubten Ladestrom lädt!",
 
             "reset_description": "Aktionen",
@@ -173,7 +180,7 @@ let x = {
 
             // EVSE V2 and V3
             "energy_meter_type": "Stromzählertyp",
-            "gpio_shutdown_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
+            "gpio_shutdown_help": <><p>Am Abschalteingang kann zum Beispiel ein Rundsteuerempfänger angeschlossen werden. Hier kann eingestellt werden, wie auf Änderungen am Abschalteingang reagiert werden soll. In der Standardkonfiguration der Wallbox wird auf 4200 W limitiert, wenn der Abschalteingang geschlossen ist, siehe <a href="https://docs.warp-charger.com/docs/tutorials/verbrauchseinrichtung">Steuerbare Verbrauchseinrichtung nach §14a EnWG</a>.</p></>,
             "gpio_shutdown_not_configured": "Nicht konfiguriert",
             "gpio_shutdown_on_open": "Abschalten wenn geöffnet",
             "gpio_shutdown_on_close": "Abschalten wenn geschlossen",
@@ -197,11 +204,11 @@ let x = {
             "button_configuration_start_and_stop_charging": "Ladestart bzw. Ladestop",
 
             "ev_wakeup_desc": "Fahrzeug-Weckruf",
-            "ev_wakeup_desc_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
+            "ev_wakeup_desc_help": <><p>Die Ladeelektronik mancher Fahrzeuge wechselt in einen Energiesparmodus, falls ein Ladevorgang nicht innerhalb einer gewissen Zeit gestartet wird. Der Fahrzeug-Weckruf versucht, solche Ladeelektroniken automatisch zu wecken, falls das Fahrzeug nicht innerhalb von 30 Sekunden reagiert, wenn Strom zur Verfugung steht. Umgesetzt wird dies durch eine kurzzeitige Trennung des Control-Pilot- bzw. CP-Signals.</p></>,
             "ev_wakeup": "Versucht die Ladeelektronik des Fahrzeugs aus einem Energiesparmodus zu wecken, indem ein Abziehen und Anstecken des Ladekabels vorgetäuscht wird.",
 
             "phase_auto_switch_desc": "Automatischer Phasenwechsel",
-            "phase_auto_switch_desc_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
+            "phase_auto_switch_desc_help": <><p>Ist die Option aktiviert, wird bei einem laufenden Ladevorgang mit dem internen Stromzähler ermittelt, ob das Fahrzeug nur einphasig lädt. Ist dies der Fall, schaltet die Wallbox automatisch auf einphasiges Laden um.</p></>,
             "phase_auto_switch": "Schaltet automatisch auf einphasiges Laden um, wenn das angeschlossene Fahrzeug nur auf L1 Strom bezieht.",
 
             "dc_fault_current_state": "DC-Fehlerstromzustand",
@@ -234,7 +241,7 @@ let x = {
             "phases_state": "Zustand der Phasenumschaltung",
 
             "phases_connected": "Zuleitung",
-            "phases_connected_muted": <><a href="{{{manual_url}}}">siehe Betriebsanleitung für Details</a></>,
+            "phases_connected_help": <><p>Hier wird konfiguriert, ob die Wallbox dreiphasig oder einphasig angeschlossen ist. Ist die Wallbox nur einphasig angeschlossen und hier auch so konfiguriert, wird das zweite Schütz für die Phasen L2 und L3 nie geschaltet, außerdem wird die Begrenzung der Ladeleistung nach §14 EnWG entsprechend berechnet.</p></>,
             "phases_connected_1": "Einphasig",
             "phases_connected_3": "Dreiphasig"
 
