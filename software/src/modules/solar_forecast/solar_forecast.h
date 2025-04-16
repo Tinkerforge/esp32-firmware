@@ -63,9 +63,9 @@ public:
     Option<uint32_t> get_wh_today();
     Option<uint32_t> get_wh_today_remaining();
     Option<uint32_t> get_wh_tomorrow();
-    float get_cached_wh_today();
-    float get_cached_wh_today_remaining();
-    float get_cached_wh_tomorrow();
+    int32_t get_cached_wh_today();
+    int32_t get_cached_wh_today_remaining();
+    int32_t get_cached_wh_tomorrow();
 
     ConfigRoot config;
     ConfigRoot state;

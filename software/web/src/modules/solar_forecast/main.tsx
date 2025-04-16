@@ -39,6 +39,10 @@ import { StatusSection } from "../../ts/components/status_section";
 
 const SOLAR_FORECAST_PLANES = 6;
 
+function minus1_to_nan(val: number) {
+    return val == -1 ? NaN : val;
+}
+
 function get_active_planes() {
     let active_planes = [];
     for (let i = 0; i < SOLAR_FORECAST_PLANES; i++) {
@@ -429,7 +433,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                     </FormRow>
                 <FormRow label={__("solar_forecast.content.solar_forecast_now_label")} label_muted={("0" + new Date(util.get_date_now_1m_update_rate()).getHours()).slice(-2) + ":00 " + __("solar_forecast.content.time_to") + " 23:59"}>
                     <InputText
-                        value={util.get_value_with_unit(this.state.state.wh_today_remaining / 1000, "kWh", 2)}
+                        value={util.get_value_with_unit(minus1_to_nan(this.state.state.wh_today_remaining) / 1000, "kWh", 2)}
                     />
                 </FormRow>
                 <FormRow label={__("solar_forecast.content.solar_forecast_days_label")} label_muted={__("solar_forecast.content.solar_forecast_today_label_muted")}>
@@ -438,7 +442,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                             <div class="input-group">
                                 <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("solar_forecast.content.solar_forecast_today_label")}</span></div>
                                 <InputText
-                                    value={util.get_value_with_unit(this.state.state.wh_today / 1000, "kWh", 2)}
+                                    value={util.get_value_with_unit(minus1_to_nan(this.state.state.wh_today) / 1000, "kWh", 2)}
                                 />
                             </div>
                         </div>
@@ -446,7 +450,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                             <div class="input-group">
                                 <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("solar_forecast.content.solar_forecast_tomorrow_label")}</span></div>
                                 <InputText
-                                    value={util.get_value_with_unit(this.state.state.wh_tomorrow / 1000, "kWh", 2)}
+                                    value={util.get_value_with_unit(minus1_to_nan(this.state.state.wh_tomorrow) / 1000, "kWh", 2)}
                                 />
                             </div>
                         </div>
@@ -500,7 +504,7 @@ export class SolarForecastStatus extends Component
         return <StatusSection name="solar_forecast">
             <FormRow label={__("solar_forecast.content.solar_forecast_now_label")} label_muted={("0" + new Date(util.get_date_now_1m_update_rate()).getHours()).slice(-2) + ":00 " + __("solar_forecast.content.time_to") + " 23:59"}>
                 <InputText
-                    value={util.get_value_with_unit(state.wh_today_remaining / 1000, "kWh", 2)}
+                    value={util.get_value_with_unit(minus1_to_nan(state.wh_today_remaining) / 1000, "kWh", 2)}
                 />
             </FormRow>
             <FormRow label={__("solar_forecast.content.solar_forecast_days_label")} label_muted={__("solar_forecast.content.solar_forecast_today_label_muted")}>
@@ -509,7 +513,7 @@ export class SolarForecastStatus extends Component
                         <div class="input-group">
                             <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("solar_forecast.content.solar_forecast_today_label")}</span></div>
                             <InputText
-                                value={util.get_value_with_unit(state.wh_today / 1000, "kWh", 2)}
+                                value={util.get_value_with_unit(minus1_to_nan(state.wh_today) / 1000, "kWh", 2)}
                             />
                         </div>
                     </div>
@@ -517,7 +521,7 @@ export class SolarForecastStatus extends Component
                         <div class="input-group">
                             <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("solar_forecast.content.solar_forecast_tomorrow_label")}</span></div>
                             <InputText
-                                value={util.get_value_with_unit(state.wh_tomorrow / 1000, "kWh", 2)}
+                                value={util.get_value_with_unit(minus1_to_nan(state.wh_tomorrow) / 1000, "kWh", 2)}
                             />
                         </div>
                     </div>

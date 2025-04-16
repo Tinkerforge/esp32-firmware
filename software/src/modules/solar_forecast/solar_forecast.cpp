@@ -66,12 +66,12 @@ void SolarForecast::pre_setup()
     }};
 
     state = Config::Object({
-        {"wh_today",           Config::Float(NAN)},
-        {"wh_today_remaining", Config::Float(NAN)},
-        {"wh_tomorrow",        Config::Float(NAN)},
-        {"rate_limit",         Config::Int8(-1)  },
-        {"rate_remaining",     Config::Int8(-1)  },
-        {"next_api_call",      Config::Uint32(0) }, // unix timestamp in minutes
+        {"wh_today",           Config::Int32(-1)},
+        {"wh_today_remaining", Config::Int32(-1)},
+        {"wh_tomorrow",        Config::Int32(-1)},
+        {"rate_limit",         Config::Int8(-1) },
+        {"rate_remaining",     Config::Int8(-1) },
+        {"next_api_call",      Config::Uint32(0)}, // unix timestamp in minutes
     });
 
     for (size_t plane_index = 0; plane_index < SOLAR_FORECAST_PLANES; plane_index++) {
@@ -657,19 +657,19 @@ Option<uint32_t> SolarForecast::get_wh_tomorrow()
     return get_wh_range(start, end);
 }
 
-float SolarForecast::get_cached_wh_today()
+int32_t SolarForecast::get_cached_wh_today()
 {
-    return state.get("wh_today")->asFloat();
+    return state.get("wh_today")->asInt();
 }
 
-float SolarForecast::get_cached_wh_today_remaining()
+int32_t SolarForecast::get_cached_wh_today_remaining()
 {
-    return state.get("wh_today_remaining")->asFloat();
+    return state.get("wh_today_remaining")->asInt();
 }
 
-float SolarForecast::get_cached_wh_tomorrow()
+int32_t SolarForecast::get_cached_wh_tomorrow()
 {
-    return state.get("wh_tomorrow")->asFloat();
+    return state.get("wh_tomorrow")->asInt();
 }
 
 void SolarForecast::update_cached_wh_state()
@@ -678,7 +678,7 @@ void SolarForecast::update_cached_wh_state()
     Option<uint32_t> wh_today_remaining = get_wh_today_remaining();
     Option<uint32_t> wh_tomorrow = get_wh_tomorrow();
 
-    state.get("wh_today"          )->updateFloat(wh_today.is_some()           ? static_cast<float>(wh_today.unwrap())           : NAN);
-    state.get("wh_today_remaining")->updateFloat(wh_today_remaining.is_some() ? static_cast<float>(wh_today_remaining.unwrap()) : NAN);
-    state.get("wh_tomorrow"       )->updateFloat(wh_tomorrow.is_some()        ? static_cast<float>(wh_tomorrow.unwrap())        : NAN);
+    state.get("wh_today"          )->updateInt(wh_today.is_some()           ? static_cast<int32_t>(wh_today.unwrap())           : -1);
+    state.get("wh_today_remaining")->updateInt(wh_today_remaining.is_some() ? static_cast<int32_t>(wh_today_remaining.unwrap()) : -1);
+    state.get("wh_tomorrow"       )->updateInt(wh_tomorrow.is_some()        ? static_cast<int32_t>(wh_tomorrow.unwrap())        : -1);
 }
