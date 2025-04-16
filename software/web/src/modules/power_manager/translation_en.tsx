@@ -29,7 +29,7 @@ let x = {
 
             "header_excess_charging": "Photovoltaic Excess Charging",
             "enable_excess_charging": "Excess charging enabled",
-            "enable_excess_charging_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
+            "enable_excess_charging_help": <><p>The <a href="https://docs.warp-charger.com/docs/tutorials/pv_excess_charging/">tutorial PV-excess-charging</a> helps you configuring this the first time.</p></>,
             "enable_excess_charging_desc": "Will adjust the power consumption of controlled chargers, depending on the power generation of a photovoltaic system and the charge mode.",
             "default_mode": "Default charging mode",
             "default_mode_muted": "will be used after reboot",
@@ -41,7 +41,7 @@ let x = {
             "guaranteed_power": "Min + PV: Minimum charging power",
             "guaranteed_power_muted": "Charging power that is allowed to be drawn from the grid to charge vehicles.",
             "control_behavior": "Control behavior",
-            "control_behavior_muted": <><a href="{{{manual_url}}}">see manual for details</a></>,
+            "control_behavior_help": <><p>Defines the allowed grid withdrawal. This allows e.g. prioritizing a battery storage over an electric vehicle.</p></>,
             "target_power_n200": "Very conservative (− 200 W)",
             "target_power_n100": "Conservative (− 100 W)",
             "target_power_n50_with_battery_meter": "Slightly conservative (− 50 W)",
