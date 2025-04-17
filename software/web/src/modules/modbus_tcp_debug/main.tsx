@@ -49,7 +49,6 @@ interface ModbusTCPDebugToolState {
     data_count: number;
     write_data: string;
     timeout: number;
-    byte_order: number;
     waiting: boolean;
     cookie: number;
     result: string;
@@ -76,7 +75,6 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
             data_count: 1,
             write_data: "",
             timeout: 2000,
-            byte_order: 0,
             waiting: false,
             cookie: null,
             result: "",
@@ -176,7 +174,6 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                                 data_count: data_count,
                                 write_data: values_hex.join(""),
                                 timeout: this.state.timeout,
-                                byte_order: this.state.byte_order,
                                 cookie: cookie,
                             })).text();
                         }

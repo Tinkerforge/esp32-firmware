@@ -35,7 +35,7 @@ public:
 
 private:
     ConfigRoot transact;
-    TFModbusTCPClient *client = nullptr;
-    bool client_disconnect = false;
+    TFGenericTCPSharedClient *connected_client = nullptr;
+    bool release_client = false;
     uint16_t *transact_buffer = nullptr;
 };
