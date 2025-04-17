@@ -1659,6 +1659,7 @@ void MeterModbusTCP::parse_next()
                     table = &sungrow_string_inverter_1p2l_table;
                 }
 
+                logger.printfln_meter("Sungrow 1P2L inverter detected");
                 break;
 
             case 1:
@@ -1669,6 +1670,7 @@ void MeterModbusTCP::parse_next()
                     table = &sungrow_string_inverter_3p4l_table;
                 }
 
+                logger.printfln_meter("Sungrow 3P4L inverter detected");
                 break;
 
             case 2:
@@ -1679,11 +1681,12 @@ void MeterModbusTCP::parse_next()
                     table = &sungrow_string_inverter_3p3l_table;
                 }
 
+                logger.printfln_meter("Sungrow 3P3L inverter detected");
                 break;
 
             default:
                 table = nullptr;
-                logger.printfln_meter("%s has unknown Output Type: %u", get_meter_modbus_tcp_table_id_name(table_id), c16.u);
+                logger.printfln_meter("Sungrow inverter has unknown output type: %u", c16.u);
                 return;
             }
 
@@ -1707,21 +1710,23 @@ void MeterModbusTCP::parse_next()
             case 0x0002:
             case 0x0003:
             case 0x0004:
-                logger.printfln_meter("%s has unsupported Device Type: 0x%04x", get_meter_modbus_tcp_table_id_name(table_id), c16.u);
+                logger.printfln_meter("Deye hybrid inverter has unsupported device type: 0x%04x", c16.u);
                 return;
 
             case 0x0005:
                 table = &deye_hybrid_inverter_low_voltage_battery_table;
+                logger.printfln_meter("Deye hybrid inverter with low-voltage battery detected");
                 break;
 
             case 0x0006:
             case 0x0106:
                 table = &deye_hybrid_inverter_high_voltage_battery_table;
+                logger.printfln_meter("Deye hybrid inverter with high-voltage battery detected: 0x%04x", c16.u);
                 break;
 
             default:
                 table = nullptr;
-                logger.printfln_meter("%s has unknown Device Type: 0x%04x", get_meter_modbus_tcp_table_id_name(table_id), c16.u);
+                logger.printfln_meter("Deye hybrid inverter has unknown device type: 0x%04x", c16.u);
                 return;
             }
 
@@ -1745,16 +1750,18 @@ void MeterModbusTCP::parse_next()
             case 1: // module/1/ID: Input ID
                 table = &fronius_gen24_plus_battery_integer_table;
                 fronius_gen24_plus.start_address_shift = 0;
+                logger.printfln_meter("Fronius GEN24 Plus inverter with integer MPPT model detected");
                 break;
 
             case 160: // ID: SunSpec Model ID
                 table = &fronius_gen24_plus_battery_float_table;
                 fronius_gen24_plus.start_address_shift = 10;
+                logger.printfln_meter("Fronius GEN24 Plus inverter with float MPPT model detected");
                 break;
 
             default:
                 table = nullptr;
-                logger.printfln_meter("%s has unknown input or model ID: %u", get_meter_modbus_tcp_table_id_name(table_id), c16.u);
+                logger.printfln_meter("Fronius GEN24 Plus inverter has malformed MPPT model: %u", c16.u);
                 return;
             }
 
