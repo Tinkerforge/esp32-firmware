@@ -26,6 +26,8 @@
 #include "module_dependencies.h"
 #include "build.h"
 
+#include "gcc_warnings.h"
+
 #if !BUILD_IS_SIGNED()
 #define SOLAR_FORECAST_USE_TEST_DATA
 #endif
@@ -178,16 +180,16 @@ void SolarForecast::next_update() {
                     break;
                 }
 
-                first_delay_ms = std::min(first_delay_ms, (int)(next_check - rtc.timestamp_minutes()) * 60 * 1000);
+                first_delay_ms = std::min(first_delay_ms, static_cast<int>(next_check - rtc.timestamp_minutes()) * 60 * 1000);
             }
         }
     }
 
     if(next_sync_forced != 0) {
-        first_delay_ms = std::max(first_delay_ms, (int)(next_sync_forced - rtc.timestamp_minutes()) * 60 * 1000);
+        first_delay_ms = std::max(first_delay_ms, static_cast<int>(next_sync_forced - rtc.timestamp_minutes()) * 60 * 1000);
     }
 
-    state.get("next_api_call")->updateUint(rtc.timestamp_minutes() + first_delay_ms / 60000);
+    state.get("next_api_call")->updateUint(rtc.timestamp_minutes() + static_cast<uint32_t>(first_delay_ms) / (60 * 1000));
 
     // Cancel current task
     task_scheduler.cancel(task_id);
@@ -232,9 +234,9 @@ void SolarForecast::handle_new_data()
             JsonString place         = js_info["place"];
             plane_current->state.get("place")->updateString(place.c_str());
 
-            JsonInteger limit        = js_ratelimit["limit"];
-            JsonInteger remaining    = js_ratelimit["remaining"];
-            JsonInteger period       = js_ratelimit["period"];
+            const int32_t  limit     = js_ratelimit["limit"    ].as<int32_t>();
+            const int32_t  remaining = js_ratelimit["remaining"].as<int32_t>();
+            const uint32_t period    = js_ratelimit["period"   ].as<uint32_t>();
             state.get("rate_limit")->updateInt(limit);
             state.get("rate_remaining")->updateInt(remaining);
             if (remaining == 0) {
@@ -261,8 +263,8 @@ void SolarForecast::handle_new_data()
             }
 
             for (JsonPair pair : js_wh_period) {
-                String key(pair.key().c_str());
-                uint32_t value = pair.value().as<int>();
+                const char *key = pair.key().c_str();
+                uint32_t value = pair.value().as<uint32_t>();
 
                 // Calculate start time of the data from first day
                 if (first) {
@@ -270,26 +272,31 @@ void SolarForecast::handle_new_data()
                     day_start0 = key[8];
                     day_start1 = key[9];
 
-                    // String for 00:00:00 of first day
-                    const String first_date = key.substring(0, 11) + "00:00:00";
-
-                    // String to tm struct
+                    // Parse date of first day
                     struct tm tm;
-                    strptime(first_date.c_str(), "%Y-%m-%d %H:%M:%S", &tm);
+                    if (!strptime(key, "%Y-%m-%d", &tm)) {
+                        logger.printfln("Cannot parse first day's date: '%s'", key);
+                        continue;
+                    }
+
+                    // 00:00:00 of first day
+                    tm.tm_hour = 0;
+                    tm.tm_min  = 0;
+                    tm.tm_sec  = 0;
 
                     // mktime needs tm_isdst to be set, but strptime doesn't set it.
                     // Use -1 to have mktime figure out if DST is in effect.
                     tm.tm_isdst = -1;
 
                     // Set first date as unix time in minutes
-                    plane_current->forecast.get("first_date")->updateUint(mktime(&tm) / 60);
+                    plane_current->forecast.get("first_date")->updateUint(static_cast<uint32_t>(mktime(&tm) / 60));
                 }
 
                 // Add 24 hours for second day
-                const uint8_t index_add = ((day_start0 == key[8]) && (day_start1 == key[9])) ? 0 : 24;
-                const uint8_t index = index_add + (key[11] - '0')*10 + (key[12] - '0');
+                const uint32_t index_add = ((day_start0 == key[8]) && (day_start1 == key[9])) ? 0 : 24;
+                const uint32_t index = index_add + static_cast<uint32_t>(key[11] - '0')*10 + (key[12] - '0');
                 if(index > 47) {
-                    logger.printfln("Found impossible index: %d (date %s)", index, key.c_str());
+                    logger.printfln("Found impossible index: %lu (date %s)", index, key);
                     continue;
                 }
                 // We add up all kWh values that correspond to the same hour
@@ -372,18 +379,25 @@ void SolarForecast::update()
         return;
     }
 
-#ifdef SOLAR_FORECAST_USE_TEST_DATA
-    if(json_buffer == nullptr) {
-        json_buffer = (char *)calloc_psram_or_dram(SOLAR_FORECAST_MAX_JSON_LENGTH, sizeof(char));
-    } else {
-        logger.printfln("JSON Buffer was potentially not freed correctly");
-        json_buffer_position = 0;
+    if (config.get("api_url")->asString().length() == 0) {
+        logger.printfln("No solar forecast API server configured");
+        download_state = SF_DOWNLOAD_STATE_ERROR;
+        return;
     }
 
+    if (json_buffer == nullptr) {
+        json_buffer = static_cast<char *>(malloc_psram_or_dram(SOLAR_FORECAST_MAX_JSON_LENGTH * sizeof(char)));
+    } else {
+        logger.printfln("JSON Buffer was potentially not freed correctly");
+    }
+    json_buffer_position = 0;
+
+#ifdef SOLAR_FORECAST_USE_TEST_DATA
     // Copy test data to temporary buffer
     logger.printfln("Using test data");
-    memcpy(json_buffer + json_buffer_position, test_data.c_str(), test_data.length());
-    json_buffer_position += test_data.length();
+    size_t test_data_length = strlen(test_data);
+    memcpy(json_buffer + json_buffer_position, test_data, test_data_length);
+    json_buffer_position += test_data_length;
     json_buffer[json_buffer_position] = '\0';
 
     handle_new_data();
@@ -394,19 +408,6 @@ void SolarForecast::update()
 #endif
 
     plane_current->state.get("last_check")->updateUint(rtc.timestamp_minutes());
-
-    if (config.get("api_url")->asString().length() == 0) {
-        logger.printfln("No solar forecast API server configured");
-        download_state = SF_DOWNLOAD_STATE_ERROR;
-        return;
-    }
-
-    if(json_buffer == nullptr) {
-        json_buffer = (char *)calloc_psram_or_dram(SOLAR_FORECAST_MAX_JSON_LENGTH, sizeof(char));
-    } else {
-        logger.printfln("JSON Buffer was potentially not freed correctly");
-        json_buffer_position = 0;
-    }
 
     download_state = SF_DOWNLOAD_STATE_PENDING;
     https_client.download_async(get_api_url_with_path(*plane_current).c_str(), config.get("cert_id")->asInt(), [this](AsyncHTTPSClientEvent *event) {
@@ -450,6 +451,9 @@ void SolarForecast::update()
                 break;
 
             // use default to prevent warnings since we dont use a body, cookies or headers here
+            case AsyncHTTPSClientError::HTTPClientSetCookieFailed:
+            case AsyncHTTPSClientError::HTTPClientSetHeaderFailed:
+            case AsyncHTTPSClientError::HTTPClientSetBodyFailed:
             default:
                 logger.printfln("Uncovered error, this should never happen!");
                 break;
@@ -528,6 +532,10 @@ void SolarForecast::update()
 
             next_update();
 
+            break;
+
+        default:
+            esp_system_abort("Invalid event");
             break;
         }
     });
@@ -628,7 +636,7 @@ Option<uint32_t> SolarForecast::get_wh_today()
         return {};
     }
 
-    const uint32_t start = midnight / 60;
+    const uint32_t start = static_cast<uint32_t>(midnight / 60);
     const uint32_t end   = start + 60*24 - 1;
     return get_wh_range(start, end);
 }
@@ -641,7 +649,7 @@ Option<uint32_t> SolarForecast::get_wh_today_remaining()
     }
 
     const uint32_t start = rtc.timestamp_minutes();
-    const uint32_t end   = midnight / 60 + 60*24 - 1;
+    const uint32_t end   = static_cast<uint32_t>(midnight / 60 + 60*24 - 1);
     return get_wh_range(start, end);
 }
 
@@ -652,7 +660,7 @@ Option<uint32_t> SolarForecast::get_wh_tomorrow()
         return {};
     }
 
-    const uint32_t start = midnight / 60 + 60*24;
+    const uint32_t start = static_cast<uint32_t>(midnight / 60 + 60*24);
     const uint32_t end   = start + 60*24 - 1;
     return get_wh_range(start, end);
 }
