@@ -18,6 +18,7 @@ import eastron
 import tinkerforge
 import sax_power
 import e3dc
+import huawei
 
 tfutil.create_parent_module(__file__, 'software')
 
@@ -25,7 +26,7 @@ from software import util
 
 specs = sungrow.specs + solarmax.specs + victron_energy.specs + deye.specs + alpha_ess.specs + shelly.specs + goodwe.specs \
       + solax.specs + fronius_gen24_plus.specs + hailei.specs + fox_ess.specs + siemens.specs + carlo_gavazzi.specs + solaredge.specs \
-      + eastron.specs + tinkerforge.specs + sax_power.specs + e3dc.specs
+      + eastron.specs + tinkerforge.specs + sax_power.specs + e3dc.specs + huawei.specs
 spec_values = []
 
 for spec in specs:
