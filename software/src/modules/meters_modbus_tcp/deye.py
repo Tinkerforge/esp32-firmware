@@ -393,7 +393,7 @@ specs = [
                 'start_address': 587,
                 'value_type': 'U16',
                 'scale_factor': 0.01,
-                'variant': 'Low Voltage',
+                'variants': ['Low Voltage'],
             },
             {
                 'name': 'Battery Voltage [0.1 V]',
@@ -401,7 +401,7 @@ specs = [
                 'start_address': 587,
                 'value_type': 'U16',
                 'scale_factor': 0.1,
-                'variant': 'High Voltage',
+                'variants': ['High Voltage'],
             },
             {
                 'name': 'Battery Capacity [%]',
@@ -415,7 +415,7 @@ specs = [
                 'start_address': 590,
                 'value_type': 'S16',
                 'scale_factor': -1.0,
-                'variant': 'Low Voltage',
+                'variants': ['Low Voltage'],
             },
             {
                 'name': 'Battery Power [10 W]',
@@ -423,7 +423,7 @@ specs = [
                 'start_address': 590,
                 'value_type': 'S16',
                 'scale_factor': -10.0,
-                'variant': 'High Voltage',
+                'variants': ['High Voltage'],
             },
             {
                 'name': 'Battery Current [0.01 A]',

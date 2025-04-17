@@ -42,9 +42,9 @@ for spec in specs:
         current_index = 0
 
         for value in spec['values']:
-            variant_value = value.get('variant')
+            variants_value = value.get('variants')
 
-            if variant_value != None and variant_value not in variant_spec:
+            if variants_value != None and variant_spec not in variants_value:
                 continue
 
             if value['name'] in value_names:

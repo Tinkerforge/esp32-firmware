@@ -17,21 +17,21 @@ inverter_values = [
         'start_address': 5004,
         'value_type': 'U32LE',
         'scale_factor': 0.1,
-        'variant': 'Hybrid',
+        'variants': ['Hybrid'],
     },
     {
         'name': 'Total Output Energy [kWh]',
         'value_id': 'EnergyActiveLSumExport',
         'start_address': 5004,
         'value_type': 'U32LE',
-        'variant': 'String',
+        'variants': ['String'],
     },
     {
         'name': 'Total Running Time [h]',
         'value_id': 'VALUE_ID_DEBUG',
         'start_address': 5006,
         'value_type': 'U32LE',
-        'variant': 'String',
+        'variants': ['String'],
     },
     {
         'name': 'Inside Temperature [0.1 °C]',
@@ -45,7 +45,7 @@ inverter_values = [
         'value_id': 'PowerApparentLSumImExDiff',
         'start_address': 5009,
         'value_type': 'U32LE',
-        'variant': 'String',
+        'variants': ['String'],
     },
     {
         'name': 'MPPT 1 Voltage [0.1 V]',
@@ -101,7 +101,7 @@ inverter_values = [
         'start_address': 5022,
         'value_type': 'U16',
         'scale_factor': 0.1,
-        'variant': 'String',
+        'variants': ['String'],
     },
     {
         'name': 'Phase B Current [0.1 A]',  # FIXME: not available for all device types
@@ -109,7 +109,7 @@ inverter_values = [
         'start_address': 5023,
         'value_type': 'U16',
         'scale_factor': 0.1,
-        'variant': 'String',
+        'variants': ['String'],
     },
     {
         'name': 'Phase C Current [0.1 A]',  # FIXME: not available for all device types
@@ -117,20 +117,20 @@ inverter_values = [
         'start_address': 5024,
         'value_type': 'U16',
         'scale_factor': 0.1,
-        'variant': 'String',
+        'variants': ['String'],
     },
     {
         'name': 'Total Active Power Export [W]',
         'value_id': 'PowerActiveLSumExport',
         'start_address': 5031,
         'value_type': 'U32LE',
-        'variant': 'String',
+        'variants': ['String'],
     },
     {
         'name': 'Total Active Power [W]',
         'value_id': 'PowerActiveLSumImExDiff',
         'start_address': 'START_ADDRESS_VIRTUAL',
-        'variant': 'String',
+        'variants': ['String'],
     },
     {
         'name': 'Reactive Power [var]',
@@ -150,7 +150,7 @@ inverter_values = [
         'value_id': 'VALUE_ID_DEBUG',
         'start_address': 5049,
         'value_type': 'U16',
-        'variant': 'String',
+        'variants': ['String'],
     },
     {
         'name': 'Total Direct Energy Consumption [0.1 kWh]',
@@ -158,7 +158,7 @@ inverter_values = [
         'start_address': 5103,
         'value_type': 'U32LE',
         'scale_factor': 0.1,
-        'variant': 'String',
+        'variants': ['String'],
     },
     {
         'name': 'Total Output Energy Alternative [0.1 kWh]',  # FIXME: use this instead of 5004, if available
@@ -166,7 +166,7 @@ inverter_values = [
         'start_address': 5144,
         'value_type': 'U32LE',
         'scale_factor': 0.1,
-        'variant': 'String',
+        'variants': ['String'],
     },
     {
         'name': 'Total PV Generation [0.1 kWh]',
@@ -174,7 +174,7 @@ inverter_values = [
         'start_address': 13003,
         'value_type': 'U32LE',
         'scale_factor': 0.1,
-        'variant': 'Hybrid',
+        'variants': ['Hybrid'],
     },
     {
         'name': 'Total Direct Energy Consumption [0.1 kWh]',
@@ -182,7 +182,7 @@ inverter_values = [
         'start_address': 13018,
         'value_type': 'U32LE',
         'scale_factor': 0.1,
-        'variant': 'Hybrid',
+        'variants': ['Hybrid'],
     },
     {
         'name': 'Total Active Power [W]',
@@ -190,7 +190,7 @@ inverter_values = [
         'start_address': 13034,
         'value_type': 'S32LE',
         'scale_factor': -1.0,
-        'variant': 'Hybrid',
+        'variants': ['Hybrid'],
     },
 ]
 
@@ -249,7 +249,7 @@ hybrid_inverter_phase_current_values = [
         'start_address': 13031,
         'value_type': 'S16',
         'scale_factor': -0.1,  # FIXME: is the current always positive?
-        'variant': 'Hybrid',
+        'variants': ['Hybrid'],
     },
     {
         'name': 'Phase B Current [0.1 A]',
@@ -257,7 +257,7 @@ hybrid_inverter_phase_current_values = [
         'start_address': 13032,
         'value_type': 'S16',
         'scale_factor': -0.1,  # FIXME: is the current always positive?
-        'variant': 'Hybrid',
+        'variants': ['Hybrid'],
     },
     {
         'name': 'Phase C Current [0.1 A]',
@@ -265,7 +265,7 @@ hybrid_inverter_phase_current_values = [
         'start_address': 13033,
         'value_type': 'S16',
         'scale_factor': -0.1,  # FIXME: is the current always positive?
-        'variant': 'Hybrid',
+        'variants': ['Hybrid'],
     },
 ]
 
@@ -323,35 +323,35 @@ specs = [
                 'start_address': 5148,
                 'value_type': 'U16',
                 'scale_factor': 0.01,
-                'variant': 'String',
+                'variants': ['String'],
             },
             {
                 'name': 'Meter Power [W]',  # FIXME: not available for all device types
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 5083,
                 'value_type': 'S32LE',
-                'variant': 'String',
+                'variants': ['String'],
             },
             {
                 'name': 'Meter Phase A Power [W]',  # FIXME: not available for all device types
                 'value_id': 'PowerActiveL1ImExDiff',
                 'start_address': 5085,
                 'value_type': 'S32LE',
-                'variant': 'String',
+                'variants': ['String'],
             },
             {
                 'name': 'Meter Phase B Power [W]',  # FIXME: not available for all device types
                 'value_id': 'PowerActiveL2ImExDiff',
                 'start_address': 5087,
                 'value_type': 'S32LE',
-                'variant': 'String',
+                'variants': ['String'],
             },
             {
                 'name': 'Meter Phase C Power [W]',  # FIXME: not available for all device types
                 'value_id': 'PowerActiveL3ImExDiff',
                 'start_address': 5089,
                 'value_type': 'S32LE',
-                'variant': 'String',
+                'variants': ['String'],
             },
             {
                 'name': 'Total Export Energy [0.1 kWh]',  # FIXME: not available for all device types
@@ -359,7 +359,7 @@ specs = [
                 'start_address': 5095,
                 'value_type': 'U32LE',
                 'scale_factor': 0.1,
-                'variant': 'String',
+                'variants': ['String'],
             },
             {
                 'name': 'Total Import Energy [0.1 kWh]',  # FIXME: not available for all device types
@@ -367,7 +367,7 @@ specs = [
                 'start_address': 5099,
                 'value_type': 'U32LE',
                 'scale_factor': 0.1,
-                'variant': 'String',
+                'variants': ['String'],
             },
             {
                 'name': 'Export Power [W]',
@@ -375,7 +375,7 @@ specs = [
                 'start_address': 13010,
                 'value_type': 'S32LE',
                 'scale_factor': -1.0,
-                'variant': 'Hybrid',
+                'variants': ['Hybrid'],
             },
             {
                 'name': 'Total Import Energy [0.1 kWh]',
@@ -383,7 +383,7 @@ specs = [
                 'start_address': 13037,
                 'value_type': 'U32LE',
                 'scale_factor': 0.1,
-                'variant': 'Hybrid',
+                'variants': ['Hybrid'],
             },
             {
                 'name': 'Total Export Energy [0.1 kWh]',
@@ -391,7 +391,7 @@ specs = [
                 'start_address': 13046,
                 'value_type': 'U32LE',
                 'scale_factor': 0.1,
-                'variant': 'Hybrid',
+                'variants': ['Hybrid'],
             },
         ],
     },
@@ -482,14 +482,14 @@ specs = [
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 5091,
                 'value_type': 'S32LE',
-                'variant': 'String',
+                'variants': ['String'],
             },
             {
                 'name': 'Load Power [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 13008,
                 'value_type': 'S32LE',
-                'variant': 'Hybrid',
+                'variants': ['Hybrid'],
             },
         ],
     },
