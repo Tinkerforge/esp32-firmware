@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { removeUnicodeHacks } from "../../ts/translation";
 let x = {
     "modbus_tcp": {
         "navbar": {
@@ -204,7 +205,7 @@ let x = {
                         <td>More meter values</td>
                         <td>float32 (85x)</td>
                         <td>all_values</td>
-                        <td>See <a href="{{{doc_base_url}}}/docs/mqtt_http/api_reference/meter/#meter_all_values_any">API Documentation</a></td>
+                        <td>See <a href={removeUnicodeHacks("{{{doc_base_url}}}/docs/mqtt_http/api_reference/meter/#meter_all_values_any")}>API Documentation</a></td>
                     </tr>
                     <tr>
                         <td>3100</td>

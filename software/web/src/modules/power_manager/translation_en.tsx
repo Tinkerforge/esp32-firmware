@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 import { toLocaleFixed } from "../../ts/util";
-import { __ } from "../../ts/translation";
+import { __, removeUnicodeHacks } from "../../ts/translation";
 let x = {
     "power_manager": {
         "status": {
@@ -29,7 +29,7 @@ let x = {
 
             "header_excess_charging": "Photovoltaic Excess Charging",
             "enable_excess_charging": "Excess charging enabled",
-            "enable_excess_charging_help": <><p>The <a href="{{{doc_base_url}}}/docs/tutorials/pv_excess_charging/">tutorial PV-excess-charging</a> helps you configuring this the first time.</p></>,
+            "enable_excess_charging_help": <><p>The <a href={removeUnicodeHacks("{{{doc_base_url}}}/docs/tutorials/pv_excess_charging/")}>tutorial PV-excess-charging</a> helps you configuring this the first time.</p></>,
             "enable_excess_charging_desc": "Will adjust the power consumption of controlled chargers, depending on the power generation of a photovoltaic system and the charge mode.",
             "default_mode": "Default charging mode",
             "default_mode_muted": "will be used after reboot",
