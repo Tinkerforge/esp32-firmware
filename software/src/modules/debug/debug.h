@@ -40,8 +40,8 @@ public:
     void setup() override;
     void register_urls() override;
     void register_events() override;
-    void loop() override;
 
+    void task_scheduler_idle_call();
     void register_task(const char *task_name, uint32_t stack_size, TaskAvailability availability = ExpectPresent);
     void register_task(TaskHandle_t handle, uint32_t stack_size);
     void deregister_task(const char *task_name);

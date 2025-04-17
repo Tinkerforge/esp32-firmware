@@ -120,25 +120,26 @@ void TaskScheduler::custom_loop()
 
     {
         std::lock_guard<std::mutex> lock{this->task_mutex};
-        if (tasks.empty()) {
-            return;
-        }
+        if (!tasks.empty() && deadline_elapsed(tasks.top()->next_deadline)) {
+            this->currentTask = tasks.top_and_pop();
 
-        if (!deadline_elapsed(tasks.top()->next_deadline)) {
-            return;
-        }
+            if (this->currentTask->cancelled) {
+                if (this->currentTask->awaited_by != nullptr) {
+                    xTaskNotifyGive(this->currentTask->awaited_by);
+                    this->currentTask->awaited_by = nullptr;
+                }
 
-        this->currentTask = tasks.top_and_pop();
-
-        if (this->currentTask->cancelled) {
-            if (this->currentTask->awaited_by != nullptr) {
-                xTaskNotifyGive(this->currentTask->awaited_by);
-                this->currentTask->awaited_by = nullptr;
+                this->currentTask = nullptr;
+                return;
             }
-
-            this->currentTask = nullptr;
-            return;
         }
+    }
+
+    if (!this->currentTask) {
+#if MODULE_DEBUG_AVAILABLE()
+        debug.task_scheduler_idle_call();
+#endif
+        return;
     }
 
     task_fn_file = this->currentTask->file;

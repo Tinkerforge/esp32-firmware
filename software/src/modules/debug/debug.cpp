@@ -581,7 +581,7 @@ void Debug::register_events()
 #define CHECK_PSRAM 0
 #endif
 
-void Debug::loop()
+void Debug::task_scheduler_idle_call()
 {
     micros_t start = now_us();
     if (CHECK_PSRAM && check_psram_next) {
