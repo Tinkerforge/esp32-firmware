@@ -135,7 +135,7 @@ specs = [
         'start_address_offset': 1,
         'values': [
             {
-                'name': 'module/1/ID: Input ID or ID: SunSpec Model ID | Input or Model ID',
+                'name': 'module/1/ID: Input ID or ID: SunSpec Model ID | Input ID or Model ID',
                 'value_id': 'VALUE_ID_META',
                 'start_address': 40264,
                 'value_type': 'U16',

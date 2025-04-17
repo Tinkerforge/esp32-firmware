@@ -76,7 +76,7 @@
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_ENERGY             static_cast<size_t>(ShellyEMMonophaseChannel3AsL1Address::Channel3TotalActiveEnergyPerpetualCount)
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_RETURNED_ENERGY    static_cast<size_t>(ShellyEMMonophaseChannel3AsL1Address::Channel3TotalActiveReturnedEnergyPerpetualCount)
 
-#define FRONIUS_GEN24_PLUS_INPUT_OR_MODEL_ID_ADDRESS                       static_cast<size_t>(FroniusGEN24PlusBatteryTypeAddress::InputOrModelID)
+#define FRONIUS_GEN24_PLUS_INPUT_ID_OR_MODEL_ID_ADDRESS                    static_cast<size_t>(FroniusGEN24PlusBatteryTypeAddress::InputIDOrModelID)
 #define FRONIUS_GEN24_PLUS_DCA_SF_ADDRESS                                  static_cast<size_t>(FroniusGEN24PlusBatteryIntegerAddress::DCA_SF)
 #define FRONIUS_GEN24_PLUS_DCV_SF_ADDRESS                                  static_cast<size_t>(FroniusGEN24PlusBatteryIntegerAddress::DCV_SF)
 #define FRONIUS_GEN24_PLUS_DCW_SF_ADDRESS                                  static_cast<size_t>(FroniusGEN24PlusBatteryIntegerAddress::DCW_SF)
@@ -114,7 +114,7 @@
 #define SOLAREDGE_BATTERY_2_IMPORT_ENERGY                                  static_cast<size_t>(SolaredgeBatteryAddress::Battery2LifetimeImportEnergyCounter)
 #define SOLAREDGE_BATTERY_2_STATE_OF_CHARGE                                static_cast<size_t>(SolaredgeBatteryAddress::Battery2StateOfEnergy)
 
-#define E3DC_PHOTOVOLTAIK_LEISTUNG_ADDRESS                                 static_cast<size_t>(E3DCPVAddress::PhotovoltaikLeistung)
+#define E3DC_PV_POWER_ADDRESS                                              static_cast<size_t>(E3DCPVAddress::PVPower)
 
 #define MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(x) (static_cast<uint8_t>(x) & 0x07)
 #define MODBUS_VALUE_TYPE_TO_REGISTER_ORDER_LE(x) ((static_cast<uint8_t>(x) >> 5) & 1)
@@ -730,7 +730,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
     case MeterModbusTCPTableID::FroniusGEN24Plus:
         fronius_gen24_plus.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<FroniusGEN24PlusVirtualMeter>();
-        fronius_gen24_plus.input_or_model_id = 0;
+        fronius_gen24_plus.input_id_or_model_id = 0;
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
 
         switch (fronius_gen24_plus.virtual_meter) {
@@ -1179,6 +1179,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             table = &e3dc_additional_generation_table;
             default_location = MeterLocation::PV;
             break;
+
         default:
             logger.printfln_meter("Unknown E3/DC Virtual Meter: %u", static_cast<uint8_t>(e3dc.virtual_meter));
             return;
@@ -1738,8 +1739,8 @@ void MeterModbusTCP::parse_next()
     }
 
     if (is_fronius_gen24_plus_battery_meter()
-     && generic_read_request.start_address == FRONIUS_GEN24_PLUS_INPUT_OR_MODEL_ID_ADDRESS) {
-        if (fronius_gen24_plus.input_or_model_id == 0) {
+     && generic_read_request.start_address == FRONIUS_GEN24_PLUS_INPUT_ID_OR_MODEL_ID_ADDRESS) {
+        if (fronius_gen24_plus.input_id_or_model_id == 0) {
             switch (c16.u) {
             case 1: // module/1/ID: Input ID
                 table = &fronius_gen24_plus_battery_integer_table;
@@ -1757,7 +1758,7 @@ void MeterModbusTCP::parse_next()
                 return;
             }
 
-            fronius_gen24_plus.input_or_model_id = c16.u;
+            fronius_gen24_plus.input_id_or_model_id = c16.u;
 
             meters.declare_value_ids(slot, table->ids, table->ids_length);
         }
@@ -2041,7 +2042,7 @@ void MeterModbusTCP::parse_next()
         }
     }
     else if (is_e3dc_pv_meter()) {
-        if (register_start_address == E3DC_PHOTOVOLTAIK_LEISTUNG_ADDRESS) {
+        if (register_start_address == E3DC_PV_POWER_ADDRESS) {
             meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(value));
         }
     }

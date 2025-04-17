@@ -200,7 +200,7 @@ private:
             ShellyEMMonophaseMapping monophase_mapping;
         } shelly_pro_3em;
 
-        // Goodwe
+        // GoodWe
         struct {
             GoodweHybridInverterVirtualMeter hybrid_inverter_virtual_meter;
         } goodwe;
@@ -213,7 +213,7 @@ private:
         // Fronius GEN24 Plus
         struct {
             FroniusGEN24PlusVirtualMeter virtual_meter;
-            uint16_t input_or_model_id;
+            uint16_t input_id_or_model_id;
             size_t start_address_shift;
             int16_t dca_sf;
             int16_t dcv_sf;
@@ -266,7 +266,7 @@ private:
             CarloGavazziPhase phase;
         } carlo_gavazzi_em510;
 
-        // Solaredge
+        // SolarEdge
         struct {
             SolaredgeVirtualMeter virtual_meter;
             float battery_1_temperature;

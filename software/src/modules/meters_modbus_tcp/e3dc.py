@@ -107,7 +107,7 @@ specs = [
                 'value_type': 'U16',
             },
             {
-                'name': 'Photovoltaik-Leistung [W]',
+                'name': 'Photovoltaik-Leistung [W] | PV Power',
                 'value_id': 'PowerPVSumExport',
                 'start_address': 68,
                 'value_type': 'S32LE',
