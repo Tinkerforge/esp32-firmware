@@ -50,6 +50,5 @@ void GenericTCPClientPoolConnector::disconnect_internal()
 {
     if (connected_client != nullptr) {
         pool->release(connected_client);
-        connected_client = nullptr;
     }
 }

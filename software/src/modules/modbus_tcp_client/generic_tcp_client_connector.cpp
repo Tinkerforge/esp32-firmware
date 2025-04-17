@@ -42,6 +42,5 @@ void GenericTCPClientConnector::disconnect_internal()
 {
     if (connected_client != nullptr) {
         client->disconnect();
-        connected_client = nullptr;
     }
 }
