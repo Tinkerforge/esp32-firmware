@@ -617,7 +617,9 @@ export class HeatingStatus extends Component<{}, state & sgr_blocking_override &
         });
 
         util.addApiEventListener("rtc/time", () => {
-            this.setState({override_duration: this.state.override_until !== 0 ? this.state.override_until - Math.floor(Date.now() / 1000 / 60) : 0})
+            if (this.override_active) {
+                this.setState({override_duration: this.state.override_until !== 0 ? this.state.override_until - Math.floor(Date.now() / 1000 / 60) : 0});
+            }
         });
     }
 
@@ -660,7 +662,7 @@ export class HeatingStatus extends Component<{}, state & sgr_blocking_override &
                                     override_duration: v,
                                 })
                             }}
-                            disabled={this.override_active}
+                            readonly={this.override_active}
                             min={15}
                             max={60}
                         />
