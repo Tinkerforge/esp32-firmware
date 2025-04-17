@@ -8,6 +8,9 @@ let x = {
         },
         "content": {
             "heating": "Heizung",
+            "override": "Aufheben",
+            "override_blocking": "Blockierenden Betrieb aufheben",
+            "discard_override": "Überschreiben aufheben",
             "extended_logging": "Erweitertes Logging",
             "extended_logging_enabled": "Weiterführende Informationen zu den Steuerentscheidungen werden im Ereignis-Log angezeigt.",
             "extended_logging_description": "",

@@ -43,6 +43,7 @@ import { is_day_ahead_prices_enabled, get_average_price_today, get_average_price
 import { StatusSection } from "../../ts/components/status_section";
 import { Button } from "react-bootstrap";
 import { ControlPeriod } from "./control_period.enum";
+import { sgr_blocking_override, state } from "./api";
 
 export function HeatingNavbar() {
     return <NavbarItem name="heating" module="heating" title={__("heating.navbar.heating")} symbol={<Thermometer />} />;
@@ -586,14 +587,45 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
     }
 }
 
-export class HeatingStatus extends Component
+export class HeatingStatus extends Component<{}, state & sgr_blocking_override & {override_duration: number}>
 {
+    override_active: boolean;
+    constructor() {
+        super();
+
+        this.override_active = false;
+        this.state = {
+            override_duration: 0,
+            sgr_blocking: false,
+            sgr_extended: false,
+            p14ewng_enable: false,
+            next_update: 0,
+            override_until: 0
+        };
+        util.addApiEventListener("heating/state", () => {
+            this.setState({...API.get("heating/state")});
+        });
+        util.addApiEventListener("heating/sgr_blocking_override", () => {
+            let override_until = API.get("heating/sgr_blocking_override").override_until;
+            if (override_until == 0) {
+                this.override_active = false;
+            } else {
+                this.override_active = true;
+            }
+
+            this.setState({override_until});
+        });
+
+        util.addApiEventListener("rtc/time", () => {
+            this.setState({override_duration: this.state.override_until !== 0 ? this.state.override_until - Math.floor(Date.now() / 1000 / 60) : 0})
+        });
+    }
+
     render() {
         if (!util.render_allowed()) {
             return <StatusSection name="heating" />
         }
 
-        const state = API.get('heating/state')
 
         return <StatusSection name="heating">
             <FormRow label={__("heating.content.sg_ready")} label_muted={__("heating.content.sg_ready_muted")}>
@@ -602,7 +634,7 @@ export class HeatingStatus extends Component
                         <div class="input-group">
                             <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.blocked")}</span></div>
                             <InputText
-                                value={state.sgr_blocking ? __("heating.content.active") : __("heating.content.inactive")}
+                                value={this.state.sgr_blocking ? __("heating.content.active") : __("heating.content.inactive")}
                             />
                         </div>
                     </div>
@@ -610,9 +642,38 @@ export class HeatingStatus extends Component
                         <div class="input-group">
                             <div class="input-group-prepend"><span class="heating-fixed-size input-group-text">{__("heating.content.extended")}</span></div>
                             <InputText
-                                value={state.sgr_extended ? __("heating.content.active") : __("heating.content.inactive")}
+                                value={this.state.sgr_extended ? __("heating.content.active") : __("heating.content.inactive")}
                             />
                         </div>
+                    </div>
+                </div>
+            </FormRow>
+            <FormRow hidden={!this.state.sgr_blocking && !this.override_active} label={__("heating.content.override_blocking")}>
+                <div className="row mx-n1">
+                    <div className="col px-1">
+                        <InputNumber
+                            unit={__("heating.content.minutes")}
+                            value={this.state.override_duration}
+                            onValue={(v) => {
+                                this.setState({
+                                    override_until: v + Math.floor(Date.now() / 1000 / 60),
+                                    override_duration: v,
+                                })
+                            }}
+                            disabled={this.override_active}
+                            min={15}
+                            max={60}
+                        />
+                    </div>
+                    <div className="col-auto px-1">
+                        <Button
+                            variant={this.override_active ? "warning" : "primary"}
+                            onClick={() => {
+                                API.save("heating/sgr_blocking_override", {override_until: this.override_active ? 0 : this.state.override_until}, () => "Override heating failed");
+                                this.override_active = !this.override_active;
+                            }}>
+                            {this.override_active ? __("heating.content.discard_override") : __("heating.content.override")}
+                        </Button>
                     </div>
                 </div>
             </FormRow>

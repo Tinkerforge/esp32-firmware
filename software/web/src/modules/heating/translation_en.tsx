@@ -8,6 +8,9 @@ let x = {
         },
         "content": {
             "heating": "Heating",
+            "override": "Override",
+            "override_blocking": "Override blocking operation",
+            "discard_override": "Discard override",
             "extended_logging": "Extended logging",
             "extended_logging_enabled": "Extended logging enabled",
             "extended_logging_description": "More information about the control decisions in the event log",

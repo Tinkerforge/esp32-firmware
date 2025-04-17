@@ -30,7 +30,10 @@ private:
 
     ConfigRoot config;
     ConfigRoot state;
+    ConfigRoot sgr_blocking_override;
     uint32_t last_sg_ready_change = 0;
+
+    uint32_t override_task_id = 0;
 
     size_t trace_buffer_index;
 

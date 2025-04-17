@@ -67,6 +67,11 @@ void Heating::pre_setup()
         return "";
     }};
 
+    sgr_blocking_override = ConfigRoot{Config::Object({
+        // timestamp minutes.
+        {"override_until", Config::Uint32(0)},
+    })};
+
     state = Config::Object({
         {"sgr_blocking", Config::Bool(false)},
         {"sgr_extended", Config::Bool(false)},
@@ -90,6 +95,35 @@ void Heating::register_urls()
         this->last_sg_ready_change = 0;
         this->update();
     }, true);
+
+    // We dont want a persistent config since we dont want to save this across reboots.
+    // This is why the config is build manually here.
+    api.addState("heating/sgr_blocking_override", &sgr_blocking_override);
+    api.addCommand("heating/sgr_blocking_override_update", &sgr_blocking_override, {}, [this](String){
+        task_scheduler.cancel(this->override_task_id);
+
+        // Override the timeout to force sg_ready to switch instantly
+        const uint8_t min_hold_time = config.get("min_hold_time")->asUint();
+        const uint32_t now = rtc.timestamp_minutes();
+        if (now > min_hold_time) {
+            last_sg_ready_change = now - min_hold_time - 2;
+        }
+        this->update();
+
+        uint32_t override_until = sgr_blocking_override.get("override_until")->asUint();
+        if (override_until > 0) {
+            this->override_task_id = task_scheduler.scheduleOnce([this]() {
+                const uint8_t min_hold_time = config.get("min_hold_time")->asUint();
+                const uint32_t now = rtc.timestamp_minutes();
+                if (now > min_hold_time) {
+                    last_sg_ready_change = now - min_hold_time - 2;
+                }
+                this->sgr_blocking_override.get("override_until")->updateUint(0);
+                this->update();
+            }, (override_until - now) * 60 * 1000);
+        }
+    }, true);
+
 
     task_scheduler.scheduleWallClock([this]() {
         this->update();
@@ -391,6 +425,18 @@ void Heating::update()
             em_v2.set_sg_ready_output(1, new_value);
             last_sg_ready_change = rtc.timestamp_minutes();
             state.get("next_update")->updateUint(last_sg_ready_change + config.get("min_hold_time")->asUint());
+        }
+    }
+
+    uint32_t override_until = sgr_blocking_override.get("override_until")->asUint();
+    if (override_until > 0) {
+        uint32_t now = rtc.timestamp_minutes();
+        if (now >= override_until) {
+            extended_logging("Override time is over. Resetting override.");
+            sgr_blocking_override.get("override_until")->updateUint(0);
+        } else {
+            extended_logging("Override time is active. Current time: %limin, override until: %limin.", now, override_until);
+            sg_ready0_on = false;
         }
     }
 

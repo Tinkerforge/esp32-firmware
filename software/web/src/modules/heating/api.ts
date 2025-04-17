@@ -26,3 +26,7 @@ export interface state {
 }
 
 export interface reset_holding_time {}
+
+export interface sgr_blocking_override {
+    override_until: number;
+}
