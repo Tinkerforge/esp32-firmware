@@ -651,33 +651,37 @@ export class HeatingStatus extends Component<{}, state & sgr_blocking_override &
                 </div>
             </FormRow>
             <FormRow hidden={!this.state.sgr_blocking && !this.override_active} label={__("heating.content.override_blocking")}>
-                <div className="row mx-n1">
-                    <div className="col px-1">
-                        <InputNumber
-                            unit={__("heating.content.minutes")}
-                            value={this.state.override_duration}
-                            onValue={(v) => {
-                                this.setState({
-                                    override_until: v + Math.floor(Date.now() / 1000 / 60),
-                                    override_duration: v,
-                                })
-                            }}
-                            readonly={this.override_active}
-                            min={15}
-                            max={60}
-                        />
+                <form onSubmit={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    API.save("heating/sgr_blocking_override", {override_until: this.override_active ? 0 : this.state.override_until}, () => "Override heating failed");
+                    this.override_active = !this.override_active;
+                }}>
+                    <div className="row mx-n1">
+                        <div className="col px-1">
+                            <InputNumber
+                                unit={__("heating.content.minutes")}
+                                value={this.state.override_duration}
+                                onValue={(v) => {
+                                    this.setState({
+                                        override_until: v + Math.floor(Date.now() / 1000 / 60),
+                                        override_duration: v,
+                                    })
+                                }}
+                                readonly={this.override_active}
+                                min={15}
+                                max={60}
+                            />
+                        </div>
+                        <div className="col-auto px-1">
+                            <Button
+                                variant={this.override_active ? "warning" : "primary"}
+                                type="submit">
+                                {this.override_active ? __("heating.content.discard_override") : __("heating.content.override")}
+                            </Button>
+                        </div>
                     </div>
-                    <div className="col-auto px-1">
-                        <Button
-                            variant={this.override_active ? "warning" : "primary"}
-                            onClick={() => {
-                                API.save("heating/sgr_blocking_override", {override_until: this.override_active ? 0 : this.state.override_until}, () => "Override heating failed");
-                                this.override_active = !this.override_active;
-                            }}>
-                            {this.override_active ? __("heating.content.discard_override") : __("heating.content.override")}
-                        </Button>
-                    </div>
-                </div>
+                </form>
             </FormRow>
         </StatusSection>;
     }
