@@ -118,9 +118,9 @@ let x = {
             "reset_description_muted": "",
             "reset_evse": "Neu starten",
             "reflash_evse": "Neu flashen",
-            "car_stopped_charging": "Auto hat Ladevorgang gestoppt",
-            "car_stopped_false": "Nein",
-            "car_stopped_true": "Ja",
+            "vehicle_stopped_charging": "Fahrzeug hat Ladevorgang gestoppt",
+            "vehicle_stopped_false": "Nein",
+            "vehicle_stopped_true": "Ja",
 
             "meter_monitoring": "Zählerüberwachung",
             "meter_monitoring_desc": "Überwacht den Stromzähler und blockiert Ladevorgänge im Falle eines Defekts.",

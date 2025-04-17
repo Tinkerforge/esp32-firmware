@@ -146,9 +146,9 @@ let x = {
             "reset_description_muted": "",
             "reset_evse": "Restart",
             "reflash_evse": "Reflash",
-            "car_stopped_charging": "Car stopped charging",
-            "car_stopped_false": "No",
-            "car_stopped_true": "Yes",
+            "vehicle_stopped_charging": "Vehicle stopped charging",
+            "vehicle_stopped_false": "No",
+            "vehicle_stopped_true": "Yes",
 
             "meter_monitoring": "Meter monitoring",
             "meter_monitoring_desc": "Monitors the energy meter and blocks charging if a malfunction is detected.",
