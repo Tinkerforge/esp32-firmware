@@ -181,3 +181,8 @@ constexpr size_t constexpr_strnlen(const char *s, size_t maxlen) {
     return (maxlen == 0 || s == nullptr || s[0] == '\0') ? 0
             : (constexpr_strnlen(&s[1], maxlen - 1) + 1);
 }
+
+constexpr size_t constexpr_strlen(const char *s) {
+    return (s == nullptr || s[0] == '\0') ? 0
+            : (constexpr_strlen(&s[1]) + 1);
+}
