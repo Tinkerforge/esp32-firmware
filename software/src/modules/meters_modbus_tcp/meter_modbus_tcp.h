@@ -112,6 +112,7 @@ private:
     bool is_deye_hybrid_inverter_battery_meter() const;
     bool is_deye_hybrid_inverter_pv_meter() const;
     bool is_shelly_pro_xem_monophase() const;
+    bool is_goodwe_hybrid_inverter_battery_meter() const;
     bool is_fronius_gen24_plus_battery_meter() const;
     bool is_carlo_gavazzi_em100_or_et100() const;
     bool is_carlo_gavazzi_em510() const;
@@ -203,10 +204,22 @@ private:
             ShellyEMMonophaseMapping monophase_mapping;
         } shelly_pro_3em;
 
-        // GoodWe
+        // GoodWe hybrid inverter
         struct {
-            GoodweHybridInverterVirtualMeter hybrid_inverter_virtual_meter;
-        } goodwe;
+            GoodweHybridInverterVirtualMeter virtual_meter;
+            float battery_1_voltage;
+            float battery_1_current;
+            float battery_1_power;
+            uint16_t battery_1_mode;
+            float bms_1_pack_temperature;
+            float battery_1_capacity;
+            float battery_2_voltage;
+            float battery_2_current;
+            float battery_2_power;
+            uint16_t battery_2_mode;
+            float bms_2_pack_temperature;
+            float battery_2_capacity;
+        } goodwe_hybrid_inverter;
 
         // Solax
         struct {
