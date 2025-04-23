@@ -312,15 +312,17 @@ void ShipNode::as_json(StringBuilder *sb)
 {
     char json_buf[1024]; //TODO: Use 1024 for now, change later to dynamic size depending on struct size
     TFJsonSerializer json(json_buf, sizeof(json_buf));
-    json.addMemberString("dns_name", dns_name.c_str());
-    json.addMemberString("txt_vers", txt_vers.c_str());
-    json.addMemberString("txt_id", txt_id.c_str());
-    json.addMemberString("txt_wss_path", txt_wss_path.c_str());
-    json.addMemberString("txt_ski", txt_ski.c_str());
-    json.addMemberBoolean("txt_autoregister", txt_autoregister);
-    json.addMemberString("txt_brand", txt_brand.c_str());
-    json.addMemberString("txt_model", txt_model.c_str());
-    json.addMemberString("txt_type", txt_type.c_str());
+    json.addMemberString("name", dns_name.c_str());
+    json.addMemberString("id", txt_id.c_str());
+    json.addMemberString("ws_path", txt_wss_path.c_str());
+    json.addMemberString("ski", txt_ski.c_str());
+    json.addMemberBoolean("allow_autoregister", txt_autoregister);
+    json.addMemberString("device_manufacturer", txt_brand.c_str());
+    json.addMemberString("device_model", txt_model.c_str());
+    json.addMemberString("device_type", txt_type.c_str());
+    json.addMemberBoolean("trusted", trusted);
+    json.addMemberNumber("port", port);
+    json.addMemberNumber("state", (uint8_t)state);
 
     StringBuilder ip_sb;
     ip_sb.putc('[');

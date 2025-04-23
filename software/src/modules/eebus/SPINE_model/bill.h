@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#pragma once
+
 #include "build.h"
 #include "commondatatypes.h"
 #include "tools.h"
@@ -120,3 +122,91 @@ struct BillPositionType {
 bool convertToJson(const BillPositionType &billPosition, JsonObject &obj);
 void convertFromJson(const JsonObject &obj, BillPositionType &billPosition);
 
+struct BillPositionElementsType {
+    std::optional<ElementTagType> positionId;
+    std::optional<ElementTagType> positionType;
+    std::optional<TimePeriodElementsType> timePeriod;
+    std::optional<BillValueElementsType> value;
+    std::optional<BillCostElementsType> cost;
+    std::optional<ElementTagType> label;
+    std::optional<ElementTagType> description;
+};
+// TODO: Implement convertToJson and convertFromJson for BillPositionElementsType
+
+struct BillDataType {
+    std::optional<BillIdType> billId;
+    std::optional<BillTypeType> billType;
+    std::optional<ScopeTypeType> scopeType; // TODO: implement ScopeTypeType in commondatatypes.h
+    std::optional<BillPositionType> total;
+    std::optional<BillPositionType> position;
+};
+// TODO: implement convertToJson and convertFromJson for BillDataType
+
+struct BillDataElementsType {
+    std::optional<ElementTagType> billId;
+    std::optional<ElementTagType> billType;
+    std::optional<ElementTagType> scopeType;
+    std::optional<BillPositionElementsType> total;
+    std::optional<BillPositionElementsType> position;
+};
+// TODO: implement convertToJson and convertFromJson for BillDataElementsType
+
+struct BillListDataType {
+    std::optional<std::vector<BillDataType>> billData;
+};
+// TODO: implement convertToJson and convertFromJson for BillListDataType
+
+struct BillListDataSelectorsType {
+    std::optional<BillIdType> billId;
+    std::optional<ScopeTypeType> scopeType;
+};
+// TODO: implement convertToJson and convertFromJson for BillListDataSelectorsType
+
+struct BillConstraintsDataType {
+    std::optional<BillIdType> billId;
+    std::optional<BillPositionCountType> positionCountMin;
+    std::optional<BillPositionCountType> positionCountMax;
+};
+//TODO: implement convertToJson and convertFromJson for BillConstraintsDataType
+
+struct BillConstraintsDataElementsType {
+    std::optional<ElementTagType> billId;
+    std::optional<ElementTagType> positionCountMin;
+    std::optional<ElementTagType> positionCountMax;
+};
+// TODO: implement convertToJson and convertFromJson for BillConstraintsDataElementsType
+
+struct BillConstraintsListDataType {
+    std::optional<std::vector<BillConstraintsDataType>> billConstraintsDataElements;
+};
+// TODO: implement convertToJson and convertFromJson for BillConstraintsListDataType
+
+struct BillConstraintsListDataSelectorsType {
+    std::optional<BillIdType> billId;
+};
+// TODO: implement convertToJson and convertFromJson for BillConstraintsListDataSelectorsType
+
+struct BillDescriptionDataType {
+    std::optional<BillIdType> billId;
+    std::optional<bool> billWriteable;
+    std::optional<bool> updateRequired;
+    std::optional<std::vector<BillTypeType>> supportedBillType;
+};
+// TODO: implement convertToJson and convertFromJson for BillDescriptionDataType
+
+struct BillDescroptionDataElementsType {
+    std::optional<ElementTagType> billId;
+    std::optional<ElementTagType> billWriteable;
+    std::optional<ElementTagType> updateRequired;
+    std::optional<ElementTagType> supportedBillType;
+};
+// TODO: implement convertToJson and convertFromJson for BillDescroptionDataElementsType
+
+struct BillDescriptionListDataType {
+    std::optional<std::vector<BillDescriptionDataType>> billDescriptionData;
+};
+// TODO: implement convertToJson and convertFromJson for BillDescriptionListDataType
+struct BillDescriptionListDataSelectorsType {
+    std::optional<BillIdType> billId;
+};
+// TODO: implement convertToJson and convertFromJson for BillDescriptionListDataSelectorsType

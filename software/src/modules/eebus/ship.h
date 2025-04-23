@@ -29,6 +29,12 @@
 #include <TFJson.h>
 #include "string_builder.h"
 
+enum class NodeState {
+    Unknown = 0,
+    Discovered,
+    Connected
+};
+    
 
 struct ShipNode {
 
@@ -36,7 +42,7 @@ struct ShipNode {
     std::vector<IPAddress> ip_addresses;
     uint16_t port = 0;
     bool trusted = false;
-    bool connected = false;
+    NodeState state = NodeState::Unknown;
     // Stuff that is Mandatory in the TXT record
     String dns_name = "";
     String txt_vers = ""; //Maybe change to number?
@@ -54,6 +60,8 @@ struct ShipNode {
     void as_json(StringBuilder *sb);/* */  
 };
 
+
+
 enum Ship_Discovery_State {
     READY,
     SCANNING,
@@ -69,9 +77,6 @@ private:
 
     WebSockets web_sockets;
     std::vector<ShipConnection> ship_connections;
-
-    
-
 
 public:
     Ship(){}

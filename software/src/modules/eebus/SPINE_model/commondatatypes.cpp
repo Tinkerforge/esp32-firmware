@@ -24,27 +24,30 @@
 template <typename T> void serializeOptional(JsonObject &obj, const char *key, const std::optional<T> &value)
 {
     if (value.has_value()) {
+        if constexpr (std::is_enum<T>::value) {
+            obj[key] = toString(value.value());
+        } else {
         obj[key] = value.value();
-    }
+    }}
 }
 
 template <typename T> std::optional<T> deserializeOptional(const JsonObjectConst &obj, const char *key)
 {
     if (obj.containsKey(key)) {
         JsonObjectConst objConst = obj;
-        return std::optional<T>{objConst[key].as<T>()};
+        if constexpr (std::is_enum<T>::value) {
+            return std::optional<T>{fromString(objConst[key].as<std::string>(), T{})};
+        } else {
+            return std::optional<T>{objConst[key].as<T>()};
+        }
     }
     return std::nullopt;
 }
 
-template <typename T> std::optional<T> deserializeOptional(const JsonObject &obj, const char *key)
+/*template <typename T> std::optional<T> deserializeOptional(JsonObject &obj, const char *key)
 {
-    if (obj.containsKey(key)) {
-        JsonObjectConst objConst = obj;
-        return std::optional<T>{objConst[key].as<T>()};
-    }
-    return std::nullopt;
-}
+    return deserializeOptional<T>(obj.to<JsonObjectConst>(), key);
+}*/
 
 void convertFromJson(JsonVariantConst src, ElementTagType &tag)
 {
@@ -138,77 +141,68 @@ RecurringIntervalEnumType fromString(const std::string &str, RecurringIntervalEn
     logger.printfln("Unknown RecurringIntervalEnumType: %s", str.c_str());
     return RecurringIntervalEnumType::Yearly; // Default value
 }
-bool convertToJson(const MonthType &month, const JsonObject &obj)
+std::string toString(MonthType month)
 {
     switch (month) {
         case MonthType::January:
-            obj["month"] = "january";
-            break;
+            return "january";
         case MonthType::February:
-            obj["month"] = "february";
-            break;
+            return "february";
         case MonthType::March:
-            obj["month"] = "march";
-            break;
+            return "march";
         case MonthType::April:
-            obj["month"] = "april";
-            break;
+            return "april";
         case MonthType::May:
-            obj["month"] = "may";
-            break;
+            return "may";
         case MonthType::June:
-            obj["month"] = "june";
-            break;
+            return "june";
         case MonthType::July:
-            obj["month"] = "july";
-            break;
+            return "july";
         case MonthType::August:
-            obj["month"] = "august";
-            break;
+            return "august";
         case MonthType::September:
-            obj["month"] = "september";
-            break;
+            return "september";
         case MonthType::October:
-            obj["month"] = "october";
-            break;
+            return "october";
         case MonthType::November:
-            obj["month"] = "november";
-            break;
+            return "november";
         case MonthType::December:
-            obj["month"] = "december";
-            break;
+            return "december";
     }
-    return true;
+    return "unknown month";
 }
-void convertFromJson(JsonVariantConst src, MonthType &month)
-{
-    std::string monthStr = src["month"].as<std::string>();
-    if (monthStr == "january") {
-        month = MonthType::January;
-    } else if (monthStr == "february") {
-        month = MonthType::February;
-    } else if (monthStr == "march") {
-        month = MonthType::March;
-    } else if (monthStr == "april") {
-        month = MonthType::April;
-    } else if (monthStr == "may") {
-        month = MonthType::May;
-    } else if (monthStr == "june") {
-        month = MonthType::June;
-    } else if (monthStr == "july") {
-        month = MonthType::July;
-    } else if (monthStr == "august") {
-        month = MonthType::August;
-    } else if (monthStr == "september") {
-        month = MonthType::September;
-    } else if (monthStr == "october") {
-        month = MonthType::October;
-    } else if (monthStr == "november") {
-        month = MonthType::November;
-    } else if (monthStr == "december") {
-        month = MonthType::December;
+
+MonthType fromString(const std::string &str, MonthType) {
+    if (str == "january") {
+        return MonthType::January;
+    } else if (str == "february") {
+        return MonthType::February;
+    } else if (str == "march") {
+        return MonthType::March;
+    } else if (str == "april") {
+        return MonthType::April;
+    } else if (str == "may") {
+        return MonthType::May;
+    } else if (str == "june") {
+        return MonthType::June;
+    } else if (str == "july") {
+        return MonthType::July;
+    } else if (str == "august") {
+        return MonthType::August;
+    } else if (str == "september") {
+        return MonthType::September;
+    } else if (str == "october") {
+        return MonthType::October;
+    } else if (str == "november") {
+        return MonthType::November;
+    } else if (str == "december") {
+        return MonthType::December;
     }
+    logger.printfln("Unknown month: %s", str.c_str());
+    return MonthType::January; // Default value
 }
+
+
 
 std::string toString(DayOfWeekType day)
 {
@@ -944,4 +938,125 @@ CurrencyEnumType fromString(const std::string &str, CurrencyEnumType) {
         }
     }
     return CurrencyEnumType::EUR; // Default value
+}
+
+std::string toString(ScopeTypeEnumType scope) {
+    switch (scope) {
+        case ScopeTypeEnumType::Ac:
+            return "ac";
+        case ScopeTypeEnumType::AcCosPhiGrid:
+            return "acCosPhiGrid";
+        case ScopeTypeEnumType::AcCurrentA:
+            return "acCurrentA";    
+        case ScopeTypeEnumType::AcCurrentB:
+            return "acCurrentB";
+        case ScopeTypeEnumType::AcCurrentC:
+            return "acCurrentC";
+        case ScopeTypeEnumType::AcFrequencyGrid:
+            return "acFrequencyGrid";
+        case ScopeTypeEnumType::AcPowerA:
+            return "acPowerA";
+        case ScopeTypeEnumType::AcPowerB:
+            return "acPowerB";
+        case ScopeTypeEnumType::AcPowerC:
+            return "acPowerC";
+        case ScopeTypeEnumType::AcPowerLimitPct:
+            return "acPowerLimitPct";
+        case ScopeTypeEnumType::AcPowerTotal:
+            return "acPowerTotal";
+        case ScopeTypeEnumType::AcVoltageA:
+            return "acVoltageA";    
+        case ScopeTypeEnumType::AcVoltageB:
+            return "acVoltageB";
+        case ScopeTypeEnumType::AcVoltageC:
+            return "acVoltageC";
+        case ScopeTypeEnumType::AcYieldDay:
+            return "acYieldDay";
+        case ScopeTypeEnumType::AcYieldTotal:
+            return "acYieldTotal";
+        case ScopeTypeEnumType::DcCurrent:
+            return "dcCurrent";     
+        case ScopeTypeEnumType::DcPower:
+            return "dcPower";
+        case ScopeTypeEnumType::DcString1:
+            return "dcString1";
+        case ScopeTypeEnumType::DcString2:
+            return "dcString2";
+        case ScopeTypeEnumType::DcString3:
+            return "dcString3";
+        case ScopeTypeEnumType::DcString4:
+            return "dcString4";
+        case ScopeTypeEnumType::DcString5:
+            return "dcString5";
+        case ScopeTypeEnumType::DcString6:
+            return "dcString6";
+        case ScopeTypeEnumType::DcTotal:
+            return "dcTotal";
+        case ScopeTypeEnumType::DcVoltage:
+            return "dcVoltage";
+        case ScopeTypeEnumType::DhwTemperature:
+            return "dhwTemperature";    
+        case ScopeTypeEnumType::FlowTemperature:
+            return "flowTemperature";
+        case ScopeTypeEnumType::OutsideAirTemperature:
+            return "outsideAirTemperature";
+        case ScopeTypeEnumType::ReturnTemperature:
+            return "returnTemperature";
+        case ScopeTypeEnumType::RoomAirTemperature:
+            return "roomAirTemperature";
+        case ScopeTypeEnumType::Charge:
+            return "charge";
+        case ScopeTypeEnumType::StateOfCharge:
+            return "stateOfCharge";
+        case ScopeTypeEnumType::Discharge:
+            return "discharge";
+        case ScopeTypeEnumType::GridConsumption:
+            return "gridConsumption";
+        case ScopeTypeEnumType::GridFeedIn:
+            return "gridFeedIn";
+        case ScopeTypeEnumType::SelfConsumption:
+            return "selfConsumption";
+        case ScopeTypeEnumType::OverloadProtection:
+            return "overloadProtection";
+        case ScopeTypeEnumType::AcPower:
+            return "acPower";
+        case ScopeTypeEnumType::AcEnergy:
+            return "acEnergy";
+        case ScopeTypeEnumType::AcCurrent:
+            return "acCurrent";
+        case ScopeTypeEnumType::AcVoltage:
+            return "acVoltage";
+        case ScopeTypeEnumType::BatteryControl:
+            return "batteryControl";
+        case ScopeTypeEnumType::SimpleIncentiveTable:
+            return "simpleIncentiveTable";
+
+
+    }
+    return "unknown";
+}
+
+   
+ScopeTypeEnumType fromString(const std::string &str, ScopeTypeEnumType) {
+    for (int i = 0; i != static_cast<int>(ScopeTypeEnumType::SimpleIncentiveTable); i++) {
+        if (str == toString(static_cast<ScopeTypeEnumType>(i))) {
+            return static_cast<ScopeTypeEnumType>(i);
+        }
+    }
+    return ScopeTypeEnumType::Ac; // Default value
+}
+
+bool convertToJson(const FeatureAddressType &address, JsonObject &obj)
+{
+    serializeOptional(obj, "device", address.device);
+    serializeOptional(obj, "entity", address.entity);
+    serializeOptional(obj, "feature", address.feature);
+
+    return true;
+}
+
+void convertFromJson(const JsonObject &obj, FeatureAddressType &address) {
+    address.device = deserializeOptional<AddressDeviceType>(obj, "device");
+    address.entity = deserializeOptional<std::vector<AddressEntityType>>(obj, "entity");
+    address.feature = deserializeOptional<AddressFeatureType>(obj, "feature");
 }
