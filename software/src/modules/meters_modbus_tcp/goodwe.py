@@ -179,8 +179,8 @@ specs = [
             {
                 'name': 'First Group Battery Power [W]',
                 'value_id': 'PowerDCChaDisDiff',
-                'start_address': 35183,
-                'value_type': 'S16',
+                'start_address': 35182,
+                'value_type': 'S32BE',
                 'scale_factor': -1.0,
             },
             {
