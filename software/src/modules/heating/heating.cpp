@@ -125,6 +125,26 @@ void Heating::register_urls()
         }
     }, true);
 
+    api.addCommand("heating/switch_sgr_0", Config::Null(), {}, [this](String &err) {
+        const bool sg_ready_output_0 = em_v2.get_sg_ready_output(0);
+        em_v2.set_sg_ready_output(0, !sg_ready_output_0);
+        last_sg_ready_change = rtc.timestamp_minutes();
+        state.get("next_update")->updateUint(last_sg_ready_change + config.get("min_hold_time")->asUint());
+        state.get("sgr_blocking")->updateBool(!state.get("sgr_blocking")->asBool());
+    }, true);
+
+    api.addCommand("heating/switch_sgr_1", Config::Null(), {}, [this](String &err) {
+        if (this->is_p14enwg_active()) {
+            err = "Cannot switch SG Ready output 1 when §14 EnWG is active.";
+            return;
+        }
+
+        const bool sg_ready_output_1 = em_v2.get_sg_ready_output(1);
+        em_v2.set_sg_ready_output(1, !sg_ready_output_1);
+        last_sg_ready_change = rtc.timestamp_minutes();
+        state.get("next_update")->updateUint(last_sg_ready_change + config.get("min_hold_time")->asUint());
+        state.get("sgr_extended")->updateBool(!state.get("sgr_extended")->asBool());
+    }, true);
 
     task_scheduler.scheduleWallClock([this]() {
         this->update();

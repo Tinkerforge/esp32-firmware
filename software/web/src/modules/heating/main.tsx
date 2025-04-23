@@ -345,24 +345,44 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                         </InputText>
                     </FormRow>
                     <FormRow label={__("heating.content.sg_ready_output") + " 1"} label_muted={__("heating.content.sg_ready_output1_muted")} help={__("heating.content.sg_ready_output1_help")}>
-                        <InputSelect
-                            items={[
-                                ["0", __("heating.content.closed")],
-                                ["1", __("heating.content.opened")]
-                            ]}
-                            value={state.sgr_blocking_type}
-                            onValue={(v) => this.setState({sgr_blocking_type: parseInt(v)})}
-                        />
+                        <div class="row mx-n1">
+                            <div class="col px-1">
+                                <InputSelect
+                                    items={[
+                                        ["0", __("heating.content.closed")],
+                                        ["1", __("heating.content.opened")]
+                                    ]}
+                                    value={state.sgr_blocking_type}
+                                    onValue={(v) => this.setState({sgr_blocking_type: parseInt(v)})}
+                                />
+                            </div>
+                            <div class="col-auto px-1">
+                                <Button variant="primary"
+                                    onClick={() => API.call("heating/switch_sgr_0", {}, () => "Failed to test SG Ready output 1")}>
+                                        {__("heating.content.switch")}
+                                    </Button>
+                            </div>
+                        </div>
                     </FormRow>
                     <FormRow label={__("heating.content.sg_ready_output") + " 2"} label_muted={__("heating.content.sg_ready_output2_muted")} help={__("heating.content.sg_ready_output2_help")}>
-                        <InputSelect
-                            items={[
-                                ["0", __("heating.content.closed")],
-                                ["1", __("heating.content.opened")]
-                            ]}
-                            value={state.sgr_extended_type}
-                            onValue={(v) => this.setState({sgr_extended_type: parseInt(v)})}
-                        />
+                        <div class="row mx-n1">
+                            <div class="col px-1">
+                                <InputSelect
+                                    items={[
+                                        ["0", __("heating.content.closed")],
+                                        ["1", __("heating.content.opened")]
+                                    ]}
+                                    value={state.sgr_extended_type}
+                                    onValue={(v) => this.setState({sgr_extended_type: parseInt(v)})}
+                                />
+                            </div>
+                            <div class="col-auto px-1">
+                                <Button variant="primary"
+                                    onClick={() => API.call("heating/switch_sgr_1", {}, () => "Failed to test SG Ready output 1")}>
+                                        {__("heating.content.switch")}
+                                    </Button>
+                            </div>
+                        </div>
                     </FormRow>
                     <FormRow label={__("heating.content.control_period")} label_muted={__("heating.content.control_period_muted")} help={__("heating.content.control_period_help")}>
                         <InputSelect
