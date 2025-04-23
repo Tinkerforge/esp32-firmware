@@ -80,9 +80,12 @@ void DayAheadPrices::pre_setup()
             prices.get("prices")->removeAll();
             prices.get("resolution")->updateEnum(update.get("resolution")->asEnum<Resolution>());
             current_price_available = false;
-            task_scheduler.scheduleOnce([this]() {
-                this->update();
-            });
+
+            if (boot_stage == BootStage::LOOP) {
+                task_scheduler.scheduleOnce([this]() {
+                    this->update();
+                });
+            }
         }
 
         return "";
