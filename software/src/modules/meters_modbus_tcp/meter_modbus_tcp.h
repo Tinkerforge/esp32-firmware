@@ -138,24 +138,29 @@ private:
     size_t register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
     size_t register_start_address;
 
+    int sungrow_inverter_output_type;
+
     union {
         // custom
         struct {
             ValueTable *table;
         } custom;
 
-        // Sungrow
+        // Sungrow hybrid inverter
         struct {
-            SungrowHybridInverterVirtualMeter hybrid_inverter_virtual_meter;
-            SungrowStringInverterVirtualMeter string_inverter_virtual_meter;
-            int inverter_output_type;
-            uint16_t hybrid_inverter_running_state;
-        } sungrow;
+            SungrowHybridInverterVirtualMeter virtual_meter;
+            uint16_t running_state;
+        } sungrow_hybrid_inverter;
 
-        // Solarmax
+        // Sungrow string inverter
         struct {
-            SolarmaxMaxStorageVirtualMeter max_storage_virtual_meter;
-        } solarmax;
+            SungrowStringInverterVirtualMeter virtual_meter;
+        } sungrow_string_inverter;
+
+        // Solarmax Max Storage
+        struct {
+            SolarmaxMaxStorageVirtualMeter virtual_meter;
+        } solarmax_max_storage;
 
         // Victron Energy GX
         struct {
@@ -168,28 +173,28 @@ private:
             float ac_consumption_l3_power;
         } victron_energy_gx;
 
-        // Deye
+        // Deye hybrid inverter
         struct {
-            DeyeHybridInverterVirtualMeter hybrid_inverter_virtual_meter;
-            int hybrid_inverter_device_type;
-            float hybrid_inverter_pv1_power;
-            float hybrid_inverter_pv2_power;
-            float hybrid_inverter_pv3_power;
-            float hybrid_inverter_pv4_power;
-            float hybrid_inverter_pv1_voltage;
-            float hybrid_inverter_pv1_current;
-            float hybrid_inverter_pv2_voltage;
-            float hybrid_inverter_pv2_current;
-            float hybrid_inverter_pv3_voltage;
-            float hybrid_inverter_pv3_current;
-            float hybrid_inverter_pv4_voltage;
-            float hybrid_inverter_pv4_current;
-        } deye;
+            DeyeHybridInverterVirtualMeter virtual_meter;
+            int device_type;
+            float pv1_power;
+            float pv2_power;
+            float pv3_power;
+            float pv4_power;
+            float pv1_voltage;
+            float pv1_current;
+            float pv2_voltage;
+            float pv2_current;
+            float pv3_voltage;
+            float pv3_current;
+            float pv4_voltage;
+            float pv4_current;
+        } deye_hybrid_inverter;
 
-        // Alpha ESS
+        // Alpha ESS hybrid inverter
         struct {
-            AlphaESSHybridInverterVirtualMeter hybrid_inverter_virtual_meter;
-        } alpha_ess;
+            AlphaESSHybridInverterVirtualMeter virtual_meter;
+        } alpha_ess_hybrid_inverter;
 
         // Shelly Pro EM
         struct {
@@ -221,10 +226,10 @@ private:
             float battery_2_capacity;
         } goodwe_hybrid_inverter;
 
-        // Solax
+        // Solax hybrid inverter
         struct {
-            SolaxHybridInverterVirtualMeter hybrid_inverter_virtual_meter;
-        } solax;
+            SolaxHybridInverterVirtualMeter virtual_meter;
+        } solax_hybrid_inverter;
 
         // Fronius GEN24 Plus
         struct {
@@ -247,15 +252,15 @@ private:
             int16_t chastate_sf;
         } fronius_gen24_plus;
 
-        // Hailei
+        // Hailei hybrid inverter
         struct {
-            HaileiHybridInverterVirtualMeter hybrid_inverter_virtual_meter;
-        } hailei;
+            HaileiHybridInverterVirtualMeter virtual_meter;
+        } hailei_hybrid_inverter;
 
-        // Fox ESS H3
+        // Fox ESS H3 hybrid inverter
         struct {
-            FoxESSH3HybridInverterVirtualMeter hybrid_inverter_virtual_meter;
-        } fox_ess_h3;
+            FoxESSH3HybridInverterVirtualMeter virtual_meter;
+        } fox_ess_h3_hybrid_inverter;
 
         // Carlo Gavazzi EM100
         struct {
