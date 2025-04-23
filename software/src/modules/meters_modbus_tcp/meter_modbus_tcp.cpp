@@ -2069,7 +2069,7 @@ void MeterModbusTCP::parse_next()
                           + deye_hybrid_inverter.pv4_current;
 
             meters.update_value(slot, table->index[read_index + 1], power);
-            meters.update_value(slot, table->index[read_index + 2], -power);
+            meters.update_value(slot, table->index[read_index + 2], zero_safe_negation(power));
             meters.update_value(slot, table->index[read_index + 3], voltage);
             meters.update_value(slot, table->index[read_index + 4], current);
         }
@@ -2247,7 +2247,7 @@ void MeterModbusTCP::parse_next()
             solaredge.battery_1_voltage = value;
         }
         else if (register_start_address == SOLAREDGE_BATTERY_1_CURRENT) {
-            solaredge.battery_1_current = zero_safe_negation(value); // current is negative while charging
+            solaredge.battery_1_current = value;
         }
         else if (register_start_address == SOLAREDGE_BATTERY_1_POWER) {
             solaredge.battery_1_power = value;
@@ -2268,7 +2268,7 @@ void MeterModbusTCP::parse_next()
             value = nan_safe_avg(solaredge.battery_1_voltage, value);
         }
         else if (register_start_address == SOLAREDGE_BATTERY_2_CURRENT) {
-            value = nan_safe_sum(solaredge.battery_1_current, zero_safe_negation(value)); // current is negative while charging
+            value = nan_safe_sum(solaredge.battery_1_current, value);
         }
         else if (register_start_address == SOLAREDGE_BATTERY_2_POWER) {
             value = nan_safe_sum(solaredge.battery_1_power, value);
