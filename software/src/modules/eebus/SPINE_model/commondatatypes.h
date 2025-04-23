@@ -17,17 +17,48 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#pragma once
 #include "build.h"
 
 #include "tools.h"
-#include <TFJson.h>
 #include <ArduinoJson.h> // Include this even though its already included in TFJson.h but compiler got angry with me so just to be safe
+#include <TFJson.h>
 #include <optional>
 
+// General helper functions for JSON serialization/deserialization
 template <typename T> void serializeOptional(JsonObject &obj, const char *key, const std::optional<T> &value);
 template <typename T> std::optional<T> deserializeOptional(const JsonObjectConst &obj, const char *key);
 template <typename T> std::optional<T> deserializeOptional(const JsonObject &obj, const char *key);
+// For serializing/deserializing std::vector<T>
+// From https://arduinojson.org/v7/how-to/create-converters-for-stl-containers/
+namespace ArduinoJson
+{
+template <typename T> struct Converter<std::vector<T>> {
+    static void toJson(const std::vector<T> &src, JsonVariant dst)
+    {
+        JsonArray array = dst.to<JsonArray>();
+        for (T item : src)
+            array.add(item);
+    }
 
+    static std::vector<T> fromJson(JsonVariantConst src)
+    {
+        std::vector<T> dst;
+        for (T item : src.as<JsonArrayConst>())
+            dst.push_back(item);
+        return dst;
+    }
+
+    static bool checkJson(JsonVariantConst src)
+    {
+        JsonArrayConst array = src;
+        bool result = array;
+        for (JsonVariantConst item : array)
+            result &= item.is<T>();
+        return result;
+    }
+};
+} // namespace ArduinoJson
 
 struct ElementTagType {
 };
@@ -72,8 +103,8 @@ RecurringIntervalEnumType fromString(const std::string &str, RecurringIntervalEn
 using RecurringIntervalType = RecurringIntervalEnumType;
 
 enum class MonthType { January, February, March, April, May, June, July, August, September, October, November, December };
-bool convertToJson(const MonthType &month, const JsonObject &obj);
-void convertFromJson(JsonVariantConst src, MonthType &month);
+std::string toString(MonthType month);
+MonthType fromString(const std::string &str, MonthType);
 
 using DayOfMonthType = uint8_t;
 using CalendarWeekType = uint8_t;
@@ -96,7 +127,6 @@ struct DaysOfWeekType {
 bool convertToJson(const DaysOfWeekType &days, JsonVariant variant);
 void convertFromJson(const JsonObject &obj, DaysOfWeekType &days);
 
-
 using OccurenceType = std::string;
 
 enum class OccurenceEnumType { First, Second, Third, Fourth, Last };
@@ -116,11 +146,10 @@ struct AbsoluteOrReccuringTimeType {
 void convertFromJson(const JsonObject &obj, AbsoluteOrReccuringTimeType &time);
 void convertToJson(const AbsoluteOrReccuringTimeType &time, JsonObject &obj);
 
-
 enum class UnitOfMeasurementEnumType {
     // SI units. Divisions are replaced by underscore (m/s -> m_s). Power is ommitted (m^2 -> m2)
     Unknown = 0,
-    One, //Should be 1 
+    One, //Should be 1
     M,
     Kg,
     S,
@@ -212,11 +241,10 @@ enum class UnitOfMeasurementEnumType {
     Btu_h,
     Ah,
     Kg_wh,
-};  
+};
 std::string toString(UnitOfMeasurementEnumType unit);
 UnitOfMeasurementEnumType fromString(const std::string &str, UnitOfMeasurementEnumType);
-using  UnitOfMeasurementType = UnitOfMeasurementEnumType;
-
+using UnitOfMeasurementType = UnitOfMeasurementEnumType;
 
 using NumberType = int64_t;
 using ScaleType = int8_t;
@@ -235,186 +263,185 @@ struct ScaledNumberElementsType {
 bool convertToJson(const ScaledNumberElementsType &scaledNumber, JsonObject &obj);
 void convertFromJson(const JsonObject &obj, ScaledNumberElementsType &scaledNumber);
 
-
 enum class CurrencyEnumType {
     AED,
-	AFN,
-	ALL,
-	AMD,
-	ANG,
-	AOA,
-	ARS,
-	AUD,
-	AWG,
-	AZN,
-	BAM,
-	BBD,
-	BDT,
-	BGN,
-	BHD,
-	BIF,
-	BMD,
-	BND,
-	BOB,
-	BOV,
-	BRL,
-	BSD,
-	BTN,
-	BWP,
-	BYR,
-	BZD,
-	CAD,
-	CDF,
-	CHE,
-	CHF,
-	CHW,
-	CLF,
-	CLP,
-	CNY,
-	COP,
-	COU,
-	CRC,
-	CUC,
-	CUP,
-	CVE,
-	CZK,
-	DJF,
-	DKK,
-	DOP,
-	DZD,
-	EGP,
-	ERN,
-	ETB,
-	EUR,
-	FJD,
-	FKP,
-	GBP,
-	GEL,
-	GHS,
-	GIP,
-	GMD,
-	GNF,
-	GTQ,
-	GYD,
-	HKD,
-	HNL,
-	HRK,
-	HTG,
-	HUF,
-	IDR,
-	ILS,
-	INR,
-	IQD,
-	IRR,
-	ISK,
-	JMD,
-	JOD,
-	JPY,
-	KES,
-	KGS,
-	KHR,
-	KMF,
-	KPW,
-	KRW,
-	KWD,
-	KYD,
-	KZT,
-	LAK,
-	LBP,
-	LKR,
-	LRD,
-	LSL,
-	LYD,
-	MAD,
-	MDL,
-	MGA,
-	MKD,
-	MMK,
-	MNT,
-	MOP,
-	MRO,
-	MUR,
-	MVR,
-	MWK,
-	MXN,
-	MXV,
-	MYR,
-	MZN,
-	NAD,
-	NGN,
-	NIO,
-	NOK,
-	NPR,
-	NZD,
-	OMR,
-	PAB,
-	PEN,
-	PGK,
-	PHP,
-	PKR,
-	PLN,
-	PYG,
-	QAR,
-	RON,
-	RSD,
-	RUB,
-	RWF,
-	SAR_, // This is defined as a Register too
-	SBD,
-	SCR,
-	SDG,
-	SEK,
-	SGD,
-	SHP,
-	SLL,
-	SOS,
-	SRD,
-	SSP,
-	STD,
-	SVC,
-	SYP,
-	SZL,
-	THB,
-	TJS,
-	TMT,
-	TND,
-	TOP,
-	TRY,
-	TTD,
-	TWD,
-	TZS,
-	UAH,
-	UGX,
-	USD,
-	USN,
-	UYI,
-	UYU,
-	UZS,
-	VEF,
-	VND,
-	VUV,
-	WST,
-	XAF,
-	XAG,
-	XAU,
-	XBA,
-	XBB,
-	XBC,
-	XBD,
-	XCD,
-	XDR,
-	XOF,
-	XPD,
-	XPF,
-	XPT,
-	XSU,
-	XTS,
-	XUA,
-	XXX,
-	YER,
-	ZAR,
-	ZMW,
-	ZWL,
+    AFN,
+    ALL,
+    AMD,
+    ANG,
+    AOA,
+    ARS,
+    AUD,
+    AWG,
+    AZN,
+    BAM,
+    BBD,
+    BDT,
+    BGN,
+    BHD,
+    BIF,
+    BMD,
+    BND,
+    BOB,
+    BOV,
+    BRL,
+    BSD,
+    BTN,
+    BWP,
+    BYR,
+    BZD,
+    CAD,
+    CDF,
+    CHE,
+    CHF,
+    CHW,
+    CLF,
+    CLP,
+    CNY,
+    COP,
+    COU,
+    CRC,
+    CUC,
+    CUP,
+    CVE,
+    CZK,
+    DJF,
+    DKK,
+    DOP,
+    DZD,
+    EGP,
+    ERN,
+    ETB,
+    EUR,
+    FJD,
+    FKP,
+    GBP,
+    GEL,
+    GHS,
+    GIP,
+    GMD,
+    GNF,
+    GTQ,
+    GYD,
+    HKD,
+    HNL,
+    HRK,
+    HTG,
+    HUF,
+    IDR,
+    ILS,
+    INR,
+    IQD,
+    IRR,
+    ISK,
+    JMD,
+    JOD,
+    JPY,
+    KES,
+    KGS,
+    KHR,
+    KMF,
+    KPW,
+    KRW,
+    KWD,
+    KYD,
+    KZT,
+    LAK,
+    LBP,
+    LKR,
+    LRD,
+    LSL,
+    LYD,
+    MAD,
+    MDL,
+    MGA,
+    MKD,
+    MMK,
+    MNT,
+    MOP,
+    MRO,
+    MUR,
+    MVR,
+    MWK,
+    MXN,
+    MXV,
+    MYR,
+    MZN,
+    NAD,
+    NGN,
+    NIO,
+    NOK,
+    NPR,
+    NZD,
+    OMR,
+    PAB,
+    PEN,
+    PGK,
+    PHP,
+    PKR,
+    PLN,
+    PYG,
+    QAR,
+    RON,
+    RSD,
+    RUB,
+    RWF,
+    SAR_, // This is defined as a Register too
+    SBD,
+    SCR,
+    SDG,
+    SEK,
+    SGD,
+    SHP,
+    SLL,
+    SOS,
+    SRD,
+    SSP,
+    STD,
+    SVC,
+    SYP,
+    SZL,
+    THB,
+    TJS,
+    TMT,
+    TND,
+    TOP,
+    TRY,
+    TTD,
+    TWD,
+    TZS,
+    UAH,
+    UGX,
+    USD,
+    USN,
+    UYI,
+    UYU,
+    UZS,
+    VEF,
+    VND,
+    VUV,
+    WST,
+    XAF,
+    XAG,
+    XAU,
+    XBA,
+    XBB,
+    XBC,
+    XBD,
+    XCD,
+    XDR,
+    XOF,
+    XPD,
+    XPF,
+    XPT,
+    XSU,
+    XTS,
+    XUA,
+    XXX,
+    YER,
+    ZAR,
+    ZMW,
+    ZWL,
 
 };
 
@@ -422,3 +449,66 @@ std::string toString(CurrencyEnumType currency);
 CurrencyEnumType fromString(const std::string &str, CurrencyEnumType);
 
 using CurrencyType = CurrencyEnumType;
+
+enum ScopeTypeEnumType {
+    Ac = 0,
+    AcCosPhiGrid,
+    AcCurrentA,
+    AcCurrentB,
+    AcCurrentC,
+    AcFrequencyGrid,
+    AcPowerA,
+    AcPowerB,
+    AcPowerC,
+    AcPowerLimitPct,
+    AcPowerTotal,
+    AcVoltageA,
+    AcVoltageB,
+    AcVoltageC,
+    AcYieldDay,
+    AcYieldTotal,
+    DcCurrent,
+    DcPower,
+    DcString1,
+    DcString2,
+    DcString3,
+    DcString4,
+    DcString5,
+    DcString6,
+    DcTotal,
+    DcVoltage,
+    DhwTemperature,
+    FlowTemperature,
+    OutsideAirTemperature,
+    ReturnTemperature,
+    RoomAirTemperature,
+    Charge,
+    StateOfCharge,
+    Discharge,
+    GridConsumption,
+    GridFeedIn,
+    SelfConsumption,
+    OverloadProtection,
+    AcPower,
+    AcEnergy,
+    AcCurrent,
+    AcVoltage,
+    BatteryControl,
+    SimpleIncentiveTable
+};
+std::string toString(ScopeTypeEnumType scope);
+ScopeTypeEnumType fromString(const std::string &str, ScopeTypeEnumType);
+
+using ScopeTypeType = ScopeTypeEnumType;
+
+using AddressDeviceType = std::string;
+using AddressEntityType = uint32_t;
+using AddressFeatureType = uint32_t;
+
+struct FeatureAddressType {
+    std::optional<AddressDeviceType> device;
+    std::optional<std::vector<AddressEntityType>> entity;
+    std::optional<AddressFeatureType> feature;
+};
+bool convertToJson(const FeatureAddressType &address, JsonObject &obj);
+void convertFromJson(const JsonObject &obj, FeatureAddressType &address);
