@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2024 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2025 Julius Dill <julius@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,35 +17,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#pragma once
-
-#include "module.h"
-#include "config.h"
-#include "ship.h"
+#include "build.h"
+#include "commondatatypes.h"
+#include "usecaseinformation.h"
+#include "tools.h"
+#include <ArduinoJson.h> // Include this even though its already included in TFJson.h but compiler got angry with me so just to be safe
 #include <TFJson.h>
-
-#define MAX_SHIP_PEER_REMEMBERED 64 // How man ship peers configured to be remembered
-#define DNS_SD_UUID "Tinkerforge-WARP3-12345"
-
-class EEBus final : public IModule
-{
-public:
-    EEBus(){}
-    void pre_setup() override;
-    void setup() override;
-    void register_urls() override;
+#include <map>
+#include <optional>
 
 
-    Config ship_peer_prototye;
-    ConfigRoot add_ship_peer;
-    ConfigRoot remove_ship_peer;
-    ConfigRoot config;
-    ConfigRoot state;
-    ConfigRoot peers; // TODO: Merge this into config once i figure out the frontend
-    Ship ship;
-
-private:
-    std::vector<ShipNode> peers;
-    void update_peers();
-
+struct NodeManagementUseCaseDataType {
+    std::optional<std::vector<UseCaseInformationDataType>> useCaseInformationDataType;
 };
+
