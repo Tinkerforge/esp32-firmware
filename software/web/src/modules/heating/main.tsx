@@ -349,8 +349,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             <div class="col px-1">
                                 <InputSelect
                                     items={[
-                                        ["0", __("heating.content.closed")],
-                                        ["1", __("heating.content.opened")]
+                                        ["0", __("heating.content.output_active_closed")],
+                                        ["1", __("heating.content.output_active_open")]
                                     ]}
                                     value={state.sgr_blocking_type}
                                     onValue={(v) => this.setState({sgr_blocking_type: parseInt(v)})}
@@ -369,8 +369,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             <div class="col px-1">
                                 <InputSelect
                                     items={[
-                                        ["0", __("heating.content.closed")],
-                                        ["1", __("heating.content.opened")]
+                                        ["0", __("heating.content.output_active_closed")],
+                                        ["1", __("heating.content.output_active_open")]
                                     ]}
                                     value={state.sgr_extended_type}
                                     onValue={(v) => this.setState({sgr_extended_type: parseInt(v)})}
@@ -594,8 +594,8 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                     <FormRow label={__("heating.content.blocking_operation")}>
                         <InputSelect
                             items={[
-                                ["0", __("heating.content.closed")],
-                                ["1", __("heating.content.opened")]
+                                ["0", __("heating.content.input_active_closed")],
+                                ["1", __("heating.content.input_active_open")]
                             ]}
                             value={state.p14enwg_type}
                             onValue={(v) => this.setState({p14enwg_type: parseInt(v)})}
