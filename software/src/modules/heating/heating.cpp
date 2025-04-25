@@ -173,6 +173,7 @@ bool Heating::is_p14enwg_active()
 Heating::Status Heating::get_status()
 {
     const bool p14enwg            = config.get("p14enwg")->asBool();
+    const uint32_t p14enwg_input  = config.get("p14enwg_input")->asUint();
     const uint32_t p14enwg_type   = config.get("p14enwg_type")->asUint();
     const uint32_t sg_ready0_type = config.get("sgr_blocking_type")->asUint();
     const uint32_t sg_ready1_type = config.get("sgr_extended_type")->asUint();
@@ -180,7 +181,7 @@ Heating::Status Heating::get_status()
     const bool sg_ready_output_1  = em_v2.get_sg_ready_output(1);
     const bool sg_ready0_on       = sg_ready_output_0 == (sg_ready0_type == HEATING_SG_READY_ACTIVE_CLOSED);
     const bool sg_ready1_on       = sg_ready_output_1 == (sg_ready1_type == HEATING_SG_READY_ACTIVE_CLOSED);
-    const bool p14_enwg_on        = p14enwg && (sg_ready_output_0 == (p14enwg_type == HEATING_SG_READY_ACTIVE_CLOSED));
+    const bool p14_enwg_on        = p14enwg && (em_v2.get_input(p14enwg_input) == (p14enwg_type == 0));
 
     if(p14_enwg_on) {
         return Status::BlockingP14;
