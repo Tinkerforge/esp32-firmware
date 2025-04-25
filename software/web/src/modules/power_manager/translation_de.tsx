@@ -29,7 +29,7 @@ let x = {
 
             "header_excess_charging": "Photovoltaik-Überschussladen",
             "enable_excess_charging": "Überschussladen aktiviert",
-            "enable_excess_charging_help": <><p>Das <a href={removeUnicodeHacks("{{{doc_base_url}}}/docs/tutorials/pv_excess_charging/")}>Tutorial PV-Überschussladen</a> hilft dir bei der Ersteinrichtung</p></>,
+            "enable_excess_charging_help": <><p>Das <a href={removeUnicodeHacks("{{{doc_base_url}}}/docs/tutorials/pv_excess_charging/")}>Tutorial PV-Überschussladen</a> hilft bei der Einrichtung.</p></>,
             "enable_excess_charging_desc": "Regelt die kontrollierten Wallboxen abhängig vom gemessenen Überschuss einer Photovoltaikanlage und vom Lademodus.",
             "default_mode": "Standardlademodus",
             "default_mode_muted": "wird nach Neustart verwendet",
@@ -41,7 +41,7 @@ let x = {
             "guaranteed_power": "Min + PV: Mindestladeleistung",
             "guaranteed_power_muted": "Leistung, die im Min + PV-Modus zum Laden von Fahrzeugen aus dem Netz bezogen werden darf.",
             "control_behavior": "Regelverhalten",
-            "control_behavior_help": <><p>Legt fest, auf welchen Netzbezug geregelt werden soll, damit beispielsweise ein Batteriespeicher höher oder niedriger priorisiert wird als das Laden von Fahrzeugen.</p></>,
+            "control_behavior_help": <><p>Legt fest, auf welchen Netzbezug geregelt werden soll, damit ein Batteriespeicher höher oder niedriger priorisiert wird als ein Fahrzeugladevorgang.</p></>,
             "target_power_n200": "Sehr konservativ (− 200 W)",
             "target_power_n100": "Konservativ (− 100 W)",
             "target_power_n50_with_battery_meter": "Leicht konservativ (− 50 W)",
