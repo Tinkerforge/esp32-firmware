@@ -407,7 +407,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                     <FormRow label={__("heating.content.pv_excess_control")}
                              error={__("heating.content.meter_needs_activation")}
                              show_error={state.pv_excess_control && !meter_available}
-                             class="mb-xs-1 mb-md-0">
+                             class="mb-2 mb-lg-0">
                         <SwitchableInputNumber
                             switch_label_active={__("heating.content.active")}
                             switch_label_inactive={__("heating.content.inactive")}
@@ -421,13 +421,13 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             switch_label_min_width="110px"
                         />
                     </FormRow>
-                    <FormRow label={__("heating.content.or")} small={true} class="mb-0 mb-xs-1">
+                    <FormRow label={__("heating.content.or")} small={true} class="mb-0">
                         <div></div>
                     </FormRow>
                     <FormRow label={__("heating.content.dpc_low")}
                              error={__("heating.content.day_ahead_prices_needs_activation")}
                              show_error={state.extended && !day_ahead_prices_enabled}
-                             class="mb-xs-1 mb-md-0">
+                             class="mb-2 mb-lg-0">
                         <SwitchableInputNumber
                             switch_label_active={__("heating.content.active")}
                             switch_label_inactive={__("heating.content.inactive")}
@@ -441,7 +441,7 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                             switch_label_min_width="110px"
                         />
                     </FormRow>
-                    <FormRow label={__("heating.content.but_only_if")} small={true} class="mb-0 mb-xs-1">
+                    <FormRow label={__("heating.content.but_only_if")} small={true} class="mb-0">
                         <div></div>
                     </FormRow>
                     <FormRow label={__("heating.content.pv_yield_forecast")}
