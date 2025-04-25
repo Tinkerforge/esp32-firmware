@@ -49,14 +49,16 @@ let x = {
             "charge_manager_settings": "Lastmanagement",
             "charge_manager_chargers": "Wallboxen",
             "enable_charge_manager": "Fremdsteuerung",
-            "enable_charge_manager_help": <>
+            "enable_charge_manager_help": /*FFN*/(has_managed_mode: boolean) => <>
                 <p>Auf dieser Seite werden die kontrollierten Wallboxen konfiguriert. Die hier vorgenommenen Einstellungen beeinflussen das <a href={removeUnicodeHacks("{{{doc_base_url}}}/docs/tutorials/chargemanagement")}>Lastmanagement</a> zwischen den Wallboxen.</p>
                 <ul class="mb-0">
-                    <li><strong>Deaktiviert:</strong> Es findet kein Lastmanagement statt. Die Wallbox ist vollständig eigenständig.</li>
-                    <li><strong>Fremdgesteuert:</strong> Die Wallbox wird von einem anderen Lastmanager verwaltet. Es müssen keine weiteren Einstellungen vorgenommen werden.</li>
-                    <li><strong>Lastmanager/PV-Überschussladen:</strong> Die Wallbox arbeitet als Lastmanager. Dies ist auch der Fall, wenn sie nur eigenständig die Funktion <a href={removeUnicodeHacks("{{{doc_base_url}}}/docs/tutorials/pv_excess_charging/")}>PV-Überschussladen</a> ausführen soll. Es sind weitere Einstellungen vorzunehmen.</li>
+                    <li><strong>Deaktiviert:</strong> Es findet kein Lastmanagement statt. {__("This_device")} ist vollständig eigenständig.</li>
+                    {has_managed_mode ?
+                        <li><strong>Fremdgesteuert:</strong> {__("This_device")} wird von einem anderen Lastmanager verwaltet. Es müssen keine weiteren Einstellungen vorgenommen werden.</li>
+                        : undefined}
+                    <li><strong>Lastmanager / PV-Überschussladen:</strong> {__("This_device")} arbeitet als Lastmanager. Dies ist auch der Fall, wenn sie nur eigenständig die Funktion <a href={removeUnicodeHacks("{{{doc_base_url}}}/docs/tutorials/pv_excess_charging/")}>PV-Überschussladen</a> ausführen soll. Es sind weitere Einstellungen vorzunehmen.</li>
                 </ul>
-            </>,
+            </>/*NF*/,
             "enable_watchdog": "Watchdog aktiviert",
             "enable_watchdog_muted": "nur bei API-Benutzung aktivieren (für den normalen Lastmanagement-Betrieb nicht notwendig!)",
             "enable_watchdog_desc": "Setzt den verfügbaren Strom auf die Voreinstellung, wenn er nicht spätestens alle 30 Sekunden aktualisiert wurde",

@@ -349,11 +349,14 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
             ["2", translate_unchecked("charge_manager.content.mode_manager" + charge_manager_mode_suffix)],
         ];
 
+        let has_managed_mode = false;
+
         if (API.hasModule("evse_common") || API.hasModule("em_phase_switcher")) {
+            has_managed_mode = true;
             modes.splice(1, 0, ["1", translate_unchecked("charge_manager.content.mode_managed" + charge_manager_mode_suffix)]);
         }
 
-        let charge_manager_mode = <FormRow label={__("charge_manager.content.enable_charge_manager")} help={__("charge_manager.content.enable_charge_manager_help")}>
+        let charge_manager_mode = <FormRow label={__("charge_manager.content.enable_charge_manager")} help={__("charge_manager.content.enable_charge_manager_help")(has_managed_mode)}>
             <InputSelect
                     items={modes}
                     value={state.enable_charge_manager ? "2" : state.managementEnabled ? "1" : "0"}
