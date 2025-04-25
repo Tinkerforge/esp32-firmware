@@ -1,0 +1,25 @@
+From 843f93bade5cbff43d8bc426d618d04bcad72e2c Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Fri, 25 Apr 2025 12:52:34 +0200
+Subject: [PATCH] lwIP: Faster DHCP duplicate address check
+
+---
+ components/lwip/port/acd_dhcp_check.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/components/lwip/port/acd_dhcp_check.c b/components/lwip/port/acd_dhcp_check.c
+index e29ff984c5..3a100d42cf 100644
+--- a/components/lwip/port/acd_dhcp_check.c
++++ b/components/lwip/port/acd_dhcp_check.c
+@@ -13,7 +13,7 @@
+ #include "lwip/prot/dhcp.h"
+ #include "lwip/timeouts.h"
+ 
+-#define ACD_DHCP_ARP_REPLY_TIMEOUT_MS 500
++#define ACD_DHCP_ARP_REPLY_TIMEOUT_MS 250
+ 
+ static void
+ acd_dhcp_check_timeout_cb(void *arg);
+-- 
+2.39.5
+
