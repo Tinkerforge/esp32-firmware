@@ -54,6 +54,8 @@ type HeatingConfig = API.getType["heating/config"];
 interface HeatingState {
     heating_state: API.getType["heating/state"];
     dap_config: API.getType["day_ahead_prices/config"];
+    active_sgr_blocking_type: number;
+    active_sgr_extended_type: number;
 }
 
 export class Heating extends ConfigComponent<'heating/config', {status_ref?: RefObject<HeatingStatus>}, HeatingState> {
@@ -95,6 +97,12 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
 
         util.addApiEventListener("heating/state", () => {
             this.setState({heating_state: API.get("heating/state")});
+        });
+
+        util.addApiEventListener("heating/config", () => {
+            let config = API.get("heating/config");
+
+            this.setState({active_sgr_blocking_type: config.sgr_blocking_type, active_sgr_extended_type: config.sgr_extended_type});
         });
 
         util.addApiEventListener("day_ahead_prices/prices", () => {
@@ -356,12 +364,13 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                                     onValue={(v) => this.setState({sgr_blocking_type: parseInt(v)})}
                                 />
                             </div>
-                            <div class="col-auto px-1">
-                                <Button variant="primary"
-                                    onClick={() => API.call("heating/switch_sgr_0", {}, () => "Failed to test SG Ready output 1")}>
-                                        {__("heating.content.switch")}
+                            {state.active_sgr_blocking_type !== undefined ?
+                                <div class="col-auto px-1">
+                                    <Button variant="primary"
+                                            onClick={() => API.call("heating/toggle_sgr_blocking", {}, () => __("heating.content.toogle_now_failed")(1))}>
+                                        {state.heating_state.sgr_blocking === (state.active_sgr_blocking_type === 0) ? __("heating.content.close_now") : __("heating.content.open_now")}
                                     </Button>
-                            </div>
+                                </div> : undefined}
                         </div>
                     </FormRow>
                     <FormRow label={__("heating.content.sg_ready_output") + " 2"} label_muted={__("heating.content.sg_ready_output2_muted")} help={__("heating.content.sg_ready_output2_help")}>
@@ -376,12 +385,13 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
                                     onValue={(v) => this.setState({sgr_extended_type: parseInt(v)})}
                                 />
                             </div>
-                            <div class="col-auto px-1">
-                                <Button variant="primary"
-                                    onClick={() => API.call("heating/switch_sgr_1", {}, () => "Failed to test SG Ready output 1")}>
-                                        {__("heating.content.switch")}
+                            {state.active_sgr_extended_type !== undefined ?
+                                <div class="col-auto px-1">
+                                    <Button variant="primary"
+                                            onClick={() => API.call("heating/toggle_sgr_extended", {}, () => __("heating.content.toogle_now_failed")(2))}>
+                                        {state.heating_state.sgr_extended === (state.active_sgr_extended_type === 0) ? __("heating.content.close_now") : __("heating.content.open_now")}
                                     </Button>
-                            </div>
+                                </div> : undefined}
                         </div>
                     </FormRow>
                     <FormRow label={__("heating.content.control_period")} label_muted={__("heating.content.control_period_muted")} help={__("heating.content.control_period_help")}>

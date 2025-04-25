@@ -125,7 +125,7 @@ void Heating::register_urls()
         }
     }, true);
 
-    api.addCommand("heating/switch_sgr_0", Config::Null(), {}, [this](String &err) {
+    api.addCommand("heating/toggle_sgr_blocking", Config::Null(), {}, [this](String &err) {
         const bool sg_ready_output_0 = em_v2.get_sg_ready_output(0);
         em_v2.set_sg_ready_output(0, !sg_ready_output_0);
         last_sg_ready_change = rtc.timestamp_minutes();
@@ -133,9 +133,9 @@ void Heating::register_urls()
         state.get("sgr_blocking")->updateBool(!state.get("sgr_blocking")->asBool());
     }, true);
 
-    api.addCommand("heating/switch_sgr_1", Config::Null(), {}, [this](String &err) {
+    api.addCommand("heating/toggle_sgr_extended", Config::Null(), {}, [this](String &err) {
         if (this->is_p14enwg_active()) {
-            err = "Cannot switch SG Ready output 1 when §14 EnWG is active.";
+            err = "Cannot toggle SG Ready output 2 when §14 EnWG is active.";
             return;
         }
 

@@ -31,5 +31,5 @@ export interface sgr_blocking_override {
     override_until: number;
 }
 
-export type switch_sgr_0 = {};
-export type switch_sgr_1 = {};
+export type toggle_sgr_blocking = {};
+export type toggle_sgr_extended = {};
