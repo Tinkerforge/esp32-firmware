@@ -59,11 +59,11 @@ export function is_solar_forecast_enabled() {
 }
 
 export function get_kwh_today() {
-    return API.get("solar_forecast/state").wh_today;
+    return minus1_to_nan(API.get("solar_forecast/state").wh_today   ) / 1000;
 }
 
 export function get_kwh_tomorrow() {
-    return API.get("solar_forecast/state").wh_tomorrow;
+    return minus1_to_nan(API.get("solar_forecast/state").wh_tomorrow) / 1000;
 }
 
 export function SolarForecastNavbar() {
