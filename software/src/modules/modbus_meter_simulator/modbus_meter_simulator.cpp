@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define EVENT_LOG_PREFIX "modbus_meter_sim"
+
 #include "modbus_meter_simulator.h"
 
 #include <math.h>
