@@ -27,13 +27,14 @@ import { register_id_context_component_type } from "./form_row";
 
 import * as util from "../util";
 
-interface InputNumberProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>,  "class" | "id" | "type" | "onInput"> {
+interface InputNumberProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "class" | "id" | "type" | "onInput"> {
     idContext?: Context<string>;
     value: number;
     onValue?: (value: number) => void;
     unit?: string;
     invalidFeedback?: string;
     disabled?: boolean;
+    readonly?: boolean;
 }
 
 export function InputNumber(props: InputNumberProps) {
@@ -81,7 +82,7 @@ export function InputNumber(props: InputNumberProps) {
             {props.unit ? <div class="form-control input-group-text">{props.unit}</div> : undefined}
             {props.onValue ? <>
             <Button variant="primary"
-                    disabled={props.value == props.min || props.disabled}
+                    disabled={props.value == props.min || props.disabled || props.readonly}
                     className="form-control px-1"
                     style="margin-right: .125rem !important;"
                     onClick={() => {
@@ -97,7 +98,7 @@ export function InputNumber(props: InputNumberProps) {
                 <Minus/>
             </Button>
             <Button variant="primary"
-                    disabled={props.value == props.max || props.disabled}
+                    disabled={props.value == props.max || props.disabled || props.readonly}
                     className="form-control px-1 rounded-right"
                     onClick={() => {
                         if (util.hasValue(props.value) && !isNaN(props.value)) {
