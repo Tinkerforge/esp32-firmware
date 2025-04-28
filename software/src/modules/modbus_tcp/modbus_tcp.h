@@ -60,6 +60,7 @@ private:
     TFModbusTCPExceptionCode setBenderHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values);
 
     ConfigRoot config;
+    ConfigRoot error_counters;
 
     bool started = false;
 

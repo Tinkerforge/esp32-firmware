@@ -151,6 +151,12 @@ void ModbusTCP::pre_setup()
         {"table", Config::Enum(RegisterTable::WARP)},
         {"send_illegal_data_address", Config::Bool(true)}
     });
+
+    error_counters = Config::Object({
+        {"illegal_data_address", Config::Uint32(0)},
+        {"illegal_function", Config::Uint32(0)},
+        {"ignored_illegal_function", Config::Uint32(0)},
+    });
 }
 
 #if MODULE_NFC_AVAILABLE()
@@ -331,8 +337,12 @@ TFModbusTCPExceptionCode ModbusTCP::getWarpInputRegisters(uint16_t start_address
         uint16_t reg = (i + start_address) & (~1);
 
         Option<TwoRegs> opt = this->getWarpInputRegister(reg, &ctx);
-        if (opt.is_none())
+        if (opt.is_none()) {
+            uint32_t counter = error_counters.get("illegal_data_address")->asUint();
+            error_counters.get("illegal_data_address")->updateUint(counter + 1);
+
             return TFModbusTCPExceptionCode::IllegalDataAddress;
+        }
 
         TwoRegs val = opt.unwrap();
 
@@ -414,8 +424,12 @@ TFModbusTCPExceptionCode ModbusTCP::getWarpHoldingRegisters(uint16_t start_addre
         uint16_t reg = (i + start_address) & (~1);
 
         Option<ModbusTCP::TwoRegs> opt = this->getWarpHoldingRegister(reg);
-        if (opt.is_none())
+        if (opt.is_none()) {
+            uint32_t counter = error_counters.get("illegal_data_address")->asUint();
+            error_counters.get("illegal_data_address")->updateUint(counter + 1);
+
             return TFModbusTCPExceptionCode::IllegalDataAddress;
+        }
 
         auto val = opt.unwrap();
 
@@ -489,7 +503,12 @@ TFModbusTCPExceptionCode ModbusTCP::getWarpDiscreteInputs(uint16_t start_address
             case 2104: REQUIRE(meter_phases); result = cache->meter_phases->get("phases_active")->get(1)->asBool(); break;
             case 2105: REQUIRE(meter_phases); result = cache->meter_phases->get("phases_active")->get(2)->asBool(); break;
 
-            default: if (this->send_illegal_data_address) return TFModbusTCPExceptionCode::IllegalDataAddress;
+            default: if (this->send_illegal_data_address) {
+                uint32_t counter = error_counters.get("illegal_data_address")->asUint();
+                error_counters.get("illegal_data_address")->updateUint(counter + 1);
+
+                return TFModbusTCPExceptionCode::IllegalDataAddress;
+            }
         }
 
         if (result)
@@ -526,7 +545,12 @@ TFModbusTCPExceptionCode ModbusTCP::getWarpCoils(uint16_t start_address, uint16_
                         result = cache->evse_gp_output->get("gp_output")->asUint() > 0;
                 } break;
 
-            default: if (this->send_illegal_data_address) return TFModbusTCPExceptionCode::IllegalDataAddress;
+            default: if (this->send_illegal_data_address) {
+                uint32_t counter = error_counters.get("illegal_data_address")->asUint();
+                error_counters.get("illegal_data_address")->updateUint(counter + 1);
+
+                return TFModbusTCPExceptionCode::IllegalDataAddress;
+            }
         }
 
         if (result)
@@ -542,8 +566,13 @@ TFModbusTCPExceptionCode ModbusTCP::getWarpCoils(uint16_t start_address, uint16_
 TFModbusTCPExceptionCode ModbusTCP::setWarpCoils(uint16_t start_address, uint16_t data_count, uint8_t *data_values) {
     FILL_FEATURE_CACHE(evse)
 
-    if (!cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool())
+    // For now returning the wrong exception code is tolerated but we need to discuss it as described in
+    // https://github.com/Tinkerforge/esp32-firmware/issues/404
+    if (!cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool()) {
+        error_counters.get("ignored_illegal_function")->updateUint(error_counters.get("ignored_illegal_function")->asUint() + 1);
+
         return TFModbusTCPExceptionCode::Success;
+    }
 
     int i = 0;
     while (i < data_count) {
@@ -570,7 +599,12 @@ TFModbusTCPExceptionCode ModbusTCP::setWarpCoils(uint16_t start_address, uint16_
                     }
                 } break;
 
-            default: if (this->send_illegal_data_address) return TFModbusTCPExceptionCode::IllegalDataAddress;
+            default: if (this->send_illegal_data_address) {
+                uint32_t counter = error_counters.get("illegal_data_address")->asUint();
+                error_counters.get("illegal_data_address")->updateUint(counter + 1);
+
+                return TFModbusTCPExceptionCode::IllegalDataAddress;
+            }
         }
 
         ++i;
@@ -585,8 +619,13 @@ TFModbusTCPExceptionCode ModbusTCP::setWarpHoldingRegisters(uint16_t start_addre
     FILL_FEATURE_CACHE(phase_switch)
     FILL_FEATURE_CACHE(nfc)
 
-    if (!cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool())
+    // For now returning the wrong exception code is tolerated but we need to discuss it as described in
+    // https://github.com/Tinkerforge/esp32-firmware/issues/404
+    if (!cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool()) {
+        error_counters.get("ignored_illegal_function")->updateUint(error_counters.get("ignored_illegal_function")->asUint() + 1);
+
         return TFModbusTCPExceptionCode::Success;
+    }
 
     bool report_illegal_data_address = false;
 
@@ -599,8 +638,12 @@ TFModbusTCPExceptionCode ModbusTCP::setWarpHoldingRegisters(uint16_t start_addre
         if (i == 0 && (start_address % 2) == 1) {
             val.regs.lower = data_values[i];
             Option<TwoRegs> opt = this->getWarpHoldingRegister(reg);
-            if (opt.is_none())
+            if (opt.is_none()) {
+                uint32_t counter = error_counters.get("illegal_data_address")->asUint();
+                error_counters.get("illegal_data_address")->updateUint(counter + 1);
+
                 return TFModbusTCPExceptionCode::IllegalDataAddress;
+            }
 
             auto old_val = opt.unwrap();
             old_val.u = swapBytes(old_val.u);
@@ -609,8 +652,12 @@ TFModbusTCPExceptionCode ModbusTCP::setWarpHoldingRegisters(uint16_t start_addre
         } else if (i == data_count - 1) {
             val.regs.upper = data_values[i];
             Option<TwoRegs> opt = this->getWarpHoldingRegister(reg);
-            if (opt.is_none())
+            if (opt.is_none()) {
+                uint32_t counter = error_counters.get("illegal_data_address")->asUint();
+                error_counters.get("illegal_data_address")->updateUint(counter + 1);
+
                 return TFModbusTCPExceptionCode::IllegalDataAddress;
+            }
 
             auto old_val = opt.unwrap();
             old_val.u = swapBytes(old_val.u);
@@ -734,15 +781,27 @@ TFModbusTCPExceptionCode ModbusTCP::setWarpHoldingRegisters(uint16_t start_addre
 #endif
     }
 
-    return (this->send_illegal_data_address && report_illegal_data_address) ? TFModbusTCPExceptionCode::IllegalDataAddress : TFModbusTCPExceptionCode::Success;
+    if (this->send_illegal_data_address && report_illegal_data_address) {
+        uint32_t counter = error_counters.get("illegal_data_address")->asUint();
+        error_counters.get("illegal_data_address")->updateUint(counter + 1);
+
+        return TFModbusTCPExceptionCode::IllegalDataAddress;
+    }
+
+    return TFModbusTCPExceptionCode::Success;
 }
 
 TFModbusTCPExceptionCode ModbusTCP::setKebaHoldingRegisters(uint16_t start_address, uint16_t data_count, uint16_t *data_values) {
     FILL_FEATURE_CACHE(evse)
     FILL_FEATURE_CACHE(phase_switch)
 
-    if (!cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool())
+    // For now returning the wrong exception code is tolerated but we need to discuss it as described in
+    // https://github.com/Tinkerforge/esp32-firmware/issues/404
+    if (!cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool()) {
+        error_counters.get("ignored_illegal_function")->updateUint(error_counters.get("ignored_illegal_function")->asUint() + 1);
+
         return TFModbusTCPExceptionCode::Success;
+    }
 
     int i = 0;
     while (i < data_count) {
@@ -778,7 +837,12 @@ TFModbusTCPExceptionCode ModbusTCP::setKebaHoldingRegisters(uint16_t start_addre
                     }
                 } break;
 
-            default: if(this->send_illegal_data_address) return TFModbusTCPExceptionCode::IllegalDataAddress;
+            default: if(this->send_illegal_data_address) {
+                uint32_t counter = error_counters.get("illegal_data_address")->asUint();
+                error_counters.get("illegal_data_address")->updateUint(counter + 1);
+
+                return TFModbusTCPExceptionCode::IllegalDataAddress;
+            }
         }
         ++i;
     }
@@ -790,8 +854,13 @@ TFModbusTCPExceptionCode ModbusTCP::setBenderHoldingRegisters(uint16_t start_add
     FILL_FEATURE_CACHE(evse)
     FILL_FEATURE_CACHE(phase_switch)
 
-    if (!cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool())
+    // For now returning the wrong exception code is tolerated but we need to discuss it as described in
+    // https://github.com/Tinkerforge/esp32-firmware/issues/404
+    if (!cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool()) {
+        error_counters.get("ignored_illegal_function")->updateUint(error_counters.get("ignored_illegal_function")->asUint() + 1);
+
         return TFModbusTCPExceptionCode::Success;
+    }
 
     int i = 0;
     while (i < data_count) {
@@ -801,7 +870,12 @@ TFModbusTCPExceptionCode ModbusTCP::setBenderHoldingRegisters(uint16_t start_add
         switch (reg) {
             case 124: REQUIRE(evse); evse_common.set_modbus_enabled(val == 0); break;
             case 1000: REQUIRE(evse); evse_common.set_modbus_current(val * 1000); break;
-            default: if (this->send_illegal_data_address) return TFModbusTCPExceptionCode::IllegalDataAddress;
+            default: if (this->send_illegal_data_address) {
+                uint32_t counter = error_counters.get("illegal_data_address")->asUint();
+                error_counters.get("illegal_data_address")->updateUint(counter + 1);
+
+                return TFModbusTCPExceptionCode::IllegalDataAddress;
+            }
         }
         ++i;
     }
@@ -820,8 +894,12 @@ TFModbusTCPExceptionCode ModbusTCP::getKebaHoldingRegisters(uint16_t start_addre
         uint16_t reg = (i + start_address) & (~1);
 
         Option<ModbusTCP::TwoRegs> opt = this->getKebaHoldingRegister(reg);
-        if (opt.is_none())
+        if (opt.is_none()) {
+            uint32_t counter = error_counters.get("illegal_data_address")->asUint();
+            error_counters.get("illegal_data_address")->updateUint(counter + 1);
+
             return TFModbusTCPExceptionCode::IllegalDataAddress;
+        }
 
         auto val = opt.unwrap();
 
@@ -919,7 +997,7 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getKebaHoldingRegister(uint16_t reg) {
         case 1600: break; // failsafe
         case 1602: break; // failsafe
 
-        default: if (this->send_illegal_data_address) {logger.printfln_debug("%d", this->send_illegal_data_address); return {};}
+        default: if (this->send_illegal_data_address) {return {};}
     }
 
     return {val};
@@ -1126,6 +1204,9 @@ void ModbusTCP::start_server() {
                     break;
             }
 
+            uint32_t counter = error_counters.get("illegal_function")->asUint();
+            error_counters.get("illegal_function")->updateUint(counter + 1);
+
             return TFModbusTCPExceptionCode::IllegalFunction;
         }
     );
@@ -1192,6 +1273,7 @@ void ModbusTCP::setup()
 void ModbusTCP::register_urls()
 {
     api.addPersistentConfig("modbus_tcp/config", &config);
+    api.addState("modbus_tcp/error_counters", &error_counters);
 }
 
 void ModbusTCP::pre_reboot()
