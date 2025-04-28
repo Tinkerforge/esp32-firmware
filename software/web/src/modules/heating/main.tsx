@@ -617,49 +617,114 @@ export class Heating extends ConfigComponent<'heating/config', {status_ref?: Ref
     }
 }
 
-export class HeatingStatus extends Component<{}, state & sgr_blocking_override & {override_duration: number}>
+const MIN_OVERRIDE_DURATION = 15; // minutes
+
+export class HeatingStatus extends Component<{}, state & sgr_blocking_override & {override_duration: number, override_remaining: number, blocking: boolean}>
 {
-    override_active: boolean;
+    override_remaining_interval: number = undefined;
+
     constructor() {
         super();
 
-        this.override_active = false;
         this.state = {
-            override_duration: 0,
             sgr_blocking: false,
             sgr_extended: false,
             p14enwg: false,
             next_update: 0,
-            override_until: 0
+            override_until: 0,
+            override_duration: MIN_OVERRIDE_DURATION,
+            override_remaining: null,
+            blocking: false,
         };
+
+        util.addApiEventListener("heating/config", () => {
+            let config = API.get("heating/config");
+
+            this.setState({blocking: config.blocking});
+        });
+
         util.addApiEventListener("heating/state", () => {
             this.setState({...API.get("heating/state")});
         });
+
         util.addApiEventListener("heating/sgr_blocking_override", () => {
-            let override_until = API.get("heating/sgr_blocking_override").override_until;
-            if (override_until == 0) {
-                this.override_active = false;
-            } else {
-                this.override_active = true;
+            let sgr_blocking_override = API.get("heating/sgr_blocking_override");
+            let override_remaining: number = null;
+
+            if (sgr_blocking_override.override_until != 0) {
+                override_remaining = this.get_override_remaining();
+
+                if (this.override_remaining_interval === undefined) {
+                    this.override_remaining_interval = setInterval(() => this.setState({override_remaining: this.get_override_remaining()}), 5000);
+                }
+            }
+            else if (this.override_remaining_interval !== undefined) {
+                clearInterval(this.override_remaining_interval);
+                this.override_remaining_interval = undefined;
             }
 
-            this.setState({override_until});
+            this.setState({override_until: sgr_blocking_override.override_until, override_remaining: override_remaining});
         });
+    }
 
-        util.addApiEventListener("rtc/time", () => {
-            if (this.override_active) {
-                this.setState({override_duration: this.state.override_until !== 0 ? this.state.override_until - Math.floor(Date.now() / 1000 / 60) : 0});
-            }
-        });
+    get_override_remaining() {
+        return Math.round(Math.max(0, this.state.override_until - util.get_date_now_1m_update_rate() / 60000));
     }
 
     render() {
         if (!util.render_allowed()) {
-            return <StatusSection name="heating" />
+            return <StatusSection name="heating" />;
         }
 
-
         return <StatusSection name="heating">
+            <FormRow hidden={!this.state.blocking} label={__("heating.content.override_blocking")}>
+                <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    let override_until = 0;
+                    let override_remaining = 0;
+
+                    if (this.state.override_until == 0) {
+                        override_until = Math.round(util.get_date_now_1m_update_rate() / 60000 + this.state.override_duration);
+                        override_remaining = this.state.override_duration;
+                    }
+
+                    await API.save("heating/sgr_blocking_override", {override_until: override_until}, () => "Override heating failed");
+
+                    this.setState({override_until: override_until, override_remaining: override_remaining});
+                }}>
+                    <div className="row mx-n1">
+                        <div className="col px-1">
+                            {this.state.override_until != 0 ?
+                                <InputNumber
+                                    unit={__("heating.content.minutes")}
+                                    value={this.state.override_remaining}
+                                    readonly
+                                /> :
+                                <InputNumber
+                                    disabled={!this.state.sgr_blocking}
+                                    unit={__("heating.content.minutes")}
+                                    value={this.state.override_duration}
+                                    onValue={(v) => this.setState({override_duration: v})}
+                                    min={MIN_OVERRIDE_DURATION}
+                                    max={60}
+                                />}
+                        </div>
+                        <div className="col-auto px-1">
+                            <Button
+                                disabled={!this.state.sgr_blocking && this.state.override_until == 0}
+                                variant={this.state.override_until != 0 ? "warning" : "primary"}
+                                type="submit">
+                                {this.state.override_until != 0 ? __("heating.content.discard_override") : __("heating.content.override")}
+                            </Button>
+                        </div>
+                    </div>
+                    {this.state.sgr_extended/*p14enwg*/ ?
+                        <div class="mt-1 mb-0">{__("heating.content.override_blocked_by_p14enwg")}</div>
+                        : undefined}
+                </form>
+            </FormRow>
             <FormRow label={__("heating.content.sg_ready")} label_muted={__("heating.content.sg_ready_muted")}>
                 <div class="row mx-n1">
                     <div class="col-md-6 px-1">
@@ -679,39 +744,6 @@ export class HeatingStatus extends Component<{}, state & sgr_blocking_override &
                         </div>
                     </div>
                 </div>
-            </FormRow>
-            <FormRow hidden={!this.state.sgr_blocking && !this.override_active} label={__("heating.content.override_blocking")}>
-                <form onSubmit={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    API.save("heating/sgr_blocking_override", {override_until: this.override_active ? 0 : this.state.override_until}, () => "Override heating failed");
-                    this.override_active = !this.override_active;
-                }}>
-                    <div className="row mx-n1">
-                        <div className="col px-1">
-                            <InputNumber
-                                unit={__("heating.content.minutes")}
-                                value={this.state.override_duration}
-                                onValue={(v) => {
-                                    this.setState({
-                                        override_until: v + Math.floor(Date.now() / 1000 / 60),
-                                        override_duration: v,
-                                    })
-                                }}
-                                readonly={this.override_active}
-                                min={15}
-                                max={60}
-                            />
-                        </div>
-                        <div className="col-auto px-1">
-                            <Button
-                                variant={this.override_active ? "warning" : "primary"}
-                                type="submit">
-                                {this.override_active ? __("heating.content.discard_override") : __("heating.content.override")}
-                            </Button>
-                        </div>
-                    </div>
-                </form>
             </FormRow>
         </StatusSection>;
     }
