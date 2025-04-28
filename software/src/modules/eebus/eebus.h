@@ -24,8 +24,10 @@
 #include "ship.h"
 #include <TFJson.h>
 
-#define MAX_SHIP_PEER_REMEMBERED 64 // How man ship peers configured to be remembered
 #define DNS_SD_UUID "Tinkerforge-WARP3-12345"
+#define EEBUS_PEER_FILE "/eebus/peers"
+#define MAX_PEER_REMEMBERED 64 // How man ship peers configured to be remembered
+
 
 class EEBus final : public IModule
 {
@@ -36,16 +38,14 @@ public:
     void register_urls() override;
 
 
-    Config ship_peer_prototye;
-    ConfigRoot add_ship_peer;
-    ConfigRoot remove_ship_peer;
+    Config config_peers_prototype;
     ConfigRoot config;
     ConfigRoot state;
-    ConfigRoot peers; // TODO: Merge this into config once i figure out the frontend
+    
     Ship ship;
 
 private:
-    std::vector<ShipNode> peers;
-    void update_peers();
+    void cleanup_peers();
+    void update_peers_config();
 
 };
