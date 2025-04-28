@@ -149,7 +149,8 @@ void ModbusTCP::pre_setup()
         {"enable", Config::Bool(false)},
         {"port", Config::Uint16(502)},
         {"table", Config::Enum(RegisterTable::WARP)},
-        {"send_illegal_data_address", Config::Bool(true)}
+        {"send_illegal_data_address", Config::Bool(true)},
+        {"ignore_writes", Config::Bool(false)}
     });
 
     error_counters = Config::Object({
@@ -566,12 +567,15 @@ TFModbusTCPExceptionCode ModbusTCP::getWarpCoils(uint16_t start_address, uint16_
 TFModbusTCPExceptionCode ModbusTCP::setWarpCoils(uint16_t start_address, uint16_t data_count, uint8_t *data_values) {
     FILL_FEATURE_CACHE(evse)
 
-    // For now returning the wrong exception code is tolerated but we need to discuss it as described in
-    // https://github.com/Tinkerforge/esp32-firmware/issues/404
-    if (!cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool()) {
+    bool read_only = !cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool();
+    if (read_only && config.get("ignore_writes")->asBool()) {
         error_counters.get("ignored_illegal_function")->updateUint(error_counters.get("ignored_illegal_function")->asUint() + 1);
 
         return TFModbusTCPExceptionCode::Success;
+    } else if (read_only) {
+        uint32_t counter = error_counters.get("illegal_function")->asUint();
+        error_counters.get("illegal_function")->updateUint(counter + 1);
+        return TFModbusTCPExceptionCode::IllegalFunction;
     }
 
     int i = 0;
@@ -619,12 +623,15 @@ TFModbusTCPExceptionCode ModbusTCP::setWarpHoldingRegisters(uint16_t start_addre
     FILL_FEATURE_CACHE(phase_switch)
     FILL_FEATURE_CACHE(nfc)
 
-    // For now returning the wrong exception code is tolerated but we need to discuss it as described in
-    // https://github.com/Tinkerforge/esp32-firmware/issues/404
-    if (!cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool()) {
+    bool read_only = !cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool();
+    if (read_only && config.get("ignore_writes")->asBool()) {
         error_counters.get("ignored_illegal_function")->updateUint(error_counters.get("ignored_illegal_function")->asUint() + 1);
 
         return TFModbusTCPExceptionCode::Success;
+    } else if (read_only) {
+        uint32_t counter = error_counters.get("illegal_function")->asUint();
+        error_counters.get("illegal_function")->updateUint(counter + 1);
+        return TFModbusTCPExceptionCode::IllegalFunction;
     }
 
     bool report_illegal_data_address = false;
@@ -795,12 +802,15 @@ TFModbusTCPExceptionCode ModbusTCP::setKebaHoldingRegisters(uint16_t start_addre
     FILL_FEATURE_CACHE(evse)
     FILL_FEATURE_CACHE(phase_switch)
 
-    // For now returning the wrong exception code is tolerated but we need to discuss it as described in
-    // https://github.com/Tinkerforge/esp32-firmware/issues/404
-    if (!cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool()) {
+    bool read_only = !cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool();
+    if (read_only && config.get("ignore_writes")->asBool()) {
         error_counters.get("ignored_illegal_function")->updateUint(error_counters.get("ignored_illegal_function")->asUint() + 1);
 
         return TFModbusTCPExceptionCode::Success;
+    } else if (read_only) {
+        uint32_t counter = error_counters.get("illegal_function")->asUint();
+        error_counters.get("illegal_function")->updateUint(counter + 1);
+        return TFModbusTCPExceptionCode::IllegalFunction;
     }
 
     int i = 0;
@@ -854,12 +864,15 @@ TFModbusTCPExceptionCode ModbusTCP::setBenderHoldingRegisters(uint16_t start_add
     FILL_FEATURE_CACHE(evse)
     FILL_FEATURE_CACHE(phase_switch)
 
-    // For now returning the wrong exception code is tolerated but we need to discuss it as described in
-    // https://github.com/Tinkerforge/esp32-firmware/issues/404
-    if (!cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool()) {
+    bool read_only = !cache->has_feature_evse || !cache->evse_slots->get(CHARGING_SLOT_MODBUS_TCP)->get("active")->asBool();
+    if (read_only && config.get("ignore_writes")->asBool()) {
         error_counters.get("ignored_illegal_function")->updateUint(error_counters.get("ignored_illegal_function")->asUint() + 1);
 
         return TFModbusTCPExceptionCode::Success;
+    } else if (read_only) {
+        uint32_t counter = error_counters.get("illegal_function")->asUint();
+        error_counters.get("illegal_function")->updateUint(counter + 1);
+        return TFModbusTCPExceptionCode::IllegalFunction;
     }
 
     int i = 0;

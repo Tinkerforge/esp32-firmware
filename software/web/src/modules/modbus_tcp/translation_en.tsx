@@ -8,7 +8,8 @@ let x = {
         },
         "content": {
             "disabled": "Disabled",
-            "read_only": "Read access only",
+            "read_only": "Read access only (error on writes)",
+            "ignore_writes": "Read access only (ignore writes)",
             "full_access": "Read/write access",
             "table": "Register table",
             "warp": "WARP Charger",

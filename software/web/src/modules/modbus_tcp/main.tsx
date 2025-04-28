@@ -89,11 +89,12 @@ export class ModbusTCP extends ConfigComponent<'modbus_tcp/config', {}, config> 
                         <InputSelect items={[
                             ["0", __("modbus_tcp.content.disabled")],
                             ["1", __("modbus_tcp.content.read_only")],
-                            ["2", __("modbus_tcp.content.full_access")],
+                            ["2", __("modbus_tcp.content.ignore_writes")],
+                            ["3", __("modbus_tcp.content.full_access")],
                         ]}
-                        value={this.state.enable && this.state.evse_enable ? "2" : this.state.enable ? "1" : "0"}
+                        value={this.state.enable && this.state.evse_enable ? "3" : this.state.enable && this.state.ignore_writes ? "2" : this.state.enable ? "1" : "0"}
                         onValue={(v) => {
-                            this.setState({enable: Number(v) != 0, evse_enable: v == "2"});
+                            this.setState({enable: Number(v) != 0, evse_enable: v === "3", ignore_writes: v === "2"});
                         }}/>
                     </FormRow>
                     <FormRow label={__("modbus_tcp.content.port")} label_muted={__("modbus_tcp.content.port_muted")}>

@@ -8,7 +8,8 @@ let x = {
         },
         "content": {
             "disabled": "Deaktiviert",
-            "read_only": "Nur Lesezugriff",
+            "read_only": "Nur Lesezugriff (Fehler bei Schreibzugriff)",
+            "ignore_writes": "Nur Lesezugriff (Schreibzugriffe ignorieren)",
             "full_access": "Lese-/Schreibzugriff",
             "table": "Registertabelle",
             "warp": "WARP Charger",
