@@ -29,6 +29,7 @@ import { InputSelect } from "../../ts/components/input_select";
 import { InputText } from "../../ts/components/input_text";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
+import { Table } from "../../ts/components/table";
 import { Share2 } from "react-feather";
 
 export function EEBusNavbar() {
@@ -40,8 +41,9 @@ type EEBusConfig = API.getType["eebus/config"];
 export class EEBus extends ConfigComponent<'eebus/config', {}> {
     constructor() {
         super('eebus/config',
-              () => __("mqtt.script.save_failed"),
-              () => __("mqtt.script.reboot_content_changed"));
+            // TODO: Remove mqtt dependencies
+            () => __("mqtt.script.save_failed"),
+            () => __("mqtt.script.reboot_content_changed"));
     }
 
     render(props: {}, state: Readonly<EEBusConfig>) {
@@ -61,28 +63,42 @@ export class EEBus extends ConfigComponent<'eebus/config', {}> {
                 <ConfigForm id="eebus_config_form" title="EEBUS" isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormRow label={__("eebus.content.cert")}>
                         <InputSelect items={[
-                                ["-1", __("eebus.content.no_cert")],
-                            ].concat(certs) as [string, string][]
-                            }
+                            ["-1", __("eebus.content.no_cert")],
+                        ].concat(certs) as [string, string][]
+                        }
                             value={state.cert_id}
-                            onValue={(v) => this.setState({cert_id: parseInt(v)})}
+                            onValue={(v) => this.setState({ cert_id: parseInt(v) })}
                             disabled={cert_state == null}
                             required={state.key_id != -1}
                         />
                     </FormRow>
                     <FormRow label={__("eebus.content.key")}>
                         <InputSelect items={[
-                                ["-1", __("eebus.content.no_cert")],
-                            ].concat(certs) as [string, string][]
-                            }
+                            ["-1", __("eebus.content.no_cert")],
+                        ].concat(certs) as [string, string][]
+                        }
                             value={state.key_id}
-                            onValue={(v) => this.setState({key_id: parseInt(v)})}
+                            onValue={(v) => this.setState({ key_id: parseInt(v) })}
                             disabled={cert_state == null}
                             required={state.cert_id != -1}
                         />
                     </FormRow>
                     <FormRow label={__("eebus.content.ski")}>
-                        <InputText value={ski}/>
+                        <InputText value={ski} />
+                    </FormRow>
+                    <FormRow label={__("eebus.content.peers")}>
+                        <Table columnNames={[__("eebus.content.model_model"), __("eebus.content.model_brand"), __("eebus.content.ski") ]} 
+                        rows={
+                            state.peers.map((peer) => {
+                                return {
+                                    columnValues: [
+                                    peer.model_model,
+                                    peer.model_brand,
+                                    peer.ski
+                                    ]
+                                }
+                            })
+                        } />
                     </FormRow>
                 </ConfigForm>
             </SubPage>
