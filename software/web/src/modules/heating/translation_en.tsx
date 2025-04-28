@@ -123,8 +123,7 @@ let x = {
             "control_period_muted": "Period in which the cheapest hours for the extended and the most expensive hours for the blocking operation are determined. The better the storage capacity of the building, the larger the periods can be chosen."
         },
         "script": {
-            "save_failed": "Failed to save the heating settings",
-            "reboot_content_changed": "heating settings"
+            "save_failed": "Failed to save the heating settings"
         }
     }
 }

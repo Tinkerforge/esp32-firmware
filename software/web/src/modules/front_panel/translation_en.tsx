@@ -28,8 +28,7 @@ let x = {
             "unconfigured": "unconfigured"
         },
         "script": {
-            "save_failed": "Failed to save the display settings",
-            "reboot_content_changed": "display settings"
+            "save_failed": "Failed to save the display settings"
         }
     }
 }

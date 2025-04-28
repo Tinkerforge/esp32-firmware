@@ -124,8 +124,7 @@ let x = {
             "control_period_muted": "Zeitraum in dem die günstigsten Stunden für den erweiterten und die teuersten Stunden für den blockierenden Betrieb bestimmt werden. Je besser die Speicherfähigkeit des Gebäudes, umso größer können die Zeiträume gewählt werden."
         },
         "script": {
-            "save_failed": "Speichern der Heizungseinstellungen fehlgeschlagen",
-            "reboot_content_changed": "Heizungseinstellungen"
+            "save_failed": "Speichern der Heizungseinstellungen fehlgeschlagen"
         }
     }
 }
