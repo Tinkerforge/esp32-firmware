@@ -103,22 +103,16 @@ void Heating::register_urls()
         task_scheduler.cancel(this->override_task_id);
 
         // Override the timeout to force sg_ready to switch instantly
-        const uint8_t min_hold_time = config.get("min_hold_time")->asUint();
-        const uint32_t now = rtc.timestamp_minutes();
-        if (now > min_hold_time) {
-            last_sg_ready_change = now - min_hold_time - 2;
-        }
+        last_sg_ready_change = 0;
         this->update();
 
         uint32_t override_until = sgr_blocking_override.get("override_until")->asUint();
         if (override_until > 0) {
-            const millis_t timeout = millis_t((uint64_t)(override_until - now) * 1000 * 60);
+            const millis_t timeout = millis_t((uint64_t)(override_until - rtc.timestamp_minutes()) * 1000 * 60);
             this->override_task_id = task_scheduler.scheduleOnce([this]() {
-                const uint8_t min_hold_time_lambda = config.get("min_hold_time")->asUint();
-                const uint32_t now_lambda = rtc.timestamp_minutes();
-                if (now_lambda > min_hold_time_lambda) {
-                    last_sg_ready_change = now_lambda - min_hold_time_lambda - 2;
-                }
+
+                // Override the timeout to force sg_ready to switch instantly
+                last_sg_ready_change = 0;
                 this->sgr_blocking_override.get("override_until")->updateUint(0);
                 this->update();
             }, timeout);
