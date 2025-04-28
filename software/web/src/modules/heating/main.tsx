@@ -628,7 +628,7 @@ export class HeatingStatus extends Component<{}, state & sgr_blocking_override &
             override_duration: 0,
             sgr_blocking: false,
             sgr_extended: false,
-            p14ewng_enable: false,
+            p14enwg: false,
             next_update: 0,
             override_until: 0
         };

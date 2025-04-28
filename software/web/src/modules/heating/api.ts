@@ -21,7 +21,7 @@ export interface config {
 export interface state {
     sgr_blocking: boolean;
     sgr_extended: boolean;
-    p14ewng_enable: boolean;
+    p14enwg: boolean;
     next_update: number;
 }
 
