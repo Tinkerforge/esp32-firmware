@@ -888,6 +888,23 @@ de_hyph = [
     "Aus-füh-rungs",
     "ver-trau-ens-wür-dig",
     "zu-rück-ge-wech-selt",
+    "Ein-rich-tung",
+    "pri-o-ri-siert",
+    "Fahr-zeug-la-de-vor-gang",
+    "Strom-zäh-ler-num-mer",
+    "Haus-kraft-werk",
+    "vor-ge-nom-me-nen",
+    "be-ein-flus-sen",
+    "voll-stän-dig",
+    "ei-gen-stän-dig",
+    "vor-zu-neh-men",
+    "fehl-ge-schla-gen-en",
+    "De-zi-mal-zahl",
+    "kom-ma-ge-trennt",
+    "kom-ma-ge-trenn-te",
+    "De-zi-mal-zah-len",
+    "Blo-ckie-ren-den",
+    "um-schal-ten",
 ]
 
 en_hyph = [
@@ -1118,6 +1135,10 @@ en_hyph = [
     "Tin-ker-forge",
     "Pre-sum-ably",
     "con-tain-ing",
+    "pri-or-i-tiz-ing",
+    "Haus-kraft-werk",
+    "in-de-pen-dent-ly",
+
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
@@ -1230,4 +1251,5 @@ allowed_missing = set([
     "firmware_version",
     "installed_version",
     'meter_all_values',
+    "chargemanagement",
 ])
