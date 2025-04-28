@@ -99,24 +99,27 @@ void Heating::register_urls()
     // We dont want a persistent config since we dont want to save this across reboots.
     // This is why the config is build manually here.
     api.addState("heating/sgr_blocking_override", &sgr_blocking_override);
-    api.addCommand("heating/sgr_blocking_override_update", &sgr_blocking_override, {}, [this](String){
+    api.addCommand("heating/sgr_blocking_override_update", &sgr_blocking_override, {}, [this](String &/*errmsg*/) {
         task_scheduler.cancel(this->override_task_id);
-
-        // Override the timeout to force sg_ready to switch instantly
-        last_sg_ready_change = 0;
-        this->update();
+        this->override_task_id = 0;
 
         uint32_t override_until = sgr_blocking_override.get("override_until")->asUint();
-        if (override_until > 0) {
-            const millis_t timeout = millis_t((uint64_t)(override_until - rtc.timestamp_minutes()) * 1000 * 60);
-            this->override_task_id = task_scheduler.scheduleOnce([this]() {
+        uint32_t now = rtc.timestamp_minutes();
 
-                // Override the timeout to force sg_ready to switch instantly
-                last_sg_ready_change = 0;
-                this->sgr_blocking_override.get("override_until")->updateUint(0);
-                this->update();
-            }, timeout);
+        if (override_until <= now) {
+            return;
         }
+
+        // Override the timeout to force sg_ready to switch instantly
+        this->last_sg_ready_change = 0;
+        this->update();
+
+        const millis_t timeout = millis_t((uint64_t)(override_until - now) * 1000 * 60);
+        this->override_task_id = task_scheduler.scheduleOnce([this]() {
+            this->sgr_blocking_override.get("override_until")->updateUint(0);
+            this->last_sg_ready_change = 0;
+            this->update();
+        }, timeout);
     }, true);
 
     api.addCommand("heating/toggle_sgr_blocking", Config::Null(), {}, [this](String &err) {
