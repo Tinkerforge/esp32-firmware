@@ -648,7 +648,7 @@
 - Improve remote access registration UI
 - Improve add meter modal UI
 - Only show meter plot on status page if meter is connected
-- Fix charge manager not detecting vehicle as full if charge did start with an A -> C transition (through EVSE Bricklet firmware 2.2.6)
+- Fix charge manager not detecting vehicle as full if charge did start with an A -> C transition (through EVSE 2.0 Bricklet firmware 2.2.6)
 
 2024-12-02: 2.6.2 (120d8bd2)
 - Add passive battery storage support for PV excess charging
