@@ -304,12 +304,6 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
             .catch(err => util.add_alert("download-charge-log", "danger", () => __("charge_tracker.script.download_charge_log_failed"), err));
     }
 
-    override async sendReset(t: "charge_tracker/config") {
-        super.sendReset(t);
-
-        await util.upload(new Blob([""]), "/charge_tracker/letterhead");
-    }
-
     override async isSaveAllowed(cfg: ChargeTrackerConfig) {
         let allowed = cfg.electricity_price == 0 || cfg.electricity_price >= 100;
         allowed = allowed && this.state.pdf_text.length <= 512;
