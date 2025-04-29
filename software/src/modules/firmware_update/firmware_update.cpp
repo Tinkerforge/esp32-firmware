@@ -64,11 +64,17 @@
 static_assert(signature_sodium_public_key_length == crypto_sign_PUBLICKEYBYTES);
 #endif
 
+#if defined(FIRMWARE_UPDATE_ENABLE_ROLLBACK) && FIRMWARE_UPDATE_ENABLE_ROLLBACK
+static const bool enable_rollback = true;
+#else
+static const bool enable_rollback = false;
+#endif
+
 // override weakly linked arduino-esp32 function to stop arduino-esp32
 // initArduino() from calling esp_ota_mark_app_valid_cancel_rollback()
 extern "C" bool verifyRollbackLater()
 {
-    return true;
+    return enable_rollback;
 }
 
 static const char *get_esp_ota_img_state_name(esp_ota_img_states_t ota_state)
@@ -275,9 +281,11 @@ void FirmwareUpdate::setup()
 
     read_app_partition_state();
 
-    task_scheduler.scheduleOnce([this]() {
-        change_running_partition_from_pending_verify_to_valid();
-    }, 5_min);
+    if (enable_rollback) {
+        task_scheduler.scheduleOnce([this]() {
+            change_running_partition_from_pending_verify_to_valid();
+        }, 5_min);
+    }
 
     initialized = true;
 }
