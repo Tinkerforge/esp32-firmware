@@ -136,3 +136,4 @@
 - Disable gratuitous ARP
 - Disable trusting sender of IP packets for ARP
 - Disable TLS elliptic curves smaller than the required default of 256
+- Allow up to 2kb of HTTP request headers
