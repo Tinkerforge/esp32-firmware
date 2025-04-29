@@ -38,7 +38,6 @@ import { useMemo } from "preact/hooks";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { BatteryCharging, Calendar, Clock, Download, User, List } from "react-feather";
-import { useEffect } from "react";
 
 export function ChargeTrackerNavbar() {
     return <NavbarItem name="charge_tracker" module="charge_tracker" title={__("charge_tracker.navbar.charge_tracker")} symbol={<List />} />;
@@ -149,12 +148,6 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
             let conf = API.get('charge_tracker/config');
             this.setState({electricity_price: conf.electricity_price});
         });
-
-        // set pdf_text since it is otherwise undefined
-        this.state = {
-            ...this.state,
-            pdf_text: "",
-        };
     }
 
     get_last_charges(charges: Readonly<Charge[]>, price: number) {
@@ -305,28 +298,12 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
     }
 
     override async isSaveAllowed(cfg: ChargeTrackerConfig) {
-        let allowed = cfg.electricity_price == 0 || cfg.electricity_price >= 100;
-        allowed = allowed && this.state.pdf_text.length <= 512;
-        return allowed;
-    }
-
-    override async sendSave(t: "charge_tracker/config",cfg: ChargeTrackerConfig) {
-        await util.upload(new Blob([this.state.pdf_text]), "/charge_tracker/letterhead");
-
-        super.sendSave(t, cfg);
+        return cfg.electricity_price == 0 || cfg.electricity_price >= 100
     }
 
     render(props: {}, state: Readonly<ChargeTrackerState> & ChargeTrackerConfig) {
         if (!util.render_allowed())
             return <SubPage name="charge_tracker" />;
-
-        const that = this;
-        useEffect(() => {
-            util.download("/charge_tracker/letterhead").then(async (blob) => {
-                let text = await blob.text();
-                that.setState({pdf_text: text});
-            })
-        }, []);
 
         // TODO show hint that day ahead prices are not used here!
 
@@ -396,13 +373,12 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 <Collapse in={state.file_type == "0"}>
                     <div>
                         <FormRow label={__("charge_tracker.content.pdf_text")} label_muted={__("charge_tracker.content.pdf_text_muted")}>
-                            <textarea name="letterhead" class="text-monospace form-control" id="letterhead" value={state.pdf_text} onInput={(e) => {
+                            <textarea name="test" class="text-monospace form-control" id="test" value={state.pdf_text} onInput={(e) => {
                                 let value = (e.target as HTMLInputElement).value;
                                 if (new Blob([value]).size < 500)
                                     this.setState({pdf_text: value});
                                 else
                                     this.setState({pdf_text: state.pdf_text});
-                                this.setDirty(true);
                             }} cols={30} rows={6}/>
                         </FormRow>
 

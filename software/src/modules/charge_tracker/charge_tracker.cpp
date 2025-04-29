@@ -28,9 +28,6 @@
 #include "tools/fs.h"
 #include "pdf_charge_log.h"
 
-#define PDF_LETTERHEAD "charge_tracker/letterhead.txt"
-#define LETTERHEAD_MAX_SIZE 512
-
 struct [[gnu::packed]] ChargeStart {
     uint32_t timestamp_minutes = 0;
     float meter_start = 0.0f;
@@ -1134,45 +1131,5 @@ search_done:
         free(display_name_cache);
         logger.printfln("PDF generation done.");
         return request.endChunkedResponse();
-    });
-
-    server.on_HTTPThread("/charge_tracker/letterhead", HTTP_GET, [this](WebServerRequest request) {
-        char buf[LETTERHEAD_MAX_SIZE + 1] = {0};
-
-        if (!LittleFS.exists("/charge_tracker/letterhead.txt")) {
-            return request.send(200, "text/plain", "", 0);
-        }
-
-        File file = LittleFS.open("/charge_tracker/letterhead.txt");
-        size_t file_size = file.size();
-        if (file_size > LETTERHEAD_MAX_SIZE) {
-            return request.send(507);
-        }
-
-        size_t read = file.read((uint8_t *)buf, file_size);
-        if (read != file_size) {
-            return request.send(500, "text/plain", "Failed to read letterhead");
-        }
-        return request.send(200, "text/plain", buf, file_size);
-    });
-
-    server.on_HTTPThread("/charge_tracker/letterhead", HTTP_POST, [this](WebServerRequest request) {
-        char buf[LETTERHEAD_MAX_SIZE + 1] = {0};
-
-        if (request.contentLength() > LETTERHEAD_MAX_SIZE) {
-            return request.send(413);
-        }
-
-        int received = request.receive(buf, request.contentLength());
-        if (received < 0) {
-            return request.send(500, "text/plain", "Failed to receive request payload");
-        }
-
-        File file = LittleFS.open("/charge_tracker/letterhead.txt", "w", true);
-        int written = file.write((uint8_t *)buf, received);
-        if (written < 0 || written != received) {
-            return request.send(500, "text/plain", "Failed to write letterhead");
-        }
-        return request.send(200, "text/plain", "OK");
     });
 }
