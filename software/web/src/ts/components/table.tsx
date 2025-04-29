@@ -62,6 +62,8 @@ export interface TableProps {
     onAddStart?: never;
     onAddCommit?: never;
     onAddAbort?: never;
+    invalid?: boolean;
+    invalidFeedback?: string;
 }
 
 interface TableState {
@@ -110,7 +112,7 @@ export class Table extends Component<TableProps, TableState> {
     render(props: TableProps, state: TableState) {
         return (
             <>
-                <Card className={`d-none d-${props.tableTill ? props.tableTill : 'sm'}-block`}><Card.Body style="padding: 0;">
+                <Card className={`d-none d-${props.tableTill ? props.tableTill : 'sm'}-block`} style={props.invalid ? "border-color: red;" : undefined}><Card.Body style="padding: 0;">
                 <table class="table" style="font-size: 1rem; margin-bottom: 0;">
                     {props.columnNames.filter((name) => name.length > 0).length > 0 ?
                         <thead>
@@ -259,7 +261,7 @@ export class Table extends Component<TableProps, TableState> {
                         </Card></>
                     })}
                     {props.onAddShow ?
-                    <Card className="mb-0">
+                    <Card className="mb-0" style={props.invalid ? "border-color: red;" : ""}>
                         <div class="card-body d-flex justify-content-between align-items-center p-2d5">
                             <span class="text-break" style="font-size: 1rem;">{props.addMessage}</span>
                             <div style="white-space: nowrap; vertical-align: middle;">
@@ -278,6 +280,7 @@ export class Table extends Component<TableProps, TableState> {
                     </Card>
                     : undefined}
                 </div>
+                {props.invalid ? <p style="color: red;" class="mt-1">{props.invalidFeedback}</p> : undefined}
 
                 <ItemModal
                     onCheck={async () => {
