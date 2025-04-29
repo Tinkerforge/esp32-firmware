@@ -6,8 +6,7 @@
 - Add missing error translations
 
 2021-02-08: 1.0.2 (96e71e1b)
-- Make sure start_charging does nothing if autostart is disabled and no car is connected
-  (through EVSE Bricklet firmware 2.0.2)
+- Make sure start_charging does nothing if autostart is disabled and no vehicle is connected (through EVSE Bricklet firmware 2.0.2)
 
 2021-02-10: 1.0.3 (ddbc8e9a)
 - Fix communication timing issue with Bricklets
@@ -15,8 +14,7 @@
 - Don't add 0 measurements if communicating with the energy meter fails
 
 2021-02-17: 1.1.0 (18c1e717)
-- Allow connected car during initial calibration
-  (through EVSE Bricklet firmware 2.0.4)
+- Allow connected vehicle during initial calibration (through EVSE Bricklet firmware 2.0.4)
 - Automatically reload after a reboot or firmware update
 - Show warning if the connection to the charger is lost
 - Fix MQTT connection issue with static IP configuration
@@ -249,7 +247,7 @@
 - Add host name resolution to charge manager
 - Add staged factory reset via front panel button
 - Allow renaming the unknown user
-- Make sure to ignore button press if car is not charging (through EVSE Bricklet firmware 2.1.4)
+- Make sure to ignore button press if vehicle is not charging (through EVSE Bricklet firmware 2.1.4)
 - Improve CP/PE resistance calculation (through EVSE Bricklet firmware 2.1.4)
 - Add minimum delay of 30s between error and charging states (through EVSE Bricklet firmware 2.1.4)
 - Improve recovery page

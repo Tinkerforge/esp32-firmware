@@ -123,7 +123,7 @@
 - Fix log spam of Modbus timeouts
 - Fix multiple remote access bugs
 - Increase CP disconnect time to minimum 5 seconds (through EVSE 2.0 Bricklet firmware 2.2.7)
-- Wait up to 10 seconds for a car to react after a phase switch (through EVSE 2.0 Bricklet firmware 2.2.7)
+- Wait up to 10 seconds for a vehicle to react after a phase switch (through EVSE 2.0 Bricklet firmware 2.2.7)
 - Allow instant phase switch if contactor was not yet closed once or CP was disconnected (through EVSE 2.0 Bricklet firmware 2.2.7)
 - Fix glitch after 30 second CP disconnect (through EVSE 2.0 Bricklet firmware 2.2.7)
 
@@ -136,7 +136,7 @@
 2024-12-05: 2.6.5 (cd50d3be)
 - Fix external current slot blocking after firmware update
 - Fix managed chargers not being found via mDNS resolve anymore
-- Fix unnecessary phase switches on managed chargers if car is full
+- Fix unnecessary phase switches on managed chargers if vehicle is full
 - Fix phase display on managed chargers
 - Fix zero line being drawn on axis labels
 
