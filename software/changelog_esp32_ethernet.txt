@@ -137,3 +137,26 @@
 - Disable trusting sender of IP packets for ARP
 - Disable TLS elliptic curves smaller than the required default of 256
 - Allow up to 2kb of HTTP request headers
+
+2025-04-29: 2.1.0 (<unknown>)
+- Close network connections before reboot
+- Sign firmware updates
+- Fix focus loss when starting to edit device display name
+- Fix localization of names of downloaded files
+- Fix long SSIDs overflowing the web interface layout
+- Show error message if recovery page failed to start factory reset
+- Add system language setting
+- Use browser's preferred language for login page translation
+- Don't attempt to connect to servers if no network connection is available
+- Improve time keeping between RTCs, NTP and other time sources
+- Fix missing web interface alert texts
+- Fix WiFi scan results with unexpected characters
+- Fix Caps Lock detection of password inputs
+- Add device info to web interface menu bottom
+- Disconnect least recently active web interface if all connections are in use and a new web interface connects
+- Don't allow setting the web interface listen port to an "unsafe" port
+- Fix colors of disabled inputs in web interface
+- Speed up debug report (trace log) download
+- Update core software libraries (ESP-IDF 5.4 and arduino-esp32 3.2)
+- Update timezone database
+- Improve translations
