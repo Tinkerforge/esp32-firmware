@@ -929,6 +929,7 @@ de_hyph = [
     "La-de-elek-tro-ni-ken",
     "kurz-zei-ti-ge",
     "Be-gren-zung",
+    "Kon-tin-gent",
 ]
 
 en_hyph = [
