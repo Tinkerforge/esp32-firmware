@@ -763,7 +763,7 @@
 2025-04-04: 2.7.7 (61deb81d)
 - Remote Access: Fix crash when downloading debug report (trace log)
 
-2025-04-29: 2.8.0 (<unknown>)
+2025-04-29: 2.8.0 (e30e579b)
 - Automatically detect unstable firmware updates and rollback to previous firmware
 - Modbus TCP: Add support for SAX Power Home
 - Modbus TCP: Add support for E3/DC Hauskraftwerk
