@@ -138,7 +138,7 @@
 - Disable TLS elliptic curves smaller than the required default of 256
 - Allow up to 2kb of HTTP request headers
 
-2025-04-29: 2.1.0 (<unknown>)
+2025-04-29: 2.1.0 (c1c34bd5)
 - Close network connections before reboot
 - Sign firmware updates
 - Fix focus loss when starting to edit device display name
