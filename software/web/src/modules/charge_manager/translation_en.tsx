@@ -92,6 +92,7 @@ let x = {
             "table_charger_rotation": "Phase rotation",
 
             "add_charger_title": "Add charger",
+            "add_charger_invalid_feedback": "At least one charger must be configured.",
             "add_charger_name": "Display name",
             "add_charger_host": "Hostname or IP address",
             "add_charger_found": "Discovered chargers",

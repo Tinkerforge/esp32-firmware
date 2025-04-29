@@ -92,6 +92,7 @@ let x = {
             "table_charger_rotation": "Phasenrotation",
 
             "add_charger_title": "Wallbox hinzufügen",
+            "add_charger_invalid_feedback": "Es muss mindestens eine Wallbox konfiguriert werden.",
             "add_charger_name": "Anzeigename",
             "add_charger_host": "Hostname oder IP-Adresse",
             "add_charger_found": "Gefundene Wallboxen",

@@ -46,6 +46,7 @@ interface ChargersState {
     managementEnabled: boolean
     showExpert: boolean
     scanResult: Readonly<ScanCharger[]>
+    invalid: boolean
 //#if MODULE_EM_PHASE_SWITCHER_AVAILABLE
     emCharger: API.getType['em_phase_switcher/charger_config']
     emConfig: API.getType['energy_manager/config']
@@ -97,6 +98,11 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
             this.setState({emConfig: ev.data});
         });
 //#endif
+
+        this.state = {
+            ...this.state,
+            invalid: false,
+        };
     }
 
     addScanResults(result: ScanCharger[]) {
@@ -154,6 +160,11 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
 
     override async isSaveAllowed(cfg: ChargeManagerConfig): Promise<boolean> {
         if (API.hasModule("em_phase_switcher") && this.state.managementEnabled && cfg.chargers.length != 1) {
+            return false;
+        }
+
+        if (API.hasModule("em_common") && this.state.enable_charge_manager && cfg.chargers.length === 0) {
+            this.setState({invalid: true});
             return false;
         }
 
@@ -386,6 +397,8 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
 
         let chargers = <FormRow label={__("charge_manager.content.managed_boxes")}>
                     <Table
+                        invalid={this.state.invalid}
+                        invalidFeedback={__("charge_manager.content.add_charger_invalid_feedback")}
                         columnNames={[__("charge_manager.content.table_charger_name"), __("charge_manager.content.table_charger_host"), __("charge_manager.content.table_charger_rotation")]}
                         rows={state.chargers.map((charger, i) =>
                             { return {
@@ -509,7 +522,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                             </FormRow>
                         </>]}
                         onAddSubmit={async () => {
-                            this.setState({chargers: state.chargers.concat(state.addCharger)});
+                            this.setState({chargers: state.chargers.concat(state.addCharger), invalid: false});
                             this.setDirty(true);
                         }}
                         onAddHide={async () => {
