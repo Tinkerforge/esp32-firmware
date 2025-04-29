@@ -44,7 +44,7 @@ let x = {
             "ap_disabled": "Deaktiviert",
             "ap_ssid": "Netzwerkname (SSID)",
             "ap_hide_ssid": "Netzwerkname versteckt",
-            "ap_hide_ssid_desc": /*FFN*/(bssid: string) => <>{__("The_device")} ist unter der BSSID {bssid} erreichbar.</>/*NF*/,
+            "ap_hide_ssid_desc": "Einige Geräte können versteckte WLANs auf Kanal 12 und 13 nicht finden.",
             "ap_passphrase": "Passphrase",
             "ap_channel": "Kanal",
             "ap_channel_muted": "ignoriert, wenn WLAN-Verbindung aktiv ist",

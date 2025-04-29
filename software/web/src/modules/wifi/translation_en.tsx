@@ -44,7 +44,7 @@ let x = {
             "ap_disabled": "Disabled",
             "ap_ssid": "Network name (SSID)",
             "ap_hide_ssid": "Network name hidden",
-            "ap_hide_ssid_desc": /*FFN*/(bssid: string) => <>{__("The_device")} is reachable under the BSSID {bssid}.</>/*NF*/,
+            "ap_hide_ssid_desc": "Some devices cannot find hidden WiFis on channels 12 and 13.",
             "ap_passphrase": "Passphrase",
             "ap_channel": "Channel",
             "ap_channel_muted": "ignored if WiFi connection is active",
