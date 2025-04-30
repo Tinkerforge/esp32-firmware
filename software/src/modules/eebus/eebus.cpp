@@ -42,6 +42,11 @@ void EEBus::pre_setup()
         {"state", Config::Uint8(0)},
     });
 
+    state_connections_prototype = Config::Object({
+        {"ski", Config::Str("", 0, 64)},
+        {"ship_state", Config::Str("", 0, 64)},
+    });
+
     config = ConfigRoot{Config::Object({
                             {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
                             {"key_id", Config::Int(-1, -1, MAX_CERT_ID)},
@@ -66,6 +71,7 @@ void EEBus::pre_setup()
                                            Config::type_id<Config::ConfObject>())},
                         }),
                         [this](Config &config, ConfigSource source) -> String {
+                            
                             return "";
                         }};
     add_peer = ConfigRoot{Config::Object({{"ip", Config::Str("", 0, 64)},
@@ -93,9 +99,20 @@ void EEBus::pre_setup()
                                  }
                                  return "";
                              }};
+
+    
+
     state = Config::Object({
         {"ski", Config::Str("", 0, 64)},
-        {"connections", Config::Uint16(0)},
+        {"connections", Config::Array(
+            {Config::Object({
+                {"ski", Config::Str("", 0, 64)},
+                {"ship_state", Config::Str("", 0, 64)},
+            })},
+            &state_connections_prototype,
+            0,
+            MAX_PEER_REMEMBERED,
+            Config::type_id<Config::ConfObject>())},
     });
 
     ship.pre_setup();
@@ -104,13 +121,14 @@ void EEBus::pre_setup()
 void EEBus::setup()
 {
     api.restorePersistentConfig("eebus/config", &config);
-    //api.restorePersistentConfig("eebus/peers", &peers);
     update_peers_config();
 
     // All peers are unknown at startup
     for(size_t i= 0; i < config.get("peers")->count(); i++) {
        config.get("peers")->get(i)->get("state")->updateUint(0);
     }
+
+    state.get("connections")->removeAll();
 
     task_scheduler.scheduleWithFixedDelay(
         [this]() {
@@ -131,6 +149,8 @@ void EEBus::register_urls()
     api.addPersistentConfig("eebus/config", &config);
     api.addState("eebus/state", &state);
 
+
+    
 
     api.addCommand(
         "eebus/addPeer",
@@ -189,6 +209,7 @@ void EEBus::register_urls()
         },
         true);
   
+    // Yes i realize this is not the best way
     server.on("/eebus/scan", HTTP_PUT, [this](WebServerRequest request) {
         if (ship.discovery_state == Ship_Discovery_State::SCANNING) {
             return request.send(200, "text/plain; charset=utf-8", "scan in progress");
@@ -202,14 +223,21 @@ void EEBus::register_urls()
             ship.discovery_state = Ship_Discovery_State::READY;
             return request.send(200, "text/plain; charset=utf-8", "scan error");
         }
-
         return request.send(200, "text/plain; charset=utf-8", "scan done");
     });
 
     ship.setup();
 }
 
-
+int EEBus::get_connection_id_by_ski(const String &ski)
+{
+    for (size_t i = 0; i < state.get("connections")->count(); i++) {
+        if (state.get("connections")->get(i)->get("ski")->asString() == ski) {
+            return i;
+        }
+    }
+    return -1;
+}
 
 void EEBus::update_peers_config()
 {

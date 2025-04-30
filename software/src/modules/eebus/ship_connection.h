@@ -142,15 +142,18 @@ public:
     std::unique_ptr<Message, decltype(std::free) *> message_outgoing = std::unique_ptr<Message, decltype(std::free) *>((Message*)heap_caps_calloc_prefer(sizeof(Message), sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_free);
 
     // Set the ws_client, role and start the state machine that will branch into ClientWait or ServerWait depending on the role
-    ShipConnection(WebSocketsClient ws_client, Role role) : ws_client(ws_client), role(role) { state_machine_next_step(); }
+    ShipConnection(WebSocketsClient ws_client, Role role, CoolString ski) : ws_client(ws_client), role(role), peer_ski(ski) { state_machine_next_step(); }
     WebSocketsClient ws_client;
     Role role;
+    CoolString peer_ski = "";
 
 
     State state = State::CmiInitStart;
     State previous_state = State::CmiInitStart;
     SubState sub_state = SubState::Init;
     uint64_t timeout_task = 0;
+
+    
 
 
     // Implement operator== so that we can easily remove ShipConnections from the vector in Ship

@@ -32,7 +32,7 @@ extern EEBus eebus;
 
 void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
 {
-
+    
     // TODO: Does the ws_client implement some kind of keepalive? Like sending ping/pong frames? Otherwise we need to implement something like that here
     if (ws_pkt->fragmented) {
         logger.printfln("ShipConnection ws_frame_received: fragmented %d, final %d", ws_pkt->fragmented, ws_pkt->final);
@@ -288,6 +288,14 @@ void ShipConnection::state_machine_next_step()
             state_is_not_implemented();
             break;
     }
+    int state_id = eebus.get_connection_id_by_ski(peer_ski);
+    if (state_id == -1) {
+        eebus.state.get("connections")->add()->get("ski")->updateString(peer_ski);
+        state_id = eebus.get_connection_id_by_ski(peer_ski);
+    }
+    eebus.state.get("connections")->get(state_id)->get("ship_state")->updateString(get_state_name(state));
+    
+    
 }
 
 void ShipConnection::state_cme_init_start()

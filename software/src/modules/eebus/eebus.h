@@ -39,13 +39,15 @@ public:
 
 
     Config config_peers_prototype;
+    Config state_connections_prototype;
     ConfigRoot add_peer;
     ConfigRoot remove_peer;
     ConfigRoot config;
-    ConfigRoot state;
-
-    
+    ConfigRoot state;    
     Ship ship;
+
+    int get_connection_id_by_ski(const String &ski);
+    
 
 private:
     void update_peers_config();
