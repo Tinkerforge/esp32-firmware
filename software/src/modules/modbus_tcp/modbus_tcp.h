@@ -44,6 +44,7 @@ private:
     void start_server();
     void stop_server();
     void fillCache();
+    bool check_read_only(TFModbusTCPExceptionCode *result);
 
     TFModbusTCPExceptionCode getWarpCoils(uint16_t start_address, uint16_t data_count, uint8_t *data_values);
     TFModbusTCPExceptionCode getWarpDiscreteInputs(uint16_t start_address, uint16_t data_count, uint8_t *data_values);
