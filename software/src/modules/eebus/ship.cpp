@@ -26,7 +26,7 @@
 #include "module_dependencies.h"
 #include "tools.h"
 
-//#define SHIP_USE_INTERNAL_CERTS
+#define SHIP_USE_INTERNAL_CERTS
 
 #ifdef SHIP_USE_INTERNAL_CERTS
 // .crt, .key und the corresponding SKI for testing
@@ -158,6 +158,8 @@ void Ship::setup_wss()
         logger.printfln("Error starting server: %d", ret);
     }
 
+    
+
     web_sockets.onConnect_HTTPThread([this](WebSocketsClient ws_client) {
         struct sockaddr_in6 addr;
         socklen_t addr_len = sizeof(addr);
@@ -223,7 +225,7 @@ void Ship::setup_mdns()
 Ship_Discovery_State Ship::discover_ship_peers()
 {   
     if (discovery_state == Ship_Discovery_State::SCANNING) {
-        return Ship_Discovery_State::SCANNING;
+        return discovery_state;
     }
     discovery_state = Ship_Discovery_State::SCANNING;
     logger.printfln("discover_mdns start");
@@ -241,7 +243,7 @@ Ship_Discovery_State Ship::discover_ship_peers()
         discovery_state = Ship_Discovery_State::SCAN_DONE;
         return discovery_state;
     }
-
+    mdns_results.clear();
     while (results) {
         ShipNode ship_node;
         ship_node.dns_name = results->hostname;
@@ -284,7 +286,9 @@ Ship_Discovery_State Ship::discover_ship_peers()
             }
             results->addr = results->addr->next;
         }
+
         mdns_results.push_back(ship_node);
+        
         results = results->next;
     }
 
