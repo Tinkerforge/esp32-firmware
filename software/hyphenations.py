@@ -930,6 +930,7 @@ de_hyph = [
     "kurz-zei-ti-ge",
     "Be-gren-zung",
     "Kon-tin-gent",
+    "ver-steck-te",
 ]
 
 en_hyph = [
