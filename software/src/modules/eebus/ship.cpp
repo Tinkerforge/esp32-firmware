@@ -165,11 +165,20 @@ void Ship::setup_wss()
         socklen_t addr_len = sizeof(addr);
         getpeername(ws_client.fd, (struct sockaddr *)&addr, &addr_len);
         char client_ip[INET6_ADDRSTRLEN];
+  
         inet_ntop(AF_INET6, &addr.sin6_addr, client_ip, sizeof(client_ip));
-
-        logger.printfln("WebSocketsClient connected from %s:%d", client_ip, ntohs(addr.sin6_port));
-
-        ship_connections.push_back(ShipConnection{ws_client, ShipConnection::Role::Server});        
+     
+        CoolString peer_ski = "unknown";
+        std::string peer_ip = client_ip;
+        
+        for (size_t i = 0; i < eebus.config.get("peers")->count(); i++) {
+            if (peer_ip.find(eebus.config.get("peers")->get(i)->get("ip")->asString().c_str()) != std::string::npos) {
+                peer_ski = eebus.config.get("peers")->get(i)->get("ski")->asString();
+                break;
+            }
+        }
+        logger.printfln("WebSocketsClient connected from %s:%d with SKI %s", client_ip, ntohs(addr.sin6_port), peer_ski.c_str());
+        ship_connections.push_back(ShipConnection{ws_client, ShipConnection::Role::Server, peer_ski});        
         logger.printfln("WebSocketClient connected");
 
         return true;

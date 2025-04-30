@@ -13,6 +13,11 @@ interface Peer {
     state: number;
 }
 
+interface Connection {
+    ski: string;
+    ship_state: string;
+}
+
 export interface addPeer {
     ski: string;
     trusted: boolean;
@@ -32,9 +37,12 @@ export interface config {
     peers: Peer[];
 }
 
+
+
 export interface state {
     ski: string;
-    connections: number;
+    connections: Connection[];
+
 }
 
 export interface scan {
