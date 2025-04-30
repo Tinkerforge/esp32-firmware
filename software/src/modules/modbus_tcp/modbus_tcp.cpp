@@ -156,7 +156,7 @@ void ModbusTCP::pre_setup()
     error_counters = Config::Object({
         {"illegal_data_address", Config::Uint32(0)},
         {"illegal_function", Config::Uint32(0)},
-        {"ignored_illegal_function", Config::Uint32(0)},
+        {"ignored_write", Config::Uint32(0)},
     });
 }
 
@@ -1253,8 +1253,8 @@ bool ModbusTCP::check_read_only(TFModbusTCPExceptionCode *result)
     if (config.get("ignore_writes")->asBool()) {
         *result = TFModbusTCPExceptionCode::Success;
 
-        auto ignored_illegal_function = error_counters.get("ignored_illegal_function");
-        ignored_illegal_function->updateUint(ignored_illegal_function->asUint() + 1);
+        auto ignored_write = error_counters.get("ignored_write");
+        ignored_write->updateUint(ignored_write->asUint() + 1);
     }
     else {
         *result = TFModbusTCPExceptionCode::IllegalFunction;
