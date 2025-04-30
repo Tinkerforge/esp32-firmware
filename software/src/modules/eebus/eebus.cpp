@@ -85,6 +85,14 @@ void EEBus::pre_setup()
                           }};
 
     add_peer.set_permit_null_updates(false);
+
+    remove_peer = ConfigRoot{Config::Object({{"ski", Config::Str("", 0, 64)}}),
+                             [this](Config &remove_peer, ConfigSource source) -> String {
+                                 if (remove_peer.get("ski")->asString().isEmpty()) {
+                                     return "Can't remove peer. Ski is missing.";
+                                 }
+                                 return "";
+                             }};
     state = Config::Object({
         {"ski", Config::Str("", 0, 64)},
         {"connections", Config::Uint16(0)},
@@ -97,8 +105,12 @@ void EEBus::setup()
 {
     api.restorePersistentConfig("eebus/config", &config);
     //api.restorePersistentConfig("eebus/peers", &peers);
-    cleanup_peers();
     update_peers_config();
+
+    // All peers are unknown at startup
+    for(size_t i= 0; i < config.get("peers")->count(); i++) {
+       config.get("peers")->get(i)->get("state")->updateUint(0);
+    }
 
     task_scheduler.scheduleWithFixedDelay(
         [this]() {
@@ -115,6 +127,7 @@ void EEBus::setup()
 
 void EEBus::register_urls()
 {
+    
     api.addPersistentConfig("eebus/config", &config);
     api.addState("eebus/state", &state);
 
@@ -124,24 +137,58 @@ void EEBus::register_urls()
         &add_peer,
         {"ip", "port", "trusted", "dns_name", "wss_path", "ski"},
         [this](String &errmsg) {
-            logger.printfln("Adding ship peer");
-            update_peers_config();
+            if (!errmsg.isEmpty()) {
+                logger.printfln("Error adding or Updating peer: %s", errmsg.c_str());
+                return;
+            }
+            Config::Wrap peer = nullptr;
+            bool found = false;
+            for (size_t i = 0; i < config.get("peers")->count(); i++) {
+                auto p = config.get("peers")->get(i);
+                if (p->get("ski")->asString() == add_peer.get("ski")->asString()) {
+                    peer = p;
+                    found = true;
+                    logger.printfln("Updating ship peer %s with ip %s", peer->get("ski")->asString().c_str(), peer->get("ip")->asString().c_str());
+                    break;
+                }
+            }
+            if (!found) {
+                peer = config.get("peers")->add();
+                logger.printfln("Adding ship peer %s with ip %s", peer->get("ski")->asString().c_str(), peer->get("ip")->asString().c_str());
+            }
+            peer->get("ip")->updateString(add_peer.get("ip")->asString());
+            peer->get("port")->updateUint(add_peer.get("port")->asUint());
+            peer->get("trusted")->updateBool(add_peer.get("trusted")->asBool());
+            peer->get("dns_name")->updateString(add_peer.get("dns_name")->asString());
+            peer->get("wss_path")->updateString(add_peer.get("wss_path")->asString());
+            peer->get("ski")->updateString(add_peer.get("ski")->asString());            
+            api.writeConfig("eebus/config", &config);
+            
         },
         true);
 
-    //api.addPersistentConfig("eebus/peers", &peers);
-
-    /*api.addCommand(
-        "eebus/peers/add",
-        &add_ship_peer,
-        //TODO: Here we should set the parameters required, How can i set optional parameters?
-        {},
-        [this](String & errmsg) {
-            logger.printfln("Adding ship peer");
+    api.addCommand(
+        "eebus/removePeer",
+        &remove_peer,
+        {"ski"},
+        [this](String &errmsg) {
+            if (!errmsg.isEmpty()) {
+                logger.printfln("Error removing peer: %s", errmsg.c_str());
+                return;
+            }
+            for (size_t i = 0; i < config.get("peers")->count(); i++) {
+                auto peer = config.get("peers")->get(i);
+                if (peer->get("ski")->asString() == remove_peer.get("ski")->asString()) {
+                    logger.printfln("Removing ship peer %s with ip %s", peer->get("ski")->asString().c_str(), peer->get("ip")->asString().c_str()); 
+                    config.get("peers")->remove(i);
+                    break;
+                }
+            }
+            api.writeConfig("eebus/config", &config);
+            
         },
         true);
-*/
-
+  
     server.on("/eebus/scan", HTTP_PUT, [this](WebServerRequest request) {
         if (ship.discovery_state == Ship_Discovery_State::SCANNING) {
             return request.send(200, "text/plain; charset=utf-8", "scan in progress");
@@ -162,24 +209,18 @@ void EEBus::register_urls()
     ship.setup();
 }
 
-void EEBus::cleanup_peers()
-{
-    uint16_t cleanup_count = 0;
-    for (size_t i = 0; i < config.get("peers")->count(); i++) {
-        auto peer = config.get("peers")->get(i);
-        if (peer->get("trusted")->asBool() == false) {
-            config.get("peers")->remove(i);
-            i--;
-            cleanup_count++;
-        }
-    }
-    logger.printfln("Cleanup peers: Removed %d untrusted peers", cleanup_count);
-}
+
 
 void EEBus::update_peers_config()
 {
     size_t currently_configured_count = config.get("peers")->count();
     logger.printfln("Updating peers to config");
+
+    for (size_t i= 0; i< config.get("peers")->count(); i++) {
+        if(config.get("peers")->get(i)->get("ski")->asString().isEmpty() || config.get("peers")->get(i)->get("ski")->asString().length() < 1) {
+            config.get("peers")->remove(i);
+        }
+    }
 
     for (ShipNode node : ship.mdns_results) {
         bool found = false;
@@ -188,6 +229,7 @@ void EEBus::update_peers_config()
             auto peer = config.get("peers")->get(i);
             if (peer->get("ski")->asString() == node.txt_ski) {
                 peer->get("port")->updateUint(node.port);
+                peer->get("ip")->updateString(node.ip_addresses[0].toString());
                 peer->get("dns_name")->updateString(node.dns_name);
                 peer->get("id")->updateString(node.txt_id);
                 peer->get("wss_path")->updateString(node.txt_wss_path);
@@ -196,9 +238,13 @@ void EEBus::update_peers_config()
                 peer->get("model_brand")->updateString(node.txt_brand);
                 peer->get("model_model")->updateString(node.txt_model);
                 peer->get("mode_type")->updateString(node.txt_type);
+                if (peer->get("state")->asUint() != (uint32_t)NodeState::Connected) {
+                    peer->get("state")->updateUint((uint32_t)NodeState::Discovered);
+                }
                 found = true;
                 break;
             }
+
         }
         // Add new peer
         if (!found) {
@@ -219,7 +265,3 @@ void EEBus::update_peers_config()
     }
 }
 
-void EEBus::pre_reboot()
-{
-    cleanup_peers();
-}

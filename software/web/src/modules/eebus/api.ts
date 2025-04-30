@@ -22,6 +22,10 @@ export interface addPeer {
     wss_path: string;
 }
 
+export interface removePeer {
+    ski: string;
+}
+
 export interface config {
     cert_id: number;
     key_id: number;
