@@ -84,7 +84,7 @@ public:
     void pre_setup();
     void setup();
     void remove(const ShipConnection &ship_connection);
-    Ship_Discovery_State scan_skis();
+    Ship_Discovery_State discover_ship_peers();
     void print_skis(StringBuilder *sb);
 
     ConfigRoot config;

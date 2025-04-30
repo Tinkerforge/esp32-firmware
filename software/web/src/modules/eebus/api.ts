@@ -13,6 +13,15 @@ interface Peer {
     state: number;
 }
 
+export interface addPeer {
+    ski: string;
+    trusted: boolean;
+    ip: string;
+    port: number;
+    dns_name: string;
+    wss_path: string;
+}
+
 export interface config {
     cert_id: number;
     key_id: number;
@@ -22,4 +31,7 @@ export interface config {
 export interface state {
     ski: string;
     connections: number;
+}
+
+export interface scan {
 }
