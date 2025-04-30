@@ -27,7 +27,7 @@
 #define DNS_SD_UUID "Tinkerforge-WARP3-12345"
 #define EEBUS_PEER_FILE "/eebus/peers"
 #define MAX_PEER_REMEMBERED 64 // How man ship peers configured to be remembered
-
+#define SHIP_AUTODISCOVER_INTERVAL 30_s // How often to autodiscover ship peers
 
 class EEBus final : public IModule
 {

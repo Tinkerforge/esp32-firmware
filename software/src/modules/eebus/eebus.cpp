@@ -68,24 +68,23 @@ void EEBus::pre_setup()
                         [this](Config &config, ConfigSource source) -> String {
                             return "";
                         }};
-    add_peer = ConfigRoot{Config::Object({
-        {"ip", Config::Str("", 0, 64)},
-        {"port", Config::Uint16(0)},
-        {"trusted", Config::Bool(false)},
-        {"dns_name", Config::Str("", 0, 64)},
-        {"wss_path", Config::Str("", 0, 64)},
-        {"ski", Config::Str("", 0, 64)}
-    }), [this](Config &add_peer, ConfigSource source) -> String {
-        if (add_peer.get("ski")->asString().isEmpty()) {
-            return "Can't add peer. Ski is missing.";
-        }
-        if (config.get("peers")->count() == MAX_PEER_REMEMBERED) {
-            return "Can't add peer. Already have the maximum number of peers.";
-        }
-        return "";
-    }};
+    add_peer = ConfigRoot{Config::Object({{"ip", Config::Str("", 0, 64)},
+                                          {"port", Config::Uint16(0)},
+                                          {"trusted", Config::Bool(false)},
+                                          {"dns_name", Config::Str("", 0, 64)},
+                                          {"wss_path", Config::Str("", 0, 64)},
+                                          {"ski", Config::Str("", 0, 64)}}),
+                          [this](Config &add_peer, ConfigSource source) -> String {
+                              if (add_peer.get("ski")->asString().isEmpty()) {
+                                  return "Can't add peer. Ski is missing.";
+                              }
+                              if (config.get("peers")->count() == MAX_PEER_REMEMBERED) {
+                                  return "Can't add peer. Already have the maximum number of peers.";
+                              }
+                              return "";
+                          }};
 
-
+    add_peer.set_permit_null_updates(false);
     state = Config::Object({
         {"ski", Config::Str("", 0, 64)},
         {"connections", Config::Uint16(0)},
@@ -100,7 +99,17 @@ void EEBus::setup()
     //api.restorePersistentConfig("eebus/peers", &peers);
     cleanup_peers();
     update_peers_config();
-    
+
+    task_scheduler.scheduleWithFixedDelay(
+        [this]() {
+            if (ship.discovery_state == Ship_Discovery_State::READY) {
+                ship.discover_ship_peers();
+                update_peers_config();
+            }
+        },
+        SHIP_AUTODISCOVER_INTERVAL,
+        SHIP_AUTODISCOVER_INTERVAL);
+
     initialized = true;
 }
 
@@ -108,6 +117,17 @@ void EEBus::register_urls()
 {
     api.addPersistentConfig("eebus/config", &config);
     api.addState("eebus/state", &state);
+
+
+    api.addCommand(
+        "eebus/addPeer",
+        &add_peer,
+        {"ip", "port", "trusted", "dns_name", "wss_path", "ski"},
+        [this](String &errmsg) {
+            logger.printfln("Adding ship peer");
+            update_peers_config();
+        },
+        true);
 
     //api.addPersistentConfig("eebus/peers", &peers);
 
@@ -126,7 +146,7 @@ void EEBus::register_urls()
         if (ship.discovery_state == Ship_Discovery_State::SCANNING) {
             return request.send(200, "text/plain; charset=utf-8", "scan in progress");
         }
-        if (ship.discovery_state == Ship_Discovery_State::READY) {
+        if (ship.discovery_state == Ship_Discovery_State::READY || ship.discovery_state == Ship_Discovery_State::SCAN_DONE) {
             ship.discover_ship_peers();
             update_peers_config();
             return request.send(200, "text/plain; charset=utf-8", "scan started");
@@ -199,7 +219,7 @@ void EEBus::update_peers_config()
     }
 }
 
-
-void EEBus::pre_reboot() {
+void EEBus::pre_reboot()
+{
     cleanup_peers();
 }

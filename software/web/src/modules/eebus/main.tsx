@@ -44,7 +44,7 @@ type EEBusStateType = API.getType["eebus/state"];
 
 interface EEBusState {
     addPeer: EEBusAddPeer;
-    state: EEBusStateType;
+    state: Readonly<EEBusStateType>;
 }
 
 export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
@@ -99,13 +99,13 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                     <FormRow label={__("eebus.content.ski")}>
                         <InputText value={ski} />
                     </FormRow>
-                    <FormRow label={__("eebus.content.peers")}>
+                    <FormRow label={__("eebus.content.peer_info.peers")}>
                         <Table
                             columnNames={[
-                                __("eebus.content.model_model"),
-                                __("eebus.content.model_brand"),
-                                __("eebus.content.device_ip"),
-                                __("eebus.content.device_trusted")]}
+                                __("eebus.content.peer_info.model_model"),
+                                __("eebus.content.peer_info.model_brand"),
+                                __("eebus.content.peer_info.device_ip"),
+                                __("eebus.content.peer_info.device_trusted")]}
                             rows={
                                 state.peers.map((peer) => {
                                     return {
@@ -113,7 +113,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             peer.model_model,
                                             peer.model_brand,
                                             peer.ip,
-                                            peer.trusted ? __("eebus.content.trusted_yes") : __("eebus.content.trusted_no")
+                                            peer.trusted ? __("eebus.content.peer_info.trusted_yes") : __("eebus.content.peer_info.trusted_no")
                                         ],
                                         fieldValues: [
                                             peer.model_model,
@@ -121,23 +121,54 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             peer.ip,
                                             peer.trusted
                                         ],
-                                        editTitle: __("eebus.content.edit_peer_title"),
+                                        editTitle: __("eebus.content.peer_info.edit_peer_title"),
                                         onEditShow: async () => this.setState({ addPeer: { ski: peer.ski, trusted: peer.trusted, ip: peer.ip, port: peer.port, dns_name: peer.dns_name, wss_path: peer.wss_path } }),
                                         onEditGetChildren: () => [
                                             <>
                                                 <FormRow label={__("eebus.content.ski")}>
                                                     <InputText
                                                         value={state.addPeer.ski}
+                                                        onValue={(v) => this.setState({ addPeer: { ...state.addPeer, ski: v } })}
+                                                        required
                                                     />
                                                 </FormRow>
-                                                <FormRow label={__("eebus.content.device_trusted")}>
+                                                <FormRow label={__("eebus.content.peer_info.device_trusted")}>
                                                     <InputSelect items={[
-                                                        ["0", __("eebus.content.trusted_no")],
-                                                        ["1", __("eebus.content.trusted_yes")]
+                                                        ["0", __("eebus.content.peer_info.trusted_no")],
+                                                        ["1", __("eebus.content.peer_info.trusted_yes")]
                                                     ]} value={state.addPeer.trusted ? "1" : "0"} onValue={(v) => this.setState({ addPeer: { ...state.addPeer, trusted: v == "1" } })} />
                                                 </FormRow>
+                                                <FormRow label={__("eebus.content.peer_info.device_ip")}>
+                                                    <InputText
+                                                        value={state.addPeer.ip}
+                                                        onValue={(v) => this.setState({ addPeer: { ...state.addPeer, ip: v } })}
+                                                        required
+                                                    />
+                                                </FormRow>
+                                                <FormRow label={__("eebus.content.peer_info.device_port")}>
+                                                    <InputText
+                                                        value={state.addPeer.port}
+                                                        onValue={(v) => this.setState({ addPeer: { ...state.addPeer, port: parseInt(v) } })}
+                                                        required
+                                                    />
+                                                </FormRow>
+                                                <FormRow label={__("eebus.content.peer_info.dns_name")}>
+                                                    <InputText
+                                                        value={state.addPeer.dns_name}
+                                                        onValue={(v) => this.setState({ addPeer: { ...state.addPeer, dns_name: v } })}
+                                                        required
+                                                    />
+                                                </FormRow>
+                                                <FormRow label={__("eebus.content.peer_info.wss_path")}>
+                                                    <InputText
+                                                        value={state.addPeer.wss_path}
+                                                        onValue={(v) => this.setState({ addPeer: { ...state.addPeer, wss_path: v } })}
+                                                        required
+                                                    />
+                                                </FormRow>
                                             </>
-                                        ]
+                                        ],
+                                        removeEnabled: false,
 
                                     }
                                 })
@@ -148,13 +179,50 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                             onAddShow={async () => { }}
                             onAddGetChildren={() => [<>
                                 <FormRow label={__("eebus.content.ski")}>
-                                    <InputText value={""} />
+                                    <InputText
+                                        value={""}
+                                        onValue={(v) => this.setState({ addPeer: { ...state.addPeer, ski: v } })}
+                                        required
+                                    />
                                 </FormRow>
-                                <FormRow label={__("eebus.content.device_trusted")}>
+                                <FormRow label={__("eebus.content.peer_info.device_trusted")}>
                                     <InputSelect items={[
-                                        ["0", __("eebus.content.trusted_no")],
-                                        ["1", __("eebus.content.trusted_yes")]
-                                    ]} value={""} onValue={() => { }} />
+                                        ["0", __("eebus.content.peer_info.trusted_no")],
+                                        ["1", __("eebus.content.peer_info.trusted_yes")]
+                                    ]}
+                                        value={"1"}
+                                        onValue={(v) => this.setState({ addPeer: { ...state.addPeer, trusted: v == "1" } })}
+                                        required
+
+                                    />
+                                </FormRow>
+                                <FormRow label={__("eebus.content.peer_info.device_ip")}>
+                                    <InputText
+                                        value={""}
+                                        onValue={(v) => this.setState({ addPeer: { ...state.addPeer, ip: v } })}
+                                        required
+                                    />
+                                </FormRow>
+                                <FormRow label={__("eebus.content.peer_info.device_port")}>
+                                    <InputText
+                                        value={"4815"}
+                                        onValue={(v) => this.setState({ addPeer: { ...state.addPeer, port: parseInt(v) } })}
+                                        required
+                                    />
+                                </FormRow>
+                                <FormRow label={__("eebus.content.peer_info.dns_name")}>
+                                    <InputText
+                                        value={""}
+                                        onValue={(v) => this.setState({ addPeer: { ...state.addPeer, dns_name: v } })}
+                                        required
+                                    />
+                                </FormRow>
+                                <FormRow label={__("eebus.content.peer_info.wss_path")}>
+                                    <InputText
+                                        value={"/ship/"}
+                                        onValue={(v) => this.setState({ addPeer: { ...state.addPeer, wss_path: v } })}
+                                        required
+                                    />
                                 </FormRow>
                             </>]}
                         />
