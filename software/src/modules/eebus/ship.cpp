@@ -26,7 +26,7 @@
 #include "module_dependencies.h"
 #include "tools.h"
 
-#define SHIP_USE_INTERNAL_CERTS
+//#define SHIP_USE_INTERNAL_CERTS
 
 #ifdef SHIP_USE_INTERNAL_CERTS
 // .crt, .key und the corresponding SKI for testing
@@ -220,7 +220,7 @@ void Ship::setup_mdns()
     logger.printfln("setup_mdns done");
 }
 
-Ship_Discovery_State Ship::scan_skis()
+Ship_Discovery_State Ship::discover_ship_peers()
 {   
     if (discovery_state == Ship_Discovery_State::SCANNING) {
         return Ship_Discovery_State::SCANNING;

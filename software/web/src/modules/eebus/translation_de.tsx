@@ -12,10 +12,15 @@ let x = {
             "dns_name": "DNS Addresse",
             "device_ip": "IP Addresse",
             "device_port": "Port",
-            "device_trusted": "Vertraut",
+            "device_trusted": "Verbindung erlaubt",
             "model_brand": "Hersteller",
             "model_model": "Gerät",
-            "model_type": "Gerätetype"
+            "model_type": "Gerätetype",
+            "search_peers": "Detektiere EEBUS Geräte",
+            "add_peers": "SKI Hinzufügen",
+            "trusted_no": "Nein",
+            "trusted_yes": "Ja",
+            "edit_peer_title": "Bearbeiten"
         },
         "script": {
             "save_failed": "Speichern der EEBUS-Einstellungen fehlgeschlagen.",

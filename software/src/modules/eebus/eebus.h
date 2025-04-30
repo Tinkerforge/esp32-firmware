@@ -36,11 +36,14 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void pre_reboot() override;
 
 
     Config config_peers_prototype;
+    ConfigRoot add_peer;
     ConfigRoot config;
     ConfigRoot state;
+
     
     Ship ship;
 

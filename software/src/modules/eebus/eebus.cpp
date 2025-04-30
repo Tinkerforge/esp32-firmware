@@ -68,6 +68,23 @@ void EEBus::pre_setup()
                         [this](Config &config, ConfigSource source) -> String {
                             return "";
                         }};
+    add_peer = ConfigRoot{Config::Object({
+        {"ip", Config::Str("", 0, 64)},
+        {"port", Config::Uint16(0)},
+        {"trusted", Config::Bool(false)},
+        {"dns_name", Config::Str("", 0, 64)},
+        {"wss_path", Config::Str("", 0, 64)},
+        {"ski", Config::Str("", 0, 64)}
+    }), [this](Config &add_peer, ConfigSource source) -> String {
+        if (add_peer.get("ski")->asString().isEmpty()) {
+            return "Can't add peer. Ski is missing.";
+        }
+        if (config.get("peers")->count() == MAX_PEER_REMEMBERED) {
+            return "Can't add peer. Already have the maximum number of peers.";
+        }
+        return "";
+    }};
+
 
     state = Config::Object({
         {"ski", Config::Str("", 0, 64)},
@@ -83,7 +100,7 @@ void EEBus::setup()
     //api.restorePersistentConfig("eebus/peers", &peers);
     cleanup_peers();
     update_peers_config();
-
+    
     initialized = true;
 }
 
@@ -99,26 +116,24 @@ void EEBus::register_urls()
         &add_ship_peer,
         //TODO: Here we should set the parameters required, How can i set optional parameters?
         {},
-        [this](String & /*errmsg) {
+        [this](String & errmsg) {
             logger.printfln("Adding ship peer");
         },
         true);
 */
-    api.addCommand(
-        "eebus/discover_devices",
-        Config::Null(),
-        {},
-        [this](String & /*errmsg*/) {
-            ship.scan_skis();
-            update_peers_config();
-        },
-        true);
-    server.on("/eebus/discovered_devices", HTTP_GET, [this](WebServerRequest request) {
-        if (ship.discovery_state != Ship_Discovery_State::SCANNING) {
+
+    server.on("/eebus/scan", HTTP_PUT, [this](WebServerRequest request) {
+        if (ship.discovery_state == Ship_Discovery_State::SCANNING) {
             return request.send(200, "text/plain; charset=utf-8", "scan in progress");
         }
-        if (ship.discovery_state != Ship_Discovery_State::READY) {
-            return request.send(200, "text/plain; charset=utf-8", "no scan done yet");
+        if (ship.discovery_state == Ship_Discovery_State::READY) {
+            ship.discover_ship_peers();
+            update_peers_config();
+            return request.send(200, "text/plain; charset=utf-8", "scan started");
+        }
+        if (ship.discovery_state == Ship_Discovery_State::ERROR) {
+            ship.discovery_state = Ship_Discovery_State::READY;
+            return request.send(200, "text/plain; charset=utf-8", "scan error");
         }
 
         return request.send(200, "text/plain; charset=utf-8", "scan done");
@@ -129,13 +144,16 @@ void EEBus::register_urls()
 
 void EEBus::cleanup_peers()
 {
+    uint16_t cleanup_count = 0;
     for (size_t i = 0; i < config.get("peers")->count(); i++) {
         auto peer = config.get("peers")->get(i);
         if (peer->get("trusted")->asBool() == false) {
             config.get("peers")->remove(i);
             i--;
+            cleanup_count++;
         }
     }
+    logger.printfln("Cleanup peers: Removed %d untrusted peers", cleanup_count);
 }
 
 void EEBus::update_peers_config()
@@ -179,4 +197,9 @@ void EEBus::update_peers_config()
             peer->get("state")->updateUint((uint32_t)NodeState::Discovered);
         }
     }
+}
+
+
+void EEBus::pre_reboot() {
+    cleanup_peers();
 }

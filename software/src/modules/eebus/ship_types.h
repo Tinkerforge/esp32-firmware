@@ -21,7 +21,7 @@
 
 #include "module.h"
 #include "config.h"
-#include <ArduinoJson.h>
+#include <TFJson.h>
 
 #define SHIP_TYPES_MAX_JSON_SIZE 8192 // TODO: What is a sane value here?
 
