@@ -8,19 +8,22 @@ let x = {
             "ski": "SKI",
             "no_cert": "Not used",
             "unknown": "Unknown",
-            "peers": "EEBUS-Partner",
-            "dns_name": "DNS Addresse",
-            "device_ip": "IP Addresse",
-            "device_port": "Port",
-            "device_trusted": "Vertraut",
-            "model_brand": "Hersteller",
-            "model_model": "Geraet",
-            "model_type": "Gerätetype",
             "search_peers": "Detektiere EEBUS Geräte",
             "add_peers": "SKI Hinzufügen",
-            "trusted_no": "Nein",
-            "trusted_yes": "Ja",
-            "edit_peer_title": "Bearbeiten"
+            "peer_info": {
+                "peers": "EEBUS-Partner",
+                "dns_name": "DNS Addresse",
+                "device_ip": "IP Addresse",
+                "device_port": "Port",
+                "device_trusted": "Vertraut",
+                "model_brand": "Hersteller",
+                "model_model": "Geraet",
+                "model_type": "Gerätetype",
+                "trusted_no": "Nein",
+                "trusted_yes": "Ja",
+                "edit_peer_title": "Bearbeiten",
+                "wss_path": "WSS Pfad"
+            }
         },
         "script": {
             "save_failed": "Failed to save the EEBUS settings.",
