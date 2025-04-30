@@ -15,7 +15,12 @@ let x = {
             "device_trusted": "Vertraut",
             "model_brand": "Hersteller",
             "model_model": "Geraet",
-            "model_type": "Gerätetype"
+            "model_type": "Gerätetype",
+            "search_peers": "Detektiere EEBUS Geräte",
+            "add_peers": "SKI Hinzufügen",
+            "trusted_no": "Nein",
+            "trusted_yes": "Ja",
+            "edit_peer_title": "Bearbeiten"
         },
         "script": {
             "save_failed": "Failed to save the EEBUS settings.",
