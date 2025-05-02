@@ -556,4 +556,93 @@ specs = [
             },
         ],
     },
+    {
+        'name': 'Huawei SUN2000 Smart Dongle Grid',
+        'register_type': 'HoldingRegister',
+        'values': [
+            {
+                'name': 'Grid current A phase [0.01 A]',
+                'value_id': 'CurrentL1ImExDiff',
+                'start_address': 37107,
+                'value_type': 'S32BE',
+                'scale_factor': -0.01,
+            },
+            {
+                'name': 'B phase current [0.01 A]',
+                'value_id': 'CurrentL2ImExDiff',
+                'start_address': 37109,
+                'value_type': 'S32BE',
+                'scale_factor': -0.01,
+            },
+            {
+                'name': 'C phase current [0.01 A]',
+                'value_id': 'CurrentL3ImExDiff',
+                'start_address': 37111,
+                'value_type': 'S32BE',
+                'scale_factor': -0.01,
+            },
+            {
+                'name': 'Active power [W]',
+                'value_id': 'PowerActiveLSumImExDiff',
+                'start_address': 37113,
+                'value_type': 'S32BE',
+                'scale_factor': -1.0,
+            },
+        ],
+    },
+    {
+        'name': 'Huawei SUN2000 Smart Dongle Battery Huawei LUNA2000',  # two can be connected, use combined registers
+        'register_type': 'HoldingRegister',
+        'values': [
+            {
+                'name': 'Energy storage - SOC [0.1 %]',
+                'value_id': 'StateOfCharge',
+                'start_address': 37760,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Energy storage - charge discharge power [W]',
+                'value_id': 'PowerDCChaDisDiff',
+                'start_address': 37765,
+                'value_type': 'S32BE',
+            },
+        ],
+    },
+    {
+        'name': 'Huawei SUN2000 Smart Dongle Battery LG RESU',  # only one can be connected, use unit 1 registers
+        'register_type': 'HoldingRegister',
+        'values': [
+            {
+                'name': 'Energy storage unit 1 - charge discharge power [W]',
+                'value_id': 'PowerDCChaDisDiff',
+                'start_address': 37001,
+                'value_type': 'S32BE',
+            },
+            {
+                'name': 'Energy storage unit 1 - SOC [0.1 %]',
+                'value_id': 'StateOfCharge',
+                'start_address': 37004,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+        ],
+    },
+    {
+        'name': 'Huawei SUN2000 Smart Dongle PV',
+        'register_type': 'HoldingRegister',
+        'values': [
+            {
+                'name': 'Input power [W]',
+                'value_id': 'PowerPVSumExport',
+                'start_address': 32064,
+                'value_type': 'S32BE',
+            },
+            {
+                'name': 'Input power signed [W]',
+                'value_id': 'PowerPVSumImExDiff',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+        ],
+    },
 ]

@@ -53,6 +53,7 @@ let x = {
             "table_sax_power_home_extended_mode": "SAX Power Home (Extended Mode)",
             "table_e3dc": "E3/DC (Hauskraftwerk)",
             "table_huawei_sun2000": "Huawei (SUN2000-Serie)",
+            "table_huawei_sun2000_smart_dongle": "Huawei (SUN2000-Serie mit Smart Dongle)",
             "virtual_meter": "Virtueller Zähler",
             "virtual_meter_inverter": "Wechselrichter",
             "virtual_meter_grid": "Netzanschluss",

@@ -135,6 +135,8 @@
 
 #define HUAWEI_SUN2000_INPUT_POWER_ADDRESS                                 static_cast<size_t>(HuaweiSUN2000PVNoStringsAddress::InputPower)
 
+#define HUAWEI_SUN2000_SMART_DONGLE_INPUT_POWER_ADDRESS                    static_cast<size_t>(HuaweiSUN2000SmartDonglePVAddress::InputPower)
+
 
 #define MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(x) (static_cast<uint8_t>(x) & 0x07)
 #define MODBUS_VALUE_TYPE_TO_REGISTER_ORDER_LE(x) ((static_cast<uint8_t>(x) >> 5) & 1)
@@ -1245,6 +1247,42 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         break;
 
+    case MeterModbusTCPTableID::HuaweiSUN2000SmartDongle:
+        huawei_sun2000_smart_dongle.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<HuaweiSUN2000SmartDongleVirtualMeter>();
+        huawei_sun2000_smart_dongle.energy_storage_product_model = -1;
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
+
+        switch (huawei_sun2000_smart_dongle.virtual_meter) {
+        case HuaweiSUN2000SmartDongleVirtualMeter::None:
+            logger.printfln_meter("No Huawei SUN2000 Smart Dongle Virtual Meter selected");
+            return;
+
+        case HuaweiSUN2000SmartDongleVirtualMeter::InverterUnused:
+            logger.printfln_meter("Invalid Huawei SUN2000 Smart Dongle Virtual Meter: %u", static_cast<uint8_t>(solaredge.virtual_meter));
+            return;
+
+        case HuaweiSUN2000SmartDongleVirtualMeter::Grid:
+            table = &huawei_sun2000_smart_dongle_grid_table;
+            default_location = MeterLocation::Grid;
+            break;
+
+        case HuaweiSUN2000SmartDongleVirtualMeter::Battery:
+            table = &huawei_sun2000_battery_product_model_table;
+            default_location = MeterLocation::Battery;
+            break;
+
+        case HuaweiSUN2000SmartDongleVirtualMeter::PV:
+            table = &huawei_sun2000_smart_dongle_pv_table;
+            default_location = MeterLocation::PV;
+            break;
+
+        default:
+            logger.printfln_meter("Unknown Huawei SUN2000 Virtual Meter: %u", static_cast<uint8_t>(huawei_sun2000_smart_dongle.virtual_meter));
+            return;
+        }
+
+        break;
+
     default:
         logger.printfln_meter("Unknown table: %u", static_cast<uint8_t>(table_id));
         return;
@@ -1459,6 +1497,18 @@ bool MeterModbusTCP::is_huawei_sun2000_pv_meter() const
 {
     return table_id == MeterModbusTCPTableID::HuaweiSUN2000
         && huawei_sun2000.virtual_meter == HuaweiSUN2000VirtualMeter::PV;
+}
+
+bool MeterModbusTCP::is_huawei_sun2000_smart_dongle_battery_meter() const
+{
+    return table_id == MeterModbusTCPTableID::HuaweiSUN2000SmartDongle
+        && huawei_sun2000_smart_dongle.virtual_meter == HuaweiSUN2000SmartDongleVirtualMeter::Battery;
+}
+
+bool MeterModbusTCP::is_huawei_sun2000_smart_dongle_pv_meter() const
+{
+    return table_id == MeterModbusTCPTableID::HuaweiSUN2000SmartDongle
+        && huawei_sun2000_smart_dongle.virtual_meter == HuaweiSUN2000SmartDongleVirtualMeter::PV;
 }
 
 void MeterModbusTCP::read_done_callback()
@@ -1953,6 +2003,44 @@ void MeterModbusTCP::parse_next()
         return;
     }
 
+    if (is_huawei_sun2000_smart_dongle_battery_meter()
+     && generic_read_request.start_address == HUAWEI_SUN2000_ENERGY_STORAGE_PRODUCT_MODEL_ADDRESS) {
+        if (huawei_sun2000_smart_dongle.energy_storage_product_model == -1) {
+            switch (c16.u) {
+            case 0: // None
+                table = nullptr;
+                logger.printfln_meter("Huawei SUN2000 inverter has no battery connected");
+                return;
+
+            case 1: // LG RESU
+                table = &huawei_sun2000_smart_dongle_battery_lg_resu_table;
+                logger.printfln_meter("Huawei SUN2000 inverter with LG RESU battery detected");
+                break;
+
+            case 2: // Huawei LUNA2000
+                table = &huawei_sun2000_smart_dongle_battery_huawei_luna2000_table;
+                logger.printfln_meter("Huawei SUN2000 inverter with Huawei LUNA2000 battery detected");
+                break;
+
+            default:
+                table = nullptr;
+                logger.printfln_meter("Huawei SUN2000 inverter has unknown battery model: %u", c16.u);
+                return;
+            }
+
+            huawei_sun2000_smart_dongle.energy_storage_product_model = c16.u;
+
+            meters.declare_value_ids(slot, table->ids, table->ids_length);
+        }
+
+        read_allowed = true;
+        read_index = 0;
+        register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
+
+        prepare_read();
+        return;
+    }
+
     if (is_sungrow_grid_meter()) {
         if (register_start_address == SUNGROW_INVERTER_GRID_FREQUENCY_ADDRESS) {
             if (value > 100) {
@@ -2290,6 +2378,11 @@ void MeterModbusTCP::parse_next()
     }
     else if (is_huawei_sun2000_pv_meter()) {
         if (register_start_address == HUAWEI_SUN2000_INPUT_POWER_ADDRESS) {
+            meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(value));
+        }
+    }
+    else if (is_huawei_sun2000_smart_dongle_pv_meter()) {
+        if (register_start_address == HUAWEI_SUN2000_SMART_DONGLE_INPUT_POWER_ADDRESS) {
             meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(value));
         }
     }

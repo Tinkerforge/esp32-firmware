@@ -51,6 +51,7 @@
 #include "sax_power_virtual_meter.enum.h"
 #include "e3dc_virtual_meter.enum.h"
 #include "huawei_sun2000_virtual_meter.enum.h"
+#include "huawei_sun2000_smart_dongle_virtual_meter.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -120,6 +121,8 @@ private:
     bool is_e3dc_pv_meter() const;
     bool is_huawei_sun2000_battery_meter() const;
     bool is_huawei_sun2000_pv_meter() const;
+    bool is_huawei_sun2000_smart_dongle_battery_meter() const;
+    bool is_huawei_sun2000_smart_dongle_pv_meter() const;
 
     uint32_t slot;
     Config *state;
@@ -315,6 +318,12 @@ private:
             int32_t energy_storage_product_model;
             int32_t number_of_pv_strings;
         } huawei_sun2000;
+
+        // Huawei SUN2000 Smart Dongle
+        struct {
+            HuaweiSUN2000SmartDongleVirtualMeter virtual_meter;
+            int32_t energy_storage_product_model;
+        } huawei_sun2000_smart_dongle;
     };
 };
 
