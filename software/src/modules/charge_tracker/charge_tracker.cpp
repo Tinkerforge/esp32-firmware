@@ -560,6 +560,7 @@ static size_t get_display_name(uint8_t user_id, char *ret_buf, display_name_entr
         *dst++ = *src_start++;
     }
 
+    ret_buf[display_name_cache[user_id].length] = '\0';
     return display_name_cache[user_id].length;
 }
 
