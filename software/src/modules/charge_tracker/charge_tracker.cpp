@@ -1010,12 +1010,12 @@ search_done:
         int current_charge = (first_charge > -1 ? first_charge : 0);
         last_file = (last_file >= 0) ? last_file : this->last_charge_record;
 
-#define TABLE_LINE_LEN (17 /*start date: 01.02.3456 12:34\0 or 3456-02-01 12:34\0*/ \
-                      + 33 /*display name: max 32 chars + \0*/ \
-                      + 8  /*charged: (assumed max) "999.999\0" kWh else truncated to "> 1000\0"*/ \
-                      + 11 /* charge duration max "9999:59:59\0"*/ \
-                      + 16 /* meter start max 99'999'999.999\0*/ \
-                      + 8) /* cost max 9999.99\0 else truncated to >10000*/
+#define TABLE_LINE_LEN (17 /* start date: 01.02.3456 12:34\0 or 3456-02-01 12:34\0 */ \
+                      + 33 /* display name: max 32 chars + \0 */ \
+                      + 8  /* charged: (assumed max) "999.999\0" kWh else truncated to "> 1000\0" */ \
+                      + 11 /* charge duration max "9999:59:59\0" */ \
+                      + 16 /* meter start max 99'999'999.999\0 */ \
+                      + 8) /* cost max 9999.99\0 else truncated to >10000 */
 
         char table_lines_buffer[8 * TABLE_LINE_LEN];
         File f;
