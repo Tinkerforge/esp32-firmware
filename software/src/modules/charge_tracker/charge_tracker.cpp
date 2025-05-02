@@ -844,13 +844,13 @@ void ChargeTracker::register_urls()
             }
         }
 
-        char stats_buf[384];//55  9 "Wallbox: " + 32 display name + 13 " (warp2-AbCd)" + \0
-                            //31  13 "Exportiert am " + 17 (date time + \0)
-                            //55  22  "Exportierte Benutzer: " + 32 display name + \0
-                            //63  "Exportierter Zeitraum: Aufzeichnungsbeginn - Aufzeichnungsende" + \0
-                            //60  41 "Gesamtenergie exportierter Ladevorgänge: " + 19 "999.999.999,999kWh" + \0
-                            //50 "Gesamtbetrag 99999.99€ (Strompreis 123.45 ct/kWh)" + \0
-                            //= 314
+        char stats_buf[384];//55 9 "Wallbox: " + 32 display name + 13 " (warp2-AbCd)" + \0
+                            //31 13 "Exportiert am " + 17 (date time + \0)
+                            //55 22 "Exportierte Benutzer: " + 32 display name + \0
+                            //63 "Exportierter Zeitraum: Aufzeichnungsbeginn - Aufzeichnungsende" + \0
+                            //60 41 "Gesamtenergie exportierter Ladevorgänge: " + 17 "999999999,999 kWh" + \0
+                            //39 "Gesamtkosten: 9999,99 € (123,45 ct/kWh)" + \0
+                            //= 302
 
         double charged_sum = 0;
         uint32_t charged_cost_sum = 0;
@@ -982,15 +982,22 @@ search_done:
             stats_head += timestamp_min_to_date_time_string(stats_head, end_timestamp_min, english);
         ++stats_head;
 
-        int written = sprintf_u(stats_head, "%s: %9.3f kWh", english ? "Total energy of exported charges" : "Gesamtenergie exportierter Ladevorgänge", charged_sum);
-        if (!english)
-            for (int i = 0; i < written; ++i)
-                if (stats_head[i] == '.')
-                    stats_head[i] = ',';
-        stats_head += 1 + written;
+        stats_head += sprintf_u(stats_head, "%s: ", english ? "Total energy of exported charges" : "Gesamtenergie exportierter Ladevorgänge");
+        if (charged_sum <= 999999999.999f) {
+            int written = sprintf_u(stats_head, "%.3f kWh", charged_sum);
+            if (!english)
+                for (int i = 0; i < written; ++i)
+                    if (stats_head[i] == '.')
+                        stats_head[i] = ',';
+            stats_head += 1 + written;
+        }
+        else {
+            memcpy(stats_head, ">=1000000000 kWh", ARRAY_SIZE(">=1000000000 kWh"));
+            stats_head += ARRAY_SIZE(">=1000000000 kWh");
+        }
 
         if (electricity_price != 0) {
-            written = sprintf_u(stats_head, "%s: %ld.%02ld€ (%.2f ct/kWh)%s",
+            int written = sprintf_u(stats_head, "%s: %ld.%02ld€ (%.2f ct/kWh)%s",
                             english ? "Total cost" : "Gesamtkosten",
                             charged_cost_sum / 100, charged_cost_sum % 100,
                             electricity_price / 100.0f,
