@@ -79,6 +79,7 @@ interface SolarForecastState {
     plane_configs: {[plane_index: number]: PlaneConfig};
     plane_forecasts: {[plane_index: number]: API.getType['planes/0/plane_forecast']};
     plane_config_tmp: PlaneConfig;
+    config_enable: boolean;
 }
 
 export class SolarForecast extends ConfigComponent<"solar_forecast/config", {status_ref?: RefObject<SolarForecastStatus>}, SolarForecastState> {
@@ -92,6 +93,12 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
 
         util.addApiEventListener("solar_forecast/state", () => {
             this.setState({state: API.get("solar_forecast/state")});
+        });
+
+        util.addApiEventListener("solar_forecast/config", () => {
+            let config = API.get("solar_forecast/config");
+
+            this.setState({config_enable: config.enable});
         });
 
         for (let plane_index = 0; plane_index < SOLAR_FORECAST_PLANES; ++plane_index) {
@@ -141,6 +148,8 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
         }
     }
     override async sendSave(topic: "solar_forecast/config", config: SolarForecastConfig) {
+        this.setState({config_enable: config.enable}); // avoid round trip time
+
         for (let plane_index = 0; plane_index < SOLAR_FORECAST_PLANES; plane_index++) {
             await API.save_unchecked(
                 `solar_forecast/planes/${plane_index}/config`,
@@ -427,6 +436,8 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                     />
                     </div>
                 </ConfigForm>
+
+                <div hidden={!state.config_enable}> {/* can only hide this div, as the enable state can change without reload and the contained uplot div has to stay stable */}
                 <FormSeparator heading={__("solar_forecast.content.solar_forecast_chart_heading")}/>
                 <FormRow label={__("solar_forecast.content.next_update_in")} help={__("solar_forecast.content.next_update_in_help")}>
                         <InputText value={get_next_update_string()}/>
@@ -486,6 +497,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                             />
                         </UplotLoader>
                     </div>
+                </div>
                 </div>
             </SubPage>
         );
