@@ -26,6 +26,7 @@
 #include "config.h"
 #include "modules/ws/web_sockets.h"
 #include "ship_types.h"
+#include "spine_connection.h"
 
 // Values and Timeouts as defined by SHIP document
 #define SHIP_CONNECTION_CMI_TIMEOUT 30_s // SHIP 13.4.3 Timneout procedure
@@ -146,6 +147,8 @@ public:
     WebSocketsClient ws_client;
     Role role;
     CoolString peer_ski = "";
+    SpineConnection spine{};
+    bool connection_established = false;
 
 
     State state = State::CmiInitStart;
@@ -164,6 +167,7 @@ public:
     void send_cmi_message(uint8_t type, uint8_t value);
     void send_current_outgoing_message();
     void send_string(String str);
+    void send_data_message(String payload);
 
     CMIMessage get_cmi_message();
     ProtocolState get_protocol_state();
