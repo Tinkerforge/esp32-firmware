@@ -22,6 +22,8 @@
 class IModule
 {
 public:
+    IModule() = default;
+    IModule(const IModule &) = delete; // Do not allow modules to be copied. Note: Use references or pointers instead.
     virtual ~IModule() = default;
 
     // pre_init() is only for special handlers that must run very early.
