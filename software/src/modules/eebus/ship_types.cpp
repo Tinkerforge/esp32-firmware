@@ -32,26 +32,27 @@ DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, 
 {
     DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
 
-    DeserializationError error = deserializeJson(doc, incoming_data, length);
+    DeserializationError error = deserializeJson(doc, incoming_data, length, DeserializationOption::NestingLimit(20));
     doc.shrinkToFit(); // Make this a bit smaller
     if (error) {
         logger.printfln("J2T ShipMessageData Error during JSON deserialization : %s", error.c_str());
         return DeserializationResult::ERROR;
     }
 
-    JsonObject data = doc["data"];
+    JsonObject data = doc["data"][0];
 
     if (data.isNull()) {
         logger.printfln("J2T ShipMessageData Error: No data object found");
+        
         return DeserializationResult::ERROR;
     }
-    if (data["header"]["protocolId"] == nullptr || data["payload"] == nullptr) {
+    if (doc["data"][0]["header"][0]["protocolId"]== nullptr || doc["data"][1]["payload"] == nullptr) {
         logger.printfln("J2T ShipMessageData Error: Data invalid");
         valid = false;
         return DeserializationResult::ERROR;
     }
-    protocol_id = data["header"]["protocolId"].as<String>();
-    payload = data["payload"].as<String>();
+    protocol_id = String(doc["data"][0]["header"][0]["protocolId"]);
+    payload = String(doc["data"][1]["payload"]);
     valid = true;
 
     JsonObject data_extension = data["extension"];
