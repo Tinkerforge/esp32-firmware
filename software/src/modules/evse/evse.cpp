@@ -40,9 +40,9 @@ EVSE::EVSE() : DeviceModule(evse_bricklet_firmware_bin_data,
 void EVSE::pre_init()
 {
 #if MODULE_ESP32_BRICK_AVAILABLE()
-    auto esp_brick = esp32_brick;
+    auto &esp_brick = esp32_brick;
 #elif MODULE_ESP32_ETHERNET_BRICK_AVAILABLE()
-    auto esp_brick = esp32_ethernet_brick;
+    auto &esp_brick = esp32_ethernet_brick;
 #else
     #warning "Using EVSE module without ESP32 Brick or ESP32 Ethernet Brick module. Pre-init will not work!"
     return;
