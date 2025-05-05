@@ -1,8 +1,0 @@
-.idea
-.venv
-SHIP/*
-SPINE/*
-*.pyc
-*.pyo
-*.pyd
-__pycache__/

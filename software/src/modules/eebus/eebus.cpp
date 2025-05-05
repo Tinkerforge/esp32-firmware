@@ -104,6 +104,7 @@ void EEBus::pre_setup()
 
     state = Config::Object({
         {"ski", Config::Str("", 0, 64)},
+        {"discovery_state", Config::Uint8(0)},
         {"connections", Config::Array(
             {Config::Object({
                 {"ski", Config::Str("", 0, 64)},

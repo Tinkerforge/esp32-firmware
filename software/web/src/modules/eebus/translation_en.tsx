@@ -9,6 +9,9 @@ let x = {
             "no_cert": "Not used",
             "unknown": "Unknown",
             "search_peers": "Detektiere EEBUS Geräte",
+            "searching_peers": "Suche....",
+            "search_completed": "Suche abgeschlossen",
+            "search_failed": "Suche fehlgeschlagen",
             "add_peers": "SKI Hinzufügen",
             "peer_info": {
                 "peers": "EEBUS-Partner",

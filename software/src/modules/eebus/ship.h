@@ -63,7 +63,7 @@ struct ShipNode {
 
 
 enum Ship_Discovery_State {
-    READY,
+    READY = 0,
     SCANNING,
     SCAN_DONE,
     ERROR

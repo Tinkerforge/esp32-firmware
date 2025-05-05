@@ -20,7 +20,7 @@
 
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
-import { h, Fragment, Component, RefObject } from "preact";
+import { h, Fragment } from "preact";
 import { __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
@@ -30,7 +30,7 @@ import { InputText } from "../../ts/components/input_text";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Table } from "../../ts/components/table";
-import { Collapse, Button, Spinner, ListGroup, ListGroupItem, Alert, Form } from "react-bootstrap";
+import { Button} from "react-bootstrap";
 import { Share2 } from "react-feather";
 
 export function EEBusNavbar() {
@@ -45,26 +45,34 @@ type EEBusStateType = API.getType["eebus/state"];
 
 interface EEBusState {
     addPeer: EEBusAddPeer;
-    state: Readonly<EEBusStateType>;
+    state: EEBusStateType;
+    config: EEBusConfig;
 }
 
 export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
     constructor() {
-        super('eebus/config',
-            // TODO: Remove mqtt dependencies
+        super('eebus/config',           
+            
             () => __("eebus.script.save_failed"),
             () => __("eebus.script.reboot_content_changed"));
+            util.addApiEventListener('eebus/state', () => {
+                this.setState({ state: API.get('eebus/state') });
+            });
+            util.addApiEventListener('eebus/config', () => {
+                this.setState({ config: API.get('eebus/config') });
+            });
     }
     scan_peers() {
         API.call('eebus/scan', {});
     }
 
 
-    render(props: {}, state: Readonly<EEBusConfig> & EEBusState) {
+    render(props: {}, state: EEBusState) {
         if (!util.render_allowed())
             return <SubPage name="eebus" />;
+        
 
-        let ski = API.get('eebus/state').ski
+        let ski = state.state.ski;
         if (ski == "") {
             ski = __("eebus.content.unknown");
         }
@@ -80,10 +88,10 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                             ["-1", __("eebus.content.no_cert")],
                         ].concat(certs) as [string, string][]
                         }
-                            value={state.cert_id}
+                            value={this.state.config.cert_id}
                             onValue={(v) => this.setState({ cert_id: parseInt(v) })}
                             disabled={cert_state == null}
-                            required={state.key_id != -1}
+                            required={state.config.key_id != -1}
                         />
                     </FormRow>
                     <FormRow label={__("eebus.content.key")}>
@@ -91,10 +99,10 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                             ["-1", __("eebus.content.no_cert")],
                         ].concat(certs) as [string, string][]
                         }
-                            value={state.key_id}
+                            value={state.config.key_id}
                             onValue={(v) => this.setState({ key_id: parseInt(v) })}
                             disabled={cert_state == null}
-                            required={state.cert_id != -1}
+                            required={state.config.cert_id != -1}
                         />
                     </FormRow>
                     <FormRow label={__("eebus.content.ski")}>
@@ -108,7 +116,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                 __("eebus.content.peer_info.dns_name"),
                                 __("eebus.content.peer_info.state")]}
                             rows={
-                                state.peers.map((peer) => {
+                                state.config.peers.map((peer) => {
                                     return {
                                         columnValues: [
                                             peer.model_model,
@@ -272,7 +280,15 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                 this.setState({ addPeer: { ski: "", trusted: true, ip: "", port: 4815, dns_name: "", wss_path: "/ship/" } });
                             }}
                         />
-                        <Button className="form-control rounded-right" variant="primary" onClick={() => this.scan_peers()}>{__("eebus.content.search_peers")}</Button>
+                        <Button className="form-control rounded-right" variant="primary" onClick={() => this.scan_peers()} disabled={state.state.discovery_state === 1} >
+                            {state.state.discovery_state === 0
+                            ? __("eebus.content.search_peers")
+                            : state.state.discovery_state === 1
+                            ? __("eebus.content.searching_peers")
+                            : state.state.discovery_state === 2
+                            ? __("eebus.content.search_completed")
+                            : __("eebus.content.search_failed")}                            
+                            </Button>
                     </FormRow>
                 </ConfigForm>
             </SubPage>

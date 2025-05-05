@@ -41,6 +41,7 @@ export interface config {
 
 export interface state {
     ski: string;
+    discovery_state: number;
     connections: Connection[];
 
 }
