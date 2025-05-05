@@ -236,7 +236,14 @@ Ship_Discovery_State Ship::discover_ship_peers()
     if (discovery_state == Ship_Discovery_State::SCANNING) {
         return discovery_state;
     }
-    discovery_state = Ship_Discovery_State::SCANNING;
+
+    auto update_discovery_state = [this](Ship_Discovery_State state) {
+        this->discovery_state = state;
+        eebus.state.get("discovery_state")->updateUint((uint8_t)state);
+    };
+
+    update_discovery_state(Ship_Discovery_State::SCANNING);
+
     logger.printfln("discover_mdns start");
     const char *service = "_ship";
     const char *proto = "_tcp";
@@ -244,12 +251,12 @@ Ship_Discovery_State Ship::discover_ship_peers()
     esp_err_t err = mdns_query_ptr(service, proto, 3000, 20, &results);
     if (err) {
         logger.printfln("EEBUS MDNS Query Failed. Error %d", err);
-        discovery_state = Ship_Discovery_State::ERROR;
+update_discovery_state(Ship_Discovery_State::ERROR);
         return discovery_state;
     }
     if (!results) {
         logger.printfln("EEBUS MDNS: No results found!");
-        discovery_state = Ship_Discovery_State::SCAN_DONE;
+update_discovery_state(Ship_Discovery_State::SCAN_DONE);
         return discovery_state;
     }
     mdns_results.clear();
@@ -304,7 +311,7 @@ Ship_Discovery_State Ship::discover_ship_peers()
     logger.printfln("EEBUS MDNS: Found %d results", mdns_results.size());
 
     mdns_query_results_free(results);
-    discovery_state = Ship_Discovery_State::SCAN_DONE;
+    update_discovery_state(Ship_Discovery_State::SCAN_DONE);
     return discovery_state;
 }
 
