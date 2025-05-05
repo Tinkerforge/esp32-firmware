@@ -18,17 +18,36 @@
  * Boston, MA 02111-1307, USA.
  */
 
- #pragma once
+#pragma once
 
- #include "build.h"
-#include <esp_http_client.h>
+#include "build.h"
 #include <ArduinoJson.h>
+#include <esp_http_client.h>
 
-#include "module.h"
 #include "config.h"
+#include "module.h"
 
+#define SPINE_CONNECTION_MAX_JSON_SIZE 8192 // TODO: What is a sane value here?
+#define SPINE_CONNECTION_MAX_DEPTH 30 // Maximum depth of serialization of a json document
+
+/*
+struct SpineDatagramHeader
+{
+    
+};
+
+*/
 class SpineConnection
 {
-    public:
-    SpineConnection(ShipConnection *ship);
-}
+
+public:
+    SpineConnection();
+
+    void process_datagram(String datagram);
+
+    // SPINE TS 5.2.3.1
+    // Specification recommends these be stored in non-volatile memory
+
+    uint64_t msg_counter = 0;
+    uint64_t msg_counter_received = 0;
+};

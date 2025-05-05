@@ -32,7 +32,7 @@ extern EEBus eebus;
 
 void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
 {
-    
+
     // TODO: Does the ws_client implement some kind of keepalive? Like sending ping/pong frames? Otherwise we need to implement something like that here
     if (ws_pkt->fragmented) {
         logger.printfln("ShipConnection ws_frame_received: fragmented %d, final %d", ws_pkt->fragmented, ws_pkt->final);
@@ -102,7 +102,7 @@ ShipConnection::ProtocolState ShipConnection::get_protocol_state()
     if (message_incoming->data[0] == 3) {
         return ProtocolState::Terminate;
     }
-    if ((message_incoming->data[0] != 1) || (message_incoming->length < 3)) {
+    if ((message_incoming->data[0] != 1 && message_incoming->data[0] != 2) || (message_incoming->length < 3)) {
         return ProtocolState::None;
     }
 
@@ -294,8 +294,6 @@ void ShipConnection::state_machine_next_step()
         state_id = eebus.get_connection_id_by_ski(peer_ski);
     }
     eebus.state.get("connections")->get(state_id)->get("ship_state")->updateString(get_state_name(state));
-    
-    
 }
 
 void ShipConnection::state_cme_init_start()
@@ -861,14 +859,43 @@ void ShipConnection::state_sme_access_method_request()
     }
 }
 
+void ShipConnection::send_data_message(String payload)
+{
+    if (state == State::Done && get_protocol_state() == ProtocolState::Data) {
+        SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
+        // SHIP 14.
+        data.protocol_id = "ee1.0"; // We only speak ee1.0
+        data.payload = payload;
+
+        String json = data.type_to_json();
+
+        message_outgoing->data[0] = 1;
+        memcpy(&message_outgoing->data[1], json.c_str(), json.length());
+        message_outgoing->length = json.length() + 1;
+        send_current_outgoing_message();
+    } else {
+        logger.printfln("send_data_message: Connection not in done state");
+    }
+}
+
 void ShipConnection::state_done()
 {
     logger.printfln("state_done: %d (len %d)-> %s", message_incoming->data[0], message_incoming->length, &message_incoming->data[1]);
     // If we are done we can still get the PIN Request (which we currently don't support)
     // and the SME Access Method Request. In that case we jump to the corresponding state,
     // which will then come back here.
+    if (!connection_established) {
+        for (int i = 0; i < eebus.config.get("peers")->count(); i++) {
+            if (eebus.config.get("peers")->get(i)->get("ski")->asString() == peer_ski) {
+                eebus.config.get("peers")->get(i)->get("state")->updateUint((uint32_t)NodeState::Connected);
+            }
+        }
+    }
+    connection_established = true;
 
     auto protocol_state = get_protocol_state();
+
+    logger.printfln("state_done: protocol_state %d", (int)protocol_state);
     switch (protocol_state) {
         case ProtocolState::Data: {
             SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
@@ -877,6 +904,9 @@ void ShipConnection::state_done()
                                 message_incoming->data[0],
                                 message_incoming->length,
                                 &message_incoming->data[1]);
+                spine.process_datagram(data.payload);
+            } else {
+                logger.printfln("Error while trying to deserialize data message");
             }
             break;
         }
