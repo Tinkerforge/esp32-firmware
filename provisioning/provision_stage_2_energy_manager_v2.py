@@ -200,10 +200,14 @@ class EnergyManagerV2Tester:
         if self.sku == 'SEB':
             arguments = [
                 os.path.join(WARP_CHARGER_GIT_PATH, 'label', 'print-seb-label.py'),
+                '-c',
+                '2',
             ]
         else:
             arguments = [
                 os.path.join(WARP_CHARGER_GIT_PATH, 'label', 'print-wem-label.py'),
+                '-c',
+                '2',
                 self.sku,
             ]
 
@@ -215,16 +219,13 @@ class EnergyManagerV2Tester:
         ]
 
         result = subprocess.check_output(arguments)
-        if result == b'':
-            print(' ... Label 1 OK')
-        else:
-            self.fatal_error(" ... Label 1 FAILED!")
 
-        result = subprocess.check_output(arguments)
         if result == b'':
-            print(' ... Label 2 OK')
+            print(' ... Labels OK')
         else:
-            self.fatal_error(" ... Label 1 FAILED!")
+            self.fatal_error(" ... Labels FAILED!")
+
+        time.sleep(2)
 
         if self.sku == 'SEB':
             arguments = [
@@ -243,6 +244,7 @@ class EnergyManagerV2Tester:
         ]
 
         result = subprocess.check_output(arguments)
+
         if result == b'':
             print(' ... Package label OK')
         else:
