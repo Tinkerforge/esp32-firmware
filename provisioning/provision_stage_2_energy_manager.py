@@ -160,6 +160,7 @@ class EnergyManagerTester:
                         self.fatal_error("Can't flash firmware!")
 
             time.sleep(3)
+            connect_to_ethernet(self.ssid, "firmware_update/validate")
             factory_reset(self.ssid)
         else:
             print("Flashed firmware is up-to-date.")
