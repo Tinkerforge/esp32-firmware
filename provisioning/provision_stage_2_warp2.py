@@ -485,7 +485,7 @@ def factory_reset(ssid):
 
 def connect_to_ethernet(ssid, url):
     host = ssid + ".local"
-    print("Connecting via ethernet to {}".format(host), end="")
+    print("Connecting via ethernet to {} [{}]".format(host, url), end="")
     for i in range(45):
         start = time.monotonic()
         try:
@@ -620,7 +620,7 @@ def main(stage3, scanner):
 
         result["firmware"] = firmware_path.split("/")[-1]
 
-        _, host = connect_to_ethernet(ssid, "hidden_proxy/enable")
+        host = connect_to_ethernet(ssid, "hidden_proxy/enable")[1]
 
         ipcon = IPConnection()
         try:

@@ -112,7 +112,7 @@ class EnergyManagerV2Tester:
 
         self.ssid = hardware_type + "-" + esp_uid_qr
 
-        event_log = connect_to_ethernet(self.ssid, "event_log").decode('utf-8')
+        event_log = connect_to_ethernet(self.ssid, "event_log")[0].decode('utf-8')
         print(event_log)
 
         macs = re.findall(re.compile(r'ethernet         \| Connected: 100 Mbps Full Duplex, MAC: ((?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2})'), event_log)
@@ -165,12 +165,12 @@ class EnergyManagerV2Tester:
 
         self.result["firmware"] = wem_brick_path.split("/")[-1]
 
-        connect_to_ethernet(self.ssid, "hidden_proxy/enable")
+        host = connect_to_ethernet(self.ssid, "hidden_proxy/enable")[1]
 
         time.sleep(1)
         wem_ipcon = IPConnection()
         try:
-            wem_ipcon.connect(self.ssid, 4223)
+            wem_ipcon.connect(host, 4223)
         except Exception as e:
             self.fatal_error("Failed to connect to ESP proxy. Is the router's DHCP cache full?")
 
