@@ -1072,7 +1072,7 @@ static void stage_5(StageContext &sc) {
         StringWriter sw{buf, ARRAY_SIZE(buf)};
 
         sw.printf("5: %d:", sc.idx_array[i]);
-        if (!can_activate(sw, check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, sc.limits, sc.cfg, state->phase_rotation == PhaseRotation::Unknown, state->guaranteed_pv_current)) {
+        if (!can_activate(sw, check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, sc.limits, sc.cfg, state->phase_rotation == PhaseRotation::Unknown, state->guaranteed_pv_current - already_allocated.pv)) {
             trace("%s", buf);
             continue;
         }
