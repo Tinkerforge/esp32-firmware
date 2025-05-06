@@ -614,7 +614,7 @@ def main(stage3, scanner):
                         fatal_error("Can't flash firmware!")
 
             time.sleep(3)
-            connect_to_ethernet(self.ssid, "firmware_update/validate")
+            connect_to_ethernet(ssid, "firmware_update/validate")
             factory_reset(ssid)
         else:
             print("Flashed firmware is up-to-date.")
