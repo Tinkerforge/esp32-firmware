@@ -143,3 +143,20 @@ void Watchdog::reset(int handle)
 
     regs[handle].last_reset = now_us();
 }
+
+// When the ESP WDT triggers, store triggered task data in RTC memory that ends up in the core dump.
+COREDUMP_RTC_DATA_ATTR char wdt_info[256];
+static size_t wdt_info_len = 0;
+
+static void wdt_msg_handler(void *, const char *msg)
+{
+    while (wdt_info_len < (sizeof(wdt_info) - 1) && *msg != '\0') {
+        wdt_info[wdt_info_len++] = *msg++;
+    }
+    wdt_info[wdt_info_len] = '\0';
+}
+
+void esp_task_wdt_isr_user_handler()
+{
+    esp_task_wdt_print_triggered_tasks(wdt_msg_handler, nullptr, nullptr);
+}
