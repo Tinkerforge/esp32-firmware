@@ -115,7 +115,7 @@ def format_extra_data(extra_data):
         del extra_data['crashed_task_handle']
 
     for k, v in extra_data.items():
-        if k == 'EXCCAUSE':
+        if k == 'EXCCAUSE' and v in XTENSA_EXCEPTION_CAUSE_DICT:
             result += f"{k.ljust(16)}{hex(v).ljust(16)}{': '.join(XTENSA_EXCEPTION_CAUSE_DICT[v])}\n"
         else:
             result += f"{k.ljust(16)}{hex(v).ljust(16)}{v}\n"
