@@ -1303,12 +1303,13 @@ static_assert(ARRAY_SIZE(meters_path_postfixes) == static_cast<uint32_t>(Meters:
 
 String Meters::get_path(uint32_t slot, Meters::PathType path_type)
 {
-    String path = "meters/";
-    path.concat(slot);
-    path.concat('/');
-    path.concat(meters_path_postfixes[static_cast<uint32_t>(path_type)]);
+    char buf[32];
+    StringWriter sw(buf, ARRAY_SIZE(buf));
 
-    return path;
+    sw.printf("meters/%lu/", slot);
+    sw.puts(meters_path_postfixes[static_cast<uint32_t>(path_type)]);
+
+    return String(buf, sw.getLength());
 }
 
 uint32_t meters_find_id_index(const MeterValueID value_ids[], uint32_t value_id_count, std::initializer_list<MeterValueID> ids)
