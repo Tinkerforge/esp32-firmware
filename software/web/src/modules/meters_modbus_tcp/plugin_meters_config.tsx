@@ -1258,8 +1258,8 @@ export function init() {
                             <FormRow label={__("meters_modbus_tcp.content.device_address")} label_muted={__("meters_modbus_tcp.content.device_address_muted")(default_device_address)}>
                                 <InputNumber
                                     required
-                                    min={1}
-                                    max={247}
+                                    min={0}
+                                    max={255}
                                     value={config[1].table[1].device_address}
                                     onValue={(v) => {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {device_address: v})}));
@@ -1367,8 +1367,8 @@ export function init() {
                         <FormRow label={__("meters_modbus_tcp.content.device_address")}>
                             <InputNumber
                                 required
-                                min={1}
-                                max={247}
+                                min={0}
+                                max={255}
                                 value={config[1].table[1].device_address}
                                 onValue={(v) => {
                                     on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {device_address: v})}));

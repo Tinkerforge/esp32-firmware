@@ -59,7 +59,7 @@ void MetersSunSpec::pre_setup()
         {"location", Config::Enum(MeterLocation::Unknown)},
         {"host", Config::Str("", 0, 64)},
         {"port", Config::Uint16(502)},
-        {"device_address", Config::Uint(1, 1, 247)},
+        {"device_address", Config::Uint8(1)},
         {"manufacturer_name", Config::Str("", 0, 32)},
         {"model_name", Config::Str("", 0, 32)},
         {"serial_number", Config::Str("", 0, 32)},
@@ -78,8 +78,8 @@ void MetersSunSpec::pre_setup()
     scan_config = ConfigRoot{Config::Object({
         {"host", Config::Str("", 0, 64)},
         {"port", Config::Uint16(502)},
-        {"device_address_first", Config::Uint(1, 1, 247)},
-        {"device_address_last", Config::Uint(247, 1, 247)},
+        {"device_address_first", Config::Uint8(1)},
+        {"device_address_last", Config::Uint8(247)},
         {"cookie", Config::Uint32(0)},
     })};
 

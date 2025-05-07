@@ -295,8 +295,8 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                     <div class="col-sm-6">
                         <InputNumber
                             required
-                            min={1}
-                            max={247}
+                            min={0}
+                            max={255}
                             value={this.state.scan_device_address_first}
                             onValue={(v) => {
                                 this.setState({scan_device_address_first: v});
@@ -305,8 +305,8 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                     <div class="col-sm-6">
                         <InputNumber
                             required
-                            min={1}
-                            max={247}
+                            min={0}
+                            max={255}
                             value={this.state.scan_device_address_last}
                             onValue={(v) => {
                                 this.setState({scan_device_address_last: v});
@@ -539,8 +539,8 @@ class EditChildren extends Component<EditChildrenProps, EditChildrenState> {
                 <InputNumber
                     required
                     disabled={!this.state.manual_override}
-                    min={1}
-                    max={247}
+                    min={0}
+                    max={255}
                     value={this.props.config[1].device_address}
                     onValue={(v) => {
                         this.props.on_config(util.get_updated_union(this.props.config, {device_address: v}));
