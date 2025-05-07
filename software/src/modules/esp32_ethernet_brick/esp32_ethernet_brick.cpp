@@ -60,7 +60,11 @@ static TF_Local local;
 
 // Time in seconds.
 #ifndef WEM_FACTORY_RESET_WAIT_TIME
+#if BUILD_IS_SIGNED()
 #define WEM_FACTORY_RESET_WAIT_TIME 8
+#else
+#define WEM_FACTORY_RESET_WAIT_TIME 1
+#endif
 #endif
 
 static void check_for_factory_reset()
