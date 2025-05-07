@@ -103,10 +103,12 @@ private:
 
     struct firmware_info_t {
         uint32_t magic[2] = {0};
-        char firmware_name[61] = {0};
-        uint8_t fw_version[3] = {0};
-        uint32_t fw_build_time = 0;
-        uint8_t fw_version_beta = 0;
+        char display_name[61] = {};
+        uint8_t fw_version_major = 0;
+        uint8_t fw_version_minor = 0;
+        uint8_t fw_version_patch = 0;
+        uint32_t fw_build_timestamp = 0;
+        uint8_t fw_version_beta = 0; // since block version 2, before it's 0xFF
     };
 
     BlockReader<firmware_info_t> firmware_info;
@@ -114,8 +116,8 @@ private:
 #if signature_sodium_public_key_length != 0
     struct signature_info_t {
         uint32_t magic[2] = {0};
-        char publisher[64] = {0};
-        unsigned char signature[crypto_sign_BYTES] = {0};
+        char publisher[64] = {};
+        unsigned char signature[crypto_sign_BYTES] = {};
     };
 
     BlockReader<signature_info_t> signature_info;

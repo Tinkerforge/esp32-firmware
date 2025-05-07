@@ -103,7 +103,7 @@ static const char *get_partition_ota_state_name(const esp_partition_t *partition
     }
 }
 
-static bool read_custom_app_desc(const esp_partition_t *partition, build_custom_app_desc_t *custom_app_desc, char *version, size_t version_len)
+static bool read_custom_app_desc(const esp_partition_t *partition, build_custom_app_desc_t *custom_app_desc, char *fw_version, size_t fw_version_len)
 {
     esp_err_t err = esp_partition_read(partition,
                                        sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t) + sizeof(esp_app_desc_t),
@@ -125,14 +125,14 @@ static bool read_custom_app_desc(const esp_partition_t *partition, build_custom_
         return false;
     }
 
-    char beta[12] = "";
+    char fw_version_beta[12] = "";
 
-    if (custom_app_desc->fw_version[3] != 255) {
-        snprintf(beta, ARRAY_SIZE(beta), "-beta.%u", custom_app_desc->fw_version[3]);
+    if (custom_app_desc->fw_version_beta != 255) {
+        snprintf(fw_version_beta, ARRAY_SIZE(fw_version_beta), "-beta.%u", custom_app_desc->fw_version_beta);
     }
 
-    snprintf(version, version_len, "%u.%u.%u%s+%lx",
-             custom_app_desc->fw_version[0], custom_app_desc->fw_version[1], custom_app_desc->fw_version[2], beta, custom_app_desc->fw_build_time);
+    snprintf(fw_version, fw_version_len, "%u.%u.%u%s+%lx",
+             custom_app_desc->fw_version_major, custom_app_desc->fw_version_minor, custom_app_desc->fw_version_patch, fw_version_beta, custom_app_desc->fw_build_timestamp);
 
     return true;
 }
@@ -318,19 +318,19 @@ InstallState FirmwareUpdate::check_firmware_info(bool detect_downgrade, bool log
             return InstallState::InfoPageCorrupted;
         }
 
-        firmware_info.block.firmware_name[ARRAY_SIZE(firmware_info.block.firmware_name) - 1] = '\0';
+        firmware_info.block.display_name[ARRAY_SIZE(firmware_info.block.display_name) - 1] = '\0';
 
-        if (strcmp(BUILD_DISPLAY_NAME, firmware_info.block.firmware_name) != 0) {
+        if (strcmp(BUILD_DISPLAY_NAME, firmware_info.block.display_name) != 0) {
             if (log) {
                 logger.printfln("Failed to update: Firmware is for a %s but this is a %s!",
-                                firmware_info.block.firmware_name, BUILD_DISPLAY_NAME);
+                                firmware_info.block.display_name, BUILD_DISPLAY_NAME);
             }
 
             return InstallState::WrongFirmwareType;
         }
 
-        if (detect_downgrade && compare_version(firmware_info.block.fw_version[0], firmware_info.block.fw_version[1], firmware_info.block.fw_version[2],
-                                                firmware_info.block.fw_version_beta, firmware_info.block.fw_build_time,
+        if (detect_downgrade && compare_version(firmware_info.block.fw_version_major, firmware_info.block.fw_version_minor, firmware_info.block.fw_version_patch,
+                                                firmware_info.block.fw_version_beta, firmware_info.block.fw_build_timestamp,
                                                 BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH,
                                                 BUILD_VERSION_BETA, build_timestamp()) < 0) {
             if (log) {
@@ -338,21 +338,31 @@ InstallState FirmwareUpdate::check_firmware_info(bool detect_downgrade, bool log
             }
 
             if (json_ptr != nullptr) {
-                char info_beta[12] = "";
-                char build_beta[12] = "";
+                char fw_version_beta[12] = "";
+                char build_version_beta[12] = "";
 
                 if (firmware_info.block.fw_version_beta != 255) {
-                    snprintf(info_beta, ARRAY_SIZE(info_beta), "-beta.%u", firmware_info.block.fw_version_beta);
+                    snprintf(fw_version_beta, ARRAY_SIZE(fw_version_beta), "-beta.%u", firmware_info.block.fw_version_beta);
                 }
 
                 if (BUILD_VERSION_BETA != 255) {
-                    snprintf(build_beta, ARRAY_SIZE(build_beta), "-beta.%u", BUILD_VERSION_BETA);
+                    snprintf(build_version_beta, ARRAY_SIZE(build_version_beta), "-beta.%u", BUILD_VERSION_BETA);
                 }
 
                 json_ptr->addObject();
                 json_ptr->addMemberNumber("error", static_cast<uint8_t>(InstallState::Downgrade));
-                json_ptr->addMemberStringF("firmware_version", "%u.%u.%u%s+%lx", firmware_info.block.fw_version[0], firmware_info.block.fw_version[1], firmware_info.block.fw_version[2], info_beta, firmware_info.block.fw_build_time);
-                json_ptr->addMemberStringF("installed_version", "%u.%u.%u%s+%lx", BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH, build_beta, build_timestamp());
+                json_ptr->addMemberStringF("firmware_version", "%u.%u.%u%s+%lx",
+                                           firmware_info.block.fw_version_major,
+                                           firmware_info.block.fw_version_minor,
+                                           firmware_info.block.fw_version_patch,
+                                           fw_version_beta,
+                                           firmware_info.block.fw_build_timestamp);
+                json_ptr->addMemberStringF("installed_version", "%u.%u.%u%s+%lx",
+                                           BUILD_VERSION_MAJOR,
+                                           BUILD_VERSION_MINOR,
+                                           BUILD_VERSION_PATCH,
+                                           build_version_beta,
+                                           build_timestamp());
                 json_ptr->endObject();
                 json_ptr->end();
             }

@@ -83,23 +83,23 @@ def get_changelog_version(name):
     version = (str(versions[-1][0]), str(versions[-1][1]), str(versions[-1][2]), str(versions[-1][3]))
     return version_oldest, version
 
-def write_firmware_info(display_name, major, minor, patch, beta, build_time):
+def write_firmware_info(display_name, version, build_timestamp):
     buf = bytearray([0xFF] * 4096)
 
     # 7121CE12F0126E
     # tink er for ge
     buf[0:7] = bytes.fromhex("7121CE12F0126E") # magic
-    buf[7] = 0x02 # firmware_info_version, note: a new version has to be backwards compatible
+    buf[7] = 0x02 # firmware info version, note: a new version has to be backwards compatible
 
-    name_bytes = display_name.encode("utf-8") # firmware name, max 60 chars
-    buf[8:8 + len(name_bytes)] = name_bytes
-    buf[8 + len(name_bytes):68] = bytes(60 - len(name_bytes))
-    buf[68] = 0x00 # 0 byte to make sure string is terminated. also pads the fw version, so that the build date will be 4-byte aligned
-    buf[69] = int(major)
-    buf[70] = int(minor)
-    buf[71] = int(patch)
-    buf[72:76] = build_time.to_bytes(4, byteorder='little')
-    buf[76] = int(beta) # since version 2
+    display_name_bytes = display_name.encode("utf-8") # max 60 chars
+    buf[8:8 + len(display_name_bytes)] = display_name_bytes
+    buf[8 + len(display_name_bytes):68] = bytes(60 - len(display_name_bytes))
+    buf[68] = 0x00 # 0 byte to make sure string is terminated. also pads the version, so that the build timestamp will be 4-byte aligned
+    buf[69] = int(version[0])
+    buf[70] = int(version[1])
+    buf[71] = int(version[2])
+    buf[72:76] = build_timestamp.to_bytes(4, byteorder='little')
+    buf[76] = int(version[3]) # since firmware info version 2
     buf[4092:4096] = crc32(buf[0:4092]).to_bytes(4, byteorder='little')
 
     pathlib.Path(env.subst('$BUILD_DIR'), 'firmware_info.bin').write_bytes(buf)
@@ -582,7 +582,7 @@ def main():
     check_call([env.subst('$PYTHONEXE'), "-u", "update_packages.py"])
 
     # Add build flags
-    timestamp = int(time.time())
+    build_timestamp = int(time.time())
     name = env.GetProjectOption("custom_name")
     manufacturer = env.GetProjectOption("custom_manufacturer")
     manufacturer_full = env.GetProjectOption("custom_manufacturer_full")
@@ -736,7 +736,7 @@ def main():
 
     env.Replace(BUILD_FLAGS=build_flags)
 
-    write_firmware_info(display_name, *version, timestamp)
+    write_firmware_info(display_name, version, build_timestamp)
 
     build_lines = []
     build_lines.append('#pragma once')
@@ -784,11 +784,14 @@ def main():
     build_lines.append('#define BUILD_CUSTOM_APP_DESC_MAGIC 0xBCDE6543')
     build_lines.append('#define BUILD_CUSTOM_APP_DESC_VERSION 1')
     build_lines.append('typedef struct {')
-    build_lines.append('    uint32_t magic; // CUSTOM_APP_DESC_MAGIC')
+    build_lines.append('    uint32_t magic; // BUILD_CUSTOM_APP_DESC_MAGIC')
     build_lines.append('    uint8_t version; // BUILD_CUSTOM_APP_DESC_VERSION')
     build_lines.append('    uint8_t padding[3];')
-    build_lines.append('    uint8_t fw_version[4]; // major, minor, patch, beta')
-    build_lines.append('    uint32_t fw_build_time;')
+    build_lines.append('    uint8_t fw_version_major;')
+    build_lines.append('    uint8_t fw_version_minor;')
+    build_lines.append('    uint8_t fw_version_patch;')
+    build_lines.append('    uint8_t fw_version_beta;')
+    build_lines.append('    uint32_t fw_build_timestamp;')
     build_lines.append('} build_custom_app_desc_t;')
     tfutil.write_file_if_different(os.path.join('src', 'build.h'), '\n'.join(build_lines))
 
@@ -798,16 +801,16 @@ def main():
         "-NIGHTLY" if nightly else "",
         "-WITH-WIFI-PASSPHRASE-DO-NOT-DISTRIBUTE" if not_for_distribution else "",
         "{}_{}_{}{}".format(*version[:3], f"_beta_{version[3]}" if version[3] != "255" else ""),
-        timestamp,
+        build_timestamp,
         dirty_suffix,
     )
 
-    version_full_str = "{}.{}.{}{}+{:x}".format(*version[:3], f"-beta.{version[3]}" if version[3] != "255" else "", timestamp)
+    version_full_str = "{}.{}.{}{}+{:x}".format(*version[:3], f"-beta.{version[3]}" if version[3] != "255" else "", build_timestamp)
 
     build_lines = []
     build_lines.append('#include "build.h"')
-    build_lines.append('uint32_t build_timestamp() {{ return {}; }}'.format(timestamp))
-    build_lines.append('const char *build_timestamp_hex_str() {{ return "{:x}"; }}'.format(timestamp))
+    build_lines.append('uint32_t build_timestamp() {{ return {}; }}'.format(build_timestamp))
+    build_lines.append('const char *build_timestamp_hex_str() {{ return "{:x}"; }}'.format(build_timestamp))
     build_lines.append('const char *build_version_full_str() {{ return "{}"; }}'.format(version_full_str))
     build_lines.append('const char *build_version_full_str_upper() {{ return "{}"; }}'.format(version_full_str.upper()))
     build_lines.append('const char *build_info_str() {{ return "git url: {}, git branch: {}, git commit id: {}"; }}'.format(git_url, branch_name, git_commit_id))
@@ -818,13 +821,11 @@ def main():
     build_lines.append('    BUILD_CUSTOM_APP_DESC_MAGIC,')
     build_lines.append('    BUILD_CUSTOM_APP_DESC_VERSION,')
     build_lines.append('    {0, 0, 0},')
-    build_lines.append('    {')
-    build_lines.append('        BUILD_VERSION_MAJOR,')
-    build_lines.append('        BUILD_VERSION_MINOR,')
-    build_lines.append('        BUILD_VERSION_PATCH,')
-    build_lines.append('        BUILD_VERSION_BETA,')
-    build_lines.append('    },')
-    build_lines.append('    {},'.format(timestamp))
+    build_lines.append('    BUILD_VERSION_MAJOR,')
+    build_lines.append('    BUILD_VERSION_MINOR,')
+    build_lines.append('    BUILD_VERSION_PATCH,')
+    build_lines.append('    BUILD_VERSION_BETA,')
+    build_lines.append('    {},'.format(build_timestamp))
     build_lines.append('};')
     tfutil.write_file_if_different(os.path.join('src', 'build.cpp'), '\n'.join(build_lines))
     del build_lines
