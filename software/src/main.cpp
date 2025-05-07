@@ -77,8 +77,14 @@ int8_t button_pin = -1;
 ConfigRoot modules;
 
 static bool is_safari(const String &user_agent) {
+    // Firefox on iOS uses WebKit, not Gecko, but reports FxiOS/* instead of Version/*
+    // The same is true for Chrome on iOS, but with CriOS/* instead of Version/*
+    // For good measure also treat Edge on iOS the same way, even while reporting Version/* right now
+    // https://github.com/Tinkerforge/esp32-firmware/issues/342#issuecomment-2855741681
+    // https://github.com/mozilla-mobile/firefox-ios/issues/15938
+    // https://issues.chromium.org/issues/40233511
     return user_agent.indexOf("Safari/") >= 0 &&
-           user_agent.indexOf("Version/") >= 0 &&
+          (user_agent.indexOf("Version/") >= 0 || user_agent.indexOf("FxiOS/") >= 0 || user_agent.indexOf("CriOS/") >= 0 || user_agent.indexOf("EdgiOS/") >= 0) &&
            user_agent.indexOf("Chrome/") == -1 &&
            user_agent.indexOf("Chromium/") == -1;
 }
