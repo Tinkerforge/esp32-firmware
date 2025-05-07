@@ -35,14 +35,14 @@
 // Newer firmwares contain a firmware info page.
 #define FIRMWARE_INFO_OFFSET (0xd000 - 0x1000)
 #define FIRMWARE_INFO_LENGTH 0x1000
-#define FIRMWARE_INFO_MAGIC_0 0x12CE2171
-#define FIRMWARE_INFO_MAGIC_1 0x6E12F0
+
+static const uint8_t firmware_info_magic[BLOCK_READER_MAGIC_LENGTH] = {0x71, 0x21, 0xCE, 0x12, 0xF0, 0x12, 0x6E};
 
 // Signed firmwares contain a signature info page.
 #define SIGNATURE_INFO_OFFSET (0xc000 - 0x1000)
 #define SIGNATURE_INFO_LENGTH 0x1000
-#define SIGNATURE_INFO_MAGIC_0 0xE6210F21
-#define SIGNATURE_INFO_MAGIC_1 0xEC1217
+
+static const uint8_t signature_info_magic[BLOCK_READER_MAGIC_LENGTH] = {0xE6, 0x21, 0x0F, 0x21, 0xEC, 0x12, 0x17};
 
 #define SIGNATURE_INFO_SIGNATURE_OFFSET (SIGNATURE_INFO_OFFSET + offsetof(signature_info_t, signature))
 #define SIGNATURE_INFO_SIGNATURE_LENGTH crypto_sign_BYTES
@@ -138,6 +138,14 @@ static bool read_custom_app_desc(const esp_partition_t *partition, build_custom_
 }
 
 template <typename T>
+BlockReader<T>::BlockReader(size_t block_offset, size_t block_len, const uint8_t expected_magic[BLOCK_READER_MAGIC_LENGTH]) : block_offset(block_offset), block_len(block_len)
+{
+    memcpy(this->expected_magic, expected_magic, BLOCK_READER_MAGIC_LENGTH);
+
+    reset();
+}
+
+template <typename T>
 void BlockReader<T>::reset()
 {
     block = T{};
@@ -195,16 +203,16 @@ bool BlockReader<T>::handle_chunk(size_t chunk_offset, uint8_t *chunk_data, size
             read_expected_checksum_len += to_read;
         }
 
-        block_found = read_expected_checksum_len == sizeof(expected_checksum) && actual_magic_0 == expected_magic_0 && (actual_magic_1 & 0x00FFFFFF) == expected_magic_1;
+        block_found = read_expected_checksum_len == sizeof(expected_checksum) && memcmp(block.magic, expected_magic, BLOCK_READER_MAGIC_LENGTH) == 0;
     }
 
     return chunk_offset + chunk_len >= block_offset + block_len;
 }
 
 FirmwareUpdate::FirmwareUpdate() :
-    firmware_info(FIRMWARE_INFO_OFFSET, FIRMWARE_INFO_LENGTH, FIRMWARE_INFO_MAGIC_0, FIRMWARE_INFO_MAGIC_1)
+    firmware_info(FIRMWARE_INFO_OFFSET, FIRMWARE_INFO_LENGTH, firmware_info_magic)
 #if signature_sodium_public_key_length != 0
-    , signature_info(SIGNATURE_INFO_OFFSET, SIGNATURE_INFO_LENGTH, SIGNATURE_INFO_MAGIC_0, SIGNATURE_INFO_MAGIC_1)
+    , signature_info(SIGNATURE_INFO_OFFSET, SIGNATURE_INFO_LENGTH, signature_info_magic)
 #endif
 {
 }

@@ -35,36 +35,28 @@
 
 struct TFJsonSerializer;
 
+#define BLOCK_READER_MAGIC_LENGTH 7
+
 template <typename T>
 class BlockReader
 {
 public:
-    BlockReader(size_t block_offset, size_t block_len, uint32_t expected_magic_0, uint32_t expected_magic_1) :
-        block_offset(block_offset), block_len(block_len), expected_magic_0(expected_magic_0), expected_magic_1(expected_magic_1) {}
+    BlockReader(size_t block_offset, size_t block_len, const uint8_t expected_magic[BLOCK_READER_MAGIC_LENGTH]);
 
     void reset();
     bool handle_chunk(size_t chunk_offset, uint8_t *chunk_data, size_t chunk_len);
 
     size_t block_offset;
     size_t block_len;
+    uint8_t expected_magic[BLOCK_READER_MAGIC_LENGTH];
 
-    uint32_t expected_magic_0;
-    uint32_t expected_magic_1;
+    T block;
+    size_t read_block_len;
+    bool block_found;
 
-    union {
-        T block;
-        struct {
-            uint32_t actual_magic_0;
-            uint32_t actual_magic_1;
-        };
-    };
-
-    size_t read_block_len = 0;
-    bool block_found = false;
-
-    uint32_t actual_checksum = 0;
-    uint32_t expected_checksum = 0;
-    size_t read_expected_checksum_len = 0;
+    uint32_t actual_checksum;
+    uint32_t expected_checksum;
+    size_t read_expected_checksum_len;
 };
 
 class FirmwareUpdate final : public IModule
@@ -102,7 +94,8 @@ private:
     bool flash_firmware_in_progress = false;
 
     struct firmware_info_t {
-        uint32_t magic[2] = {0};
+        uint8_t magic[BLOCK_READER_MAGIC_LENGTH] = {};
+        uint8_t version = 0;
         char display_name[61] = {};
         uint8_t fw_version_major = 0;
         uint8_t fw_version_minor = 0;
@@ -115,7 +108,8 @@ private:
 
 #if signature_sodium_public_key_length != 0
     struct signature_info_t {
-        uint32_t magic[2] = {0};
+        uint8_t magic[BLOCK_READER_MAGIC_LENGTH] = {};
+        uint8_t version = 0;
         char publisher[64] = {};
         unsigned char signature[crypto_sign_BYTES] = {};
     };
