@@ -43,15 +43,13 @@ let x = {
             "confirm_remove": "Delete",
             "price": "Electricity price",
             "price_invalid": "The electricity price must be set in cent per kWh, not euro per kWh.",
-            "price_not_dynamic_yet": /*FFN*/(dap_enabled: boolean, pv_excess_enabled: boolean) => <>
+            "price_not_dynamic_yet": /*FFN*/(dap_enabled: boolean) => <>
                 Charges are always tracked with the electricity price configured here.<br/>
                 {dap_enabled ?
-                    <>The dynamic pricing is <strong>not tracked</strong>!</>:
-                    <>A dynamic pricing (currently not configured) will not be tracked.</>}<br/>
-                {pv_excess_enabled ?
-                    <>The used PV excess is <strong>not taken into account</strong>!</> :
-                    <>A PV excess (currently not configured) will not be taken into account.</>
-                }
+                    <>The dynamic pricing is <strong>not</strong> tracked!</>:
+                    <>A dynamic pricing (currently not configured) will <strong>not</strong> be tracked.</>}<br/>
+                <>The charged energy is always tracked completely. <strong>No</strong> distinction is
+                  made based on its origin (grid, battery storage, PV, etc.)!</>
             </>/*NF*/,
 
             "file_type": "File format",

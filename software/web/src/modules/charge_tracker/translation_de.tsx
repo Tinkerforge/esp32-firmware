@@ -43,15 +43,13 @@ let x = {
             "confirm_remove": "Löschen",
             "price": "Strompreis",
             "price_invalid": "Der Strompreis muss in Cent pro kWh, nicht in Euro pro kWh angegeben werden.",
-            "price_not_dynamic_yet": /*FFN*/(dap_enabled: boolean, pv_excess_enabled: boolean) => <>
+            "price_not_dynamic_yet": /*FFN*/(dap_enabled: boolean) => <>
                 Ladevorgänge werden immer mit dem hier konfigurierten Strompreis aufgezeichnet.<br/>
                 {dap_enabled ?
-                    <>Der dynamische Strompreis wird <strong>nicht aufgezeichnet</strong>!</>:
-                    <>Ein künftig konfigurierter dynamischer Strompreis wird nicht aufgezeichnet.</>}<br/>
-                {pv_excess_enabled ?
-                    <>Der verwendete PV-Überschuss wird <strong>nicht einberechnet</strong>!</> :
-                    <>Ein künftig gemessener PV-Überschuss wird nicht einberechnet.</>
-                }
+                    <>Der dynamische Strompreis wird <strong>nicht</strong> aufgezeichnet!</>:
+                    <>Ein dynamischer Strompreis (momentan nicht konfiguriert) wird <strong>nicht</strong> aufgezeichnet.</>}<br/>
+                <>Es wird immer die gesamte ins Fahrzeug geladene Energie aufgezeichnet. Es wird <strong>nicht</strong> nach
+                  Herkunft (Netzanschluss, Batteriespeicher, PV, etc.) unterschieden!</>
             </>/*NF*/,
 
             "file_type": "Dateiformat",
