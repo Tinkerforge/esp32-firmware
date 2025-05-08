@@ -9,7 +9,7 @@ let x = {
                 let result = [<>{`Firmware ${rolled_back_version} scheint instabil zu sein. Es wurde automatisch auf die vorherige Firmware ${version} zurückgewechselt.`}</>];
 
                 if ("{{{support_email}}}".length > 0) {
-                    result.push(<> Bitte einen <a href="/#event_log">Debug-Report</a> herunterladen und an <a href={removeUnicodeHacks(`mailto:{{{support_email}}}?subject=${display_type} Firmware ${rolled_back_version} scheint instabil`)}>{{{support_email}}}</a> schicken.</>);
+                    result.push(<> Bitte einen <a href="#event_log">Debug-Report</a> herunterladen und an <a href={removeUnicodeHacks(`mailto:{{{support_email}}}?subject=${display_type} Firmware ${rolled_back_version} scheint instabil`)}>{{{support_email}}}</a> schicken.</>);
                 }
 
                 return <>{result}</>;

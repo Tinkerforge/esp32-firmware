@@ -9,7 +9,7 @@ let x = {
                 let result = [<>{`Firmware ${rolled_back_version} seems unstable. An automatic rollback to the previous firmware ${version} has occurred.`}</>];
 
                 if ("{{{support_email}}}".length > 0) {
-                    result.push(<> Please download a <a href="/#event_log">debug report</a> and send it to <a href={removeUnicodeHacks(`mailto:{{{support_email}}}?subject=${display_type} firmware ${rolled_back_version} seems unstable`)}>{{{support_email}}}</a>.</>);
+                    result.push(<> Please download a <a href="#event_log">debug report</a> and send it to <a href={removeUnicodeHacks(`mailto:{{{support_email}}}?subject=${display_type} firmware ${rolled_back_version} seems unstable`)}>{{{support_email}}}</a>.</>);
                 }
 
                 return <>{result}</>;
