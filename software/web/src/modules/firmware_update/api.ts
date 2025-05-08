@@ -27,5 +27,5 @@ export interface override_signature {
 export interface clear_rolled_back_version {
 }
 
-export interface validate_firmware_now {
+export interface validate {
 }
