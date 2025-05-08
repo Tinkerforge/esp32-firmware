@@ -66,6 +66,21 @@ const char *tf_reset_reason()
         case ESP_RST_SDIO:
             return "Reset over SDIO.";
 
+        case ESP_RST_USB:
+            return "Reset by USB peripheral.";
+
+        case ESP_RST_JTAG:
+            return "Reset by JTAG.";
+
+        case ESP_RST_EFUSE:
+            return "Reset due to efuse error.";
+
+        case ESP_RST_PWR_GLITCH:
+            return "Reset due to power glitch detected.";
+
+        case ESP_RST_CPU_LOCKUP:
+            return "Reset due to CPU lock up.";
+
         default:
             return "Reset reason unknown.";
     }
