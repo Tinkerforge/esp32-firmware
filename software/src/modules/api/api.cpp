@@ -702,9 +702,9 @@ void API::register_urls()
     server.on("/debug_report", HTTP_GET, [this](WebServerRequest request) {
         String result = "{\"uptime\": ";
         result += String(now_us().to<millis_t>().as<uint32_t>());
-        result += ",\n \"free_heap_bytes\":";
+        result += ",\n \"free_heap_bytes\": ";
         result += heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-        result += ",\n \"largest_free_heap_block\":";
+        result += ",\n \"largest_free_heap_block\": ";
         result += heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
         result += ",\n \"devices\": [";
 
@@ -716,7 +716,7 @@ void API::register_urls()
         while (tf_hal_get_device_info(&hal, i, uid_str, &port_name, &device_id) == TF_E_OK) {
             char buf[100] = {0};
 
-            snprintf(buf, sizeof(buf), "%c{\"UID\":\"%s\", \"DID\":%u, \"port\":\"%c\"}", i == 0 ? ' ' : ',', uid_str, device_id, port_name);
+            snprintf(buf, sizeof(buf), "%s{\"UID\":\"%s\",\"DID\":%u,\"port\":\"%c\"}", i == 0 ? "" : ",", uid_str, device_id, port_name);
             result += buf;
             ++i;
         }
@@ -729,7 +729,7 @@ void API::register_urls()
             char buf[100] = {0};
 
             tf_hal_get_error_counters(&hal, c, &spitfp_checksum, &spitfp_frame, &tfp_frame, &tfp_unexpected);
-            snprintf(buf, sizeof(buf), "%c{\"port\": \"%c\", \"SpiTfpChecksum\": %lu, \"SpiTfpFrame\": %lu, \"TfpFrame\": %lu, \"TfpUnexpected\": %lu}", c == 'A' ? ' ': ',', c,
+            snprintf(buf, sizeof(buf), "%s{\"port\":\"%c\",\"SpiTfpChecksum\": %lu,\"SpiTfpFrame\": %lu,\"TfpFrame\": %lu,\"TfpUnexpected\": %lu}", c == 'A' ? "" : ",", c,
                      spitfp_checksum,
                      spitfp_frame,
                      tfp_frame,
