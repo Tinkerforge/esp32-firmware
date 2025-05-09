@@ -312,6 +312,8 @@ void setup()
         logger.printfln("Failed to register reboot handler");
     }
 
+    logger.printfln("Initialization done");
+
     boot_stage = BootStage::LOOP;
 }
 
