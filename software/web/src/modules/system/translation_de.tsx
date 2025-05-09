@@ -22,7 +22,7 @@ let x = {
                     "mittels JTAG",
                     "wegen einem eFuse-Fehler",
                     "wegen einer Power-Glitch-Erkennung",
-                    "wegen einer blockiertern CPU",
+                    "wegen einer blockierten CPU",
                 ];
 
                 let reason_str = reason_table[reason];
