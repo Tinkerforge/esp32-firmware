@@ -327,8 +327,19 @@ InstallState FirmwareUpdate::check_firmware_info(bool detect_downgrade, bool log
         }
 
         firmware_info.block.display_name[ARRAY_SIZE(firmware_info.block.display_name) - 1] = '\0';
+        firmware_info.block.name[ARRAY_SIZE(firmware_info.block.name) - 1] = '\0';
 
-        if (strcmp(BUILD_DISPLAY_NAME, firmware_info.block.display_name) != 0) {
+        if (firmware_info.block.version >= 3) {
+            if (strcmp(BUILD_NAME, firmware_info.block.name) != 0) {
+                if (log) {
+                    logger.printfln("Failed to update: Firmware is for %s but this is %s!",
+                                    firmware_info.block.name, BUILD_NAME);
+                }
+
+                return InstallState::WrongFirmwareType;
+            }
+        }
+        else if (strcmp(BUILD_DISPLAY_NAME, firmware_info.block.display_name) != 0) {
             if (log) {
                 logger.printfln("Failed to update: Firmware is for a %s but this is a %s!",
                                 firmware_info.block.display_name, BUILD_DISPLAY_NAME);

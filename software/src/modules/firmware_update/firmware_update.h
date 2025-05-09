@@ -101,7 +101,8 @@ private:
         uint8_t fw_version_minor = 0;
         uint8_t fw_version_patch = 0;
         uint32_t fw_build_timestamp = 0;
-        uint8_t fw_version_beta = 0; // since block version 2, before it's 0xFF
+        uint8_t fw_version_beta = 0; // since firmware info version 2, before it's 0xFF
+        char name[61] = {}; // since firmware info version 3, before it's 0xFF
     };
 
     BlockReader<firmware_info_t> firmware_info;

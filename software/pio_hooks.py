@@ -83,15 +83,18 @@ def get_changelog_version(name):
     version = (str(versions[-1][0]), str(versions[-1][1]), str(versions[-1][2]), str(versions[-1][3]))
     return version_oldest, version
 
-def write_firmware_info(display_name, version, build_timestamp):
+def write_firmware_info(name, display_name, version, build_timestamp):
     buf = bytearray([0xFF] * 4096)
 
     # 7121CE12F0126E
     # tink er for ge
     buf[0:7] = bytes.fromhex("7121CE12F0126E") # magic
-    buf[7] = 0x02 # firmware info version, note: a new version has to be backwards compatible
+    buf[7] = 0x03 # firmware info version, note: a new version has to be backwards compatible
+    display_name_bytes = display_name.encode("utf-8") # max 60 bytes
 
-    display_name_bytes = display_name.encode("utf-8") # max 60 chars
+    if len(display_name_bytes) > 60:
+        raise Exception('display_name is longer than 60 bytes')
+
     buf[8:8 + len(display_name_bytes)] = display_name_bytes
     buf[8 + len(display_name_bytes):68] = bytes(60 - len(display_name_bytes))
     buf[68] = 0x00 # 0 byte to make sure string is terminated. also pads the version, so that the build timestamp will be 4-byte aligned
@@ -100,6 +103,14 @@ def write_firmware_info(display_name, version, build_timestamp):
     buf[71] = int(version[2])
     buf[72:76] = build_timestamp.to_bytes(4, byteorder='little')
     buf[76] = int(version[3]) # since firmware info version 2
+    name_bytes = name.encode("utf-8") # max 30 bytes
+
+    if len(name_bytes) > 60:
+        raise Exception('name is longer than 60 bytes')
+
+    buf[77:77 + len(name_bytes)] = name_bytes # since firmware info version 3
+    buf[77 + len(name_bytes):137] = bytes(60 - len(name_bytes))
+    buf[137] = 0x00 # 0 byte to make sure string is terminated
     buf[4092:4096] = crc32(buf[0:4092]).to_bytes(4, byteorder='little')
 
     pathlib.Path(env.subst('$BUILD_DIR'), 'firmware_info.bin').write_bytes(buf)
@@ -736,7 +747,7 @@ def main():
 
     env.Replace(BUILD_FLAGS=build_flags)
 
-    write_firmware_info(display_name, version, build_timestamp)
+    write_firmware_info(name, display_name, version, build_timestamp)
 
     build_lines = []
     build_lines.append('#pragma once')
