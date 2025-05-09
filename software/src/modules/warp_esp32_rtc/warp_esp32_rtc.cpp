@@ -34,7 +34,7 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 // portTICK_PERIOD_MS expands to an old style cast.
-static TickType_t i2c_timeout = 4 / portTICK_PERIOD_MS;
+static constexpr const TickType_t i2c_timeout = 6 / portTICK_PERIOD_MS;
 #pragma GCC diagnostic pop
 
 static uint8_t intToBCD(uint8_t num) {
@@ -88,10 +88,14 @@ void WarpEsp32Rtc::setup_rtc() {
     ESP_ERROR_CHECK(i2c_master_write_byte(cmd, 0x00, true)); // start address is register control_1 (@ address 0x00), expect ack
     ESP_ERROR_CHECK(i2c_master_write(cmd, write_buf, ARRAY_SIZE(write_buf), true)); // overwrite the control registers, expect ack
     ESP_ERROR_CHECK(i2c_master_stop(cmd));
-    auto errRc = i2c_master_cmd_begin(I2C_MASTER_PORT, cmd, i2c_timeout);
+    esp_err_t ret = i2c_master_cmd_begin(I2C_MASTER_PORT, cmd, i2c_timeout);
     i2c_cmd_link_delete(cmd);
-    if (errRc != 0) {
-        logger.printfln("RTC write control reg failed: %d", errRc);
+    if (ret != ESP_OK) {
+        if (ret == ESP_FAIL) {
+            logger.printfln("RTC write control reg failed: Likely I2C NACK");
+        } else {
+            logger.printfln("RTC write control reg failed: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
+        }
         task_scheduler.scheduleOnce([this](){ this->setup_rtc(); }, 1_min);
         return;
     }
@@ -116,10 +120,9 @@ void WarpEsp32Rtc::set_time(const tm &date_time, int32_t microseconds)
 
     // TODO: can we do something with the microseconds here?
 
-    esp_err_t errRc;
-    errRc = i2c_master_cmd_begin(I2C_MASTER_PORT, rtc_write_time_cmd_handle, i2c_timeout);
-    if (errRc != 0) {
-        logger.printfln("RTC write failed: %d", errRc);
+    esp_err_t ret = i2c_master_cmd_begin(I2C_MASTER_PORT, rtc_write_time_cmd_handle, i2c_timeout);
+    if (ret != ESP_OK) {
+        logger.printfln("RTC write failed: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
     }
 }
 
@@ -129,9 +132,9 @@ struct timeval WarpEsp32Rtc::get_time()
     time.tv_sec = 0;
     time.tv_usec = 0;
 
-    auto ret = i2c_master_cmd_begin(I2C_MASTER_PORT, rtc_read_time_cmd_handle, i2c_timeout);
-
+    esp_err_t ret = i2c_master_cmd_begin(I2C_MASTER_PORT, rtc_read_time_cmd_handle, i2c_timeout);
     if (ret != ESP_OK) {
+        logger.printfln("RTC read failed: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
         return time;
     }
     struct tm tm;

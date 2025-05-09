@@ -1,0 +1,56 @@
+From d223c4033f4f1cdd4407e4ec1255d19f675a09c6 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Fri, 9 May 2025 14:51:03 +0200
+Subject: [PATCH] i2c: Fix stuck interrupt after a timeout
+
+- Mask all I2C interrupts before disabling the module.
+  This avoids interrupts becoming active while the module is switched off,
+  which would result in an infinite ISR loop because the interrupts cannot be cleared anymore.
+- Change the timeout calculation to exclude the preparation time.
+  This makes it unlikely that the timeout has already expired by the time the I2C transfer is started,
+  which would make it likely that the END interrupt becomes active while the I2C modules is being switched off.
+---
+ components/driver/i2c/i2c.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/components/driver/i2c/i2c.c b/components/driver/i2c/i2c.c
+index b7b2291e0c..22c6ae0dde 100644
+--- a/components/driver/i2c/i2c.c
++++ b/components/driver/i2c/i2c.c
+@@ -257,6 +257,7 @@ static void i2c_hw_disable(i2c_port_t i2c_num)
+     if (i2c_context[i2c_num].hw_enabled != false) {
+         I2C_RCC_ATOMIC() {
+             i2c_ll_enable_bus_clock(i2c_num, false);
++            i2c_ll_reset_register(i2c_num);
+         }
+         i2c_context[i2c_num].hw_enabled = false;
+     }
+@@ -707,6 +708,8 @@ static esp_err_t i2c_hw_fsm_reset(i2c_port_t i2c_num)
+     i2c_hal_get_timing_config(&i2c_context[i2c_num].hal, &timing_config);
+     i2c_ll_master_get_filter(i2c_context[i2c_num].hal.dev, &filter_cfg);
+ 
++    i2c_ll_disable_intr_mask(i2c_context[i2c_num].hal.dev, I2C_LL_INTR_MASK);
++
+     //to reset the I2C hw module, we need re-enable the hw
+     i2c_hw_disable(i2c_num);
+     i2c_master_clear_bus(i2c_num);
+@@ -1550,7 +1553,6 @@ esp_err_t i2c_master_cmd_begin(i2c_port_t i2c_num, i2c_cmd_handle_t cmd_handle,
+     // Sometimes when the FSM get stuck, the ACK_ERR interrupt will occur endlessly until we reset the FSM and clear bus.
+     esp_err_t ret = ESP_FAIL;
+     i2c_obj_t *p_i2c = p_i2c_obj[i2c_num];
+-    const TickType_t ticks_start = xTaskGetTickCount();
+     BaseType_t res = xSemaphoreTake(p_i2c->cmd_mux, ticks_to_wait);
+     if (res == pdFALSE) {
+         return ESP_ERR_TIMEOUT;
+@@ -1586,6 +1588,8 @@ esp_err_t i2c_master_cmd_begin(i2c_port_t i2c_num, i2c_cmd_handle_t cmd_handle,
+     //start send commands, at most 32 bytes one time, isr handler will process the remaining commands.
+     i2c_master_cmd_begin_static(i2c_num, NULL);
+ 
++    const TickType_t ticks_start = xTaskGetTickCount();
++
+     // Wait event bits
+     i2c_cmd_evt_t evt;
+     while (1) {
+-- 
+2.39.5
+

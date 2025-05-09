@@ -19,6 +19,7 @@
 
 #include "warp_esp32_i2c.h"
 
+#include "event_log_prefix.h"
 #include "module_dependencies.h"
 
 #include "gcc_warnings.h"
@@ -31,7 +32,7 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 // portTICK_PERIOD_MS expands to an old style cast.
-static TickType_t i2c_timeout = 6 / portTICK_PERIOD_MS;
+static constexpr const TickType_t i2c_timeout = 6 / portTICK_PERIOD_MS;
 #pragma GCC diagnostic pop
 
 static uint8_t tmp_cmd_buf[I2C_LINK_RECOMMENDED_SIZE(2)] = {};
@@ -65,10 +66,12 @@ void WarpEsp32I2c::setup()
 
     initialized = true;
 
-    task_scheduler.scheduleWithFixedDelay([this](){
-        auto ret = i2c_master_cmd_begin(I2C_MASTER_PORT, tmp_cmd_handle, i2c_timeout);
-        if(ret != ESP_OK)
+    task_scheduler.scheduleWithFixedDelay([this]() {
+        esp_err_t ret = i2c_master_cmd_begin(I2C_MASTER_PORT, tmp_cmd_handle, i2c_timeout);
+        if(ret != ESP_OK) {
+            logger.printfln("Temperature read failed: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
             return;
+        }
 
         int temp = static_cast<int8_t>(tmp_read_buf[0]) << 4 | tmp_read_buf[1] >> 4; // Cast to int8_t for sign-extension.
         temp = temp * 25 / 4; // equivalent to * 6.25 centicelsius per LSB
