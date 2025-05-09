@@ -931,6 +931,9 @@ de_hyph = [
     "Be-gren-zung",
     "Kon-tin-gent",
     "ver-steck-te",
+    "Ein-schal-ten",
+    "Pe-riph-er-al",
+    "blo-ckier-ten",
 ]
 
 en_hyph = [
@@ -1179,6 +1182,7 @@ en_hyph = [
     "ver-brauchs-ein-rich-tung",
     "con-trol-lable",
     "tem-po-rar-ily",
+    "pe-riph-er-al",
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
