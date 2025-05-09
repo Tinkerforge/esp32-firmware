@@ -20,8 +20,9 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h } from "preact";
+import { h, Component, RefObject } from "preact";
 import { __, update_languages_function } from "../../ts/translation";
+import { Alert } from "react-bootstrap";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
@@ -33,6 +34,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Settings } from "react-feather";
 import { Switch } from "../../ts/components/switch";
 import { Language } from "./language.enum";
+import { StatusSection } from "../../ts/components/status_section";
 
 export function SystemNavbar() {
     return <NavbarItem name="system" module="system" title={__("system.navbar.system")} symbol={<Settings />} />;
@@ -44,7 +46,7 @@ interface SystemState {
 
 type SystemI18nConfig = API.getType["system/i18n_config"];
 
-export class System extends ConfigComponent<"system/i18n_config", {}, SystemState> {
+export class System extends ConfigComponent<"system/i18n_config", {status_ref?: RefObject<SystemStatus>}, SystemState> {
     constructor() {
         super('system/i18n_config',
               () => __("system.script.save_failed"));
@@ -176,6 +178,27 @@ export class System extends ConfigComponent<"system/i18n_config", {}, SystemStat
                 </ConfigForm>
             </SubPage>
         );
+    }
+}
+
+export class SystemStatus extends Component
+{
+    render() {
+        if (!util.render_allowed())
+            return <StatusSection name="system" />
+
+        let last_reset = API.get('system/last_reset');
+        let version = API.get('info/version').firmware;
+        let display_type = API.get('info/name').display_type;
+
+        return <StatusSection name="system">
+            {last_reset.show_warning ?
+                <FormRow label={__("system.status.system")}>
+                    <Alert variant="warning" className="mb-0" onClose={() => API.call("system/hide_last_reset_warning", {}, () => __("system.status.hide_last_reset_warning_failed"))} dismissible>
+                        {__("system.status.last_reset")(last_reset.reason, version, display_type)}
+                    </Alert>
+                </FormRow> : undefined}
+            </StatusSection>;
     }
 }
 

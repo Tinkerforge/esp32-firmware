@@ -1,8 +1,45 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { __, removeUnicodeHacks } from "../../ts/translation";
 let x = {
     "system": {
         "status": {
+            "system": "System",
+            "last_reset": /*FFN*/(reason: number, version: string, display_type: string) => {
+                let reason_table = [
+                    "due to unknown cause",
+                    "due to power-on",
+                    "by external pin",
+                    "by software reset",
+                    "due to software crash",
+                    "due to interrupt watchdog",
+                    "due to task watchdog",
+                    "due to other watchdog",
+                    "after exiting deep sleep mode",
+                    "due to brownout",
+                    "by SDIO",
+                    "by USB peripheral",
+                    "by JTAG",
+                    "due to eFuse error",
+                    "due to power glitch detection",
+                    "due to CPU lock up",
+                ];
+
+                let reason_str = reason_table[reason];
+
+                if (reason_str === undefined) {
+                    reason_str = reason_table[0];
+                }
+
+                let result = [<>__("The_device") was rebooted unexpectedly {reason_str}.</>];
+
+                if ("{{{support_email}}}".length > 0) {
+                    result.push(<> Please download a <a href="#event_log">debug report</a> and send it to <a href={removeUnicodeHacks(`mailto:{{{support_email}}}?subject=${display_type} with firmware ${version} was rebooted unexpectedly`)}>{{{support_email}}}</a>.</>);
+                }
+
+                return <>{result}</>;
+            }/*NF*/,
+            "hide_last_reset_warning_failed": "Clearing the warning failed"
         },
         "navbar": {
             "system": "Settings"

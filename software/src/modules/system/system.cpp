@@ -23,6 +23,7 @@
 #include <LittleFS.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <esp_system.h>
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
@@ -79,6 +80,13 @@ void System::pre_setup()
         {"language", Config::Enum(Language::German)},
         {"detect_browser_language", Config::Bool(true)}
     })};
+
+    esp_reset_reason_t reason = esp_reset_reason();
+
+    last_reset = Config::Object({
+        {"reason", Config::Uint(reason)},
+        {"show_warning", Config::Bool(reason != ESP_RST_POWERON && reason != ESP_RST_SW)}
+    });
 }
 
 void System::setup()
@@ -91,6 +99,7 @@ void System::setup()
 void System::register_urls()
 {
     api.addPersistentConfig("system/i18n_config", &i18n_config);
+    api.addState("system/last_reset", &last_reset);
 
     server.on_HTTPThread("/recovery", HTTP_GET, [](WebServerRequest req) {
         req.addResponseHeader("Content-Encoding", "gzip");
@@ -141,5 +150,9 @@ void System::register_urls()
             API::removeAllConfig();
             ESP.restart();
         }, 3_s);
+    }, true);
+
+    api.addCommand("system/hide_last_reset_warning", Config::Null(), {}, [this](String &/*errmsg*/) {
+        last_reset.get("show_warning")->updateBool(false);
     }, true);
 }

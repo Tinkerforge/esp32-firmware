@@ -39,4 +39,5 @@ public:
 private:
     bool factory_reset_running = false;
     ConfigRoot i18n_config;
+    ConfigRoot last_reset;
 };
