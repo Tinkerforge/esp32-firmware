@@ -109,12 +109,12 @@ void Debug::pre_setup()
 
     float dram_speed   = static_cast<float>(cpu_freq_conf.freq_mhz * 1000000 * 4) / 1048576.0f; // DRAM speed cannot be measured accurately, but we know that it can deliver 4 bytes per CPU clock cycle.
     float iram_speed   = benchmark_area(reinterpret_cast<uint32_t *>(0x40080000), 128*1024);
-    float rodata_speed = benchmark_area(&_rodata_start, 128*1024); // 128KiB at the beginning of the readonly-data
-    float text_speed   = benchmark_area(&_text_start,   128*1024); // 128KiB at the beginning of the code
+    float rodata_speed = benchmark_area(&_rodata_start, 32*1024); // 32KiB at the beginning of the readonly-data
+    float text_speed   = benchmark_area(&_text_start,   32*1024); // 32KiB at the beginning of the code
 
     float psram_speed = 0;
 #if defined(BOARD_HAS_PSRAM)
-    psram_speed = benchmark_area(reinterpret_cast<uint32_t *>(0x3FB00000), 128*1024); // 128KiB inside the fourth MiB
+    psram_speed = benchmark_area(reinterpret_cast<uint32_t *>(0x3FB00000), 32*1024); // 32KiB inside the fourth MiB
 #endif
 
     state_spi_bus_prototype = Config::Object({
