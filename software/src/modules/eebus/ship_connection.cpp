@@ -859,7 +859,8 @@ void ShipConnection::state_sme_access_method_request()
     }
 }
 
-void ShipConnection::send_data_message(String payload)
+
+void ShipConnection::send_data_message(JsonVariant payload)
 {
     if (state == State::Done && get_protocol_state() == ProtocolState::Data) {
         SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
