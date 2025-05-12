@@ -52,7 +52,7 @@ DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, 
         return DeserializationResult::ERROR;
     }
     protocol_id = String(doc["data"][0]["header"][0]["protocolId"]);
-    payload = String(doc["data"][1]["payload"]);
+    payload = doc["data"][1]["payload"];
     valid = true;
 
     JsonObject data_extension = data["extension"];
