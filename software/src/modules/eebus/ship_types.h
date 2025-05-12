@@ -46,12 +46,11 @@ namespace SHIP_TYPES {
         // Mandatory
         bool valid = false;
         CoolString protocol_id{};
-        CoolString payload{}; //Can be anything so we just shove it into a string and let the handler responsible for the protocol figure it out
-
+        JsonVariant payload{}; 
 
         // Optional
         // This is used by Manufacturers to add their own data to the message
-        // If a field is to be sent out it has to be set to valid = true
+        // If a field is to be sent out it has to be set to valid = true, otherwise it will be ignored
         bool extension_id_valid = false;
         bool extension_binary_valid = false;
         bool extension_string_valid = false;

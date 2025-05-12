@@ -17,33 +17,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
+ #pragma once
+
+
 #include "build.h"
 #include "commondatatypes.h"
-#include "usecaseinformation.h"
 #include "tools.h"
 #include <ArduinoJson.h> // Include this even though its already included in TFJson.h but compiler got angry with me so just to be safe
 #include <TFJson.h>
 #include <map>
 #include <optional>
 
-
-struct NodeManagementUseCaseDataType {
-    std::optional<std::vector<UseCaseInformationDataType>> useCaseInformationDataType;
+struct NetworkManagementDeviceDescriptionDataType {
+    std::optional<DeviceAddressType> deviceAddress;
 };
-
-struct NodeManagementSpecificationVersionListType {
-    std::optional<std::vector<SpecificationVersionType>> specificationVersion;
-};
-
-struct NodeManagementDetailedDiscoveryDeviceInformationType {
-    std::optional<std::vector<NetworkManagementDeviceDescriptionDataType>> description;
-};
-
-struct NodeManagementDetailedDiscoveryDataType {
-    std::optional<NodeManagementSpecificationVersionListType> specificationVersionList;
-    std::optional<NodeManagementDetailedDiscoveryDeviceInformationType> deviceInformation;
-    std::optional<NodeManagementDetailedDiscoveryEntityInformationType> entityInformation;
-    std::optional<NodeManagementDetailedDiscoveryFeatureInformationType> featureInformation;
-};
-
-

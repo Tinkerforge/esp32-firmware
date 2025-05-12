@@ -40,7 +40,6 @@
 
 
 
-
 class ShipConnection
 {
 public:
@@ -147,7 +146,7 @@ public:
     WebSocketsClient ws_client;
     Role role;
     CoolString peer_ski = "";
-    SpineConnection spine{};
+    SpineConnection spine{this};
     bool connection_established = false;
 
 
@@ -167,7 +166,7 @@ public:
     void send_cmi_message(uint8_t type, uint8_t value);
     void send_current_outgoing_message();
     void send_string(String str);
-    void send_data_message(String payload);
+    void send_data_message(JsonVariant payload);
 
     CMIMessage get_cmi_message();
     ProtocolState get_protocol_state();

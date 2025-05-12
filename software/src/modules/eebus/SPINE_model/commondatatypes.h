@@ -29,6 +29,7 @@
 template <typename T> void serializeOptional(JsonObject &obj, const char *key, const std::optional<T> &value);
 template <typename T> std::optional<T> deserializeOptional(const JsonObjectConst &obj, const char *key);
 template <typename T> std::optional<T> deserializeOptional(const JsonObject &obj, const char *key);
+
 // For serializing/deserializing std::vector<T>
 // From https://arduinojson.org/v7/how-to/create-converters-for-stl-containers/
 namespace ArduinoJson
