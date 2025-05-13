@@ -2,13 +2,13 @@
     {
         "base": "esp32-arduino-libs",
         "branch": "tf-esp-20250513",
-        "commit": "e480269de70e3f977c47668497def590c289bef0",
+        "commit": "8884dc7a2d8a28f1ee9bafabbae29255bb41600f",
         "url": "https://github.com/Tinkerforge/esp32-arduino-libs"
     },
     {
         "base": "esp32-arduino-libs",
         "branch": "tf-esp-ethernet-20250513",
-        "commit": "de918644cd9b2a910e4cee71385f7f3c40161037",
+        "commit": "c0ab243e3204f1279f04aefb8d178836bb30287d",
         "url": "https://github.com/Tinkerforge/esp32-arduino-libs"
     }
 ]
