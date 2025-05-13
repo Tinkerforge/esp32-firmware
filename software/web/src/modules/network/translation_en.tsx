@@ -3,7 +3,27 @@ import { h } from "preact";
 import { __ } from "../../ts/translation";
 let x = {
     "network": {
-        "status": {},
+        "status": {
+            "sta_and_ethernet": "STA and Ethernet active",
+            "subnet_conflict": "Subnetzkonflikt",
+            "sta": "Wifi-STA",
+            "ethernet": "Ethernet",
+            "ap": "Wifi-AP",
+            "wireguard": "Wireguard",
+            "remote_access": "Remote Access",
+            "status_help": /*FFN*/(val: {network: number, name: string}[]) => {
+                return <>
+                    <p>Shows if network configurations exists that probably interfere with each other</p>
+                    <ul>
+                        <li><strong>{__("network.status.sta_and_ethernet")}</strong>: Wifi Connection and LAN Connection is active at the same time</li>
+                        <li><strong>{__("network.status.subnet_conflict")}</strong>: Multiple network interfaces are in the same subnet
+                    {
+                        val.length > 0 ? <><br/>Conflicting interfaces:<ul>{val.map(v => <li>{v.name}</li>)}</ul></> : <></>
+                    }</li>
+                    </ul>
+                </>
+            }/*NF*/
+        },
         "navbar": {
             "network": "Settings"
         },
