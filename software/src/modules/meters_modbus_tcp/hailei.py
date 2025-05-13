@@ -31,49 +31,49 @@ specs = [
                 'value_id': 'CurrentL1ImExDiff',
                 'start_address': 0x0403,
                 'value_type': 'S16',
-                'scale_factor': 0.1,  # FIXME: sign?
+                'scale_factor': 0.1,
             },
             {
                 'name': 'Inverter Current L2 [0.1 A]',
                 'value_id': 'CurrentL2ImExDiff',
                 'start_address': 0x0404,
                 'value_type': 'S16',
-                'scale_factor': 0.1,  # FIXME: sign?
+                'scale_factor': 0.1,
             },
             {
                 'name': 'Inverter Current L3 [0.1 A]',
                 'value_id': 'CurrentL3ImExDiff',
                 'start_address': 0x0405,
                 'value_type': 'S16',
-                'scale_factor': 0.1,  # FIXME: sign?
+                'scale_factor': 0.1,
             },
             {
                 'name': 'Inverter Power L1 [W]',
                 'value_id': 'PowerActiveL1ImExDiff',
                 'start_address': 0x0406,
                 'value_type': 'S32BE',
-                'scale_factor': 1.0,  # FIXME: sign?
+                'scale_factor': -1.0,
             },
             {
                 'name': 'Inverter Power L2 [W]',
                 'value_id': 'PowerActiveL2ImExDiff',
                 'start_address': 0x0408,
                 'value_type': 'S32BE',
-                'scale_factor': 1.0,  # FIXME: sign?
+                'scale_factor': -1.0,
             },
             {
                 'name': 'Inverter Power L3 [W]',
                 'value_id': 'PowerActiveL3ImExDiff',
                 'start_address': 0x040A,
                 'value_type': 'S32BE',
-                'scale_factor': 1.0,  # FIXME: sign?
+                'scale_factor': -1.0,
             },
             {
                 'name': 'Inverter Total Power [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 0x040C,
                 'value_type': 'S32BE',
-                'scale_factor': 1.0,  # FIXME: sign?
+                'scale_factor': -1.0,
             },
             {
                 'name': 'Inverter Grid Frequency [0.01 Hz]',
@@ -292,7 +292,7 @@ specs = [
                 'value_id': 'CurrentDCChaDisDiff',
                 'start_address': 0x0101,
                 'value_type': 'S16',
-                'scale_factor': 0.1,  # FIXME: sign?
+                'scale_factor': -0.1,
             },
             {
                 'name': 'Battery SOC [0.1 %]',
@@ -302,11 +302,11 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
-                'name': 'Max cell temperature [0.1 °C]',
+                'name': 'Max cell temperature [0.01 °C]',
                 'value_id': 'Temperature',
                 'start_address': 0x0110,
                 'value_type': 'S16',
-                'scale_factor': 0.1,
+                'scale_factor': 0.01,
             },
             {
                 'name': 'Battery charge energy [0.1 kWh]',
@@ -327,7 +327,7 @@ specs = [
                 'value_id': 'PowerDCChaDisDiff',
                 'start_address': 0x0126,
                 'value_type': 'S16',
-                'scale_factor': -1.0,  # FIXME: sign?
+                'scale_factor': -1.0,
             },
         ],
     },
