@@ -433,16 +433,18 @@ void SolarForecast::update()
                 logger.printfln("Solar forecast download ended prematurely");
                 break;
 
-            case AsyncHTTPSClientError::HTTPError:
-                logger.printfln("HTTP error while downloading solar forecast");
+            case AsyncHTTPSClientError::HTTPError: {
+                char buf[212];
+                translate_HTTPError_detailed(event->error_handle, buf, ARRAY_SIZE(buf), true);
+                logger.printfln("Forecast download failed: %s", buf);
                 break;
-
+            }
             case AsyncHTTPSClientError::HTTPClientInitFailed:
                 logger.printfln("Error while creating HTTP client");
                 break;
 
             case AsyncHTTPSClientError::HTTPClientError:
-                logger.printfln("Error while downloading solar forecast: %s", esp_err_to_name(event->error_http_client));
+                logger.printfln("Error while downloading solar forecast: %s (0x%lX)", esp_err_to_name(event->error_http_client), static_cast<uint32_t>(event->error_http_client));
                 break;
 
             case AsyncHTTPSClientError::HTTPStatusError:

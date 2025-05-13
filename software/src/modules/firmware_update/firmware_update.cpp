@@ -1112,18 +1112,20 @@ void FirmwareUpdate::check_for_update()
                 state.get("check_state")->updateEnum(CheckState::DownloadShortRead);
                 break;
 
-            case AsyncHTTPSClientError::HTTPError:
-                logger.printfln("HTTP error while downloading firmware index");
+            case AsyncHTTPSClientError::HTTPError: {
+                char buf[204];
+                translate_HTTPError_detailed(event->error_handle, buf, ARRAY_SIZE(buf), true);
+                logger.printfln("Firmware index download failed: %s", buf);
                 state.get("check_state")->updateEnum(CheckState::DownloadError);
                 break;
-
+            }
             case AsyncHTTPSClientError::HTTPClientInitFailed:
                 logger.printfln("Error while creating HTTP client");
                 state.get("check_state")->updateEnum(CheckState::HTTPClientInitFailed);
                 break;
 
             case AsyncHTTPSClientError::HTTPClientError:
-                logger.printfln("Error while downloading firmware index: %s", esp_err_to_name(event->error_http_client));
+                logger.printfln("Error while downloading firmware index: %s (0x%lX)", esp_err_to_name(event->error_http_client), static_cast<uint32_t>(event->error_http_client));
                 state.get("check_state")->updateEnum(CheckState::DownloadError);
                 break;
 

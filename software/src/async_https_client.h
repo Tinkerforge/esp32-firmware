@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <FS.h> // FIXME: without this include here there is a problem with the IPADDR_NONE define in <lwip/ip4_addr.h>
 #include <esp_http_client.h>
+#include <esp_tls_errors.h>
 #include <vector>
 #include <TFTools/Micros.h>
 
@@ -57,6 +58,7 @@ struct AsyncHTTPSClientEvent
         // AsyncHTTPSClientEventType::Error
         struct {
             AsyncHTTPSClientError error;
+            esp_tls_error_handle_t error_handle; // AsyncHTTPSClientError::HTTPError
             esp_err_t error_http_client; // AsyncHTTPSClientError::HTTPClientError
             int error_http_status; // AsyncHTTPSClientError::HTTPStatusError
         };
@@ -73,6 +75,7 @@ struct AsyncHTTPSClientEvent
 };
 
 const char *translate_error(AsyncHTTPSClientEvent *event);
+size_t translate_HTTPError_detailed(const esp_tls_error_handle_t error_handle, char *buf, size_t buflen, bool include_sock_errno = false);
 
 class AsyncHTTPSClient final
 {

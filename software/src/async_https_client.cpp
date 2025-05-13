@@ -19,6 +19,8 @@
 
 #define EVENT_LOG_PREFIX "async_https_clnt"
 
+#include <esp_tls.h>
+
 #include "async_https_client.h"
 
 #include "event_log_prefix.h"
@@ -57,6 +59,13 @@ esp_err_t AsyncHTTPSClient::event_handler(esp_http_client_event_t *event)
         async_event.error_http_client = ESP_OK;
         async_event.error_http_status = -1;
 
+        if (event->data_len == 0) {
+            async_event.error_handle = static_cast<esp_tls_error_handle_t>(event->data);
+        } else {
+            async_event.error_handle = nullptr;
+            logger.printfln("event_handler received HTTP_EVENT_ERROR with unexpected data: %iB @ %p", event->data_len, event->data);
+        }
+
         if (!that->abort_requested) {
             that->callback(&async_event);
         }
@@ -83,6 +92,7 @@ esp_err_t AsyncHTTPSClient::event_handler(esp_http_client_event_t *event)
 
             async_event.type = AsyncHTTPSClientEventType::Error;
             async_event.error = AsyncHTTPSClientError::HTTPStatusError;
+            async_event.error_handle = nullptr;
             async_event.error_http_client = ESP_OK;
             async_event.error_http_status = http_status;
 
@@ -294,6 +304,7 @@ void AsyncHTTPSClient::error_abort(AsyncHTTPSClientError error, esp_err_t error_
 
     async_event.type = AsyncHTTPSClientEventType::Error;
     async_event.error = error;
+    async_event.error_handle = nullptr;
     async_event.error_http_client = error_http_client;
     async_event.error_http_status = error_http_status;
 
@@ -356,7 +367,11 @@ const char *translate_error(AsyncHTTPSClientEvent *event) {
             return "Received incomplete response";
 
         case AsyncHTTPSClientError::HTTPError:
-            return "Error during execution";
+            if (!event->error_handle) {
+                return "Error during execution";
+            } else {
+                return esp_err_to_name(event->error_handle->last_error);
+            }
 
         case AsyncHTTPSClientError::HTTPClientInitFailed:
             return "Initializing HTTP-Client failed";
@@ -371,11 +386,80 @@ const char *translate_error(AsyncHTTPSClientEvent *event) {
             return "Setting request-body failed";
 
         case AsyncHTTPSClientError::HTTPClientError:
-            return strerror(event->error_http_client);
+            return esp_err_to_name(event->error_http_client);
 
         case AsyncHTTPSClientError::HTTPStatusError:
             return "Received HTTP-Error status-code";
     }
 
     return "";
+}
+
+size_t translate_HTTPError_detailed(const esp_tls_error_handle_t error_handle, char *buf, size_t buflen, bool include_sock_errno)
+{
+    StringWriter sw(buf, buflen);
+
+    if (!error_handle) {
+        sw.printf("Unknown error (no handle)");
+    } else {
+        const uint32_t esp_tls_flags = static_cast<uint32_t>(error_handle->esp_tls_flags);
+        if (esp_tls_flags != 0) {
+            char *remaining = sw.getRemainingPtr();
+            int len = mbedtls_x509_crt_verify_info(remaining, sw.getRemainingLength(), "", esp_tls_flags);
+            if (len > 0) {
+                if (remaining[len - 1] == '\n') {
+                    len--;
+                    remaining[len] = '\0';
+                }
+                for (int i = 0; i < len; i++) {
+                    if (remaining[i] == '\n') {
+                        remaining[i] = ';';
+                    }
+                }
+
+                sw.setLength(sw.getLength() + static_cast<size_t>(len));
+            }
+        } else {
+            bool needs_divider = false;
+
+            const esp_err_t last_error = error_handle->last_error;
+            if (last_error != ESP_OK) {
+                const char *last_error_str = esp_err_to_name(last_error);
+                if (!last_error_str) {
+                    last_error_str = "Unknown ESP_ERR_ESP_TLS_BASE error code";
+                }
+                sw.printf("%s (0x%lX)", last_error_str, static_cast<uint32_t>(last_error));
+                needs_divider = true;
+            }
+
+            const int error_code = error_handle->esp_tls_error_code;
+            if (error_code != 0) {
+                if (needs_divider) {
+                    sw.puts("; ");
+                }
+                char *remaining = sw.getRemainingPtr();
+                mbedtls_strerror(error_code, remaining, sw.getRemainingLength());
+                sw.setLength(sw.getLength() + strlen(remaining));
+                sw.printf(" (0x%lX)", static_cast<uint32_t>(error_code));
+                needs_divider = true;
+            }
+
+            if (include_sock_errno) {
+                int sock_errno = 0;
+                esp_tls_get_and_clear_error_type(error_handle, ESP_TLS_ERR_TYPE_SYSTEM, &sock_errno);
+                if (sock_errno != 0) {
+                    if (needs_divider) {
+                        sw.puts("; ");
+                    }
+                    const char *error_str = strerror(sock_errno);
+                    if (!error_str) {
+                        error_str = "Unknown system error code";
+                    }
+                    sw.printf("%s (%i)", error_str, sock_errno);
+                }
+            }
+        }
+    }
+
+    return sw.getLength();
 }

@@ -310,16 +310,18 @@ void DayAheadPrices::update()
                 logger.printfln("Day ahead price download ended prematurely");
                 break;
 
-            case AsyncHTTPSClientError::HTTPError:
-                logger.printfln("HTTP error while downloading day ahead prices");
+            case AsyncHTTPSClientError::HTTPError: {
+                char buf[216];
+                translate_HTTPError_detailed(event->error_handle, buf, ARRAY_SIZE(buf), true);
+                logger.printfln("DAP download failed: %s", buf);
                 break;
-
+            }
             case AsyncHTTPSClientError::HTTPClientInitFailed:
                 logger.printfln("Error while creating HTTP client");
                 break;
 
             case AsyncHTTPSClientError::HTTPClientError:
-                logger.printfln("Error while downloading day ahead prices: %s", esp_err_to_name(event->error_http_client));
+                logger.printfln("Error while downloading day ahead prices: %s (0x%lX)", esp_err_to_name(event->error_http_client), static_cast<uint32_t>(event->error_http_client));
                 break;
 
             case AsyncHTTPSClientError::HTTPStatusError:
