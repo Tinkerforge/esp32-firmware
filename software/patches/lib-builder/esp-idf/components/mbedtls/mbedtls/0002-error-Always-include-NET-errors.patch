@@ -1,0 +1,34 @@
+From 20c9df560a91c752a010f7493f019cadbf1b881c Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Mon, 12 May 2025 16:10:58 +0200
+Subject: [PATCH] error: Always include NET errors
+
+NET errors are used by the Xtensa port, but their inclusion for mbedtls_strerror() depends on the NET module, which is the POSIX port that is not included on Xtensa.
+---
+ library/error.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/library/error.c b/library/error.c
+index 6ad7162ab..b6008ca43 100644
+--- a/library/error.c
++++ b/library/error.c
+@@ -106,7 +106,7 @@
+ #include "mbedtls/md.h"
+ #endif
+
+-#if defined(MBEDTLS_NET_C)
++#if defined(MBEDTLS_NET_C) || 1
+ #include "mbedtls/net_sockets.h"
+ #endif
+
+@@ -711,7 +711,7 @@ const char *mbedtls_low_level_strerr(int error_code)
+             return( "LMS - Input/output buffer is too small to contain requited data" );
+ #endif /* MBEDTLS_LMS_C */
+
+-#if defined(MBEDTLS_NET_C)
++#if defined(MBEDTLS_NET_C) || 1
+         case -(MBEDTLS_ERR_NET_SOCKET_FAILED):
+             return( "NET - Failed to open a socket" );
+         case -(MBEDTLS_ERR_NET_CONNECT_FAILED):
+--
+2.39.5

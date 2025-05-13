@@ -1,0 +1,41 @@
+From b2c56ceb44d35464dcf07173054d79f66164d334 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Mon, 12 May 2025 16:19:59 +0200
+Subject: [PATCH] esp-tls: Fix async connect failure handling
+
+- Actually check the error value after successfully acquiring it.
+- Set a TLS connection failure error code instead of a setopt error code when a connection attempt fails.
+---
+ components/esp-tls/esp_tls.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/components/esp-tls/esp_tls.c b/components/esp-tls/esp_tls.c
+index 063a87a3a3..93cfa89b17 100644
+--- a/components/esp-tls/esp_tls.c
++++ b/components/esp-tls/esp_tls.c
+@@ -484,7 +484,7 @@ static int esp_tls_low_level_conn(const char *hostname, int hostlen, int port, c
+                 return 0;
+             }
+             if (FD_ISSET(tls->sockfd, &tls->rset) || FD_ISSET(tls->sockfd, &tls->wset)) {
+-                int error;
++                int error = 0;
+                 socklen_t len = sizeof(error);
+                 /* pending error check */
+                 if (getsockopt(tls->sockfd, SOL_SOCKET, SO_ERROR, &error, &len) < 0) {
+@@ -494,6 +494,13 @@ static int esp_tls_low_level_conn(const char *hostname, int hostlen, int port, c
+                     tls->conn_state = ESP_TLS_FAIL;
+                     return -1;
+                 }
++                if (error != 0) {
++                    ESP_LOGD(TAG, "Non blocking connect failed");
++                    ESP_INT_EVENT_TRACKER_CAPTURE(tls->error_handle, ESP_TLS_ERR_TYPE_SYSTEM, error);
++                    ESP_INT_EVENT_TRACKER_CAPTURE(tls->error_handle, ESP_TLS_ERR_TYPE_ESP, ESP_ERR_ESP_TLS_FAILED_CONNECT_TO_HOST);
++                    tls->conn_state = ESP_TLS_FAIL;
++                    return -1;
++                }
+             }
+         }
+         /* By now, the connection has been established */
+-- 
+2.39.5
+

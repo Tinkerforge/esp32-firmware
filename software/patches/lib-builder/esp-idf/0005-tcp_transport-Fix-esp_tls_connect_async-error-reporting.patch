@@ -1,0 +1,85 @@
+From 1799a46b5324db05a91b43cd4776852d5f93dee7 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Tue, 6 May 2025 16:44:33 +0200
+Subject: [PATCH] tcp_transport: Fix esp_tls_connect_async error reporting
+
+---
+ components/tcp_transport/transport_ssl.c | 48 ++++++++++++++++--------
+ 1 file changed, 33 insertions(+), 15 deletions(-)
+
+diff --git a/components/tcp_transport/transport_ssl.c b/components/tcp_transport/transport_ssl.c
+index 0a3adbac3b..bb23925e34 100644
+--- a/components/tcp_transport/transport_ssl.c
++++ b/components/tcp_transport/transport_ssl.c
+@@ -69,25 +69,43 @@ static int esp_tls_connect_async(esp_transport_handle_t t, const char *host, int
+         ssl->cfg.non_block = true;
+         ssl->ssl_initialized = true;
+         ssl->tls = esp_tls_init();
+-        if (!ssl->tls) {
++        if (ssl->tls == NULL) {
++            ESP_LOGE(TAG, "Failed to initialize new connection object");
++            capture_tcp_transport_error(t, ERR_TCP_TRANSPORT_NO_MEM);
+             return -1;
+         }
+         ssl->conn_state = TRANS_SSL_CONNECTING;
+         ssl->sockfd = INVALID_SOCKET;
+     }
+-    if (ssl->conn_state == TRANS_SSL_CONNECTING) {
+-        int progress = esp_tls_conn_new_async(host, strlen(host), port, &ssl->cfg, ssl->tls);
+-        if (progress >= 0) {
+-            if (esp_tls_get_conn_sockfd(ssl->tls, &ssl->sockfd) != ESP_OK) {
+-                ESP_LOGE(TAG, "Error in obtaining socket fd for the session");
+-                esp_tls_conn_destroy(ssl->tls);
+-                return -1;
+-            }
++
++    if (ssl->conn_state != TRANS_SSL_CONNECTING) {
++        ESP_LOGE(TAG, "Connection not in 'connecting' state");
++        return 0;
++    }
++
++    int progress = esp_tls_conn_new_async(host, strlen(host), port, &ssl->cfg, ssl->tls);
++    if (progress < 0) {
++        ESP_LOGE(TAG, "Failed to open a new connection");
++        esp_tls_error_handle_t esp_tls_error_handle;
++        if (esp_tls_get_error_handle(ssl->tls, &esp_tls_error_handle) == ESP_OK) {
++            esp_transport_set_errors(t, esp_tls_error_handle);
++        } else {
++            ESP_LOGE(TAG, "Error in obtaining the error handle");
+         }
+-        return progress;
++        goto exit_failure;
++    }
+
++    if (esp_tls_get_conn_sockfd(ssl->tls, &ssl->sockfd) != ESP_OK) {
++        ESP_LOGE(TAG, "Error in obtaining socket fd for the session");
++        goto exit_failure;
+     }
+-    return 0;
++    return progress;
++
++exit_failure:
++    esp_tls_conn_destroy(ssl->tls);
++    ssl->tls = NULL;
++    ssl->sockfd = INVALID_SOCKET;
++    return -1;
+ }
+
+ static inline int ssl_connect_async(esp_transport_handle_t t, const char *host, int port, int timeout_ms)
+@@ -132,10 +150,10 @@ static int ssl_connect(esp_transport_handle_t t, const char *host, int port, int
+     return 0;
+
+ exit_failure:
+-        esp_tls_conn_destroy(ssl->tls);
+-        ssl->tls = NULL;
+-        ssl->sockfd = INVALID_SOCKET;
+-        return -1;
++    esp_tls_conn_destroy(ssl->tls);
++    ssl->tls = NULL;
++    ssl->sockfd = INVALID_SOCKET;
++    return -1;
+ }
+
+ static int tcp_connect(esp_transport_handle_t t, const char *host, int port, int timeout_ms)
+--
+2.39.5

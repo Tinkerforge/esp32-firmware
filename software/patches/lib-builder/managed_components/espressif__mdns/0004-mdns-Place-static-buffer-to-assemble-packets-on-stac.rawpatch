@@ -14,13 +14,13 @@ index b658b16ea1..97600c5ee1 100644
 +++ b/mdns.c
 @@ -1489,7 +1489,7 @@ static uint8_t _mdns_append_answer(uint8_t * packet, uint16_t * index, mdns_out_
   */
- static void _mdns_dispatch_tx_packet(mdns_tx_packet_t * p)
+ static void _mdns_dispatch_tx_packet(mdns_tx_packet_t *p)
  {
 -    static uint8_t packet[MDNS_MAX_PACKET_SIZE];
 +    uint8_t packet[MDNS_MAX_PACKET_SIZE];
      uint16_t index = MDNS_HEAD_LEN;
      memset(packet, 0, MDNS_HEAD_LEN);
-     mdns_out_question_t * q;
+     mdns_out_question_t *q;
 -- 
 2.39.2
 

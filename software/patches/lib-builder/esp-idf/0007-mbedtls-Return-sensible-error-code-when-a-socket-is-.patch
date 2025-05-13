@@ -1,0 +1,29 @@
+From 77d2c6f683030c5596947c09faf574ccc85ae218 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Mon, 12 May 2025 16:33:57 +0200
+Subject: [PATCH] mbedtls: Return sensible error code when a socket is not
+ connected
+
+Return MBEDTLS_ERR_NET_CONNECT_FAILED instead of -1 when attempting to send via a socket that is not connected.
+---
+ components/mbedtls/port/net_sockets.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/components/mbedtls/port/net_sockets.c b/components/mbedtls/port/net_sockets.c
+index b646870d92..6789f3b8c5 100644
+--- a/components/mbedtls/port/net_sockets.c
++++ b/components/mbedtls/port/net_sockets.c
+@@ -436,6 +436,10 @@ int mbedtls_net_send( void *ctx, const unsigned char *buf, size_t len )
+             return ( MBEDTLS_ERR_SSL_WANT_WRITE );
+         }
+ 
++        if ( errno == ENOTCONN ) {
++            return ( MBEDTLS_ERR_NET_CONNECT_FAILED );
++        }
++
+         return ( MBEDTLS_ERR_NET_SEND_FAILED );
+     }
+ 
+-- 
+2.39.5
+
