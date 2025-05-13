@@ -51,7 +51,8 @@ let x = {
             "wifi_ap": "the WiFi access point",
             "wifi_sta": "the WiFi connection",
             "ethernet": "the Ethernet connection",
-            "wireguard": "the WireGuard connection"
+            "wireguard": "the WireGuard connection",
+            "remote_access": "the remote access"
         },
         "collapsed_section": {
             "heading": "Details",

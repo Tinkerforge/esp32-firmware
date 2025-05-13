@@ -22,7 +22,8 @@ import { JSX } from 'preact';
 import { __ } from "../translation";
 import { FormRow } from "./form_row";
 import { InputIP } from "./input_ip";
-import { parseIP, unparseIP } from "../util";
+import { parseIP, range, unparseIP } from "../util";
+import * as API from "../api";
 
 import Collapse from "react-bootstrap/Collapse";
 import { InputSelect } from "./input_select";
@@ -60,6 +61,22 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
         this.props.onValue(this.props.value);
     }
 
+    addRemoteAccessNetworks(networks: {ip: number, subnet: number, name: string}[]) {
+        const remoteAccessNetworks = range(0, API.get("remote_access/config").users.length * 5).map((i) => {
+            return {
+                ip: parseIP(`10.123.${i}.2`),
+                subnet: parseIP("255.255.255.0"),
+                name: __("component.ip_configuration.remote_access")
+            };
+        });
+        remoteAccessNetworks.push({
+            ip: parseIP("10.123.123.2"),
+            subnet: parseIP("255.255.255.0"),
+            name: __("component.ip_configuration.remote_access"),
+        });
+        return networks.concat(remoteAccessNetworks);
+    }
+
     render(props: IPConfigurationProps, state: Readonly<{}>) {
         let dhcp = props.value.ip == "0.0.0.0";
         let gateway_out_of_subnet = false;
@@ -83,7 +100,12 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
                 }
 
                 if (props.forbidNetwork) {
-                    for (let net of props.forbidNetwork) {
+                    let forbidNetwork = props.forbidNetwork;
+                    if (API.get("remote_access/config").enable) {
+                        forbidNetwork = this.addRemoteAccessNetworks(forbidNetwork);
+                    }
+
+                    for (let net of forbidNetwork) {
                         let common_subnet = subnet & net.subnet;
                         if ((ip & common_subnet) == (net.ip & common_subnet)) {
                             captured_subnet_name = net.name;

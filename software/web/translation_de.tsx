@@ -51,7 +51,8 @@ let x = {
             "wifi_ap": "den WLAN-Access-Point",
             "wifi_sta": "die WLAN-Verbindung",
             "ethernet": "die LAN-Verbindung",
-            "wireguard": "die WireGuard-Verbindung"
+            "wireguard": "die WireGuard-Verbindung",
+            "remote_access": "den Fernzugriff"
         },
         "collapsed_section": {
             "heading": "Details",
