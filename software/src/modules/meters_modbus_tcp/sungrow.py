@@ -424,14 +424,14 @@ specs = [
                 'name': 'Battery Current [0.1 A]',
                 'value_id': 'CurrentDCChaDisDiff',
                 'start_address': 13021,
-                'value_type': 'U16',
+                'value_type': 'S16',
                 'scale_factor': 0.1,  # sign depends on running state
             },
             {
                 'name': 'Battery Power [W]',
                 'value_id': 'PowerDCChaDisDiff',
                 'start_address': 13022,
-                'value_type': 'U16',
+                'value_type': 'S16',
                 'scale_factor': 1.0,  # sign depends on running state
             },
             {

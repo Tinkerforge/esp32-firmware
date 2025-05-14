@@ -2117,14 +2117,16 @@ void MeterModbusTCP::parse_next()
         if (register_start_address == SUNGROW_HYBRID_INVERTER_RUNNING_STATE_ADDRESS) {
             sungrow_hybrid_inverter.running_state = c16.u;
         }
-        else if (register_start_address == SUNGROW_HYBRID_INVERTER_BATTERY_CURRENT_ADDRESS) {
+        else if (register_start_address == SUNGROW_HYBRID_INVERTER_BATTERY_CURRENT_ADDRESS
+              || register_start_address == SUNGROW_HYBRID_INVERTER_BATTERY_POWER_ADDRESS) {
+            // it seems that from october 2024 the running-state register stays at 0 and
+            // the current and power values are reported signed already
+            //
+            // https://github.com/evcc-io/evcc/issues/18270
+            // https://github.com/mkaiser/Sungrow-SHx-Inverter-Modbus-Home-Assistant/blob/a3b82db9a3b33bdda5c35108578d4c7685f82f7d/modbus_sungrow.yaml#L1281
             if ((sungrow_hybrid_inverter.running_state & (1 << 2)) != 0) {
-                value = zero_safe_negation(value);
-            }
-        }
-        else if (register_start_address == SUNGROW_HYBRID_INVERTER_BATTERY_POWER_ADDRESS) {
-            if ((sungrow_hybrid_inverter.running_state & (1 << 2)) != 0) {
-                value = zero_safe_negation(value);
+                // discharging flag is set, assume unsigned value, but fabs anyway to be sure
+                value = zero_safe_negation(fabs(value));
             }
         }
     }
