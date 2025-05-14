@@ -32,6 +32,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { Settings } from "react-feather";
 import { StatusSection } from "ts/components/status_section";
 import { IndicatorGroup } from "ts/components/indicator_group";
+import { Alert } from "react-bootstrap";
 
 export function NetworkNavbar() {
     return <NavbarItem name="network" module="network" title={__("network.navbar.network")} symbol={<Settings />} />;
@@ -120,6 +121,7 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
     getEqualSubnets(state: Readonly<NetworkStatusState>) {
         const connectedSubnets: {
             network: number;
+            subnet: string;
             name: string;
         }[] = [];
 
@@ -127,7 +129,9 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
         if (wifiIP !== 0) {
             const wifiSubnet = util.parseIP(state.wifi.sta_subnet);
             const wifiNetwork = wifiIP & wifiSubnet;
-            connectedSubnets.push({network: wifiNetwork, name: __("network.status.sta")});
+            const subnetString = `/${util.countBits(wifiSubnet)}`;
+            console.log(subnetString);
+            connectedSubnets.push({network: wifiNetwork, name: __("network.status.sta"), subnet: subnetString});
         }
 
 
@@ -135,58 +139,73 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
         if (ethernetIP !== 0) {
             const ethernetSubnet = util.parseIP(state.ethernet.subnet);
             const ethernetNetwork = ethernetIP & ethernetSubnet;
-            connectedSubnets.push({network: ethernetNetwork, name: __("network.status.ethernet")});
+            const subnetString = `/${util.countBits(ethernetSubnet)}`;
+            connectedSubnets.push({network: ethernetNetwork, name: __("network.status.ethernet"), subnet: subnetString});
         }
 
         if (state.apConfig.enable_ap && !state.apConfig.ap_fallback_only) {
             const apIP = util.parseIP(state.apConfig.ip);
             const apSubnet = util.parseIP(state.apConfig.subnet);
             const apNetwork = apIP & apSubnet;
-            connectedSubnets.push({network: apNetwork, name: __("network.status.ap")});
+            const subnetString = `/${util.countBits(apSubnet)}`;
+            connectedSubnets.push({network: apNetwork, name: __("network.status.ap"), subnet: subnetString});
         }
 
         if (state.wireguardConfig.enable) {
             const wireguardIP = util.parseIP(state.wireguardConfig.internal_ip);
             const wireguardSubnet = util.parseIP(state.wireguardConfig.internal_subnet);
             const wireguardNetwork = wireguardIP & wireguardSubnet;
-            connectedSubnets.push({network: wireguardNetwork, name: __("network.status.wireguard")});
+            const subnetString = `/${util.countBits(wireguardSubnet)}`;
+            connectedSubnets.push({network: wireguardNetwork, name: __("network.status.wireguard"), subnet: subnetString});
         }
 
         if (state.remoteAccessConfig.enable) {
             for (let i = 0; i < state.remoteAccessConfig.users.length * 5; i++) {
                 const remoteAccessNetwork = util.parseIP(`10.123.${i}.0`);
-                connectedSubnets.push({network: remoteAccessNetwork, name: __("network.status.remote_access")});
+                connectedSubnets.push({network: remoteAccessNetwork, name: __("network.status.remote_access"), subnet: "/24"});
             }
             const remoteAccessNetwork = util.parseIP(`10.123.123.0`);
-            connectedSubnets.push({network: remoteAccessNetwork, name: __("network.status.remote_access")});
+            connectedSubnets.push({network: remoteAccessNetwork, name: __("network.status.remote_access"), subnet: "/24"});
         }
 
         const equalSubnets = connectedSubnets.filter((subnet) => {
             return connectedSubnets.findIndex(v => v.network === subnet.network && v.name !== subnet.name) !== -1;
         });
 
-        return equalSubnets;
+        const conflictSubnets: [{
+            network: string,
+            name: string,
+        },
+        {
+            network: string,
+            name: string,
+        }][] = [];
+        equalSubnets.map((subnet, idx) => {
+            const conflict = equalSubnets.slice(idx + 1).filter(v => v.network === subnet.network);
+            for (const c of conflict) {
+                conflictSubnets.push([{
+                    network: `${util.unparseIP(subnet.network)}${subnet.subnet}`,
+                    name: subnet.name,
+                },
+            {
+                    network: `${util.unparseIP(c.network)}${c.subnet}`,
+                    name: c.name,
+            }]);
+            }
+        })
+
+        return conflictSubnets;
     }
 
     render(props: {}, state: Readonly<NetworkStatusState>) {
         if (!util.render_allowed()) {
             return <StatusSection name="network" />;
         }
-        const equalSubnets = this.getEqualSubnets(state);
-        const wifiAndEthernetActive = util.parseIP(state.wifi.sta_ip) !== 0 && util.parseIP(state.ethernet.ip) !== 0;
-        const indicatorValue = equalSubnets.length > 0 ? 2 : wifiAndEthernetActive ? 1 : 0;
+        const conflictSubnets = this.getEqualSubnets(state);
 
         return <StatusSection name="network">
-            <FormRow label={__("network.content.network")} help={__("network.status.status_help")(equalSubnets)}>
-                <IndicatorGroup
-                    style="width: 100%"
-                    class="flex-wrap"
-                    value={indicatorValue}
-                    items={[
-                        ["success", "OK"],
-                        ["warning", __("network.status.sta_and_ethernet")],
-                        ["danger", __("network.status.subnet_conflict")],
-                    ]} />
+            <FormRow label={__("network.status.subnet_conflict")}>
+                <Alert variant="danger" >{__("network.status.status_help")(conflictSubnets)}</Alert>
             </FormRow>
         </StatusSection>;
     }

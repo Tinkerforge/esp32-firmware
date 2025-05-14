@@ -4,23 +4,19 @@ import { __ } from "../../ts/translation";
 let x = {
     "network": {
         "status": {
-            "sta_and_ethernet": "STA und Ethernet aktiv",
+            "sta_and_ethernet": "WLAN und Ethernet aktiv",
             "subnet_conflict": "Subnetzkonflikt",
             "sta": "WLAN-Verbindung",
             "ethernet": "LAN-Verbindung",
             "ap": "WLAN-Access-Point",
             "wireguard": "Wireguard",
             "remote_access": "Fernzugriff",
-            "status_help": /*FFN*/(val: {network: number, name: string}[]) => {
+            "status_help": /*FFN*/(val: [{network: string, name: string}, {network: string, name: string}][]) => {
                 return <>
-                    <p>Zeigt Netzwerkkonfigurationen, welche möglicherweise zu Problemen führen können an</p>
-                    <ul>
-                        <li><strong>{__("network.status.sta_and_ethernet")}</strong>: Wifi-STA und Ethernet ist gleichzeitig aktiv</li>
-                        <li><strong>{__("network.status.subnet_conflict")}</strong>: Mehrere Netzwerkinterface sind im Selben Subnetz
+                    <p>Folgende Schnittstellen kollidieren miteinander:</p>
                     {
-                        val.length > 0 ? <><br/>Folgende Konflikte:<ul>{val.map(v => <li>{v.name}</li>)}</ul></> : <></>
-                    }</li>
-                    </ul>
+                        val.length > 0 ? <><ul>{val.map(v => <li>{v[0].name} ({v[0].network}) und {v[1].name} ({v[1].network})</li>)}</ul></> : <></>
+                    }
                 </>
             }/*NF*/
         },
