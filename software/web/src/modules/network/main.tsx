@@ -17,10 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "module_available.inc"
+
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { h, Component, RefObject } from "preact";
-import { __ } from "../../ts/translation";
+import { __, translate_unchecked } from "../../ts/translation";
 import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
@@ -90,20 +92,29 @@ export class Network extends ConfigComponent<'network/config', {status_ref: RefO
 }
 
 interface NetworkStatusState {
+//#if MODULE_ETHERNET_AVAILABLE
     ethernet: API.getType["ethernet/state"];
+//#endif
+
     wifi: API.getType["wifi/state"];
     wireguardConfig: API.getType["wireguard/config"];
     apConfig: API.getType["wifi/ap_config"];
+
+//#if MODULE_REMOTE_ACCESS_AVAILABLE
     remoteAccessConfig: API.getType["remote_access/config"];
+//#endif
 }
 
 export class NetworkStatus extends Component<{}, NetworkStatusState> {
     constructor() {
         super();
 
+//#if MODULE_ETHERNET_AVAILABLE
         util.addApiEventListener('ethernet/state', () => {
             this.setState({ ethernet: API.get('ethernet/state') });
         });
+//#endif
+
         util.addApiEventListener('wifi/state', () => {
             this.setState({ wifi: API.get('wifi/state') });
         });
@@ -113,9 +124,12 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
         util.addApiEventListener('wifi/ap_config', () => {
             this.setState({ apConfig: API.get('wifi/ap_config') });
         });
+
+//#if MODULE_REMOTE_ACCESS_AVAILABLE
         util.addApiEventListener('remote_access/config', () => {
             this.setState({ remoteAccessConfig: API.get('remote_access/config') });
         });
+//#endif
     }
 
     getEqualSubnets(state: Readonly<NetworkStatusState>) {
@@ -136,15 +150,16 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
             connectedSubnets.push({network: wifiNetwork, name: __("wifi.navbar.wifi_sta"), subnet: subnetString, href: "#wifi_sta", dhcp});
         }
 
-
+//#if MODULE_ETHERNET_AVAILABLE
         const ethernetIP = util.parseIP(state.ethernet.ip);
         if (ethernetIP !== 0) {
             const ethernetSubnet = util.parseIP(state.ethernet.subnet);
             const ethernetNetwork = ethernetIP & ethernetSubnet;
             const subnetString = `/${util.countBits(ethernetSubnet)}`;
-            const dhcp = API.get("ethernet/config").ip === "0.0.0.0";
-            connectedSubnets.push({network: ethernetNetwork, name: __("ethernet.navbar.ethernet"), subnet: subnetString, href: "#ethernet", dhcp});
+            const dhcp = API.get_unchecked("ethernet/config").ip === "0.0.0.0";
+            connectedSubnets.push({network: ethernetNetwork, name: translate_unchecked("ethernet.navbar.ethernet"), subnet: subnetString, href: "#ethernet", dhcp});
         }
+//#endif
 
         if (state.apConfig.enable_ap && !state.apConfig.ap_fallback_only) {
             const apIP = util.parseIP(state.apConfig.ip);
@@ -162,6 +177,7 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
             connectedSubnets.push({network: wireguardNetwork, name: __("wireguard.navbar.wireguard"), subnet: subnetString, href: "#wireguard"});
         }
 
+//#if MODULE_REMOTE_ACCESS_AVAILABLE
         if (state.remoteAccessConfig.enable) {
             for (let i = 0; i < state.remoteAccessConfig.users.length * 5; i++) {
                 const remoteAccessNetwork = util.parseIP(`10.123.${i}.0`);
@@ -170,6 +186,7 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
             const remoteAccessNetwork = util.parseIP(`10.123.123.0`);
             connectedSubnets.push({network: remoteAccessNetwork, name: __("remote_access.navbar.remote_access"), subnet: "/24", href: "#remote_access"});
         }
+//#endif
 
         const equalSubnets = connectedSubnets.filter((subnet) => {
             return connectedSubnets.findIndex(v => v.network === subnet.network && v.name !== subnet.name) !== -1;
@@ -213,6 +230,9 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
             return <StatusSection name="network" />;
         }
         const conflictSubnets = this.getEqualSubnets(state);
+        if (conflictSubnets.length === 0) {
+            return <StatusSection name="network" />
+        }
 
         return <StatusSection name="network">
             <FormRow label={__("network.status.subnet_conflict")}>

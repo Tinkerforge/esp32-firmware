@@ -62,7 +62,7 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
     }
 
     addRemoteAccessNetworks(networks: {ip: number, subnet: number, name: string}[]) {
-        const remoteAccessNetworks = range(0, API.get("remote_access/config").users.length * 5).map((i) => {
+        const remoteAccessNetworks = range(0, API.get_unchecked("remote_access/config").users.length * 5).map((i) => {
             return {
                 ip: parseIP(`10.123.${i}.2`),
                 subnet: parseIP("255.255.255.0"),
@@ -101,7 +101,7 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
 
                 if (props.forbidNetwork) {
                     let forbidNetwork = props.forbidNetwork;
-                    if (API.get("remote_access/config").enable) {
+                    if (API.hasModule("remote_access") && API.get_unchecked("remote_access/config").enable) {
                         forbidNetwork = this.addRemoteAccessNetworks(forbidNetwork);
                     }
 
