@@ -130,7 +130,6 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
             const wifiSubnet = util.parseIP(state.wifi.sta_subnet);
             const wifiNetwork = wifiIP & wifiSubnet;
             const subnetString = `/${util.countBits(wifiSubnet)}`;
-            console.log(subnetString);
             connectedSubnets.push({network: wifiNetwork, name: __("network.status.sta"), subnet: subnetString});
         }
 
