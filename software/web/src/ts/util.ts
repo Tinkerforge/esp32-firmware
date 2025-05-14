@@ -529,6 +529,14 @@ export function unparseIP(ip: number) {
            ((ip >>> 0 ) & 0xFF).toString();
 }
 
+// Count the number of bits set in a 32 bit integer
+// https://graphics.stanford.edu/%7Eseander/bithacks.html#CountBitsSetParallel
+export function countBits(x: number) {
+    x = x - ((x >> 1) & 0x55555555);
+    x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
+    x = ((x + (x >> 4) & 0xF0F0F0F) * 0x1010101) >> 24;
+    return x;
+}
 
 export function downloadToFile(content: BlobPart, fileType: string, extension: string, contentType: string, timestamp?: Date) {
     if (timestamp === undefined) {
