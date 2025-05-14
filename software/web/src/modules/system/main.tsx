@@ -125,10 +125,6 @@ export class System extends ConfigComponent<"system/i18n_config", {status_ref?: 
                         <Button variant="primary" className="form-control" onClick={util.reboot}>{__("system.content.reboot")}</Button>
                     </FormRow>
 
-                    <FormRow label={__("system.content.current_spiffs")}>
-                        <InputText value={this.state.version.config + " (" + this.state.version.config_type + ")"}/>
-                    </FormRow>
-
                     {show_config_reset ?
                         <FormRow label={__("system.content.config_reset")} label_muted={__("system.content.config_reset_desc")}>
                             <Button variant="danger" className="form-control" onClick={async () => {
