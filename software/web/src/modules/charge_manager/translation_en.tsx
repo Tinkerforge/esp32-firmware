@@ -261,9 +261,9 @@ let x = {
 
             "scan_failed": "Scan failed",
 
-            "mode_explainer_0": "This WARP Charger is not part of a charge management group. PV excess charging is disabled.",
-            "mode_explainer_1": "This WARP Charger is part of a charge management group with other WARP Chargers and/or a WARP Energy Manager. Another device controls this group to make sure the configured current is never exceeded.",
-            "mode_explainer_2": "This WARP Charger either uses the PV excess charging or controls a charge management group with other WARP Chargers to make sure the configured current is never exceeded.",
+            "mode_explainer_0": <>{__("This_device")} is not part of a charge management group. PV excess charging is disabled.</>,
+            "mode_explainer_1": <>{__("This_device")} is part of a charge management group with other WARP Chargers and/or a WARP Energy Manager. Another device controls this group to make sure the configured current is never exceeded.</>,
+            "mode_explainer_2": <>{__("This_device")} either uses the PV excess charging or controls a charge management group with other WARP Chargers to make sure the configured current is never exceeded.</>,
 
             "mode_explainer_0_em": <>{__("This_device")} does not control any chargers.</>,
             "mode_explainer_2_em": <>{__("This_device")} controls one or more chargers.</>,

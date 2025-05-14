@@ -133,12 +133,14 @@ let x = {
         "The": "The",
         "this": "this",
         "This": "This",
-        "to_the": "to the"
+        "to_the": "to the",
+        "from_the": "from the"
     },
     "device": <>{__("branding.device")}</>,
     "the_device": <>{__("branding.the")} {__("branding.device")}</>,
     "The_device": <>{__("branding.The")} {__("branding.device")}</>,
     "this_device": <>{__("branding.this")} {__("branding.device")}</>,
     "This_device": <>{__("branding.This")} {__("branding.device")}</>,
-    "to_the_device": <>{__("branding.to_the")} {__("branding.device")}</>
+    "to_the_device": <>{__("branding.to_the")} {__("branding.device")}</>,
+    "from_the_device": <>{__("branding.from_the")} {__("branding.device")}</>
 }

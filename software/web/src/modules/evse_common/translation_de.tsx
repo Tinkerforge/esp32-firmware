@@ -111,7 +111,7 @@ let x = {
             "external_enable": <>Erlaubt einer externen Steuerung (z.B. <a href="https://evcc.io/">EVCC</a>) diese Wallbox zu steuern</>,
 
             "boost_mode_desc": "Boost-Modus",
-            "boost_mode_desc_help": <><p>Die Ladeelektronik mancher Fahrzeuge interpretiert einen vom WARP3 Charger vorgeschriebenen Ladestrom zu niedrig. Der Boost-Modus versucht, diesen Effekt auszugleichen, indem ein leicht höherer Ladestrom kommuniziert wird.</p></>,
+            "boost_mode_desc_help": <><p>Die Ladeelektronik mancher Fahrzeuge interpretiert einen __("from_the_device") vorgeschriebenen Ladestrom zu niedrig. Der Boost-Modus versucht, diesen Effekt auszugleichen, indem ein leicht höherer Ladestrom kommuniziert wird.</p></>,
             "boost_mode": "Gibt der Ladeelektronik des Fahrzeugs einen leicht höheren Ladestrom vor (+ 0,24 A) um Messfehler der Ladeelektronik zu kompensieren. Nur Verwenden, falls ein Fahrzeug mit einem kleineren als dem erlaubten Ladestrom lädt!",
 
             "reset_description": "Aktionen",

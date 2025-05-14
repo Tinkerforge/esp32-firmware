@@ -137,7 +137,7 @@ let x = {
             "boost_mode_desc": "Boost Mode",
             "boost_mode_desc_help": <>
                 <p>
-                    Some vehicles' charging electronics may interpret the prescribed current from the WARP3 Charger as too low. Boost mode compensates for this by communicating a slightly higher charging current.
+                    Some vehicles' charging electronics may interpret the prescribed current __("from_the_device") as too low. Boost mode compensates for this by communicating a slightly higher charging current.
                 </p>
             </>,
             "boost_mode": "Allows the vehicle's charge controller a slightly higher charge current (+ 0.24 A) to compensate measurement errors of the vehicle. Use only if your vehicle charges with less than the allowed charge current!",

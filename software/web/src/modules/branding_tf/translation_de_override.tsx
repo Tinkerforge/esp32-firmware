@@ -26,6 +26,7 @@ let x = {
         "The": "Der",
         "this": "dieser",
         "This": "Dieser",
-        "to_the": "zum"
+        "to_the": "zum",
+        "from_the": "vom"
     }
 }
