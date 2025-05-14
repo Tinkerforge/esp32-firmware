@@ -137,7 +137,7 @@ export class IPConfiguration extends Component<IPConfigurationProps, {}> {
         if (props.showDns) {
             inner = (<>
                 {inner}
-                <FormRow label={__("component.ip_configuration.dns")} label_muted={__("component.ip_configuration.dns_muted")}>
+                <FormRow label={__("component.ip_configuration.dns")}>
                     <InputIP invalidFeedback={__("component.ip_configuration.dns_invalid")}
                              value={props.value.dns}
                              onValue={(v) => this.onUpdate("dns", v)}/>
