@@ -621,7 +621,7 @@ const MIN_OVERRIDE_DURATION = 15; // minutes
 
 export class HeatingStatus extends Component<{}, state & sgr_blocking_override & {override_duration: number, override_remaining: number, blocking: boolean}>
 {
-    override_remaining_interval: number = undefined;
+    override_remaining_interval_id: number = undefined;
 
     constructor() {
         super();
@@ -654,13 +654,13 @@ export class HeatingStatus extends Component<{}, state & sgr_blocking_override &
             if (sgr_blocking_override.override_until != 0) {
                 override_remaining = this.get_override_remaining();
 
-                if (this.override_remaining_interval === undefined) {
-                    this.override_remaining_interval = setInterval(() => this.setState({override_remaining: this.get_override_remaining()}), 5000);
+                if (this.override_remaining_interval_id === undefined) {
+                    this.override_remaining_interval_id = setInterval(() => this.setState({override_remaining: this.get_override_remaining()}), 5000);
                 }
             }
-            else if (this.override_remaining_interval !== undefined) {
-                clearInterval(this.override_remaining_interval);
-                this.override_remaining_interval = undefined;
+            else if (this.override_remaining_interval_id !== undefined) {
+                clearInterval(this.override_remaining_interval_id);
+                this.override_remaining_interval_id = undefined;
             }
 
             this.setState({override_until: sgr_blocking_override.override_until, override_remaining: override_remaining});

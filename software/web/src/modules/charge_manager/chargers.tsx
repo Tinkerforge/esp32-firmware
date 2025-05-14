@@ -46,7 +46,7 @@ interface ChargersState {
     managementEnabled: boolean
     showExpert: boolean
     scanResult: Readonly<ScanCharger[]>
-    invalid: boolean
+    chargersInvalid: boolean
 //#if MODULE_EM_PHASE_SWITCHER_AVAILABLE
     emCharger: API.getType['em_phase_switcher/charger_config']
     emConfig: API.getType['energy_manager/config']
@@ -62,8 +62,9 @@ export function get_managed_chargers(): [string, string][] {
 }
 
 
-export class ChargeManagerChargers extends ConfigComponent<'charge_manager/config', {status_ref?: RefObject<ChargeManagerStatus>}, ChargersState> {
-    intervalID: number = null;
+export class ChargeManagerChargers extends ConfigComponent<'charge_manager/config', {status_ref?: RefObject<ChargeManagerStatus>}, ChargersState>
+{
+    scan_interval_id: number = null;
 
     constructor() {
         super('charge_manager/config',
@@ -73,7 +74,8 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                   editCharger: {host: "", name: "", rot: -1},
                   managementEnabled: false,
                   showExpert: false,
-                  scanResult: []
+                  scanResult: [],
+                  chargersInvalid: false,
               });
 
         // Does not check if the event exists, in case the evse module is not compiled in.
@@ -98,11 +100,6 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
             this.setState({emConfig: ev.data});
         });
 //#endif
-
-        this.state = {
-            ...this.state,
-            invalid: false,
-        };
     }
 
     addScanResults(result: ScanCharger[]) {
@@ -397,7 +394,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
 
         let chargers = <FormRow label={__("charge_manager.content.managed_boxes")}>
                     <Table
-                        invalid={this.state.invalid}
+                        invalid={this.state.chargersInvalid}
                         invalidFeedback={__("charge_manager.content.add_charger_invalid_feedback")}
                         columnNames={[__("charge_manager.content.table_charger_name"), __("charge_manager.content.table_charger_host"), __("charge_manager.content.table_charger_rotation")]}
                         rows={state.chargers.map((charger, i) =>
@@ -461,7 +458,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                         onAddShow={async () => {
                             this.setState({addCharger: {name: "", host: "", rot: -1}});
                             this.scan_services();
-                            this.intervalID = window.setInterval(this.scan_services, 3000);
+                            this.scan_interval_id = setInterval(this.scan_services, 3000);
                         }}
                         onAddGetChildren={() => [<>
                             <FormRow label={__("charge_manager.content.add_charger_name")}>
@@ -522,11 +519,11 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                             </FormRow>
                         </>]}
                         onAddSubmit={async () => {
-                            this.setState({chargers: state.chargers.concat(state.addCharger), invalid: false});
+                            this.setState({chargers: state.chargers.concat(state.addCharger), chargersInvalid: false});
                             this.setDirty(true);
                         }}
                         onAddHide={async () => {
-                            window.clearInterval(this.intervalID);
+                            clearInterval(this.scan_interval_id);
                         }} />
             </FormRow>
 
