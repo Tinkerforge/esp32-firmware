@@ -15,7 +15,7 @@ PIO_DIR=$(realpath ${DPIO_DIR:-~/.platformio})
 docker run \
        --rm \
        -v $(realpath ../..):/tf \
-       -v $PIO_DIR:/home/pio/.platformio \
+       -v $PIO_DIR:/home/pio/.platformio -u $(id -u):$(id -g) \
        $PIO_FLAGS \
        -e PLATFORMIO_WORKSPACE_DIR=$PIO_CACHE_DIR\
        tinkerforge/build_environment_esp32 \
