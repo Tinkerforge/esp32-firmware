@@ -4,14 +4,17 @@ import { __ } from "../../ts/translation";
 let x = {
     "network": {
         "status": {
-            "sta_and_ethernet": "Wifi and Ethernet active",
             "subnet_conflict": "Subnet conflict",
-            "sta": "Wifi-STA",
-            "ethernet": "Ethernet",
-            "ap": "Wifi-AP",
-            "wireguard": "Wireguard",
-            "remote_access": "Remote Access",
-            "status_help": /*FFN*/(val: [{network: string, name: string, href: string, dhcp?: boolean}, {network: string, name: string, href: string, dhcp?: boolean}][]) => {
+            "dns_not_configured": "DNS not configured",
+            "dns_not_configured_text": /*FFN*/(val: string[]) => {
+                return <>
+                    <p>Following interfaces do not have a DNS configured:</p>
+                    <ul class="mb-0">
+                        {val.map(v => <li>{v}</li>)}
+                    </ul>
+                </>
+            }/*NF*/,
+            "subnet_text": /*FFN*/(val: [{network: string, name: string, href: string, dhcp?: boolean}, {network: string, name: string, href: string, dhcp?: boolean}][]) => {
                 return <>
                     <p>There are interfaces with colliding networks. This can cause problems when trying to connect to {__("the_device")}. Please ensure that there are no overlapping networks configured.</p>
                     <p>Following configurations may cause problems:</p>

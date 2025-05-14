@@ -21,7 +21,7 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, Component, RefObject } from "preact";
+import { h, Component, Fragment, RefObject } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { Switch } from "../../ts/components/switch";
 import { ConfigComponent } from "../../ts/components/config_component";
@@ -33,7 +33,6 @@ import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Settings } from "react-feather";
 import { StatusSection } from "ts/components/status_section";
-import { IndicatorGroup } from "ts/components/indicator_group";
 import { Alert } from "react-bootstrap";
 
 export function NetworkNavbar() {
@@ -94,9 +93,11 @@ export class Network extends ConfigComponent<'network/config', {status_ref: RefO
 interface NetworkStatusState {
 //#if MODULE_ETHERNET_AVAILABLE
     ethernet: API.getType["ethernet/state"];
+    ethernetConfig: API.getType["ethernet/config"];
 //#endif
 
     wifi: API.getType["wifi/state"];
+    wifiConfig: API.getType["wifi/sta_config"];
     wireguardConfig: API.getType["wireguard/config"];
     apConfig: API.getType["wifi/ap_config"];
 
@@ -113,10 +114,16 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
         util.addApiEventListener('ethernet/state', () => {
             this.setState({ ethernet: API.get('ethernet/state') });
         });
+        util.addApiEventListener('ethernet/config', () => {
+            this.setState({ ethernetConfig: API.get('ethernet/config') });
+        });
 //#endif
 
         util.addApiEventListener('wifi/state', () => {
             this.setState({ wifi: API.get('wifi/state') });
+        });
+        util.addApiEventListener('wifi/sta_config', () => {
+            this.setState({ wifiConfig: API.get('wifi/sta_config') });
         });
         util.addApiEventListener('wireguard/config', () => {
             this.setState({ wireguardConfig: API.get('wireguard/config') });
@@ -225,19 +232,44 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
         return conflictSubnets;
     }
 
+    checkDNS(state: Readonly<NetworkStatusState>) {
+        const interfacesMissingDNS: string[] = [];
+//#if MODULE_ETHERNET_AVAILABLE
+        if (state.ethernetConfig.ip !== "0.0.0.0" &&
+            state.ethernetConfig.dns === "0.0.0.0" &&
+            state.ethernetConfig.dns2 === "0.0.0.0") {
+                interfacesMissingDNS.push(translate_unchecked("ethernet.navbar.ethernet"));
+        }
+//#endif
+
+        if (state.wifiConfig.ip !== "0.0.0.0" &&
+            state.wifiConfig.dns === "0.0.0.0" &&
+            state.wifiConfig.dns2 === "0.0.0.0") {
+                interfacesMissingDNS.push(translate_unchecked("wifi.navbar.wifi_sta"));
+        }
+        console.log(interfacesMissingDNS);
+        return interfacesMissingDNS;
+    }
+
     render(props: {}, state: Readonly<NetworkStatusState>) {
         if (!util.render_allowed()) {
             return <StatusSection name="network" />;
         }
         const conflictSubnets = this.getEqualSubnets(state);
-        if (conflictSubnets.length === 0) {
-            return <StatusSection name="network" />
-        }
+        const conflictSubnetsFragment = conflictSubnets.length === 0 ? <></> :
+        <FormRow label={__("network.status.subnet_conflict")}>
+            <Alert className="mb-0" variant="danger" >{__("network.status.subnet_text")(conflictSubnets)}</Alert>
+        </FormRow>
+
+        const interfacesMissingDNS = this.checkDNS(state);
+        const dnsFragment = interfacesMissingDNS.length === 0 ? <></> :
+        <FormRow label={__("network.status.dns_not_configured")}>
+            <Alert className="mb-0" variant="warning">{__("network.status.dns_not_configured_text")(interfacesMissingDNS)}</Alert>
+        </FormRow>
 
         return <StatusSection name="network">
-            <FormRow label={__("network.status.subnet_conflict")}>
-                <Alert className="mb-0" variant="danger" >{__("network.status.status_help")(conflictSubnets)}</Alert>
-            </FormRow>
+            {conflictSubnetsFragment}
+            {dnsFragment}
         </StatusSection>;
     }
 }
