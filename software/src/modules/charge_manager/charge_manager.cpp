@@ -101,11 +101,8 @@ void ChargeManager::pre_setup()
             0, MAX_CONTROLLED_CHARGERS, Config::type_id<Config::ConfObject>()
         )}
     }), [](Config &conf, ConfigSource source) -> String {
-
-#if !MODULE_EVSE_COMMON_AVAILABLE()
-        if (conf.get("chargers")->count() == 0)
+        if (conf.get("enable_charge_manager")->asBool() && conf.get("chargers")->count() == 0)
             return "at least one charger is required";
-#endif
 
         uint32_t default_available_current = conf.get("default_available_current")->asUint();
         uint32_t maximum_available_current = conf.get("maximum_available_current")->asUint();

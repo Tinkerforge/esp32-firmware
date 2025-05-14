@@ -157,19 +157,25 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
 
     override async isSaveAllowed(cfg: ChargeManagerConfig): Promise<boolean> {
         if (API.hasModule("em_phase_switcher") && this.state.managementEnabled && cfg.chargers.length != 1) {
+            this.setState({chargersInvalid: true});
             return false;
         }
 
-        if (API.hasModule("em_common") && this.state.enable_charge_manager && cfg.chargers.length === 0) {
-            this.setState({invalid: true});
+        if (this.state.enable_charge_manager && cfg.chargers.length === 0) {
+            this.setState({chargersInvalid: true});
             return false;
         }
 
         // Check for duplicat host entries
-        for (let i = 0; i < cfg.chargers.length; i++)
-            for (let a = i + 1; a < cfg.chargers.length; a++)
-                if (cfg.chargers[a].host == cfg.chargers[i].host)
+        for (let i = 0; i < cfg.chargers.length; i++) {
+            for (let a = i + 1; a < cfg.chargers.length; a++) {
+                if (cfg.chargers[a].host == cfg.chargers[i].host) {
+                    this.setState({chargersInvalid: true});
                     return false;
+                }
+            }
+        }
+
         return true;
     }
 
