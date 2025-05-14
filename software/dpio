@@ -12,11 +12,13 @@ fi
 PIO_CACHE_DIR=${PLATFORMIO_WORKSPACE_DIR:-.pio}
 PIO_DIR=$(realpath ${DPIO_DIR:-~/.platformio})
 
+mkdir -p $PIO_DIR
+
 docker run \
        --rm \
        -v $(realpath ../..):/tf \
-       -v $PIO_DIR:/home/pio/.platformio -u $(id -u):$(id -g) \
+       -v $PIO_DIR:/home/pio/.platformio \
        $PIO_FLAGS \
        -e PLATFORMIO_WORKSPACE_DIR=$PIO_CACHE_DIR\
        tinkerforge/build_environment_esp32 \
-       /bin/bash -c "groupmod -g $(id -g) $(id -gn) || groupadd -g $(id -g) $(id -gn) && usermod -u $(id -u) -g $(id -g) pio && su pio -c \"cd /tf/$DIRNAME2 && pio $*\""
+       /bin/bash -c "groupmod -g $(id -g) $(id -gn) 2>/dev/null || groupadd -g $(id -g) $(id -gn) && usermod -u $(id -u) -g $(id -g) pio && su pio -c \"cd /tf/$DIRNAME2 && pio $*\""
