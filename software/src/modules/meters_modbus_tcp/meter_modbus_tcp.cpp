@@ -1501,7 +1501,7 @@ bool MeterModbusTCP::is_deye_hybrid_inverter_pv_meter() const
 bool MeterModbusTCP::is_alpha_ess_hybrid_inverter_pv_meter() const
 {
     return table_id == MeterModbusTCPTableID::AlphaESSHybridInverter
-        && alpha_ess_hybrid_inverter.virtual_meter == HaileiHybridInverterVirtualMeter::PV;
+        && alpha_ess_hybrid_inverter.virtual_meter == AlphaESSHybridInverterVirtualMeter::PV;
 }
 
 bool MeterModbusTCP::is_shelly_pro_xem_monophase() const
