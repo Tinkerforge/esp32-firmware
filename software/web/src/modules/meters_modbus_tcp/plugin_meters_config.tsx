@@ -964,6 +964,7 @@ export function init() {
                             [AlphaESSHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
                             [AlphaESSHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
                             [AlphaESSHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                            [AlphaESSHybridInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
                         ];
 
                         get_default_location = (virtual_meter: number) => {
@@ -971,6 +972,7 @@ export function init() {
                             case AlphaESSHybridInverterVirtualMeter.Inverter: return MeterLocation.Inverter;
                             case AlphaESSHybridInverterVirtualMeter.Grid: return MeterLocation.Grid;
                             case AlphaESSHybridInverterVirtualMeter.Battery: return MeterLocation.Battery;
+                            case AlphaESSHybridInverterVirtualMeter.PV: return MeterLocation.PV;
                             }
 
                             return MeterLocation.Unknown;
@@ -1038,6 +1040,7 @@ export function init() {
                             [HaileiHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
                             [HaileiHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
                             [HaileiHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                            [HaileiHybridInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
                         ];
 
                         get_default_location = (virtual_meter: number) => {
@@ -1045,6 +1048,7 @@ export function init() {
                             case HaileiHybridInverterVirtualMeter.Inverter: return MeterLocation.Inverter;
                             case HaileiHybridInverterVirtualMeter.Grid: return MeterLocation.Grid;
                             case HaileiHybridInverterVirtualMeter.Battery: return MeterLocation.Battery;
+                            case HaileiHybridInverterVirtualMeter.PV: return MeterLocation.PV;
                             }
 
                             return MeterLocation.Unknown;

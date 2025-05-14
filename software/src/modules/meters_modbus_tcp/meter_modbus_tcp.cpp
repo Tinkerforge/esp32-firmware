@@ -66,6 +66,25 @@
 #define DEYE_HYBRID_INVERTER_PV4_VOLTAGE_ADDRESS                           static_cast<size_t>(DeyeHybridInverterPVAddress::PV4Voltage)
 #define DEYE_HYBRID_INVERTER_PV4_CURRENT_ADDRESS                           static_cast<size_t>(DeyeHybridInverterPVAddress::PV4Current)
 
+#define ALPHA_ESS_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS                      static_cast<size_t>(AlphaESSHybridInverterPVAddress::PV1Voltage)
+#define ALPHA_ESS_HYBRID_INVERTER_PV1_CURRENT_ADDRESS                      static_cast<size_t>(AlphaESSHybridInverterPVAddress::PV1Current)
+#define ALPHA_ESS_HYBRID_INVERTER_PV1_POWER_ADDRESS                        static_cast<size_t>(AlphaESSHybridInverterPVAddress::PV1Power)
+#define ALPHA_ESS_HYBRID_INVERTER_PV2_VOLTAGE_ADDRESS                      static_cast<size_t>(AlphaESSHybridInverterPVAddress::PV2Voltage)
+#define ALPHA_ESS_HYBRID_INVERTER_PV2_CURRENT_ADDRESS                      static_cast<size_t>(AlphaESSHybridInverterPVAddress::PV2Current)
+#define ALPHA_ESS_HYBRID_INVERTER_PV2_POWER_ADDRESS                        static_cast<size_t>(AlphaESSHybridInverterPVAddress::PV2Power)
+#define ALPHA_ESS_HYBRID_INVERTER_PV3_VOLTAGE_ADDRESS                      static_cast<size_t>(AlphaESSHybridInverterPVAddress::PV3Voltage)
+#define ALPHA_ESS_HYBRID_INVERTER_PV3_CURRENT_ADDRESS                      static_cast<size_t>(AlphaESSHybridInverterPVAddress::PV3Current)
+#define ALPHA_ESS_HYBRID_INVERTER_PV3_POWER_ADDRESS                        static_cast<size_t>(AlphaESSHybridInverterPVAddress::PV3Power)
+#define ALPHA_ESS_HYBRID_INVERTER_PV4_VOLTAGE_ADDRESS                      static_cast<size_t>(AlphaESSHybridInverterPVAddress::PV4Voltage)
+#define ALPHA_ESS_HYBRID_INVERTER_PV4_CURRENT_ADDRESS                      static_cast<size_t>(AlphaESSHybridInverterPVAddress::PV4Current)
+#define ALPHA_ESS_HYBRID_INVERTER_PV4_POWER_ADDRESS                        static_cast<size_t>(AlphaESSHybridInverterPVAddress::PV4Power)
+#define ALPHA_ESS_HYBRID_INVERTER_PV5_VOLTAGE_ADDRESS                      static_cast<size_t>(AlphaESSHybridInverterPVAddress::PV5Voltage)
+#define ALPHA_ESS_HYBRID_INVERTER_PV5_CURRENT_ADDRESS                      static_cast<size_t>(AlphaESSHybridInverterPVAddress::PV5Current)
+#define ALPHA_ESS_HYBRID_INVERTER_PV5_POWER_ADDRESS                        static_cast<size_t>(AlphaESSHybridInverterPVAddress::PV5Power)
+#define ALPHA_ESS_HYBRID_INVERTER_PV6_VOLTAGE_ADDRESS                      static_cast<size_t>(AlphaESSHybridInverterPVAddress::PV6Voltage)
+#define ALPHA_ESS_HYBRID_INVERTER_PV6_CURRENT_ADDRESS                      static_cast<size_t>(AlphaESSHybridInverterPVAddress::PV6Current)
+#define ALPHA_ESS_HYBRID_INVERTER_PV6_POWER_ADDRESS                        static_cast<size_t>(AlphaESSHybridInverterPVAddress::PV6Power)
+
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_ACTIVE_POWER                    static_cast<size_t>(ShellyEMMonophaseChannel1AsL1Address::Channel1ActivePower)
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_TOTAL_ACTIVE_ENERGY             static_cast<size_t>(ShellyEMMonophaseChannel1AsL1Address::Channel1TotalActiveEnergyPerpetualCount)
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_TOTAL_ACTIVE_RETURNED_ENERGY    static_cast<size_t>(ShellyEMMonophaseChannel1AsL1Address::Channel1TotalActiveReturnedEnergyPerpetualCount)
@@ -104,6 +123,25 @@
 #define FRONIUS_GEN24_PLUS_DISCHARGE_DCWH_ADDRESS                          static_cast<size_t>(FroniusGEN24PlusBatteryIntegerAddress::DischargeDCWH)
 #define FRONIUS_GEN24_PLUS_CHASTATE_ADDRESS                                static_cast<size_t>(FroniusGEN24PlusBatteryIntegerAddress::ChaState)
 #define FRONIUS_GEN24_PLUS_CHASTATE_SF_ADDRESS                             static_cast<size_t>(FroniusGEN24PlusBatteryIntegerAddress::ChaState_SF)
+
+#define HAILEI_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS                         static_cast<size_t>(HaileiHybridInverterPVAddress::PV1Voltage)
+#define HAILEI_HYBRID_INVERTER_PV1_CURRENT_ADDRESS                         static_cast<size_t>(HaileiHybridInverterPVAddress::PV1Current)
+#define HAILEI_HYBRID_INVERTER_PV1_POWER_ADDRESS                           static_cast<size_t>(HaileiHybridInverterPVAddress::PV1Power)
+#define HAILEI_HYBRID_INVERTER_PV2_VOLTAGE_ADDRESS                         static_cast<size_t>(HaileiHybridInverterPVAddress::PV2Voltage)
+#define HAILEI_HYBRID_INVERTER_PV2_CURRENT_ADDRESS                         static_cast<size_t>(HaileiHybridInverterPVAddress::PV2Current)
+#define HAILEI_HYBRID_INVERTER_PV2_POWER_ADDRESS                           static_cast<size_t>(HaileiHybridInverterPVAddress::PV2Power)
+#define HAILEI_HYBRID_INVERTER_PV3_VOLTAGE_ADDRESS                         static_cast<size_t>(HaileiHybridInverterPVAddress::PV3Voltage)
+#define HAILEI_HYBRID_INVERTER_PV3_CURRENT_ADDRESS                         static_cast<size_t>(HaileiHybridInverterPVAddress::PV3Current)
+#define HAILEI_HYBRID_INVERTER_PV3_POWER_ADDRESS                           static_cast<size_t>(HaileiHybridInverterPVAddress::PV3Power)
+#define HAILEI_HYBRID_INVERTER_PV4_VOLTAGE_ADDRESS                         static_cast<size_t>(HaileiHybridInverterPVAddress::PV4Voltage)
+#define HAILEI_HYBRID_INVERTER_PV4_CURRENT_ADDRESS                         static_cast<size_t>(HaileiHybridInverterPVAddress::PV4Current)
+#define HAILEI_HYBRID_INVERTER_PV4_POWER_ADDRESS                           static_cast<size_t>(HaileiHybridInverterPVAddress::PV4Power)
+#define HAILEI_HYBRID_INVERTER_PV5_VOLTAGE_ADDRESS                         static_cast<size_t>(HaileiHybridInverterPVAddress::PV5Voltage)
+#define HAILEI_HYBRID_INVERTER_PV5_CURRENT_ADDRESS                         static_cast<size_t>(HaileiHybridInverterPVAddress::PV5Current)
+#define HAILEI_HYBRID_INVERTER_PV5_POWER_ADDRESS                           static_cast<size_t>(HaileiHybridInverterPVAddress::PV5Power)
+#define HAILEI_HYBRID_INVERTER_PV6_VOLTAGE_ADDRESS                         static_cast<size_t>(HaileiHybridInverterPVAddress::PV6Voltage)
+#define HAILEI_HYBRID_INVERTER_PV6_CURRENT_ADDRESS                         static_cast<size_t>(HaileiHybridInverterPVAddress::PV6Current)
+#define HAILEI_HYBRID_INVERTER_PV6_POWER_ADDRESS                           static_cast<size_t>(HaileiHybridInverterPVAddress::PV6Power)
 
 #define CARLO_GAVAZZI_EM100_OR_ET100_W                                     static_cast<size_t>(CarloGavazziEM100andET100AtL1Address::W)
 #define CARLO_GAVAZZI_EM100_OR_ET100_KWH_POSITIVE_TOTAL                    static_cast<size_t>(CarloGavazziEM100andET100AtL1Address::KWhPositiveTotal)
@@ -186,6 +224,18 @@ static float get_fronius_scale_factor(int16_t sf)
     return fronius_scale_factors[sf + 10];
 }
 
+static bool is_exactly_zero(float f)
+{
+    #if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
+    return f == 0.0f; // Really compare exactly with 0.0f
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
+}
+
 static float nan_safe_sum(float a, float b)
 {
     if (isnan(a)) {
@@ -214,14 +264,7 @@ static float nan_safe_avg(float a, float b)
 
 static float zero_safe_negation(float f)
 {
-    #if defined(__GNUC__)
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wfloat-equal"
-#endif
-    if (f != 0.0f) { // Really compare exactly with 0.0f
-#if defined(__GNUC__)
-    #pragma GCC diagnostic pop
-#endif
+    if (!is_exactly_zero(f)) {
         // Don't convert 0.0f into -0.0f
         f *= -1.0f;
     }
@@ -487,6 +530,11 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         case AlphaESSHybridInverterVirtualMeter::Battery:
             table = &alpha_ess_hybrid_inverter_battery_table;
             default_location = MeterLocation::Battery;
+            break;
+
+        case AlphaESSHybridInverterVirtualMeter::PV:
+            table = &alpha_ess_hybrid_inverter_pv_table;
+            default_location = MeterLocation::PV;
             break;
 
         default:
@@ -804,6 +852,11 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         case HaileiHybridInverterVirtualMeter::Battery:
             table = &hailei_hybrid_inverter_battery_table;
             default_location = MeterLocation::Battery;
+            break;
+
+        case HaileiHybridInverterVirtualMeter::PV:
+            table = &hailei_hybrid_inverter_pv_table;
+            default_location = MeterLocation::PV;
             break;
 
         default:
@@ -1445,6 +1498,12 @@ bool MeterModbusTCP::is_deye_hybrid_inverter_pv_meter() const
         && deye_hybrid_inverter.virtual_meter == DeyeHybridInverterVirtualMeter::PV;
 }
 
+bool MeterModbusTCP::is_alpha_ess_hybrid_inverter_pv_meter() const
+{
+    return table_id == MeterModbusTCPTableID::AlphaESSHybridInverter
+        && alpha_ess_hybrid_inverter.virtual_meter == HaileiHybridInverterVirtualMeter::PV;
+}
+
 bool MeterModbusTCP::is_shelly_pro_xem_monophase() const
 {
     return table_id == MeterModbusTCPTableID::ShellyProEM
@@ -1462,6 +1521,12 @@ bool MeterModbusTCP::is_fronius_gen24_plus_battery_meter() const
 {
     return table_id == MeterModbusTCPTableID::FroniusGEN24Plus
         && fronius_gen24_plus.virtual_meter == FroniusGEN24PlusVirtualMeter::Battery;
+}
+
+bool MeterModbusTCP::is_hailei_hybrid_inverter_pv_meter() const
+{
+    return table_id == MeterModbusTCPTableID::HaileiHybridInverter
+        && hailei_hybrid_inverter.virtual_meter == HaileiHybridInverterVirtualMeter::PV;
 }
 
 bool MeterModbusTCP::is_carlo_gavazzi_em100_or_et100() const
@@ -1761,14 +1826,7 @@ void MeterModbusTCP::parse_next()
 
     value += table->specs[read_index].offset;
 
-#if defined(__GNUC__)
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wfloat-equal"
-#endif
-    if (value != 0.0f) { // Really compare exactly with 0.0f
-#if defined(__GNUC__)
-    #pragma GCC diagnostic pop
-#endif
+    if (!is_exactly_zero(value)) {
         // Don't convert 0.0f into -0.0f if the scale factor is negative
         value *= table->specs[read_index].scale_factor;
     }
@@ -2146,15 +2204,145 @@ void MeterModbusTCP::parse_next()
                         + deye_hybrid_inverter.pv3_power
                         + deye_hybrid_inverter.pv4_power;
 
-            float voltage = (deye_hybrid_inverter.pv1_voltage
-                          +  deye_hybrid_inverter.pv2_voltage
-                          +  deye_hybrid_inverter.pv3_voltage
-                          +  deye_hybrid_inverter.pv4_voltage) / 4; // FIXME: how to handle unused strings?
+            float voltage_sum = 0.0f;
+            float voltage_count = 0.0f;
+
+            if (!is_exactly_zero(deye_hybrid_inverter.pv1_voltage)) {
+                voltage_sum += deye_hybrid_inverter.pv1_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(deye_hybrid_inverter.pv2_voltage)) {
+                voltage_sum += deye_hybrid_inverter.pv2_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(deye_hybrid_inverter.pv3_voltage)) {
+                voltage_sum += deye_hybrid_inverter.pv3_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(deye_hybrid_inverter.pv4_voltage)) {
+                voltage_sum += deye_hybrid_inverter.pv4_voltage;
+                ++voltage_count;
+            }
+
+            float voltage = voltage_sum / voltage_count;
 
             float current = deye_hybrid_inverter.pv1_current
                           + deye_hybrid_inverter.pv2_current
                           + deye_hybrid_inverter.pv3_current
                           + deye_hybrid_inverter.pv4_current;
+
+            meters.update_value(slot, table->index[read_index + 1], power);
+            meters.update_value(slot, table->index[read_index + 2], zero_safe_negation(power));
+            meters.update_value(slot, table->index[read_index + 3], voltage);
+            meters.update_value(slot, table->index[read_index + 4], current);
+        }
+    }
+    else if (is_alpha_ess_hybrid_inverter_pv_meter()) {
+        if (register_start_address == ALPHA_ESS_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS) {
+            alpha_ess_hybrid_inverter.pv1_voltage = value;
+        }
+        else if (register_start_address == ALPHA_ESS_HYBRID_INVERTER_PV1_CURRENT_ADDRESS) {
+            alpha_ess_hybrid_inverter.pv1_current = value;
+        }
+        else if (register_start_address == ALPHA_ESS_HYBRID_INVERTER_PV1_POWER_ADDRESS) {
+            alpha_ess_hybrid_inverter.pv1_power = value;
+        }
+        else if (register_start_address == ALPHA_ESS_HYBRID_INVERTER_PV2_VOLTAGE_ADDRESS) {
+            alpha_ess_hybrid_inverter.pv2_voltage = value;
+        }
+        else if (register_start_address == ALPHA_ESS_HYBRID_INVERTER_PV2_CURRENT_ADDRESS) {
+            alpha_ess_hybrid_inverter.pv2_current = value;
+        }
+        else if (register_start_address == ALPHA_ESS_HYBRID_INVERTER_PV2_POWER_ADDRESS) {
+            alpha_ess_hybrid_inverter.pv2_power = value;
+        }
+        else if (register_start_address == ALPHA_ESS_HYBRID_INVERTER_PV3_VOLTAGE_ADDRESS) {
+            alpha_ess_hybrid_inverter.pv3_voltage = value;
+        }
+        else if (register_start_address == ALPHA_ESS_HYBRID_INVERTER_PV3_CURRENT_ADDRESS) {
+            alpha_ess_hybrid_inverter.pv3_current = value;
+        }
+        else if (register_start_address == ALPHA_ESS_HYBRID_INVERTER_PV3_POWER_ADDRESS) {
+            alpha_ess_hybrid_inverter.pv3_power = value;
+        }
+        else if (register_start_address == ALPHA_ESS_HYBRID_INVERTER_PV4_VOLTAGE_ADDRESS) {
+            alpha_ess_hybrid_inverter.pv4_voltage = value;
+        }
+        else if (register_start_address == ALPHA_ESS_HYBRID_INVERTER_PV4_CURRENT_ADDRESS) {
+            alpha_ess_hybrid_inverter.pv4_current = value;
+        }
+        else if (register_start_address == ALPHA_ESS_HYBRID_INVERTER_PV4_POWER_ADDRESS) {
+            alpha_ess_hybrid_inverter.pv4_power = value;
+        }
+        else if (register_start_address == ALPHA_ESS_HYBRID_INVERTER_PV5_VOLTAGE_ADDRESS) {
+            alpha_ess_hybrid_inverter.pv5_voltage = value;
+        }
+        else if (register_start_address == ALPHA_ESS_HYBRID_INVERTER_PV5_CURRENT_ADDRESS) {
+            alpha_ess_hybrid_inverter.pv5_current = value;
+        }
+        else if (register_start_address == ALPHA_ESS_HYBRID_INVERTER_PV5_POWER_ADDRESS) {
+            alpha_ess_hybrid_inverter.pv5_power = value;
+        }
+        else if (register_start_address == ALPHA_ESS_HYBRID_INVERTER_PV6_VOLTAGE_ADDRESS) {
+            alpha_ess_hybrid_inverter.pv6_voltage = value;
+        }
+        else if (register_start_address == ALPHA_ESS_HYBRID_INVERTER_PV6_CURRENT_ADDRESS) {
+            alpha_ess_hybrid_inverter.pv6_current = value;
+        }
+        else if (register_start_address == ALPHA_ESS_HYBRID_INVERTER_PV6_POWER_ADDRESS) {
+            alpha_ess_hybrid_inverter.pv6_power = value;
+
+            float power = alpha_ess_hybrid_inverter.pv1_power
+                        + alpha_ess_hybrid_inverter.pv2_power
+                        + alpha_ess_hybrid_inverter.pv3_power
+                        + alpha_ess_hybrid_inverter.pv4_power
+                        + alpha_ess_hybrid_inverter.pv5_power
+                        + alpha_ess_hybrid_inverter.pv6_power;
+
+            float voltage_sum = 0.0f;
+            float voltage_count = 0.0f;
+
+            if (!is_exactly_zero(alpha_ess_hybrid_inverter.pv1_voltage)) {
+                voltage_sum += alpha_ess_hybrid_inverter.pv1_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(alpha_ess_hybrid_inverter.pv2_voltage)) {
+                voltage_sum += alpha_ess_hybrid_inverter.pv2_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(alpha_ess_hybrid_inverter.pv3_voltage)) {
+                voltage_sum += alpha_ess_hybrid_inverter.pv3_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(alpha_ess_hybrid_inverter.pv4_voltage)) {
+                voltage_sum += alpha_ess_hybrid_inverter.pv4_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(alpha_ess_hybrid_inverter.pv5_voltage)) {
+                voltage_sum += alpha_ess_hybrid_inverter.pv5_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(alpha_ess_hybrid_inverter.pv6_voltage)) {
+                voltage_sum += alpha_ess_hybrid_inverter.pv6_voltage;
+                ++voltage_count;
+            }
+
+            float voltage = voltage_sum / voltage_count;
+
+            float current = alpha_ess_hybrid_inverter.pv1_current
+                          + alpha_ess_hybrid_inverter.pv2_current
+                          + alpha_ess_hybrid_inverter.pv3_current
+                          + alpha_ess_hybrid_inverter.pv4_current
+                          + alpha_ess_hybrid_inverter.pv5_current
+                          + alpha_ess_hybrid_inverter.pv6_current;
 
             meters.update_value(slot, table->index[read_index + 1], power);
             meters.update_value(slot, table->index[read_index + 2], zero_safe_negation(power));
@@ -2311,6 +2499,116 @@ void MeterModbusTCP::parse_next()
             meters.update_value(slot, table->index[read_index + 4], state_of_charge);
             meters.update_value(slot, table->index[read_index + 5], energy_charge);
             meters.update_value(slot, table->index[read_index + 6], energy_discharge);
+        }
+    }
+    else if (is_hailei_hybrid_inverter_pv_meter()) {
+        if (register_start_address == HAILEI_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS) {
+            hailei_hybrid_inverter.pv1_voltage = value;
+        }
+        else if (register_start_address == HAILEI_HYBRID_INVERTER_PV1_CURRENT_ADDRESS) {
+            hailei_hybrid_inverter.pv1_current = value;
+        }
+        else if (register_start_address == HAILEI_HYBRID_INVERTER_PV1_POWER_ADDRESS) {
+            hailei_hybrid_inverter.pv1_power = value;
+        }
+        else if (register_start_address == HAILEI_HYBRID_INVERTER_PV2_VOLTAGE_ADDRESS) {
+            hailei_hybrid_inverter.pv2_voltage = value;
+        }
+        else if (register_start_address == HAILEI_HYBRID_INVERTER_PV2_CURRENT_ADDRESS) {
+            hailei_hybrid_inverter.pv2_current = value;
+        }
+        else if (register_start_address == HAILEI_HYBRID_INVERTER_PV2_POWER_ADDRESS) {
+            hailei_hybrid_inverter.pv2_power = value;
+        }
+        else if (register_start_address == HAILEI_HYBRID_INVERTER_PV3_VOLTAGE_ADDRESS) {
+            hailei_hybrid_inverter.pv3_voltage = value;
+        }
+        else if (register_start_address == HAILEI_HYBRID_INVERTER_PV3_CURRENT_ADDRESS) {
+            hailei_hybrid_inverter.pv3_current = value;
+        }
+        else if (register_start_address == HAILEI_HYBRID_INVERTER_PV3_POWER_ADDRESS) {
+            hailei_hybrid_inverter.pv3_power = value;
+        }
+        else if (register_start_address == HAILEI_HYBRID_INVERTER_PV4_VOLTAGE_ADDRESS) {
+            hailei_hybrid_inverter.pv4_voltage = value;
+        }
+        else if (register_start_address == HAILEI_HYBRID_INVERTER_PV4_CURRENT_ADDRESS) {
+            hailei_hybrid_inverter.pv4_current = value;
+        }
+        else if (register_start_address == HAILEI_HYBRID_INVERTER_PV4_POWER_ADDRESS) {
+            hailei_hybrid_inverter.pv4_power = value;
+        }
+        else if (register_start_address == HAILEI_HYBRID_INVERTER_PV5_VOLTAGE_ADDRESS) {
+            hailei_hybrid_inverter.pv5_voltage = value;
+        }
+        else if (register_start_address == HAILEI_HYBRID_INVERTER_PV5_CURRENT_ADDRESS) {
+            hailei_hybrid_inverter.pv5_current = value;
+        }
+        else if (register_start_address == HAILEI_HYBRID_INVERTER_PV5_POWER_ADDRESS) {
+            hailei_hybrid_inverter.pv5_power = value;
+        }
+        else if (register_start_address == HAILEI_HYBRID_INVERTER_PV6_VOLTAGE_ADDRESS) {
+            hailei_hybrid_inverter.pv6_voltage = value;
+        }
+        else if (register_start_address == HAILEI_HYBRID_INVERTER_PV6_CURRENT_ADDRESS) {
+            hailei_hybrid_inverter.pv6_current = value;
+        }
+        else if (register_start_address == HAILEI_HYBRID_INVERTER_PV6_POWER_ADDRESS) {
+            hailei_hybrid_inverter.pv6_power = value;
+
+            float power = hailei_hybrid_inverter.pv1_power
+                        + hailei_hybrid_inverter.pv2_power
+                        + hailei_hybrid_inverter.pv3_power
+                        + hailei_hybrid_inverter.pv4_power
+                        + hailei_hybrid_inverter.pv5_power
+                        + hailei_hybrid_inverter.pv6_power;
+
+            float voltage_sum = 0.0f;
+            float voltage_count = 0.0f;
+
+            if (!is_exactly_zero(hailei_hybrid_inverter.pv1_voltage)) {
+                voltage_sum += hailei_hybrid_inverter.pv1_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(hailei_hybrid_inverter.pv2_voltage)) {
+                voltage_sum += hailei_hybrid_inverter.pv2_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(hailei_hybrid_inverter.pv3_voltage)) {
+                voltage_sum += hailei_hybrid_inverter.pv3_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(hailei_hybrid_inverter.pv4_voltage)) {
+                voltage_sum += hailei_hybrid_inverter.pv4_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(hailei_hybrid_inverter.pv5_voltage)) {
+                voltage_sum += hailei_hybrid_inverter.pv5_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(hailei_hybrid_inverter.pv6_voltage)) {
+                voltage_sum += hailei_hybrid_inverter.pv6_voltage;
+                ++voltage_count;
+            }
+
+            float voltage = voltage_sum / voltage_count;
+
+            float current = hailei_hybrid_inverter.pv1_current
+                          + hailei_hybrid_inverter.pv2_current
+                          + hailei_hybrid_inverter.pv3_current
+                          + hailei_hybrid_inverter.pv4_current
+                          + hailei_hybrid_inverter.pv5_current
+                          + hailei_hybrid_inverter.pv6_current;
+
+            meters.update_value(slot, table->index[read_index + 1], power);
+            meters.update_value(slot, table->index[read_index + 2], zero_safe_negation(power));
+            meters.update_value(slot, table->index[read_index + 3], voltage);
+            meters.update_value(slot, table->index[read_index + 4], current);
         }
     }
     else if (is_carlo_gavazzi_em100_or_et100()) {

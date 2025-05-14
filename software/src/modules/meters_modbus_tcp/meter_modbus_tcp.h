@@ -112,9 +112,11 @@ private:
     bool is_victron_energy_gx_load_meter() const;
     bool is_deye_hybrid_inverter_battery_meter() const;
     bool is_deye_hybrid_inverter_pv_meter() const;
+    bool is_alpha_ess_hybrid_inverter_pv_meter() const;
     bool is_shelly_pro_xem_monophase() const;
     bool is_goodwe_hybrid_inverter_battery_meter() const;
     bool is_fronius_gen24_plus_battery_meter() const;
+    bool is_hailei_hybrid_inverter_pv_meter() const;
     bool is_carlo_gavazzi_em100_or_et100() const;
     bool is_carlo_gavazzi_em510() const;
     bool is_solaredge_battery_meter() const;
@@ -197,6 +199,24 @@ private:
         // Alpha ESS hybrid inverter
         struct {
             AlphaESSHybridInverterVirtualMeter virtual_meter;
+            float pv1_voltage;
+            float pv1_current;
+            float pv1_power;
+            float pv2_voltage;
+            float pv2_current;
+            float pv2_power;
+            float pv3_voltage;
+            float pv3_current;
+            float pv3_power;
+            float pv4_voltage;
+            float pv4_current;
+            float pv4_power;
+            float pv5_voltage;
+            float pv5_current;
+            float pv5_power;
+            float pv6_voltage;
+            float pv6_current;
+            float pv6_power;
         } alpha_ess_hybrid_inverter;
 
         // Shelly Pro EM
@@ -258,6 +278,24 @@ private:
         // Hailei hybrid inverter
         struct {
             HaileiHybridInverterVirtualMeter virtual_meter;
+            float pv1_voltage;
+            float pv1_current;
+            float pv1_power;
+            float pv2_voltage;
+            float pv2_current;
+            float pv2_power;
+            float pv3_voltage;
+            float pv3_current;
+            float pv3_power;
+            float pv4_voltage;
+            float pv4_current;
+            float pv4_power;
+            float pv5_voltage;
+            float pv5_current;
+            float pv5_power;
+            float pv6_voltage;
+            float pv6_current;
+            float pv6_power;
         } hailei_hybrid_inverter;
 
         // Fox ESS H3 hybrid inverter
