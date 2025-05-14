@@ -77,4 +77,6 @@ public:
 
     SpineDatagramHeader received_header;
     JsonVariant received_payload;
+
+    SpineDataTypeHandler data_handler{};
 };
