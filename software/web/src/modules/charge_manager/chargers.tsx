@@ -586,9 +586,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                 <div>
                     <FormRow label=""
                              error={__("charge_manager.content.em_proxy_warning_too_many")} show_error={state.chargers.length > 1}
-                             warning={__("charge_manager.content.em_proxy_warning_not_enough")} show_warning={state.chargers.length < 1}>
-                        <></>
-                    </FormRow>
+                             warning={__("charge_manager.content.em_proxy_warning_not_enough")} show_warning={state.chargers.length < 1} />
                 </div>
             </Collapse>
         </>

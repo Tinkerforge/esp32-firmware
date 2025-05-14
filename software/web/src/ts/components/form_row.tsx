@@ -26,7 +26,7 @@ export interface FormRowProps {
     label: ComponentChildren;
     label_muted?: ComponentChildren;
     // Don't use ComponentChildren here: We want to pass in the idContext. This only works on VNodes.
-    children: VNode | VNode[];
+    children?: VNode | VNode[];
     labelColClasses?: string;
     contentColClasses?: string;
     hidden?: boolean;
@@ -85,25 +85,23 @@ export class FormRow extends Component<FormRowProps, {help_expanded: boolean}> {
         if (child_using_id_context != null) {
             child_using_id_context.props["idContext"] = this.idContext;
         }
-        let inner = props.children;
 
-        if (props.contentColClasses === undefined || props.contentColClasses !== "") {
-            inner = <div class={props.contentColClasses === undefined ? "col-lg-8" : props.contentColClasses}>
-                {inner}
-                {props.error ? <Collapse in={props.show_error} ><div><div class="alert alert-danger mt-2 mb-0">{props.error}</div></div></Collapse> : <></>}
-                {props.warning ? <Collapse in={props.show_warning} ><div><div class="alert alert-warning mt-2 mb-0">{props.warning}</div></div></Collapse> : <></>}
-                {props.help ? <Collapse in={state.help_expanded} >
-                                <div>{/*Empty div to fix choppy animation. See https://react-bootstrap-v4.netlify.app/utilities/transitions/#collapse*/}
-                                    <div class="card mt-2">
-                                        <div class="card-body p-3 form-row-help" style="background: #ffffe7;">
-                                            {props.help}
-                                        </div>
+        let children = toChildArray(props.children);
+        let inner = <div class={props.contentColClasses === undefined ? "col-lg-8" : props.contentColClasses}>
+            {children}
+            {props.error ? <Collapse in={props.show_error} ><div><div class={"alert alert-danger mb-0 " + (children.length > 0 ? "mt-2" : "mt-0")}>{props.error}</div></div></Collapse> : <></>}
+            {props.warning ? <Collapse in={props.show_warning} ><div><div class={"alert alert-warning mb-0 " + (props.show_error || children.length > 0 ? "mt-2" : "mt-0")}>{props.warning}</div></div></Collapse> : <></>}
+            {props.help ? <Collapse in={state.help_expanded} >
+                            <div>{/*Empty div to fix choppy animation. See https://react-bootstrap-v4.netlify.app/utilities/transitions/#collapse*/}
+                                <div class="card mt-2">
+                                    <div class="card-body p-3 form-row-help" style="background: #ffffe7;">
+                                        {props.help}
                                     </div>
                                 </div>
-                              </Collapse>
-                            : <></>}
-            </div>
-        }
+                            </div>
+                            </Collapse>
+                        : <></>}
+        </div>;
 
         let label_content = <div class="row mx-lg-0">
                                 <div class={"col px-lg-0" + (props.symbol ? " d-flex-ni align-items-center" : "")}>
@@ -129,7 +127,7 @@ export class FormRow extends Component<FormRowProps, {help_expanded: boolean}> {
 
         return (
             <div class={"form-group row " + (props.class === undefined ? "" : props.class)} hidden={props.hidden == undefined ? false : props.hidden}>
-                <div class={(props.labelColClasses === undefined ? "col-lg-4" : props.labelColClasses)}>
+                <div class={props.labelColClasses === undefined ? "col-lg-4" : props.labelColClasses}>
                     <div class="row">
                         {label}
                         {props.help ? <span class={"col-auto pt-lg-col-form-label"} onClick={() => this.setState({help_expanded: !state.help_expanded})}><HelpCircle {...{class:(state.help_expanded ? "btn-dark" : "btn-outline-secondary"), style:"border-radius: 50%; transition: .35s;"} as any}/></span> : undefined}
