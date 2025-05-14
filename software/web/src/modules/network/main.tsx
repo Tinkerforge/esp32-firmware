@@ -123,6 +123,8 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
             network: number;
             subnet: string;
             name: string;
+            href: string
+            dhcp?: boolean;
         }[] = [];
 
         const wifiIP = util.parseIP(state.wifi.sta_ip);
@@ -130,7 +132,8 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
             const wifiSubnet = util.parseIP(state.wifi.sta_subnet);
             const wifiNetwork = wifiIP & wifiSubnet;
             const subnetString = `/${util.countBits(wifiSubnet)}`;
-            connectedSubnets.push({network: wifiNetwork, name: __("network.status.sta"), subnet: subnetString});
+            const dhcp = API.get("wifi/sta_config").ip === "0.0.0.0";
+            connectedSubnets.push({network: wifiNetwork, name: __("wifi.navbar.wifi_sta"), subnet: subnetString, href: "#wifi_sta", dhcp});
         }
 
 
@@ -139,7 +142,8 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
             const ethernetSubnet = util.parseIP(state.ethernet.subnet);
             const ethernetNetwork = ethernetIP & ethernetSubnet;
             const subnetString = `/${util.countBits(ethernetSubnet)}`;
-            connectedSubnets.push({network: ethernetNetwork, name: __("network.status.ethernet"), subnet: subnetString});
+            const dhcp = API.get("ethernet/config").ip === "0.0.0.0";
+            connectedSubnets.push({network: ethernetNetwork, name: __("ethernet.navbar.ethernet"), subnet: subnetString, href: "#ethernet", dhcp});
         }
 
         if (state.apConfig.enable_ap && !state.apConfig.ap_fallback_only) {
@@ -147,7 +151,7 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
             const apSubnet = util.parseIP(state.apConfig.subnet);
             const apNetwork = apIP & apSubnet;
             const subnetString = `/${util.countBits(apSubnet)}`;
-            connectedSubnets.push({network: apNetwork, name: __("network.status.ap"), subnet: subnetString});
+            connectedSubnets.push({network: apNetwork, name: __("wifi.navbar.wifi_ap"), subnet: subnetString, href: "#wifi_ap"});
         }
 
         if (state.wireguardConfig.enable) {
@@ -155,16 +159,16 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
             const wireguardSubnet = util.parseIP(state.wireguardConfig.internal_subnet);
             const wireguardNetwork = wireguardIP & wireguardSubnet;
             const subnetString = `/${util.countBits(wireguardSubnet)}`;
-            connectedSubnets.push({network: wireguardNetwork, name: __("network.status.wireguard"), subnet: subnetString});
+            connectedSubnets.push({network: wireguardNetwork, name: __("wireguard.navbar.wireguard"), subnet: subnetString, href: "#wireguard"});
         }
 
         if (state.remoteAccessConfig.enable) {
             for (let i = 0; i < state.remoteAccessConfig.users.length * 5; i++) {
                 const remoteAccessNetwork = util.parseIP(`10.123.${i}.0`);
-                connectedSubnets.push({network: remoteAccessNetwork, name: __("network.status.remote_access"), subnet: "/24"});
+                connectedSubnets.push({network: remoteAccessNetwork, name: __("remote_access.navbar.remote_access"), subnet: "/24", href: "#remote_access"});
             }
             const remoteAccessNetwork = util.parseIP(`10.123.123.0`);
-            connectedSubnets.push({network: remoteAccessNetwork, name: __("network.status.remote_access"), subnet: "/24"});
+            connectedSubnets.push({network: remoteAccessNetwork, name: __("remote_access.navbar.remote_access"), subnet: "/24", href: "#remote_access"});
         }
 
         const equalSubnets = connectedSubnets.filter((subnet) => {
@@ -174,10 +178,14 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
         const conflictSubnets: [{
             network: string,
             name: string,
+            href: string,
+            dhcp?: boolean,
         },
         {
             network: string,
             name: string,
+            href: string,
+            dhcp?: boolean,
         }][] = [];
         equalSubnets.map((subnet, idx) => {
             const conflict = equalSubnets.slice(idx + 1).filter(v => v.network === subnet.network);
@@ -185,10 +193,14 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
                 conflictSubnets.push([{
                     network: `${util.unparseIP(subnet.network)}${subnet.subnet}`,
                     name: subnet.name,
+                    href: subnet.href,
+                    dhcp: subnet.dhcp,
                 },
             {
                     network: `${util.unparseIP(c.network)}${c.subnet}`,
                     name: c.name,
+                    href: c.href,
+                    dhcp: c.dhcp,
             }]);
             }
         })
@@ -204,7 +216,7 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
 
         return <StatusSection name="network">
             <FormRow label={__("network.status.subnet_conflict")}>
-                <Alert variant="danger" >{__("network.status.status_help")(conflictSubnets)}</Alert>
+                <Alert className="mb-0" variant="danger" >{__("network.status.status_help")(conflictSubnets)}</Alert>
             </FormRow>
         </StatusSection>;
     }

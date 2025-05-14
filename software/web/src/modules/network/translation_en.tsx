@@ -11,11 +11,12 @@ let x = {
             "ap": "Wifi-AP",
             "wireguard": "Wireguard",
             "remote_access": "Remote Access",
-            "status_help": /*FFN*/(val: [{network: string, name: string}, {network: string, name: string}][]) => {
+            "status_help": /*FFN*/(val: [{network: string, name: string, href: string, dhcp?: boolean}, {network: string, name: string, href: string, dhcp?: boolean}][]) => {
                 return <>
-                    <p>Following interfaces have conflicting networks:</p>
+                    <p>There are interfaces with colliding networks. This can cause problems when trying to connect to {__("the_device")}. Please ensure that there are no overlapping networks configured.</p>
+                    <p>Following configurations may cause problems:</p>
                     {
-                        val.length > 0 ? <><ul class="mb-0">{val.map(v => <li>{v[0].name} ({v[0].network}) und {v[1].name} ({v[1].network})</li>)}</ul></> : <></>
+                        val.length > 0 ? <><ul class="mb-0">{val.map(v => <li><a href={v[0].href}>{v[0].name}</a> ({v[0].network}{v[0].dhcp ? " via DHCP" : ""}) and <a href={v[1].href}>{v[1].name}</a> ({v[1].network}{v[1].dhcp ? " via DHCP" : ""})</li>)}</ul></> : <></>
                     }
                 </>
             }/*NF*/
