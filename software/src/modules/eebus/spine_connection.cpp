@@ -68,7 +68,7 @@ void SpineDatagramHeader::from_json(String json)
 
     version = json_doc[0]["specificationVersion"].as<String>();
     source_device_id = json_doc[1]["addressSource"][0]["device"].as<String>(); // "device_id_0"
-    source_device_id_valid = json_doc[1]["addressSource"][0]["device"].isNull() || source_device_id.length() >= 0;
+    source_device_id_valid = json_doc[1]["addressSource"][0]["device"].isNull() || source_device_id.length() > 0;
 
     int source_entity_size = json_doc[1]["addressSource"][0]["entity"].size(); // 2
     for (int i = 0; i < source_entity_size; i++) {
@@ -76,7 +76,7 @@ void SpineDatagramHeader::from_json(String json)
     }
     source_feature = json_doc[1]["addressSource"][0]["feature"];
     destination_device_id = json_doc[2]["addressDestination"][0]["device"].as<String>(); // "device_id_0"
-    destination_device_id_valid = json_doc[2]["addressDestination"][0]["device"].isNull() || destination_device_id.length() >= 0;
+    destination_device_id_valid = json_doc[2]["addressDestination"][0]["device"].isNull() || destination_device_id.length() > 0;
 
     int destination_entity_size = json_doc[2]["addressDestination"][0]["entity"].size(); // 2
     for (int i = 0; i < destination_entity_size; i++) {
@@ -124,8 +124,11 @@ String SpineDatagramHeader::to_json()
     header["cmdClassifier"] = cmd_classifier;
     header["wantsResponse"] = wants_response;
     String output;
-    json_doc.shrinkToFit();
+    //json_doc.shrinkToFit();
     serializeJson(json_doc, output);
     logger.printfln("SPINE Datagram Header JSON: %s", output.c_str());
     return output;
 }
+
+
+
