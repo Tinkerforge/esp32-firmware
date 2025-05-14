@@ -214,8 +214,9 @@ export function DayAheadPricesNavbar() {
 type DayAheadPricesConfig = API.getType["day_ahead_prices/config"];
 
 interface DayAheadPricesState {
-    dap_state:  API.getType["day_ahead_prices/state"];
+    dap_state: API.getType["day_ahead_prices/state"];
     dap_prices: API.getType["day_ahead_prices/prices"];
+    config_enable: boolean;
 }
 
 export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {status_ref?: RefObject<DayAheadPricesStatus>}, DayAheadPricesState> {
@@ -236,8 +237,20 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
             this.update_uplot();
         });
 
+        util.addApiEventListener("day_ahead_prices/config", () => {
+            let config = API.get("day_ahead_prices/config");
+
+            this.setState({config_enable: config.enable});
+        });
+
         // Update vertical "now" line on time change
         effect(() => this.update_uplot());
+    }
+
+    override async sendSave(topic: "day_ahead_prices/config", config: DayAheadPricesConfig) {
+        this.setState({config_enable: config.enable}); // avoid round trip time
+
+        await super.sendSave(topic, config);
     }
 
     update_uplot() {
@@ -352,6 +365,8 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                         <InputFloat value={dap.supplier_base_fee} onValue={this.set('supplier_base_fee')} digits={2} unit={__("day_ahead_prices.content.euro_divided_by_month")} max={99000} min={0}/>
                     </FormRow>
                 </ConfigForm>
+
+                <div hidden={!dap.config_enable}> {/* can only hide this div, as the enable state can change without reload and the contained uplot div has to stay stable */}
                 <FormSeparator heading={__("day_ahead_prices.content.day_ahead_market_prices_heading")}/>
                 <FormRow label={__("day_ahead_prices.content.current_price")} label_muted={get_price_timeframe()}>
                     <InputText value={get_current_price_string()}/>
@@ -376,7 +391,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                         </div>
                     </div>
                 </FormRow>
-                <div class="pb-3">
+                <div class="pb-3" hidden={!dap.config_enable}>
                     <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
                         <UplotLoader
                             ref={this.uplot_loader_ref}
@@ -406,6 +421,7 @@ export class DayAheadPrices extends ConfigComponent<"day_ahead_prices/config", {
                             />
                         </UplotLoader>
                     </div>
+                </div>
                 </div>
             </SubPage>
         );
