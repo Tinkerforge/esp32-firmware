@@ -202,6 +202,12 @@ void RemoteAccess::pre_setup()
         {"last_state_change", Config::Uint53(0)},
     });
 
+    ping_state = ConfigRoot{Config::Object({
+        {"packets_sent", Config::Uint32(0)},
+        {"packets_received", Config::Uint32(0)},
+        {"time_elapsed_ms", Config::Uint32(0)},
+    })};
+
     connection_state =
         Config::Array({}, &connection_state_prototype, MAX_KEYS_PER_USER + 1, MAX_KEYS_PER_USER + 1, Config::type_id<Config::ConfUint>());
     for (int i = 0; i < MAX_KEYS_PER_USER + 1; ++i) {
@@ -257,12 +263,38 @@ void RemoteAccess::register_urls()
 
     api.addState("remote_access/state", &connection_state);
     api.addState("remote_access/registration_state", &registration_state);
+    api.addState("remote_access/ping_state", &ping_state);
 
     server.on("/remote_access/reset_registration_state", HTTP_PUT, [this](WebServerRequest request) {
         registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::None);
         registration_state.get("message")->updateString("");
         return request.send(200);
     });
+
+    api.addCommand(
+        "remote_access/start_ping",
+        Config::Null(),
+        {},
+        [this](String & err) {
+            if (ping != nullptr) {
+                err = "Ping already started";
+                return;
+            }
+            int start_err = start_ping();
+            if (start_err != 0) {
+                err = "Failed to start ping: " + String(start_err);
+            }
+        },
+        true);
+
+    api.addCommand(
+        "remote_access/stop_ping",
+        Config::Null(),
+        {},
+        [this](String & /*errmsg*/) {
+            stop_ping();
+        },
+        true);
 
     api.addCommand(
         "remote_access/config_update",
@@ -1924,4 +1956,135 @@ void RemoteAccess::close_all_remote_connections() {
             connection_state.get(i + 1)->get("last_state_change")->updateUint53(now.tv_sec);
         }
     }
+}
+
+static void on_ping_success(esp_ping_handle_t handle, void *args) {
+    uint8_t ttl;
+    uint8_t seqno;
+    uint32_t elapsed_time, recv_len;
+    ip_addr_t target_addr;
+
+    esp_ping_get_profile(handle, ESP_PING_PROF_SEQNO, &seqno, sizeof(seqno));
+    esp_ping_get_profile(handle, ESP_PING_PROF_TTL, &ttl, sizeof(ttl));
+    esp_ping_get_profile(handle, ESP_PING_PROF_IPADDR, &target_addr, sizeof(target_addr));
+    esp_ping_get_profile(handle, ESP_PING_PROF_SIZE, &recv_len, sizeof(recv_len));
+    esp_ping_get_profile(handle, ESP_PING_PROF_TIMEGAP, &elapsed_time, sizeof(elapsed_time));
+    logger.printfln("Ping: seqno=%u, ttl=%u, elapsed_time=%lu ms, recv_len=%lu bytes", seqno, ttl, elapsed_time, recv_len);
+
+    PingArgs *ping_args = static_cast<PingArgs *>(args);
+    ping_args->packets_sent++;
+    ping_args->packets_received++;
+    task_scheduler.scheduleOnce(
+        [ping_args]() {
+            ConfigRoot &ping_state = ping_args->that->get_ping_state();
+
+            ping_state.get("packets_sent")->updateUint(ping_args->packets_sent);
+            ping_state.get("packets_received")->updateUint(ping_args->packets_received);
+            ping_state.get("time_elapsed_ms")->updateUint(millis() - ping_args->that->get_ping_start());
+        },
+    0_ms);
+}
+
+static void on_ping_timeout(esp_ping_handle_t handle, void *args) {
+    uint8_t seqno;
+    ip_addr_t target_addr;
+
+    esp_ping_get_profile(handle, ESP_PING_PROF_SEQNO, &seqno, sizeof(seqno));
+    esp_ping_get_profile(handle, ESP_PING_PROF_IPADDR, &target_addr, sizeof(target_addr));
+    logger.printfln("Ping timeout: seqno=%u", seqno);
+
+    PingArgs *ping_args = static_cast<PingArgs *>(args);
+    ping_args->packets_sent++;
+    task_scheduler.scheduleOnce(
+        [ping_args]() {
+            ConfigRoot &ping_state = ping_args->that->get_ping_state();
+
+            ping_state.get("packets_sent")->updateUint(ping_args->packets_sent);
+            ping_state.get("packets_received")->updateUint(ping_args->packets_received);
+            ping_state.get("time_elapsed_ms")->updateUint(millis() - ping_args->that->get_ping_start());
+        },
+    0_ms);
+}
+
+static void on_ping_end(esp_ping_handle_t handle, void *args) {
+    uint32_t transmitted;
+    uint32_t received;
+    uint32_t total_time_ms;
+
+    esp_ping_get_profile(handle, ESP_PING_PROF_REQUEST, &transmitted, sizeof(transmitted));
+    esp_ping_get_profile(handle, ESP_PING_PROF_REPLY, &received, sizeof(received));
+    esp_ping_get_profile(handle, ESP_PING_PROF_DURATION, &total_time_ms, sizeof(total_time_ms));
+    logger.printfln("Ping end: packets transmitted=%lu, received=%lu, total_time_ms=%lu", transmitted, received, total_time_ms);
+
+    PingArgs *ping_args = static_cast<PingArgs *>(args);
+    task_scheduler.scheduleOnce(
+        [ping_args, transmitted, received]() {
+            ConfigRoot &ping_state = ping_args->that->get_ping_state();
+
+            uint32_t ping_start = ping_args->that->get_ping_start();
+            uint32_t now = millis();
+
+            ping_state.get("packets_sent")->updateUint(transmitted);
+            ping_state.get("packets_received")->updateUint(received);
+            ping_state.get("time_elapsed_ms")->updateUint(static_cast<uint32_t>(now - ping_start));
+
+            delete ping_args;
+        },
+    0_s);
+}
+
+int RemoteAccess::start_ping() {
+    ip_addr_t target_addr;
+    memset(&target_addr, 0, sizeof(target_addr));
+    const char *host = config.get("relay_host")->asEphemeralCStr();
+
+    struct sockaddr_in dest_addr;
+    bzero(&dest_addr, sizeof(dest_addr));
+
+    int ret = dns_gethostbyname_addrtype_lwip_ctx(host, &target_addr, nullptr, nullptr, LWIP_DNS_ADDRTYPE_IPV4);
+    if (ret == ERR_VAL) {
+        logger.printfln("No DNS server is configured!");
+        return -1;
+    }
+
+    PingArgs *ping_args = new PingArgs();
+    ping_args->that = this;
+
+    esp_ping_config_t ping_config = ESP_PING_DEFAULT_CONFIG();
+    ping_config.target_addr = target_addr;
+    ping_config.count = ESP_PING_COUNT_INFINITE;
+
+    esp_ping_callbacks_t cbs;
+    cbs.on_ping_success = on_ping_success;
+    cbs.on_ping_timeout = on_ping_timeout;
+    cbs.on_ping_end = on_ping_end;
+    cbs.cb_args = static_cast<void *>(ping_args);
+    esp_ping_new_session(&ping_config, &cbs, &ping);
+    esp_ping_start(ping);
+
+    ping_start = millis();
+
+    char str[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &target_addr.u_addr.ip4, str, sizeof(str));
+    logger.printfln("Start pinging %s(%s)", host, str);
+
+    return 0;
+}
+
+int RemoteAccess::stop_ping() {
+    if (ping != nullptr) {
+        esp_ping_stop(ping);
+        esp_ping_delete_session(ping);
+        ping = nullptr;
+    }
+
+    return 0;
+}
+
+ConfigRoot &RemoteAccess::get_ping_state() {
+    return ping_state;
+}
+
+uint32_t RemoteAccess::get_ping_start() {
+    return ping_start;
 }

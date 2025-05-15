@@ -26,6 +26,7 @@
 #include "module.h"
 #include "config.h"
 #include "async_https_client.h"
+#include "ping/ping_sock.h"
 
 struct HttpResponse {
     int status;
@@ -61,6 +62,9 @@ public:
     void register_urls() override;
     void register_events() override;
 
+    ConfigRoot &get_ping_state();
+    uint32_t get_ping_start();
+
 private:
     void resolve_management();
     void connect_management();
@@ -81,6 +85,8 @@ private:
     void cleanup_after();
     bool user_already_registered(const CoolString &email);
     void setup_inner_socket();
+    int start_ping();
+    int stop_ping();
     WireGuard *management = nullptr;
     Connections remote_connections[5] = {};
 
@@ -93,6 +99,9 @@ private:
     micros_t last_mgmt_alive = 0_us;
     uint64_t task_id = 0;
 
+    esp_ping_handle_t ping = nullptr;
+    uint32_t ping_start = 0;
+
     std::unique_ptr<AsyncHTTPSClient> https_client;
     String response_body;
     std::unique_ptr<uint8_t[]> encrypted_secret = nullptr;
@@ -104,6 +113,7 @@ private:
     ConfigRoot registration_state;
     ConfigRoot users_config_prototype;
     ConfigRoot registration_config;
+    ConfigRoot ping_state;
 };
 
 enum management_command_id {
@@ -137,4 +147,10 @@ struct [[gnu::packed]] management_packet_header {
 struct [[gnu::packed]] management_command_packet {
     struct management_packet_header header;
     struct management_command command;
+};
+
+struct PingArgs {
+    RemoteAccess *that;
+    uint32_t packets_sent;
+    uint32_t packets_received;
 };

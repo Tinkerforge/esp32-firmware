@@ -73,6 +73,15 @@ interface registration_config {
     cert_id: number,
 }
 
+export interface ping_state {
+    packets_sent: number,
+    packets_received: number,
+    time_elapsed_ms: number,
+}
+
+export type start_ping = {}
+export type stop_ping = {};
+
 interface StateUser {
     state: number,
     user: number,

@@ -46,7 +46,15 @@ let x = {
             "token_corrupted": "Autorisierungstoken beschädigt. Bitte entfernen und neu hinzufügen.",
             "auth_token": "Autorisierungstoken",
             "auth_token_invalid": "Ungültiges Autorisierungstoken",
-            "auth_method": "Autorisierungsmethode"
+            "auth_method": "Autorisierungsmethode",
+            "ping": "Ping",
+            "start_ping": "Ping starten",
+            "stop_ping": "Ping stoppen",
+            "start_ping_failed": "Ping starten fehlgeschlagen",
+            "stop_ping_failed": "Ping stoppen fehlgeschlagen",
+            "packets_sent": "Gesendete Pakete",
+            "packets_received": "Empfangene Pakete",
+            "time_elapsed": "Verstrichene Zeit"
         },
         "script": {
             "save_failed": "Speichern der Fernzugriffs-Einstellungen fehlgeschlagen.",

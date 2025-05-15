@@ -46,7 +46,15 @@ let x = {
             "token_corrupted": "Authorization token corrupted. Please remove and re-add.",
             "auth_token": "Authorization token",
             "auth_token_invalid": "Invalid authorization token",
-            "auth_method": "Authorization method"
+            "auth_method": "Authorization method",
+            "ping": "Ping",
+            "start_ping": "Start ping",
+            "stop_ping": "Stop ping",
+            "start_ping_failed": "Starting ping failed",
+            "stop_ping_failed": "Stopping ping failed",
+            "packets_sent": "Packets sent",
+            "packets_received": "Packets received",
+            "time_elapsed": "Elapsed time"
         },
         "script": {
             "save_failed": "Failed to save the remote access settings.",

@@ -37,7 +37,7 @@ import { InputNumber } from "../../ts/components/input_number";
 import { InputSelect } from "../../ts/components/input_select";
 import { ArgonType, hash } from "argon2-browser";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
-import { Collapse, Container, Modal, Row, Spinner } from "react-bootstrap";
+import { Button, Collapse, Container, Modal, Row, Spinner } from "react-bootstrap";
 import { Table, TableRow } from "ts/components/table";
 import { useState } from "preact/hooks";
 import { StatusSection } from "ts/components/status_section";
@@ -105,6 +105,7 @@ interface RemoteAccessState {
         note: string,
     },
     removeUsers: number[],
+    pingState: API.getType["remote_access/ping_state"],
 }
 
 export class RemoteAccess extends ConfigComponent<"remote_access/config", {status_ref: RefObject<RemoteAccessStatus>}, RemoteAccessState> {
@@ -136,6 +137,9 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
                 this.resolve = undefined;
                 this.reject = undefined;
             }
+        });
+        util.addApiEventListener("remote_access/ping_state", () => {
+            this.setState({pingState: API.get("remote_access/ping_state")});
         });
         this.setState({status_modal_string: "", removeUsers: []});
     }
@@ -771,6 +775,25 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
                             <InputSelect items={cert_items} value={this.state.cert_id} onValue={(v) => {
                                 this.setState({cert_id: parseInt(v)});
                             }}/>
+                        </FormRow>
+                        <FormRow label={__("remote_access.content.ping")}>
+                            <div class="input-group">
+                                <Button className="form-control mr-2 rounded-right" onClick={() => {
+                                    API.call("remote_access/start_ping", {}, () => __("remote_access.content.start_ping_failed"));
+                                }}>{__("remote_access.content.start_ping")}</Button>
+                                <Button className="form-control rounded-left" onClick={() => {
+                                    API.call("remote_access/stop_ping", {}, () => __("remote_access.content.stop_ping_failed"));
+                                }}>{__("remote_access.content.stop_ping")}</Button>
+                            </div>
+                        </FormRow>
+                        <FormRow label={__("remote_access.content.packets_sent")}>
+                            <InputNumber value={this.state.pingState.packets_sent}/>
+                        </FormRow>
+                        <FormRow label={__("remote_access.content.packets_received")}>
+                            <InputNumber value={this.state.pingState.packets_received}/>
+                        </FormRow>
+                        <FormRow label={__("remote_access.content.time_elapsed")}>
+                            <InputNumber value={Math.floor(this.state.pingState.time_elapsed_ms / 1000)}/>
                         </FormRow>
                     </CollapsedSection>
                 </ConfigForm>
