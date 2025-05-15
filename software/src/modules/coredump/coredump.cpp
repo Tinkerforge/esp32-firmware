@@ -73,6 +73,33 @@ bool Coredump::build_coredump_info(JsonDocument &tf_coredump_json)
     return true;
 }
 
+void Coredump::pre_init()
+{
+    if (esp_reset_reason() != ESP_RST_PANIC) {
+        return;
+    }
+
+    char task_name[16];
+
+    { // Scope for summary
+        esp_core_dump_summary_t summary;
+        if (esp_core_dump_get_summary(&summary) == ESP_OK) {
+            memcpy(task_name, summary.exc_task, sizeof(task_name));
+        } else {
+            snprintf(task_name, sizeof(task_name), "<unknown>");
+        }
+    }
+
+    { // Scope for panic_reason
+        char panic_reason[256];
+        if (esp_core_dump_get_panic_reason(panic_reason, sizeof(panic_reason)) == ESP_OK) {
+            logger.printfln("Task '%.16s' crashed: '%s'", task_name, panic_reason);
+        } else {
+            logger.printfln("Task '%.16s' crashed for unknown reasons", task_name);
+        }
+    }
+}
+
 void Coredump::pre_setup()
 {
     bool coredump_available;
@@ -100,43 +127,48 @@ void Coredump::register_urls()
 {
     api.addState("coredump/state", &state);
 
-    // TODO: Make this an API command?
-    server.on("/coredump/erase", HTTP_GET, [this](WebServerRequest request) {
+    server.on_HTTPThread("/coredump/erase", HTTP_GET, [this](WebServerRequest request) {
         esp_core_dump_image_erase();
-        if (esp_core_dump_image_check() == ESP_OK)
-            return request.send(503, "text/plain", "Error while erasing core dump");
 
-        state.get("coredump_available")->updateBool(false);
+        if (esp_core_dump_image_check() == ESP_OK) {
+            return request.send(503, "text/plain", "Error while erasing core dump");
+        }
+
+        task_scheduler.scheduleOnce([this]() {
+            this->state.get("coredump_available")->updateBool(false);
+        });
 
         return request.send(200);
     });
 
     server.on_HTTPThread("/coredump/coredump.elf", HTTP_GET, [this](WebServerRequest request) {
-        if (esp_core_dump_image_check() != ESP_OK)
-            return request.send(404);
+        constexpr size_t OFFSET_BEFORE_ELF_HEADER = 24;
+        constexpr size_t BUFFER_SIZE = 2048;
+        char buffer[BUFFER_SIZE];
 
-        esp_core_dump_summary_t summary;
-        if (esp_core_dump_get_summary(&summary) != ESP_OK)
-            return request.send(503, "text/plain", "Failed to get core dump summary");
+        esp_err_t ret = esp_core_dump_image_check();
+        if (ret != ESP_OK) {
+            StringWriter sw(buffer, BUFFER_SIZE);
+            sw.printf("No core dump image available: %s (0x%lX)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
+            return request.send(404, "text/plain", buffer, sw.getLength());
+        }
 
         size_t addr;
         size_t size;
-        if (esp_core_dump_image_get(&addr, &size) != ESP_OK)
-            return request.send(503, "text/plain", "Failed to get core dump image size");
+        ret = esp_core_dump_image_get(&addr, &size);
+        if (ret != ESP_OK) {
+            StringWriter sw(buffer, BUFFER_SIZE);
+            sw.printf("Failed to get core dump image: %s (0x%lX)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
+            return request.send(503, "text/plain", buffer, sw.getLength());
+        }
 
         request.beginChunkedResponse(200, "application/octet-stream");
-
-        constexpr size_t BUFFER_SIZE = 2048;
-        constexpr size_t OFFSET_BEFORE_ELF_HEADER = 24;
-
-        char buffer[BUFFER_SIZE];
 
         for (size_t i = 0; i < size; i += BUFFER_SIZE) {
             size_t to_send = std::min(BUFFER_SIZE, size - i);
             if (esp_flash_read(NULL, buffer, addr + i, to_send) != ESP_OK) {
-                String s = "ESP_FLASH_READ failed. Core dump truncated";
-                request.sendChunk(s.c_str(), s.length());
-                return request.endChunkedResponse();
+                request.sendChunk("\n\nESP_FLASH_READ failed. Core dump truncated", HTTPD_RESP_USE_STRLEN);
+                break;
             }
             request.sendChunk(buffer + (i == 0 ? OFFSET_BEFORE_ELF_HEADER : 0), to_send - (i == 0 ? OFFSET_BEFORE_ELF_HEADER : 0));
         }
