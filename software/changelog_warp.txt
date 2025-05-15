@@ -777,7 +777,7 @@
 - Add more help texts to web interface
 - Update core software libraries (ESP-IDF 5.4 and arduino-esp32 3.2)
 
-2025-05-15: 2.8.1 (<unknown>)
+2025-05-15: 2.8.1 (90e590cd)
 - Charge Tracker: Fix summary in PDF export
 - Charge Manager: Fix incorrect phase switching in Min+PV mode
 - Modbus TCP: Fix inverter power and battery current sign for Alpha ESS and Hailei hybrid inverters
