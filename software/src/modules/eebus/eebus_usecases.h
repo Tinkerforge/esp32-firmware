@@ -25,6 +25,7 @@
 
 #include "config.h"
 #include "module.h"
+#include "spine_types.h"
 
 
 class UseCase{
@@ -35,8 +36,13 @@ class UseCase{
 };
 
 class NodeManagementUsecase : public UseCase {
+    
+    NodeManagementUsecase();
+    
     JsonVariant read() override;
     void subscribe() override;
+
+    NodeManagementUseCaseDataType node_management_usecase_data_type;
 };
 
 class EEBusUseCases {

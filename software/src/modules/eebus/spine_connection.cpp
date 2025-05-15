@@ -54,7 +54,7 @@ void SpineConnection::check_message_counter()
     // We ignore the message counter received for now as we are not sending messages that warrant a response.
 }
 
-void SpineDatagramHeader::from_json(String json)
+void SpineHeader::from_json(String json)
 {
     DynamicJsonDocument json_doc{SPINE_CONNECTION_MAX_JSON_SIZE};
 
@@ -89,7 +89,7 @@ void SpineDatagramHeader::from_json(String json)
     wants_response = json_doc[5]["wantsResponse"];
 }
 
-String SpineDatagramHeader::to_json()
+String SpineHeader::to_json()
 {
     DynamicJsonDocument json_doc{SPINE_CONNECTION_MAX_JSON_SIZE};
     JsonArray datagram = json_doc.createNestedArray("datagram");

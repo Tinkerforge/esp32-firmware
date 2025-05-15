@@ -288,10 +288,10 @@ void ShipConnection::state_machine_next_step()
             state_is_not_implemented();
             break;
     }
-    int state_id = eebus.get_connection_id_by_ski(peer_ski);
+    int state_id = eebus.get_state_connection_id_by_ski(peer_ski);
     if (state_id == -1) {
         eebus.state.get("connections")->add()->get("ski")->updateString(peer_ski);
-        state_id = eebus.get_connection_id_by_ski(peer_ski);
+        state_id = eebus.get_state_connection_id_by_ski(peer_ski);
     }
     eebus.state.get("connections")->get(state_id)->get("ship_state")->updateString(get_state_name(state));
 }
