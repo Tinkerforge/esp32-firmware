@@ -230,7 +230,7 @@ void EEBus::register_urls()
     ship.setup();
 }
 
-int EEBus::get_connection_id_by_ski(const String &ski)
+int EEBus::get_state_connection_id_by_ski(const String &ski)
 {
     for (size_t i = 0; i < state.get("connections")->count(); i++) {
         if (state.get("connections")->get(i)->get("ski")->asString() == ski) {

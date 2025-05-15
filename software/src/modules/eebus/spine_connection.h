@@ -32,7 +32,7 @@
 
 #define SPINE_DEVICE_ID "d:_i:123456_WARP3" // TODO: This should be based on the device UUID
 
-struct SpineDatagramHeader {
+struct SpineHeader {
     CoolString version; // Version of SPINE the node is using
     CoolString source_device_id;
     bool source_device_id_valid = false; // True if device is present and not empty or not present. False if present and empty
@@ -60,8 +60,7 @@ class SpineConnection
 public:
     ShipConnection *ship_connection = nullptr;
     SpineConnection(ShipConnection *ship_connection) : ship_connection(ship_connection){};
-
-    
+  
 
 
     void process_datagram(JsonVariant datagram);
@@ -75,8 +74,11 @@ public:
 
     CoolString device_id = SPINE_DEVICE_ID;
 
-    SpineDatagramHeader received_header;
+    SpineHeader received_header;
     JsonVariant received_payload;
 
+
+    // TODO: Move this to eebus.h to save a bit of ram
+    // Or opimize it so it doesnt use optionals.
     SpineDataTypeHandler data_handler{};
 };
