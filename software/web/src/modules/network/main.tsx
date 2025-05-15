@@ -247,7 +247,6 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
             state.wifiConfig.dns2 === "0.0.0.0") {
                 interfacesMissingDNS.push(translate_unchecked("wifi.navbar.wifi_sta"));
         }
-        console.log(interfacesMissingDNS);
         return interfacesMissingDNS;
     }
 
