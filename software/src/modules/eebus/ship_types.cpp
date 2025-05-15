@@ -33,7 +33,7 @@ DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, 
     DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
 
     DeserializationError error = deserializeJson(doc, incoming_data, length, DeserializationOption::NestingLimit(20));
-    doc.shrinkToFit(); // Make this a bit smaller
+    //doc.shrinkToFit(); // Make this a bit smaller
     if (error) {
         logger.printfln("J2T ShipMessageData Error during JSON deserialization : %s", error.c_str());
         return DeserializationResult::ERROR;
@@ -90,7 +90,7 @@ String ShipMessageDataType::type_to_json()
     }
 
     String output;
-    doc.shrinkToFit();
+    //doc.shrinkToFit();
     serializeJson(doc, output);
     return output;
 }
@@ -105,7 +105,6 @@ void DeserializeOptionalField(JsonObject *data, const char *field_name, bool *fi
     }
 }
 
-// TODO: This generic causes warnings i think 
 template <typename T>
 void DeserializeOptionalField(JsonObject *data, const char *field_name, bool *field_valid, std::vector<T> *field_value)
 {
@@ -124,7 +123,7 @@ DeserializationResult ShipMessageAccessMethodsRequest::json_to_type(uint8_t *dat
     DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
     logger.printfln("J2T ShipMessageAccessMethodsRequest json: %s", data);
     DeserializationError error = deserializeJson(doc, data, length);
-    doc.shrinkToFit(); // Make this a bit smaller
+    //doc.shrinkToFit(); // Make this a bit smaller
     if (error) {
         logger.printfln("J2T ShipMessageAccessMethodsRequest Error during JSON deserialization : %s", error.c_str());
         return DeserializationResult::ERROR;
@@ -143,7 +142,7 @@ String ShipMessageAccessMethodsRequest::type_to_json()
     JsonObject accessMethodsRequest = doc["accessMethodsRequest"].to<JsonObject>();
     accessMethodsRequest["request"] = request;
     String output;
-    doc.shrinkToFit();
+    //doc.shrinkToFit();
     serializeJson(doc, output);
     logger.printfln("T2J ShipMessageAccessMethods json: %s", output.c_str());
     return output;
@@ -153,7 +152,7 @@ DeserializationResult ShipMessageAccessMethods::json_to_type(uint8_t *data, size
 {
     DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
     DeserializationError error = deserializeJson(doc, data, length);
-    doc.shrinkToFit(); // Make this a bit smaller
+    //doc.shrinkToFit(); // Make this a bit smaller
     if (error) {
         logger.printfln("J2T ShipMessageAccessMethods Error during JSON deserialization : %s. Data: %s", error.c_str(), data);
         return DeserializationResult::ERROR;
@@ -189,7 +188,7 @@ String ShipMessageAccessMethods::type_to_json()
     uri["uri"] =  dns_uri; //"wss://192.168.0.33:4712/ship/"; // TODO
     */
     String output;
-    doc.shrinkToFit();
+    //doc.shrinkToFit();
     serializeJson(doc, output);
     logger.printfln("T2J ShipMessageAccessMethods json: %s", output.c_str());
     return output;
