@@ -197,7 +197,7 @@ void MetersModbusTCP::pre_setup()
     })});
 
     table_prototypes.push_back({MeterModbusTCPTableID::HuaweiSUN2000SmartDongle, Config::Object({
-        {"virtual_meter", Config::Enum(HuaweiSUN2000VirtualMeter::None)},
+        {"virtual_meter", Config::Enum(HuaweiSUN2000SmartDongleVirtualMeter::None)},
         {"device_address", Config::Uint8(1)},
     })});
 

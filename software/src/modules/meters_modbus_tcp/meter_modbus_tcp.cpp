@@ -1311,7 +1311,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             return;
 
         case HuaweiSUN2000SmartDongleVirtualMeter::InverterUnused:
-            logger.printfln_meter("Invalid Huawei SUN2000 Smart Dongle Virtual Meter: %u", static_cast<uint8_t>(solaredge.virtual_meter));
+            logger.printfln_meter("Invalid Huawei SUN2000 Smart Dongle Virtual Meter: %u", static_cast<uint8_t>(huawei_sun2000_smart_dongle.virtual_meter));
             return;
 
         case HuaweiSUN2000SmartDongleVirtualMeter::Grid:
@@ -1330,7 +1330,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         default:
-            logger.printfln_meter("Unknown Huawei SUN2000 Virtual Meter: %u", static_cast<uint8_t>(huawei_sun2000_smart_dongle.virtual_meter));
+            logger.printfln_meter("Unknown Huawei SUN2000 Smart Dongle Virtual Meter: %u", static_cast<uint8_t>(huawei_sun2000_smart_dongle.virtual_meter));
             return;
         }
 
