@@ -223,7 +223,7 @@ Cost get_cost(int current_to_allocate,
 }
 
 // Checks stage-specific limits.
-bool cost_exceeds_limits(const Cost &cost, const CurrentLimits* limits, int stage, bool observe_pv_limit, uint32_t guaranteed_pv_current)
+bool cost_exceeds_limits(const Cost &cost, const CurrentLimits* limits, int stage, bool observe_pv_limit, int guaranteed_pv_current)
 {
     bool phases_exceeded = false;
     for (size_t i = (size_t)GridPhase::L1; i <= (size_t)GridPhase::L3; ++i) {
@@ -735,7 +735,7 @@ static constexpr int CHECK_IMPROVEMENT = 4;
 static constexpr int CHECK_IMPROVEMENT_ALL_PHASE = 8;
 static constexpr int CHECK_SPREAD = 16;
 
-static bool can_activate(StringWriter &sw, const Cost &check_phase, const Cost &new_cost, const Cost &new_enable_cost, const Cost &wnd_min, const Cost &wnd_max, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg, bool is_unknown_rotated_1p_3p_switch, uint16_t guaranteed_pv_current) {
+static bool can_activate(StringWriter &sw, const Cost &check_phase, const Cost &new_cost, const Cost &new_enable_cost, const Cost &wnd_min, const Cost &wnd_max, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg, bool is_unknown_rotated_1p_3p_switch, int guaranteed_pv_current) {
     // Spread
     bool check_spread = ((check_phase.pv | check_phase.l1 | check_phase.l2 | check_phase.l3) & CHECK_SPREAD) != 0;
     bool check_improvement = ((check_phase.pv | check_phase.l1 | check_phase.l2 | check_phase.l3) & (CHECK_IMPROVEMENT | CHECK_IMPROVEMENT_ALL_PHASE)) != 0;
