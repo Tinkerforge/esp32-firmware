@@ -80,23 +80,48 @@ void Coredump::pre_init()
     }
 
     char task_name[16];
+    uint32_t exc_cause;
+    char backtrace[192];
+    StringWriter sw_bt(backtrace, ARRAY_SIZE(backtrace));
 
     { // Scope for summary
         esp_core_dump_summary_t summary;
-        if (esp_core_dump_get_summary(&summary) == ESP_OK) {
-            memcpy(task_name, summary.exc_task, sizeof(task_name));
+        if (esp_core_dump_get_summary(&summary) != ESP_OK) {
+            strlcpy(task_name, "<unknown>", sizeof(task_name));
+            exc_cause = EXCCAUSE_EXCCAUSE_MASK + 1;
         } else {
-            snprintf(task_name, sizeof(task_name), "<unknown>");
+            memcpy(task_name, summary.exc_task, sizeof(task_name));
+            exc_cause = summary.ex_info.exc_cause;
+
+            sw_bt.puts("Backtrace:");
+
+            const uint32_t frame_count = std::min(summary.exc_bt_info.depth, static_cast<uint32_t>(ARRAY_SIZE(summary.exc_bt_info.bt)));
+            const uint32_t *bt = summary.exc_bt_info.bt;
+            for (uint32_t i = 0; i < frame_count; i ++) {
+                sw_bt.printf(" 0x%08lx", bt[i]);
+            }
+
+            if (summary.exc_bt_info.corrupted) {
+                sw_bt.puts(" |<-CORRUPT\n");
+            } else {
+                sw_bt.putc('\n');
+            }
         }
     }
 
     { // Scope for panic_reason
         char panic_reason[256];
         if (esp_core_dump_get_panic_reason(panic_reason, sizeof(panic_reason)) == ESP_OK) {
-            logger.printfln("Task '%.16s' crashed: '%s'", task_name, panic_reason);
+            logger.printfln("Task '%.16s' panicked: '%s'", task_name, panic_reason);
         } else {
-            logger.printfln("Task '%.16s' crashed for unknown reasons", task_name);
+            const char *exc_name = exc_cause < ARRAY_SIZE(exc_cause_table) ? exc_cause_table[exc_cause] : "<unknown>";
+            logger.printfln("Task '%.16s' caused exception %lu: %s", task_name, exc_cause, exc_name);
         }
+    }
+
+    const size_t backtrace_length = sw_bt.getLength();
+    if (backtrace_length > 0) {
+        logger.print_plain(backtrace, backtrace_length);
     }
 }
 
