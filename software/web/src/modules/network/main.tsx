@@ -98,7 +98,11 @@ interface NetworkStatusState {
 
     wifi: API.getType["wifi/state"];
     wifiConfig: API.getType["wifi/sta_config"];
+
+//#if MODULE_WIREGUARD_AVAILABLE
     wireguardConfig: API.getType["wireguard/config"];
+//#endif
+
     apConfig: API.getType["wifi/ap_config"];
 
 //#if MODULE_REMOTE_ACCESS_AVAILABLE
@@ -125,9 +129,13 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
         util.addApiEventListener('wifi/sta_config', () => {
             this.setState({ wifiConfig: API.get('wifi/sta_config') });
         });
+
+//#if MODULE_WIREGUARD_AVAILABLE
         util.addApiEventListener('wireguard/config', () => {
             this.setState({ wireguardConfig: API.get('wireguard/config') });
         });
+//#endif
+
         util.addApiEventListener('wifi/ap_config', () => {
             this.setState({ apConfig: API.get('wifi/ap_config') });
         });
@@ -176,6 +184,7 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
             connectedSubnets.push({network: apNetwork, name: __("wifi.navbar.wifi_ap"), subnet: subnetString, href: "#wifi_ap"});
         }
 
+//#if MODULE_WIREGUARD_AVAILABLE
         if (state.wireguardConfig.enable) {
             const wireguardIP = util.parseIP(state.wireguardConfig.internal_ip);
             const wireguardSubnet = util.parseIP(state.wireguardConfig.internal_subnet);
@@ -183,6 +192,7 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
             const subnetString = `/${util.countBits(wireguardSubnet)}`;
             connectedSubnets.push({network: wireguardNetwork, name: __("wireguard.navbar.wireguard"), subnet: subnetString, href: "#wireguard"});
         }
+//#endif
 
 //#if MODULE_REMOTE_ACCESS_AVAILABLE
         if (state.remoteAccessConfig.enable) {
