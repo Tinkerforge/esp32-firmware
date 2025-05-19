@@ -257,11 +257,14 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
         }
 //#endif
 
+//#if MODULE_WIFI_AVAILABLE
         if (state.wifiConfig.ip !== "0.0.0.0" &&
             state.wifiConfig.dns === "0.0.0.0" &&
             state.wifiConfig.dns2 === "0.0.0.0") {
                 interfacesMissingDNS.push(translate_unchecked("wifi.navbar.wifi_sta"));
         }
+//#endif
+
         return interfacesMissingDNS;
     }
 
