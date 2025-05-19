@@ -565,8 +565,7 @@ let x = {
             </>
         },
         "script": {
-            "save_failed": "Failed to save the Modbus/TCP settings.",
-            "reboot_content_changed": "Modbus/TCP settings"
+            "save_failed": "Failed to save the Modbus/TCP settings."
         }
     }
 }

@@ -47,8 +47,6 @@ let x = {
         "content": {
             "system": "System",
 
-            "current_spiffs": "Konfigurationsversion",
-
             "factory_reset_desc": null,
             "factory_reset": "Zurücksetzen auf Werkszustand",
             "factory_reset_modal_text": null,
