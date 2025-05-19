@@ -181,7 +181,7 @@ int init_pdf_generator(WebServerRequest *request,
             --stream_num;
         }
 
-        auto content_offset = PDF_A4_HEIGHT - TOP_MARGIN - 10 - (page_num == 0 ? (LINE_HEIGHT * (stats_lines + 2)) : LINE_HEIGHT);
+        auto content_offset = PDF_A4_HEIGHT - TOP_MARGIN - 10 - (page_num == 0 ? (LINE_HEIGHT * (std::max(letterhead_lines, stats_lines) + 2)) : LINE_HEIGHT);
 
         // Table header
         if (stream_num == 0) {
