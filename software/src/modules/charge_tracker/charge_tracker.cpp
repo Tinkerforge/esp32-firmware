@@ -28,8 +28,7 @@
 #include "tools/fs.h"
 #include "pdf_charge_log.h"
 
-#define PDF_LETTERHEAD "charge_tracker/letterhead.txt"
-#define LETTERHEAD_MAX_SIZE 512
+#define PDF_LETTERHEAD_MAX_SIZE 512
 
 struct [[gnu::packed]] ChargeStart {
     uint32_t timestamp_minutes = 0;
@@ -95,6 +94,10 @@ void ChargeTracker::pre_setup()
 
     config = Config::Object({
         {"electricity_price", Config::Uint16(0)}
+    });
+
+    pdf_letterhead_config = Config::Object({
+        {"letterhead", Config::Str("", 0, PDF_LETTERHEAD_MAX_SIZE)}
     });
 
 // #if MODULE_AUTOMATION_AVAILABLE()
@@ -476,6 +479,7 @@ void ChargeTracker::setup()
     repair_charges();
 
     api.restorePersistentConfig("charge_tracker/config", &config);
+    api.restorePersistentConfig("charge_tracker/pdf_letterhead_config", &pdf_letterhead_config);
 
     // Fill charge_tracker/last_charges
     bool charging = currentlyCharging();
@@ -747,6 +751,7 @@ void ChargeTracker::register_urls()
     updateState();
 
     api.addPersistentConfig("charge_tracker/config", &config);
+    api.addPersistentConfig("charge_tracker/pdf_letterhead_config", &pdf_letterhead_config);
 
     server.on_HTTPThread("/charge_tracker/charge_log", HTTP_GET, [this](WebServerRequest request) {
         std::lock_guard<std::mutex> lock{records_mutex};
@@ -800,15 +805,17 @@ void ChargeTracker::register_urls()
         uint32_t current_timestamp_min = rtc.timestamp_minutes();
 
         bool english = false;
-        #define LETTERHEAD_SIZE 512
-        auto letterhead = heap_alloc_array<char>(LETTERHEAD_SIZE);
+        auto letterhead = heap_alloc_array<char>(PDF_LETTERHEAD_MAX_SIZE + 1);
         int letterhead_lines = 0;
 
         {
             StaticJsonDocument<192> doc;
             auto buf = heap_alloc_array<char>(1024);
-            if (request.contentLength() > 1024)
+
+            if (request.contentLength() > 1024) {
                 return request.send(413);
+            }
+
             auto received = request.receive(buf.get(), 1024);
 
             if (received < 0) {
@@ -816,35 +823,66 @@ void ChargeTracker::register_urls()
             }
 
             DeserializationError error = deserializeJson(doc, buf.get(), received);
+
             if (error) {
                 String errorString = String("Failed to deserialize string: ") + error.c_str();
                 return request.send(400, "text/plain", errorString.c_str());
             }
-            if (!bool(doc["api_not_final_acked"]))
+
+            if (!bool(doc["api_not_final_acked"])) {
                 return request.send(400, "text/plain", "Please acknowledge that this API is subject to change!");
+            }
 
             user_filter = doc["user_filter"] | USER_FILTER_ALL_USERS;
             start_timestamp_min = doc["start_timestamp_min"] | 0l;
             end_timestamp_min = doc["end_timestamp_min"] | 0l;
             english = doc["english"] | false;
-            if (current_timestamp_min == 0)
+
+            if (current_timestamp_min == 0) {
                 current_timestamp_min = doc["current_timestamp_min"] | 0l;
+            }
+
+            const char *lh;
+            auto saved_letterhead = pdf_letterhead_config.get("letterhead");
+
             if (doc.containsKey("letterhead")) {
-                const char *lh = doc["letterhead"];
-                letterhead_lines = 1;
-                for (size_t i = 0; i < LETTERHEAD_SIZE; ++i) {
-                    if (lh[i] == '\0')
-                        break;
-                    if (lh[i] == '\n') {
-                        letterhead[i] = '\0';
-                        if (letterhead_lines == 6)
-                            break;
-                        ++letterhead_lines;
-                    }
-                    else
-                        letterhead[i] = lh[i];
+                lh = doc["letterhead"];
+
+                if (strlen(lh) > PDF_LETTERHEAD_MAX_SIZE) {
+                    return request.send(400, "text/plain", "Letterhead is too long!");
+                }
+
+                if (strcmp(saved_letterhead->asEphemeralCStr(), lh) != 0) {
+                    saved_letterhead->updateString(lh);
+                    API::writeConfig("charge_tracker/pdf_letterhead_config", &pdf_letterhead_config);
                 }
             }
+            else {
+                lh = saved_letterhead->asEphemeralCStr();
+            }
+
+            letterhead_lines = 1;
+
+            for (size_t i = 0; i < PDF_LETTERHEAD_MAX_SIZE; ++i) {
+                if (lh[i] == '\0') {
+                    break;
+                }
+
+                if (lh[i] == '\n') {
+                    letterhead[i] = '\0';
+
+                    if (letterhead_lines == 6) {
+                        break;
+                    }
+
+                    ++letterhead_lines;
+                }
+                else {
+                    letterhead[i] = lh[i];
+                }
+            }
+
+            letterhead[PDF_LETTERHEAD_MAX_SIZE] = '\0';
         }
 
         char stats_buf[384];//55 9 "Wallbox: " + 32 display name + 13 " (warp2-AbCd)" + \0
@@ -1142,45 +1180,5 @@ search_done:
         free(display_name_cache);
         logger.printfln("PDF generation done.");
         return request.endChunkedResponse();
-    });
-
-    server.on_HTTPThread("/charge_tracker/letterhead", HTTP_GET, [this](WebServerRequest request) {
-        char buf[LETTERHEAD_MAX_SIZE + 1] = {0};
-
-        if (!LittleFS.exists("/charge_tracker/letterhead.txt")) {
-            return request.send(200, "text/plain", "", 0);
-        }
-
-        File file = LittleFS.open("/charge_tracker/letterhead.txt");
-        size_t file_size = file.size();
-        if (file_size > LETTERHEAD_MAX_SIZE) {
-            return request.send(507);
-        }
-
-        size_t read = file.read((uint8_t *)buf, file_size);
-        if (read != file_size) {
-            return request.send(500, "text/plain", "Failed to read letterhead");
-        }
-        return request.send(200, "text/plain", buf, file_size);
-    });
-
-    server.on_HTTPThread("/charge_tracker/letterhead", HTTP_POST, [this](WebServerRequest request) {
-        char buf[LETTERHEAD_MAX_SIZE + 1] = {0};
-
-        if (request.contentLength() > LETTERHEAD_MAX_SIZE) {
-            return request.send(413);
-        }
-
-        int received = request.receive(buf, request.contentLength());
-        if (received < 0) {
-            return request.send(500, "text/plain", "Failed to receive request payload");
-        }
-
-        File file = LittleFS.open("/charge_tracker/letterhead.txt", "w", true);
-        int written = file.write((uint8_t *)buf, received);
-        if (written < 0 || written != received) {
-            return request.send(500, "text/plain", "Failed to write letterhead");
-        }
-        return request.send(200, "text/plain", "OK");
     });
 }

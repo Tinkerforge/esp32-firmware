@@ -18,8 +18,8 @@ let x = {
             "download_btn": "Ladelog als CSV herunterladen",
             "download_btn_pdf": "Ladelog als PDF herunterladen",
 
-            "pdf_text": "Briefkopf",
-            "pdf_text_muted": "",
+            "pdf_letterhead": "PDF-Briefkopf",
+            "pdf_letterhead_muted": "",
 
             "tracked_charges": "Aufgezeichnete Ladevorgänge",
             "tracked_charges_muted": "",

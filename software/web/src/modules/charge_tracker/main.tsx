@@ -55,7 +55,7 @@ interface S {
     start_date: Date;
     end_date: Date;
     file_type: string;
-    pdf_text: string;
+    pdf_letterhead: string;
     csv_flavor: "excel" | "rfc4180";
     show_spinner: boolean;
     last_charges: Readonly<Charge[]>;
@@ -146,15 +146,14 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         });
 
         util.addApiEventListener('charge_tracker/config', () => {
-            let conf = API.get('charge_tracker/config');
-            this.setState({electricity_price: conf.electricity_price});
+            let config = API.get('charge_tracker/config');
+            this.setState({electricity_price: config.electricity_price});
         });
 
-        // set pdf_text since it is otherwise undefined
-        this.state = {
-            ...this.state,
-            pdf_text: "",
-        };
+        util.addApiEventListener('charge_tracker/pdf_letterhead_config', () => {
+            let pdf_letterhead_config = API.get('charge_tracker/pdf_letterhead_config');
+            this.setState({pdf_letterhead: pdf_letterhead_config.letterhead});
+        });
     }
 
     get_last_charges(charges: Readonly<Charge[]>, price: number) {
@@ -304,42 +303,15 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
             .catch(err => util.add_alert("download-charge-log", "danger", () => __("charge_tracker.script.download_charge_log_failed"), err));
     }
 
-    override async sendReset(t: "charge_tracker/config") {
-        super.sendReset(t);
-
-        await util.upload(new Blob([""]), "/charge_tracker/letterhead");
-    }
-
     override async isSaveAllowed(cfg: ChargeTrackerConfig) {
-        let allowed = cfg.electricity_price == 0 || cfg.electricity_price >= 100;
-        allowed = allowed && this.state.pdf_text.length <= 512;
-        return allowed;
-    }
-
-    override async sendSave(t: "charge_tracker/config",cfg: ChargeTrackerConfig) {
-        await util.upload(new Blob([this.state.pdf_text]), "/charge_tracker/letterhead");
-
-        super.sendSave(t, cfg);
+        return cfg.electricity_price == 0 || cfg.electricity_price >= 100;
     }
 
     render(props: {}, state: Readonly<ChargeTrackerState> & ChargeTrackerConfig) {
         if (!util.render_allowed())
             return <SubPage name="charge_tracker" />;
 
-        const that = this;
-        useEffect(() => {
-            util.download("/charge_tracker/letterhead").then(async (blob) => {
-                let text = await blob.text();
-                that.setState({pdf_text: text});
-            })
-        }, []);
-
         // TODO show hint that day ahead prices are not used here!
-
-//#if MODULE_POWER_MANAGER_AVAILABLE
-        let pv_enabled = false;
-//#endif
-        pv_enabled = API.get('power_manager/config').excess_charging_enable;
 
         let dap_enabled = false;
 //#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
@@ -401,14 +373,13 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 
                 <Collapse in={state.file_type == "0"}>
                     <div>
-                        <FormRow label={__("charge_tracker.content.pdf_text")} label_muted={__("charge_tracker.content.pdf_text_muted")}>
-                            <textarea name="letterhead" class="text-monospace form-control" id="letterhead" value={state.pdf_text} onInput={(e) => {
+                        <FormRow label={__("charge_tracker.content.pdf_letterhead")} label_muted={__("charge_tracker.content.pdf_letterhead_muted")}>
+                            <textarea name="letterhead" class="text-monospace form-control" id="letterhead" value={state.pdf_letterhead} onInput={(e) => {
                                 let value = (e.target as HTMLInputElement).value;
-                                if (new Blob([value]).size < 500)
-                                    this.setState({pdf_text: value});
+                                if (new Blob([value]).size < 512)
+                                    this.setState({pdf_letterhead: value});
                                 else
-                                    this.setState({pdf_text: state.pdf_text});
-                                this.setDirty(true);
+                                    this.setState({pdf_letterhead: state.pdf_letterhead});
                             }} cols={30} rows={6}/>
                         </FormRow>
 
@@ -434,7 +405,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                                         start_timestamp_min: start.getTime() / 1000 / 60,
                                         end_timestamp_min: end.getTime() / 1000 / 60,
                                         user_filter: parseInt(state.user_filter),
-                                        letterhead: state.pdf_text
+                                        letterhead: state.pdf_letterhead,
                                     }, () => __("charge_tracker.script.download_charge_log_failed"), undefined, 2 * 60 * 1000);
                                     util.downloadToFile(pdf, __("charge_tracker.content.charge_log_file"), "pdf", "application/pdf");
                                 } finally {

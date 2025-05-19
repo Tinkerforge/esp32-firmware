@@ -9,6 +9,10 @@ export interface config {
     electricity_price: number;
 }
 
+export interface pdf_letterhead_config {
+    letterhead: string;
+}
+
 export type last_charges = Charge[];
 
 interface current_charge_base {

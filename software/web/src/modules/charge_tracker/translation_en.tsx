@@ -18,8 +18,8 @@ let x = {
             "download_btn": "Download charge log as CSV",
             "download_btn_pdf": "Download charge log as PDF",
 
-            "pdf_text": "Letterhead",
-            "pdf_text_muted": "",
+            "pdf_letterhead": "PDF letterhead",
+            "pdf_letterhead_muted": "",
 
             "tracked_charges": "Tracked charges",
             "tracked_charges_muted": "",

@@ -1186,6 +1186,7 @@ en_hyph = [
     "pe-riph-er-al",
     "dis-tinc-tion",
     "Let-ter-head",
+    "let-ter-head",
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]

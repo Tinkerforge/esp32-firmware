@@ -54,6 +54,7 @@ public:
     ConfigRoot state;
 
     ConfigRoot config;
+    ConfigRoot pdf_letterhead_config;
 
     std::mutex records_mutex;
     std::mutex pdf_mutex;
