@@ -96,14 +96,15 @@ interface NetworkStatusState {
     ethernetConfig: API.getType["ethernet/config"];
 //#endif
 
+//#if MODULE_WIFI_AVAILABLE
     wifi: API.getType["wifi/state"];
     wifiConfig: API.getType["wifi/sta_config"];
+    apConfig: API.getType["wifi/ap_config"];
+//#endif
 
 //#if MODULE_WIREGUARD_AVAILABLE
     wireguardConfig: API.getType["wireguard/config"];
 //#endif
-
-    apConfig: API.getType["wifi/ap_config"];
 
 //#if MODULE_REMOTE_ACCESS_AVAILABLE
     remoteAccessConfig: API.getType["remote_access/config"];
@@ -123,12 +124,17 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
         });
 //#endif
 
+//#if MODULE_WIFI_AVAILABLE
         util.addApiEventListener('wifi/state', () => {
             this.setState({ wifi: API.get('wifi/state') });
         });
         util.addApiEventListener('wifi/sta_config', () => {
             this.setState({ wifiConfig: API.get('wifi/sta_config') });
         });
+        util.addApiEventListener('wifi/ap_config', () => {
+            this.setState({ apConfig: API.get('wifi/ap_config') });
+        });
+//#endif
 
 //#if MODULE_WIREGUARD_AVAILABLE
         util.addApiEventListener('wireguard/config', () => {
@@ -136,9 +142,6 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
         });
 //#endif
 
-        util.addApiEventListener('wifi/ap_config', () => {
-            this.setState({ apConfig: API.get('wifi/ap_config') });
-        });
 
 //#if MODULE_REMOTE_ACCESS_AVAILABLE
         util.addApiEventListener('remote_access/config', () => {
@@ -156,15 +159,6 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
             dhcp?: boolean;
         }[] = [];
 
-        const wifiIP = util.parseIP(state.wifi.sta_ip);
-        if (wifiIP !== 0) {
-            const wifiSubnet = util.parseIP(state.wifi.sta_subnet);
-            const wifiNetwork = wifiIP & wifiSubnet;
-            const subnetString = `/${util.countBits(wifiSubnet)}`;
-            const dhcp = API.get("wifi/sta_config").ip === "0.0.0.0";
-            connectedSubnets.push({network: wifiNetwork, name: __("wifi.navbar.wifi_sta"), subnet: subnetString, href: "#wifi_sta", dhcp});
-        }
-
 //#if MODULE_ETHERNET_AVAILABLE
         const ethernetIP = util.parseIP(state.ethernet.ip);
         if (ethernetIP !== 0) {
@@ -176,6 +170,16 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
         }
 //#endif
 
+//#if MODULE_WIFI_AVAILABLE
+        const wifiIP = util.parseIP(state.wifi.sta_ip);
+        if (wifiIP !== 0) {
+            const wifiSubnet = util.parseIP(state.wifi.sta_subnet);
+            const wifiNetwork = wifiIP & wifiSubnet;
+            const subnetString = `/${util.countBits(wifiSubnet)}`;
+            const dhcp = API.get("wifi/sta_config").ip === "0.0.0.0";
+            connectedSubnets.push({network: wifiNetwork, name: __("wifi.navbar.wifi_sta"), subnet: subnetString, href: "#wifi_sta", dhcp});
+        }
+
         if (state.apConfig.enable_ap && !state.apConfig.ap_fallback_only) {
             const apIP = util.parseIP(state.apConfig.ip);
             const apSubnet = util.parseIP(state.apConfig.subnet);
@@ -183,6 +187,7 @@ export class NetworkStatus extends Component<{}, NetworkStatusState> {
             const subnetString = `/${util.countBits(apSubnet)}`;
             connectedSubnets.push({network: apNetwork, name: __("wifi.navbar.wifi_ap"), subnet: subnetString, href: "#wifi_ap"});
         }
+//#endif
 
 //#if MODULE_WIREGUARD_AVAILABLE
         if (state.wireguardConfig.enable) {
