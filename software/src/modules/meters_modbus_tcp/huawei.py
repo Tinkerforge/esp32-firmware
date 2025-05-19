@@ -645,4 +645,416 @@ specs = [
             },
         ],
     },
+    {
+        'name': 'Huawei EMMA Inverter',
+        'register_type': 'HoldingRegister',
+        'values': [
+            {
+                'name': 'Inverter total absorbed energy [0.01 kWh]',
+                'value_id': 'EnergyActiveLSumImport',
+                'start_address': 30302,
+                'value_type': 'U64BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Inverter total energy yield [0.01 kWh]',
+                'value_id': 'EnergyActiveLSumExport',
+                'start_address': 30344,
+                'value_type': 'U32BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Inverter active power [W]',
+                'value_id': 'PowerActiveLSumImExDiff',
+                'start_address': 30364,
+                'value_type': 'S32BE',
+            },
+        ],
+    },
+    {
+        'name': 'Huawei EMMA Grid Internal Sensor',
+        'register_type': 'HoldingRegister',
+        'values': [
+            {
+                'name': 'Total feed-in to grid [0.01 kWh]',
+                #'value_id': 'EnergyActiveLSumExport',
+                'value_id': 'VALUE_ID_META',
+                'start_address': 30332,
+                'value_type': 'U64BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Total supply from grid [0.01 kWh]',
+                #'value_id': 'EnergyActiveLSumImport',
+                'value_id': 'VALUE_ID_META',
+                'start_address': 30338,
+                'value_type': 'U64BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Feed-in power [W]',
+                #'value_id': 'PowerActiveLSumImExDiff',
+                'value_id': 'VALUE_ID_META',
+                'start_address': 30358,
+                'value_type': 'S32BE',
+                'scale_factor': -1.0,  # FIXME: sign?
+            },
+            {
+                'name': 'Phase A voltage of built-in electric energy sensor [0.01 V]',
+                'value_id': 'VoltageL1N',
+                'start_address': 31639,
+                'value_type': 'U32BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Phase B voltage of built-in electric energy sensor [0.01 V]',
+                'value_id': 'VoltageL2N',
+                'start_address': 31641,
+                'value_type': 'U32BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Phase C voltage of built-in electric energy sensor [0.01 V]',
+                'value_id': 'VoltageL3N',
+                'start_address': 31643,
+                'value_type': 'U32BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'A-B line voltage of built-in electric energy sensor [0.01 V]',
+                'value_id': 'VoltageL1L2',
+                'start_address': 31645,
+                'value_type': 'U32BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'B-C line voltage of built-in electric energy sensor [0.01 V]',
+                'value_id': 'VoltageL2L3',
+                'start_address': 31647,
+                'value_type': 'U32BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'C-A line voltage of built-in electric energy sensor [0.01 V]',
+                'value_id': 'VoltageL3L1',
+                'start_address': 31649,
+                'value_type': 'U32BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Phase A current of built-in electric energy sensor [0.1 A]',
+                'value_id': 'CurrentL1ImExDiff',
+                'start_address': 31651,
+                'value_type': 'S32BE',
+                'scale_factor': -0.1,  # FIXME: sign?
+            },
+            {
+                'name': 'Phase B current of built-in electric energy sensor [0.1 A]',
+                'value_id': 'CurrentL2ImExDiff',
+                'start_address': 31653,
+                'value_type': 'S32BE',
+                'scale_factor': -0.1,  # FIXME: sign?
+            },
+            {
+                'name': 'Phase C current of built-in electric energy sensor [0.1 A]',
+                'value_id': 'CurrentL3ImExDiff',
+                'start_address': 31655,
+                'value_type': 'S32BE',
+                'scale_factor': -0.1,  # FIXME: sign?
+            },
+            {
+                'name': 'Active power of built-in electric energy sensor [W]',
+                'value_id': 'PowerActiveLSumImExDiff',
+                'start_address': 31657,
+                'value_type': 'S32BE',
+                'scale_factor': -1.0,  # FIXME: sign?
+            },
+            {
+                'name': 'Power factor of built-in electric energy sensor [0.001]',
+                'value_id': 'PowerFactorLSumDirectional',
+                'start_address': 31661,
+                'value_type': 'S32BE',
+                'scale_factor': -0.001,  # FIXME: sign?
+            },
+            {
+                'name': 'Apparent power of built-in electric energy sensor [VA]',
+                'value_id': 'PowerApparentLSumImExDiff',
+                'start_address': 31663,
+                'value_type': 'S32BE',
+                'scale_factor': -1.0,  # FIXME: sign?
+            },
+            {
+                'name': 'Phase A active power of built-in electric energy sensor [W]',
+                'value_id': 'PowerActiveL1ImExDiff',
+                'start_address': 31665,
+                'value_type': 'S32BE',
+                'scale_factor': -1.0,  # FIXME: sign?
+            },
+            {
+                'name': 'Phase B active power of built-in electric energy sensor [W]',
+                'value_id': 'PowerActiveL2ImExDiff',
+                'start_address': 31667,
+                'value_type': 'S32BE',
+                'scale_factor': -1.0,  # FIXME: sign?
+            },
+            {
+                'name': 'Phase C active power of built-in electric energy sensor [W]',
+                'value_id': 'PowerActiveL3ImExDiff',
+                'start_address': 31669,
+                'value_type': 'S32BE',
+                'scale_factor': -1.0,  # FIXME: sign?
+            },
+            {
+                'name': 'Total active energy of built-in electric energy sensor [0.01 kWh]',
+                'value_id': 'EnergyActiveLSumImExDiff',
+                'start_address': 31671,
+                'value_type': 'S64BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Total negative active energy of built-in electric energy sensor [0.01 kWh]',
+                'value_id': 'EnergyActiveLSumImport',
+                'start_address': 31679,
+                'value_type': 'S64BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Total positive active energy of built-in electric energy sensor [0.01 kWh]',
+                'value_id': 'EnergyActiveLSumExport',
+                'start_address': 31687,
+                'value_type': 'S64BE',
+                'scale_factor': 0.01,
+            },
+        ],
+    },
+    {
+        'name': 'Huawei EMMA Battery',
+        'register_type': 'HoldingRegister',
+        'values': [
+            {
+                'name': 'Total charged energy [0.01 kWh]',
+                'value_id': 'EnergyActiveLSumImport',
+                'start_address': 30308,
+                'value_type': 'U64BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Total discharged energy [0.01 kWh]',
+                'value_id': 'EnergyActiveLSumExport',
+                'start_address': 30314,
+                'value_type': 'U64BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Battery charge/discharge power [W]',
+                'value_id': 'PowerDCChaDisDiff',
+                'start_address': 30360,
+                'value_type': 'S32BE',
+            },
+            {
+                'name': 'SOC [0.01 %]',
+                'value_id': 'StateOfCharge',
+                'start_address': 30368,
+                'value_type': 'U16',
+                'scale_factor': 0.01,
+            },
+        ],
+    },
+    {
+        'name': 'Huawei EMMA Load',
+        'register_type': 'HoldingRegister',
+        'values': [
+            {
+                'name': 'Load power [W]',
+                'value_id': 'PowerActiveLSumImport',
+                'start_address': 30356,
+                'value_type': 'U32BE',
+            },
+            {
+                'name': 'Load power signed [W]',
+                'value_id': 'PowerActiveLSumImExDiff',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+        ],
+    },
+    {
+        'name': 'Huawei EMMA PV',
+        'register_type': 'HoldingRegister',
+        'values': [
+            {
+                'name': 'Total PV energy yield [0.01 kWh]',
+                'value_id': 'EnergyPVSumExport',
+                'start_address': 30348,
+                'value_type': 'U64BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'PV output power [W]',
+                'value_id': 'PowerPVSumExport',
+                'start_address': 30354,
+                'value_type': 'U32BE',
+            },
+            {
+                'name': 'PV output power signed [W]',
+                'value_id': 'PowerPVSumImExDiff',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+        ],
+    },
+    {
+        'name': 'Huawei EMMA Grid External Sensor',
+        'register_type': 'HoldingRegister',
+        'values': [
+            {
+                'name': 'Total feed-in to grid [0.01 kWh]',
+                #'value_id': 'EnergyActiveLSumExport',
+                'value_id': 'VALUE_ID_META',
+                'start_address': 30332,
+                'value_type': 'U64BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Total supply from grid [0.01 kWh]',
+                #'value_id': 'EnergyActiveLSumImport',
+                'value_id': 'VALUE_ID_META',
+                'start_address': 30338,
+                'value_type': 'U64BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Feed-in power [W]',
+                #'value_id': 'PowerActiveLSumImExDiff',
+                'value_id': 'VALUE_ID_META',
+                'start_address': 30358,
+                'value_type': 'S32BE',
+                'scale_factor': -1.0,  # FIXME: sign?
+            },
+            {
+                'name': 'Phase A voltage of external electric energy sensor [0.1 V]',
+                'value_id': 'VoltageL1N',
+                'start_address': 31895,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Phase B voltage of external electric energy sensor [0.1 V]',
+                'value_id': 'VoltageL2N',
+                'start_address': 31897,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Phase C voltage of external electric energy sensor [0.1 V]',
+                'value_id': 'VoltageL3N',
+                'start_address': 31899,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'A-B line voltage of external electric energy sensor [0.1 V]',
+                'value_id': 'VoltageL1L2',
+                'start_address': 31901,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'B-C line voltage of external electric energy sensor [0.1 V]',
+                'value_id': 'VoltageL2L3',
+                'start_address': 31903,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'C-A line voltage of external electric energy sensor [0.1 V]',
+                'value_id': 'VoltageL3L1',
+                'start_address': 31905,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Phase A current of external electric energy sensor [0.01 A]',
+                'value_id': 'CurrentL1ImExDiff',
+                'start_address': 31907,
+                'value_type': 'S32BE',
+                'scale_factor': -0.01,  # FIXME: sign?
+            },
+            {
+                'name': 'Phase B current of external electric energy sensor [0.01 A]',
+                'value_id': 'CurrentL2ImExDiff',
+                'start_address': 31909,
+                'value_type': 'S32BE',
+                'scale_factor': -0.01,  # FIXME: sign?
+            },
+            {
+                'name': 'Phase C current of external electric energy sensor [0.01 A]',
+                'value_id': 'CurrentL3ImExDiff',
+                'start_address': 31911,
+                'value_type': 'S32BE',
+                'scale_factor': -0.01,  # FIXME: sign?
+            },
+            {
+                'name': 'Active power of external electric energy sensor [W]',
+                'value_id': 'PowerActiveLSumImExDiff',
+                'start_address': 31913,
+                'value_type': 'S32BE',
+                'scale_factor': -1.0,  # FIXME: sign?
+            },
+            {
+                'name': 'Power factor of external electric energy sensor [0.001]',
+                'value_id': 'PowerFactorLSumDirectional',
+                'start_address': 31917,
+                'value_type': 'S32BE',
+                'scale_factor': -0.001,  # FIXME: sign?
+            },
+            {
+                'name': 'Apparent power of external electric energy sensor [VA]',
+                'value_id': 'PowerApparentLSumImExDiff',
+                'start_address': 31919,
+                'value_type': 'S32BE',
+                'scale_factor': -1.0,  # FIXME: sign?
+            },
+            {
+                'name': 'Phase A active power of external electric energy sensor [W]',
+                'value_id': 'PowerActiveL1ImExDiff',
+                'start_address': 31921,
+                'value_type': 'S32BE',
+                'scale_factor': -1.0,  # FIXME: sign?
+            },
+            {
+                'name': 'Phase B active power of external electric energy sensor [W]',
+                'value_id': 'PowerActiveL2ImExDiff',
+                'start_address': 31923,
+                'value_type': 'S32BE',
+                'scale_factor': -1.0,  # FIXME: sign?
+            },
+            {
+                'name': 'Phase C active power of external electric energy sensor [W]',
+                'value_id': 'PowerActiveL3ImExDiff',
+                'start_address': 31925,
+                'value_type': 'S32BE',
+                'scale_factor': -1.0,  # FIXME: sign?
+            },
+            {
+                'name': 'Total active energy of external electric energy sensor [0.01 kWh]',
+                'value_id': 'EnergyActiveLSumImExDiff',
+                'start_address': 31927,
+                'value_type': 'S64BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Total negative active energy of external electric energy sensor [0.01 kWh]',
+                'value_id': 'EnergyActiveLSumImport',
+                'start_address': 31935,
+                'value_type': 'S64BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Total positive active energy of external electric energy sensor [0.01 kWh]',
+                'value_id': 'EnergyActiveLSumExport',
+                'start_address': 31943,
+                'value_type': 'S64BE',
+                'scale_factor': 0.01,
+            },
+        ],
+    },
 ]

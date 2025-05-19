@@ -52,6 +52,7 @@
 #include "e3dc_virtual_meter.enum.h"
 #include "huawei_sun2000_virtual_meter.enum.h"
 #include "huawei_sun2000_smart_dongle_virtual_meter.enum.h"
+#include "huawei_emma_virtual_meter.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -362,6 +363,11 @@ private:
             HuaweiSUN2000SmartDongleVirtualMeter virtual_meter;
             int32_t energy_storage_product_model;
         } huawei_sun2000_smart_dongle;
+
+        // Huawei EMMA
+        struct {
+            HuaweiEMMAVirtualMeter virtual_meter;
+        } huawei_emma;
     };
 };
 

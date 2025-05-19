@@ -1336,6 +1336,52 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         break;
 
+    case MeterModbusTCPTableID::HuaweiEMMA:
+        huawei_emma.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<HuaweiEMMAVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
+
+        switch (huawei_emma.virtual_meter) {
+        case HuaweiEMMAVirtualMeter::None:
+            logger.printfln_meter("No Huawei EMMA Virtual Meter selected");
+            return;
+
+        case HuaweiEMMAVirtualMeter::Inverter:
+            table = &huawei_emma_inverter_table;
+            default_location = MeterLocation::Inverter;
+            return;
+
+        case HuaweiEMMAVirtualMeter::GridInternalSensor:
+            table = &huawei_emma_grid_internal_sensor_table;
+            default_location = MeterLocation::Grid;
+            break;
+
+        case HuaweiEMMAVirtualMeter::Battery:
+            table = &huawei_emma_battery_table;
+            default_location = MeterLocation::Battery;
+            break;
+
+        case HuaweiEMMAVirtualMeter::Load:
+            table = &huawei_emma_load_table;
+            default_location = MeterLocation::Load;
+            break;
+
+        case HuaweiEMMAVirtualMeter::PV:
+            table = &huawei_emma_pv_table;
+            default_location = MeterLocation::PV;
+            break;
+
+        case HuaweiEMMAVirtualMeter::GridExternalSensor:
+            table = &huawei_emma_grid_external_sensor_table;
+            default_location = MeterLocation::Grid;
+            break;
+
+        default:
+            logger.printfln_meter("Unknown Huawei EMMA Virtual Meter: %u", static_cast<uint8_t>(huawei_emma.virtual_meter));
+            return;
+        }
+
+        break;
+
     default:
         logger.printfln_meter("Unknown table: %u", static_cast<uint8_t>(table_id));
         return;
