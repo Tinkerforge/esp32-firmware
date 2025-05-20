@@ -22,13 +22,9 @@
 #include <atomic>
 #include <vector>
 
+#include "event_result.h"
 #include "module.h"
 #include "modules/api/api.h"
-
-enum class EventResult {
-    OK = 0,
-    Deregister
-};
 
 typedef strict_variant::variant<
     const char *,

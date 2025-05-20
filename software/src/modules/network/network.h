@@ -19,8 +19,9 @@
 
 #pragma once
 
-#include "module.h"
 #include "config.h"
+#include "module.h"
+#include "modules/event/event_result.h"
 
 class Network final : public IModule
 {
@@ -38,6 +39,8 @@ public:
     inline uint16_t get_web_server_port() { return web_server_port; }
 
     void set_default_hostname(const String &hostname);
+
+    int64_t on_network_connected(std::function<EventResult(const Config *)> &&callback);
 
 private:
     void update_connected();

@@ -169,3 +169,8 @@ void Network::update_connected()
 void Network::set_default_hostname(const String &hostname) {
     this->default_hostname = hostname;
 }
+
+int64_t Network::on_network_connected(std::function<EventResult(const Config *)> &&callback)
+{
+    return event.registerEvent("network/state", {"connected"}, std::move(callback));
+}
