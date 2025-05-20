@@ -115,7 +115,7 @@ void MeterRCTPower::register_events()
         return;
     }
 
-    event.registerEvent("network/state", {"connected"}, [this](const Config *connected) {
+    network.on_network_connected([this](const Config *connected) {
         if (connected->asBool()) {
             start_connection();
         }

@@ -739,7 +739,7 @@ void Mqtt::register_events()
     }
 
     // Start MQTT client here to make sure all handlers are already registered.
-    event.registerEvent("network/state", {"connected"}, [this](const Config *connected) {
+    network.on_network_connected([this](const Config *connected) {
         if (connected->asBool()) {
             esp_mqtt_client_start(client);
 #if MODULE_DEBUG_AVAILABLE()

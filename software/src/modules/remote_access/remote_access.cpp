@@ -1080,8 +1080,11 @@ void RemoteAccess::register_events()
     if (!config.get("enable")->asBool())
         return;
 
-    event.registerEvent("network/state", {"connected"}, [this](const Config *connected) {
-        task_scheduler.cancel(this->task_id);
+    network.on_network_connected([this](const Config *connected) {
+        if (this->task_id) {
+            task_scheduler.cancel(this->task_id);
+            this->task_id = 0;
+        }
 
         if (connected->asBool()) {
             this->task_id = task_scheduler.scheduleWithFixedDelay(
