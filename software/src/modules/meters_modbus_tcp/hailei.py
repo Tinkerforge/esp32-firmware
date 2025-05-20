@@ -456,16 +456,6 @@ specs = [
                 'value_type': 'U32BE',
             },
             {
-                'name': 'PV Total Power [W]',
-                'value_id': 'PowerPVSumExport',
-                'start_address': 'START_ADDRESS_VIRTUAL',
-            },
-            {
-                'name': 'PV Total Power Signed [W]',
-                'value_id': 'PowerPVSumImExDiff',
-                'start_address': 'START_ADDRESS_VIRTUAL',
-            },
-            {
                 'name': 'PV Average Voltage [0.1 V]',
                 'value_id': 'VoltagePVAvg',
                 'start_address': 'START_ADDRESS_VIRTUAL',
@@ -473,6 +463,16 @@ specs = [
             {
                 'name': 'PV Total Current [0.1 A]',
                 'value_id': 'CurrentPVSumExport',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+            {
+                'name': 'PV Total Power [W]',
+                'value_id': 'PowerPVSumExport',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+            {
+                'name': 'PV Total Power Signed [W]',
+                'value_id': 'PowerPVSumImExDiff',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
             {

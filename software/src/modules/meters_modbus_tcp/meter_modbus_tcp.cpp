@@ -2297,13 +2297,6 @@ void MeterModbusTCP::parse_next()
         else if (register_start_address == ALPHA_ESS_HYBRID_INVERTER_PV6_POWER_ADDRESS) {
             alpha_ess_hybrid_inverter.pv6_power = value;
 
-            float power = alpha_ess_hybrid_inverter.pv1_power
-                        + alpha_ess_hybrid_inverter.pv2_power
-                        + alpha_ess_hybrid_inverter.pv3_power
-                        + alpha_ess_hybrid_inverter.pv4_power
-                        + alpha_ess_hybrid_inverter.pv5_power
-                        + alpha_ess_hybrid_inverter.pv6_power;
-
             float voltage_sum = 0.0f;
             float voltage_count = 0.0f;
 
@@ -2346,10 +2339,17 @@ void MeterModbusTCP::parse_next()
                           + alpha_ess_hybrid_inverter.pv5_current
                           + alpha_ess_hybrid_inverter.pv6_current;
 
-            meters.update_value(slot, table->index[read_index + 1], power);
-            meters.update_value(slot, table->index[read_index + 2], zero_safe_negation(power));
-            meters.update_value(slot, table->index[read_index + 3], voltage);
-            meters.update_value(slot, table->index[read_index + 4], current);
+            float power = alpha_ess_hybrid_inverter.pv1_power
+                        + alpha_ess_hybrid_inverter.pv2_power
+                        + alpha_ess_hybrid_inverter.pv3_power
+                        + alpha_ess_hybrid_inverter.pv4_power
+                        + alpha_ess_hybrid_inverter.pv5_power
+                        + alpha_ess_hybrid_inverter.pv6_power;
+
+            meters.update_value(slot, table->index[read_index + 1], voltage);
+            meters.update_value(slot, table->index[read_index + 2], current);
+            meters.update_value(slot, table->index[read_index + 3], power);
+            meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power));
         }
     }
     else if (is_shelly_pro_xem_monophase()) {
@@ -2558,13 +2558,6 @@ void MeterModbusTCP::parse_next()
         else if (register_start_address == HAILEI_HYBRID_INVERTER_PV6_POWER_ADDRESS) {
             hailei_hybrid_inverter.pv6_power = value;
 
-            float power = hailei_hybrid_inverter.pv1_power
-                        + hailei_hybrid_inverter.pv2_power
-                        + hailei_hybrid_inverter.pv3_power
-                        + hailei_hybrid_inverter.pv4_power
-                        + hailei_hybrid_inverter.pv5_power
-                        + hailei_hybrid_inverter.pv6_power;
-
             float voltage_sum = 0.0f;
             float voltage_count = 0.0f;
 
@@ -2607,10 +2600,17 @@ void MeterModbusTCP::parse_next()
                           + hailei_hybrid_inverter.pv5_current
                           + hailei_hybrid_inverter.pv6_current;
 
-            meters.update_value(slot, table->index[read_index + 1], power);
-            meters.update_value(slot, table->index[read_index + 2], zero_safe_negation(power));
-            meters.update_value(slot, table->index[read_index + 3], voltage);
-            meters.update_value(slot, table->index[read_index + 4], current);
+            float power = hailei_hybrid_inverter.pv1_power
+                        + hailei_hybrid_inverter.pv2_power
+                        + hailei_hybrid_inverter.pv3_power
+                        + hailei_hybrid_inverter.pv4_power
+                        + hailei_hybrid_inverter.pv5_power
+                        + hailei_hybrid_inverter.pv6_power;
+
+            meters.update_value(slot, table->index[read_index + 1], voltage);
+            meters.update_value(slot, table->index[read_index + 2], current);
+            meters.update_value(slot, table->index[read_index + 3], power);
+            meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power));
         }
     }
     else if (is_carlo_gavazzi_em100_or_et100()) {
