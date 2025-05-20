@@ -159,14 +159,6 @@ MeterClassID MeterSMASpeedwire::get_class() const
 
 void MeterSMASpeedwire::setup(Config */*ephemeral_config*/)
 {
-    IPAddress mc_groupIP(239, 12, 255, 254);
-    if (udp.beginMulticast(mc_groupIP, 9522)) {
-        logger.printfln_meter("Joined multicast group %s:9522", mc_groupIP.toString().c_str());
-    } else {
-        logger.printfln_meter("Couldn't join multicast group %s:9522", mc_groupIP.toString().c_str());
-        return;
-    }
-
     MeterValueID valueIds[METERS_SMA_SPEEDWIRE_VALUE_COUNT];
 
     for (size_t i = 0; i < ARRAY_SIZE(obis_value_mappings); i++) {
@@ -183,12 +175,32 @@ void MeterSMASpeedwire::setup(Config */*ephemeral_config*/)
     valueIds[METERS_SMA_SPEEDWIRE_VALUE_COUNT - 1] = MeterValueID::PowerActiveLSumImExDiff;
 
     meters.declare_value_ids(slot, valueIds, ARRAY_SIZE(valueIds));
+}
 
-    // Tested Speedwire products send one packet per second.
-    // Poll twice a second to reduce latency and packet backlog.
-    task_scheduler.scheduleWithFixedDelay([this]() {
-        parse_packet();
-    }, 500_ms);
+void MeterSMASpeedwire::register_events()
+{
+    network.on_network_connected([this](const Config *connected) {
+        if (!connected->asBool()) {
+            return EventResult::OK; // Try again on next connected event.
+        }
+
+        const char *mc_groupIP = "239.12.255.254";
+
+        if (!udp.beginMulticast({mc_groupIP}, 9522)) {
+            logger.printfln_meter("Couldn't join multicast group %s:9522", mc_groupIP);
+            return EventResult::OK; // Try again on next connected event.
+        }
+
+        logger.printfln_meter("Joined multicast group %s:9522", mc_groupIP);
+
+        // Tested Speedwire products send one packet per second.
+        // Poll twice a second to reduce latency and packet backlog.
+        task_scheduler.scheduleWithFixedDelay([this]() {
+            parse_packet();
+        }, 500_ms);
+
+        return EventResult::Deregister;
+    });
 }
 
 int MeterSMASpeedwire::parse_header(SpeedwireHeader *header)

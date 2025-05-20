@@ -63,6 +63,7 @@ public:
 
     [[gnu::const]] MeterClassID get_class() const override;
     void setup(Config *ephemeral_config) override;
+    void register_events() override;
 
     bool supports_power() override          {return true;}
     bool supports_energy_import() override  {return true;}
