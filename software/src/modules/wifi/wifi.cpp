@@ -298,19 +298,11 @@ void Wifi::apply_soft_ap_config_and_start()
                    channel_to_use,
                    ap_config_in_use.get("hide_ssid")->asBool());
 
-    int ap_config_attempts = 0;
-    do {
-        if (!WiFi.softAPConfig(ip, gateway, subnet)) {
-            logger.printfln("softAPConfig() failed. Try different Access Point settings.");
-        }
-        ++ap_config_attempts;
-    } while (ip != WiFi.softAPIP());
+    if (!WiFi.softAPConfig(ip, gateway, subnet)) {
+        logger.printfln("softAPConfig failed");
+    }
 
     WiFi.setSleep(false);
-
-    if (ap_config_attempts != 1) {
-        logger.printfln("Had to configure soft AP IP address %d times.", ap_config_attempts);
-    }
 
     String ap_bssid = WiFi.softAPmacAddress();
     state.get("ap_bssid")->updateString(ap_bssid);
