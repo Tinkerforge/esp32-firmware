@@ -77,6 +77,13 @@ specs = [
                 'value_type': 'S16',
                 'scale_factor': 0.1,
             },
+            {
+                'name': 'Yield Total [0.1 kWh]',
+                'value_id': 'EnergyActiveLSumExport',
+                'start_address': 32015,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
         ],
     },
     {
@@ -84,16 +91,16 @@ specs = [
         'register_type': 'HoldingRegister',
         'values': [
             {
-                'name': 'Smart Meter Import Total [0.1 kWh]',
-                'value_id': 'EnergyActiveLSumImport',
-                'start_address': 32012,
+                'name': 'Smart Meter Export Total [0.1 kWh]',
+                'value_id': 'EnergyActiveLSumExport',
+                'start_address': 32009,
                 'value_type': 'U32BE',
                 'scale_factor': 0.1,
             },
             {
-                'name': 'Smart Meter Export Total [0.1 kWh]',
-                'value_id': 'EnergyActiveLSumExport',
-                'start_address': 32015,
+                'name': 'Smart Meter Import Total [0.1 kWh]',
+                'value_id': 'EnergyActiveLSumImport',
+                'start_address': 32012,
                 'value_type': 'U32BE',
                 'scale_factor': 0.1,
             },
