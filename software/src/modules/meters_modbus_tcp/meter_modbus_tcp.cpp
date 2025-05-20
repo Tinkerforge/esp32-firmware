@@ -222,6 +222,38 @@
 #define SOLAX_STRING_INVERTER_PV3_CURRENT_ADDRESS                          static_cast<size_t>(SolaxStringInverterPVAddress::PV3Current)
 #define SOLAX_STRING_INVERTER_PV3_POWER_ADDRESS                            static_cast<size_t>(SolaxStringInverterPVAddress::PV3Power)
 
+#define FOX_ESS_H3_SMART_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS               static_cast<size_t>(FoxESSH3SmartHybridInverterPVAddress::PV1Voltage)
+#define FOX_ESS_H3_SMART_HYBRID_INVERTER_PV1_CURRENT_ADDRESS               static_cast<size_t>(FoxESSH3SmartHybridInverterPVAddress::PV1Current)
+#define FOX_ESS_H3_SMART_HYBRID_INVERTER_PV1_POWER_ADDRESS                 static_cast<size_t>(FoxESSH3SmartHybridInverterPVAddress::PV1Power)
+#define FOX_ESS_H3_SMART_HYBRID_INVERTER_PV2_VOLTAGE_ADDRESS               static_cast<size_t>(FoxESSH3SmartHybridInverterPVAddress::PV2Voltage)
+#define FOX_ESS_H3_SMART_HYBRID_INVERTER_PV2_CURRENT_ADDRESS               static_cast<size_t>(FoxESSH3SmartHybridInverterPVAddress::PV2Current)
+#define FOX_ESS_H3_SMART_HYBRID_INVERTER_PV2_POWER_ADDRESS                 static_cast<size_t>(FoxESSH3SmartHybridInverterPVAddress::PV2Power)
+#define FOX_ESS_H3_SMART_HYBRID_INVERTER_PV3_VOLTAGE_ADDRESS               static_cast<size_t>(FoxESSH3SmartHybridInverterPVAddress::PV3Voltage)
+#define FOX_ESS_H3_SMART_HYBRID_INVERTER_PV3_CURRENT_ADDRESS               static_cast<size_t>(FoxESSH3SmartHybridInverterPVAddress::PV3Current)
+#define FOX_ESS_H3_SMART_HYBRID_INVERTER_PV3_POWER_ADDRESS                 static_cast<size_t>(FoxESSH3SmartHybridInverterPVAddress::PV3Power)
+#define FOX_ESS_H3_SMART_HYBRID_INVERTER_PV4_VOLTAGE_ADDRESS               static_cast<size_t>(FoxESSH3SmartHybridInverterPVAddress::PV4Voltage)
+#define FOX_ESS_H3_SMART_HYBRID_INVERTER_PV4_CURRENT_ADDRESS               static_cast<size_t>(FoxESSH3SmartHybridInverterPVAddress::PV4Current)
+#define FOX_ESS_H3_SMART_HYBRID_INVERTER_PV4_POWER_ADDRESS                 static_cast<size_t>(FoxESSH3SmartHybridInverterPVAddress::PV4Power)
+
+#define FOX_ESS_H3_PRO_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS                 static_cast<size_t>(FoxESSH3ProHybridInverterPVAddress::PV1Voltage)
+#define FOX_ESS_H3_PRO_HYBRID_INVERTER_PV1_CURRENT_ADDRESS                 static_cast<size_t>(FoxESSH3ProHybridInverterPVAddress::PV1Current)
+#define FOX_ESS_H3_PRO_HYBRID_INVERTER_PV1_POWER_ADDRESS                   static_cast<size_t>(FoxESSH3ProHybridInverterPVAddress::PV1Power)
+#define FOX_ESS_H3_PRO_HYBRID_INVERTER_PV2_VOLTAGE_ADDRESS                 static_cast<size_t>(FoxESSH3ProHybridInverterPVAddress::PV2Voltage)
+#define FOX_ESS_H3_PRO_HYBRID_INVERTER_PV2_CURRENT_ADDRESS                 static_cast<size_t>(FoxESSH3ProHybridInverterPVAddress::PV2Current)
+#define FOX_ESS_H3_PRO_HYBRID_INVERTER_PV2_POWER_ADDRESS                   static_cast<size_t>(FoxESSH3ProHybridInverterPVAddress::PV2Power)
+#define FOX_ESS_H3_PRO_HYBRID_INVERTER_PV3_VOLTAGE_ADDRESS                 static_cast<size_t>(FoxESSH3ProHybridInverterPVAddress::PV3Voltage)
+#define FOX_ESS_H3_PRO_HYBRID_INVERTER_PV3_CURRENT_ADDRESS                 static_cast<size_t>(FoxESSH3ProHybridInverterPVAddress::PV3Current)
+#define FOX_ESS_H3_PRO_HYBRID_INVERTER_PV3_POWER_ADDRESS                   static_cast<size_t>(FoxESSH3ProHybridInverterPVAddress::PV3Power)
+#define FOX_ESS_H3_PRO_HYBRID_INVERTER_PV4_VOLTAGE_ADDRESS                 static_cast<size_t>(FoxESSH3ProHybridInverterPVAddress::PV4Voltage)
+#define FOX_ESS_H3_PRO_HYBRID_INVERTER_PV4_CURRENT_ADDRESS                 static_cast<size_t>(FoxESSH3ProHybridInverterPVAddress::PV4Current)
+#define FOX_ESS_H3_PRO_HYBRID_INVERTER_PV4_POWER_ADDRESS                   static_cast<size_t>(FoxESSH3ProHybridInverterPVAddress::PV4Power)
+#define FOX_ESS_H3_PRO_HYBRID_INVERTER_PV5_VOLTAGE_ADDRESS                 static_cast<size_t>(FoxESSH3ProHybridInverterPVAddress::PV5Voltage)
+#define FOX_ESS_H3_PRO_HYBRID_INVERTER_PV5_CURRENT_ADDRESS                 static_cast<size_t>(FoxESSH3ProHybridInverterPVAddress::PV5Current)
+#define FOX_ESS_H3_PRO_HYBRID_INVERTER_PV5_POWER_ADDRESS                   static_cast<size_t>(FoxESSH3ProHybridInverterPVAddress::PV5Power)
+#define FOX_ESS_H3_PRO_HYBRID_INVERTER_PV6_VOLTAGE_ADDRESS                 static_cast<size_t>(FoxESSH3ProHybridInverterPVAddress::PV6Voltage)
+#define FOX_ESS_H3_PRO_HYBRID_INVERTER_PV6_CURRENT_ADDRESS                 static_cast<size_t>(FoxESSH3ProHybridInverterPVAddress::PV6Current)
+#define FOX_ESS_H3_PRO_HYBRID_INVERTER_PV6_POWER_ADDRESS                   static_cast<size_t>(FoxESSH3ProHybridInverterPVAddress::PV6Power)
+
 #define MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(x) (static_cast<uint8_t>(x) & 0x07)
 #define MODBUS_VALUE_TYPE_TO_REGISTER_ORDER_LE(x) ((static_cast<uint8_t>(x) >> 5) & 1)
 
@@ -1399,6 +1431,88 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         break;
 
+    case MeterModbusTCPTableID::FoxESSH3SmartHybridInverter:
+        fox_ess_h3_smart_hybrid_inverter.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<FoxESSH3SmartHybridInverterVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
+
+        switch (fox_ess_h3_smart_hybrid_inverter.virtual_meter) {
+        case FoxESSH3SmartHybridInverterVirtualMeter::None:
+            logger.printfln_meter("No Fox ESS H3 Smart Hybrid Inverter Virtual Meter selected");
+            return;
+
+        case FoxESSH3SmartHybridInverterVirtualMeter::Inverter:
+            table = &fox_ess_h3_smart_hybrid_inverter_table;
+            default_location = MeterLocation::Inverter;
+            break;
+
+        case FoxESSH3SmartHybridInverterVirtualMeter::Grid:
+            table = &fox_ess_h3_smart_hybrid_inverter_grid_table;
+            default_location = MeterLocation::Grid;
+            break;
+
+        case FoxESSH3SmartHybridInverterVirtualMeter::Battery:
+            table = &fox_ess_h3_smart_hybrid_inverter_battery_table;
+            default_location = MeterLocation::Battery;
+            break;
+
+        case FoxESSH3SmartHybridInverterVirtualMeter::Load:
+            table = &fox_ess_h3_smart_hybrid_inverter_load_table;
+            default_location = MeterLocation::Load;
+            break;
+
+        case FoxESSH3SmartHybridInverterVirtualMeter::PV:
+            table = &fox_ess_h3_smart_hybrid_inverter_pv_table;
+            default_location = MeterLocation::PV;
+            break;
+
+        default:
+            logger.printfln_meter("Unknown Fox ESS H3 Smart Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(fox_ess_h3_smart_hybrid_inverter.virtual_meter));
+            return;
+        }
+
+        break;
+
+    case MeterModbusTCPTableID::FoxESSH3ProHybridInverter:
+        fox_ess_h3_pro_hybrid_inverter.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<FoxESSH3ProHybridInverterVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
+
+        switch (fox_ess_h3_pro_hybrid_inverter.virtual_meter) {
+        case FoxESSH3ProHybridInverterVirtualMeter::None:
+            logger.printfln_meter("No Fox ESS H3 Pro Hybrid Inverter Virtual Meter selected");
+            return;
+
+        case FoxESSH3ProHybridInverterVirtualMeter::Inverter:
+            table = &fox_ess_h3_pro_hybrid_inverter_table;
+            default_location = MeterLocation::Inverter;
+            break;
+
+        case FoxESSH3ProHybridInverterVirtualMeter::Grid:
+            table = &fox_ess_h3_pro_hybrid_inverter_grid_table;
+            default_location = MeterLocation::Grid;
+            break;
+
+        case FoxESSH3ProHybridInverterVirtualMeter::Battery:
+            table = &fox_ess_h3_pro_hybrid_inverter_battery_table;
+            default_location = MeterLocation::Battery;
+            break;
+
+        case FoxESSH3ProHybridInverterVirtualMeter::Load:
+            table = &fox_ess_h3_pro_hybrid_inverter_load_table;
+            default_location = MeterLocation::Load;
+            break;
+
+        case FoxESSH3ProHybridInverterVirtualMeter::PV:
+            table = &fox_ess_h3_pro_hybrid_inverter_pv_table;
+            default_location = MeterLocation::PV;
+            break;
+
+        default:
+            logger.printfln_meter("Unknown Fox ESS H3 Pro Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(fox_ess_h3_pro_hybrid_inverter.virtual_meter));
+            return;
+        }
+
+        break;
+
     default:
         logger.printfln_meter("Unknown table: %u", static_cast<uint8_t>(table_id));
         break;
@@ -1685,6 +1799,18 @@ bool MeterModbusTCP::is_solax_string_inverter_pv_meter() const
 {
     return table_id == MeterModbusTCPTableID::SolaxStringInverter
         && solax_string_inverter.virtual_meter == SolaxStringInverterVirtualMeter::PV;
+}
+
+bool MeterModbusTCP::is_fox_ess_h3_smart_hybrid_inverter_pv_meter() const
+{
+    return table_id == MeterModbusTCPTableID::FoxESSH3SmartHybridInverter
+        && fox_ess_h3_smart_hybrid_inverter.virtual_meter == FoxESSH3SmartHybridInverterVirtualMeter::PV;
+}
+
+bool MeterModbusTCP::is_fox_ess_h3_pro_hybrid_inverter_pv_meter() const
+{
+    return table_id == MeterModbusTCPTableID::FoxESSH3ProHybridInverter
+        && fox_ess_h3_pro_hybrid_inverter.virtual_meter == FoxESSH3ProHybridInverterVirtualMeter::PV;
 }
 
 void MeterModbusTCP::read_done_callback()
@@ -3121,10 +3247,7 @@ void MeterModbusTCP::parse_next()
         }
         else if (register_start_address == SOLAX_STRING_INVERTER_PV3_POWER_ADDRESS) {
             solax_string_inverter.pv3_power = value;
-
-            float voltage_sum = 0.0f;
-            float voltage_count = 0.0f;
-
+            
             if (!is_exactly_zero(solax_string_inverter.pv1_voltage)) {
                 voltage_sum += solax_string_inverter.pv1_voltage;
                 ++voltage_count;
@@ -3154,6 +3277,194 @@ void MeterModbusTCP::parse_next()
             meters.update_value(slot, table->index[read_index + 2], current_sum);
             meters.update_value(slot, table->index[read_index + 3], power_sum);
             meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power_sum));
+        }
+    }
+    else if (is_fox_ess_h3_smart_hybrid_inverter_pv_meter()) {
+        if (register_start_address == FOX_ESS_H3_SMART_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS) {
+            fox_ess_h3_smart_hybrid_inverter.pv1_voltage = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_SMART_HYBRID_INVERTER_PV1_CURRENT_ADDRESS) {
+            fox_ess_h3_smart_hybrid_inverter.pv1_current = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_SMART_HYBRID_INVERTER_PV1_POWER_ADDRESS) {
+            fox_ess_h3_smart_hybrid_inverter.pv1_power = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_SMART_HYBRID_INVERTER_PV2_VOLTAGE_ADDRESS) {
+            fox_ess_h3_smart_hybrid_inverter.pv2_voltage = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_SMART_HYBRID_INVERTER_PV2_CURRENT_ADDRESS) {
+            fox_ess_h3_smart_hybrid_inverter.pv2_current = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_SMART_HYBRID_INVERTER_PV2_POWER_ADDRESS) {
+            fox_ess_h3_smart_hybrid_inverter.pv2_power = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_SMART_HYBRID_INVERTER_PV3_VOLTAGE_ADDRESS) {
+            fox_ess_h3_smart_hybrid_inverter.pv3_voltage = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_SMART_HYBRID_INVERTER_PV3_CURRENT_ADDRESS) {
+            fox_ess_h3_smart_hybrid_inverter.pv3_current = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_SMART_HYBRID_INVERTER_PV3_POWER_ADDRESS) {
+            fox_ess_h3_smart_hybrid_inverter.pv3_power = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_SMART_HYBRID_INVERTER_PV4_VOLTAGE_ADDRESS) {
+            fox_ess_h3_smart_hybrid_inverter.pv4_voltage = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_SMART_HYBRID_INVERTER_PV4_CURRENT_ADDRESS) {
+            fox_ess_h3_smart_hybrid_inverter.pv4_current = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_SMART_HYBRID_INVERTER_PV4_POWER_ADDRESS) {
+            fox_ess_h3_smart_hybrid_inverter.pv4_power = value;
+
+            float voltage_sum = 0.0f;
+            float voltage_count = 0.0f;
+
+            if (!is_exactly_zero(fox_ess_h3_smart_hybrid_inverter.pv1_voltage)) {
+                voltage_sum += fox_ess_h3_smart_hybrid_inverter.pv1_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(fox_ess_h3_smart_hybrid_inverter.pv2_voltage)) {
+                voltage_sum += fox_ess_h3_smart_hybrid_inverter.pv2_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(fox_ess_h3_smart_hybrid_inverter.pv3_voltage)) {
+                voltage_sum += fox_ess_h3_smart_hybrid_inverter.pv3_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(fox_ess_h3_smart_hybrid_inverter.pv4_voltage)) {
+                voltage_sum += fox_ess_h3_smart_hybrid_inverter.pv4_voltage;
+                ++voltage_count;
+            }
+
+            float voltage = voltage_sum / voltage_count;
+
+            float current = fox_ess_h3_smart_hybrid_inverter.pv1_current
+                          + fox_ess_h3_smart_hybrid_inverter.pv2_current
+                          + fox_ess_h3_smart_hybrid_inverter.pv3_current
+                          + fox_ess_h3_smart_hybrid_inverter.pv4_current;
+
+            float power = fox_ess_h3_smart_hybrid_inverter.pv1_power
+                        + fox_ess_h3_smart_hybrid_inverter.pv2_power
+                        + fox_ess_h3_smart_hybrid_inverter.pv3_power
+                        + fox_ess_h3_smart_hybrid_inverter.pv4_power;
+
+            meters.update_value(slot, table->index[read_index + 1], voltage);
+            meters.update_value(slot, table->index[read_index + 2], current);
+            meters.update_value(slot, table->index[read_index + 3], power);
+            meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power));
+        }
+    }
+    else if (is_fox_ess_h3_pro_hybrid_inverter_pv_meter()) {
+        if (register_start_address == FOX_ESS_H3_PRO_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS) {
+            fox_ess_h3_pro_hybrid_inverter.pv1_voltage = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_PRO_HYBRID_INVERTER_PV1_CURRENT_ADDRESS) {
+            fox_ess_h3_pro_hybrid_inverter.pv1_current = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_PRO_HYBRID_INVERTER_PV1_POWER_ADDRESS) {
+            fox_ess_h3_pro_hybrid_inverter.pv1_power = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_PRO_HYBRID_INVERTER_PV2_VOLTAGE_ADDRESS) {
+            fox_ess_h3_pro_hybrid_inverter.pv2_voltage = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_PRO_HYBRID_INVERTER_PV2_CURRENT_ADDRESS) {
+            fox_ess_h3_pro_hybrid_inverter.pv2_current = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_PRO_HYBRID_INVERTER_PV2_POWER_ADDRESS) {
+            fox_ess_h3_pro_hybrid_inverter.pv2_power = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_PRO_HYBRID_INVERTER_PV3_VOLTAGE_ADDRESS) {
+            fox_ess_h3_pro_hybrid_inverter.pv3_voltage = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_PRO_HYBRID_INVERTER_PV3_CURRENT_ADDRESS) {
+            fox_ess_h3_pro_hybrid_inverter.pv3_current = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_PRO_HYBRID_INVERTER_PV3_POWER_ADDRESS) {
+            fox_ess_h3_pro_hybrid_inverter.pv3_power = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_PRO_HYBRID_INVERTER_PV4_VOLTAGE_ADDRESS) {
+            fox_ess_h3_pro_hybrid_inverter.pv4_voltage = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_PRO_HYBRID_INVERTER_PV4_CURRENT_ADDRESS) {
+            fox_ess_h3_pro_hybrid_inverter.pv4_current = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_PRO_HYBRID_INVERTER_PV4_POWER_ADDRESS) {
+            fox_ess_h3_pro_hybrid_inverter.pv4_power = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_PRO_HYBRID_INVERTER_PV5_VOLTAGE_ADDRESS) {
+            fox_ess_h3_pro_hybrid_inverter.pv5_voltage = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_PRO_HYBRID_INVERTER_PV5_CURRENT_ADDRESS) {
+            fox_ess_h3_pro_hybrid_inverter.pv5_current = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_PRO_HYBRID_INVERTER_PV5_POWER_ADDRESS) {
+            fox_ess_h3_pro_hybrid_inverter.pv5_power = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_PRO_HYBRID_INVERTER_PV6_VOLTAGE_ADDRESS) {
+            fox_ess_h3_pro_hybrid_inverter.pv6_voltage = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_PRO_HYBRID_INVERTER_PV6_CURRENT_ADDRESS) {
+            fox_ess_h3_pro_hybrid_inverter.pv6_current = value;
+        }
+        else if (register_start_address == FOX_ESS_H3_PRO_HYBRID_INVERTER_PV6_POWER_ADDRESS) {
+            fox_ess_h3_pro_hybrid_inverter.pv6_power = value;
+
+            float voltage_sum = 0.0f;
+            float voltage_count = 0.0f;
+
+            if (!is_exactly_zero(fox_ess_h3_pro_hybrid_inverter.pv1_voltage)) {
+                voltage_sum += fox_ess_h3_pro_hybrid_inverter.pv1_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(fox_ess_h3_pro_hybrid_inverter.pv2_voltage)) {
+                voltage_sum += fox_ess_h3_pro_hybrid_inverter.pv2_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(fox_ess_h3_pro_hybrid_inverter.pv3_voltage)) {
+                voltage_sum += fox_ess_h3_pro_hybrid_inverter.pv3_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(fox_ess_h3_pro_hybrid_inverter.pv4_voltage)) {
+                voltage_sum += fox_ess_h3_pro_hybrid_inverter.pv4_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(fox_ess_h3_pro_hybrid_inverter.pv5_voltage)) {
+                voltage_sum += fox_ess_h3_pro_hybrid_inverter.pv5_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(fox_ess_h3_pro_hybrid_inverter.pv6_voltage)) {
+                voltage_sum += fox_ess_h3_pro_hybrid_inverter.pv6_voltage;
+                ++voltage_count;
+            }
+
+            float voltage = voltage_sum / voltage_count;
+
+            float current = fox_ess_h3_pro_hybrid_inverter.pv1_current
+                          + fox_ess_h3_pro_hybrid_inverter.pv2_current
+                          + fox_ess_h3_pro_hybrid_inverter.pv3_current
+                          + fox_ess_h3_pro_hybrid_inverter.pv4_current
+                          + fox_ess_h3_pro_hybrid_inverter.pv5_current
+                          + fox_ess_h3_pro_hybrid_inverter.pv6_current;
+
+            float power = fox_ess_h3_pro_hybrid_inverter.pv1_power
+                        + fox_ess_h3_pro_hybrid_inverter.pv2_power
+                        + fox_ess_h3_pro_hybrid_inverter.pv3_power
+                        + fox_ess_h3_pro_hybrid_inverter.pv4_power
+                        + fox_ess_h3_pro_hybrid_inverter.pv5_power
+                        + fox_ess_h3_pro_hybrid_inverter.pv6_power;
+
+            meters.update_value(slot, table->index[read_index + 1], voltage);
+            meters.update_value(slot, table->index[read_index + 2], current);
+            meters.update_value(slot, table->index[read_index + 3], power);
+            meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power));
         }
     }
 

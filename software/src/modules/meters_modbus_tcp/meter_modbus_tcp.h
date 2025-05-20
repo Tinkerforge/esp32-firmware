@@ -54,6 +54,8 @@
 #include "huawei_sun2000_smart_dongle_virtual_meter.enum.h"
 #include "huawei_emma_virtual_meter.enum.h"
 #include "solax_string_inverter_virtual_meter.enum.h"
+#include "fox_ess_h3_smart_hybrid_inverter_virtual_meter.enum.h"
+#include "fox_ess_h3_pro_hybrid_inverter_virtual_meter.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -134,6 +136,8 @@ private:
     bool is_huawei_emma_pv_meter() const;
     bool is_solax_string_inverter_meter() const;
     bool is_solax_string_inverter_pv_meter() const;
+    bool is_fox_ess_h3_smart_hybrid_inverter_pv_meter() const;
+    bool is_fox_ess_h3_pro_hybrid_inverter_pv_meter() const;
 
     uint32_t slot;
     Config *state;
@@ -410,6 +414,43 @@ private:
             float pv3_current;
             float pv3_power;
         } solax_string_inverter;
+
+        // Fox ESS H3 Smart hybrid inverter
+        struct {
+            FoxESSH3SmartHybridInverterVirtualMeter virtual_meter;
+            float pv1_voltage;
+            float pv1_current;
+            float pv1_power;
+            float pv2_voltage;
+            float pv2_current;
+            float pv2_power;
+            float pv3_voltage;
+            float pv3_current;
+            float pv3_power;
+        } fox_ess_h3_smart_hybrid_inverter;
+
+        // Fox ESS H3 Pro hybrid inverter
+        struct {
+            FoxESSH3ProHybridInverterVirtualMeter virtual_meter;
+            float pv1_voltage;
+            float pv1_current;
+            float pv1_power;
+            float pv2_voltage;
+            float pv2_current;
+            float pv2_power;
+            float pv3_voltage;
+            float pv3_current;
+            float pv3_power;
+            float pv4_voltage;
+            float pv4_current;
+            float pv4_power;
+            float pv5_voltage;
+            float pv5_current;
+            float pv5_power;
+            float pv6_voltage;
+            float pv6_current;
+            float pv6_power;
+        } fox_ess_h3_pro_hybrid_inverter;
     };
 };
 

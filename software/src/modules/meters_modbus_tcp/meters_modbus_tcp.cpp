@@ -213,6 +213,16 @@ void MetersModbusTCP::pre_setup()
         {"device_address", Config::Uint8(1)},
     })});
 
+    table_prototypes.push_back({MeterModbusTCPTableID::FoxESSH3SmartHybridInverter, Config::Object({
+        {"virtual_meter", Config::Enum(FoxESSH3SmartHybridInverterVirtualMeter::None)},
+        {"device_address", Config::Uint8(247)},
+    })});
+
+    table_prototypes.push_back({MeterModbusTCPTableID::FoxESSH3ProHybridInverter, Config::Object({
+        {"virtual_meter", Config::Enum(FoxESSH3ProHybridInverterVirtualMeter::None)},
+        {"device_address", Config::Uint8(247)},
+    })});
+
     config_prototype = Config::Object({
         {"display_name",   Config::Str("", 0, 32)},
         {"location",       Config::Enum(MeterLocation::Unknown)},

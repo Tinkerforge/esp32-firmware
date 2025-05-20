@@ -54,6 +54,8 @@ import { E3DCVirtualMeter } from "./e3dc_virtual_meter.enum";
 import { HuaweiSUN2000VirtualMeter } from "./huawei_sun2000_virtual_meter.enum";
 import { HuaweiSUN2000SmartDongleVirtualMeter } from "./huawei_sun2000_smart_dongle_virtual_meter.enum";
 import { HuaweiEMMAVirtualMeter } from "./huawei_emma_virtual_meter.enum";
+import { FoxESSH3SmartHybridInverterVirtualMeter } from "./fox_ess_h3_smart_hybrid_inverter_virtual_meter.enum";
+import { FoxESSH3ProHybridInverterVirtualMeter } from "./fox_ess_h3_pro_hybrid_inverter_virtual_meter.enum";
 import { InputText } from "../../ts/components/input_text";
 import { InputHost } from "../../ts/components/input_host";
 import { InputNumber } from "../../ts/components/input_number";
@@ -407,6 +409,22 @@ type TableConfigSolaxStringInverter = [
     },
 ];
 
+type TableConfigFoxESSH3SmartHybridInverter = [
+    MeterModbusTCPTableID.FoxESSH3SmartHybridInverter,
+    {
+        virtual_meter: number;
+        device_address: number;
+    },
+];
+
+type TableConfigFoxESSH3ProHybridInverter = [
+    MeterModbusTCPTableID.FoxESSH3ProHybridInverter,
+    {
+        virtual_meter: number;
+        device_address: number;
+    },
+];
+
 type TableConfig = TableConfigNone |
                    TableConfigCustom |
                    TableConfigSungrowHybridInverter |
@@ -450,7 +468,9 @@ type TableConfig = TableConfigNone |
                    TableConfigHuaweiSUN2000 |
                    TableConfigHuaweiSUN2000SmartDongle |
                    TableConfigHuaweiEMMA |
-                   TableConfigSolaxStringInverter;
+                   TableConfigSolaxStringInverter |
+                   TableConfigFoxESSH3SmartHybridInverter |
+                   TableConfigFoxESSH3ProHybridInverter;
 
 export type ModbusTCPMetersConfig = [
     MeterClassID.ModbusTCP,
@@ -593,6 +613,12 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
 
         case MeterModbusTCPTableID.SolaxStringInverter:
             return [MeterModbusTCPTableID.SolaxStringInverter, {virtual_meter: null, device_address: 1}];
+
+        case MeterModbusTCPTableID.FoxESSH3SmartHybridInverter:
+            return [MeterModbusTCPTableID.FoxESSH3SmartHybridInverter, {virtual_meter: null, device_address: 247}];
+
+        case MeterModbusTCPTableID.FoxESSH3ProHybridInverter:
+            return [MeterModbusTCPTableID.FoxESSH3ProHybridInverter, {virtual_meter: null, device_address: 247}];
 
         default:
             return [MeterModbusTCPTableID.None, null];
@@ -829,6 +855,8 @@ export function init() {
                                 [MeterModbusTCPTableID.E3DC.toString(), __("meters_modbus_tcp.content.table_e3dc")],
                                 [MeterModbusTCPTableID.EastronSDM630TCP.toString(), __("meters_modbus_tcp.content.table_eastron_sdm630_tcp")],
                                 [MeterModbusTCPTableID.FoxESSH3HybridInverter.toString(), __("meters_modbus_tcp.content.table_fox_ess_h3_hybrid_inverter")],
+                                [MeterModbusTCPTableID.FoxESSH3SmartHybridInverter.toString(), __("meters_modbus_tcp.content.table_fox_ess_h3_smart_hybrid_inverter")],
+                                [MeterModbusTCPTableID.FoxESSH3ProHybridInverter.toString(), __("meters_modbus_tcp.content.table_fox_ess_h3_pro_hybrid_inverter")],
                                 [MeterModbusTCPTableID.FroniusGEN24Plus.toString(), __("meters_modbus_tcp.content.table_fronius_gen24_plus")],
                                 [MeterModbusTCPTableID.GoodweHybridInverter.toString(), __("meters_modbus_tcp.content.table_goodwe_hybrid_inverter")],
                                 [MeterModbusTCPTableID.HaileiHybridInverter.toString(), __("meters_modbus_tcp.content.table_hailei_hybrid_inverter")],
@@ -912,7 +940,9 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.HuaweiSUN2000
                   || config[1].table[0] == MeterModbusTCPTableID.HuaweiSUN2000SmartDongle
                   || config[1].table[0] == MeterModbusTCPTableID.HuaweiEMMA
-                  || config[1].table[0] == MeterModbusTCPTableID.SolaxStringInverter)) {
+                  || config[1].table[0] == MeterModbusTCPTableID.SolaxStringInverter
+                  || config[1].table[0] == MeterModbusTCPTableID.FoxESSH3SmartHybridInverter
+                  || config[1].table[0] == MeterModbusTCPTableID.FoxESSH3ProHybridInverter)) {
                     let virtual_meter_items: [string, string][] = [];
                     let default_location: MeterLocation = undefined; // undefined: there is no default location, null: default location is not known yet
                     let get_default_location: (virtual_meter: number) => MeterLocation = undefined; // undefined: there is no default location
@@ -1299,6 +1329,52 @@ export function init() {
 
                             return MeterLocation.Unknown;
                         }
+                    }
+                    else if (config[1].table[0] == MeterModbusTCPTableID.FoxESSH3SmartHybridInverter) {
+                        virtual_meter_items = [
+                            [FoxESSH3SmartHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
+                            [FoxESSH3SmartHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
+                            [FoxESSH3SmartHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                            [FoxESSH3SmartHybridInverterVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
+                            [FoxESSH3SmartHybridInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
+                        ];
+
+                        get_default_location = (virtual_meter: number) => {
+                            switch (virtual_meter) {
+                            case FoxESSH3SmartHybridInverterVirtualMeter.Inverter: return MeterLocation.Inverter;
+                            case FoxESSH3SmartHybridInverterVirtualMeter.Grid: return MeterLocation.Grid;
+                            case FoxESSH3SmartHybridInverterVirtualMeter.Battery: return MeterLocation.Battery;
+                            case FoxESSH3SmartHybridInverterVirtualMeter.Load: return MeterLocation.Load;
+                            case FoxESSH3SmartHybridInverterVirtualMeter.PV: return MeterLocation.PV;
+                            }
+
+                            return MeterLocation.Unknown;
+                        }
+
+                        default_device_address = 247;
+                    }
+                    else if (config[1].table[0] == MeterModbusTCPTableID.FoxESSH3ProHybridInverter) {
+                        virtual_meter_items = [
+                            [FoxESSH3ProHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
+                            [FoxESSH3ProHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
+                            [FoxESSH3ProHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                            [FoxESSH3ProHybridInverterVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
+                            [FoxESSH3ProHybridInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
+                        ];
+
+                        get_default_location = (virtual_meter: number) => {
+                            switch (virtual_meter) {
+                            case FoxESSH3ProHybridInverterVirtualMeter.Inverter: return MeterLocation.Inverter;
+                            case FoxESSH3ProHybridInverterVirtualMeter.Grid: return MeterLocation.Grid;
+                            case FoxESSH3ProHybridInverterVirtualMeter.Battery: return MeterLocation.Battery;
+                            case FoxESSH3ProHybridInverterVirtualMeter.Load: return MeterLocation.Load;
+                            case FoxESSH3ProHybridInverterVirtualMeter.PV: return MeterLocation.PV;
+                            }
+
+                            return MeterLocation.Unknown;
+                        }
+
+                        default_device_address = 247;
                     }
 
                     if (virtual_meter_items.length > 0) {
