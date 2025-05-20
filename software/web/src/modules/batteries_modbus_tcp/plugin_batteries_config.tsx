@@ -291,8 +291,8 @@ export function init() {
                         <FormRow label={__("batteries_modbus_tcp.content.device_address")}>
                             <InputNumber
                                 required
-                                min={1}
-                                max={247}
+                                min={0}
+                                max={255}
                                 value={config[1].table[1].permit_grid_charge.device_address}
                                 onValue={(v) => {
                                     on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {permit_grid_charge: {...(config[1].table as TableConfigCustom)[1].permit_grid_charge, device_address: v}})}));
@@ -329,8 +329,8 @@ export function init() {
                         <FormRow label={__("batteries_modbus_tcp.content.device_address")}>
                             <InputNumber
                                 required
-                                min={1}
-                                max={247}
+                                min={0}
+                                max={255}
                                 value={config[1].table[1].revoke_grid_charge_override.device_address}
                                 onValue={(v) => {
                                     on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_grid_charge_override: {...(config[1].table as TableConfigCustom)[1].revoke_grid_charge_override, device_address: v}})}));
@@ -367,8 +367,8 @@ export function init() {
                         <FormRow label={__("batteries_modbus_tcp.content.device_address")}>
                             <InputNumber
                                 required
-                                min={1}
-                                max={247}
+                                min={0}
+                                max={255}
                                 value={config[1].table[1].forbid_discharge.device_address}
                                 onValue={(v) => {
                                     on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_discharge: {...(config[1].table as TableConfigCustom)[1].forbid_discharge, device_address: v}})}));
@@ -405,8 +405,8 @@ export function init() {
                         <FormRow label={__("batteries_modbus_tcp.content.device_address")}>
                             <InputNumber
                                 required
-                                min={1}
-                                max={247}
+                                min={0}
+                                max={255}
                                 value={config[1].table[1].revoke_discharge_override.device_address}
                                 onValue={(v) => {
                                     on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_discharge_override: {...(config[1].table as TableConfigCustom)[1].revoke_discharge_override, device_address: v}})}));
