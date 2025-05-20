@@ -95,7 +95,7 @@ specs = [
                 'value_id': 'EnergyActiveLSumExport',
                 'start_address': 32015,
                 'value_type': 'U32BE',
-                'scale_factor': 0.01,
+                'scale_factor': 0.1,
             },
             {
                 'name': 'Smart Meter Power Phase R [W]',
