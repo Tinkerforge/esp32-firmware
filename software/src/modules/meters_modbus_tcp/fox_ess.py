@@ -174,4 +174,111 @@ specs = [
             },
         ],
     },
+    {
+        'name': 'Fox ESS H3 Hybrid Inverter Load',
+        'register_type': 'InputRegister',
+        'values': [
+            {
+                'name': 'Load Import Total [0.1 kWh]',
+                'value_id': 'EnergyActiveLSumImport',
+                'start_address': 32021,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Load Power Phase R [W]',
+                'value_id': 'PowerActiveL1ImExDiff',
+                'start_address': 31029,
+                'value_type': 'S16',
+                'scale_factor': -1.0,  # FIXME: sign?
+            },
+            {
+                'name': 'Load Power Phase S [W]',
+                'value_id': 'PowerActiveL2ImExDiff',
+                'start_address': 31030,
+                'value_type': 'S16',
+                'scale_factor': -1.0,  # FIXME: sign?
+            },
+            {
+                'name': 'Load Power Phase T [W]',
+                'value_id': 'PowerActiveL3ImExDiff',
+                'start_address': 31031,
+                'value_type': 'S16',
+                'scale_factor': -1.0,  # FIXME: sign?
+            },
+        ],
+    },
+    {
+        'name': 'Fox ESS H3 Hybrid Inverter PV',
+        'register_type': 'HoldingRegister',
+        'values': [
+            {
+                'name': 'Solar Energy Total [0.1 kWh]',
+                'value_id': 'EnergyPVSumExport',
+                'start_address': 32000,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'PV1 Voltage [0.1 V]',
+                'value_id': 'VoltagePV1',
+                'start_address': 31000,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'PV1 Current [0.1 A]',
+                'value_id': 'CurrentPV1Export',
+                'start_address': 31001,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'PV1 Power [W]',
+                'value_id': 'PowerPV1Export',
+                'start_address': 31002,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'PV2 Voltage [0.1 V]',
+                'value_id': 'VoltagePV2',
+                'start_address': 31003,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'PV2 Current [0.1 A]',
+                'value_id': 'CurrentPV2Export',
+                'start_address': 31004,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'PV2 Power [W]',
+                'value_id': 'PowerPV2Export',
+                'start_address': 31005,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'PV Voltage Average [0.1 V]',
+                'value_id': 'VoltagePVAvg',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+            {
+                'name': 'PV Current Total [0.1 A]',
+                'value_id': 'CurrentPVSumExport',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+            {
+                'name': 'PV Power Total [W]',
+                'value_id': 'PowerPVSumExport',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+            {
+                'name': 'PV Power Total Signed [W]',
+                'value_id': 'PowerPVSumImExDiff',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+        ],
+    },
 ]

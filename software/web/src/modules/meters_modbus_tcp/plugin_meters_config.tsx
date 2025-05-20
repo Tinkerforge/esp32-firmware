@@ -1119,6 +1119,8 @@ export function init() {
                             [FoxESSH3HybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
                             [FoxESSH3HybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
                             [FoxESSH3HybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                            [FoxESSH3HybridInverterVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
+                            [FoxESSH3HybridInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
                         ];
 
                         get_default_location = (virtual_meter: number) => {
@@ -1126,6 +1128,8 @@ export function init() {
                             case FoxESSH3HybridInverterVirtualMeter.Inverter: return MeterLocation.Inverter;
                             case FoxESSH3HybridInverterVirtualMeter.Grid: return MeterLocation.Grid;
                             case FoxESSH3HybridInverterVirtualMeter.Battery: return MeterLocation.Battery;
+                            case FoxESSH3HybridInverterVirtualMeter.Load: return MeterLocation.Load;
+                            case FoxESSH3HybridInverterVirtualMeter.PV: return MeterLocation.PV;
                             }
 
                             return MeterLocation.Unknown;

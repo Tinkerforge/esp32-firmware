@@ -121,6 +121,7 @@ private:
     bool is_solax_hybrid_inverter_pv_meter() const;
     bool is_fronius_gen24_plus_battery_meter() const;
     bool is_hailei_hybrid_inverter_pv_meter() const;
+    bool is_fox_ess_h3_hybrid_inverter_pv_meter() const;
     bool is_carlo_gavazzi_em100_or_et100() const;
     bool is_carlo_gavazzi_em510() const;
     bool is_solaredge_battery_meter() const;
@@ -323,6 +324,12 @@ private:
         // Fox ESS H3 hybrid inverter
         struct {
             FoxESSH3HybridInverterVirtualMeter virtual_meter;
+            float pv1_voltage;
+            float pv1_current;
+            float pv1_power;
+            float pv2_voltage;
+            float pv2_current;
+            float pv2_power;
         } fox_ess_h3_hybrid_inverter;
 
         // Carlo Gavazzi EM100

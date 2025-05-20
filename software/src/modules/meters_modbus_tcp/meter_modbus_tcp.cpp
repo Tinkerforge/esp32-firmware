@@ -167,6 +167,13 @@
 #define HAILEI_HYBRID_INVERTER_PV6_CURRENT_ADDRESS                         static_cast<size_t>(HaileiHybridInverterPVAddress::PV6Current)
 #define HAILEI_HYBRID_INVERTER_PV6_POWER_ADDRESS                           static_cast<size_t>(HaileiHybridInverterPVAddress::PV6Power)
 
+#define FOX_ESS_H3_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS                     static_cast<size_t>(FoxESSH3HybridInverterPVAddress::PV1Voltage)
+#define FOX_ESS_H3_HYBRID_INVERTER_PV1_CURRENT_ADDRESS                     static_cast<size_t>(FoxESSH3HybridInverterPVAddress::PV1Current)
+#define FOX_ESS_H3_HYBRID_INVERTER_PV1_POWER_ADDRESS                       static_cast<size_t>(FoxESSH3HybridInverterPVAddress::PV1Power)
+#define FOX_ESS_H3_HYBRID_INVERTER_PV2_VOLTAGE_ADDRESS                     static_cast<size_t>(FoxESSH3HybridInverterPVAddress::PV2Voltage)
+#define FOX_ESS_H3_HYBRID_INVERTER_PV2_CURRENT_ADDRESS                     static_cast<size_t>(FoxESSH3HybridInverterPVAddress::PV2Current)
+#define FOX_ESS_H3_HYBRID_INVERTER_PV2_POWER_ADDRESS                       static_cast<size_t>(FoxESSH3HybridInverterPVAddress::PV2Power)
+
 #define CARLO_GAVAZZI_EM100_OR_ET100_W_ADDRESS                             static_cast<size_t>(CarloGavazziEM100andET100AtL1Address::W)
 #define CARLO_GAVAZZI_EM100_OR_ET100_KWH_POSITIVE_TOTAL_ADDRESS            static_cast<size_t>(CarloGavazziEM100andET100AtL1Address::KWhPositiveTotal)
 #define CARLO_GAVAZZI_EM100_OR_ET100_KWH_NEGATIVE_TOTAL_ADDRESS            static_cast<size_t>(CarloGavazziEM100andET100AtL1Address::KWhNegativeTotal)
@@ -852,6 +859,16 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         case FoxESSH3HybridInverterVirtualMeter::Battery:
             table = &fox_ess_h3_hybrid_inverter_battery_table;
             default_location = MeterLocation::Battery;
+            break;
+
+        case FoxESSH3HybridInverterVirtualMeter::Load:
+            table = &fox_ess_h3_hybrid_inverter_load_table;
+            default_location = MeterLocation::Load;
+            break;
+
+        case FoxESSH3HybridInverterVirtualMeter::PV:
+            table = &fox_ess_h3_hybrid_inverter_pv_table;
+            default_location = MeterLocation::PV;
             break;
 
         default:
@@ -1591,6 +1608,12 @@ bool MeterModbusTCP::is_hailei_hybrid_inverter_pv_meter() const
 {
     return table_id == MeterModbusTCPTableID::HaileiHybridInverter
         && hailei_hybrid_inverter.virtual_meter == HaileiHybridInverterVirtualMeter::PV;
+}
+
+bool MeterModbusTCP::is_fox_ess_h3_hybrid_inverter_pv_meter() const
+{
+    return table_id == MeterModbusTCPTableID::FoxESSH3HybridInverter
+        && fox_ess_h3_hybrid_inverter.virtual_meter == FoxESSH3HybridInverterVirtualMeter::PV;
 }
 
 bool MeterModbusTCP::is_carlo_gavazzi_em100_or_et100() const
@@ -2935,6 +2958,52 @@ void MeterModbusTCP::parse_next()
             meters.update_value(slot, table->index[read_index + 2], current_sum);
             meters.update_value(slot, table->index[read_index + 3], power_sum);
             meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power_sum));
+        }
+    }
+    else if (is_fox_ess_h3_hybrid_inverter_pv_meter()) {
+        if (register_start_address == FOX_ESS_H3_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS) {
+            fox_ess_h3_hybrid_inverter.pv1_voltage = value;
+        }
+        else if (register_start_address == HAILEI_HYBRID_INVERTER_PV1_CURRENT_ADDRESS) {
+            fox_ess_h3_hybrid_inverter.pv1_current = value;
+        }
+        else if (register_start_address == HAILEI_HYBRID_INVERTER_PV1_POWER_ADDRESS) {
+            fox_ess_h3_hybrid_inverter.pv1_power = value;
+        }
+        else if (register_start_address == HAILEI_HYBRID_INVERTER_PV2_VOLTAGE_ADDRESS) {
+            fox_ess_h3_hybrid_inverter.pv2_voltage = value;
+        }
+        else if (register_start_address == HAILEI_HYBRID_INVERTER_PV2_CURRENT_ADDRESS) {
+            fox_ess_h3_hybrid_inverter.pv2_current = value;
+        }
+        else if (register_start_address == HAILEI_HYBRID_INVERTER_PV2_POWER_ADDRESS) {
+            fox_ess_h3_hybrid_inverter.pv2_power = value;
+
+            float voltage_sum = 0.0f;
+            float voltage_count = 0.0f;
+
+            if (!is_exactly_zero(fox_ess_h3_hybrid_inverter.pv1_voltage)) {
+                voltage_sum += fox_ess_h3_hybrid_inverter.pv1_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(fox_ess_h3_hybrid_inverter.pv2_voltage)) {
+                voltage_sum += fox_ess_h3_hybrid_inverter.pv2_voltage;
+                ++voltage_count;
+            }
+
+            float voltage = voltage_sum / voltage_count;
+
+            float current = fox_ess_h3_hybrid_inverter.pv1_current
+                          + fox_ess_h3_hybrid_inverter.pv2_current;
+
+            float power = fox_ess_h3_hybrid_inverter.pv1_power
+                        + fox_ess_h3_hybrid_inverter.pv2_power;
+
+            meters.update_value(slot, table->index[read_index + 1], voltage);
+            meters.update_value(slot, table->index[read_index + 2], current);
+            meters.update_value(slot, table->index[read_index + 3], power);
+            meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power));
         }
     }
     else if (is_carlo_gavazzi_em100_or_et100()) {
