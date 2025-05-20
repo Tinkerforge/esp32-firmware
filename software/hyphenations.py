@@ -936,6 +936,14 @@ de_hyph = [
     "un-ter-schie-den",
     "Schreib-zu-grif-fe",
     "igno-rie-ren",
+    "Sub-netz-kon-flikt",
+    "kol-li-die-ren-den",
+    "Er-reich-bar-keit",
+    "Über-schnei-dun-gen",
+    "Kon-fi-gu-ra-ti-o-nen",
+    "pro-ble-ma-tisch",
+    "Emp-fan-ge-ne",
+    "Ver-stri-che-ne",
 ]
 
 en_hyph = [
@@ -1187,6 +1195,9 @@ en_hyph = [
     "dis-tinc-tion",
     "Let-ter-head",
     "let-ter-head",
+    "in-ter-faces",
+    "over-lap-ping",
+    "con-fig-u-ra-tions",
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
