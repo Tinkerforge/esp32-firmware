@@ -22,8 +22,8 @@
 #include <FS.h> // FIXME: without this include here there is a problem with the IPADDR_NONE define in <lwip/ip4_addr.h>
 #include <esp_http_client.h>
 
-#include "module.h"
 #include "config.h"
+#include "module.h"
 #include "modules/ws/web_sockets.h"
 #include "ship_types.h"
 #include "spine_connection.h"
@@ -35,19 +35,14 @@
 #define SHIP_CONNECTION_SME_T_hello_prolong_waiting_gap 15_s
 #define SHIP_CONNECTION_PROTOCOL_HANDSHAKE_TIMEOUT 10_s
 
-#define SHIP_CONNECTION_MAX_JSON_SIZE 8192 // TODO: What is a sane value here?
-#define SHIP_CONNECTION_MAX_BUFFER_SIZE (1024*10) // TODO: What is a sane value here?
-
-
+#define SHIP_CONNECTION_MAX_JSON_SIZE 8192          // TODO: What is a sane value here?
+#define SHIP_CONNECTION_MAX_BUFFER_SIZE (1024 * 10) // TODO: What is a sane value here?
 
 class ShipConnection
 {
 public:
     // SHIP 13.4.1
-    enum class Role : uint8_t {
-        Client,
-        Server
-    };
+    enum class Role : uint8_t { Client, Server };
 
     enum class State : uint8_t {
         // CMI = Connection Mode Initialisation
@@ -105,11 +100,7 @@ public:
     };
 
     // SHIP 13.4.4.1.3
-    enum class SubState : uint8_t {
-        Init,
-        Listen,
-        Timeout
-    };
+    enum class SubState : uint8_t { Init, Listen, Timeout };
 
     enum class ProtocolState : uint16_t {
         ConnectionHello,
@@ -124,7 +115,7 @@ public:
     };
 
     struct CMIMessage {
-        bool    valid;
+        bool valid;
         uint8_t type;
         uint8_t value;
     };
@@ -138,34 +129,40 @@ public:
         uint8_t data[SHIP_CONNECTION_MAX_BUFFER_SIZE]; // TODO: Find good size
         size_t length;
     };
-    std::unique_ptr<Message, decltype(std::free) *> message_incoming = std::unique_ptr<Message, decltype(std::free) *>((Message*)heap_caps_calloc_prefer(sizeof(Message), sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_free);
-    std::unique_ptr<Message, decltype(std::free) *> message_outgoing = std::unique_ptr<Message, decltype(std::free) *>((Message*)heap_caps_calloc_prefer(sizeof(Message), sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_free);
+    std::unique_ptr<Message, decltype(std::free) *> message_incoming = std::unique_ptr<Message, decltype(std::free) *>(
+        (Message *)heap_caps_calloc_prefer(sizeof(Message), sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+        heap_caps_free);
+    std::unique_ptr<Message, decltype(std::free) *> message_outgoing = std::unique_ptr<Message, decltype(std::free) *>(
+        (Message *)heap_caps_calloc_prefer(sizeof(Message), sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+        heap_caps_free);
 
     // Set the ws_client, role and start the state machine that will branch into ClientWait or ServerWait depending on the role
-    ShipConnection(WebSocketsClient ws_client, Role role, CoolString ski) : ws_client(ws_client), role(role), peer_ski(ski) { state_machine_next_step(); }
+    ShipConnection(WebSocketsClient ws_client, Role role, CoolString ski) : ws_client(ws_client), role(role), peer_ski(ski)
+    {
+        state_machine_next_step();
+    }
     WebSocketsClient ws_client;
     Role role;
     CoolString peer_ski = "";
     SpineConnection spine{this};
     bool connection_established = false;
 
-
     State state = State::CmiInitStart;
     State previous_state = State::CmiInitStart;
     SubState sub_state = SubState::Init;
     uint64_t timeout_task = 0;
 
-    
-
-
     // Implement operator== so that we can easily remove ShipConnections from the vector in Ship
-    bool operator==(const ShipConnection &rhs) const { return this == &rhs; }
+    bool operator==(const ShipConnection &rhs) const
+    {
+        return this == &rhs;
+    }
 
     void frame_received(httpd_ws_frame_t *ws_pkt);
     void schedule_close(const millis_t delay_ms);
     void send_cmi_message(uint8_t type, uint8_t value);
     void send_current_outgoing_message();
-    void send_string(String str);
+    void send_string(const char *str, int length);
     void send_data_message(JsonVariant payload);
 
     CMIMessage get_cmi_message();
@@ -221,41 +218,41 @@ public:
     void state_is_not_implemented();
     const char *get_state_name(State state);
 
-
-
     //--------------------------------------------------------------------------------
     // Hello Phase Specific stuff
     // Types from EEBus SHIP TS TransferProtocol xsd (v1.0.1) with corresponding conversion functions
     // The json_to_type and type_to_json functions operatore on the message_incoming and message_outgoing variables.
     // json_to_type will read from message_incoming (and may modify it while doing so) and write to the Type
     // type_to_json will read from the Type and write to message_outgoing
-    class ConnectionHelloPhase {
+    class ConnectionHelloPhase
+    {
     public:
-        enum Type : uint8_t {
-            Pending = 0,
-            Ready = 1,
-            Aborted = 2,
-            Unknown = 255
-        };
+        enum Type : uint8_t { Pending = 0, Ready = 1, Aborted = 2, Unknown = 255 };
 
-        static Type from_str(const char *str) {
-            if(strcmp(str, "pending") == 0) {
+        static Type from_str(const char *str)
+        {
+            if (strcmp(str, "pending") == 0) {
                 return Type::Pending;
-            } else if(strcmp(str, "ready") == 0) {
+            } else if (strcmp(str, "ready") == 0) {
                 return Type::Ready;
-            } else if(strcmp(str, "aborted") == 0) {
+            } else if (strcmp(str, "aborted") == 0) {
                 return Type::Aborted;
             } else {
                 return Type::Unknown;
             }
         }
 
-        static const char *to_str(Type value) {
-            switch(value) {
-                case Type::Pending: return "pending";
-                case Type::Ready:   return "ready";
-                case Type::Aborted: return "aborted";
-                default:            return "unknown";
+        static const char *to_str(Type value)
+        {
+            switch (value) {
+                case Type::Pending:
+                    return "pending";
+                case Type::Ready:
+                    return "ready";
+                case Type::Aborted:
+                    return "aborted";
+                default:
+                    return "unknown";
             }
         }
     };
@@ -275,7 +272,7 @@ public:
     uint64_t hello_send_prolongation_reply_timer = 0;
 
     /// @brief Which timer expire. 1=wait_for_ready, 2=prolongation_request, 3=prolongation_reply
-    uint8_t hello_timer_expiry = 0; 
+    uint8_t hello_timer_expiry = 0;
 
     // Current Peer Hello Phase
     ConnectionHelloType peer_hello_phase = {};
@@ -286,7 +283,6 @@ public:
     void hello_set_wait_for_ready_timer(State target);
     void hello_decide_prolongation();
 
-
     //--------------------------------------------------------------------------------
     // Protocol Handshake Specific stuff
 
@@ -296,32 +292,33 @@ public:
 
     uint64_t protocol_handshake_timer = 0;
 
-    uint32_t protocol_handshake_version_selected[2] = {1,0};
-    
+    uint32_t protocol_handshake_version_selected[2] = {1, 0};
 
-    class ProtocolHandshake {
+    class ProtocolHandshake
+    {
     public:
-        enum Type : uint8_t {
-            AnnounceMax = 0,
-            Select = 1,
-            Unknown = 255
-        };
+        enum Type : uint8_t { AnnounceMax = 0, Select = 1, Unknown = 255 };
 
-        static Type from_str(const char *str) {
-            if(strcmp(str, "announceMax") == 0) {
+        static Type from_str(const char *str)
+        {
+            if (strcmp(str, "announceMax") == 0) {
                 return Type::AnnounceMax;
-            } else if(strcmp(str, "select") == 0) {
+            } else if (strcmp(str, "select") == 0) {
                 return Type::Select;
             } else {
                 return Type::Unknown;
             }
         }
 
-        static const char *to_str(Type value) {
-            switch(value) {
-                case Type::AnnounceMax: return "announceMax";
-                case Type::Select:      return "select";
-                default:                return "unknown";
+        static const char *to_str(Type value)
+        {
+            switch (value) {
+                case Type::AnnounceMax:
+                    return "announceMax";
+                case Type::Select:
+                    return "select";
+                default:
+                    return "unknown";
             }
         }
     };
@@ -331,17 +328,12 @@ public:
         uint32_t version_major;
         uint32_t version_minor;
         // Hint: We ignore "formats" parameter completly since we only support UTF-8 and UTF-8 ist mandatory to support for the receiver
-        //       Changing the character enconding in the middle of the communication also seems like a bad idea... 
+        //       Changing the character enconding in the middle of the communication also seems like a bad idea...
     };
     void json_to_type_handshake_type(ProtocolHandshakeType *handshake_type);
     void type_to_json_handshake_type(ProtocolHandshakeType *handshake_type);
 
-    enum ProtocolAbortReason : uint8_t {
-        Timeout = 1,
-        UnexpectedMessage = 2,
-        SelectionMismatch = 3,
-        RFU
-    };
+    enum ProtocolAbortReason : uint8_t { Timeout = 1, UnexpectedMessage = 2, SelectionMismatch = 3, RFU };
     void sme_protocol_abort_procedure(ProtocolAbortReason reason);
 
     void common_procedure_enable_data_exchange();
@@ -351,6 +343,4 @@ public:
     // generates a proper json for the accessMethods
     // that is returned on accessMethodsRequest
     void to_json_access_methods_type();
-
-    
 };
