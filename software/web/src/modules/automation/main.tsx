@@ -258,7 +258,16 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
                                     ? (<span class="text-danger">[{action_component.get_disabled_reason ? action_component.get_disabled_reason(task.action) : __("automation.content.action_disabled")}]</span>)
                                     : undefined;
 
-            let last_run_timestamp = last_run == 0 ? __("automation.content.never") : (last_run > uptime_s ? util.format_timespan(last_run - uptime_s) : util.timestamp_sec_to_date((now_s - (uptime_s - last_run))));
+            let last_run_timestamp;
+            if (last_run === undefined) {
+                last_run_timestamp = __("automation.content.needs_reboot");
+            } else if (last_run == 0) {
+                last_run_timestamp = __("automation.content.never")
+            } else if (last_run > uptime_s) {
+                last_run_timestamp =  util.format_timespan(last_run - uptime_s);
+            } else {
+                last_run_timestamp =  util.timestamp_sec_to_date((now_s - (uptime_s - last_run)));
+            }
 
             let row: TableRow = {
                 columnValues: [
