@@ -163,10 +163,8 @@ def remove_duplicate_function_mappings(type_function_mapping: list[tuple[str, st
 def sort_and_resolve_dependencies(spine_types: list[Spine_type]):
     type_order = {"define": 0, "using": 1, "enum": 2, "struct": 3, "class": 4}
 
-    # Erstelle eine Abhängigkeits-Map
     dependency_map = {datatype_l.name: datatype_l.depends_on for datatype_l in cpp_datatypes}
 
-    # Topologische Sortierung
     sorted_datatypes = []
     visited = set()
 
@@ -180,7 +178,6 @@ def sort_and_resolve_dependencies(spine_types: list[Spine_type]):
                 visit(dependent_datatype)
         sorted_datatypes.append(datatype_v)
 
-    # Sortiere zuerst nach `type_order`, dann nach Abhängigkeiten
     cpp_datatypes.sort(key=lambda x: type_order.get(x.type_name, 5))
     for datatype_l in cpp_datatypes:
         visit(datatype_l)
@@ -199,11 +196,9 @@ def make_variable_name(name: str):
 def process_complex_type(complex_type):
     global unprocessed_elements
     struct_type_name = remove_namespace(complex_type.name)
-    #we dont generate cmdtype and datagramtype. They are added manually
+    #we dont generate cmdtype and datagramtype. They are handled differently
     if struct_type_name == "CmdType" or struct_type_name == "DatagramType" or struct_type_name == "PayloadType":
         return
-
-
     new_type = Spine_type("struct", struct_type_name, "")
     if hasattr(complex_type.content, "content_type_label") and complex_type.content.content_type_label == "simple":
         new_type = Spine_type("using", remove_namespace(complex_type.name), "")
@@ -214,9 +209,9 @@ def process_complex_type(complex_type):
         sequence_size = len(complex_type.content)
         elements = []
         new_type.code = f"struct {struct_type_name} {{ // {complex_type.schema.name}\n"
-        new_type.to_json_code = f"""bool convertToJson(const {struct_type_name} &src, JsonVariant& dst) {{\n\tif (!dst.is<JsonObject>()) {{\n\t\treturn false;\n\t}}\n\tJsonObject obj = dst.as<JsonObject>();\n"""
+        new_type.to_json_code = f"""bool convertToJson(const {struct_type_name} &src, JsonVariant& dst) {{\n"""
 
-        new_type.from_json_code = f"""void convertFromJson(const JsonVariantConst& src, {struct_type_name} &dst) {{\n\tif (!src.is<JsonObjectConst>()) {{\n\t\treturn;\n\t}}\n\tJsonObjectConst obj = src.as<JsonObjectConst>();\n"""
+        new_type.from_json_code = f"""void convertFromJson(const JsonVariantConst& src, {struct_type_name} &dst) {{\n"""
         for elem in complex_type.content:
             variable_type = variable_name = ""
             is_vec = False
@@ -280,8 +275,8 @@ def process_complex_type(complex_type):
                 print("Variable type is None while making complex type")
                 unprocessed_elements += 1
                 return
-            new_type.to_json_code += f"""\tif (src.{variable_name_cpp}) {{\n\t\tobj["{variable_name_string}"] = *src.{variable_name_cpp};\n\t}}\n"""
-            new_type.from_json_code += f"""\tif (obj["{variable_name_string}"]) {{\n\t\tdst.{variable_name_cpp} = obj["{variable_name_string}"].as<decltype(dst.{variable_name_cpp})::value_type>();\n\t}} else {{\n\t\tdst.{variable_name_cpp} = std::nullopt;\n\t}}\n"""
+            new_type.to_json_code += f"""\tif (src.{variable_name_cpp}) {{\n\t\tdst["{variable_name_string}"] = *src.{variable_name_cpp};\n\t}}\n"""
+            new_type.from_json_code += f"""\tif (src["{variable_name_string}"]) {{\n\t\tdst.{variable_name_cpp} = src["{variable_name_string}"].as<decltype(dst.{variable_name_cpp})::value_type>();\n\t}} else {{\n\t\tdst.{variable_name_cpp} = std::nullopt;\n\t}}\n"""
         if len(elements) < 1:
             new_type.to_json_code = f"""bool convertToJson(const {struct_type_name} &src, JsonVariant& dst) {{\n"""
             new_type.from_json_code = f"""void convertFromJson(const JsonVariantConst& src, {struct_type_name} &dst) {{\n"""
@@ -360,42 +355,14 @@ def process_schema(xml_schema):
                 unprocessed_elements += 1
                 print("simple type: " + simple_type.name + " has restriction but no enumeration. Not sure what to do with this")
         else:
-            # else its a struct
-
+            # else its a union
             if hasattr(simple_type, 'member_types'):
-                struct_type_name = remove_namespace(simple_type.name)
-
-                new_type = Spine_type("struct", struct_type_name, "")
-                new_type.code = "struct " + struct_type_name + " { // " + simple_type.schema.name +" \n"
-                new_type.to_json_code = f"""bool convertToJson(const {struct_type_name} &src, JsonVariant& dst) {{\n\tif (!dst.is<JsonObject>()) {{\n\t\treturn false;\n\t}}\n\tJsonObject obj = dst.as<JsonObject>();\n"""
-
-                new_type.from_json_code = f"""void convertFromJson(const JsonVariantConst& src, {struct_type_name} &dst) {{\n\tif (!src.is<JsonObjectConst>()) {{\n\t\treturn;\n\t}}\n\tJsonObjectConst obj = src.as<JsonObjectConst>();\n"""
-                for member_type in simple_type.member_types:
-                    member_type_name = remove_namespace(member_type.name)
-                    if member_type.derivation == "restriction":
-                        member_type_name = remove_namespace(member_type.name)
-                        member_variable_name = str(member_type.local_name)
-                        member_variable_cpp = member_variable_name.lower()
-                    else:
-                        member_type_name = to_cpp_datatype(member_type.python_type)
-                        member_variable_name = member_type.local_name
-                        member_variable_cpp = member_variable_name.lower()
-                    if member_type_name == "None":
-                        print("Member type is None")
-                        unprocessed_elements += 1
-                        return
-                    new_type.code += "\tstd::optional<" + member_type_name + "> " + member_variable_cpp + ";\n"
-                    new_type.to_json_code += f"""\tif (src.{member_variable_cpp}) {{\n\t\tobj["{member_variable_name}"] = *src.{member_variable_cpp};\n\t}}\n"""
-                    new_type.from_json_code += f"""\tif (obj["{member_variable_name}"]) {{\n\t\tdst.{member_variable_cpp} = obj["{member_variable_name}"].as<decltype(dst.{member_variable_cpp})::value_type>();\n\t}} else {{\n\t\tdst.{member_variable_cpp} = std::nullopt;\n\t}}\n"""
-                if len(simple_type.member_types) < 1:
-                    print("Empty complex type: " + struct_type_name)
-                new_type.code += "};\n"
-
-                new_type.to_json_code += "\n\treturn true;\n};\n"
-                new_type.from_json_code += "};\n"
+                new_type = Spine_type("using", remove_namespace(simple_type.name), "")
+                new_type.code = "using " + remove_namespace(simple_type.name) + " = " + to_cpp_datatype(simple_type.python_type) + ";\n"
                 cpp_datatypes.append(new_type)
+
             else:
-                print("No restriction to basetype", simple_type.name)
+                print("Unidentified Type", simple_type.name)
                 unprocessed_elements += 1
     for complex_type in xml_schema.complex_types:
         process_complex_type(complex_type)
@@ -418,6 +385,9 @@ def generate_data_handler_class() -> (str,str):
     type_enum_entries = ''.join(f"\n\t\t\t{function[1]}," for function in type_function_mapping)
     function_to_type_mapping = ''.join(f"\n\t\tcase SpineDataTypeHandler::Function::{function[0]}: return SpineDataTypeHandler::Type::{function[1]};" for function in type_function_mapping)
     string_to_function_mapping = ''.join(f"\n\tif (function_name == \"{function[0]}\") return SpineDataTypeHandler::Function::{function[0]};" for function in type_function_mapping)
+    function_to_string_mapping = ''.join(f"\n\tif (function == SpineDataTypeHandler::Function::{function[0]}) return \"{function[0]}\";" for function in type_function_mapping)
+
+
 
     data_types = ''.join(f"\n\t\tstd::optional<{cpp_datatype.name}> {cpp_datatype.name.lower()};" for cpp_datatype in cpp_datatypes)
 
@@ -431,19 +401,22 @@ def generate_data_handler_class() -> (str,str):
     output_h = f"""
 class SpineDataTypeHandler {{
     public:
+
+        {data_types}
         enum class Function {{{function_enum_entries}
         None
         }};  
         enum class Type {{{type_enum_entries}
         None
         }};
-        {data_types}
+        
         
         Function last_cmd;
         
         Type type_from_function(Function function);
         Function function_from_string(const String function_name);
         Function handle_cmd(JsonObjectConst obj);
+        String function_to_string(Function function);
 }};
     """
     output_cpp_code = f"""
@@ -463,6 +436,10 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::function_from_string(const 
 SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst obj) {{
     {cmd_types}
     return SpineDataTypeHandler::Function::None;
+}}
+String SpineDataTypeHandler::function_to_string(Function function) {{
+    {function_to_string_mapping}
+    return "Unknown function";
 }}
     """
 
@@ -516,3 +493,4 @@ print(f"Unprocessed elements: {unprocessed_elements}")
 
 print("Done!")
 
+# TODO: Add more documentation on how to use this

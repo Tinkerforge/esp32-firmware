@@ -1,5 +1,6 @@
 .pio
 .vscode
+.venv
 default_wifi.json*
 build/
 build_latest/

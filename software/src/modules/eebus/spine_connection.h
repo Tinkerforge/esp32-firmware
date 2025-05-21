@@ -59,7 +59,7 @@ class SpineConnection
 
 public:
     ShipConnection *ship_connection = nullptr;
-    SpineConnection(ShipConnection *ship_connection) : ship_connection(ship_connection){};
+    SpineConnection(ShipConnection *ship_connection) : ship_connection(ship_connection), received_header() {};
   
 
 
@@ -80,5 +80,5 @@ public:
 
     // TODO: Move this to eebus.h to save a bit of ram
     // Or opimize it so it doesnt use optionals.
-    SpineDataTypeHandler data_handler{};
+
 };
