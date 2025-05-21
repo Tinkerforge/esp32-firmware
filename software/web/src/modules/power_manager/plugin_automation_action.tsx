@@ -108,6 +108,7 @@ function get_pm_limit_max_current_edit_children(action: PMLimitMaxCurrentAutomat
                     on_action(util.get_updated_union(action, {current: v}));
                 }}
                 min={0}
+                max={524287}
                 unit="A"
                 digits={3} />
         </FormRow>,

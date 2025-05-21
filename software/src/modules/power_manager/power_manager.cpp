@@ -181,7 +181,7 @@ void PowerManager::pre_setup()
     automation.register_action(
         AutomationActionID::PMLimitMaxCurrent,
         Config::Object({
-            {"current", Config::Int(0, -1)}
+            {"current", Config::Int(0, -1, 524287)}, // mA, maximum is 524 A
         }),
         [this](const Config *cfg) {
             int32_t current = cfg->get("current")->asInt();
@@ -190,9 +190,7 @@ void PowerManager::pre_setup()
             } else {
                 this->set_max_current_limit(current);
             }
-        },
-        nullptr,
-        false);
+        });
 
 #if MODULE_EM_V1_AVAILABLE()
     automation.register_action(
@@ -298,7 +296,8 @@ void PowerManager::setup()
 
     bool automation_has_action = false;
 #if MODULE_AUTOMATION_AVAILABLE()
-    automation_has_action = automation.has_task_with_action(AutomationActionID::PMBlockCharge);
+    automation_has_action = automation.has_task_with_action(AutomationActionID::PMBlockCharge)
+                         || automation.has_task_with_action(AutomationActionID::PMLimitMaxCurrent);
 #endif
 
     // Force-enable PM if either PV excess charging or dynamic load management are enabled.
@@ -317,7 +316,6 @@ void PowerManager::setup()
     }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-    automation.set_enabled(AutomationActionID::PMLimitMaxCurrent, true);
     automation.set_enabled(AutomationTriggerID::PMGridPowerDraw, true);
 #endif
 
