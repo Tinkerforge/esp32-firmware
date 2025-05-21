@@ -290,7 +290,9 @@ void Mqtt::onMqttConnect()
 {
     last_connected = now_us();
     state.get("connection_start")->updateUint(last_connected.to<millis_t>().as<uint32_t>());
+    state.get("last_error")->updateInt(0);
     was_connected = true;
+    report_disconnect = true;
 
     const char *schema = "";
     bool print_path = false;
@@ -336,10 +338,15 @@ void Mqtt::onMqttConnect()
 
 void Mqtt::onMqttDisconnect()
 {
-    if (this->state.get("connection_state")->asEnum<MqttConnectionState>() == MqttConnectionState::NotConnected)
-        logger.printfln("Failed to connect to broker.");
-    else
+    if (this->state.get("connection_state")->asEnum<MqttConnectionState>() == MqttConnectionState::NotConnected) {
+        if (report_disconnect) {
+            report_disconnect = false;
+            logger.printfln("Failed to connect to broker.");
+        }
+    }
+    else {
         logger.printfln("Disconnected from broker.");
+    }
 
     this->state.get("connection_state")->updateEnum(MqttConnectionState::NotConnected);
     if (was_connected) {
@@ -488,61 +495,100 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             task_scheduler.scheduleOnce([mqtt](){
                 mqtt->onMqttConnect();
             });
+
             break;
+
         case MQTT_EVENT_DISCONNECTED:
             task_scheduler.scheduleOnce([mqtt](){
                 mqtt->onMqttDisconnect();
             });
+
             break;
+
         case MQTT_EVENT_DATA:
-            if (event->current_data_offset != 0)
-                return;
-            if (event->total_data_len != event->data_len) {
-                logger.printfln("Ignoring message with payload length %d for topic %.*s. Maximum length allowed is %u.", event->total_data_len, event->topic_len, event->topic, MQTT_RECV_BUFFER_SIZE);
+            if (event->current_data_offset != 0) {
                 return;
             }
+
+            if (event->total_data_len != event->data_len) {
+                logger.printfln("Ignoring message with payload length %d for topic %.*s. Maximum length allowed is %u.",
+                                event->total_data_len, event->topic_len, event->topic, MQTT_RECV_BUFFER_SIZE);
+                return;
+            }
+
             mqtt->onMqttMessage(event->topic, event->topic_len, event->data, event->data_len, event->retain);
             break;
+
         case MQTT_EVENT_ERROR: {
                 auto eh = *event->error_handle;
                 task_scheduler.scheduleOnce([mqtt, eh](){
                     bool was_connected = mqtt->state.get("connection_state")->asEnum<MqttConnectionState>() != MqttConnectionState::NotConnected;
+                    auto last_error = mqtt->state.get("last_error");
+                    int last_error_as_int = last_error->asInt();
+                    int error_as_int = last_error_as_int;
 
                     if (eh.error_type == MQTT_ERROR_TYPE_TCP_TRANSPORT) {
                         if (was_connected) {
                             if (eh.esp_tls_last_esp_err != ESP_OK) {
-                                char err_buf[64];
-                                const char *e = esp_err_to_name_r(eh.esp_tls_last_esp_err, err_buf, ARRAY_SIZE(err_buf));
-                                logger.printfln("Transport error: %s (esp_tls_last_esp_err)", e);
-                                mqtt->state.get("last_error")->updateInt(eh.esp_tls_last_esp_err);
+                                error_as_int = eh.esp_tls_last_esp_err;
+
+                                if (last_error_as_int != error_as_int) {
+                                    char err_buf[64];
+                                    const char *e = esp_err_to_name_r(eh.esp_tls_last_esp_err, err_buf, ARRAY_SIZE(err_buf));
+                                    logger.printfln("Transport error: %s (esp_tls_last_esp_err)", e);
+                                }
                             } else if (eh.esp_tls_stack_err != 0) {
-                                char err_buf[64];
-                                const char *e = esp_err_to_name_r(eh.esp_tls_stack_err, err_buf, ARRAY_SIZE(err_buf));
-                                logger.printfln("Transport error: %s (esp_tls_stack_err)", e);
-                                mqtt->state.get("last_error")->updateInt(eh.esp_tls_stack_err);
+                                error_as_int = eh.esp_tls_stack_err;
+
+                                if (last_error_as_int != error_as_int) {
+                                    char err_buf[64];
+                                    const char *e = esp_err_to_name_r(eh.esp_tls_stack_err, err_buf, ARRAY_SIZE(err_buf));
+                                    logger.printfln("Transport error: %s (esp_tls_stack_err)", e);
+                                }
                             } else {
-                                logger.printfln("Unknown transport error after initial connect");
-                                mqtt->state.get("last_error")->updateInt(0xFFFFFFFD);
+                                error_as_int = 0xFFFFFFFD;
+
+                                if (last_error_as_int != error_as_int) {
+                                    logger.printfln("Unknown transport error after initial connect");
+                                }
                             }
                         } else if (eh.esp_transport_sock_errno != 0) {
-                            const char *e = strerror(eh.esp_transport_sock_errno);
-                            logger.printfln("Transport error: %s", e);
-                            mqtt->state.get("last_error")->updateInt(eh.esp_transport_sock_errno);
+                            error_as_int = eh.esp_transport_sock_errno;
+
+                            if (last_error_as_int != error_as_int) {
+                                const char *e = strerror(eh.esp_transport_sock_errno);
+                                logger.printfln("Transport error: %s", e);
+                            }
                         } else {
-                            logger.printfln("Unknown transport error");
-                            mqtt->state.get("last_error")->updateInt(0xFFFFFFFE);
+                            error_as_int = 0xFFFFFFFE;
+
+                            if (last_error_as_int != error_as_int) {
+                                logger.printfln("Unknown transport error");
+                            }
                         }
                     } else if (eh.error_type == MQTT_ERROR_TYPE_CONNECTION_REFUSED) {
-                        logger.printfln("Connection refused: %s", get_mqtt_error(eh.connect_return_code));
-                        // Minus to indicate this is a connection error
-                        mqtt->state.get("last_error")->updateInt(-eh.connect_return_code);
+                        error_as_int = -eh.connect_return_code; // Minus to indicate this is a connection error
+
+                        if (last_error_as_int != error_as_int) {
+                            logger.printfln("Connection refused: %s", get_mqtt_error(eh.connect_return_code));
+                        }
                     } else {
-                        logger.printfln("Unknown error");
-                        mqtt->state.get("last_error")->updateInt(0xFFFFFFFF);
+                        error_as_int = 0xFFFFFFFF;
+
+                        if (last_error_as_int != error_as_int) {
+                            logger.printfln("Unknown error");
+                        }
+                    }
+
+                    if (last_error_as_int != error_as_int) {
+                        last_error->updateInt(error_as_int);
+                        mqtt->report_disconnect = true;
                     }
                 });
+
                 break;
             }
+
         default:
             break;
     }

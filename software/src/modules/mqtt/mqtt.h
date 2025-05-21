@@ -96,6 +96,8 @@ public:
     // Copy prefix to not access config in MQTT thread.
     String global_topic_prefix;
 
+    bool report_disconnect = true;
+
 private:
     struct MqttCommand {
         String topic;
