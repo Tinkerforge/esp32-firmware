@@ -26,34 +26,52 @@
 #include "config.h"
 #include "module.h"
 #include "spine_types.h"
+#include "spine_connection.h"
 
-
-class UseCase{
-    public:
-        UseCase() = default;
-        virtual JsonVariant read() = 0;
-        virtual void subscribe() = 0;
+// The basic skeleton of a UseCase
+class UseCase
+{
+public:
+    virtual JsonVariant read() = 0;
+    virtual void subscribe() = 0;
+    virtual UseCaseInformationDataType get_usecase_information() = 0;
 };
 
-class NodeManagementUsecase : public UseCase {
-    
+// NodeManagement not quite a full usecase but it is required
+class NodeManagementUsecase : public UseCase
+{
+public:
     NodeManagementUsecase();
-    
+
     JsonVariant read() override;
     void subscribe() override;
+    UseCaseInformationDataType get_usecase_information() override;
 
-    NodeManagementUseCaseDataType node_management_usecase_data_type;
+    NodeManagementUseCaseDataType get_usecases();
 };
 
-class EEBusUseCases {
-    private:
+class ChargingSummaryUsecase : public UseCase
+{
+public:
+    ChargingSummaryUsecase() = default;
+    JsonVariant read() override;
+    void subscribe() override;
+    UseCaseInformationDataType get_usecase_information() override;
+
+private:
+    UseCaseInformationDataType use_case_information;
+};
+
+// Handles all usecases and is the primary interface to all usecases
+class EEBusUseCases
+{
+public:
+    EEBusUseCases() = default;
+
+    bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonVariant response);
+
+    std::vector<UseCase *> usecases;
     NodeManagementUsecase node_management;
 
 
-    public:
-        UseCase* get_usecase(int entity, int feature);
-
-
 };
-
-

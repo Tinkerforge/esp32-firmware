@@ -24,6 +24,7 @@
 #include "ship.h"
 #include <TFJson.h>
 #include "spine_connection.h"
+#include "eebus_usecases.h"
 
 #define DNS_SD_UUID "Tinkerforge-WARP3-12345"
 #define EEBUS_PEER_FILE "/eebus/peers"
@@ -46,6 +47,9 @@ public:
     ConfigRoot config;
     ConfigRoot state;    
     Ship ship;
+    EEBusUseCases usecases{};    
+
+    SpineDataTypeHandler data_handler{};
 
     int get_state_connection_id_by_ski(const String &ski);
     

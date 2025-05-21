@@ -80,11 +80,15 @@ void ShipConnection::send_current_outgoing_message()
     ws_client.sendOwnedNoFreeBlocking_HTTPThread((char *)message_outgoing->data, message_outgoing->length, HTTPD_WS_TYPE_BINARY);
 }
 
-void ShipConnection::send_string(String str)
+void ShipConnection::send_string(const char* str, int length)
 {
+    if(length + 1 > SHIP_CONNECTION_MAX_BUFFER_SIZE) {
+        logger.printfln("send_string: String zu lang (%d), max erlaubt: %d", length, SHIP_CONNECTION_MAX_BUFFER_SIZE - 1);
+        length = SHIP_CONNECTION_MAX_BUFFER_SIZE - 1;
+    }
     message_outgoing->data[0] = 1;
-    memcpy(&message_outgoing->data[1], str.c_str(), str.length());
-    message_outgoing->length = str.length() + 1;
+    memcpy(&message_outgoing->data[1], str, length);
+    message_outgoing->length = length + 1;
     send_current_outgoing_message();
 }
 
@@ -926,7 +930,9 @@ void ShipConnection::state_done()
                             &message_incoming->data[1]);
             SHIP_TYPES::ShipMessageAccessMethods access_methods = SHIP_TYPES::ShipMessageAccessMethods();
             access_methods.id = DNS_SD_UUID;
-            send_string(access_methods.type_to_json());
+            String json = access_methods.type_to_json();
+            // TOD: optimize this so it doesnt need to copy the string
+            send_string(json.c_str(), json.length());
             break;
         }
         case ProtocolState::AccessMethods: {
@@ -1201,3 +1207,4 @@ void ShipConnection::to_json_access_methods_type()
 void ShipConnection::common_procedure_enable_data_exchange()
 {
 }
+
