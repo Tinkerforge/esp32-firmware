@@ -257,6 +257,12 @@ int MeterSMASpeedwire::parse_header(SpeedwireHeader *header)
         return 0;
     }
 
+    // Protocol ID 0x6081 is used for communication between SMA devices and SMA EV Charger.
+    // We ignore these packets for now.
+    if (header->protocol_id == 0x6081) {
+        return 0;
+    }
+
     if (header->protocol_id != 0x6069) {
         logger.printfln_meter("Invalid protocol ID: %u", header->protocol_id);
         return 0;
