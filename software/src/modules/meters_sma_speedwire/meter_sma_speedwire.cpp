@@ -184,14 +184,15 @@ void MeterSMASpeedwire::register_events()
             return EventResult::OK; // Try again on next connected event.
         }
 
-        const char *mc_groupIP = "239.12.255.254";
+        const char *group = "239.12.255.254";
+        uint16_t port = 9522;
 
-        if (!udp.beginMulticast({mc_groupIP}, 9522)) {
-            logger.printfln_meter("Couldn't join multicast group %s:9522", mc_groupIP);
+        if (!udp.beginMulticast({group}, port)) {
+            logger.printfln_meter("Couldn't join multicast group %s:%u", group, port);
             return EventResult::OK; // Try again on next connected event.
         }
 
-        logger.printfln_meter("Joined multicast group %s:9522", mc_groupIP);
+        logger.printfln_meter("Joined multicast group %s:%u", group, port);
 
         // Tested Speedwire products send one packet per second.
         // Poll twice a second to reduce latency and packet backlog.
