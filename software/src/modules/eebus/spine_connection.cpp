@@ -24,12 +24,11 @@
 #include "module_dependencies.h"
 #include "tools.h"
 
-
-
 void SpineConnection::process_datagram(JsonVariant datagram)
 {
     JsonVariant datagram_header = datagram["datagram"][0]["header"];
-    received_payload = datagram["datagram"][1]["payload"];
+
+    received_payload = datagram["datagram"][1]["payload"][0]["cmd"][0][0];
     if (datagram_header.isNull() || received_payload.isNull()) {
         logger.printfln("Error: No datagram header or payload found");
         return;
@@ -38,10 +37,53 @@ void SpineConnection::process_datagram(JsonVariant datagram)
     received_header.from_json(datagram_header.as<String>());
 
     check_message_counter();
+    SpineDataTypeHandler::Function called_function = eebus.data_handler.handle_cmd(received_payload);
 
-    logger.printfln("SPINE HEADER: %s", received_header.to_json().c_str());
+    if (called_function == SpineDataTypeHandler::Function::None) {
+        logger.printfln("SPINE: No function found for the received payload");
+        logger.printfln("SPINE: Payload: %s", received_payload.as<String>().c_str());
+        return;
+    }
+    DynamicJsonDocument doc{10000};
+    JsonVariant response = doc.to<JsonVariant>();
+    const bool has_response = eebus.usecases.handle_message(received_header, eebus.data_handler, response);
 
-    logger.printfln("SPINE Process payload: %s", received_payload.as<String>().c_str());
+    //logger.printfln("SPINE HEADER: %s", received_header.to_json().c_str());
+
+    //logger.printfln("SPINE Process payload: %s", received_payload.as<String>().c_str());
+
+    if (has_response) {
+
+        // TODO: Build response datagram
+        DynamicJsonDocument responseJson{10000};
+        JsonVariant responseObject = responseJson.to<JsonVariant>();
+        responseObject["datagram"]["header"]["specificationVersion"] = "1.3.0";
+        responseObject["datagram"]["header"]["addressSource"]["device"] = "d:_i:123456_warp3";
+        responseObject["datagram"]["header"]["addressSource"]["entity"][0] = 0;
+        responseObject["datagram"]["header"]["addressSource"]["feature"] = 0;
+        responseObject["datagram"]["header"]["addressDestination"]["device"] = received_header.source_device_id;
+        responseObject["datagram"]["header"]["addressDestination"]["entity"][0] = 0;
+        responseObject["datagram"]["header"]["addressDestination"]["feature"] = 0;
+        responseObject["datagram"]["header"]["msgCounter"] = msg_counter++;
+        responseObject["datagram"]["header"]["msgCounterReference"] = received_header.msg_counter;
+        responseObject["datagram"]["header"]["cmdClassifier"] = "reply";
+        responseObject["datagram"]["header"]["ackRequest"] = false;
+        responseObject["datagram"]["payload"]["cmd"][0][0] = response;;
+
+
+        String responseString;
+        responseJson.shrinkToFit();
+        serializeJson(responseJson, responseString);
+
+        logger.printfln("SPINE: Sending response: %s", responseString.c_str());
+        ship_connection->send_string(responseString.c_str(), responseString.length());
+
+    } else if (!has_response && received_header.wants_response) {
+        logger.printfln("SPINE: No response availabe but one was requested.");
+        logger.printfln("Payload: %s", received_payload.as<String>().c_str());
+    } else {
+        logger.printfln("SPINE: No response needed");
+    }
 }
 
 void SpineConnection::check_message_counter()
@@ -129,6 +171,3 @@ String SpineHeader::to_json()
     logger.printfln("SPINE Datagram Header JSON: %s", output.c_str());
     return output;
 }
-
-
-

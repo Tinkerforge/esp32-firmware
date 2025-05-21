@@ -27,19 +27,60 @@
 
 NodeManagementUsecase::NodeManagementUsecase()
 {
-    node_management_usecase_data_type = NodeManagementUseCaseDataType();
-    node_management_usecase_data_type.useCaseInformation = UseCaseInformationDataType();
-    node_management_usecase_data_type.useCaseInformation->address = FeatureAddressType();
-    node_management_usecase_data_type.useCaseInformation->actor = UseCaseActorType();
-    node_management_usecase_data_type.useCaseInformation->useCaseSupport = UseCaseSupportType();
-    node_management_usecase_data_type.useCaseInformation->address->device = AddressDeviceType();
-    node_management_usecase_data_type.useCaseInformation->address->entity = std::vector<AddressEntityType>();
-    node_management_usecase_data_type.useCaseInformation->address->feature = AddressFeatureType();
-    node_management_usecase_data_type.useCaseInformation->actor->usecaseactorenumtype = UseCaseActorEnumType();
-    node_management_usecase_data_type.useCaseInformation->actor->enumextendtype = EnumExtendType();
-    node_management_usecase_data_type.useCaseInformation->useCaseSupport->useCaseName = UseCaseNameType();
-    node_management_usecase_data_type.useCaseInformation->useCaseSupport->useCaseVersion = SpecificationVersionType();
-    node_management_usecase_data_type.useCaseInformation->useCaseSupport->useCaseAvailable = bool();
-    node_management_usecase_data_type.useCaseInformation->useCaseSupport->scenarioSupport = UseCaseScenarioSupportType();
-    node_management_usecase_data_type.useCaseInformation->useCaseSupport->useCaseDocumentSubRevision = std::string();
+}
+
+UseCaseInformationDataType NodeManagementUsecase::get_usecase_information()
+{
+    return UseCaseInformationDataType(); // This should never be used
+}
+
+JsonVariant NodeManagementUsecase::read()
+{
+    return JsonVariant();
+}
+void NodeManagementUsecase::subscribe()
+{
+}
+NodeManagementUseCaseDataType NodeManagementUsecase::get_usecases()
+{
+    NodeManagementUseCaseDataType data;
+    std::vector<UseCaseInformationDataType> usecases;
+
+    // This is done for testing. For the final implementation each usecase should report this information themselves
+    UseCaseInformationDataType evcs_usecase;
+    evcs_usecase.actor = "EVCS";
+
+    UseCaseSupportType evcs_usecase_support;
+    evcs_usecase_support.useCaseName = "evChargingSummary";
+    evcs_usecase_support.useCaseVersion = "1.0.1";
+    evcs_usecase_support.useCaseAvailable = true;
+    evcs_usecase_support.scenarioSupport->push_back(1);
+    evcs_usecase_support.useCaseDocumentSubRevision = "release";
+    evcs_usecase.useCaseSupport->push_back(evcs_usecase_support);
+
+    FeatureAddressType evcs_usecase_feature_address;
+    evcs_usecase_feature_address.device = "d:_i:123456_WARP3";
+    evcs_usecase_feature_address.entity->push_back(1);
+    evcs_usecase_feature_address.feature = 1;
+    evcs_usecase.address = evcs_usecase_feature_address;
+
+    usecases.push_back(evcs_usecase);
+    data.useCaseInformation = usecases;
+    return data;
+}
+
+bool EEBusUseCases::handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonVariant response)
+{
+    if (header.destination_feature == 0 && header.destination_entity[0] == 0) {
+        logger.printfln("EEBus: Received message for NodeManagementUsecase");
+        logger.printfln("Function called: %s", data.function_to_string(data.last_cmd).c_str());
+
+        response["nodeManagementUseCaseData"] = node_management.get_usecases();
+
+        logger.printfln("Built response: %s", response.as<String>().c_str());
+
+        return true;
+    }
+
+    return false;
 }
