@@ -146,7 +146,12 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
 
 
     async parseAuthorizationToken(authToken: string) {
-        const decodedToken = util.decodeBase58(authToken);
+        let decodedToken;
+        try {
+            decodedToken = util.decodeBase58(authToken);
+        } catch {
+            throw new Error(__("remote_access.content.token_corrupted"));
+        }
         const binaryToken = decodedToken.subarray(0, decodedToken.length - 32);
         const tokenDigest = decodedToken.subarray(binaryToken.length);
 
