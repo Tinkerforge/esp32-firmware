@@ -19,9 +19,7 @@
 
 #include "system.h"
 
-#include <Arduino.h>
 #include <LittleFS.h>
-#include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <esp_system.h>
 
@@ -65,8 +63,9 @@ void System::factory_reset(bool restart_esp)
 
     LittleFS.end();
     LittleFS.format();
-    if (restart_esp)
-        ESP.restart();
+    if (restart_esp) {
+        esp_restart();
+    }
 }
 
 Language System::get_system_language()
@@ -148,7 +147,7 @@ void System::register_urls()
 #endif
 
             API::removeAllConfig();
-            ESP.restart();
+            esp_restart();
         }, 3_s);
     }, true);
 
