@@ -82,7 +82,7 @@ extern inline void tf_ip4addr_ntoa(const uint32_t *addr, char *buf, int buflen) 
     #pragma GCC diagnostic pop
 #endif
 
-bool is_in_subnet(IPAddress ip, IPAddress subnet, IPAddress to_check);
-bool is_valid_subnet_mask(IPAddress subnet);
+bool is_in_subnet(const IPAddress &ip, const IPAddress &subnet, const IPAddress &to_check);
+bool is_valid_subnet_mask(const IPAddress &subnet);
 
 void poke_localhost();
