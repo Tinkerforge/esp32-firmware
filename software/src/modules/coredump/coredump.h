@@ -35,6 +35,7 @@ public:
     Coredump();
     void pre_init() override;
     void pre_setup() override;
+    void setup() override;
     void register_urls() override;
 
 private:
