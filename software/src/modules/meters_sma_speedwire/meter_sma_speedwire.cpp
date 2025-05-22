@@ -298,11 +298,14 @@ void MeterSMASpeedwire::parse_packet()
 
         for (size_t i = 0; i < ARRAY_SIZE(obis_value_positions); i++) {
             size_t position = obis_value_positions[i];
-            if (position > 0) {
-                auto mapping = obis_value_mappings[i];
-                values[i] = mapping.parser_fn(packet.data + position) * mapping.scaling_factor;
-            } else {
+            if (position == 0) {
                 values[i] = NAN;
+            } else if (position >= static_cast<size_t>(data_length)) {
+                logger.printfln_meter("Access beyond data length for OBIS value %zu: position %zu >= %i", i, position, data_length);
+                values[i] = NAN;
+            } else {
+                const obis_value_mapping &mapping = obis_value_mappings[i];
+                values[i] = mapping.parser_fn(packet.data + position) * mapping.scaling_factor;
             }
         }
 
@@ -322,8 +325,14 @@ void MeterSMASpeedwire::parse_values(const uint8_t *buf, int buflen)
             if (obis_code.u32 == obis_value_mappings[i].obis.u32) {
                 pos += 4;
                 obis_value_positions[i] = static_cast<size_t>(pos);
-                break;
+                goto value_found;
             }
         }
+
+        // OBIS value not found, set position to 0.
+        obis_value_positions[i] = 0;
+
+value_found:
+        {}
     }
 }
