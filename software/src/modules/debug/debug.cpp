@@ -40,8 +40,6 @@
 
 #include "gcc_warnings.h"
 
-#define BENCHMARK_BLOCKSIZE 32768
-
 static float benchmark_area(uint32_t *start_address, size_t max_length);
 static void get_spi_settings(uint32_t spi_num, uint32_t apb_clk, uint32_t *spi_clk, uint32_t *dummy_cyclelen, const char **spi_mode);
 
@@ -107,10 +105,10 @@ void Debug::pre_setup()
     rtc_cpu_freq_config_t cpu_freq_conf;
     rtc_clk_cpu_freq_get_config(&cpu_freq_conf);
 
-    float dram_speed   = static_cast<float>(cpu_freq_conf.freq_mhz * 1000000 * 4) / 1048576.0f; // DRAM speed cannot be measured accurately, but we know that it can deliver 4 bytes per CPU clock cycle.
-    float iram_speed   = benchmark_area(reinterpret_cast<uint32_t *>(0x40080000), 128*1024);
-    float rodata_speed = benchmark_area(&_rodata_start, 32*1024); // 32KiB at the beginning of the readonly-data
-    float text_speed   = benchmark_area(&_text_start,   32*1024); // 32KiB at the beginning of the code
+    const float dram_speed   = static_cast<float>(cpu_freq_conf.freq_mhz * 1000000 * 4) / 1048576.0f; // DRAM speed cannot be measured accurately, but we know that it can deliver 4 bytes per CPU clock cycle.
+    const float iram_speed   = benchmark_area(reinterpret_cast<uint32_t *>(0x40080000), 128*1024);
+    const float rodata_speed = benchmark_area(&_rodata_start, 32*1024); // 32KiB at the beginning of the readonly-data
+    const float text_speed   = benchmark_area(&_text_start,   32*1024); // 32KiB at the beginning of the code
 
     float psram_speed = 0;
 #if defined(BOARD_HAS_PSRAM)
@@ -206,8 +204,8 @@ void Debug::pre_setup()
 
     task_handles.reserve(16);
     register_task(xTaskGetCurrentTaskHandle(),      getArduinoLoopTaskStackSize());
-    register_task(xTaskGetIdleTaskHandleForCore(0),  sizeof(StackType_t) * configMINIMAL_STACK_SIZE);
-    register_task(xTaskGetIdleTaskHandleForCore(1),  sizeof(StackType_t) * configMINIMAL_STACK_SIZE);
+    register_task(xTaskGetIdleTaskHandleForCore(0), sizeof(StackType_t) * configMINIMAL_STACK_SIZE);
+    register_task(xTaskGetIdleTaskHandleForCore(1), sizeof(StackType_t) * configMINIMAL_STACK_SIZE);
     register_task(xTimerGetTimerDaemonTaskHandle(), sizeof(StackType_t) * configTIMER_TASK_STACK_DEPTH);
     register_task("esp_timer",                      ESP_TASK_TIMER_STACK);
 
@@ -224,7 +222,7 @@ void Debug::pre_setup()
 
 void Debug::setup()
 {
-    task_scheduler.scheduleWithFixedDelay([this](){
+    task_scheduler.scheduleWithFixedDelay([this]() {
         size_t free_internal = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
 
         multi_heap_info_t dram_info;
