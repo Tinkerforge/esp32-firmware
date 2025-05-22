@@ -1121,7 +1121,7 @@ void RemoteAccess::run_request_with_next_stage(const char *url,
                                                ConfigRoot config,
                                                std::function<void(ConfigRoot config)> &&next_stage)
 {
-    response_body = String();
+    response_body.clear();
 
     const String url_capture = String(url);
     std::function<void(AsyncHTTPSClientEvent * event)> callback = [this, next_stage, config, url_capture](AsyncHTTPSClientEvent *event) {
@@ -1165,7 +1165,7 @@ void RemoteAccess::run_request_with_next_stage(const char *url,
                         this->cleanup_after();
                         break;
                 }
-                response_body = String();
+                response_body.clear();
                 break;
 
             case AsyncHTTPSClientEventType::Aborted:
@@ -1224,7 +1224,7 @@ void RemoteAccess::parse_login_salt(ConfigRoot config)
         for (int i = 0; i < 48; i++) {
             login_salt[i] = doc[i].as<uint8_t>();
         }
-        response_body = "";
+        response_body.clear();
     }
 
     char base64[65] = {};
@@ -1267,7 +1267,7 @@ void RemoteAccess::login(ConfigRoot config, CoolString &login_key)
     run_request_with_next_stage(url, HTTP_METHOD_POST, body.c_str(), body.length(), config, [this](ConfigRoot cfg) {
         registration_state.get("message")->updateString("");
         registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Success);
-        response_body = "";
+        response_body.clear();
     });
 }
 
@@ -1301,7 +1301,7 @@ void RemoteAccess::parse_secret(ConfigRoot config)
             this->request_cleanup();
             return;
         }
-        response_body = "";
+        response_body.clear();
     }
 
     encrypted_secret = heap_alloc_array<uint8_t>(crypto_box_SECRETKEYBYTES + crypto_secretbox_MACBYTES);
@@ -1505,7 +1505,7 @@ void RemoteAccess::resolve_management()
                     this->request_cleanup();
                     return;
                 }
-                response_body = "";
+                response_body.clear();
             }
             config.get("uuid")->updateString(resp["uuid"]);
             api.writeConfig("remote_access/config", &config);
@@ -1524,7 +1524,7 @@ void RemoteAccess::resolve_management()
                 this->request_cleanup();
                 return;
             }
-            response_body = "";
+            response_body.clear();
         }
 
             bool changed = false;
@@ -1640,7 +1640,7 @@ void RemoteAccess::request_cleanup()
     https_client = nullptr;
     encrypted_secret = nullptr;
     secret_nonce = nullptr;
-    response_body = "";
+    response_body.clear();
     management_request_allowed = true;
 }
 
