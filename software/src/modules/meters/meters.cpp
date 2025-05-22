@@ -222,7 +222,8 @@ void Meters::pre_setup()
 
 void Meters::setup()
 {
-    generators.shrink_to_fit();
+    // Not necessary if the vector is cleared anyway after all meters have been set up.
+    //generators.shrink_to_fit();
 
     // Create config prototypes, depending on available generators.
     uint8_t class_count = static_cast<uint8_t>(generators.size());
@@ -231,7 +232,7 @@ void Meters::setup()
     for (uint32_t i = 0; i < class_count; i++) {
         const auto &generator_tuple = generators[i];
         MeterClassID meter_class = std::get<0>(generator_tuple);
-        auto meter_generator = std::get<1>(generator_tuple);
+        IMeterGenerator *meter_generator = std::get<1>(generator_tuple);
         config_prototypes[i] = {meter_class, *meter_generator->get_config_prototype()};
     }
 
@@ -290,6 +291,10 @@ void Meters::setup()
         }
         meter_slot.meter = meter;
     }
+
+    // The generators aren't used anymore at the moment.
+    generators.clear();
+    generators.shrink_to_fit();
 
     history_chars_per_value = max(String(METER_VALUE_HISTORY_VALUE_MIN).length(), String(METER_VALUE_HISTORY_VALUE_MAX).length());
     // val_min values are replaced with null -> require at least 4 chars per value.
