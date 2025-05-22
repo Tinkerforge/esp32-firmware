@@ -661,6 +661,9 @@ void RemoteAccess::register_urls()
             }
         }
 
+        registration_state.get("message")->updateString("");
+        registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::InProgress);
+
         uint8_t public_key[50];
         mbedtls_base64_encode(public_key, 50, &olen, (uint8_t *)pk, crypto_box_PUBLICKEYBYTES);
         auto next_stage = [this, key_cache, public_key, olen](ConfigRoot cfg) {
