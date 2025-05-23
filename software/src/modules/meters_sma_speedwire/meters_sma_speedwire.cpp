@@ -32,6 +32,7 @@ void MetersSMASpeedwire::pre_setup()
     config_prototype = Config::Object({
         {"display_name", Config::Str("", 0, 32)},
         {"location", Config::Enum(MeterLocation::Unknown)},
+        {"serial_number", Config::Uint32(0)}, // 0 == accept all serial numbers
     });
 
     meters.register_meter_generator(get_class(), this);

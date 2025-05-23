@@ -157,8 +157,10 @@ MeterClassID MeterSMASpeedwire::get_class() const
     return MeterClassID::SMASpeedwire;
 }
 
-void MeterSMASpeedwire::setup(Config */*ephemeral_config*/)
+void MeterSMASpeedwire::setup(Config *ephemeral_config)
 {
+    serial_number = ephemeral_config->get("serial_number")->asUint();
+
     MeterValueID valueIds[METERS_SMA_SPEEDWIRE_VALUE_COUNT];
 
     for (size_t i = 0; i < ARRAY_SIZE(obis_value_mappings); i++) {
@@ -228,7 +230,11 @@ int MeterSMASpeedwire::parse_header(SpeedwireHeader *header)
                           header->protocol_id,
                           header->susy_id,
                           header->serial_number,
-                          header->measuring_time);
+                          header->measuring_time); // FIXME: also trace data
+
+    if (serial_number != 0 && header->serial_number != serial_number) {
+        return 0;
+    }
 
     if (header->vendor[0] != 'S' || header->vendor[1] != 'M' || header->vendor[2] != 'A' || header->vendor[3] != '\0') {
         logger.printfln_meter("Invalid vendor: %c%c%c", header->vendor[0], header->vendor[1], header->vendor[2]);

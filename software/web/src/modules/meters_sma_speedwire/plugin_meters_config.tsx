@@ -24,7 +24,7 @@ import { MeterClassID } from "../meters/meter_class_id.enum";
 import { MeterLocation } from "../meters/meter_location.enum";
 import { get_meter_location_items } from "../meters/meter_location";
 import { MeterConfig } from "../meters/types";
-import { InputText } from "../../ts/components/input_text";
+import { InputText, InputTextPatterned } from "../../ts/components/input_text";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 
@@ -33,6 +33,7 @@ export type SMASpeedwireMetersConfig = [
     {
         display_name: string;
         location: number;
+        serial_number: number;
     },
 ];
 
@@ -40,7 +41,7 @@ export function init() {
     return {
         [MeterClassID.SMASpeedwire]: {
             name: () => __("meters_sma_speedwire.content.meter_class"),
-            new_config: () => [MeterClassID.SMASpeedwire, {display_name: "", location: MeterLocation.Unknown}] as MeterConfig,
+            new_config: () => [MeterClassID.SMASpeedwire, {display_name: "", location: MeterLocation.Unknown, serial_number: 0}] as MeterConfig,
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: SMASpeedwireMetersConfig, on_config: (config: SMASpeedwireMetersConfig) => void): ComponentChildren => {
                 return [
@@ -52,6 +53,26 @@ export function init() {
                             onValue={(v) => {
                                 on_config(util.get_updated_union(config, {display_name: v}));
                             }}
+                        />
+                    </FormRow>,
+                    <FormRow label={__("meters_sma_speedwire.content.config_serial_number")} label_muted={__("meters_sma_speedwire.content.config_serial_number_muted")}>
+                        <InputTextPatterned
+                            maxLength={10}
+                            value={config[1].serial_number == 0 ? "" : config[1].serial_number.toString()}
+                            pattern="^(?:|[1-9][0-9]*)$"
+                            onValue={(v) => {
+                                let serial_number = parseInt(v);
+
+                                if (isNaN(serial_number)) {
+                                    serial_number = 0;
+                                }
+                                else if (serial_number > 0xFFFFFFFF) {
+                                    serial_number = 0xFFFFFFFF;
+                                }
+
+                                on_config(util.get_updated_union(config, {serial_number: serial_number}));
+                            }}
+                            invalidFeedback={__("meters_sma_speedwire.content.config_serial_number_invalid")}
                         />
                     </FormRow>,
                     <FormRow label={__("meters_sma_speedwire.content.config_location")}>

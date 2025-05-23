@@ -1203,11 +1203,12 @@ en_hyph = [
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
 
 allowed_missing = set([
-    '0xFFFFFFFF',
-    '1716882142',
+    "1716882142",
+    "4294967295",
     "0x012EB007",
     "0x3E12E5E7",
     "0x66558ADE",
+    "0xFFFFFFFF",
     "Open_collector",
     "all_values",
     "apidoc_url",
@@ -1217,7 +1218,6 @@ allowed_missing = set([
     "charge_release",
     "UNAVAILABLE",
     "comparison",
-
     "Authorize",
     "BootNotification",
     "ChangeAvailabilityResponse",

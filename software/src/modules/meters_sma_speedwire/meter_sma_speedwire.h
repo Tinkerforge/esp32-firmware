@@ -76,6 +76,7 @@ private:
     void parse_values(const uint8_t *buf, int buflen);
 
     uint32_t slot;
+    uint32_t serial_number = 0;
     uint32_t power_export_index = 0;
     uint32_t power_import_index = 0;
     size_t   obis_value_positions[METERS_SMA_SPEEDWIRE_OBIS_COUNT];
