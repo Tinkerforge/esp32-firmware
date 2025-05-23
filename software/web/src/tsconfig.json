@@ -13,6 +13,7 @@
         "strictBuiltinIteratorReturn": true,
         "esModuleInterop": true,
         "target": "es6",
+        "lib": ["es6", "esnext.bigint"],
         "jsx": "react",
         "jsxFactory": "h",
         "jsxFragmentFactory": "Fragment",
