@@ -58,6 +58,8 @@ let x = {
             "virtual_meter": "Virtual meter",
             "virtual_meter_inverter": "Inverter",
             "virtual_meter_grid": "Grid",
+            "virtual_meter_grid_internal_sensor": "Grid (internal sensor)",
+            "virtual_meter_grid_external_sensor": "Grid (external sensor)",
             "virtual_meter_battery": "Battery",
             "virtual_meter_load": "Load",
             "virtual_meter_backup_load": "Backup load",

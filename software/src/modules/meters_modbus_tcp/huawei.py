@@ -801,80 +801,6 @@ specs = [
         ],
     },
     {
-        'name': 'Huawei EMMA Battery',
-        'register_type': 'HoldingRegister',
-        'values': [
-            {
-                'name': 'Total charged energy [0.01 kWh]',
-                'value_id': 'EnergyDCCharge',
-                'start_address': 30308,
-                'value_type': 'U64BE',
-                'scale_factor': 0.01,
-            },
-            {
-                'name': 'Total discharged energy [0.01 kWh]',
-                'value_id': 'EnergyDCDischarge',
-                'start_address': 30314,
-                'value_type': 'U64BE',
-                'scale_factor': 0.01,
-            },
-            {
-                'name': 'Battery charge/discharge power [W]',
-                'value_id': 'PowerDCChaDisDiff',
-                'start_address': 30360,
-                'value_type': 'S32BE',
-            },
-            {
-                'name': 'SOC [0.01 %]',
-                'value_id': 'StateOfCharge',
-                'start_address': 30368,
-                'value_type': 'U16',
-                'scale_factor': 0.01,
-            },
-        ],
-    },
-    {
-        'name': 'Huawei EMMA Load',
-        'register_type': 'HoldingRegister',
-        'values': [
-            {
-                'name': 'Load power [W]',
-                'value_id': 'PowerActiveLSumImport',
-                'start_address': 30356,
-                'value_type': 'U32BE',
-            },
-            {
-                'name': 'Load power signed [W]',
-                'value_id': 'PowerActiveLSumImExDiff',
-                'start_address': 'START_ADDRESS_VIRTUAL',
-            },
-        ],
-    },
-    {
-        'name': 'Huawei EMMA PV',
-        'register_type': 'HoldingRegister',
-        'values': [
-            {
-                'name': 'Total PV energy yield [0.01 kWh]',
-                'value_id': 'EnergyPVSumExport',
-                'start_address': 30348,
-                'value_type': 'U64BE',
-                'scale_factor': 0.01,
-            },
-            {
-                'name': 'PV output power [W]',
-                'value_id': 'PowerPVSumExport',
-                'start_address': 30354,
-                'value_type': 'U32BE',
-            },
-            {
-                'name': 'PV output power signed [W]',
-                'value_id': 'PowerPVSumImExDiff',
-                'start_address': 'START_ADDRESS_VIRTUAL',
-            },
-        ],
-    },
-    {
         'name': 'Huawei EMMA Grid External Sensor',
         'register_type': 'HoldingRegister',
         'values': [
@@ -999,6 +925,80 @@ specs = [
                 'start_address': 31943,
                 'value_type': 'S64BE',
                 'scale_factor': 0.01,
+            },
+        ],
+    },
+    {
+        'name': 'Huawei EMMA Battery',
+        'register_type': 'HoldingRegister',
+        'values': [
+            {
+                'name': 'Total charged energy [0.01 kWh]',
+                'value_id': 'EnergyDCCharge',
+                'start_address': 30308,
+                'value_type': 'U64BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Total discharged energy [0.01 kWh]',
+                'value_id': 'EnergyDCDischarge',
+                'start_address': 30314,
+                'value_type': 'U64BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Battery charge/discharge power [W]',
+                'value_id': 'PowerDCChaDisDiff',
+                'start_address': 30360,
+                'value_type': 'S32BE',
+            },
+            {
+                'name': 'SOC [0.01 %]',
+                'value_id': 'StateOfCharge',
+                'start_address': 30368,
+                'value_type': 'U16',
+                'scale_factor': 0.01,
+            },
+        ],
+    },
+    {
+        'name': 'Huawei EMMA Load',
+        'register_type': 'HoldingRegister',
+        'values': [
+            {
+                'name': 'Load power [W]',
+                'value_id': 'PowerActiveLSumImport',
+                'start_address': 30356,
+                'value_type': 'U32BE',
+            },
+            {
+                'name': 'Load power signed [W]',
+                'value_id': 'PowerActiveLSumImExDiff',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+        ],
+    },
+    {
+        'name': 'Huawei EMMA PV',
+        'register_type': 'HoldingRegister',
+        'values': [
+            {
+                'name': 'Total PV energy yield [0.01 kWh]',
+                'value_id': 'EnergyPVSumExport',
+                'start_address': 30348,
+                'value_type': 'U64BE',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'PV output power [W]',
+                'value_id': 'PowerPVSumExport',
+                'start_address': 30354,
+                'value_type': 'U32BE',
+            },
+            {
+                'name': 'PV output power signed [W]',
+                'value_id': 'PowerPVSumImExDiff',
+                'start_address': 'START_ADDRESS_VIRTUAL',
             },
         ],
     },

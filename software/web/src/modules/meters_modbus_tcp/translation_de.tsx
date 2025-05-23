@@ -58,6 +58,8 @@ let x = {
             "virtual_meter": "Virtueller Zähler",
             "virtual_meter_inverter": "Wechselrichter",
             "virtual_meter_grid": "Netzanschluss",
+            "virtual_meter_grid_internal_sensor": "Netzanschluss (interner Sensor)",
+            "virtual_meter_grid_external_sensor": "Netzanschluss (externer Sensor)",
             "virtual_meter_battery": "Speicher",
             "virtual_meter_load": "Last",
             "virtual_meter_backup_load": "Backup-Last",

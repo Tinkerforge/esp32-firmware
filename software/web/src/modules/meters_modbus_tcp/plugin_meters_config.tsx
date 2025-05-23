@@ -1214,21 +1214,21 @@ export function init() {
                     else if (config[1].table[0] == MeterModbusTCPTableID.HuaweiEMMA) {
                         virtual_meter_items = [
                             [HuaweiEMMAVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
-                            [HuaweiEMMAVirtualMeter.GridInternalSensor.toString(), __("meters_modbus_tcp.content.virtual_meter_grid") + " (internal)"],
+                            [HuaweiEMMAVirtualMeter.GridInternalSensor.toString(), __("meters_modbus_tcp.content.virtual_meter_grid_internal_sensor")],
+                            [HuaweiEMMAVirtualMeter.GridExternalSensor.toString(), __("meters_modbus_tcp.content.virtual_meter_grid_external_sensor")],
                             [HuaweiEMMAVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
                             [HuaweiEMMAVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
                             [HuaweiEMMAVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
-                            [HuaweiEMMAVirtualMeter.GridExternalSensor.toString(), __("meters_modbus_tcp.content.virtual_meter_grid") + " (external)"],
                         ];
 
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
                             case HuaweiEMMAVirtualMeter.Inverter: return MeterLocation.Inverter;
                             case HuaweiEMMAVirtualMeter.GridInternalSensor: return MeterLocation.Grid;
+                            case HuaweiEMMAVirtualMeter.GridExternalSensor: return MeterLocation.Grid;
                             case HuaweiEMMAVirtualMeter.Battery: return MeterLocation.Battery;
                             case HuaweiEMMAVirtualMeter.Load: return MeterLocation.Load;
                             case HuaweiEMMAVirtualMeter.PV: return MeterLocation.PV;
-                            case HuaweiEMMAVirtualMeter.GridExternalSensor: return MeterLocation.Grid;
                             }
 
                             return MeterLocation.Unknown;
