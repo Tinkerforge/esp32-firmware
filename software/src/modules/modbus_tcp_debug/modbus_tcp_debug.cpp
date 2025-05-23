@@ -126,8 +126,7 @@ void ModbusTCPDebug::register_urls()
 
             if (transact_buffer == nullptr) {
                 report_errorf(cookie, "Cannot allocate transaction buffer");
-
-                release_client = true;
+                release_client();
                 return;
             }
 
@@ -138,22 +137,19 @@ void ModbusTCPDebug::register_urls()
 
                 if (nibble_count > TF_MODBUS_TCP_MAX_WRITE_REGISTER_COUNT * 4) {
                     report_errorf(cookie, "Write data is too long");
-
-                    release_client = true;
+                    release_client();
                     return;
                 }
 
                 if ((nibble_count % 4) != 0) {
                     report_errorf(cookie, "Write data length must be multiple of 4");
-
-                    release_client = true;
+                    release_client();
                     return;
                 }
 
                 if (nibble_count != data_count * 4) {
                     report_errorf(cookie, "Write data nibble count mismatch");
-
-                    release_client = true;
+                    release_client();
                     return;
                 }
 
@@ -161,15 +157,13 @@ void ModbusTCPDebug::register_urls()
 
                 if (data_hexload_len < 0) {
                     report_errorf(cookie, "Write data is malformed");
-
-                    release_client = true;
+                    release_client();
                     return;
                 }
 
                 if (data_hexload_len != data_count) {
                     report_errorf(cookie, "Write data register count mismatch");
-
-                    release_client = true;
+                    release_client();
                     return;
                 }
             }
@@ -180,8 +174,7 @@ void ModbusTCPDebug::register_urls()
                     report_errorf(cookie, "Transaction failed: %s (%d)",
                                   get_tf_modbus_tcp_client_transaction_result_name(transact_result),
                                   static_cast<int>(transact_result));
-
-                    release_client = true;
+                    release_client();
                     return;
                 }
 
@@ -208,7 +201,7 @@ void ModbusTCPDebug::register_urls()
 
                 ws.pushRawStateUpdate(buf, "modbus_tcp_debug/transact_result");
 
-                release_client = true;
+                release_client();
             });
         },
         [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client) {
@@ -217,7 +210,6 @@ void ModbusTCPDebug::register_urls()
             }
 
             connected_client = nullptr;
-            release_client = false;
 
             free(transact_buffer);
             transact_buffer = nullptr;
@@ -225,9 +217,11 @@ void ModbusTCPDebug::register_urls()
     }, true);
 }
 
-void ModbusTCPDebug::loop()
+void ModbusTCPDebug::release_client()
 {
-    if (release_client) {
-        modbus_tcp_client.get_pool()->release(connected_client);
-    }
+    task_scheduler.scheduleOnce([this]() {
+        if (connected_client != nullptr) {
+            modbus_tcp_client.get_pool()->release(connected_client);
+        }
+    });
 }
