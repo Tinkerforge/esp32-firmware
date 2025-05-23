@@ -244,12 +244,14 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
             <FormRow label={__("modbus_tcp_debug.content.host")}>
                 <InputHost
                     required
+                    disabled={this.state.waiting}
                     value={this.state.host}
                     onValue={(v) => this.setState({host: v})} />
             </FormRow>
             <FormRow label={__("modbus_tcp_debug.content.port")} label_muted={__("modbus_tcp_debug.content.port_muted")}>
                 <InputNumber
                     required
+                    disabled={this.state.waiting}
                     min={1}
                     max={65535}
                     value={this.state.port}
@@ -258,6 +260,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
             <FormRow label={__("modbus_tcp_debug.content.device_address")}>
                 <InputNumber
                     required
+                    disabled={this.state.waiting}
                     min={0}
                     max={255}
                     value={this.state.device_address}
@@ -266,6 +269,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
             <FormRow label={__("modbus_tcp_debug.content.function_code")}>
                 <InputSelect
                     required
+                    disabled={this.state.waiting}
                     items={[
                         ["3", __("modbus_tcp_debug.content.function_code_read_holding_registers")],
                         ["4", __("modbus_tcp_debug.content.function_code_read_input_registers")],
@@ -279,6 +283,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
             <FormRow label={__("modbus_tcp_debug.content.start_address")} label_muted={__("modbus_tcp_debug.content.start_address_muted")}>
                 <InputNumber
                     required
+                    disabled={this.state.waiting}
                     min={0}
                     max={65535}
                     value={this.state.start_address}
@@ -289,6 +294,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                 <FormRow label={__("modbus_tcp_debug.content.data_count")}>
                     <InputNumber
                         required
+                        disabled={this.state.waiting}
                         min={1}
                         max={65535 /* FIXME: depends on function code */}
                         value={this.state.data_count}
@@ -300,6 +306,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                 <FormRow label={__("modbus_tcp_debug.content.write_data_single_register")}>
                     <InputTextPatterned
                         required
+                        disabled={this.state.waiting}
                         pattern="^[0-9]+$"
                         value={this.state.write_data}
                         onValue={(v) => this.setState({write_data: v})}
@@ -312,6 +319,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                 <FormRow label={__("modbus_tcp_debug.content.write_data_multiple_registers")} label_muted={__("modbus_tcp_debug.content.write_data_multiple_registers_muted")}>
                     <InputTextPatterned
                         required
+                        disabled={this.state.waiting}
                         pattern="^[0-9]+(,[0-9]+)*$"
                         value={this.state.write_data}
                         onValue={(v) => this.setState({write_data: v})}
@@ -323,12 +331,13 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
             <FormRow label={__("modbus_tcp_debug.content.transact_timeout")}>
                 <InputNumber
                     required
+                    disabled={this.state.waiting}
                     value={this.state.timeout}
                     onValue={(v) => this.setState({timeout: v})}
                     unit="ms" />
             </FormRow>
             <FormRow label="">
-                <Button variant="primary" className="form-control" type="submit">{__("modbus_tcp_debug.content.execute")}</Button>
+                <Button variant="primary" className="form-control" type="submit" disabled={this.state.waiting}>{__("modbus_tcp_debug.content.execute")}</Button>
             </FormRow>
             <FormRow label={__("modbus_tcp_debug.content.response")}>
                 <OutputTextarea rows={15} resize="vertical" value={this.state.waiting ? "Waiting..." : this.state.result} />
