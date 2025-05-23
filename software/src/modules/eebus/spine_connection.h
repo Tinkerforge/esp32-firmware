@@ -59,11 +59,11 @@ class SpineConnection
 
 public:
     ShipConnection *ship_connection = nullptr;
-    SpineConnection(ShipConnection *ship_connection) : ship_connection(ship_connection), received_header() {};
+    explicit SpineConnection(ShipConnection *ship_connection) : ship_connection(ship_connection), received_header() {};
   
 
 
-    void process_datagram(JsonVariant datagram);
+    bool process_datagram(JsonVariant datagram);
     void check_message_counter();
 
     // SPINE TS 5.2.3.1
@@ -77,8 +77,7 @@ public:
     SpineHeader received_header;
     JsonVariant received_payload;
 
-
-    // TODO: Move this to eebus.h to save a bit of ram
-    // Or opimize it so it doesnt use optionals.
+    DynamicJsonDocument response_doc{SPINE_CONNECTION_MAX_JSON_SIZE};
+    JsonVariant response_datagram;
 
 };

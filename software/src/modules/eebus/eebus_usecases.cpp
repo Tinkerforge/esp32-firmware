@@ -75,9 +75,10 @@ bool EEBusUseCases::handle_message(SpineHeader &header, SpineDataTypeHandler &da
         logger.printfln("EEBus: Received message for NodeManagementUsecase");
         logger.printfln("Function called: %s", data.function_to_string(data.last_cmd).c_str());
 
-        response["nodeManagementUseCaseData"] = node_management.get_usecases();
+        if (!response["nodeManagementUseCaseData"].set(node_management.get_usecases())) {
+            logger.printfln("Could not set response");
+        }
 
-        logger.printfln("Built response: %s", response.as<String>().c_str());
 
         return true;
     }
