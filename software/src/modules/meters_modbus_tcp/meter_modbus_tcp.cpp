@@ -175,6 +175,9 @@
 
 #define HUAWEI_SUN2000_SMART_DONGLE_INPUT_POWER_ADDRESS                    static_cast<size_t>(HuaweiSUN2000SmartDonglePVAddress::InputPower)
 
+#define HUAWEI_EMMA_LOAD_POWER_ADDRESS                                     static_cast<size_t>(HuaweiEMMALoadAddress::LoadPower)
+
+#define HUAWEI_EMMA_PV_OUTPUT_POWER_ADDRESS                                static_cast<size_t>(HuaweiEMMAPVAddress::PVOutputPower)
 
 #define MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(x) (static_cast<uint8_t>(x) & 0x07)
 #define MODBUS_VALUE_TYPE_TO_REGISTER_ORDER_LE(x) ((static_cast<uint8_t>(x) >> 5) & 1)
@@ -1622,6 +1625,18 @@ bool MeterModbusTCP::is_huawei_sun2000_smart_dongle_pv_meter() const
         && huawei_sun2000_smart_dongle.virtual_meter == HuaweiSUN2000SmartDongleVirtualMeter::PV;
 }
 
+bool MeterModbusTCP::is_huawei_emma_load_meter() const
+{
+    return table_id == MeterModbusTCPTableID::HuaweiEMMA
+        && huawei_emma.virtual_meter == HuaweiEMMAVirtualMeter::Load;
+}
+
+bool MeterModbusTCP::is_huawei_emma_pv_meter() const
+{
+    return table_id == MeterModbusTCPTableID::HuaweiEMMA
+        && huawei_emma.virtual_meter == HuaweiEMMAVirtualMeter::PV;
+}
+
 void MeterModbusTCP::read_done_callback()
 {
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
@@ -2729,6 +2744,16 @@ void MeterModbusTCP::parse_next()
     }
     else if (is_huawei_sun2000_smart_dongle_pv_meter()) {
         if (register_start_address == HUAWEI_SUN2000_SMART_DONGLE_INPUT_POWER_ADDRESS) {
+            meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(value));
+        }
+    }
+    else if (is_huawei_emma_load_meter()) {
+        if (register_start_address == HUAWEI_EMMA_LOAD_POWER_ADDRESS) {
+            meters.update_value(slot, table->index[read_index + 1], value);
+        }
+    }
+    else if (is_huawei_emma_pv_meter()) {
+        if (register_start_address == HUAWEI_EMMA_PV_OUTPUT_POWER_ADDRESS) {
             meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(value));
         }
     }

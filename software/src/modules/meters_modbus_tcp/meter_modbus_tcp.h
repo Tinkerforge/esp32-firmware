@@ -126,6 +126,8 @@ private:
     bool is_huawei_sun2000_pv_meter() const;
     bool is_huawei_sun2000_smart_dongle_battery_meter() const;
     bool is_huawei_sun2000_smart_dongle_pv_meter() const;
+    bool is_huawei_emma_load_meter() const;
+    bool is_huawei_emma_pv_meter() const;
 
     uint32_t slot;
     Config *state;
