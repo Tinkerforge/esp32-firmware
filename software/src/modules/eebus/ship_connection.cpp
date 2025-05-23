@@ -27,6 +27,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "tools.h"
+#include "ship_types.h"
 
 extern EEBus eebus;
 
@@ -76,16 +77,20 @@ void ShipConnection::send_current_outgoing_message()
     if (message_outgoing->length == 0) {
         return;
     }
-
+    if (!message_outgoing) {
+        logger.printfln("message_outgoing ist NULL!");
+        return;
+    }
+    if (message_outgoing->length > SHIP_CONNECTION_MAX_BUFFER_SIZE) {
+        logger.printfln("message_outgoing->length zu groß!");
+        return;
+    }
+    logger.printfln("Looking good. Sending message");
     ws_client.sendOwnedNoFreeBlocking_HTTPThread((char *)message_outgoing->data, message_outgoing->length, HTTPD_WS_TYPE_BINARY);
 }
 
-void ShipConnection::send_string(const char* str, int length)
+void ShipConnection::send_string(const char *str, const int length)
 {
-    if(length + 1 > SHIP_CONNECTION_MAX_BUFFER_SIZE) {
-        logger.printfln("send_string: String zu lang (%d), max erlaubt: %d", length, SHIP_CONNECTION_MAX_BUFFER_SIZE - 1);
-        length = SHIP_CONNECTION_MAX_BUFFER_SIZE - 1;
-    }
     message_outgoing->data[0] = 1;
     memcpy(&message_outgoing->data[1], str, length);
     message_outgoing->length = length + 1;
@@ -863,23 +868,21 @@ void ShipConnection::state_sme_access_method_request()
     }
 }
 
-
 void ShipConnection::send_data_message(JsonVariant payload)
 {
-    if (state == State::Done && get_protocol_state() == ProtocolState::Data) {
+    if (/*state == State::Done*/ true) {
         SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
         // SHIP 14.
         data.protocol_id = "ee1.0"; // We only speak ee1.0
-        data.payload = payload;
+        [[maybe_unused]] auto tmp = data.payload = payload;
 
-        String json = data.type_to_json();
+        data.type_to_json(*message_outgoing);
 
-        message_outgoing->data[0] = 1;
-        memcpy(&message_outgoing->data[1], json.c_str(), json.length());
-        message_outgoing->length = json.length() + 1;
+        logger.printfln("Done building data message with total length of %d", message_outgoing->length);
+        logger.printfln("Data: %s", &message_outgoing->data[1]);
         send_current_outgoing_message();
     } else {
-        logger.printfln("send_data_message: Connection not in done state");
+        logger.printfln("send_data_message: Connection not in done state. Actual State: %d", (int)state);
     }
 }
 
@@ -909,7 +912,13 @@ void ShipConnection::state_done()
                                 message_incoming->data[0],
                                 message_incoming->length,
                                 &message_incoming->data[1]);
-                spine.process_datagram(data.payload);
+                bool response = spine.process_datagram(data.payload);
+                if (response) {
+                    logger.printfln("Response datagram: %s", spine.response_doc.as<String>().c_str());
+                    send_data_message(spine.response_doc.as<JsonVariant>());
+                } else {
+                    logger.printfln("No response to data message");
+                }
             } else {
                 logger.printfln("Error while trying to deserialize data message");
             }
@@ -942,6 +951,7 @@ void ShipConnection::state_done()
         default:
             break;
     }
+    logger.printfln("After state done state: %s", get_state_name(state));
 }
 
 void ShipConnection::state_is_not_implemented()
@@ -1207,4 +1217,3 @@ void ShipConnection::to_json_access_methods_type()
 void ShipConnection::common_procedure_enable_data_exchange()
 {
 }
-

@@ -19,11 +19,16 @@
 
 #pragma once
 
-#include "module.h"
 #include "config.h"
+#include "module.h"
+#include "ship_connection.h"
+
 #include <TFJson.h>
+#include "ship_connection.h"
+
 
 #define SHIP_TYPES_MAX_JSON_SIZE 8192 // TODO: What is a sane value here?
+
 
 namespace SHIP_TYPES {
 
@@ -59,7 +64,7 @@ namespace SHIP_TYPES {
         CoolString extension_string{};
 
         DeserializationResult json_to_type(uint8_t *data, size_t length);
-        String type_to_json();
+        String type_to_json(ShipConnection::Message &message_outgoing);
 
     };
 

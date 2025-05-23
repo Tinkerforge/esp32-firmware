@@ -24,6 +24,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "tools.h"
+#include "ship_connection.h"
 
 namespace SHIP_TYPES
 {
@@ -43,10 +44,10 @@ DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, 
 
     if (data.isNull()) {
         logger.printfln("J2T ShipMessageData Error: No data object found");
-        
+
         return DeserializationResult::ERROR;
     }
-    if (doc["data"][0]["header"][0]["protocolId"]== nullptr || doc["data"][1]["payload"] == nullptr) {
+    if (doc["data"][0]["header"][0]["protocolId"] == nullptr || doc["data"][1]["payload"] == nullptr) {
         logger.printfln("J2T ShipMessageData Error: Data invalid");
         valid = false;
         return DeserializationResult::ERROR;
@@ -65,13 +66,18 @@ DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, 
     return DeserializationResult::SUCCESS;
 }
 
-String ShipMessageDataType::type_to_json()
+String ShipMessageDataType::type_to_json(ShipConnection::Message &message_outgoing)
 {
     DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
 
     JsonObject data = doc["data"].to<JsonObject>();
     data["header"]["protocolId"] = protocol_id;
-    data["payload"] = payload;
+    bool payload_loaded = data["payload"].set(payload);
+    logger.printfln("Payload: %s", payload.as<String>().c_str());
+    if (!payload_loaded) {
+        logger.printfln("J2T ShipMessageData Error: Payload invalid");
+        return "";
+    }
 
     if (extension_id_valid || extension_binary_valid || extension_string_valid) {
         JsonObject data_extension = data.createNestedObject("extension");
@@ -89,10 +95,10 @@ String ShipMessageDataType::type_to_json()
         }
     }
 
-    String output;
-    //doc.shrinkToFit();
-    serializeJson(doc, output);
-    return output;
+    message_outgoing.data[0] = 2;
+    size_t size = serializeJson(doc, &message_outgoing.data[1], SHIP_TYPES_MAX_JSON_SIZE - 1);
+    message_outgoing.length = size + 1;
+    return "";
 }
 
 void DeserializeOptionalField(JsonObject *data, const char *field_name, bool *field_valid, String *field_value)
@@ -174,9 +180,9 @@ String ShipMessageAccessMethods::type_to_json()
     JsonArray json_am = doc.createNestedArray("accessMethods");
     JsonObject access_methods = json_am.createNestedObject();
     access_methods["id"] = id;
-    
+
     json_am.createNestedObject().createNestedArray("dnsSd_mDns");
-    for(auto &value : dns_sd_mdns) {
+    for (auto &value : dns_sd_mdns) {
         access_methods["dns_sd_mdns"].add(value);
     }
     /* This is standard conform, but ship-go does not accept it. remove it for now..

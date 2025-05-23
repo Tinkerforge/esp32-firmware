@@ -25,7 +25,7 @@
 #include "config.h"
 #include "module.h"
 #include "modules/ws/web_sockets.h"
-#include "ship_types.h"
+//#include "ship_types.h"
 #include "spine_connection.h"
 
 // Values and Timeouts as defined by SHIP document
