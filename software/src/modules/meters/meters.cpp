@@ -998,8 +998,13 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
     }
 
     MeterSlot &meter_slot = meter_slots[slot];
-
     Config &values = meter_slot.values;
+
+    if (index >= values.count()) {
+        logger.printfln_meter("Tried to update value %lu that is known to not exist (index >= %zu)", index, values.count());
+        return;
+    }
+
     Config *conf_val = static_cast<Config *>(values.get(index));
     micros_t t_now = now_us();
 
