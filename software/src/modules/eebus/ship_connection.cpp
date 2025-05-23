@@ -26,8 +26,8 @@
 #include "eebus.h"
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
-#include "tools.h"
 #include "ship_types.h"
+#include "tools.h"
 
 extern EEBus eebus;
 
@@ -947,6 +947,24 @@ void ShipConnection::state_done()
         case ProtocolState::AccessMethods: {
 
             break;
+        }
+        case ProtocolState::Terminate: {
+            logger.printfln("SHIP Connection Close requested. Closing connection.");
+            // TODO: Move all this json stuff into another function/type
+            DynamicJsonDocument doc{1024};
+
+            JsonArray connectionClose = doc["connectionClose"].to<JsonArray>();
+            connectionClose[0]["phase"] = "announce";
+            connectionClose[1]["maxTime"] = 500;
+            connectionClose[2]["reason"] = "User close";
+
+            String output;
+            serializeJson(doc, output);
+            message_outgoing->data[0] = 3;
+            memcpy(&message_outgoing->data[1], output.c_str(), output.length());
+            message_outgoing->length = output.length() + 1;
+            send_current_outgoing_message();
+            schedule_close(0_ms);
         }
         default:
             break;
