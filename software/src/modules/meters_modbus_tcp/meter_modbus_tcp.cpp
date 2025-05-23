@@ -1348,7 +1348,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         case HuaweiEMMAVirtualMeter::Inverter:
             table = &huawei_emma_inverter_table;
             default_location = MeterLocation::Inverter;
-            return;
+            break;
 
         case HuaweiEMMAVirtualMeter::GridInternalSensor:
             table = &huawei_emma_grid_internal_sensor_table;
