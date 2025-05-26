@@ -19,14 +19,12 @@
 #include "ntp.h"
 
 #include <time.h>
-#include <lwip/apps/sntp.h>
-#include <lwip/inet.h>
 #include <esp_netif.h>
+#include <esp_sntp.h>
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "timezone_translation.h"
-#include "build.h"
 
 extern "C" void sntp_sync_time(struct timeval *tv)
 {
@@ -59,70 +57,81 @@ void NTP::pre_setup()
     });
 }
 
-struct sntp_opts {
-    const String &server1;
-    const String &server2;
-    const bool set_servers_from_dhcp;
-};
-
 void NTP::setup()
 {
     initialized = true;
 
     api.restorePersistentConfig("ntp/config", &config);
 
-    const char *tzstring = lookup_timezone(config.get("timezone")->asEphemeralCStr());
+    const char *timezone = config.get("timezone")->asUnsafeCStr();
+    const char *tzstring = lookup_timezone(timezone);
 
-    if (tzstring == nullptr) {
-        logger.printfln("Failed to look up timezone information for %s. Will not set timezone", config.get("timezone")->asEphemeralCStr());
+    if (!tzstring) {
+        logger.printfln("Failed to look up timezone information for %s. Will not set timezone", timezone);
         return;
     }
     setenv("TZ", tzstring, 1);
     tzset();
-    logger.printfln("Set timezone to %s", config.get("timezone")->asEphemeralCStr());
+    logger.printfln("Set timezone to %s", timezone);
 
-    if (config.get("enable")->asBool()) {
-        bool set_servers_from_dhcp = config.get("use_dhcp")->asBool();
+    if (!config.get("enable")->asBool()) {
+        return;
+    }
 
-        // Keep local copies of ephemeral conf Strings because the SNTP lib doesn't create its own copies and holds references to whatever we pass to it.
-        ntp_server1 = config.get("server")->asString();
-        ntp_server2 = config.get("server2")->asString();
+    // Keep local copies of unsafe ConfStrings because the SNTP lib doesn't create its own copies and holds references to whatever is passed to it.
+    ntp_server1 = config.get("server" )->asString();
+    ntp_server2 = config.get("server2")->asString();
 
-        sntp_opts sntp_opts = {ntp_server1, ntp_server2, set_servers_from_dhcp};
+    const bool set_servers_from_dhcp = config.get("use_dhcp")->asBool();
 
-        // Enable network stack before setting any SNTP options.
-        // Cannot be called via esp_netif_tcpip_exec() because that function
-        // will fail if the network stack is started during its execution.
-        // It should be safe to set SNTP options without the network stack
-        // running, but it needs to be running to send any SNTP queries anyway.
-        esp_netif_init();
+    // Enable network stack before setting any SNTP options.
+    // It should be safe to set SNTP options without the network stack
+    // running, but it needs to be running to send any SNTP queries anyway.
+    esp_netif_init();
 
-        esp_netif_tcpip_exec([](void *ctx) -> esp_err_t {
-            const struct sntp_opts *opts = static_cast<struct sntp_opts *>(ctx);
+    if (esp_sntp_enabled()) {
+        esp_sntp_stop();
+    }
 
-            // As we use our own sntp_sync_time function, we do not need to register the cb function.
-            // sntp_set_time_sync_notification_cb(ntp_sync_cb);
+    // As we use our own sntp_sync_time function, we do not need to register the cb function.
+    // sntp_set_time_sync_notification_cb(ntp_sync_cb);
 
-            sntp_servermode_dhcp(opts->set_servers_from_dhcp);
+    esp_sntp_servermode_dhcp(set_servers_from_dhcp);
+    esp_sntp_setoperatingmode(SNTP_OPMODE_POLL);
 
-            if (sntp_enabled()) {
-                sntp_stop();
+    // Always set first two NTP server slots and don't leave any room for
+    // servers received via DHCP. If NTP via DHCP is enabled and NTP
+    // servers are received via DHCP, all previously set servers are removed.
+    // Always set both servers, even when only one is configured, as the SNTP
+    // client will query all servers round-robin, including unset ones.
+    esp_sntp_setservername(0, ntp_server1.isEmpty() ? ntp_server2.c_str() : ntp_server1.c_str());
+    esp_sntp_setservername(1, ntp_server2.isEmpty() ? ntp_server1.c_str() : ntp_server2.c_str());
+
+#if MODULE_NETWORK_AVAILABLE()
+    if (set_servers_from_dhcp) {
+        // To hook into DHCP, SNTP must be initialized before starting Ethernet or WiFi.
+        esp_sntp_init();
+    }
+#else
+    esp_sntp_init();
+#endif
+}
+
+void NTP::register_events()
+{
+#if MODULE_NETWORK_AVAILABLE()
+    if (config.get("enable")->asBool() && !config.get("use_dhcp")->asBool()) {
+        network.on_network_connected([this](const Config *connected) {
+            if (connected->asBool()) {
+                esp_sntp_init();
+
+                return EventResult::Deregister;
             }
 
-            sntp_setoperatingmode(SNTP_OPMODE_POLL);
-
-            // Always set first two NTP server slots and don't leave any room for
-            // servers received via DHCP. If NTP via DHCP is enabled and NTP
-            // servers are recieved via DHCP, all previously set servers are removed.
-            // Always set both servers, even when only one is configured, as the SNTP
-            // client will query all servers round-robin, including unset ones.
-            sntp_setservername(0, opts->server1.isEmpty() ? opts->server2.c_str() : opts->server1.c_str());
-            sntp_setservername(1, opts->server2.isEmpty() ? opts->server1.c_str() : opts->server2.c_str());
-
-            sntp_init();
-            return ESP_OK;
-        }, &sntp_opts);
+            return EventResult::OK;
+        });
     }
+#endif
 }
 
 void NTP::set_synced(bool synced)
@@ -141,24 +150,26 @@ void NTP::register_urls()
 }
 
 void NTP::time_synced_NTPThread() {
-    this->last_sync = now_us();
+    micros_t now = now_us();
 
-    if (this->first_sync) {
-        this->first_sync = false;
-        auto now = now_us().to<millis_t>().as<uint32_t>();
+    if (sync_expires_at == 0_us) {
+        uint32_t now_u32 = now.to<millis_t>().as<uint32_t>();
 
-        task_scheduler.scheduleOnce([this, now](){
+        task_scheduler.scheduleOnce([this, now_u32]() {
             this->set_synced(true);
 
-            auto secs = now / 1000;
-            auto ms = now % 1000;
+            uint32_t secs = now_u32 / 1000;
+            uint32_t ms   = now_u32 % 1000;
             // Don't log in TCP/IP task: Deadlocks the event lock
             logger.printfln("NTP synchronized at %lu,%03lu", secs, ms);
         });
 
-        task_scheduler.scheduleWithFixedDelay([this](){
-            if (deadline_elapsed(this->last_sync + 25_h))
+        task_scheduler.scheduleWithFixedDelay([this]() {
+            if (deadline_elapsed(this->sync_expires_at)) {
                 this->set_synced(false);
+            }
         }, 1_h, 1_h);
     }
+
+    sync_expires_at = now + 25_h;
 }

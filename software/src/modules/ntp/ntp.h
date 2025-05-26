@@ -19,7 +19,8 @@
 
 #pragma once
 
-#include <mutex>
+#include <stdint.h>
+#include <TFTools/Micros.h>
 
 #include "module.h"
 #include "config.h"
@@ -27,25 +28,23 @@
 class NTP final : public IModule
 {
 private:
+    ConfigRoot config;
+    ConfigRoot state;
+
     String ntp_server1;
     String ntp_server2;
 
-    std::mutex mtx;
-    uint32_t sync_counter = 0;
-    micros_t last_sync = 0_us;
-    bool first_sync = true;
-
-    ConfigRoot config;
-    ConfigRoot state;
+    micros_t sync_expires_at = 0_us;
 
 public:
     NTP(){}
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void register_events() override;
+
     void set_synced(bool synced);
     void set_api_time(struct timeval time);
-
 
     void time_synced_NTPThread();
 };
