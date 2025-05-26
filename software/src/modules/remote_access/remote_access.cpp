@@ -113,22 +113,10 @@ fail:
     return false;
 }
 
-static int create_sock_and_send_to(const void *payload, size_t payload_len, const char *dest_host, uint16_t port, uint16_t *local_port)
+static int create_sock_and_send_to(const void *payload, size_t payload_len, const ip_addr_t ip, uint16_t port, uint16_t local_port)
 {
-    struct sockaddr_in dest_addr;
+    sockaddr_in dest_addr;
     bzero(&dest_addr, sizeof(dest_addr));
-
-    ip_addr_t ip;
-    int ret = dns_gethostbyname_addrtype_lwip_ctx(dest_host, &ip, nullptr, nullptr, LWIP_DNS_ADDRTYPE_IPV4);
-    if (ret == ERR_VAL) {
-        logger.printfln("No DNS server is configured!");
-        return -1;
-    }
-
-    if (ret != ESP_OK || ip.type != IPADDR_TYPE_V4) {
-        return -1;
-    }
-
     dest_addr.sin_addr.s_addr = ip.u_addr.ip4.addr;
     dest_addr.sin_family = AF_INET;
     dest_addr.sin_port = htons(port);
@@ -138,26 +126,24 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
         logger.printfln("Remote Access: failed to send management frame");
         return sock;
     }
-    ret = fcntl(sock, F_SETFL, O_NONBLOCK);
+    int ret = fcntl(sock, F_SETFL, O_NONBLOCK);
     if (ret == -1) {
         logger.printfln("Setting socket to non_blocking caused and error: (%i)%s", errno, strerror_r(errno, nullptr, 0));
         close(sock);
         return -1;
     }
 
-    if (local_port != nullptr) {
-        struct sockaddr_in local_addr;
-        bzero(&local_addr, sizeof(local_addr));
+    struct sockaddr_in local_addr;
+    bzero(&local_addr, sizeof(local_addr));
 
-        local_addr.sin_addr.s_addr = inet_addr("0.0.0.0");
-        local_addr.sin_family = AF_INET;
-        local_addr.sin_port = htons(*local_port);
-        ret = bind(sock, (struct sockaddr *)&local_addr, sizeof(local_addr));
-        if (ret == -1) {
-            logger.printfln("Binding socket to port %u caused and error: (%i)%s", *local_port, errno, strerror_r(errno, nullptr, 0));
-            close(sock);
-            return -1;
-        }
+    local_addr.sin_addr.s_addr = inet_addr("0.0.0.0");
+    local_addr.sin_family = AF_INET;
+    local_addr.sin_port = htons(local_port);
+    ret = bind(sock, (struct sockaddr *)&local_addr, sizeof(local_addr));
+    if (ret == -1) {
+        logger.printfln("Binding socket to port %u caused and error: (%i)%s", local_port, errno, strerror_r(errno, nullptr, 0));
+        close(sock);
+        return -1;
     }
 
     ret = sendto(sock, payload, payload_len, 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
@@ -1921,8 +1907,12 @@ void RemoteAccess::run_management()
                 (*conn)->end();
             }
             local_port = find_next_free_port(local_port);
-            create_sock_and_send_to(&response, sizeof(response), remote_host.c_str(), 51820, &local_port);
-            connect_remote_access(command->connection_no, local_port);
+
+            dns_gethostbyname_addrtype_lwip_ctx_async_data *outer_data = new dns_gethostbyname_addrtype_lwip_ctx_async_data;
+            dns_gethostbyname_addrtype_lwip_ctx_async(remote_host.c_str(), [this, response, local_port, command](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
+                create_sock_and_send_to(&response, sizeof(response), data->addr, 51820, local_port);
+                connect_remote_access(command->connection_no, local_port);
+            }, outer_data, LWIP_DNS_ADDRTYPE_IPV4);
         } break;
 
         case management_command_id::Disconnect:
@@ -2040,39 +2030,32 @@ static void on_ping_end(esp_ping_handle_t handle, void *args) {
 }
 
 int RemoteAccess::start_ping() {
-    ip_addr_t target_addr;
-    memset(&target_addr, 0, sizeof(target_addr));
     const char *host = config.get("relay_host")->asEphemeralCStr();
 
-    struct sockaddr_in dest_addr;
-    bzero(&dest_addr, sizeof(dest_addr));
+    dns_gethostbyname_addrtype_lwip_ctx_async_data *outer_data = new dns_gethostbyname_addrtype_lwip_ctx_async_data;
+    dns_gethostbyname_addrtype_lwip_ctx_async(host, [this, host](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
+        PingArgs *ping_args = new PingArgs();
+        ping_args->that = this;
 
-    int ret = dns_gethostbyname_addrtype_lwip_ctx(host, &target_addr, nullptr, nullptr, LWIP_DNS_ADDRTYPE_IPV4);
-    if (ret == ERR_VAL) {
-        logger.printfln("No DNS server is configured!");
-        return -1;
-    }
+        esp_ping_config_t ping_config = ESP_PING_DEFAULT_CONFIG();
+        ping_config.target_addr = data->addr;
+        ping_config.count = ESP_PING_COUNT_INFINITE;
 
-    PingArgs *ping_args = new PingArgs();
-    ping_args->that = this;
+        esp_ping_callbacks_t cbs;
+        cbs.on_ping_success = on_ping_success;
+        cbs.on_ping_timeout = on_ping_timeout;
+        cbs.on_ping_end = on_ping_end;
+        cbs.cb_args = static_cast<void *>(ping_args);
+        esp_ping_new_session(&ping_config, &cbs, &ping);
+        esp_ping_start(ping);
 
-    esp_ping_config_t ping_config = ESP_PING_DEFAULT_CONFIG();
-    ping_config.target_addr = target_addr;
-    ping_config.count = ESP_PING_COUNT_INFINITE;
+        ping_start = millis();
 
-    esp_ping_callbacks_t cbs;
-    cbs.on_ping_success = on_ping_success;
-    cbs.on_ping_timeout = on_ping_timeout;
-    cbs.on_ping_end = on_ping_end;
-    cbs.cb_args = static_cast<void *>(ping_args);
-    esp_ping_new_session(&ping_config, &cbs, &ping);
-    esp_ping_start(ping);
-
-    ping_start = millis();
-
-    char str[INET_ADDRSTRLEN];
-    inet_ntop(AF_INET, &target_addr.u_addr.ip4, str, sizeof(str));
-    logger.printfln("Start pinging %s(%s)", host, str);
+        char str[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, &data->addr, str, sizeof(str));
+        logger.printfln("Start pinging %s(%s)", host, str);
+        delete data;
+    }, outer_data, LWIP_DNS_ADDRTYPE_IPV4);
 
     return 0;
 }
