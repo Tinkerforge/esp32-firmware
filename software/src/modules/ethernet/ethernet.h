@@ -44,6 +44,5 @@ private:
     ConfigRoot state;
 
     OwnedConfig config_in_use;
-    String hostname;
     EthernetState connection_state = EthernetState::NotConfigured;
 };

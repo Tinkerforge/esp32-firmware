@@ -100,6 +100,14 @@ void Ethernet::print_con_duration()
     }
 }
 
+static void eth_async_begin(void *)
+{
+    if (!ETH.begin()) {
+        logger.printfln("Async start failed. PHY broken?");
+    }
+    vTaskDelete(NULL); // exit RTOS task
+}
+
 void Ethernet::setup()
 {
     api.addFeature("ethernet");
@@ -115,18 +123,22 @@ void Ethernet::setup()
     if (!config_in_use.get("enable_ethernet")->asBool())
         return;
 
-#if MODULE_NETWORK_AVAILABLE()
-    hostname = network.get_hostname();
-#else
-    hostname = String(BUILD_HOST_PREFIX) + "-" + local_uid_str;
-#endif
-
     connection_state = EthernetState::NotConnected;
     state.get("connection_state")->updateEnum(connection_state);
 
-    Network.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+    Network.begin();
+
+    Network.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
             logger.printfln("Started");
-            ETH.setHostname(hostname.c_str());
+
+#if MODULE_NETWORK_AVAILABLE()
+            const String &hostname = network.get_hostname();
+#else
+            String hostname{BUILD_HOST_PREFIX};
+            hostname.concat("-", 1);
+            hostname.concat(local_uid_str);
+#endif
+            ETH.setHostname(hostname.c_str()); // Underlying API creates a copy.
 
             connection_state = EthernetState::NotConnected;
 
@@ -136,26 +148,36 @@ void Ethernet::setup()
         },
         ARDUINO_EVENT_ETH_START);
 
-    Network.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            uint32_t link_speed = ETH.linkSpeed();
-            bool full_duplex    = ETH.fullDuplex();
-            logger.printfln("Connected: %lu Mbps %s Duplex, MAC: %s", link_speed, full_duplex ? "Full" : "Half", ETH.macAddress().c_str());
+    Network.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
+            const uint16_t link_speed = ETH.linkSpeed();
+            if (link_speed < 100) {
+                // A 10MBit link sometimes chokes on link-up and won't be able to send any data.
+                // It usually needs at least an additional 19ms to settle before configuring an IP.
+                // Give it 40ms to be safe.
+                delay(40);
+            }
 
-            IPAddress ip, subnet, gateway, dns, dns2;
-            ip.fromString(config_in_use.get("ip")->asEphemeralCStr());
-            subnet.fromString(config_in_use.get("subnet")->asEphemeralCStr());
-            gateway.fromString(config_in_use.get("gateway")->asEphemeralCStr());
-            dns.fromString(config_in_use.get("dns")->asEphemeralCStr());
-            dns2.fromString(config_in_use.get("dns2")->asEphemeralCStr());
-
-            if (link_speed < 100)
-                delay(40); // 10MBit usually needs at least 19ms extra. Give it 40ms to be safe.
-
-            if ((uint32_t)ip != 0) {
-                ETH.config(ip, gateway, subnet, dns, dns2);
+            const IPAddress ip{config_in_use.get("ip")->asUnsafeCStr()};
+            if (static_cast<uint32_t>(ip) != 0) {
+                ETH.config(ip,
+                           {config_in_use.get("gateway")->asUnsafeCStr()},
+                           {config_in_use.get("subnet" )->asUnsafeCStr()},
+                           {config_in_use.get("dns"    )->asUnsafeCStr()},
+                           {config_in_use.get("dns2"   )->asUnsafeCStr()});
             } else {
                 ETH.config();
             }
+
+            uint8_t mac[6];
+            if (!ETH.macAddress(mac)) {
+                memset(mac, 0, sizeof(mac));
+            }
+            const bool full_duplex = ETH.fullDuplex();
+
+            logger.printfln("Connected: %hu Mbps %s Duplex, MAC: %02X:%02X:%02X:%02X:%02X:%02X",
+                            link_speed,
+                            full_duplex ? "Full" : "Half",
+                            mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
             connection_state = EthernetState::Connecting;
 
@@ -174,34 +196,42 @@ void Ethernet::setup()
         },
         ARDUINO_EVENT_ETH_CONNECTED);
 
-    Network.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            auto ip = ETH.localIP().toString();
-            auto subnet = ETH.subnetMask();
-            logger.printfln("Got IP address: %s/%u", ip.c_str(), WiFiGenericClass::calculateSubnetCIDR(subnet));
+    Network.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t info) {
+            const esp_netif_ip_info_t &ip_info = info.got_ip.ip_info;
+            char ip_str[16];
+            tf_ip4addr_ntoa(&ip_info.ip, ip_str, ARRAY_SIZE(ip_str));
+            char gw_str[16];
+            tf_ip4addr_ntoa(&ip_info.gw, gw_str, ARRAY_SIZE(gw_str));
+            const uint32_t subnet = ip_info.netmask.addr;
 
-            micros_t now = now_us();
+            logger.printfln("Got IP address: %s/%i, GW %s", ip_str, __builtin_clz(~ntohl(subnet)), gw_str);
+
+            const micros_t now = now_us();
             was_connected = true;
             last_connected = now;
+            const uint32_t now_ms = now.to<millis_t>().as<uint32_t>();
 
             connection_state = EthernetState::Connected;
 
-            uint32_t now_ms = now.to<millis_t>().as<uint32_t>();
+            const String ip_string{ip_str};
+            task_scheduler.scheduleOnce([this, now_ms, ip_string, subnet]() {
+                char subnet_str[16];
+                tf_ip4addr_ntoa(&subnet, subnet_str, ARRAY_SIZE(subnet_str));
 
-            task_scheduler.scheduleOnce([this, now_ms, ip, subnet]() {
+                state.get("ip"    )->updateString(ip_string);
+                state.get("subnet")->updateString(subnet_str);
                 state.get("connection_state")->updateEnum(connection_state);
-                state.get("ip")->updateString(ip);
-                state.get("subnet")->updateString(subnet.toString());
                 state.get("connection_start")->updateUint(now_ms);
             });
         },
         ARDUINO_EVENT_ETH_GOT_IP);
 
-    Network.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+    Network.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
             logger.printfln("Got IPv6 address: TODO PRINT ADDRESS.");
         },
         ARDUINO_EVENT_ETH_GOT_IP6);
 
-    Network.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+    Network.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
             logger.printfln("Lost IP address.");
             this->print_con_duration();
 
@@ -221,7 +251,7 @@ void Ethernet::setup()
         },
         ARDUINO_EVENT_ETH_LOST_IP);
 
-    Network.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+    Network.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
             logger.printfln("Disconnected");
             this->print_con_duration();
 
@@ -238,7 +268,7 @@ void Ethernet::setup()
         },
         ARDUINO_EVENT_ETH_DISCONNECTED);
 
-    Network.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+    Network.onEvent([this](arduino_event_id_t /*event*/, arduino_event_info_t /*info*/) {
             logger.printfln("Stopped");
             this->print_con_duration();
 
@@ -255,7 +285,15 @@ void Ethernet::setup()
 
     ETH.setTaskStackSize(2048);
 
-    ETH.begin();
+    const BaseType_t ret = xTaskCreatePinnedToCore(eth_async_begin, "eth_async_begin", 2560, nullptr, ESP_TASK_PRIO_MAX - 2, nullptr, 1);
+    if (ret == pdPASS) {
+        logger.printfln("Starting");
+    } else {
+        logger.printfln("eth_async_begin task could not be created: %s (0x%lx)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
+        if (!ETH.begin()) {
+            logger.printfln("Start failed. PHY broken?");
+        }
+    }
 }
 
 void Ethernet::register_urls()
