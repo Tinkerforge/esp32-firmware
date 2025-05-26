@@ -475,7 +475,7 @@ WebServerRequestReturnProtect WebServerRequest::send(uint16_t code, const char *
          * is closed */
         if (setsockopt(ra->sd->fd, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay)) < 0) {
             /* If failed to turn on TCP_NODELAY, throw warning and continue */
-            logger.printfln("error calling setsockopt : %d", errno);
+            logger.printfln("setsockopt failed to enable TCP_NODELAY: %s (%i)", strerror(errno), errno);
             nodelay = 0;
         }
     }
@@ -492,7 +492,7 @@ WebServerRequestReturnProtect WebServerRequest::send(uint16_t code, const char *
             if (setsockopt(ra->sd->fd, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay)) < 0) {
                 /* If failed to turn off TCP_NODELAY, throw error and
                  * return failure to signal for socket closure */
-                logger.printfln("error calling setsockopt : %d", errno);
+            logger.printfln("setsockopt failed to disable TCP_NODELAY: %s (%i)", strerror(errno), errno);
                 result = ESP_ERR_INVALID_STATE;
             }
         }
