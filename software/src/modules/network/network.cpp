@@ -19,7 +19,8 @@
 
 #include "network.h"
 
-#include <sdkconfig.h>
+#include <esp_netif.h>
+#include <sdkconfig.h> // For CONFIG_MDNS_TASK_STACK_SIZE
 
 #include "mdns.h"
 #include "event_log_prefix.h"
@@ -74,13 +75,18 @@ void Network::setup()
     this->enable_mdns = config.get("enable_mdns")->asBool();
     this->web_server_port = config.get("web_server_port")->asUint();
 
+    esp_netif_init();
+
     initialized = true;
 }
 
 void Network::register_urls()
 {
     api.addPersistentConfig("network/config", &config, {}, {"hostname"});
-    api.addState("network/state", &state);
+
+#if !MODULE_NETWORK_HELPER_AVAILABLE()
+    register_urls_late();
+#endif
 
     if (!this->enable_mdns) {
         return;
@@ -89,20 +95,23 @@ void Network::register_urls()
     if (mdns_init() != ESP_OK) {
         logger.printfln("Error initializing mDNS responder");
     } else {
-        String hostname = this->hostname;
-
-        if(mdns_hostname_set(hostname.c_str()) != ESP_OK) {
+        if(mdns_hostname_set(this->hostname.c_str()) != ESP_OK) {
             logger.printfln("Error initializing mDNS hostname");
         } else {
             logger.printfln("mDNS responder started");
         }
     }
 
-    mdns_service_add(NULL, "_http", "_tcp", 80, NULL, 0);
+    mdns_service_add(NULL, "_http", "_tcp", this->web_server_port, NULL, 0);
 
 #if MODULE_DEBUG_AVAILABLE()
     debug.register_task("mdns", CONFIG_MDNS_TASK_STACK_SIZE);
 #endif
+}
+
+void Network::register_urls_late()
+{
+    api.addState("network/state", &state);
 }
 
 void Network::register_events()

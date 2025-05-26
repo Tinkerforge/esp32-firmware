@@ -32,6 +32,8 @@ public:
     void register_urls() override;
     void register_events() override;
 
+    void register_urls_late();
+
     inline bool is_connected() { return connected; }
 
     inline bool get_enable_mdns() { return enable_mdns; }
