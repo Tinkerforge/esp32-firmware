@@ -196,7 +196,7 @@ void RequireMeter::start_task()
         // This might allow an immediate charge, just to abort it right away, but the EVSE
         // might start a charge by itself anyway before the ESP finished starting,
         // unless NFC or OCPP are enabled.
-    }, 3_s, 1_s);
+    }, 4_s, 1_s);
     is_running = true;
 }
 
