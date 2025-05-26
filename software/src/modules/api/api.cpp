@@ -763,7 +763,7 @@ void API::register_urls()
 
         result += "}";
 
-        return request.send(200, "application/json; charset=utf-8", result.c_str());
+        return request.send(200, "application/json; charset=utf-8", result.c_str(), static_cast<ssize_t>(result.length()));
     });
 
     this->addState("info/features", &features);

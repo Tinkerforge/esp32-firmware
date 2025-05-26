@@ -731,7 +731,7 @@ void FirmwareUpdate::register_urls()
                 install_state_to_json_error(result, &json);
             }
 
-            return request.send(400, "application/json", json_buf);
+            return request.send(400, "application/json", json_buf, std::min(json.buf_size - 1, json.buf_required));
         }
 
         return request.send(200, "text/plain", "Check OK");
@@ -742,7 +742,7 @@ void FirmwareUpdate::register_urls()
             TFJsonSerializer json{json_buf, sizeof(json_buf)};
 
             install_state_to_json_error(InstallState::VehicleConnected, &json);
-            request.send(400, "application/json", json_buf);
+            request.send(400, "application/json", json_buf, std::min(json.buf_size - 1, json.buf_required));
             return false;
         }
 
@@ -775,7 +775,7 @@ void FirmwareUpdate::register_urls()
             TFJsonSerializer json{json_buf, sizeof(json_buf)};
 
             install_state_to_json_error(InstallState::InfoPageTooBig, &json);
-            request.send(400, "application/json", json_buf);
+            request.send(400, "application/json", json_buf, std::min(json.buf_size - 1, json.buf_required));
             task_scheduler.await([this](){check_firmware_in_progress = false;});
             return false;
         }
@@ -829,7 +829,7 @@ void FirmwareUpdate::register_urls()
                 install_state_to_json_error(result, &json);
             }
 
-            request.send(400, "application/json", json_buf);
+            request.send(400, "application/json", json_buf, std::min(json.buf_size - 1, json.buf_required));
             task_scheduler.await([this](){flash_firmware_in_progress = false;});
             return false;
         }

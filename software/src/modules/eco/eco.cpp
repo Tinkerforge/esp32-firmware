@@ -140,8 +140,11 @@ void Eco::register_urls()
         StaticJsonDocument<1024> doc;
         DeserializationError error = deserializeJson(doc, buf.get(), 1024);
         if (error) {
-            String errorString = String("Failed to deserialize string: ") + error.c_str();
-            return request.send(400, "text/plain", errorString.c_str());
+            char error_string[64];
+            StringWriter sw(error_string, ARRAY_SIZE(error_string));
+            sw.puts("Failed to deserialize string: ");
+            sw.puts(error.c_str());
+            return request.send(400, "text/plain", error_string, static_cast<ssize_t>(sw.getLength()));
         }
 
         if (!doc.containsKey("time")) {

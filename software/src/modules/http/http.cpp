@@ -176,7 +176,7 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
     if (message.isEmpty()) {
         return req.send(200);
     }
-    return req.send(400, "text/plain; charset=utf-8", message.c_str());
+    return req.send(400, "text/plain; charset=utf-8", message.c_str(), message.length());
 }
 
 WebServerRequestReturnProtect Http::run_response(WebServerRequest req, ResponseRegistration &reg)
@@ -230,7 +230,7 @@ WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest req)
         if (result == TaskScheduler::AwaitResult::Timeout)
             return req.send(500, "text/plain", "Failed to get config. Task timed out.");
 
-        return req.send(200, "application/json; charset=utf-8", response.c_str());
+        return req.send(200, "application/json; charset=utf-8", response.c_str(), response.length());
     }
 
     for (size_t i = 0; i < api.commands.size(); i++)

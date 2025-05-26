@@ -825,8 +825,11 @@ void ChargeTracker::register_urls()
             DeserializationError error = deserializeJson(doc, buf.get(), received);
 
             if (error) {
-                String errorString = String("Failed to deserialize string: ") + error.c_str();
-                return request.send(400, "text/plain", errorString.c_str());
+                char error_string[64];
+                StringWriter sw(error_string, ARRAY_SIZE(error_string));
+                sw.puts("Failed to deserialize string: ");
+                sw.puts(error.c_str());
+                return request.send(400, "text/plain", error_string, static_cast<ssize_t>(sw.getLength()));
             }
 
             if (!bool(doc["api_not_final_acked"])) {
@@ -987,7 +990,7 @@ search_done:
 
         display_name_entry *display_name_cache = static_cast<decltype(display_name_cache)>(malloc_32bit_addressed(MAX_PASSIVE_USERS * sizeof(display_name_cache[0])));
         if (!display_name_cache) {
-            return request.send(500, "text/plain", "Failed to generate PDF: No memory");;
+            return request.send(500, "text/plain", "Failed to generate PDF: No memory");
         }
 
         for (size_t i = 0; i < MAX_PASSIVE_USERS; i++) {

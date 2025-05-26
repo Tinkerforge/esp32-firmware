@@ -912,7 +912,7 @@ void Wifi::register_urls()
 
         get_scan_results(&sb, network_count);
 
-        return request.send(200, "application/json; charset=utf-8", sb.getPtr());
+        return request.send(200, "application/json; charset=utf-8", sb.getPtr(), sb.getLength());
     });
 
     api.addPersistentConfig("wifi/sta_config", &sta_config, {"passphrase", "password"});
