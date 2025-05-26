@@ -1005,13 +1005,12 @@ def main():
 
         all_backend_modules_upper.append(existing_backend_module.upper())
 
-    backend_modules_upper = [x.upper for x in backend_modules]
     identifier_backlist = ["system"]
 
     tfutil.specialize_template("modules.cpp.template", os.path.join("src", "modules.cpp"), {
         '{{{imodule_extern_decls}}}': '\n'.join([f'extern IModule *const {x.under}_imodule;' for x in backend_modules]),
-        '{{{imodule_count}}}': str(len(backend_modules)),
-        '{{{imodule_vector}}}': '\n    '.join([f'imodules->push_back({x.under}_imodule);' for x in backend_modules]),
+        '{{{imodules_count}}}': str(len(backend_modules)),
+        '{{{imodules_array}}}': '\n    '.join([f'{{&{x.under}_imodule, "{x.camel}"}},' for x in backend_modules]),
         '{{{module_init_config}}}': ',\n        '.join(f'{{"{x.under}", Config::Bool({x.under}_imodule->initialized)}}' for x in backend_modules if not x.under.startswith("hidden_")),
     })
 

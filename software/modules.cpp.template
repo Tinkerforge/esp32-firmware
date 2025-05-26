@@ -4,12 +4,11 @@
 
 {{{imodule_extern_decls}}}
 
-void modules_get_imodules(std::vector<IModule*> *imodules)
-{
-    imodules->reserve({{{imodule_count}}});
+extern constexpr const imodule_info imodules[] = {
+    {{{imodules_array}}}
+};
 
-    {{{imodule_vector}}}
-}
+extern constexpr const size_t imodules_count = {{{imodules_count}}};
 
 ConfigRoot modules_get_init_config()
 {

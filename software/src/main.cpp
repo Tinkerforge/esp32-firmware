@@ -37,9 +37,9 @@
 
 BootStage boot_stage = BootStage::STATIC_INITIALIZATION;
 
-static IModule **loop_chain = nullptr;
-static size_t loop_chain_size = 0;
-static size_t loop_chain_head = 0;
+static IModule **loop_array = nullptr;
+static size_t loop_array_size = 0;
+static size_t loop_array_position = 0;
 
 static bool is_module_loop_overridden(const IModule *imodule) {
 #if defined(__GNUC__)
@@ -128,14 +128,12 @@ static void task_creation_failed(int error_code)
 
 #endif
 
+[[gnu::noinline]]
 static void pre_reboot_helper()
 {
-    std::vector<IModule *> imodules;
-    modules_get_imodules(&imodules);
-    std::reverse(imodules.begin(), imodules.end());
-
-    for (IModule *imodule : imodules) {
-        imodule->pre_reboot();
+    for (size_t i = imodules_count; i > 0;) {
+        i--;
+        (*imodules[i].imodule)->pre_reboot();
     }
 
     delay(1500);
@@ -240,11 +238,8 @@ void setup()
     // However if BUILD_MONITOR_SPEED is not the ROM bootloader's preferred speed, this call will change the speed.
     Serial.begin(BUILD_MONITOR_SPEED);
 
-    std::vector<IModule *> imodules;
-    modules_get_imodules(&imodules);
-
-    for (IModule *imodule : imodules) {
-        imodule->pre_init();
+    for (size_t i = 0; i < imodules_count; i++) {
+        (*imodules[i].imodule)->pre_init();
     }
 
     if (!mount_or_format_spiffs()) {
@@ -255,14 +250,14 @@ void setup()
 
     boot_stage = BootStage::PRE_SETUP;
 
-    for (IModule *imodule : imodules) {
-        imodule->pre_setup();
+    for (size_t i = 0; i < imodules_count; i++) {
+        (*imodules[i].imodule)->pre_setup();
     }
 
     boot_stage = BootStage::SETUP;
 
-    for (IModule *imodule : imodules) {
-        imodule->setup();
+    for (size_t i = 0; i < imodules_count; i++) {
+        (*imodules[i].imodule)->setup();
     }
 
     modules = modules_get_init_config();
@@ -275,31 +270,32 @@ void setup()
 
     register_default_urls();
 
-    for (IModule *imodule : imodules) {
-        imodule->register_urls();
+    for (size_t i = 0; i < imodules_count; i++) {
+        (*imodules[i].imodule)->register_urls();
     }
 
     boot_stage = BootStage::REGISTER_EVENTS;
 
-    for (IModule *imodule : imodules) {
-        imodule->register_events();
+    for (size_t i = 0; i < imodules_count; i++) {
+        (*imodules[i].imodule)->register_events();
     }
 
     // Ignore non-overridden empty loop functions.
-    for (IModule *imodule : imodules) {
-        if (is_module_loop_overridden(imodule)) {
-            ++loop_chain_size;
+    for (size_t i = 0; i < imodules_count; i++) {
+        if (is_module_loop_overridden(*imodules[i].imodule)) {
+            loop_array_size++;
         }
     }
 
-    // Add all overridden loop functions to a circular list for round-robin execution.
-    if (loop_chain_size > 0) {
-        loop_chain = static_cast<IModule **>(malloc(sizeof(IModule*) * loop_chain_size));
-        size_t loop_chain_used = 0;
-        for (IModule *imodule : imodules) {
-            if (is_module_loop_overridden(imodule)) {
-                loop_chain[loop_chain_used] = imodule;
-                ++loop_chain_used;
+    // Add all overridden loop functions to an array for round-robin execution.
+    if (loop_array_size > 0) {
+        loop_array = static_cast<IModule **>(malloc(sizeof(IModule *) * loop_array_size));
+
+        size_t loop_array_used = 0;
+        for (size_t i = 0; i < imodules_count; i++) {
+            if (is_module_loop_overridden(*imodules[i].imodule)) {
+                loop_array[loop_array_used] = *imodules[i].imodule;
+                loop_array_used++;
             }
         }
     }
@@ -326,11 +322,12 @@ void loop() {
     task_scheduler.custom_loop();
 
     // Round-robin for modules' loop functions, to prioritize HAL ticks and scheduler.
-    if (loop_chain != nullptr) {
-        loop_chain[loop_chain_head]->loop();
-        loop_chain_head = loop_chain_head + 1;
-        if (loop_chain_head >= loop_chain_size) {
-            loop_chain_head = 0;
+    if (loop_array != nullptr) {
+        loop_array[loop_array_position]->loop();
+
+        loop_array_position++;
+        if (loop_array_position >= loop_array_size) {
+            loop_array_position = 0;
         }
     }
 }

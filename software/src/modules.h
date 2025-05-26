@@ -19,10 +19,15 @@
 
 #pragma once
 
-#include <vector>
-
-#include "module.h"
 #include "config.h"
+#include "module.h"
 
-void modules_get_imodules(std::vector<IModule*> *imodules);
+struct imodule_info {
+    IModule *const *imodule;
+    const char *name;
+};
+
+extern const imodule_info imodules[];
+extern const size_t imodules_count;
+
 ConfigRoot modules_get_init_config();
