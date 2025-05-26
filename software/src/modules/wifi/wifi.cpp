@@ -274,13 +274,16 @@ void Wifi::apply_soft_ap_config_and_start()
         }
     }
 
-    IPAddress ip, gateway, subnet;
-    ip.fromString(ap_config_in_use.get("ip")->asEphemeralCStr());
-    gateway.fromString(ap_config_in_use.get("gateway")->asEphemeralCStr());
-    subnet.fromString(ap_config_in_use.get("subnet")->asEphemeralCStr());
+    // Parse addresses before enableAP in order to keep the time between enableAP and softAPConfig as short as possible.
+    const IPAddress ip     {ap_config_in_use.get("ip"     )->asUnsafeCStr()};
+    const IPAddress gateway{ap_config_in_use.get("gateway")->asUnsafeCStr()};
+    const IPAddress subnet {ap_config_in_use.get("subnet" )->asUnsafeCStr()};
 
     // AP must be enabled before the bandwidth can be set.
-    WiFi.enableAP(true);
+    if (!WiFi.enableAP(true)) {
+        logger.printfln("AP enable failed");
+        return;
+    }
 
     if (!WiFi.AP.waitStatusBits(ESP_NETIF_STARTED_BIT, 1000)) {
         logger.printfln("AP netif not started after 1s. Expect problems.");
@@ -333,16 +336,13 @@ bool Wifi::apply_sta_config_and_connect()
         sta_config_in_use.get("bssid")->fillUint8Array(bssid, ARRAY_SIZE(bssid));
     }
 
-    IPAddress ip, subnet, gateway, dns, dns2;
-
-    ip.fromString(sta_config_in_use.get("ip")->asEphemeralCStr());
-    subnet.fromString(sta_config_in_use.get("subnet")->asEphemeralCStr());
-    gateway.fromString(sta_config_in_use.get("gateway")->asEphemeralCStr());
-    dns.fromString(sta_config_in_use.get("dns")->asEphemeralCStr());
-    dns2.fromString(sta_config_in_use.get("dns2")->asEphemeralCStr());
-
-    if (ip != IPAddress(0,0,0,0)) {
-        WiFi.config(ip, gateway, subnet, dns, dns2);
+    const IPAddress ip{sta_config_in_use.get("ip")->asUnsafeCStr()};
+    if (static_cast<uint32_t>(ip) != 0) {
+        WiFi.config(ip,
+                    {sta_config_in_use.get("gateway")->asUnsafeCStr()},
+                    {sta_config_in_use.get("subnet" )->asUnsafeCStr()},
+                    {sta_config_in_use.get("dns"    )->asUnsafeCStr()},
+                    {sta_config_in_use.get("dns2"   )->asUnsafeCStr()});
     } else {
         WiFi.config((uint32_t)0, (uint32_t)0, (uint32_t)0);
     }
@@ -465,9 +465,6 @@ const char *reason2str(uint8_t reason)
 
 void Wifi::setup()
 {
-    String default_ap_ssid = String(BUILD_HOST_PREFIX) + "-" + local_uid_str;
-    String default_ap_passphrase = String(passphrase);
-
     if (!api.restorePersistentConfig("wifi/sta_config", &sta_config)) {
 #ifdef DEFAULT_WIFI_STA_ENABLE
         sta_config.get("enable_sta")->updateBool(DEFAULT_WIFI_STA_ENABLE);
@@ -490,175 +487,225 @@ void Wifi::setup()
 #ifdef DEFAULT_WIFI_AP_SSID
         ap_config.get("ssid")->updateString(String(DEFAULT_WIFI_AP_SSID));
 #else
+        String default_ap_ssid{BUILD_HOST_PREFIX};
+        default_ap_ssid.concat("-", 1);
+        default_ap_ssid.concat(local_uid_str);
         ap_config.get("ssid")->updateString(default_ap_ssid);
 #endif
 #ifdef DEFAULT_WIFI_AP_PASSPHRASE
         ap_config.get("passphrase")->updateString(String(DEFAULT_WIFI_AP_PASSPHRASE));
 #else
-        ap_config.get("passphrase")->updateString(default_ap_passphrase);
+        ap_config.get("passphrase")->updateString(passphrase); // Default AP passphrase
 #endif
     }
 
     ap_config_in_use = ap_config.get_owned_copy();
     sta_config_in_use = sta_config.get_owned_copy();
 
+    const bool enable_sta       = sta_config_in_use.get("enable_sta"      )->asBool();
+    const bool enable_ap        =  ap_config_in_use.get("enable_ap"       )->asBool();
+    const bool ap_fallback_only =  ap_config_in_use.get("ap_fallback_only")->asBool();
+
     WiFi.persistent(false);
     WiFi.disableSTA11b(!sta_config_in_use.get("enable_11b")->asBool());
 
-    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            uint8_t reason_code = info.wifi_sta_disconnected.reason;
-            const char *reason = reason2str(reason_code);
-            if (!this->was_connected) {
-                logger.printfln("Failed to connect to '%s': %s (%u)", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
-            } else {
-                auto now = now_us();
-                auto connected_for = now - last_connected;
-                logger.printfln("Disconnected from '%s': %s (%u). Was connected for %lu seconds.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code, connected_for.to<seconds_t>().as<uint32_t>());
+    if (enable_sta) {
+        WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+                uint8_t reason_code = info.wifi_sta_disconnected.reason;
+                const char *reason = reason2str(reason_code);
+                if (!this->was_connected) {
+                    logger.printfln("Failed to connect to '%s': %s (%u)", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
+                } else {
+                    auto now = now_us();
+                    auto connected_for = now - last_connected;
+                    logger.printfln("Disconnected from '%s': %s (%u). Was connected for %lu seconds.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code, connected_for.to<seconds_t>().as<uint32_t>());
 
-                uint32_t now_ms = now.to<millis_t>().as<uint32_t>();
-                task_scheduler.scheduleOnce([this, now_ms](){
-                    state.get("connection_end")->updateUint(now_ms);
+                    uint32_t now_ms = now.to<millis_t>().as<uint32_t>();
+                    task_scheduler.scheduleOnce([this, now_ms](){
+                        state.get("connection_end")->updateUint(now_ms);
+                    });
+                }
+
+                task_scheduler.scheduleOnce([this](){
+                    state.get("sta_ip")->updateString("0.0.0.0");
+                    state.get("sta_subnet")->updateString("0.0.0.0");
+                    state.get("sta_bssid")->updateString("");
                 });
-            }
 
-            task_scheduler.scheduleOnce([this](){
-                state.get("sta_ip")->updateString("0.0.0.0");
-                state.get("sta_subnet")->updateString("0.0.0.0");
-                state.get("sta_bssid")->updateString("");
-            });
+                this->was_connected = false;
+            },
+            ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
 
-            this->was_connected = false;
-        },
-        ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
+        WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+                wifi_ap_record_t wifi_info;
+                if (esp_wifi_sta_get_ap_info(&wifi_info) != ESP_OK) {
+                    logger.printfln("Connected to WiFi");
+                } else {
+                    char buf[128];
+                    StringWriter sw(buf, ARRAY_SIZE(buf));
+                    sw.printf("'%s', ", reinterpret_cast<const char *>(wifi_info.ssid));
+
+                    if (wifi_info.phy_11a)       sw.puts("a+");
+                    if (wifi_info.phy_11b)       sw.puts("b+");
+                    if (wifi_info.phy_11g)       sw.puts("g+");
+                    if (wifi_info.phy_11n)       sw.puts("n+");
+                    if (wifi_info.phy_11ac)      sw.puts("ac+");
+                    if (wifi_info.phy_11ax)      sw.puts("ax+");
+                    sw.setLength(sw.getLength() - 1); // Remove trailing plus or space if no mode was added.
+
+                    sw.printf(" ch.%hhu", wifi_info.primary);
+
+                    if      (wifi_info.bandwidth == WIFI_BW_HT20)   sw.puts(" HT20");
+                    else if (wifi_info.bandwidth == WIFI_BW_HT40)   sw.puts(" HT40");
+                    else if (wifi_info.bandwidth == WIFI_BW80)      sw.puts(" VHT80");
+                    else if (wifi_info.bandwidth == WIFI_BW160)     sw.puts(" VHT160");
+                    else if (wifi_info.bandwidth == WIFI_BW80_BW80) sw.puts(" VHT80+80");
+
+                    if (wifi_info.phy_lr)        sw.puts(" lr");
+                    if (wifi_info.wps)           sw.puts(" WPS");
+                    if (wifi_info.ftm_responder) sw.puts(" FTMr");
+                    if (wifi_info.ftm_initiator) sw.puts(" FTMi");
+
+                    sw.puts(" [");
+                    if (wifi_info.country.cc[0] != '\0') {
+                        sw.printf("%-2.2s", wifi_info.country.cc);
+                    }
+                    const char oix = wifi_info.country.cc[2];
+                    switch(oix) {
+                        case '\0':
+                            break;
+                        case ' ':
+                        case 'O':
+                        case 'I':
+                        case 'X':
+                            sw.putc(oix);
+                            break;
+                        default:
+                            sw.printf("%u", oix);
+                    }
+
+                    sw.printf("] %hhidBm, BSSID %02hhX:%02hhX:%02hhX:%02hhX:%02hhX:%02hhX",
+                            wifi_info.rssi,
+                            wifi_info.bssid[0], wifi_info.bssid[1], wifi_info.bssid[2], wifi_info.bssid[3], wifi_info.bssid[4], wifi_info.bssid[5]);
+
+                    logger.printfln("Connected to %s", buf);
+                }
+
+                this->was_connected = true;
+                this->last_connected = now_us();
+
+                uint32_t now_ms = this->last_connected.to<millis_t>().as<uint32_t>();
+                task_scheduler.scheduleOnce([this, now_ms]() {
+                    state.get("connection_start")->updateUint(now_ms);
+                });
+            },
+            ARDUINO_EVENT_WIFI_STA_CONNECTED);
+
+        WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+                // Sometimes the ARDUINO_EVENT_WIFI_STA_CONNECTED is not fired.
+                // Instead we get the ARDUINO_EVENT_WIFI_STA_GOT_IP twice?
+                // Make sure that the state is set to connected here,
+                // or else MQTT will never attempt to connect.
+                this->was_connected = true;
+
+                auto ip = WiFi.localIP().toString();
+                auto subnet = WiFi.subnetMask();
+                logger.printfln("Got IP address: %s/%u. Own MAC address: %s", ip.c_str(), WiFiGenericClass::calculateSubnetCIDR(subnet), WiFi.macAddress().c_str());
+                task_scheduler.scheduleOnce([this, ip, subnet](){
+                    state.get("sta_ip")->updateString(ip);
+                    state.get("sta_subnet")->updateString(subnet.toString());
+                    state.get("sta_bssid")->updateString(WiFi.BSSIDstr());
+                });
+            },
+            ARDUINO_EVENT_WIFI_STA_GOT_IP);
+
+        WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+                logger.printfln("Got IPv6 address: TODO PRINT ADDRESS.");
+            },
+            ARDUINO_EVENT_WIFI_STA_GOT_IP6);
+
+        WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+                if(!this->was_connected)
+                    return;
+
+                this->was_connected = false;
+
+                logger.printfln("Lost IP. Forcing disconnect and reconnect of WiFi");
+                WiFi.disconnect(false, true);
+
+                task_scheduler.scheduleOnce([this](){
+                    state.get("sta_ip")->updateString("0.0.0.0");
+                    state.get("sta_subnet")->updateString("0.0.0.0");
+                    state.get("sta_bssid")->updateString("");
+                });
+            },
+            ARDUINO_EVENT_WIFI_STA_LOST_IP);
+    }
+
+    if (enable_ap) {
+        WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+                logger.printfln("STA with MAC address %02X:%02X:%02X:%02X:%02X:%02X connected to AP",
+                                info.wifi_ap_staconnected.mac[0],
+                                info.wifi_ap_staconnected.mac[1],
+                                info.wifi_ap_staconnected.mac[2],
+                                info.wifi_ap_staconnected.mac[3],
+                                info.wifi_ap_staconnected.mac[4],
+                                info.wifi_ap_staconnected.mac[5]);
+
+                task_scheduler.scheduleOnce([this]() {
+                    auto ap_sta_count = state.get("ap_sta_count");
+                    ap_sta_count->updateUint(ap_sta_count->asUint() + 1);
+                });
+
+            },
+            ARDUINO_EVENT_WIFI_AP_STACONNECTED);
+
+        WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
+                logger.printfln("STA with MAC address %02X:%02X:%02X:%02X:%02X:%02X disconnected from AP",
+                                info.wifi_ap_staconnected.mac[0],
+                                info.wifi_ap_staconnected.mac[1],
+                                info.wifi_ap_staconnected.mac[2],
+                                info.wifi_ap_staconnected.mac[3],
+                                info.wifi_ap_staconnected.mac[4],
+                                info.wifi_ap_staconnected.mac[5]);
+
+                task_scheduler.scheduleOnce([this]() {
+                    auto ap_sta_count = state.get("ap_sta_count");
+                    uint32_t ap_sta_count_value = ap_sta_count->asUint();
+
+                    if (ap_sta_count_value == 0) {
+                        logger.printfln("Unexpected disconnect from AP, STA count was already zero");
+                    }
+                    else {
+                        ap_sta_count->updateUint(ap_sta_count_value - 1);
+                    }
+                });
+            },
+            ARDUINO_EVENT_WIFI_AP_STADISCONNECTED);
+    }
 
     WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            wifi_ap_record_t wifi_info;
-            if (esp_wifi_sta_get_ap_info(&wifi_info) != ESP_OK) {
-                logger.printfln("Connected to WiFi");
-            } else {
-                char buf[128];
-                StringWriter sw(buf, ARRAY_SIZE(buf));
-                sw.printf("'%s', ch.%hhu 11", reinterpret_cast<const char *>(wifi_info.ssid), wifi_info.primary);
+            const wifi_event_sta_scan_done_t *scan_info = &info.wifi_scan_done;
 
-                if (wifi_info.phy_11a)       sw.printf("a");
-                if (wifi_info.phy_11b)       sw.printf("b");
-                if (wifi_info.phy_11g)       sw.printf("g");
-                if (wifi_info.phy_11n)       sw.printf("n");
-                if (wifi_info.phy_11ac)      sw.printf("+ac");
-                if (wifi_info.phy_11ax)      sw.printf("+ax");
-
-                if      (wifi_info.bandwidth == WIFI_BW_HT20)   sw.printf(" HT20");
-                else if (wifi_info.bandwidth == WIFI_BW_HT40)   sw.printf(" HT40");
-                else if (wifi_info.bandwidth == WIFI_BW80)      sw.printf(" VHT80");
-                else if (wifi_info.bandwidth == WIFI_BW160)     sw.printf(" VHT160");
-                else if (wifi_info.bandwidth == WIFI_BW80_BW80) sw.printf(" VHT80+80");
-
-                if (wifi_info.phy_lr)        sw.printf(" lr");
-                if (wifi_info.wps)           sw.printf(" WPS");
-                if (wifi_info.ftm_responder) sw.printf(" FTMr");
-                if (wifi_info.ftm_initiator) sw.printf(" FTMi");
-
-                sw.printf(" [%.3s] %hhidBm, BSSID %02X:%02X:%02X:%02X:%02X:%02X",
-                          wifi_info.country.cc,
-                          wifi_info.rssi,
-                          wifi_info.bssid[0], wifi_info.bssid[1], wifi_info.bssid[2], wifi_info.bssid[3], wifi_info.bssid[4], wifi_info.bssid[5]);
-
-                logger.printfln("Connected to %s", buf);
-            }
-
-            this->was_connected = true;
-            this->last_connected = now_us();
-
-            uint32_t now_ms = this->last_connected.to<millis_t>().as<uint32_t>();
-            task_scheduler.scheduleOnce([this, now_ms]() {
-                state.get("connection_start")->updateUint(now_ms);
-            });
-        },
-        ARDUINO_EVENT_WIFI_STA_CONNECTED);
-
-    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            // Sometimes the ARDUINO_EVENT_WIFI_STA_CONNECTED is not fired.
-            // Instead we get the ARDUINO_EVENT_WIFI_STA_GOT_IP twice?
-            // Make sure that the state is set to connected here,
-            // or else MQTT will never attempt to connect.
-            this->was_connected = true;
-
-            auto ip = WiFi.localIP().toString();
-            auto subnet = WiFi.subnetMask();
-            logger.printfln("Got IP address: %s/%u. Own MAC address: %s", ip.c_str(), WiFiGenericClass::calculateSubnetCIDR(subnet), WiFi.macAddress().c_str());
-            task_scheduler.scheduleOnce([this, ip, subnet](){
-                state.get("sta_ip")->updateString(ip);
-                state.get("sta_subnet")->updateString(subnet.toString());
-                state.get("sta_bssid")->updateString(WiFi.BSSIDstr());
-            });
-        },
-        ARDUINO_EVENT_WIFI_STA_GOT_IP);
-
-    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            logger.printfln("Got IPv6 address: TODO PRINT ADDRESS.");
-        },
-        ARDUINO_EVENT_WIFI_STA_GOT_IP6);
-
-    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            if(!this->was_connected)
+            if (scan_info->status != 0) {
+                logger.printfln("Scan failed");
                 return;
+            }
 
-            this->was_connected = false;
+            const size_t network_count = scan_info->number;
+            logger.printfln("%zu networks found", network_count);
 
-            logger.printfln("Lost IP. Forcing disconnect and reconnect of WiFi");
-            WiFi.disconnect(false, true);
+#if MODULE_WS_AVAILABLE()
+            StringBuilder sb;
 
-            task_scheduler.scheduleOnce([this](){
-                state.get("sta_ip")->updateString("0.0.0.0");
-                state.get("sta_subnet")->updateString("0.0.0.0");
-                state.get("sta_bssid")->updateString("");
-            });
+            if (ws.pushRawStateUpdateBegin(&sb, MAX_SCAN_RESULT_LENGTH * network_count + 2, "wifi/scan_results")) {
+                get_scan_results(&sb, network_count);
+                WiFi.scanDelete();
+                ws.pushRawStateUpdateEnd(&sb);
+            }
+#endif
         },
-        ARDUINO_EVENT_WIFI_STA_LOST_IP);
-
-    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            logger.printfln("STA with MAC address %02X:%02X:%02X:%02X:%02X:%02X connected to AP",
-                            info.wifi_ap_staconnected.mac[0],
-                            info.wifi_ap_staconnected.mac[1],
-                            info.wifi_ap_staconnected.mac[2],
-                            info.wifi_ap_staconnected.mac[3],
-                            info.wifi_ap_staconnected.mac[4],
-                            info.wifi_ap_staconnected.mac[5]);
-
-            task_scheduler.scheduleOnce([this]() {
-                auto ap_sta_count = state.get("ap_sta_count");
-                ap_sta_count->updateUint(ap_sta_count->asUint() + 1);
-            });
-
-        },
-        ARDUINO_EVENT_WIFI_AP_STACONNECTED);
-
-    WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-            logger.printfln("STA with MAC address %02X:%02X:%02X:%02X:%02X:%02X disconnected from AP",
-                            info.wifi_ap_staconnected.mac[0],
-                            info.wifi_ap_staconnected.mac[1],
-                            info.wifi_ap_staconnected.mac[2],
-                            info.wifi_ap_staconnected.mac[3],
-                            info.wifi_ap_staconnected.mac[4],
-                            info.wifi_ap_staconnected.mac[5]);
-
-            task_scheduler.scheduleOnce([this]() {
-                auto ap_sta_count = state.get("ap_sta_count");
-                uint32_t ap_sta_count_value = ap_sta_count->asUint();
-
-                if (ap_sta_count_value == 0) {
-                    logger.printfln("Unexpected disconnect from AP, STA count was already zero");
-                }
-                else {
-                    ap_sta_count->updateUint(ap_sta_count_value - 1);
-                }
-            });
-        },
-        ARDUINO_EVENT_WIFI_AP_STADISCONNECTED);
-
-    bool enable_ap = ap_config_in_use.get("enable_ap")->asBool();
-    bool enable_sta = sta_config_in_use.get("enable_sta")->asBool();
-    bool ap_fallback_only = ap_config_in_use.get("ap_fallback_only")->asBool();
+        ARDUINO_EVENT_WIFI_SCAN_DONE);
 
     // For some reason WiFi.setHostname only writes a temporary buffer that is passed to the IDF when calling WiFi.mode.
     // As we have the same hostname for STA and AP, it is sufficient to set the hostname here once and never call WiFi.softAPsetHostname.
@@ -669,7 +716,10 @@ void Wifi::setup()
 #endif
 
     // STA mode is always on so that we can scan for WiFis and the HWRNG has entropy.
-    WiFi.mode(WIFI_STA);
+    if (!WiFi.mode(WIFI_STA)) {
+        logger.printfln("WiFi STA enable failed");
+        return;
+    }
     WiFi.setAutoReconnect(false);
 
     // Check if WiFi connected automatically and erase configuration in that case.
@@ -716,7 +766,7 @@ void Wifi::setup()
                 if (!apply_sta_config_and_connect())
                     tries = 0;
             tries++;
-        }, 10_s);
+        }, 10_s, 10_s);
     }
 
     if (ap_fallback_only) {
@@ -751,7 +801,7 @@ void Wifi::setup()
 #if MODULE_ETHERNET_AVAILABLE()
         || (ethernet.is_enabled() && ethernet.get_connection_state() != EthernetState::NotConnected)
 #endif
-        ? 30_s : 1_s, 10_s);
+        ? 30_s : 6_s, 10_s); // When Ethernet is not connected yet, wait 6 seconds: 4s for link up, 1s for DHCP, 1s for tolerance.
     }
 
     EapConfigID eap_config_id = static_cast<EapConfigID>(sta_config_in_use.get("wpa_eap_config")->as<OwnedConfig::OwnedConfigUnion>()->tag);
@@ -798,13 +848,51 @@ void Wifi::setup()
     }
 
     initialized = true;
+
+    if (enable_sta) {
+        wl_status_t old_status = WL_STOPPED;
+        wl_status_t status;
+        micros_t state_deadline;
+
+        // The WiFi status can change a few times after enabling station mode.
+        // Wait for it to be in a stable disconnected state for 10ms.
+        // Don't hang if this takes longer than 1s. It usually takes only 12ms.
+        micros_t check_deadline = now_us() + 1_s;
+        for (;;) {
+            status = WiFi.STA.status();
+            if (status != old_status) {
+                if (status == WL_DISCONNECTED) {
+                    state_deadline = now_us() + 10_ms;
+                }
+                old_status = status;
+            }
+
+            if (status == WL_DISCONNECTED && deadline_elapsed(state_deadline)) {
+                break;
+            }
+
+            if (deadline_elapsed(check_deadline)) {
+                logger.printfln("WiFi stuck in state %i? Continuing...", status);
+                break;
+            }
+        }
+
+        if (!apply_sta_config_and_connect()) {
+            logger.printfln("Couldn't apply STA config and connect during setup");
+        }
+    }
 }
 
-void Wifi::get_scan_results(StringBuilder *sb, int16_t network_count)
+void Wifi::get_scan_results(StringBuilder *sb, size_t network_count)
 {
     sb->putc('[');
 
-    for (int16_t i = 0; i < network_count; ++i) {
+    for (size_t i = 0; i < network_count; ++i) {
+        const wifi_ap_record_t *ap_record = reinterpret_cast<wifi_ap_record_t *>(WiFi.getScanInfoByIndex(static_cast<int>(i)));
+        if (!ap_record) {
+            continue;
+        }
+
         if (i > 0) {
             sb->putc(',');
         }
@@ -812,43 +900,20 @@ void Wifi::get_scan_results(StringBuilder *sb, int16_t network_count)
         char json_buf[2 + 64] = ""; // use twice the maximum SSID length to have room for escaping
         TFJsonSerializer json{json_buf, sizeof(json_buf)};
 
-        json.addString(WiFi.SSID(i).c_str());
+        json.addString(reinterpret_cast<const char *>(ap_record->ssid));
         json.end();
 
-        sb->printf("{\"ssid\":%s,\"bssid\":\"%s\",\"rssi\":%ld,\"channel\":%ld,\"encryption\":%d}",
-                   json_buf, WiFi.BSSIDstr(i).c_str(), WiFi.RSSI(i), WiFi.channel(i), WiFi.encryptionType(i));
+        const uint8_t *bssid = ap_record->bssid;
+
+        sb->printf("{\"ssid\":%s,\"bssid\":\"%02hhX:%02hhX:%02hhX:%02hhX:%02hhX:%02hhX\",\"rssi\":%hhi,\"channel\":%hhu,\"encryption\":%i}",
+                   json_buf,
+                   bssid[0], bssid[1], bssid[2], bssid[3], bssid[4], bssid[5],
+                   ap_record->rssi,
+                   ap_record->primary,
+                   ap_record->authmode);
     }
 
     sb->putc(']');
-}
-
-void Wifi::check_for_scan_completion()
-{
-    int16_t network_count = WiFi.scanComplete();
-
-    if (network_count == WIFI_SCAN_RUNNING) {
-        logger.printfln("Scan in progress...");
-        task_scheduler.scheduleOnce([this]() {
-            this->check_for_scan_completion();
-        }, 500_ms);
-        return;
-    }
-
-    if (network_count < 0) {
-        logger.printfln("Scan failed.");
-        return;
-    }
-
-    logger.printfln("Scan done. %d networks.", network_count);
-
-#if MODULE_WS_AVAILABLE()
-    StringBuilder sb;
-
-    if (ws.pushRawStateUpdateBegin(&sb, MAX_SCAN_RESULT_LENGTH * network_count + 2, "wifi/scan_results")) {
-        get_scan_results(&sb, network_count);
-        ws.pushRawStateUpdateEnd(&sb);
-    }
-#endif
 }
 
 void Wifi::start_scan()
@@ -858,7 +923,7 @@ void Wifi::start_scan()
     if (WiFi.scanComplete() == WIFI_SCAN_RUNNING)
         return;
 
-    logger.printfln("Scanning for wifis...");
+    logger.printfln("Scanning for WiFi networks...");
     WiFi.scanDelete();
 
     // WIFI_SCAN_FAILED also means the scan is done.
@@ -866,22 +931,15 @@ void Wifi::start_scan()
         return;
 
     if (WiFi.scanNetworks(true, true) != WIFI_SCAN_FAILED) {
-        task_scheduler.scheduleOnce([this]() {
-            this->check_for_scan_completion();
-        }, 2_s);
         return;
     }
 
     logger.printfln("Starting WiFi scan failed. Maybe a connection attempt is running concurrently. Retrying once in 6 seconds.");
-    task_scheduler.scheduleOnce([this](){
+    task_scheduler.scheduleOnce([this]() {
         if (WiFi.scanNetworks(true, true) == WIFI_SCAN_FAILED) {
             logger.printfln("Second scan attempt failed. Giving up.");
             return;
         }
-
-        task_scheduler.scheduleOnce([this]() {
-            this->check_for_scan_completion();
-        }, 2_s);
     }, 6_s);
 }
 
@@ -910,7 +968,7 @@ void Wifi::register_urls()
             return request.send(200, "text/plain; charset=utf-8", "scan out of memory");
         }
 
-        get_scan_results(&sb, network_count);
+        get_scan_results(&sb, static_cast<size_t>(network_count));
 
         return request.send(200, "application/json; charset=utf-8", sb.getPtr(), sb.getLength());
     });
