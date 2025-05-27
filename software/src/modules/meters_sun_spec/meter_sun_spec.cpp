@@ -526,6 +526,7 @@ void MeterSunSpec::scan_next()
                         }
                         else if (strncmp(m->Mn, "SMA", 32) == 0) {
                             quirks |= SUN_SPEC_QUIRKS_INTEGER_INVERTER_CURRENT_IS_INT16;
+                            quirks |= SUN_SPEC_QUIRKS_INTEGER_INVERTER_POWER_FACTOR_IS_UNITY;
                         }
                         else if (equals_solar_edge(m->Mn)) {
                             if (model_id >= 200 && model_id < 300) {
