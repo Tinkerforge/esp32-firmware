@@ -145,10 +145,10 @@ static float get_model_101_AphA(const void *register_data, uint32_t quirks, bool
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     uint16_t val = model->AphA;
-    uint16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0 ? UINT16_MAX : 0x8000u;
+    uint16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_CURRENT_IS_INT16) == 0 ? UINT16_MAX : 0x8000u;
     if (val == not_implemented_val) return NAN;
     float fval;
-    if ((quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0) {
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_CURRENT_IS_INT16) == 0) {
         fval = static_cast<float>(val);
     } else {
         int16_t sval = static_cast<int16_t>(val);
@@ -162,10 +162,10 @@ static float get_model_101_AphB(const void *register_data, uint32_t quirks, bool
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     uint16_t val = model->AphB;
-    uint16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0 ? UINT16_MAX : 0x8000u;
+    uint16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_CURRENT_IS_INT16) == 0 ? UINT16_MAX : 0x8000u;
     if (val == not_implemented_val) return NAN;
     float fval;
-    if ((quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0) {
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_CURRENT_IS_INT16) == 0) {
         fval = static_cast<float>(val);
     } else {
         int16_t sval = static_cast<int16_t>(val);
@@ -179,10 +179,10 @@ static float get_model_101_AphC(const void *register_data, uint32_t quirks, bool
 {
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     uint16_t val = model->AphC;
-    uint16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0 ? UINT16_MAX : 0x8000u;
+    uint16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_CURRENT_IS_INT16) == 0 ? UINT16_MAX : 0x8000u;
     if (val == not_implemented_val) return NAN;
     float fval;
-    if ((quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0) {
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_CURRENT_IS_INT16) == 0) {
         fval = static_cast<float>(val);
     } else {
         int16_t sval = static_cast<int16_t>(val);
@@ -466,10 +466,10 @@ static float get_model_102_AphA(const void *register_data, uint32_t quirks, bool
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     uint16_t val = model->AphA;
-    uint16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0 ? UINT16_MAX : 0x8000u;
+    uint16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_CURRENT_IS_INT16) == 0 ? UINT16_MAX : 0x8000u;
     if (val == not_implemented_val) return NAN;
     float fval;
-    if ((quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0) {
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_CURRENT_IS_INT16) == 0) {
         fval = static_cast<float>(val);
     } else {
         int16_t sval = static_cast<int16_t>(val);
@@ -483,10 +483,10 @@ static float get_model_102_AphB(const void *register_data, uint32_t quirks, bool
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     uint16_t val = model->AphB;
-    uint16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0 ? UINT16_MAX : 0x8000u;
+    uint16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_CURRENT_IS_INT16) == 0 ? UINT16_MAX : 0x8000u;
     if (val == not_implemented_val) return NAN;
     float fval;
-    if ((quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0) {
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_CURRENT_IS_INT16) == 0) {
         fval = static_cast<float>(val);
     } else {
         int16_t sval = static_cast<int16_t>(val);
@@ -500,10 +500,10 @@ static float get_model_102_AphC(const void *register_data, uint32_t quirks, bool
 {
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     uint16_t val = model->AphC;
-    uint16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0 ? UINT16_MAX : 0x8000u;
+    uint16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_CURRENT_IS_INT16) == 0 ? UINT16_MAX : 0x8000u;
     if (val == not_implemented_val) return NAN;
     float fval;
-    if ((quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0) {
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_CURRENT_IS_INT16) == 0) {
         fval = static_cast<float>(val);
     } else {
         int16_t sval = static_cast<int16_t>(val);
@@ -787,10 +787,10 @@ static float get_model_103_AphA(const void *register_data, uint32_t quirks, bool
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     uint16_t val = model->AphA;
-    uint16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0 ? UINT16_MAX : 0x8000u;
+    uint16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_CURRENT_IS_INT16) == 0 ? UINT16_MAX : 0x8000u;
     if (val == not_implemented_val) return NAN;
     float fval;
-    if ((quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0) {
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_CURRENT_IS_INT16) == 0) {
         fval = static_cast<float>(val);
     } else {
         int16_t sval = static_cast<int16_t>(val);
@@ -804,10 +804,10 @@ static float get_model_103_AphB(const void *register_data, uint32_t quirks, bool
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     uint16_t val = model->AphB;
-    uint16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0 ? UINT16_MAX : 0x8000u;
+    uint16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_CURRENT_IS_INT16) == 0 ? UINT16_MAX : 0x8000u;
     if (val == not_implemented_val) return NAN;
     float fval;
-    if ((quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0) {
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_CURRENT_IS_INT16) == 0) {
         fval = static_cast<float>(val);
     } else {
         int16_t sval = static_cast<int16_t>(val);
@@ -821,10 +821,10 @@ static float get_model_103_AphC(const void *register_data, uint32_t quirks, bool
 {
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     uint16_t val = model->AphC;
-    uint16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0 ? UINT16_MAX : 0x8000u;
+    uint16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_CURRENT_IS_INT16) == 0 ? UINT16_MAX : 0x8000u;
     if (val == not_implemented_val) return NAN;
     float fval;
-    if ((quirks & SUN_SPEC_QUIRKS_INVERTER_CURRENT_IS_INT16) == 0) {
+    if ((quirks & SUN_SPEC_QUIRKS_INTEGER_INVERTER_CURRENT_IS_INT16) == 0) {
         fval = static_cast<float>(val);
     } else {
         int16_t sval = static_cast<int16_t>(val);
