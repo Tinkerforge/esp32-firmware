@@ -245,7 +245,7 @@ bool MetersSunSpecParser160::parse_values(const uint16_t *const register_data[2]
         values[5] /= static_cast<float>(mppt_count);
     }
 
-    values[3] = -values[2];
+    values[3] = -values[2]; // FIXME: use zero_safe_negation
 
     meters.update_all_values(slot, values);
 

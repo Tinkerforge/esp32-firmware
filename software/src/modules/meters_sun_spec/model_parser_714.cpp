@@ -38,8 +38,8 @@ static const MeterValueID model_714_pv_ids[] = {
     MeterValueID::CurrentPVSumExport,
     MeterValueID::VoltagePVAvg,
     MeterValueID::PowerPVSumExport,
-    MeterValueID::PowerPVSumImExDiff,
     MeterValueID::EnergyPVSumExport,
+    MeterValueID::PowerPVSumImExDiff,
     MeterValueID::Temperature,
 
     MeterValueID::CurrentPV1Export,
@@ -64,20 +64,20 @@ static const MeterValueID model_714_pv_ids[] = {
 };
 
 static const MeterValueID model_714_battery_ids[] = {
-    MeterValueID::CurrentDCChaDisDiff,
+    MeterValueID::CurrentDCChaDisDiff, // FIXME: sign?
     MeterValueID::VoltageDC,
-    MeterValueID::PowerDCChaDisDiff,
-    MeterValueID::EnergyDCCharge,
+    MeterValueID::PowerDCChaDisDiff, // FIXME: sign?
     MeterValueID::EnergyDCDischarge,
+    MeterValueID::EnergyDCCharge,
     MeterValueID::Temperature,
 };
 
 static const MeterValueID model_714_other_ids[] = {
-    MeterValueID::CurrentDCImExDiff,
+    MeterValueID::CurrentDCImExDiff, // FIXME: sign?
     MeterValueID::VoltageDC,
-    MeterValueID::PowerDCImExDiff,
-    MeterValueID::EnergyDCImport,
+    MeterValueID::PowerDCImExDiff, // FIXME: sign?
     MeterValueID::EnergyDCExport,
+    MeterValueID::EnergyDCImport,
     MeterValueID::Temperature,
 };
 
@@ -299,7 +299,7 @@ bool MetersSunSpecParser714::parse_values(const uint16_t *const register_data[2]
             values[MODEL_714_PV_ID_COUNT + pv_idx * MODEL_714_PORT_PV_ID_COUNT + 0] = dca;
             values[MODEL_714_PV_ID_COUNT + pv_idx * MODEL_714_PORT_PV_ID_COUNT + 1] = dcv;
             values[MODEL_714_PV_ID_COUNT + pv_idx * MODEL_714_PORT_PV_ID_COUNT + 2] = dcw;
-            values[MODEL_714_PV_ID_COUNT + pv_idx * MODEL_714_PORT_PV_ID_COUNT + 3] = dcwh_abs;
+            values[MODEL_714_PV_ID_COUNT + pv_idx * MODEL_714_PORT_PV_ID_COUNT + 3] = dcwh_inj;
 
             ++pv_idx;
         }
@@ -311,7 +311,7 @@ bool MetersSunSpecParser714::parse_values(const uint16_t *const register_data[2]
     }
 
     if (port_type == DCPortType::Photovoltaic) {
-        values[3] = -values[2];
+        values[4] = -values[2]; // FIXME: use zero_safe_negation
     }
 
     meters.update_all_values(slot, values);
