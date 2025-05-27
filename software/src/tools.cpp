@@ -31,58 +31,65 @@
 #include "main_dependencies.h"
 #include "bindings/base58.h"
 
-const char *tf_reset_reason()
+const char *tf_reset_reason(uint32_t *numeric_reason_out)
 {
     esp_reset_reason_t reason = esp_reset_reason();
 
+    if (numeric_reason_out) {
+        *numeric_reason_out = static_cast<uint32_t>(reason);
+    }
+
     switch (reason) {
+        case ESP_RST_UNKNOWN:
+            return "Reset reason reported as unknown";
+
         case ESP_RST_POWERON:
-            return "Reset due to power-on.";
+            return "Reset due to power-on";
 
         case ESP_RST_EXT:
-            return "Reset by external pin.";
+            return "Reset by external pin";
 
         case ESP_RST_SW:
-            return "Software reset via esp_restart.";
+            return "Software reset via esp_restart";
 
         case ESP_RST_PANIC:
-            return "Software reset due to exception/panic.";
+            return "Software reset due to exception/panic";
 
         case ESP_RST_INT_WDT:
-            return "Reset due to interrupt watchdog.";
+            return "Reset due to interrupt watchdog";
 
         case ESP_RST_TASK_WDT:
-            return "Reset due to task watchdog.";
+            return "Reset due to task watchdog";
 
         case ESP_RST_WDT:
-            return "Reset due to some watchdog.";
+            return "Reset due to some watchdog";
 
         case ESP_RST_DEEPSLEEP:
-            return "Reset after exiting deep sleep mode.";
+            return "Reset after exiting deep sleep mode";
 
         case ESP_RST_BROWNOUT:
-            return "Brownout reset.";
+            return "Brownout reset";
 
         case ESP_RST_SDIO:
-            return "Reset over SDIO.";
+            return "Reset over SDIO";
 
         case ESP_RST_USB:
-            return "Reset by USB peripheral.";
+            return "Reset by USB peripheral";
 
         case ESP_RST_JTAG:
-            return "Reset by JTAG.";
+            return "Reset by JTAG";
 
         case ESP_RST_EFUSE:
-            return "Reset due to efuse error.";
+            return "Reset due to efuse error";
 
         case ESP_RST_PWR_GLITCH:
-            return "Reset due to power glitch detected.";
+            return "Reset due to power glitch detected";
 
         case ESP_RST_CPU_LOCKUP:
-            return "Reset due to CPU lock up.";
+            return "Reset due to CPU lock up";
 
         default:
-            return "Reset reason unknown.";
+            return "Reset reason out of range";
     }
 }
 

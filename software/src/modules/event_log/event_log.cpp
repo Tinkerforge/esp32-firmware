@@ -64,8 +64,9 @@ void EventLog::pre_init()
 {
     event_buf.setup();
 
+    uint32_t numeric_reset_reason;
     printfln_prefixed("", 0, "    **** " BUILD_MANUFACTURER_UPPER " " BUILD_DISPLAY_NAME_UPPER " V%s ****", build_version_full_str_upper());
-    printfln_prefixed("", 0, "Last reset reason was: %s", tf_reset_reason());
+    printfln_prefixed("", 0, "Last reset reason was: %s (%lu)", tf_reset_reason(&numeric_reset_reason), numeric_reset_reason);
 }
 
 size_t EventLog::alloc_trace_buffer(const char *name, size_t size) {
@@ -423,7 +424,7 @@ void EventLog::print_drop(size_t count)
 {
     char c = '\n';
 
-    for (int i = 0; i < count; ++i) {
+    for (size_t i = 0; i < count; ++i) {
         event_buf.pop(&c);
     }
 
@@ -588,7 +589,7 @@ void EventLog::trace_drop(size_t trace_buf_idx, size_t count)
 
     auto *trace_buffer = &this->trace_buffers[trace_buf_idx];
 
-    for (int i = 0; i < count; ++i) {
+    for (size_t i = 0; i < count; ++i) {
         trace_buffer->buf.pop(&c);
     }
 
