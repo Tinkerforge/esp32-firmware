@@ -46,8 +46,6 @@ def run_bricklet_tests(ipcon, result, scanner, ssid, stage3):
     global evse
     global generation
 
-    host = ssid + ".local"
-
     enumerations = enumerate_devices(ipcon)
 
     master = next((e for e in enumerations if e.device_identifier == 13), None)
@@ -73,6 +71,9 @@ def run_bricklet_tests(ipcon, result, scanner, ssid, stage3):
 
     is_smart = not is_basic and energy_meter_type == 0
     is_pro = not is_basic and energy_meter_type != 0
+
+    if is_smart or is_pro:
+        host = ssid + ".local"
 
     automatic = scanner.qr_stand == '0' or scanner.qr_stand_wiring == '0'
 
