@@ -465,7 +465,7 @@ const char *reason2str(uint8_t reason)
 
 void Wifi::setup()
 {
-    if (!api.restorePersistentConfig("wifi/sta_config", &sta_config)) {
+    if (!api.restorePersistentConfig("wifi/sta_config", &sta_config, API::SavedDefaultConfig::Keep)) {
 #ifdef DEFAULT_WIFI_STA_ENABLE
         sta_config.get("enable_sta")->updateBool(DEFAULT_WIFI_STA_ENABLE);
 #endif
@@ -477,7 +477,7 @@ void Wifi::setup()
 #endif
     }
 
-    if (!api.restorePersistentConfig("wifi/ap_config", &ap_config)) {
+    if (!api.restorePersistentConfig("wifi/ap_config", &ap_config, API::SavedDefaultConfig::Keep)) {
 #ifdef DEFAULT_WIFI_AP_ENABLE
         ap_config.get("enable_ap")->updateBool(DEFAULT_WIFI_AP_ENABLE);
 #endif

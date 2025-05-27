@@ -84,6 +84,11 @@ public:
 class API final : public IModule
 {
 public:
+    enum class SavedDefaultConfig {
+        Remove,
+        Keep,
+    };
+
     API();
 
     void pre_setup() override;
@@ -127,7 +132,7 @@ public:
     static void removeConfig(const String &path);
     static void removeAllConfig();
 
-    static bool restorePersistentConfig(const String &path, ConfigRoot *config);
+    static bool restorePersistentConfig(const String &path, ConfigRoot *config, SavedDefaultConfig remove_saved_default = SavedDefaultConfig::Remove);
 
     static String getLittleFSConfigPath(const String &path, bool tmp = false);
 

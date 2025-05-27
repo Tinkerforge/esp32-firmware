@@ -477,7 +477,7 @@ void API::addTemporaryConfig(String path, Config *config, const std::vector<cons
 }
 */
 
-bool API::restorePersistentConfig(const String &path, ConfigRoot *config)
+bool API::restorePersistentConfig(const String &path, ConfigRoot *config, SavedDefaultConfig remove_saved_default)
 {
     String filename = API::getLittleFSConfigPath(path);
 
@@ -485,13 +485,27 @@ bool API::restorePersistentConfig(const String &path, ConfigRoot *config)
         return false;
     }
 
-    String error = config->update_from_file(LittleFS.open(filename));
+    // Save previous updated state
+    const auto updated = config->value.updated;
+    config->value.updated = 0;
 
-    if (!error.isEmpty()) {
+    const String error = config->update_from_file(LittleFS.open(filename));
+
+    // If the file load didn't update anything, the file's content matches the default config.
+    // Remove the saved file in that case.
+    if (config->value.updated == 0 && remove_saved_default == SavedDefaultConfig::Remove) {
+        removeConfig(path);
+    }
+
+    // Include previous updated state
+    config->value.updated |= updated;
+
+    const bool restore_ok = error.isEmpty();
+    if (!restore_ok) {
         logger.printfln("Failed to restore persistent config %s: %s", path.c_str(), error.c_str());
     }
 
-    return error.isEmpty();
+    return restore_ok;
 }
 
 void API::register_urls()
