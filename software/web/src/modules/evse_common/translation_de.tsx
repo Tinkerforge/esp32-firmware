@@ -104,7 +104,7 @@ let x = {
 
             "auto_start_description": "Manuelle Ladefreigabe",
             "auto_start_description_help": <><p>Wenn die manuelle Ladefreigabe aktiviert wird, wird ein Ladevorgang niemals automatisch begonnen. Jeder Ladevorgang muss über das Webinterface, die API oder (je nach Tastereinstellung) den Taster gestartet werden. Die manuelle Ladefreigabe blockiert zusätzlich zu eventuell anderen aktiven Ladestromgrenzen. Das heißt, dass sie nicht aktiviert werden muss, wenn Ladevorgänge beispielsweise mit der Benutzerfreigabe per NFC-Tag, oder der Steuerung per OCPP kontrolliert werden.</p></>,
-            "auto_start_enable": "Erzwingt dass Ladevorgänge immer über das Webinterface, die API oder (je nach Tastereinstellung) den Taster manuell gestartet werden müssen.",
+            "auto_start_enable": "Erzwingt, dass Ladevorgänge immer über das Webinterface, die API oder (je nach Tastereinstellung) den Taster manuell gestartet werden müssen.",
 
             "external_description": "Externe Steuerung",
             "external_description_muted": <><a href="https://www.warp-charger.com/evcc.html?v=2">siehe Einrichtungs-Tutorial für Details</a></>,
