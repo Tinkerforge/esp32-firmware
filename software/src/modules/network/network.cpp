@@ -43,15 +43,17 @@ extern char local_uid_str[32];
 void Network::pre_setup()
 {
     config = ConfigRoot{Config::Object({
-        {"hostname", Config::Str("replaceme", 0, 32)},
+        {"hostname", Config::Str("hostname", 1, 32)}, // Will be replaced with stored config or sensible default. Cannot be empty.
         {"enable_mdns", Config::Bool(true)},
         {"web_server_port", Config::Uint16(80)}
     }), [this](Config &update, ConfigSource source) -> String {
-        auto new_port = update.get("web_server_port")->asUint();
-        for(size_t i = 0; i < unsafe_ports_length; ++i)
-            if (unsafe_ports[i] == new_port)
-                return "Selected web server port is regarded as unsafe by web browsers. Please select another port.";
+        const uint16_t new_port = static_cast<uint16_t>(update.get("web_server_port")->asUint());
 
+        for (size_t i = 0; i < unsafe_ports_length; ++i) {
+            if (unsafe_ports[i] == new_port) {
+                return "Selected web server port is regarded as unsafe by web browsers. Please select another port.";
+            }
+        }
         return "";
     }};
 
