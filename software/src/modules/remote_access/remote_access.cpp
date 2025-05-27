@@ -1908,10 +1908,11 @@ void RemoteAccess::run_management()
             }
             local_port = find_next_free_port(local_port);
 
+            uint8_t conn_no = command->connection_no;
             dns_gethostbyname_addrtype_lwip_ctx_async_data *outer_data = new dns_gethostbyname_addrtype_lwip_ctx_async_data;
-            dns_gethostbyname_addrtype_lwip_ctx_async(remote_host.c_str(), [this, response, local_port, command](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
+            dns_gethostbyname_addrtype_lwip_ctx_async(remote_host.c_str(), [this, response, local_port, conn_no](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
                 create_sock_and_send_to(&response, sizeof(response), data->addr, 51820, local_port);
-                connect_remote_access(command->connection_no, local_port);
+                connect_remote_access(conn_no, local_port);
             }, outer_data, LWIP_DNS_ADDRTYPE_IPV4);
         } break;
 
