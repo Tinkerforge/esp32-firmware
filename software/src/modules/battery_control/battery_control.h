@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include <stdint.h>
+
 #include "config.h"
 #include "module.h"
 #include "TFTools/Micros.h"
@@ -34,10 +36,37 @@ public:
     void register_urls() override;
 
 private:
+    enum class RuleCondition : uint8_t {
+        Ignore = 0,
+        Below  = 1,
+        Above  = 2,
+    };
+
+    struct control_rule {
+        int32_t  price_th;    // in ct/1000
+        uint32_t forecast_th; // in Wh
+        uint8_t  soc_th;      // in percent
+        RuleCondition soc_cond;
+        RuleCondition price_cond;
+        RuleCondition forecast_cond;
+    };
+
+    void preprocess_rules(const Config *rules_config, control_rule *rules, size_t rules_count);
+
+    micros_t next_blocked_update = 0_us;
+
     ConfigRoot config;
+    ConfigRoot rules_forbid_discharge;
+    ConfigRoot rules_permit_grid_charge;
     ConfigRoot low_level_config;
     ConfigRoot state;
 
-    micros_t next_blocked_update = 0_us;
+    Config rule_prototype;
+
+    const control_rule *forbid_discharge_rules   = nullptr;
+    const control_rule *permit_grid_charge_rules = nullptr;
+    uint8_t forbid_discharge_rules_count   = 0;
+    uint8_t permit_grid_charge_rules_count = 0;
+
     TristateBool discharge_blocked = TristateBool::Undefined;
 };
