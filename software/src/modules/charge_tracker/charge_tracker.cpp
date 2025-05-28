@@ -751,7 +751,7 @@ void ChargeTracker::register_urls()
     updateState();
 
     api.addPersistentConfig("charge_tracker/config", &config);
-    api.addPersistentConfig("charge_tracker/pdf_letterhead_config", &pdf_letterhead_config);
+    api.addPersistentConfig("charge_tracker/pdf_letterhead_config", &pdf_letterhead_config, {}, {"letterhead"});
 
     server.on_HTTPThread("/charge_tracker/charge_log", HTTP_GET, [this](WebServerRequest request) {
         std::lock_guard<std::mutex> lock{records_mutex};
