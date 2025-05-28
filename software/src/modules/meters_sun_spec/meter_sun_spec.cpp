@@ -40,6 +40,19 @@
         logger.tracefln_plain(trace_buffer_index, fmt __VA_OPT__(,) __VA_ARGS__); \
     } while (0)
 
+// The manufacturer name for SolarEdge devices sometimes has a trailing space
+static inline bool is_solar_edge(const char *manufacturer)
+{
+    return strncmp(manufacturer, "SolarEdge", 32) == 0 || strncmp(manufacturer, "SolarEdge ", 32) == 0;
+}
+
+// Since KOSTAL Smart Energy Meter firmware 2.6.0 the SunSpec manufacturer name
+// got changed from "KOSTAL" to "KOSTAL Solar Electric GmbH"
+static inline bool is_kostal(const char *manufacturer)
+{
+    return strncmp(manufacturer, "KOSTAL", 32) == 0 || strncmp(manufacturer, "KOSTAL Solar Electric GmbH", 32) == 0;
+}
+
 static const uint16_t scan_base_addresses[] {
     40000,
     50000,
@@ -477,16 +490,13 @@ void MeterSunSpec::scan_next()
 
                     logger.printfln_meter("Looking for device Mn='%s' Md='%s' SN='%s'", manufacturer_name.c_str(), model_name.c_str(), serial_number.c_str());
 
-                    // The manufacturer name for SolarEdge devices sometimes has a trailing space. Compare only the first 9 characters.
-                    #define equals_solar_edge(value) (strncmp(value, "SolarEdge", 9) == 0)
-
                     if (manufacturer_name.length() == 0 && model_name.length() == 0 && serial_number.length() == 0) {
                         scan_device_found = true;
                     }
-                    else if (equals_solar_edge(m->Mn) &&
+                    else if (is_solar_edge(m->Mn) &&
                              strncmp(m->Md, "SE-RGMTR-1D-240C-A", 32) == 0 &&
                              strncmp(m->SN, "0", 32) == 0 &&
-                             equals_solar_edge(manufacturer_name.c_str()) &&
+                             is_solar_edge(manufacturer_name.c_str()) &&
                              strncmp(model_name.c_str(), "MTR-240-3PC1-D-A-MW", 32) == 0) {
                         // Sometimes SolarEdge inverters report a MTR-240-3PC1-D-A-MW meter wrongly
                         // as a SE-RGMTR-1D-240C-A meter with serial number 0. Work around this by
@@ -494,9 +504,9 @@ void MeterSunSpec::scan_next()
                         // for a MTR-240-3PC1-D-A-MW meter.
                         scan_device_found = true;
                     }
-                    else if (equals_solar_edge(m->Mn) &&
+                    else if (is_solar_edge(m->Mn) &&
                              strncmp(m->Md, "MTR-240-3PC1-D-A-MW", 32) == 0 &&
-                             equals_solar_edge(manufacturer_name.c_str()) &&
+                             is_solar_edge(manufacturer_name.c_str()) &&
                              strncmp(model_name.c_str(), "SE-RGMTR-1D-240C-A", 32) == 0 &&
                              strncmp(serial_number.c_str(), "0", 32) == 0) {
                         // A MTR-240-3PC1-D-A-MW meter might have been configured while it was wrongly
@@ -506,7 +516,11 @@ void MeterSunSpec::scan_next()
                         scan_device_found = true;
                     }
                     else {
-                        scan_device_found = strncmp(m->Mn, manufacturer_name.c_str(), 32) == 0 &&
+                        bool manufacturer_match = strncmp(m->Mn, manufacturer_name.c_str(), 32) == 0 ||
+                                                  (is_solar_edge(m->Mn) && is_solar_edge(manufacturer_name.c_str())) ||
+                                                  (is_kostal(m->Mn) && is_kostal(manufacturer_name.c_str()));
+
+                        scan_device_found = manufacturer_match &&
                                             strncmp(m->Md, model_name.c_str(), 32) == 0 &&
                                             strncmp(m->SN, serial_number.c_str(), 32) == 0;
                     }
@@ -520,7 +534,7 @@ void MeterSunSpec::scan_next()
                                           !scan_device_found ? "not " :"");
 
                     if (scan_device_found) {
-                        if (strncmp(m->Mn, "KOSTAL", 32) == 0) {
+                        if (is_kostal(m->Mn)) {
                             quirks |= SUN_SPEC_QUIRKS_ACC32_IS_INT32;
                             quirks |= SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY;
                         }
@@ -528,7 +542,7 @@ void MeterSunSpec::scan_next()
                             quirks |= SUN_SPEC_QUIRKS_INTEGER_INVERTER_CURRENT_IS_INT16;
                             quirks |= SUN_SPEC_QUIRKS_INTEGER_INVERTER_POWER_FACTOR_IS_UNITY;
                         }
-                        else if (equals_solar_edge(m->Mn)) {
+                        else if (is_solar_edge(m->Mn)) {
                             if (model_id >= 200 && model_id < 300) {
                                 // Only meters are inverted, inverters are not.
                                 quirks |= SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED;

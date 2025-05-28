@@ -149,11 +149,17 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
             let unique_id = scan_result.manufacturer_name + scan_result.model_name + scan_result.serial_number;
 
             if (this.state.scan_results.filter((other) => other.unique_id == unique_id && other.model_id == scan_result.model_id && other.model_instance == scan_result.model_instance).length == 0) {
+                let manufacturer_name = scan_result.manufacturer_name.trim();
+
+                if (manufacturer_name == 'KOSTAL Solar Electric GmbH') {
+                    manufacturer_name = 'KOSTAL';
+                }
+
                 this.setState({scan_results: this.state.scan_results.concat({
                     unique_id: unique_id,
                     manufacturer_name: scan_result.manufacturer_name,
                     model_name: scan_result.model_name,
-                    display_name: removeUnicodeHacks((scan_result.model_name.startsWith(scan_result.manufacturer_name) ? scan_result.model_name.trim() : scan_result.manufacturer_name.trim() + ' ' + scan_result.model_name.trim()) + ': ' + translate_unchecked(`meters_sun_spec.content.model_${scan_result.model_id}`)).substring(0, 65),
+                    display_name: removeUnicodeHacks((scan_result.model_name.startsWith(manufacturer_name) ? scan_result.model_name.trim() : manufacturer_name + ' ' + scan_result.model_name.trim()) + ': ' + translate_unchecked(`meters_sun_spec.content.model_${scan_result.model_id}`)).substring(0, 65),
                     serial_number: scan_result.serial_number,
                     device_address: scan_result.device_address,
                     model_id: scan_result.model_id,
