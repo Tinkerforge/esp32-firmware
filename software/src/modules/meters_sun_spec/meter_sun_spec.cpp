@@ -22,6 +22,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "sun_spec_model_specs.h"
+#include "semantic_version.h"
 #include "tools/hexdump.h"
 #include "modules/meters/meter_location.enum.h"
 #include "modules/modbus_tcp_client/modbus_tcp_tools.h"
@@ -535,7 +536,26 @@ void MeterSunSpec::scan_next()
 
                     if (scan_device_found) {
                         if (is_kostal(m->Mn)) {
-                            quirks |= SUN_SPEC_QUIRKS_ACC32_IS_INT32;
+                            bool acc32_is_int32 = true;
+
+                            if (strncmp(m->Md, "KOSTAL Smart Energy Meter", 25) == 0) {
+                                char *version_str = strndup(m->Vr, 16); // create NUL-terminated string
+                                SemanticVersion version;
+
+                                if (!version.from_string(version_str, SemanticVersion::WithoutTimestamp)) {
+                                    logger.printfln_meter("Could not parse KOSTAL Smart Energy Meter version: %s", version_str);
+                                }
+                                else if (version.compare(SemanticVersion{2, 6, 0}) >= 0) {
+                                    acc32_is_int32 = false;
+                                }
+
+                                free(version_str);
+                            }
+
+                            if (acc32_is_int32) {
+                                quirks |= SUN_SPEC_QUIRKS_ACC32_IS_INT32;
+                            }
+
                             quirks |= SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY;
                         }
                         else if (strncmp(m->Mn, "SMA", 32) == 0) {
