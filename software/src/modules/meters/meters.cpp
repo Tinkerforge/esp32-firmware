@@ -24,7 +24,7 @@
 #include "meter_class_none.h"
 #include "meter_value_imexdiff.h"
 #include "tools.h"
-#include "string_builder.h"
+#include "tools/string_builder.h"
 
 #include "gcc_warnings.h"
 #ifdef __GNUC__

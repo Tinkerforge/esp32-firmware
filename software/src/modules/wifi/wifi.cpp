@@ -30,7 +30,7 @@
 #include "tools.h"
 #include "tools/net.h"
 #include "build.h"
-#include "string_builder.h"
+#include "tools/string_builder.h"
 
 // result line: {"ssid":"%s","bssid":"%s","rssi":%d,"channel":%d,"encryption":%d}
 // worst case length ~140

@@ -32,7 +32,7 @@
 
 #include "cool_string.h"
 #include "tools.h"
-#include "string_builder.h"
+#include "tools/string_builder.h"
 #include "config/owned_config.h"
 
 struct Config;

@@ -30,7 +30,7 @@
 #include "tools.h"
 #include "modules/cm_networking/cm_networking_defs.h"
 #include "current_allocator_private.h"
-#include "string_builder.h"
+#include "tools/string_builder.h"
 
 //#include "gcc_warnings.h"
 

@@ -23,7 +23,7 @@
 #include "bindings/errors.h"
 #include "bindings/hal_common.h"
 #include "tools.h"
-#include "string_builder.h"
+#include "tools/string_builder.h"
 #include "evse_bricklet_firmware_bin.embedded.h"
 
 #include "module_dependencies.h"

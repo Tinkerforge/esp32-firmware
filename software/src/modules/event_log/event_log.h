@@ -25,7 +25,7 @@
 
 #include "module.h"
 #include "config.h"
-#include "ringbuffer.h"
+#include "tools/ringbuffer.h"
 #include "tools/malloc.h"
 
 // Length of an ISO 8601 timestamp. For example "2022-02-11 12:34:56,789"

@@ -25,7 +25,7 @@
 #include "module.h"
 #include "modules/api/api.h"
 #include "web_sockets.h"
-#include "string_builder.h"
+#include "tools/string_builder.h"
 
 class WS final : public IModule, public IAPIBackend
 {

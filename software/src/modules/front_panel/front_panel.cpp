@@ -28,7 +28,7 @@
 #include "warp_front_panel_bricklet_firmware_bin.embedded.h"
 #include "sprite_defines.h"
 #include "font_defines.h"
-#include "semantic_version.h"
+#include "tools/semantic_version.h"
 #include "modules/charge_manager/charge_manager_private.h"
 #include "metadata.h"
 #include "build.h"

@@ -31,7 +31,7 @@
 #include "tools.h"
 #include "tools/fs.h"
 #include "tools/memory.h"
-#include "string_builder.h"
+#include "tools/string_builder.h"
 
 extern TF_HAL hal;
 

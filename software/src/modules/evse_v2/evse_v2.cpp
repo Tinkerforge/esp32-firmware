@@ -24,7 +24,7 @@
 #include "bindings/errors.h"
 #include "build.h"
 #include "tools.h"
-#include "string_builder.h"
+#include "tools/string_builder.h"
 #include "evse_v2_bricklet_firmware_bin.embedded.h"
 
 extern EVSEV2 evse_v2;

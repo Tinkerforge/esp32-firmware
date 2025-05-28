@@ -24,7 +24,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "debug_protocol_backend.h"
-#include "string_builder.h"
+#include "tools/string_builder.h"
 
 #include "gcc_warnings.h"
 

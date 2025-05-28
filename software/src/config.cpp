@@ -25,7 +25,7 @@
 #include "main_dependencies.h"
 #include "config/visitors.h"
 #include "tools.h"
-#include "string_builder.h"
+#include "tools/string_builder.h"
 
 static ConfigRoot nullconf = Config{Config::ConfVariant{}};
 static ConfigRoot confirmconf;

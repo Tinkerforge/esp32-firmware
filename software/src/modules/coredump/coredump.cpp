@@ -25,7 +25,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
-#include "string_builder.h"
+#include "tools/string_builder.h"
 
 #include "gcc_warnings.h"
 

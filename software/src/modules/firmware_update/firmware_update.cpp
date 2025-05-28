@@ -28,8 +28,8 @@
 #include "module_dependencies.h"
 #include "tools.h"
 #include "build.h"
-#include "string_builder.h"
-#include "semantic_version.h"
+#include "tools/string_builder.h"
+#include "tools/semantic_version.h"
 #include "check_state.enum.h"
 #include "./crc32.h"
 

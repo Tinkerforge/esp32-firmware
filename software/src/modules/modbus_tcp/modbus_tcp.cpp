@@ -27,7 +27,7 @@
 
 #include "event_log_prefix.h"
 #include "build.h"
-#include "string_builder.h"
+#include "tools/string_builder.h"
 #include "tools/net.h"
 
 #include "module_dependencies.h"

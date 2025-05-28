@@ -28,7 +28,7 @@
 
 #include "module.h"
 #include "config.h"
-#include "semantic_version.h"
+#include "tools/semantic_version.h"
 #include "async_https_client.h"
 #include "signature_verify.embedded.h"
 #include "install_state.enum.h"
