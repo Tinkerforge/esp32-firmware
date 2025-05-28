@@ -50,6 +50,7 @@ NodeManagementUseCaseDataType NodeManagementUsecase::get_usecases()
     UseCaseInformationDataType evcs_usecase;
     evcs_usecase.actor = "EVCS";
 
+
     UseCaseSupportType evcs_usecase_support;
     evcs_usecase_support.useCaseName = "evChargingSummary";
     evcs_usecase_support.useCaseVersion = "1.0.1";
