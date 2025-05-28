@@ -28,7 +28,7 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
 {
     JsonVariant datagram_header = datagram["datagram"][0]["header"];
 
-    received_payload = datagram["datagram"][1]["payload"][0]["cmd"][0][0];
+    received_payload = datagram["datagram"][1]["payload"][0]["cmd"][0][0]; // The payload should not be in an array but spine-go does these strange things
 
 
     if (datagram_header.isNull() || received_payload.isNull()) {
@@ -48,9 +48,9 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
     }
     response_doc.clear();
     //response_datagram = response_doc.to<JsonVariant>();
-    response_doc["datagram"][1]["payload"][0]["cmd"][0][0] = JsonVariant();
+    response_doc["datagram"]["payload"][0]["cmd"][0][0] = JsonVariant();
 
-    const bool has_response = eebus.usecases.handle_message(received_header, eebus.data_handler, response_doc["datagram"][1]["payload"][0]["cmd"][0][0]);
+    const bool has_response = eebus.usecases.handle_message(received_header, eebus.data_handler, response_doc["datagram"]["payload"][0]["cmd"][0][0]);
 
     if (has_response) {
 

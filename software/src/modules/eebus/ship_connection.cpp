@@ -878,8 +878,8 @@ void ShipConnection::send_data_message(JsonVariant payload)
 
         data.type_to_json(*message_outgoing);
 
-        logger.printfln("Done building data message with total length of %d", message_outgoing->length);
-        logger.printfln("Data: %s", &message_outgoing->data[1]);
+        logger.printfln("Data: sending message with total length of %d", message_outgoing->length);
+       // logger.printfln("Data: %s", &message_outgoing->data[1]);
         send_current_outgoing_message();
     } else {
         logger.printfln("send_data_message: Connection not in done state. Actual State: %d", (int)state);
@@ -914,7 +914,7 @@ void ShipConnection::state_done()
                                 &message_incoming->data[1]);
                 bool response = spine.process_datagram(data.payload);
                 if (response) {
-                    logger.printfln("Response datagram: %s", spine.response_doc.as<String>().c_str());
+// logger.printfln("Response datagram: %s", spine.response_doc.as<String>().c_str());
                     send_data_message(spine.response_doc.as<JsonVariant>());
                 } else {
                     logger.printfln("No response to data message");
