@@ -19,11 +19,12 @@
 
 #include "semantic_version.h"
 
-// <major:int>.<minor:int>.<patch:int>[-beta.<beta:int>]+<timestamp:hex>
-bool SemanticVersion::from_string(const char *buf)
+// <major:int>.<minor:int>.<patch:int>[-beta.<beta:int>][+<timestamp:hex>]
+bool SemanticVersion::from_string(const char *buf, Format format)
 {
     const char *p = buf;
     char *end;
+    char timestamp_marker = format == Format::WithTimestamp ? '+' : '\0';
 
     // major
     uint32_t major_candidate = strtoul(p, &end, 10);
@@ -46,29 +47,32 @@ bool SemanticVersion::from_string(const char *buf)
     // patch
     uint32_t patch_candidate = strtoul(p, &end, 10);
 
-    if (p == end || (strncmp(end, "-beta.", 6) != 0 && *end != '+') || patch_candidate > 254) {
+    if (p == end || (strncmp(end, "-beta.", 6) != 0 && *end != timestamp_marker) || patch_candidate > 254) {
         return false;
     }
 
     // beta
     uint32_t beta_candidate = 255;
 
-    if (*end != '+') {
-        p = end + 6;
+    if (*end != timestamp_marker) {
+        p = end + 6; // skip "-beta."
         beta_candidate = strtoul(p, &end, 10);
 
-        if (p == end || *end != '+' || beta_candidate > 254) {
+        if (p == end || *end != timestamp_marker || beta_candidate > 254) {
             return false;
         }
     }
 
-    p = end + 1; // skip plus
-
     // timestamp
-    uint32_t timestamp_candidate = strtoul(p, &end, 16);
+    uint32_t timestamp_candidate = UINT32_MAX;
 
-    if (p == end || *end != '\0') {
-        return false;
+    if (format == Format::WithTimestamp) {
+        p = end + 1; // skip plus
+        timestamp_candidate = strtoul(p, &end, 16);
+
+        if (p == end || *end != '\0') {
+            return false;
+        }
     }
 
     major = major_candidate;
@@ -82,10 +86,81 @@ bool SemanticVersion::from_string(const char *buf)
 
 int SemanticVersion::to_string(char *buf, size_t len) const
 {
-    if (beta != 255) {
-        return snprintf(buf, len, "%u.%u.%u-beta.%u+%lx", major, minor, patch, beta, timestamp);
+    if (timestamp != UINT32_MAX) {
+        if (beta != 255) {
+            return snprintf(buf, len, "%u.%u.%u-beta.%u+%lx", major, minor, patch, beta, timestamp);
+        }
+        else {
+            return snprintf(buf, len, "%u.%u.%u+%lx", major, minor, patch, timestamp);
+        }
+    }
+    else if (beta != 255) {
+        return snprintf(buf, len, "%u.%u.%u-beta.%u", major, minor, patch, beta);
     }
     else {
-        return snprintf(buf, len, "%u.%u.%u+%lx", major, minor, patch, timestamp);
+        return snprintf(buf, len, "%u.%u.%u", major, minor, patch);
     }
+}
+
+int SemanticVersion::compare(const SemanticVersion &other) const
+{
+    if (major > other.major) {
+        return 1;
+    }
+
+    if (major < other.major) {
+        return -1;
+    }
+
+    if (minor > other.minor) {
+        return 1;
+    }
+
+    if (minor < other.minor) {
+        return -1;
+    }
+
+    if (patch > other.patch) {
+        return 1;
+    }
+
+    if (patch < other.patch) {
+        return -1;
+    }
+
+    if (beta == 255 && other.beta != 255) {
+        return 1;
+    }
+
+    if (beta != 255 && other.beta == 255) {
+        return -1;
+    }
+
+    if (beta > other.beta) {
+        return 1;
+    }
+
+    if (beta < other.beta) {
+        return -1;
+    }
+
+    // FIXME: what should be the ordering of a version with a
+    //        timestamp to a version without a timestamp?
+    if (timestamp == UINT32_MAX && other.timestamp != UINT32_MAX) {
+        return 1;
+    }
+
+    if (timestamp != UINT32_MAX && other.timestamp == UINT32_MAX) {
+        return -1;
+    }
+
+    if (timestamp > other.timestamp) {
+        return 1;
+    }
+
+    if (timestamp < other.timestamp) {
+        return -1;
+    }
+
+    return 0;
 }

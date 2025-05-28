@@ -41,9 +41,6 @@ bool a_after_b(uint32_t a, uint32_t b);
 
 void read_efuses(uint32_t *ret_uid_num, char *ret_uid_str, char *ret_passphrase);
 
-int compare_version(uint8_t left_major, uint8_t left_minor, uint8_t left_patch, uint8_t left_beta /* 255 == no beta */, uint32_t left_timestamp,
-                    uint8_t right_major, uint8_t right_minor, uint8_t right_patch, uint8_t right_beta /* 255 == no beta */, uint32_t right_timestamp);
-
 extern TaskHandle_t mainTaskHandle;
 void set_main_task_handle();
 inline bool running_in_main_task()

@@ -28,8 +28,14 @@ struct SemanticVersion {
     uint8_t minor = 255;
     uint8_t patch = 255;
     uint8_t beta = 255;
-    uint32_t timestamp = 0;
+    uint32_t timestamp = UINT32_MAX;
 
-    bool from_string(const char *buf);
+    enum Format {
+        WithTimestamp,
+        WithoutTimestamp,
+    };
+
+    bool from_string(const char *buf, Format format = Format::WithTimestamp);
     int to_string(char *buf, size_t len) const;
+    int compare(const SemanticVersion &other) const;
 };

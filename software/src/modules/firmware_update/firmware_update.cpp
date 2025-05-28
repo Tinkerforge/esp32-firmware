@@ -29,8 +29,11 @@
 #include "tools.h"
 #include "build.h"
 #include "string_builder.h"
+#include "semantic_version.h"
 #include "check_state.enum.h"
 #include "./crc32.h"
+
+static const SemanticVersion build_version{BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH, BUILD_VERSION_BETA, build_timestamp()};
 
 // Newer firmwares contain a firmware info page.
 #define FIRMWARE_INFO_OFFSET (0xd000 - 0x1000)
@@ -53,8 +56,6 @@ static const uint8_t signature_info_magic[BLOCK_READER_MAGIC_LENGTH] = {0xE6, 0x
 // The first firmware slot (i.e. the one that is flashed over USB) starts at 0x10000.
 // So we have to skip the first 0x10000 - 0x1000 bytes, after them the actual firmware starts.
 #define FIRMWARE_OFFSET (0x10000 - 0x1000)
-
-#define MAX_VERSION_STRING_LENGTH 32
 
 #if !MODULE_CERTS_AVAILABLE()
 #define MAX_CERT_ID -1
@@ -125,14 +126,8 @@ static bool read_custom_app_desc(const esp_partition_t *partition, build_custom_
         return false;
     }
 
-    char fw_version_beta[12] = "";
-
-    if (custom_app_desc->fw_version_beta != 255) {
-        snprintf(fw_version_beta, ARRAY_SIZE(fw_version_beta), "-beta.%u", custom_app_desc->fw_version_beta);
-    }
-
-    snprintf(fw_version, fw_version_len, "%u.%u.%u%s+%lx",
-             custom_app_desc->fw_version_major, custom_app_desc->fw_version_minor, custom_app_desc->fw_version_patch, fw_version_beta, custom_app_desc->fw_build_timestamp);
+    SemanticVersion{custom_app_desc->fw_version_major, custom_app_desc->fw_version_minor, custom_app_desc->fw_version_patch,
+                    custom_app_desc->fw_version_beta, custom_app_desc->fw_build_timestamp}.to_string(fw_version, fw_version_len);
 
     return true;
 }
@@ -235,19 +230,19 @@ void FirmwareUpdate::pre_setup()
         {"publisher", Config::Str(signature_publisher, 0, strlen(signature_publisher))},
         {"check_timestamp", Config::Uint(0)},
         {"check_state", Config::Uint8(static_cast<uint8_t>(CheckState::Idle))},
-        {"update_version", Config::Str("", 0, MAX_VERSION_STRING_LENGTH)},
+        {"update_version", Config::Str("", 0, SEMANTIC_VERSION_MAX_STRING_LENGTH)},
         {"install_progress", Config::Uint(0, 0, 100)},
         {"install_state", Config::Uint8(static_cast<uint8_t>(InstallState::Idle))},
         {"running_partition", Config::Str("", 0, 16)},
         {"app0_state", Config::Uint(ESP_OTA_IMG_INVALID)},
-        {"app0_version", Config::Str("", 0, MAX_VERSION_STRING_LENGTH)},
+        {"app0_version", Config::Str("", 0, SEMANTIC_VERSION_MAX_STRING_LENGTH)},
         {"app1_state", Config::Uint(ESP_OTA_IMG_INVALID)},
-        {"app1_version", Config::Str("", 0, MAX_VERSION_STRING_LENGTH)},
-        {"rolled_back_version", Config::Str("", 0, MAX_VERSION_STRING_LENGTH)},
+        {"app1_version", Config::Str("", 0, SEMANTIC_VERSION_MAX_STRING_LENGTH)},
+        {"rolled_back_version", Config::Str("", 0, SEMANTIC_VERSION_MAX_STRING_LENGTH)},
     });
 
     install_firmware_config = ConfigRoot{Config::Object({
-        {"version", Config::Str("", 0, MAX_VERSION_STRING_LENGTH)},
+        {"version", Config::Str("", 0, SEMANTIC_VERSION_MAX_STRING_LENGTH)},
     }), [this](Config &update, ConfigSource source) -> String {
         SemanticVersion version;
 
@@ -348,40 +343,23 @@ InstallState FirmwareUpdate::check_firmware_info(bool detect_downgrade, bool log
             return InstallState::WrongFirmwareType;
         }
 
-        if (detect_downgrade && compare_version(firmware_info.block.fw_version_major, firmware_info.block.fw_version_minor, firmware_info.block.fw_version_patch,
-                                                firmware_info.block.fw_version_beta, firmware_info.block.fw_build_timestamp,
-                                                BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH,
-                                                BUILD_VERSION_BETA, build_timestamp()) < 0) {
+        SemanticVersion fw_version{firmware_info.block.fw_version_major, firmware_info.block.fw_version_minor, firmware_info.block.fw_version_patch,
+                                   firmware_info.block.fw_version_beta, firmware_info.block.fw_build_timestamp};
+
+        if (detect_downgrade && fw_version.compare(build_version) < 0) {
             if (log) {
                 logger.printfln("Firmware is a downgrade!");
             }
 
             if (json_ptr != nullptr) {
-                char fw_version_beta[12] = "";
-                char build_version_beta[12] = "";
+                char fw_version_str[SEMANTIC_VERSION_MAX_STRING_LENGTH] = "<unknown>";
 
-                if (firmware_info.block.fw_version_beta != 255) {
-                    snprintf(fw_version_beta, ARRAY_SIZE(fw_version_beta), "-beta.%u", firmware_info.block.fw_version_beta);
-                }
-
-                if (BUILD_VERSION_BETA != 255) {
-                    snprintf(build_version_beta, ARRAY_SIZE(build_version_beta), "-beta.%u", BUILD_VERSION_BETA);
-                }
+                fw_version.to_string(fw_version_str, ARRAY_SIZE(fw_version_str));
 
                 json_ptr->addObject();
                 json_ptr->addMemberNumber("error", static_cast<uint8_t>(InstallState::Downgrade));
-                json_ptr->addMemberStringF("firmware_version", "%u.%u.%u%s+%lx",
-                                           firmware_info.block.fw_version_major,
-                                           firmware_info.block.fw_version_minor,
-                                           firmware_info.block.fw_version_patch,
-                                           fw_version_beta,
-                                           firmware_info.block.fw_build_timestamp);
-                json_ptr->addMemberStringF("installed_version", "%u.%u.%u%s+%lx",
-                                           BUILD_VERSION_MAJOR,
-                                           BUILD_VERSION_MINOR,
-                                           BUILD_VERSION_PATCH,
-                                           build_version_beta,
-                                           build_timestamp());
+                json_ptr->addMemberString("firmware_version", fw_version_str);
+                json_ptr->addMemberString("installed_version", build_version_full_str());
                 json_ptr->endObject();
                 json_ptr->end();
             }
@@ -1221,8 +1199,7 @@ void FirmwareUpdate::handle_index_data(const void *data, size_t data_len)
                 }
 
                 // ignore all versions that are older than the current version
-                if (compare_version(version.major, version.minor, version.patch, version.beta, version.timestamp,
-                                    BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH, BUILD_VERSION_BETA, build_timestamp()) <= 0) {
+                if (version.compare(build_version) <= 0) {
                     logger.printfln("No firmware update available");
                     state.get("check_state")->updateEnum(CheckState::Idle);
                     state.get("update_version")->updateString("");
@@ -1413,13 +1390,13 @@ void FirmwareUpdate::read_app_partition_state()
     esp_ota_img_states_t app0_state = ESP_OTA_IMG_INVALID;
     const char *app0_state_name = "<unknown>";
     build_custom_app_desc_t app0_custom_desc;
-    char app0_version[MAX_VERSION_STRING_LENGTH + 1] = "<unknown>";
+    char app0_version[SEMANTIC_VERSION_MAX_STRING_LENGTH] = "<unknown>";
 
     bool app1_running = false;
     esp_ota_img_states_t app1_state = ESP_OTA_IMG_INVALID;
     const char *app1_state_name = "<unknown>";
     build_custom_app_desc_t app1_custom_desc;
-    char app1_version[MAX_VERSION_STRING_LENGTH + 1] = "<unknown>";
+    char app1_version[SEMANTIC_VERSION_MAX_STRING_LENGTH] = "<unknown>";
 
     const esp_partition_t *running_partition = esp_ota_get_running_partition();
 
