@@ -31,6 +31,8 @@
 #include "modules/modbus_tcp_client/modbus_tcp_tools.h"
 #include "modules/modbus_tcp_client/modbus_register_address_mode.enum.h"
 #include "meters_modbus_tcp_defs.inc"
+#include "tools/float.h"
+#include "tools/sun_spec.h"
 
 #include "gcc_warnings.h"
 
@@ -187,93 +189,6 @@
         meters_modbus_tcp.trace_timestamp(); \
         logger.tracefln_plain(trace_buffer_index, fmt __VA_OPT__(,) __VA_ARGS__); \
     } while (0)
-
-static const float fronius_scale_factors[21] = {
-              0.0000000001f,    // 10^-10
-              0.000000001f,     // 10^-9
-              0.00000001f,      // 10^-8
-              0.0000001f,       // 10^-7
-              0.000001f,        // 10^-6
-              0.00001f,         // 10^-5
-              0.0001f,          // 10^-4
-              0.001f,           // 10^-3
-              0.01f,            // 10^-2
-              0.1f,             // 10^-1
-              1.0f,             // 10^0
-             10.0f,             // 10^1
-            100.0f,             // 10^2
-           1000.0f,             // 10^3
-          10000.0f,             // 10^4
-         100000.0f,             // 10^5
-        1000000.0f,             // 10^6
-       10000000.0f,             // 10^7
-      100000000.0f,             // 10^8
-     1000000000.0f,             // 10^9
-    10000000000.0f,             // 10^10
-};
-
-static float get_fronius_scale_factor(int16_t sf)
-{
-    if (sf < -10) {
-        if (sf == INT16_MIN) { // scale factor not implemented
-            return 1;
-        } else {
-            return NAN;
-        }
-    } else if (sf > 10) {
-        return NAN;
-    }
-
-    return fronius_scale_factors[sf + 10];
-}
-
-static bool is_exactly_zero(float f)
-{
-    #if defined(__GNUC__)
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wfloat-equal"
-#endif
-    return f == 0.0f; // Really compare exactly with 0.0f
-#if defined(__GNUC__)
-    #pragma GCC diagnostic pop
-#endif
-}
-
-static float nan_safe_sum(float a, float b)
-{
-    if (isnan(a)) {
-        return b;
-    }
-
-    if (isnan(b)) {
-        return a;
-    }
-
-    return a + b;
-}
-
-static float nan_safe_avg(float a, float b)
-{
-    if (isnan(a)) {
-        return b;
-    }
-
-    if (isnan(b)) {
-        return a;
-    }
-
-    return (a + b) / 2.0f;
-}
-
-static float zero_safe_negation(float f)
-{
-    if (!is_exactly_zero(f)) {
-        // Don't convert 0.0f into -0.0f
-        f *= -1.0f;
-    }
-
-    return f;
-}
 
 MeterClassID MeterModbusTCP::get_class() const
 {
@@ -2535,11 +2450,11 @@ void MeterModbusTCP::parse_next()
         else if (start_address == FRONIUS_GEN24_PLUS_CHASTATE_SF_ADDRESS) {
             fronius_gen24_plus.chastate_sf = static_cast<int16_t>(c16.u); // SunSpec: sunssf
 
-            float dca_scale_factor = get_fronius_scale_factor(fronius_gen24_plus.dca_sf);
-            float dcv_scale_factor = get_fronius_scale_factor(fronius_gen24_plus.dcv_sf);
-            float dcw_scale_factor = get_fronius_scale_factor(fronius_gen24_plus.dcw_sf);
-            float dcwh_scale_factor = get_fronius_scale_factor(fronius_gen24_plus.dcwh_sf);
-            float chastate_scale_factor = get_fronius_scale_factor(fronius_gen24_plus.chastate_sf);
+            float dca_scale_factor = get_sun_spec_scale_factor(fronius_gen24_plus.dca_sf);
+            float dcv_scale_factor = get_sun_spec_scale_factor(fronius_gen24_plus.dcv_sf);
+            float dcw_scale_factor = get_sun_spec_scale_factor(fronius_gen24_plus.dcw_sf);
+            float dcwh_scale_factor = get_sun_spec_scale_factor(fronius_gen24_plus.dcwh_sf);
+            float chastate_scale_factor = get_sun_spec_scale_factor(fronius_gen24_plus.chastate_sf);
 
             float charge_dca = fronius_gen24_plus.charge_dca * dca_scale_factor;
             float charge_dcv = fronius_gen24_plus.charge_dcv * dcv_scale_factor;

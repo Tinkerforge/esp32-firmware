@@ -21,6 +21,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "tools/float.h"
 
 // ========================
 // 714 - DER DC Measurement
@@ -241,59 +242,12 @@ bool MetersSunSpecParser714::parse_values(const uint16_t *const register_data[2]
         float dcwh_abs = uint64_to_float(block1_port->DCWhAbs, block1->DCWH_SF) * 0.001f;
         float tmp      =  int16_to_float(block1_port->Tmp,     block1->Tmp_SF);
 
-        if (!isnan(dca)) {
-            if (isnan(values[0])) {
-                values[0] = dca;
-            }
-            else {
-                values[0] += dca;
-            }
-        }
-
-        if (!isnan(dcv)) {
-            if (isnan(values[1])) {
-                values[1] = dcv;
-            }
-            else {
-                values[1] += dcv;
-            }
-        }
-
-        if (!isnan(dcw)) {
-            if (isnan(values[2])) {
-                values[2] = dcw;
-            }
-            else {
-                values[2] += dcw;
-            }
-        }
-
-        if (!isnan(dcwh_inj)) {
-            if (isnan(values[3])) {
-                values[3] = dcwh_inj;
-            }
-            else {
-                values[3] += dcwh_inj;
-            }
-        }
-
-        if (!isnan(dcwh_abs)) {
-            if (isnan(values[4])) {
-                values[4] = dcwh_abs;
-            }
-            else {
-                values[4] += dcwh_abs;
-            }
-        }
-
-        if (!isnan(tmp)) {
-            if (isnan(values[5])) {
-                values[5] = tmp;
-            }
-            else {
-                values[5] += tmp;
-            }
-        }
+        values[0] = nan_safe_sum(values[0], dca);
+        values[1] = nan_safe_sum(values[1], dcv);
+        values[2] = nan_safe_sum(values[2], dcw);
+        values[3] = nan_safe_sum(values[3], dcwh_inj);
+        values[4] = nan_safe_sum(values[4], dcwh_abs);
+        values[5] = nan_safe_sum(values[5], tmp);
 
         if (port_type == DCPortType::Photovoltaic) {
             values[MODEL_714_PV_ID_COUNT + pv_idx * MODEL_714_PORT_PV_ID_COUNT + 0] = dca;
@@ -311,7 +265,7 @@ bool MetersSunSpecParser714::parse_values(const uint16_t *const register_data[2]
     }
 
     if (port_type == DCPortType::Photovoltaic) {
-        values[4] = -values[2]; // FIXME: use zero_safe_negation
+        values[4] = zero_safe_negation(values[2]);
     }
 
     meters.update_all_values(slot, values);

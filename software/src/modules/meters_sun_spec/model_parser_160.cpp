@@ -21,6 +21,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "tools/float.h"
 
 // ======================================
 // 160 - Multiple MPPT Inverter Extension
@@ -189,50 +190,11 @@ bool MetersSunSpecParser160::parse_values(const uint16_t *const register_data[2]
         float dcwh =  acc32_to_float(block1_mppt->DCWH, block1->DCWH_SF) * 0.001f;
         float tmp  =  int16_to_float(block1_mppt->Tmp,  0);
 
-        if (!isnan(dca)) {
-            if (isnan(values[0])) {
-                values[0] = dca;
-            }
-            else {
-                values[0] += dca;
-            }
-        }
-
-        if (!isnan(dcv)) {
-            if (isnan(values[1])) {
-                values[1] = dcv;
-            }
-            else {
-                values[1] += dcv;
-            }
-        }
-
-        if (!isnan(dcw)) {
-            if (isnan(values[2])) {
-                values[2] = dcw;
-            }
-            else {
-                values[2] += dcw;
-            }
-        }
-
-        if (!isnan(dcwh)) {
-            if (isnan(values[4])) {
-                values[4] = dcwh;
-            }
-            else {
-                values[4] += dcwh;
-            }
-        }
-
-        if (!isnan(tmp)) {
-            if (isnan(values[5])) {
-                values[5] = tmp;
-            }
-            else {
-                values[5] += tmp;
-            }
-        }
+        values[0] = nan_safe_sum(values[0], dca);
+        values[1] = nan_safe_sum(values[1], dcv);
+        values[2] = nan_safe_sum(values[2], dcw);
+        values[4] = nan_safe_sum(values[4], dcwh);
+        values[5] = nan_safe_sum(values[5], tmp);
 
         values[MODEL_160_ID_COUNT + mppt_idx * MODEL_160_MPPT_ID_COUNT + 0] = dca;
         values[MODEL_160_ID_COUNT + mppt_idx * MODEL_160_MPPT_ID_COUNT + 1] = dcv;
@@ -245,7 +207,7 @@ bool MetersSunSpecParser160::parse_values(const uint16_t *const register_data[2]
         values[5] /= static_cast<float>(mppt_count);
     }
 
-    values[3] = -values[2]; // FIXME: use zero_safe_negation
+    values[3] = zero_safe_negation(values[2]);
 
     meters.update_all_values(slot, values);
 

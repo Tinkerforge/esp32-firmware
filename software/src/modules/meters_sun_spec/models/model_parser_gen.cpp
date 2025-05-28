@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "../model_parser.h"
+#include "tools/sun_spec.h"
 
 #include "gcc_warnings.h"
 
@@ -11,48 +12,6 @@
     #pragma GCC diagnostic ignored "-Wpedantic"
     #pragma GCC diagnostic ignored "-Waddress-of-packed-member" // We should fix this soon.
 #endif
-
-static const float scale_factors[21] = {
-              0.0000000001f,    // 10^-10
-              0.000000001f,     // 10^-9
-              0.00000001f,      // 10^-8
-              0.0000001f,       // 10^-7
-              0.000001f,        // 10^-6
-              0.00001f,         // 10^-5
-              0.0001f,          // 10^-4
-              0.001f,           // 10^-3
-              0.01f,            // 10^-2
-              0.1f,             // 10^-1
-              1.0f,             // 10^0
-             10.0f,             // 10^1
-            100.0f,             // 10^2
-           1000.0f,             // 10^3
-          10000.0f,             // 10^4
-         100000.0f,             // 10^5
-        1000000.0f,             // 10^6
-       10000000.0f,             // 10^7
-      100000000.0f,             // 10^8
-     1000000000.0f,             // 10^9
-    10000000000.0f,             // 10^10
-};
-
-float get_sun_spec_scale_factor(int32_t sunssf);
-
-[[gnu::const]]
-float get_sun_spec_scale_factor(int32_t sunssf)
-{
-    if (sunssf < -10) {
-        if (sunssf == INT16_MIN) { // scale factor not implemented
-            return 1;
-        } else {
-            return NAN;
-        }
-    } else if (sunssf > 10) {
-        return NAN;
-    }
-
-    return scale_factors[sunssf + 10];
-}
 
 static inline uint32_t convert_me_uint32(const uint32_t *me32, bool is_already_le32 = false)
 {
