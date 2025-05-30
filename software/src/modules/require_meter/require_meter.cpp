@@ -185,9 +185,9 @@ void RequireMeter::start_task()
         static bool last_meter_timeout = false;
         if (meter_timeout != last_meter_timeout) {
             if (meter_timeout) {
-                logger.printfln("Energy meter stuck or unreachable! Blocking charging.");
+                logger.printfln("Charger energy meter stuck or unreachable! Blocking charging.");
             } else {
-                logger.printfln("Energy meter working again. Allowing charging.");
+                logger.printfln("Charger energy meter working again. Allowing charging.");
             }
         }
         last_meter_timeout = meter_timeout;
