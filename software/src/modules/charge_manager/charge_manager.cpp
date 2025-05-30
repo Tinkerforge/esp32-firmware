@@ -624,18 +624,24 @@ void ChargeManager::check_watchdog()
     if (this->watchdog_triggered || !deadline_elapsed(last_available_current_update + WATCHDOG_TIMEOUT))
         return;
 
-    this->watchdog_triggered = true;
-
     uint32_t default_available_current = config.get("default_available_current")->asUint();
 
     logger.printfln("Watchdog triggered! Received no available current update for %d s. Setting available current to %lu mA", WATCHDOG_TIMEOUT.to<seconds_t>().as<int>(), default_available_current);
 
+    // Use the command to update the available current.
+    // Setting available_current directly will not update the limits struct.
+    const String err = api.callCommand("charge_manager/available_current_update", Config::ConfUpdateObject{{
+        {"current", default_available_current},
+    }});
+    if (!err.isEmpty()) {
+        logger.printfln("Watchdog couldn't set manager current: %s", err.c_str());
+    }
+
+    this->watchdog_triggered = true; // Set this here because the command call always sets it to false;
+
 #if MODULE_AUTOMATION_AVAILABLE()
     automation.trigger(AutomationTriggerID::ChargeManagerWd, nullptr, this);
 #endif
-    this->available_current.get("current")->updateUint(default_available_current);
-
-    last_available_current_update = now_us();
 }
 
 size_t ChargeManager::get_charger_count()
@@ -715,7 +721,6 @@ void ChargeManager::register_urls()
             this->limits.min[i] = current;
             this->limits.spread[i] = current;
         }
-        this->limits.max_pv = 3 * current; //TODO: unlimited?
 
     }, false);
 
