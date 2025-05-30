@@ -166,7 +166,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
             return false;
         }
 
-        // Check for duplicat host entries
+        // Check for duplicate host entries
         for (let i = 0; i < cfg.chargers.length; i++) {
             for (let a = i + 1; a < cfg.chargers.length; a++) {
                 if (cfg.chargers[a].host == cfg.chargers[i].host) {
