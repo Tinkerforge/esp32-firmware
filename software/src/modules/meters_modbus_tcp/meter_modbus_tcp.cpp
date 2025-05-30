@@ -206,7 +206,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
     switch (table_id) {
     case MeterModbusTCPTableID::None:
         logger.printfln_meter("No table selected");
-        return;
+        break;
 
     case MeterModbusTCPTableID::Custom: {
             device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
@@ -256,7 +256,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (sungrow_hybrid_inverter.virtual_meter) {
         case SungrowHybridInverterVirtualMeter::None:
             logger.printfln_meter("No Sungrow Hybrid Inverter Virtual Meter selected");
-            return;
+            break;
 
         case SungrowHybridInverterVirtualMeter::Inverter:
             table = &sungrow_inverter_output_type_table;
@@ -280,7 +280,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         default:
             logger.printfln_meter("Unknown Sungrow Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(sungrow_hybrid_inverter.virtual_meter));
-            return;
+            break;
         }
 
         break;
@@ -293,7 +293,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (sungrow_string_inverter.virtual_meter) {
         case SungrowStringInverterVirtualMeter::None:
             logger.printfln_meter("No Sungrow String Inverter Virtual Meter selected");
-            return;
+            break;
 
         case SungrowStringInverterVirtualMeter::Inverter:
             table = &sungrow_inverter_output_type_table;
@@ -312,7 +312,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         default:
             logger.printfln_meter("Unknown Sungrow String Inverter Virtual Meter: %u", static_cast<uint8_t>(sungrow_string_inverter.virtual_meter));
-            return;
+            break;
         }
 
         break;
@@ -324,7 +324,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (solarmax_max_storage.virtual_meter) {
         case SolarmaxMaxStorageVirtualMeter::None:
             logger.printfln_meter("No Solarmax Max Storage Virtual Meter selected");
-            return;
+            break;
 
         case SolarmaxMaxStorageVirtualMeter::Inverter:
             table = &solarmax_max_storage_inverter_table;
@@ -343,7 +343,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         default:
             logger.printfln_meter("Unknown Solarmax Max Storage Virtual Meter: %u", static_cast<uint8_t>(solarmax_max_storage.virtual_meter));
-            return;
+            break;
         }
 
         break;
@@ -355,7 +355,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (victron_energy_gx.virtual_meter) {
         case VictronEnergyGXVirtualMeter::None:
             logger.printfln_meter("No Victron Energy GX Virtual Meter selected");
-            return;
+            break;
 
         case VictronEnergyGXVirtualMeter::Inverter:
             table = &victron_energy_gx_inverter_table;
@@ -379,7 +379,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         default:
             logger.printfln_meter("Unknown Victron Energy GX Virtual Meter: %u", static_cast<uint8_t>(victron_energy_gx.virtual_meter));
-            return;
+            break;
         }
 
         break;
@@ -392,7 +392,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (deye_hybrid_inverter.virtual_meter) {
         case DeyeHybridInverterVirtualMeter::None:
             logger.printfln_meter("No Deye Hybrid Inverter Virtual Meter selected");
-            return;
+            break;
 
         case DeyeHybridInverterVirtualMeter::Inverter:
             table = &deye_hybrid_inverter_table;
@@ -421,7 +421,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         default:
             logger.printfln_meter("Unknown Deye Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(deye_hybrid_inverter.virtual_meter));
-            return;
+            break;
         }
 
         break;
@@ -433,7 +433,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (alpha_ess_hybrid_inverter.virtual_meter) {
         case AlphaESSHybridInverterVirtualMeter::None:
             logger.printfln_meter("No Alpha ESS Hybrid Inverter Virtual Meter selected");
-            return;
+            break;
 
         case AlphaESSHybridInverterVirtualMeter::Inverter:
             table = &alpha_ess_hybrid_inverter_table;
@@ -457,7 +457,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         default:
             logger.printfln_meter("Unknown Alpha ESS Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(alpha_ess_hybrid_inverter.virtual_meter));
-            return;
+            break;
         }
 
         break;
@@ -470,13 +470,13 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (shelly_pro_em.monophase_channel) {
         case ShellyEMMonophaseChannel::None:
             logger.printfln_meter("No Shelly Pro EM Monophase Channel selected");
-            return;
+            break;
 
         case ShellyEMMonophaseChannel::First:
             switch (shelly_pro_em.monophase_mapping) {
             case ShellyEMMonophaseMapping::None:
                 logger.printfln_meter("No Shelly Pro EM Monophase Mapping selected");
-                return;
+                break;
 
             case ShellyEMMonophaseMapping::L1:
                 table = &shelly_em_monophase_channel_1_as_l1_table;
@@ -492,7 +492,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
             default:
                 logger.printfln_meter("Unknown Shelly Pro EM Monophase Mapping: %u", static_cast<uint8_t>(shelly_pro_em.monophase_mapping));
-                return;
+                break;
             }
 
             break;
@@ -501,7 +501,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             switch (shelly_pro_em.monophase_mapping) {
             case ShellyEMMonophaseMapping::None:
                 logger.printfln_meter("No Shelly Pro EM Monophase Mapping selected");
-                return;
+                break;
 
             case ShellyEMMonophaseMapping::L1:
                 table = &shelly_em_monophase_channel_2_as_l1_table;
@@ -517,18 +517,18 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
             default:
                 logger.printfln_meter("Unknown Shelly Pro EM Monophase Mapping: %u", static_cast<uint8_t>(shelly_pro_em.monophase_mapping));
-                return;
+                break;
             }
 
             break;
 
         case ShellyEMMonophaseChannel::Third:
             logger.printfln_meter("Impossible Shelly Pro EM Monophase Channel selected: Third");
-            return;
+            break;
 
         default:
             logger.printfln_meter("Unknown Shelly Pro EM Monophase Channel: %u", static_cast<uint8_t>(shelly_pro_em.monophase_channel));
-            return;
+            break;
         }
 
         break;
@@ -548,13 +548,13 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             switch (shelly_pro_3em.monophase_channel) {
             case ShellyEMMonophaseChannel::None:
                 logger.printfln_meter("No Shelly Pro 3EM Monophase Channel selected");
-                return;
+                break;
 
             case ShellyEMMonophaseChannel::First:
                 switch (shelly_pro_3em.monophase_mapping) {
                 case ShellyEMMonophaseMapping::None:
                     logger.printfln_meter("No Shelly Pro 3EM Monophase Mapping selected");
-                    return;
+                    break;
 
                 case ShellyEMMonophaseMapping::L1:
                     table = &shelly_em_monophase_channel_1_as_l1_table;
@@ -570,7 +570,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
                 default:
                     logger.printfln_meter("Unknown Shelly Pro 3EM Monophase Mapping: %u", static_cast<uint8_t>(shelly_pro_3em.monophase_mapping));
-                    return;
+                    break;
                 }
 
                 break;
@@ -579,7 +579,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
                 switch (shelly_pro_3em.monophase_mapping) {
                 case ShellyEMMonophaseMapping::None:
                     logger.printfln_meter("No Shelly Pro 3EM Monophase Mapping selected");
-                    return;
+                    break;
 
                 case ShellyEMMonophaseMapping::L1:
                     table = &shelly_em_monophase_channel_2_as_l1_table;
@@ -595,7 +595,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
                 default:
                     logger.printfln_meter("Unknown Shelly Pro 3EM Monophase Mapping: %u", static_cast<uint8_t>(shelly_pro_3em.monophase_mapping));
-                    return;
+                    break;
                 }
 
                 break;
@@ -604,7 +604,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
                 switch (shelly_pro_3em.monophase_mapping) {
                 case ShellyEMMonophaseMapping::None:
                     logger.printfln_meter("No Shelly Pro 3EM Monophase Mapping selected");
-                    return;
+                    break;
 
                 case ShellyEMMonophaseMapping::L1:
                     table = &shelly_em_monophase_channel_3_as_l1_table;
@@ -620,21 +620,21 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
                 default:
                     logger.printfln_meter("Unknown Shelly Pro 3EM Monophase Mapping: %u", static_cast<uint8_t>(shelly_pro_3em.monophase_mapping));
-                    return;
+                    break;
                 }
 
                 break;
 
             default:
                 logger.printfln_meter("Unknown Shelly Pro 3EM Monophase Channel: %u", static_cast<uint8_t>(shelly_pro_3em.monophase_channel));
-                return;
+                break;
             }
 
             break;
 
         default:
             logger.printfln_meter("Unknown Shelly Pro 3EM Device Profile: %u", static_cast<uint8_t>(shelly_pro_3em.device_profile));
-            return;
+            break;
         }
 
         break;
@@ -646,7 +646,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (goodwe_hybrid_inverter.virtual_meter) {
         case GoodweHybridInverterVirtualMeter::None:
             logger.printfln_meter("No Goodwe Hybrid Inverter Virtual Meter selected");
-            return;
+            break;
 
         case GoodweHybridInverterVirtualMeter::Inverter:
             table = &goodwe_hybrid_inverter_table;
@@ -680,7 +680,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         default:
             logger.printfln_meter("Unknown Goodwe Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(goodwe_hybrid_inverter.virtual_meter));
-            return;
+            break;
         }
 
         break;
@@ -692,7 +692,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (solax_hybrid_inverter.virtual_meter) {
         case SolaxHybridInverterVirtualMeter::None:
             logger.printfln_meter("No Solax Hybrid Inverter Virtual Meter selected");
-            return;
+            break;
 
         case SolaxHybridInverterVirtualMeter::Inverter:
             table = &solax_hybrid_inverter_table;
@@ -711,7 +711,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         default:
             logger.printfln_meter("Unknown Solax Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(solax_hybrid_inverter.virtual_meter));
-            return;
+            break;
         }
 
         break;
@@ -724,17 +724,17 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (fronius_gen24_plus.virtual_meter) {
         case FroniusGEN24PlusVirtualMeter::None:
             logger.printfln_meter("No Fronius GEN24 Plus Virtual Meter selected");
-            return;
+            break;
 
         case FroniusGEN24PlusVirtualMeter::InverterUnused:
             logger.printfln_meter("Invalid Fronius GEN24 Plus Virtual Meter: %u", static_cast<uint8_t>(fronius_gen24_plus.virtual_meter));
             default_location = MeterLocation::Inverter;
-            return;
+            break;
 
         case FroniusGEN24PlusVirtualMeter::GridUnused:
             logger.printfln_meter("Invalid Fronius GEN24 Plus Virtual Meter: %u", static_cast<uint8_t>(fronius_gen24_plus.virtual_meter));
             default_location = MeterLocation::Grid;
-            return;
+            break;
 
         case FroniusGEN24PlusVirtualMeter::Battery:
             table = &fronius_gen24_plus_battery_type_table;
@@ -743,7 +743,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         default:
             logger.printfln_meter("Unknown Fronius GEN24 Plus Virtual Meter: %u", static_cast<uint8_t>(fronius_gen24_plus.virtual_meter));
-            return;
+            break;
         }
 
         break;
@@ -755,7 +755,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (hailei_hybrid_inverter.virtual_meter) {
         case HaileiHybridInverterVirtualMeter::None:
             logger.printfln_meter("No Hailei Hybrid Inverter Virtual Meter selected");
-            return;
+            break;
 
         case HaileiHybridInverterVirtualMeter::Inverter:
             table = &hailei_hybrid_inverter_table;
@@ -779,7 +779,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         default:
             logger.printfln_meter("Unknown Hailei Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(hailei_hybrid_inverter.virtual_meter));
-            return;
+            break;
         }
 
         break;
@@ -791,7 +791,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (fox_ess_h3_hybrid_inverter.virtual_meter) {
         case FoxESSH3HybridInverterVirtualMeter::None:
             logger.printfln_meter("No Fox ESS H3 Hybrid Inverter Virtual Meter selected");
-            return;
+            break;
 
         case FoxESSH3HybridInverterVirtualMeter::Inverter:
             table = &fox_ess_h3_hybrid_inverter_table;
@@ -810,7 +810,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         default:
             logger.printfln_meter("Unknown Fox ESS H3 Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(fox_ess_h3_hybrid_inverter.virtual_meter));
-            return;
+            break;
         }
 
         break;
@@ -864,7 +864,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (carlo_gavazzi_em100.phase) {
         case CarloGavazziPhase::None:
             logger.printfln_meter("No Carlo Gavazzi EM100 Phase selected");
-            return;
+            break;
 
         case CarloGavazziPhase::L1:
             table = &carlo_gavazzi_em100_and_et100_at_l1_table;
@@ -880,7 +880,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         default:
             logger.printfln_meter("Unknown Carlo Gavazzi EM100 Phase: %u", static_cast<uint8_t>(carlo_gavazzi_em100.phase));
-            return;
+            break;
         }
 
         break;
@@ -893,7 +893,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (carlo_gavazzi_et100.phase) {
         case CarloGavazziPhase::None:
             logger.printfln_meter("No Carlo Gavazzi ET100 Phase selected");
-            return;
+            break;
 
         case CarloGavazziPhase::L1:
             table = &carlo_gavazzi_em100_and_et100_at_l1_table;
@@ -909,7 +909,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         default:
             logger.printfln_meter("Unknown Carlo Gavazzi ET100 Phase: %u", static_cast<uint8_t>(carlo_gavazzi_et100.phase));
-            return;
+            break;
         }
 
         break;
@@ -928,7 +928,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (carlo_gavazzi_em270.virtual_meter) {
         case CarloGavazziEM270VirtualMeter::None:
             logger.printfln_meter("No Carlo Gavazzi EM270 Virtual Meter selected");
-            return;
+            break;
 
         case CarloGavazziEM270VirtualMeter::Meter:
             table = &carlo_gavazzi_em270_and_em280_meter_table;
@@ -944,7 +944,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         default:
             logger.printfln_meter("Unknown Carlo Gavazzi EM270 Virtual Meter: %u", static_cast<uint8_t>(carlo_gavazzi_em270.virtual_meter));
-            return;
+            break;
         }
 
         break;
@@ -957,7 +957,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (carlo_gavazzi_em280.virtual_meter) {
         case CarloGavazziEM280VirtualMeter::None:
             logger.printfln_meter("No Carlo Gavazzi EM280 Virtual Meter selected");
-            return;
+            break;
 
         case CarloGavazziEM280VirtualMeter::Meter:
             table = &carlo_gavazzi_em270_and_em280_meter_table;
@@ -973,7 +973,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         default:
             logger.printfln_meter("Unknown Carlo Gavazzi EM280 Virtual Meter: %u", static_cast<uint8_t>(carlo_gavazzi_em280.virtual_meter));
-            return;
+            break;
         }
 
         break;
@@ -998,7 +998,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (carlo_gavazzi_em510.phase) {
         case CarloGavazziPhase::None:
             logger.printfln_meter("No Carlo Gavazzi EM510 Phase selected");
-            return;
+            break;
 
         case CarloGavazziPhase::L1:
             table = &carlo_gavazzi_em510_at_l1_table;
@@ -1014,7 +1014,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         default:
             logger.printfln_meter("Unknown Carlo Gavazzi EM510 Phase: %u", static_cast<uint8_t>(carlo_gavazzi_em510.phase));
-            return;
+            break;
         }
 
         break;
@@ -1036,17 +1036,17 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (solaredge.virtual_meter) {
         case SolaredgeVirtualMeter::None:
             logger.printfln_meter("No Solaredge Virtual Meter selected");
-            return;
+            break;
 
         case SolaredgeVirtualMeter::InverterUnused:
             logger.printfln_meter("Invalid Solaredge Virtual Meter: %u", static_cast<uint8_t>(solaredge.virtual_meter));
             default_location = MeterLocation::Inverter;
-            return;
+            break;
 
         case SolaredgeVirtualMeter::GridUnused:
             logger.printfln_meter("Invalid Solaredge Virtual Meter: %u", static_cast<uint8_t>(solaredge.virtual_meter));
             default_location = MeterLocation::Grid;
-            return;
+            break;
 
         case SolaredgeVirtualMeter::Battery:
             table = &solaredge_battery_table;
@@ -1055,7 +1055,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         default:
             logger.printfln_meter("Unknown Solaredge Hybrid Virtual Meter: %u", static_cast<uint8_t>(solaredge.virtual_meter));
-            return;
+            break;
         }
 
         break;
@@ -1079,12 +1079,12 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (sax_power.virtual_meter) {
         case SAXPowerVirtualMeter::None:
             logger.printfln_meter("No SAX Power Home Basic Mode Virtual Meter selected");
-            return;
+            break;
 
         case SAXPowerVirtualMeter::InverterUnused:
             logger.printfln_meter("Invalid SAX Power Home Basic Mode Virtual Meter: %u", static_cast<uint8_t>(sax_power.virtual_meter));
             default_location = MeterLocation::Inverter;
-            return;
+            break;
 
         case SAXPowerVirtualMeter::Grid:
             table = &sax_power_home_basic_mode_grid_table;
@@ -1098,7 +1098,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         default:
             logger.printfln_meter("Unknown SAX Power Home Basic Mode Virtual Meter: %u", static_cast<uint8_t>(sax_power.virtual_meter));
-            return;
+            break;
         }
 
         break;
@@ -1110,12 +1110,12 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (sax_power.virtual_meter) {
         case SAXPowerVirtualMeter::None:
             logger.printfln_meter("No SAX Power Home Extended Mode Virtual Meter selected");
-            return;
+            break;
 
         case SAXPowerVirtualMeter::InverterUnused:
             logger.printfln_meter("Invalid SAX Power Home Extended Mode Virtual Meter: %u", static_cast<uint8_t>(sax_power.virtual_meter));
             default_location = MeterLocation::Inverter;
-            return;
+            break;
 
         case SAXPowerVirtualMeter::Grid:
             table = &sax_power_home_extended_mode_grid_table;
@@ -1129,7 +1129,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         default:
             logger.printfln_meter("Unknown SAX Power Home Extended Mode Virtual Meter: %u", static_cast<uint8_t>(sax_power.virtual_meter));
-            return;
+            break;
         }
 
         break;
@@ -1141,12 +1141,12 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (e3dc.virtual_meter) {
         case E3DCVirtualMeter::None:
             logger.printfln_meter("No E3/DC Virtual Meter selected");
-            return;
+            break;
 
         case E3DCVirtualMeter::InverterUnused:
             logger.printfln_meter("Invalid E3/DC Virtual Meter: %u", static_cast<uint8_t>(e3dc.virtual_meter));
             default_location = MeterLocation::Inverter;
-            return;
+            break;
 
         case E3DCVirtualMeter::Grid:
             table = &e3dc_grid_table;
@@ -1175,7 +1175,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         default:
             logger.printfln_meter("Unknown E3/DC Virtual Meter: %u", static_cast<uint8_t>(e3dc.virtual_meter));
-            return;
+            break;
         }
 
         break;
@@ -1189,7 +1189,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (huawei_sun2000.virtual_meter) {
         case HuaweiSUN2000VirtualMeter::None:
             logger.printfln_meter("No Huawei SUN2000 Virtual Meter selected");
-            return;
+            break;
 
         case HuaweiSUN2000VirtualMeter::Inverter:
             table = &huawei_sun2000_inverter_table;
@@ -1213,7 +1213,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         default:
             logger.printfln_meter("Unknown Huawei SUN2000 Virtual Meter: %u", static_cast<uint8_t>(huawei_sun2000.virtual_meter));
-            return;
+            break;
         }
 
         break;
@@ -1226,11 +1226,11 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (huawei_sun2000_smart_dongle.virtual_meter) {
         case HuaweiSUN2000SmartDongleVirtualMeter::None:
             logger.printfln_meter("No Huawei SUN2000 Smart Dongle Virtual Meter selected");
-            return;
+            break;
 
         case HuaweiSUN2000SmartDongleVirtualMeter::InverterUnused:
             logger.printfln_meter("Invalid Huawei SUN2000 Smart Dongle Virtual Meter: %u", static_cast<uint8_t>(huawei_sun2000_smart_dongle.virtual_meter));
-            return;
+            break;
 
         case HuaweiSUN2000SmartDongleVirtualMeter::Grid:
             table = &huawei_sun2000_smart_dongle_grid_table;
@@ -1249,7 +1249,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         default:
             logger.printfln_meter("Unknown Huawei SUN2000 Smart Dongle Virtual Meter: %u", static_cast<uint8_t>(huawei_sun2000_smart_dongle.virtual_meter));
-            return;
+            break;
         }
 
         break;
@@ -1261,7 +1261,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         switch (huawei_emma.virtual_meter) {
         case HuaweiEMMAVirtualMeter::None:
             logger.printfln_meter("No Huawei EMMA Virtual Meter selected");
-            return;
+            break;
 
         case HuaweiEMMAVirtualMeter::Inverter:
             table = &huawei_emma_inverter_table;
@@ -1295,13 +1295,17 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         default:
             logger.printfln_meter("Unknown Huawei EMMA Virtual Meter: %u", static_cast<uint8_t>(huawei_emma.virtual_meter));
-            return;
+            break;
         }
 
         break;
 
     default:
         logger.printfln_meter("Unknown table: %u", static_cast<uint8_t>(table_id));
+        break;
+    }
+
+    if (table == nullptr) {
         return;
     }
 
@@ -1313,16 +1317,18 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         meters.declare_value_ids(slot, table->ids, table->ids_length);
     }
 
-    task_scheduler.scheduleWithFixedDelay([this]() {
-        if (read_allowed) {
-            read_next();
-        }
-    }, 2_s, 1_s);
+    if (table->specs_length > 0) {
+        task_scheduler.scheduleWithFixedDelay([this]() {
+            if (read_allowed) {
+                read_next();
+            }
+        }, 2_s, 1_s);
+    }
 }
 
 void MeterModbusTCP::register_events()
 {
-    if (table == nullptr) {
+    if (table == nullptr || table->specs_length == 0) {
         return;
     }
 
