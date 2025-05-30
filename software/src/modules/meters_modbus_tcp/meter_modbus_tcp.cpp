@@ -718,7 +718,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
     case MeterModbusTCPTableID::FroniusGEN24Plus:
         fronius_gen24_plus.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<FroniusGEN24PlusVirtualMeter>();
-        fronius_gen24_plus.input_id_or_model_id = 0;
+        fronius_gen24_plus.input_id_or_model_id = -1;
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
 
         switch (fronius_gen24_plus.virtual_meter) {
@@ -1905,7 +1905,7 @@ void MeterModbusTCP::parse_next()
 
     if (is_fronius_gen24_plus_battery_meter()
      && generic_read_request.start_address == FRONIUS_GEN24_PLUS_INPUT_ID_OR_MODEL_ID_ADDRESS) {
-        if (fronius_gen24_plus.input_id_or_model_id == 0) {
+        if (fronius_gen24_plus.input_id_or_model_id < 0) {
             switch (c16.u) {
             case 1: // module/1/ID: Input ID
                 table = &fronius_gen24_plus_battery_integer_table;
@@ -1940,7 +1940,7 @@ void MeterModbusTCP::parse_next()
 
     if (is_huawei_sun2000_battery_meter()
      && generic_read_request.start_address == HUAWEI_SUN2000_ENERGY_STORAGE_PRODUCT_MODEL_ADDRESS) {
-        if (huawei_sun2000.energy_storage_product_model == -1) {
+        if (huawei_sun2000.energy_storage_product_model < 0) {
             switch (c16.u) {
             case 0: // None
                 table = nullptr;
@@ -1978,7 +1978,7 @@ void MeterModbusTCP::parse_next()
 
     if (is_huawei_sun2000_pv_meter()
      && generic_read_request.start_address == HUAWEI_SUN2000_NUMBER_OF_PV_STRINGS_ADDRESS) {
-        if (huawei_sun2000.number_of_pv_strings == -1) {
+        if (huawei_sun2000.number_of_pv_strings < 0) {
             switch (c16.u) {
             case 0:
                 table = &huawei_sun2000_pv_no_strings_table;
@@ -2039,7 +2039,7 @@ void MeterModbusTCP::parse_next()
 
     if (is_huawei_sun2000_smart_dongle_battery_meter()
      && generic_read_request.start_address == HUAWEI_SUN2000_ENERGY_STORAGE_PRODUCT_MODEL_ADDRESS) {
-        if (huawei_sun2000_smart_dongle.energy_storage_product_model == -1) {
+        if (huawei_sun2000_smart_dongle.energy_storage_product_model < 0) {
             switch (c16.u) {
             case 0: // None
                 table = nullptr;

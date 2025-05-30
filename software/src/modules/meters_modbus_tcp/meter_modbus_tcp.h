@@ -260,7 +260,7 @@ private:
         // Fronius GEN24 Plus
         struct {
             FroniusGEN24PlusVirtualMeter virtual_meter;
-            uint16_t input_id_or_model_id;
+            int input_id_or_model_id;
             size_t start_address_shift;
             int16_t dca_sf;
             int16_t dcv_sf;
@@ -356,14 +356,14 @@ private:
         // Huawei SUN2000
         struct {
             HuaweiSUN2000VirtualMeter virtual_meter;
-            int32_t energy_storage_product_model;
-            int32_t number_of_pv_strings;
+            int energy_storage_product_model;
+            int number_of_pv_strings;
         } huawei_sun2000;
 
         // Huawei SUN2000 Smart Dongle
         struct {
             HuaweiSUN2000SmartDongleVirtualMeter virtual_meter;
-            int32_t energy_storage_product_model;
+            int energy_storage_product_model;
         } huawei_sun2000_smart_dongle;
 
         // Huawei EMMA
