@@ -476,7 +476,7 @@ static const ConfigMigration migrations[] = {
                                 break;
 
                             case 5:
-                                trigger[0] = 17;;
+                                trigger[0] = 17;
                                 trigger_config["drawing_power"] = config["relay_rule_is"].as<int>() == 8 ? true : false;
                         }
                         auto action = task.createNestedArray("action");
