@@ -199,7 +199,15 @@ function debug_report() {
 
 function call_api() {
     let s = document.getElementById('api').value;
-    let payload = JSON.parse(s);
+    let payload;
+
+    try {
+        payload = JSON.parse(s);
+    }
+    catch (error) {
+        document.getElementById('api_result').value = error;
+        return;
+    }
 
     var url = connection_prefix() + payload["url"];
 
