@@ -539,7 +539,11 @@ void MeterSunSpec::scan_next()
                             bool acc32_is_int32 = true;
 
                             if (strncmp(m->Md, "KOSTAL Smart Energy Meter", 25) == 0) {
-                                char *version_str = strndup(m->Vr, 16); // create NUL-terminated string
+                                // create null-terminated string from unterminated character sequence
+                                char version_str[17];
+                                memcpy(version_str, m->Vr, 16);
+                                version_str[16] = 0;
+
                                 SemanticVersion version;
 
                                 if (!version.from_string(version_str, SemanticVersion::WithoutTimestamp)) {
@@ -548,8 +552,6 @@ void MeterSunSpec::scan_next()
                                 else if (version.compare(SemanticVersion{2, 6, 0}) >= 0) {
                                     acc32_is_int32 = false;
                                 }
-
-                                free(version_str);
                             }
 
                             if (acc32_is_int32) {
