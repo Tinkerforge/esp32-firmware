@@ -1816,6 +1816,8 @@ void MeterModbusTCP::parse_next()
     if (is_sungrow_inverter_meter()
      && generic_read_request.start_address == SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS) {
         if (sungrow_inverter_output_type < 0) {
+            bool success = true;
+
             switch (c16.u) {
             case 0:
                 if (table_id == MeterModbusTCPTableID::SungrowHybridInverter) {
@@ -1851,14 +1853,16 @@ void MeterModbusTCP::parse_next()
                 break;
 
             default:
-                table = nullptr;
+                success = false;
                 logger.printfln_meter("Sungrow inverter has unknown output type: %u", c16.u);
-                return;
+                break;
             }
 
-            sungrow_inverter_output_type = c16.u;
+            if (success) {
+                sungrow_inverter_output_type = c16.u;
 
-            meters.declare_value_ids(slot, table->ids, table->ids_length);
+                meters.declare_value_ids(slot, table->ids, table->ids_length);
+            }
         }
 
         read_allowed = true;
@@ -1872,6 +1876,8 @@ void MeterModbusTCP::parse_next()
     if (is_deye_hybrid_inverter_battery_meter()
      && generic_read_request.start_address == DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS) {
         if (deye_hybrid_inverter.device_type < 0) {
+            bool success = true;
+
             switch (c16.u) {
             case 0x0002:
             case 0x0003:
@@ -1891,14 +1897,16 @@ void MeterModbusTCP::parse_next()
                 break;
 
             default:
-                table = nullptr;
+                success = false;
                 logger.printfln_meter("Deye hybrid inverter has unknown device type: 0x%04x", c16.u);
-                return;
+                break;
             }
 
-            deye_hybrid_inverter.device_type = c16.u;
+            if (success) {
+                deye_hybrid_inverter.device_type = c16.u;
 
-            meters.declare_value_ids(slot, table->ids, table->ids_length);
+                meters.declare_value_ids(slot, table->ids, table->ids_length);
+            }
         }
 
         read_allowed = true;
@@ -1912,6 +1920,8 @@ void MeterModbusTCP::parse_next()
     if (is_fronius_gen24_plus_battery_meter()
      && generic_read_request.start_address == FRONIUS_GEN24_PLUS_INPUT_ID_OR_MODEL_ID_ADDRESS) {
         if (fronius_gen24_plus.input_id_or_model_id < 0) {
+            bool success = true;
+
             switch (c16.u) {
             case 1: // module/1/ID: Input ID
                 table = &fronius_gen24_plus_battery_integer_table;
@@ -1926,14 +1936,16 @@ void MeterModbusTCP::parse_next()
                 break;
 
             default:
-                table = nullptr;
+                success = false;
                 logger.printfln_meter("Fronius GEN24 Plus inverter has malformed MPPT model: %u", c16.u);
-                return;
+                break;
             }
 
-            fronius_gen24_plus.input_id_or_model_id = c16.u;
+            if (success) {
+                fronius_gen24_plus.input_id_or_model_id = c16.u;
 
-            meters.declare_value_ids(slot, table->ids, table->ids_length);
+                meters.declare_value_ids(slot, table->ids, table->ids_length);
+            }
         }
 
         read_allowed = true;
@@ -1947,9 +1959,11 @@ void MeterModbusTCP::parse_next()
     if (is_huawei_sun2000_battery_meter()
      && generic_read_request.start_address == HUAWEI_SUN2000_ENERGY_STORAGE_PRODUCT_MODEL_ADDRESS) {
         if (huawei_sun2000.energy_storage_product_model < 0) {
+            bool success = true;
+
             switch (c16.u) {
             case 0: // None
-                table = nullptr;
+                success = false;
                 logger.printfln_meter("Huawei SUN2000 inverter has no battery connected");
                 return;
 
@@ -1964,14 +1978,16 @@ void MeterModbusTCP::parse_next()
                 break;
 
             default:
-                table = nullptr;
+                success = false;
                 logger.printfln_meter("Huawei SUN2000 inverter has unknown battery model: %u", c16.u);
-                return;
+                break;
             }
 
-            huawei_sun2000.energy_storage_product_model = c16.u;
+            if (success) {
+                huawei_sun2000.energy_storage_product_model = c16.u;
 
-            meters.declare_value_ids(slot, table->ids, table->ids_length);
+                meters.declare_value_ids(slot, table->ids, table->ids_length);
+            }
         }
 
         read_allowed = true;
@@ -2046,9 +2062,11 @@ void MeterModbusTCP::parse_next()
     if (is_huawei_sun2000_smart_dongle_battery_meter()
      && generic_read_request.start_address == HUAWEI_SUN2000_ENERGY_STORAGE_PRODUCT_MODEL_ADDRESS) {
         if (huawei_sun2000_smart_dongle.energy_storage_product_model < 0) {
+            bool success = true;
+
             switch (c16.u) {
             case 0: // None
-                table = nullptr;
+                success = false;
                 logger.printfln_meter("Huawei SUN2000 inverter has no battery connected");
                 return;
 
@@ -2063,14 +2081,16 @@ void MeterModbusTCP::parse_next()
                 break;
 
             default:
-                table = nullptr;
+                success = false;
                 logger.printfln_meter("Huawei SUN2000 inverter has unknown battery model: %u", c16.u);
                 return;
             }
 
-            huawei_sun2000_smart_dongle.energy_storage_product_model = c16.u;
+            if (success) {
+                huawei_sun2000_smart_dongle.energy_storage_product_model = c16.u;
 
-            meters.declare_value_ids(slot, table->ids, table->ids_length);
+                meters.declare_value_ids(slot, table->ids, table->ids_length);
+            }
         }
 
         read_allowed = true;
