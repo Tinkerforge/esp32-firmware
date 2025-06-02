@@ -58,14 +58,32 @@ private:
     void start_scan();
     void get_scan_results(StringBuilder *sb, size_t network_count);
 
+    struct ap_runtime {
+        uint32_t scan_start_time_s; // This overflows after an uptime of 68 years, which seems unlikely enough.
+
+        ip4_addr_t gateway;
+        uint8_t subnet_cidr;
+
+        uint8_t ssid_offset;
+        uint8_t passphrase_offset;
+        uint8_t stop_soft_ap_runs;
+
+        uint8_t channel       : 4;
+        bool ap_fallback_only : 1;
+        bool hide_ssid        : 1;
+        bool soft_ap_running  : 1;
+
+        char ip_ssid_passphrase[];
+    };
+
     ConfigRoot ap_config;
     ConfigRoot sta_config;
     ConfigRoot state;
 
-    OwnedConfig ap_config_in_use;
+    ap_runtime *runtime_ap = nullptr;
+
     OwnedConfig sta_config_in_use;
 
-    bool soft_ap_running = false;
     std::unique_ptr<unsigned char[]> ca_cert = nullptr;
     size_t ca_cert_len = 0;
     std::unique_ptr<unsigned char[]> client_cert = nullptr;
