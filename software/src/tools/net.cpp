@@ -25,6 +25,8 @@
 
 #include "event_log_prefix.h"
 
+#include "gcc_warnings.h"
+
 bool is_in_subnet(const IPAddress &ip, const IPAddress &subnet, const IPAddress &to_check)
 {
     return (static_cast<uint32_t>(ip) & static_cast<uint32_t>(subnet)) == (static_cast<uint32_t>(to_check) & static_cast<uint32_t>(subnet));
@@ -36,6 +38,32 @@ bool is_valid_subnet_mask(const IPAddress &subnet)
     const uint32_t inverted = ~ntohl(static_cast<uint32_t>(subnet));
     return ((inverted + 1) & inverted) == 0;
 }
+
+uint8_t tf_ip4addr_mask2cidr(const ip4_addr_t subnet)
+{
+    return static_cast<uint8_t>(__builtin_clz(~ntohl(subnet.addr)));
+}
+
+ip4_addr_t tf_ip4addr_cidr2mask(uint32_t cidr)
+{
+    ip4_addr_t mask;
+
+    if (cidr >= 32) {
+        mask.addr = ~0ul;
+    } else {
+        mask.addr = htonl(~0ul << (32 - cidr));
+    }
+
+    return mask;
+}
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+
+    // IPADDR_LOOPBACK expands to an old-style cast that is also useless
+    #pragma GCC diagnostic ignored "-Wold-style-cast"
+    #pragma GCC diagnostic ignored "-Wuseless-cast"
+#endif
 
 static esp_err_t poke_localhost_fn(void * /*ctx*/)
 {
@@ -65,6 +93,10 @@ static esp_err_t poke_localhost_fn(void * /*ctx*/)
     }
     return ESP_OK; // Don't care about errors.
 }
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
 
 void poke_localhost()
 {

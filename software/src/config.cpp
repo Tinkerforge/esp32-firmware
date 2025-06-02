@@ -813,7 +813,7 @@ void Config::to_string_except(const char *const *keys_to_censor, size_t keys_to_
     }
 }
 
-uint8_t Config::was_updated(uint8_t api_backend_flag)
+uint8_t Config::was_updated(uint8_t api_backend_flag) const
 {
     ASSERT_MAIN_THREAD();
     return (value.updated & api_backend_flag) | Config::apply_visitor(is_updated{api_backend_flag}, value);

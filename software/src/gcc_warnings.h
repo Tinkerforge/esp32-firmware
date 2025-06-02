@@ -37,6 +37,7 @@
 #pragma GCC diagnostic error "-Wredundant-decls"
 #pragma GCC diagnostic error "-Wregister"
 #pragma GCC diagnostic error "-Wstack-protector"
+#pragma GCC diagnostic error "-Wstrict-flex-arrays"
 #pragma GCC diagnostic error "-Wstrict-null-sentinel"
 #pragma GCC diagnostic error "-Wstrict-overflow=2"
 #pragma GCC diagnostic error "-Wsuggest-attribute=const"

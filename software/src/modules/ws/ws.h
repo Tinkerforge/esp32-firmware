@@ -49,5 +49,7 @@ public:
     bool pushRawStateUpdateBegin(StringBuilder *sb, size_t payload_len, const char *path, ssize_t path_len = -1);
     bool pushRawStateUpdateEnd(StringBuilder *sb);
 
+    bool haveActiveClient();
+
     WebSockets web_sockets;
 };

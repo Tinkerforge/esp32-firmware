@@ -92,13 +92,15 @@ void API::setup()
         bool skip_high_latency_states = state_update_counter % 4 != 0;
         ++state_update_counter;
 
-        for (size_t state_idx = 0; state_idx < states.size(); ++state_idx) {
-            auto &reg = states[state_idx];
+        const size_t states_count = states.size();
+
+        for (size_t state_idx = 0; state_idx < states_count; ++state_idx) {
+            const auto &reg = states[state_idx];
 
             if (skip_high_latency_states && !reg.low_latency)
                 continue;
 
-            size_t backend_count = this->backends.size();
+            const size_t backend_count = this->backends.size();
 
             uint8_t to_send = reg.config->was_updated((1 << backend_count) - 1);
             // If the config was not updated for any API, we don't have to serialize the payload.
@@ -107,7 +109,7 @@ void API::setup()
             }
 
             auto wsu = IAPIBackend::WantsStateUpdate::No;
-            for (size_t backend_idx = 0; backend_idx < this->backends.size(); ++backend_idx) {
+            for (size_t backend_idx = 0; backend_idx < backend_count; ++backend_idx) {
                 auto backend_wsu = this->backends[backend_idx]->wantsStateUpdate(state_idx);
                 if ((int) wsu < (int) backend_wsu) {
                     wsu = backend_wsu;
@@ -123,7 +125,7 @@ void API::setup()
                 continue;
             }
 
-            String payload = "";
+            String payload;
             // If no backend wants the state update as string
             // don't serialize the payload.
             if (wsu == IAPIBackend::WantsStateUpdate::AsString)
@@ -131,7 +133,7 @@ void API::setup()
 
             uint8_t sent = 0;
 
-            for (size_t backend_idx = 0; backend_idx < this->backends.size(); ++backend_idx) {
+            for (size_t backend_idx = 0; backend_idx < backend_count; ++backend_idx) {
                 if ((to_send & (1 << backend_idx)) == 0)
                     continue;
 

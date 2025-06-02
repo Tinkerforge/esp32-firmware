@@ -23,6 +23,7 @@
 #include <IPAddress.h>
 #include <lwip/ip_addr.h>
 #include <lwip/sockets.h>
+#include <stdint.h>
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -84,5 +85,8 @@ extern inline void tf_ip4addr_ntoa(const uint32_t *addr, char *buf, int buflen) 
 
 bool is_in_subnet(const IPAddress &ip, const IPAddress &subnet, const IPAddress &to_check);
 bool is_valid_subnet_mask(const IPAddress &subnet);
+
+[[gnu::const]] extern uint8_t tf_ip4addr_mask2cidr(const ip4_addr_t subnet);
+[[gnu::const]] extern ip4_addr_t tf_ip4addr_cidr2mask(uint32_t cidr);
 
 void poke_localhost();

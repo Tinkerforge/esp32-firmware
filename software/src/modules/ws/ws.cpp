@@ -225,6 +225,11 @@ IAPIBackend::WantsStateUpdate WS::wantsStateUpdate(size_t stateIdx)
            IAPIBackend::WantsStateUpdate::No;
 }
 
+bool WS::haveActiveClient()
+{
+    return web_sockets.haveActiveClient();
+}
+
 void WS::pre_reboot() {
     web_sockets.pre_reboot();
 }

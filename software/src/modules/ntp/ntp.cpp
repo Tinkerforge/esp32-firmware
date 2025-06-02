@@ -26,6 +26,8 @@
 #include "module_dependencies.h"
 #include "timezone_translation.h"
 
+#include "gcc_warnings.h"
+
 extern "C" void sntp_sync_time(struct timeval *tv)
 {
 #if MODULE_RTC_AVAILABLE()
@@ -140,7 +142,7 @@ void NTP::set_synced(bool synced)
 }
 
 void NTP::set_api_time(struct timeval time) {
-    state.get("time")->updateUint(time.tv_sec / 60);
+    state.get("time")->updateUint(static_cast<uint32_t>(time.tv_sec / 60)); // This will overflow in 10135 CE, which seems safe enough.
 }
 
 void NTP::register_urls()
