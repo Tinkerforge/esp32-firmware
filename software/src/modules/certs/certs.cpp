@@ -22,16 +22,17 @@
 #include <mbedtls/pem.h>
 #include <mbedtls/error.h>
 
+#include "event_log_prefix.h"
 #include "module_dependencies.h"
 
 #define CERT_DIRECTORY "/certs"
 
 static inline String get_cert_path(uint8_t cert_id) {
-    return String(CERT_DIRECTORY "/") + cert_id;
+    return StringSumHelper(CERT_DIRECTORY "/") + cert_id;
 }
 
 static inline String get_cert_name_path(uint8_t cert_id) {
-    return String(CERT_DIRECTORY "/") + cert_id + "_name";
+    return StringSumHelper(CERT_DIRECTORY "/") + cert_id + "_name";
 }
 
 void Certs::pre_setup()
@@ -164,7 +165,7 @@ void Certs::register_urls()
     api.addState("certs/state", &state);
 
     api.addCommand("certs/add", &add, {}, [this](String &errmsg) {
-        if (add.get("cert")->asString().length() == 0) {
+        if (add.get("cert")->asString().isEmpty()) {
             errmsg = "Adding an empty certificate is not allowed. Did you mean to call certs/modify?";
             return;
         }
@@ -180,18 +181,19 @@ void Certs::register_urls()
 
         {
             File f = LittleFS.open(get_cert_name_path(cert_id), "w");
-            auto cert_name = add.get("name")->asString();
+            const String &cert_name = add.get("name")->asString();
             f.write((const uint8_t *) cert_name.c_str(), cert_name.length());
         }
 
         {
             File f = LittleFS.open(get_cert_path(cert_id), "w");
             // TODO: more robust writing
-            auto &cert = add.get("cert")->asString();
+            const String &cert = add.get("cert")->asString();
             f.write((const uint8_t *) cert.c_str(), cert.length());
         }
 
         // Cert is written into flash. Drop from config to free memory.
+        add.get("name")->clearString();
         add.get("cert")->clearString();
 
         this->update_state();
@@ -208,23 +210,25 @@ void Certs::register_urls()
         }
 
         if (!found) {
-            errmsg = String("No cert with ID ") + cert_id + " found! Did you mean to call certs/add?";
+            errmsg = StringSumHelper("No cert with ID ") + cert_id + " found! Did you mean to call certs/add?";
+            return;
         }
 
         {
             File f = LittleFS.open(get_cert_name_path(cert_id), "w");
-            auto cert_name = add.get("name")->asString();
+            const String &cert_name = add.get("name")->asString();
             f.write((const uint8_t *) cert_name.c_str(), cert_name.length());
         }
 
-        if (add.get("cert")->asString().length() != 0) {
-            File f = LittleFS.open(get_cert_path(cert_id), "w");
+        if (!add.get("cert")->asString().isEmpty()) { // TODO: Should empty certificats really be accepted here?
+            File f = LittleFS.open(get_cert_path(cert_id), "w"); // TODO: Does this truncate a larger existing file?
             // TODO: more robust writing
-            auto &cert = add.get("cert")->asString();
+            const String &cert = add.get("cert")->asString();
             f.write((const uint8_t *) cert.c_str(), cert.length());
         }
 
         // Cert is written into flash. Drop from config to free memory.
+        add.get("name")->clearString();
         add.get("cert")->clearString();
 
         this->update_state();
@@ -248,21 +252,37 @@ void Certs::register_urls()
 
 std::unique_ptr<unsigned char[]> Certs::get_cert(uint8_t cert_id, size_t *out_cert_len)
 {
-    String path = get_cert_path(cert_id);
+    const String path = get_cert_path(cert_id);
 
     if (!LittleFS.exists(path)) {
         return nullptr;
     }
 
     File f = LittleFS.open(path, "r");
+
+    if (!f) { // Must check for valid handle because read() will return SIZE_MAX on invalid handle.
+        logger.printfln("Error opening cert %hhu file: %s (%i)", cert_id, strerror(errno), errno);
+        return nullptr;
+    }
+
+    const size_t file_size = f.size();
+
     // Allocate one byte more so that the cert is also null-terminated.
     // Some ESP-IDF APIs need both a null-terminated string _and_ passing the strings length.
-    auto result = heap_alloc_array<unsigned char>(f.size() + 1);
-    size_t buf_size = f.size();
-    while (f.available())
-        buf_size -= f.read(result.get(), buf_size);
+    auto cert_data = heap_alloc_array<unsigned char>(file_size + 1);
 
-    *out_cert_len = f.size();
-    result[*out_cert_len] = 0;
-    return result;
+    size_t bytes_read = f.read(cert_data.get(), file_size);
+
+    if (bytes_read != file_size) {
+        logger.printfln("Failed to read cert %hhu: got %zu/%zu bytes, %s (%i)", cert_id, bytes_read, file_size, strerror(errno), errno);
+    }
+
+    bytes_read = std::min(bytes_read, file_size); // Safeguard against bytes_read > file_size because read() might return SIZE_MAX.
+    cert_data[bytes_read] = 0;
+
+    if (out_cert_len) {
+        *out_cert_len = bytes_read;
+    }
+
+    return cert_data;
 }
