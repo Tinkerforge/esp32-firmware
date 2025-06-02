@@ -1195,6 +1195,7 @@ en_hyph = [
     "in-ter-faces",
     "over-lap-ping",
     "con-fig-u-ra-tions",
+    "per-spec-tive",
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
