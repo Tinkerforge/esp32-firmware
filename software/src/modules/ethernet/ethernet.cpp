@@ -29,14 +29,16 @@
 #include "module_dependencies.h"
 
 #include <ETH.h>
-#include <WiFiGeneric.h> // for calculateSubnetCIDR
 #include <esp_eth.h>
 
 #include "event_log_prefix.h"
 
 #include "build.h"
 #include "tools.h"
+#include "tools/malloc.h"
 #include "tools/net.h"
+
+#include "gcc_warnings.h"
 
 extern char local_uid_str[32];
 
@@ -93,10 +95,10 @@ void Ethernet::pre_setup()
 
 void Ethernet::print_con_duration()
 {
-    if (was_connected) {
-        was_connected = false;
-        auto connected_for = now_us() - last_connected;
-        logger.printfln("Was connected for %lu seconds.", connected_for.to<seconds_t>().as<uint32_t>());
+    if (runtime_data->was_connected) {
+        runtime_data->was_connected = false;
+        const uint32_t connected_for = now_us().to<seconds_t>().as<uint32_t>() - runtime_data->last_connected_s;
+        logger.printfln("Was connected for %lu seconds.", connected_for);
     }
 }
 
@@ -113,18 +115,32 @@ void Ethernet::setup()
     api.addFeature("ethernet");
     api.restorePersistentConfig("ethernet/config", &config);
 
-    config_in_use = config.get_owned_copy();
-
-    connection_state = EthernetState::NotConfigured;
-    state.get("connection_state")->updateEnum(connection_state);
-
     initialized = true;
 
-    if (!config_in_use.get("enable_ethernet")->asBool())
+    if (!config.get("enable_ethernet")->asBool()) {
         return;
+    }
 
-    connection_state = EthernetState::NotConnected;
-    state.get("connection_state")->updateEnum(connection_state);
+    runtime_data = static_cast<decltype(runtime_data)>(malloc_psram_or_dram(sizeof(*runtime_data)));
+
+    if (!runtime_data) {
+        logger.printfln("Failed to allocate memory for Ethernet runtime data");
+        return;
+    }
+
+    ip4_addr_t subnet_tmp;
+    ip4addr_aton(config.get("ip"     )->asUnsafeCStr(), &runtime_data->ip);
+    ip4addr_aton(config.get("gateway")->asUnsafeCStr(), &runtime_data->gateway);
+    ip4addr_aton(config.get("dns"    )->asUnsafeCStr(), &runtime_data->dns);
+    ip4addr_aton(config.get("dns2"   )->asUnsafeCStr(), &runtime_data->dns2);
+    ip4addr_aton(config.get("subnet" )->asUnsafeCStr(), &subnet_tmp);
+    runtime_data->subnet_cidr = tf_ip4addr_mask2cidr(subnet_tmp);
+
+    runtime_data->connection_state = EthernetState::NotConnected;
+    state.get("connection_state")->updateEnum(runtime_data->connection_state);
+
+    runtime_data->was_connected = false;
+    runtime_data->last_connected_s = 0;
 
     Network.begin();
 
@@ -140,10 +156,10 @@ void Ethernet::setup()
 #endif
             ETH.setHostname(hostname.c_str()); // Underlying API creates a copy.
 
-            connection_state = EthernetState::NotConnected;
+            this->runtime_data->connection_state = EthernetState::NotConnected;
 
             task_scheduler.scheduleOnce([this]() {
-                state.get("connection_state")->updateEnum(connection_state);
+                state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
             });
         },
         ARDUINO_EVENT_ETH_START);
@@ -157,13 +173,12 @@ void Ethernet::setup()
                 delay(40);
             }
 
-            const IPAddress ip{config_in_use.get("ip")->asUnsafeCStr()};
-            if (static_cast<uint32_t>(ip) != 0) {
-                ETH.config(ip,
-                           {config_in_use.get("gateway")->asUnsafeCStr()},
-                           {config_in_use.get("subnet" )->asUnsafeCStr()},
-                           {config_in_use.get("dns"    )->asUnsafeCStr()},
-                           {config_in_use.get("dns2"   )->asUnsafeCStr()});
+            if (this->runtime_data->ip.addr != 0) {
+                ETH.config({this->runtime_data->ip.addr     },
+                           {this->runtime_data->gateway.addr},
+                           {tf_ip4addr_cidr2mask(this->runtime_data->subnet_cidr).addr},
+                           {this->runtime_data->dns.addr    },
+                           {this->runtime_data->dns2.addr   });
             } else {
                 ETH.config();
             }
@@ -179,10 +194,10 @@ void Ethernet::setup()
                             full_duplex ? "Full" : "Half",
                             mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
-            connection_state = EthernetState::Connecting;
+            this->runtime_data->connection_state = EthernetState::Connecting;
 
             task_scheduler.scheduleOnce([this, link_speed, full_duplex]() {
-                state.get("connection_state")->updateEnum(connection_state);
+                state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
                 state.get("link_speed" )->updateUint(link_speed);
                 state.get("full_duplex")->updateBool(full_duplex);
 
@@ -204,14 +219,14 @@ void Ethernet::setup()
             tf_ip4addr_ntoa(&ip_info.gw, gw_str, ARRAY_SIZE(gw_str));
             const uint32_t subnet = ip_info.netmask.addr;
 
-            logger.printfln("Got IP address: %s/%i, GW %s", ip_str, __builtin_clz(~ntohl(subnet)), gw_str);
+            logger.printfln("Got IP address: %s/%i, GW %s", ip_str, tf_ip4addr_mask2cidr(ip4_addr_t{subnet}), gw_str);
 
             const micros_t now = now_us();
-            was_connected = true;
-            last_connected = now;
+            this->runtime_data->was_connected = true;
+            this->runtime_data->last_connected_s = now.to<seconds_t>().as<uint32_t>();
             const uint32_t now_ms = now.to<millis_t>().as<uint32_t>();
 
-            connection_state = EthernetState::Connected;
+            this->runtime_data->connection_state = EthernetState::Connected;
 
             const String ip_string{ip_str};
             task_scheduler.scheduleOnce([this, now_ms, ip_string, subnet]() {
@@ -220,7 +235,7 @@ void Ethernet::setup()
 
                 state.get("ip"    )->updateString(ip_string);
                 state.get("subnet")->updateString(subnet_str);
-                state.get("connection_state")->updateEnum(connection_state);
+                state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
                 state.get("connection_start")->updateUint(now_ms);
             });
         },
@@ -237,13 +252,15 @@ void Ethernet::setup()
 
             uint32_t now_ms = now_us().to<millis_t>().as<uint32_t>();
 
-            // Restart DHCP to make sure that the GOT_IP event fires when receiving the same address as before.
-            ETH.config();
+            // Restart DHCP, if it's enabled, to make sure that the GOT_IP event fires when receiving the same address as before.
+            if (this->runtime_data->ip.addr == 0) {
+                ETH.config();
+            }
 
-            connection_state = EthernetState::Connecting;
+            this->runtime_data->connection_state = EthernetState::Connecting;
 
             task_scheduler.scheduleOnce([this, now_ms]() {
-                state.get("connection_state")->updateEnum(connection_state);
+                state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
                 state.get("ip")->updateString("0.0.0.0");
                 state.get("subnet")->updateString("0.0.0.0");
                 state.get("connection_end")->updateUint(now_ms);
@@ -257,10 +274,10 @@ void Ethernet::setup()
 
             uint32_t now_ms = now_us().to<millis_t>().as<uint32_t>();
 
-            connection_state = EthernetState::NotConnected;
+            this->runtime_data->connection_state = EthernetState::NotConnected;
 
             task_scheduler.scheduleOnce([this, now_ms]() {
-                state.get("connection_state")->updateEnum(connection_state);
+                state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
                 state.get("ip")->updateString("0.0.0.0");
                 state.get("subnet")->updateString("0.0.0.0");
                 state.get("connection_end")->updateUint(now_ms);
@@ -274,16 +291,24 @@ void Ethernet::setup()
 
             uint32_t now_ms = now_us().to<millis_t>().as<uint32_t>();
 
-            connection_state = EthernetState::NotConnected;
+            this->runtime_data->connection_state = EthernetState::NotConnected;
 
             task_scheduler.scheduleOnce([this, now_ms]() {
-                state.get("connection_state")->updateEnum(connection_state);
+                state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
                 state.get("connection_end")->updateUint(now_ms);
             });
         },
         ARDUINO_EVENT_ETH_STOP);
 
     ETH.setTaskStackSize(2048);
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+
+    // pdPASS expands to an old-style cast that is also useless
+    #pragma GCC diagnostic ignored "-Wold-style-cast"
+    #pragma GCC diagnostic ignored "-Wuseless-cast"
+#endif
 
     const BaseType_t ret = xTaskCreatePinnedToCore(eth_async_begin, "eth_async_begin", 2560, nullptr, ESP_TASK_PRIO_MAX - 2, nullptr, 1);
     if (ret == pdPASS) {
@@ -294,6 +319,10 @@ void Ethernet::setup()
             logger.printfln("Start failed. PHY broken?");
         }
     }
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
 }
 
 void Ethernet::register_urls()
@@ -312,12 +341,13 @@ void Ethernet::register_urls()
 
 EthernetState Ethernet::get_connection_state() const
 {
-    if (!initialized)
+    if (!runtime_data) {
         return EthernetState::NotConfigured;
-    return this->connection_state;
+    }
+    return runtime_data->connection_state;
 }
 
 bool Ethernet::is_enabled() const
 {
-    return config_in_use.get("enable_ethernet")->asBool();
+    return runtime_data != nullptr;
 }

@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include <lwip/ip4_addr.h>
+
 #include "module.h"
 #include "config.h"
 #include "ethernet_state.enum.h"
@@ -31,18 +33,27 @@ public:
     void setup() override;
     void register_urls() override;
 
-    bool was_connected = false;
-    micros_t last_connected = 0_us;
-
     EthernetState get_connection_state() const;
     bool is_enabled() const;
 
     void print_con_duration();
 
 private:
+
+    struct eth_runtime {
+        ip4_addr_t ip;
+        ip4_addr_t gateway;
+        ip4_addr_t dns;
+        ip4_addr_t dns2;
+        uint8_t subnet_cidr;
+
+        EthernetState connection_state;
+        bool was_connected;
+        uint32_t last_connected_s;
+    };
+
     ConfigRoot config;
     ConfigRoot state;
 
-    OwnedConfig config_in_use;
-    EthernetState connection_state = EthernetState::NotConfigured;
+    eth_runtime *runtime_data = nullptr;
 };
