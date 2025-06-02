@@ -604,7 +604,7 @@ export function timestamp_sec_to_date(timestamp_seconds: number, unsynced_string
     return timestamp_to_date(timestamp_seconds * 1000, {hour: '2-digit', minute: '2-digit', second: '2-digit'});
 }
 
-export function upload(data: Blob, url: string, progress: (i: number) => void = i => {}, contentType?: string, timeout_ms: number = 5000) {
+export function upload(data: Blob, url: string, progress: (i: number) => void = i => {}, contentType?: string, timeout_ms: number = 10*1000) {
     const xhr = new XMLHttpRequest();
     progress(0);
 
@@ -612,7 +612,6 @@ export function upload(data: Blob, url: string, progress: (i: number) => void = 
 
     if (remoteAccessMode) {
         url = path + (url.startsWith("/") ? "" : "/") + url;
-        timeout_ms *= 2;
     }
 
     return new Promise<void>((resolve, reject) => {
@@ -652,11 +651,7 @@ export function upload(data: Blob, url: string, progress: (i: number) => void = 
     });
 }
 
-export async function download(url: string, timeout_ms: number = 5000) {
-    if (remoteAccessMode) {
-        timeout_ms *= 2;
-    }
-
+export async function download(url: string, timeout_ms: number = 10*1000) {
     let abort = new AbortController();
     let timeout = setTimeout(() => abort.abort(), timeout_ms);
 
@@ -677,11 +672,7 @@ export async function download(url: string, timeout_ms: number = 5000) {
     return await response.blob();
 }
 
-export async function put(url: string, payload: any, timeout_ms: number = 5000) {
-    if (remoteAccessMode) {
-        timeout_ms *= 2;
-    }
-
+export async function put(url: string, payload: any, timeout_ms: number = 10*1000) {
     let abort = new AbortController();
     let timeout = setTimeout(() => abort.abort(), timeout_ms);
 

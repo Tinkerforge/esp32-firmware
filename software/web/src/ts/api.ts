@@ -172,11 +172,11 @@ export function reset_unchecked<T extends string>(topic: T, error_string?: () =>
     return Promise.resolve();
 }
 
-export async function call<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string?: () => string, reboot_string?: () => string, timeout_ms: number = 5000) {
+export async function call<T extends keyof ConfigMap>(topic: T, payload: ConfigMap[T], error_string?: () => string, reboot_string?: () => string, timeout_ms: number = 10*1000) {
     return call_unchecked(topic, payload, error_string, reboot_string, timeout_ms);
 }
 
-export async function call_unchecked(topic: string, payload: any, error_string?: () => string, reboot_string?: () => string, timeout_ms: number = 5000) {
+export async function call_unchecked(topic: string, payload: any, error_string?: () => string, reboot_string?: () => string, timeout_ms: number = 10*1000) {
     try {
         let blob = await util.put('/' + topic, payload, timeout_ms);
         if (reboot_string) {
