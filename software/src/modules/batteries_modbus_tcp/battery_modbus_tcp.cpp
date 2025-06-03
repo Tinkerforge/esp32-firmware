@@ -25,33 +25,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
-#include "modules/modbus_tcp_client/modbus_register_address_mode.enum.h"
 #include "modules/modbus_tcp_client/modbus_tcp_tools.h"
-
-static BatteryModbusTCP::ValueTable *read_table_config(const Config *config)
-{
-    // FIXME: leaking this, because as of right now battery instances don't get destroyed
-    BatteryModbusTCP::ValueTable *table = new BatteryModbusTCP::ValueTable;
-
-    table->device_address = static_cast<uint8_t>(config->get("device_address")->asUint());
-
-    const Config *registers_config = static_cast<const Config *>(config->get("registers"));
-    size_t registers_count         = registers_config->count();
-
-    // FIXME: leaking this, because as of right now battery instances don't get destroyed
-    BatteryModbusTCP::ValueSpec *values = new BatteryModbusTCP::ValueSpec[registers_count];
-
-    for (size_t i = 0; i < registers_count; ++i) {
-        values[i].register_type = registers_config->get(i)->get("rtype")->asEnum<ModbusRegisterType>();
-        values[i].start_address = static_cast<uint16_t>(registers_config->get(i)->get("addr")->asUint());
-        values[i].value         = static_cast<uint16_t>(registers_config->get(i)->get("value")->asUint());
-    }
-
-    table->values = values;
-    table->values_length = registers_count;
-
-    return table;
-}
 
 BatteryClassID BatteryModbusTCP::get_class() const
 {
@@ -72,10 +46,11 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
     case BatteryModbusTCPTableID::Custom: {
             const Config *table_config = static_cast<const Config *>(ephemeral_config.get("table")->get());
 
-            custom_table_permit_grid_charge          = read_table_config(static_cast<const Config *>(table_config->get("permit_grid_charge")));
-            custom_table_revoke_grid_charge_override = read_table_config(static_cast<const Config *>(table_config->get("revoke_grid_charge_override")));
-            custom_table_forbid_discharge            = read_table_config(static_cast<const Config *>(table_config->get("forbid_discharge")));
-            custom_table_revoke_discharge_override   = read_table_config(static_cast<const Config *>(table_config->get("revoke_discharge_override")));
+            // FIXME: leaking this, because as of right now battery instances don't get destroyed
+            custom_table_permit_grid_charge          = BatteriesModbusTCP::read_table_config(static_cast<const Config *>(table_config->get("permit_grid_charge")));
+            custom_table_revoke_grid_charge_override = BatteriesModbusTCP::read_table_config(static_cast<const Config *>(table_config->get("revoke_grid_charge_override")));
+            custom_table_forbid_discharge            = BatteriesModbusTCP::read_table_config(static_cast<const Config *>(table_config->get("forbid_discharge")));
+            custom_table_revoke_discharge_override   = BatteriesModbusTCP::read_table_config(static_cast<const Config *>(table_config->get("revoke_discharge_override")));
 
             tables[static_cast<uint32_t>(IBattery::Action::PermitGridCharge)]         = custom_table_permit_grid_charge;
             tables[static_cast<uint32_t>(IBattery::Action::RevokeGridChargeOverride)] = custom_table_revoke_grid_charge_override;
@@ -163,14 +138,14 @@ void BatteryModbusTCP::write_next()
         return;
     }
 
-    const ValueTable *table = tables[static_cast<uint32_t>(current_action)];
+    const BatteriesModbusTCP::ValueTable *table = tables[static_cast<uint32_t>(current_action)];
 
     if (current_action_index >= table->values_length) {
-        has_current_action = false; // action is complete
+        has_current_action = false; // action is done
         return;
     }
 
-    const ValueSpec *spec = &table->values[current_action_index];
+    const BatteriesModbusTCP::ValueSpec *spec = &table->values[current_action_index];
     TFModbusTCPFunctionCode function_code;
 
     switch (spec->register_type) {
