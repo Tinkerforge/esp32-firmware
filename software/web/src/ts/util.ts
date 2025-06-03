@@ -538,30 +538,32 @@ export function countBits(x: number) {
     return x;
 }
 
-export function downloadToFile(content: BlobPart, fileType: string, extension: string, contentType: string, timestamp?: Date) {
-    if (timestamp === undefined) {
-        timestamp = new Date();
-    }
-
+export function downloadToFile(content: BlobPart, filename: string, contentType: string) {
     const a = document.createElement('a');
     const file = new Blob([content], {type: contentType});
-    let timestamp_str = iso8601ButLocal(timestamp).replace(/:/gi, "-").replace(/\./gi, "-");
-    let name = API.get_unchecked('info/name')?.name ?? "unknown_uid";
-
-    let filename = name + "-" + fileType + "-" + timestamp_str + "." + extension;
-    filename = removeUnicodeHacks(filename);
-
     const url = URL.createObjectURL(file);
 
     if (is_native_median_app()) {
         Median.share.downloadFile({url: url});
     } else {
         a.href = url
-        a.download = filename;
+        a.download = removeUnicodeHacks(filename);
         a.click();
     }
 
     URL.revokeObjectURL(a.href);
+}
+
+export function downloadToTimestampedFile(content: BlobPart, fileType: string, extension: string, contentType: string, timestamp?: Date) {
+    if (timestamp === undefined) {
+        timestamp = new Date();
+    }
+
+    let timestamp_str = iso8601ButLocal(timestamp).replace(/:/gi, "-").replace(/\./gi, "-");
+    let name = API.get_unchecked('info/name')?.name ?? "unknown_uid";
+    let filename = name + "-" + fileType + "-" + timestamp_str + "." + extension;
+
+    downloadToFile(content, filename, contentType);
 }
 
 function timestamp_to_date(timestamp: number, time_fmt: any) {
