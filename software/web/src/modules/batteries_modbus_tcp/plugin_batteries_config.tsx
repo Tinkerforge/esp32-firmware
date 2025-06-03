@@ -28,11 +28,11 @@ import { BatteryModbusTCPTableID } from "./battery_modbus_tcp_table_id.enum";
 import { ModbusRegisterType } from "../modbus_tcp_client/modbus_register_type.enum";
 import { ModbusRegisterAddressMode } from "../modbus_tcp_client/modbus_register_address_mode.enum";
 import { InputText, InputTextPatterned } from "../../ts/components/input_text";
+import { CollapsedSection } from "../../ts/components/collapsed_section";
 import { InputNumber } from "../../ts/components/input_number";
 import { InputAnyFloat } from "../../ts/components/input_any_float";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
-import { FormSeparator } from "../../ts/components/form_separator";
 import { Table, TableRow } from "../../ts/components/table";
 
 const MAX_CUSTOM_REGISTERS = 16;
@@ -224,6 +224,93 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
     }
 }
 
+interface ExecutorProps {
+    host: string;
+    port: number;
+    table: RegisterTable;
+}
+
+interface ExecutorState {
+    waiting: boolean;
+    cookie: number;
+    result: string;
+}
+
+class Executor extends Component<ExecutorProps, ExecutorState> {
+    constructor(props: ExecutorProps) {
+        super(props);
+
+        this.state = {
+            waiting: false,
+            cookie: null,
+            result: "",
+        } as ExecutorState;
+
+        util.addApiEventListener('batteries_modbus_tcp/execute_result', () => {
+            let execute_result = API.get('batteries_modbus_tcp/execute_result');
+
+            if (!this.state.waiting || execute_result.cookie !== this.state.cookie) {
+                return;
+            }
+
+            let result: string = __("batteries_modbus_tcp.content.execute_done");
+
+            if (execute_result.error !== null) {
+                result = __("batteries_modbus_tcp.content.execute_error_prefix") + execute_result.error; // FIXME: translate
+            }
+
+            this.setState({waiting: false, cookie: null, result: result});
+        });
+    }
+
+    async execute() {
+        let cookie: number = Math.floor(Math.random() * 0xFFFFFFFF);
+
+        this.setState({waiting: true, cookie: cookie, result: ""}, async () => {
+            let result = "<unknown>";
+
+            try {
+                result = await (await util.put("/batteries_modbus_tcp/execute", {
+                    host: this.props.host,
+                    port: this.props.port,
+                    table: [BatteryModbusTCPTableID.Custom, {
+                        device_address: this.props.table.device_address,
+                        registers: this.props.table.registers,
+                    }],
+                    cookie: cookie,
+                })).text();
+            }
+            catch (e) {
+                result = e.message.replace("400(Bad Request) ", "");
+            }
+
+            if (result.length > 0) {
+                this.setState({waiting: false, cookie: null, result: __("batteries_modbus_tcp.content.execute_error_prefix") + result});
+            }
+        });
+    }
+
+    render() {
+        return <>
+            <FormRow label="">
+                <Button
+                    variant="primary"
+                    className="form-control"
+                    disabled={this.props.table.registers.length == 0 || this.state.waiting}
+                    onClick={async () => await this.execute()}>{__("batteries_modbus_tcp.content.execute")}
+                </Button>
+            </FormRow>
+
+            {this.state.waiting || this.state.result.length > 0 ?
+                <FormRow label={__("batteries_modbus_tcp.content.execute_response")}>
+                    <InputText value={this.state.waiting ? __("batteries_modbus_tcp.content.execute_waiting") : this.state.result} />
+                </FormRow>
+                : undefined}
+        </>;
+    }
+
+}
+
 export function init() {
     return {
         [BatteryClassID.ModbusTCP]: {
@@ -279,157 +366,133 @@ export function init() {
 
                 if (util.hasValue(config[1].table) && config[1].table[0] == BatteryModbusTCPTableID.Custom) {
                     edit_children.push(
-                        <FormSeparator heading={__("batteries_modbus_tcp.content.permit_grid_charge")}>
-                            <div class="mb-2 ml-auto col-auto">
-                                <Button variant="primary"
-                                        /* FIXME: don't hardcode battery slot 0 here */
-                                        onClick={() => API.call('batteries/0/permit_grid_charge', {}, () => __("batteries_modbus_tcp.content.execute_failed"))}>
-                                        {__("batteries_modbus_tcp.content.execute")}
-                                </Button>
-                            </div>
-                        </FormSeparator>,
-                        <FormRow label={__("batteries_modbus_tcp.content.device_address")}>
-                            <InputNumber
-                                required
-                                min={0}
-                                max={255}
-                                value={config[1].table[1].permit_grid_charge.device_address}
-                                onValue={(v) => {
-                                    on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {permit_grid_charge: {...(config[1].table as TableConfigCustom)[1].permit_grid_charge, device_address: v}})}));
-                                }} />
-                        </FormRow>,
-                        <FormRow label={__("batteries_modbus_tcp.content.register_address_mode")}>
-                            <InputSelect
-                                required
-                                items={[
-                                    [ModbusRegisterAddressMode.Address.toString(), __("batteries_modbus_tcp.content.register_address_mode_address")],
-                                    [ModbusRegisterAddressMode.Number.toString(), __("batteries_modbus_tcp.content.register_address_mode_number")]
-                                ]}
-                                placeholder={__("select")}
-                                value={util.hasValue(config[1].table[1].permit_grid_charge.register_address_mode) ? config[1].table[1].permit_grid_charge.register_address_mode.toString() : undefined}
-                                onValue={(v) => {
-                                    on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {permit_grid_charge: {...(config[1].table as TableConfigCustom)[1].permit_grid_charge, register_address_mode: parseInt(v)}})}));
-                                }} />
-                        </FormRow>,
-                        <FormRow label={__("batteries_modbus_tcp.content.registers")}>
-                            <RegisterEditor
-                                table={config[1].table[1].permit_grid_charge}
-                                on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {permit_grid_charge: table})}))} />
-                        </FormRow>,
+                        <CollapsedSection heading={__("batteries_modbus_tcp.content.permit_grid_charge")} modal={true}>
+                            <FormRow label={__("batteries_modbus_tcp.content.device_address")}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={255}
+                                    value={config[1].table[1].permit_grid_charge.device_address}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {permit_grid_charge: {...(config[1].table as TableConfigCustom)[1].permit_grid_charge, device_address: v}})}));
+                                    }} />
+                            </FormRow>
+                            <FormRow label={__("batteries_modbus_tcp.content.register_address_mode")}>
+                                <InputSelect
+                                    required
+                                    items={[
+                                        [ModbusRegisterAddressMode.Address.toString(), __("batteries_modbus_tcp.content.register_address_mode_address")],
+                                        [ModbusRegisterAddressMode.Number.toString(), __("batteries_modbus_tcp.content.register_address_mode_number")]
+                                    ]}
+                                    placeholder={__("select")}
+                                    value={util.hasValue(config[1].table[1].permit_grid_charge.register_address_mode) ? config[1].table[1].permit_grid_charge.register_address_mode.toString() : undefined}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {permit_grid_charge: {...(config[1].table as TableConfigCustom)[1].permit_grid_charge, register_address_mode: parseInt(v)}})}));
+                                    }} />
+                            </FormRow>
+                            <FormRow label={__("batteries_modbus_tcp.content.registers")}>
+                                <RegisterEditor
+                                    table={config[1].table[1].permit_grid_charge}
+                                    on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {permit_grid_charge: table})}))} />
+                            </FormRow>
+                            <Executor host={config[1].host} port={config[1].port} table={config[1].table[1].permit_grid_charge} />
+                        </CollapsedSection>,
 
-                        <FormSeparator heading={__("batteries_modbus_tcp.content.revoke_grid_charge_override")}>
-                            <div class="mb-2 ml-auto col-auto">
-                                <Button variant="primary"
-                                        /* FIXME: don't hardcode battery slot 0 here */
-                                        onClick={() => API.call('batteries/0/revoke_grid_charge_override', {}, () => __("batteries_modbus_tcp.content.execute_failed"))}>
-                                        {__("batteries_modbus_tcp.content.execute")}
-                                </Button>
-                            </div>
-                        </FormSeparator>,
-                        <FormRow label={__("batteries_modbus_tcp.content.device_address")}>
-                            <InputNumber
-                                required
-                                min={0}
-                                max={255}
-                                value={config[1].table[1].revoke_grid_charge_override.device_address}
-                                onValue={(v) => {
-                                    on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_grid_charge_override: {...(config[1].table as TableConfigCustom)[1].revoke_grid_charge_override, device_address: v}})}));
-                                }} />
-                        </FormRow>,
-                        <FormRow label={__("batteries_modbus_tcp.content.register_address_mode")}>
-                            <InputSelect
-                                required
-                                items={[
-                                    [ModbusRegisterAddressMode.Address.toString(), __("batteries_modbus_tcp.content.register_address_mode_address")],
-                                    [ModbusRegisterAddressMode.Number.toString(), __("batteries_modbus_tcp.content.register_address_mode_number")]
-                                ]}
-                                placeholder={__("select")}
-                                value={util.hasValue(config[1].table[1].revoke_grid_charge_override.register_address_mode) ? config[1].table[1].revoke_grid_charge_override.register_address_mode.toString() : undefined}
-                                onValue={(v) => {
-                                    on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_grid_charge_override: {...(config[1].table as TableConfigCustom)[1].revoke_grid_charge_override, register_address_mode: parseInt(v)}})}));
-                                }} />
-                        </FormRow>,
-                        <FormRow label={__("batteries_modbus_tcp.content.registers")}>
-                            <RegisterEditor
-                                table={config[1].table[1].revoke_grid_charge_override}
-                                on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_grid_charge_override: table})}))} />
-                        </FormRow>,
+                        <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_grid_charge_override")} modal={true}>
+                            <FormRow label={__("batteries_modbus_tcp.content.device_address")}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={255}
+                                    value={config[1].table[1].revoke_grid_charge_override.device_address}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_grid_charge_override: {...(config[1].table as TableConfigCustom)[1].revoke_grid_charge_override, device_address: v}})}));
+                                    }} />
+                            </FormRow>
+                            <FormRow label={__("batteries_modbus_tcp.content.register_address_mode")}>
+                                <InputSelect
+                                    required
+                                    items={[
+                                        [ModbusRegisterAddressMode.Address.toString(), __("batteries_modbus_tcp.content.register_address_mode_address")],
+                                        [ModbusRegisterAddressMode.Number.toString(), __("batteries_modbus_tcp.content.register_address_mode_number")]
+                                    ]}
+                                    placeholder={__("select")}
+                                    value={util.hasValue(config[1].table[1].revoke_grid_charge_override.register_address_mode) ? config[1].table[1].revoke_grid_charge_override.register_address_mode.toString() : undefined}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_grid_charge_override: {...(config[1].table as TableConfigCustom)[1].revoke_grid_charge_override, register_address_mode: parseInt(v)}})}));
+                                    }} />
+                            </FormRow>
+                            <FormRow label={__("batteries_modbus_tcp.content.registers")}>
+                                <RegisterEditor
+                                    table={config[1].table[1].revoke_grid_charge_override}
+                                    on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_grid_charge_override: table})}))} />
+                            </FormRow>
+                            <Executor host={config[1].host} port={config[1].port} table={config[1].table[1].revoke_grid_charge_override} />
+                        </CollapsedSection>,
 
-                        <FormSeparator heading={__("batteries_modbus_tcp.content.forbid_discharge")}>
-                            <div class="mb-2 ml-auto col-auto">
-                                <Button variant="primary"
-                                        /* FIXME: don't hardcode battery slot 0 here */
-                                        onClick={() => API.call('batteries/0/forbid_discharge', {}, () => __("batteries_modbus_tcp.content.execute_failed"))}>
-                                        {__("batteries_modbus_tcp.content.execute")}
-                                </Button>
-                            </div>
-                        </FormSeparator>,
-                        <FormRow label={__("batteries_modbus_tcp.content.device_address")}>
-                            <InputNumber
-                                required
-                                min={0}
-                                max={255}
-                                value={config[1].table[1].forbid_discharge.device_address}
-                                onValue={(v) => {
-                                    on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_discharge: {...(config[1].table as TableConfigCustom)[1].forbid_discharge, device_address: v}})}));
-                                }} />
-                        </FormRow>,
-                        <FormRow label={__("batteries_modbus_tcp.content.register_address_mode")}>
-                            <InputSelect
-                                required
-                                items={[
-                                    [ModbusRegisterAddressMode.Address.toString(), __("batteries_modbus_tcp.content.register_address_mode_address")],
-                                    [ModbusRegisterAddressMode.Number.toString(), __("batteries_modbus_tcp.content.register_address_mode_number")]
-                                ]}
-                                placeholder={__("select")}
-                                value={util.hasValue(config[1].table[1].forbid_discharge.register_address_mode) ? config[1].table[1].forbid_discharge.register_address_mode.toString() : undefined}
-                                onValue={(v) => {
-                                    on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_discharge: {...(config[1].table as TableConfigCustom)[1].forbid_discharge, register_address_mode: parseInt(v)}})}));
-                                }} />
-                        </FormRow>,
-                        <FormRow label={__("batteries_modbus_tcp.content.registers")}>
-                            <RegisterEditor
-                                table={config[1].table[1].forbid_discharge}
-                                on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_discharge: table})}))} />
-                        </FormRow>,
+                        <CollapsedSection heading={__("batteries_modbus_tcp.content.forbid_discharge")} modal={true}>
+                            <FormRow label={__("batteries_modbus_tcp.content.device_address")}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={255}
+                                    value={config[1].table[1].forbid_discharge.device_address}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_discharge: {...(config[1].table as TableConfigCustom)[1].forbid_discharge, device_address: v}})}));
+                                    }} />
+                            </FormRow>
+                            <FormRow label={__("batteries_modbus_tcp.content.register_address_mode")}>
+                                <InputSelect
+                                    required
+                                    items={[
+                                        [ModbusRegisterAddressMode.Address.toString(), __("batteries_modbus_tcp.content.register_address_mode_address")],
+                                        [ModbusRegisterAddressMode.Number.toString(), __("batteries_modbus_tcp.content.register_address_mode_number")]
+                                    ]}
+                                    placeholder={__("select")}
+                                    value={util.hasValue(config[1].table[1].forbid_discharge.register_address_mode) ? config[1].table[1].forbid_discharge.register_address_mode.toString() : undefined}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_discharge: {...(config[1].table as TableConfigCustom)[1].forbid_discharge, register_address_mode: parseInt(v)}})}));
+                                    }} />
+                            </FormRow>
+                            <FormRow label={__("batteries_modbus_tcp.content.registers")}>
+                                <RegisterEditor
+                                    table={config[1].table[1].forbid_discharge}
+                                    on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_discharge: table})}))} />
+                            </FormRow>
+                            <Executor host={config[1].host} port={config[1].port} table={config[1].table[1].forbid_discharge} />
+                        </CollapsedSection>,
 
-                        <FormSeparator heading={__("batteries_modbus_tcp.content.revoke_discharge_override")}>
-                            <div class="mb-2 ml-auto col-auto">
-                                <Button variant="primary"
-                                        /* FIXME: don't hardcode battery slot 0 here */
-                                        onClick={() => API.call('batteries/0/revoke_discharge_override', {}, () => __("batteries_modbus_tcp.content.execute_failed"))}>
-                                        {__("batteries_modbus_tcp.content.execute")}
-                                </Button>
-                            </div>
-                        </FormSeparator>,
-                        <FormRow label={__("batteries_modbus_tcp.content.device_address")}>
-                            <InputNumber
-                                required
-                                min={0}
-                                max={255}
-                                value={config[1].table[1].revoke_discharge_override.device_address}
-                                onValue={(v) => {
-                                    on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_discharge_override: {...(config[1].table as TableConfigCustom)[1].revoke_discharge_override, device_address: v}})}));
-                                }} />
-                        </FormRow>,
-                        <FormRow label={__("batteries_modbus_tcp.content.register_address_mode")}>
-                            <InputSelect
-                                required
-                                items={[
-                                    [ModbusRegisterAddressMode.Address.toString(), __("batteries_modbus_tcp.content.register_address_mode_address")],
-                                    [ModbusRegisterAddressMode.Number.toString(), __("batteries_modbus_tcp.content.register_address_mode_number")]
-                                ]}
-                                placeholder={__("select")}
-                                value={util.hasValue(config[1].table[1].revoke_discharge_override.register_address_mode) ? config[1].table[1].revoke_discharge_override.register_address_mode.toString() : undefined}
-                                onValue={(v) => {
-                                    on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_discharge_override: {...(config[1].table as TableConfigCustom)[1].revoke_discharge_override, register_address_mode: parseInt(v)}})}));
-                                }} />
-                        </FormRow>,
-                        <FormRow label={__("batteries_modbus_tcp.content.registers")}>
-                            <RegisterEditor
-                                table={config[1].table[1].revoke_discharge_override}
-                                on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_discharge_override: table})}))} />
-                        </FormRow>,
+                        <CollapsedSection heading={__("batteries_modbus_tcp.content.revoke_discharge_override")} modal={true}>
+                            <FormRow label={__("batteries_modbus_tcp.content.device_address")}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={255}
+                                    value={config[1].table[1].revoke_discharge_override.device_address}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_discharge_override: {...(config[1].table as TableConfigCustom)[1].revoke_discharge_override, device_address: v}})}));
+                                    }} />
+                            </FormRow>
+                            <FormRow label={__("batteries_modbus_tcp.content.register_address_mode")}>
+                                <InputSelect
+                                    required
+                                    items={[
+                                        [ModbusRegisterAddressMode.Address.toString(), __("batteries_modbus_tcp.content.register_address_mode_address")],
+                                        [ModbusRegisterAddressMode.Number.toString(), __("batteries_modbus_tcp.content.register_address_mode_number")]
+                                    ]}
+                                    placeholder={__("select")}
+                                    value={util.hasValue(config[1].table[1].revoke_discharge_override.register_address_mode) ? config[1].table[1].revoke_discharge_override.register_address_mode.toString() : undefined}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_discharge_override: {...(config[1].table as TableConfigCustom)[1].revoke_discharge_override, register_address_mode: parseInt(v)}})}));
+                                    }} />
+                            </FormRow>
+                            <FormRow label={__("batteries_modbus_tcp.content.registers")}>
+                                <RegisterEditor
+                                    table={config[1].table[1].revoke_discharge_override}
+                                    on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_discharge_override: table})}))} />
+                            </FormRow>
+                            <Executor host={config[1].host} port={config[1].port} table={config[1].table[1].revoke_discharge_override} />
+                        </CollapsedSection>,
                     );
                 }
 

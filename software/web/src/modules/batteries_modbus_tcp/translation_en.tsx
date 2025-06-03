@@ -9,7 +9,10 @@ let x = {
         "content": {
             "battery_class": "Modbus/TCP",
             "execute": "Execute",
-            "execute_failed": "Execution failed",
+            "execute_response": "Response",
+            "execute_waiting": "Waiting...",
+            "execute_done": "Done",
+            "execute_error_prefix": "Error: ",
             "display_name": "Display name",
             "host": "Host",
             "host_invalid": "Host is invalid",

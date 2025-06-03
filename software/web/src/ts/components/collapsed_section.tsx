@@ -23,6 +23,7 @@ import { __ } from "../../ts/translation";
 
 interface CollapsedSectionProps {
     heading?: string;
+    modal?: boolean;
     children: ComponentChildren;
 }
 
@@ -34,9 +35,9 @@ export class CollapsedSection extends Component<CollapsedSectionProps, Collapsed
     render(props: CollapsedSectionProps, state: Readonly<CollapsedSectionState>) {
         return (
             <>
-            <div class="row mb-3 pt-3">
-                <div class="col border-bottom d-flex justify-content-between">
-                    <span class="h3">{props.heading || __("component.collapsed_section.heading")}</span>
+            <div class={"row mb-3 pt-3" + (props.modal ? " mx-0" : "")}>
+                <div class={"col d-flex justify-content-between border-bottom" + (props.modal ? " px-0" : "")}>
+                    <div class={props.modal ? "pt-2" : ""}><span class={props.modal ? "form-label" : "h3"}>{props.heading || __("component.collapsed_section.heading")}</span></div>
                     <Button variant="primary"
                             className="mb-2"
                             onClick={() => this.setState({show: !state.show})}>
