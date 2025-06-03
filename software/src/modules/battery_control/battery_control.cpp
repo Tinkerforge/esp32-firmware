@@ -35,7 +35,7 @@ void BatteryControl::pre_setup()
     });
 
     rule_prototype = Config::Object({
-        //{"name", Config::Str("", 0, 32)},
+        {"name",          Config::Str ("", 0, 32)},
         {"soc_cond",      Config::Uint  (0, 0, 2)}, // 0 = ignore, 1 = true if below threshold, 2 = true if above threshold
         {"soc_th",        Config::Uint8 (0      )}, // in percent (0 to 100 %)
         {"price_cond",    Config::Uint  (0, 0, 2)},
@@ -59,7 +59,10 @@ void BatteryControl::pre_setup()
 
 void BatteryControl::setup()
 {
-    api.restorePersistentConfig("battery_control/config", &config);
+    api.restorePersistentConfig("battery_control/config",                   &config);
+    api.restorePersistentConfig("battery_control/rules_forbid_discharge",   &rules_forbid_discharge);
+    api.restorePersistentConfig("battery_control/rules_permit_grid_charge", &rules_permit_grid_charge);
+    api.restorePersistentConfig("battery_control/low_level_config",         &low_level_config);
 
     bool have_battery = false;
 
@@ -156,7 +159,7 @@ void BatteryControl::preprocess_rules(const Config *rules_config, control_rule *
         control_rule *rule = rules + i;
 
         rule->soc_cond      =                       rule_config->get("soc_cond"     )->asEnum<RuleCondition>();
-        rule->soc_th        = static_cast<uint8_t >(rule_config->get("soc_tht"      )->asUint());
+        rule->soc_th        = static_cast<uint8_t >(rule_config->get("soc_th"       )->asUint());
         rule->price_cond    =                       rule_config->get("price_cond"   )->asEnum<RuleCondition>();
         rule->price_th      =                       rule_config->get("price_th"     )->asInt()  *  100;         // ct/10 -> ct/1000
         rule->forecast_cond =                       rule_config->get("forecast_cond")->asEnum<RuleCondition>();

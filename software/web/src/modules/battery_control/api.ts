@@ -3,6 +3,7 @@ export interface config {
 }
 
 interface RuleConfig {
+    name:          string;
     soc_cond:      number;
     soc_th:        number;
     price_cond:    number;
