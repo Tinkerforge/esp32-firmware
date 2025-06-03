@@ -202,7 +202,13 @@ inline void notify_free_slot(size_t idx)
 #endif
 
     if (idx == RootBlock<ConfigT>::last_used_slot && RootBlock<ConfigT>::last_used_slot > 0) {
-        RootBlock<ConfigT>::last_used_slot = find_last_used_slot(RootBlock<ConfigT>::first_superblock, RootBlock<ConfigT>::last_used_slot - 1u);
+        const size_t last_used = find_last_used_slot(RootBlock<ConfigT>::first_superblock, RootBlock<ConfigT>::last_used_slot - 1u);
+
+        if (last_used == std::numeric_limits<size_t>::max()) { // All unused
+            RootBlock<ConfigT>::last_used_slot = 0;
+        } else {
+            RootBlock<ConfigT>::last_used_slot = static_cast<uint16_t>(last_used);
+        }
     }
 #endif
 }
@@ -217,8 +223,8 @@ extern template Config::ConfString::Slot *get_slot<Config::ConfString>(size_t id
 extern template Config::ConfArray::Slot  *get_slot<Config::ConfArray>(size_t idx);
 extern template Config::ConfObject::Slot *get_slot<Config::ConfObject>(size_t idx);
 extern template Config::ConfUnion::Slot  *get_slot<Config::ConfUnion>(size_t idx);
-extern template Config::ConfUint53::Slot   *get_slot<Config::ConfUint53>(size_t idx);
-extern template Config::ConfInt52::Slot    *get_slot<Config::ConfInt52>(size_t idx);
+extern template Config::ConfUint53::Slot *get_slot<Config::ConfUint53>(size_t idx);
+extern template Config::ConfInt52::Slot  *get_slot<Config::ConfInt52>(size_t idx);
 
 template<typename ConfigT>
 size_t get_allocated_slot_memory()

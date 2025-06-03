@@ -40,8 +40,8 @@ template<> Superblock<Config::ConfString> *RootBlock<Config::ConfString>::first_
 template<> Superblock<Config::ConfArray>  *RootBlock<Config::ConfArray>::first_superblock  = &first_superblock_ConfArray;
 template<> Superblock<Config::ConfObject> *RootBlock<Config::ConfObject>::first_superblock = &first_superblock_ConfObject;
 template<> Superblock<Config::ConfUnion>  *RootBlock<Config::ConfUnion>::first_superblock  = &first_superblock_ConfUnion;
-template<> Superblock<Config::ConfUint53>   *RootBlock<Config::ConfUint53>::first_superblock   = &first_superblock_ConfUint53;
-template<> Superblock<Config::ConfInt52>    *RootBlock<Config::ConfInt52>::first_superblock    = &first_superblock_ConfInt52;
+template<> Superblock<Config::ConfUint53> *RootBlock<Config::ConfUint53>::first_superblock = &first_superblock_ConfUint53;
+template<> Superblock<Config::ConfInt52>  *RootBlock<Config::ConfInt52>::first_superblock  = &first_superblock_ConfInt52;
 
 template<typename ConfT> uint16_t RootBlock<ConfT>::first_free_slot  = 0;
 template<typename ConfT> uint16_t RootBlock<ConfT>::allocated_blocks = 0;
@@ -153,8 +153,8 @@ template Config::ConfString::Slot *get_slot<Config::ConfString>(size_t idx);
 template Config::ConfArray::Slot  *get_slot<Config::ConfArray>(size_t idx);
 template Config::ConfObject::Slot *get_slot<Config::ConfObject>(size_t idx);
 template Config::ConfUnion::Slot  *get_slot<Config::ConfUnion>(size_t idx);
-template Config::ConfUint53::Slot   *get_slot<Config::ConfUint53>(size_t idx);
-template Config::ConfInt52::Slot    *get_slot<Config::ConfInt52>(size_t idx);
+template Config::ConfUint53::Slot *get_slot<Config::ConfUint53>(size_t idx);
+template Config::ConfInt52::Slot  *get_slot<Config::ConfInt52>(size_t idx);
 
 #ifdef DEBUG_FS_ENABLE
 template<typename ConfigT>
