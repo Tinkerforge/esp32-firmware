@@ -20,11 +20,13 @@
 #pragma once
 
 #include <stdint.h>
+#include <TFModbusTCPClient.h>
 
 #include "config.h"
 #include "module.h"
 #include "battery_modbus_tcp_table_id.enum.h"
 #include "modules/batteries/ibattery_generator.h"
+#include "modules/modbus_tcp_client/modbus_register_type.enum.h"
 
 #if defined(__GNUC__)
 #pragma GCC diagnostic push
@@ -37,8 +39,23 @@
 class BatteriesModbusTCP final : public IModule, public IBatteryGenerator
 {
 public:
+    struct ValueSpec {
+        ModbusRegisterType register_type;
+        uint16_t start_address;
+        uint16_t value;
+    };
+
+    struct ValueTable {
+        uint8_t device_address;
+        const ValueSpec *values;
+        size_t values_length;
+    };
+
+    static ValueTable *read_table_config(const Config *config);
+
     // for IModule
     void pre_setup() override;
+    void register_urls() override;
 
     // for IBatteryGenerator
     [[gnu::const]] BatteryClassID get_class() const override;
@@ -48,10 +65,20 @@ public:
     [[gnu::const]] virtual const Config *get_errors_prototype() override;
 
 private:
+    void write_next();
+    void release_client();
+
     Config config_prototype;
     Config table_custom_registers_prototype;
     std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> table_prototypes;
     //Config errors_prototype;
+
+    ConfigRoot execute_config;
+    std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> execute_table_prototypes;
+    TFGenericTCPSharedClient *execute_client = nullptr;
+    uint32_t execute_cookie;
+    ValueTable *execute_table = nullptr;
+    size_t current_execute_index;
 };
 
 #if defined(__GNUC__)
