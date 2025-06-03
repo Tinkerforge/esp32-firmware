@@ -157,8 +157,8 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
         full_log = full_log.concat(this.debug_protocol_lines);
         full_log.push(this.debug_suffix);
 
-        //Download log in any case: Even an incomplete log can be useful for debugging.
-        util.downloadToFile(full_log.join(''), this.props.filename, "txt", "text/plain");
+        // Download log in any case: Even an incomplete log can be useful for debugging.
+        util.downloadToTimestampedFile(full_log.join(''), this.props.filename, "txt", "text/plain");
     }
 
     render(props: DebugLoggerProps, s: DebugLoggerState)

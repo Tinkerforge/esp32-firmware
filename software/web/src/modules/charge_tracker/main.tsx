@@ -296,9 +296,9 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 }
 
                 if (flavor == 'excel')
-                    util.downloadToFile(util.win1252Encode(result), __("charge_tracker.content.charge_log_file"), "csv", "text/csv; charset=windows-1252; header=present");
+                    util.downloadToTimestampedFile(util.win1252Encode(result), __("charge_tracker.content.charge_log_file"), "csv", "text/csv; charset=windows-1252; header=present");
                 else
-                    util.downloadToFile(result, __("charge_tracker.content.charge_log_file"), "csv", "text/csv; charset=utf-8; header=present");
+                    util.downloadToTimestampedFile(result, __("charge_tracker.content.charge_log_file"), "csv", "text/csv; charset=utf-8; header=present");
             })
             .catch(err => util.add_alert("download-charge-log", "danger", () => __("charge_tracker.script.download_charge_log_failed"), err));
     }
@@ -407,7 +407,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                                         user_filter: parseInt(state.user_filter),
                                         letterhead: state.pdf_letterhead,
                                     }, () => __("charge_tracker.script.download_charge_log_failed"), undefined, 2 * 60 * 1000);
-                                    util.downloadToFile(pdf, __("charge_tracker.content.charge_log_file"), "pdf", "application/pdf");
+                                    util.downloadToTimestampedFile(pdf, __("charge_tracker.content.charge_log_file"), "pdf", "application/pdf");
                                 } finally {
                                     this.setState({show_spinner: false});
                                 }

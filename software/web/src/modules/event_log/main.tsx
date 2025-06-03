@@ -202,14 +202,13 @@ export class EventLog extends Component<{}, EventLogState> {
                 }
             }
 
-            util.downloadToFile(debug_log, __("event_log.content.debug_report_file"), "txt", "text/plain", timestamp);
+            util.downloadToTimestampedFile(debug_log, __("event_log.content.debug_report_file"), "txt", "text/plain", timestamp);
         } catch (e) {
             util.add_alert("debug_report_load_failed", "danger", () => __("event_log.script.load_debug_report_error"), () => e.message)
         } finally {
             this.setState({show_spinner: false})
         }
     }
-
 
     render(props: {}, state: Readonly<EventLogState>) {
         if (!util.render_allowed())
