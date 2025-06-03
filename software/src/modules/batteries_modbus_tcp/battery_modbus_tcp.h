@@ -27,23 +27,10 @@
 #include "battery_modbus_tcp_table_id.enum.h"
 #include "modules/batteries/ibattery.h"
 #include "modules/modbus_tcp_client/generic_tcp_client_pool_connector.h"
-#include "modules/modbus_tcp_client/modbus_register_type.enum.h"
 
 class BatteryModbusTCP final : protected GenericTCPClientPoolConnector, public IBattery
 {
 public:
-    struct ValueSpec {
-        ModbusRegisterType register_type;
-        uint16_t start_address;
-        uint16_t value;
-    };
-
-    struct ValueTable {
-        uint8_t device_address;
-        const ValueSpec *values;
-        size_t values_length;
-    };
-
     BatteryModbusTCP(uint32_t slot_, Config *state_, Config *errors_, TFModbusTCPClientPool *pool_) :
         GenericTCPClientPoolConnector("batteries_mbtcp", format_battery_slot(slot_), pool_), slot(slot_), state(state_), errors(errors_) {}
 
@@ -56,7 +43,6 @@ public:
     bool start_action(Action action) override;
     bool get_current_action(Action *action) override;
 
-
 private:
     void connect_callback() override;
     void disconnect_callback() override;
@@ -67,15 +53,15 @@ private:
     Config *errors;
 
     BatteryModbusTCPTableID table_id;
-    const ValueTable *tables[4] = {nullptr, nullptr, nullptr, nullptr};
+    const BatteriesModbusTCP::ValueTable *tables[4] = {nullptr, nullptr, nullptr, nullptr};
 
     bool has_current_action = false;
     Action current_action;
     size_t current_action_index;
 
     // custom
-    ValueTable *custom_table_permit_grid_charge;
-    ValueTable *custom_table_revoke_grid_charge_override;
-    ValueTable *custom_table_forbid_discharge;
-    ValueTable *custom_table_revoke_discharge_override;
+    BatteriesModbusTCP::ValueTable *custom_table_permit_grid_charge;
+    BatteriesModbusTCP::ValueTable *custom_table_revoke_grid_charge_override;
+    BatteriesModbusTCP::ValueTable *custom_table_forbid_discharge;
+    BatteriesModbusTCP::ValueTable *custom_table_revoke_discharge_override;
 };
