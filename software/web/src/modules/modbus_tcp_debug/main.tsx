@@ -339,9 +339,12 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
             <FormRow label="">
                 <Button variant="primary" className="form-control" type="submit" disabled={this.state.waiting}>{__("modbus_tcp_debug.content.execute")}</Button>
             </FormRow>
-            <FormRow label={__("modbus_tcp_debug.content.response")}>
-                <OutputTextarea rows={15} resize="vertical" value={this.state.waiting ? "Waiting..." : this.state.result} />
-            </FormRow>
+
+            {this.state.waiting || this.state.result.length > 0 ?
+                <FormRow label={__("modbus_tcp_debug.content.response")}>
+                    <OutputTextarea rows={15} resize="vertical" value={this.state.waiting ? "Waiting..." : this.state.result} />
+                </FormRow>
+                : undefined}
         </form>;
     }
 }
