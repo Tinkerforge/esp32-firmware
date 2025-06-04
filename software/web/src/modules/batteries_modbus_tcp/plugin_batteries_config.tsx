@@ -50,13 +50,13 @@ type Register = {
 
 type RegisterTable = {
     device_address: number;
-    register_address_mode: number; // ModbusRegisterAddressMode
     registers: Register[];
 };
 
 type TableConfigCustom = [
     BatteryModbusTCPTableID.Custom,
     {
+        register_address_mode: number, // ModbusRegisterAddressMode
         permit_grid_charge: RegisterTable,
         revoke_grid_charge_override: RegisterTable,
         forbid_discharge: RegisterTable,
@@ -81,10 +81,11 @@ function new_table_config(table: BatteryModbusTCPTableID): TableConfig {
     switch (table) {
         case BatteryModbusTCPTableID.Custom:
             return [BatteryModbusTCPTableID.Custom, {
-                permit_grid_charge:          {device_address: 1, register_address_mode: null, registers: []},
-                revoke_grid_charge_override: {device_address: 1, register_address_mode: null, registers: []},
-                forbid_discharge:            {device_address: 1, register_address_mode: null, registers: []},
-                revoke_discharge_override:   {device_address: 1, register_address_mode: null, registers: []},
+                register_address_mode:       null,
+                permit_grid_charge:          {device_address: 1, registers: []},
+                revoke_grid_charge_override: {device_address: 1, registers: []},
+                forbid_discharge:            {device_address: 1, registers: []},
+                revoke_discharge_override:   {device_address: 1, registers: []},
             }];
 
         default:
@@ -93,6 +94,7 @@ function new_table_config(table: BatteryModbusTCPTableID): TableConfig {
 }
 
 interface RegisterEditorProps {
+    register_address_mode: ModbusRegisterAddressMode;
     table: RegisterTable;
     on_table: (table: RegisterTable) => void;
 }
@@ -115,7 +117,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
     }
 
     get_children() {
-        let start_address_offset = this.props.table.register_address_mode == ModbusRegisterAddressMode.Address ? 0 : 1;
+        let start_address_offset = this.props.register_address_mode == ModbusRegisterAddressMode.Address ? 0 : 1;
 
         return [
             <FormRow label={__("batteries_modbus_tcp.content.registers_register_type")}>
@@ -133,12 +135,12 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
             </FormRow>,
             <FormRow
                 label={
-                    this.props.table.register_address_mode == ModbusRegisterAddressMode.Address
+                    this.props.register_address_mode == ModbusRegisterAddressMode.Address
                     ? __("batteries_modbus_tcp.content.registers_start_address")
                     : __("batteries_modbus_tcp.content.registers_start_number")
                 }
                 label_muted={
-                    this.props.table.register_address_mode == ModbusRegisterAddressMode.Address
+                    this.props.register_address_mode == ModbusRegisterAddressMode.Address
                     ? __("batteries_modbus_tcp.content.registers_start_address_muted")
                     : __("batteries_modbus_tcp.content.registers_start_number_muted")
                 }>
@@ -177,7 +179,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
     }
 
     render() {
-        let start_address_offset = this.props.table.register_address_mode == ModbusRegisterAddressMode.Address ? 0 : 1;
+        let start_address_offset = this.props.register_address_mode == ModbusRegisterAddressMode.Address ? 0 : 1;
 
         return <Table
             nestingDepth={1}
@@ -201,9 +203,9 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
                 return row
             })}
             columnNames={[""]}
-            addEnabled={util.hasValue(this.props.table.register_address_mode) && this.props.table.registers.length < MAX_CUSTOM_REGISTERS}
+            addEnabled={util.hasValue(this.props.register_address_mode) && this.props.table.registers.length < MAX_CUSTOM_REGISTERS}
             addMessage={
-                util.hasValue(this.props.table.register_address_mode)
+                util.hasValue(this.props.register_address_mode)
                     ? __("batteries_modbus_tcp.content.registers_add_count")(this.props.table.registers.length, MAX_CUSTOM_REGISTERS)
                     : __("batteries_modbus_tcp.content.registers_add_select_address_mode")
             }
@@ -366,6 +368,20 @@ export function init() {
 
                 if (util.hasValue(config[1].table) && config[1].table[0] == BatteryModbusTCPTableID.Custom) {
                     edit_children.push(
+                        <FormRow label={__("batteries_modbus_tcp.content.register_address_mode")}>
+                            <InputSelect
+                                required
+                                items={[
+                                    [ModbusRegisterAddressMode.Address.toString(), __("batteries_modbus_tcp.content.register_address_mode_address")],
+                                    [ModbusRegisterAddressMode.Number.toString(), __("batteries_modbus_tcp.content.register_address_mode_number")]
+                                ]}
+                                placeholder={__("select")}
+                                value={util.hasValue(config[1].table[1].register_address_mode) ? config[1].table[1].register_address_mode.toString() : undefined}
+                                onValue={(v) => {
+                                    on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {...(config[1].table as TableConfigCustom)[1], register_address_mode: parseInt(v)})}));
+                                }} />
+                        </FormRow>,
+
                         <CollapsedSection heading={__("batteries_modbus_tcp.content.permit_grid_charge")} modal={true}>
                             <FormRow label={__("batteries_modbus_tcp.content.device_address")}>
                                 <InputNumber
@@ -377,21 +393,9 @@ export function init() {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {permit_grid_charge: {...(config[1].table as TableConfigCustom)[1].permit_grid_charge, device_address: v}})}));
                                     }} />
                             </FormRow>
-                            <FormRow label={__("batteries_modbus_tcp.content.register_address_mode")}>
-                                <InputSelect
-                                    required
-                                    items={[
-                                        [ModbusRegisterAddressMode.Address.toString(), __("batteries_modbus_tcp.content.register_address_mode_address")],
-                                        [ModbusRegisterAddressMode.Number.toString(), __("batteries_modbus_tcp.content.register_address_mode_number")]
-                                    ]}
-                                    placeholder={__("select")}
-                                    value={util.hasValue(config[1].table[1].permit_grid_charge.register_address_mode) ? config[1].table[1].permit_grid_charge.register_address_mode.toString() : undefined}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {permit_grid_charge: {...(config[1].table as TableConfigCustom)[1].permit_grid_charge, register_address_mode: parseInt(v)}})}));
-                                    }} />
-                            </FormRow>
                             <FormRow label={__("batteries_modbus_tcp.content.registers")}>
                                 <RegisterEditor
+                                    register_address_mode={config[1].table[1].register_address_mode}
                                     table={config[1].table[1].permit_grid_charge}
                                     on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {permit_grid_charge: table})}))} />
                             </FormRow>
@@ -409,21 +413,9 @@ export function init() {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_grid_charge_override: {...(config[1].table as TableConfigCustom)[1].revoke_grid_charge_override, device_address: v}})}));
                                     }} />
                             </FormRow>
-                            <FormRow label={__("batteries_modbus_tcp.content.register_address_mode")}>
-                                <InputSelect
-                                    required
-                                    items={[
-                                        [ModbusRegisterAddressMode.Address.toString(), __("batteries_modbus_tcp.content.register_address_mode_address")],
-                                        [ModbusRegisterAddressMode.Number.toString(), __("batteries_modbus_tcp.content.register_address_mode_number")]
-                                    ]}
-                                    placeholder={__("select")}
-                                    value={util.hasValue(config[1].table[1].revoke_grid_charge_override.register_address_mode) ? config[1].table[1].revoke_grid_charge_override.register_address_mode.toString() : undefined}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_grid_charge_override: {...(config[1].table as TableConfigCustom)[1].revoke_grid_charge_override, register_address_mode: parseInt(v)}})}));
-                                    }} />
-                            </FormRow>
                             <FormRow label={__("batteries_modbus_tcp.content.registers")}>
                                 <RegisterEditor
+                                    register_address_mode={config[1].table[1].register_address_mode}
                                     table={config[1].table[1].revoke_grid_charge_override}
                                     on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_grid_charge_override: table})}))} />
                             </FormRow>
@@ -441,21 +433,9 @@ export function init() {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_discharge: {...(config[1].table as TableConfigCustom)[1].forbid_discharge, device_address: v}})}));
                                     }} />
                             </FormRow>
-                            <FormRow label={__("batteries_modbus_tcp.content.register_address_mode")}>
-                                <InputSelect
-                                    required
-                                    items={[
-                                        [ModbusRegisterAddressMode.Address.toString(), __("batteries_modbus_tcp.content.register_address_mode_address")],
-                                        [ModbusRegisterAddressMode.Number.toString(), __("batteries_modbus_tcp.content.register_address_mode_number")]
-                                    ]}
-                                    placeholder={__("select")}
-                                    value={util.hasValue(config[1].table[1].forbid_discharge.register_address_mode) ? config[1].table[1].forbid_discharge.register_address_mode.toString() : undefined}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_discharge: {...(config[1].table as TableConfigCustom)[1].forbid_discharge, register_address_mode: parseInt(v)}})}));
-                                    }} />
-                            </FormRow>
                             <FormRow label={__("batteries_modbus_tcp.content.registers")}>
                                 <RegisterEditor
+                                    register_address_mode={config[1].table[1].register_address_mode}
                                     table={config[1].table[1].forbid_discharge}
                                     on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_discharge: table})}))} />
                             </FormRow>
@@ -473,21 +453,9 @@ export function init() {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_discharge_override: {...(config[1].table as TableConfigCustom)[1].revoke_discharge_override, device_address: v}})}));
                                     }} />
                             </FormRow>
-                            <FormRow label={__("batteries_modbus_tcp.content.register_address_mode")}>
-                                <InputSelect
-                                    required
-                                    items={[
-                                        [ModbusRegisterAddressMode.Address.toString(), __("batteries_modbus_tcp.content.register_address_mode_address")],
-                                        [ModbusRegisterAddressMode.Number.toString(), __("batteries_modbus_tcp.content.register_address_mode_number")]
-                                    ]}
-                                    placeholder={__("select")}
-                                    value={util.hasValue(config[1].table[1].revoke_discharge_override.register_address_mode) ? config[1].table[1].revoke_discharge_override.register_address_mode.toString() : undefined}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_discharge_override: {...(config[1].table as TableConfigCustom)[1].revoke_discharge_override, register_address_mode: parseInt(v)}})}));
-                                    }} />
-                            </FormRow>
                             <FormRow label={__("batteries_modbus_tcp.content.registers")}>
                                 <RegisterEditor
+                                    register_address_mode={config[1].table[1].register_address_mode}
                                     table={config[1].table[1].revoke_discharge_override}
                                     on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_discharge_override: table})}))} />
                             </FormRow>
