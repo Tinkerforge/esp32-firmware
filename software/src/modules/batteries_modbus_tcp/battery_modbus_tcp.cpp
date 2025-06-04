@@ -160,7 +160,9 @@ void BatteryModbusTCP::write_next()
     case ModbusRegisterType::InputRegister:
     case ModbusRegisterType::DiscreteInput:
     default:
-        esp_system_abort("battery_modbus_tcp: Unsupported register type to write.");
+        logger.printfln_battery("Unsupported register type to write: %u", static_cast<uint8_t>(spec->register_type));
+        has_current_action = false;
+        return;
     }
 
     static_cast<TFModbusTCPSharedClient *>(connected_client)->transact(table->device_address,
