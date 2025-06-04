@@ -31,7 +31,13 @@ let x = {
 
             "edit_battery_title": "Edit battery storage",
             "edit_battery_slot": "Number",
-            "edit_battery_class": "Class"
+            "edit_battery_class": "Class",
+
+            "battery_import_error_json_malformed": "JSON is malformed.",
+            "battery_import_error_class_unknown": "Class is unknown.",
+            "battery_import_error_import_unsupported": "Import is not supported by this class.",
+            "battery_import_error_config_malformed": "Config is malformed.",
+            "battery_export_basename": "battery-storage-config"
         },
         "script": {
             "save_failed": "Failed to save the battery control settings.",
