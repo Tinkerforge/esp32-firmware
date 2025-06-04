@@ -772,6 +772,11 @@ export function hasValue(a: any): boolean
     return a !== null && a !== undefined;
 }
 
+export function isNonNullObject(a: any): boolean
+{
+    return typeof a === "object" && a !== null;
+}
+
 export function compareArrays(a: Array<any>, b: Array<any>): boolean
 {
     return a.length === b.length && a.every((element, index) => element === b[index]);
