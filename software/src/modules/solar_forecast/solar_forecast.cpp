@@ -57,7 +57,7 @@ void SolarForecast::pre_setup()
         {"api_url", Config::Str(BUILD_SOLAR_FORECAST_API_URL, 0, 64)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
     }), [this](Config &update, ConfigSource source) -> String {
-        String api_url = update.get("api_url")->asString();
+        const String &api_url = update.get("api_url")->asString();
 
         if ((api_url.length() > 0) && !api_url.startsWith("https://")) {
             return "HTTPS required for Solar Forecast API URL";
@@ -116,6 +116,10 @@ void SolarForecast::pre_setup()
 
         plane.index = plane_index;
     }
+
+#ifdef DEBUG_FS_ENABLE
+    debug_forecast_update = Config::Int32(0);
+#endif
 }
 
 void SolarForecast::setup()
@@ -126,9 +130,6 @@ void SolarForecast::setup()
         SolarForecastPlane &plane = planes[plane_index];
         api.restorePersistentConfig(get_path(plane, SolarForecast::PathType::Config), &plane.config);
     }
-
-    json_buffer = nullptr;
-    json_buffer_position = 0;
 
     initialized = true;
 }
@@ -153,6 +154,16 @@ void SolarForecast::register_urls()
             this->update_cached_wh_state();
         }, 60_min, 0_ms, false);
     });
+
+#ifdef DEBUG_FS_ENABLE
+    api.addCommand("solar_forecast/debug_forecast_update", &debug_forecast_update, {}, [this](String &/*errmsg*/) {
+        const int32_t wh_fake_forecast = debug_forecast_update.asInt();
+
+        state.get("wh_today"          )->updateInt(wh_fake_forecast);
+        state.get("wh_today_remaining")->updateInt(wh_fake_forecast);
+        state.get("wh_tomorrow"       )->updateInt(wh_fake_forecast);
+    }, false);
+#endif
 }
 
 void SolarForecast::next_update() {
@@ -341,23 +352,18 @@ void SolarForecast::retry_update(millis_t delay)
 
 void SolarForecast::update()
 {
-    if (config.get("enable")->asBool() == false) {
+    if (!config.get("enable")->asBool()) {
         return;
     }
 
-    if (!network.is_connected()) {
+    // Only update if network is connected and clock is synced
+    struct timeval tv_now;
+    if (!network.is_connected() || !rtc.clock_synced(&tv_now)) {
         retry_update(1_s);
         return;
     }
 
     if (download_state == SF_DOWNLOAD_STATE_PENDING) {
-        return;
-    }
-
-    // Only update if NTP is available
-    struct timeval tv_now;
-    if (!rtc.clock_synced(&tv_now)) {
-        retry_update(1_s);
         return;
     }
 
@@ -479,7 +485,7 @@ void SolarForecast::update()
 
         case AsyncHTTPSClientEventType::Data:
             if(json_buffer == nullptr) {
-                logger.printfln("JSON Buffer was not allocated correctly");
+                logger.printfln("JSON Buffer was not allocated correctly before receiving data");
                 next_sync_forced = rtc.timestamp_minutes() + 30;
 
                 download_state = SF_DOWNLOAD_STATE_ERROR;
@@ -515,7 +521,7 @@ void SolarForecast::update()
 
         case AsyncHTTPSClientEventType::Finished:
             if(json_buffer == nullptr) {
-                logger.printfln("JSON Buffer was not allocated correctly");
+                logger.printfln("JSON Buffer was not allocated correctly before finishing");
                 next_sync_forced = rtc.timestamp_minutes() + 30;
 
                 download_state = SF_DOWNLOAD_STATE_ERROR;
@@ -545,30 +551,36 @@ void SolarForecast::update()
 // Create API path including user configuration
 String SolarForecast::get_api_url_with_path(const SolarForecastPlane &plane)
 {
-    String api_url = config.get("api_url")->asString();
+    char buf[256];
+    StringWriter sw(buf, ARRAY_SIZE(buf));
 
-    if (!api_url.endsWith("/")) {
-        api_url += "/";
+    const String &api_url = config.get("api_url")->asString();
+    sw.puts(api_url.c_str(), static_cast<ssize_t>(api_url.length()));
+
+    if (*(sw.getRemainingPtr() - 1) != '/') {
+        sw.putc('/');
     }
 
-    return api_url + "estimate/"
-        + String(plane.config.get("lat")->asInt()/10000.0, 4)  + "/"
-        + String(plane.config.get("long")->asInt()/10000.0, 4) + "/"
-        + String(plane.config.get("dec")->asUint())            + "/"
-        + String(plane.config.get("az")->asInt())              + "/"
-        + String(plane.config.get("wp")->asUint()/1000.0, 3);
+    sw.printf("estimate/%.4f/%.4f/%lu/%li/%.3f",
+              plane.config.get("lat" )->asInt()  / 10000.0,
+              plane.config.get("long")->asInt()  / 10000.0,
+              plane.config.get("dec" )->asUint(),
+              plane.config.get("az"  )->asInt(),
+              plane.config.get("wp"  )->asUint() /  1000.0);
+
+    return String(buf, sw.getLength());
 }
 
 static const char *solar_forecast_path_postfixes[] = {"", "config", "state", "forecast"};
 static_assert(ARRAY_SIZE(solar_forecast_path_postfixes) == static_cast<uint32_t>(SolarForecast::PathType::_max) + 1, "Path postfix length mismatch");
 String SolarForecast::get_path(const SolarForecastPlane &plane, const SolarForecast::PathType path_type)
 {
-    String path = "solar_forecast/planes/";
-    path.concat(plane.index);
-    path.concat('/');
-    path.concat(solar_forecast_path_postfixes[static_cast<uint32_t>(path_type)]);
+    char buf[64];
+    StringWriter sw(buf, ARRAY_SIZE(buf));
 
-    return path;
+    sw.printf("solar_forecast/planes/%zu/%s", plane.index, solar_forecast_path_postfixes[static_cast<uint32_t>(path_type)]);
+
+    return String(buf, sw.getLength());
 }
 
 Option<uint32_t> SolarForecast::get_wh_range(const uint32_t start, const uint32_t end)
