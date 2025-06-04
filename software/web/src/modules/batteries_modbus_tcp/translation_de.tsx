@@ -8,6 +8,7 @@ let x = {
         },
         "content": {
             "battery_class": "Modbus/TCP",
+            "export_basename_suffix": "-Modbus-TCP",
             "execute": "Ausführen",
             "execute_response": "Antwort",
             "execute_waiting": "Warte...",
