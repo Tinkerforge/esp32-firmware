@@ -67,11 +67,6 @@ public:
     int32_t get_cached_wh_today_remaining();
     int32_t get_cached_wh_tomorrow();
 
-    ConfigRoot config;
-    ConfigRoot state;
-
-    uint64_t task_id = 0;
-
 private:
     class SolarForecastPlane {
     public:
@@ -91,11 +86,20 @@ private:
     void handle_cleanup();
     void update_cached_wh_state();
 
+    ConfigRoot config;
+    ConfigRoot state;
+
+#ifdef DEBUG_FS_ENABLE
+    ConfigRoot debug_forecast_update;
+#endif
+
     SolarForecastPlane *plane_current;
 
+    uint64_t task_id = 0;
+
     uint32_t last_update_begin;
-    char *json_buffer;
-    uint32_t json_buffer_position;
+    char *json_buffer = nullptr;
+    uint32_t json_buffer_position = 0;
     uint32_t next_sync_forced = 0;
     AsyncHTTPSClient https_client;
 
