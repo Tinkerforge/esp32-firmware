@@ -24,7 +24,6 @@ import { __, translate_unchecked } from "../../ts/translation";
 import { h, Fragment, ComponentChild } from "preact";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { FormRow } from "../../ts/components/form_row";
-import { FormSeparator } from "../../ts/components/form_separator";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputSelect } from "../../ts/components/input_select";
 import { ConfigComponent } from "../../ts/components/config_component";
@@ -116,6 +115,41 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
         }
 
         return super.getIsModified(topic);
+    }
+
+    import_config(json: string, current_config: BatteryConfig) {
+        let new_config;
+
+        try {
+            new_config = JSON.parse(json);
+        }
+        catch (error) {
+            console.log("Batteries: JSON of imported config is malformed:", error.message);
+            throw new Error(__("batteries.content.battery_import_error_json_malformed"));
+        }
+
+        if (!util.isNonNullObject(new_config)) {
+            console.log("Batteries: JSON of imported config has no toplevel object");
+            throw new Error(__("batteries.content.battery_import_error_config_malformed"));
+        }
+
+        if (config_plugins[new_config[0]] === undefined) {
+            console.log("Batteries: Imported config has unknown class:", new_config[0]);
+            throw new Error(__("batteries.content.battery_import_error_class_unknown"));
+        }
+
+        if (config_plugins[new_config[0]].import_config === undefined) {
+            console.log("Batteries: Imported config class doesn't support import:", new_config[0]);
+            throw new Error(__("batteries.content.battery_import_error_import_unsupported"));
+        }
+
+        new_config = config_plugins[new_config[0]].import_config(new_config, current_config);
+
+        if (!util.hasValue(new_config)) {
+            throw new Error(__("batteries.content.battery_import_error_config_malformed"));
+        }
+
+        return new_config;
     }
 
     render() {
@@ -227,7 +261,14 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                                     onRemoveClick: async () => {
                                         this.setState({configs: {...this.state.configs, [battery_slot]: [BatteryClassID.None, null]}});
                                         this.setDirty(true);
-                                    }
+                                    },
+                                    onEditImport: async (json: string) => {
+                                        this.setState({edit_battery_config: this.import_config(json, this.state.edit_battery_config)});
+                                    },
+                                    onEditExport: this.state.edit_battery_config[0] != BatteryClassID.None && config_plugins[this.state.edit_battery_config[0]].export_config ? async () => {
+                                        return JSON.stringify(config_plugins[this.state.edit_battery_config[0]].export_config(this.state.edit_battery_config), null, 4);
+                                    } : undefined,
+                                    editExportBasename: __("batteries.content.battery_export_basename") + (this.state.edit_battery_config[0] != BatteryClassID.None && config_plugins[this.state.edit_battery_config[0]].export_basename_suffix ? config_plugins[this.state.edit_battery_config[0]].export_basename_suffix() : ""),
                                 }
                             })}
                             addEnabled={active_battery_slots.length < BATTERIES_SLOTS}
@@ -304,6 +345,13 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                                     await config_plugins[this.state.add_battery_config[0]].hide();
                                 }
                             }}
+                            onAddImport={async (json: string) => {
+                                this.setState({add_battery_config: this.import_config(json, this.state.add_battery_config)});
+                            }}
+                            onAddExport={this.state.add_battery_config[0] != BatteryClassID.None && config_plugins[this.state.add_battery_config[0]].export_config ? async () => {
+                                return JSON.stringify(config_plugins[this.state.add_battery_config[0]].export_config(this.state.add_battery_config), null, 4);
+                            } : undefined}
+                            addExportBasename={__("batteries.content.battery_export_basename") + (this.state.add_battery_config[0] != BatteryClassID.None && config_plugins[this.state.add_battery_config[0]].export_basename_suffix ? config_plugins[this.state.add_battery_config[0]].export_basename_suffix() : "")}
                             />
                     </FormRow>
                 </ConfigForm>
