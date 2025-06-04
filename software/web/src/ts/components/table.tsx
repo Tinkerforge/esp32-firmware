@@ -45,6 +45,9 @@ export interface TableRow {
     onEditStart?: never;
     onEditCommit?: never;
     onEditAbort?: never;
+    onEditImport?: (json: string) => Promise<void>;
+    onEditExport?: () => Promise<string>;
+    editExportBasename?: string;
 }
 
 export interface TableProps {
@@ -66,6 +69,9 @@ export interface TableProps {
     onAddAbort?: never;
     invalid?: boolean;
     invalidFeedback?: string;
+    onAddImport?: (json: string) => Promise<void>;
+    onAddExport?: () => Promise<string>;
+    addExportBasename?: string;
 }
 
 interface TableState {
@@ -316,6 +322,8 @@ export class Table extends Component<TableProps, TableState> {
                             }
                         });
                     }}
+                    onImport={props.onAddImport ? async (json: string) => {await props.onAddImport(json);} : undefined}
+                    onExport={props.onAddExport ? async () => {return await props.onAddExport();} : undefined}
                     show={state.showAddModal}
                     no_variant="secondary"
                     yes_variant="primary"
@@ -323,6 +331,7 @@ export class Table extends Component<TableProps, TableState> {
                     no_text={__("component.table.abort")}
                     yes_text={__("component.table.add")}
                     additionalFooterButtons={props.addAdditionalFooterButtons}
+                    export_basename={props.addExportBasename}
                     backdropClassName={props.nestingDepth === undefined ? undefined : ("modal-backdrop-" + props.nestingDepth)}
                     className={props.nestingDepth === undefined ? undefined : ("modal-" + props.nestingDepth)}
                     size={props.nestingDepth === undefined ? "xl" : {0: "xl", 1: "lg", 2: "md", 3: "sm"}[props.nestingDepth] as 'xl' | 'lg' | 'sm'} >{/* "md" doesn't exist, but is just the normal size, the cast make it ignore "md"*/}
@@ -351,6 +360,8 @@ export class Table extends Component<TableProps, TableState> {
                             }
                         });
                     }}
+                    onImport={util.hasValue(props.rows[state.showEditModal]) && props.rows[state.showEditModal].onEditImport ? async (json: string) => {await props.rows[state.showEditModal].onEditImport(json);} : undefined}
+                    onExport={util.hasValue(props.rows[state.showEditModal]) && props.rows[state.showEditModal].onEditExport ? async () => {return await props.rows[state.showEditModal].onEditExport();} : undefined}
                     show={state.showEditModal !== null}
                     no_variant="secondary"
                     yes_variant="primary"
@@ -358,6 +369,7 @@ export class Table extends Component<TableProps, TableState> {
                     no_text={__("component.table.abort")}
                     yes_text={__("component.table.apply")}
                     additionalFooterButtons={state.showEditModal !== null ? props.rows[state.showEditModal].editAdditionalFooterButtons : undefined}
+                    export_basename={util.hasValue(props.rows[state.showEditModal]) && props.rows[state.showEditModal].editExportBasename}
                     backdropClassName={props.nestingDepth === undefined ? undefined : ("modal-backdrop-" + props.nestingDepth)}
                     className={props.nestingDepth === undefined ? undefined : ("modal-" + props.nestingDepth)}
                     size={props.nestingDepth === undefined ? "xl" : {0: "xl", 1: "lg", 2: "md", 3: "sm"}[props.nestingDepth] as 'xl' | 'lg' | 'sm'} >{/* "md" doesn't exist, but is just the normal size, the cast make it ignore "md"*/}
