@@ -83,6 +83,16 @@ let x = {
         "input_host": {
             "invalid_feedback": "Hostname oder IP-Address ist ungültig"
         },
+        "item_modal": {
+            "error_button": "Schließen",
+            "import_button": "Importieren",
+            "import_error_title": "Fehler beim Importieren",
+            "import_error_no_file": "Es wurde keine Datei ausgewählt.",
+            "import_error_wrong_file_type": "Ausgewählte Datei ist keine JSON Datei.",
+            "import_error_file_read_error": "Datei konnte nicht gelesen werden.",
+            "export_button": "Exportieren",
+            "export_error_title": "Fehler beim Exportieren"
+        },
         "table": {
             "abort": "Verwerfen",
             "add": "Hinzufügen",
