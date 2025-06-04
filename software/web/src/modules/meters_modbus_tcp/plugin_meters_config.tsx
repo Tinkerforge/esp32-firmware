@@ -693,8 +693,20 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
         return <Table
             nestingDepth={1}
             rows={this.props.table[1].registers.map((register, i) => {
+                let register_type = "<unknown>";
+
+                switch (this.state.register.rtype) {
+                case ModbusRegisterType.HoldingRegister:
+                    register_type = __("meters_modbus_tcp.content.registers_register_type_holding_register");
+                    break;
+
+                case ModbusRegisterType.InputRegister:
+                    register_type = __("meters_modbus_tcp.content.registers_register_type_input_register");
+                    break;
+                }
+
                 const row: TableRow = {
-                    columnValues: [__("meters_modbus_tcp.content.registers_register")(register.addr + start_address_offset, get_meter_value_id_name(register.id))],
+                    columnValues: [__("meters_modbus_tcp.content.registers_register")(register_type, register.addr + start_address_offset, get_meter_value_id_name(register.id))],
                     onRemoveClick: async () => {
                         this.props.on_table(util.get_updated_union(this.props.table, {registers: this.props.table[1].registers.filter((r, k) => k !== i)}));
                     },

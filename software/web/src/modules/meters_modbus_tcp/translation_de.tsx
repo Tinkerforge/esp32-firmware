@@ -96,7 +96,7 @@ let x = {
             "registers_add_count": /*SFN*/(x: number, max: number) => x + " von " + max + " Registern konfiguriert"/*NF*/,
             "registers_add_select_address_mode": "Zuerst Adressmodus auswählen.",
             "registers_edit_title": "Register bearbeiten",
-            "registers_register": /*SFN*/(start_address: number, value_id_name: string) => start_address + " als " + value_id_name/*NF*/,
+            "registers_register": /*SFN*/(register_type: string, start_address: number, value_id_name: string) => "Lese " + register_type + " " + start_address + " als " + value_id_name/*NF*/,
             "registers_register_type": "Registertyp",
             "registers_register_type_holding_register": "Holding Register",
             "registers_register_type_input_register": "Input Register",
