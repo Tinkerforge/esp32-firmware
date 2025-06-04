@@ -298,7 +298,7 @@ class Executor extends Component<ExecutorProps, ExecutorState> {
                 <Button
                     variant="primary"
                     className="form-control"
-                    disabled={this.props.table.registers.length == 0 || this.state.waiting}
+                    disabled={!util.hasValue(this.props.host) || this.props.host.length == 0 || this.props.table.registers.length == 0 || this.state.waiting}
                     onClick={async () => await this.execute()}>{__("batteries_modbus_tcp.content.execute")}
                 </Button>
             </FormRow>
@@ -310,7 +310,61 @@ class Executor extends Component<ExecutorProps, ExecutorState> {
                 : undefined}
         </>;
     }
+}
 
+function import_register_subtable(table: RegisterTable)
+{
+    if (!util.isNonNullObject(table)) {
+        console.log("Batteries Modbus/TCP: Imported config register subtable is not an object");
+        return null;
+    }
+
+    if (typeof table.device_address != "number") {
+        console.log("Batteries Modbus/TCP: Imported config register subtable device address is not a number");
+        return null;
+    }
+
+    if (!util.isNonNullObject(table.registers)) {
+        console.log("Batteries Modbus/TCP: Imported config register subtable registers is not an object");
+        return null;
+    }
+
+    if (typeof table.registers.length != "number") {
+        console.log("Batteries Modbus/TCP: Imported config register subtable registers has no length");
+        return null;
+    }
+
+    let registers: Register[] = [];
+
+    for (let i = 0; i < table.registers.length; ++i) {
+        if (!util.isNonNullObject(table.registers[i])) {
+            console.log("Batteries Modbus/TCP: Imported config register subtable registers item is not an object");
+            return null;
+        }
+
+        if (typeof table.registers[i].rtype != "number") {
+            console.log("Batteries Modbus/TCP: Imported config register subtable registers item rtype is not a number");
+            return null;
+        }
+
+        if (typeof table.registers[i].addr != "number") {
+            console.log("Batteries Modbus/TCP: Imported config register subtable registers item addr is not a number");
+            return null;
+        }
+
+        if (typeof table.registers[i].value != "number") {
+            console.log("Batteries Modbus/TCP: Imported config register subtable registers item value is not a number");
+            return null;
+        }
+
+        registers.push({
+            rtype: table.registers[i].rtype,
+            addr:  table.registers[i].addr,
+            value: table.registers[i].value,
+        });
+    }
+
+    return {device_address: table.device_address, registers: registers};
 }
 
 export function init() {
@@ -319,6 +373,87 @@ export function init() {
             name: () => __("batteries_modbus_tcp.content.battery_class"),
             new_config: () => [BatteryClassID.ModbusTCP, {display_name: "", host: "", port: 502, table: null}] as BatteryConfig,
             clone_config: (config: BatteryConfig) => [config[0], {...config[1]}] as BatteryConfig,
+            import_config: (new_config: BatteryConfig, current_config: BatteryConfig) => {
+                if (!util.isNonNullObject(new_config)) {
+                    console.log("Batteries Modbus/TCP: JSON of imported config has no toplevel object");
+                    return null;
+                }
+
+                if (new_config[0] != BatteryClassID.ModbusTCP) {
+                    console.log("Batteries Modbus/TCP: Imported config has wrong class:", new_config[0]);
+                    return null;
+                }
+
+                if (!util.isNonNullObject(new_config[1])) {
+                    console.log("Batteries Modbus/TCP: Imported config union value is not an object");
+                    return null;
+                }
+
+                if (typeof new_config[1].port != "number") {
+                    console.log("Batteries Modbus/TCP: Imported config port is not a number");
+                    return null;
+                }
+
+                if (!util.isNonNullObject(new_config[1].table)) {
+                    console.log("Batteries Modbus/TCP: Imported config table union value is not an object");
+                    return null;
+                }
+
+                let table: TableConfigCustom;
+
+                switch (new_config[1].table[0]) {
+                    case BatteryModbusTCPTableID.Custom:
+                        if (typeof new_config[1].table[1].register_address_mode != "number") {
+                            console.log("Batteries Modbus/TCP: Imported config register address mode is not a number");
+                            return null;
+                        }
+
+                        table = [BatteryModbusTCPTableID.Custom, {
+                            register_address_mode:       new_config[1].table[1].register_address_mode,
+                            permit_grid_charge:          import_register_subtable(new_config[1].table[1].permit_grid_charge),
+                            revoke_grid_charge_override: import_register_subtable(new_config[1].table[1].revoke_grid_charge_override),
+                            forbid_discharge:            import_register_subtable(new_config[1].table[1].forbid_discharge),
+                            revoke_discharge_override:   import_register_subtable(new_config[1].table[1].revoke_discharge_override),
+                        }]
+
+                        if (!util.hasValue(table[1].permit_grid_charge)
+                         || !util.hasValue(table[1].revoke_grid_charge_override)
+                         || !util.hasValue(table[1].forbid_discharge)
+                         || !util.hasValue(table[1].revoke_discharge_override)) {
+                            return null;
+                        }
+
+                        break;
+
+                    default:
+                        console.log("Batteries Modbus/TCP: Imported config table has unknown class:", new_config[1].table[0]);
+                        return null;
+                }
+
+                let display_name = "";
+                let host = "";
+
+                if (util.isNonNullObject(current_config[1])) {
+                    if (typeof current_config[1].display_name == "string") {
+                        display_name = current_config[1].display_name;
+                    }
+
+                    if (typeof current_config[1].host == "string") {
+                        host = current_config[1].host;
+                    }
+                }
+
+                return [BatteryClassID.ModbusTCP, {display_name: display_name, host: host, port: new_config[1].port, table: table}] as BatteryConfig;
+            },
+            export_basename_suffix: () => __("batteries_modbus_tcp.content.export_basename_suffix"),
+            export_config: (config: BatteryConfig) => {
+                let clone: BatteryConfig = {...config};
+
+                delete clone[1].display_name;
+                delete clone[1].host;
+
+                return clone;
+            },
             get_edit_children: (config: ModbusTCPBatteriesConfig, on_config: (config: ModbusTCPBatteriesConfig) => void): ComponentChildren => {
                 let edit_children = [
                     <FormRow label={__("batteries_modbus_tcp.content.display_name")}>

@@ -31,7 +31,13 @@ let x = {
 
             "edit_battery_title": "Batteriespeicher bearbeiten",
             "edit_battery_slot": "Nummer",
-            "edit_battery_class": "Klasse"
+            "edit_battery_class": "Klasse",
+
+            "battery_import_error_json_malformed": "Das JSON-Format ist beschädigt.",
+            "battery_import_error_class_unknown": "Klasse ist unbekannt.",
+            "battery_import_error_import_unsupported": "Importieren wird für diese Klasse nicht unterstüzt.",
+            "battery_import_error_config_malformed": "Das Konfigurations-Format ist beschädigt.",
+            "battery_export_basename": "Batteriespeicher-Konfiguration"
         },
         "script": {
             "save_failed": "Speichern der Speichersteuerungs-Einstellungen fehlgeschlagen.",
