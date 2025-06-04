@@ -54,7 +54,7 @@ void DayAheadPrices::pre_setup()
         {"supplier_markup", Config::Uint(0, 0, 99000)},      // in ct/1000 per kWh
         {"supplier_base_fee", Config::Uint(0, 0, 99000)},    // in ct per month
     }), [this](Config &update, ConfigSource source) -> String {
-        String api_url = update.get("api_url")->asString();
+        const String &api_url = update.get("api_url")->asString();
 
         if ((api_url.length() > 0) && !api_url.startsWith("https://")) {
             return "HTTPS required for Day Ahead Price API URL";
@@ -114,15 +114,16 @@ void DayAheadPrices::pre_setup()
         })
     );
 #endif
+
+#ifdef DEBUG_FS_ENABLE
+    debug_price_update = Config::Int32(0);
+#endif
 }
 
 void DayAheadPrices::setup()
 {
     api.restorePersistentConfig("day_ahead_prices/config", &config);
     prices.get("resolution")->updateEnum(config.get("resolution")->asEnum<Resolution>());
-
-    json_buffer = nullptr;
-    json_buffer_position = 0;
 
     initialized = true;
 }
@@ -142,32 +143,39 @@ void DayAheadPrices::register_urls()
     task_scheduler.scheduleWallClock([this]() {
         this->update_current_price();
     }, PRICE_UPDATE_INTERVAL, 0_ms, true);
+
+#ifdef DEBUG_FS_ENABLE
+    api.addCommand("day_ahead_prices/debug_price_update", &debug_price_update, {}, [this](String &/*errmsg*/) {
+        const int32_t fake_price = debug_price_update.asInt();
+
+        state.get("current_price")->updateInt(fake_price);
+    }, false);
+#endif
 }
 
 void DayAheadPrices::update_current_price()
 {
-    static int32_t last_price = INT32_MAX;
-
     const uint32_t resolution_divisor = config.get("resolution")->asEnum<Resolution>() == Resolution::Min15 ? 15 : 60;
     const uint32_t diff = rtc.timestamp_minutes() - prices.get("first_date")->asUint();
     const uint32_t index = diff/resolution_divisor;
-    if (prices.get("prices")->count() <= index) {
+    const Config *p = static_cast<const Config *>(prices.get("prices"));
+
+    if (p->count() <= index) {
         state.get("current_price")->updateInt(INT32_MAX);
         current_price_available = false;
     } else {
-        state.get("current_price")->updateInt(prices.get("prices")->get(index)->asInt());
+        int32_t current_price = p->get(index)->asInt();
+        const bool price_changed = state.get("current_price")->updateInt(current_price);
         current_price_available = true;
-    }
 
 #if MODULE_AUTOMATION_AVAILABLE()
-    if (boot_stage > BootStage::SETUP) {
-        int32_t current_price = state.get("current_price")->asInt();
-        if ((current_price != INT32_MAX) && (current_price != last_price)) {
+        if (price_changed && boot_stage > BootStage::SETUP) {
             automation.trigger(AutomationTriggerID::DayAheadPriceNow, &current_price, this);
-            last_price = current_price;
         }
-    }
+#else
+        (void)price_changed;
 #endif
+    }
 }
 
 void DayAheadPrices::update_prices_sorted()
@@ -176,7 +184,7 @@ void DayAheadPrices::update_prices_sorted()
         prices_sorted = new_array_psram_or_dram<PriceSorted>(DAY_AHEAD_PRICE_MAX_AMOUNT);
     }
 
-    auto p = prices.get("prices");
+    const Config *p = static_cast<const Config *>(prices.get("prices"));
     const size_t num_prices = p->count();
 
     // No price data available
@@ -186,13 +194,14 @@ void DayAheadPrices::update_prices_sorted()
     }
 
     // Put prices in array with pair of index and price
-    std::fill_n(prices_sorted, DAY_AHEAD_PRICE_MAX_AMOUNT, std::pair<uint8_t, int32_t>(-1, 0));
+    std::fill_n(prices_sorted, DAY_AHEAD_PRICE_MAX_AMOUNT, std::pair<uint8_t, int32_t>(std::numeric_limits<uint8_t>::max(), 0));
 
     const size_t multiplier = config.get("resolution")->asEnum<Resolution>() == Resolution::Min60 ? 4 : 1;
     prices_sorted_count = std::min(num_prices * multiplier, static_cast<size_t>(DAY_AHEAD_PRICE_MAX_AMOUNT));
+
     for (size_t i = 0; i < prices_sorted_count/multiplier; i++) {
-        int32_t price = p->get(i)->asInt();
-        if (config.get("resolution")->asEnum<Resolution>() == Resolution::Min15) {
+        const int32_t price = p->get(i)->asInt();
+        if (multiplier == 1) {
             prices_sorted[i] = std::make_pair(i, price);
         } else {
             prices_sorted[i*4+0] = std::make_pair(static_cast<uint8_t>(i*4+0), price);
@@ -207,8 +216,8 @@ void DayAheadPrices::update_prices_sorted()
         return a.second < b.second;
     });
 
-    prices_sorted_first_date  = prices.get("first_date")->asUint();
-    prices_sorted_available = true;
+    prices_sorted_first_date = prices.get("first_date")->asUint();
+    prices_sorted_available  = true;
 }
 
 void DayAheadPrices::update_minmaxavg_price()
@@ -246,7 +255,7 @@ void DayAheadPrices::retry_update(millis_t delay)
 
 void DayAheadPrices::update()
 {
-    if (config.get("enable")->asBool() == false) {
+    if (!config.get("enable")->asBool()) {
         return;
     }
 
@@ -254,19 +263,14 @@ void DayAheadPrices::update()
         return;
     }
 
-    if (!network.is_connected()) {
+    // Only update if network is connected and clock is synced
+    struct timeval tv_now;
+    if (!network.is_connected() || !rtc.clock_synced(&tv_now)) {
         retry_update(1_s);
         return;
     }
 
     if (download_state == DAP_DOWNLOAD_STATE_PENDING) {
-        return;
-    }
-
-    // Only update if clock is synced
-    struct timeval tv_now;
-    if (!rtc.clock_synced(&tv_now)) {
-        retry_update(1_s);
         return;
     }
 
@@ -283,8 +287,8 @@ void DayAheadPrices::update()
         json_buffer = (char *)calloc_psram_or_dram(DAY_AHEAD_PRICE_MAX_JSON_LENGTH, sizeof(char));
     } else {
         logger.printfln("JSON Buffer was potentially not freed correctly");
-        json_buffer_position = 0;
     }
+    json_buffer_position = 0;
 
     https_client.download_async(get_api_url_with_path().c_str(), config.get("cert_id")->asInt(), [this](AsyncHTTPSClientEvent *event) {
         switch (event->type) {
@@ -340,7 +344,7 @@ void DayAheadPrices::update()
 
         case AsyncHTTPSClientEventType::Data:
             if(json_buffer == nullptr) {
-                logger.printfln("JSON Buffer was not allocated correctly");
+                logger.printfln("JSON Buffer was not allocated correctly before receiving data");
 
                 download_state = DAP_DOWNLOAD_STATE_ERROR;
                 handle_cleanup();
@@ -370,7 +374,7 @@ void DayAheadPrices::update()
 
         case AsyncHTTPSClientEventType::Finished:
             if(json_buffer == nullptr) {
-                logger.printfln("JSON Buffer was not allocated correctly");
+                logger.printfln("JSON Buffer was not allocated correctly before finishing");
 
                 download_state = DAP_DOWNLOAD_STATE_ERROR;
                 break;
@@ -408,15 +412,21 @@ void DayAheadPrices::handle_new_data()
         // Put data from json into day_ahead_prices/state object
         JsonArray js_prices = json_doc["prices"].as<JsonArray>();
         auto p = prices.get("prices");
-        p->removeAll();
-        int count = 0;
-        int max_count = this->get_max_price_values();
-        for(JsonVariant v : js_prices) {
-            p->add()->updateInt(v.as<int>());
+        const size_t old_count = p->count();
+        const size_t max_count = static_cast<size_t>(this->get_max_price_values());
+        size_t count = 0;
+
+        for (JsonVariant v : js_prices) {
+            auto price_elem = count < old_count ? p->get(count) : p->add();
+            price_elem->updateInt(v.as<int>());
             count++;
-            if(count >= max_count) {
+            if (count >= max_count) {
                 break;
             }
+        }
+
+        for (size_t i = old_count; i > count; i--) {
+            p->removeLast();
         }
 
         const uint32_t current_minutes = rtc.timestamp_minutes();
@@ -434,16 +444,22 @@ void DayAheadPrices::handle_new_data()
 // Create API path that includes currently configured region and resolution
 String DayAheadPrices::get_api_url_with_path()
 {
-    String api_url = config.get("api_url")->asString();
+    char buf[256];
+    StringWriter sw(buf, ARRAY_SIZE(buf));
 
-    if (!api_url.endsWith("/")) {
-        api_url += "/";
+    const String &api_url = config.get("api_url")->asString();
+    sw.puts(api_url.c_str(), static_cast<ssize_t>(api_url.length()));
+
+    if (*(sw.getRemainingPtr() - 1) != '/') {
+        sw.putc('/');
     }
 
-    String region = region_str[static_cast<std::underlying_type<Region>::type>(config.get("region")->asEnum<Region>())];
-    String resolution = resolution_str[static_cast<std::underlying_type<Resolution>::type>(config.get("resolution")->asEnum<Resolution>())];
+    sw.puts("v1/day_ahead_prices/");
+    sw.puts(region_str[static_cast<std::underlying_type<Region>::type>(config.get("region")->asEnum<Region>())]);
+    sw.putc('/');
+    sw.puts(resolution_str[static_cast<std::underlying_type<Resolution>::type>(config.get("resolution")->asEnum<Resolution>())]);
 
-    return api_url + "v1/day_ahead_prices/" + region + "/" + resolution;
+    return String(buf, sw.getLength());
 }
 
 int DayAheadPrices::get_max_price_values()
@@ -820,23 +836,27 @@ bool DayAheadPrices::has_triggered(const Config *conf, void *data)
 {
     if (conf->getTag<AutomationTriggerID>() == AutomationTriggerID::DayAheadPriceNow) {
         const Config *cfg = static_cast<const Config *>(conf->get());
-        const int32_t current_price = *(int32_t *)data;
-        const int32_t type = cfg->get("type")->asInt();
-        const int32_t comparison = cfg->get("comparison")->asInt();
-        const int32_t value = cfg->get("value")->asInt();
+        const int32_t type          = cfg->get("type"      )->asInt();
+        const int32_t comparison    = cfg->get("comparison")->asInt();
+        const int32_t value         = cfg->get("value"     )->asInt();
+        const int32_t current_price = *static_cast<int32_t *>(data);
 
-        if (type == 0) {// average
+        if (type == 0) { // average
             auto avg = get_average_price_today();
-            if (comparison == 0) { // greater
-                return avg.is_some() && (current_price > (avg.unwrap()*value/100));
-            } else if (comparison == 1) { // less
-                return avg.is_some() && (current_price < (avg.unwrap()*value/100));
+            if (avg.is_some()) {
+                const int32_t threshold = avg.unwrap() * value / 100; // value in %
+                if (comparison == 0) { // greater
+                    return current_price > threshold;
+                } else if (comparison == 1) { // less
+                    return current_price < threshold;
+                }
             }
         } else if (type == 1) { // absolute
+            const int32_t threshold = value * 1000; // value in ct
             if (comparison == 0) { // greater
-                return current_price > (value*1000);
+                return current_price > threshold;
             } else if (comparison == 1) { // less
-                return current_price < (value*1000);
+                return current_price < threshold;
             }
         }
     }
