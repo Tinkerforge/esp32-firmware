@@ -26,6 +26,8 @@
 #include "TFTools/Micros.h"
 #include "tools/tristate_bool.h"
 
+struct battery_control_action_info;
+
 class BatteryControl final : public IModule
 {
 public:
@@ -34,6 +36,9 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void register_events() override;
+
+    void cm_callback(bool fast_charger_in_c);
 
 private:
     enum class RuleCondition : uint8_t {
@@ -44,7 +49,7 @@ private:
 
     struct control_rule {
         int32_t  price_th;    // in ct/1000
-        uint32_t forecast_th; // in Wh
+        int32_t  forecast_th; // in Wh
         uint8_t  soc_th;      // in percent
         RuleCondition soc_cond;
         RuleCondition price_cond;
@@ -53,7 +58,21 @@ private:
 
     void preprocess_rules(const Config *rules_config, control_rule *rules, size_t rules_count);
 
-    micros_t next_blocked_update = 0_us;
+    void update_avg_soc();
+    void schedule_evaluation();
+    bool rule_condition_failed(BatteryControl::RuleCondition cond, int32_t th, int32_t value);
+    TristateBool evaluate_rules(const control_rule *rules, size_t rules_count);
+    void evaluate_all_rules();
+    void evaluate_summary();
+    void periodic_update();
+
+    void update_batteries_and_state(bool influence_active, bool changed, const battery_control_action_info *action, micros_t *next_update);
+    void update_charge_permitted(bool changed);
+    void update_discharge_blocked(bool changed);
+
+    micros_t rewrite_period = 0_us;
+    micros_t next_permit_grid_charge_update = 0_us;
+    micros_t next_discharge_blocked_update  = 0_us;
 
     ConfigRoot config;
     ConfigRoot rules_forbid_discharge;
@@ -63,10 +82,28 @@ private:
 
     Config rule_prototype;
 
+    uint64_t evaluation_task_id = 0;
+
     const control_rule *forbid_discharge_rules   = nullptr;
     const control_rule *permit_grid_charge_rules = nullptr;
     uint8_t forbid_discharge_rules_count   = 0;
     uint8_t permit_grid_charge_rules_count = 0;
 
+    bool block_discharge_during_fast_charge = false;
+    bool evaluation_must_update_soc = false;
+    bool evaluation_must_check_rules = false;
+    bool have_battery = false;
+    bool network_connect_seen = false;
+
+    int32_t soc_cache_avg  = std::numeric_limits<decltype(soc_cache_avg)>::min();
+    int32_t price_cache    = std::numeric_limits<decltype(soc_cache_avg)>::min();
+    int32_t forecast_cache = std::numeric_limits<decltype(soc_cache_avg)>::min();
+    uint8_t soc_cache[METERS_SLOTS];
+    bool fast_charger_in_c_cache = false;
+
+    TristateBool discharge_blocked_by_rules = TristateBool::Undefined;
     TristateBool discharge_blocked = TristateBool::Undefined;
+
+    TristateBool charge_permitted_by_rules = TristateBool::Undefined;
+    TristateBool charge_permitted = TristateBool::Undefined;
 };
