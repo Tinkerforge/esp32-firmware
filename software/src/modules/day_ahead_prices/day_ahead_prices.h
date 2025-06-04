@@ -66,8 +66,8 @@ private:
     void update_prices_sorted();
 
     micros_t last_update_begin;
-    char *json_buffer;
-    uint32_t json_buffer_position;
+    char *json_buffer = nullptr;
+    uint32_t json_buffer_position = 0;
     bool current_price_available = false;
     AsyncHTTPSClient https_client;
     uint64_t task_id = 0;
@@ -90,6 +90,10 @@ private:
     ConfigRoot config;
     ConfigRoot state;
     ConfigRoot prices;
+
+#ifdef DEBUG_FS_ENABLE
+    ConfigRoot debug_price_update;
+#endif
 
 public:
     DayAheadPrices(){}
