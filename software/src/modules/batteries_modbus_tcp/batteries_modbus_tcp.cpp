@@ -59,7 +59,7 @@ void BatteriesModbusTCP::pre_setup()
     table_prototypes.push_back({BatteryModbusTCPTableID::None, *Config::Null()});
 
     table_custom_registers_prototype = Config::Object({
-        {"rtype", Config::Uint8(static_cast<uint8_t>(ModbusRegisterType::HoldingRegister))},
+        {"rtype", Config::Enum(ModbusRegisterType::HoldingRegister)}, // FIXME: replace with function code?
         {"addr", Config::Uint16(0)},
         {"value", Config::Uint16(0)},
     });
@@ -296,7 +296,9 @@ void BatteriesModbusTCP::write_next()
     case ModbusRegisterType::InputRegister:
     case ModbusRegisterType::DiscreteInput:
     default:
-        esp_system_abort("batteries_modbus_tcp: Unsupported register type to write.");
+        report_errorf(execute_cookie, "Unsupported register type to write: %u", static_cast<uint8_t>(spec->register_type));
+        release_client();
+        return;
     }
 
     static_cast<TFModbusTCPSharedClient *>(execute_client)->transact(execute_table->device_address,
