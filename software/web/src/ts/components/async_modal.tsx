@@ -34,6 +34,7 @@ interface AsyncModalParams {
     yes_text: () => string;
 
     nestingDepth?: number
+    size?: "sm" | "lg" | "xl";
 }
 
 interface AsyncModalState extends AsyncModalParams {
@@ -82,16 +83,17 @@ export class AsyncModal extends Component<AsyncModalProps, AsyncModalState> {
                     centered
                     backdropClassName={this.state.nestingDepth ? "modal-backdrop-" + this.state.nestingDepth : ""}
                     className={this.state.nestingDepth ? "modal-" + this.state.nestingDepth : ""}
-                    size="xl">
+                    size={this.state.size ?? "xl"}>
                 {/* There seems to be an incompatibility between preact's and react-bootstrap's typings*/ }
                 <Modal.Header {...{closeButton: true} as any}>
                     <span class="modal-title form-label">{this.params.title()}</span>
                 </Modal.Header>
                 <Modal.Body>{this.params.body()}</Modal.Body>
                 <Modal.Footer>
+                    {state.no_variant ?
                     <Button variant={state.no_variant} onClick={() => {this.hide(false)}}>
                         {this.params.no_text()}
-                    </Button>
+                    </Button> : undefined}
                     <Button variant={state.yes_variant} onClick={() => {this.hide(true)}}>
                         {this.params.yes_text()}
                     </Button>
