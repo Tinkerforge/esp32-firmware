@@ -248,12 +248,6 @@ void BatteryControl::preprocess_rules(const Config *rules_config, control_rule *
     }
 }
 
-void BatteryControl::cm_callback(bool fast_charger_in_c)
-{
-    fast_charger_in_c_cache = fast_charger_in_c;
-    schedule_evaluation();
-}
-
 void BatteryControl::update_avg_soc()
 {
     uint32_t soc_sum = 0;
@@ -376,11 +370,25 @@ void BatteryControl::evaluate_summary()
 
 void BatteryControl::periodic_update()
 {
+    bool skip_discharge_blocked = false;
+
+    if (block_discharge_during_fast_charge) {
+        const bool fast_charger_in_c_cm = charge_manager.fast_charger_in_c;
+
+        if (fast_charger_in_c_cm != fast_charger_in_c_cache) {
+            logger.printfln("fast_charger_in_c %i", fast_charger_in_c_cm); // TODO remove
+            fast_charger_in_c_cache = fast_charger_in_c_cm;
+            skip_discharge_blocked = true;
+            schedule_evaluation();
+        }
+    }
+
     if (deadline_elapsed(next_permit_grid_charge_update)) {
         logger.printfln("next_permit_grid_charge_update running"); // TODO remove
         update_charge_permitted(false);
     }
-    if (deadline_elapsed(next_discharge_blocked_update)) {
+
+    if (!skip_discharge_blocked && deadline_elapsed(next_discharge_blocked_update)) {
         logger.printfln("next_discharge_blocked_update running"); // TODO remove
         update_discharge_blocked(false);
     }
