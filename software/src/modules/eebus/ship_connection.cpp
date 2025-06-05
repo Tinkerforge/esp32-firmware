@@ -85,7 +85,6 @@ void ShipConnection::send_current_outgoing_message()
         logger.printfln("message_outgoing->length zu groß!");
         return;
     }
-    logger.printfln("Looking good. Sending message");
     ws_client.sendOwnedNoFreeBlocking_HTTPThread((char *)message_outgoing->data, message_outgoing->length, HTTPD_WS_TYPE_BINARY);
 }
 
@@ -870,6 +869,7 @@ void ShipConnection::state_sme_access_method_request()
 
 void ShipConnection::send_data_message(JsonVariant payload)
 {
+    // Technically we should only send data messages if the state is done but for some reason the done state is not set correctly
     if (/*state == State::Done*/ true) {
         SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
         // SHIP 14.
@@ -878,8 +878,7 @@ void ShipConnection::send_data_message(JsonVariant payload)
 
         data.type_to_json(*message_outgoing);
 
-        logger.printfln("Data: sending message with total length of %d", message_outgoing->length);
-       // logger.printfln("Data: %s", &message_outgoing->data[1]);
+        logger.printfln("Data: sending message with total length of %d", message_outgoing->length -1);
         send_current_outgoing_message();
     } else {
         logger.printfln("send_data_message: Connection not in done state. Actual State: %d", (int)state);

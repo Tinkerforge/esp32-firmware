@@ -32,13 +32,14 @@
 class UseCase
 {
 public:
+    virtual ~UseCase() = default;
     virtual JsonVariant read() = 0;
     virtual void subscribe() = 0;
     virtual UseCaseInformationDataType get_usecase_information() = 0;
 };
 
 // NodeManagement not quite a full usecase but it is required
-class NodeManagementUsecase : public UseCase
+class NodeManagementUsecase final : public UseCase
 {
 public:
     NodeManagementUsecase();
@@ -50,7 +51,7 @@ public:
     NodeManagementUseCaseDataType get_usecases();
 };
 
-class ChargingSummaryUsecase : public UseCase
+class ChargingSummaryUsecase final : public UseCase
 {
 public:
     ChargingSummaryUsecase() = default;
@@ -68,7 +69,7 @@ class EEBusUseCases
 public:
     EEBusUseCases() = default;
 
-    bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonVariant response);
+    bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response);
 
     std::vector<UseCase *> usecases;
     NodeManagementUsecase node_management;
