@@ -67,14 +67,17 @@ private:
     void update_batteries_and_state(bool influence_active, bool changed, const battery_control_action_info *action, micros_t *next_update);
     void update_charge_permitted(bool changed);
     void update_discharge_blocked(bool changed);
+    void update_charge_blocked(bool changed);
 
     micros_t rewrite_period = 0_us;
     micros_t next_permit_grid_charge_update = 0_us;
     micros_t next_discharge_blocked_update  = 0_us;
+    micros_t next_charge_blocked_update     = 0_us;
 
     ConfigRoot config;
-    ConfigRoot rules_forbid_discharge;
     ConfigRoot rules_permit_grid_charge;
+    ConfigRoot rules_forbid_discharge;
+    ConfigRoot rules_forbid_charge;
     ConfigRoot low_level_config;
     ConfigRoot state;
 
@@ -82,10 +85,12 @@ private:
 
     uint64_t evaluation_task_id = 0;
 
-    const control_rule *forbid_discharge_rules   = nullptr;
     const control_rule *permit_grid_charge_rules = nullptr;
-    uint8_t forbid_discharge_rules_count   = 0;
+    const control_rule *forbid_discharge_rules   = nullptr;
+    const control_rule *forbid_charge_rules      = nullptr;
     uint8_t permit_grid_charge_rules_count = 0;
+    uint8_t forbid_discharge_rules_count   = 0;
+    uint8_t forbid_charge_rules_count      = 0;
 
     bool block_discharge_during_fast_charge = false;
     bool evaluation_must_update_soc = false;
@@ -99,9 +104,12 @@ private:
     uint8_t soc_cache[METERS_SLOTS];
     bool fast_charger_in_c_cache = false;
 
+    TristateBool charge_permitted_by_rules = TristateBool::Undefined;
+    TristateBool charge_permitted = TristateBool::Undefined;
+
     TristateBool discharge_blocked_by_rules = TristateBool::Undefined;
     TristateBool discharge_blocked = TristateBool::Undefined;
 
-    TristateBool charge_permitted_by_rules = TristateBool::Undefined;
-    TristateBool charge_permitted = TristateBool::Undefined;
+    TristateBool charge_blocked_by_rules = TristateBool::Undefined;
+    TristateBool charge_blocked = TristateBool::Undefined;
 };
