@@ -32,6 +32,8 @@
 #include "build.h"
 #include "tools/string_builder.h"
 
+#include "gcc_warnings.h"
+
 // result line: {"ssid":"%s","bssid":"%s","rssi":%d,"channel":%d,"encryption":%d}
 // worst case length ~140
 #define MAX_SCAN_RESULT_LENGTH 145
@@ -90,30 +92,24 @@ void Wifi::pre_setup()
         {"sta_bssid", Config::Str("", 0, 20)}
     });
 
-    eap_config_prototypes.push_back({EapConfigID::None, *Config::Null()});
+    eap_config_prototypes[0] = {EapConfigID::None, *Config::Null()};
 
     // Max len of identity is currently limited by arduino.
-    eap_config_prototypes.push_back({EapConfigID::TLS, Config::Object({
+    eap_config_prototypes[1] = {EapConfigID::TLS, Config::Object({
         {"ca_cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
         {"identity", Config::Str("", 0, 64)},
         {"client_cert_id", Config::Int(0, 0, MAX_CERT_ID)},
         {"client_key_id", Config::Int(0, 0, MAX_CERT_ID)}
-    })});
+    })};
 
-    eap_config_prototypes.push_back({EapConfigID::PEAP_TTLS, Config::Object({
+    eap_config_prototypes[2] = {EapConfigID::PEAP_TTLS, Config::Object({
         {"ca_cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
         {"identity", Config::Str("", 0, 64)},
         {"username", Config::Str("", 0, 64)},
         {"password", Config::Str("", 0, 64)},
         {"client_cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
         {"client_key_id", Config::Int(-1, -1, MAX_CERT_ID)}
-    })});
-
-    Config eap_config_union = Config::Union<EapConfigID>(
-        *Config::Null(),
-        EapConfigID::None,
-        eap_config_prototypes.data(),
-        eap_config_prototypes.size());
+    })};
 
     sta_config = ConfigRoot{Config::Object({
         {"enable_sta", Config::Bool(false)},
@@ -140,7 +136,12 @@ void Wifi::pre_setup()
         {"subnet", Config::Str("0.0.0.0", 7, 15)},
         {"dns", Config::Str("0.0.0.0", 7, 15)},
         {"dns2", Config::Str("0.0.0.0", 7, 15)},
-        {"wpa_eap_config", eap_config_union}
+        {"wpa_eap_config", Config::Union<EapConfigID>(
+            *Config::Null(),
+            EapConfigID::None,
+            eap_config_prototypes,
+            ARRAY_SIZE(eap_config_prototypes)
+        )},
     }), [](Config &cfg, ConfigSource source) -> String {
         const String &phrase = cfg.get("passphrase")->asString();
         if (phrase.length() > 0 && phrase.length() < 8)
@@ -329,86 +330,79 @@ bool Wifi::apply_sta_config_and_connect()
     WiFi.disconnect(false, true);
     WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
 
-    const char *ssid = sta_config_in_use.get("ssid")->asEphemeralCStr();
-    const char *passphrase = sta_config_in_use.get("passphrase")->asEphemeralCStr();
-    const bool bssid_lock = sta_config_in_use.get("bssid_lock")->asBool();
-
-    uint8_t bssid[6];
-    if (bssid_lock) {
-        sta_config_in_use.get("bssid")->fillUint8Array(bssid, ARRAY_SIZE(bssid));
-    }
-
-    const IPAddress ip{sta_config_in_use.get("ip")->asUnsafeCStr()};
-    if (static_cast<uint32_t>(ip) != 0) {
-        WiFi.config(ip,
-                    {sta_config_in_use.get("gateway")->asUnsafeCStr()},
-                    {sta_config_in_use.get("subnet" )->asUnsafeCStr()},
-                    {sta_config_in_use.get("dns"    )->asUnsafeCStr()},
-                    {sta_config_in_use.get("dns2"   )->asUnsafeCStr()});
+    if (runtime_sta->ip.addr == 0) {
+        WiFi.STA.config(static_cast<uint32_t>(0), static_cast<uint32_t>(0), static_cast<uint32_t>(0));
     } else {
-        WiFi.config((uint32_t)0, (uint32_t)0, (uint32_t)0);
+        const ip4_addr_t subnet = tf_ip4addr_cidr2mask(runtime_sta->subnet_cidr);
+
+        WiFi.STA.config({runtime_sta->ip.addr     },
+                        {runtime_sta->gateway.addr},
+                        {subnet.addr              },
+                        {runtime_sta->dns.addr    },
+                        {runtime_sta->dns2.addr   });
     }
 
-    if (bssid_lock) {
+    const char *ssid = runtime_sta->ssid_passphrase;
+    const uint8_t *bssid;
+
+    if (runtime_sta->bssid_lock) {
+        bssid = runtime_sta->bssid;
         logger.printfln("Connecting to '%s', locked to BSSID %02X:%02X:%02X:%02X:%02X:%02X", ssid, bssid[0], bssid[1], bssid[2], bssid[3], bssid[4], bssid[5]);
     } else {
+        bssid = nullptr;
         logger.printfln("Connecting to '%s'", ssid);
     }
-    EapConfigID eap_config_id = static_cast<EapConfigID>(sta_config_in_use.get("wpa_eap_config")->as<OwnedConfig::OwnedConfigUnion>()->tag);
-    switch (eap_config_id) {
-        case EapConfigID::None:
-            WiFi.setMinSecurity(WIFI_AUTH_WPA_WPA2_PSK);
-            WiFi.begin(ssid, passphrase, 0, bssid_lock ? bssid : nullptr, true);
-            break;
 
-        case EapConfigID::TLS:
-            WiFi.setMinSecurity(WIFI_AUTH_WPA2_ENTERPRISE);
-            WiFi.begin(ssid,
-                    wpa2_auth_method_t::WPA2_AUTH_TLS,
-                    eap_identity.c_str(),
-                    nullptr,
-                    nullptr,
-                    (const char *)ca_cert.get(),
-                    //ca_cert_len,
-                    (const char *)client_cert.get(),
-                    //client_cert_len,
-                    (const char *)client_key.get(),
-                    //client_key_len,
-                    //"",
-                    //0,
-                    -1,
-                    0,
-                    bssid_lock ? bssid : nullptr,
-                    true);
+    const EapConfigID eap_config_id = runtime_sta->runtime_eap ? static_cast<EapConfigID>(runtime_sta->runtime_eap->eap_config_id) : EapConfigID::None;
+
+    switch (eap_config_id) {
+        case EapConfigID::None: {
+            const char *sta_passphrase = runtime_sta->ssid_passphrase + runtime_sta->passphrase_offset;
+            WiFi.setMinSecurity(WIFI_AUTH_WPA_WPA2_PSK);
+            WiFi.STA.connect(ssid, sta_passphrase, 0, bssid, true);
             break;
+        }
+        case EapConfigID::TLS: {
+            const eap_runtime *eap = runtime_sta->runtime_eap;
+            WiFi.setMinSecurity(WIFI_AUTH_WPA2_ENTERPRISE);
+            WiFi.STA.connect(ssid,
+                    wpa2_auth_method_t::WPA2_AUTH_TLS,
+                    eap->identity_credentials,
+                    nullptr, // no username
+                    nullptr, // no password
+                    reinterpret_cast<const char *>(eap->ca_cert.get()),
+                    reinterpret_cast<const char *>(eap->client_cert.get()),
+                    reinterpret_cast<const char *>(eap->client_key.get()),
+                    -1, // ttls_phase2_type
+                    0,  // auto-channel
+                    bssid,
+                    true); // connect
+            break;
+        }
         /**
          * The auth method can be hardcoded here because arduino is not controlling the actual method and we need to
          * set the username and password.
          * The user cert and key are unused because using them breaks it atm.
         */
-        case EapConfigID::PEAP_TTLS:
+        case EapConfigID::PEAP_TTLS: {
+            const eap_runtime *eap = runtime_sta->runtime_eap;
             WiFi.setMinSecurity(WIFI_AUTH_WPA2_ENTERPRISE);
-            WiFi.begin(ssid,
+            WiFi.STA.connect(ssid,
                     wpa2_auth_method_t::WPA2_AUTH_PEAP,
-                    eap_identity.c_str(),
-                    eap_username.c_str(),
-                    eap_password.c_str(),
-                    (const char *)ca_cert.get(),
-                    //ca_cert_len,
-                    nullptr,
-                    //0,
-                    nullptr,
-                    //0,
-                    //nullptr,
-                    //0,
-                    -1,
-                    0,
-                    bssid_lock ? bssid : nullptr,
-                    true);
+                    eap->identity_credentials,
+                    eap->identity_credentials + eap->username_offset,
+                    eap->identity_credentials + eap->password_offset,
+                    reinterpret_cast<const char *>(eap->ca_cert.get()),
+                    nullptr, // user cert
+                    nullptr, // user key
+                    -1, // ttls_phase2_type
+                    0,  // auto-channel
+                    bssid,
+                    true); // connect
             break;
-
+        }
         default:
-            break;
+            esp_system_abort("Invalid eap_config_id");
     }
     WiFi.setSleep(false);
     return true;
@@ -541,19 +535,131 @@ void Wifi::setup()
         }
     }
 
-    sta_config_in_use = sta_config.get_owned_copy();
-    const bool enable_sta = sta_config_in_use.get("enable_sta")->asBool();
+    if (sta_config.get("enable_sta")->asBool()) {
+        const String &ssid = sta_config.get("ssid"      )->asString();
+        const String &pass = sta_config.get("passphrase")->asString();
 
-    if (enable_sta) {
+        const size_t ssid_len_term = ssid.length() + 1;
+        const size_t pass_len_term = pass.length() + 1;
+
+        runtime_sta = static_cast<decltype(runtime_sta)>(malloc_psram_or_dram(offsetof(struct sta_runtime, ssid_passphrase) + ssid_len_term + pass_len_term));
+
+        if (!runtime_sta) {
+            logger.printfln("Failed to allocate memory for WiFi STA runtime data");
+        } else {
+            ip4addr_aton(sta_config.get("ip"     )->asUnsafeCStr(), &runtime_sta->ip     );
+            ip4addr_aton(sta_config.get("gateway")->asUnsafeCStr(), &runtime_sta->gateway);
+            ip4addr_aton(sta_config.get("dns"    )->asUnsafeCStr(), &runtime_sta->dns    );
+            ip4addr_aton(sta_config.get("dns2"   )->asUnsafeCStr(), &runtime_sta->dns2   );
+
+            ip4_addr_t subnet;
+            ip4addr_aton(sta_config.get("subnet" )->asUnsafeCStr(), &subnet);
+            runtime_sta->subnet_cidr = tf_ip4addr_mask2cidr(subnet) & 0x1F;
+
+            runtime_sta->enable_11b = sta_config.get("enable_11b")->asBool();
+            runtime_sta->bssid_lock = sta_config.get("bssid_lock")->asBool();
+
+            auto bssid_config = sta_config.get("bssid");
+            uint8_t *bssid = runtime_sta->bssid;
+            for (size_t i = 0; i < ARRAY_SIZE(runtime_sta->bssid); i++) {
+                bssid[i] = static_cast<uint8_t>(bssid_config->get(i)->asUint());
+            }
+
+            memcpy(runtime_sta->ssid_passphrase, ssid.c_str(), ssid_len_term);
+
+            runtime_sta->passphrase_offset = static_cast<uint8_t>(ssid_len_term);
+            memcpy(runtime_sta->ssid_passphrase + runtime_sta->passphrase_offset, pass.c_str(), pass_len_term);
+
+            runtime_sta->last_connected_s = 0;
+            runtime_sta->connect_tries    = 0;
+            runtime_sta->was_connected    = false;
+
+            auto eap_union = const_cast<const ConfigRoot *>(&sta_config)->get("wpa_eap_config");
+            const EapConfigID eap_config_id = eap_union->getTag<EapConfigID>();
+
+            if (eap_config_id == EapConfigID::None) {
+                runtime_sta->runtime_eap = nullptr;
+            } else {
+                auto eap_config = eap_union->get();
+
+                const String &eap_identity_tmp = eap_config->get("identity")->asString();
+                      String  eap_identity;
+
+                if (eap_config_id == EapConfigID::TLS && eap_identity_tmp.isEmpty()) {
+                    eap_identity = "anonymous";
+                } else {
+                    eap_identity = eap_identity_tmp;
+                }
+
+                const String *eap_username;
+                const String *eap_password;
+
+                const size_t eap_identity_len_term = eap_identity.length() + 1;
+                      size_t eap_username_len_term;
+                      size_t eap_password_len_term;
+
+                if (eap_config_id == EapConfigID::PEAP_TTLS) {
+                    eap_username = &eap_config->get("username")->asString();
+                    eap_password = &eap_config->get("password")->asString();
+
+                    eap_username_len_term = eap_username->length() + 1;
+                    eap_password_len_term = eap_password->length() + 1;
+                } else {
+                    eap_username = nullptr;
+                    eap_password = nullptr;
+
+                    eap_username_len_term = 0;
+                    eap_password_len_term = 0;
+                }
+
+                eap_runtime *eap = static_cast<decltype(eap)>(malloc_psram_or_dram(offsetof(struct eap_runtime, identity_credentials) + eap_identity_len_term + eap_username_len_term + eap_password_len_term));
+                runtime_sta->runtime_eap = eap;
+
+                if (!eap) {
+                    logger.printfln("Failed to allocate memory for WiFi STA EAP runtime data");
+                } else {
+                    memset(eap, 0, offsetof(struct eap_runtime, identity_credentials));
+
+                    const int32_t ca_cert_id     = eap_config->get("ca_cert_id"    )->asInt();
+                    const int32_t client_cert_id = eap_config->get("client_cert_id")->asInt();
+                    const int32_t client_key_id  = eap_config->get("client_key_id" )->asInt();
+
+                    if (ca_cert_id     >= 0) eap->ca_cert     = certs.get_cert(static_cast<uint8_t>(ca_cert_id),     nullptr);
+                    if (client_cert_id >= 0) eap->client_cert = certs.get_cert(static_cast<uint8_t>(client_cert_id), nullptr);
+                    if (client_key_id  >= 0) eap->client_key  = certs.get_cert(static_cast<uint8_t>(client_key_id),  nullptr);
+
+                    eap->eap_config_id = static_cast<uint8_t>(eap_config_id);
+
+                    memcpy(eap->identity_credentials, eap_identity.c_str(), eap_identity_len_term);
+
+                    if (!eap_username) {
+                        eap->username_offset = static_cast<uint8_t>(eap_identity_len_term - 1); // Point to identity string's null byte.
+                    } else {
+                        eap->username_offset = static_cast<uint8_t>(eap_identity_len_term);
+                        memcpy(eap->identity_credentials + eap->username_offset, eap_username->c_str(), eap_username_len_term);
+                    }
+
+                    if (!eap_password) {
+                        eap->password_offset = static_cast<uint8_t>(eap_identity_len_term - 1); // Point to identity string's null byte.
+                    } else {
+                        eap->password_offset = static_cast<uint8_t>(eap_identity_len_term + eap_username_len_term);
+                        memcpy(eap->identity_credentials + eap->password_offset, eap_password->c_str(), eap_password_len_term);
+                    }
+                }
+            }
+        }
+    }
+
+    if (runtime_sta) {
         WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
                 uint8_t reason_code = info.wifi_sta_disconnected.reason;
                 const char *reason = reason2str(reason_code);
-                if (!this->was_connected) {
-                    logger.printfln("Failed to connect to '%s': %s (%u)", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code);
+                if (!this->runtime_sta->was_connected) {
+                    logger.printfln("Failed to connect to '%s': %s (%u)", runtime_sta->ssid_passphrase, reason, reason_code);
                 } else {
-                    auto now = now_us();
-                    auto connected_for = now - last_connected;
-                    logger.printfln("Disconnected from '%s': %s (%u). Was connected for %lu seconds.", sta_config_in_use.get("ssid")->asEphemeralCStr(), reason, reason_code, connected_for.to<seconds_t>().as<uint32_t>());
+                    const micros_t now = now_us();
+                    const uint32_t connected_for_s = now.to<seconds_t>().as<uint32_t>() - runtime_sta->last_connected_s;
+                    logger.printfln("Disconnected from '%s': %s (%u). Was connected for %lu seconds.", runtime_sta->ssid_passphrase, reason, reason_code, connected_for_s);
 
                     uint32_t now_ms = now.to<millis_t>().as<uint32_t>();
                     task_scheduler.scheduleOnce([this, now_ms](){
@@ -567,7 +673,7 @@ void Wifi::setup()
                     state.get("sta_bssid")->updateString("");
                 });
 
-                this->was_connected = false;
+                this->runtime_sta->was_connected = false;
             },
             ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
 
@@ -626,10 +732,12 @@ void Wifi::setup()
                     logger.printfln("Connected to %s", buf);
                 }
 
-                this->was_connected = true;
-                this->last_connected = now_us();
+                this->runtime_sta->was_connected = true;
 
-                uint32_t now_ms = this->last_connected.to<millis_t>().as<uint32_t>();
+                const micros_t now = now_us();
+                this->runtime_sta->last_connected_s = now.to<seconds_t>().as<uint32_t>();
+
+                const uint32_t now_ms = now.to<millis_t>().as<uint32_t>();
                 task_scheduler.scheduleOnce([this, now_ms]() {
                     state.get("connection_start")->updateUint(now_ms);
                 });
@@ -641,7 +749,7 @@ void Wifi::setup()
                 // Instead we get the ARDUINO_EVENT_WIFI_STA_GOT_IP twice?
                 // Make sure that the state is set to connected here,
                 // or else MQTT will never attempt to connect.
-                this->was_connected = true;
+                this->runtime_sta->was_connected = true;
 
                 auto ip = WiFi.localIP().toString();
                 auto subnet = WiFi.subnetMask();
@@ -660,10 +768,10 @@ void Wifi::setup()
             ARDUINO_EVENT_WIFI_STA_GOT_IP6);
 
         WiFi.onEvent([this](arduino_event_id_t event, arduino_event_info_t info) {
-                if(!this->was_connected)
+                if(!this->runtime_sta->was_connected)
                     return;
 
-                this->was_connected = false;
+                this->runtime_sta->was_connected = false;
 
                 logger.printfln("Lost IP. Forcing disconnect and reconnect of WiFi");
                 WiFi.disconnect(false, true);
@@ -755,7 +863,7 @@ void Wifi::setup()
 #endif
 
     WiFi.persistent(false);
-    WiFi.disableSTA11b(!sta_config_in_use.get("enable_11b")->asBool());
+    WiFi.disableSTA11b(runtime_sta == nullptr || !runtime_sta->enable_11b);
 
     // STA mode is always on so that we can scan for WiFis and the HWRNG has entropy.
     if (!WiFi.mode(WIFI_STA)) {
@@ -813,7 +921,7 @@ void Wifi::setup()
                     }
                 }
             },
-            enable_sta
+            runtime_sta != nullptr // STA enabled
 #if MODULE_ETHERNET_AVAILABLE()
             || (ethernet.is_enabled() && ethernet.get_connection_state() != EthernetState::NotConnected)
 #endif
@@ -825,7 +933,7 @@ void Wifi::setup()
         }, 5_s, 5_s);
     }
 
-    if (enable_sta) {
+    if (runtime_sta != nullptr) { // STA enabled
         task_scheduler.scheduleWithFixedDelay([this]() {
             state.get("connection_state")->updateEnum(get_connection_state());
         }, 1_s);
@@ -835,58 +943,14 @@ void Wifi::setup()
             esp_wifi_sta_get_rssi(&rssi); // Ignore failure, rssi is still -127.
             state.get("sta_rssi")->updateInt(rssi);
 
-            static int tries = 0; // TODO move to runtime
-            if (tries < 3 || tries % 3 == 2)
-                if (!apply_sta_config_and_connect())
-                    tries = 0;
-            tries++;
-        }, 10_s, 10_s);
-    }
-
-    EapConfigID eap_config_id = static_cast<EapConfigID>(sta_config_in_use.get("wpa_eap_config")->as<OwnedConfig::OwnedConfigUnion>()->tag);
-    if (eap_config_id != EapConfigID::None) {
-        const OwnedConfig::OwnedConfigWrap &eap_config = sta_config_in_use.get("wpa_eap_config")->get();
-        int ca_id = eap_config->get("ca_cert_id")->asInt();
-        int client_cert_id = eap_config->get("client_cert_id")->asInt();
-        int client_key_id = eap_config->get("client_key_id")->asInt();
-        eap_identity = eap_config->get("identity")->asString();
-        if (ca_id != -1) {
-            ca_cert = certs.get_cert(ca_id, &ca_cert_len);
-        }
-        switch (eap_config_id) {
-            case EapConfigID::TLS:
-            {
-                client_cert = certs.get_cert(client_cert_id, &client_cert_len);
-                client_key = certs.get_cert(client_key_id, &client_key_len);
-
-                const CoolString &tmp_identity = eap_config->get("identity")->asString();
-                if (tmp_identity.length() > 0) {
-                    eap_identity = tmp_identity;
-                } else {
-                    eap_identity = "anonymous";
+            if (runtime_sta->connect_tries < 3 || runtime_sta->connect_tries % 3 == 2) {
+                if (!apply_sta_config_and_connect()) {
+                    runtime_sta->connect_tries = 0; // Couldn't connect because STA is already connected.
                 }
             }
-                break;
+            runtime_sta->connect_tries++;
+        }, 10_s, 10_s);
 
-            case EapConfigID::PEAP_TTLS:
-                eap_username = eap_config->get("username")->asString();
-                eap_password = eap_config->get("password")->asString();
-
-                if (client_cert_id != -1) {
-                    client_cert = certs.get_cert(eap_config->get("client_cert_id")->asInt(), &client_cert_len);
-                }
-                if (client_key_id != -1) {
-                    client_key = certs.get_cert(eap_config->get("client_key_id")->asInt(), &client_key_len);
-                }
-
-                break;
-
-            default:
-                break;
-        }
-    }
-
-    if (enable_sta) {
         wl_status_t old_status = WL_STOPPED;
         wl_status_t status;
         micros_t state_deadline;
@@ -1016,7 +1080,7 @@ void Wifi::register_urls()
 
 WifiState Wifi::get_connection_state() const
 {
-    if (!sta_config_in_use.get("enable_sta")->asBool())
+    if (runtime_sta == nullptr)
         return WifiState::NotConfigured;
 
     switch (WiFi.status()) {
@@ -1040,7 +1104,7 @@ WifiState Wifi::get_connection_state() const
 
 bool Wifi::is_sta_enabled() const
 {
-    return sta_config_in_use.get("enable_sta")->asBool();
+    return runtime_sta != nullptr;
 }
 
 int Wifi::get_ap_state()

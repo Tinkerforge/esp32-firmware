@@ -39,8 +39,6 @@ public:
     void setup() override;
     void register_urls() override;
 
-    bool was_connected = false;
-
     WifiState get_connection_state() const;
     bool is_sta_enabled() const;
     int get_sta_rssi() const;
@@ -76,26 +74,48 @@ private:
         char ip_ssid_passphrase[];
     };
 
+    struct eap_runtime {
+        std::unique_ptr<unsigned char[]> ca_cert;
+        std::unique_ptr<unsigned char[]> client_cert;
+        std::unique_ptr<unsigned char[]> client_key;
+
+        uint8_t eap_config_id;
+
+        uint8_t username_offset;
+        uint8_t password_offset;
+
+        char identity_credentials[];
+    };
+
+    struct sta_runtime {
+        uint32_t last_connected_s;
+        eap_runtime *runtime_eap;
+
+        ip4_addr_t ip;
+        ip4_addr_t gateway;
+        ip4_addr_t dns;
+        ip4_addr_t dns2;
+
+        uint8_t bssid[6];
+
+        uint8_t passphrase_offset;
+
+        uint8_t subnet_cidr : 5;
+        bool bssid_lock     : 1;
+        bool enable_11b     : 1;
+        bool was_connected  : 1;
+
+        uint8_t connect_tries;
+
+        char ssid_passphrase[];
+    };
+
     ConfigRoot ap_config;
     ConfigRoot sta_config;
     ConfigRoot state;
 
-    ap_runtime *runtime_ap = nullptr;
+    ConfUnionPrototype<EapConfigID> eap_config_prototypes[3];
 
-    OwnedConfig sta_config_in_use;
-
-    std::unique_ptr<unsigned char[]> ca_cert = nullptr;
-    size_t ca_cert_len = 0;
-    std::unique_ptr<unsigned char[]> client_cert = nullptr;
-    size_t client_cert_len = 0;
-    std::unique_ptr<unsigned char[]> client_key = nullptr;
-    size_t client_key_len = 0;
-
-    std::vector<ConfUnionPrototype<EapConfigID>> eap_config_prototypes;
-
-    String eap_username;
-    String eap_password;
-    String eap_identity;
-
-    micros_t last_connected = 0_us;
+    ap_runtime  *runtime_ap  = nullptr;
+    sta_runtime *runtime_sta = nullptr;
 };
