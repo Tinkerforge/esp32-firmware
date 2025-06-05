@@ -1,5 +1,5 @@
 export interface config {
-    block_discharge_during_fast_charge: boolean;
+    forbid_discharge_during_fast_charge: boolean;
 }
 
 interface RuleConfig {
@@ -20,6 +20,6 @@ export interface low_level_config {
 }
 
 export interface state {
-    grid_charge_allowed: boolean;
-    discharge_blocked: boolean;
+    grid_charge_permitted: boolean;
+    discharge_forbidden:   boolean;
 }
