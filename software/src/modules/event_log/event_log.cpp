@@ -75,7 +75,7 @@ size_t EventLog::alloc_trace_buffer(const char *name, size_t size) {
         esp_system_abort("Using alloc_trace_buffer after the pre_setup is not allowed!");
     }
 
-    if (this->trace_buffer_size_allocd + trace_buffer_size_allocd > MAX_TRACE_BUFFERS_SIZE){
+    if (trace_buffer_size_allocd + size > MAX_TRACE_BUFFERS_SIZE){
         esp_system_abort("Maximum size of trace buffers exceeded!");
     }
 
@@ -85,7 +85,10 @@ size_t EventLog::alloc_trace_buffer(const char *name, size_t size) {
 
     trace_buffers[trace_buffers_in_use].name = name;
     trace_buffers[trace_buffers_in_use].buf.setup(size);
+
     ++trace_buffers_in_use;
+    trace_buffer_size_allocd += size;
+
     return trace_buffers_in_use - 1;
 #else
     return std::numeric_limits<size_t>::max();
