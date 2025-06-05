@@ -32,7 +32,7 @@ static_assert(MAX_RULES_PER_TYPE < 256, "MAX_RULES_PER_TYPE must be below 256 to
 void BatteryControl::pre_setup()
 {
     config = Config::Object({
-        {"block_discharge_during_fast_charge", Config::Bool(false)},
+        {"forbid_discharge_during_fast_charge", Config::Bool(false)},
     });
 
     rule_prototype = Config::Object({
@@ -54,9 +54,9 @@ void BatteryControl::pre_setup()
     });
 
     state = Config::Object({
-        {"grid_charge_allowed", Config::Bool(false)},
-        {"discharge_blocked",   Config::Bool(false)},
-        {"charge_blocked",      Config::Bool(false)},
+        {"grid_charge_permitted", Config::Bool(false)},
+        {"discharge_forbidden",   Config::Bool(false)},
+        {"charge_forbidden",      Config::Bool(false)},
     });
 }
 
@@ -85,7 +85,7 @@ void BatteryControl::setup()
         soc_cache[i] = std::numeric_limits<uint8_t>::max();
     }
 
-    block_discharge_during_fast_charge = config.get("block_discharge_during_fast_charge")->asBool() && charge_manager.get_charger_count() > 0;
+    forbid_discharge_during_fast_charge = config.get("forbid_discharge_during_fast_charge")->asBool() && charge_manager.get_charger_count() > 0;
     rewrite_period = seconds_t{this->low_level_config.get("rewrite_period")->asUint()};
 
     const size_t permit_grid_charge_rules_cnt = rules_permit_grid_charge.count();
@@ -140,7 +140,7 @@ void BatteryControl::register_events()
 {
     const size_t total_rules_cnt = static_cast<size_t>(permit_grid_charge_rules_count) + static_cast<size_t>(forbid_discharge_rules_count) + static_cast<size_t>(forbid_charge_rules_count);
 
-    if (block_discharge_during_fast_charge || total_rules_cnt > 0) {
+    if (forbid_discharge_during_fast_charge || total_rules_cnt > 0) {
 #if MODULE_NETWORK_AVAILABLE()
         network.on_network_connected([this](const Config *connected) {
             if (!connected->asBool()) {
@@ -353,10 +353,10 @@ TristateBool BatteryControl::evaluate_rules(const control_rule *rules, size_t ru
 void BatteryControl::evaluate_all_rules()
 {
     charge_permitted_by_rules  = evaluate_rules(permit_grid_charge_rules, permit_grid_charge_rules_count);
-    discharge_blocked_by_rules = evaluate_rules(forbid_discharge_rules,   forbid_discharge_rules_count);
-    charge_blocked_by_rules    = evaluate_rules(forbid_charge_rules,      forbid_charge_rules_count);
+    discharge_forbidden_by_rules = evaluate_rules(forbid_discharge_rules,   forbid_discharge_rules_count);
+    charge_forbidden_by_rules    = evaluate_rules(forbid_charge_rules,      forbid_charge_rules_count);
 
-    logger.printfln("charge_permitted_by_rules=%u discharge_blocked_by_rules=%u charge_blocked_by_rules=%u", static_cast<unsigned>(charge_permitted_by_rules), static_cast<unsigned>(discharge_blocked_by_rules), static_cast<unsigned>(charge_blocked_by_rules)); // TODO remove
+    logger.printfln("charge_permitted_by_rules=%u discharge_forbidden_by_rules=%u charge_forbidden_by_rules=%u", static_cast<unsigned>(charge_permitted_by_rules), static_cast<unsigned>(discharge_forbidden_by_rules), static_cast<unsigned>(charge_forbidden_by_rules)); // TODO remove
 }
 
 void BatteryControl::evaluate_summary()
@@ -366,38 +366,38 @@ void BatteryControl::evaluate_summary()
         update_charge_permitted(true);
     }
 
-    TristateBool discharge_blocked_update;
+    TristateBool discharge_forbidden_update;
 
-    if (discharge_blocked_by_rules == TristateBool::True) {
-        discharge_blocked_update = TristateBool::True;
-    } else if (block_discharge_during_fast_charge && fast_charger_in_c_cache) {
-        discharge_blocked_update = TristateBool::True;
+    if (discharge_forbidden_by_rules == TristateBool::True) {
+        discharge_forbidden_update = TristateBool::True;
+    } else if (forbid_discharge_during_fast_charge && fast_charger_in_c_cache) {
+        discharge_forbidden_update = TristateBool::True;
     } else {
-        discharge_blocked_update = TristateBool::False;
+        discharge_forbidden_update = TristateBool::False;
     }
 
-    if (discharge_blocked != discharge_blocked_update) {
-        discharge_blocked = discharge_blocked_update;
-        update_discharge_blocked(true);
+    if (discharge_forbidden != discharge_forbidden_update) {
+        discharge_forbidden  = discharge_forbidden_update;
+        update_discharge_forbidden(true);
     }
 
-    if (charge_blocked != charge_blocked_by_rules) {
-        charge_blocked  = charge_blocked_by_rules;
-        update_charge_blocked(true);
+    if (charge_forbidden != charge_forbidden_by_rules) {
+        charge_forbidden  = charge_forbidden_by_rules;
+        update_charge_forbidden(true);
     }
 }
 
 void BatteryControl::periodic_update()
 {
-    bool skip_discharge_blocked = false;
+    bool skip_discharge_forbidden = false;
 
-    if (block_discharge_during_fast_charge) {
+    if (forbid_discharge_during_fast_charge) {
         const bool fast_charger_in_c_cm = charge_manager.fast_charger_in_c;
 
         if (fast_charger_in_c_cm != fast_charger_in_c_cache) {
             logger.printfln("fast_charger_in_c %i", fast_charger_in_c_cm); // TODO remove
             fast_charger_in_c_cache = fast_charger_in_c_cm;
-            skip_discharge_blocked = true;
+            skip_discharge_forbidden = true;
             schedule_evaluation();
         }
     }
@@ -407,14 +407,14 @@ void BatteryControl::periodic_update()
         update_charge_permitted(false);
     }
 
-    if (!skip_discharge_blocked && deadline_elapsed(next_discharge_blocked_update)) {
-        logger.printfln("next_discharge_blocked_update running"); // TODO remove
-        update_discharge_blocked(false);
+    if (!skip_discharge_forbidden && deadline_elapsed(next_discharge_forbidden_update)) {
+        logger.printfln("next_discharge_forbidden_update running"); // TODO remove
+        update_discharge_forbidden(false);
     }
 
-    if (deadline_elapsed(next_charge_blocked_update)) {
-        logger.printfln("next_charge_blocked_update running"); // TODO remove
-        update_charge_blocked(false);
+    if (deadline_elapsed(next_charge_forbidden_update)) {
+        logger.printfln("next_charge_forbidden_update running"); // TODO remove
+        update_charge_forbidden(false);
     }
 }
 
@@ -434,23 +434,23 @@ const battery_control_action_info action_infos[] = {
     {
         IBattery::Action::PermitGridCharge,
         IBattery::Action::RevokeGridChargeOverride,
-        "Allowing grid charge",
-        "Not allowing grid charge",
-        "grid_charge_allowed",
+        "Permit grid charge",
+        "Revoke grid charge override",
+        "grid_charge_permitted",
     },
     {
         IBattery::Action::ForbidDischarge,
         IBattery::Action::RevokeDischargeOverride,
-        "Blocking discharge",
-        "Unblocking discharge",
-        "discharge_blocked",
+        "Forbid discharge",
+        "Revoke discharge override",
+        "discharge_forbidden",
     },
     {
         IBattery::Action::ForbidCharge,
         IBattery::Action::RevokeChargeOverride,
-        "Blocking charge",
-        "Unblocking charge",
-        "charge_blocked",
+        "Forbid charge",
+        "Revoke charge override",
+        "charge_forbidden",
     },
 };
 
@@ -478,14 +478,14 @@ void BatteryControl::update_charge_permitted(bool changed)
     update_batteries_and_state(influence_active, changed, action_infos + action_info_num_permit_grid_charge, &next_permit_grid_charge_update);
 }
 
-void BatteryControl::update_discharge_blocked(bool changed)
+void BatteryControl::update_discharge_forbidden(bool changed)
 {
-    const bool influence_active = discharge_blocked == TristateBool::True;
-    update_batteries_and_state(influence_active, changed, action_infos + action_info_num_forbid_discharge, &next_discharge_blocked_update);
+    const bool influence_active = discharge_forbidden == TristateBool::True;
+    update_batteries_and_state(influence_active, changed, action_infos + action_info_num_forbid_discharge, &next_discharge_forbidden_update);
 }
 
-void BatteryControl::update_charge_blocked(bool changed)
+void BatteryControl::update_charge_forbidden(bool changed)
 {
-    const bool influence_active = charge_blocked == TristateBool::True;
-    update_batteries_and_state(influence_active, changed, action_infos + action_info_num_forbid_charge, &next_charge_blocked_update);
+    const bool influence_active = charge_forbidden == TristateBool::True;
+    update_batteries_and_state(influence_active, changed, action_infos + action_info_num_forbid_charge, &next_charge_forbidden_update);
 }
