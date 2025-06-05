@@ -31,17 +31,17 @@
 
 #include "gcc_warnings.h"
 
-BatteriesModbusTCP::TableSpec *BatteriesModbusTCP::read_table_config(const Config *config)
+BatteriesModbusTCP::TableSpec *BatteriesModbusTCP::init_table(const Config *config)
 {
-    TableSpec *table = new TableSpec;
+    TableSpec *table = static_cast<TableSpec *>(malloc(sizeof(TableSpec)));
 
     table->device_address = static_cast<uint8_t>(config->get("device_address")->asUint());
 
     const Config *registers_config = static_cast<const Config *>(config->get("registers"));
     size_t registers_count         = registers_config->count();
 
-    table->registers = new RegisterSpec[registers_count];
-    table->registers_length = registers_count;
+    table->registers = static_cast<RegisterSpec *>(malloc(sizeof(RegisterSpec) * registers_count));
+    table->registers_count = registers_count;
 
     for (size_t i = 0; i < registers_count; ++i) {
         auto register_config = registers_config->get(i);
@@ -51,17 +51,58 @@ BatteriesModbusTCP::TableSpec *BatteriesModbusTCP::read_table_config(const Confi
 
         auto values_config  = register_config->get("vals");
         uint16_t values_count = static_cast<uint16_t>(values_config->count());
+        size_t values_byte_count;
 
-        table->registers[i].values = new uint16_t[values_count];
-        table->registers[i].values_length = values_count;
+        if (table->registers[i].register_type == ModbusRegisterType::Coil) {
+            values_byte_count = (values_count + 7u) / 8u;
+        }
+        else {
+            values_byte_count = values_count * 2u;
+        }
 
-        for (uint16_t k = 0; k < values_count; ++k) {
-            // FIXME: need to bit pack values in case of coils
-            table->registers[i].values[k] = static_cast<uint16_t>(values_config->get(k)->asUint());
+        table->registers[i].values_buffer = malloc(values_byte_count);
+        table->registers[i].values_count = values_count;
+
+        if (table->registers[i].register_type == ModbusRegisterType::Coil) {
+            uint8_t *coils_buffer = reinterpret_cast<uint8_t *>(table->registers[i].values_buffer);
+
+            coils_buffer[values_byte_count - 1] = 0;
+
+            for (uint16_t k = 0; k < values_count; ++k) {
+                uint8_t mask = static_cast<uint8_t>(1u << (k % 8));
+
+                if (values_config->get(k)->asUint() != 0) {
+                    coils_buffer[k / 8] |= mask;
+                }
+                else {
+                    coils_buffer[k / 8] &= ~mask;
+                }
+            }
+        }
+        else {
+            uint16_t *registers_buffer = reinterpret_cast<uint16_t *>(table->registers[i].values_buffer);
+
+            for (uint16_t k = 0; k < values_count; ++k) {
+                registers_buffer[k] = static_cast<uint16_t>(values_config->get(k)->asUint());
+            }
         }
     }
 
     return table;
+}
+
+void BatteriesModbusTCP::free_table(BatteriesModbusTCP::TableSpec *table)
+{
+    if (table == nullptr) {
+        return;
+    }
+
+    for (size_t i = 0; i < table->registers_count; ++i) {
+        free(table->registers[i].values_buffer);
+    }
+
+    free(table->registers);
+    free(table);
 }
 
 void BatteriesModbusTCP::pre_setup()
@@ -239,7 +280,7 @@ void BatteriesModbusTCP::register_urls()
         const Config *table = static_cast<const Config *>(execute_config.get("table")->get());
 
         execute_cookie = cookie;
-        execute_table = BatteriesModbusTCP::read_table_config(table);
+        execute_table = init_table(table);
 
         modbus_tcp_client.get_pool()->acquire(host.c_str(), port,
         [this, cookie, host, port](TFGenericTCPClientConnectResult connect_result, int error_number, TFGenericTCPSharedClient *shared_client) {
@@ -249,7 +290,7 @@ void BatteriesModbusTCP::register_urls()
                 GenericTCPClientConnectorBase::format_connect_error(connect_result, error_number, host.c_str(), port, connect_error, sizeof(connect_error));
                 report_errorf(cookie, "%s", connect_error);
 
-                delete execute_table;
+                free_table(execute_table);
                 execute_table = nullptr;
 
                 return;
@@ -267,7 +308,7 @@ void BatteriesModbusTCP::register_urls()
 
             execute_client = nullptr;
 
-            delete execute_table;
+            free_table(execute_table);
             execute_table = nullptr;
         });
     }, true);
@@ -309,7 +350,7 @@ void BatteriesModbusTCP::write_next()
         return;
     }
 
-    if (current_execute_index >= execute_table->registers_length) {
+    if (current_execute_index >= execute_table->registers_count) {
         report_success(execute_cookie);
         release_client(); // execution is done
         return;
@@ -321,10 +362,12 @@ void BatteriesModbusTCP::write_next()
     switch (register_->register_type) {
     case ModbusRegisterType::HoldingRegister:
         function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
+        execute_data_name = "register";
         break;
 
     case ModbusRegisterType::Coil:
         function_code = TFModbusTCPFunctionCode::WriteMultipleCoils;
+        execute_data_name = "coil";
         break;
 
     case ModbusRegisterType::InputRegister:
@@ -338,13 +381,13 @@ void BatteriesModbusTCP::write_next()
     static_cast<TFModbusTCPSharedClient *>(execute_client)->transact(execute_table->device_address,
                                                                      function_code,
                                                                      register_->start_address,
-                                                                     register_->values_length,
-                                                                     register_->values,
+                                                                     register_->values_count,
+                                                                     register_->values_buffer,
                                                                      2_s,
-    [this, function_code](TFModbusTCPClientTransactionResult result) {
+    [this](TFModbusTCPClientTransactionResult result) {
         if (result != TFModbusTCPClientTransactionResult::Success) {
-            report_errorf(execute_cookie, "Execution failed at register %zu of %zu: %s (%d)",
-                          current_execute_index, execute_table->registers_length,
+            report_errorf(execute_cookie, "Execution failed at %s %zu of %zu: %s (%d)",
+                          execute_data_name, current_execute_index + 1, execute_table->registers_count,
                           get_tf_modbus_tcp_client_transaction_result_name(result),
                           static_cast<int>(result));
 
@@ -355,7 +398,7 @@ void BatteriesModbusTCP::write_next()
 
         ++current_execute_index;
 
-        if (current_execute_index >= execute_table->registers_length) {
+        if (current_execute_index >= execute_table->registers_count) {
             report_success(execute_cookie);
             release_client(); // execution is done
             return;
