@@ -138,17 +138,17 @@ void BatteryModbusTCP::write_next()
         return;
     }
 
-    const BatteriesModbusTCP::ValueTable *table = tables[static_cast<uint32_t>(current_action)];
+    BatteriesModbusTCP::TableSpec *table = tables[static_cast<uint32_t>(current_action)];
 
-    if (current_action_index >= table->values_length) {
+    if (current_action_index >= table->registers_length) {
         has_current_action = false; // action is done
         return;
     }
 
-    const BatteriesModbusTCP::ValueSpec *spec = &table->values[current_action_index];
+    BatteriesModbusTCP::RegisterSpec *register_ = &table->registers[current_action_index];
     TFModbusTCPFunctionCode function_code;
 
-    switch (spec->register_type) {
+    switch (register_->register_type) {
     case ModbusRegisterType::HoldingRegister:
         function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
         break;
@@ -160,26 +160,26 @@ void BatteryModbusTCP::write_next()
     case ModbusRegisterType::InputRegister:
     case ModbusRegisterType::DiscreteInput:
     default:
-        logger.printfln_battery("Unsupported register type to write: %u", static_cast<uint8_t>(spec->register_type));
+        logger.printfln_battery("Unsupported register type to write: %u", static_cast<uint8_t>(register_->register_type));
         has_current_action = false;
         return;
     }
 
     static_cast<TFModbusTCPSharedClient *>(connected_client)->transact(table->device_address,
                                                                        function_code,
-                                                                       spec->start_address,
-                                                                       1,
-                                                                       const_cast<uint16_t *>(&spec->value),
+                                                                       register_->start_address,
+                                                                       static_cast<uint16_t>(register_->values_length),
+                                                                       register_->values,
                                                                        2_s,
-    [this, table, spec, function_code](TFModbusTCPClientTransactionResult result) {
+    [this, table, register_, function_code](TFModbusTCPClientTransactionResult result) {
         if (result != TFModbusTCPClientTransactionResult::Success) {
-            logger.printfln_battery("Modbus write error (host='%s' port=%u devaddr=%u fcode=%d regaddr=%u value=%u): %s (%d)",
+            logger.printfln_battery("Modbus write error (host='%s' port=%u devaddr=%u fcode=%d regaddr=%u values[0]=%u): %s (%d)",
                                     host.c_str(),
                                     port,
                                     table->device_address,
                                     static_cast<int>(function_code),
-                                    spec->start_address,
-                                    spec->value,
+                                    register_->start_address,
+                                    register_->values[0],
                                     get_tf_modbus_tcp_client_transaction_result_name(result),
                                     static_cast<int>(result));
 
@@ -190,7 +190,7 @@ void BatteryModbusTCP::write_next()
 
         ++current_action_index;
 
-        if (current_action_index >= table->values_length) {
+        if (current_action_index >= table->registers_length) {
             has_current_action = false; // action is done
             return;
         }
