@@ -34,6 +34,8 @@ let x = {
             "registers_add_count": /*SFN*/(x: number, max: number) => x + " von " + max + " Registern konfiguriert"/*NF*/,
             "registers_add_select_address_mode": "Zuerst Adressmodus auswählen...",
             "registers_edit_title": "Register bearbeiten",
+            "registers_register_desc": "Beschreibung",
+            "registers_register_desc_muted": "optional",
             "registers_register_type": "Registertyp",
             "registers_register_type_holding_register": "Holding Register",
             "registers_register_type_holding_register_desc": "Holding Register",
@@ -45,8 +47,10 @@ let x = {
             "registers_start_address_muted": "beginnt bei 0",
             "registers_start_number": "Startnummer",
             "registers_start_number_muted": "beginnt bei 1",
-            "registers_value": "Wert",
-            "registers_value_desc": /*SFN*/(rtype: string, addr: number, value: number) => "Setze " + rtype + " " + addr + " auf " + value/*NF*/
+            "registers_values": "Werte",
+            "registers_values_muted": "kommagetrennt",
+            "registers_values_invalid": "Die Werte müssen eine kommagetrennte Liste von Dezimalzahlen sein.",
+            "registers_values_desc": /*SFN*/(rtype: string, addr: number, values: number[]) => "Setze " + rtype + (values.length > 1 ? " ab " : " ") + addr + " auf " + values.join(", ")/*NF*/
         },
         "script": {
         }
