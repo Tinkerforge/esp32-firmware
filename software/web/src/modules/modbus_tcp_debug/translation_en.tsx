@@ -31,7 +31,7 @@ let x = {
             "write_data_single_register_invalid": "The values must be a decimal number.",
             "write_data_multiple_registers": "Values",
             "write_data_multiple_registers_muted": "comma-separated",
-            "write_data_multiple_registers_invalid": "The values must be a comma separated list of decimal numbers.",
+            "write_data_multiple_registers_invalid": "The values must be a comma-separated list of decimal numbers.",
             "transact_timeout": "Execution timeout",
             "execute": "Execute",
             "response": "Response"
