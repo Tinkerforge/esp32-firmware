@@ -162,21 +162,21 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
         return (
             <SubPage name="batteries">
                 <ConfigForm id="batteries_config_form" title={__("batteries.content.batteries")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
-                    <FormRow label={__("batteries.content.discharge_blocked")}>
+                    <FormRow label={__("batteries.content.discharge_forbidden")}>
                         <IndicatorGroup
                             style="width: 100%"
                             class="flex-wrap"
-                            value={bc_state.discharge_blocked ? 1 : 0}
+                            value={bc_state.discharge_forbidden ? 1 : 0}
                             items={[
-                                ["success", __("batteries.content.discharge_blocked_no")],
-                                ["warning", __("batteries.content.discharge_blocked_yes")],
+                                ["success", __("batteries.content.discharge_forbidden_no")],
+                                ["warning", __("batteries.content.discharge_forbidden_yes")],
                             ]}/>
                     </FormRow>
 
-                    <FormRow label={__("batteries.content.block_discharge_during_fast_charge")}>
-                        <Switch desc={__("batteries.content.block_discharge_during_fast_charge_desc")}
-                            checked={this.state.block_discharge_during_fast_charge}
-                            onClick={this.toggle("block_discharge_during_fast_charge")}
+                    <FormRow label={__("batteries.content.forbid_discharge_during_fast_charge")}>
+                        <Switch desc={__("batteries.content.forbid_discharge_during_fast_charge_desc")}
+                            checked={this.state.forbid_discharge_during_fast_charge}
+                            onClick={this.toggle("forbid_discharge_during_fast_charge")}
                         />
                     </FormRow>
 
