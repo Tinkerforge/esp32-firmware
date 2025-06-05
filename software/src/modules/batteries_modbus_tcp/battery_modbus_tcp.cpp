@@ -47,12 +47,12 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
             const Config *table_config = static_cast<const Config *>(ephemeral_config.get("table")->get());
 
             // FIXME: leaking this, because as of right now battery instances don't get destroyed
-            custom_table_permit_grid_charge          = BatteriesModbusTCP::read_table_config(static_cast<const Config *>(table_config->get("permit_grid_charge")));
-            custom_table_revoke_grid_charge_override = BatteriesModbusTCP::read_table_config(static_cast<const Config *>(table_config->get("revoke_grid_charge_override")));
-            custom_table_forbid_discharge            = BatteriesModbusTCP::read_table_config(static_cast<const Config *>(table_config->get("forbid_discharge")));
-            custom_table_revoke_discharge_override   = BatteriesModbusTCP::read_table_config(static_cast<const Config *>(table_config->get("revoke_discharge_override")));
-            custom_table_forbid_charge               = BatteriesModbusTCP::read_table_config(static_cast<const Config *>(table_config->get("forbid_charge")));
-            custom_table_revoke_charge_override      = BatteriesModbusTCP::read_table_config(static_cast<const Config *>(table_config->get("revoke_charge_override")));
+            custom_table_permit_grid_charge          = BatteriesModbusTCP::init_table(static_cast<const Config *>(table_config->get("permit_grid_charge")));
+            custom_table_revoke_grid_charge_override = BatteriesModbusTCP::init_table(static_cast<const Config *>(table_config->get("revoke_grid_charge_override")));
+            custom_table_forbid_discharge            = BatteriesModbusTCP::init_table(static_cast<const Config *>(table_config->get("forbid_discharge")));
+            custom_table_revoke_discharge_override   = BatteriesModbusTCP::init_table(static_cast<const Config *>(table_config->get("revoke_discharge_override")));
+            custom_table_forbid_charge               = BatteriesModbusTCP::init_table(static_cast<const Config *>(table_config->get("forbid_charge")));
+            custom_table_revoke_charge_override      = BatteriesModbusTCP::init_table(static_cast<const Config *>(table_config->get("revoke_charge_override")));
 
             tables[static_cast<uint32_t>(IBattery::Action::PermitGridCharge)]         = custom_table_permit_grid_charge;
             tables[static_cast<uint32_t>(IBattery::Action::RevokeGridChargeOverride)] = custom_table_revoke_grid_charge_override;
@@ -144,7 +144,7 @@ void BatteryModbusTCP::write_next()
 
     BatteriesModbusTCP::TableSpec *table = tables[static_cast<uint32_t>(current_action)];
 
-    if (current_action_index >= table->registers_length) {
+    if (current_action_index >= table->registers_count) {
         has_current_action = false; // action is done
         return;
     }
@@ -172,18 +172,17 @@ void BatteryModbusTCP::write_next()
     static_cast<TFModbusTCPSharedClient *>(connected_client)->transact(table->device_address,
                                                                        function_code,
                                                                        register_->start_address,
-                                                                       static_cast<uint16_t>(register_->values_length),
-                                                                       register_->values,
+                                                                       register_->values_count,
+                                                                       register_->values_buffer,
                                                                        2_s,
     [this, table, register_, function_code](TFModbusTCPClientTransactionResult result) {
         if (result != TFModbusTCPClientTransactionResult::Success) {
-            logger.printfln_battery("Modbus write error (host='%s' port=%u devaddr=%u fcode=%d regaddr=%u values[0]=%u): %s (%d)",
+            logger.printfln_battery("Modbus write error (host='%s' port=%u devaddr=%u fcode=%d regaddr=%u): %s (%d)",
                                     host.c_str(),
                                     port,
                                     table->device_address,
                                     static_cast<int>(function_code),
                                     register_->start_address,
-                                    register_->values[0],
                                     get_tf_modbus_tcp_client_transaction_result_name(result),
                                     static_cast<int>(result));
 
@@ -194,7 +193,7 @@ void BatteryModbusTCP::write_next()
 
         ++current_action_index;
 
-        if (current_action_index >= table->registers_length) {
+        if (current_action_index >= table->registers_count) {
             has_current_action = false; // action is done
             return;
         }
