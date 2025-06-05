@@ -26,6 +26,8 @@ let x = {
             "revoke_grid_charge_override": "Erlaubnis zum Laden vom Netz zurücknehmen",
             "forbid_discharge": "Entladen verbieten",
             "revoke_discharge_override": "Verbot zum Entladen zurücknehmen",
+            "forbid_charge": "Laden verbieten",
+            "revoke_charge_override": "Verbot zum Laden zurücknehmen",
             "register_address_mode": "Adressmodus",
             "register_address_mode_address": "Registeradresse (beginnt bei 0)",
             "register_address_mode_number": "Registernummer (beginnt bei 1)",
