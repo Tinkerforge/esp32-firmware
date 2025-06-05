@@ -66,10 +66,8 @@ template <typename T>
 void Converter<std::vector<T>>::toJson(const std::vector<T> &src, JsonVariant dst)
 {
     JsonArray array = dst.to<JsonArray>();
-    logger.printfln("Converter<std::vector<T>> toJson");
     for (T item : src)
         array.add(item);
-    logger.printfln("Final array size: %d", array.size());
 }
 
 template <typename T>
@@ -349,7 +347,7 @@ def process_schema(xml_schema):
                     new_type.from_json_code += f"""\tif (src == "{enum_string_name}") {{\n\t\tdst = {enum_type_name}::{enum_variable_name};\n\t\treturn;\n\t}}\n"""
 
                 #return empty string if enum->json fails (shouldn't happen)
-                new_type.to_json_code += "\t} \n\tdst.set(enumName);\n\treturn true;\n}\n"
+                new_type.to_json_code += "\t} \n\treturn dst.set(enumName);\n}\n"
                 #return last enum if json->enum fails
                 new_type.from_json_code += f"""\t return;\n}}\n"""
                 new_type.code += "};\n"

@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "config.h"
 #include "module.h"
-#include <map>
-#include <optional>
+#include "config.h"
 #include <string>
 #include <vector>
+#include <map>
+#include <optional>
 
 namespace ArduinoJson
 {
@@ -18,6 +18,7 @@ template <typename T> struct Converter<std::vector<T>> {
     static bool checkJson(JsonVariantConst src);
 };
 } // namespace ArduinoJson
+
 
 struct DateTimeStruct { // Added manually
     std::optional<uint16_t> year;
@@ -29,6 +30,11 @@ struct DateTimeStruct { // Added manually
     std::optional<uint16_t> millisecond;
     std::optional<int8_t> timezone; // Offset from UTC in hours, 0 if time is UTC, empty if no TZ is given
 };
+
+
+
+
+
 
 using MessagingNumberType = int;
 using MessagingTypeType = std::string;
@@ -179,10545 +185,11749 @@ using GridConditionType = std::string;
 using TaskManagementJobIdType = int;
 using TaskManagementJobStateType = std::string;
 using TaskManagementJobSourceType = std::string;
-using SpecificationVersionDataType = std::string;
+using SpecificationVersionDataType = std::string; 
 enum class MessagingTypeEnumType { // EEBus_SPINE_TS_Messaging.xsd
-    logging,
-    information,
-    warning,
-    alarm,
-    emergency,
-    obsolete,
+	logging,
+	information,
+	warning,
+	alarm,
+	emergency,
+	obsolete,
 };
-bool convertToJson(const MessagingTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MessagingTypeEnumType &dst);
+bool convertToJson(const MessagingTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MessagingTypeEnumType &dst);
 
 enum class RecurringIntervalEnumType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    yearly,
-    monthly,
-    weekly,
-    daily,
-    hourly,
-    everyMinute,
-    everySecond,
+	yearly,
+	monthly,
+	weekly,
+	daily,
+	hourly,
+	everyMinute,
+	everySecond,
 };
-bool convertToJson(const RecurringIntervalEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, RecurringIntervalEnumType &dst);
+bool convertToJson(const RecurringIntervalEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, RecurringIntervalEnumType &dst);
 
 enum class MonthType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    january,
-    february,
-    march,
-    april,
-    may,
-    june,
-    july,
-    august,
-    september,
-    october,
-    november,
-    december,
+	january,
+	february,
+	march,
+	april,
+	may,
+	june,
+	july,
+	august,
+	september,
+	october,
+	november,
+	december,
 };
-bool convertToJson(const MonthType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MonthType &dst);
+bool convertToJson(const MonthType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MonthType &dst);
 
 enum class DayOfWeekType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    monday,
-    tuesday,
-    wednesday,
-    thursday,
-    friday,
-    saturday,
-    sunday,
+	monday,
+	tuesday,
+	wednesday,
+	thursday,
+	friday,
+	saturday,
+	sunday,
 };
-bool convertToJson(const DayOfWeekType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DayOfWeekType &dst);
+bool convertToJson(const DayOfWeekType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DayOfWeekType &dst);
 
 enum class OccurrenceEnumType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    first,
-    second,
-    third,
-    fourth,
-    last,
+	first,
+	second,
+	third,
+	fourth,
+	last,
 };
-bool convertToJson(const OccurrenceEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OccurrenceEnumType &dst);
+bool convertToJson(const OccurrenceEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OccurrenceEnumType &dst);
 
 enum class CommodityTypeEnumType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    electricity,
-    gas,
-    oil,
-    water,
-    wasteWater,
-    domesticHotWater,
-    heatingWater,
-    steam,
-    heat,
-    coolingLoad,
-    air,
+	electricity,
+	gas,
+	oil,
+	water,
+	wasteWater,
+	domesticHotWater,
+	heatingWater,
+	steam,
+	heat,
+	coolingLoad,
+	air,
 };
-bool convertToJson(const CommodityTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, CommodityTypeEnumType &dst);
+bool convertToJson(const CommodityTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, CommodityTypeEnumType &dst);
 
 enum class EnergyDirectionEnumType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    consume,
-    produce,
+	consume,
+	produce,
 };
-bool convertToJson(const EnergyDirectionEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, EnergyDirectionEnumType &dst);
+bool convertToJson(const EnergyDirectionEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, EnergyDirectionEnumType &dst);
 
 enum class EnergyModeEnumType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    consume,
-    produce,
-    idle,
-    var_auto,
+	consume,
+	produce,
+	idle,
+	var_auto,
 };
-bool convertToJson(const EnergyModeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, EnergyModeEnumType &dst);
+bool convertToJson(const EnergyModeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, EnergyModeEnumType &dst);
 
 enum class UnitOfMeasurementEnumType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    unknown,
-    var_1,
-    m,
-    kg,
-    s,
-    A,
-    K,
-    mol,
-    cd,
-    V,
-    W,
-    Wh,
-    VA,
-    VAh,
-    var,
-    varh,
-    degC,
-    degF,
-    Lm,
-    lx,
-    Ohm,
-    Hz,
-    dB,
-    dBm,
-    pct,
-    ppm,
-    l,
-    l_s,
-    l_h,
-    deg,
-    rad,
-    rad_s,
-    sr,
-    Gy,
-    Bq,
-    Bq_m_3,
-    Sv,
-    Rd,
-    C,
-    F,
-    H,
-    J,
-    N,
-    N_m,
-    N_s,
-    Wb,
-    T,
-    Pa,
-    bar,
-    atm,
-    psi,
-    mmHg,
-    m_2,
-    m_3,
-    m_3_h,
-    m_s,
-    m_s_2,
-    m_3_s,
-    m_m_3,
-    kg_m_3,
-    kg_m,
-    m_2_s,
-    W_m_K,
-    J_K,
-    var_1_s,
-    W_m_2,
-    J_m_2,
-    S,
-    S_m,
-    K_s,
-    Pa_s,
-    J_kg_K,
-    Vs,
-    V_m,
-    V_Hz,
-    As,
-    A_m,
-    Hz_s,
-    kg_s,
-    kg_m_2,
-    J_Wh,
-    W_s,
-    ft_3,
-    ft_3_h,
-    ccf,
-    ccf_h,
-    US_liq_gal,
-    US_liq_gal_h,
-    Imp_gal,
-    Imp_gal_h,
-    Btu,
-    Btu_h,
-    Ah,
-    kg_Wh,
+	unknown,
+	var_1,
+	m,
+	kg,
+	s,
+	A,
+	K,
+	mol,
+	cd,
+	V,
+	W,
+	Wh,
+	VA,
+	VAh,
+	var,
+	varh,
+	degC,
+	degF,
+	Lm,
+	lx,
+	Ohm,
+	Hz,
+	dB,
+	dBm,
+	pct,
+	ppm,
+	l,
+	l_s,
+	l_h,
+	deg,
+	rad,
+	rad_s,
+	sr,
+	Gy,
+	Bq,
+	Bq_m_3,
+	Sv,
+	Rd,
+	C,
+	F,
+	H,
+	J,
+	N,
+	N_m,
+	N_s,
+	Wb,
+	T,
+	Pa,
+	bar,
+	atm,
+	psi,
+	mmHg,
+	m_2,
+	m_3,
+	m_3_h,
+	m_s,
+	m_s_2,
+	m_3_s,
+	m_m_3,
+	kg_m_3,
+	kg_m,
+	m_2_s,
+	W_m_K,
+	J_K,
+	var_1_s,
+	W_m_2,
+	J_m_2,
+	S,
+	S_m,
+	K_s,
+	Pa_s,
+	J_kg_K,
+	Vs,
+	V_m,
+	V_Hz,
+	As,
+	A_m,
+	Hz_s,
+	kg_s,
+	kg_m_2,
+	J_Wh,
+	W_s,
+	ft_3,
+	ft_3_h,
+	ccf,
+	ccf_h,
+	US_liq_gal,
+	US_liq_gal_h,
+	Imp_gal,
+	Imp_gal_h,
+	Btu,
+	Btu_h,
+	Ah,
+	kg_Wh,
 };
-bool convertToJson(const UnitOfMeasurementEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, UnitOfMeasurementEnumType &dst);
+bool convertToJson(const UnitOfMeasurementEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, UnitOfMeasurementEnumType &dst);
 
 enum class CurrencyEnumType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    AED,
-    AFN,
-    ALL,
-    AMD,
-    ANG,
-    AOA,
-    ARS,
-    AUD,
-    AWG,
-    AZN,
-    BAM,
-    BBD,
-    BDT,
-    BGN,
-    BHD,
-    BIF,
-    BMD,
-    BND,
-    BOB,
-    BOV,
-    BRL,
-    BSD,
-    BTN,
-    BWP,
-    BYR,
-    BZD,
-    CAD,
-    CDF,
-    CHE,
-    CHF,
-    CHW,
-    CLF,
-    CLP,
-    CNY,
-    COP,
-    COU,
-    CRC,
-    CUC,
-    CUP,
-    CVE,
-    CZK,
-    DJF,
-    DKK,
-    DOP,
-    DZD,
-    EGP,
-    ERN,
-    ETB,
-    EUR,
-    FJD,
-    FKP,
-    GBP,
-    GEL,
-    GHS,
-    GIP,
-    GMD,
-    GNF,
-    GTQ,
-    GYD,
-    HKD,
-    HNL,
-    HRK,
-    HTG,
-    HUF,
-    IDR,
-    ILS,
-    INR,
-    IQD,
-    IRR,
-    ISK,
-    JMD,
-    JOD,
-    JPY,
-    KES,
-    KGS,
-    KHR,
-    KMF,
-    KPW,
-    KRW,
-    KWD,
-    KYD,
-    KZT,
-    LAK,
-    LBP,
-    LKR,
-    LRD,
-    LSL,
-    LYD,
-    MAD,
-    MDL,
-    MGA,
-    MKD,
-    MMK,
-    MNT,
-    MOP,
-    MRO,
-    MUR,
-    MVR,
-    MWK,
-    MXN,
-    MXV,
-    MYR,
-    MZN,
-    NAD,
-    NGN,
-    NIO,
-    NOK,
-    NPR,
-    NZD,
-    OMR,
-    PAB,
-    PEN,
-    PGK,
-    PHP,
-    PKR,
-    PLN,
-    PYG,
-    QAR,
-    RON,
-    RSD,
-    RUB,
-    RWF,
-    var_SAR,
-    SBD,
-    SCR,
-    SDG,
-    SEK,
-    SGD,
-    SHP,
-    SLL,
-    SOS,
-    SRD,
-    SSP,
-    STD,
-    SVC,
-    SYP,
-    SZL,
-    THB,
-    TJS,
-    TMT,
-    TND,
-    TOP,
-    TRY,
-    TTD,
-    TWD,
-    TZS,
-    UAH,
-    UGX,
-    USD,
-    USN,
-    UYI,
-    UYU,
-    UZS,
-    VEF,
-    VND,
-    VUV,
-    WST,
-    XAF,
-    XAG,
-    XAU,
-    XBA,
-    XBB,
-    XBC,
-    XBD,
-    XCD,
-    XDR,
-    XOF,
-    XPD,
-    XPF,
-    XPT,
-    XSU,
-    XTS,
-    XUA,
-    XXX,
-    YER,
-    ZAR,
-    ZMW,
-    ZWL,
+	AED,
+	AFN,
+	ALL,
+	AMD,
+	ANG,
+	AOA,
+	ARS,
+	AUD,
+	AWG,
+	AZN,
+	BAM,
+	BBD,
+	BDT,
+	BGN,
+	BHD,
+	BIF,
+	BMD,
+	BND,
+	BOB,
+	BOV,
+	BRL,
+	BSD,
+	BTN,
+	BWP,
+	BYR,
+	BZD,
+	CAD,
+	CDF,
+	CHE,
+	CHF,
+	CHW,
+	CLF,
+	CLP,
+	CNY,
+	COP,
+	COU,
+	CRC,
+	CUC,
+	CUP,
+	CVE,
+	CZK,
+	DJF,
+	DKK,
+	DOP,
+	DZD,
+	EGP,
+	ERN,
+	ETB,
+	EUR,
+	FJD,
+	FKP,
+	GBP,
+	GEL,
+	GHS,
+	GIP,
+	GMD,
+	GNF,
+	GTQ,
+	GYD,
+	HKD,
+	HNL,
+	HRK,
+	HTG,
+	HUF,
+	IDR,
+	ILS,
+	INR,
+	IQD,
+	IRR,
+	ISK,
+	JMD,
+	JOD,
+	JPY,
+	KES,
+	KGS,
+	KHR,
+	KMF,
+	KPW,
+	KRW,
+	KWD,
+	KYD,
+	KZT,
+	LAK,
+	LBP,
+	LKR,
+	LRD,
+	LSL,
+	LYD,
+	MAD,
+	MDL,
+	MGA,
+	MKD,
+	MMK,
+	MNT,
+	MOP,
+	MRO,
+	MUR,
+	MVR,
+	MWK,
+	MXN,
+	MXV,
+	MYR,
+	MZN,
+	NAD,
+	NGN,
+	NIO,
+	NOK,
+	NPR,
+	NZD,
+	OMR,
+	PAB,
+	PEN,
+	PGK,
+	PHP,
+	PKR,
+	PLN,
+	PYG,
+	QAR,
+	RON,
+	RSD,
+	RUB,
+	RWF,
+	var_SAR,
+	SBD,
+	SCR,
+	SDG,
+	SEK,
+	SGD,
+	SHP,
+	SLL,
+	SOS,
+	SRD,
+	SSP,
+	STD,
+	SVC,
+	SYP,
+	SZL,
+	THB,
+	TJS,
+	TMT,
+	TND,
+	TOP,
+	TRY,
+	TTD,
+	TWD,
+	TZS,
+	UAH,
+	UGX,
+	USD,
+	USN,
+	UYI,
+	UYU,
+	UZS,
+	VEF,
+	VND,
+	VUV,
+	WST,
+	XAF,
+	XAG,
+	XAU,
+	XBA,
+	XBB,
+	XBC,
+	XBD,
+	XCD,
+	XDR,
+	XOF,
+	XPD,
+	XPF,
+	XPT,
+	XSU,
+	XTS,
+	XUA,
+	XXX,
+	YER,
+	ZAR,
+	ZMW,
+	ZWL,
 };
-bool convertToJson(const CurrencyEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, CurrencyEnumType &dst);
+bool convertToJson(const CurrencyEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, CurrencyEnumType &dst);
 
 enum class ScopeTypeEnumType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    ac,
-    acCosPhiGrid,
-    acCurrentA,
-    acCurrentB,
-    acCurrentC,
-    acFrequencyGrid,
-    acPowerA,
-    acPowerB,
-    acPowerC,
-    acPowerLimitPct,
-    acPowerTotal,
-    acVoltageA,
-    acVoltageB,
-    acVoltageC,
-    acYieldDay,
-    acYieldTotal,
-    dcCurrent,
-    dcPower,
-    dcString1,
-    dcString2,
-    dcString3,
-    dcString4,
-    dcString5,
-    dcString6,
-    dcTotal,
-    dcVoltage,
-    dhwTemperature,
-    flowTemperature,
-    outsideAirTemperature,
-    returnTemperature,
-    roomAirTemperature,
-    charge,
-    stateOfCharge,
-    discharge,
-    gridConsumption,
-    gridFeedIn,
-    selfConsumption,
-    overloadProtection,
-    acPower,
-    acEnergy,
-    acCurrent,
-    acVoltage,
-    batteryControl,
-    simpleIncentiveTable,
-    stateOfHealth,
-    travelRange,
-    nominalEnergyCapacity,
-    acPowerReal,
-    acPowerApparent,
-    acPowerReactive,
-    acYieldMonth,
-    acYieldYear,
-    acFrequency,
-    acCosPhi,
-    dcEnergy,
-    insulationResistance,
-    stateOfEnergy,
-    useableCapacity,
-    dcChargeEnergy,
-    dcDischargeEnergy,
-    loadCycleCount,
-    componentTemperature,
-    gridLimit,
-    gridLimitFallback,
-    acPowerApparentTotal,
-    acPowerReactiveTotal,
-    acCurrentTotal,
-    acEnergyConsumed,
-    acEnergyProduced,
-    batteryAcPower,
-    batteryAcPowerPhaseSpecific,
-    batteryDcPower,
-    pccPower,
-    activePowerLimit,
-    activePowerLimitPercentage,
-    simpleCommittedIncentiveTable,
-    simplePreliminaryIncentiveTable,
-    committedPowerPlan,
-    preliminaryPowerPlan,
-    incentiveTableEnConsWithPoETF,
-    incentiveTableEnProdWithPoETF,
-    incentiveTableEnConsWithPoE,
-    incentiveTableEnProdWithPoE,
-    incentiveTableEnConsWithTF,
-    incentiveTableEnProdWithTF,
-    activePowerForecast,
+	ac,
+	acCosPhiGrid,
+	acCurrentA,
+	acCurrentB,
+	acCurrentC,
+	acFrequencyGrid,
+	acPowerA,
+	acPowerB,
+	acPowerC,
+	acPowerLimitPct,
+	acPowerTotal,
+	acVoltageA,
+	acVoltageB,
+	acVoltageC,
+	acYieldDay,
+	acYieldTotal,
+	dcCurrent,
+	dcPower,
+	dcString1,
+	dcString2,
+	dcString3,
+	dcString4,
+	dcString5,
+	dcString6,
+	dcTotal,
+	dcVoltage,
+	dhwTemperature,
+	flowTemperature,
+	outsideAirTemperature,
+	returnTemperature,
+	roomAirTemperature,
+	charge,
+	stateOfCharge,
+	discharge,
+	gridConsumption,
+	gridFeedIn,
+	selfConsumption,
+	overloadProtection,
+	acPower,
+	acEnergy,
+	acCurrent,
+	acVoltage,
+	batteryControl,
+	simpleIncentiveTable,
+	stateOfHealth,
+	travelRange,
+	nominalEnergyCapacity,
+	acPowerReal,
+	acPowerApparent,
+	acPowerReactive,
+	acYieldMonth,
+	acYieldYear,
+	acFrequency,
+	acCosPhi,
+	dcEnergy,
+	insulationResistance,
+	stateOfEnergy,
+	useableCapacity,
+	dcChargeEnergy,
+	dcDischargeEnergy,
+	loadCycleCount,
+	componentTemperature,
+	gridLimit,
+	gridLimitFallback,
+	acPowerApparentTotal,
+	acPowerReactiveTotal,
+	acCurrentTotal,
+	acEnergyConsumed,
+	acEnergyProduced,
+	batteryAcPower,
+	batteryAcPowerPhaseSpecific,
+	batteryDcPower,
+	pccPower,
+	activePowerLimit,
+	activePowerLimitPercentage,
+	simpleCommittedIncentiveTable,
+	simplePreliminaryIncentiveTable,
+	committedPowerPlan,
+	preliminaryPowerPlan,
+	incentiveTableEnConsWithPoETF,
+	incentiveTableEnProdWithPoETF,
+	incentiveTableEnConsWithPoE,
+	incentiveTableEnProdWithPoE,
+	incentiveTableEnConsWithTF,
+	incentiveTableEnProdWithTF,
+	activePowerForecast,
 };
-bool convertToJson(const ScopeTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ScopeTypeEnumType &dst);
+bool convertToJson(const ScopeTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ScopeTypeEnumType &dst);
 
 enum class RoleType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    client,
-    server,
-    special,
+	client,
+	server,
+	special,
 };
-bool convertToJson(const RoleType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, RoleType &dst);
+bool convertToJson(const RoleType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, RoleType &dst);
 
 enum class DeviceTypeEnumType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    Dishwasher,
-    Dryer,
-    EnvironmentSensor,
-    Generic,
-    HeatGenerationSystem,
-    HeatSinkSystem,
-    HeatStorageSystem,
-    HVACController,
-    SubMeter,
-    Washer,
-    ElectricitySupplySystem,
-    EnergyManagementSystem,
-    Inverter,
-    ChargingStation,
+	Dishwasher,
+	Dryer,
+	EnvironmentSensor,
+	Generic,
+	HeatGenerationSystem,
+	HeatSinkSystem,
+	HeatStorageSystem,
+	HVACController,
+	SubMeter,
+	Washer,
+	ElectricitySupplySystem,
+	EnergyManagementSystem,
+	Inverter,
+	ChargingStation,
 };
-bool convertToJson(const DeviceTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceTypeEnumType &dst);
+bool convertToJson(const DeviceTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceTypeEnumType &dst);
 
 enum class EntityTypeEnumType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    Battery,
-    Compressor,
-    DeviceInformation,
-    DHWCircuit,
-    DHWStorage,
-    Dishwasher,
-    Dryer,
-    ElectricalImmersionHeater,
-    Fan,
-    GasHeatingAppliance,
-    Generic,
-    HeatingBufferStorage,
-    HeatingCircuit,
-    HeatingObject,
-    HeatingZone,
-    HeatPumpAppliance,
-    HeatSinkCircuit,
-    HeatSourceCircuit,
-    HeatSourceUnit,
-    HVACController,
-    HVACRoom,
-    InstantDHWHeater,
-    Inverter,
-    OilHeatingAppliance,
-    Pump,
-    RefrigerantCircuit,
-    SmartEnergyAppliance,
-    SolarDHWStorage,
-    SolarThermalCircuit,
-    SubMeterElectricity,
-    TemperatureSensor,
-    Washer,
-    BatterySystem,
-    ElectricityGenerationSystem,
-    ElectricityStorageSystem,
-    GridConnectionPointOfPremises,
-    Household,
-    PVSystem,
-    EV,
-    EVSE,
-    ChargingOutlet,
-    CEM,
-    PV,
-    PVESHybrid,
-    ElectricalStorage,
-    PVString,
-    GridGuard,
-    ControllableSystem,
+	Battery,
+	Compressor,
+	DeviceInformation,
+	DHWCircuit,
+	DHWStorage,
+	Dishwasher,
+	Dryer,
+	ElectricalImmersionHeater,
+	Fan,
+	GasHeatingAppliance,
+	Generic,
+	HeatingBufferStorage,
+	HeatingCircuit,
+	HeatingObject,
+	HeatingZone,
+	HeatPumpAppliance,
+	HeatSinkCircuit,
+	HeatSourceCircuit,
+	HeatSourceUnit,
+	HVACController,
+	HVACRoom,
+	InstantDHWHeater,
+	Inverter,
+	OilHeatingAppliance,
+	Pump,
+	RefrigerantCircuit,
+	SmartEnergyAppliance,
+	SolarDHWStorage,
+	SolarThermalCircuit,
+	SubMeterElectricity,
+	TemperatureSensor,
+	Washer,
+	BatterySystem,
+	ElectricityGenerationSystem,
+	ElectricityStorageSystem,
+	GridConnectionPointOfPremises,
+	Household,
+	PVSystem,
+	EV,
+	EVSE,
+	ChargingOutlet,
+	CEM,
+	PV,
+	PVESHybrid,
+	ElectricalStorage,
+	PVString,
+	GridGuard,
+	ControllableSystem,
 };
-bool convertToJson(const EntityTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, EntityTypeEnumType &dst);
+bool convertToJson(const EntityTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, EntityTypeEnumType &dst);
 
 enum class FeatureTypeEnumType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    ActuatorLevel,
-    ActuatorSwitch,
-    Alarm,
-    DataTunneling,
-    DeviceClassification,
-    DeviceDiagnosis,
-    DirectControl,
-    ElectricalConnection,
-    Generic,
-    HVAC,
-    LoadControl,
-    Measurement,
-    Messaging,
-    NetworkManagement,
-    NodeManagement,
-    OperatingConstraints,
-    PowerSequences,
-    Sensing,
-    Setpoint,
-    SmartEnergyManagementPs,
-    TaskManagement,
-    Threshold,
-    TimeInformation,
-    TimeTable,
-    DeviceConfiguration,
-    SupplyCondition,
-    TimeSeries,
-    TariffInformation,
-    IncentiveTable,
-    Bill,
-    Identification,
-    StateInformation,
+	ActuatorLevel,
+	ActuatorSwitch,
+	Alarm,
+	DataTunneling,
+	DeviceClassification,
+	DeviceDiagnosis,
+	DirectControl,
+	ElectricalConnection,
+	Generic,
+	HVAC,
+	LoadControl,
+	Measurement,
+	Messaging,
+	NetworkManagement,
+	NodeManagement,
+	OperatingConstraints,
+	PowerSequences,
+	Sensing,
+	Setpoint,
+	SmartEnergyManagementPs,
+	TaskManagement,
+	Threshold,
+	TimeInformation,
+	TimeTable,
+	DeviceConfiguration,
+	SupplyCondition,
+	TimeSeries,
+	TariffInformation,
+	IncentiveTable,
+	Bill,
+	Identification,
+	StateInformation,
 };
-bool convertToJson(const FeatureTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, FeatureTypeEnumType &dst);
+bool convertToJson(const FeatureTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, FeatureTypeEnumType &dst);
 
 enum class FeatureDirectControlSpecificUsageEnumType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    History,
-    RealTime,
+	History,
+	RealTime,
 };
-bool convertToJson(const FeatureDirectControlSpecificUsageEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, FeatureDirectControlSpecificUsageEnumType &dst);
+bool convertToJson(const FeatureDirectControlSpecificUsageEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, FeatureDirectControlSpecificUsageEnumType &dst);
 
 enum class FeatureHvacSpecificUsageEnumType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    OperationMode,
-    Overrun,
+	OperationMode,
+	Overrun,
 };
-bool convertToJson(const FeatureHvacSpecificUsageEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, FeatureHvacSpecificUsageEnumType &dst);
+bool convertToJson(const FeatureHvacSpecificUsageEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, FeatureHvacSpecificUsageEnumType &dst);
 
 enum class FeatureMeasurementSpecificUsageEnumType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    Contact,
-    Electrical,
-    Heat,
-    Level,
-    Pressure,
-    Temperature,
+	Contact,
+	Electrical,
+	Heat,
+	Level,
+	Pressure,
+	Temperature,
 };
-bool convertToJson(const FeatureMeasurementSpecificUsageEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, FeatureMeasurementSpecificUsageEnumType &dst);
+bool convertToJson(const FeatureMeasurementSpecificUsageEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, FeatureMeasurementSpecificUsageEnumType &dst);
 
 enum class FeatureSetpointSpecificUsageEnumType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    Contact,
-    Electrical,
-    Heat,
-    Level,
-    Pressure,
-    Temperature,
+	Contact,
+	Electrical,
+	Heat,
+	Level,
+	Pressure,
+	Temperature,
 };
-bool convertToJson(const FeatureSetpointSpecificUsageEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, FeatureSetpointSpecificUsageEnumType &dst);
+bool convertToJson(const FeatureSetpointSpecificUsageEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, FeatureSetpointSpecificUsageEnumType &dst);
 
 enum class FeatureSmartEnergyManagementPsSpecificUsageEnumType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    FixedForecast,
-    FlexibleChosenForecast,
-    FlexibleOptionalForecast,
-    OptionalSequenceBasedImmediateControl,
+	FixedForecast,
+	FlexibleChosenForecast,
+	FlexibleOptionalForecast,
+	OptionalSequenceBasedImmediateControl,
 };
-bool convertToJson(const FeatureSmartEnergyManagementPsSpecificUsageEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, FeatureSmartEnergyManagementPsSpecificUsageEnumType &dst);
+bool convertToJson(const FeatureSmartEnergyManagementPsSpecificUsageEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, FeatureSmartEnergyManagementPsSpecificUsageEnumType &dst);
 
 enum class FunctionEnumType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    actuatorLevelData,
-    actuatorLevelDescriptionData,
-    actuatorSwitchData,
-    actuatorSwitchDescriptionData,
-    alarmListData,
-    bindingManagementDeleteCall,
-    bindingManagementEntryListData,
-    bindingManagementRequestCall,
-    dataTunnelingCall,
-    deviceClassificationManufacturerData,
-    deviceClassificationUserData,
-    deviceDiagnosisHeartbeatData,
-    deviceDiagnosisServiceData,
-    deviceDiagnosisStateData,
-    directControlActivityListData,
-    directControlDescriptionData,
-    electricalConnectionDescriptionListData,
-    electricalConnectionParameterDescriptionListData,
-    electricalConnectionStateListData,
-    hvacOperationModeDescriptionListData,
-    hvacOverrunDescriptionListData,
-    hvacOverrunListData,
-    hvacSystemFunctionDescriptionListData,
-    hvacSystemFunctionListData,
-    hvacSystemFunctionOperationModeRelationListData,
-    hvacSystemFunctionPowerSequenceRelationListData,
-    hvacSystemFunctionSetpointRelationListData,
-    loadControlEventListData,
-    loadControlStateListData,
-    measurementConstraintsListData,
-    measurementDescriptionListData,
-    measurementListData,
-    measurementThresholdRelationListData,
-    messagingListData,
-    networkManagementAbortCall,
-    networkManagementAddNodeCall,
-    networkManagementDeviceDescriptionListData,
-    networkManagementDiscoverCall,
-    networkManagementEntityDescriptionListData,
-    networkManagementFeatureDescriptionListData,
-    networkManagementJoiningModeData,
-    networkManagementModifyNodeCall,
-    networkManagementProcessStateData,
-    networkManagementRemoveNodeCall,
-    networkManagementReportCandidateData,
-    networkManagementScanNetworkCall,
-    nodeManagementBindingData,
-    nodeManagementBindingDeleteCall,
-    nodeManagementBindingRequestCall,
-    nodeManagementDestinationListData,
-    nodeManagementDetailedDiscoveryData,
-    nodeManagementSubscriptionData,
-    nodeManagementSubscriptionDeleteCall,
-    nodeManagementSubscriptionRequestCall,
-    operatingConstraintsDurationListData,
-    operatingConstraintsInterruptListData,
-    operatingConstraintsPowerDescriptionListData,
-    operatingConstraintsPowerLevelListData,
-    operatingConstraintsPowerRangeListData,
-    operatingConstraintsResumeImplicationListData,
-    powerSequenceAlternativesRelationListData,
-    powerSequenceDescriptionListData,
-    powerSequenceNodeScheduleInformationData,
-    powerSequencePriceCalculationRequestCall,
-    powerSequencePriceListData,
-    powerSequenceScheduleConfigurationRequestCall,
-    powerSequenceScheduleConstraintsListData,
-    powerSequenceScheduleListData,
-    powerSequenceSchedulePreferenceListData,
-    powerSequenceStateListData,
-    powerTimeSlotScheduleConstraintsListData,
-    powerTimeSlotScheduleListData,
-    powerTimeSlotValueListData,
-    resultData,
-    sensingDescriptionData,
-    sensingListData,
-    sessionIdentificationListData,
-    sessionMeasurementRelationListData,
-    setpointConstraintsListData,
-    setpointDescriptionListData,
-    setpointListData,
-    smartEnergyManagementPsConfigurationRequestCall,
-    smartEnergyManagementPsData,
-    smartEnergyManagementPsPriceCalculationRequestCall,
-    smartEnergyManagementPsPriceData,
-    specificationVersionListData,
-    subscriptionManagementDeleteCall,
-    subscriptionManagementEntryListData,
-    subscriptionManagementRequestCall,
-    supplyConditionDescriptionListData,
-    supplyConditionListData,
-    supplyConditionThresholdRelationListData,
-    taskManagementJobDescriptionListData,
-    taskManagementJobListData,
-    taskManagementJobRelationListData,
-    taskManagementOverviewData,
-    thresholdConstraintsListData,
-    thresholdDescriptionListData,
-    thresholdListData,
-    timeDistributorData,
-    timeDistributorEnquiryCall,
-    timeInformationData,
-    timePrecisionData,
-    timeTableConstraintsListData,
-    timeTableDescriptionListData,
-    timeTableListData,
-    deviceConfigurationKeyValueConstraintsListData,
-    deviceConfigurationKeyValueListData,
-    deviceConfigurationKeyValueDescriptionListData,
-    loadControlLimitConstraintsListData,
-    loadControlLimitDescriptionListData,
-    loadControlLimitListData,
-    loadControlNodeData,
-    timeSeriesConstraintsListData,
-    timeSeriesDescriptionListData,
-    timeSeriesListData,
-    tariffOverallConstraintsData,
-    tariffListData,
-    tariffBoundaryRelationListData,
-    tariffTierRelationListData,
-    tariffDescriptionListData,
-    tierBoundaryListData,
-    tierBoundaryDescriptionListData,
-    commodityListData,
-    tierListData,
-    tierIncentiveRelationListData,
-    tierDescriptionListData,
-    incentiveListData,
-    incentiveDescriptionListData,
-    incentiveTableData,
-    incentiveTableDescriptionData,
-    incentiveTableConstraintsData,
-    electricalConnectionPermittedValueSetListData,
-    useCaseInformationListData,
-    nodeManagementUseCaseData,
-    billConstraintsListData,
-    billDescriptionListData,
-    billListData,
-    identificationListData,
-    measurementSeriesListData,
-    electricalConnectionCharacteristicListData,
-    stateInformationListData,
+	actuatorLevelData,
+	actuatorLevelDescriptionData,
+	actuatorSwitchData,
+	actuatorSwitchDescriptionData,
+	alarmListData,
+	bindingManagementDeleteCall,
+	bindingManagementEntryListData,
+	bindingManagementRequestCall,
+	dataTunnelingCall,
+	deviceClassificationManufacturerData,
+	deviceClassificationUserData,
+	deviceDiagnosisHeartbeatData,
+	deviceDiagnosisServiceData,
+	deviceDiagnosisStateData,
+	directControlActivityListData,
+	directControlDescriptionData,
+	electricalConnectionDescriptionListData,
+	electricalConnectionParameterDescriptionListData,
+	electricalConnectionStateListData,
+	hvacOperationModeDescriptionListData,
+	hvacOverrunDescriptionListData,
+	hvacOverrunListData,
+	hvacSystemFunctionDescriptionListData,
+	hvacSystemFunctionListData,
+	hvacSystemFunctionOperationModeRelationListData,
+	hvacSystemFunctionPowerSequenceRelationListData,
+	hvacSystemFunctionSetpointRelationListData,
+	loadControlEventListData,
+	loadControlStateListData,
+	measurementConstraintsListData,
+	measurementDescriptionListData,
+	measurementListData,
+	measurementThresholdRelationListData,
+	messagingListData,
+	networkManagementAbortCall,
+	networkManagementAddNodeCall,
+	networkManagementDeviceDescriptionListData,
+	networkManagementDiscoverCall,
+	networkManagementEntityDescriptionListData,
+	networkManagementFeatureDescriptionListData,
+	networkManagementJoiningModeData,
+	networkManagementModifyNodeCall,
+	networkManagementProcessStateData,
+	networkManagementRemoveNodeCall,
+	networkManagementReportCandidateData,
+	networkManagementScanNetworkCall,
+	nodeManagementBindingData,
+	nodeManagementBindingDeleteCall,
+	nodeManagementBindingRequestCall,
+	nodeManagementDestinationListData,
+	nodeManagementDetailedDiscoveryData,
+	nodeManagementSubscriptionData,
+	nodeManagementSubscriptionDeleteCall,
+	nodeManagementSubscriptionRequestCall,
+	operatingConstraintsDurationListData,
+	operatingConstraintsInterruptListData,
+	operatingConstraintsPowerDescriptionListData,
+	operatingConstraintsPowerLevelListData,
+	operatingConstraintsPowerRangeListData,
+	operatingConstraintsResumeImplicationListData,
+	powerSequenceAlternativesRelationListData,
+	powerSequenceDescriptionListData,
+	powerSequenceNodeScheduleInformationData,
+	powerSequencePriceCalculationRequestCall,
+	powerSequencePriceListData,
+	powerSequenceScheduleConfigurationRequestCall,
+	powerSequenceScheduleConstraintsListData,
+	powerSequenceScheduleListData,
+	powerSequenceSchedulePreferenceListData,
+	powerSequenceStateListData,
+	powerTimeSlotScheduleConstraintsListData,
+	powerTimeSlotScheduleListData,
+	powerTimeSlotValueListData,
+	resultData,
+	sensingDescriptionData,
+	sensingListData,
+	sessionIdentificationListData,
+	sessionMeasurementRelationListData,
+	setpointConstraintsListData,
+	setpointDescriptionListData,
+	setpointListData,
+	smartEnergyManagementPsConfigurationRequestCall,
+	smartEnergyManagementPsData,
+	smartEnergyManagementPsPriceCalculationRequestCall,
+	smartEnergyManagementPsPriceData,
+	specificationVersionListData,
+	subscriptionManagementDeleteCall,
+	subscriptionManagementEntryListData,
+	subscriptionManagementRequestCall,
+	supplyConditionDescriptionListData,
+	supplyConditionListData,
+	supplyConditionThresholdRelationListData,
+	taskManagementJobDescriptionListData,
+	taskManagementJobListData,
+	taskManagementJobRelationListData,
+	taskManagementOverviewData,
+	thresholdConstraintsListData,
+	thresholdDescriptionListData,
+	thresholdListData,
+	timeDistributorData,
+	timeDistributorEnquiryCall,
+	timeInformationData,
+	timePrecisionData,
+	timeTableConstraintsListData,
+	timeTableDescriptionListData,
+	timeTableListData,
+	deviceConfigurationKeyValueConstraintsListData,
+	deviceConfigurationKeyValueListData,
+	deviceConfigurationKeyValueDescriptionListData,
+	loadControlLimitConstraintsListData,
+	loadControlLimitDescriptionListData,
+	loadControlLimitListData,
+	loadControlNodeData,
+	timeSeriesConstraintsListData,
+	timeSeriesDescriptionListData,
+	timeSeriesListData,
+	tariffOverallConstraintsData,
+	tariffListData,
+	tariffBoundaryRelationListData,
+	tariffTierRelationListData,
+	tariffDescriptionListData,
+	tierBoundaryListData,
+	tierBoundaryDescriptionListData,
+	commodityListData,
+	tierListData,
+	tierIncentiveRelationListData,
+	tierDescriptionListData,
+	incentiveListData,
+	incentiveDescriptionListData,
+	incentiveTableData,
+	incentiveTableDescriptionData,
+	incentiveTableConstraintsData,
+	electricalConnectionPermittedValueSetListData,
+	useCaseInformationListData,
+	nodeManagementUseCaseData,
+	billConstraintsListData,
+	billDescriptionListData,
+	billListData,
+	identificationListData,
+	measurementSeriesListData,
+	electricalConnectionCharacteristicListData,
+	stateInformationListData,
 };
-bool convertToJson(const FunctionEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, FunctionEnumType &dst);
+bool convertToJson(const FunctionEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, FunctionEnumType &dst);
 
 enum class TimeSeriesTypeEnumType { // EEBus_SPINE_TS_TimeSeries.xsd
-    plan,
-    singleDemand,
-    constraints,
-    energyRequest,
-    dischargingEnergyRequest,
-    consumptionLimitCurve,
-    productionLimitCurve,
+	plan,
+	singleDemand,
+	constraints,
+	energyRequest,
+	dischargingEnergyRequest,
+	consumptionLimitCurve,
+	productionLimitCurve,
 };
-bool convertToJson(const TimeSeriesTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeSeriesTypeEnumType &dst);
+bool convertToJson(const TimeSeriesTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesTypeEnumType &dst);
 
 enum class MeasurementTypeEnumType { // EEBus_SPINE_TS_Measurement.xsd
-    acceleration,
-    angle,
-    angularVelocity,
-    area,
-    atmosphericPressure,
-    capacity,
-    concentration,
-    count,
-    current,
-    density,
-    distance,
-    electricField,
-    energy,
-    force,
-    frequency,
-    harmonicDistortion,
-    heat,
-    heatFlux,
-    illuminance,
-    impulse,
-    level,
-    magneticField,
-    mass,
-    massFlow,
-    particles,
-    percentage,
-    power,
-    powerFactor,
-    pressure,
-    radonActivity,
-    relativeHumidity,
-    resistance,
-    solarRadiation,
-    speed,
-    temperature,
-    time,
-    torque,
-    unknown,
-    velocity,
-    voltage,
-    volume,
-    volumetricFlow,
+	acceleration,
+	angle,
+	angularVelocity,
+	area,
+	atmosphericPressure,
+	capacity,
+	concentration,
+	count,
+	current,
+	density,
+	distance,
+	electricField,
+	energy,
+	force,
+	frequency,
+	harmonicDistortion,
+	heat,
+	heatFlux,
+	illuminance,
+	impulse,
+	level,
+	magneticField,
+	mass,
+	massFlow,
+	particles,
+	percentage,
+	power,
+	powerFactor,
+	pressure,
+	radonActivity,
+	relativeHumidity,
+	resistance,
+	solarRadiation,
+	speed,
+	temperature,
+	time,
+	torque,
+	unknown,
+	velocity,
+	voltage,
+	volume,
+	volumetricFlow,
 };
-bool convertToJson(const MeasurementTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementTypeEnumType &dst);
+bool convertToJson(const MeasurementTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementTypeEnumType &dst);
 
 enum class MeasurementValueTypeEnumType { // EEBus_SPINE_TS_Measurement.xsd
-    value,
-    averageValue,
-    minValue,
-    maxValue,
-    standardDeviation,
+	value,
+	averageValue,
+	minValue,
+	maxValue,
+	standardDeviation,
 };
-bool convertToJson(const MeasurementValueTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementValueTypeEnumType &dst);
+bool convertToJson(const MeasurementValueTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementValueTypeEnumType &dst);
 
 enum class MeasurementValueSourceEnumType { // EEBus_SPINE_TS_Measurement.xsd
-    measuredValue,
-    calculatedValue,
-    empiricalValue,
+	measuredValue,
+	calculatedValue,
+	empiricalValue,
 };
-bool convertToJson(const MeasurementValueSourceEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementValueSourceEnumType &dst);
+bool convertToJson(const MeasurementValueSourceEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementValueSourceEnumType &dst);
 
 enum class MeasurementValueTendencyEnumType { // EEBus_SPINE_TS_Measurement.xsd
-    rising,
-    stable,
-    falling,
+	rising,
+	stable,
+	falling,
 };
-bool convertToJson(const MeasurementValueTendencyEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementValueTendencyEnumType &dst);
+bool convertToJson(const MeasurementValueTendencyEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementValueTendencyEnumType &dst);
 
 enum class MeasurementValueStateEnumType { // EEBus_SPINE_TS_Measurement.xsd
-    normal,
-    outOfRange,
-    error,
+	normal,
+	outOfRange,
+	error,
 };
-bool convertToJson(const MeasurementValueStateEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementValueStateEnumType &dst);
+bool convertToJson(const MeasurementValueStateEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementValueStateEnumType &dst);
 
 enum class ThresholdTypeEnumType { // EEBus_SPINE_TS_Threshold.xsd
-    goodAbove,
-    badAbove,
-    goodBelow,
-    badBelow,
-    minValueThreshold,
-    maxValueThreshold,
-    minValueThresholdExtreme,
-    maxValueThresholdExtreme,
-    sagThreshold,
-    swellThreshold,
+	goodAbove,
+	badAbove,
+	goodBelow,
+	badBelow,
+	minValueThreshold,
+	maxValueThreshold,
+	minValueThresholdExtreme,
+	maxValueThresholdExtreme,
+	sagThreshold,
+	swellThreshold,
 };
-bool convertToJson(const ThresholdTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ThresholdTypeEnumType &dst);
+bool convertToJson(const ThresholdTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdTypeEnumType &dst);
 
 enum class DirectControlActivityStateEnumType { // EEBus_SPINE_TS_DirectControl.xsd
-    running,
-    paused,
-    inactive,
+	running,
+	paused,
+	inactive,
 };
-bool convertToJson(const DirectControlActivityStateEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DirectControlActivityStateEnumType &dst);
+bool convertToJson(const DirectControlActivityStateEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DirectControlActivityStateEnumType &dst);
 
 enum class PowerTimeSlotValueTypeEnumType { // EEBus_SPINE_TS_PowerSequences.xsd
-    power,
-    powerMin,
-    powerMax,
-    powerExpectedValue,
-    powerStandardDeviation,
-    powerSkewness,
-    energy,
-    energyMin,
-    energyMax,
-    energyExpectedValue,
-    energyStandardDeviation,
-    energySkewness,
+	power,
+	powerMin,
+	powerMax,
+	powerExpectedValue,
+	powerStandardDeviation,
+	powerSkewness,
+	energy,
+	energyMin,
+	energyMax,
+	energyExpectedValue,
+	energyStandardDeviation,
+	energySkewness,
 };
-bool convertToJson(const PowerTimeSlotValueTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueTypeEnumType &dst);
+bool convertToJson(const PowerTimeSlotValueTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotValueTypeEnumType &dst);
 
 enum class PowerSequenceScopeEnumType { // EEBus_SPINE_TS_PowerSequences.xsd
-    forecast,
-    measurement,
-    recommendation,
+	forecast,
+	measurement,
+	recommendation,
 };
-bool convertToJson(const PowerSequenceScopeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceScopeEnumType &dst);
+bool convertToJson(const PowerSequenceScopeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceScopeEnumType &dst);
 
 enum class PowerSequenceStateEnumType { // EEBus_SPINE_TS_PowerSequences.xsd
-    running,
-    paused,
-    scheduled,
-    scheduledPaused,
-    pending,
-    inactive,
-    completed,
-    invalid,
+	running,
+	paused,
+	scheduled,
+	scheduledPaused,
+	pending,
+	inactive,
+	completed,
+	invalid,
 };
-bool convertToJson(const PowerSequenceStateEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceStateEnumType &dst);
+bool convertToJson(const PowerSequenceStateEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceStateEnumType &dst);
 
 enum class ActuatorLevelFctEnumType { // EEBus_SPINE_TS_ActuatorLevel.xsd
-    start,
-    up,
-    down,
-    stop,
-    percentageAbsolute,
-    percentageRelative,
-    absolute,
-    relative,
+	start,
+	up,
+	down,
+	stop,
+	percentageAbsolute,
+	percentageRelative,
+	absolute,
+	relative,
 };
-bool convertToJson(const ActuatorLevelFctEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ActuatorLevelFctEnumType &dst);
+bool convertToJson(const ActuatorLevelFctEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ActuatorLevelFctEnumType &dst);
 
 enum class CmdClassifierType { // EEBus_SPINE_TS_CommandFrame.xsd
-    read,
-    reply,
-    notify,
-    write,
-    call,
-    result,
+	read,
+	reply,
+	notify,
+	write,
+	call,
+	result,
 };
-bool convertToJson(const CmdClassifierType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, CmdClassifierType &dst);
+bool convertToJson(const CmdClassifierType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, CmdClassifierType &dst);
 
 enum class ActuatorSwitchFctEnumType { // EEBus_SPINE_TS_ActuatorSwitch.xsd
-    on,
-    off,
-    toggle,
+	on,
+	off,
+	toggle,
 };
-bool convertToJson(const ActuatorSwitchFctEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ActuatorSwitchFctEnumType &dst);
+bool convertToJson(const ActuatorSwitchFctEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ActuatorSwitchFctEnumType &dst);
 
 enum class AlarmTypeEnumType { // EEBus_SPINE_TS_Alarm.xsd
-    alarmCancelled,
-    underThreshold,
-    overThreshold,
+	alarmCancelled,
+	underThreshold,
+	overThreshold,
 };
-bool convertToJson(const AlarmTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, AlarmTypeEnumType &dst);
+bool convertToJson(const AlarmTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, AlarmTypeEnumType &dst);
 
 enum class BillTypeEnumType { // EEBus_SPINE_TS_Bill.xsd
-    chargingSummary,
+	chargingSummary,
 };
-bool convertToJson(const BillTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BillTypeEnumType &dst);
+bool convertToJson(const BillTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BillTypeEnumType &dst);
 
 enum class BillPositionTypeEnumType { // EEBus_SPINE_TS_Bill.xsd
-    gridElectricEnergy,
-    selfProducedElectricEnergy,
+	gridElectricEnergy,
+	selfProducedElectricEnergy,
 };
-bool convertToJson(const BillPositionTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BillPositionTypeEnumType &dst);
+bool convertToJson(const BillPositionTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BillPositionTypeEnumType &dst);
 
 enum class BillCostTypeEnumType { // EEBus_SPINE_TS_Bill.xsd
-    absolutePrice,
-    relativePrice,
-    co2Emission,
-    renewableEnergy,
-    radioactiveWaste,
+	absolutePrice,
+	relativePrice,
+	co2Emission,
+	renewableEnergy,
+	radioactiveWaste,
 };
-bool convertToJson(const BillCostTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BillCostTypeEnumType &dst);
+bool convertToJson(const BillCostTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BillCostTypeEnumType &dst);
 
 enum class IdentificationTypeEnumType { // EEBus_SPINE_TS_Identification.xsd
-    eui48,
-    eui64,
-    userRfidTag,
+	eui48,
+	eui64,
+	userRfidTag,
 };
-bool convertToJson(const IdentificationTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IdentificationTypeEnumType &dst);
+bool convertToJson(const IdentificationTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IdentificationTypeEnumType &dst);
 
 enum class PowerSourceEnumType { // EEBus_SPINE_TS_DeviceClassification.xsd
-    unknown,
-    mainsSinglePhase,
-    mains3Phase,
-    battery,
-    dc,
+	unknown,
+	mainsSinglePhase,
+	mains3Phase,
+	battery,
+	dc,
 };
-bool convertToJson(const PowerSourceEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSourceEnumType &dst);
+bool convertToJson(const PowerSourceEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSourceEnumType &dst);
 
 enum class DeviceConfigurationKeyNameEnumType { // EEBus_SPINE_TS_DeviceConfiguration.xsd
-    peakPowerOfPvSystem,
-    pvCurtailmentLimitFactor,
-    asymmetricChargingSupported,
-    communicationsStandard,
-    inverterGridCode,
-    pvStringAvailabilityStatus,
-    batteryAvailabilityStatus,
-    gridConnectionStatus,
-    timeToAcChargePowerMax,
-    timeToAcDischargePowerMax,
-    tilt,
-    azimuth,
-    batteryType,
-    maxCycleCountPerDay,
-    failsafeConsumptionActivePowerLimit,
-    failsafeProductionActivePowerLimit,
-    failsafePositiveReactivePowerLimit,
-    failsafeNegativeReactivePowerLimit,
-    failsafePositiveCosPhiLimit,
-    failsafeNegativeCosPhiLimit,
-    maxAcChargePower,
-    maxAcDischargePower,
-    maxDcChargePower,
-    maxDcDischargePower,
-    batteryActiveControlMode,
-    defaultAcPower,
-    defaultDcPower,
-    defaultPccPower,
-    failsafeAcPowerSetpoint,
-    failsafeDcPowerSetpoint,
-    failsafePccPowerSetpoint,
-    failsafeDurationMinimum,
-    dischargingBelowTargetEnergyRequestPermitted,
-    incentivesSimulationCyclesMax,
-    incentivesSimulationConcurrent,
-    incentivesTimeoutIncentiveRequest,
-    incentivesWaitIncentiveWriteable,
+	peakPowerOfPvSystem,
+	pvCurtailmentLimitFactor,
+	asymmetricChargingSupported,
+	communicationsStandard,
+	inverterGridCode,
+	pvStringAvailabilityStatus,
+	batteryAvailabilityStatus,
+	gridConnectionStatus,
+	timeToAcChargePowerMax,
+	timeToAcDischargePowerMax,
+	tilt,
+	azimuth,
+	batteryType,
+	maxCycleCountPerDay,
+	failsafeConsumptionActivePowerLimit,
+	failsafeProductionActivePowerLimit,
+	failsafePositiveReactivePowerLimit,
+	failsafeNegativeReactivePowerLimit,
+	failsafePositiveCosPhiLimit,
+	failsafeNegativeCosPhiLimit,
+	maxAcChargePower,
+	maxAcDischargePower,
+	maxDcChargePower,
+	maxDcDischargePower,
+	batteryActiveControlMode,
+	defaultAcPower,
+	defaultDcPower,
+	defaultPccPower,
+	failsafeAcPowerSetpoint,
+	failsafeDcPowerSetpoint,
+	failsafePccPowerSetpoint,
+	failsafeDurationMinimum,
+	dischargingBelowTargetEnergyRequestPermitted,
+	incentivesSimulationCyclesMax,
+	incentivesSimulationConcurrent,
+	incentivesTimeoutIncentiveRequest,
+	incentivesWaitIncentiveWriteable,
 };
-bool convertToJson(const DeviceConfigurationKeyNameEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyNameEnumType &dst);
+bool convertToJson(const DeviceConfigurationKeyNameEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyNameEnumType &dst);
 
 enum class DeviceConfigurationKeyValueTypeType { // EEBus_SPINE_TS_DeviceConfiguration.xsd
-    boolean,
-    date,
-    dateTime,
-    duration,
-    string,
-    time,
-    scaledNumber,
-    integer,
+	boolean,
+	date,
+	dateTime,
+	duration,
+	string,
+	time,
+	scaledNumber,
+	integer,
 };
-bool convertToJson(const DeviceConfigurationKeyValueTypeType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueTypeType &dst);
+bool convertToJson(const DeviceConfigurationKeyValueTypeType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueTypeType &dst);
 
 enum class DeviceDiagnosisOperatingStateEnumType { // EEBus_SPINE_TS_DeviceDiagnosis.xsd
-    normalOperation,
-    standby,
-    failure,
-    serviceNeeded,
-    overrideDetected,
-    inAlarm,
-    notReachable,
-    finished,
-    temporarilyNotReady,
-    off,
+	normalOperation,
+	standby,
+	failure,
+	serviceNeeded,
+	overrideDetected,
+	inAlarm,
+	notReachable,
+	finished,
+	temporarilyNotReady,
+	off,
 };
-bool convertToJson(const DeviceDiagnosisOperatingStateEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisOperatingStateEnumType &dst);
+bool convertToJson(const DeviceDiagnosisOperatingStateEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceDiagnosisOperatingStateEnumType &dst);
 
 enum class PowerSupplyConditionEnumType { // EEBus_SPINE_TS_DeviceDiagnosis.xsd
-    good,
-    low,
-    critical,
-    unknown,
-    error,
+	good,
+	low,
+	critical,
+	unknown,
+	error,
 };
-bool convertToJson(const PowerSupplyConditionEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSupplyConditionEnumType &dst);
+bool convertToJson(const PowerSupplyConditionEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSupplyConditionEnumType &dst);
 
 enum class ElectricalConnectionMeasurandVariantEnumType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    amplitude,
-    rms,
-    instantaneous,
-    angle,
-    cosPhi,
+	amplitude,
+	rms,
+	instantaneous,
+	angle,
+	cosPhi,
 };
-bool convertToJson(const ElectricalConnectionMeasurandVariantEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionMeasurandVariantEnumType &dst);
+bool convertToJson(const ElectricalConnectionMeasurandVariantEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionMeasurandVariantEnumType &dst);
 
 enum class ElectricalConnectionVoltageTypeEnumType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    ac,
-    dc,
+	ac,
+	dc,
 };
-bool convertToJson(const ElectricalConnectionVoltageTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionVoltageTypeEnumType &dst);
+bool convertToJson(const ElectricalConnectionVoltageTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionVoltageTypeEnumType &dst);
 
 enum class ElectricalConnectionAcMeasurementTypeEnumType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    real,
-    reactive,
-    apparent,
-    phase,
+	real,
+	reactive,
+	apparent,
+	phase,
 };
-bool convertToJson(const ElectricalConnectionAcMeasurementTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionAcMeasurementTypeEnumType &dst);
+bool convertToJson(const ElectricalConnectionAcMeasurementTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionAcMeasurementTypeEnumType &dst);
 
 enum class ElectricalConnectionPhaseNameEnumType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    a,
-    b,
-    c,
-    ab,
-    bc,
-    ac,
-    abc,
-    neutral,
-    ground,
-    none,
+	a,
+	b,
+	c,
+	ab,
+	bc,
+	ac,
+	abc,
+	neutral,
+	ground,
+	none,
 };
-bool convertToJson(const ElectricalConnectionPhaseNameEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPhaseNameEnumType &dst);
+bool convertToJson(const ElectricalConnectionPhaseNameEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionPhaseNameEnumType &dst);
 
 enum class ElectricalConnectionConnectionPointType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    grid,
-    home,
-    pv,
-    sd,
-    other,
+	grid,
+	home,
+	pv,
+	sd,
+	other,
 };
-bool convertToJson(const ElectricalConnectionConnectionPointType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionConnectionPointType &dst);
+bool convertToJson(const ElectricalConnectionConnectionPointType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionConnectionPointType &dst);
 
 enum class ElectricalConnectionCharacteristicContextEnumType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    device,
-    entity,
-    inverter,
-    pvString,
-    battery,
+	device,
+	entity,
+	inverter,
+	pvString,
+	battery,
 };
-bool convertToJson(const ElectricalConnectionCharacteristicContextEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicContextEnumType &dst);
+bool convertToJson(const ElectricalConnectionCharacteristicContextEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionCharacteristicContextEnumType &dst);
 
 enum class ElectricalConnectionCharacteristicTypeEnumType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    powerConsumptionMin,
-    powerConsumptionMax,
-    powerConsumptionNominalMin,
-    powerConsumptionNominalMax,
-    powerProductionMin,
-    powerProductionMax,
-    powerProductionNominalMin,
-    powerProductionNominalMax,
-    energyCapacityNominalMax,
-    contractualConsumptionNominalMax,
-    contractualProductionNominalMax,
-    apparentPowerProductionNominalMax,
-    apparentPowerConsumptionNominalMax,
+	powerConsumptionMin,
+	powerConsumptionMax,
+	powerConsumptionNominalMin,
+	powerConsumptionNominalMax,
+	powerProductionMin,
+	powerProductionMax,
+	powerProductionNominalMin,
+	powerProductionNominalMax,
+	energyCapacityNominalMax,
+	contractualConsumptionNominalMax,
+	contractualProductionNominalMax,
+	apparentPowerProductionNominalMax,
+	apparentPowerConsumptionNominalMax,
 };
-bool convertToJson(const ElectricalConnectionCharacteristicTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicTypeEnumType &dst);
+bool convertToJson(const ElectricalConnectionCharacteristicTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionCharacteristicTypeEnumType &dst);
 
 enum class HvacSystemFunctionTypeEnumType { // EEBus_SPINE_TS_HVAC.xsd
-    heating,
-    cooling,
-    ventilation,
-    dhw,
+	heating,
+	cooling,
+	ventilation,
+	dhw,
 };
-bool convertToJson(const HvacSystemFunctionTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionTypeEnumType &dst);
+bool convertToJson(const HvacSystemFunctionTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionTypeEnumType &dst);
 
 enum class HvacOperationModeTypeEnumType { // EEBus_SPINE_TS_HVAC.xsd
-    var_auto,
-    on,
-    off,
-    eco,
+	var_auto,
+	on,
+	off,
+	eco,
 };
-bool convertToJson(const HvacOperationModeTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacOperationModeTypeEnumType &dst);
+bool convertToJson(const HvacOperationModeTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacOperationModeTypeEnumType &dst);
 
 enum class HvacOverrunTypeEnumType { // EEBus_SPINE_TS_HVAC.xsd
-    oneTimeDhw,
-    party,
-    sgReadyCondition1,
-    sgReadyCondition3,
-    sgReadyCondition4,
-    oneDayAway,
-    oneDayAtHome,
-    oneTimeVentilation,
-    hvacSystemOff,
-    valveKick,
+	oneTimeDhw,
+	party,
+	sgReadyCondition1,
+	sgReadyCondition3,
+	sgReadyCondition4,
+	oneDayAway,
+	oneDayAtHome,
+	oneTimeVentilation,
+	hvacSystemOff,
+	valveKick,
 };
-bool convertToJson(const HvacOverrunTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacOverrunTypeEnumType &dst);
+bool convertToJson(const HvacOverrunTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacOverrunTypeEnumType &dst);
 
 enum class HvacOverrunStatusEnumType { // EEBus_SPINE_TS_HVAC.xsd
-    active,
-    running,
-    finished,
-    inactive,
+	active,
+	running,
+	finished,
+	inactive,
 };
-bool convertToJson(const HvacOverrunStatusEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacOverrunStatusEnumType &dst);
+bool convertToJson(const HvacOverrunStatusEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacOverrunStatusEnumType &dst);
 
 enum class SetpointTypeEnumType { // EEBus_SPINE_TS_Setpoint.xsd
-    valueAbsolute,
-    valueRelative,
+	valueAbsolute,
+	valueRelative,
 };
-bool convertToJson(const SetpointTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SetpointTypeEnumType &dst);
+bool convertToJson(const SetpointTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SetpointTypeEnumType &dst);
 
 enum class TimeSlotTimeModeEnumType { // EEBus_SPINE_TS_TimeTable.xsd
-    absolute,
-    recurring,
-    both,
+	absolute,
+	recurring,
+	both,
 };
-bool convertToJson(const TimeSlotTimeModeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeSlotTimeModeEnumType &dst);
+bool convertToJson(const TimeSlotTimeModeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeSlotTimeModeEnumType &dst);
 
 enum class TierBoundaryTypeEnumType { // EEBus_SPINE_TS_TariffInformation.xsd
-    powerBoundary,
-    energyBoundary,
-    countBoundary,
+	powerBoundary,
+	energyBoundary,
+	countBoundary,
 };
-bool convertToJson(const TierBoundaryTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TierBoundaryTypeEnumType &dst);
+bool convertToJson(const TierBoundaryTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TierBoundaryTypeEnumType &dst);
 
 enum class TierTypeEnumType { // EEBus_SPINE_TS_TariffInformation.xsd
-    fixedCost,
-    dynamicCost,
+	fixedCost,
+	dynamicCost,
 };
-bool convertToJson(const TierTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TierTypeEnumType &dst);
+bool convertToJson(const TierTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TierTypeEnumType &dst);
 
 enum class IncentiveTypeEnumType { // EEBus_SPINE_TS_TariffInformation.xsd
-    absoluteCost,
-    relativeCost,
-    renewableEnergyPercentage,
-    co2Emission,
+	absoluteCost,
+	relativeCost,
+	renewableEnergyPercentage,
+	co2Emission,
 };
-bool convertToJson(const IncentiveTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveTypeEnumType &dst);
+bool convertToJson(const IncentiveTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTypeEnumType &dst);
 
 enum class IncentiveValueTypeEnumType { // EEBus_SPINE_TS_TariffInformation.xsd
-    value,
-    averageValue,
-    minValue,
-    maxValue,
+	value,
+	averageValue,
+	minValue,
+	maxValue,
 };
-bool convertToJson(const IncentiveValueTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveValueTypeEnumType &dst);
+bool convertToJson(const IncentiveValueTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveValueTypeEnumType &dst);
 
 enum class LoadControlEventActionEnumType { // EEBus_SPINE_TS_LoadControl.xsd
-    pause,
-    resume,
-    reduce,
-    increase,
-    emergency,
-    normal,
+	pause,
+	resume,
+	reduce,
+	increase,
+	emergency,
+	normal,
 };
-bool convertToJson(const LoadControlEventActionEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlEventActionEnumType &dst);
+bool convertToJson(const LoadControlEventActionEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlEventActionEnumType &dst);
 
 enum class LoadControlEventStateEnumType { // EEBus_SPINE_TS_LoadControl.xsd
-    eventAccepted,
-    eventStarted,
-    eventStopped,
-    eventRejected,
-    eventCancelled,
-    eventError,
+	eventAccepted,
+	eventStarted,
+	eventStopped,
+	eventRejected,
+	eventCancelled,
+	eventError,
 };
-bool convertToJson(const LoadControlEventStateEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlEventStateEnumType &dst);
+bool convertToJson(const LoadControlEventStateEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlEventStateEnumType &dst);
 
 enum class LoadControlLimitTypeEnumType { // EEBus_SPINE_TS_LoadControl.xsd
-    minValueLimit,
-    maxValueLimit,
-    signDependentAbsValueLimit,
+	minValueLimit,
+	maxValueLimit,
+	signDependentAbsValueLimit,
 };
-bool convertToJson(const LoadControlLimitTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitTypeEnumType &dst);
+bool convertToJson(const LoadControlLimitTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitTypeEnumType &dst);
 
 enum class LoadControlCategoryEnumType { // EEBus_SPINE_TS_LoadControl.xsd
-    obligation,
-    recommendation,
-    optimization,
+	obligation,
+	recommendation,
+	optimization,
 };
-bool convertToJson(const LoadControlCategoryEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlCategoryEnumType &dst);
+bool convertToJson(const LoadControlCategoryEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlCategoryEnumType &dst);
 
 enum class NetworkManagementFeatureSetType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    gateway,
-    router,
-    smart,
-    simple,
+	gateway,
+	router,
+	smart,
+	simple,
 };
-bool convertToJson(const NetworkManagementFeatureSetType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureSetType &dst);
+bool convertToJson(const NetworkManagementFeatureSetType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementFeatureSetType &dst);
 
 enum class NetworkManagementProcessStateStateType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    succeeded,
-    failed,
-    aborted,
+	succeeded,
+	failed,
+	aborted,
 };
-bool convertToJson(const NetworkManagementProcessStateStateType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementProcessStateStateType &dst);
+bool convertToJson(const NetworkManagementProcessStateStateType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementProcessStateStateType &dst);
 
 enum class NetworkManagementStateChangeType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    added,
-    removed,
-    modified,
+	added,
+	removed,
+	modified,
 };
-bool convertToJson(const NetworkManagementStateChangeType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementStateChangeType &dst);
+bool convertToJson(const NetworkManagementStateChangeType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementStateChangeType &dst);
 
 enum class SensingStateEnumType { // EEBus_SPINE_TS_Sensing.xsd
-    on,
-    off,
-    toggle,
-    level,
-    levelUp,
-    levelDown,
-    levelStart,
-    levelStop,
-    levelAbsolute,
-    levelRelative,
-    levelPercentageAbsolute,
-    levelPercentageRelative,
-    pressed,
-    longPressed,
-    released,
-    changed,
-    started,
-    stopped,
-    paused,
-    middle,
-    up,
-    down,
-    forward,
-    backwards,
-    open,
-    closed,
-    opening,
-    closing,
-    high,
-    low,
-    day,
-    night,
-    detected,
-    notDetected,
-    alarmed,
-    notAlarmed,
+	on,
+	off,
+	toggle,
+	level,
+	levelUp,
+	levelDown,
+	levelStart,
+	levelStop,
+	levelAbsolute,
+	levelRelative,
+	levelPercentageAbsolute,
+	levelPercentageRelative,
+	pressed,
+	longPressed,
+	released,
+	changed,
+	started,
+	stopped,
+	paused,
+	middle,
+	up,
+	down,
+	forward,
+	backwards,
+	open,
+	closed,
+	opening,
+	closing,
+	high,
+	low,
+	day,
+	night,
+	detected,
+	notDetected,
+	alarmed,
+	notAlarmed,
 };
-bool convertToJson(const SensingStateEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SensingStateEnumType &dst);
+bool convertToJson(const SensingStateEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SensingStateEnumType &dst);
 
 enum class SensingTypeEnumType { // EEBus_SPINE_TS_Sensing.xsd
-    var_switch,
-    button,
-    level,
-    levelSwitch,
-    windowHandle,
-    contactSensor,
-    occupancySensor,
-    motionDetector,
-    fireDetector,
-    smokeDetector,
-    heatDetector,
-    waterDetector,
-    gasDetector,
-    alarmSensor,
-    powerAlarmSensor,
-    dayNightIndicator,
+	var_switch,
+	button,
+	level,
+	levelSwitch,
+	windowHandle,
+	contactSensor,
+	occupancySensor,
+	motionDetector,
+	fireDetector,
+	smokeDetector,
+	heatDetector,
+	waterDetector,
+	gasDetector,
+	alarmSensor,
+	powerAlarmSensor,
+	dayNightIndicator,
 };
-bool convertToJson(const SensingTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SensingTypeEnumType &dst);
+bool convertToJson(const SensingTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SensingTypeEnumType &dst);
 
 enum class StateInformationFunctionalityEnumType { // EEBus_SPINE_TS_StateInformation.xsd
-    externalOverrideFromGrid,
-    autonomousGridSupport,
-    islandingMode,
-    balancing,
-    trickleCharging,
-    calibration,
-    commissioningMissing,
-    sleeping,
-    starting,
-    mppt,
-    throttled,
-    shuttingDown,
-    manualShutdown,
+	externalOverrideFromGrid,
+	autonomousGridSupport,
+	islandingMode,
+	balancing,
+	trickleCharging,
+	calibration,
+	commissioningMissing,
+	sleeping,
+	starting,
+	mppt,
+	throttled,
+	shuttingDown,
+	manualShutdown,
 };
-bool convertToJson(const StateInformationFunctionalityEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, StateInformationFunctionalityEnumType &dst);
+bool convertToJson(const StateInformationFunctionalityEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, StateInformationFunctionalityEnumType &dst);
 
 enum class StateInformationFailureEnumType { // EEBus_SPINE_TS_StateInformation.xsd
-    inverterDefective,
-    batteryOvercurrentProtection,
-    pvStringOvercurrentProtection,
-    gridFault,
-    groundFault,
-    acDisconnected,
-    dcDisconnected,
-    cabinetOpen,
-    overTemperature,
-    underTemperature,
-    frequencyAboveLimit,
-    frequencyBelowLimit,
-    acVoltageAboveLimit,
-    acVoltageBelowLimit,
-    dcVoltageAboveLimit,
-    dcVoltageBelowLimit,
-    hardwareTestFailure,
-    genericInternalError,
+	inverterDefective,
+	batteryOvercurrentProtection,
+	pvStringOvercurrentProtection,
+	gridFault,
+	groundFault,
+	acDisconnected,
+	dcDisconnected,
+	cabinetOpen,
+	overTemperature,
+	underTemperature,
+	frequencyAboveLimit,
+	frequencyBelowLimit,
+	acVoltageAboveLimit,
+	acVoltageBelowLimit,
+	dcVoltageAboveLimit,
+	dcVoltageBelowLimit,
+	hardwareTestFailure,
+	genericInternalError,
 };
-bool convertToJson(const StateInformationFailureEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, StateInformationFailureEnumType &dst);
+bool convertToJson(const StateInformationFailureEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, StateInformationFailureEnumType &dst);
 
 enum class StateInformationCategoryEnumType { // EEBus_SPINE_TS_StateInformation.xsd
-    functionality,
-    failure,
+	functionality,
+	failure,
 };
-bool convertToJson(const StateInformationCategoryEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, StateInformationCategoryEnumType &dst);
+bool convertToJson(const StateInformationCategoryEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, StateInformationCategoryEnumType &dst);
 
 enum class SupplyConditionEventTypeEnumType { // EEBus_SPINE_TS_SupplyCondition.xsd
-    thesholdExceeded,
-    fallenBelowThreshold,
-    supplyInterrupt,
-    releaseOfLimitations,
-    otherProblem,
-    gridConditionUpdate,
+	thesholdExceeded,
+	fallenBelowThreshold,
+	supplyInterrupt,
+	releaseOfLimitations,
+	otherProblem,
+	gridConditionUpdate,
 };
-bool convertToJson(const SupplyConditionEventTypeEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SupplyConditionEventTypeEnumType &dst);
+bool convertToJson(const SupplyConditionEventTypeEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionEventTypeEnumType &dst);
 
 enum class SupplyConditionOriginatorEnumType { // EEBus_SPINE_TS_SupplyCondition.xsd
-    externDSO,
-    externSupplier,
-    internalLimit,
-    internalService,
-    internalUser,
+	externDSO,
+	externSupplier,
+	internalLimit,
+	internalService,
+	internalUser,
 };
-bool convertToJson(const SupplyConditionOriginatorEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SupplyConditionOriginatorEnumType &dst);
+bool convertToJson(const SupplyConditionOriginatorEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionOriginatorEnumType &dst);
 
 enum class GridConditionEnumType { // EEBus_SPINE_TS_SupplyCondition.xsd
-    consumptionRed,
-    consumptionYellow,
-    good,
-    productionYellow,
-    productionRed,
+	consumptionRed,
+	consumptionYellow,
+	good,
+	productionYellow,
+	productionRed,
 };
-bool convertToJson(const GridConditionEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, GridConditionEnumType &dst);
+bool convertToJson(const GridConditionEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, GridConditionEnumType &dst);
 
 enum class TaskManagementJobSourceEnumType { // EEBus_SPINE_TS_TaskManagement.xsd
-    internalMechanism,
-    userInteraction,
-    externalConfiguration,
+	internalMechanism,
+	userInteraction,
+	externalConfiguration,
 };
-bool convertToJson(const TaskManagementJobSourceEnumType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobSourceEnumType &dst);
+bool convertToJson(const TaskManagementJobSourceEnumType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobSourceEnumType &dst);
 
 struct MessagingDataType { // EEBus_SPINE_TS_Messaging.xsd
-    std::optional<AbsoluteOrRelativeTimeType> timestamp;
-    std::optional<MessagingNumberType> messagingNumber;
-    std::optional<MessagingTypeType> type;
-    std::optional<MessagingDataTextType> text;
+	std::optional<AbsoluteOrRelativeTimeType> timestamp;
+	std::optional<MessagingNumberType> messagingNumber;
+	std::optional<MessagingTypeType> type;
+	std::optional<MessagingDataTextType> text;
 
-    MessagingDataType() :
-        timestamp(AbsoluteOrRelativeTimeType{}), messagingNumber(MessagingNumberType{}), type(MessagingTypeType{}),
-        text(MessagingDataTextType{})
-    {
-    }
+	MessagingDataType()
+		:
+		timestamp(AbsoluteOrRelativeTimeType{}),
+		messagingNumber(MessagingNumberType{}),
+		type(MessagingTypeType{}),
+		text(MessagingDataTextType{})
+	{}
 };
-bool convertToJson(const MessagingDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MessagingDataType &dst);
+bool convertToJson(const MessagingDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MessagingDataType &dst);
 
 struct ElementTagType { // EEBus_SPINE_TS_CommonDataTypes.xsd
 
-    ElementTagType()
-
-    {
-    }
+	ElementTagType()
+		
+	{}
 };
-bool convertToJson(const ElementTagType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElementTagType &dst);
+bool convertToJson(const ElementTagType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElementTagType &dst);
 
 struct MessagingDataElementsType { // EEBus_SPINE_TS_Messaging.xsd
-    std::optional<ElementTagType> timestamp;
-    std::optional<ElementTagType> messagingNumber;
-    std::optional<ElementTagType> type;
-    std::optional<ElementTagType> text;
+	std::optional<ElementTagType> timestamp;
+	std::optional<ElementTagType> messagingNumber;
+	std::optional<ElementTagType> type;
+	std::optional<ElementTagType> text;
 
-    MessagingDataElementsType() :
-        timestamp(ElementTagType{}), messagingNumber(ElementTagType{}), type(ElementTagType{}), text(ElementTagType{})
-    {
-    }
+	MessagingDataElementsType()
+		:
+		timestamp(ElementTagType{}),
+		messagingNumber(ElementTagType{}),
+		type(ElementTagType{}),
+		text(ElementTagType{})
+	{}
 };
-bool convertToJson(const MessagingDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MessagingDataElementsType &dst);
+bool convertToJson(const MessagingDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MessagingDataElementsType &dst);
 
 struct MessagingListDataType { // EEBus_SPINE_TS_Messaging.xsd
-    std::optional<std::vector<MessagingDataType>> messagingData;
+	std::optional<std::vector<MessagingDataType>> messagingData;
 
-    MessagingListDataType() : messagingData(std::vector<MessagingDataType>{})
-    {
-    }
+	MessagingListDataType()
+		:
+		messagingData(std::vector<MessagingDataType>{})
+	{}
 };
-bool convertToJson(const MessagingListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MessagingListDataType &dst);
+bool convertToJson(const MessagingListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MessagingListDataType &dst);
 
 struct TimestampIntervalType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<AbsoluteOrRelativeTimeType> startTime;
-    std::optional<AbsoluteOrRelativeTimeType> endTime;
+	std::optional<AbsoluteOrRelativeTimeType> startTime;
+	std::optional<AbsoluteOrRelativeTimeType> endTime;
 
-    TimestampIntervalType() : startTime(AbsoluteOrRelativeTimeType{}), endTime(AbsoluteOrRelativeTimeType{})
-    {
-    }
+	TimestampIntervalType()
+		:
+		startTime(AbsoluteOrRelativeTimeType{}),
+		endTime(AbsoluteOrRelativeTimeType{})
+	{}
 };
-bool convertToJson(const TimestampIntervalType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimestampIntervalType &dst);
+bool convertToJson(const TimestampIntervalType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimestampIntervalType &dst);
 
 struct MessagingListDataSelectorsType { // EEBus_SPINE_TS_Messaging.xsd
-    std::optional<TimestampIntervalType> timestampInterval;
-    std::optional<MessagingNumberType> messagingNumber;
+	std::optional<TimestampIntervalType> timestampInterval;
+	std::optional<MessagingNumberType> messagingNumber;
 
-    MessagingListDataSelectorsType() : timestampInterval(TimestampIntervalType{}), messagingNumber(MessagingNumberType{})
-    {
-    }
+	MessagingListDataSelectorsType()
+		:
+		timestampInterval(TimestampIntervalType{}),
+		messagingNumber(MessagingNumberType{})
+	{}
 };
-bool convertToJson(const MessagingListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MessagingListDataSelectorsType &dst);
+bool convertToJson(const MessagingListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MessagingListDataSelectorsType &dst);
 
 struct TimePeriodType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<AbsoluteOrRelativeTimeType> startTime;
-    std::optional<AbsoluteOrRelativeTimeType> endTime;
+	std::optional<AbsoluteOrRelativeTimeType> startTime;
+	std::optional<AbsoluteOrRelativeTimeType> endTime;
 
-    TimePeriodType() : startTime(AbsoluteOrRelativeTimeType{}), endTime(AbsoluteOrRelativeTimeType{})
-    {
-    }
+	TimePeriodType()
+		:
+		startTime(AbsoluteOrRelativeTimeType{}),
+		endTime(AbsoluteOrRelativeTimeType{})
+	{}
 };
-bool convertToJson(const TimePeriodType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimePeriodType &dst);
+bool convertToJson(const TimePeriodType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimePeriodType &dst);
 
 struct TimePeriodElementsType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<ElementTagType> startTime;
-    std::optional<ElementTagType> endTime;
+	std::optional<ElementTagType> startTime;
+	std::optional<ElementTagType> endTime;
 
-    TimePeriodElementsType() : startTime(ElementTagType{}), endTime(ElementTagType{})
-    {
-    }
+	TimePeriodElementsType()
+		:
+		startTime(ElementTagType{}),
+		endTime(ElementTagType{})
+	{}
 };
-bool convertToJson(const TimePeriodElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimePeriodElementsType &dst);
+bool convertToJson(const TimePeriodElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimePeriodElementsType &dst);
 
 struct DaysOfWeekType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<ElementTagType> monday;
-    std::optional<ElementTagType> tuesday;
-    std::optional<ElementTagType> wednesday;
-    std::optional<ElementTagType> thursday;
-    std::optional<ElementTagType> friday;
-    std::optional<ElementTagType> saturday;
-    std::optional<ElementTagType> sunday;
+	std::optional<ElementTagType> monday;
+	std::optional<ElementTagType> tuesday;
+	std::optional<ElementTagType> wednesday;
+	std::optional<ElementTagType> thursday;
+	std::optional<ElementTagType> friday;
+	std::optional<ElementTagType> saturday;
+	std::optional<ElementTagType> sunday;
 
-    DaysOfWeekType() :
-        monday(ElementTagType{}), tuesday(ElementTagType{}), wednesday(ElementTagType{}), thursday(ElementTagType{}),
-        friday(ElementTagType{}), saturday(ElementTagType{}), sunday(ElementTagType{})
-    {
-    }
+	DaysOfWeekType()
+		:
+		monday(ElementTagType{}),
+		tuesday(ElementTagType{}),
+		wednesday(ElementTagType{}),
+		thursday(ElementTagType{}),
+		friday(ElementTagType{}),
+		saturday(ElementTagType{}),
+		sunday(ElementTagType{})
+	{}
 };
-bool convertToJson(const DaysOfWeekType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DaysOfWeekType &dst);
+bool convertToJson(const DaysOfWeekType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DaysOfWeekType &dst);
 
 struct AbsoluteOrRecurringTimeType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<std::string> dateTime;
-    std::optional<MonthType> month;
-    std::optional<DayOfMonthType> dayOfMonth;
-    std::optional<CalendarWeekType> calendarWeek;
-    std::optional<OccurrenceType> dayOfWeekOccurrence;
-    std::optional<DaysOfWeekType> daysOfWeek;
-    std::optional<std::string> time;
-    std::optional<std::string> relative;
+	std::optional<std::string> dateTime;
+	std::optional<MonthType> month;
+	std::optional<DayOfMonthType> dayOfMonth;
+	std::optional<CalendarWeekType> calendarWeek;
+	std::optional<OccurrenceType> dayOfWeekOccurrence;
+	std::optional<DaysOfWeekType> daysOfWeek;
+	std::optional<std::string> time;
+	std::optional<std::string> relative;
 
-    AbsoluteOrRecurringTimeType() :
-        dateTime(std::string{}), month(MonthType{}), dayOfMonth(DayOfMonthType{}), calendarWeek(CalendarWeekType{}),
-        dayOfWeekOccurrence(OccurrenceType{}), daysOfWeek(DaysOfWeekType{}), time(std::string{}), relative(std::string{})
-    {
-    }
+	AbsoluteOrRecurringTimeType()
+		:
+		dateTime(std::string{}),
+		month(MonthType{}),
+		dayOfMonth(DayOfMonthType{}),
+		calendarWeek(CalendarWeekType{}),
+		dayOfWeekOccurrence(OccurrenceType{}),
+		daysOfWeek(DaysOfWeekType{}),
+		time(std::string{}),
+		relative(std::string{})
+	{}
 };
-bool convertToJson(const AbsoluteOrRecurringTimeType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, AbsoluteOrRecurringTimeType &dst);
+bool convertToJson(const AbsoluteOrRecurringTimeType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, AbsoluteOrRecurringTimeType &dst);
 
 struct AbsoluteOrRecurringTimeElementsType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<ElementTagType> dateTime;
-    std::optional<ElementTagType> month;
-    std::optional<ElementTagType> dayOfMonth;
-    std::optional<ElementTagType> calendarWeek;
-    std::optional<ElementTagType> dayOfWeekOccurrence;
-    std::optional<ElementTagType> daysOfWeek;
-    std::optional<ElementTagType> time;
-    std::optional<ElementTagType> relative;
+	std::optional<ElementTagType> dateTime;
+	std::optional<ElementTagType> month;
+	std::optional<ElementTagType> dayOfMonth;
+	std::optional<ElementTagType> calendarWeek;
+	std::optional<ElementTagType> dayOfWeekOccurrence;
+	std::optional<ElementTagType> daysOfWeek;
+	std::optional<ElementTagType> time;
+	std::optional<ElementTagType> relative;
 
-    AbsoluteOrRecurringTimeElementsType() :
-        dateTime(ElementTagType{}), month(ElementTagType{}), dayOfMonth(ElementTagType{}), calendarWeek(ElementTagType{}),
-        dayOfWeekOccurrence(ElementTagType{}), daysOfWeek(ElementTagType{}), time(ElementTagType{}), relative(ElementTagType{})
-    {
-    }
+	AbsoluteOrRecurringTimeElementsType()
+		:
+		dateTime(ElementTagType{}),
+		month(ElementTagType{}),
+		dayOfMonth(ElementTagType{}),
+		calendarWeek(ElementTagType{}),
+		dayOfWeekOccurrence(ElementTagType{}),
+		daysOfWeek(ElementTagType{}),
+		time(ElementTagType{}),
+		relative(ElementTagType{})
+	{}
 };
-bool convertToJson(const AbsoluteOrRecurringTimeElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, AbsoluteOrRecurringTimeElementsType &dst);
+bool convertToJson(const AbsoluteOrRecurringTimeElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, AbsoluteOrRecurringTimeElementsType &dst);
 
 struct RecurrenceInformationType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<RecurringIntervalType> recurringInterval;
-    std::optional<uint32_t> recurringIntervalStep;
-    std::optional<std::string> firstExecution;
-    std::optional<uint32_t> executionCount;
-    std::optional<std::string> lastExecution;
+	std::optional<RecurringIntervalType> recurringInterval;
+	std::optional<uint32_t> recurringIntervalStep;
+	std::optional<std::string> firstExecution;
+	std::optional<uint32_t> executionCount;
+	std::optional<std::string> lastExecution;
 
-    RecurrenceInformationType() :
-        recurringInterval(RecurringIntervalType{}), recurringIntervalStep(uint32_t{}), firstExecution(std::string{}),
-        executionCount(uint32_t{}), lastExecution(std::string{})
-    {
-    }
+	RecurrenceInformationType()
+		:
+		recurringInterval(RecurringIntervalType{}),
+		recurringIntervalStep(uint32_t{}),
+		firstExecution(std::string{}),
+		executionCount(uint32_t{}),
+		lastExecution(std::string{})
+	{}
 };
-bool convertToJson(const RecurrenceInformationType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, RecurrenceInformationType &dst);
+bool convertToJson(const RecurrenceInformationType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, RecurrenceInformationType &dst);
 
 struct RecurrenceInformationElementsType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<ElementTagType> recurringInterval;
-    std::optional<ElementTagType> recurringIntervalStep;
-    std::optional<ElementTagType> firstExecution;
-    std::optional<ElementTagType> executionCount;
-    std::optional<ElementTagType> lastExecution;
+	std::optional<ElementTagType> recurringInterval;
+	std::optional<ElementTagType> recurringIntervalStep;
+	std::optional<ElementTagType> firstExecution;
+	std::optional<ElementTagType> executionCount;
+	std::optional<ElementTagType> lastExecution;
 
-    RecurrenceInformationElementsType() :
-        recurringInterval(ElementTagType{}), recurringIntervalStep(ElementTagType{}), firstExecution(ElementTagType{}),
-        executionCount(ElementTagType{}), lastExecution(ElementTagType{})
-    {
-    }
+	RecurrenceInformationElementsType()
+		:
+		recurringInterval(ElementTagType{}),
+		recurringIntervalStep(ElementTagType{}),
+		firstExecution(ElementTagType{}),
+		executionCount(ElementTagType{}),
+		lastExecution(ElementTagType{})
+	{}
 };
-bool convertToJson(const RecurrenceInformationElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, RecurrenceInformationElementsType &dst);
+bool convertToJson(const RecurrenceInformationElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, RecurrenceInformationElementsType &dst);
 
 struct ScaledNumberType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<NumberType> number;
-    std::optional<ScaleType> scale;
+	std::optional<NumberType> number;
+	std::optional<ScaleType> scale;
 
-    ScaledNumberType() : number(NumberType{}), scale(ScaleType{})
-    {
-    }
+	ScaledNumberType()
+		:
+		number(NumberType{}),
+		scale(ScaleType{})
+	{}
 };
-bool convertToJson(const ScaledNumberType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ScaledNumberType &dst);
+bool convertToJson(const ScaledNumberType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ScaledNumberType &dst);
 
 struct ScaledNumberRangeType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<ScaledNumberType> min;
-    std::optional<ScaledNumberType> max;
+	std::optional<ScaledNumberType> min;
+	std::optional<ScaledNumberType> max;
 
-    ScaledNumberRangeType() : min(ScaledNumberType{}), max(ScaledNumberType{})
-    {
-    }
+	ScaledNumberRangeType()
+		:
+		min(ScaledNumberType{}),
+		max(ScaledNumberType{})
+	{}
 };
-bool convertToJson(const ScaledNumberRangeType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ScaledNumberRangeType &dst);
+bool convertToJson(const ScaledNumberRangeType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ScaledNumberRangeType &dst);
 
 struct ScaledNumberElementsType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<ElementTagType> number;
-    std::optional<ElementTagType> scale;
+	std::optional<ElementTagType> number;
+	std::optional<ElementTagType> scale;
 
-    ScaledNumberElementsType() : number(ElementTagType{}), scale(ElementTagType{})
-    {
-    }
+	ScaledNumberElementsType()
+		:
+		number(ElementTagType{}),
+		scale(ElementTagType{})
+	{}
 };
-bool convertToJson(const ScaledNumberElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ScaledNumberElementsType &dst);
+bool convertToJson(const ScaledNumberElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ScaledNumberElementsType &dst);
 
 struct ScaledNumberRangeElementsType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<ScaledNumberElementsType> min;
-    std::optional<ScaledNumberElementsType> max;
+	std::optional<ScaledNumberElementsType> min;
+	std::optional<ScaledNumberElementsType> max;
 
-    ScaledNumberRangeElementsType() : min(ScaledNumberElementsType{}), max(ScaledNumberElementsType{})
-    {
-    }
+	ScaledNumberRangeElementsType()
+		:
+		min(ScaledNumberElementsType{}),
+		max(ScaledNumberElementsType{})
+	{}
 };
-bool convertToJson(const ScaledNumberRangeElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ScaledNumberRangeElementsType &dst);
+bool convertToJson(const ScaledNumberRangeElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ScaledNumberRangeElementsType &dst);
 
 struct ScaledNumberSetType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<std::vector<ScaledNumberType>> value;
-    std::optional<std::vector<ScaledNumberRangeType>> range;
+	std::optional<std::vector<ScaledNumberType>> value;
+	std::optional<std::vector<ScaledNumberRangeType>> range;
 
-    ScaledNumberSetType() : value(std::vector<ScaledNumberType>{}), range(std::vector<ScaledNumberRangeType>{})
-    {
-    }
+	ScaledNumberSetType()
+		:
+		value(std::vector<ScaledNumberType>{}),
+		range(std::vector<ScaledNumberRangeType>{})
+	{}
 };
-bool convertToJson(const ScaledNumberSetType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ScaledNumberSetType &dst);
+bool convertToJson(const ScaledNumberSetType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ScaledNumberSetType &dst);
 
 struct ScaledNumberSetElementsType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<ScaledNumberElementsType> value;
-    std::optional<ScaledNumberRangeElementsType> range;
+	std::optional<ScaledNumberElementsType> value;
+	std::optional<ScaledNumberRangeElementsType> range;
 
-    ScaledNumberSetElementsType() : value(ScaledNumberElementsType{}), range(ScaledNumberRangeElementsType{})
-    {
-    }
+	ScaledNumberSetElementsType()
+		:
+		value(ScaledNumberElementsType{}),
+		range(ScaledNumberRangeElementsType{})
+	{}
 };
-bool convertToJson(const ScaledNumberSetElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ScaledNumberSetElementsType &dst);
+bool convertToJson(const ScaledNumberSetElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ScaledNumberSetElementsType &dst);
 
 struct DeviceAddressType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<AddressDeviceType> device;
+	std::optional<AddressDeviceType> device;
 
-    DeviceAddressType() : device(AddressDeviceType{})
-    {
-    }
+	DeviceAddressType()
+		:
+		device(AddressDeviceType{})
+	{}
 };
-bool convertToJson(const DeviceAddressType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceAddressType &dst);
+bool convertToJson(const DeviceAddressType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceAddressType &dst);
 
 struct DeviceAddressElementsType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<ElementTagType> device;
+	std::optional<ElementTagType> device;
 
-    DeviceAddressElementsType() : device(ElementTagType{})
-    {
-    }
+	DeviceAddressElementsType()
+		:
+		device(ElementTagType{})
+	{}
 };
-bool convertToJson(const DeviceAddressElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceAddressElementsType &dst);
+bool convertToJson(const DeviceAddressElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceAddressElementsType &dst);
 
 struct EntityAddressType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<AddressDeviceType> device;
-    std::optional<std::vector<AddressEntityType>> entity;
+	std::optional<AddressDeviceType> device;
+	std::optional<std::vector<AddressEntityType>> entity;
 
-    EntityAddressType() : device(AddressDeviceType{}), entity(std::vector<AddressEntityType>{})
-    {
-    }
+	EntityAddressType()
+		:
+		device(AddressDeviceType{}),
+		entity(std::vector<AddressEntityType>{})
+	{}
 };
-bool convertToJson(const EntityAddressType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, EntityAddressType &dst);
+bool convertToJson(const EntityAddressType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, EntityAddressType &dst);
 
 struct EntityAddressElementsType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<ElementTagType> device;
-    std::optional<ElementTagType> entity;
+	std::optional<ElementTagType> device;
+	std::optional<ElementTagType> entity;
 
-    EntityAddressElementsType() : device(ElementTagType{}), entity(ElementTagType{})
-    {
-    }
+	EntityAddressElementsType()
+		:
+		device(ElementTagType{}),
+		entity(ElementTagType{})
+	{}
 };
-bool convertToJson(const EntityAddressElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, EntityAddressElementsType &dst);
+bool convertToJson(const EntityAddressElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, EntityAddressElementsType &dst);
 
 struct FeatureAddressType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<AddressDeviceType> device;
-    std::optional<std::vector<AddressEntityType>> entity;
-    std::optional<AddressFeatureType> feature;
+	std::optional<AddressDeviceType> device;
+	std::optional<std::vector<AddressEntityType>> entity;
+	std::optional<AddressFeatureType> feature;
 
-    FeatureAddressType() : device(AddressDeviceType{}), entity(std::vector<AddressEntityType>{}), feature(AddressFeatureType{})
-    {
-    }
+	FeatureAddressType()
+		:
+		device(AddressDeviceType{}),
+		entity(std::vector<AddressEntityType>{}),
+		feature(AddressFeatureType{})
+	{}
 };
-bool convertToJson(const FeatureAddressType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, FeatureAddressType &dst);
+bool convertToJson(const FeatureAddressType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, FeatureAddressType &dst);
 
 struct FeatureAddressElementsType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<ElementTagType> device;
-    std::optional<ElementTagType> entity;
-    std::optional<ElementTagType> feature;
+	std::optional<ElementTagType> device;
+	std::optional<ElementTagType> entity;
+	std::optional<ElementTagType> feature;
 
-    FeatureAddressElementsType() : device(ElementTagType{}), entity(ElementTagType{}), feature(ElementTagType{})
-    {
-    }
+	FeatureAddressElementsType()
+		:
+		device(ElementTagType{}),
+		entity(ElementTagType{}),
+		feature(ElementTagType{})
+	{}
 };
-bool convertToJson(const FeatureAddressElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, FeatureAddressElementsType &dst);
+bool convertToJson(const FeatureAddressElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, FeatureAddressElementsType &dst);
 
 struct PossibleOperationsClassifierType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<ElementTagType> partial;
+	std::optional<ElementTagType> partial;
 
-    PossibleOperationsClassifierType() : partial(ElementTagType{})
-    {
-    }
+	PossibleOperationsClassifierType()
+		:
+		partial(ElementTagType{})
+	{}
 };
-bool convertToJson(const PossibleOperationsClassifierType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PossibleOperationsClassifierType &dst);
+bool convertToJson(const PossibleOperationsClassifierType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PossibleOperationsClassifierType &dst);
 
 struct PossibleOperationsReadType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<ElementTagType> partial;
+	std::optional<ElementTagType> partial;
 
-    PossibleOperationsReadType() : partial(ElementTagType{})
-    {
-    }
+	PossibleOperationsReadType()
+		:
+		partial(ElementTagType{})
+	{}
 };
-bool convertToJson(const PossibleOperationsReadType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PossibleOperationsReadType &dst);
+bool convertToJson(const PossibleOperationsReadType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PossibleOperationsReadType &dst);
 
 struct PossibleOperationsWriteType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<ElementTagType> partial;
+	std::optional<ElementTagType> partial;
 
-    PossibleOperationsWriteType() : partial(ElementTagType{})
-    {
-    }
+	PossibleOperationsWriteType()
+		:
+		partial(ElementTagType{})
+	{}
 };
-bool convertToJson(const PossibleOperationsWriteType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PossibleOperationsWriteType &dst);
+bool convertToJson(const PossibleOperationsWriteType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PossibleOperationsWriteType &dst);
 
 struct PossibleOperationsType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<PossibleOperationsReadType> read;
-    std::optional<PossibleOperationsWriteType> write;
+	std::optional<PossibleOperationsReadType> read;
+	std::optional<PossibleOperationsWriteType> write;
 
-    PossibleOperationsType() : read(PossibleOperationsReadType{}), write(PossibleOperationsWriteType{})
-    {
-    }
+	PossibleOperationsType()
+		:
+		read(PossibleOperationsReadType{}),
+		write(PossibleOperationsWriteType{})
+	{}
 };
-bool convertToJson(const PossibleOperationsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PossibleOperationsType &dst);
+bool convertToJson(const PossibleOperationsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PossibleOperationsType &dst);
 
 struct PossibleOperationsElementsType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<ElementTagType> read;
-    std::optional<ElementTagType> write;
+	std::optional<ElementTagType> read;
+	std::optional<ElementTagType> write;
 
-    PossibleOperationsElementsType() : read(ElementTagType{}), write(ElementTagType{})
-    {
-    }
+	PossibleOperationsElementsType()
+		:
+		read(ElementTagType{}),
+		write(ElementTagType{})
+	{}
 };
-bool convertToJson(const PossibleOperationsElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PossibleOperationsElementsType &dst);
+bool convertToJson(const PossibleOperationsElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PossibleOperationsElementsType &dst);
 
 struct FunctionPropertyType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<FunctionType> function;
-    std::optional<PossibleOperationsType> possibleOperations;
+	std::optional<FunctionType> function;
+	std::optional<PossibleOperationsType> possibleOperations;
 
-    FunctionPropertyType() : function(FunctionType{}), possibleOperations(PossibleOperationsType{})
-    {
-    }
+	FunctionPropertyType()
+		:
+		function(FunctionType{}),
+		possibleOperations(PossibleOperationsType{})
+	{}
 };
-bool convertToJson(const FunctionPropertyType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, FunctionPropertyType &dst);
+bool convertToJson(const FunctionPropertyType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, FunctionPropertyType &dst);
 
 struct FunctionPropertyElementsType { // EEBus_SPINE_TS_CommonDataTypes.xsd
-    std::optional<ElementTagType> function;
-    std::optional<PossibleOperationsElementsType> possibleOperations;
+	std::optional<ElementTagType> function;
+	std::optional<PossibleOperationsElementsType> possibleOperations;
 
-    FunctionPropertyElementsType() : function(ElementTagType{}), possibleOperations(PossibleOperationsElementsType{})
-    {
-    }
+	FunctionPropertyElementsType()
+		:
+		function(ElementTagType{}),
+		possibleOperations(PossibleOperationsElementsType{})
+	{}
 };
-bool convertToJson(const FunctionPropertyElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, FunctionPropertyElementsType &dst);
+bool convertToJson(const FunctionPropertyElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, FunctionPropertyElementsType &dst);
 
 struct TimeSeriesSlotType { // EEBus_SPINE_TS_TimeSeries.xsd
-    std::optional<TimeSeriesSlotIdType> timeSeriesSlotId;
-    std::optional<TimePeriodType> timePeriod;
-    std::optional<std::string> duration;
-    std::optional<AbsoluteOrRecurringTimeType> recurrenceInformation;
-    std::optional<ScaledNumberType> value;
-    std::optional<ScaledNumberType> minValue;
-    std::optional<ScaledNumberType> maxValue;
+	std::optional<TimeSeriesSlotIdType> timeSeriesSlotId;
+	std::optional<TimePeriodType> timePeriod;
+	std::optional<std::string> duration;
+	std::optional<AbsoluteOrRecurringTimeType> recurrenceInformation;
+	std::optional<ScaledNumberType> value;
+	std::optional<ScaledNumberType> minValue;
+	std::optional<ScaledNumberType> maxValue;
 
-    TimeSeriesSlotType() :
-        timeSeriesSlotId(TimeSeriesSlotIdType{}), timePeriod(TimePeriodType{}), duration(std::string{}),
-        recurrenceInformation(AbsoluteOrRecurringTimeType{}), value(ScaledNumberType{}), minValue(ScaledNumberType{}),
-        maxValue(ScaledNumberType{})
-    {
-    }
+	TimeSeriesSlotType()
+		:
+		timeSeriesSlotId(TimeSeriesSlotIdType{}),
+		timePeriod(TimePeriodType{}),
+		duration(std::string{}),
+		recurrenceInformation(AbsoluteOrRecurringTimeType{}),
+		value(ScaledNumberType{}),
+		minValue(ScaledNumberType{}),
+		maxValue(ScaledNumberType{})
+	{}
 };
-bool convertToJson(const TimeSeriesSlotType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeSeriesSlotType &dst);
+bool convertToJson(const TimeSeriesSlotType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesSlotType &dst);
 
 struct TimeSeriesSlotElementsType { // EEBus_SPINE_TS_TimeSeries.xsd
-    std::optional<ElementTagType> timeSeriesSlotId;
-    std::optional<TimePeriodElementsType> timePeriod;
-    std::optional<ElementTagType> duration;
-    std::optional<AbsoluteOrRecurringTimeElementsType> recurrenceInformation;
-    std::optional<ElementTagType> value;
-    std::optional<ElementTagType> minValue;
-    std::optional<ElementTagType> maxValue;
+	std::optional<ElementTagType> timeSeriesSlotId;
+	std::optional<TimePeriodElementsType> timePeriod;
+	std::optional<ElementTagType> duration;
+	std::optional<AbsoluteOrRecurringTimeElementsType> recurrenceInformation;
+	std::optional<ElementTagType> value;
+	std::optional<ElementTagType> minValue;
+	std::optional<ElementTagType> maxValue;
 
-    TimeSeriesSlotElementsType() :
-        timeSeriesSlotId(ElementTagType{}), timePeriod(TimePeriodElementsType{}), duration(ElementTagType{}),
-        recurrenceInformation(AbsoluteOrRecurringTimeElementsType{}), value(ElementTagType{}), minValue(ElementTagType{}),
-        maxValue(ElementTagType{})
-    {
-    }
+	TimeSeriesSlotElementsType()
+		:
+		timeSeriesSlotId(ElementTagType{}),
+		timePeriod(TimePeriodElementsType{}),
+		duration(ElementTagType{}),
+		recurrenceInformation(AbsoluteOrRecurringTimeElementsType{}),
+		value(ElementTagType{}),
+		minValue(ElementTagType{}),
+		maxValue(ElementTagType{})
+	{}
 };
-bool convertToJson(const TimeSeriesSlotElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeSeriesSlotElementsType &dst);
+bool convertToJson(const TimeSeriesSlotElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesSlotElementsType &dst);
 
 struct TimeSeriesDataType { // EEBus_SPINE_TS_TimeSeries.xsd
-    std::optional<TimeSeriesIdType> timeSeriesId;
-    std::optional<TimePeriodType> timePeriod;
-    std::optional<std::vector<TimeSeriesSlotType>> timeSeriesSlot;
+	std::optional<TimeSeriesIdType> timeSeriesId;
+	std::optional<TimePeriodType> timePeriod;
+	std::optional<std::vector<TimeSeriesSlotType>> timeSeriesSlot;
 
-    TimeSeriesDataType() : timeSeriesId(TimeSeriesIdType{}), timePeriod(TimePeriodType{}), timeSeriesSlot(std::vector<TimeSeriesSlotType>{})
-    {
-    }
+	TimeSeriesDataType()
+		:
+		timeSeriesId(TimeSeriesIdType{}),
+		timePeriod(TimePeriodType{}),
+		timeSeriesSlot(std::vector<TimeSeriesSlotType>{})
+	{}
 };
-bool convertToJson(const TimeSeriesDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeSeriesDataType &dst);
+bool convertToJson(const TimeSeriesDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesDataType &dst);
 
 struct TimeSeriesDataElementsType { // EEBus_SPINE_TS_TimeSeries.xsd
-    std::optional<ElementTagType> timeSeriesId;
-    std::optional<TimePeriodElementsType> timePeriod;
-    std::optional<TimeSeriesSlotElementsType> timeSeriesSlot;
+	std::optional<ElementTagType> timeSeriesId;
+	std::optional<TimePeriodElementsType> timePeriod;
+	std::optional<TimeSeriesSlotElementsType> timeSeriesSlot;
 
-    TimeSeriesDataElementsType() :
-        timeSeriesId(ElementTagType{}), timePeriod(TimePeriodElementsType{}), timeSeriesSlot(TimeSeriesSlotElementsType{})
-    {
-    }
+	TimeSeriesDataElementsType()
+		:
+		timeSeriesId(ElementTagType{}),
+		timePeriod(TimePeriodElementsType{}),
+		timeSeriesSlot(TimeSeriesSlotElementsType{})
+	{}
 };
-bool convertToJson(const TimeSeriesDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeSeriesDataElementsType &dst);
+bool convertToJson(const TimeSeriesDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesDataElementsType &dst);
 
 struct TimeSeriesListDataType { // EEBus_SPINE_TS_TimeSeries.xsd
-    std::optional<std::vector<TimeSeriesDataType>> timeSeriesData;
+	std::optional<std::vector<TimeSeriesDataType>> timeSeriesData;
 
-    TimeSeriesListDataType() : timeSeriesData(std::vector<TimeSeriesDataType>{})
-    {
-    }
+	TimeSeriesListDataType()
+		:
+		timeSeriesData(std::vector<TimeSeriesDataType>{})
+	{}
 };
-bool convertToJson(const TimeSeriesListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeSeriesListDataType &dst);
+bool convertToJson(const TimeSeriesListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesListDataType &dst);
 
 struct TimeSeriesListDataSelectorsType { // EEBus_SPINE_TS_TimeSeries.xsd
-    std::optional<TimeSeriesIdType> timeSeriesId;
-    std::optional<TimeSeriesSlotIdType> timeSeriesSlotId;
+	std::optional<TimeSeriesIdType> timeSeriesId;
+	std::optional<TimeSeriesSlotIdType> timeSeriesSlotId;
 
-    TimeSeriesListDataSelectorsType() : timeSeriesId(TimeSeriesIdType{}), timeSeriesSlotId(TimeSeriesSlotIdType{})
-    {
-    }
+	TimeSeriesListDataSelectorsType()
+		:
+		timeSeriesId(TimeSeriesIdType{}),
+		timeSeriesSlotId(TimeSeriesSlotIdType{})
+	{}
 };
-bool convertToJson(const TimeSeriesListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeSeriesListDataSelectorsType &dst);
+bool convertToJson(const TimeSeriesListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesListDataSelectorsType &dst);
 
 struct TimeSeriesDescriptionDataType { // EEBus_SPINE_TS_TimeSeries.xsd
-    std::optional<TimeSeriesIdType> timeSeriesId;
-    std::optional<TimeSeriesTypeType> timeSeriesType;
-    std::optional<bool> timeSeriesWriteable;
-    std::optional<bool> updateRequired;
-    std::optional<MeasurementIdType> measurementId;
-    std::optional<CurrencyType> currency;
-    std::optional<UnitOfMeasurementType> unit;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
-    std::optional<ScopeTypeType> scopeType;
+	std::optional<TimeSeriesIdType> timeSeriesId;
+	std::optional<TimeSeriesTypeType> timeSeriesType;
+	std::optional<bool> timeSeriesWriteable;
+	std::optional<bool> updateRequired;
+	std::optional<MeasurementIdType> measurementId;
+	std::optional<CurrencyType> currency;
+	std::optional<UnitOfMeasurementType> unit;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
+	std::optional<ScopeTypeType> scopeType;
 
-    TimeSeriesDescriptionDataType() :
-        timeSeriesId(TimeSeriesIdType{}), timeSeriesType(TimeSeriesTypeType{}), timeSeriesWriteable(bool{}), updateRequired(bool{}),
-        measurementId(MeasurementIdType{}), currency(CurrencyType{}), unit(UnitOfMeasurementType{}), label(LabelType{}),
-        description(DescriptionType{}), scopeType(ScopeTypeType{})
-    {
-    }
+	TimeSeriesDescriptionDataType()
+		:
+		timeSeriesId(TimeSeriesIdType{}),
+		timeSeriesType(TimeSeriesTypeType{}),
+		timeSeriesWriteable(bool{}),
+		updateRequired(bool{}),
+		measurementId(MeasurementIdType{}),
+		currency(CurrencyType{}),
+		unit(UnitOfMeasurementType{}),
+		label(LabelType{}),
+		description(DescriptionType{}),
+		scopeType(ScopeTypeType{})
+	{}
 };
-bool convertToJson(const TimeSeriesDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataType &dst);
+bool convertToJson(const TimeSeriesDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesDescriptionDataType &dst);
 
 struct TimeSeriesDescriptionDataElementsType { // EEBus_SPINE_TS_TimeSeries.xsd
-    std::optional<ElementTagType> timeSeriesId;
-    std::optional<ElementTagType> timeSeriesType;
-    std::optional<ElementTagType> timeSeriesWriteable;
-    std::optional<ElementTagType> updateRequired;
-    std::optional<ElementTagType> measurementId;
-    std::optional<ElementTagType> currency;
-    std::optional<ElementTagType> unit;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
-    std::optional<ElementTagType> scopeType;
+	std::optional<ElementTagType> timeSeriesId;
+	std::optional<ElementTagType> timeSeriesType;
+	std::optional<ElementTagType> timeSeriesWriteable;
+	std::optional<ElementTagType> updateRequired;
+	std::optional<ElementTagType> measurementId;
+	std::optional<ElementTagType> currency;
+	std::optional<ElementTagType> unit;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
+	std::optional<ElementTagType> scopeType;
 
-    TimeSeriesDescriptionDataElementsType() :
-        timeSeriesId(ElementTagType{}), timeSeriesType(ElementTagType{}), timeSeriesWriteable(ElementTagType{}),
-        updateRequired(ElementTagType{}), measurementId(ElementTagType{}), currency(ElementTagType{}), unit(ElementTagType{}),
-        label(ElementTagType{}), description(ElementTagType{}), scopeType(ElementTagType{})
-    {
-    }
+	TimeSeriesDescriptionDataElementsType()
+		:
+		timeSeriesId(ElementTagType{}),
+		timeSeriesType(ElementTagType{}),
+		timeSeriesWriteable(ElementTagType{}),
+		updateRequired(ElementTagType{}),
+		measurementId(ElementTagType{}),
+		currency(ElementTagType{}),
+		unit(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{}),
+		scopeType(ElementTagType{})
+	{}
 };
-bool convertToJson(const TimeSeriesDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataElementsType &dst);
+bool convertToJson(const TimeSeriesDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesDescriptionDataElementsType &dst);
 
 struct TimeSeriesDescriptionListDataType { // EEBus_SPINE_TS_TimeSeries.xsd
-    std::optional<std::vector<TimeSeriesDescriptionDataType>> timeSeriesDescriptionData;
+	std::optional<std::vector<TimeSeriesDescriptionDataType>> timeSeriesDescriptionData;
 
-    TimeSeriesDescriptionListDataType() : timeSeriesDescriptionData(std::vector<TimeSeriesDescriptionDataType>{})
-    {
-    }
+	TimeSeriesDescriptionListDataType()
+		:
+		timeSeriesDescriptionData(std::vector<TimeSeriesDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const TimeSeriesDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionListDataType &dst);
+bool convertToJson(const TimeSeriesDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesDescriptionListDataType &dst);
 
 struct TimeSeriesDescriptionListDataSelectorsType { // EEBus_SPINE_TS_TimeSeries.xsd
-    std::optional<TimeSeriesIdType> timeSeriesId;
-    std::optional<TimeSeriesTypeType> timeSeriesType;
-    std::optional<MeasurementIdType> measurementId;
-    std::optional<ScopeTypeType> scopeType;
+	std::optional<TimeSeriesIdType> timeSeriesId;
+	std::optional<TimeSeriesTypeType> timeSeriesType;
+	std::optional<MeasurementIdType> measurementId;
+	std::optional<ScopeTypeType> scopeType;
 
-    TimeSeriesDescriptionListDataSelectorsType() :
-        timeSeriesId(TimeSeriesIdType{}), timeSeriesType(TimeSeriesTypeType{}), measurementId(MeasurementIdType{}),
-        scopeType(ScopeTypeType{})
-    {
-    }
+	TimeSeriesDescriptionListDataSelectorsType()
+		:
+		timeSeriesId(TimeSeriesIdType{}),
+		timeSeriesType(TimeSeriesTypeType{}),
+		measurementId(MeasurementIdType{}),
+		scopeType(ScopeTypeType{})
+	{}
 };
-bool convertToJson(const TimeSeriesDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionListDataSelectorsType &dst);
+bool convertToJson(const TimeSeriesDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesDescriptionListDataSelectorsType &dst);
 
 struct TimeSeriesConstraintsDataType { // EEBus_SPINE_TS_TimeSeries.xsd
-    std::optional<TimeSeriesIdType> timeSeriesId;
-    std::optional<TimeSeriesSlotCountType> slotCountMin;
-    std::optional<TimeSeriesSlotCountType> slotCountMax;
-    std::optional<std::string> slotDurationMin;
-    std::optional<std::string> slotDurationMax;
-    std::optional<std::string> slotDurationStepSize;
-    std::optional<AbsoluteOrRelativeTimeType> earliestTimeSeriesStartTime;
-    std::optional<AbsoluteOrRelativeTimeType> latestTimeSeriesEndTime;
-    std::optional<ScaledNumberType> slotValueMin;
-    std::optional<ScaledNumberType> slotValueMax;
-    std::optional<ScaledNumberType> slotValueStepSize;
+	std::optional<TimeSeriesIdType> timeSeriesId;
+	std::optional<TimeSeriesSlotCountType> slotCountMin;
+	std::optional<TimeSeriesSlotCountType> slotCountMax;
+	std::optional<std::string> slotDurationMin;
+	std::optional<std::string> slotDurationMax;
+	std::optional<std::string> slotDurationStepSize;
+	std::optional<AbsoluteOrRelativeTimeType> earliestTimeSeriesStartTime;
+	std::optional<AbsoluteOrRelativeTimeType> latestTimeSeriesEndTime;
+	std::optional<ScaledNumberType> slotValueMin;
+	std::optional<ScaledNumberType> slotValueMax;
+	std::optional<ScaledNumberType> slotValueStepSize;
 
-    TimeSeriesConstraintsDataType() :
-        timeSeriesId(TimeSeriesIdType{}), slotCountMin(TimeSeriesSlotCountType{}), slotCountMax(TimeSeriesSlotCountType{}),
-        slotDurationMin(std::string{}), slotDurationMax(std::string{}), slotDurationStepSize(std::string{}),
-        earliestTimeSeriesStartTime(AbsoluteOrRelativeTimeType{}), latestTimeSeriesEndTime(AbsoluteOrRelativeTimeType{}),
-        slotValueMin(ScaledNumberType{}), slotValueMax(ScaledNumberType{}), slotValueStepSize(ScaledNumberType{})
-    {
-    }
+	TimeSeriesConstraintsDataType()
+		:
+		timeSeriesId(TimeSeriesIdType{}),
+		slotCountMin(TimeSeriesSlotCountType{}),
+		slotCountMax(TimeSeriesSlotCountType{}),
+		slotDurationMin(std::string{}),
+		slotDurationMax(std::string{}),
+		slotDurationStepSize(std::string{}),
+		earliestTimeSeriesStartTime(AbsoluteOrRelativeTimeType{}),
+		latestTimeSeriesEndTime(AbsoluteOrRelativeTimeType{}),
+		slotValueMin(ScaledNumberType{}),
+		slotValueMax(ScaledNumberType{}),
+		slotValueStepSize(ScaledNumberType{})
+	{}
 };
-bool convertToJson(const TimeSeriesConstraintsDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsDataType &dst);
+bool convertToJson(const TimeSeriesConstraintsDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesConstraintsDataType &dst);
 
 struct TimeSeriesConstraintsDataElementsType { // EEBus_SPINE_TS_TimeSeries.xsd
-    std::optional<ElementTagType> timeSeriesId;
-    std::optional<ElementTagType> slotCountMin;
-    std::optional<ElementTagType> slotCountMax;
-    std::optional<ElementTagType> slotDurationMin;
-    std::optional<ElementTagType> slotDurationMax;
-    std::optional<ElementTagType> slotDurationStepSize;
-    std::optional<ElementTagType> earliestTimeSeriesStartTime;
-    std::optional<ElementTagType> latestTimeSeriesEndTime;
-    std::optional<ScaledNumberElementsType> slotValueMin;
-    std::optional<ScaledNumberElementsType> slotValueMax;
-    std::optional<ScaledNumberElementsType> slotValueStepSize;
+	std::optional<ElementTagType> timeSeriesId;
+	std::optional<ElementTagType> slotCountMin;
+	std::optional<ElementTagType> slotCountMax;
+	std::optional<ElementTagType> slotDurationMin;
+	std::optional<ElementTagType> slotDurationMax;
+	std::optional<ElementTagType> slotDurationStepSize;
+	std::optional<ElementTagType> earliestTimeSeriesStartTime;
+	std::optional<ElementTagType> latestTimeSeriesEndTime;
+	std::optional<ScaledNumberElementsType> slotValueMin;
+	std::optional<ScaledNumberElementsType> slotValueMax;
+	std::optional<ScaledNumberElementsType> slotValueStepSize;
 
-    TimeSeriesConstraintsDataElementsType() :
-        timeSeriesId(ElementTagType{}), slotCountMin(ElementTagType{}), slotCountMax(ElementTagType{}), slotDurationMin(ElementTagType{}),
-        slotDurationMax(ElementTagType{}), slotDurationStepSize(ElementTagType{}), earliestTimeSeriesStartTime(ElementTagType{}),
-        latestTimeSeriesEndTime(ElementTagType{}), slotValueMin(ScaledNumberElementsType{}), slotValueMax(ScaledNumberElementsType{}),
-        slotValueStepSize(ScaledNumberElementsType{})
-    {
-    }
+	TimeSeriesConstraintsDataElementsType()
+		:
+		timeSeriesId(ElementTagType{}),
+		slotCountMin(ElementTagType{}),
+		slotCountMax(ElementTagType{}),
+		slotDurationMin(ElementTagType{}),
+		slotDurationMax(ElementTagType{}),
+		slotDurationStepSize(ElementTagType{}),
+		earliestTimeSeriesStartTime(ElementTagType{}),
+		latestTimeSeriesEndTime(ElementTagType{}),
+		slotValueMin(ScaledNumberElementsType{}),
+		slotValueMax(ScaledNumberElementsType{}),
+		slotValueStepSize(ScaledNumberElementsType{})
+	{}
 };
-bool convertToJson(const TimeSeriesConstraintsDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsDataElementsType &dst);
+bool convertToJson(const TimeSeriesConstraintsDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesConstraintsDataElementsType &dst);
 
 struct TimeSeriesConstraintsListDataType { // EEBus_SPINE_TS_TimeSeries.xsd
-    std::optional<std::vector<TimeSeriesConstraintsDataType>> timeSeriesConstraintsData;
+	std::optional<std::vector<TimeSeriesConstraintsDataType>> timeSeriesConstraintsData;
 
-    TimeSeriesConstraintsListDataType() : timeSeriesConstraintsData(std::vector<TimeSeriesConstraintsDataType>{})
-    {
-    }
+	TimeSeriesConstraintsListDataType()
+		:
+		timeSeriesConstraintsData(std::vector<TimeSeriesConstraintsDataType>{})
+	{}
 };
-bool convertToJson(const TimeSeriesConstraintsListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsListDataType &dst);
+bool convertToJson(const TimeSeriesConstraintsListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesConstraintsListDataType &dst);
 
 struct TimeSeriesConstraintsListDataSelectorsType { // EEBus_SPINE_TS_TimeSeries.xsd
-    std::optional<TimeSeriesIdType> timeSeriesId;
+	std::optional<TimeSeriesIdType> timeSeriesId;
 
-    TimeSeriesConstraintsListDataSelectorsType() : timeSeriesId(TimeSeriesIdType{})
-    {
-    }
+	TimeSeriesConstraintsListDataSelectorsType()
+		:
+		timeSeriesId(TimeSeriesIdType{})
+	{}
 };
-bool convertToJson(const TimeSeriesConstraintsListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsListDataSelectorsType &dst);
+bool convertToJson(const TimeSeriesConstraintsListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesConstraintsListDataSelectorsType &dst);
 
 struct MeasurementDataType { // EEBus_SPINE_TS_Measurement.xsd
-    std::optional<MeasurementIdType> measurementId;
-    std::optional<MeasurementValueTypeType> valueType;
-    std::optional<AbsoluteOrRelativeTimeType> timestamp;
-    std::optional<ScaledNumberType> value;
-    std::optional<TimePeriodType> evaluationPeriod;
-    std::optional<MeasurementValueSourceType> valueSource;
-    std::optional<MeasurementValueTendencyType> valueTendency;
-    std::optional<MeasurementValueStateType> valueState;
+	std::optional<MeasurementIdType> measurementId;
+	std::optional<MeasurementValueTypeType> valueType;
+	std::optional<AbsoluteOrRelativeTimeType> timestamp;
+	std::optional<ScaledNumberType> value;
+	std::optional<TimePeriodType> evaluationPeriod;
+	std::optional<MeasurementValueSourceType> valueSource;
+	std::optional<MeasurementValueTendencyType> valueTendency;
+	std::optional<MeasurementValueStateType> valueState;
 
-    MeasurementDataType() :
-        measurementId(MeasurementIdType{}), valueType(MeasurementValueTypeType{}), timestamp(AbsoluteOrRelativeTimeType{}),
-        value(ScaledNumberType{}), evaluationPeriod(TimePeriodType{}), valueSource(MeasurementValueSourceType{}),
-        valueTendency(MeasurementValueTendencyType{}), valueState(MeasurementValueStateType{})
-    {
-    }
+	MeasurementDataType()
+		:
+		measurementId(MeasurementIdType{}),
+		valueType(MeasurementValueTypeType{}),
+		timestamp(AbsoluteOrRelativeTimeType{}),
+		value(ScaledNumberType{}),
+		evaluationPeriod(TimePeriodType{}),
+		valueSource(MeasurementValueSourceType{}),
+		valueTendency(MeasurementValueTendencyType{}),
+		valueState(MeasurementValueStateType{})
+	{}
 };
-bool convertToJson(const MeasurementDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementDataType &dst);
+bool convertToJson(const MeasurementDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementDataType &dst);
 
 struct MeasurementDataElementsType { // EEBus_SPINE_TS_Measurement.xsd
-    std::optional<ElementTagType> measurementId;
-    std::optional<ElementTagType> valueType;
-    std::optional<ElementTagType> timestamp;
-    std::optional<ScaledNumberElementsType> value;
-    std::optional<TimePeriodElementsType> evaluationPeriod;
-    std::optional<ElementTagType> valueSource;
-    std::optional<ElementTagType> valueTendency;
-    std::optional<ElementTagType> valueState;
+	std::optional<ElementTagType> measurementId;
+	std::optional<ElementTagType> valueType;
+	std::optional<ElementTagType> timestamp;
+	std::optional<ScaledNumberElementsType> value;
+	std::optional<TimePeriodElementsType> evaluationPeriod;
+	std::optional<ElementTagType> valueSource;
+	std::optional<ElementTagType> valueTendency;
+	std::optional<ElementTagType> valueState;
 
-    MeasurementDataElementsType() :
-        measurementId(ElementTagType{}), valueType(ElementTagType{}), timestamp(ElementTagType{}), value(ScaledNumberElementsType{}),
-        evaluationPeriod(TimePeriodElementsType{}), valueSource(ElementTagType{}), valueTendency(ElementTagType{}),
-        valueState(ElementTagType{})
-    {
-    }
+	MeasurementDataElementsType()
+		:
+		measurementId(ElementTagType{}),
+		valueType(ElementTagType{}),
+		timestamp(ElementTagType{}),
+		value(ScaledNumberElementsType{}),
+		evaluationPeriod(TimePeriodElementsType{}),
+		valueSource(ElementTagType{}),
+		valueTendency(ElementTagType{}),
+		valueState(ElementTagType{})
+	{}
 };
-bool convertToJson(const MeasurementDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementDataElementsType &dst);
+bool convertToJson(const MeasurementDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementDataElementsType &dst);
 
 struct MeasurementListDataType { // EEBus_SPINE_TS_Measurement.xsd
-    std::optional<std::vector<MeasurementDataType>> measurementData;
+	std::optional<std::vector<MeasurementDataType>> measurementData;
 
-    MeasurementListDataType() : measurementData(std::vector<MeasurementDataType>{})
-    {
-    }
+	MeasurementListDataType()
+		:
+		measurementData(std::vector<MeasurementDataType>{})
+	{}
 };
-bool convertToJson(const MeasurementListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementListDataType &dst);
+bool convertToJson(const MeasurementListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementListDataType &dst);
 
 struct MeasurementListDataSelectorsType { // EEBus_SPINE_TS_Measurement.xsd
-    std::optional<MeasurementIdType> measurementId;
-    std::optional<MeasurementValueTypeType> valueType;
-    std::optional<TimestampIntervalType> timestampInterval;
+	std::optional<MeasurementIdType> measurementId;
+	std::optional<MeasurementValueTypeType> valueType;
+	std::optional<TimestampIntervalType> timestampInterval;
 
-    MeasurementListDataSelectorsType() :
-        measurementId(MeasurementIdType{}), valueType(MeasurementValueTypeType{}), timestampInterval(TimestampIntervalType{})
-    {
-    }
+	MeasurementListDataSelectorsType()
+		:
+		measurementId(MeasurementIdType{}),
+		valueType(MeasurementValueTypeType{}),
+		timestampInterval(TimestampIntervalType{})
+	{}
 };
-bool convertToJson(const MeasurementListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementListDataSelectorsType &dst);
+bool convertToJson(const MeasurementListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementListDataSelectorsType &dst);
 
 struct MeasurementSeriesDataType { // EEBus_SPINE_TS_Measurement.xsd
-    std::optional<MeasurementIdType> measurementId;
-    std::optional<MeasurementValueTypeType> valueType;
-    std::optional<AbsoluteOrRelativeTimeType> timestamp;
-    std::optional<ScaledNumberType> value;
-    std::optional<TimePeriodType> evaluationPeriod;
-    std::optional<MeasurementValueSourceType> valueSource;
-    std::optional<MeasurementValueTendencyType> valueTendency;
-    std::optional<MeasurementValueStateType> valueState;
+	std::optional<MeasurementIdType> measurementId;
+	std::optional<MeasurementValueTypeType> valueType;
+	std::optional<AbsoluteOrRelativeTimeType> timestamp;
+	std::optional<ScaledNumberType> value;
+	std::optional<TimePeriodType> evaluationPeriod;
+	std::optional<MeasurementValueSourceType> valueSource;
+	std::optional<MeasurementValueTendencyType> valueTendency;
+	std::optional<MeasurementValueStateType> valueState;
 
-    MeasurementSeriesDataType() :
-        measurementId(MeasurementIdType{}), valueType(MeasurementValueTypeType{}), timestamp(AbsoluteOrRelativeTimeType{}),
-        value(ScaledNumberType{}), evaluationPeriod(TimePeriodType{}), valueSource(MeasurementValueSourceType{}),
-        valueTendency(MeasurementValueTendencyType{}), valueState(MeasurementValueStateType{})
-    {
-    }
+	MeasurementSeriesDataType()
+		:
+		measurementId(MeasurementIdType{}),
+		valueType(MeasurementValueTypeType{}),
+		timestamp(AbsoluteOrRelativeTimeType{}),
+		value(ScaledNumberType{}),
+		evaluationPeriod(TimePeriodType{}),
+		valueSource(MeasurementValueSourceType{}),
+		valueTendency(MeasurementValueTendencyType{}),
+		valueState(MeasurementValueStateType{})
+	{}
 };
-bool convertToJson(const MeasurementSeriesDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementSeriesDataType &dst);
+bool convertToJson(const MeasurementSeriesDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementSeriesDataType &dst);
 
 struct MeasurementSeriesDataElementsType { // EEBus_SPINE_TS_Measurement.xsd
-    std::optional<ElementTagType> measurementId;
-    std::optional<ElementTagType> valueType;
-    std::optional<ElementTagType> timestamp;
-    std::optional<ScaledNumberElementsType> value;
-    std::optional<TimePeriodElementsType> evaluationPeriod;
-    std::optional<ElementTagType> valueSource;
-    std::optional<ElementTagType> valueTendency;
-    std::optional<ElementTagType> valueState;
+	std::optional<ElementTagType> measurementId;
+	std::optional<ElementTagType> valueType;
+	std::optional<ElementTagType> timestamp;
+	std::optional<ScaledNumberElementsType> value;
+	std::optional<TimePeriodElementsType> evaluationPeriod;
+	std::optional<ElementTagType> valueSource;
+	std::optional<ElementTagType> valueTendency;
+	std::optional<ElementTagType> valueState;
 
-    MeasurementSeriesDataElementsType() :
-        measurementId(ElementTagType{}), valueType(ElementTagType{}), timestamp(ElementTagType{}), value(ScaledNumberElementsType{}),
-        evaluationPeriod(TimePeriodElementsType{}), valueSource(ElementTagType{}), valueTendency(ElementTagType{}),
-        valueState(ElementTagType{})
-    {
-    }
+	MeasurementSeriesDataElementsType()
+		:
+		measurementId(ElementTagType{}),
+		valueType(ElementTagType{}),
+		timestamp(ElementTagType{}),
+		value(ScaledNumberElementsType{}),
+		evaluationPeriod(TimePeriodElementsType{}),
+		valueSource(ElementTagType{}),
+		valueTendency(ElementTagType{}),
+		valueState(ElementTagType{})
+	{}
 };
-bool convertToJson(const MeasurementSeriesDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementSeriesDataElementsType &dst);
+bool convertToJson(const MeasurementSeriesDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementSeriesDataElementsType &dst);
 
 struct MeasurementSeriesListDataType { // EEBus_SPINE_TS_Measurement.xsd
-    std::optional<std::vector<MeasurementSeriesDataType>> measurementSeriesData;
+	std::optional<std::vector<MeasurementSeriesDataType>> measurementSeriesData;
 
-    MeasurementSeriesListDataType() : measurementSeriesData(std::vector<MeasurementSeriesDataType>{})
-    {
-    }
+	MeasurementSeriesListDataType()
+		:
+		measurementSeriesData(std::vector<MeasurementSeriesDataType>{})
+	{}
 };
-bool convertToJson(const MeasurementSeriesListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementSeriesListDataType &dst);
+bool convertToJson(const MeasurementSeriesListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementSeriesListDataType &dst);
 
 struct MeasurementSeriesListDataSelectorsType { // EEBus_SPINE_TS_Measurement.xsd
-    std::optional<MeasurementIdType> measurementId;
-    std::optional<MeasurementValueTypeType> valueType;
-    std::optional<TimestampIntervalType> timestampInterval;
+	std::optional<MeasurementIdType> measurementId;
+	std::optional<MeasurementValueTypeType> valueType;
+	std::optional<TimestampIntervalType> timestampInterval;
 
-    MeasurementSeriesListDataSelectorsType() :
-        measurementId(MeasurementIdType{}), valueType(MeasurementValueTypeType{}), timestampInterval(TimestampIntervalType{})
-    {
-    }
+	MeasurementSeriesListDataSelectorsType()
+		:
+		measurementId(MeasurementIdType{}),
+		valueType(MeasurementValueTypeType{}),
+		timestampInterval(TimestampIntervalType{})
+	{}
 };
-bool convertToJson(const MeasurementSeriesListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementSeriesListDataSelectorsType &dst);
+bool convertToJson(const MeasurementSeriesListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementSeriesListDataSelectorsType &dst);
 
 struct MeasurementConstraintsDataType { // EEBus_SPINE_TS_Measurement.xsd
-    std::optional<MeasurementIdType> measurementId;
-    std::optional<ScaledNumberType> valueRangeMin;
-    std::optional<ScaledNumberType> valueRangeMax;
-    std::optional<ScaledNumberType> valueStepSize;
+	std::optional<MeasurementIdType> measurementId;
+	std::optional<ScaledNumberType> valueRangeMin;
+	std::optional<ScaledNumberType> valueRangeMax;
+	std::optional<ScaledNumberType> valueStepSize;
 
-    MeasurementConstraintsDataType() :
-        measurementId(MeasurementIdType{}), valueRangeMin(ScaledNumberType{}), valueRangeMax(ScaledNumberType{}),
-        valueStepSize(ScaledNumberType{})
-    {
-    }
+	MeasurementConstraintsDataType()
+		:
+		measurementId(MeasurementIdType{}),
+		valueRangeMin(ScaledNumberType{}),
+		valueRangeMax(ScaledNumberType{}),
+		valueStepSize(ScaledNumberType{})
+	{}
 };
-bool convertToJson(const MeasurementConstraintsDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsDataType &dst);
+bool convertToJson(const MeasurementConstraintsDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementConstraintsDataType &dst);
 
 struct MeasurementConstraintsDataElementsType { // EEBus_SPINE_TS_Measurement.xsd
-    std::optional<ElementTagType> measurementId;
-    std::optional<ScaledNumberElementsType> valueRangeMin;
-    std::optional<ScaledNumberElementsType> valueRangeMax;
-    std::optional<ScaledNumberElementsType> valueStepSize;
+	std::optional<ElementTagType> measurementId;
+	std::optional<ScaledNumberElementsType> valueRangeMin;
+	std::optional<ScaledNumberElementsType> valueRangeMax;
+	std::optional<ScaledNumberElementsType> valueStepSize;
 
-    MeasurementConstraintsDataElementsType() :
-        measurementId(ElementTagType{}), valueRangeMin(ScaledNumberElementsType{}), valueRangeMax(ScaledNumberElementsType{}),
-        valueStepSize(ScaledNumberElementsType{})
-    {
-    }
+	MeasurementConstraintsDataElementsType()
+		:
+		measurementId(ElementTagType{}),
+		valueRangeMin(ScaledNumberElementsType{}),
+		valueRangeMax(ScaledNumberElementsType{}),
+		valueStepSize(ScaledNumberElementsType{})
+	{}
 };
-bool convertToJson(const MeasurementConstraintsDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsDataElementsType &dst);
+bool convertToJson(const MeasurementConstraintsDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementConstraintsDataElementsType &dst);
 
 struct MeasurementConstraintsListDataType { // EEBus_SPINE_TS_Measurement.xsd
-    std::optional<std::vector<MeasurementConstraintsDataType>> measurementConstraintsData;
+	std::optional<std::vector<MeasurementConstraintsDataType>> measurementConstraintsData;
 
-    MeasurementConstraintsListDataType() : measurementConstraintsData(std::vector<MeasurementConstraintsDataType>{})
-    {
-    }
+	MeasurementConstraintsListDataType()
+		:
+		measurementConstraintsData(std::vector<MeasurementConstraintsDataType>{})
+	{}
 };
-bool convertToJson(const MeasurementConstraintsListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsListDataType &dst);
+bool convertToJson(const MeasurementConstraintsListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementConstraintsListDataType &dst);
 
 struct MeasurementConstraintsListDataSelectorsType { // EEBus_SPINE_TS_Measurement.xsd
-    std::optional<MeasurementIdType> measurementId;
+	std::optional<MeasurementIdType> measurementId;
 
-    MeasurementConstraintsListDataSelectorsType() : measurementId(MeasurementIdType{})
-    {
-    }
+	MeasurementConstraintsListDataSelectorsType()
+		:
+		measurementId(MeasurementIdType{})
+	{}
 };
-bool convertToJson(const MeasurementConstraintsListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsListDataSelectorsType &dst);
+bool convertToJson(const MeasurementConstraintsListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementConstraintsListDataSelectorsType &dst);
 
 struct MeasurementDescriptionDataType { // EEBus_SPINE_TS_Measurement.xsd
-    std::optional<MeasurementIdType> measurementId;
-    std::optional<MeasurementTypeType> measurementType;
-    std::optional<CommodityTypeType> commodityType;
-    std::optional<UnitOfMeasurementType> unit;
-    std::optional<ScaledNumberType> calibrationValue;
-    std::optional<ScopeTypeType> scopeType;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<MeasurementIdType> measurementId;
+	std::optional<MeasurementTypeType> measurementType;
+	std::optional<CommodityTypeType> commodityType;
+	std::optional<UnitOfMeasurementType> unit;
+	std::optional<ScaledNumberType> calibrationValue;
+	std::optional<ScopeTypeType> scopeType;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    MeasurementDescriptionDataType() :
-        measurementId(MeasurementIdType{}), measurementType(MeasurementTypeType{}), commodityType(CommodityTypeType{}),
-        unit(UnitOfMeasurementType{}), calibrationValue(ScaledNumberType{}), scopeType(ScopeTypeType{}), label(LabelType{}),
-        description(DescriptionType{})
-    {
-    }
+	MeasurementDescriptionDataType()
+		:
+		measurementId(MeasurementIdType{}),
+		measurementType(MeasurementTypeType{}),
+		commodityType(CommodityTypeType{}),
+		unit(UnitOfMeasurementType{}),
+		calibrationValue(ScaledNumberType{}),
+		scopeType(ScopeTypeType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const MeasurementDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionDataType &dst);
+bool convertToJson(const MeasurementDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementDescriptionDataType &dst);
 
 struct MeasurementDescriptionDataElementsType { // EEBus_SPINE_TS_Measurement.xsd
-    std::optional<ElementTagType> measurementId;
-    std::optional<ElementTagType> measurementType;
-    std::optional<ElementTagType> commodityType;
-    std::optional<ElementTagType> unit;
-    std::optional<ScaledNumberElementsType> calibrationValue;
-    std::optional<ElementTagType> scopeType;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> measurementId;
+	std::optional<ElementTagType> measurementType;
+	std::optional<ElementTagType> commodityType;
+	std::optional<ElementTagType> unit;
+	std::optional<ScaledNumberElementsType> calibrationValue;
+	std::optional<ElementTagType> scopeType;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    MeasurementDescriptionDataElementsType() :
-        measurementId(ElementTagType{}), measurementType(ElementTagType{}), commodityType(ElementTagType{}), unit(ElementTagType{}),
-        calibrationValue(ScaledNumberElementsType{}), scopeType(ElementTagType{}), label(ElementTagType{}), description(ElementTagType{})
-    {
-    }
+	MeasurementDescriptionDataElementsType()
+		:
+		measurementId(ElementTagType{}),
+		measurementType(ElementTagType{}),
+		commodityType(ElementTagType{}),
+		unit(ElementTagType{}),
+		calibrationValue(ScaledNumberElementsType{}),
+		scopeType(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const MeasurementDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionDataElementsType &dst);
+bool convertToJson(const MeasurementDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementDescriptionDataElementsType &dst);
 
 struct MeasurementDescriptionListDataType { // EEBus_SPINE_TS_Measurement.xsd
-    std::optional<std::vector<MeasurementDescriptionDataType>> measurementDescriptionData;
+	std::optional<std::vector<MeasurementDescriptionDataType>> measurementDescriptionData;
 
-    MeasurementDescriptionListDataType() : measurementDescriptionData(std::vector<MeasurementDescriptionDataType>{})
-    {
-    }
+	MeasurementDescriptionListDataType()
+		:
+		measurementDescriptionData(std::vector<MeasurementDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const MeasurementDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionListDataType &dst);
+bool convertToJson(const MeasurementDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementDescriptionListDataType &dst);
 
 struct MeasurementDescriptionListDataSelectorsType { // EEBus_SPINE_TS_Measurement.xsd
-    std::optional<MeasurementIdType> measurementId;
-    std::optional<MeasurementTypeType> measurementType;
-    std::optional<CommodityTypeType> commodityType;
-    std::optional<ScopeTypeType> scopeType;
+	std::optional<MeasurementIdType> measurementId;
+	std::optional<MeasurementTypeType> measurementType;
+	std::optional<CommodityTypeType> commodityType;
+	std::optional<ScopeTypeType> scopeType;
 
-    MeasurementDescriptionListDataSelectorsType() :
-        measurementId(MeasurementIdType{}), measurementType(MeasurementTypeType{}), commodityType(CommodityTypeType{}),
-        scopeType(ScopeTypeType{})
-    {
-    }
+	MeasurementDescriptionListDataSelectorsType()
+		:
+		measurementId(MeasurementIdType{}),
+		measurementType(MeasurementTypeType{}),
+		commodityType(CommodityTypeType{}),
+		scopeType(ScopeTypeType{})
+	{}
 };
-bool convertToJson(const MeasurementDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionListDataSelectorsType &dst);
+bool convertToJson(const MeasurementDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementDescriptionListDataSelectorsType &dst);
 
 struct MeasurementThresholdRelationDataType { // EEBus_SPINE_TS_Measurement.xsd
-    std::optional<MeasurementIdType> measurementId;
-    std::optional<std::vector<ThresholdIdType>> thresholdId;
+	std::optional<MeasurementIdType> measurementId;
+	std::optional<std::vector<ThresholdIdType>> thresholdId;
 
-    MeasurementThresholdRelationDataType() : measurementId(MeasurementIdType{}), thresholdId(std::vector<ThresholdIdType>{})
-    {
-    }
+	MeasurementThresholdRelationDataType()
+		:
+		measurementId(MeasurementIdType{}),
+		thresholdId(std::vector<ThresholdIdType>{})
+	{}
 };
-bool convertToJson(const MeasurementThresholdRelationDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationDataType &dst);
+bool convertToJson(const MeasurementThresholdRelationDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementThresholdRelationDataType &dst);
 
 struct MeasurementThresholdRelationDataElementsType { // EEBus_SPINE_TS_Measurement.xsd
-    std::optional<ElementTagType> measurementId;
-    std::optional<ElementTagType> thresholdId;
+	std::optional<ElementTagType> measurementId;
+	std::optional<ElementTagType> thresholdId;
 
-    MeasurementThresholdRelationDataElementsType() : measurementId(ElementTagType{}), thresholdId(ElementTagType{})
-    {
-    }
+	MeasurementThresholdRelationDataElementsType()
+		:
+		measurementId(ElementTagType{}),
+		thresholdId(ElementTagType{})
+	{}
 };
-bool convertToJson(const MeasurementThresholdRelationDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationDataElementsType &dst);
+bool convertToJson(const MeasurementThresholdRelationDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementThresholdRelationDataElementsType &dst);
 
 struct MeasurementThresholdRelationListDataType { // EEBus_SPINE_TS_Measurement.xsd
-    std::optional<std::vector<MeasurementThresholdRelationDataType>> measurementThresholdRelationData;
+	std::optional<std::vector<MeasurementThresholdRelationDataType>> measurementThresholdRelationData;
 
-    MeasurementThresholdRelationListDataType() : measurementThresholdRelationData(std::vector<MeasurementThresholdRelationDataType>{})
-    {
-    }
+	MeasurementThresholdRelationListDataType()
+		:
+		measurementThresholdRelationData(std::vector<MeasurementThresholdRelationDataType>{})
+	{}
 };
-bool convertToJson(const MeasurementThresholdRelationListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationListDataType &dst);
+bool convertToJson(const MeasurementThresholdRelationListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementThresholdRelationListDataType &dst);
 
 struct MeasurementThresholdRelationListDataSelectorsType { // EEBus_SPINE_TS_Measurement.xsd
-    std::optional<MeasurementIdType> measurementId;
-    std::optional<ThresholdIdType> thresholdId;
+	std::optional<MeasurementIdType> measurementId;
+	std::optional<ThresholdIdType> thresholdId;
 
-    MeasurementThresholdRelationListDataSelectorsType() : measurementId(MeasurementIdType{}), thresholdId(ThresholdIdType{})
-    {
-    }
+	MeasurementThresholdRelationListDataSelectorsType()
+		:
+		measurementId(MeasurementIdType{}),
+		thresholdId(ThresholdIdType{})
+	{}
 };
-bool convertToJson(const MeasurementThresholdRelationListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationListDataSelectorsType &dst);
+bool convertToJson(const MeasurementThresholdRelationListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementThresholdRelationListDataSelectorsType &dst);
 
 struct ThresholdDataType { // EEBus_SPINE_TS_Threshold.xsd
-    std::optional<ThresholdIdType> thresholdId;
-    std::optional<ScaledNumberType> thresholdValue;
+	std::optional<ThresholdIdType> thresholdId;
+	std::optional<ScaledNumberType> thresholdValue;
 
-    ThresholdDataType() : thresholdId(ThresholdIdType{}), thresholdValue(ScaledNumberType{})
-    {
-    }
+	ThresholdDataType()
+		:
+		thresholdId(ThresholdIdType{}),
+		thresholdValue(ScaledNumberType{})
+	{}
 };
-bool convertToJson(const ThresholdDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ThresholdDataType &dst);
+bool convertToJson(const ThresholdDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdDataType &dst);
 
 struct ThresholdDataElementsType { // EEBus_SPINE_TS_Threshold.xsd
-    std::optional<ElementTagType> thresholdId;
-    std::optional<ScaledNumberElementsType> thresholdValue;
+	std::optional<ElementTagType> thresholdId;
+	std::optional<ScaledNumberElementsType> thresholdValue;
 
-    ThresholdDataElementsType() : thresholdId(ElementTagType{}), thresholdValue(ScaledNumberElementsType{})
-    {
-    }
+	ThresholdDataElementsType()
+		:
+		thresholdId(ElementTagType{}),
+		thresholdValue(ScaledNumberElementsType{})
+	{}
 };
-bool convertToJson(const ThresholdDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ThresholdDataElementsType &dst);
+bool convertToJson(const ThresholdDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdDataElementsType &dst);
 
 struct ThresholdListDataType { // EEBus_SPINE_TS_Threshold.xsd
-    std::optional<std::vector<ThresholdDataType>> thresholdData;
+	std::optional<std::vector<ThresholdDataType>> thresholdData;
 
-    ThresholdListDataType() : thresholdData(std::vector<ThresholdDataType>{})
-    {
-    }
+	ThresholdListDataType()
+		:
+		thresholdData(std::vector<ThresholdDataType>{})
+	{}
 };
-bool convertToJson(const ThresholdListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ThresholdListDataType &dst);
+bool convertToJson(const ThresholdListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdListDataType &dst);
 
 struct ThresholdListDataSelectorsType { // EEBus_SPINE_TS_Threshold.xsd
-    std::optional<ThresholdIdType> thresholdId;
+	std::optional<ThresholdIdType> thresholdId;
 
-    ThresholdListDataSelectorsType() : thresholdId(ThresholdIdType{})
-    {
-    }
+	ThresholdListDataSelectorsType()
+		:
+		thresholdId(ThresholdIdType{})
+	{}
 };
-bool convertToJson(const ThresholdListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ThresholdListDataSelectorsType &dst);
+bool convertToJson(const ThresholdListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdListDataSelectorsType &dst);
 
 struct ThresholdConstraintsDataType { // EEBus_SPINE_TS_Threshold.xsd
-    std::optional<ThresholdIdType> thresholdId;
-    std::optional<ScaledNumberType> thresholdRangeMin;
-    std::optional<ScaledNumberType> thresholdRangeMax;
-    std::optional<ScaledNumberType> thresholdStepSize;
+	std::optional<ThresholdIdType> thresholdId;
+	std::optional<ScaledNumberType> thresholdRangeMin;
+	std::optional<ScaledNumberType> thresholdRangeMax;
+	std::optional<ScaledNumberType> thresholdStepSize;
 
-    ThresholdConstraintsDataType() :
-        thresholdId(ThresholdIdType{}), thresholdRangeMin(ScaledNumberType{}), thresholdRangeMax(ScaledNumberType{}),
-        thresholdStepSize(ScaledNumberType{})
-    {
-    }
+	ThresholdConstraintsDataType()
+		:
+		thresholdId(ThresholdIdType{}),
+		thresholdRangeMin(ScaledNumberType{}),
+		thresholdRangeMax(ScaledNumberType{}),
+		thresholdStepSize(ScaledNumberType{})
+	{}
 };
-bool convertToJson(const ThresholdConstraintsDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsDataType &dst);
+bool convertToJson(const ThresholdConstraintsDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdConstraintsDataType &dst);
 
 struct ThresholdConstraintsDataElementsType { // EEBus_SPINE_TS_Threshold.xsd
-    std::optional<ElementTagType> thresholdId;
-    std::optional<ScaledNumberElementsType> thresholdRangeMin;
-    std::optional<ScaledNumberElementsType> thresholdRangeMax;
-    std::optional<ScaledNumberElementsType> thresholdStepSize;
+	std::optional<ElementTagType> thresholdId;
+	std::optional<ScaledNumberElementsType> thresholdRangeMin;
+	std::optional<ScaledNumberElementsType> thresholdRangeMax;
+	std::optional<ScaledNumberElementsType> thresholdStepSize;
 
-    ThresholdConstraintsDataElementsType() :
-        thresholdId(ElementTagType{}), thresholdRangeMin(ScaledNumberElementsType{}), thresholdRangeMax(ScaledNumberElementsType{}),
-        thresholdStepSize(ScaledNumberElementsType{})
-    {
-    }
+	ThresholdConstraintsDataElementsType()
+		:
+		thresholdId(ElementTagType{}),
+		thresholdRangeMin(ScaledNumberElementsType{}),
+		thresholdRangeMax(ScaledNumberElementsType{}),
+		thresholdStepSize(ScaledNumberElementsType{})
+	{}
 };
-bool convertToJson(const ThresholdConstraintsDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsDataElementsType &dst);
+bool convertToJson(const ThresholdConstraintsDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdConstraintsDataElementsType &dst);
 
 struct ThresholdConstraintsListDataType { // EEBus_SPINE_TS_Threshold.xsd
-    std::optional<std::vector<ThresholdConstraintsDataType>> thresholdConstraintsData;
+	std::optional<std::vector<ThresholdConstraintsDataType>> thresholdConstraintsData;
 
-    ThresholdConstraintsListDataType() : thresholdConstraintsData(std::vector<ThresholdConstraintsDataType>{})
-    {
-    }
+	ThresholdConstraintsListDataType()
+		:
+		thresholdConstraintsData(std::vector<ThresholdConstraintsDataType>{})
+	{}
 };
-bool convertToJson(const ThresholdConstraintsListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsListDataType &dst);
+bool convertToJson(const ThresholdConstraintsListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdConstraintsListDataType &dst);
 
 struct ThresholdConstraintsListDataSelectorsType { // EEBus_SPINE_TS_Threshold.xsd
-    std::optional<ThresholdIdType> thresholdId;
+	std::optional<ThresholdIdType> thresholdId;
 
-    ThresholdConstraintsListDataSelectorsType() : thresholdId(ThresholdIdType{})
-    {
-    }
+	ThresholdConstraintsListDataSelectorsType()
+		:
+		thresholdId(ThresholdIdType{})
+	{}
 };
-bool convertToJson(const ThresholdConstraintsListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsListDataSelectorsType &dst);
+bool convertToJson(const ThresholdConstraintsListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdConstraintsListDataSelectorsType &dst);
 
 struct ThresholdDescriptionDataType { // EEBus_SPINE_TS_Threshold.xsd
-    std::optional<ThresholdIdType> thresholdId;
-    std::optional<ThresholdTypeType> thresholdType;
-    std::optional<UnitOfMeasurementType> unit;
-    std::optional<ScopeTypeType> scopeType;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<ThresholdIdType> thresholdId;
+	std::optional<ThresholdTypeType> thresholdType;
+	std::optional<UnitOfMeasurementType> unit;
+	std::optional<ScopeTypeType> scopeType;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    ThresholdDescriptionDataType() :
-        thresholdId(ThresholdIdType{}), thresholdType(ThresholdTypeType{}), unit(UnitOfMeasurementType{}), scopeType(ScopeTypeType{}),
-        label(LabelType{}), description(DescriptionType{})
-    {
-    }
+	ThresholdDescriptionDataType()
+		:
+		thresholdId(ThresholdIdType{}),
+		thresholdType(ThresholdTypeType{}),
+		unit(UnitOfMeasurementType{}),
+		scopeType(ScopeTypeType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const ThresholdDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionDataType &dst);
+bool convertToJson(const ThresholdDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdDescriptionDataType &dst);
 
 struct ThresholdDescriptionDataElementsType { // EEBus_SPINE_TS_Threshold.xsd
-    std::optional<ElementTagType> thresholdId;
-    std::optional<ElementTagType> thresholdType;
-    std::optional<ElementTagType> unit;
-    std::optional<ElementTagType> scopeType;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> thresholdId;
+	std::optional<ElementTagType> thresholdType;
+	std::optional<ElementTagType> unit;
+	std::optional<ElementTagType> scopeType;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    ThresholdDescriptionDataElementsType() :
-        thresholdId(ElementTagType{}), thresholdType(ElementTagType{}), unit(ElementTagType{}), scopeType(ElementTagType{}),
-        label(ElementTagType{}), description(ElementTagType{})
-    {
-    }
+	ThresholdDescriptionDataElementsType()
+		:
+		thresholdId(ElementTagType{}),
+		thresholdType(ElementTagType{}),
+		unit(ElementTagType{}),
+		scopeType(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const ThresholdDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionDataElementsType &dst);
+bool convertToJson(const ThresholdDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdDescriptionDataElementsType &dst);
 
 struct ThresholdDescriptionListDataType { // EEBus_SPINE_TS_Threshold.xsd
-    std::optional<std::vector<ThresholdDescriptionDataType>> thresholdDescriptionData;
+	std::optional<std::vector<ThresholdDescriptionDataType>> thresholdDescriptionData;
 
-    ThresholdDescriptionListDataType() : thresholdDescriptionData(std::vector<ThresholdDescriptionDataType>{})
-    {
-    }
+	ThresholdDescriptionListDataType()
+		:
+		thresholdDescriptionData(std::vector<ThresholdDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const ThresholdDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionListDataType &dst);
+bool convertToJson(const ThresholdDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdDescriptionListDataType &dst);
 
 struct ThresholdDescriptionListDataSelectorsType { // EEBus_SPINE_TS_Threshold.xsd
-    std::optional<ThresholdIdType> thresholdId;
-    std::optional<ScopeTypeType> scopeType;
+	std::optional<ThresholdIdType> thresholdId;
+	std::optional<ScopeTypeType> scopeType;
 
-    ThresholdDescriptionListDataSelectorsType() : thresholdId(ThresholdIdType{}), scopeType(ScopeTypeType{})
-    {
-    }
+	ThresholdDescriptionListDataSelectorsType()
+		:
+		thresholdId(ThresholdIdType{}),
+		scopeType(ScopeTypeType{})
+	{}
 };
-bool convertToJson(const ThresholdDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionListDataSelectorsType &dst);
+bool convertToJson(const ThresholdDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdDescriptionListDataSelectorsType &dst);
 
 struct DirectControlActivityDataType { // EEBus_SPINE_TS_DirectControl.xsd
-    std::optional<AbsoluteOrRelativeTimeType> timestamp;
-    std::optional<DirectControlActivityStateType> activityState;
-    std::optional<bool> isActivityStateChangeable;
-    std::optional<EnergyModeType> energyMode;
-    std::optional<bool> isEnergyModeChangeable;
-    std::optional<ScaledNumberType> power;
-    std::optional<bool> isPowerChangeable;
-    std::optional<ScaledNumberType> energy;
-    std::optional<bool> isEnergyChangeable;
-    std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<AbsoluteOrRelativeTimeType> timestamp;
+	std::optional<DirectControlActivityStateType> activityState;
+	std::optional<bool> isActivityStateChangeable;
+	std::optional<EnergyModeType> energyMode;
+	std::optional<bool> isEnergyModeChangeable;
+	std::optional<ScaledNumberType> power;
+	std::optional<bool> isPowerChangeable;
+	std::optional<ScaledNumberType> energy;
+	std::optional<bool> isEnergyChangeable;
+	std::optional<PowerSequenceIdType> sequenceId;
 
-    DirectControlActivityDataType() :
-        timestamp(AbsoluteOrRelativeTimeType{}), activityState(DirectControlActivityStateType{}), isActivityStateChangeable(bool{}),
-        energyMode(EnergyModeType{}), isEnergyModeChangeable(bool{}), power(ScaledNumberType{}), isPowerChangeable(bool{}),
-        energy(ScaledNumberType{}), isEnergyChangeable(bool{}), sequenceId(PowerSequenceIdType{})
-    {
-    }
+	DirectControlActivityDataType()
+		:
+		timestamp(AbsoluteOrRelativeTimeType{}),
+		activityState(DirectControlActivityStateType{}),
+		isActivityStateChangeable(bool{}),
+		energyMode(EnergyModeType{}),
+		isEnergyModeChangeable(bool{}),
+		power(ScaledNumberType{}),
+		isPowerChangeable(bool{}),
+		energy(ScaledNumberType{}),
+		isEnergyChangeable(bool{}),
+		sequenceId(PowerSequenceIdType{})
+	{}
 };
-bool convertToJson(const DirectControlActivityDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataType &dst);
+bool convertToJson(const DirectControlActivityDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DirectControlActivityDataType &dst);
 
 struct DirectControlActivityDataElementsType { // EEBus_SPINE_TS_DirectControl.xsd
-    std::optional<ElementTagType> timestamp;
-    std::optional<ElementTagType> activityState;
-    std::optional<ElementTagType> isActivityStateChangeable;
-    std::optional<ElementTagType> energyMode;
-    std::optional<ElementTagType> isEnergyModeChangeable;
-    std::optional<ScaledNumberElementsType> power;
-    std::optional<ElementTagType> isPowerChangeable;
-    std::optional<ScaledNumberElementsType> energy;
-    std::optional<ElementTagType> isEnergyChangeable;
-    std::optional<ElementTagType> sequenceId;
+	std::optional<ElementTagType> timestamp;
+	std::optional<ElementTagType> activityState;
+	std::optional<ElementTagType> isActivityStateChangeable;
+	std::optional<ElementTagType> energyMode;
+	std::optional<ElementTagType> isEnergyModeChangeable;
+	std::optional<ScaledNumberElementsType> power;
+	std::optional<ElementTagType> isPowerChangeable;
+	std::optional<ScaledNumberElementsType> energy;
+	std::optional<ElementTagType> isEnergyChangeable;
+	std::optional<ElementTagType> sequenceId;
 
-    DirectControlActivityDataElementsType() :
-        timestamp(ElementTagType{}), activityState(ElementTagType{}), isActivityStateChangeable(ElementTagType{}),
-        energyMode(ElementTagType{}), isEnergyModeChangeable(ElementTagType{}), power(ScaledNumberElementsType{}),
-        isPowerChangeable(ElementTagType{}), energy(ScaledNumberElementsType{}), isEnergyChangeable(ElementTagType{}),
-        sequenceId(ElementTagType{})
-    {
-    }
+	DirectControlActivityDataElementsType()
+		:
+		timestamp(ElementTagType{}),
+		activityState(ElementTagType{}),
+		isActivityStateChangeable(ElementTagType{}),
+		energyMode(ElementTagType{}),
+		isEnergyModeChangeable(ElementTagType{}),
+		power(ScaledNumberElementsType{}),
+		isPowerChangeable(ElementTagType{}),
+		energy(ScaledNumberElementsType{}),
+		isEnergyChangeable(ElementTagType{}),
+		sequenceId(ElementTagType{})
+	{}
 };
-bool convertToJson(const DirectControlActivityDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataElementsType &dst);
+bool convertToJson(const DirectControlActivityDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DirectControlActivityDataElementsType &dst);
 
 struct DirectControlActivityListDataType { // EEBus_SPINE_TS_DirectControl.xsd
-    std::optional<std::vector<DirectControlActivityDataType>> directControlActivityData;
+	std::optional<std::vector<DirectControlActivityDataType>> directControlActivityData;
 
-    DirectControlActivityListDataType() : directControlActivityData(std::vector<DirectControlActivityDataType>{})
-    {
-    }
+	DirectControlActivityListDataType()
+		:
+		directControlActivityData(std::vector<DirectControlActivityDataType>{})
+	{}
 };
-bool convertToJson(const DirectControlActivityListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DirectControlActivityListDataType &dst);
+bool convertToJson(const DirectControlActivityListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DirectControlActivityListDataType &dst);
 
 struct DirectControlActivityListDataSelectorsType { // EEBus_SPINE_TS_DirectControl.xsd
-    std::optional<TimestampIntervalType> timestampInterval;
+	std::optional<TimestampIntervalType> timestampInterval;
 
-    DirectControlActivityListDataSelectorsType() : timestampInterval(TimestampIntervalType{})
-    {
-    }
+	DirectControlActivityListDataSelectorsType()
+		:
+		timestampInterval(TimestampIntervalType{})
+	{}
 };
-bool convertToJson(const DirectControlActivityListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DirectControlActivityListDataSelectorsType &dst);
+bool convertToJson(const DirectControlActivityListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DirectControlActivityListDataSelectorsType &dst);
 
 struct DirectControlDescriptionDataType { // EEBus_SPINE_TS_DirectControl.xsd
-    std::optional<EnergyDirectionType> positiveEnergyDirection;
-    std::optional<UnitOfMeasurementType> powerUnit;
-    std::optional<UnitOfMeasurementType> energyUnit;
+	std::optional<EnergyDirectionType> positiveEnergyDirection;
+	std::optional<UnitOfMeasurementType> powerUnit;
+	std::optional<UnitOfMeasurementType> energyUnit;
 
-    DirectControlDescriptionDataType() :
-        positiveEnergyDirection(EnergyDirectionType{}), powerUnit(UnitOfMeasurementType{}), energyUnit(UnitOfMeasurementType{})
-    {
-    }
+	DirectControlDescriptionDataType()
+		:
+		positiveEnergyDirection(EnergyDirectionType{}),
+		powerUnit(UnitOfMeasurementType{}),
+		energyUnit(UnitOfMeasurementType{})
+	{}
 };
-bool convertToJson(const DirectControlDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DirectControlDescriptionDataType &dst);
+bool convertToJson(const DirectControlDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DirectControlDescriptionDataType &dst);
 
 struct DirectControlDescriptionDataElementsType { // EEBus_SPINE_TS_DirectControl.xsd
-    std::optional<ElementTagType> positiveEnergyDirection;
-    std::optional<ElementTagType> powerUnit;
-    std::optional<ElementTagType> energyUnit;
+	std::optional<ElementTagType> positiveEnergyDirection;
+	std::optional<ElementTagType> powerUnit;
+	std::optional<ElementTagType> energyUnit;
 
-    DirectControlDescriptionDataElementsType() :
-        positiveEnergyDirection(ElementTagType{}), powerUnit(ElementTagType{}), energyUnit(ElementTagType{})
-    {
-    }
+	DirectControlDescriptionDataElementsType()
+		:
+		positiveEnergyDirection(ElementTagType{}),
+		powerUnit(ElementTagType{}),
+		energyUnit(ElementTagType{})
+	{}
 };
-bool convertToJson(const DirectControlDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DirectControlDescriptionDataElementsType &dst);
+bool convertToJson(const DirectControlDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DirectControlDescriptionDataElementsType &dst);
 
 struct PowerTimeSlotScheduleDataType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
-    std::optional<PowerTimeSlotNumberType> slotNumber;
-    std::optional<TimePeriodType> timePeriod;
-    std::optional<std::string> defaultDuration;
-    std::optional<std::string> durationUncertainty;
-    std::optional<bool> slotActivated;
-    std::optional<DescriptionType> description;
+	std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<PowerTimeSlotNumberType> slotNumber;
+	std::optional<TimePeriodType> timePeriod;
+	std::optional<std::string> defaultDuration;
+	std::optional<std::string> durationUncertainty;
+	std::optional<bool> slotActivated;
+	std::optional<DescriptionType> description;
 
-    PowerTimeSlotScheduleDataType() :
-        sequenceId(PowerSequenceIdType{}), slotNumber(PowerTimeSlotNumberType{}), timePeriod(TimePeriodType{}),
-        defaultDuration(std::string{}), durationUncertainty(std::string{}), slotActivated(bool{}), description(DescriptionType{})
-    {
-    }
+	PowerTimeSlotScheduleDataType()
+		:
+		sequenceId(PowerSequenceIdType{}),
+		slotNumber(PowerTimeSlotNumberType{}),
+		timePeriod(TimePeriodType{}),
+		defaultDuration(std::string{}),
+		durationUncertainty(std::string{}),
+		slotActivated(bool{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const PowerTimeSlotScheduleDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleDataType &dst);
+bool convertToJson(const PowerTimeSlotScheduleDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotScheduleDataType &dst);
 
 struct PowerTimeSlotScheduleDataElementsType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<ElementTagType> sequenceId;
-    std::optional<ElementTagType> slotNumber;
-    std::optional<TimePeriodElementsType> timePeriod;
-    std::optional<ElementTagType> defaultDuration;
-    std::optional<ElementTagType> durationUncertainty;
-    std::optional<ElementTagType> slotActivated;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> sequenceId;
+	std::optional<ElementTagType> slotNumber;
+	std::optional<TimePeriodElementsType> timePeriod;
+	std::optional<ElementTagType> defaultDuration;
+	std::optional<ElementTagType> durationUncertainty;
+	std::optional<ElementTagType> slotActivated;
+	std::optional<ElementTagType> description;
 
-    PowerTimeSlotScheduleDataElementsType() :
-        sequenceId(ElementTagType{}), slotNumber(ElementTagType{}), timePeriod(TimePeriodElementsType{}), defaultDuration(ElementTagType{}),
-        durationUncertainty(ElementTagType{}), slotActivated(ElementTagType{}), description(ElementTagType{})
-    {
-    }
+	PowerTimeSlotScheduleDataElementsType()
+		:
+		sequenceId(ElementTagType{}),
+		slotNumber(ElementTagType{}),
+		timePeriod(TimePeriodElementsType{}),
+		defaultDuration(ElementTagType{}),
+		durationUncertainty(ElementTagType{}),
+		slotActivated(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const PowerTimeSlotScheduleDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleDataElementsType &dst);
+bool convertToJson(const PowerTimeSlotScheduleDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotScheduleDataElementsType &dst);
 
 struct PowerTimeSlotScheduleListDataType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<std::vector<PowerTimeSlotScheduleDataType>> powerTimeSlotScheduleData;
+	std::optional<std::vector<PowerTimeSlotScheduleDataType>> powerTimeSlotScheduleData;
 
-    PowerTimeSlotScheduleListDataType() : powerTimeSlotScheduleData(std::vector<PowerTimeSlotScheduleDataType>{})
-    {
-    }
+	PowerTimeSlotScheduleListDataType()
+		:
+		powerTimeSlotScheduleData(std::vector<PowerTimeSlotScheduleDataType>{})
+	{}
 };
-bool convertToJson(const PowerTimeSlotScheduleListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleListDataType &dst);
+bool convertToJson(const PowerTimeSlotScheduleListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotScheduleListDataType &dst);
 
 struct PowerTimeSlotScheduleListDataSelectorsType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
-    std::optional<PowerTimeSlotNumberType> slotNumber;
+	std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<PowerTimeSlotNumberType> slotNumber;
 
-    PowerTimeSlotScheduleListDataSelectorsType() : sequenceId(PowerSequenceIdType{}), slotNumber(PowerTimeSlotNumberType{})
-    {
-    }
+	PowerTimeSlotScheduleListDataSelectorsType()
+		:
+		sequenceId(PowerSequenceIdType{}),
+		slotNumber(PowerTimeSlotNumberType{})
+	{}
 };
-bool convertToJson(const PowerTimeSlotScheduleListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleListDataSelectorsType &dst);
+bool convertToJson(const PowerTimeSlotScheduleListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotScheduleListDataSelectorsType &dst);
 
 struct PowerTimeSlotValueDataType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
-    std::optional<PowerTimeSlotNumberType> slotNumber;
-    std::optional<PowerTimeSlotValueTypeType> valueType;
-    std::optional<ScaledNumberType> value;
+	std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<PowerTimeSlotNumberType> slotNumber;
+	std::optional<PowerTimeSlotValueTypeType> valueType;
+	std::optional<ScaledNumberType> value;
 
-    PowerTimeSlotValueDataType() :
-        sequenceId(PowerSequenceIdType{}), slotNumber(PowerTimeSlotNumberType{}), valueType(PowerTimeSlotValueTypeType{}),
-        value(ScaledNumberType{})
-    {
-    }
+	PowerTimeSlotValueDataType()
+		:
+		sequenceId(PowerSequenceIdType{}),
+		slotNumber(PowerTimeSlotNumberType{}),
+		valueType(PowerTimeSlotValueTypeType{}),
+		value(ScaledNumberType{})
+	{}
 };
-bool convertToJson(const PowerTimeSlotValueDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueDataType &dst);
+bool convertToJson(const PowerTimeSlotValueDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotValueDataType &dst);
 
 struct PowerTimeSlotValueDataElementsType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<ElementTagType> sequenceId;
-    std::optional<ElementTagType> slotNumber;
-    std::optional<ElementTagType> valueType;
-    std::optional<ScaledNumberElementsType> value;
+	std::optional<ElementTagType> sequenceId;
+	std::optional<ElementTagType> slotNumber;
+	std::optional<ElementTagType> valueType;
+	std::optional<ScaledNumberElementsType> value;
 
-    PowerTimeSlotValueDataElementsType() :
-        sequenceId(ElementTagType{}), slotNumber(ElementTagType{}), valueType(ElementTagType{}), value(ScaledNumberElementsType{})
-    {
-    }
+	PowerTimeSlotValueDataElementsType()
+		:
+		sequenceId(ElementTagType{}),
+		slotNumber(ElementTagType{}),
+		valueType(ElementTagType{}),
+		value(ScaledNumberElementsType{})
+	{}
 };
-bool convertToJson(const PowerTimeSlotValueDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueDataElementsType &dst);
+bool convertToJson(const PowerTimeSlotValueDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotValueDataElementsType &dst);
 
 struct PowerTimeSlotValueListDataType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<std::vector<PowerTimeSlotValueDataType>> powerTimeSlotValueData;
+	std::optional<std::vector<PowerTimeSlotValueDataType>> powerTimeSlotValueData;
 
-    PowerTimeSlotValueListDataType() : powerTimeSlotValueData(std::vector<PowerTimeSlotValueDataType>{})
-    {
-    }
+	PowerTimeSlotValueListDataType()
+		:
+		powerTimeSlotValueData(std::vector<PowerTimeSlotValueDataType>{})
+	{}
 };
-bool convertToJson(const PowerTimeSlotValueListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueListDataType &dst);
+bool convertToJson(const PowerTimeSlotValueListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotValueListDataType &dst);
 
 struct PowerTimeSlotValueListDataSelectorsType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
-    std::optional<PowerTimeSlotNumberType> slotNumber;
-    std::optional<PowerTimeSlotValueTypeType> valueType;
+	std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<PowerTimeSlotNumberType> slotNumber;
+	std::optional<PowerTimeSlotValueTypeType> valueType;
 
-    PowerTimeSlotValueListDataSelectorsType() :
-        sequenceId(PowerSequenceIdType{}), slotNumber(PowerTimeSlotNumberType{}), valueType(PowerTimeSlotValueTypeType{})
-    {
-    }
+	PowerTimeSlotValueListDataSelectorsType()
+		:
+		sequenceId(PowerSequenceIdType{}),
+		slotNumber(PowerTimeSlotNumberType{}),
+		valueType(PowerTimeSlotValueTypeType{})
+	{}
 };
-bool convertToJson(const PowerTimeSlotValueListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueListDataSelectorsType &dst);
+bool convertToJson(const PowerTimeSlotValueListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotValueListDataSelectorsType &dst);
 
 struct PowerTimeSlotScheduleConstraintsDataType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
-    std::optional<PowerTimeSlotNumberType> slotNumber;
-    std::optional<AbsoluteOrRelativeTimeType> earliestStartTime;
-    std::optional<AbsoluteOrRelativeTimeType> latestEndTime;
-    std::optional<std::string> minDuration;
-    std::optional<std::string> maxDuration;
-    std::optional<bool> optionalSlot;
+	std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<PowerTimeSlotNumberType> slotNumber;
+	std::optional<AbsoluteOrRelativeTimeType> earliestStartTime;
+	std::optional<AbsoluteOrRelativeTimeType> latestEndTime;
+	std::optional<std::string> minDuration;
+	std::optional<std::string> maxDuration;
+	std::optional<bool> optionalSlot;
 
-    PowerTimeSlotScheduleConstraintsDataType() :
-        sequenceId(PowerSequenceIdType{}), slotNumber(PowerTimeSlotNumberType{}), earliestStartTime(AbsoluteOrRelativeTimeType{}),
-        latestEndTime(AbsoluteOrRelativeTimeType{}), minDuration(std::string{}), maxDuration(std::string{}), optionalSlot(bool{})
-    {
-    }
+	PowerTimeSlotScheduleConstraintsDataType()
+		:
+		sequenceId(PowerSequenceIdType{}),
+		slotNumber(PowerTimeSlotNumberType{}),
+		earliestStartTime(AbsoluteOrRelativeTimeType{}),
+		latestEndTime(AbsoluteOrRelativeTimeType{}),
+		minDuration(std::string{}),
+		maxDuration(std::string{}),
+		optionalSlot(bool{})
+	{}
 };
-bool convertToJson(const PowerTimeSlotScheduleConstraintsDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstraintsDataType &dst);
+bool convertToJson(const PowerTimeSlotScheduleConstraintsDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotScheduleConstraintsDataType &dst);
 
 struct PowerTimeSlotScheduleConstraintsDataElementsType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<ElementTagType> sequenceId;
-    std::optional<ElementTagType> slotNumber;
-    std::optional<ElementTagType> earliestStartTime;
-    std::optional<ElementTagType> latestEndTime;
-    std::optional<ElementTagType> minDuration;
-    std::optional<ElementTagType> maxDuration;
-    std::optional<ElementTagType> optionalSlot;
+	std::optional<ElementTagType> sequenceId;
+	std::optional<ElementTagType> slotNumber;
+	std::optional<ElementTagType> earliestStartTime;
+	std::optional<ElementTagType> latestEndTime;
+	std::optional<ElementTagType> minDuration;
+	std::optional<ElementTagType> maxDuration;
+	std::optional<ElementTagType> optionalSlot;
 
-    PowerTimeSlotScheduleConstraintsDataElementsType() :
-        sequenceId(ElementTagType{}), slotNumber(ElementTagType{}), earliestStartTime(ElementTagType{}), latestEndTime(ElementTagType{}),
-        minDuration(ElementTagType{}), maxDuration(ElementTagType{}), optionalSlot(ElementTagType{})
-    {
-    }
+	PowerTimeSlotScheduleConstraintsDataElementsType()
+		:
+		sequenceId(ElementTagType{}),
+		slotNumber(ElementTagType{}),
+		earliestStartTime(ElementTagType{}),
+		latestEndTime(ElementTagType{}),
+		minDuration(ElementTagType{}),
+		maxDuration(ElementTagType{}),
+		optionalSlot(ElementTagType{})
+	{}
 };
-bool convertToJson(const PowerTimeSlotScheduleConstraintsDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstraintsDataElementsType &dst);
+bool convertToJson(const PowerTimeSlotScheduleConstraintsDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotScheduleConstraintsDataElementsType &dst);
 
 struct PowerTimeSlotScheduleConstraintsListDataType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<std::vector<PowerTimeSlotScheduleConstraintsDataType>> powerTimeSlotScheduleConstraintsData;
+	std::optional<std::vector<PowerTimeSlotScheduleConstraintsDataType>> powerTimeSlotScheduleConstraintsData;
 
-    PowerTimeSlotScheduleConstraintsListDataType() :
-        powerTimeSlotScheduleConstraintsData(std::vector<PowerTimeSlotScheduleConstraintsDataType>{})
-    {
-    }
+	PowerTimeSlotScheduleConstraintsListDataType()
+		:
+		powerTimeSlotScheduleConstraintsData(std::vector<PowerTimeSlotScheduleConstraintsDataType>{})
+	{}
 };
-bool convertToJson(const PowerTimeSlotScheduleConstraintsListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstraintsListDataType &dst);
+bool convertToJson(const PowerTimeSlotScheduleConstraintsListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotScheduleConstraintsListDataType &dst);
 
 struct PowerTimeSlotScheduleConstraintsListDataSelectorsType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
-    std::optional<PowerTimeSlotNumberType> slotNumber;
+	std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<PowerTimeSlotNumberType> slotNumber;
 
-    PowerTimeSlotScheduleConstraintsListDataSelectorsType() : sequenceId(PowerSequenceIdType{}), slotNumber(PowerTimeSlotNumberType{})
-    {
-    }
+	PowerTimeSlotScheduleConstraintsListDataSelectorsType()
+		:
+		sequenceId(PowerSequenceIdType{}),
+		slotNumber(PowerTimeSlotNumberType{})
+	{}
 };
-bool convertToJson(const PowerTimeSlotScheduleConstraintsListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstraintsListDataSelectorsType &dst);
+bool convertToJson(const PowerTimeSlotScheduleConstraintsListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotScheduleConstraintsListDataSelectorsType &dst);
 
 struct PowerSequenceAlternativesRelationDataType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<AlternativesIdType> alternativesId;
-    std::optional<std::vector<PowerSequenceIdType>> sequenceId;
+	std::optional<AlternativesIdType> alternativesId;
+	std::optional<std::vector<PowerSequenceIdType>> sequenceId;
 
-    PowerSequenceAlternativesRelationDataType() : alternativesId(AlternativesIdType{}), sequenceId(std::vector<PowerSequenceIdType>{})
-    {
-    }
+	PowerSequenceAlternativesRelationDataType()
+		:
+		alternativesId(AlternativesIdType{}),
+		sequenceId(std::vector<PowerSequenceIdType>{})
+	{}
 };
-bool convertToJson(const PowerSequenceAlternativesRelationDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelationDataType &dst);
+bool convertToJson(const PowerSequenceAlternativesRelationDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceAlternativesRelationDataType &dst);
 
 struct PowerSequenceAlternativesRelationDataElementsType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<ElementTagType> alternativesId;
-    std::optional<ElementTagType> sequenceId;
+	std::optional<ElementTagType> alternativesId;
+	std::optional<ElementTagType> sequenceId;
 
-    PowerSequenceAlternativesRelationDataElementsType() : alternativesId(ElementTagType{}), sequenceId(ElementTagType{})
-    {
-    }
+	PowerSequenceAlternativesRelationDataElementsType()
+		:
+		alternativesId(ElementTagType{}),
+		sequenceId(ElementTagType{})
+	{}
 };
-bool convertToJson(const PowerSequenceAlternativesRelationDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelationDataElementsType &dst);
+bool convertToJson(const PowerSequenceAlternativesRelationDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceAlternativesRelationDataElementsType &dst);
 
 struct PowerSequenceAlternativesRelationListDataType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<std::vector<PowerSequenceAlternativesRelationDataType>> powerSequenceAlternativesRelationData;
+	std::optional<std::vector<PowerSequenceAlternativesRelationDataType>> powerSequenceAlternativesRelationData;
 
-    PowerSequenceAlternativesRelationListDataType() :
-        powerSequenceAlternativesRelationData(std::vector<PowerSequenceAlternativesRelationDataType>{})
-    {
-    }
+	PowerSequenceAlternativesRelationListDataType()
+		:
+		powerSequenceAlternativesRelationData(std::vector<PowerSequenceAlternativesRelationDataType>{})
+	{}
 };
-bool convertToJson(const PowerSequenceAlternativesRelationListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelationListDataType &dst);
+bool convertToJson(const PowerSequenceAlternativesRelationListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceAlternativesRelationListDataType &dst);
 
 struct PowerSequenceAlternativesRelationListDataSelectorsType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<AlternativesIdType> alternativesId;
-    std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<AlternativesIdType> alternativesId;
+	std::optional<PowerSequenceIdType> sequenceId;
 
-    PowerSequenceAlternativesRelationListDataSelectorsType() : alternativesId(AlternativesIdType{}), sequenceId(PowerSequenceIdType{})
-    {
-    }
+	PowerSequenceAlternativesRelationListDataSelectorsType()
+		:
+		alternativesId(AlternativesIdType{}),
+		sequenceId(PowerSequenceIdType{})
+	{}
 };
-bool convertToJson(const PowerSequenceAlternativesRelationListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelationListDataSelectorsType &dst);
+bool convertToJson(const PowerSequenceAlternativesRelationListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceAlternativesRelationListDataSelectorsType &dst);
 
 struct PowerSequenceDescriptionDataType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
-    std::optional<DescriptionType> description;
-    std::optional<EnergyDirectionType> positiveEnergyDirection;
-    std::optional<UnitOfMeasurementType> powerUnit;
-    std::optional<UnitOfMeasurementType> energyUnit;
-    std::optional<MeasurementValueSourceType> valueSource;
-    std::optional<PowerSequenceScopeType> scope;
-    std::optional<uint32_t> taskIdentifier;
-    std::optional<uint32_t> repetitionsTotal;
+	std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<DescriptionType> description;
+	std::optional<EnergyDirectionType> positiveEnergyDirection;
+	std::optional<UnitOfMeasurementType> powerUnit;
+	std::optional<UnitOfMeasurementType> energyUnit;
+	std::optional<MeasurementValueSourceType> valueSource;
+	std::optional<PowerSequenceScopeType> scope;
+	std::optional<uint32_t> taskIdentifier;
+	std::optional<uint32_t> repetitionsTotal;
 
-    PowerSequenceDescriptionDataType() :
-        sequenceId(PowerSequenceIdType{}), description(DescriptionType{}), positiveEnergyDirection(EnergyDirectionType{}),
-        powerUnit(UnitOfMeasurementType{}), energyUnit(UnitOfMeasurementType{}), valueSource(MeasurementValueSourceType{}),
-        scope(PowerSequenceScopeType{}), taskIdentifier(uint32_t{}), repetitionsTotal(uint32_t{})
-    {
-    }
+	PowerSequenceDescriptionDataType()
+		:
+		sequenceId(PowerSequenceIdType{}),
+		description(DescriptionType{}),
+		positiveEnergyDirection(EnergyDirectionType{}),
+		powerUnit(UnitOfMeasurementType{}),
+		energyUnit(UnitOfMeasurementType{}),
+		valueSource(MeasurementValueSourceType{}),
+		scope(PowerSequenceScopeType{}),
+		taskIdentifier(uint32_t{}),
+		repetitionsTotal(uint32_t{})
+	{}
 };
-bool convertToJson(const PowerSequenceDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionDataType &dst);
+bool convertToJson(const PowerSequenceDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceDescriptionDataType &dst);
 
 struct PowerSequenceDescriptionDataElementsType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<ElementTagType> sequenceId;
-    std::optional<ElementTagType> description;
-    std::optional<ElementTagType> positiveEnergyDirection;
-    std::optional<ElementTagType> powerUnit;
-    std::optional<ElementTagType> energyUnit;
-    std::optional<ElementTagType> valueSource;
-    std::optional<ElementTagType> scope;
-    std::optional<ElementTagType> taskIdentifier;
-    std::optional<ElementTagType> repetitionsTotal;
+	std::optional<ElementTagType> sequenceId;
+	std::optional<ElementTagType> description;
+	std::optional<ElementTagType> positiveEnergyDirection;
+	std::optional<ElementTagType> powerUnit;
+	std::optional<ElementTagType> energyUnit;
+	std::optional<ElementTagType> valueSource;
+	std::optional<ElementTagType> scope;
+	std::optional<ElementTagType> taskIdentifier;
+	std::optional<ElementTagType> repetitionsTotal;
 
-    PowerSequenceDescriptionDataElementsType() :
-        sequenceId(ElementTagType{}), description(ElementTagType{}), positiveEnergyDirection(ElementTagType{}), powerUnit(ElementTagType{}),
-        energyUnit(ElementTagType{}), valueSource(ElementTagType{}), scope(ElementTagType{}), taskIdentifier(ElementTagType{}),
-        repetitionsTotal(ElementTagType{})
-    {
-    }
+	PowerSequenceDescriptionDataElementsType()
+		:
+		sequenceId(ElementTagType{}),
+		description(ElementTagType{}),
+		positiveEnergyDirection(ElementTagType{}),
+		powerUnit(ElementTagType{}),
+		energyUnit(ElementTagType{}),
+		valueSource(ElementTagType{}),
+		scope(ElementTagType{}),
+		taskIdentifier(ElementTagType{}),
+		repetitionsTotal(ElementTagType{})
+	{}
 };
-bool convertToJson(const PowerSequenceDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionDataElementsType &dst);
+bool convertToJson(const PowerSequenceDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceDescriptionDataElementsType &dst);
 
 struct PowerSequenceDescriptionListDataType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<std::vector<PowerSequenceDescriptionDataType>> powerSequenceDescriptionData;
+	std::optional<std::vector<PowerSequenceDescriptionDataType>> powerSequenceDescriptionData;
 
-    PowerSequenceDescriptionListDataType() : powerSequenceDescriptionData(std::vector<PowerSequenceDescriptionDataType>{})
-    {
-    }
+	PowerSequenceDescriptionListDataType()
+		:
+		powerSequenceDescriptionData(std::vector<PowerSequenceDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const PowerSequenceDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionListDataType &dst);
+bool convertToJson(const PowerSequenceDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceDescriptionListDataType &dst);
 
 struct PowerSequenceDescriptionListDataSelectorsType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<PowerSequenceIdType> sequenceId;
 
-    PowerSequenceDescriptionListDataSelectorsType() : sequenceId(PowerSequenceIdType{})
-    {
-    }
+	PowerSequenceDescriptionListDataSelectorsType()
+		:
+		sequenceId(PowerSequenceIdType{})
+	{}
 };
-bool convertToJson(const PowerSequenceDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionListDataSelectorsType &dst);
+bool convertToJson(const PowerSequenceDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceDescriptionListDataSelectorsType &dst);
 
 struct PowerSequenceStateDataType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
-    std::optional<PowerSequenceStateType> state;
-    std::optional<PowerTimeSlotNumberType> activeSlotNumber;
-    std::optional<std::string> elapsedSlotTime;
-    std::optional<std::string> remainingSlotTime;
-    std::optional<bool> sequenceRemoteControllable;
-    std::optional<uint32_t> activeRepetitionNumber;
-    std::optional<std::string> remainingPauseTime;
+	std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<PowerSequenceStateType> state;
+	std::optional<PowerTimeSlotNumberType> activeSlotNumber;
+	std::optional<std::string> elapsedSlotTime;
+	std::optional<std::string> remainingSlotTime;
+	std::optional<bool> sequenceRemoteControllable;
+	std::optional<uint32_t> activeRepetitionNumber;
+	std::optional<std::string> remainingPauseTime;
 
-    PowerSequenceStateDataType() :
-        sequenceId(PowerSequenceIdType{}), state(PowerSequenceStateType{}), activeSlotNumber(PowerTimeSlotNumberType{}),
-        elapsedSlotTime(std::string{}), remainingSlotTime(std::string{}), sequenceRemoteControllable(bool{}),
-        activeRepetitionNumber(uint32_t{}), remainingPauseTime(std::string{})
-    {
-    }
+	PowerSequenceStateDataType()
+		:
+		sequenceId(PowerSequenceIdType{}),
+		state(PowerSequenceStateType{}),
+		activeSlotNumber(PowerTimeSlotNumberType{}),
+		elapsedSlotTime(std::string{}),
+		remainingSlotTime(std::string{}),
+		sequenceRemoteControllable(bool{}),
+		activeRepetitionNumber(uint32_t{}),
+		remainingPauseTime(std::string{})
+	{}
 };
-bool convertToJson(const PowerSequenceStateDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceStateDataType &dst);
+bool convertToJson(const PowerSequenceStateDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceStateDataType &dst);
 
 struct PowerSequenceStateDataElementsType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<ElementTagType> sequenceId;
-    std::optional<ElementTagType> state;
-    std::optional<ElementTagType> activeSlotNumber;
-    std::optional<ElementTagType> elapsedSlotTime;
-    std::optional<ElementTagType> remainingSlotTime;
-    std::optional<ElementTagType> sequenceRemoteControllable;
-    std::optional<ElementTagType> activeRepetitionNumber;
-    std::optional<ElementTagType> remainingPauseTime;
+	std::optional<ElementTagType> sequenceId;
+	std::optional<ElementTagType> state;
+	std::optional<ElementTagType> activeSlotNumber;
+	std::optional<ElementTagType> elapsedSlotTime;
+	std::optional<ElementTagType> remainingSlotTime;
+	std::optional<ElementTagType> sequenceRemoteControllable;
+	std::optional<ElementTagType> activeRepetitionNumber;
+	std::optional<ElementTagType> remainingPauseTime;
 
-    PowerSequenceStateDataElementsType() :
-        sequenceId(ElementTagType{}), state(ElementTagType{}), activeSlotNumber(ElementTagType{}), elapsedSlotTime(ElementTagType{}),
-        remainingSlotTime(ElementTagType{}), sequenceRemoteControllable(ElementTagType{}), activeRepetitionNumber(ElementTagType{}),
-        remainingPauseTime(ElementTagType{})
-    {
-    }
+	PowerSequenceStateDataElementsType()
+		:
+		sequenceId(ElementTagType{}),
+		state(ElementTagType{}),
+		activeSlotNumber(ElementTagType{}),
+		elapsedSlotTime(ElementTagType{}),
+		remainingSlotTime(ElementTagType{}),
+		sequenceRemoteControllable(ElementTagType{}),
+		activeRepetitionNumber(ElementTagType{}),
+		remainingPauseTime(ElementTagType{})
+	{}
 };
-bool convertToJson(const PowerSequenceStateDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceStateDataElementsType &dst);
+bool convertToJson(const PowerSequenceStateDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceStateDataElementsType &dst);
 
 struct PowerSequenceStateListDataType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<std::vector<PowerSequenceStateDataType>> powerSequenceStateData;
+	std::optional<std::vector<PowerSequenceStateDataType>> powerSequenceStateData;
 
-    PowerSequenceStateListDataType() : powerSequenceStateData(std::vector<PowerSequenceStateDataType>{})
-    {
-    }
+	PowerSequenceStateListDataType()
+		:
+		powerSequenceStateData(std::vector<PowerSequenceStateDataType>{})
+	{}
 };
-bool convertToJson(const PowerSequenceStateListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceStateListDataType &dst);
+bool convertToJson(const PowerSequenceStateListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceStateListDataType &dst);
 
 struct PowerSequenceStateListDataSelectorsType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<PowerSequenceIdType> sequenceId;
 
-    PowerSequenceStateListDataSelectorsType() : sequenceId(PowerSequenceIdType{})
-    {
-    }
+	PowerSequenceStateListDataSelectorsType()
+		:
+		sequenceId(PowerSequenceIdType{})
+	{}
 };
-bool convertToJson(const PowerSequenceStateListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceStateListDataSelectorsType &dst);
+bool convertToJson(const PowerSequenceStateListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceStateListDataSelectorsType &dst);
 
 struct PowerSequenceScheduleDataType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
-    std::optional<AbsoluteOrRelativeTimeType> startTime;
-    std::optional<AbsoluteOrRelativeTimeType> endTime;
+	std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<AbsoluteOrRelativeTimeType> startTime;
+	std::optional<AbsoluteOrRelativeTimeType> endTime;
 
-    PowerSequenceScheduleDataType() :
-        sequenceId(PowerSequenceIdType{}), startTime(AbsoluteOrRelativeTimeType{}), endTime(AbsoluteOrRelativeTimeType{})
-    {
-    }
+	PowerSequenceScheduleDataType()
+		:
+		sequenceId(PowerSequenceIdType{}),
+		startTime(AbsoluteOrRelativeTimeType{}),
+		endTime(AbsoluteOrRelativeTimeType{})
+	{}
 };
-bool convertToJson(const PowerSequenceScheduleDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleDataType &dst);
+bool convertToJson(const PowerSequenceScheduleDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceScheduleDataType &dst);
 
 struct PowerSequenceScheduleDataElementsType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<ElementTagType> sequenceId;
-    std::optional<ElementTagType> startTime;
-    std::optional<ElementTagType> endTime;
+	std::optional<ElementTagType> sequenceId;
+	std::optional<ElementTagType> startTime;
+	std::optional<ElementTagType> endTime;
 
-    PowerSequenceScheduleDataElementsType() : sequenceId(ElementTagType{}), startTime(ElementTagType{}), endTime(ElementTagType{})
-    {
-    }
+	PowerSequenceScheduleDataElementsType()
+		:
+		sequenceId(ElementTagType{}),
+		startTime(ElementTagType{}),
+		endTime(ElementTagType{})
+	{}
 };
-bool convertToJson(const PowerSequenceScheduleDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleDataElementsType &dst);
+bool convertToJson(const PowerSequenceScheduleDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceScheduleDataElementsType &dst);
 
 struct PowerSequenceScheduleListDataType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<std::vector<PowerSequenceScheduleDataType>> powerSequenceScheduleData;
+	std::optional<std::vector<PowerSequenceScheduleDataType>> powerSequenceScheduleData;
 
-    PowerSequenceScheduleListDataType() : powerSequenceScheduleData(std::vector<PowerSequenceScheduleDataType>{})
-    {
-    }
+	PowerSequenceScheduleListDataType()
+		:
+		powerSequenceScheduleData(std::vector<PowerSequenceScheduleDataType>{})
+	{}
 };
-bool convertToJson(const PowerSequenceScheduleListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleListDataType &dst);
+bool convertToJson(const PowerSequenceScheduleListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceScheduleListDataType &dst);
 
 struct PowerSequenceScheduleListDataSelectorsType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<PowerSequenceIdType> sequenceId;
 
-    PowerSequenceScheduleListDataSelectorsType() : sequenceId(PowerSequenceIdType{})
-    {
-    }
+	PowerSequenceScheduleListDataSelectorsType()
+		:
+		sequenceId(PowerSequenceIdType{})
+	{}
 };
-bool convertToJson(const PowerSequenceScheduleListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleListDataSelectorsType &dst);
+bool convertToJson(const PowerSequenceScheduleListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceScheduleListDataSelectorsType &dst);
 
 struct PowerSequenceScheduleConstraintsDataType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
-    std::optional<AbsoluteOrRelativeTimeType> earliestStartTime;
-    std::optional<AbsoluteOrRelativeTimeType> latestStartTime;
-    std::optional<AbsoluteOrRelativeTimeType> earliestEndTime;
-    std::optional<AbsoluteOrRelativeTimeType> latestEndTime;
-    std::optional<bool> optionalSequence;
+	std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<AbsoluteOrRelativeTimeType> earliestStartTime;
+	std::optional<AbsoluteOrRelativeTimeType> latestStartTime;
+	std::optional<AbsoluteOrRelativeTimeType> earliestEndTime;
+	std::optional<AbsoluteOrRelativeTimeType> latestEndTime;
+	std::optional<bool> optionalSequence;
 
-    PowerSequenceScheduleConstraintsDataType() :
-        sequenceId(PowerSequenceIdType{}), earliestStartTime(AbsoluteOrRelativeTimeType{}), latestStartTime(AbsoluteOrRelativeTimeType{}),
-        earliestEndTime(AbsoluteOrRelativeTimeType{}), latestEndTime(AbsoluteOrRelativeTimeType{}), optionalSequence(bool{})
-    {
-    }
+	PowerSequenceScheduleConstraintsDataType()
+		:
+		sequenceId(PowerSequenceIdType{}),
+		earliestStartTime(AbsoluteOrRelativeTimeType{}),
+		latestStartTime(AbsoluteOrRelativeTimeType{}),
+		earliestEndTime(AbsoluteOrRelativeTimeType{}),
+		latestEndTime(AbsoluteOrRelativeTimeType{}),
+		optionalSequence(bool{})
+	{}
 };
-bool convertToJson(const PowerSequenceScheduleConstraintsDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstraintsDataType &dst);
+bool convertToJson(const PowerSequenceScheduleConstraintsDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceScheduleConstraintsDataType &dst);
 
 struct PowerSequenceScheduleConstraintsDataElementsType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<ElementTagType> sequenceId;
-    std::optional<ElementTagType> earliestStartTime;
-    std::optional<ElementTagType> latestStartTime;
-    std::optional<ElementTagType> earliestEndTime;
-    std::optional<ElementTagType> latestEndTime;
-    std::optional<ElementTagType> optionalSequence;
+	std::optional<ElementTagType> sequenceId;
+	std::optional<ElementTagType> earliestStartTime;
+	std::optional<ElementTagType> latestStartTime;
+	std::optional<ElementTagType> earliestEndTime;
+	std::optional<ElementTagType> latestEndTime;
+	std::optional<ElementTagType> optionalSequence;
 
-    PowerSequenceScheduleConstraintsDataElementsType() :
-        sequenceId(ElementTagType{}), earliestStartTime(ElementTagType{}), latestStartTime(ElementTagType{}),
-        earliestEndTime(ElementTagType{}), latestEndTime(ElementTagType{}), optionalSequence(ElementTagType{})
-    {
-    }
+	PowerSequenceScheduleConstraintsDataElementsType()
+		:
+		sequenceId(ElementTagType{}),
+		earliestStartTime(ElementTagType{}),
+		latestStartTime(ElementTagType{}),
+		earliestEndTime(ElementTagType{}),
+		latestEndTime(ElementTagType{}),
+		optionalSequence(ElementTagType{})
+	{}
 };
-bool convertToJson(const PowerSequenceScheduleConstraintsDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstraintsDataElementsType &dst);
+bool convertToJson(const PowerSequenceScheduleConstraintsDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceScheduleConstraintsDataElementsType &dst);
 
 struct PowerSequenceScheduleConstraintsListDataType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<std::vector<PowerSequenceScheduleConstraintsDataType>> powerSequenceScheduleConstraintsData;
+	std::optional<std::vector<PowerSequenceScheduleConstraintsDataType>> powerSequenceScheduleConstraintsData;
 
-    PowerSequenceScheduleConstraintsListDataType() :
-        powerSequenceScheduleConstraintsData(std::vector<PowerSequenceScheduleConstraintsDataType>{})
-    {
-    }
+	PowerSequenceScheduleConstraintsListDataType()
+		:
+		powerSequenceScheduleConstraintsData(std::vector<PowerSequenceScheduleConstraintsDataType>{})
+	{}
 };
-bool convertToJson(const PowerSequenceScheduleConstraintsListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstraintsListDataType &dst);
+bool convertToJson(const PowerSequenceScheduleConstraintsListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceScheduleConstraintsListDataType &dst);
 
 struct PowerSequenceScheduleConstraintsListDataSelectorsType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<PowerSequenceIdType> sequenceId;
 
-    PowerSequenceScheduleConstraintsListDataSelectorsType() : sequenceId(PowerSequenceIdType{})
-    {
-    }
+	PowerSequenceScheduleConstraintsListDataSelectorsType()
+		:
+		sequenceId(PowerSequenceIdType{})
+	{}
 };
-bool convertToJson(const PowerSequenceScheduleConstraintsListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstraintsListDataSelectorsType &dst);
+bool convertToJson(const PowerSequenceScheduleConstraintsListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceScheduleConstraintsListDataSelectorsType &dst);
 
 struct PowerSequencePriceDataType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
-    std::optional<AbsoluteOrRelativeTimeType> potentialStartTime;
-    std::optional<ScaledNumberType> price;
-    std::optional<CurrencyType> currency;
+	std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<AbsoluteOrRelativeTimeType> potentialStartTime;
+	std::optional<ScaledNumberType> price;
+	std::optional<CurrencyType> currency;
 
-    PowerSequencePriceDataType() :
-        sequenceId(PowerSequenceIdType{}), potentialStartTime(AbsoluteOrRelativeTimeType{}), price(ScaledNumberType{}),
-        currency(CurrencyType{})
-    {
-    }
+	PowerSequencePriceDataType()
+		:
+		sequenceId(PowerSequenceIdType{}),
+		potentialStartTime(AbsoluteOrRelativeTimeType{}),
+		price(ScaledNumberType{}),
+		currency(CurrencyType{})
+	{}
 };
-bool convertToJson(const PowerSequencePriceDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequencePriceDataType &dst);
+bool convertToJson(const PowerSequencePriceDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequencePriceDataType &dst);
 
 struct PowerSequencePriceDataElementsType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<ElementTagType> sequenceId;
-    std::optional<ElementTagType> potentialStartTime;
-    std::optional<ScaledNumberElementsType> price;
-    std::optional<ElementTagType> currency;
+	std::optional<ElementTagType> sequenceId;
+	std::optional<ElementTagType> potentialStartTime;
+	std::optional<ScaledNumberElementsType> price;
+	std::optional<ElementTagType> currency;
 
-    PowerSequencePriceDataElementsType() :
-        sequenceId(ElementTagType{}), potentialStartTime(ElementTagType{}), price(ScaledNumberElementsType{}), currency(ElementTagType{})
-    {
-    }
+	PowerSequencePriceDataElementsType()
+		:
+		sequenceId(ElementTagType{}),
+		potentialStartTime(ElementTagType{}),
+		price(ScaledNumberElementsType{}),
+		currency(ElementTagType{})
+	{}
 };
-bool convertToJson(const PowerSequencePriceDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequencePriceDataElementsType &dst);
+bool convertToJson(const PowerSequencePriceDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequencePriceDataElementsType &dst);
 
 struct PowerSequencePriceListDataType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<std::vector<PowerSequencePriceDataType>> powerSequencePriceData;
+	std::optional<std::vector<PowerSequencePriceDataType>> powerSequencePriceData;
 
-    PowerSequencePriceListDataType() : powerSequencePriceData(std::vector<PowerSequencePriceDataType>{})
-    {
-    }
+	PowerSequencePriceListDataType()
+		:
+		powerSequencePriceData(std::vector<PowerSequencePriceDataType>{})
+	{}
 };
-bool convertToJson(const PowerSequencePriceListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequencePriceListDataType &dst);
+bool convertToJson(const PowerSequencePriceListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequencePriceListDataType &dst);
 
 struct PowerSequencePriceListDataSelectorsType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
-    std::optional<TimestampIntervalType> potentialStartTimeInterval;
+	std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<TimestampIntervalType> potentialStartTimeInterval;
 
-    PowerSequencePriceListDataSelectorsType() : sequenceId(PowerSequenceIdType{}), potentialStartTimeInterval(TimestampIntervalType{})
-    {
-    }
+	PowerSequencePriceListDataSelectorsType()
+		:
+		sequenceId(PowerSequenceIdType{}),
+		potentialStartTimeInterval(TimestampIntervalType{})
+	{}
 };
-bool convertToJson(const PowerSequencePriceListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequencePriceListDataSelectorsType &dst);
+bool convertToJson(const PowerSequencePriceListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequencePriceListDataSelectorsType &dst);
 
 struct PowerSequenceSchedulePreferenceDataType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
-    std::optional<bool> greenest;
-    std::optional<bool> cheapest;
+	std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<bool> greenest;
+	std::optional<bool> cheapest;
 
-    PowerSequenceSchedulePreferenceDataType() : sequenceId(PowerSequenceIdType{}), greenest(bool{}), cheapest(bool{})
-    {
-    }
+	PowerSequenceSchedulePreferenceDataType()
+		:
+		sequenceId(PowerSequenceIdType{}),
+		greenest(bool{}),
+		cheapest(bool{})
+	{}
 };
-bool convertToJson(const PowerSequenceSchedulePreferenceDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenceDataType &dst);
+bool convertToJson(const PowerSequenceSchedulePreferenceDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceSchedulePreferenceDataType &dst);
 
 struct PowerSequenceSchedulePreferenceDataElementsType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<ElementTagType> sequenceId;
-    std::optional<ElementTagType> greenest;
-    std::optional<ElementTagType> cheapest;
+	std::optional<ElementTagType> sequenceId;
+	std::optional<ElementTagType> greenest;
+	std::optional<ElementTagType> cheapest;
 
-    PowerSequenceSchedulePreferenceDataElementsType() : sequenceId(ElementTagType{}), greenest(ElementTagType{}), cheapest(ElementTagType{})
-    {
-    }
+	PowerSequenceSchedulePreferenceDataElementsType()
+		:
+		sequenceId(ElementTagType{}),
+		greenest(ElementTagType{}),
+		cheapest(ElementTagType{})
+	{}
 };
-bool convertToJson(const PowerSequenceSchedulePreferenceDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenceDataElementsType &dst);
+bool convertToJson(const PowerSequenceSchedulePreferenceDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceSchedulePreferenceDataElementsType &dst);
 
 struct PowerSequenceSchedulePreferenceListDataType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<std::vector<PowerSequenceSchedulePreferenceDataType>> powerSequenceSchedulePreferenceData;
+	std::optional<std::vector<PowerSequenceSchedulePreferenceDataType>> powerSequenceSchedulePreferenceData;
 
-    PowerSequenceSchedulePreferenceListDataType() :
-        powerSequenceSchedulePreferenceData(std::vector<PowerSequenceSchedulePreferenceDataType>{})
-    {
-    }
+	PowerSequenceSchedulePreferenceListDataType()
+		:
+		powerSequenceSchedulePreferenceData(std::vector<PowerSequenceSchedulePreferenceDataType>{})
+	{}
 };
-bool convertToJson(const PowerSequenceSchedulePreferenceListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenceListDataType &dst);
+bool convertToJson(const PowerSequenceSchedulePreferenceListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceSchedulePreferenceListDataType &dst);
 
 struct PowerSequenceSchedulePreferenceListDataSelectorsType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<PowerSequenceIdType> sequenceId;
 
-    PowerSequenceSchedulePreferenceListDataSelectorsType() : sequenceId(PowerSequenceIdType{})
-    {
-    }
+	PowerSequenceSchedulePreferenceListDataSelectorsType()
+		:
+		sequenceId(PowerSequenceIdType{})
+	{}
 };
-bool convertToJson(const PowerSequenceSchedulePreferenceListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenceListDataSelectorsType &dst);
+bool convertToJson(const PowerSequenceSchedulePreferenceListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceSchedulePreferenceListDataSelectorsType &dst);
 
 struct PowerSequenceNodeScheduleInformationDataType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<bool> nodeRemoteControllable;
-    std::optional<bool> supportsSingleSlotSchedulingOnly;
-    std::optional<uint32_t> alternativesCount;
-    std::optional<uint32_t> totalSequencesCountMax;
-    std::optional<bool> supportsReselection;
+	std::optional<bool> nodeRemoteControllable;
+	std::optional<bool> supportsSingleSlotSchedulingOnly;
+	std::optional<uint32_t> alternativesCount;
+	std::optional<uint32_t> totalSequencesCountMax;
+	std::optional<bool> supportsReselection;
 
-    PowerSequenceNodeScheduleInformationDataType() :
-        nodeRemoteControllable(bool{}), supportsSingleSlotSchedulingOnly(bool{}), alternativesCount(uint32_t{}),
-        totalSequencesCountMax(uint32_t{}), supportsReselection(bool{})
-    {
-    }
+	PowerSequenceNodeScheduleInformationDataType()
+		:
+		nodeRemoteControllable(bool{}),
+		supportsSingleSlotSchedulingOnly(bool{}),
+		alternativesCount(uint32_t{}),
+		totalSequencesCountMax(uint32_t{}),
+		supportsReselection(bool{})
+	{}
 };
-bool convertToJson(const PowerSequenceNodeScheduleInformationDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceNodeScheduleInformationDataType &dst);
+bool convertToJson(const PowerSequenceNodeScheduleInformationDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceNodeScheduleInformationDataType &dst);
 
 struct PowerSequenceNodeScheduleInformationDataElementsType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<ElementTagType> nodeRemoteControllable;
-    std::optional<ElementTagType> supportsSingleSlotSchedulingOnly;
-    std::optional<ElementTagType> alternativesCount;
-    std::optional<ElementTagType> totalSequencesCountMax;
-    std::optional<ElementTagType> supportsReselection;
+	std::optional<ElementTagType> nodeRemoteControllable;
+	std::optional<ElementTagType> supportsSingleSlotSchedulingOnly;
+	std::optional<ElementTagType> alternativesCount;
+	std::optional<ElementTagType> totalSequencesCountMax;
+	std::optional<ElementTagType> supportsReselection;
 
-    PowerSequenceNodeScheduleInformationDataElementsType() :
-        nodeRemoteControllable(ElementTagType{}), supportsSingleSlotSchedulingOnly(ElementTagType{}), alternativesCount(ElementTagType{}),
-        totalSequencesCountMax(ElementTagType{}), supportsReselection(ElementTagType{})
-    {
-    }
+	PowerSequenceNodeScheduleInformationDataElementsType()
+		:
+		nodeRemoteControllable(ElementTagType{}),
+		supportsSingleSlotSchedulingOnly(ElementTagType{}),
+		alternativesCount(ElementTagType{}),
+		totalSequencesCountMax(ElementTagType{}),
+		supportsReselection(ElementTagType{})
+	{}
 };
-bool convertToJson(const PowerSequenceNodeScheduleInformationDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceNodeScheduleInformationDataElementsType &dst);
+bool convertToJson(const PowerSequenceNodeScheduleInformationDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceNodeScheduleInformationDataElementsType &dst);
 
 struct PowerSequenceScheduleConfigurationRequestCallType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<PowerSequenceIdType> sequenceId;
 
-    PowerSequenceScheduleConfigurationRequestCallType() : sequenceId(PowerSequenceIdType{})
-    {
-    }
+	PowerSequenceScheduleConfigurationRequestCallType()
+		:
+		sequenceId(PowerSequenceIdType{})
+	{}
 };
-bool convertToJson(const PowerSequenceScheduleConfigurationRequestCallType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConfigurationRequestCallType &dst);
+bool convertToJson(const PowerSequenceScheduleConfigurationRequestCallType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceScheduleConfigurationRequestCallType &dst);
 
 struct PowerSequenceScheduleConfigurationRequestCallElementsType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<ElementTagType> sequenceId;
+	std::optional<ElementTagType> sequenceId;
 
-    PowerSequenceScheduleConfigurationRequestCallElementsType() : sequenceId(ElementTagType{})
-    {
-    }
+	PowerSequenceScheduleConfigurationRequestCallElementsType()
+		:
+		sequenceId(ElementTagType{})
+	{}
 };
-bool convertToJson(const PowerSequenceScheduleConfigurationRequestCallElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConfigurationRequestCallElementsType &dst);
+bool convertToJson(const PowerSequenceScheduleConfigurationRequestCallElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceScheduleConfigurationRequestCallElementsType &dst);
 
 struct PowerSequencePriceCalculationRequestCallType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
-    std::optional<AbsoluteOrRelativeTimeType> potentialStartTime;
+	std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<AbsoluteOrRelativeTimeType> potentialStartTime;
 
-    PowerSequencePriceCalculationRequestCallType() : sequenceId(PowerSequenceIdType{}), potentialStartTime(AbsoluteOrRelativeTimeType{})
-    {
-    }
+	PowerSequencePriceCalculationRequestCallType()
+		:
+		sequenceId(PowerSequenceIdType{}),
+		potentialStartTime(AbsoluteOrRelativeTimeType{})
+	{}
 };
-bool convertToJson(const PowerSequencePriceCalculationRequestCallType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequencePriceCalculationRequestCallType &dst);
+bool convertToJson(const PowerSequencePriceCalculationRequestCallType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequencePriceCalculationRequestCallType &dst);
 
 struct PowerSequencePriceCalculationRequestCallElementsType { // EEBus_SPINE_TS_PowerSequences.xsd
-    std::optional<ElementTagType> sequenceId;
-    std::optional<ElementTagType> potentialStartTime;
+	std::optional<ElementTagType> sequenceId;
+	std::optional<ElementTagType> potentialStartTime;
 
-    PowerSequencePriceCalculationRequestCallElementsType() : sequenceId(ElementTagType{}), potentialStartTime(ElementTagType{})
-    {
-    }
+	PowerSequencePriceCalculationRequestCallElementsType()
+		:
+		sequenceId(ElementTagType{}),
+		potentialStartTime(ElementTagType{})
+	{}
 };
-bool convertToJson(const PowerSequencePriceCalculationRequestCallElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, PowerSequencePriceCalculationRequestCallElementsType &dst);
+bool convertToJson(const PowerSequencePriceCalculationRequestCallElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequencePriceCalculationRequestCallElementsType &dst);
 
 struct ResultDataType { // EEBus_SPINE_TS_Result.xsd
-    std::optional<ErrorNumberType> errorNumber;
-    std::optional<DescriptionType> description;
+	std::optional<ErrorNumberType> errorNumber;
+	std::optional<DescriptionType> description;
 
-    ResultDataType() : errorNumber(ErrorNumberType{}), description(DescriptionType{})
-    {
-    }
+	ResultDataType()
+		:
+		errorNumber(ErrorNumberType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const ResultDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ResultDataType &dst);
+bool convertToJson(const ResultDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ResultDataType &dst);
 
 struct BindingManagementEntryDataType { // EEBus_SPINE_TS_BindingManagement.xsd
-    std::optional<BindingIdType> bindingId;
-    std::optional<FeatureAddressType> clientAddress;
-    std::optional<FeatureAddressType> serverAddress;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<BindingIdType> bindingId;
+	std::optional<FeatureAddressType> clientAddress;
+	std::optional<FeatureAddressType> serverAddress;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    BindingManagementEntryDataType() :
-        bindingId(BindingIdType{}), clientAddress(FeatureAddressType{}), serverAddress(FeatureAddressType{}), label(LabelType{}),
-        description(DescriptionType{})
-    {
-    }
+	BindingManagementEntryDataType()
+		:
+		bindingId(BindingIdType{}),
+		clientAddress(FeatureAddressType{}),
+		serverAddress(FeatureAddressType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const BindingManagementEntryDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BindingManagementEntryDataType &dst);
+bool convertToJson(const BindingManagementEntryDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BindingManagementEntryDataType &dst);
 
 struct BindingManagementEntryDataElementsType { // EEBus_SPINE_TS_BindingManagement.xsd
-    std::optional<ElementTagType> bindingId;
-    std::optional<FeatureAddressElementsType> clientAddress;
-    std::optional<FeatureAddressElementsType> serverAddress;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> bindingId;
+	std::optional<FeatureAddressElementsType> clientAddress;
+	std::optional<FeatureAddressElementsType> serverAddress;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    BindingManagementEntryDataElementsType() :
-        bindingId(ElementTagType{}), clientAddress(FeatureAddressElementsType{}), serverAddress(FeatureAddressElementsType{}),
-        label(ElementTagType{}), description(ElementTagType{})
-    {
-    }
+	BindingManagementEntryDataElementsType()
+		:
+		bindingId(ElementTagType{}),
+		clientAddress(FeatureAddressElementsType{}),
+		serverAddress(FeatureAddressElementsType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const BindingManagementEntryDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BindingManagementEntryDataElementsType &dst);
+bool convertToJson(const BindingManagementEntryDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BindingManagementEntryDataElementsType &dst);
 
 struct BindingManagementEntryListDataType { // EEBus_SPINE_TS_BindingManagement.xsd
-    std::optional<std::vector<BindingManagementEntryDataType>> bindingManagementEntryData;
+	std::optional<std::vector<BindingManagementEntryDataType>> bindingManagementEntryData;
 
-    BindingManagementEntryListDataType() : bindingManagementEntryData(std::vector<BindingManagementEntryDataType>{})
-    {
-    }
+	BindingManagementEntryListDataType()
+		:
+		bindingManagementEntryData(std::vector<BindingManagementEntryDataType>{})
+	{}
 };
-bool convertToJson(const BindingManagementEntryListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BindingManagementEntryListDataType &dst);
+bool convertToJson(const BindingManagementEntryListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BindingManagementEntryListDataType &dst);
 
 struct BindingManagementEntryListDataSelectorsType { // EEBus_SPINE_TS_BindingManagement.xsd
-    std::optional<BindingIdType> bindingId;
-    std::optional<FeatureAddressType> clientAddress;
-    std::optional<FeatureAddressType> serverAddress;
+	std::optional<BindingIdType> bindingId;
+	std::optional<FeatureAddressType> clientAddress;
+	std::optional<FeatureAddressType> serverAddress;
 
-    BindingManagementEntryListDataSelectorsType() :
-        bindingId(BindingIdType{}), clientAddress(FeatureAddressType{}), serverAddress(FeatureAddressType{})
-    {
-    }
+	BindingManagementEntryListDataSelectorsType()
+		:
+		bindingId(BindingIdType{}),
+		clientAddress(FeatureAddressType{}),
+		serverAddress(FeatureAddressType{})
+	{}
 };
-bool convertToJson(const BindingManagementEntryListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BindingManagementEntryListDataSelectorsType &dst);
+bool convertToJson(const BindingManagementEntryListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BindingManagementEntryListDataSelectorsType &dst);
 
 struct BindingManagementRequestCallType { // EEBus_SPINE_TS_BindingManagement.xsd
-    std::optional<FeatureAddressType> clientAddress;
-    std::optional<FeatureAddressType> serverAddress;
-    std::optional<FeatureTypeType> serverFeatureType;
+	std::optional<FeatureAddressType> clientAddress;
+	std::optional<FeatureAddressType> serverAddress;
+	std::optional<FeatureTypeType> serverFeatureType;
 
-    BindingManagementRequestCallType() :
-        clientAddress(FeatureAddressType{}), serverAddress(FeatureAddressType{}), serverFeatureType(FeatureTypeType{})
-    {
-    }
+	BindingManagementRequestCallType()
+		:
+		clientAddress(FeatureAddressType{}),
+		serverAddress(FeatureAddressType{}),
+		serverFeatureType(FeatureTypeType{})
+	{}
 };
-bool convertToJson(const BindingManagementRequestCallType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BindingManagementRequestCallType &dst);
+bool convertToJson(const BindingManagementRequestCallType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BindingManagementRequestCallType &dst);
 
 struct BindingManagementRequestCallElementsType { // EEBus_SPINE_TS_BindingManagement.xsd
-    std::optional<FeatureAddressElementsType> clientAddress;
-    std::optional<FeatureAddressElementsType> serverAddress;
-    std::optional<ElementTagType> serverFeatureType;
+	std::optional<FeatureAddressElementsType> clientAddress;
+	std::optional<FeatureAddressElementsType> serverAddress;
+	std::optional<ElementTagType> serverFeatureType;
 
-    BindingManagementRequestCallElementsType() :
-        clientAddress(FeatureAddressElementsType{}), serverAddress(FeatureAddressElementsType{}), serverFeatureType(ElementTagType{})
-    {
-    }
+	BindingManagementRequestCallElementsType()
+		:
+		clientAddress(FeatureAddressElementsType{}),
+		serverAddress(FeatureAddressElementsType{}),
+		serverFeatureType(ElementTagType{})
+	{}
 };
-bool convertToJson(const BindingManagementRequestCallElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BindingManagementRequestCallElementsType &dst);
+bool convertToJson(const BindingManagementRequestCallElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BindingManagementRequestCallElementsType &dst);
 
 struct BindingManagementDeleteCallType { // EEBus_SPINE_TS_BindingManagement.xsd
-    std::optional<BindingIdType> bindingId;
-    std::optional<FeatureAddressType> clientAddress;
-    std::optional<FeatureAddressType> serverAddress;
+	std::optional<BindingIdType> bindingId;
+	std::optional<FeatureAddressType> clientAddress;
+	std::optional<FeatureAddressType> serverAddress;
 
-    BindingManagementDeleteCallType() : bindingId(BindingIdType{}), clientAddress(FeatureAddressType{}), serverAddress(FeatureAddressType{})
-    {
-    }
+	BindingManagementDeleteCallType()
+		:
+		bindingId(BindingIdType{}),
+		clientAddress(FeatureAddressType{}),
+		serverAddress(FeatureAddressType{})
+	{}
 };
-bool convertToJson(const BindingManagementDeleteCallType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BindingManagementDeleteCallType &dst);
+bool convertToJson(const BindingManagementDeleteCallType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BindingManagementDeleteCallType &dst);
 
 struct BindingManagementDeleteCallElementsType { // EEBus_SPINE_TS_BindingManagement.xsd
-    std::optional<ElementTagType> bindingId;
-    std::optional<FeatureAddressElementsType> clientAddress;
-    std::optional<FeatureAddressElementsType> serverAddress;
+	std::optional<ElementTagType> bindingId;
+	std::optional<FeatureAddressElementsType> clientAddress;
+	std::optional<FeatureAddressElementsType> serverAddress;
 
-    BindingManagementDeleteCallElementsType() :
-        bindingId(ElementTagType{}), clientAddress(FeatureAddressElementsType{}), serverAddress(FeatureAddressElementsType{})
-    {
-    }
+	BindingManagementDeleteCallElementsType()
+		:
+		bindingId(ElementTagType{}),
+		clientAddress(FeatureAddressElementsType{}),
+		serverAddress(FeatureAddressElementsType{})
+	{}
 };
-bool convertToJson(const BindingManagementDeleteCallElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BindingManagementDeleteCallElementsType &dst);
+bool convertToJson(const BindingManagementDeleteCallElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BindingManagementDeleteCallElementsType &dst);
 
 struct ActuatorLevelDataType { // EEBus_SPINE_TS_ActuatorLevel.xsd
-    std::optional<ActuatorLevelFctType> function;
-    std::optional<ScaledNumberType> value;
+	std::optional<ActuatorLevelFctType> function;
+	std::optional<ScaledNumberType> value;
 
-    ActuatorLevelDataType() : function(ActuatorLevelFctType{}), value(ScaledNumberType{})
-    {
-    }
+	ActuatorLevelDataType()
+		:
+		function(ActuatorLevelFctType{}),
+		value(ScaledNumberType{})
+	{}
 };
-bool convertToJson(const ActuatorLevelDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ActuatorLevelDataType &dst);
+bool convertToJson(const ActuatorLevelDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ActuatorLevelDataType &dst);
 
 struct ActuatorLevelDataElementsType { // EEBus_SPINE_TS_ActuatorLevel.xsd
-    std::optional<ElementTagType> function;
-    std::optional<ScaledNumberElementsType> value;
+	std::optional<ElementTagType> function;
+	std::optional<ScaledNumberElementsType> value;
 
-    ActuatorLevelDataElementsType() : function(ElementTagType{}), value(ScaledNumberElementsType{})
-    {
-    }
+	ActuatorLevelDataElementsType()
+		:
+		function(ElementTagType{}),
+		value(ScaledNumberElementsType{})
+	{}
 };
-bool convertToJson(const ActuatorLevelDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ActuatorLevelDataElementsType &dst);
+bool convertToJson(const ActuatorLevelDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ActuatorLevelDataElementsType &dst);
 
 struct ActuatorLevelDescriptionDataType { // EEBus_SPINE_TS_ActuatorLevel.xsd
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
-    std::optional<UnitOfMeasurementType> levelDefaultUnit;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
+	std::optional<UnitOfMeasurementType> levelDefaultUnit;
 
-    ActuatorLevelDescriptionDataType() : label(LabelType{}), description(DescriptionType{}), levelDefaultUnit(UnitOfMeasurementType{})
-    {
-    }
+	ActuatorLevelDescriptionDataType()
+		:
+		label(LabelType{}),
+		description(DescriptionType{}),
+		levelDefaultUnit(UnitOfMeasurementType{})
+	{}
 };
-bool convertToJson(const ActuatorLevelDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ActuatorLevelDescriptionDataType &dst);
+bool convertToJson(const ActuatorLevelDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ActuatorLevelDescriptionDataType &dst);
 
 struct ActuatorLevelDescriptionDataElementsType { // EEBus_SPINE_TS_ActuatorLevel.xsd
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
-    std::optional<ElementTagType> levelDefaultUnit;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
+	std::optional<ElementTagType> levelDefaultUnit;
 
-    ActuatorLevelDescriptionDataElementsType() : label(ElementTagType{}), description(ElementTagType{}), levelDefaultUnit(ElementTagType{})
-    {
-    }
+	ActuatorLevelDescriptionDataElementsType()
+		:
+		label(ElementTagType{}),
+		description(ElementTagType{}),
+		levelDefaultUnit(ElementTagType{})
+	{}
 };
-bool convertToJson(const ActuatorLevelDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ActuatorLevelDescriptionDataElementsType &dst);
+bool convertToJson(const ActuatorLevelDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ActuatorLevelDescriptionDataElementsType &dst);
 
 struct CmdControlType { // EEBus_SPINE_TS_CommandFrame.xsd
-    std::optional<ElementTagType> var_delete;
-    std::optional<ElementTagType> partial;
+	std::optional<ElementTagType> var_delete;
+	std::optional<ElementTagType> partial;
 
-    CmdControlType() : var_delete(ElementTagType{}), partial(ElementTagType{})
-    {
-    }
+	CmdControlType()
+		:
+		var_delete(ElementTagType{}),
+		partial(ElementTagType{})
+	{}
 };
-bool convertToJson(const CmdControlType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, CmdControlType &dst);
+bool convertToJson(const CmdControlType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, CmdControlType &dst);
 
 struct ActuatorSwitchDataType { // EEBus_SPINE_TS_ActuatorSwitch.xsd
-    std::optional<ActuatorSwitchFctType> function;
+	std::optional<ActuatorSwitchFctType> function;
 
-    ActuatorSwitchDataType() : function(ActuatorSwitchFctType{})
-    {
-    }
+	ActuatorSwitchDataType()
+		:
+		function(ActuatorSwitchFctType{})
+	{}
 };
-bool convertToJson(const ActuatorSwitchDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDataType &dst);
+bool convertToJson(const ActuatorSwitchDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ActuatorSwitchDataType &dst);
 
 struct ActuatorSwitchDataElementsType { // EEBus_SPINE_TS_ActuatorSwitch.xsd
-    std::optional<ElementTagType> function;
+	std::optional<ElementTagType> function;
 
-    ActuatorSwitchDataElementsType() : function(ElementTagType{})
-    {
-    }
+	ActuatorSwitchDataElementsType()
+		:
+		function(ElementTagType{})
+	{}
 };
-bool convertToJson(const ActuatorSwitchDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDataElementsType &dst);
+bool convertToJson(const ActuatorSwitchDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ActuatorSwitchDataElementsType &dst);
 
 struct ActuatorSwitchDescriptionDataType { // EEBus_SPINE_TS_ActuatorSwitch.xsd
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    ActuatorSwitchDescriptionDataType() : label(LabelType{}), description(DescriptionType{})
-    {
-    }
+	ActuatorSwitchDescriptionDataType()
+		:
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const ActuatorSwitchDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDescriptionDataType &dst);
+bool convertToJson(const ActuatorSwitchDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ActuatorSwitchDescriptionDataType &dst);
 
 struct ActuatorSwitchDescriptionDataElementsType { // EEBus_SPINE_TS_ActuatorSwitch.xsd
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    ActuatorSwitchDescriptionDataElementsType() : label(ElementTagType{}), description(ElementTagType{})
-    {
-    }
+	ActuatorSwitchDescriptionDataElementsType()
+		:
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const ActuatorSwitchDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDescriptionDataElementsType &dst);
+bool convertToJson(const ActuatorSwitchDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ActuatorSwitchDescriptionDataElementsType &dst);
 
 struct AlarmDataType { // EEBus_SPINE_TS_Alarm.xsd
-    std::optional<AlarmIdType> alarmId;
-    std::optional<ThresholdIdType> thresholdId;
-    std::optional<AbsoluteOrRelativeTimeType> timestamp;
-    std::optional<AlarmTypeType> alarmType;
-    std::optional<ScaledNumberType> measuredValue;
-    std::optional<TimePeriodType> evaluationPeriod;
-    std::optional<ScopeTypeType> scopeType;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<AlarmIdType> alarmId;
+	std::optional<ThresholdIdType> thresholdId;
+	std::optional<AbsoluteOrRelativeTimeType> timestamp;
+	std::optional<AlarmTypeType> alarmType;
+	std::optional<ScaledNumberType> measuredValue;
+	std::optional<TimePeriodType> evaluationPeriod;
+	std::optional<ScopeTypeType> scopeType;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    AlarmDataType() :
-        alarmId(AlarmIdType{}), thresholdId(ThresholdIdType{}), timestamp(AbsoluteOrRelativeTimeType{}), alarmType(AlarmTypeType{}),
-        measuredValue(ScaledNumberType{}), evaluationPeriod(TimePeriodType{}), scopeType(ScopeTypeType{}), label(LabelType{}),
-        description(DescriptionType{})
-    {
-    }
+	AlarmDataType()
+		:
+		alarmId(AlarmIdType{}),
+		thresholdId(ThresholdIdType{}),
+		timestamp(AbsoluteOrRelativeTimeType{}),
+		alarmType(AlarmTypeType{}),
+		measuredValue(ScaledNumberType{}),
+		evaluationPeriod(TimePeriodType{}),
+		scopeType(ScopeTypeType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const AlarmDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, AlarmDataType &dst);
+bool convertToJson(const AlarmDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, AlarmDataType &dst);
 
 struct AlarmDataElementsType { // EEBus_SPINE_TS_Alarm.xsd
-    std::optional<ElementTagType> alarmId;
-    std::optional<ElementTagType> thresholdId;
-    std::optional<ElementTagType> timestamp;
-    std::optional<ElementTagType> alarmType;
-    std::optional<ScaledNumberElementsType> measuredValue;
-    std::optional<TimePeriodElementsType> evaluationPeriod;
-    std::optional<ElementTagType> scopeType;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> alarmId;
+	std::optional<ElementTagType> thresholdId;
+	std::optional<ElementTagType> timestamp;
+	std::optional<ElementTagType> alarmType;
+	std::optional<ScaledNumberElementsType> measuredValue;
+	std::optional<TimePeriodElementsType> evaluationPeriod;
+	std::optional<ElementTagType> scopeType;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    AlarmDataElementsType() :
-        alarmId(ElementTagType{}), thresholdId(ElementTagType{}), timestamp(ElementTagType{}), alarmType(ElementTagType{}),
-        measuredValue(ScaledNumberElementsType{}), evaluationPeriod(TimePeriodElementsType{}), scopeType(ElementTagType{}),
-        label(ElementTagType{}), description(ElementTagType{})
-    {
-    }
+	AlarmDataElementsType()
+		:
+		alarmId(ElementTagType{}),
+		thresholdId(ElementTagType{}),
+		timestamp(ElementTagType{}),
+		alarmType(ElementTagType{}),
+		measuredValue(ScaledNumberElementsType{}),
+		evaluationPeriod(TimePeriodElementsType{}),
+		scopeType(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const AlarmDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, AlarmDataElementsType &dst);
+bool convertToJson(const AlarmDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, AlarmDataElementsType &dst);
 
 struct AlarmListDataType { // EEBus_SPINE_TS_Alarm.xsd
-    std::optional<std::vector<AlarmDataType>> alarmData;
+	std::optional<std::vector<AlarmDataType>> alarmData;
 
-    AlarmListDataType() : alarmData(std::vector<AlarmDataType>{})
-    {
-    }
+	AlarmListDataType()
+		:
+		alarmData(std::vector<AlarmDataType>{})
+	{}
 };
-bool convertToJson(const AlarmListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, AlarmListDataType &dst);
+bool convertToJson(const AlarmListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, AlarmListDataType &dst);
 
 struct AlarmListDataSelectorsType { // EEBus_SPINE_TS_Alarm.xsd
-    std::optional<AlarmIdType> alarmId;
-    std::optional<ScopeTypeType> scopeType;
+	std::optional<AlarmIdType> alarmId;
+	std::optional<ScopeTypeType> scopeType;
 
-    AlarmListDataSelectorsType() : alarmId(AlarmIdType{}), scopeType(ScopeTypeType{})
-    {
-    }
+	AlarmListDataSelectorsType()
+		:
+		alarmId(AlarmIdType{}),
+		scopeType(ScopeTypeType{})
+	{}
 };
-bool convertToJson(const AlarmListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, AlarmListDataSelectorsType &dst);
+bool convertToJson(const AlarmListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, AlarmListDataSelectorsType &dst);
 
 struct BillValueType { // EEBus_SPINE_TS_Bill.xsd
-    std::optional<BillValueIdType> valueId;
-    std::optional<UnitOfMeasurementType> unit;
-    std::optional<ScaledNumberType> value;
-    std::optional<ScaledNumberType> valuePercentage;
+	std::optional<BillValueIdType> valueId;
+	std::optional<UnitOfMeasurementType> unit;
+	std::optional<ScaledNumberType> value;
+	std::optional<ScaledNumberType> valuePercentage;
 
-    BillValueType() :
-        valueId(BillValueIdType{}), unit(UnitOfMeasurementType{}), value(ScaledNumberType{}), valuePercentage(ScaledNumberType{})
-    {
-    }
+	BillValueType()
+		:
+		valueId(BillValueIdType{}),
+		unit(UnitOfMeasurementType{}),
+		value(ScaledNumberType{}),
+		valuePercentage(ScaledNumberType{})
+	{}
 };
-bool convertToJson(const BillValueType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BillValueType &dst);
+bool convertToJson(const BillValueType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BillValueType &dst);
 
 struct BillValueElementsType { // EEBus_SPINE_TS_Bill.xsd
-    std::optional<ElementTagType> valueId;
-    std::optional<ElementTagType> unit;
-    std::optional<ScaledNumberElementsType> value;
-    std::optional<ScaledNumberElementsType> valuePercentage;
+	std::optional<ElementTagType> valueId;
+	std::optional<ElementTagType> unit;
+	std::optional<ScaledNumberElementsType> value;
+	std::optional<ScaledNumberElementsType> valuePercentage;
 
-    BillValueElementsType() :
-        valueId(ElementTagType{}), unit(ElementTagType{}), value(ScaledNumberElementsType{}), valuePercentage(ScaledNumberElementsType{})
-    {
-    }
+	BillValueElementsType()
+		:
+		valueId(ElementTagType{}),
+		unit(ElementTagType{}),
+		value(ScaledNumberElementsType{}),
+		valuePercentage(ScaledNumberElementsType{})
+	{}
 };
-bool convertToJson(const BillValueElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BillValueElementsType &dst);
+bool convertToJson(const BillValueElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BillValueElementsType &dst);
 
 struct BillCostType { // EEBus_SPINE_TS_Bill.xsd
-    std::optional<BillCostIdType> costId;
-    std::optional<BillCostTypeType> costType;
-    std::optional<BillValueIdType> valueId;
-    std::optional<UnitOfMeasurementType> unit;
-    std::optional<CurrencyType> currency;
-    std::optional<ScaledNumberType> cost;
-    std::optional<ScaledNumberType> costPercentage;
+	std::optional<BillCostIdType> costId;
+	std::optional<BillCostTypeType> costType;
+	std::optional<BillValueIdType> valueId;
+	std::optional<UnitOfMeasurementType> unit;
+	std::optional<CurrencyType> currency;
+	std::optional<ScaledNumberType> cost;
+	std::optional<ScaledNumberType> costPercentage;
 
-    BillCostType() :
-        costId(BillCostIdType{}), costType(BillCostTypeType{}), valueId(BillValueIdType{}), unit(UnitOfMeasurementType{}),
-        currency(CurrencyType{}), cost(ScaledNumberType{}), costPercentage(ScaledNumberType{})
-    {
-    }
+	BillCostType()
+		:
+		costId(BillCostIdType{}),
+		costType(BillCostTypeType{}),
+		valueId(BillValueIdType{}),
+		unit(UnitOfMeasurementType{}),
+		currency(CurrencyType{}),
+		cost(ScaledNumberType{}),
+		costPercentage(ScaledNumberType{})
+	{}
 };
-bool convertToJson(const BillCostType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BillCostType &dst);
+bool convertToJson(const BillCostType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BillCostType &dst);
 
 struct BillCostElementsType { // EEBus_SPINE_TS_Bill.xsd
-    std::optional<ElementTagType> costId;
-    std::optional<ElementTagType> costType;
-    std::optional<ElementTagType> valueId;
-    std::optional<ElementTagType> unit;
-    std::optional<ElementTagType> currency;
-    std::optional<ScaledNumberElementsType> cost;
-    std::optional<ScaledNumberElementsType> costPercentage;
+	std::optional<ElementTagType> costId;
+	std::optional<ElementTagType> costType;
+	std::optional<ElementTagType> valueId;
+	std::optional<ElementTagType> unit;
+	std::optional<ElementTagType> currency;
+	std::optional<ScaledNumberElementsType> cost;
+	std::optional<ScaledNumberElementsType> costPercentage;
 
-    BillCostElementsType() :
-        costId(ElementTagType{}), costType(ElementTagType{}), valueId(ElementTagType{}), unit(ElementTagType{}), currency(ElementTagType{}),
-        cost(ScaledNumberElementsType{}), costPercentage(ScaledNumberElementsType{})
-    {
-    }
+	BillCostElementsType()
+		:
+		costId(ElementTagType{}),
+		costType(ElementTagType{}),
+		valueId(ElementTagType{}),
+		unit(ElementTagType{}),
+		currency(ElementTagType{}),
+		cost(ScaledNumberElementsType{}),
+		costPercentage(ScaledNumberElementsType{})
+	{}
 };
-bool convertToJson(const BillCostElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BillCostElementsType &dst);
+bool convertToJson(const BillCostElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BillCostElementsType &dst);
 
 struct BillPositionType { // EEBus_SPINE_TS_Bill.xsd
-    std::optional<BillPositionIdType> positionId;
-    std::optional<BillPositionTypeType> positionType;
-    std::optional<TimePeriodType> timePeriod;
-    std::optional<std::vector<BillValueType>> value;
-    std::optional<std::vector<BillCostType>> cost;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<BillPositionIdType> positionId;
+	std::optional<BillPositionTypeType> positionType;
+	std::optional<TimePeriodType> timePeriod;
+	std::optional<std::vector<BillValueType>> value;
+	std::optional<std::vector<BillCostType>> cost;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    BillPositionType() :
-        positionId(BillPositionIdType{}), positionType(BillPositionTypeType{}), timePeriod(TimePeriodType{}),
-        value(std::vector<BillValueType>{}), cost(std::vector<BillCostType>{}), label(LabelType{}), description(DescriptionType{})
-    {
-    }
+	BillPositionType()
+		:
+		positionId(BillPositionIdType{}),
+		positionType(BillPositionTypeType{}),
+		timePeriod(TimePeriodType{}),
+		value(std::vector<BillValueType>{}),
+		cost(std::vector<BillCostType>{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const BillPositionType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BillPositionType &dst);
+bool convertToJson(const BillPositionType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BillPositionType &dst);
 
 struct BillPositionElementsType { // EEBus_SPINE_TS_Bill.xsd
-    std::optional<ElementTagType> positionId;
-    std::optional<ElementTagType> positionType;
-    std::optional<TimePeriodElementsType> timePeriod;
-    std::optional<BillValueElementsType> value;
-    std::optional<BillCostElementsType> cost;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> positionId;
+	std::optional<ElementTagType> positionType;
+	std::optional<TimePeriodElementsType> timePeriod;
+	std::optional<BillValueElementsType> value;
+	std::optional<BillCostElementsType> cost;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    BillPositionElementsType() :
-        positionId(ElementTagType{}), positionType(ElementTagType{}), timePeriod(TimePeriodElementsType{}), value(BillValueElementsType{}),
-        cost(BillCostElementsType{}), label(ElementTagType{}), description(ElementTagType{})
-    {
-    }
+	BillPositionElementsType()
+		:
+		positionId(ElementTagType{}),
+		positionType(ElementTagType{}),
+		timePeriod(TimePeriodElementsType{}),
+		value(BillValueElementsType{}),
+		cost(BillCostElementsType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const BillPositionElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BillPositionElementsType &dst);
+bool convertToJson(const BillPositionElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BillPositionElementsType &dst);
 
 struct BillDataType { // EEBus_SPINE_TS_Bill.xsd
-    std::optional<BillIdType> billId;
-    std::optional<BillTypeType> billType;
-    std::optional<ScopeTypeType> scopeType;
-    std::optional<BillPositionType> total;
-    std::optional<std::vector<BillPositionType>> position;
+	std::optional<BillIdType> billId;
+	std::optional<BillTypeType> billType;
+	std::optional<ScopeTypeType> scopeType;
+	std::optional<BillPositionType> total;
+	std::optional<std::vector<BillPositionType>> position;
 
-    BillDataType() :
-        billId(BillIdType{}), billType(BillTypeType{}), scopeType(ScopeTypeType{}), total(BillPositionType{}),
-        position(std::vector<BillPositionType>{})
-    {
-    }
+	BillDataType()
+		:
+		billId(BillIdType{}),
+		billType(BillTypeType{}),
+		scopeType(ScopeTypeType{}),
+		total(BillPositionType{}),
+		position(std::vector<BillPositionType>{})
+	{}
 };
-bool convertToJson(const BillDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BillDataType &dst);
+bool convertToJson(const BillDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BillDataType &dst);
 
 struct BillDataElementsType { // EEBus_SPINE_TS_Bill.xsd
-    std::optional<ElementTagType> billId;
-    std::optional<ElementTagType> billType;
-    std::optional<ElementTagType> scopeType;
-    std::optional<BillPositionElementsType> total;
-    std::optional<BillPositionElementsType> position;
+	std::optional<ElementTagType> billId;
+	std::optional<ElementTagType> billType;
+	std::optional<ElementTagType> scopeType;
+	std::optional<BillPositionElementsType> total;
+	std::optional<BillPositionElementsType> position;
 
-    BillDataElementsType() :
-        billId(ElementTagType{}), billType(ElementTagType{}), scopeType(ElementTagType{}), total(BillPositionElementsType{}),
-        position(BillPositionElementsType{})
-    {
-    }
+	BillDataElementsType()
+		:
+		billId(ElementTagType{}),
+		billType(ElementTagType{}),
+		scopeType(ElementTagType{}),
+		total(BillPositionElementsType{}),
+		position(BillPositionElementsType{})
+	{}
 };
-bool convertToJson(const BillDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BillDataElementsType &dst);
+bool convertToJson(const BillDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BillDataElementsType &dst);
 
 struct BillListDataType { // EEBus_SPINE_TS_Bill.xsd
-    std::optional<std::vector<BillDataType>> billData;
+	std::optional<std::vector<BillDataType>> billData;
 
-    BillListDataType() : billData(std::vector<BillDataType>{})
-    {
-    }
+	BillListDataType()
+		:
+		billData(std::vector<BillDataType>{})
+	{}
 };
-bool convertToJson(const BillListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BillListDataType &dst);
+bool convertToJson(const BillListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BillListDataType &dst);
 
 struct BillListDataSelectorsType { // EEBus_SPINE_TS_Bill.xsd
-    std::optional<BillIdType> billId;
-    std::optional<ScopeTypeType> scopeType;
+	std::optional<BillIdType> billId;
+	std::optional<ScopeTypeType> scopeType;
 
-    BillListDataSelectorsType() : billId(BillIdType{}), scopeType(ScopeTypeType{})
-    {
-    }
+	BillListDataSelectorsType()
+		:
+		billId(BillIdType{}),
+		scopeType(ScopeTypeType{})
+	{}
 };
-bool convertToJson(const BillListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BillListDataSelectorsType &dst);
+bool convertToJson(const BillListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BillListDataSelectorsType &dst);
 
 struct BillConstraintsDataType { // EEBus_SPINE_TS_Bill.xsd
-    std::optional<BillIdType> billId;
-    std::optional<BillPositionCountType> positionCountMin;
-    std::optional<BillPositionCountType> positionCountMax;
+	std::optional<BillIdType> billId;
+	std::optional<BillPositionCountType> positionCountMin;
+	std::optional<BillPositionCountType> positionCountMax;
 
-    BillConstraintsDataType() : billId(BillIdType{}), positionCountMin(BillPositionCountType{}), positionCountMax(BillPositionCountType{})
-    {
-    }
+	BillConstraintsDataType()
+		:
+		billId(BillIdType{}),
+		positionCountMin(BillPositionCountType{}),
+		positionCountMax(BillPositionCountType{})
+	{}
 };
-bool convertToJson(const BillConstraintsDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BillConstraintsDataType &dst);
+bool convertToJson(const BillConstraintsDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BillConstraintsDataType &dst);
 
 struct BillConstraintsDataElementsType { // EEBus_SPINE_TS_Bill.xsd
-    std::optional<ElementTagType> billId;
-    std::optional<ElementTagType> positionCountMin;
-    std::optional<ElementTagType> positionCountMax;
+	std::optional<ElementTagType> billId;
+	std::optional<ElementTagType> positionCountMin;
+	std::optional<ElementTagType> positionCountMax;
 
-    BillConstraintsDataElementsType() : billId(ElementTagType{}), positionCountMin(ElementTagType{}), positionCountMax(ElementTagType{})
-    {
-    }
+	BillConstraintsDataElementsType()
+		:
+		billId(ElementTagType{}),
+		positionCountMin(ElementTagType{}),
+		positionCountMax(ElementTagType{})
+	{}
 };
-bool convertToJson(const BillConstraintsDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BillConstraintsDataElementsType &dst);
+bool convertToJson(const BillConstraintsDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BillConstraintsDataElementsType &dst);
 
 struct BillConstraintsListDataType { // EEBus_SPINE_TS_Bill.xsd
-    std::optional<std::vector<BillConstraintsDataType>> billConstraintsData;
+	std::optional<std::vector<BillConstraintsDataType>> billConstraintsData;
 
-    BillConstraintsListDataType() : billConstraintsData(std::vector<BillConstraintsDataType>{})
-    {
-    }
+	BillConstraintsListDataType()
+		:
+		billConstraintsData(std::vector<BillConstraintsDataType>{})
+	{}
 };
-bool convertToJson(const BillConstraintsListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BillConstraintsListDataType &dst);
+bool convertToJson(const BillConstraintsListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BillConstraintsListDataType &dst);
 
 struct BillConstraintsListDataSelectorsType { // EEBus_SPINE_TS_Bill.xsd
-    std::optional<BillIdType> billId;
+	std::optional<BillIdType> billId;
 
-    BillConstraintsListDataSelectorsType() : billId(BillIdType{})
-    {
-    }
+	BillConstraintsListDataSelectorsType()
+		:
+		billId(BillIdType{})
+	{}
 };
-bool convertToJson(const BillConstraintsListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BillConstraintsListDataSelectorsType &dst);
+bool convertToJson(const BillConstraintsListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BillConstraintsListDataSelectorsType &dst);
 
 struct BillDescriptionDataType { // EEBus_SPINE_TS_Bill.xsd
-    std::optional<BillIdType> billId;
-    std::optional<bool> billWriteable;
-    std::optional<bool> updateRequired;
-    std::optional<std::vector<BillTypeType>> supportedBillType;
-    std::optional<SessionIdType> sessionId;
+	std::optional<BillIdType> billId;
+	std::optional<bool> billWriteable;
+	std::optional<bool> updateRequired;
+	std::optional<std::vector<BillTypeType>> supportedBillType;
+	std::optional<SessionIdType> sessionId;
 
-    BillDescriptionDataType() :
-        billId(BillIdType{}), billWriteable(bool{}), updateRequired(bool{}), supportedBillType(std::vector<BillTypeType>{}),
-        sessionId(SessionIdType{})
-    {
-    }
+	BillDescriptionDataType()
+		:
+		billId(BillIdType{}),
+		billWriteable(bool{}),
+		updateRequired(bool{}),
+		supportedBillType(std::vector<BillTypeType>{}),
+		sessionId(SessionIdType{})
+	{}
 };
-bool convertToJson(const BillDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BillDescriptionDataType &dst);
+bool convertToJson(const BillDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BillDescriptionDataType &dst);
 
 struct BillDescriptionDataElementsType { // EEBus_SPINE_TS_Bill.xsd
-    std::optional<ElementTagType> billId;
-    std::optional<ElementTagType> billWriteable;
-    std::optional<ElementTagType> updateRequired;
-    std::optional<ElementTagType> supportedBillType;
-    std::optional<ElementTagType> sessionId;
+	std::optional<ElementTagType> billId;
+	std::optional<ElementTagType> billWriteable;
+	std::optional<ElementTagType> updateRequired;
+	std::optional<ElementTagType> supportedBillType;
+	std::optional<ElementTagType> sessionId;
 
-    BillDescriptionDataElementsType() :
-        billId(ElementTagType{}), billWriteable(ElementTagType{}), updateRequired(ElementTagType{}), supportedBillType(ElementTagType{}),
-        sessionId(ElementTagType{})
-    {
-    }
+	BillDescriptionDataElementsType()
+		:
+		billId(ElementTagType{}),
+		billWriteable(ElementTagType{}),
+		updateRequired(ElementTagType{}),
+		supportedBillType(ElementTagType{}),
+		sessionId(ElementTagType{})
+	{}
 };
-bool convertToJson(const BillDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BillDescriptionDataElementsType &dst);
+bool convertToJson(const BillDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BillDescriptionDataElementsType &dst);
 
 struct BillDescriptionListDataType { // EEBus_SPINE_TS_Bill.xsd
-    std::optional<std::vector<BillDescriptionDataType>> billDescriptionData;
+	std::optional<std::vector<BillDescriptionDataType>> billDescriptionData;
 
-    BillDescriptionListDataType() : billDescriptionData(std::vector<BillDescriptionDataType>{})
-    {
-    }
+	BillDescriptionListDataType()
+		:
+		billDescriptionData(std::vector<BillDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const BillDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BillDescriptionListDataType &dst);
+bool convertToJson(const BillDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BillDescriptionListDataType &dst);
 
 struct BillDescriptionListDataSelectorsType { // EEBus_SPINE_TS_Bill.xsd
-    std::optional<BillIdType> billId;
+	std::optional<BillIdType> billId;
 
-    BillDescriptionListDataSelectorsType() : billId(BillIdType{})
-    {
-    }
+	BillDescriptionListDataSelectorsType()
+		:
+		billId(BillIdType{})
+	{}
 };
-bool convertToJson(const BillDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, BillDescriptionListDataSelectorsType &dst);
+bool convertToJson(const BillDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, BillDescriptionListDataSelectorsType &dst);
 
 struct IdentificationDataType { // EEBus_SPINE_TS_Identification.xsd
-    std::optional<IdentificationIdType> identificationId;
-    std::optional<IdentificationTypeType> identificationType;
-    std::optional<IdentificationValueType> identificationValue;
-    std::optional<bool> authorized;
+	std::optional<IdentificationIdType> identificationId;
+	std::optional<IdentificationTypeType> identificationType;
+	std::optional<IdentificationValueType> identificationValue;
+	std::optional<bool> authorized;
 
-    IdentificationDataType() :
-        identificationId(IdentificationIdType{}), identificationType(IdentificationTypeType{}),
-        identificationValue(IdentificationValueType{}), authorized(bool{})
-    {
-    }
+	IdentificationDataType()
+		:
+		identificationId(IdentificationIdType{}),
+		identificationType(IdentificationTypeType{}),
+		identificationValue(IdentificationValueType{}),
+		authorized(bool{})
+	{}
 };
-bool convertToJson(const IdentificationDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IdentificationDataType &dst);
+bool convertToJson(const IdentificationDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IdentificationDataType &dst);
 
 struct IdentificationDataElementsType { // EEBus_SPINE_TS_Identification.xsd
-    std::optional<ElementTagType> identificationId;
-    std::optional<ElementTagType> identificationType;
-    std::optional<ElementTagType> identificationValue;
-    std::optional<ElementTagType> authorized;
+	std::optional<ElementTagType> identificationId;
+	std::optional<ElementTagType> identificationType;
+	std::optional<ElementTagType> identificationValue;
+	std::optional<ElementTagType> authorized;
 
-    IdentificationDataElementsType() :
-        identificationId(ElementTagType{}), identificationType(ElementTagType{}), identificationValue(ElementTagType{}),
-        authorized(ElementTagType{})
-    {
-    }
+	IdentificationDataElementsType()
+		:
+		identificationId(ElementTagType{}),
+		identificationType(ElementTagType{}),
+		identificationValue(ElementTagType{}),
+		authorized(ElementTagType{})
+	{}
 };
-bool convertToJson(const IdentificationDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IdentificationDataElementsType &dst);
+bool convertToJson(const IdentificationDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IdentificationDataElementsType &dst);
 
 struct IdentificationListDataType { // EEBus_SPINE_TS_Identification.xsd
-    std::optional<std::vector<IdentificationDataType>> identificationData;
+	std::optional<std::vector<IdentificationDataType>> identificationData;
 
-    IdentificationListDataType() : identificationData(std::vector<IdentificationDataType>{})
-    {
-    }
+	IdentificationListDataType()
+		:
+		identificationData(std::vector<IdentificationDataType>{})
+	{}
 };
-bool convertToJson(const IdentificationListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IdentificationListDataType &dst);
+bool convertToJson(const IdentificationListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IdentificationListDataType &dst);
 
 struct IdentificationListDataSelectorsType { // EEBus_SPINE_TS_Identification.xsd
-    std::optional<IdentificationIdType> identificationId;
-    std::optional<IdentificationTypeType> identificationType;
+	std::optional<IdentificationIdType> identificationId;
+	std::optional<IdentificationTypeType> identificationType;
 
-    IdentificationListDataSelectorsType() : identificationId(IdentificationIdType{}), identificationType(IdentificationTypeType{})
-    {
-    }
+	IdentificationListDataSelectorsType()
+		:
+		identificationId(IdentificationIdType{}),
+		identificationType(IdentificationTypeType{})
+	{}
 };
-bool convertToJson(const IdentificationListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IdentificationListDataSelectorsType &dst);
+bool convertToJson(const IdentificationListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IdentificationListDataSelectorsType &dst);
 
 struct SessionIdentificationDataType { // EEBus_SPINE_TS_Identification.xsd
-    std::optional<SessionIdType> sessionId;
-    std::optional<IdentificationIdType> identificationId;
-    std::optional<bool> isLatestSession;
-    std::optional<TimePeriodType> timePeriod;
+	std::optional<SessionIdType> sessionId;
+	std::optional<IdentificationIdType> identificationId;
+	std::optional<bool> isLatestSession;
+	std::optional<TimePeriodType> timePeriod;
 
-    SessionIdentificationDataType() :
-        sessionId(SessionIdType{}), identificationId(IdentificationIdType{}), isLatestSession(bool{}), timePeriod(TimePeriodType{})
-    {
-    }
+	SessionIdentificationDataType()
+		:
+		sessionId(SessionIdType{}),
+		identificationId(IdentificationIdType{}),
+		isLatestSession(bool{}),
+		timePeriod(TimePeriodType{})
+	{}
 };
-bool convertToJson(const SessionIdentificationDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SessionIdentificationDataType &dst);
+bool convertToJson(const SessionIdentificationDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SessionIdentificationDataType &dst);
 
 struct SessionIdentificationDataElementsType { // EEBus_SPINE_TS_Identification.xsd
-    std::optional<ElementTagType> sessionId;
-    std::optional<ElementTagType> identificationId;
-    std::optional<ElementTagType> isLatestSession;
-    std::optional<TimePeriodElementsType> timePeriod;
+	std::optional<ElementTagType> sessionId;
+	std::optional<ElementTagType> identificationId;
+	std::optional<ElementTagType> isLatestSession;
+	std::optional<TimePeriodElementsType> timePeriod;
 
-    SessionIdentificationDataElementsType() :
-        sessionId(ElementTagType{}), identificationId(ElementTagType{}), isLatestSession(ElementTagType{}),
-        timePeriod(TimePeriodElementsType{})
-    {
-    }
+	SessionIdentificationDataElementsType()
+		:
+		sessionId(ElementTagType{}),
+		identificationId(ElementTagType{}),
+		isLatestSession(ElementTagType{}),
+		timePeriod(TimePeriodElementsType{})
+	{}
 };
-bool convertToJson(const SessionIdentificationDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SessionIdentificationDataElementsType &dst);
+bool convertToJson(const SessionIdentificationDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SessionIdentificationDataElementsType &dst);
 
 struct SessionIdentificationListDataType { // EEBus_SPINE_TS_Identification.xsd
-    std::optional<std::vector<SessionIdentificationDataType>> sessionIdentificationData;
+	std::optional<std::vector<SessionIdentificationDataType>> sessionIdentificationData;
 
-    SessionIdentificationListDataType() : sessionIdentificationData(std::vector<SessionIdentificationDataType>{})
-    {
-    }
+	SessionIdentificationListDataType()
+		:
+		sessionIdentificationData(std::vector<SessionIdentificationDataType>{})
+	{}
 };
-bool convertToJson(const SessionIdentificationListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SessionIdentificationListDataType &dst);
+bool convertToJson(const SessionIdentificationListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SessionIdentificationListDataType &dst);
 
 struct SessionIdentificationListDataSelectorsType { // EEBus_SPINE_TS_Identification.xsd
-    std::optional<SessionIdType> sessionId;
-    std::optional<IdentificationIdType> identificationId;
-    std::optional<bool> isLatestSession;
-    std::optional<TimePeriodType> timePeriod;
+	std::optional<SessionIdType> sessionId;
+	std::optional<IdentificationIdType> identificationId;
+	std::optional<bool> isLatestSession;
+	std::optional<TimePeriodType> timePeriod;
 
-    SessionIdentificationListDataSelectorsType() :
-        sessionId(SessionIdType{}), identificationId(IdentificationIdType{}), isLatestSession(bool{}), timePeriod(TimePeriodType{})
-    {
-    }
+	SessionIdentificationListDataSelectorsType()
+		:
+		sessionId(SessionIdType{}),
+		identificationId(IdentificationIdType{}),
+		isLatestSession(bool{}),
+		timePeriod(TimePeriodType{})
+	{}
 };
-bool convertToJson(const SessionIdentificationListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SessionIdentificationListDataSelectorsType &dst);
+bool convertToJson(const SessionIdentificationListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SessionIdentificationListDataSelectorsType &dst);
 
 struct SessionMeasurementRelationDataType { // EEBus_SPINE_TS_Identification.xsd
-    std::optional<SessionIdType> sessionId;
-    std::optional<std::vector<MeasurementIdType>> measurementId;
+	std::optional<SessionIdType> sessionId;
+	std::optional<std::vector<MeasurementIdType>> measurementId;
 
-    SessionMeasurementRelationDataType() : sessionId(SessionIdType{}), measurementId(std::vector<MeasurementIdType>{})
-    {
-    }
+	SessionMeasurementRelationDataType()
+		:
+		sessionId(SessionIdType{}),
+		measurementId(std::vector<MeasurementIdType>{})
+	{}
 };
-bool convertToJson(const SessionMeasurementRelationDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationDataType &dst);
+bool convertToJson(const SessionMeasurementRelationDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SessionMeasurementRelationDataType &dst);
 
 struct SessionMeasurementRelationDataElementsType { // EEBus_SPINE_TS_Identification.xsd
-    std::optional<ElementTagType> sessionId;
-    std::optional<ElementTagType> measurementId;
+	std::optional<ElementTagType> sessionId;
+	std::optional<ElementTagType> measurementId;
 
-    SessionMeasurementRelationDataElementsType() : sessionId(ElementTagType{}), measurementId(ElementTagType{})
-    {
-    }
+	SessionMeasurementRelationDataElementsType()
+		:
+		sessionId(ElementTagType{}),
+		measurementId(ElementTagType{})
+	{}
 };
-bool convertToJson(const SessionMeasurementRelationDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationDataElementsType &dst);
+bool convertToJson(const SessionMeasurementRelationDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SessionMeasurementRelationDataElementsType &dst);
 
 struct SessionMeasurementRelationListDataType { // EEBus_SPINE_TS_Identification.xsd
-    std::optional<std::vector<SessionMeasurementRelationDataType>> sessionMeasurementRelationData;
+	std::optional<std::vector<SessionMeasurementRelationDataType>> sessionMeasurementRelationData;
 
-    SessionMeasurementRelationListDataType() : sessionMeasurementRelationData(std::vector<SessionMeasurementRelationDataType>{})
-    {
-    }
+	SessionMeasurementRelationListDataType()
+		:
+		sessionMeasurementRelationData(std::vector<SessionMeasurementRelationDataType>{})
+	{}
 };
-bool convertToJson(const SessionMeasurementRelationListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationListDataType &dst);
+bool convertToJson(const SessionMeasurementRelationListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SessionMeasurementRelationListDataType &dst);
 
 struct SessionMeasurementRelationListDataSelectorsType { // EEBus_SPINE_TS_Identification.xsd
-    std::optional<SessionIdType> sessionId;
-    std::optional<MeasurementIdType> measurementId;
+	std::optional<SessionIdType> sessionId;
+	std::optional<MeasurementIdType> measurementId;
 
-    SessionMeasurementRelationListDataSelectorsType() : sessionId(SessionIdType{}), measurementId(MeasurementIdType{})
-    {
-    }
+	SessionMeasurementRelationListDataSelectorsType()
+		:
+		sessionId(SessionIdType{}),
+		measurementId(MeasurementIdType{})
+	{}
 };
-bool convertToJson(const SessionMeasurementRelationListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationListDataSelectorsType &dst);
+bool convertToJson(const SessionMeasurementRelationListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SessionMeasurementRelationListDataSelectorsType &dst);
 
 struct DataTunnelingHeaderType { // EEBus_SPINE_TS_DataTunneling.xsd
-    std::optional<PurposeIdType> purposeId;
-    std::optional<ChannelIdType> channelId;
-    std::optional<uint32_t> sequenceId;
+	std::optional<PurposeIdType> purposeId;
+	std::optional<ChannelIdType> channelId;
+	std::optional<uint32_t> sequenceId;
 
-    DataTunnelingHeaderType() : purposeId(PurposeIdType{}), channelId(ChannelIdType{}), sequenceId(uint32_t{})
-    {
-    }
+	DataTunnelingHeaderType()
+		:
+		purposeId(PurposeIdType{}),
+		channelId(ChannelIdType{}),
+		sequenceId(uint32_t{})
+	{}
 };
-bool convertToJson(const DataTunnelingHeaderType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DataTunnelingHeaderType &dst);
+bool convertToJson(const DataTunnelingHeaderType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DataTunnelingHeaderType &dst);
 
 struct DataTunnelingHeaderElementsType { // EEBus_SPINE_TS_DataTunneling.xsd
-    std::optional<ElementTagType> purposeId;
-    std::optional<ElementTagType> channelId;
-    std::optional<ElementTagType> sequenceId;
+	std::optional<ElementTagType> purposeId;
+	std::optional<ElementTagType> channelId;
+	std::optional<ElementTagType> sequenceId;
 
-    DataTunnelingHeaderElementsType() : purposeId(ElementTagType{}), channelId(ElementTagType{}), sequenceId(ElementTagType{})
-    {
-    }
+	DataTunnelingHeaderElementsType()
+		:
+		purposeId(ElementTagType{}),
+		channelId(ElementTagType{}),
+		sequenceId(ElementTagType{})
+	{}
 };
-bool convertToJson(const DataTunnelingHeaderElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DataTunnelingHeaderElementsType &dst);
+bool convertToJson(const DataTunnelingHeaderElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DataTunnelingHeaderElementsType &dst);
 
 struct DataTunnelingCallType { // EEBus_SPINE_TS_DataTunneling.xsd
-    std::optional<DataTunnelingHeaderType> header;
-    std::optional<std::string> payload;
+	std::optional<DataTunnelingHeaderType> header;
+	std::optional<std::string> payload;
 
-    DataTunnelingCallType() : header(DataTunnelingHeaderType{}), payload(std::string{})
-    {
-    }
+	DataTunnelingCallType()
+		:
+		header(DataTunnelingHeaderType{}),
+		payload(std::string{})
+	{}
 };
-bool convertToJson(const DataTunnelingCallType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DataTunnelingCallType &dst);
+bool convertToJson(const DataTunnelingCallType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DataTunnelingCallType &dst);
 
 struct DataTunnelingCallElementsType { // EEBus_SPINE_TS_DataTunneling.xsd
-    std::optional<DataTunnelingHeaderElementsType> header;
-    std::optional<ElementTagType> payload;
+	std::optional<DataTunnelingHeaderElementsType> header;
+	std::optional<ElementTagType> payload;
 
-    DataTunnelingCallElementsType() : header(DataTunnelingHeaderElementsType{}), payload(ElementTagType{})
-    {
-    }
+	DataTunnelingCallElementsType()
+		:
+		header(DataTunnelingHeaderElementsType{}),
+		payload(ElementTagType{})
+	{}
 };
-bool convertToJson(const DataTunnelingCallElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DataTunnelingCallElementsType &dst);
+bool convertToJson(const DataTunnelingCallElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DataTunnelingCallElementsType &dst);
 
 struct DeviceClassificationManufacturerDataType { // EEBus_SPINE_TS_DeviceClassification.xsd
-    std::optional<DeviceClassificationStringType> deviceName;
-    std::optional<DeviceClassificationStringType> deviceCode;
-    std::optional<DeviceClassificationStringType> serialNumber;
-    std::optional<DeviceClassificationStringType> softwareRevision;
-    std::optional<DeviceClassificationStringType> hardwareRevision;
-    std::optional<DeviceClassificationStringType> vendorName;
-    std::optional<DeviceClassificationStringType> vendorCode;
-    std::optional<DeviceClassificationStringType> brandName;
-    std::optional<PowerSourceType> powerSource;
-    std::optional<DeviceClassificationStringType> manufacturerNodeIdentification;
-    std::optional<LabelType> manufacturerLabel;
-    std::optional<DescriptionType> manufacturerDescription;
+	std::optional<DeviceClassificationStringType> deviceName;
+	std::optional<DeviceClassificationStringType> deviceCode;
+	std::optional<DeviceClassificationStringType> serialNumber;
+	std::optional<DeviceClassificationStringType> softwareRevision;
+	std::optional<DeviceClassificationStringType> hardwareRevision;
+	std::optional<DeviceClassificationStringType> vendorName;
+	std::optional<DeviceClassificationStringType> vendorCode;
+	std::optional<DeviceClassificationStringType> brandName;
+	std::optional<PowerSourceType> powerSource;
+	std::optional<DeviceClassificationStringType> manufacturerNodeIdentification;
+	std::optional<LabelType> manufacturerLabel;
+	std::optional<DescriptionType> manufacturerDescription;
 
-    DeviceClassificationManufacturerDataType() :
-        deviceName(DeviceClassificationStringType{}), deviceCode(DeviceClassificationStringType{}),
-        serialNumber(DeviceClassificationStringType{}), softwareRevision(DeviceClassificationStringType{}),
-        hardwareRevision(DeviceClassificationStringType{}), vendorName(DeviceClassificationStringType{}),
-        vendorCode(DeviceClassificationStringType{}), brandName(DeviceClassificationStringType{}), powerSource(PowerSourceType{}),
-        manufacturerNodeIdentification(DeviceClassificationStringType{}), manufacturerLabel(LabelType{}),
-        manufacturerDescription(DescriptionType{})
-    {
-    }
+	DeviceClassificationManufacturerDataType()
+		:
+		deviceName(DeviceClassificationStringType{}),
+		deviceCode(DeviceClassificationStringType{}),
+		serialNumber(DeviceClassificationStringType{}),
+		softwareRevision(DeviceClassificationStringType{}),
+		hardwareRevision(DeviceClassificationStringType{}),
+		vendorName(DeviceClassificationStringType{}),
+		vendorCode(DeviceClassificationStringType{}),
+		brandName(DeviceClassificationStringType{}),
+		powerSource(PowerSourceType{}),
+		manufacturerNodeIdentification(DeviceClassificationStringType{}),
+		manufacturerLabel(LabelType{}),
+		manufacturerDescription(DescriptionType{})
+	{}
 };
-bool convertToJson(const DeviceClassificationManufacturerDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceClassificationManufacturerDataType &dst);
+bool convertToJson(const DeviceClassificationManufacturerDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceClassificationManufacturerDataType &dst);
 
 struct DeviceClassificationManufacturerDataElementsType { // EEBus_SPINE_TS_DeviceClassification.xsd
-    std::optional<ElementTagType> deviceName;
-    std::optional<ElementTagType> deviceCode;
-    std::optional<ElementTagType> serialNumber;
-    std::optional<ElementTagType> softwareRevision;
-    std::optional<ElementTagType> hardwareRevision;
-    std::optional<ElementTagType> vendorName;
-    std::optional<ElementTagType> vendorCode;
-    std::optional<ElementTagType> brandName;
-    std::optional<ElementTagType> powerSource;
-    std::optional<ElementTagType> manufacturerNodeIdentification;
-    std::optional<ElementTagType> manufacturerLabel;
-    std::optional<ElementTagType> manufacturerDescription;
+	std::optional<ElementTagType> deviceName;
+	std::optional<ElementTagType> deviceCode;
+	std::optional<ElementTagType> serialNumber;
+	std::optional<ElementTagType> softwareRevision;
+	std::optional<ElementTagType> hardwareRevision;
+	std::optional<ElementTagType> vendorName;
+	std::optional<ElementTagType> vendorCode;
+	std::optional<ElementTagType> brandName;
+	std::optional<ElementTagType> powerSource;
+	std::optional<ElementTagType> manufacturerNodeIdentification;
+	std::optional<ElementTagType> manufacturerLabel;
+	std::optional<ElementTagType> manufacturerDescription;
 
-    DeviceClassificationManufacturerDataElementsType() :
-        deviceName(ElementTagType{}), deviceCode(ElementTagType{}), serialNumber(ElementTagType{}), softwareRevision(ElementTagType{}),
-        hardwareRevision(ElementTagType{}), vendorName(ElementTagType{}), vendorCode(ElementTagType{}), brandName(ElementTagType{}),
-        powerSource(ElementTagType{}), manufacturerNodeIdentification(ElementTagType{}), manufacturerLabel(ElementTagType{}),
-        manufacturerDescription(ElementTagType{})
-    {
-    }
+	DeviceClassificationManufacturerDataElementsType()
+		:
+		deviceName(ElementTagType{}),
+		deviceCode(ElementTagType{}),
+		serialNumber(ElementTagType{}),
+		softwareRevision(ElementTagType{}),
+		hardwareRevision(ElementTagType{}),
+		vendorName(ElementTagType{}),
+		vendorCode(ElementTagType{}),
+		brandName(ElementTagType{}),
+		powerSource(ElementTagType{}),
+		manufacturerNodeIdentification(ElementTagType{}),
+		manufacturerLabel(ElementTagType{}),
+		manufacturerDescription(ElementTagType{})
+	{}
 };
-bool convertToJson(const DeviceClassificationManufacturerDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceClassificationManufacturerDataElementsType &dst);
+bool convertToJson(const DeviceClassificationManufacturerDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceClassificationManufacturerDataElementsType &dst);
 
 struct DeviceClassificationUserDataType { // EEBus_SPINE_TS_DeviceClassification.xsd
-    std::optional<DeviceClassificationStringType> userNodeIdentification;
-    std::optional<LabelType> userLabel;
-    std::optional<DescriptionType> userDescription;
+	std::optional<DeviceClassificationStringType> userNodeIdentification;
+	std::optional<LabelType> userLabel;
+	std::optional<DescriptionType> userDescription;
 
-    DeviceClassificationUserDataType() :
-        userNodeIdentification(DeviceClassificationStringType{}), userLabel(LabelType{}), userDescription(DescriptionType{})
-    {
-    }
+	DeviceClassificationUserDataType()
+		:
+		userNodeIdentification(DeviceClassificationStringType{}),
+		userLabel(LabelType{}),
+		userDescription(DescriptionType{})
+	{}
 };
-bool convertToJson(const DeviceClassificationUserDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceClassificationUserDataType &dst);
+bool convertToJson(const DeviceClassificationUserDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceClassificationUserDataType &dst);
 
 struct DeviceClassificationUserDataElementsType { // EEBus_SPINE_TS_DeviceClassification.xsd
-    std::optional<ElementTagType> userNodeIdentification;
-    std::optional<ElementTagType> userLabel;
-    std::optional<ElementTagType> userDescription;
+	std::optional<ElementTagType> userNodeIdentification;
+	std::optional<ElementTagType> userLabel;
+	std::optional<ElementTagType> userDescription;
 
-    DeviceClassificationUserDataElementsType() :
-        userNodeIdentification(ElementTagType{}), userLabel(ElementTagType{}), userDescription(ElementTagType{})
-    {
-    }
+	DeviceClassificationUserDataElementsType()
+		:
+		userNodeIdentification(ElementTagType{}),
+		userLabel(ElementTagType{}),
+		userDescription(ElementTagType{})
+	{}
 };
-bool convertToJson(const DeviceClassificationUserDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceClassificationUserDataElementsType &dst);
+bool convertToJson(const DeviceClassificationUserDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceClassificationUserDataElementsType &dst);
 
 struct DeviceConfigurationKeyValueValueType { // EEBus_SPINE_TS_DeviceConfiguration.xsd
-    std::optional<bool> boolean;
-    std::optional<std::string> date;
-    std::optional<std::string> dateTime;
-    std::optional<std::string> duration;
-    std::optional<DeviceConfigurationKeyValueStringType> string;
-    std::optional<std::string> time;
-    std::optional<ScaledNumberType> scaledNumber;
-    std::optional<long> integer;
+	std::optional<bool> boolean;
+	std::optional<std::string> date;
+	std::optional<std::string> dateTime;
+	std::optional<std::string> duration;
+	std::optional<DeviceConfigurationKeyValueStringType> string;
+	std::optional<std::string> time;
+	std::optional<ScaledNumberType> scaledNumber;
+	std::optional<long> integer;
 
-    DeviceConfigurationKeyValueValueType() :
-        boolean(bool{}), date(std::string{}), dateTime(std::string{}), duration(std::string{}),
-        string(DeviceConfigurationKeyValueStringType{}), time(std::string{}), scaledNumber(ScaledNumberType{}), integer(long{})
-    {
-    }
+	DeviceConfigurationKeyValueValueType()
+		:
+		boolean(bool{}),
+		date(std::string{}),
+		dateTime(std::string{}),
+		duration(std::string{}),
+		string(DeviceConfigurationKeyValueStringType{}),
+		time(std::string{}),
+		scaledNumber(ScaledNumberType{}),
+		integer(long{})
+	{}
 };
-bool convertToJson(const DeviceConfigurationKeyValueValueType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueValueType &dst);
+bool convertToJson(const DeviceConfigurationKeyValueValueType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueValueType &dst);
 
 struct DeviceConfigurationKeyValueValueElementsType { // EEBus_SPINE_TS_DeviceConfiguration.xsd
-    std::optional<ElementTagType> boolean;
-    std::optional<ElementTagType> date;
-    std::optional<ElementTagType> dateTime;
-    std::optional<ElementTagType> duration;
-    std::optional<ElementTagType> string;
-    std::optional<ElementTagType> time;
-    std::optional<ScaledNumberElementsType> scaledNumber;
+	std::optional<ElementTagType> boolean;
+	std::optional<ElementTagType> date;
+	std::optional<ElementTagType> dateTime;
+	std::optional<ElementTagType> duration;
+	std::optional<ElementTagType> string;
+	std::optional<ElementTagType> time;
+	std::optional<ScaledNumberElementsType> scaledNumber;
 
-    DeviceConfigurationKeyValueValueElementsType() :
-        boolean(ElementTagType{}), date(ElementTagType{}), dateTime(ElementTagType{}), duration(ElementTagType{}), string(ElementTagType{}),
-        time(ElementTagType{}), scaledNumber(ScaledNumberElementsType{})
-    {
-    }
+	DeviceConfigurationKeyValueValueElementsType()
+		:
+		boolean(ElementTagType{}),
+		date(ElementTagType{}),
+		dateTime(ElementTagType{}),
+		duration(ElementTagType{}),
+		string(ElementTagType{}),
+		time(ElementTagType{}),
+		scaledNumber(ScaledNumberElementsType{})
+	{}
 };
-bool convertToJson(const DeviceConfigurationKeyValueValueElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueValueElementsType &dst);
+bool convertToJson(const DeviceConfigurationKeyValueValueElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueValueElementsType &dst);
 
 struct DeviceConfigurationKeyValueDataType { // EEBus_SPINE_TS_DeviceConfiguration.xsd
-    std::optional<DeviceConfigurationKeyIdType> keyId;
-    std::optional<DeviceConfigurationKeyValueValueType> value;
-    std::optional<bool> isValueChangeable;
+	std::optional<DeviceConfigurationKeyIdType> keyId;
+	std::optional<DeviceConfigurationKeyValueValueType> value;
+	std::optional<bool> isValueChangeable;
 
-    DeviceConfigurationKeyValueDataType() :
-        keyId(DeviceConfigurationKeyIdType{}), value(DeviceConfigurationKeyValueValueType{}), isValueChangeable(bool{})
-    {
-    }
+	DeviceConfigurationKeyValueDataType()
+		:
+		keyId(DeviceConfigurationKeyIdType{}),
+		value(DeviceConfigurationKeyValueValueType{}),
+		isValueChangeable(bool{})
+	{}
 };
-bool convertToJson(const DeviceConfigurationKeyValueDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDataType &dst);
+bool convertToJson(const DeviceConfigurationKeyValueDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueDataType &dst);
 
 struct DeviceConfigurationKeyValueDataElementsType { // EEBus_SPINE_TS_DeviceConfiguration.xsd
-    std::optional<ElementTagType> keyId;
-    std::optional<DeviceConfigurationKeyValueValueElementsType> value;
-    std::optional<ElementTagType> isValueChangeable;
+	std::optional<ElementTagType> keyId;
+	std::optional<DeviceConfigurationKeyValueValueElementsType> value;
+	std::optional<ElementTagType> isValueChangeable;
 
-    DeviceConfigurationKeyValueDataElementsType() :
-        keyId(ElementTagType{}), value(DeviceConfigurationKeyValueValueElementsType{}), isValueChangeable(ElementTagType{})
-    {
-    }
+	DeviceConfigurationKeyValueDataElementsType()
+		:
+		keyId(ElementTagType{}),
+		value(DeviceConfigurationKeyValueValueElementsType{}),
+		isValueChangeable(ElementTagType{})
+	{}
 };
-bool convertToJson(const DeviceConfigurationKeyValueDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDataElementsType &dst);
+bool convertToJson(const DeviceConfigurationKeyValueDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueDataElementsType &dst);
 
 struct DeviceConfigurationKeyValueListDataType { // EEBus_SPINE_TS_DeviceConfiguration.xsd
-    std::optional<std::vector<DeviceConfigurationKeyValueDataType>> deviceConfigurationKeyValueData;
+	std::optional<std::vector<DeviceConfigurationKeyValueDataType>> deviceConfigurationKeyValueData;
 
-    DeviceConfigurationKeyValueListDataType() : deviceConfigurationKeyValueData(std::vector<DeviceConfigurationKeyValueDataType>{})
-    {
-    }
+	DeviceConfigurationKeyValueListDataType()
+		:
+		deviceConfigurationKeyValueData(std::vector<DeviceConfigurationKeyValueDataType>{})
+	{}
 };
-bool convertToJson(const DeviceConfigurationKeyValueListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueListDataType &dst);
+bool convertToJson(const DeviceConfigurationKeyValueListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueListDataType &dst);
 
 struct DeviceConfigurationKeyValueListDataSelectorsType { // EEBus_SPINE_TS_DeviceConfiguration.xsd
-    std::optional<DeviceConfigurationKeyIdType> keyId;
+	std::optional<DeviceConfigurationKeyIdType> keyId;
 
-    DeviceConfigurationKeyValueListDataSelectorsType() : keyId(DeviceConfigurationKeyIdType{})
-    {
-    }
+	DeviceConfigurationKeyValueListDataSelectorsType()
+		:
+		keyId(DeviceConfigurationKeyIdType{})
+	{}
 };
-bool convertToJson(const DeviceConfigurationKeyValueListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueListDataSelectorsType &dst);
+bool convertToJson(const DeviceConfigurationKeyValueListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueListDataSelectorsType &dst);
 
 struct DeviceConfigurationKeyValueDescriptionDataType { // EEBus_SPINE_TS_DeviceConfiguration.xsd
-    std::optional<DeviceConfigurationKeyIdType> keyId;
-    std::optional<DeviceConfigurationKeyNameType> keyName;
-    std::optional<DeviceConfigurationKeyValueTypeType> valueType;
-    std::optional<UnitOfMeasurementType> unit;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<DeviceConfigurationKeyIdType> keyId;
+	std::optional<DeviceConfigurationKeyNameType> keyName;
+	std::optional<DeviceConfigurationKeyValueTypeType> valueType;
+	std::optional<UnitOfMeasurementType> unit;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    DeviceConfigurationKeyValueDescriptionDataType() :
-        keyId(DeviceConfigurationKeyIdType{}), keyName(DeviceConfigurationKeyNameType{}), valueType(DeviceConfigurationKeyValueTypeType{}),
-        unit(UnitOfMeasurementType{}), label(LabelType{}), description(DescriptionType{})
-    {
-    }
+	DeviceConfigurationKeyValueDescriptionDataType()
+		:
+		keyId(DeviceConfigurationKeyIdType{}),
+		keyName(DeviceConfigurationKeyNameType{}),
+		valueType(DeviceConfigurationKeyValueTypeType{}),
+		unit(UnitOfMeasurementType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const DeviceConfigurationKeyValueDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDescriptionDataType &dst);
+bool convertToJson(const DeviceConfigurationKeyValueDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueDescriptionDataType &dst);
 
 struct DeviceConfigurationKeyValueDescriptionDataElementsType { // EEBus_SPINE_TS_DeviceConfiguration.xsd
-    std::optional<ElementTagType> keyId;
-    std::optional<ElementTagType> keyName;
-    std::optional<ElementTagType> valueType;
-    std::optional<ElementTagType> unit;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> keyId;
+	std::optional<ElementTagType> keyName;
+	std::optional<ElementTagType> valueType;
+	std::optional<ElementTagType> unit;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    DeviceConfigurationKeyValueDescriptionDataElementsType() :
-        keyId(ElementTagType{}), keyName(ElementTagType{}), valueType(ElementTagType{}), unit(ElementTagType{}), label(ElementTagType{}),
-        description(ElementTagType{})
-    {
-    }
+	DeviceConfigurationKeyValueDescriptionDataElementsType()
+		:
+		keyId(ElementTagType{}),
+		keyName(ElementTagType{}),
+		valueType(ElementTagType{}),
+		unit(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const DeviceConfigurationKeyValueDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDescriptionDataElementsType &dst);
+bool convertToJson(const DeviceConfigurationKeyValueDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueDescriptionDataElementsType &dst);
 
 struct DeviceConfigurationKeyValueDescriptionListDataType { // EEBus_SPINE_TS_DeviceConfiguration.xsd
-    std::optional<std::vector<DeviceConfigurationKeyValueDescriptionDataType>> deviceConfigurationKeyValueDescriptionData;
+	std::optional<std::vector<DeviceConfigurationKeyValueDescriptionDataType>> deviceConfigurationKeyValueDescriptionData;
 
-    DeviceConfigurationKeyValueDescriptionListDataType() :
-        deviceConfigurationKeyValueDescriptionData(std::vector<DeviceConfigurationKeyValueDescriptionDataType>{})
-    {
-    }
+	DeviceConfigurationKeyValueDescriptionListDataType()
+		:
+		deviceConfigurationKeyValueDescriptionData(std::vector<DeviceConfigurationKeyValueDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const DeviceConfigurationKeyValueDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDescriptionListDataType &dst);
+bool convertToJson(const DeviceConfigurationKeyValueDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueDescriptionListDataType &dst);
 
 struct DeviceConfigurationKeyValueDescriptionListDataSelectorsType { // EEBus_SPINE_TS_DeviceConfiguration.xsd
-    std::optional<DeviceConfigurationKeyIdType> keyId;
-    std::optional<DeviceConfigurationKeyNameType> keyName;
+	std::optional<DeviceConfigurationKeyIdType> keyId;
+	std::optional<DeviceConfigurationKeyNameType> keyName;
 
-    DeviceConfigurationKeyValueDescriptionListDataSelectorsType() :
-        keyId(DeviceConfigurationKeyIdType{}), keyName(DeviceConfigurationKeyNameType{})
-    {
-    }
+	DeviceConfigurationKeyValueDescriptionListDataSelectorsType()
+		:
+		keyId(DeviceConfigurationKeyIdType{}),
+		keyName(DeviceConfigurationKeyNameType{})
+	{}
 };
-bool convertToJson(const DeviceConfigurationKeyValueDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDescriptionListDataSelectorsType &dst);
+bool convertToJson(const DeviceConfigurationKeyValueDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueDescriptionListDataSelectorsType &dst);
 
 struct DeviceConfigurationKeyValueConstraintsDataType { // EEBus_SPINE_TS_DeviceConfiguration.xsd
-    std::optional<DeviceConfigurationKeyIdType> keyId;
-    std::optional<DeviceConfigurationKeyValueValueType> valueRangeMin;
-    std::optional<DeviceConfigurationKeyValueValueType> valueRangeMax;
-    std::optional<DeviceConfigurationKeyValueValueType> valueStepSize;
+	std::optional<DeviceConfigurationKeyIdType> keyId;
+	std::optional<DeviceConfigurationKeyValueValueType> valueRangeMin;
+	std::optional<DeviceConfigurationKeyValueValueType> valueRangeMax;
+	std::optional<DeviceConfigurationKeyValueValueType> valueStepSize;
 
-    DeviceConfigurationKeyValueConstraintsDataType() :
-        keyId(DeviceConfigurationKeyIdType{}), valueRangeMin(DeviceConfigurationKeyValueValueType{}),
-        valueRangeMax(DeviceConfigurationKeyValueValueType{}), valueStepSize(DeviceConfigurationKeyValueValueType{})
-    {
-    }
+	DeviceConfigurationKeyValueConstraintsDataType()
+		:
+		keyId(DeviceConfigurationKeyIdType{}),
+		valueRangeMin(DeviceConfigurationKeyValueValueType{}),
+		valueRangeMax(DeviceConfigurationKeyValueValueType{}),
+		valueStepSize(DeviceConfigurationKeyValueValueType{})
+	{}
 };
-bool convertToJson(const DeviceConfigurationKeyValueConstraintsDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueConstraintsDataType &dst);
+bool convertToJson(const DeviceConfigurationKeyValueConstraintsDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueConstraintsDataType &dst);
 
 struct DeviceConfigurationKeyValueConstraintsDataElementsType { // EEBus_SPINE_TS_DeviceConfiguration.xsd
-    std::optional<ElementTagType> keyId;
-    std::optional<DeviceConfigurationKeyValueValueElementsType> valueRangeMin;
-    std::optional<DeviceConfigurationKeyValueValueElementsType> valueRangeMax;
-    std::optional<DeviceConfigurationKeyValueValueElementsType> valueStepSize;
+	std::optional<ElementTagType> keyId;
+	std::optional<DeviceConfigurationKeyValueValueElementsType> valueRangeMin;
+	std::optional<DeviceConfigurationKeyValueValueElementsType> valueRangeMax;
+	std::optional<DeviceConfigurationKeyValueValueElementsType> valueStepSize;
 
-    DeviceConfigurationKeyValueConstraintsDataElementsType() :
-        keyId(ElementTagType{}), valueRangeMin(DeviceConfigurationKeyValueValueElementsType{}),
-        valueRangeMax(DeviceConfigurationKeyValueValueElementsType{}), valueStepSize(DeviceConfigurationKeyValueValueElementsType{})
-    {
-    }
+	DeviceConfigurationKeyValueConstraintsDataElementsType()
+		:
+		keyId(ElementTagType{}),
+		valueRangeMin(DeviceConfigurationKeyValueValueElementsType{}),
+		valueRangeMax(DeviceConfigurationKeyValueValueElementsType{}),
+		valueStepSize(DeviceConfigurationKeyValueValueElementsType{})
+	{}
 };
-bool convertToJson(const DeviceConfigurationKeyValueConstraintsDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueConstraintsDataElementsType &dst);
+bool convertToJson(const DeviceConfigurationKeyValueConstraintsDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueConstraintsDataElementsType &dst);
 
 struct DeviceConfigurationKeyValueConstraintsListDataType { // EEBus_SPINE_TS_DeviceConfiguration.xsd
-    std::optional<std::vector<DeviceConfigurationKeyValueConstraintsDataType>> deviceConfigurationKeyValueConstraintsData;
+	std::optional<std::vector<DeviceConfigurationKeyValueConstraintsDataType>> deviceConfigurationKeyValueConstraintsData;
 
-    DeviceConfigurationKeyValueConstraintsListDataType() :
-        deviceConfigurationKeyValueConstraintsData(std::vector<DeviceConfigurationKeyValueConstraintsDataType>{})
-    {
-    }
+	DeviceConfigurationKeyValueConstraintsListDataType()
+		:
+		deviceConfigurationKeyValueConstraintsData(std::vector<DeviceConfigurationKeyValueConstraintsDataType>{})
+	{}
 };
-bool convertToJson(const DeviceConfigurationKeyValueConstraintsListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueConstraintsListDataType &dst);
+bool convertToJson(const DeviceConfigurationKeyValueConstraintsListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueConstraintsListDataType &dst);
 
 struct DeviceConfigurationKeyValueConstraintsListDataSelectorsType { // EEBus_SPINE_TS_DeviceConfiguration.xsd
-    std::optional<DeviceConfigurationKeyIdType> keyId;
+	std::optional<DeviceConfigurationKeyIdType> keyId;
 
-    DeviceConfigurationKeyValueConstraintsListDataSelectorsType() : keyId(DeviceConfigurationKeyIdType{})
-    {
-    }
+	DeviceConfigurationKeyValueConstraintsListDataSelectorsType()
+		:
+		keyId(DeviceConfigurationKeyIdType{})
+	{}
 };
-bool convertToJson(const DeviceConfigurationKeyValueConstraintsListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueConstraintsListDataSelectorsType &dst);
+bool convertToJson(const DeviceConfigurationKeyValueConstraintsListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueConstraintsListDataSelectorsType &dst);
 
 struct DeviceDiagnosisStateDataType { // EEBus_SPINE_TS_DeviceDiagnosis.xsd
-    std::optional<AbsoluteOrRelativeTimeType> timestamp;
-    std::optional<DeviceDiagnosisOperatingStateType> operatingState;
-    std::optional<VendorStateCodeType> vendorStateCode;
-    std::optional<LastErrorCodeType> lastErrorCode;
-    std::optional<std::string> upTime;
-    std::optional<std::string> totalUpTime;
-    std::optional<PowerSupplyConditionType> powerSupplyCondition;
+	std::optional<AbsoluteOrRelativeTimeType> timestamp;
+	std::optional<DeviceDiagnosisOperatingStateType> operatingState;
+	std::optional<VendorStateCodeType> vendorStateCode;
+	std::optional<LastErrorCodeType> lastErrorCode;
+	std::optional<std::string> upTime;
+	std::optional<std::string> totalUpTime;
+	std::optional<PowerSupplyConditionType> powerSupplyCondition;
 
-    DeviceDiagnosisStateDataType() :
-        timestamp(AbsoluteOrRelativeTimeType{}), operatingState(DeviceDiagnosisOperatingStateType{}),
-        vendorStateCode(VendorStateCodeType{}), lastErrorCode(LastErrorCodeType{}), upTime(std::string{}), totalUpTime(std::string{}),
-        powerSupplyCondition(PowerSupplyConditionType{})
-    {
-    }
+	DeviceDiagnosisStateDataType()
+		:
+		timestamp(AbsoluteOrRelativeTimeType{}),
+		operatingState(DeviceDiagnosisOperatingStateType{}),
+		vendorStateCode(VendorStateCodeType{}),
+		lastErrorCode(LastErrorCodeType{}),
+		upTime(std::string{}),
+		totalUpTime(std::string{}),
+		powerSupplyCondition(PowerSupplyConditionType{})
+	{}
 };
-bool convertToJson(const DeviceDiagnosisStateDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisStateDataType &dst);
+bool convertToJson(const DeviceDiagnosisStateDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceDiagnosisStateDataType &dst);
 
 struct DeviceDiagnosisStateDataElementsType { // EEBus_SPINE_TS_DeviceDiagnosis.xsd
-    std::optional<ElementTagType> timestamp;
-    std::optional<ElementTagType> operatingState;
-    std::optional<ElementTagType> vendorStateCode;
-    std::optional<ElementTagType> lastErrorCode;
-    std::optional<ElementTagType> upTime;
-    std::optional<ElementTagType> totalUpTime;
-    std::optional<ElementTagType> powerSupplyCondition;
+	std::optional<ElementTagType> timestamp;
+	std::optional<ElementTagType> operatingState;
+	std::optional<ElementTagType> vendorStateCode;
+	std::optional<ElementTagType> lastErrorCode;
+	std::optional<ElementTagType> upTime;
+	std::optional<ElementTagType> totalUpTime;
+	std::optional<ElementTagType> powerSupplyCondition;
 
-    DeviceDiagnosisStateDataElementsType() :
-        timestamp(ElementTagType{}), operatingState(ElementTagType{}), vendorStateCode(ElementTagType{}), lastErrorCode(ElementTagType{}),
-        upTime(ElementTagType{}), totalUpTime(ElementTagType{}), powerSupplyCondition(ElementTagType{})
-    {
-    }
+	DeviceDiagnosisStateDataElementsType()
+		:
+		timestamp(ElementTagType{}),
+		operatingState(ElementTagType{}),
+		vendorStateCode(ElementTagType{}),
+		lastErrorCode(ElementTagType{}),
+		upTime(ElementTagType{}),
+		totalUpTime(ElementTagType{}),
+		powerSupplyCondition(ElementTagType{})
+	{}
 };
-bool convertToJson(const DeviceDiagnosisStateDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisStateDataElementsType &dst);
+bool convertToJson(const DeviceDiagnosisStateDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceDiagnosisStateDataElementsType &dst);
 
 struct DeviceDiagnosisHeartbeatDataType { // EEBus_SPINE_TS_DeviceDiagnosis.xsd
-    std::optional<AbsoluteOrRelativeTimeType> timestamp;
-    std::optional<uint64_t> heartbeatCounter;
-    std::optional<std::string> heartbeatTimeout;
+	std::optional<AbsoluteOrRelativeTimeType> timestamp;
+	std::optional<uint64_t> heartbeatCounter;
+	std::optional<std::string> heartbeatTimeout;
 
-    DeviceDiagnosisHeartbeatDataType() :
-        timestamp(AbsoluteOrRelativeTimeType{}), heartbeatCounter(uint64_t{}), heartbeatTimeout(std::string{})
-    {
-    }
+	DeviceDiagnosisHeartbeatDataType()
+		:
+		timestamp(AbsoluteOrRelativeTimeType{}),
+		heartbeatCounter(uint64_t{}),
+		heartbeatTimeout(std::string{})
+	{}
 };
-bool convertToJson(const DeviceDiagnosisHeartbeatDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisHeartbeatDataType &dst);
+bool convertToJson(const DeviceDiagnosisHeartbeatDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceDiagnosisHeartbeatDataType &dst);
 
 struct DeviceDiagnosisHeartbeatDataElementsType { // EEBus_SPINE_TS_DeviceDiagnosis.xsd
-    std::optional<ElementTagType> timestamp;
-    std::optional<ElementTagType> heartbeatCounter;
-    std::optional<ElementTagType> heartbeatTimeout;
+	std::optional<ElementTagType> timestamp;
+	std::optional<ElementTagType> heartbeatCounter;
+	std::optional<ElementTagType> heartbeatTimeout;
 
-    DeviceDiagnosisHeartbeatDataElementsType() :
-        timestamp(ElementTagType{}), heartbeatCounter(ElementTagType{}), heartbeatTimeout(ElementTagType{})
-    {
-    }
+	DeviceDiagnosisHeartbeatDataElementsType()
+		:
+		timestamp(ElementTagType{}),
+		heartbeatCounter(ElementTagType{}),
+		heartbeatTimeout(ElementTagType{})
+	{}
 };
-bool convertToJson(const DeviceDiagnosisHeartbeatDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisHeartbeatDataElementsType &dst);
+bool convertToJson(const DeviceDiagnosisHeartbeatDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceDiagnosisHeartbeatDataElementsType &dst);
 
 struct DeviceDiagnosisServiceDataType { // EEBus_SPINE_TS_DeviceDiagnosis.xsd
-    std::optional<AbsoluteOrRelativeTimeType> timestamp;
-    std::optional<AbsoluteOrRelativeTimeType> installationTime;
-    std::optional<uint64_t> bootCounter;
-    std::optional<AbsoluteOrRelativeTimeType> nextService;
+	std::optional<AbsoluteOrRelativeTimeType> timestamp;
+	std::optional<AbsoluteOrRelativeTimeType> installationTime;
+	std::optional<uint64_t> bootCounter;
+	std::optional<AbsoluteOrRelativeTimeType> nextService;
 
-    DeviceDiagnosisServiceDataType() :
-        timestamp(AbsoluteOrRelativeTimeType{}), installationTime(AbsoluteOrRelativeTimeType{}), bootCounter(uint64_t{}),
-        nextService(AbsoluteOrRelativeTimeType{})
-    {
-    }
+	DeviceDiagnosisServiceDataType()
+		:
+		timestamp(AbsoluteOrRelativeTimeType{}),
+		installationTime(AbsoluteOrRelativeTimeType{}),
+		bootCounter(uint64_t{}),
+		nextService(AbsoluteOrRelativeTimeType{})
+	{}
 };
-bool convertToJson(const DeviceDiagnosisServiceDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisServiceDataType &dst);
+bool convertToJson(const DeviceDiagnosisServiceDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceDiagnosisServiceDataType &dst);
 
 struct DeviceDiagnosisServiceDataElementsType { // EEBus_SPINE_TS_DeviceDiagnosis.xsd
-    std::optional<ElementTagType> timestamp;
-    std::optional<ElementTagType> installationTime;
-    std::optional<ElementTagType> bootCounter;
-    std::optional<ElementTagType> nextService;
+	std::optional<ElementTagType> timestamp;
+	std::optional<ElementTagType> installationTime;
+	std::optional<ElementTagType> bootCounter;
+	std::optional<ElementTagType> nextService;
 
-    DeviceDiagnosisServiceDataElementsType() :
-        timestamp(ElementTagType{}), installationTime(ElementTagType{}), bootCounter(ElementTagType{}), nextService(ElementTagType{})
-    {
-    }
+	DeviceDiagnosisServiceDataElementsType()
+		:
+		timestamp(ElementTagType{}),
+		installationTime(ElementTagType{}),
+		bootCounter(ElementTagType{}),
+		nextService(ElementTagType{})
+	{}
 };
-bool convertToJson(const DeviceDiagnosisServiceDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisServiceDataElementsType &dst);
+bool convertToJson(const DeviceDiagnosisServiceDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, DeviceDiagnosisServiceDataElementsType &dst);
 
 struct ElectricalConnectionParameterDescriptionDataType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    std::optional<ElectricalConnectionIdType> electricalConnectionId;
-    std::optional<ElectricalConnectionParameterIdType> parameterId;
-    std::optional<MeasurementIdType> measurementId;
-    std::optional<ElectricalConnectionVoltageTypeType> voltageType;
-    std::optional<ElectricalConnectionPhaseNameType> acMeasuredPhases;
-    std::optional<ElectricalConnectionPhaseNameType> acMeasuredInReferenceTo;
-    std::optional<ElectricalConnectionAcMeasurementTypeType> acMeasurementType;
-    std::optional<ElectricalConnectionMeasurandVariantType> acMeasurementVariant;
-    std::optional<uint8_t> acMeasuredHarmonic;
-    std::optional<ScopeTypeType> scopeType;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<ElectricalConnectionIdType> electricalConnectionId;
+	std::optional<ElectricalConnectionParameterIdType> parameterId;
+	std::optional<MeasurementIdType> measurementId;
+	std::optional<ElectricalConnectionVoltageTypeType> voltageType;
+	std::optional<ElectricalConnectionPhaseNameType> acMeasuredPhases;
+	std::optional<ElectricalConnectionPhaseNameType> acMeasuredInReferenceTo;
+	std::optional<ElectricalConnectionAcMeasurementTypeType> acMeasurementType;
+	std::optional<ElectricalConnectionMeasurandVariantType> acMeasurementVariant;
+	std::optional<uint8_t> acMeasuredHarmonic;
+	std::optional<ScopeTypeType> scopeType;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    ElectricalConnectionParameterDescriptionDataType() :
-        electricalConnectionId(ElectricalConnectionIdType{}), parameterId(ElectricalConnectionParameterIdType{}),
-        measurementId(MeasurementIdType{}), voltageType(ElectricalConnectionVoltageTypeType{}),
-        acMeasuredPhases(ElectricalConnectionPhaseNameType{}), acMeasuredInReferenceTo(ElectricalConnectionPhaseNameType{}),
-        acMeasurementType(ElectricalConnectionAcMeasurementTypeType{}), acMeasurementVariant(ElectricalConnectionMeasurandVariantType{}),
-        acMeasuredHarmonic(uint8_t{}), scopeType(ScopeTypeType{}), label(LabelType{}), description(DescriptionType{})
-    {
-    }
+	ElectricalConnectionParameterDescriptionDataType()
+		:
+		electricalConnectionId(ElectricalConnectionIdType{}),
+		parameterId(ElectricalConnectionParameterIdType{}),
+		measurementId(MeasurementIdType{}),
+		voltageType(ElectricalConnectionVoltageTypeType{}),
+		acMeasuredPhases(ElectricalConnectionPhaseNameType{}),
+		acMeasuredInReferenceTo(ElectricalConnectionPhaseNameType{}),
+		acMeasurementType(ElectricalConnectionAcMeasurementTypeType{}),
+		acMeasurementVariant(ElectricalConnectionMeasurandVariantType{}),
+		acMeasuredHarmonic(uint8_t{}),
+		scopeType(ScopeTypeType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const ElectricalConnectionParameterDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterDescriptionDataType &dst);
+bool convertToJson(const ElectricalConnectionParameterDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionParameterDescriptionDataType &dst);
 
 struct ElectricalConnectionParameterDescriptionDataElementsType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    std::optional<ElementTagType> electricalConnectionId;
-    std::optional<ElementTagType> parameterId;
-    std::optional<ElementTagType> measurementId;
-    std::optional<ElementTagType> voltageType;
-    std::optional<ElementTagType> acMeasuredPhases;
-    std::optional<ElementTagType> acMeasuredInReferenceTo;
-    std::optional<ElementTagType> acMeasurementType;
-    std::optional<ElementTagType> acMeasurementVariant;
-    std::optional<ElementTagType> acMeasuredHarmonic;
-    std::optional<ElementTagType> scopeType;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> electricalConnectionId;
+	std::optional<ElementTagType> parameterId;
+	std::optional<ElementTagType> measurementId;
+	std::optional<ElementTagType> voltageType;
+	std::optional<ElementTagType> acMeasuredPhases;
+	std::optional<ElementTagType> acMeasuredInReferenceTo;
+	std::optional<ElementTagType> acMeasurementType;
+	std::optional<ElementTagType> acMeasurementVariant;
+	std::optional<ElementTagType> acMeasuredHarmonic;
+	std::optional<ElementTagType> scopeType;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    ElectricalConnectionParameterDescriptionDataElementsType() :
-        electricalConnectionId(ElementTagType{}), parameterId(ElementTagType{}), measurementId(ElementTagType{}),
-        voltageType(ElementTagType{}), acMeasuredPhases(ElementTagType{}), acMeasuredInReferenceTo(ElementTagType{}),
-        acMeasurementType(ElementTagType{}), acMeasurementVariant(ElementTagType{}), acMeasuredHarmonic(ElementTagType{}),
-        scopeType(ElementTagType{}), label(ElementTagType{}), description(ElementTagType{})
-    {
-    }
+	ElectricalConnectionParameterDescriptionDataElementsType()
+		:
+		electricalConnectionId(ElementTagType{}),
+		parameterId(ElementTagType{}),
+		measurementId(ElementTagType{}),
+		voltageType(ElementTagType{}),
+		acMeasuredPhases(ElementTagType{}),
+		acMeasuredInReferenceTo(ElementTagType{}),
+		acMeasurementType(ElementTagType{}),
+		acMeasurementVariant(ElementTagType{}),
+		acMeasuredHarmonic(ElementTagType{}),
+		scopeType(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const ElectricalConnectionParameterDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterDescriptionDataElementsType &dst);
+bool convertToJson(const ElectricalConnectionParameterDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionParameterDescriptionDataElementsType &dst);
 
 struct ElectricalConnectionParameterDescriptionListDataType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    std::optional<std::vector<ElectricalConnectionParameterDescriptionDataType>> electricalConnectionParameterDescriptionData;
+	std::optional<std::vector<ElectricalConnectionParameterDescriptionDataType>> electricalConnectionParameterDescriptionData;
 
-    ElectricalConnectionParameterDescriptionListDataType() :
-        electricalConnectionParameterDescriptionData(std::vector<ElectricalConnectionParameterDescriptionDataType>{})
-    {
-    }
+	ElectricalConnectionParameterDescriptionListDataType()
+		:
+		electricalConnectionParameterDescriptionData(std::vector<ElectricalConnectionParameterDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const ElectricalConnectionParameterDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterDescriptionListDataType &dst);
+bool convertToJson(const ElectricalConnectionParameterDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionParameterDescriptionListDataType &dst);
 
 struct ElectricalConnectionParameterDescriptionListDataSelectorsType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    std::optional<ElectricalConnectionIdType> electricalConnectionId;
-    std::optional<ElectricalConnectionParameterIdType> parameterId;
-    std::optional<MeasurementIdType> measurementId;
-    std::optional<ScopeTypeType> scopeType;
+	std::optional<ElectricalConnectionIdType> electricalConnectionId;
+	std::optional<ElectricalConnectionParameterIdType> parameterId;
+	std::optional<MeasurementIdType> measurementId;
+	std::optional<ScopeTypeType> scopeType;
 
-    ElectricalConnectionParameterDescriptionListDataSelectorsType() :
-        electricalConnectionId(ElectricalConnectionIdType{}), parameterId(ElectricalConnectionParameterIdType{}),
-        measurementId(MeasurementIdType{}), scopeType(ScopeTypeType{})
-    {
-    }
+	ElectricalConnectionParameterDescriptionListDataSelectorsType()
+		:
+		electricalConnectionId(ElectricalConnectionIdType{}),
+		parameterId(ElectricalConnectionParameterIdType{}),
+		measurementId(MeasurementIdType{}),
+		scopeType(ScopeTypeType{})
+	{}
 };
-bool convertToJson(const ElectricalConnectionParameterDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterDescriptionListDataSelectorsType &dst);
+bool convertToJson(const ElectricalConnectionParameterDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionParameterDescriptionListDataSelectorsType &dst);
 
 struct ElectricalConnectionPermittedValueSetDataType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    std::optional<ElectricalConnectionIdType> electricalConnectionId;
-    std::optional<ElectricalConnectionParameterIdType> parameterId;
-    std::optional<std::vector<ScaledNumberSetType>> permittedValueSet;
+	std::optional<ElectricalConnectionIdType> electricalConnectionId;
+	std::optional<ElectricalConnectionParameterIdType> parameterId;
+	std::optional<std::vector<ScaledNumberSetType>> permittedValueSet;
 
-    ElectricalConnectionPermittedValueSetDataType() :
-        electricalConnectionId(ElectricalConnectionIdType{}), parameterId(ElectricalConnectionParameterIdType{}),
-        permittedValueSet(std::vector<ScaledNumberSetType>{})
-    {
-    }
+	ElectricalConnectionPermittedValueSetDataType()
+		:
+		electricalConnectionId(ElectricalConnectionIdType{}),
+		parameterId(ElectricalConnectionParameterIdType{}),
+		permittedValueSet(std::vector<ScaledNumberSetType>{})
+	{}
 };
-bool convertToJson(const ElectricalConnectionPermittedValueSetDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedValueSetDataType &dst);
+bool convertToJson(const ElectricalConnectionPermittedValueSetDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionPermittedValueSetDataType &dst);
 
 struct ElectricalConnectionPermittedValueSetDataElementsType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    std::optional<ElementTagType> electricalConnectionId;
-    std::optional<ElementTagType> parameterId;
-    std::optional<ScaledNumberSetElementsType> permittedValueSet;
+	std::optional<ElementTagType> electricalConnectionId;
+	std::optional<ElementTagType> parameterId;
+	std::optional<ScaledNumberSetElementsType> permittedValueSet;
 
-    ElectricalConnectionPermittedValueSetDataElementsType() :
-        electricalConnectionId(ElementTagType{}), parameterId(ElementTagType{}), permittedValueSet(ScaledNumberSetElementsType{})
-    {
-    }
+	ElectricalConnectionPermittedValueSetDataElementsType()
+		:
+		electricalConnectionId(ElementTagType{}),
+		parameterId(ElementTagType{}),
+		permittedValueSet(ScaledNumberSetElementsType{})
+	{}
 };
-bool convertToJson(const ElectricalConnectionPermittedValueSetDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedValueSetDataElementsType &dst);
+bool convertToJson(const ElectricalConnectionPermittedValueSetDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionPermittedValueSetDataElementsType &dst);
 
 struct ElectricalConnectionPermittedValueSetListDataType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    std::optional<std::vector<ElectricalConnectionPermittedValueSetDataType>> electricalConnectionPermittedValueSetData;
+	std::optional<std::vector<ElectricalConnectionPermittedValueSetDataType>> electricalConnectionPermittedValueSetData;
 
-    ElectricalConnectionPermittedValueSetListDataType() :
-        electricalConnectionPermittedValueSetData(std::vector<ElectricalConnectionPermittedValueSetDataType>{})
-    {
-    }
+	ElectricalConnectionPermittedValueSetListDataType()
+		:
+		electricalConnectionPermittedValueSetData(std::vector<ElectricalConnectionPermittedValueSetDataType>{})
+	{}
 };
-bool convertToJson(const ElectricalConnectionPermittedValueSetListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedValueSetListDataType &dst);
+bool convertToJson(const ElectricalConnectionPermittedValueSetListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionPermittedValueSetListDataType &dst);
 
 struct ElectricalConnectionPermittedValueSetListDataSelectorsType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    std::optional<ElectricalConnectionIdType> electricalConnectionId;
-    std::optional<ElectricalConnectionParameterIdType> parameterId;
+	std::optional<ElectricalConnectionIdType> electricalConnectionId;
+	std::optional<ElectricalConnectionParameterIdType> parameterId;
 
-    ElectricalConnectionPermittedValueSetListDataSelectorsType() :
-        electricalConnectionId(ElectricalConnectionIdType{}), parameterId(ElectricalConnectionParameterIdType{})
-    {
-    }
+	ElectricalConnectionPermittedValueSetListDataSelectorsType()
+		:
+		electricalConnectionId(ElectricalConnectionIdType{}),
+		parameterId(ElectricalConnectionParameterIdType{})
+	{}
 };
-bool convertToJson(const ElectricalConnectionPermittedValueSetListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedValueSetListDataSelectorsType &dst);
+bool convertToJson(const ElectricalConnectionPermittedValueSetListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionPermittedValueSetListDataSelectorsType &dst);
 
 struct ElectricalConnectionCharacteristicDataType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    std::optional<ElectricalConnectionIdType> electricalConnectionId;
-    std::optional<ElectricalConnectionParameterIdType> parameterId;
-    std::optional<ElectricalConnectionCharacteristicIdType> characteristicId;
-    std::optional<ElectricalConnectionCharacteristicContextType> characteristicContext;
-    std::optional<ElectricalConnectionCharacteristicTypeType> characteristicType;
-    std::optional<ScaledNumberType> value;
-    std::optional<UnitOfMeasurementType> unit;
+	std::optional<ElectricalConnectionIdType> electricalConnectionId;
+	std::optional<ElectricalConnectionParameterIdType> parameterId;
+	std::optional<ElectricalConnectionCharacteristicIdType> characteristicId;
+	std::optional<ElectricalConnectionCharacteristicContextType> characteristicContext;
+	std::optional<ElectricalConnectionCharacteristicTypeType> characteristicType;
+	std::optional<ScaledNumberType> value;
+	std::optional<UnitOfMeasurementType> unit;
 
-    ElectricalConnectionCharacteristicDataType() :
-        electricalConnectionId(ElectricalConnectionIdType{}), parameterId(ElectricalConnectionParameterIdType{}),
-        characteristicId(ElectricalConnectionCharacteristicIdType{}),
-        characteristicContext(ElectricalConnectionCharacteristicContextType{}),
-        characteristicType(ElectricalConnectionCharacteristicTypeType{}), value(ScaledNumberType{}), unit(UnitOfMeasurementType{})
-    {
-    }
+	ElectricalConnectionCharacteristicDataType()
+		:
+		electricalConnectionId(ElectricalConnectionIdType{}),
+		parameterId(ElectricalConnectionParameterIdType{}),
+		characteristicId(ElectricalConnectionCharacteristicIdType{}),
+		characteristicContext(ElectricalConnectionCharacteristicContextType{}),
+		characteristicType(ElectricalConnectionCharacteristicTypeType{}),
+		value(ScaledNumberType{}),
+		unit(UnitOfMeasurementType{})
+	{}
 };
-bool convertToJson(const ElectricalConnectionCharacteristicDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicDataType &dst);
+bool convertToJson(const ElectricalConnectionCharacteristicDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionCharacteristicDataType &dst);
 
 struct ElectricalConnectionCharacteristicDataElementsType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    std::optional<ElementTagType> electricalConnectionId;
-    std::optional<ElementTagType> parameterId;
-    std::optional<ElementTagType> characteristicId;
-    std::optional<ElementTagType> characteristicContext;
-    std::optional<ElementTagType> characteristicType;
-    std::optional<ScaledNumberElementsType> value;
-    std::optional<ElementTagType> unit;
+	std::optional<ElementTagType> electricalConnectionId;
+	std::optional<ElementTagType> parameterId;
+	std::optional<ElementTagType> characteristicId;
+	std::optional<ElementTagType> characteristicContext;
+	std::optional<ElementTagType> characteristicType;
+	std::optional<ScaledNumberElementsType> value;
+	std::optional<ElementTagType> unit;
 
-    ElectricalConnectionCharacteristicDataElementsType() :
-        electricalConnectionId(ElementTagType{}), parameterId(ElementTagType{}), characteristicId(ElementTagType{}),
-        characteristicContext(ElementTagType{}), characteristicType(ElementTagType{}), value(ScaledNumberElementsType{}),
-        unit(ElementTagType{})
-    {
-    }
+	ElectricalConnectionCharacteristicDataElementsType()
+		:
+		electricalConnectionId(ElementTagType{}),
+		parameterId(ElementTagType{}),
+		characteristicId(ElementTagType{}),
+		characteristicContext(ElementTagType{}),
+		characteristicType(ElementTagType{}),
+		value(ScaledNumberElementsType{}),
+		unit(ElementTagType{})
+	{}
 };
-bool convertToJson(const ElectricalConnectionCharacteristicDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicDataElementsType &dst);
+bool convertToJson(const ElectricalConnectionCharacteristicDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionCharacteristicDataElementsType &dst);
 
 struct ElectricalConnectionCharacteristicListDataType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    std::optional<std::vector<ElectricalConnectionCharacteristicDataType>> electricalConnectionCharacteristicData;
+	std::optional<std::vector<ElectricalConnectionCharacteristicDataType>> electricalConnectionCharacteristicData;
 
-    ElectricalConnectionCharacteristicListDataType() :
-        electricalConnectionCharacteristicData(std::vector<ElectricalConnectionCharacteristicDataType>{})
-    {
-    }
+	ElectricalConnectionCharacteristicListDataType()
+		:
+		electricalConnectionCharacteristicData(std::vector<ElectricalConnectionCharacteristicDataType>{})
+	{}
 };
-bool convertToJson(const ElectricalConnectionCharacteristicListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicListDataType &dst);
+bool convertToJson(const ElectricalConnectionCharacteristicListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionCharacteristicListDataType &dst);
 
 struct ElectricalConnectionCharacteristicListDataSelectorsType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    std::optional<ElectricalConnectionIdType> electricalConnectionId;
-    std::optional<ElectricalConnectionParameterIdType> parameterId;
-    std::optional<ElectricalConnectionCharacteristicIdType> characteristicId;
-    std::optional<ElectricalConnectionCharacteristicContextType> characteristicContext;
-    std::optional<ElectricalConnectionCharacteristicTypeType> characteristicType;
+	std::optional<ElectricalConnectionIdType> electricalConnectionId;
+	std::optional<ElectricalConnectionParameterIdType> parameterId;
+	std::optional<ElectricalConnectionCharacteristicIdType> characteristicId;
+	std::optional<ElectricalConnectionCharacteristicContextType> characteristicContext;
+	std::optional<ElectricalConnectionCharacteristicTypeType> characteristicType;
 
-    ElectricalConnectionCharacteristicListDataSelectorsType() :
-        electricalConnectionId(ElectricalConnectionIdType{}), parameterId(ElectricalConnectionParameterIdType{}),
-        characteristicId(ElectricalConnectionCharacteristicIdType{}),
-        characteristicContext(ElectricalConnectionCharacteristicContextType{}),
-        characteristicType(ElectricalConnectionCharacteristicTypeType{})
-    {
-    }
+	ElectricalConnectionCharacteristicListDataSelectorsType()
+		:
+		electricalConnectionId(ElectricalConnectionIdType{}),
+		parameterId(ElectricalConnectionParameterIdType{}),
+		characteristicId(ElectricalConnectionCharacteristicIdType{}),
+		characteristicContext(ElectricalConnectionCharacteristicContextType{}),
+		characteristicType(ElectricalConnectionCharacteristicTypeType{})
+	{}
 };
-bool convertToJson(const ElectricalConnectionCharacteristicListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicListDataSelectorsType &dst);
+bool convertToJson(const ElectricalConnectionCharacteristicListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionCharacteristicListDataSelectorsType &dst);
 
 struct ElectricalConnectionStateDataType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    std::optional<ElectricalConnectionIdType> electricalConnectionId;
-    std::optional<AbsoluteOrRelativeTimeType> timestamp;
-    std::optional<EnergyModeType> currentEnergyMode;
-    std::optional<std::string> consumptionTime;
-    std::optional<std::string> productionTime;
-    std::optional<std::string> totalConsumptionTime;
-    std::optional<std::string> totalProductionTime;
+	std::optional<ElectricalConnectionIdType> electricalConnectionId;
+	std::optional<AbsoluteOrRelativeTimeType> timestamp;
+	std::optional<EnergyModeType> currentEnergyMode;
+	std::optional<std::string> consumptionTime;
+	std::optional<std::string> productionTime;
+	std::optional<std::string> totalConsumptionTime;
+	std::optional<std::string> totalProductionTime;
 
-    ElectricalConnectionStateDataType() :
-        electricalConnectionId(ElectricalConnectionIdType{}), timestamp(AbsoluteOrRelativeTimeType{}), currentEnergyMode(EnergyModeType{}),
-        consumptionTime(std::string{}), productionTime(std::string{}), totalConsumptionTime(std::string{}),
-        totalProductionTime(std::string{})
-    {
-    }
+	ElectricalConnectionStateDataType()
+		:
+		electricalConnectionId(ElectricalConnectionIdType{}),
+		timestamp(AbsoluteOrRelativeTimeType{}),
+		currentEnergyMode(EnergyModeType{}),
+		consumptionTime(std::string{}),
+		productionTime(std::string{}),
+		totalConsumptionTime(std::string{}),
+		totalProductionTime(std::string{})
+	{}
 };
-bool convertToJson(const ElectricalConnectionStateDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateDataType &dst);
+bool convertToJson(const ElectricalConnectionStateDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionStateDataType &dst);
 
 struct ElectricalConnectionStateDataElementsType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    std::optional<ElementTagType> electricalConnectionId;
-    std::optional<ElementTagType> timestamp;
-    std::optional<ElementTagType> currentEnergyMode;
-    std::optional<ElementTagType> consumptionTime;
-    std::optional<ElementTagType> productionTime;
-    std::optional<ElementTagType> totalConsumptionTime;
-    std::optional<ElementTagType> totalProductionTime;
+	std::optional<ElementTagType> electricalConnectionId;
+	std::optional<ElementTagType> timestamp;
+	std::optional<ElementTagType> currentEnergyMode;
+	std::optional<ElementTagType> consumptionTime;
+	std::optional<ElementTagType> productionTime;
+	std::optional<ElementTagType> totalConsumptionTime;
+	std::optional<ElementTagType> totalProductionTime;
 
-    ElectricalConnectionStateDataElementsType() :
-        electricalConnectionId(ElementTagType{}), timestamp(ElementTagType{}), currentEnergyMode(ElementTagType{}),
-        consumptionTime(ElementTagType{}), productionTime(ElementTagType{}), totalConsumptionTime(ElementTagType{}),
-        totalProductionTime(ElementTagType{})
-    {
-    }
+	ElectricalConnectionStateDataElementsType()
+		:
+		electricalConnectionId(ElementTagType{}),
+		timestamp(ElementTagType{}),
+		currentEnergyMode(ElementTagType{}),
+		consumptionTime(ElementTagType{}),
+		productionTime(ElementTagType{}),
+		totalConsumptionTime(ElementTagType{}),
+		totalProductionTime(ElementTagType{})
+	{}
 };
-bool convertToJson(const ElectricalConnectionStateDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateDataElementsType &dst);
+bool convertToJson(const ElectricalConnectionStateDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionStateDataElementsType &dst);
 
 struct ElectricalConnectionStateListDataType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    std::optional<std::vector<ElectricalConnectionStateDataType>> electricalConnectionStateData;
+	std::optional<std::vector<ElectricalConnectionStateDataType>> electricalConnectionStateData;
 
-    ElectricalConnectionStateListDataType() : electricalConnectionStateData(std::vector<ElectricalConnectionStateDataType>{})
-    {
-    }
+	ElectricalConnectionStateListDataType()
+		:
+		electricalConnectionStateData(std::vector<ElectricalConnectionStateDataType>{})
+	{}
 };
-bool convertToJson(const ElectricalConnectionStateListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateListDataType &dst);
+bool convertToJson(const ElectricalConnectionStateListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionStateListDataType &dst);
 
 struct ElectricalConnectionStateListDataSelectorsType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    std::optional<ElectricalConnectionIdType> electricalConnectionId;
+	std::optional<ElectricalConnectionIdType> electricalConnectionId;
 
-    ElectricalConnectionStateListDataSelectorsType() : electricalConnectionId(ElectricalConnectionIdType{})
-    {
-    }
+	ElectricalConnectionStateListDataSelectorsType()
+		:
+		electricalConnectionId(ElectricalConnectionIdType{})
+	{}
 };
-bool convertToJson(const ElectricalConnectionStateListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateListDataSelectorsType &dst);
+bool convertToJson(const ElectricalConnectionStateListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionStateListDataSelectorsType &dst);
 
 struct ElectricalConnectionDescriptionDataType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    std::optional<ElectricalConnectionIdType> electricalConnectionId;
-    std::optional<ElectricalConnectionVoltageTypeType> powerSupplyType;
-    std::optional<uint32_t> acConnectedPhases;
-    std::optional<std::string> acRmsPeriodDuration;
-    std::optional<EnergyDirectionType> positiveEnergyDirection;
-    std::optional<ScopeTypeType> scopeType;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<ElectricalConnectionIdType> electricalConnectionId;
+	std::optional<ElectricalConnectionVoltageTypeType> powerSupplyType;
+	std::optional<uint32_t> acConnectedPhases;
+	std::optional<std::string> acRmsPeriodDuration;
+	std::optional<EnergyDirectionType> positiveEnergyDirection;
+	std::optional<ScopeTypeType> scopeType;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    ElectricalConnectionDescriptionDataType() :
-        electricalConnectionId(ElectricalConnectionIdType{}), powerSupplyType(ElectricalConnectionVoltageTypeType{}),
-        acConnectedPhases(uint32_t{}), acRmsPeriodDuration(std::string{}), positiveEnergyDirection(EnergyDirectionType{}),
-        scopeType(ScopeTypeType{}), label(LabelType{}), description(DescriptionType{})
-    {
-    }
+	ElectricalConnectionDescriptionDataType()
+		:
+		electricalConnectionId(ElectricalConnectionIdType{}),
+		powerSupplyType(ElectricalConnectionVoltageTypeType{}),
+		acConnectedPhases(uint32_t{}),
+		acRmsPeriodDuration(std::string{}),
+		positiveEnergyDirection(EnergyDirectionType{}),
+		scopeType(ScopeTypeType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const ElectricalConnectionDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptionDataType &dst);
+bool convertToJson(const ElectricalConnectionDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionDescriptionDataType &dst);
 
 struct ElectricalConnectionDescriptionDataElementsType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    std::optional<ElementTagType> electricalConnectionId;
-    std::optional<ElementTagType> powerSupplyType;
-    std::optional<ElementTagType> acConnectedPhases;
-    std::optional<ElementTagType> acRmsPeriodDuration;
-    std::optional<ElementTagType> positiveEnergyDirection;
-    std::optional<ElementTagType> scopeType;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> electricalConnectionId;
+	std::optional<ElementTagType> powerSupplyType;
+	std::optional<ElementTagType> acConnectedPhases;
+	std::optional<ElementTagType> acRmsPeriodDuration;
+	std::optional<ElementTagType> positiveEnergyDirection;
+	std::optional<ElementTagType> scopeType;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    ElectricalConnectionDescriptionDataElementsType() :
-        electricalConnectionId(ElementTagType{}), powerSupplyType(ElementTagType{}), acConnectedPhases(ElementTagType{}),
-        acRmsPeriodDuration(ElementTagType{}), positiveEnergyDirection(ElementTagType{}), scopeType(ElementTagType{}),
-        label(ElementTagType{}), description(ElementTagType{})
-    {
-    }
+	ElectricalConnectionDescriptionDataElementsType()
+		:
+		electricalConnectionId(ElementTagType{}),
+		powerSupplyType(ElementTagType{}),
+		acConnectedPhases(ElementTagType{}),
+		acRmsPeriodDuration(ElementTagType{}),
+		positiveEnergyDirection(ElementTagType{}),
+		scopeType(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const ElectricalConnectionDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptionDataElementsType &dst);
+bool convertToJson(const ElectricalConnectionDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionDescriptionDataElementsType &dst);
 
 struct ElectricalConnectionDescriptionListDataType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    std::optional<std::vector<ElectricalConnectionDescriptionDataType>> electricalConnectionDescriptionData;
+	std::optional<std::vector<ElectricalConnectionDescriptionDataType>> electricalConnectionDescriptionData;
 
-    ElectricalConnectionDescriptionListDataType() :
-        electricalConnectionDescriptionData(std::vector<ElectricalConnectionDescriptionDataType>{})
-    {
-    }
+	ElectricalConnectionDescriptionListDataType()
+		:
+		electricalConnectionDescriptionData(std::vector<ElectricalConnectionDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const ElectricalConnectionDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptionListDataType &dst);
+bool convertToJson(const ElectricalConnectionDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionDescriptionListDataType &dst);
 
 struct ElectricalConnectionDescriptionListDataSelectorsType { // EEBus_SPINE_TS_ElectricalConnection.xsd
-    std::optional<ElectricalConnectionIdType> electricalConnectionId;
-    std::optional<ScopeTypeType> scopeType;
+	std::optional<ElectricalConnectionIdType> electricalConnectionId;
+	std::optional<ScopeTypeType> scopeType;
 
-    ElectricalConnectionDescriptionListDataSelectorsType() :
-        electricalConnectionId(ElectricalConnectionIdType{}), scopeType(ScopeTypeType{})
-    {
-    }
+	ElectricalConnectionDescriptionListDataSelectorsType()
+		:
+		electricalConnectionId(ElectricalConnectionIdType{}),
+		scopeType(ScopeTypeType{})
+	{}
 };
-bool convertToJson(const ElectricalConnectionDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptionListDataSelectorsType &dst);
+bool convertToJson(const ElectricalConnectionDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionDescriptionListDataSelectorsType &dst);
 
 struct HvacSystemFunctionDataType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<HvacSystemFunctionIdType> systemFunctionId;
-    std::optional<HvacOperationModeIdType> currentOperationModeId;
-    std::optional<bool> isOperationModeIdChangeable;
-    std::optional<SetpointIdType> currentSetpointId;
-    std::optional<bool> isSetpointIdChangeable;
-    std::optional<bool> isOverrunActive;
+	std::optional<HvacSystemFunctionIdType> systemFunctionId;
+	std::optional<HvacOperationModeIdType> currentOperationModeId;
+	std::optional<bool> isOperationModeIdChangeable;
+	std::optional<SetpointIdType> currentSetpointId;
+	std::optional<bool> isSetpointIdChangeable;
+	std::optional<bool> isOverrunActive;
 
-    HvacSystemFunctionDataType() :
-        systemFunctionId(HvacSystemFunctionIdType{}), currentOperationModeId(HvacOperationModeIdType{}),
-        isOperationModeIdChangeable(bool{}), currentSetpointId(SetpointIdType{}), isSetpointIdChangeable(bool{}), isOverrunActive(bool{})
-    {
-    }
+	HvacSystemFunctionDataType()
+		:
+		systemFunctionId(HvacSystemFunctionIdType{}),
+		currentOperationModeId(HvacOperationModeIdType{}),
+		isOperationModeIdChangeable(bool{}),
+		currentSetpointId(SetpointIdType{}),
+		isSetpointIdChangeable(bool{}),
+		isOverrunActive(bool{})
+	{}
 };
-bool convertToJson(const HvacSystemFunctionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDataType &dst);
+bool convertToJson(const HvacSystemFunctionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionDataType &dst);
 
 struct HvacSystemFunctionDataElementsType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<ElementTagType> systemFunctionId;
-    std::optional<ElementTagType> currentOperationModeId;
-    std::optional<ElementTagType> isOperationModeIdChangeable;
-    std::optional<ElementTagType> currentSetpointId;
-    std::optional<ElementTagType> isSetpointIdChangeable;
-    std::optional<ElementTagType> isOverrunActive;
+	std::optional<ElementTagType> systemFunctionId;
+	std::optional<ElementTagType> currentOperationModeId;
+	std::optional<ElementTagType> isOperationModeIdChangeable;
+	std::optional<ElementTagType> currentSetpointId;
+	std::optional<ElementTagType> isSetpointIdChangeable;
+	std::optional<ElementTagType> isOverrunActive;
 
-    HvacSystemFunctionDataElementsType() :
-        systemFunctionId(ElementTagType{}), currentOperationModeId(ElementTagType{}), isOperationModeIdChangeable(ElementTagType{}),
-        currentSetpointId(ElementTagType{}), isSetpointIdChangeable(ElementTagType{}), isOverrunActive(ElementTagType{})
-    {
-    }
+	HvacSystemFunctionDataElementsType()
+		:
+		systemFunctionId(ElementTagType{}),
+		currentOperationModeId(ElementTagType{}),
+		isOperationModeIdChangeable(ElementTagType{}),
+		currentSetpointId(ElementTagType{}),
+		isSetpointIdChangeable(ElementTagType{}),
+		isOverrunActive(ElementTagType{})
+	{}
 };
-bool convertToJson(const HvacSystemFunctionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDataElementsType &dst);
+bool convertToJson(const HvacSystemFunctionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionDataElementsType &dst);
 
 struct HvacSystemFunctionListDataType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<std::vector<HvacSystemFunctionDataType>> hvacSystemFunctionData;
+	std::optional<std::vector<HvacSystemFunctionDataType>> hvacSystemFunctionData;
 
-    HvacSystemFunctionListDataType() : hvacSystemFunctionData(std::vector<HvacSystemFunctionDataType>{})
-    {
-    }
+	HvacSystemFunctionListDataType()
+		:
+		hvacSystemFunctionData(std::vector<HvacSystemFunctionDataType>{})
+	{}
 };
-bool convertToJson(const HvacSystemFunctionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionListDataType &dst);
+bool convertToJson(const HvacSystemFunctionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionListDataType &dst);
 
 struct HvacSystemFunctionListDataSelectorsType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<HvacSystemFunctionIdType> systemFunctionId;
+	std::optional<HvacSystemFunctionIdType> systemFunctionId;
 
-    HvacSystemFunctionListDataSelectorsType() : systemFunctionId(HvacSystemFunctionIdType{})
-    {
-    }
+	HvacSystemFunctionListDataSelectorsType()
+		:
+		systemFunctionId(HvacSystemFunctionIdType{})
+	{}
 };
-bool convertToJson(const HvacSystemFunctionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionListDataSelectorsType &dst);
+bool convertToJson(const HvacSystemFunctionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionListDataSelectorsType &dst);
 
 struct HvacSystemFunctionOperationModeRelationDataType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<HvacSystemFunctionIdType> systemFunctionId;
-    std::optional<std::vector<HvacOperationModeIdType>> operationModeId;
+	std::optional<HvacSystemFunctionIdType> systemFunctionId;
+	std::optional<std::vector<HvacOperationModeIdType>> operationModeId;
 
-    HvacSystemFunctionOperationModeRelationDataType() :
-        systemFunctionId(HvacSystemFunctionIdType{}), operationModeId(std::vector<HvacOperationModeIdType>{})
-    {
-    }
+	HvacSystemFunctionOperationModeRelationDataType()
+		:
+		systemFunctionId(HvacSystemFunctionIdType{}),
+		operationModeId(std::vector<HvacOperationModeIdType>{})
+	{}
 };
-bool convertToJson(const HvacSystemFunctionOperationModeRelationDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationModeRelationDataType &dst);
+bool convertToJson(const HvacSystemFunctionOperationModeRelationDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionOperationModeRelationDataType &dst);
 
 struct HvacSystemFunctionOperationModeRelationDataElementsType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<ElementTagType> systemFunctionId;
-    std::optional<ElementTagType> operationModeId;
+	std::optional<ElementTagType> systemFunctionId;
+	std::optional<ElementTagType> operationModeId;
 
-    HvacSystemFunctionOperationModeRelationDataElementsType() : systemFunctionId(ElementTagType{}), operationModeId(ElementTagType{})
-    {
-    }
+	HvacSystemFunctionOperationModeRelationDataElementsType()
+		:
+		systemFunctionId(ElementTagType{}),
+		operationModeId(ElementTagType{})
+	{}
 };
-bool convertToJson(const HvacSystemFunctionOperationModeRelationDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationModeRelationDataElementsType &dst);
+bool convertToJson(const HvacSystemFunctionOperationModeRelationDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionOperationModeRelationDataElementsType &dst);
 
 struct HvacSystemFunctionOperationModeRelationListDataType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<std::vector<HvacSystemFunctionOperationModeRelationDataType>> hvacSystemFunctionOperationModeRelationData;
+	std::optional<std::vector<HvacSystemFunctionOperationModeRelationDataType>> hvacSystemFunctionOperationModeRelationData;
 
-    HvacSystemFunctionOperationModeRelationListDataType() :
-        hvacSystemFunctionOperationModeRelationData(std::vector<HvacSystemFunctionOperationModeRelationDataType>{})
-    {
-    }
+	HvacSystemFunctionOperationModeRelationListDataType()
+		:
+		hvacSystemFunctionOperationModeRelationData(std::vector<HvacSystemFunctionOperationModeRelationDataType>{})
+	{}
 };
-bool convertToJson(const HvacSystemFunctionOperationModeRelationListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationModeRelationListDataType &dst);
+bool convertToJson(const HvacSystemFunctionOperationModeRelationListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionOperationModeRelationListDataType &dst);
 
 struct HvacSystemFunctionOperationModeRelationListDataSelectorsType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<HvacSystemFunctionIdType> systemFunctionId;
+	std::optional<HvacSystemFunctionIdType> systemFunctionId;
 
-    HvacSystemFunctionOperationModeRelationListDataSelectorsType() : systemFunctionId(HvacSystemFunctionIdType{})
-    {
-    }
+	HvacSystemFunctionOperationModeRelationListDataSelectorsType()
+		:
+		systemFunctionId(HvacSystemFunctionIdType{})
+	{}
 };
-bool convertToJson(const HvacSystemFunctionOperationModeRelationListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationModeRelationListDataSelectorsType &dst);
+bool convertToJson(const HvacSystemFunctionOperationModeRelationListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionOperationModeRelationListDataSelectorsType &dst);
 
 struct HvacSystemFunctionSetpointRelationDataType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<HvacSystemFunctionIdType> systemFunctionId;
-    std::optional<HvacOperationModeIdType> operationModeId;
-    std::optional<std::vector<SetpointIdType>> setpointId;
+	std::optional<HvacSystemFunctionIdType> systemFunctionId;
+	std::optional<HvacOperationModeIdType> operationModeId;
+	std::optional<std::vector<SetpointIdType>> setpointId;
 
-    HvacSystemFunctionSetpointRelationDataType() :
-        systemFunctionId(HvacSystemFunctionIdType{}), operationModeId(HvacOperationModeIdType{}), setpointId(std::vector<SetpointIdType>{})
-    {
-    }
+	HvacSystemFunctionSetpointRelationDataType()
+		:
+		systemFunctionId(HvacSystemFunctionIdType{}),
+		operationModeId(HvacOperationModeIdType{}),
+		setpointId(std::vector<SetpointIdType>{})
+	{}
 };
-bool convertToJson(const HvacSystemFunctionSetpointRelationDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRelationDataType &dst);
+bool convertToJson(const HvacSystemFunctionSetpointRelationDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionSetpointRelationDataType &dst);
 
 struct HvacSystemFunctionSetpointRelationDataElementsType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<ElementTagType> systemFunctionId;
-    std::optional<ElementTagType> operationModeId;
-    std::optional<ElementTagType> setpointId;
+	std::optional<ElementTagType> systemFunctionId;
+	std::optional<ElementTagType> operationModeId;
+	std::optional<ElementTagType> setpointId;
 
-    HvacSystemFunctionSetpointRelationDataElementsType() :
-        systemFunctionId(ElementTagType{}), operationModeId(ElementTagType{}), setpointId(ElementTagType{})
-    {
-    }
+	HvacSystemFunctionSetpointRelationDataElementsType()
+		:
+		systemFunctionId(ElementTagType{}),
+		operationModeId(ElementTagType{}),
+		setpointId(ElementTagType{})
+	{}
 };
-bool convertToJson(const HvacSystemFunctionSetpointRelationDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRelationDataElementsType &dst);
+bool convertToJson(const HvacSystemFunctionSetpointRelationDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionSetpointRelationDataElementsType &dst);
 
 struct HvacSystemFunctionSetpointRelationListDataType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<std::vector<HvacSystemFunctionSetpointRelationDataType>> hvacSystemFunctionSetpointRelationData;
+	std::optional<std::vector<HvacSystemFunctionSetpointRelationDataType>> hvacSystemFunctionSetpointRelationData;
 
-    HvacSystemFunctionSetpointRelationListDataType() :
-        hvacSystemFunctionSetpointRelationData(std::vector<HvacSystemFunctionSetpointRelationDataType>{})
-    {
-    }
+	HvacSystemFunctionSetpointRelationListDataType()
+		:
+		hvacSystemFunctionSetpointRelationData(std::vector<HvacSystemFunctionSetpointRelationDataType>{})
+	{}
 };
-bool convertToJson(const HvacSystemFunctionSetpointRelationListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRelationListDataType &dst);
+bool convertToJson(const HvacSystemFunctionSetpointRelationListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionSetpointRelationListDataType &dst);
 
 struct HvacSystemFunctionSetpointRelationListDataSelectorsType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<HvacSystemFunctionIdType> systemFunctionId;
-    std::optional<HvacOperationModeIdType> operationModeId;
+	std::optional<HvacSystemFunctionIdType> systemFunctionId;
+	std::optional<HvacOperationModeIdType> operationModeId;
 
-    HvacSystemFunctionSetpointRelationListDataSelectorsType() :
-        systemFunctionId(HvacSystemFunctionIdType{}), operationModeId(HvacOperationModeIdType{})
-    {
-    }
+	HvacSystemFunctionSetpointRelationListDataSelectorsType()
+		:
+		systemFunctionId(HvacSystemFunctionIdType{}),
+		operationModeId(HvacOperationModeIdType{})
+	{}
 };
-bool convertToJson(const HvacSystemFunctionSetpointRelationListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRelationListDataSelectorsType &dst);
+bool convertToJson(const HvacSystemFunctionSetpointRelationListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionSetpointRelationListDataSelectorsType &dst);
 
 struct HvacSystemFunctionPowerSequenceRelationDataType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<HvacSystemFunctionIdType> systemFunctionId;
-    std::optional<std::vector<PowerSequenceIdType>> sequenceId;
+	std::optional<HvacSystemFunctionIdType> systemFunctionId;
+	std::optional<std::vector<PowerSequenceIdType>> sequenceId;
 
-    HvacSystemFunctionPowerSequenceRelationDataType() :
-        systemFunctionId(HvacSystemFunctionIdType{}), sequenceId(std::vector<PowerSequenceIdType>{})
-    {
-    }
+	HvacSystemFunctionPowerSequenceRelationDataType()
+		:
+		systemFunctionId(HvacSystemFunctionIdType{}),
+		sequenceId(std::vector<PowerSequenceIdType>{})
+	{}
 };
-bool convertToJson(const HvacSystemFunctionPowerSequenceRelationDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenceRelationDataType &dst);
+bool convertToJson(const HvacSystemFunctionPowerSequenceRelationDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionPowerSequenceRelationDataType &dst);
 
 struct HvacSystemFunctionPowerSequenceRelationDataElementsType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<ElementTagType> systemFunctionId;
-    std::optional<ElementTagType> sequenceId;
+	std::optional<ElementTagType> systemFunctionId;
+	std::optional<ElementTagType> sequenceId;
 
-    HvacSystemFunctionPowerSequenceRelationDataElementsType() : systemFunctionId(ElementTagType{}), sequenceId(ElementTagType{})
-    {
-    }
+	HvacSystemFunctionPowerSequenceRelationDataElementsType()
+		:
+		systemFunctionId(ElementTagType{}),
+		sequenceId(ElementTagType{})
+	{}
 };
-bool convertToJson(const HvacSystemFunctionPowerSequenceRelationDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenceRelationDataElementsType &dst);
+bool convertToJson(const HvacSystemFunctionPowerSequenceRelationDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionPowerSequenceRelationDataElementsType &dst);
 
 struct HvacSystemFunctionPowerSequenceRelationListDataType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<std::vector<HvacSystemFunctionPowerSequenceRelationDataType>> hvacSystemFunctionPowerSequenceRelationData;
+	std::optional<std::vector<HvacSystemFunctionPowerSequenceRelationDataType>> hvacSystemFunctionPowerSequenceRelationData;
 
-    HvacSystemFunctionPowerSequenceRelationListDataType() :
-        hvacSystemFunctionPowerSequenceRelationData(std::vector<HvacSystemFunctionPowerSequenceRelationDataType>{})
-    {
-    }
+	HvacSystemFunctionPowerSequenceRelationListDataType()
+		:
+		hvacSystemFunctionPowerSequenceRelationData(std::vector<HvacSystemFunctionPowerSequenceRelationDataType>{})
+	{}
 };
-bool convertToJson(const HvacSystemFunctionPowerSequenceRelationListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenceRelationListDataType &dst);
+bool convertToJson(const HvacSystemFunctionPowerSequenceRelationListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionPowerSequenceRelationListDataType &dst);
 
 struct HvacSystemFunctionPowerSequenceRelationListDataSelectorsType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<HvacSystemFunctionIdType> systemFunctionId;
+	std::optional<HvacSystemFunctionIdType> systemFunctionId;
 
-    HvacSystemFunctionPowerSequenceRelationListDataSelectorsType() : systemFunctionId(HvacSystemFunctionIdType{})
-    {
-    }
+	HvacSystemFunctionPowerSequenceRelationListDataSelectorsType()
+		:
+		systemFunctionId(HvacSystemFunctionIdType{})
+	{}
 };
-bool convertToJson(const HvacSystemFunctionPowerSequenceRelationListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenceRelationListDataSelectorsType &dst);
+bool convertToJson(const HvacSystemFunctionPowerSequenceRelationListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionPowerSequenceRelationListDataSelectorsType &dst);
 
 struct HvacSystemFunctionDescriptionDataType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<HvacSystemFunctionIdType> systemFunctionId;
-    std::optional<HvacSystemFunctionTypeType> systemFunctionType;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<HvacSystemFunctionIdType> systemFunctionId;
+	std::optional<HvacSystemFunctionTypeType> systemFunctionType;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    HvacSystemFunctionDescriptionDataType() :
-        systemFunctionId(HvacSystemFunctionIdType{}), systemFunctionType(HvacSystemFunctionTypeType{}), label(LabelType{}),
-        description(DescriptionType{})
-    {
-    }
+	HvacSystemFunctionDescriptionDataType()
+		:
+		systemFunctionId(HvacSystemFunctionIdType{}),
+		systemFunctionType(HvacSystemFunctionTypeType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const HvacSystemFunctionDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionDataType &dst);
+bool convertToJson(const HvacSystemFunctionDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionDescriptionDataType &dst);
 
 struct HvacSystemFunctionDescriptionDataElementsType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<ElementTagType> systemFunctionId;
-    std::optional<ElementTagType> systemFunctionType;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> systemFunctionId;
+	std::optional<ElementTagType> systemFunctionType;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    HvacSystemFunctionDescriptionDataElementsType() :
-        systemFunctionId(ElementTagType{}), systemFunctionType(ElementTagType{}), label(ElementTagType{}), description(ElementTagType{})
-    {
-    }
+	HvacSystemFunctionDescriptionDataElementsType()
+		:
+		systemFunctionId(ElementTagType{}),
+		systemFunctionType(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const HvacSystemFunctionDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionDataElementsType &dst);
+bool convertToJson(const HvacSystemFunctionDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionDescriptionDataElementsType &dst);
 
 struct HvacSystemFunctionDescriptionListDataType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<std::vector<HvacSystemFunctionDescriptionDataType>> hvacSystemFunctionDescriptionData;
+	std::optional<std::vector<HvacSystemFunctionDescriptionDataType>> hvacSystemFunctionDescriptionData;
 
-    HvacSystemFunctionDescriptionListDataType() : hvacSystemFunctionDescriptionData(std::vector<HvacSystemFunctionDescriptionDataType>{})
-    {
-    }
+	HvacSystemFunctionDescriptionListDataType()
+		:
+		hvacSystemFunctionDescriptionData(std::vector<HvacSystemFunctionDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const HvacSystemFunctionDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionListDataType &dst);
+bool convertToJson(const HvacSystemFunctionDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionDescriptionListDataType &dst);
 
 struct HvacSystemFunctionDescriptionListDataSelectorsType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<HvacSystemFunctionIdType> systemFunctionId;
+	std::optional<HvacSystemFunctionIdType> systemFunctionId;
 
-    HvacSystemFunctionDescriptionListDataSelectorsType() : systemFunctionId(HvacSystemFunctionIdType{})
-    {
-    }
+	HvacSystemFunctionDescriptionListDataSelectorsType()
+		:
+		systemFunctionId(HvacSystemFunctionIdType{})
+	{}
 };
-bool convertToJson(const HvacSystemFunctionDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionListDataSelectorsType &dst);
+bool convertToJson(const HvacSystemFunctionDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionDescriptionListDataSelectorsType &dst);
 
 struct HvacOperationModeDescriptionDataType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<HvacOperationModeIdType> operationModeId;
-    std::optional<HvacOperationModeTypeType> operationModeType;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<HvacOperationModeIdType> operationModeId;
+	std::optional<HvacOperationModeTypeType> operationModeType;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    HvacOperationModeDescriptionDataType() :
-        operationModeId(HvacOperationModeIdType{}), operationModeType(HvacOperationModeTypeType{}), label(LabelType{}),
-        description(DescriptionType{})
-    {
-    }
+	HvacOperationModeDescriptionDataType()
+		:
+		operationModeId(HvacOperationModeIdType{}),
+		operationModeType(HvacOperationModeTypeType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const HvacOperationModeDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionDataType &dst);
+bool convertToJson(const HvacOperationModeDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacOperationModeDescriptionDataType &dst);
 
 struct HvacOperationModeDescriptionDataElementsType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<ElementTagType> operationModeId;
-    std::optional<ElementTagType> operationModeType;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> operationModeId;
+	std::optional<ElementTagType> operationModeType;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    HvacOperationModeDescriptionDataElementsType() :
-        operationModeId(ElementTagType{}), operationModeType(ElementTagType{}), label(ElementTagType{}), description(ElementTagType{})
-    {
-    }
+	HvacOperationModeDescriptionDataElementsType()
+		:
+		operationModeId(ElementTagType{}),
+		operationModeType(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const HvacOperationModeDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionDataElementsType &dst);
+bool convertToJson(const HvacOperationModeDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacOperationModeDescriptionDataElementsType &dst);
 
 struct HvacOperationModeDescriptionListDataType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<std::vector<HvacOperationModeDescriptionDataType>> hvacOperationModeDescriptionData;
+	std::optional<std::vector<HvacOperationModeDescriptionDataType>> hvacOperationModeDescriptionData;
 
-    HvacOperationModeDescriptionListDataType() : hvacOperationModeDescriptionData(std::vector<HvacOperationModeDescriptionDataType>{})
-    {
-    }
+	HvacOperationModeDescriptionListDataType()
+		:
+		hvacOperationModeDescriptionData(std::vector<HvacOperationModeDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const HvacOperationModeDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionListDataType &dst);
+bool convertToJson(const HvacOperationModeDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacOperationModeDescriptionListDataType &dst);
 
 struct HvacOperationModeDescriptionListDataSelectorsType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<HvacOperationModeIdType> operationModeId;
+	std::optional<HvacOperationModeIdType> operationModeId;
 
-    HvacOperationModeDescriptionListDataSelectorsType() : operationModeId(HvacOperationModeIdType{})
-    {
-    }
+	HvacOperationModeDescriptionListDataSelectorsType()
+		:
+		operationModeId(HvacOperationModeIdType{})
+	{}
 };
-bool convertToJson(const HvacOperationModeDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionListDataSelectorsType &dst);
+bool convertToJson(const HvacOperationModeDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacOperationModeDescriptionListDataSelectorsType &dst);
 
 struct HvacOverrunDataType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<HvacOverrunIdType> overrunId;
-    std::optional<HvacOverrunStatusType> overrunStatus;
-    std::optional<TimeTableIdType> timeTableId;
-    std::optional<bool> isOverrunStatusChangeable;
+	std::optional<HvacOverrunIdType> overrunId;
+	std::optional<HvacOverrunStatusType> overrunStatus;
+	std::optional<TimeTableIdType> timeTableId;
+	std::optional<bool> isOverrunStatusChangeable;
 
-    HvacOverrunDataType() :
-        overrunId(HvacOverrunIdType{}), overrunStatus(HvacOverrunStatusType{}), timeTableId(TimeTableIdType{}),
-        isOverrunStatusChangeable(bool{})
-    {
-    }
+	HvacOverrunDataType()
+		:
+		overrunId(HvacOverrunIdType{}),
+		overrunStatus(HvacOverrunStatusType{}),
+		timeTableId(TimeTableIdType{}),
+		isOverrunStatusChangeable(bool{})
+	{}
 };
-bool convertToJson(const HvacOverrunDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacOverrunDataType &dst);
+bool convertToJson(const HvacOverrunDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacOverrunDataType &dst);
 
 struct HvacOverrunDataElementsType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<ElementTagType> overrunId;
-    std::optional<ElementTagType> overrunStatus;
-    std::optional<ElementTagType> timeTableId;
-    std::optional<ElementTagType> isOverrunStatusChangeable;
+	std::optional<ElementTagType> overrunId;
+	std::optional<ElementTagType> overrunStatus;
+	std::optional<ElementTagType> timeTableId;
+	std::optional<ElementTagType> isOverrunStatusChangeable;
 
-    HvacOverrunDataElementsType() :
-        overrunId(ElementTagType{}), overrunStatus(ElementTagType{}), timeTableId(ElementTagType{}),
-        isOverrunStatusChangeable(ElementTagType{})
-    {
-    }
+	HvacOverrunDataElementsType()
+		:
+		overrunId(ElementTagType{}),
+		overrunStatus(ElementTagType{}),
+		timeTableId(ElementTagType{}),
+		isOverrunStatusChangeable(ElementTagType{})
+	{}
 };
-bool convertToJson(const HvacOverrunDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacOverrunDataElementsType &dst);
+bool convertToJson(const HvacOverrunDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacOverrunDataElementsType &dst);
 
 struct HvacOverrunListDataType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<std::vector<HvacOverrunDataType>> hvacOverrunData;
+	std::optional<std::vector<HvacOverrunDataType>> hvacOverrunData;
 
-    HvacOverrunListDataType() : hvacOverrunData(std::vector<HvacOverrunDataType>{})
-    {
-    }
+	HvacOverrunListDataType()
+		:
+		hvacOverrunData(std::vector<HvacOverrunDataType>{})
+	{}
 };
-bool convertToJson(const HvacOverrunListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacOverrunListDataType &dst);
+bool convertToJson(const HvacOverrunListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacOverrunListDataType &dst);
 
 struct HvacOverrunListDataSelectorsType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<HvacOverrunIdType> overrunId;
+	std::optional<HvacOverrunIdType> overrunId;
 
-    HvacOverrunListDataSelectorsType() : overrunId(HvacOverrunIdType{})
-    {
-    }
+	HvacOverrunListDataSelectorsType()
+		:
+		overrunId(HvacOverrunIdType{})
+	{}
 };
-bool convertToJson(const HvacOverrunListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacOverrunListDataSelectorsType &dst);
+bool convertToJson(const HvacOverrunListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacOverrunListDataSelectorsType &dst);
 
 struct HvacOverrunDescriptionDataType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<HvacOverrunIdType> overrunId;
-    std::optional<HvacOverrunTypeType> overrunType;
-    std::optional<std::vector<HvacSystemFunctionIdType>> affectedSystemFunctionId;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<HvacOverrunIdType> overrunId;
+	std::optional<HvacOverrunTypeType> overrunType;
+	std::optional<std::vector<HvacSystemFunctionIdType>> affectedSystemFunctionId;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    HvacOverrunDescriptionDataType() :
-        overrunId(HvacOverrunIdType{}), overrunType(HvacOverrunTypeType{}),
-        affectedSystemFunctionId(std::vector<HvacSystemFunctionIdType>{}), label(LabelType{}), description(DescriptionType{})
-    {
-    }
+	HvacOverrunDescriptionDataType()
+		:
+		overrunId(HvacOverrunIdType{}),
+		overrunType(HvacOverrunTypeType{}),
+		affectedSystemFunctionId(std::vector<HvacSystemFunctionIdType>{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const HvacOverrunDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionDataType &dst);
+bool convertToJson(const HvacOverrunDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacOverrunDescriptionDataType &dst);
 
 struct HvacOverrunDescriptionDataElementsType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<ElementTagType> overrunId;
-    std::optional<ElementTagType> overrunType;
-    std::optional<ElementTagType> affectedSystemFunctionId;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> overrunId;
+	std::optional<ElementTagType> overrunType;
+	std::optional<ElementTagType> affectedSystemFunctionId;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    HvacOverrunDescriptionDataElementsType() :
-        overrunId(ElementTagType{}), overrunType(ElementTagType{}), affectedSystemFunctionId(ElementTagType{}), label(ElementTagType{}),
-        description(ElementTagType{})
-    {
-    }
+	HvacOverrunDescriptionDataElementsType()
+		:
+		overrunId(ElementTagType{}),
+		overrunType(ElementTagType{}),
+		affectedSystemFunctionId(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const HvacOverrunDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionDataElementsType &dst);
+bool convertToJson(const HvacOverrunDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacOverrunDescriptionDataElementsType &dst);
 
 struct HvacOverrunDescriptionListDataType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<std::vector<HvacOverrunDescriptionDataType>> hvacOverrunDescriptionData;
+	std::optional<std::vector<HvacOverrunDescriptionDataType>> hvacOverrunDescriptionData;
 
-    HvacOverrunDescriptionListDataType() : hvacOverrunDescriptionData(std::vector<HvacOverrunDescriptionDataType>{})
-    {
-    }
+	HvacOverrunDescriptionListDataType()
+		:
+		hvacOverrunDescriptionData(std::vector<HvacOverrunDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const HvacOverrunDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionListDataType &dst);
+bool convertToJson(const HvacOverrunDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacOverrunDescriptionListDataType &dst);
 
 struct HvacOverrunDescriptionListDataSelectorsType { // EEBus_SPINE_TS_HVAC.xsd
-    std::optional<HvacOverrunIdType> overrunId;
+	std::optional<HvacOverrunIdType> overrunId;
 
-    HvacOverrunDescriptionListDataSelectorsType() : overrunId(HvacOverrunIdType{})
-    {
-    }
+	HvacOverrunDescriptionListDataSelectorsType()
+		:
+		overrunId(HvacOverrunIdType{})
+	{}
 };
-bool convertToJson(const HvacOverrunDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionListDataSelectorsType &dst);
+bool convertToJson(const HvacOverrunDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HvacOverrunDescriptionListDataSelectorsType &dst);
 
 struct SetpointDataType { // EEBus_SPINE_TS_Setpoint.xsd
-    std::optional<SetpointIdType> setpointId;
-    std::optional<ScaledNumberType> value;
-    std::optional<ScaledNumberType> valueMin;
-    std::optional<ScaledNumberType> valueMax;
-    std::optional<ScaledNumberType> valueToleranceAbsolute;
-    std::optional<ScaledNumberType> valueTolerancePercentage;
-    std::optional<bool> isSetpointChangeable;
-    std::optional<bool> isSetpointActive;
-    std::optional<TimePeriodType> timePeriod;
+	std::optional<SetpointIdType> setpointId;
+	std::optional<ScaledNumberType> value;
+	std::optional<ScaledNumberType> valueMin;
+	std::optional<ScaledNumberType> valueMax;
+	std::optional<ScaledNumberType> valueToleranceAbsolute;
+	std::optional<ScaledNumberType> valueTolerancePercentage;
+	std::optional<bool> isSetpointChangeable;
+	std::optional<bool> isSetpointActive;
+	std::optional<TimePeriodType> timePeriod;
 
-    SetpointDataType() :
-        setpointId(SetpointIdType{}), value(ScaledNumberType{}), valueMin(ScaledNumberType{}), valueMax(ScaledNumberType{}),
-        valueToleranceAbsolute(ScaledNumberType{}), valueTolerancePercentage(ScaledNumberType{}), isSetpointChangeable(bool{}),
-        isSetpointActive(bool{}), timePeriod(TimePeriodType{})
-    {
-    }
+	SetpointDataType()
+		:
+		setpointId(SetpointIdType{}),
+		value(ScaledNumberType{}),
+		valueMin(ScaledNumberType{}),
+		valueMax(ScaledNumberType{}),
+		valueToleranceAbsolute(ScaledNumberType{}),
+		valueTolerancePercentage(ScaledNumberType{}),
+		isSetpointChangeable(bool{}),
+		isSetpointActive(bool{}),
+		timePeriod(TimePeriodType{})
+	{}
 };
-bool convertToJson(const SetpointDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SetpointDataType &dst);
+bool convertToJson(const SetpointDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SetpointDataType &dst);
 
 struct SetpointDataElementsType { // EEBus_SPINE_TS_Setpoint.xsd
-    std::optional<ElementTagType> setpointId;
-    std::optional<ScaledNumberElementsType> value;
-    std::optional<ScaledNumberElementsType> valueMin;
-    std::optional<ScaledNumberElementsType> valueMax;
-    std::optional<ScaledNumberElementsType> valueToleranceAbsolute;
-    std::optional<ScaledNumberElementsType> valueTolerancePercentage;
-    std::optional<ElementTagType> isSetpointChangeable;
-    std::optional<ElementTagType> isSetpointActive;
-    std::optional<TimePeriodElementsType> timePeriod;
+	std::optional<ElementTagType> setpointId;
+	std::optional<ScaledNumberElementsType> value;
+	std::optional<ScaledNumberElementsType> valueMin;
+	std::optional<ScaledNumberElementsType> valueMax;
+	std::optional<ScaledNumberElementsType> valueToleranceAbsolute;
+	std::optional<ScaledNumberElementsType> valueTolerancePercentage;
+	std::optional<ElementTagType> isSetpointChangeable;
+	std::optional<ElementTagType> isSetpointActive;
+	std::optional<TimePeriodElementsType> timePeriod;
 
-    SetpointDataElementsType() :
-        setpointId(ElementTagType{}), value(ScaledNumberElementsType{}), valueMin(ScaledNumberElementsType{}),
-        valueMax(ScaledNumberElementsType{}), valueToleranceAbsolute(ScaledNumberElementsType{}),
-        valueTolerancePercentage(ScaledNumberElementsType{}), isSetpointChangeable(ElementTagType{}), isSetpointActive(ElementTagType{}),
-        timePeriod(TimePeriodElementsType{})
-    {
-    }
+	SetpointDataElementsType()
+		:
+		setpointId(ElementTagType{}),
+		value(ScaledNumberElementsType{}),
+		valueMin(ScaledNumberElementsType{}),
+		valueMax(ScaledNumberElementsType{}),
+		valueToleranceAbsolute(ScaledNumberElementsType{}),
+		valueTolerancePercentage(ScaledNumberElementsType{}),
+		isSetpointChangeable(ElementTagType{}),
+		isSetpointActive(ElementTagType{}),
+		timePeriod(TimePeriodElementsType{})
+	{}
 };
-bool convertToJson(const SetpointDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SetpointDataElementsType &dst);
+bool convertToJson(const SetpointDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SetpointDataElementsType &dst);
 
 struct SetpointListDataType { // EEBus_SPINE_TS_Setpoint.xsd
-    std::optional<std::vector<SetpointDataType>> setpointData;
+	std::optional<std::vector<SetpointDataType>> setpointData;
 
-    SetpointListDataType() : setpointData(std::vector<SetpointDataType>{})
-    {
-    }
+	SetpointListDataType()
+		:
+		setpointData(std::vector<SetpointDataType>{})
+	{}
 };
-bool convertToJson(const SetpointListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SetpointListDataType &dst);
+bool convertToJson(const SetpointListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SetpointListDataType &dst);
 
 struct SetpointListDataSelectorsType { // EEBus_SPINE_TS_Setpoint.xsd
-    std::optional<SetpointIdType> setpointId;
+	std::optional<SetpointIdType> setpointId;
 
-    SetpointListDataSelectorsType() : setpointId(SetpointIdType{})
-    {
-    }
+	SetpointListDataSelectorsType()
+		:
+		setpointId(SetpointIdType{})
+	{}
 };
-bool convertToJson(const SetpointListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SetpointListDataSelectorsType &dst);
+bool convertToJson(const SetpointListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SetpointListDataSelectorsType &dst);
 
 struct SetpointConstraintsDataType { // EEBus_SPINE_TS_Setpoint.xsd
-    std::optional<SetpointIdType> setpointId;
-    std::optional<ScaledNumberType> setpointRangeMin;
-    std::optional<ScaledNumberType> setpointRangeMax;
-    std::optional<ScaledNumberType> setpointStepSize;
+	std::optional<SetpointIdType> setpointId;
+	std::optional<ScaledNumberType> setpointRangeMin;
+	std::optional<ScaledNumberType> setpointRangeMax;
+	std::optional<ScaledNumberType> setpointStepSize;
 
-    SetpointConstraintsDataType() :
-        setpointId(SetpointIdType{}), setpointRangeMin(ScaledNumberType{}), setpointRangeMax(ScaledNumberType{}),
-        setpointStepSize(ScaledNumberType{})
-    {
-    }
+	SetpointConstraintsDataType()
+		:
+		setpointId(SetpointIdType{}),
+		setpointRangeMin(ScaledNumberType{}),
+		setpointRangeMax(ScaledNumberType{}),
+		setpointStepSize(ScaledNumberType{})
+	{}
 };
-bool convertToJson(const SetpointConstraintsDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SetpointConstraintsDataType &dst);
+bool convertToJson(const SetpointConstraintsDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SetpointConstraintsDataType &dst);
 
 struct SetpointConstraintsDataElementsType { // EEBus_SPINE_TS_Setpoint.xsd
-    std::optional<ElementTagType> setpointId;
-    std::optional<ScaledNumberElementsType> setpointRangeMin;
-    std::optional<ScaledNumberElementsType> setpointRangeMax;
-    std::optional<ScaledNumberElementsType> setpointStepSize;
+	std::optional<ElementTagType> setpointId;
+	std::optional<ScaledNumberElementsType> setpointRangeMin;
+	std::optional<ScaledNumberElementsType> setpointRangeMax;
+	std::optional<ScaledNumberElementsType> setpointStepSize;
 
-    SetpointConstraintsDataElementsType() :
-        setpointId(ElementTagType{}), setpointRangeMin(ScaledNumberElementsType{}), setpointRangeMax(ScaledNumberElementsType{}),
-        setpointStepSize(ScaledNumberElementsType{})
-    {
-    }
+	SetpointConstraintsDataElementsType()
+		:
+		setpointId(ElementTagType{}),
+		setpointRangeMin(ScaledNumberElementsType{}),
+		setpointRangeMax(ScaledNumberElementsType{}),
+		setpointStepSize(ScaledNumberElementsType{})
+	{}
 };
-bool convertToJson(const SetpointConstraintsDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SetpointConstraintsDataElementsType &dst);
+bool convertToJson(const SetpointConstraintsDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SetpointConstraintsDataElementsType &dst);
 
 struct SetpointConstraintsListDataType { // EEBus_SPINE_TS_Setpoint.xsd
-    std::optional<std::vector<SetpointConstraintsDataType>> setpointConstraintsData;
+	std::optional<std::vector<SetpointConstraintsDataType>> setpointConstraintsData;
 
-    SetpointConstraintsListDataType() : setpointConstraintsData(std::vector<SetpointConstraintsDataType>{})
-    {
-    }
+	SetpointConstraintsListDataType()
+		:
+		setpointConstraintsData(std::vector<SetpointConstraintsDataType>{})
+	{}
 };
-bool convertToJson(const SetpointConstraintsListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SetpointConstraintsListDataType &dst);
+bool convertToJson(const SetpointConstraintsListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SetpointConstraintsListDataType &dst);
 
 struct SetpointConstraintsListDataSelectorsType { // EEBus_SPINE_TS_Setpoint.xsd
-    std::optional<SetpointIdType> setpointId;
+	std::optional<SetpointIdType> setpointId;
 
-    SetpointConstraintsListDataSelectorsType() : setpointId(SetpointIdType{})
-    {
-    }
+	SetpointConstraintsListDataSelectorsType()
+		:
+		setpointId(SetpointIdType{})
+	{}
 };
-bool convertToJson(const SetpointConstraintsListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SetpointConstraintsListDataSelectorsType &dst);
+bool convertToJson(const SetpointConstraintsListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SetpointConstraintsListDataSelectorsType &dst);
 
 struct SetpointDescriptionDataType { // EEBus_SPINE_TS_Setpoint.xsd
-    std::optional<SetpointIdType> setpointId;
-    std::optional<MeasurementIdType> measurementId;
-    std::optional<TimeTableIdType> timeTableId;
-    std::optional<SetpointTypeType> setpointType;
-    std::optional<UnitOfMeasurementType> unit;
-    std::optional<ScopeTypeType> scopeType;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<SetpointIdType> setpointId;
+	std::optional<MeasurementIdType> measurementId;
+	std::optional<TimeTableIdType> timeTableId;
+	std::optional<SetpointTypeType> setpointType;
+	std::optional<UnitOfMeasurementType> unit;
+	std::optional<ScopeTypeType> scopeType;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    SetpointDescriptionDataType() :
-        setpointId(SetpointIdType{}), measurementId(MeasurementIdType{}), timeTableId(TimeTableIdType{}), setpointType(SetpointTypeType{}),
-        unit(UnitOfMeasurementType{}), scopeType(ScopeTypeType{}), label(LabelType{}), description(DescriptionType{})
-    {
-    }
+	SetpointDescriptionDataType()
+		:
+		setpointId(SetpointIdType{}),
+		measurementId(MeasurementIdType{}),
+		timeTableId(TimeTableIdType{}),
+		setpointType(SetpointTypeType{}),
+		unit(UnitOfMeasurementType{}),
+		scopeType(ScopeTypeType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const SetpointDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SetpointDescriptionDataType &dst);
+bool convertToJson(const SetpointDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SetpointDescriptionDataType &dst);
 
 struct SetpointDescriptionDataElementsType { // EEBus_SPINE_TS_Setpoint.xsd
-    std::optional<ElementTagType> setpointId;
-    std::optional<ElementTagType> measurementId;
-    std::optional<ElementTagType> timeTableId;
-    std::optional<ElementTagType> setpointType;
-    std::optional<ElementTagType> unit;
-    std::optional<ElementTagType> scopeType;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> setpointId;
+	std::optional<ElementTagType> measurementId;
+	std::optional<ElementTagType> timeTableId;
+	std::optional<ElementTagType> setpointType;
+	std::optional<ElementTagType> unit;
+	std::optional<ElementTagType> scopeType;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    SetpointDescriptionDataElementsType() :
-        setpointId(ElementTagType{}), measurementId(ElementTagType{}), timeTableId(ElementTagType{}), setpointType(ElementTagType{}),
-        unit(ElementTagType{}), scopeType(ElementTagType{}), label(ElementTagType{}), description(ElementTagType{})
-    {
-    }
+	SetpointDescriptionDataElementsType()
+		:
+		setpointId(ElementTagType{}),
+		measurementId(ElementTagType{}),
+		timeTableId(ElementTagType{}),
+		setpointType(ElementTagType{}),
+		unit(ElementTagType{}),
+		scopeType(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const SetpointDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SetpointDescriptionDataElementsType &dst);
+bool convertToJson(const SetpointDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SetpointDescriptionDataElementsType &dst);
 
 struct SetpointDescriptionListDataType { // EEBus_SPINE_TS_Setpoint.xsd
-    std::optional<std::vector<SetpointDescriptionDataType>> setpointDescriptionData;
+	std::optional<std::vector<SetpointDescriptionDataType>> setpointDescriptionData;
 
-    SetpointDescriptionListDataType() : setpointDescriptionData(std::vector<SetpointDescriptionDataType>{})
-    {
-    }
+	SetpointDescriptionListDataType()
+		:
+		setpointDescriptionData(std::vector<SetpointDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const SetpointDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SetpointDescriptionListDataType &dst);
+bool convertToJson(const SetpointDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SetpointDescriptionListDataType &dst);
 
 struct SetpointDescriptionListDataSelectorsType { // EEBus_SPINE_TS_Setpoint.xsd
-    std::optional<SetpointIdType> setpointId;
-    std::optional<MeasurementIdType> measurementId;
-    std::optional<TimeTableIdType> timeTableId;
-    std::optional<SetpointTypeType> setpointType;
-    std::optional<ScopeTypeType> scopeType;
+	std::optional<SetpointIdType> setpointId;
+	std::optional<MeasurementIdType> measurementId;
+	std::optional<TimeTableIdType> timeTableId;
+	std::optional<SetpointTypeType> setpointType;
+	std::optional<ScopeTypeType> scopeType;
 
-    SetpointDescriptionListDataSelectorsType() :
-        setpointId(SetpointIdType{}), measurementId(MeasurementIdType{}), timeTableId(TimeTableIdType{}), setpointType(SetpointTypeType{}),
-        scopeType(ScopeTypeType{})
-    {
-    }
+	SetpointDescriptionListDataSelectorsType()
+		:
+		setpointId(SetpointIdType{}),
+		measurementId(MeasurementIdType{}),
+		timeTableId(TimeTableIdType{}),
+		setpointType(SetpointTypeType{}),
+		scopeType(ScopeTypeType{})
+	{}
 };
-bool convertToJson(const SetpointDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SetpointDescriptionListDataSelectorsType &dst);
+bool convertToJson(const SetpointDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SetpointDescriptionListDataSelectorsType &dst);
 
 struct TimeTableDataType { // EEBus_SPINE_TS_TimeTable.xsd
-    std::optional<TimeTableIdType> timeTableId;
-    std::optional<TimeSlotIdType> timeSlotId;
-    std::optional<RecurrenceInformationType> recurrenceInformation;
-    std::optional<AbsoluteOrRecurringTimeType> startTime;
-    std::optional<AbsoluteOrRecurringTimeType> endTime;
+	std::optional<TimeTableIdType> timeTableId;
+	std::optional<TimeSlotIdType> timeSlotId;
+	std::optional<RecurrenceInformationType> recurrenceInformation;
+	std::optional<AbsoluteOrRecurringTimeType> startTime;
+	std::optional<AbsoluteOrRecurringTimeType> endTime;
 
-    TimeTableDataType() :
-        timeTableId(TimeTableIdType{}), timeSlotId(TimeSlotIdType{}), recurrenceInformation(RecurrenceInformationType{}),
-        startTime(AbsoluteOrRecurringTimeType{}), endTime(AbsoluteOrRecurringTimeType{})
-    {
-    }
+	TimeTableDataType()
+		:
+		timeTableId(TimeTableIdType{}),
+		timeSlotId(TimeSlotIdType{}),
+		recurrenceInformation(RecurrenceInformationType{}),
+		startTime(AbsoluteOrRecurringTimeType{}),
+		endTime(AbsoluteOrRecurringTimeType{})
+	{}
 };
-bool convertToJson(const TimeTableDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeTableDataType &dst);
+bool convertToJson(const TimeTableDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableDataType &dst);
 
 struct TimeTableDataElementsType { // EEBus_SPINE_TS_TimeTable.xsd
-    std::optional<ElementTagType> timeTableId;
-    std::optional<ElementTagType> timeSlotId;
-    std::optional<RecurrenceInformationElementsType> recurrenceInformation;
-    std::optional<AbsoluteOrRecurringTimeElementsType> startTime;
-    std::optional<AbsoluteOrRecurringTimeElementsType> endTime;
+	std::optional<ElementTagType> timeTableId;
+	std::optional<ElementTagType> timeSlotId;
+	std::optional<RecurrenceInformationElementsType> recurrenceInformation;
+	std::optional<AbsoluteOrRecurringTimeElementsType> startTime;
+	std::optional<AbsoluteOrRecurringTimeElementsType> endTime;
 
-    TimeTableDataElementsType() :
-        timeTableId(ElementTagType{}), timeSlotId(ElementTagType{}), recurrenceInformation(RecurrenceInformationElementsType{}),
-        startTime(AbsoluteOrRecurringTimeElementsType{}), endTime(AbsoluteOrRecurringTimeElementsType{})
-    {
-    }
+	TimeTableDataElementsType()
+		:
+		timeTableId(ElementTagType{}),
+		timeSlotId(ElementTagType{}),
+		recurrenceInformation(RecurrenceInformationElementsType{}),
+		startTime(AbsoluteOrRecurringTimeElementsType{}),
+		endTime(AbsoluteOrRecurringTimeElementsType{})
+	{}
 };
-bool convertToJson(const TimeTableDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeTableDataElementsType &dst);
+bool convertToJson(const TimeTableDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableDataElementsType &dst);
 
 struct TimeTableListDataType { // EEBus_SPINE_TS_TimeTable.xsd
-    std::optional<std::vector<TimeTableDataType>> timeTableData;
+	std::optional<std::vector<TimeTableDataType>> timeTableData;
 
-    TimeTableListDataType() : timeTableData(std::vector<TimeTableDataType>{})
-    {
-    }
+	TimeTableListDataType()
+		:
+		timeTableData(std::vector<TimeTableDataType>{})
+	{}
 };
-bool convertToJson(const TimeTableListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeTableListDataType &dst);
+bool convertToJson(const TimeTableListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableListDataType &dst);
 
 struct TimeTableListDataSelectorsType { // EEBus_SPINE_TS_TimeTable.xsd
-    std::optional<TimeTableIdType> timeTableId;
-    std::optional<TimeSlotIdType> timeSlotId;
+	std::optional<TimeTableIdType> timeTableId;
+	std::optional<TimeSlotIdType> timeSlotId;
 
-    TimeTableListDataSelectorsType() : timeTableId(TimeTableIdType{}), timeSlotId(TimeSlotIdType{})
-    {
-    }
+	TimeTableListDataSelectorsType()
+		:
+		timeTableId(TimeTableIdType{}),
+		timeSlotId(TimeSlotIdType{})
+	{}
 };
-bool convertToJson(const TimeTableListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeTableListDataSelectorsType &dst);
+bool convertToJson(const TimeTableListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableListDataSelectorsType &dst);
 
 struct TimeTableConstraintsDataType { // EEBus_SPINE_TS_TimeTable.xsd
-    std::optional<uint32_t> timeTableId;
-    std::optional<TimeSlotCountType> slotCountMin;
-    std::optional<TimeSlotCountType> slotCountMax;
-    std::optional<std::string> slotDurationMin;
-    std::optional<std::string> slotDurationMax;
-    std::optional<std::string> slotDurationStepSize;
-    std::optional<std::string> slotShiftStepSize;
-    std::optional<std::string> firstSlotBeginsAt;
+	std::optional<uint32_t> timeTableId;
+	std::optional<TimeSlotCountType> slotCountMin;
+	std::optional<TimeSlotCountType> slotCountMax;
+	std::optional<std::string> slotDurationMin;
+	std::optional<std::string> slotDurationMax;
+	std::optional<std::string> slotDurationStepSize;
+	std::optional<std::string> slotShiftStepSize;
+	std::optional<std::string> firstSlotBeginsAt;
 
-    TimeTableConstraintsDataType() :
-        timeTableId(uint32_t{}), slotCountMin(TimeSlotCountType{}), slotCountMax(TimeSlotCountType{}), slotDurationMin(std::string{}),
-        slotDurationMax(std::string{}), slotDurationStepSize(std::string{}), slotShiftStepSize(std::string{}),
-        firstSlotBeginsAt(std::string{})
-    {
-    }
+	TimeTableConstraintsDataType()
+		:
+		timeTableId(uint32_t{}),
+		slotCountMin(TimeSlotCountType{}),
+		slotCountMax(TimeSlotCountType{}),
+		slotDurationMin(std::string{}),
+		slotDurationMax(std::string{}),
+		slotDurationStepSize(std::string{}),
+		slotShiftStepSize(std::string{}),
+		firstSlotBeginsAt(std::string{})
+	{}
 };
-bool convertToJson(const TimeTableConstraintsDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsDataType &dst);
+bool convertToJson(const TimeTableConstraintsDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableConstraintsDataType &dst);
 
 struct TimeTableConstraintsDataElementsType { // EEBus_SPINE_TS_TimeTable.xsd
-    std::optional<ElementTagType> timeTableId;
-    std::optional<ElementTagType> slotCountMin;
-    std::optional<ElementTagType> slotCountMax;
-    std::optional<ElementTagType> slotDurationMin;
-    std::optional<ElementTagType> slotDurationMax;
-    std::optional<ElementTagType> slotDurationStepSize;
-    std::optional<ElementTagType> slotShiftStepSize;
-    std::optional<ElementTagType> firstSlotBeginsAt;
+	std::optional<ElementTagType> timeTableId;
+	std::optional<ElementTagType> slotCountMin;
+	std::optional<ElementTagType> slotCountMax;
+	std::optional<ElementTagType> slotDurationMin;
+	std::optional<ElementTagType> slotDurationMax;
+	std::optional<ElementTagType> slotDurationStepSize;
+	std::optional<ElementTagType> slotShiftStepSize;
+	std::optional<ElementTagType> firstSlotBeginsAt;
 
-    TimeTableConstraintsDataElementsType() :
-        timeTableId(ElementTagType{}), slotCountMin(ElementTagType{}), slotCountMax(ElementTagType{}), slotDurationMin(ElementTagType{}),
-        slotDurationMax(ElementTagType{}), slotDurationStepSize(ElementTagType{}), slotShiftStepSize(ElementTagType{}),
-        firstSlotBeginsAt(ElementTagType{})
-    {
-    }
+	TimeTableConstraintsDataElementsType()
+		:
+		timeTableId(ElementTagType{}),
+		slotCountMin(ElementTagType{}),
+		slotCountMax(ElementTagType{}),
+		slotDurationMin(ElementTagType{}),
+		slotDurationMax(ElementTagType{}),
+		slotDurationStepSize(ElementTagType{}),
+		slotShiftStepSize(ElementTagType{}),
+		firstSlotBeginsAt(ElementTagType{})
+	{}
 };
-bool convertToJson(const TimeTableConstraintsDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsDataElementsType &dst);
+bool convertToJson(const TimeTableConstraintsDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableConstraintsDataElementsType &dst);
 
 struct TimeTableConstraintsListDataType { // EEBus_SPINE_TS_TimeTable.xsd
-    std::optional<std::vector<TimeTableConstraintsDataType>> timeTableConstraintsData;
+	std::optional<std::vector<TimeTableConstraintsDataType>> timeTableConstraintsData;
 
-    TimeTableConstraintsListDataType() : timeTableConstraintsData(std::vector<TimeTableConstraintsDataType>{})
-    {
-    }
+	TimeTableConstraintsListDataType()
+		:
+		timeTableConstraintsData(std::vector<TimeTableConstraintsDataType>{})
+	{}
 };
-bool convertToJson(const TimeTableConstraintsListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsListDataType &dst);
+bool convertToJson(const TimeTableConstraintsListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableConstraintsListDataType &dst);
 
 struct TimeTableConstraintsListDataSelectorsType { // EEBus_SPINE_TS_TimeTable.xsd
-    std::optional<TimeTableIdType> timeTableId;
+	std::optional<TimeTableIdType> timeTableId;
 
-    TimeTableConstraintsListDataSelectorsType() : timeTableId(TimeTableIdType{})
-    {
-    }
+	TimeTableConstraintsListDataSelectorsType()
+		:
+		timeTableId(TimeTableIdType{})
+	{}
 };
-bool convertToJson(const TimeTableConstraintsListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsListDataSelectorsType &dst);
+bool convertToJson(const TimeTableConstraintsListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableConstraintsListDataSelectorsType &dst);
 
 struct TimeTableDescriptionDataType { // EEBus_SPINE_TS_TimeTable.xsd
-    std::optional<uint32_t> timeTableId;
-    std::optional<bool> timeSlotCountChangeable;
-    std::optional<bool> timeSlotTimesChangeable;
-    std::optional<TimeSlotTimeModeType> timeSlotTimeMode;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<uint32_t> timeTableId;
+	std::optional<bool> timeSlotCountChangeable;
+	std::optional<bool> timeSlotTimesChangeable;
+	std::optional<TimeSlotTimeModeType> timeSlotTimeMode;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    TimeTableDescriptionDataType() :
-        timeTableId(uint32_t{}), timeSlotCountChangeable(bool{}), timeSlotTimesChangeable(bool{}), timeSlotTimeMode(TimeSlotTimeModeType{}),
-        label(LabelType{}), description(DescriptionType{})
-    {
-    }
+	TimeTableDescriptionDataType()
+		:
+		timeTableId(uint32_t{}),
+		timeSlotCountChangeable(bool{}),
+		timeSlotTimesChangeable(bool{}),
+		timeSlotTimeMode(TimeSlotTimeModeType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const TimeTableDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionDataType &dst);
+bool convertToJson(const TimeTableDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableDescriptionDataType &dst);
 
 struct TimeTableDescriptionDataElementsType { // EEBus_SPINE_TS_TimeTable.xsd
-    std::optional<ElementTagType> timeTableId;
-    std::optional<ElementTagType> timeSlotCountChangeable;
-    std::optional<ElementTagType> timeSlotTimesChangeable;
-    std::optional<ElementTagType> timeSlotTimeMode;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> timeTableId;
+	std::optional<ElementTagType> timeSlotCountChangeable;
+	std::optional<ElementTagType> timeSlotTimesChangeable;
+	std::optional<ElementTagType> timeSlotTimeMode;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    TimeTableDescriptionDataElementsType() :
-        timeTableId(ElementTagType{}), timeSlotCountChangeable(ElementTagType{}), timeSlotTimesChangeable(ElementTagType{}),
-        timeSlotTimeMode(ElementTagType{}), label(ElementTagType{}), description(ElementTagType{})
-    {
-    }
+	TimeTableDescriptionDataElementsType()
+		:
+		timeTableId(ElementTagType{}),
+		timeSlotCountChangeable(ElementTagType{}),
+		timeSlotTimesChangeable(ElementTagType{}),
+		timeSlotTimeMode(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const TimeTableDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionDataElementsType &dst);
+bool convertToJson(const TimeTableDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableDescriptionDataElementsType &dst);
 
 struct TimeTableDescriptionListDataType { // EEBus_SPINE_TS_TimeTable.xsd
-    std::optional<std::vector<TimeTableDescriptionDataType>> timeTableDescriptionData;
+	std::optional<std::vector<TimeTableDescriptionDataType>> timeTableDescriptionData;
 
-    TimeTableDescriptionListDataType() : timeTableDescriptionData(std::vector<TimeTableDescriptionDataType>{})
-    {
-    }
+	TimeTableDescriptionListDataType()
+		:
+		timeTableDescriptionData(std::vector<TimeTableDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const TimeTableDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionListDataType &dst);
+bool convertToJson(const TimeTableDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableDescriptionListDataType &dst);
 
 struct TimeTableDescriptionListDataSelectorsType { // EEBus_SPINE_TS_TimeTable.xsd
-    std::optional<TimeTableIdType> timeTableId;
+	std::optional<TimeTableIdType> timeTableId;
 
-    TimeTableDescriptionListDataSelectorsType() : timeTableId(TimeTableIdType{})
-    {
-    }
+	TimeTableDescriptionListDataSelectorsType()
+		:
+		timeTableId(TimeTableIdType{})
+	{}
 };
-bool convertToJson(const TimeTableDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionListDataSelectorsType &dst);
+bool convertToJson(const TimeTableDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableDescriptionListDataSelectorsType &dst);
 
 struct TariffDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<TariffIdType> tariffId;
-    std::optional<std::vector<TierIdType>> activeTierId;
+	std::optional<TariffIdType> tariffId;
+	std::optional<std::vector<TierIdType>> activeTierId;
 
-    TariffDataType() : tariffId(TariffIdType{}), activeTierId(std::vector<TierIdType>{})
-    {
-    }
+	TariffDataType()
+		:
+		tariffId(TariffIdType{}),
+		activeTierId(std::vector<TierIdType>{})
+	{}
 };
-bool convertToJson(const TariffDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TariffDataType &dst);
+bool convertToJson(const TariffDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TariffDataType &dst);
 
 struct TierDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<TierIdType> tierId;
-    std::optional<TimePeriodType> timePeriod;
-    std::optional<TimeTableIdType> timeTableId;
-    std::optional<std::vector<IncentiveIdType>> activeIncentiveId;
+	std::optional<TierIdType> tierId;
+	std::optional<TimePeriodType> timePeriod;
+	std::optional<TimeTableIdType> timeTableId;
+	std::optional<std::vector<IncentiveIdType>> activeIncentiveId;
 
-    TierDataType() :
-        tierId(TierIdType{}), timePeriod(TimePeriodType{}), timeTableId(TimeTableIdType{}),
-        activeIncentiveId(std::vector<IncentiveIdType>{})
-    {
-    }
+	TierDataType()
+		:
+		tierId(TierIdType{}),
+		timePeriod(TimePeriodType{}),
+		timeTableId(TimeTableIdType{}),
+		activeIncentiveId(std::vector<IncentiveIdType>{})
+	{}
 };
-bool convertToJson(const TierDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TierDataType &dst);
+bool convertToJson(const TierDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TierDataType &dst);
 
 struct TierBoundaryDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<TierBoundaryIdType> boundaryId;
-    std::optional<TimePeriodType> timePeriod;
-    std::optional<TimeTableIdType> timeTableId;
-    std::optional<ScaledNumberType> lowerBoundaryValue;
-    std::optional<ScaledNumberType> upperBoundaryValue;
+	std::optional<TierBoundaryIdType> boundaryId;
+	std::optional<TimePeriodType> timePeriod;
+	std::optional<TimeTableIdType> timeTableId;
+	std::optional<ScaledNumberType> lowerBoundaryValue;
+	std::optional<ScaledNumberType> upperBoundaryValue;
 
-    TierBoundaryDataType() :
-        boundaryId(TierBoundaryIdType{}), timePeriod(TimePeriodType{}), timeTableId(TimeTableIdType{}),
-        lowerBoundaryValue(ScaledNumberType{}), upperBoundaryValue(ScaledNumberType{})
-    {
-    }
+	TierBoundaryDataType()
+		:
+		boundaryId(TierBoundaryIdType{}),
+		timePeriod(TimePeriodType{}),
+		timeTableId(TimeTableIdType{}),
+		lowerBoundaryValue(ScaledNumberType{}),
+		upperBoundaryValue(ScaledNumberType{})
+	{}
 };
-bool convertToJson(const TierBoundaryDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TierBoundaryDataType &dst);
+bool convertToJson(const TierBoundaryDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TierBoundaryDataType &dst);
 
 struct IncentiveDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<IncentiveIdType> incentiveId;
-    std::optional<IncentiveValueTypeType> valueType;
-    std::optional<AbsoluteOrRelativeTimeType> timestamp;
-    std::optional<TimePeriodType> timePeriod;
-    std::optional<TimeTableIdType> timeTableId;
-    std::optional<ScaledNumberType> value;
+	std::optional<IncentiveIdType> incentiveId;
+	std::optional<IncentiveValueTypeType> valueType;
+	std::optional<AbsoluteOrRelativeTimeType> timestamp;
+	std::optional<TimePeriodType> timePeriod;
+	std::optional<TimeTableIdType> timeTableId;
+	std::optional<ScaledNumberType> value;
 
-    IncentiveDataType() :
-        incentiveId(IncentiveIdType{}), valueType(IncentiveValueTypeType{}), timestamp(AbsoluteOrRelativeTimeType{}),
-        timePeriod(TimePeriodType{}), timeTableId(TimeTableIdType{}), value(ScaledNumberType{})
-    {
-    }
+	IncentiveDataType()
+		:
+		incentiveId(IncentiveIdType{}),
+		valueType(IncentiveValueTypeType{}),
+		timestamp(AbsoluteOrRelativeTimeType{}),
+		timePeriod(TimePeriodType{}),
+		timeTableId(TimeTableIdType{}),
+		value(ScaledNumberType{})
+	{}
 };
-bool convertToJson(const IncentiveDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveDataType &dst);
+bool convertToJson(const IncentiveDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveDataType &dst);
 
 struct IncentiveTableTierType { // EEBus_SPINE_TS_IncentiveTable.xsd
-    std::optional<TierDataType> tier;
-    std::optional<std::vector<TierBoundaryDataType>> boundary;
-    std::optional<std::vector<IncentiveDataType>> incentive;
+	std::optional<TierDataType> tier;
+	std::optional<std::vector<TierBoundaryDataType>> boundary;
+	std::optional<std::vector<IncentiveDataType>> incentive;
 
-    IncentiveTableTierType() :
-        tier(TierDataType{}), boundary(std::vector<TierBoundaryDataType>{}), incentive(std::vector<IncentiveDataType>{})
-    {
-    }
+	IncentiveTableTierType()
+		:
+		tier(TierDataType{}),
+		boundary(std::vector<TierBoundaryDataType>{}),
+		incentive(std::vector<IncentiveDataType>{})
+	{}
 };
-bool convertToJson(const IncentiveTableTierType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveTableTierType &dst);
+bool convertToJson(const IncentiveTableTierType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableTierType &dst);
 
 struct IncentiveTableIncentiveSlotType { // EEBus_SPINE_TS_IncentiveTable.xsd
-    std::optional<TimeTableDataType> timeInterval;
-    std::optional<std::vector<IncentiveTableTierType>> tier;
+	std::optional<TimeTableDataType> timeInterval;
+	std::optional<std::vector<IncentiveTableTierType>> tier;
 
-    IncentiveTableIncentiveSlotType() : timeInterval(TimeTableDataType{}), tier(std::vector<IncentiveTableTierType>{})
-    {
-    }
+	IncentiveTableIncentiveSlotType()
+		:
+		timeInterval(TimeTableDataType{}),
+		tier(std::vector<IncentiveTableTierType>{})
+	{}
 };
-bool convertToJson(const IncentiveTableIncentiveSlotType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveTableIncentiveSlotType &dst);
+bool convertToJson(const IncentiveTableIncentiveSlotType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableIncentiveSlotType &dst);
 
 struct IncentiveTableType { // EEBus_SPINE_TS_IncentiveTable.xsd
-    std::optional<TariffDataType> tariff;
-    std::optional<std::vector<IncentiveTableIncentiveSlotType>> incentiveSlot;
+	std::optional<TariffDataType> tariff;
+	std::optional<std::vector<IncentiveTableIncentiveSlotType>> incentiveSlot;
 
-    IncentiveTableType() : tariff(TariffDataType{}), incentiveSlot(std::vector<IncentiveTableIncentiveSlotType>{})
-    {
-    }
+	IncentiveTableType()
+		:
+		tariff(TariffDataType{}),
+		incentiveSlot(std::vector<IncentiveTableIncentiveSlotType>{})
+	{}
 };
-bool convertToJson(const IncentiveTableType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveTableType &dst);
+bool convertToJson(const IncentiveTableType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableType &dst);
 
 struct IncentiveTableDataType { // EEBus_SPINE_TS_IncentiveTable.xsd
-    std::optional<std::vector<IncentiveTableType>> incentiveTable;
+	std::optional<std::vector<IncentiveTableType>> incentiveTable;
 
-    IncentiveTableDataType() : incentiveTable(std::vector<IncentiveTableType>{})
-    {
-    }
+	IncentiveTableDataType()
+		:
+		incentiveTable(std::vector<IncentiveTableType>{})
+	{}
 };
-bool convertToJson(const IncentiveTableDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveTableDataType &dst);
+bool convertToJson(const IncentiveTableDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableDataType &dst);
 
 struct TariffDataElementsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<ElementTagType> tariffId;
-    std::optional<ElementTagType> activeTierId;
+	std::optional<ElementTagType> tariffId;
+	std::optional<ElementTagType> activeTierId;
 
-    TariffDataElementsType() : tariffId(ElementTagType{}), activeTierId(ElementTagType{})
-    {
-    }
+	TariffDataElementsType()
+		:
+		tariffId(ElementTagType{}),
+		activeTierId(ElementTagType{})
+	{}
 };
-bool convertToJson(const TariffDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TariffDataElementsType &dst);
+bool convertToJson(const TariffDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TariffDataElementsType &dst);
 
 struct TierDataElementsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<ElementTagType> tierId;
-    std::optional<TimePeriodElementsType> timePeriod;
-    std::optional<ElementTagType> timeTableId;
-    std::optional<ElementTagType> activeIncentiveId;
+	std::optional<ElementTagType> tierId;
+	std::optional<TimePeriodElementsType> timePeriod;
+	std::optional<ElementTagType> timeTableId;
+	std::optional<ElementTagType> activeIncentiveId;
 
-    TierDataElementsType() :
-        tierId(ElementTagType{}), timePeriod(TimePeriodElementsType{}), timeTableId(ElementTagType{}), activeIncentiveId(ElementTagType{})
-    {
-    }
+	TierDataElementsType()
+		:
+		tierId(ElementTagType{}),
+		timePeriod(TimePeriodElementsType{}),
+		timeTableId(ElementTagType{}),
+		activeIncentiveId(ElementTagType{})
+	{}
 };
-bool convertToJson(const TierDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TierDataElementsType &dst);
+bool convertToJson(const TierDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TierDataElementsType &dst);
 
 struct TierBoundaryDataElementsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<ElementTagType> boundaryId;
-    std::optional<TimePeriodElementsType> timePeriod;
-    std::optional<ElementTagType> timeTableId;
-    std::optional<ScaledNumberElementsType> lowerBoundaryValue;
-    std::optional<ScaledNumberElementsType> upperBoundaryValue;
+	std::optional<ElementTagType> boundaryId;
+	std::optional<TimePeriodElementsType> timePeriod;
+	std::optional<ElementTagType> timeTableId;
+	std::optional<ScaledNumberElementsType> lowerBoundaryValue;
+	std::optional<ScaledNumberElementsType> upperBoundaryValue;
 
-    TierBoundaryDataElementsType() :
-        boundaryId(ElementTagType{}), timePeriod(TimePeriodElementsType{}), timeTableId(ElementTagType{}),
-        lowerBoundaryValue(ScaledNumberElementsType{}), upperBoundaryValue(ScaledNumberElementsType{})
-    {
-    }
+	TierBoundaryDataElementsType()
+		:
+		boundaryId(ElementTagType{}),
+		timePeriod(TimePeriodElementsType{}),
+		timeTableId(ElementTagType{}),
+		lowerBoundaryValue(ScaledNumberElementsType{}),
+		upperBoundaryValue(ScaledNumberElementsType{})
+	{}
 };
-bool convertToJson(const TierBoundaryDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TierBoundaryDataElementsType &dst);
+bool convertToJson(const TierBoundaryDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TierBoundaryDataElementsType &dst);
 
 struct IncentiveDataElementsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<ElementTagType> incentiveId;
-    std::optional<ElementTagType> valueType;
-    std::optional<ElementTagType> timestamp;
-    std::optional<TimePeriodElementsType> timePeriod;
-    std::optional<ElementTagType> timeTableId;
-    std::optional<ElementTagType> value;
+	std::optional<ElementTagType> incentiveId;
+	std::optional<ElementTagType> valueType;
+	std::optional<ElementTagType> timestamp;
+	std::optional<TimePeriodElementsType> timePeriod;
+	std::optional<ElementTagType> timeTableId;
+	std::optional<ElementTagType> value;
 
-    IncentiveDataElementsType() :
-        incentiveId(ElementTagType{}), valueType(ElementTagType{}), timestamp(ElementTagType{}), timePeriod(TimePeriodElementsType{}),
-        timeTableId(ElementTagType{}), value(ElementTagType{})
-    {
-    }
+	IncentiveDataElementsType()
+		:
+		incentiveId(ElementTagType{}),
+		valueType(ElementTagType{}),
+		timestamp(ElementTagType{}),
+		timePeriod(TimePeriodElementsType{}),
+		timeTableId(ElementTagType{}),
+		value(ElementTagType{})
+	{}
 };
-bool convertToJson(const IncentiveDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveDataElementsType &dst);
+bool convertToJson(const IncentiveDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveDataElementsType &dst);
 
 struct IncentiveTableTierElementsType { // EEBus_SPINE_TS_IncentiveTable.xsd
-    std::optional<TierDataElementsType> tier;
-    std::optional<TierBoundaryDataElementsType> boundary;
-    std::optional<IncentiveDataElementsType> incentive;
+	std::optional<TierDataElementsType> tier;
+	std::optional<TierBoundaryDataElementsType> boundary;
+	std::optional<IncentiveDataElementsType> incentive;
 
-    IncentiveTableTierElementsType() :
-        tier(TierDataElementsType{}), boundary(TierBoundaryDataElementsType{}), incentive(IncentiveDataElementsType{})
-    {
-    }
+	IncentiveTableTierElementsType()
+		:
+		tier(TierDataElementsType{}),
+		boundary(TierBoundaryDataElementsType{}),
+		incentive(IncentiveDataElementsType{})
+	{}
 };
-bool convertToJson(const IncentiveTableTierElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveTableTierElementsType &dst);
+bool convertToJson(const IncentiveTableTierElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableTierElementsType &dst);
 
 struct IncentiveTableIncentiveSlotElementsType { // EEBus_SPINE_TS_IncentiveTable.xsd
-    std::optional<TimeTableDataElementsType> timeInterval;
-    std::optional<IncentiveTableTierElementsType> tier;
+	std::optional<TimeTableDataElementsType> timeInterval;
+	std::optional<IncentiveTableTierElementsType> tier;
 
-    IncentiveTableIncentiveSlotElementsType() : timeInterval(TimeTableDataElementsType{}), tier(IncentiveTableTierElementsType{})
-    {
-    }
+	IncentiveTableIncentiveSlotElementsType()
+		:
+		timeInterval(TimeTableDataElementsType{}),
+		tier(IncentiveTableTierElementsType{})
+	{}
 };
-bool convertToJson(const IncentiveTableIncentiveSlotElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveTableIncentiveSlotElementsType &dst);
+bool convertToJson(const IncentiveTableIncentiveSlotElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableIncentiveSlotElementsType &dst);
 
 struct IncentiveTableElementsType { // EEBus_SPINE_TS_IncentiveTable.xsd
-    std::optional<TariffDataElementsType> tariff;
-    std::optional<IncentiveTableIncentiveSlotElementsType> incentiveSlot;
+	std::optional<TariffDataElementsType> tariff;
+	std::optional<IncentiveTableIncentiveSlotElementsType> incentiveSlot;
 
-    IncentiveTableElementsType() : tariff(TariffDataElementsType{}), incentiveSlot(IncentiveTableIncentiveSlotElementsType{})
-    {
-    }
+	IncentiveTableElementsType()
+		:
+		tariff(TariffDataElementsType{}),
+		incentiveSlot(IncentiveTableIncentiveSlotElementsType{})
+	{}
 };
-bool convertToJson(const IncentiveTableElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveTableElementsType &dst);
+bool convertToJson(const IncentiveTableElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableElementsType &dst);
 
 struct IncentiveTableDataElementsType { // EEBus_SPINE_TS_IncentiveTable.xsd
-    std::optional<IncentiveTableElementsType> incentiveTable;
+	std::optional<IncentiveTableElementsType> incentiveTable;
 
-    IncentiveTableDataElementsType() : incentiveTable(IncentiveTableElementsType{})
-    {
-    }
+	IncentiveTableDataElementsType()
+		:
+		incentiveTable(IncentiveTableElementsType{})
+	{}
 };
-bool convertToJson(const IncentiveTableDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveTableDataElementsType &dst);
+bool convertToJson(const IncentiveTableDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableDataElementsType &dst);
 
 struct TariffListDataSelectorsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<TariffIdType> tariffId;
-    std::optional<TierIdType> activeTierId;
+	std::optional<TariffIdType> tariffId;
+	std::optional<TierIdType> activeTierId;
 
-    TariffListDataSelectorsType() : tariffId(TariffIdType{}), activeTierId(TierIdType{})
-    {
-    }
+	TariffListDataSelectorsType()
+		:
+		tariffId(TariffIdType{}),
+		activeTierId(TierIdType{})
+	{}
 };
-bool convertToJson(const TariffListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TariffListDataSelectorsType &dst);
+bool convertToJson(const TariffListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TariffListDataSelectorsType &dst);
 
 struct IncentiveTableDataSelectorsType { // EEBus_SPINE_TS_IncentiveTable.xsd
-    std::optional<TariffListDataSelectorsType> tariff;
+	std::optional<TariffListDataSelectorsType> tariff;
 
-    IncentiveTableDataSelectorsType() : tariff(TariffListDataSelectorsType{})
-    {
-    }
+	IncentiveTableDataSelectorsType()
+		:
+		tariff(TariffListDataSelectorsType{})
+	{}
 };
-bool convertToJson(const IncentiveTableDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveTableDataSelectorsType &dst);
+bool convertToJson(const IncentiveTableDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableDataSelectorsType &dst);
 
 struct TariffDescriptionDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<TariffIdType> tariffId;
-    std::optional<CommodityIdType> commodityId;
-    std::optional<MeasurementIdType> measurementId;
-    std::optional<bool> tariffWriteable;
-    std::optional<bool> updateRequired;
-    std::optional<ScopeTypeType> scopeType;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
-    std::optional<bool> slotIdSupport;
+	std::optional<TariffIdType> tariffId;
+	std::optional<CommodityIdType> commodityId;
+	std::optional<MeasurementIdType> measurementId;
+	std::optional<bool> tariffWriteable;
+	std::optional<bool> updateRequired;
+	std::optional<ScopeTypeType> scopeType;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
+	std::optional<bool> slotIdSupport;
 
-    TariffDescriptionDataType() :
-        tariffId(TariffIdType{}), commodityId(CommodityIdType{}), measurementId(MeasurementIdType{}), tariffWriteable(bool{}),
-        updateRequired(bool{}), scopeType(ScopeTypeType{}), label(LabelType{}), description(DescriptionType{}), slotIdSupport(bool{})
-    {
-    }
+	TariffDescriptionDataType()
+		:
+		tariffId(TariffIdType{}),
+		commodityId(CommodityIdType{}),
+		measurementId(MeasurementIdType{}),
+		tariffWriteable(bool{}),
+		updateRequired(bool{}),
+		scopeType(ScopeTypeType{}),
+		label(LabelType{}),
+		description(DescriptionType{}),
+		slotIdSupport(bool{})
+	{}
 };
-bool convertToJson(const TariffDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TariffDescriptionDataType &dst);
+bool convertToJson(const TariffDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TariffDescriptionDataType &dst);
 
 struct TierDescriptionDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<TierIdType> tierId;
-    std::optional<TierTypeType> tierType;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<TierIdType> tierId;
+	std::optional<TierTypeType> tierType;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    TierDescriptionDataType() : tierId(TierIdType{}), tierType(TierTypeType{}), label(LabelType{}), description(DescriptionType{})
-    {
-    }
+	TierDescriptionDataType()
+		:
+		tierId(TierIdType{}),
+		tierType(TierTypeType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const TierDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TierDescriptionDataType &dst);
+bool convertToJson(const TierDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TierDescriptionDataType &dst);
 
 struct TierBoundaryDescriptionDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<TierBoundaryIdType> boundaryId;
-    std::optional<TierBoundaryTypeType> boundaryType;
-    std::optional<TierIdType> validForTierId;
-    std::optional<TierIdType> switchToTierIdWhenLower;
-    std::optional<TierIdType> switchToTierIdWhenHigher;
-    std::optional<UnitOfMeasurementType> boundaryUnit;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<TierBoundaryIdType> boundaryId;
+	std::optional<TierBoundaryTypeType> boundaryType;
+	std::optional<TierIdType> validForTierId;
+	std::optional<TierIdType> switchToTierIdWhenLower;
+	std::optional<TierIdType> switchToTierIdWhenHigher;
+	std::optional<UnitOfMeasurementType> boundaryUnit;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    TierBoundaryDescriptionDataType() :
-        boundaryId(TierBoundaryIdType{}), boundaryType(TierBoundaryTypeType{}), validForTierId(TierIdType{}),
-        switchToTierIdWhenLower(TierIdType{}), switchToTierIdWhenHigher(TierIdType{}), boundaryUnit(UnitOfMeasurementType{}),
-        label(LabelType{}), description(DescriptionType{})
-    {
-    }
+	TierBoundaryDescriptionDataType()
+		:
+		boundaryId(TierBoundaryIdType{}),
+		boundaryType(TierBoundaryTypeType{}),
+		validForTierId(TierIdType{}),
+		switchToTierIdWhenLower(TierIdType{}),
+		switchToTierIdWhenHigher(TierIdType{}),
+		boundaryUnit(UnitOfMeasurementType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const TierBoundaryDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionDataType &dst);
+bool convertToJson(const TierBoundaryDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TierBoundaryDescriptionDataType &dst);
 
 struct IncentiveDescriptionDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<IncentiveIdType> incentiveId;
-    std::optional<IncentiveTypeType> incentiveType;
-    std::optional<IncentivePriorityType> incentivePriority;
-    std::optional<CurrencyType> currency;
-    std::optional<UnitOfMeasurementType> unit;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<IncentiveIdType> incentiveId;
+	std::optional<IncentiveTypeType> incentiveType;
+	std::optional<IncentivePriorityType> incentivePriority;
+	std::optional<CurrencyType> currency;
+	std::optional<UnitOfMeasurementType> unit;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    IncentiveDescriptionDataType() :
-        incentiveId(IncentiveIdType{}), incentiveType(IncentiveTypeType{}), incentivePriority(IncentivePriorityType{}),
-        currency(CurrencyType{}), unit(UnitOfMeasurementType{}), label(LabelType{}), description(DescriptionType{})
-    {
-    }
+	IncentiveDescriptionDataType()
+		:
+		incentiveId(IncentiveIdType{}),
+		incentiveType(IncentiveTypeType{}),
+		incentivePriority(IncentivePriorityType{}),
+		currency(CurrencyType{}),
+		unit(UnitOfMeasurementType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const IncentiveDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionDataType &dst);
+bool convertToJson(const IncentiveDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveDescriptionDataType &dst);
 
 struct IncentiveTableDescriptionTierType { // EEBus_SPINE_TS_IncentiveTable.xsd
-    std::optional<TierDescriptionDataType> tierDescription;
-    std::optional<std::vector<TierBoundaryDescriptionDataType>> boundaryDescription;
-    std::optional<std::vector<IncentiveDescriptionDataType>> incentiveDescription;
+	std::optional<TierDescriptionDataType> tierDescription;
+	std::optional<std::vector<TierBoundaryDescriptionDataType>> boundaryDescription;
+	std::optional<std::vector<IncentiveDescriptionDataType>> incentiveDescription;
 
-    IncentiveTableDescriptionTierType() :
-        tierDescription(TierDescriptionDataType{}), boundaryDescription(std::vector<TierBoundaryDescriptionDataType>{}),
-        incentiveDescription(std::vector<IncentiveDescriptionDataType>{})
-    {
-    }
+	IncentiveTableDescriptionTierType()
+		:
+		tierDescription(TierDescriptionDataType{}),
+		boundaryDescription(std::vector<TierBoundaryDescriptionDataType>{}),
+		incentiveDescription(std::vector<IncentiveDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const IncentiveTableDescriptionTierType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionTierType &dst);
+bool convertToJson(const IncentiveTableDescriptionTierType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableDescriptionTierType &dst);
 
 struct IncentiveTableDescriptionType { // EEBus_SPINE_TS_IncentiveTable.xsd
-    std::optional<TariffDescriptionDataType> tariffDescription;
-    std::optional<std::vector<IncentiveTableDescriptionTierType>> tier;
+	std::optional<TariffDescriptionDataType> tariffDescription;
+	std::optional<std::vector<IncentiveTableDescriptionTierType>> tier;
 
-    IncentiveTableDescriptionType() : tariffDescription(TariffDescriptionDataType{}), tier(std::vector<IncentiveTableDescriptionTierType>{})
-    {
-    }
+	IncentiveTableDescriptionType()
+		:
+		tariffDescription(TariffDescriptionDataType{}),
+		tier(std::vector<IncentiveTableDescriptionTierType>{})
+	{}
 };
-bool convertToJson(const IncentiveTableDescriptionType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionType &dst);
+bool convertToJson(const IncentiveTableDescriptionType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableDescriptionType &dst);
 
 struct IncentiveTableDescriptionDataType { // EEBus_SPINE_TS_IncentiveTable.xsd
-    std::optional<std::vector<IncentiveTableDescriptionType>> incentiveTableDescription;
+	std::optional<std::vector<IncentiveTableDescriptionType>> incentiveTableDescription;
 
-    IncentiveTableDescriptionDataType() : incentiveTableDescription(std::vector<IncentiveTableDescriptionType>{})
-    {
-    }
+	IncentiveTableDescriptionDataType()
+		:
+		incentiveTableDescription(std::vector<IncentiveTableDescriptionType>{})
+	{}
 };
-bool convertToJson(const IncentiveTableDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionDataType &dst);
+bool convertToJson(const IncentiveTableDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableDescriptionDataType &dst);
 
 struct TariffDescriptionDataElementsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<ElementTagType> tariffId;
-    std::optional<ElementTagType> commodityId;
-    std::optional<ElementTagType> measurementId;
-    std::optional<ElementTagType> tariffWriteable;
-    std::optional<ElementTagType> updateRequired;
-    std::optional<ElementTagType> scopeType;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
-    std::optional<ElementTagType> slotIdSupport;
+	std::optional<ElementTagType> tariffId;
+	std::optional<ElementTagType> commodityId;
+	std::optional<ElementTagType> measurementId;
+	std::optional<ElementTagType> tariffWriteable;
+	std::optional<ElementTagType> updateRequired;
+	std::optional<ElementTagType> scopeType;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
+	std::optional<ElementTagType> slotIdSupport;
 
-    TariffDescriptionDataElementsType() :
-        tariffId(ElementTagType{}), commodityId(ElementTagType{}), measurementId(ElementTagType{}), tariffWriteable(ElementTagType{}),
-        updateRequired(ElementTagType{}), scopeType(ElementTagType{}), label(ElementTagType{}), description(ElementTagType{}),
-        slotIdSupport(ElementTagType{})
-    {
-    }
+	TariffDescriptionDataElementsType()
+		:
+		tariffId(ElementTagType{}),
+		commodityId(ElementTagType{}),
+		measurementId(ElementTagType{}),
+		tariffWriteable(ElementTagType{}),
+		updateRequired(ElementTagType{}),
+		scopeType(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{}),
+		slotIdSupport(ElementTagType{})
+	{}
 };
-bool convertToJson(const TariffDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TariffDescriptionDataElementsType &dst);
+bool convertToJson(const TariffDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TariffDescriptionDataElementsType &dst);
 
 struct TierDescriptionDataElementsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<ElementTagType> tierId;
-    std::optional<ElementTagType> tierType;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> tierId;
+	std::optional<ElementTagType> tierType;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    TierDescriptionDataElementsType() :
-        tierId(ElementTagType{}), tierType(ElementTagType{}), label(ElementTagType{}), description(ElementTagType{})
-    {
-    }
+	TierDescriptionDataElementsType()
+		:
+		tierId(ElementTagType{}),
+		tierType(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const TierDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TierDescriptionDataElementsType &dst);
+bool convertToJson(const TierDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TierDescriptionDataElementsType &dst);
 
 struct TierBoundaryDescriptionDataElementsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<ElementTagType> boundaryId;
-    std::optional<ElementTagType> boundaryType;
-    std::optional<ElementTagType> validForTierId;
-    std::optional<ElementTagType> switchToTierIdWhenLower;
-    std::optional<ElementTagType> switchToTierIdWhenHigher;
-    std::optional<ElementTagType> boundaryUnit;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> boundaryId;
+	std::optional<ElementTagType> boundaryType;
+	std::optional<ElementTagType> validForTierId;
+	std::optional<ElementTagType> switchToTierIdWhenLower;
+	std::optional<ElementTagType> switchToTierIdWhenHigher;
+	std::optional<ElementTagType> boundaryUnit;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    TierBoundaryDescriptionDataElementsType() :
-        boundaryId(ElementTagType{}), boundaryType(ElementTagType{}), validForTierId(ElementTagType{}),
-        switchToTierIdWhenLower(ElementTagType{}), switchToTierIdWhenHigher(ElementTagType{}), boundaryUnit(ElementTagType{}),
-        label(ElementTagType{}), description(ElementTagType{})
-    {
-    }
+	TierBoundaryDescriptionDataElementsType()
+		:
+		boundaryId(ElementTagType{}),
+		boundaryType(ElementTagType{}),
+		validForTierId(ElementTagType{}),
+		switchToTierIdWhenLower(ElementTagType{}),
+		switchToTierIdWhenHigher(ElementTagType{}),
+		boundaryUnit(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const TierBoundaryDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionDataElementsType &dst);
+bool convertToJson(const TierBoundaryDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TierBoundaryDescriptionDataElementsType &dst);
 
 struct IncentiveDescriptionDataElementsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<ElementTagType> incentiveId;
-    std::optional<ElementTagType> incentiveType;
-    std::optional<ElementTagType> incentivePriority;
-    std::optional<ElementTagType> currency;
-    std::optional<ElementTagType> unit;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> incentiveId;
+	std::optional<ElementTagType> incentiveType;
+	std::optional<ElementTagType> incentivePriority;
+	std::optional<ElementTagType> currency;
+	std::optional<ElementTagType> unit;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    IncentiveDescriptionDataElementsType() :
-        incentiveId(ElementTagType{}), incentiveType(ElementTagType{}), incentivePriority(ElementTagType{}), currency(ElementTagType{}),
-        unit(ElementTagType{}), label(ElementTagType{}), description(ElementTagType{})
-    {
-    }
+	IncentiveDescriptionDataElementsType()
+		:
+		incentiveId(ElementTagType{}),
+		incentiveType(ElementTagType{}),
+		incentivePriority(ElementTagType{}),
+		currency(ElementTagType{}),
+		unit(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const IncentiveDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionDataElementsType &dst);
+bool convertToJson(const IncentiveDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveDescriptionDataElementsType &dst);
 
 struct IncentiveTableDescriptionTierElementsType { // EEBus_SPINE_TS_IncentiveTable.xsd
-    std::optional<TierDescriptionDataElementsType> tierDescription;
-    std::optional<TierBoundaryDescriptionDataElementsType> boundaryDescription;
-    std::optional<IncentiveDescriptionDataElementsType> incentiveDescription;
+	std::optional<TierDescriptionDataElementsType> tierDescription;
+	std::optional<TierBoundaryDescriptionDataElementsType> boundaryDescription;
+	std::optional<IncentiveDescriptionDataElementsType> incentiveDescription;
 
-    IncentiveTableDescriptionTierElementsType() :
-        tierDescription(TierDescriptionDataElementsType{}), boundaryDescription(TierBoundaryDescriptionDataElementsType{}),
-        incentiveDescription(IncentiveDescriptionDataElementsType{})
-    {
-    }
+	IncentiveTableDescriptionTierElementsType()
+		:
+		tierDescription(TierDescriptionDataElementsType{}),
+		boundaryDescription(TierBoundaryDescriptionDataElementsType{}),
+		incentiveDescription(IncentiveDescriptionDataElementsType{})
+	{}
 };
-bool convertToJson(const IncentiveTableDescriptionTierElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionTierElementsType &dst);
+bool convertToJson(const IncentiveTableDescriptionTierElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableDescriptionTierElementsType &dst);
 
 struct IncentiveTableDescriptionElementsType { // EEBus_SPINE_TS_IncentiveTable.xsd
-    std::optional<TariffDescriptionDataElementsType> tariffDescription;
-    std::optional<IncentiveTableDescriptionTierElementsType> tier;
+	std::optional<TariffDescriptionDataElementsType> tariffDescription;
+	std::optional<IncentiveTableDescriptionTierElementsType> tier;
 
-    IncentiveTableDescriptionElementsType() :
-        tariffDescription(TariffDescriptionDataElementsType{}), tier(IncentiveTableDescriptionTierElementsType{})
-    {
-    }
+	IncentiveTableDescriptionElementsType()
+		:
+		tariffDescription(TariffDescriptionDataElementsType{}),
+		tier(IncentiveTableDescriptionTierElementsType{})
+	{}
 };
-bool convertToJson(const IncentiveTableDescriptionElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionElementsType &dst);
+bool convertToJson(const IncentiveTableDescriptionElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableDescriptionElementsType &dst);
 
 struct IncentiveTableDescriptionDataElementsType { // EEBus_SPINE_TS_IncentiveTable.xsd
-    std::optional<IncentiveTableDescriptionElementsType> incentiveTableDescription;
+	std::optional<IncentiveTableDescriptionElementsType> incentiveTableDescription;
 
-    IncentiveTableDescriptionDataElementsType() : incentiveTableDescription(IncentiveTableDescriptionElementsType{})
-    {
-    }
+	IncentiveTableDescriptionDataElementsType()
+		:
+		incentiveTableDescription(IncentiveTableDescriptionElementsType{})
+	{}
 };
-bool convertToJson(const IncentiveTableDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionDataElementsType &dst);
+bool convertToJson(const IncentiveTableDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableDescriptionDataElementsType &dst);
 
 struct TariffDescriptionListDataSelectorsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<TariffIdType> tariffId;
-    std::optional<CommodityIdType> commodityId;
-    std::optional<MeasurementIdType> measurementId;
-    std::optional<ScopeTypeType> scopeType;
+	std::optional<TariffIdType> tariffId;
+	std::optional<CommodityIdType> commodityId;
+	std::optional<MeasurementIdType> measurementId;
+	std::optional<ScopeTypeType> scopeType;
 
-    TariffDescriptionListDataSelectorsType() :
-        tariffId(TariffIdType{}), commodityId(CommodityIdType{}), measurementId(MeasurementIdType{}), scopeType(ScopeTypeType{})
-    {
-    }
+	TariffDescriptionListDataSelectorsType()
+		:
+		tariffId(TariffIdType{}),
+		commodityId(CommodityIdType{}),
+		measurementId(MeasurementIdType{}),
+		scopeType(ScopeTypeType{})
+	{}
 };
-bool convertToJson(const TariffDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TariffDescriptionListDataSelectorsType &dst);
+bool convertToJson(const TariffDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TariffDescriptionListDataSelectorsType &dst);
 
 struct IncentiveTableDescriptionDataSelectorsType { // EEBus_SPINE_TS_IncentiveTable.xsd
-    std::optional<TariffDescriptionListDataSelectorsType> tariffDescription;
+	std::optional<TariffDescriptionListDataSelectorsType> tariffDescription;
 
-    IncentiveTableDescriptionDataSelectorsType() : tariffDescription(TariffDescriptionListDataSelectorsType{})
-    {
-    }
+	IncentiveTableDescriptionDataSelectorsType()
+		:
+		tariffDescription(TariffDescriptionListDataSelectorsType{})
+	{}
 };
-bool convertToJson(const IncentiveTableDescriptionDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionDataSelectorsType &dst);
+bool convertToJson(const IncentiveTableDescriptionDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableDescriptionDataSelectorsType &dst);
 
 struct TariffOverallConstraintsDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<TariffCountType> maxTariffCount;
-    std::optional<TierBoundaryCountType> maxBoundaryCount;
-    std::optional<TierCountType> maxTierCount;
-    std::optional<IncentiveCountType> maxIncentiveCount;
-    std::optional<TierBoundaryCountType> maxBoundariesPerTariff;
-    std::optional<TierCountType> maxTiersPerTariff;
-    std::optional<TierBoundaryCountType> maxBoundariesPerTier;
-    std::optional<IncentiveCountType> maxIncentivesPerTier;
+	std::optional<TariffCountType> maxTariffCount;
+	std::optional<TierBoundaryCountType> maxBoundaryCount;
+	std::optional<TierCountType> maxTierCount;
+	std::optional<IncentiveCountType> maxIncentiveCount;
+	std::optional<TierBoundaryCountType> maxBoundariesPerTariff;
+	std::optional<TierCountType> maxTiersPerTariff;
+	std::optional<TierBoundaryCountType> maxBoundariesPerTier;
+	std::optional<IncentiveCountType> maxIncentivesPerTier;
 
-    TariffOverallConstraintsDataType() :
-        maxTariffCount(TariffCountType{}), maxBoundaryCount(TierBoundaryCountType{}), maxTierCount(TierCountType{}),
-        maxIncentiveCount(IncentiveCountType{}), maxBoundariesPerTariff(TierBoundaryCountType{}), maxTiersPerTariff(TierCountType{}),
-        maxBoundariesPerTier(TierBoundaryCountType{}), maxIncentivesPerTier(IncentiveCountType{})
-    {
-    }
+	TariffOverallConstraintsDataType()
+		:
+		maxTariffCount(TariffCountType{}),
+		maxBoundaryCount(TierBoundaryCountType{}),
+		maxTierCount(TierCountType{}),
+		maxIncentiveCount(IncentiveCountType{}),
+		maxBoundariesPerTariff(TierBoundaryCountType{}),
+		maxTiersPerTariff(TierCountType{}),
+		maxBoundariesPerTier(TierBoundaryCountType{}),
+		maxIncentivesPerTier(IncentiveCountType{})
+	{}
 };
-bool convertToJson(const TariffOverallConstraintsDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TariffOverallConstraintsDataType &dst);
+bool convertToJson(const TariffOverallConstraintsDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TariffOverallConstraintsDataType &dst);
 
 struct IncentiveTableConstraintsType { // EEBus_SPINE_TS_IncentiveTable.xsd
-    std::optional<TariffDataType> tariff;
-    std::optional<TariffOverallConstraintsDataType> tariffConstraints;
-    std::optional<TimeTableConstraintsDataType> incentiveSlotConstraints;
+	std::optional<TariffDataType> tariff;
+	std::optional<TariffOverallConstraintsDataType> tariffConstraints;
+	std::optional<TimeTableConstraintsDataType> incentiveSlotConstraints;
 
-    IncentiveTableConstraintsType() :
-        tariff(TariffDataType{}), tariffConstraints(TariffOverallConstraintsDataType{}),
-        incentiveSlotConstraints(TimeTableConstraintsDataType{})
-    {
-    }
+	IncentiveTableConstraintsType()
+		:
+		tariff(TariffDataType{}),
+		tariffConstraints(TariffOverallConstraintsDataType{}),
+		incentiveSlotConstraints(TimeTableConstraintsDataType{})
+	{}
 };
-bool convertToJson(const IncentiveTableConstraintsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsType &dst);
+bool convertToJson(const IncentiveTableConstraintsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableConstraintsType &dst);
 
 struct IncentiveTableConstraintsDataType { // EEBus_SPINE_TS_IncentiveTable.xsd
-    std::optional<std::vector<IncentiveTableConstraintsType>> incentiveTableConstraints;
+	std::optional<std::vector<IncentiveTableConstraintsType>> incentiveTableConstraints;
 
-    IncentiveTableConstraintsDataType() : incentiveTableConstraints(std::vector<IncentiveTableConstraintsType>{})
-    {
-    }
+	IncentiveTableConstraintsDataType()
+		:
+		incentiveTableConstraints(std::vector<IncentiveTableConstraintsType>{})
+	{}
 };
-bool convertToJson(const IncentiveTableConstraintsDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsDataType &dst);
+bool convertToJson(const IncentiveTableConstraintsDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableConstraintsDataType &dst);
 
 struct TariffOverallConstraintsDataElementsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<ElementTagType> maxTariffCount;
-    std::optional<ElementTagType> maxBoundaryCount;
-    std::optional<ElementTagType> maxTierCount;
-    std::optional<ElementTagType> maxIncentiveCount;
-    std::optional<ElementTagType> maxBoundariesPerTariff;
-    std::optional<ElementTagType> maxTiersPerTariff;
-    std::optional<ElementTagType> maxBoundariesPerTier;
-    std::optional<ElementTagType> maxIncentivesPerTier;
+	std::optional<ElementTagType> maxTariffCount;
+	std::optional<ElementTagType> maxBoundaryCount;
+	std::optional<ElementTagType> maxTierCount;
+	std::optional<ElementTagType> maxIncentiveCount;
+	std::optional<ElementTagType> maxBoundariesPerTariff;
+	std::optional<ElementTagType> maxTiersPerTariff;
+	std::optional<ElementTagType> maxBoundariesPerTier;
+	std::optional<ElementTagType> maxIncentivesPerTier;
 
-    TariffOverallConstraintsDataElementsType() :
-        maxTariffCount(ElementTagType{}), maxBoundaryCount(ElementTagType{}), maxTierCount(ElementTagType{}),
-        maxIncentiveCount(ElementTagType{}), maxBoundariesPerTariff(ElementTagType{}), maxTiersPerTariff(ElementTagType{}),
-        maxBoundariesPerTier(ElementTagType{}), maxIncentivesPerTier(ElementTagType{})
-    {
-    }
+	TariffOverallConstraintsDataElementsType()
+		:
+		maxTariffCount(ElementTagType{}),
+		maxBoundaryCount(ElementTagType{}),
+		maxTierCount(ElementTagType{}),
+		maxIncentiveCount(ElementTagType{}),
+		maxBoundariesPerTariff(ElementTagType{}),
+		maxTiersPerTariff(ElementTagType{}),
+		maxBoundariesPerTier(ElementTagType{}),
+		maxIncentivesPerTier(ElementTagType{})
+	{}
 };
-bool convertToJson(const TariffOverallConstraintsDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TariffOverallConstraintsDataElementsType &dst);
+bool convertToJson(const TariffOverallConstraintsDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TariffOverallConstraintsDataElementsType &dst);
 
 struct IncentiveTableConstraintsElementsType { // EEBus_SPINE_TS_IncentiveTable.xsd
-    std::optional<TariffDataElementsType> tariff;
-    std::optional<TariffOverallConstraintsDataElementsType> tariffConstraints;
-    std::optional<TimeTableConstraintsDataElementsType> incentiveSlotConstraints;
+	std::optional<TariffDataElementsType> tariff;
+	std::optional<TariffOverallConstraintsDataElementsType> tariffConstraints;
+	std::optional<TimeTableConstraintsDataElementsType> incentiveSlotConstraints;
 
-    IncentiveTableConstraintsElementsType() :
-        tariff(TariffDataElementsType{}), tariffConstraints(TariffOverallConstraintsDataElementsType{}),
-        incentiveSlotConstraints(TimeTableConstraintsDataElementsType{})
-    {
-    }
+	IncentiveTableConstraintsElementsType()
+		:
+		tariff(TariffDataElementsType{}),
+		tariffConstraints(TariffOverallConstraintsDataElementsType{}),
+		incentiveSlotConstraints(TimeTableConstraintsDataElementsType{})
+	{}
 };
-bool convertToJson(const IncentiveTableConstraintsElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsElementsType &dst);
+bool convertToJson(const IncentiveTableConstraintsElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableConstraintsElementsType &dst);
 
 struct IncentiveTableConstraintsDataElementsType { // EEBus_SPINE_TS_IncentiveTable.xsd
-    std::optional<IncentiveTableConstraintsElementsType> incentiveTableConstraints;
+	std::optional<IncentiveTableConstraintsElementsType> incentiveTableConstraints;
 
-    IncentiveTableConstraintsDataElementsType() : incentiveTableConstraints(IncentiveTableConstraintsElementsType{})
-    {
-    }
+	IncentiveTableConstraintsDataElementsType()
+		:
+		incentiveTableConstraints(IncentiveTableConstraintsElementsType{})
+	{}
 };
-bool convertToJson(const IncentiveTableConstraintsDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsDataElementsType &dst);
+bool convertToJson(const IncentiveTableConstraintsDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableConstraintsDataElementsType &dst);
 
 struct IncentiveTableConstraintsDataSelectorsType { // EEBus_SPINE_TS_IncentiveTable.xsd
-    std::optional<TariffListDataSelectorsType> tariff;
+	std::optional<TariffListDataSelectorsType> tariff;
 
-    IncentiveTableConstraintsDataSelectorsType() : tariff(TariffListDataSelectorsType{})
-    {
-    }
+	IncentiveTableConstraintsDataSelectorsType()
+		:
+		tariff(TariffListDataSelectorsType{})
+	{}
 };
-bool convertToJson(const IncentiveTableConstraintsDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsDataSelectorsType &dst);
+bool convertToJson(const IncentiveTableConstraintsDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableConstraintsDataSelectorsType &dst);
 
 struct TariffListDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<std::vector<TariffDataType>> tariffData;
+	std::optional<std::vector<TariffDataType>> tariffData;
 
-    TariffListDataType() : tariffData(std::vector<TariffDataType>{})
-    {
-    }
+	TariffListDataType()
+		:
+		tariffData(std::vector<TariffDataType>{})
+	{}
 };
-bool convertToJson(const TariffListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TariffListDataType &dst);
+bool convertToJson(const TariffListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TariffListDataType &dst);
 
 struct TariffTierRelationDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<TariffIdType> tariffId;
-    std::optional<std::vector<TierIdType>> tierId;
+	std::optional<TariffIdType> tariffId;
+	std::optional<std::vector<TierIdType>> tierId;
 
-    TariffTierRelationDataType() : tariffId(TariffIdType{}), tierId(std::vector<TierIdType>{})
-    {
-    }
+	TariffTierRelationDataType()
+		:
+		tariffId(TariffIdType{}),
+		tierId(std::vector<TierIdType>{})
+	{}
 };
-bool convertToJson(const TariffTierRelationDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TariffTierRelationDataType &dst);
+bool convertToJson(const TariffTierRelationDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TariffTierRelationDataType &dst);
 
 struct TariffTierRelationDataElementsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<ElementTagType> tariffId;
-    std::optional<ElementTagType> tierId;
+	std::optional<ElementTagType> tariffId;
+	std::optional<ElementTagType> tierId;
 
-    TariffTierRelationDataElementsType() : tariffId(ElementTagType{}), tierId(ElementTagType{})
-    {
-    }
+	TariffTierRelationDataElementsType()
+		:
+		tariffId(ElementTagType{}),
+		tierId(ElementTagType{})
+	{}
 };
-bool convertToJson(const TariffTierRelationDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TariffTierRelationDataElementsType &dst);
+bool convertToJson(const TariffTierRelationDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TariffTierRelationDataElementsType &dst);
 
 struct TariffTierRelationListDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<std::vector<TariffTierRelationDataType>> tariffTierRelationData;
+	std::optional<std::vector<TariffTierRelationDataType>> tariffTierRelationData;
 
-    TariffTierRelationListDataType() : tariffTierRelationData(std::vector<TariffTierRelationDataType>{})
-    {
-    }
+	TariffTierRelationListDataType()
+		:
+		tariffTierRelationData(std::vector<TariffTierRelationDataType>{})
+	{}
 };
-bool convertToJson(const TariffTierRelationListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TariffTierRelationListDataType &dst);
+bool convertToJson(const TariffTierRelationListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TariffTierRelationListDataType &dst);
 
 struct TariffTierRelationListDataSelectorsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<TariffIdType> tariffId;
-    std::optional<TierIdType> tierId;
+	std::optional<TariffIdType> tariffId;
+	std::optional<TierIdType> tierId;
 
-    TariffTierRelationListDataSelectorsType() : tariffId(TariffIdType{}), tierId(TierIdType{})
-    {
-    }
+	TariffTierRelationListDataSelectorsType()
+		:
+		tariffId(TariffIdType{}),
+		tierId(TierIdType{})
+	{}
 };
-bool convertToJson(const TariffTierRelationListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TariffTierRelationListDataSelectorsType &dst);
+bool convertToJson(const TariffTierRelationListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TariffTierRelationListDataSelectorsType &dst);
 
 struct TariffBoundaryRelationDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<TariffIdType> tariffId;
-    std::optional<std::vector<TierBoundaryIdType>> boundaryId;
+	std::optional<TariffIdType> tariffId;
+	std::optional<std::vector<TierBoundaryIdType>> boundaryId;
 
-    TariffBoundaryRelationDataType() : tariffId(TariffIdType{}), boundaryId(std::vector<TierBoundaryIdType>{})
-    {
-    }
+	TariffBoundaryRelationDataType()
+		:
+		tariffId(TariffIdType{}),
+		boundaryId(std::vector<TierBoundaryIdType>{})
+	{}
 };
-bool convertToJson(const TariffBoundaryRelationDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationDataType &dst);
+bool convertToJson(const TariffBoundaryRelationDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TariffBoundaryRelationDataType &dst);
 
 struct TariffBoundaryRelationDataElementsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<ElementTagType> tariffId;
-    std::optional<ElementTagType> boundaryId;
+	std::optional<ElementTagType> tariffId;
+	std::optional<ElementTagType> boundaryId;
 
-    TariffBoundaryRelationDataElementsType() : tariffId(ElementTagType{}), boundaryId(ElementTagType{})
-    {
-    }
+	TariffBoundaryRelationDataElementsType()
+		:
+		tariffId(ElementTagType{}),
+		boundaryId(ElementTagType{})
+	{}
 };
-bool convertToJson(const TariffBoundaryRelationDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationDataElementsType &dst);
+bool convertToJson(const TariffBoundaryRelationDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TariffBoundaryRelationDataElementsType &dst);
 
 struct TariffBoundaryRelationListDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<std::vector<TariffBoundaryRelationDataType>> tariffBoundaryRelationData;
+	std::optional<std::vector<TariffBoundaryRelationDataType>> tariffBoundaryRelationData;
 
-    TariffBoundaryRelationListDataType() : tariffBoundaryRelationData(std::vector<TariffBoundaryRelationDataType>{})
-    {
-    }
+	TariffBoundaryRelationListDataType()
+		:
+		tariffBoundaryRelationData(std::vector<TariffBoundaryRelationDataType>{})
+	{}
 };
-bool convertToJson(const TariffBoundaryRelationListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationListDataType &dst);
+bool convertToJson(const TariffBoundaryRelationListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TariffBoundaryRelationListDataType &dst);
 
 struct TariffBoundaryRelationListDataSelectorsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<TariffIdType> tariffId;
-    std::optional<TierBoundaryIdType> boundaryId;
+	std::optional<TariffIdType> tariffId;
+	std::optional<TierBoundaryIdType> boundaryId;
 
-    TariffBoundaryRelationListDataSelectorsType() : tariffId(TariffIdType{}), boundaryId(TierBoundaryIdType{})
-    {
-    }
+	TariffBoundaryRelationListDataSelectorsType()
+		:
+		tariffId(TariffIdType{}),
+		boundaryId(TierBoundaryIdType{})
+	{}
 };
-bool convertToJson(const TariffBoundaryRelationListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationListDataSelectorsType &dst);
+bool convertToJson(const TariffBoundaryRelationListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TariffBoundaryRelationListDataSelectorsType &dst);
 
 struct TariffDescriptionListDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<std::vector<TariffDescriptionDataType>> tariffDescriptionData;
+	std::optional<std::vector<TariffDescriptionDataType>> tariffDescriptionData;
 
-    TariffDescriptionListDataType() : tariffDescriptionData(std::vector<TariffDescriptionDataType>{})
-    {
-    }
+	TariffDescriptionListDataType()
+		:
+		tariffDescriptionData(std::vector<TariffDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const TariffDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TariffDescriptionListDataType &dst);
+bool convertToJson(const TariffDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TariffDescriptionListDataType &dst);
 
 struct TierBoundaryListDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<std::vector<TierBoundaryDataType>> tierBoundaryData;
+	std::optional<std::vector<TierBoundaryDataType>> tierBoundaryData;
 
-    TierBoundaryListDataType() : tierBoundaryData(std::vector<TierBoundaryDataType>{})
-    {
-    }
+	TierBoundaryListDataType()
+		:
+		tierBoundaryData(std::vector<TierBoundaryDataType>{})
+	{}
 };
-bool convertToJson(const TierBoundaryListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TierBoundaryListDataType &dst);
+bool convertToJson(const TierBoundaryListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TierBoundaryListDataType &dst);
 
 struct TierBoundaryListDataSelectorsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<TierBoundaryIdType> boundaryId;
+	std::optional<TierBoundaryIdType> boundaryId;
 
-    TierBoundaryListDataSelectorsType() : boundaryId(TierBoundaryIdType{})
-    {
-    }
+	TierBoundaryListDataSelectorsType()
+		:
+		boundaryId(TierBoundaryIdType{})
+	{}
 };
-bool convertToJson(const TierBoundaryListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TierBoundaryListDataSelectorsType &dst);
+bool convertToJson(const TierBoundaryListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TierBoundaryListDataSelectorsType &dst);
 
 struct TierBoundaryDescriptionListDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<std::vector<TierBoundaryDescriptionDataType>> tierBoundaryDescriptionData;
+	std::optional<std::vector<TierBoundaryDescriptionDataType>> tierBoundaryDescriptionData;
 
-    TierBoundaryDescriptionListDataType() : tierBoundaryDescriptionData(std::vector<TierBoundaryDescriptionDataType>{})
-    {
-    }
+	TierBoundaryDescriptionListDataType()
+		:
+		tierBoundaryDescriptionData(std::vector<TierBoundaryDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const TierBoundaryDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionListDataType &dst);
+bool convertToJson(const TierBoundaryDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TierBoundaryDescriptionListDataType &dst);
 
 struct TierBoundaryDescriptionListDataSelectorsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<TierBoundaryIdType> boundaryId;
-    std::optional<TierBoundaryTypeType> boundaryType;
+	std::optional<TierBoundaryIdType> boundaryId;
+	std::optional<TierBoundaryTypeType> boundaryType;
 
-    TierBoundaryDescriptionListDataSelectorsType() : boundaryId(TierBoundaryIdType{}), boundaryType(TierBoundaryTypeType{})
-    {
-    }
+	TierBoundaryDescriptionListDataSelectorsType()
+		:
+		boundaryId(TierBoundaryIdType{}),
+		boundaryType(TierBoundaryTypeType{})
+	{}
 };
-bool convertToJson(const TierBoundaryDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionListDataSelectorsType &dst);
+bool convertToJson(const TierBoundaryDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TierBoundaryDescriptionListDataSelectorsType &dst);
 
 struct CommodityDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<CommodityIdType> commodityId;
-    std::optional<CommodityTypeType> commodityType;
-    std::optional<EnergyDirectionType> positiveEnergyDirection;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<CommodityIdType> commodityId;
+	std::optional<CommodityTypeType> commodityType;
+	std::optional<EnergyDirectionType> positiveEnergyDirection;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    CommodityDataType() :
-        commodityId(CommodityIdType{}), commodityType(CommodityTypeType{}), positiveEnergyDirection(EnergyDirectionType{}),
-        label(LabelType{}), description(DescriptionType{})
-    {
-    }
+	CommodityDataType()
+		:
+		commodityId(CommodityIdType{}),
+		commodityType(CommodityTypeType{}),
+		positiveEnergyDirection(EnergyDirectionType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const CommodityDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, CommodityDataType &dst);
+bool convertToJson(const CommodityDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, CommodityDataType &dst);
 
 struct CommodityDataElementsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<ElementTagType> commodityId;
-    std::optional<ElementTagType> commodityType;
-    std::optional<ElementTagType> positiveEnergyDirection;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> commodityId;
+	std::optional<ElementTagType> commodityType;
+	std::optional<ElementTagType> positiveEnergyDirection;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    CommodityDataElementsType() :
-        commodityId(ElementTagType{}), commodityType(ElementTagType{}), positiveEnergyDirection(ElementTagType{}), label(ElementTagType{}),
-        description(ElementTagType{})
-    {
-    }
+	CommodityDataElementsType()
+		:
+		commodityId(ElementTagType{}),
+		commodityType(ElementTagType{}),
+		positiveEnergyDirection(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const CommodityDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, CommodityDataElementsType &dst);
+bool convertToJson(const CommodityDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, CommodityDataElementsType &dst);
 
 struct CommodityListDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<std::vector<CommodityDataType>> commodityData;
+	std::optional<std::vector<CommodityDataType>> commodityData;
 
-    CommodityListDataType() : commodityData(std::vector<CommodityDataType>{})
-    {
-    }
+	CommodityListDataType()
+		:
+		commodityData(std::vector<CommodityDataType>{})
+	{}
 };
-bool convertToJson(const CommodityListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, CommodityListDataType &dst);
+bool convertToJson(const CommodityListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, CommodityListDataType &dst);
 
 struct CommodityListDataSelectorsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<CommodityIdType> commodityId;
-    std::optional<CommodityTypeType> commodityType;
+	std::optional<CommodityIdType> commodityId;
+	std::optional<CommodityTypeType> commodityType;
 
-    CommodityListDataSelectorsType() : commodityId(CommodityIdType{}), commodityType(CommodityTypeType{})
-    {
-    }
+	CommodityListDataSelectorsType()
+		:
+		commodityId(CommodityIdType{}),
+		commodityType(CommodityTypeType{})
+	{}
 };
-bool convertToJson(const CommodityListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, CommodityListDataSelectorsType &dst);
+bool convertToJson(const CommodityListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, CommodityListDataSelectorsType &dst);
 
 struct TierListDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<std::vector<TierDataType>> tierData;
+	std::optional<std::vector<TierDataType>> tierData;
 
-    TierListDataType() : tierData(std::vector<TierDataType>{})
-    {
-    }
+	TierListDataType()
+		:
+		tierData(std::vector<TierDataType>{})
+	{}
 };
-bool convertToJson(const TierListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TierListDataType &dst);
+bool convertToJson(const TierListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TierListDataType &dst);
 
 struct TierListDataSelectorsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<TierIdType> tierId;
-    std::optional<IncentiveIdType> activeIncentiveId;
+	std::optional<TierIdType> tierId;
+	std::optional<IncentiveIdType> activeIncentiveId;
 
-    TierListDataSelectorsType() : tierId(TierIdType{}), activeIncentiveId(IncentiveIdType{})
-    {
-    }
+	TierListDataSelectorsType()
+		:
+		tierId(TierIdType{}),
+		activeIncentiveId(IncentiveIdType{})
+	{}
 };
-bool convertToJson(const TierListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TierListDataSelectorsType &dst);
+bool convertToJson(const TierListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TierListDataSelectorsType &dst);
 
 struct TierIncentiveRelationDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<TierIdType> tierId;
-    std::optional<std::vector<IncentiveIdType>> incentiveId;
+	std::optional<TierIdType> tierId;
+	std::optional<std::vector<IncentiveIdType>> incentiveId;
 
-    TierIncentiveRelationDataType() : tierId(TierIdType{}), incentiveId(std::vector<IncentiveIdType>{})
-    {
-    }
+	TierIncentiveRelationDataType()
+		:
+		tierId(TierIdType{}),
+		incentiveId(std::vector<IncentiveIdType>{})
+	{}
 };
-bool convertToJson(const TierIncentiveRelationDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationDataType &dst);
+bool convertToJson(const TierIncentiveRelationDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TierIncentiveRelationDataType &dst);
 
 struct TierIncentiveRelationDataElementsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<ElementTagType> tierId;
-    std::optional<ElementTagType> incentiveId;
+	std::optional<ElementTagType> tierId;
+	std::optional<ElementTagType> incentiveId;
 
-    TierIncentiveRelationDataElementsType() : tierId(ElementTagType{}), incentiveId(ElementTagType{})
-    {
-    }
+	TierIncentiveRelationDataElementsType()
+		:
+		tierId(ElementTagType{}),
+		incentiveId(ElementTagType{})
+	{}
 };
-bool convertToJson(const TierIncentiveRelationDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationDataElementsType &dst);
+bool convertToJson(const TierIncentiveRelationDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TierIncentiveRelationDataElementsType &dst);
 
 struct TierIncentiveRelationListDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<std::vector<TierIncentiveRelationDataType>> tierIncentiveRelationData;
+	std::optional<std::vector<TierIncentiveRelationDataType>> tierIncentiveRelationData;
 
-    TierIncentiveRelationListDataType() : tierIncentiveRelationData(std::vector<TierIncentiveRelationDataType>{})
-    {
-    }
+	TierIncentiveRelationListDataType()
+		:
+		tierIncentiveRelationData(std::vector<TierIncentiveRelationDataType>{})
+	{}
 };
-bool convertToJson(const TierIncentiveRelationListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationListDataType &dst);
+bool convertToJson(const TierIncentiveRelationListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TierIncentiveRelationListDataType &dst);
 
 struct TierIncentiveRelationListDataSelectorsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<TierIdType> tierId;
-    std::optional<IncentiveIdType> incentiveId;
+	std::optional<TierIdType> tierId;
+	std::optional<IncentiveIdType> incentiveId;
 
-    TierIncentiveRelationListDataSelectorsType() : tierId(TierIdType{}), incentiveId(IncentiveIdType{})
-    {
-    }
+	TierIncentiveRelationListDataSelectorsType()
+		:
+		tierId(TierIdType{}),
+		incentiveId(IncentiveIdType{})
+	{}
 };
-bool convertToJson(const TierIncentiveRelationListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationListDataSelectorsType &dst);
+bool convertToJson(const TierIncentiveRelationListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TierIncentiveRelationListDataSelectorsType &dst);
 
 struct TierDescriptionListDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<std::vector<TierDescriptionDataType>> tierDescriptionData;
+	std::optional<std::vector<TierDescriptionDataType>> tierDescriptionData;
 
-    TierDescriptionListDataType() : tierDescriptionData(std::vector<TierDescriptionDataType>{})
-    {
-    }
+	TierDescriptionListDataType()
+		:
+		tierDescriptionData(std::vector<TierDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const TierDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TierDescriptionListDataType &dst);
+bool convertToJson(const TierDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TierDescriptionListDataType &dst);
 
 struct TierDescriptionListDataSelectorsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<TierIdType> tierId;
-    std::optional<TierTypeType> tierType;
+	std::optional<TierIdType> tierId;
+	std::optional<TierTypeType> tierType;
 
-    TierDescriptionListDataSelectorsType() : tierId(TierIdType{}), tierType(TierTypeType{})
-    {
-    }
+	TierDescriptionListDataSelectorsType()
+		:
+		tierId(TierIdType{}),
+		tierType(TierTypeType{})
+	{}
 };
-bool convertToJson(const TierDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TierDescriptionListDataSelectorsType &dst);
+bool convertToJson(const TierDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TierDescriptionListDataSelectorsType &dst);
 
 struct IncentiveListDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<std::vector<IncentiveDataType>> incentiveData;
+	std::optional<std::vector<IncentiveDataType>> incentiveData;
 
-    IncentiveListDataType() : incentiveData(std::vector<IncentiveDataType>{})
-    {
-    }
+	IncentiveListDataType()
+		:
+		incentiveData(std::vector<IncentiveDataType>{})
+	{}
 };
-bool convertToJson(const IncentiveListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveListDataType &dst);
+bool convertToJson(const IncentiveListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveListDataType &dst);
 
 struct IncentiveListDataSelectorsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<IncentiveIdType> incentiveId;
-    std::optional<IncentiveValueTypeType> valueType;
-    std::optional<TimestampIntervalType> timestampInterval;
+	std::optional<IncentiveIdType> incentiveId;
+	std::optional<IncentiveValueTypeType> valueType;
+	std::optional<TimestampIntervalType> timestampInterval;
 
-    IncentiveListDataSelectorsType() :
-        incentiveId(IncentiveIdType{}), valueType(IncentiveValueTypeType{}), timestampInterval(TimestampIntervalType{})
-    {
-    }
+	IncentiveListDataSelectorsType()
+		:
+		incentiveId(IncentiveIdType{}),
+		valueType(IncentiveValueTypeType{}),
+		timestampInterval(TimestampIntervalType{})
+	{}
 };
-bool convertToJson(const IncentiveListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveListDataSelectorsType &dst);
+bool convertToJson(const IncentiveListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveListDataSelectorsType &dst);
 
 struct IncentiveDescriptionListDataType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<std::vector<IncentiveDescriptionDataType>> incentiveDescriptionData;
+	std::optional<std::vector<IncentiveDescriptionDataType>> incentiveDescriptionData;
 
-    IncentiveDescriptionListDataType() : incentiveDescriptionData(std::vector<IncentiveDescriptionDataType>{})
-    {
-    }
+	IncentiveDescriptionListDataType()
+		:
+		incentiveDescriptionData(std::vector<IncentiveDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const IncentiveDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionListDataType &dst);
+bool convertToJson(const IncentiveDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveDescriptionListDataType &dst);
 
 struct IncentiveDescriptionListDataSelectorsType { // EEBus_SPINE_TS_TariffInformation.xsd
-    std::optional<IncentiveIdType> incentiveId;
-    std::optional<IncentiveTypeType> incentiveType;
+	std::optional<IncentiveIdType> incentiveId;
+	std::optional<IncentiveTypeType> incentiveType;
 
-    IncentiveDescriptionListDataSelectorsType() : incentiveId(IncentiveIdType{}), incentiveType(IncentiveTypeType{})
-    {
-    }
+	IncentiveDescriptionListDataSelectorsType()
+		:
+		incentiveId(IncentiveIdType{}),
+		incentiveType(IncentiveTypeType{})
+	{}
 };
-bool convertToJson(const IncentiveDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionListDataSelectorsType &dst);
+bool convertToJson(const IncentiveDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveDescriptionListDataSelectorsType &dst);
 
 struct LoadControlNodeDataType { // EEBus_SPINE_TS_LoadControl.xsd
-    std::optional<bool> isNodeRemoteControllable;
+	std::optional<bool> isNodeRemoteControllable;
 
-    LoadControlNodeDataType() : isNodeRemoteControllable(bool{})
-    {
-    }
+	LoadControlNodeDataType()
+		:
+		isNodeRemoteControllable(bool{})
+	{}
 };
-bool convertToJson(const LoadControlNodeDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlNodeDataType &dst);
+bool convertToJson(const LoadControlNodeDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlNodeDataType &dst);
 
 struct LoadControlNodeDataElementsType { // EEBus_SPINE_TS_LoadControl.xsd
-    std::optional<ElementTagType> isNodeRemoteControllable;
+	std::optional<ElementTagType> isNodeRemoteControllable;
 
-    LoadControlNodeDataElementsType() : isNodeRemoteControllable(ElementTagType{})
-    {
-    }
+	LoadControlNodeDataElementsType()
+		:
+		isNodeRemoteControllable(ElementTagType{})
+	{}
 };
-bool convertToJson(const LoadControlNodeDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlNodeDataElementsType &dst);
+bool convertToJson(const LoadControlNodeDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlNodeDataElementsType &dst);
 
 struct LoadControlEventDataType { // EEBus_SPINE_TS_LoadControl.xsd
-    std::optional<AbsoluteOrRelativeTimeType> timestamp;
-    std::optional<LoadControlEventIdType> eventId;
-    std::optional<LoadControlEventActionType> eventActionConsume;
-    std::optional<LoadControlEventActionType> eventActionProduce;
-    std::optional<TimePeriodType> timePeriod;
+	std::optional<AbsoluteOrRelativeTimeType> timestamp;
+	std::optional<LoadControlEventIdType> eventId;
+	std::optional<LoadControlEventActionType> eventActionConsume;
+	std::optional<LoadControlEventActionType> eventActionProduce;
+	std::optional<TimePeriodType> timePeriod;
 
-    LoadControlEventDataType() :
-        timestamp(AbsoluteOrRelativeTimeType{}), eventId(LoadControlEventIdType{}), eventActionConsume(LoadControlEventActionType{}),
-        eventActionProduce(LoadControlEventActionType{}), timePeriod(TimePeriodType{})
-    {
-    }
+	LoadControlEventDataType()
+		:
+		timestamp(AbsoluteOrRelativeTimeType{}),
+		eventId(LoadControlEventIdType{}),
+		eventActionConsume(LoadControlEventActionType{}),
+		eventActionProduce(LoadControlEventActionType{}),
+		timePeriod(TimePeriodType{})
+	{}
 };
-bool convertToJson(const LoadControlEventDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlEventDataType &dst);
+bool convertToJson(const LoadControlEventDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlEventDataType &dst);
 
 struct LoadControlEventDataElementsType { // EEBus_SPINE_TS_LoadControl.xsd
-    std::optional<ElementTagType> timestamp;
-    std::optional<ElementTagType> eventId;
-    std::optional<ElementTagType> eventActionConsume;
-    std::optional<ElementTagType> eventActionProduce;
-    std::optional<TimePeriodElementsType> timePeriod;
+	std::optional<ElementTagType> timestamp;
+	std::optional<ElementTagType> eventId;
+	std::optional<ElementTagType> eventActionConsume;
+	std::optional<ElementTagType> eventActionProduce;
+	std::optional<TimePeriodElementsType> timePeriod;
 
-    LoadControlEventDataElementsType() :
-        timestamp(ElementTagType{}), eventId(ElementTagType{}), eventActionConsume(ElementTagType{}), eventActionProduce(ElementTagType{}),
-        timePeriod(TimePeriodElementsType{})
-    {
-    }
+	LoadControlEventDataElementsType()
+		:
+		timestamp(ElementTagType{}),
+		eventId(ElementTagType{}),
+		eventActionConsume(ElementTagType{}),
+		eventActionProduce(ElementTagType{}),
+		timePeriod(TimePeriodElementsType{})
+	{}
 };
-bool convertToJson(const LoadControlEventDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlEventDataElementsType &dst);
+bool convertToJson(const LoadControlEventDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlEventDataElementsType &dst);
 
 struct LoadControlEventListDataType { // EEBus_SPINE_TS_LoadControl.xsd
-    std::optional<std::vector<LoadControlEventDataType>> loadControlEventData;
+	std::optional<std::vector<LoadControlEventDataType>> loadControlEventData;
 
-    LoadControlEventListDataType() : loadControlEventData(std::vector<LoadControlEventDataType>{})
-    {
-    }
+	LoadControlEventListDataType()
+		:
+		loadControlEventData(std::vector<LoadControlEventDataType>{})
+	{}
 };
-bool convertToJson(const LoadControlEventListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlEventListDataType &dst);
+bool convertToJson(const LoadControlEventListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlEventListDataType &dst);
 
 struct LoadControlEventListDataSelectorsType { // EEBus_SPINE_TS_LoadControl.xsd
-    std::optional<TimestampIntervalType> timestampInterval;
-    std::optional<LoadControlEventIdType> eventId;
+	std::optional<TimestampIntervalType> timestampInterval;
+	std::optional<LoadControlEventIdType> eventId;
 
-    LoadControlEventListDataSelectorsType() : timestampInterval(TimestampIntervalType{}), eventId(LoadControlEventIdType{})
-    {
-    }
+	LoadControlEventListDataSelectorsType()
+		:
+		timestampInterval(TimestampIntervalType{}),
+		eventId(LoadControlEventIdType{})
+	{}
 };
-bool convertToJson(const LoadControlEventListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlEventListDataSelectorsType &dst);
+bool convertToJson(const LoadControlEventListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlEventListDataSelectorsType &dst);
 
 struct LoadControlStateDataType { // EEBus_SPINE_TS_LoadControl.xsd
-    std::optional<AbsoluteOrRelativeTimeType> timestamp;
-    std::optional<LoadControlEventIdType> eventId;
-    std::optional<LoadControlEventStateType> eventStateConsume;
-    std::optional<LoadControlEventActionType> appliedEventActionConsume;
-    std::optional<LoadControlEventStateType> eventStateProduce;
-    std::optional<LoadControlEventActionType> appliedEventActionProduce;
+	std::optional<AbsoluteOrRelativeTimeType> timestamp;
+	std::optional<LoadControlEventIdType> eventId;
+	std::optional<LoadControlEventStateType> eventStateConsume;
+	std::optional<LoadControlEventActionType> appliedEventActionConsume;
+	std::optional<LoadControlEventStateType> eventStateProduce;
+	std::optional<LoadControlEventActionType> appliedEventActionProduce;
 
-    LoadControlStateDataType() :
-        timestamp(AbsoluteOrRelativeTimeType{}), eventId(LoadControlEventIdType{}), eventStateConsume(LoadControlEventStateType{}),
-        appliedEventActionConsume(LoadControlEventActionType{}), eventStateProduce(LoadControlEventStateType{}),
-        appliedEventActionProduce(LoadControlEventActionType{})
-    {
-    }
+	LoadControlStateDataType()
+		:
+		timestamp(AbsoluteOrRelativeTimeType{}),
+		eventId(LoadControlEventIdType{}),
+		eventStateConsume(LoadControlEventStateType{}),
+		appliedEventActionConsume(LoadControlEventActionType{}),
+		eventStateProduce(LoadControlEventStateType{}),
+		appliedEventActionProduce(LoadControlEventActionType{})
+	{}
 };
-bool convertToJson(const LoadControlStateDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlStateDataType &dst);
+bool convertToJson(const LoadControlStateDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlStateDataType &dst);
 
 struct LoadControlStateDataElementsType { // EEBus_SPINE_TS_LoadControl.xsd
-    std::optional<ElementTagType> timestamp;
-    std::optional<ElementTagType> eventId;
-    std::optional<ElementTagType> eventStateConsume;
-    std::optional<ElementTagType> appliedEventActionConsume;
-    std::optional<ElementTagType> eventStateProduce;
-    std::optional<ElementTagType> appliedEventActionProduce;
+	std::optional<ElementTagType> timestamp;
+	std::optional<ElementTagType> eventId;
+	std::optional<ElementTagType> eventStateConsume;
+	std::optional<ElementTagType> appliedEventActionConsume;
+	std::optional<ElementTagType> eventStateProduce;
+	std::optional<ElementTagType> appliedEventActionProduce;
 
-    LoadControlStateDataElementsType() :
-        timestamp(ElementTagType{}), eventId(ElementTagType{}), eventStateConsume(ElementTagType{}),
-        appliedEventActionConsume(ElementTagType{}), eventStateProduce(ElementTagType{}), appliedEventActionProduce(ElementTagType{})
-    {
-    }
+	LoadControlStateDataElementsType()
+		:
+		timestamp(ElementTagType{}),
+		eventId(ElementTagType{}),
+		eventStateConsume(ElementTagType{}),
+		appliedEventActionConsume(ElementTagType{}),
+		eventStateProduce(ElementTagType{}),
+		appliedEventActionProduce(ElementTagType{})
+	{}
 };
-bool convertToJson(const LoadControlStateDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlStateDataElementsType &dst);
+bool convertToJson(const LoadControlStateDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlStateDataElementsType &dst);
 
 struct LoadControlStateListDataType { // EEBus_SPINE_TS_LoadControl.xsd
-    std::optional<std::vector<LoadControlStateDataType>> loadControlStateData;
+	std::optional<std::vector<LoadControlStateDataType>> loadControlStateData;
 
-    LoadControlStateListDataType() : loadControlStateData(std::vector<LoadControlStateDataType>{})
-    {
-    }
+	LoadControlStateListDataType()
+		:
+		loadControlStateData(std::vector<LoadControlStateDataType>{})
+	{}
 };
-bool convertToJson(const LoadControlStateListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlStateListDataType &dst);
+bool convertToJson(const LoadControlStateListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlStateListDataType &dst);
 
 struct LoadControlStateListDataSelectorsType { // EEBus_SPINE_TS_LoadControl.xsd
-    std::optional<TimestampIntervalType> timestampInterval;
-    std::optional<LoadControlEventIdType> eventId;
+	std::optional<TimestampIntervalType> timestampInterval;
+	std::optional<LoadControlEventIdType> eventId;
 
-    LoadControlStateListDataSelectorsType() : timestampInterval(TimestampIntervalType{}), eventId(LoadControlEventIdType{})
-    {
-    }
+	LoadControlStateListDataSelectorsType()
+		:
+		timestampInterval(TimestampIntervalType{}),
+		eventId(LoadControlEventIdType{})
+	{}
 };
-bool convertToJson(const LoadControlStateListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlStateListDataSelectorsType &dst);
+bool convertToJson(const LoadControlStateListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlStateListDataSelectorsType &dst);
 
 struct LoadControlLimitDataType { // EEBus_SPINE_TS_LoadControl.xsd
-    std::optional<LoadControlLimitIdType> limitId;
-    std::optional<bool> isLimitChangeable;
-    std::optional<bool> isLimitActive;
-    std::optional<TimePeriodType> timePeriod;
-    std::optional<ScaledNumberType> value;
+	std::optional<LoadControlLimitIdType> limitId;
+	std::optional<bool> isLimitChangeable;
+	std::optional<bool> isLimitActive;
+	std::optional<TimePeriodType> timePeriod;
+	std::optional<ScaledNumberType> value;
 
-    LoadControlLimitDataType() :
-        limitId(LoadControlLimitIdType{}), isLimitChangeable(bool{}), isLimitActive(bool{}), timePeriod(TimePeriodType{}),
-        value(ScaledNumberType{})
-    {
-    }
+	LoadControlLimitDataType()
+		:
+		limitId(LoadControlLimitIdType{}),
+		isLimitChangeable(bool{}),
+		isLimitActive(bool{}),
+		timePeriod(TimePeriodType{}),
+		value(ScaledNumberType{})
+	{}
 };
-bool convertToJson(const LoadControlLimitDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitDataType &dst);
+bool convertToJson(const LoadControlLimitDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitDataType &dst);
 
 struct LoadControlLimitDataElementsType { // EEBus_SPINE_TS_LoadControl.xsd
-    std::optional<ElementTagType> limitId;
-    std::optional<ElementTagType> isLimitChangeable;
-    std::optional<ElementTagType> isLimitActive;
-    std::optional<TimePeriodElementsType> timePeriod;
-    std::optional<ScaledNumberElementsType> value;
+	std::optional<ElementTagType> limitId;
+	std::optional<ElementTagType> isLimitChangeable;
+	std::optional<ElementTagType> isLimitActive;
+	std::optional<TimePeriodElementsType> timePeriod;
+	std::optional<ScaledNumberElementsType> value;
 
-    LoadControlLimitDataElementsType() :
-        limitId(ElementTagType{}), isLimitChangeable(ElementTagType{}), isLimitActive(ElementTagType{}),
-        timePeriod(TimePeriodElementsType{}), value(ScaledNumberElementsType{})
-    {
-    }
+	LoadControlLimitDataElementsType()
+		:
+		limitId(ElementTagType{}),
+		isLimitChangeable(ElementTagType{}),
+		isLimitActive(ElementTagType{}),
+		timePeriod(TimePeriodElementsType{}),
+		value(ScaledNumberElementsType{})
+	{}
 };
-bool convertToJson(const LoadControlLimitDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitDataElementsType &dst);
+bool convertToJson(const LoadControlLimitDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitDataElementsType &dst);
 
 struct LoadControlLimitListDataType { // EEBus_SPINE_TS_LoadControl.xsd
-    std::optional<std::vector<LoadControlLimitDataType>> loadControlLimitData;
+	std::optional<std::vector<LoadControlLimitDataType>> loadControlLimitData;
 
-    LoadControlLimitListDataType() : loadControlLimitData(std::vector<LoadControlLimitDataType>{})
-    {
-    }
+	LoadControlLimitListDataType()
+		:
+		loadControlLimitData(std::vector<LoadControlLimitDataType>{})
+	{}
 };
-bool convertToJson(const LoadControlLimitListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitListDataType &dst);
+bool convertToJson(const LoadControlLimitListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitListDataType &dst);
 
 struct LoadControlLimitListDataSelectorsType { // EEBus_SPINE_TS_LoadControl.xsd
-    std::optional<LoadControlLimitIdType> limitId;
+	std::optional<LoadControlLimitIdType> limitId;
 
-    LoadControlLimitListDataSelectorsType() : limitId(LoadControlLimitIdType{})
-    {
-    }
+	LoadControlLimitListDataSelectorsType()
+		:
+		limitId(LoadControlLimitIdType{})
+	{}
 };
-bool convertToJson(const LoadControlLimitListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitListDataSelectorsType &dst);
+bool convertToJson(const LoadControlLimitListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitListDataSelectorsType &dst);
 
 struct LoadControlLimitConstraintsDataType { // EEBus_SPINE_TS_LoadControl.xsd
-    std::optional<LoadControlLimitIdType> limitId;
-    std::optional<ScaledNumberType> valueRangeMin;
-    std::optional<ScaledNumberType> valueRangeMax;
-    std::optional<ScaledNumberType> valueStepSize;
+	std::optional<LoadControlLimitIdType> limitId;
+	std::optional<ScaledNumberType> valueRangeMin;
+	std::optional<ScaledNumberType> valueRangeMax;
+	std::optional<ScaledNumberType> valueStepSize;
 
-    LoadControlLimitConstraintsDataType() :
-        limitId(LoadControlLimitIdType{}), valueRangeMin(ScaledNumberType{}), valueRangeMax(ScaledNumberType{}),
-        valueStepSize(ScaledNumberType{})
-    {
-    }
+	LoadControlLimitConstraintsDataType()
+		:
+		limitId(LoadControlLimitIdType{}),
+		valueRangeMin(ScaledNumberType{}),
+		valueRangeMax(ScaledNumberType{}),
+		valueStepSize(ScaledNumberType{})
+	{}
 };
-bool convertToJson(const LoadControlLimitConstraintsDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsDataType &dst);
+bool convertToJson(const LoadControlLimitConstraintsDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitConstraintsDataType &dst);
 
 struct LoadControlLimitConstraintsDataElementsType { // EEBus_SPINE_TS_LoadControl.xsd
-    std::optional<ElementTagType> limitId;
-    std::optional<ScaledNumberElementsType> valueRangeMin;
-    std::optional<ScaledNumberElementsType> valueRangeMax;
-    std::optional<ScaledNumberElementsType> valueStepSize;
+	std::optional<ElementTagType> limitId;
+	std::optional<ScaledNumberElementsType> valueRangeMin;
+	std::optional<ScaledNumberElementsType> valueRangeMax;
+	std::optional<ScaledNumberElementsType> valueStepSize;
 
-    LoadControlLimitConstraintsDataElementsType() :
-        limitId(ElementTagType{}), valueRangeMin(ScaledNumberElementsType{}), valueRangeMax(ScaledNumberElementsType{}),
-        valueStepSize(ScaledNumberElementsType{})
-    {
-    }
+	LoadControlLimitConstraintsDataElementsType()
+		:
+		limitId(ElementTagType{}),
+		valueRangeMin(ScaledNumberElementsType{}),
+		valueRangeMax(ScaledNumberElementsType{}),
+		valueStepSize(ScaledNumberElementsType{})
+	{}
 };
-bool convertToJson(const LoadControlLimitConstraintsDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsDataElementsType &dst);
+bool convertToJson(const LoadControlLimitConstraintsDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitConstraintsDataElementsType &dst);
 
 struct LoadControlLimitConstraintsListDataType { // EEBus_SPINE_TS_LoadControl.xsd
-    std::optional<std::vector<LoadControlLimitConstraintsDataType>> loadControlLimitConstraintsData;
+	std::optional<std::vector<LoadControlLimitConstraintsDataType>> loadControlLimitConstraintsData;
 
-    LoadControlLimitConstraintsListDataType() : loadControlLimitConstraintsData(std::vector<LoadControlLimitConstraintsDataType>{})
-    {
-    }
+	LoadControlLimitConstraintsListDataType()
+		:
+		loadControlLimitConstraintsData(std::vector<LoadControlLimitConstraintsDataType>{})
+	{}
 };
-bool convertToJson(const LoadControlLimitConstraintsListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsListDataType &dst);
+bool convertToJson(const LoadControlLimitConstraintsListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitConstraintsListDataType &dst);
 
 struct LoadControlLimitConstraintsListDataSelectorsType { // EEBus_SPINE_TS_LoadControl.xsd
-    std::optional<LoadControlLimitIdType> limitId;
+	std::optional<LoadControlLimitIdType> limitId;
 
-    LoadControlLimitConstraintsListDataSelectorsType() : limitId(LoadControlLimitIdType{})
-    {
-    }
+	LoadControlLimitConstraintsListDataSelectorsType()
+		:
+		limitId(LoadControlLimitIdType{})
+	{}
 };
-bool convertToJson(const LoadControlLimitConstraintsListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsListDataSelectorsType &dst);
+bool convertToJson(const LoadControlLimitConstraintsListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitConstraintsListDataSelectorsType &dst);
 
 struct LoadControlLimitDescriptionDataType { // EEBus_SPINE_TS_LoadControl.xsd
-    std::optional<LoadControlLimitIdType> limitId;
-    std::optional<LoadControlLimitTypeType> limitType;
-    std::optional<LoadControlCategoryType> limitCategory;
-    std::optional<EnergyDirectionType> limitDirection;
-    std::optional<MeasurementIdType> measurementId;
-    std::optional<UnitOfMeasurementType> unit;
-    std::optional<ScopeTypeType> scopeType;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<LoadControlLimitIdType> limitId;
+	std::optional<LoadControlLimitTypeType> limitType;
+	std::optional<LoadControlCategoryType> limitCategory;
+	std::optional<EnergyDirectionType> limitDirection;
+	std::optional<MeasurementIdType> measurementId;
+	std::optional<UnitOfMeasurementType> unit;
+	std::optional<ScopeTypeType> scopeType;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    LoadControlLimitDescriptionDataType() :
-        limitId(LoadControlLimitIdType{}), limitType(LoadControlLimitTypeType{}), limitCategory(LoadControlCategoryType{}),
-        limitDirection(EnergyDirectionType{}), measurementId(MeasurementIdType{}), unit(UnitOfMeasurementType{}),
-        scopeType(ScopeTypeType{}), label(LabelType{}), description(DescriptionType{})
-    {
-    }
+	LoadControlLimitDescriptionDataType()
+		:
+		limitId(LoadControlLimitIdType{}),
+		limitType(LoadControlLimitTypeType{}),
+		limitCategory(LoadControlCategoryType{}),
+		limitDirection(EnergyDirectionType{}),
+		measurementId(MeasurementIdType{}),
+		unit(UnitOfMeasurementType{}),
+		scopeType(ScopeTypeType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const LoadControlLimitDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionDataType &dst);
+bool convertToJson(const LoadControlLimitDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitDescriptionDataType &dst);
 
 struct LoadControlLimitDescriptionDataElementsType { // EEBus_SPINE_TS_LoadControl.xsd
-    std::optional<ElementTagType> limitId;
-    std::optional<ElementTagType> limitType;
-    std::optional<ElementTagType> limitCategory;
-    std::optional<ElementTagType> limitDirection;
-    std::optional<ElementTagType> measurementId;
-    std::optional<ElementTagType> unit;
-    std::optional<ElementTagType> scopeType;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> limitId;
+	std::optional<ElementTagType> limitType;
+	std::optional<ElementTagType> limitCategory;
+	std::optional<ElementTagType> limitDirection;
+	std::optional<ElementTagType> measurementId;
+	std::optional<ElementTagType> unit;
+	std::optional<ElementTagType> scopeType;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    LoadControlLimitDescriptionDataElementsType() :
-        limitId(ElementTagType{}), limitType(ElementTagType{}), limitCategory(ElementTagType{}), limitDirection(ElementTagType{}),
-        measurementId(ElementTagType{}), unit(ElementTagType{}), scopeType(ElementTagType{}), label(ElementTagType{}),
-        description(ElementTagType{})
-    {
-    }
+	LoadControlLimitDescriptionDataElementsType()
+		:
+		limitId(ElementTagType{}),
+		limitType(ElementTagType{}),
+		limitCategory(ElementTagType{}),
+		limitDirection(ElementTagType{}),
+		measurementId(ElementTagType{}),
+		unit(ElementTagType{}),
+		scopeType(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const LoadControlLimitDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionDataElementsType &dst);
+bool convertToJson(const LoadControlLimitDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitDescriptionDataElementsType &dst);
 
 struct LoadControlLimitDescriptionListDataType { // EEBus_SPINE_TS_LoadControl.xsd
-    std::optional<std::vector<LoadControlLimitDescriptionDataType>> loadControlLimitDescriptionData;
+	std::optional<std::vector<LoadControlLimitDescriptionDataType>> loadControlLimitDescriptionData;
 
-    LoadControlLimitDescriptionListDataType() : loadControlLimitDescriptionData(std::vector<LoadControlLimitDescriptionDataType>{})
-    {
-    }
+	LoadControlLimitDescriptionListDataType()
+		:
+		loadControlLimitDescriptionData(std::vector<LoadControlLimitDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const LoadControlLimitDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionListDataType &dst);
+bool convertToJson(const LoadControlLimitDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitDescriptionListDataType &dst);
 
 struct LoadControlLimitDescriptionListDataSelectorsType { // EEBus_SPINE_TS_LoadControl.xsd
-    std::optional<LoadControlLimitIdType> limitId;
-    std::optional<LoadControlLimitTypeType> limitType;
-    std::optional<EnergyDirectionType> limitDirection;
-    std::optional<MeasurementIdType> measurementId;
-    std::optional<ScopeTypeType> scopeType;
+	std::optional<LoadControlLimitIdType> limitId;
+	std::optional<LoadControlLimitTypeType> limitType;
+	std::optional<EnergyDirectionType> limitDirection;
+	std::optional<MeasurementIdType> measurementId;
+	std::optional<ScopeTypeType> scopeType;
 
-    LoadControlLimitDescriptionListDataSelectorsType() :
-        limitId(LoadControlLimitIdType{}), limitType(LoadControlLimitTypeType{}), limitDirection(EnergyDirectionType{}),
-        measurementId(MeasurementIdType{}), scopeType(ScopeTypeType{})
-    {
-    }
+	LoadControlLimitDescriptionListDataSelectorsType()
+		:
+		limitId(LoadControlLimitIdType{}),
+		limitType(LoadControlLimitTypeType{}),
+		limitDirection(EnergyDirectionType{}),
+		measurementId(MeasurementIdType{}),
+		scopeType(ScopeTypeType{})
+	{}
 };
-bool convertToJson(const LoadControlLimitDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionListDataSelectorsType &dst);
+bool convertToJson(const LoadControlLimitDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitDescriptionListDataSelectorsType &dst);
 
 struct NetworkManagementAddNodeCallType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<FeatureAddressType> nodeAddress;
-    std::optional<NetworkManagementNativeSetupType> nativeSetup;
-    std::optional<NetworkManagementProcessTimeoutType> timeout;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<FeatureAddressType> nodeAddress;
+	std::optional<NetworkManagementNativeSetupType> nativeSetup;
+	std::optional<NetworkManagementProcessTimeoutType> timeout;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    NetworkManagementAddNodeCallType() :
-        nodeAddress(FeatureAddressType{}), nativeSetup(NetworkManagementNativeSetupType{}), timeout(NetworkManagementProcessTimeoutType{}),
-        label(LabelType{}), description(DescriptionType{})
-    {
-    }
+	NetworkManagementAddNodeCallType()
+		:
+		nodeAddress(FeatureAddressType{}),
+		nativeSetup(NetworkManagementNativeSetupType{}),
+		timeout(NetworkManagementProcessTimeoutType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const NetworkManagementAddNodeCallType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementAddNodeCallType &dst);
+bool convertToJson(const NetworkManagementAddNodeCallType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementAddNodeCallType &dst);
 
 struct NetworkManagementAddNodeCallElementsType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<FeatureAddressElementsType> nodeAddress;
-    std::optional<ElementTagType> nativeSetup;
-    std::optional<ElementTagType> timeout;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<FeatureAddressElementsType> nodeAddress;
+	std::optional<ElementTagType> nativeSetup;
+	std::optional<ElementTagType> timeout;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    NetworkManagementAddNodeCallElementsType() :
-        nodeAddress(FeatureAddressElementsType{}), nativeSetup(ElementTagType{}), timeout(ElementTagType{}), label(ElementTagType{}),
-        description(ElementTagType{})
-    {
-    }
+	NetworkManagementAddNodeCallElementsType()
+		:
+		nodeAddress(FeatureAddressElementsType{}),
+		nativeSetup(ElementTagType{}),
+		timeout(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const NetworkManagementAddNodeCallElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementAddNodeCallElementsType &dst);
+bool convertToJson(const NetworkManagementAddNodeCallElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementAddNodeCallElementsType &dst);
 
 struct NetworkManagementRemoveNodeCallType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<FeatureAddressType> nodeAddress;
-    std::optional<NetworkManagementProcessTimeoutType> timeout;
+	std::optional<FeatureAddressType> nodeAddress;
+	std::optional<NetworkManagementProcessTimeoutType> timeout;
 
-    NetworkManagementRemoveNodeCallType() : nodeAddress(FeatureAddressType{}), timeout(NetworkManagementProcessTimeoutType{})
-    {
-    }
+	NetworkManagementRemoveNodeCallType()
+		:
+		nodeAddress(FeatureAddressType{}),
+		timeout(NetworkManagementProcessTimeoutType{})
+	{}
 };
-bool convertToJson(const NetworkManagementRemoveNodeCallType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementRemoveNodeCallType &dst);
+bool convertToJson(const NetworkManagementRemoveNodeCallType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementRemoveNodeCallType &dst);
 
 struct NetworkManagementRemoveNodeCallElementsType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<FeatureAddressElementsType> nodeAddress;
-    std::optional<ElementTagType> timeout;
+	std::optional<FeatureAddressElementsType> nodeAddress;
+	std::optional<ElementTagType> timeout;
 
-    NetworkManagementRemoveNodeCallElementsType() : nodeAddress(FeatureAddressElementsType{}), timeout(ElementTagType{})
-    {
-    }
+	NetworkManagementRemoveNodeCallElementsType()
+		:
+		nodeAddress(FeatureAddressElementsType{}),
+		timeout(ElementTagType{})
+	{}
 };
-bool convertToJson(const NetworkManagementRemoveNodeCallElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementRemoveNodeCallElementsType &dst);
+bool convertToJson(const NetworkManagementRemoveNodeCallElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementRemoveNodeCallElementsType &dst);
 
 struct NetworkManagementModifyNodeCallType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<FeatureAddressType> nodeAddress;
-    std::optional<NetworkManagementNativeSetupType> nativeSetup;
-    std::optional<NetworkManagementProcessTimeoutType> timeout;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<FeatureAddressType> nodeAddress;
+	std::optional<NetworkManagementNativeSetupType> nativeSetup;
+	std::optional<NetworkManagementProcessTimeoutType> timeout;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    NetworkManagementModifyNodeCallType() :
-        nodeAddress(FeatureAddressType{}), nativeSetup(NetworkManagementNativeSetupType{}), timeout(NetworkManagementProcessTimeoutType{}),
-        label(LabelType{}), description(DescriptionType{})
-    {
-    }
+	NetworkManagementModifyNodeCallType()
+		:
+		nodeAddress(FeatureAddressType{}),
+		nativeSetup(NetworkManagementNativeSetupType{}),
+		timeout(NetworkManagementProcessTimeoutType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const NetworkManagementModifyNodeCallType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementModifyNodeCallType &dst);
+bool convertToJson(const NetworkManagementModifyNodeCallType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementModifyNodeCallType &dst);
 
 struct NetworkManagementModifyNodeCallElementsType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<FeatureAddressElementsType> nodeAddress;
-    std::optional<ElementTagType> nativeSetup;
-    std::optional<ElementTagType> timeout;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<FeatureAddressElementsType> nodeAddress;
+	std::optional<ElementTagType> nativeSetup;
+	std::optional<ElementTagType> timeout;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    NetworkManagementModifyNodeCallElementsType() :
-        nodeAddress(FeatureAddressElementsType{}), nativeSetup(ElementTagType{}), timeout(ElementTagType{}), label(ElementTagType{}),
-        description(ElementTagType{})
-    {
-    }
+	NetworkManagementModifyNodeCallElementsType()
+		:
+		nodeAddress(FeatureAddressElementsType{}),
+		nativeSetup(ElementTagType{}),
+		timeout(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const NetworkManagementModifyNodeCallElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementModifyNodeCallElementsType &dst);
+bool convertToJson(const NetworkManagementModifyNodeCallElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementModifyNodeCallElementsType &dst);
 
 struct NetworkManagementScanNetworkCallType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<NetworkManagementScanSetupType> scanSetup;
-    std::optional<NetworkManagementProcessTimeoutType> timeout;
+	std::optional<NetworkManagementScanSetupType> scanSetup;
+	std::optional<NetworkManagementProcessTimeoutType> timeout;
 
-    NetworkManagementScanNetworkCallType() : scanSetup(NetworkManagementScanSetupType{}), timeout(NetworkManagementProcessTimeoutType{})
-    {
-    }
+	NetworkManagementScanNetworkCallType()
+		:
+		scanSetup(NetworkManagementScanSetupType{}),
+		timeout(NetworkManagementProcessTimeoutType{})
+	{}
 };
-bool convertToJson(const NetworkManagementScanNetworkCallType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementScanNetworkCallType &dst);
+bool convertToJson(const NetworkManagementScanNetworkCallType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementScanNetworkCallType &dst);
 
 struct NetworkManagementScanNetworkCallElementsType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<ElementTagType> scanSetup;
-    std::optional<ElementTagType> timeout;
+	std::optional<ElementTagType> scanSetup;
+	std::optional<ElementTagType> timeout;
 
-    NetworkManagementScanNetworkCallElementsType() : scanSetup(ElementTagType{}), timeout(ElementTagType{})
-    {
-    }
+	NetworkManagementScanNetworkCallElementsType()
+		:
+		scanSetup(ElementTagType{}),
+		timeout(ElementTagType{})
+	{}
 };
-bool convertToJson(const NetworkManagementScanNetworkCallElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementScanNetworkCallElementsType &dst);
+bool convertToJson(const NetworkManagementScanNetworkCallElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementScanNetworkCallElementsType &dst);
 
 struct NetworkManagementDiscoverCallType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<FeatureAddressType> discoverAddress;
+	std::optional<FeatureAddressType> discoverAddress;
 
-    NetworkManagementDiscoverCallType() : discoverAddress(FeatureAddressType{})
-    {
-    }
+	NetworkManagementDiscoverCallType()
+		:
+		discoverAddress(FeatureAddressType{})
+	{}
 };
-bool convertToJson(const NetworkManagementDiscoverCallType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementDiscoverCallType &dst);
+bool convertToJson(const NetworkManagementDiscoverCallType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementDiscoverCallType &dst);
 
 struct NetworkManagementDiscoverCallElementsType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<FeatureAddressElementsType> discoverAddress;
+	std::optional<FeatureAddressElementsType> discoverAddress;
 
-    NetworkManagementDiscoverCallElementsType() : discoverAddress(FeatureAddressElementsType{})
-    {
-    }
+	NetworkManagementDiscoverCallElementsType()
+		:
+		discoverAddress(FeatureAddressElementsType{})
+	{}
 };
-bool convertToJson(const NetworkManagementDiscoverCallElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementDiscoverCallElementsType &dst);
+bool convertToJson(const NetworkManagementDiscoverCallElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementDiscoverCallElementsType &dst);
 
 struct NetworkManagementAbortCallType { // EEBus_SPINE_TS_NetworkManagement.xsd
 
-    NetworkManagementAbortCallType()
-
-    {
-    }
+	NetworkManagementAbortCallType()
+		
+	{}
 };
-bool convertToJson(const NetworkManagementAbortCallType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementAbortCallType &dst);
+bool convertToJson(const NetworkManagementAbortCallType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementAbortCallType &dst);
 
 struct NetworkManagementAbortCallElementsType { // EEBus_SPINE_TS_NetworkManagement.xsd
 
-    NetworkManagementAbortCallElementsType()
-
-    {
-    }
+	NetworkManagementAbortCallElementsType()
+		
+	{}
 };
-bool convertToJson(const NetworkManagementAbortCallElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementAbortCallElementsType &dst);
+bool convertToJson(const NetworkManagementAbortCallElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementAbortCallElementsType &dst);
 
 struct NetworkManagementProcessStateDataType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<NetworkManagementProcessStateStateType> state;
-    std::optional<DescriptionType> description;
+	std::optional<NetworkManagementProcessStateStateType> state;
+	std::optional<DescriptionType> description;
 
-    NetworkManagementProcessStateDataType() : state(NetworkManagementProcessStateStateType{}), description(DescriptionType{})
-    {
-    }
+	NetworkManagementProcessStateDataType()
+		:
+		state(NetworkManagementProcessStateStateType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const NetworkManagementProcessStateDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementProcessStateDataType &dst);
+bool convertToJson(const NetworkManagementProcessStateDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementProcessStateDataType &dst);
 
 struct NetworkManagementProcessStateDataElementsType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<ElementTagType> state;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> state;
+	std::optional<ElementTagType> description;
 
-    NetworkManagementProcessStateDataElementsType() : state(ElementTagType{}), description(ElementTagType{})
-    {
-    }
+	NetworkManagementProcessStateDataElementsType()
+		:
+		state(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const NetworkManagementProcessStateDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementProcessStateDataElementsType &dst);
+bool convertToJson(const NetworkManagementProcessStateDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementProcessStateDataElementsType &dst);
 
 struct NetworkManagementJoiningModeDataType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<NetworkManagementSetupType> setup;
+	std::optional<NetworkManagementSetupType> setup;
 
-    NetworkManagementJoiningModeDataType() : setup(NetworkManagementSetupType{})
-    {
-    }
+	NetworkManagementJoiningModeDataType()
+		:
+		setup(NetworkManagementSetupType{})
+	{}
 };
-bool convertToJson(const NetworkManagementJoiningModeDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementJoiningModeDataType &dst);
+bool convertToJson(const NetworkManagementJoiningModeDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementJoiningModeDataType &dst);
 
 struct NetworkManagementJoiningModeDataElementsType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<ElementTagType> setup;
+	std::optional<ElementTagType> setup;
 
-    NetworkManagementJoiningModeDataElementsType() : setup(ElementTagType{})
-    {
-    }
+	NetworkManagementJoiningModeDataElementsType()
+		:
+		setup(ElementTagType{})
+	{}
 };
-bool convertToJson(const NetworkManagementJoiningModeDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementJoiningModeDataElementsType &dst);
+bool convertToJson(const NetworkManagementJoiningModeDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementJoiningModeDataElementsType &dst);
 
 struct NetworkManagementReportCandidateDataType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<NetworkManagementCandidateSetupType> candidateSetup;
-    std::optional<bool> setupUsableForAdd;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<NetworkManagementCandidateSetupType> candidateSetup;
+	std::optional<bool> setupUsableForAdd;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    NetworkManagementReportCandidateDataType() :
-        candidateSetup(NetworkManagementCandidateSetupType{}), setupUsableForAdd(bool{}), label(LabelType{}), description(DescriptionType{})
-    {
-    }
+	NetworkManagementReportCandidateDataType()
+		:
+		candidateSetup(NetworkManagementCandidateSetupType{}),
+		setupUsableForAdd(bool{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const NetworkManagementReportCandidateDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementReportCandidateDataType &dst);
+bool convertToJson(const NetworkManagementReportCandidateDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementReportCandidateDataType &dst);
 
 struct NetworkManagementReportCandidateDataElementsType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<ElementTagType> candidateSetup;
-    std::optional<ElementTagType> setupUsableForAdd;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> candidateSetup;
+	std::optional<ElementTagType> setupUsableForAdd;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    NetworkManagementReportCandidateDataElementsType() :
-        candidateSetup(ElementTagType{}), setupUsableForAdd(ElementTagType{}), label(ElementTagType{}), description(ElementTagType{})
-    {
-    }
+	NetworkManagementReportCandidateDataElementsType()
+		:
+		candidateSetup(ElementTagType{}),
+		setupUsableForAdd(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const NetworkManagementReportCandidateDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementReportCandidateDataElementsType &dst);
+bool convertToJson(const NetworkManagementReportCandidateDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementReportCandidateDataElementsType &dst);
 
 struct NetworkManagementDeviceDescriptionDataType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<DeviceAddressType> deviceAddress;
-    std::optional<DeviceTypeType> deviceType;
-    std::optional<FeatureAddressType> networkManagementResponsibleAddress;
-    std::optional<NetworkManagementNativeSetupType> nativeSetup;
-    std::optional<NetworkManagementTechnologyAddressType> technologyAddress;
-    std::optional<NetworkManagementCommunicationsTechnologyInformationType> communicationsTechnologyInformation;
-    std::optional<NetworkManagementFeatureSetType> networkFeatureSet;
-    std::optional<NetworkManagementStateChangeType> lastStateChange;
-    std::optional<NetworkManagementMinimumTrustLevelType> minimumTrustLevel;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<DeviceAddressType> deviceAddress;
+	std::optional<DeviceTypeType> deviceType;
+	std::optional<FeatureAddressType> networkManagementResponsibleAddress;
+	std::optional<NetworkManagementNativeSetupType> nativeSetup;
+	std::optional<NetworkManagementTechnologyAddressType> technologyAddress;
+	std::optional<NetworkManagementCommunicationsTechnologyInformationType> communicationsTechnologyInformation;
+	std::optional<NetworkManagementFeatureSetType> networkFeatureSet;
+	std::optional<NetworkManagementStateChangeType> lastStateChange;
+	std::optional<NetworkManagementMinimumTrustLevelType> minimumTrustLevel;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    NetworkManagementDeviceDescriptionDataType() :
-        deviceAddress(DeviceAddressType{}), deviceType(DeviceTypeType{}), networkManagementResponsibleAddress(FeatureAddressType{}),
-        nativeSetup(NetworkManagementNativeSetupType{}), technologyAddress(NetworkManagementTechnologyAddressType{}),
-        communicationsTechnologyInformation(NetworkManagementCommunicationsTechnologyInformationType{}),
-        networkFeatureSet(NetworkManagementFeatureSetType{}), lastStateChange(NetworkManagementStateChangeType{}),
-        minimumTrustLevel(NetworkManagementMinimumTrustLevelType{}), label(LabelType{}), description(DescriptionType{})
-    {
-    }
+	NetworkManagementDeviceDescriptionDataType()
+		:
+		deviceAddress(DeviceAddressType{}),
+		deviceType(DeviceTypeType{}),
+		networkManagementResponsibleAddress(FeatureAddressType{}),
+		nativeSetup(NetworkManagementNativeSetupType{}),
+		technologyAddress(NetworkManagementTechnologyAddressType{}),
+		communicationsTechnologyInformation(NetworkManagementCommunicationsTechnologyInformationType{}),
+		networkFeatureSet(NetworkManagementFeatureSetType{}),
+		lastStateChange(NetworkManagementStateChangeType{}),
+		minimumTrustLevel(NetworkManagementMinimumTrustLevelType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const NetworkManagementDeviceDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescriptionDataType &dst);
+bool convertToJson(const NetworkManagementDeviceDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementDeviceDescriptionDataType &dst);
 
 struct NetworkManagementDeviceDescriptionDataElementsType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<DeviceAddressElementsType> deviceAddress;
-    std::optional<ElementTagType> deviceType;
-    std::optional<ElementTagType> networkManagementResponsibleAddress;
-    std::optional<ElementTagType> nativeSetup;
-    std::optional<ElementTagType> technologyAddress;
-    std::optional<ElementTagType> communicationsTechnologyInformation;
-    std::optional<ElementTagType> networkFeatureSet;
-    std::optional<ElementTagType> lastStateChange;
-    std::optional<ElementTagType> minimumTrustLevel;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<DeviceAddressElementsType> deviceAddress;
+	std::optional<ElementTagType> deviceType;
+	std::optional<ElementTagType> networkManagementResponsibleAddress;
+	std::optional<ElementTagType> nativeSetup;
+	std::optional<ElementTagType> technologyAddress;
+	std::optional<ElementTagType> communicationsTechnologyInformation;
+	std::optional<ElementTagType> networkFeatureSet;
+	std::optional<ElementTagType> lastStateChange;
+	std::optional<ElementTagType> minimumTrustLevel;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    NetworkManagementDeviceDescriptionDataElementsType() :
-        deviceAddress(DeviceAddressElementsType{}), deviceType(ElementTagType{}), networkManagementResponsibleAddress(ElementTagType{}),
-        nativeSetup(ElementTagType{}), technologyAddress(ElementTagType{}), communicationsTechnologyInformation(ElementTagType{}),
-        networkFeatureSet(ElementTagType{}), lastStateChange(ElementTagType{}), minimumTrustLevel(ElementTagType{}),
-        label(ElementTagType{}), description(ElementTagType{})
-    {
-    }
+	NetworkManagementDeviceDescriptionDataElementsType()
+		:
+		deviceAddress(DeviceAddressElementsType{}),
+		deviceType(ElementTagType{}),
+		networkManagementResponsibleAddress(ElementTagType{}),
+		nativeSetup(ElementTagType{}),
+		technologyAddress(ElementTagType{}),
+		communicationsTechnologyInformation(ElementTagType{}),
+		networkFeatureSet(ElementTagType{}),
+		lastStateChange(ElementTagType{}),
+		minimumTrustLevel(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const NetworkManagementDeviceDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescriptionDataElementsType &dst);
+bool convertToJson(const NetworkManagementDeviceDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementDeviceDescriptionDataElementsType &dst);
 
 struct NetworkManagementDeviceDescriptionListDataType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<std::vector<NetworkManagementDeviceDescriptionDataType>> networkManagementDeviceDescriptionData;
+	std::optional<std::vector<NetworkManagementDeviceDescriptionDataType>> networkManagementDeviceDescriptionData;
 
-    NetworkManagementDeviceDescriptionListDataType() :
-        networkManagementDeviceDescriptionData(std::vector<NetworkManagementDeviceDescriptionDataType>{})
-    {
-    }
+	NetworkManagementDeviceDescriptionListDataType()
+		:
+		networkManagementDeviceDescriptionData(std::vector<NetworkManagementDeviceDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const NetworkManagementDeviceDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescriptionListDataType &dst);
+bool convertToJson(const NetworkManagementDeviceDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementDeviceDescriptionListDataType &dst);
 
 struct NetworkManagementDeviceDescriptionListDataSelectorsType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<DeviceAddressType> deviceAddress;
-    std::optional<DeviceTypeType> deviceType;
+	std::optional<DeviceAddressType> deviceAddress;
+	std::optional<DeviceTypeType> deviceType;
 
-    NetworkManagementDeviceDescriptionListDataSelectorsType() : deviceAddress(DeviceAddressType{}), deviceType(DeviceTypeType{})
-    {
-    }
+	NetworkManagementDeviceDescriptionListDataSelectorsType()
+		:
+		deviceAddress(DeviceAddressType{}),
+		deviceType(DeviceTypeType{})
+	{}
 };
-bool convertToJson(const NetworkManagementDeviceDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescriptionListDataSelectorsType &dst);
+bool convertToJson(const NetworkManagementDeviceDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementDeviceDescriptionListDataSelectorsType &dst);
 
 struct NetworkManagementEntityDescriptionDataType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<EntityAddressType> entityAddress;
-    std::optional<EntityTypeType> entityType;
-    std::optional<NetworkManagementStateChangeType> lastStateChange;
-    std::optional<NetworkManagementMinimumTrustLevelType> minimumTrustLevel;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<EntityAddressType> entityAddress;
+	std::optional<EntityTypeType> entityType;
+	std::optional<NetworkManagementStateChangeType> lastStateChange;
+	std::optional<NetworkManagementMinimumTrustLevelType> minimumTrustLevel;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    NetworkManagementEntityDescriptionDataType() :
-        entityAddress(EntityAddressType{}), entityType(EntityTypeType{}), lastStateChange(NetworkManagementStateChangeType{}),
-        minimumTrustLevel(NetworkManagementMinimumTrustLevelType{}), label(LabelType{}), description(DescriptionType{})
-    {
-    }
+	NetworkManagementEntityDescriptionDataType()
+		:
+		entityAddress(EntityAddressType{}),
+		entityType(EntityTypeType{}),
+		lastStateChange(NetworkManagementStateChangeType{}),
+		minimumTrustLevel(NetworkManagementMinimumTrustLevelType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const NetworkManagementEntityDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescriptionDataType &dst);
+bool convertToJson(const NetworkManagementEntityDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementEntityDescriptionDataType &dst);
 
 struct NetworkManagementEntityDescriptionDataElementsType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<EntityAddressElementsType> entityAddress;
-    std::optional<ElementTagType> entityType;
-    std::optional<ElementTagType> lastStateChange;
-    std::optional<ElementTagType> minimumTrustLevel;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<EntityAddressElementsType> entityAddress;
+	std::optional<ElementTagType> entityType;
+	std::optional<ElementTagType> lastStateChange;
+	std::optional<ElementTagType> minimumTrustLevel;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    NetworkManagementEntityDescriptionDataElementsType() :
-        entityAddress(EntityAddressElementsType{}), entityType(ElementTagType{}), lastStateChange(ElementTagType{}),
-        minimumTrustLevel(ElementTagType{}), label(ElementTagType{}), description(ElementTagType{})
-    {
-    }
+	NetworkManagementEntityDescriptionDataElementsType()
+		:
+		entityAddress(EntityAddressElementsType{}),
+		entityType(ElementTagType{}),
+		lastStateChange(ElementTagType{}),
+		minimumTrustLevel(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const NetworkManagementEntityDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescriptionDataElementsType &dst);
+bool convertToJson(const NetworkManagementEntityDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementEntityDescriptionDataElementsType &dst);
 
 struct NetworkManagementEntityDescriptionListDataType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<std::vector<NetworkManagementEntityDescriptionDataType>> networkManagementEntityDescriptionData;
+	std::optional<std::vector<NetworkManagementEntityDescriptionDataType>> networkManagementEntityDescriptionData;
 
-    NetworkManagementEntityDescriptionListDataType() :
-        networkManagementEntityDescriptionData(std::vector<NetworkManagementEntityDescriptionDataType>{})
-    {
-    }
+	NetworkManagementEntityDescriptionListDataType()
+		:
+		networkManagementEntityDescriptionData(std::vector<NetworkManagementEntityDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const NetworkManagementEntityDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescriptionListDataType &dst);
+bool convertToJson(const NetworkManagementEntityDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementEntityDescriptionListDataType &dst);
 
 struct NetworkManagementEntityDescriptionListDataSelectorsType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<EntityAddressType> entityAddress;
-    std::optional<EntityTypeType> entityType;
+	std::optional<EntityAddressType> entityAddress;
+	std::optional<EntityTypeType> entityType;
 
-    NetworkManagementEntityDescriptionListDataSelectorsType() : entityAddress(EntityAddressType{}), entityType(EntityTypeType{})
-    {
-    }
+	NetworkManagementEntityDescriptionListDataSelectorsType()
+		:
+		entityAddress(EntityAddressType{}),
+		entityType(EntityTypeType{})
+	{}
 };
-bool convertToJson(const NetworkManagementEntityDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescriptionListDataSelectorsType &dst);
+bool convertToJson(const NetworkManagementEntityDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementEntityDescriptionListDataSelectorsType &dst);
 
 struct NetworkManagementFeatureDescriptionDataType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<FeatureAddressType> featureAddress;
-    std::optional<FeatureTypeType> featureType;
-    std::optional<std::vector<FeatureSpecificUsageType>> specificUsage;
-    std::optional<FeatureGroupType> featureGroup;
-    std::optional<RoleType> role;
-    std::optional<std::vector<FunctionPropertyType>> supportedFunction;
-    std::optional<NetworkManagementStateChangeType> lastStateChange;
-    std::optional<NetworkManagementMinimumTrustLevelType> minimumTrustLevel;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
-    std::optional<MaxResponseDelayType> maxResponseDelay;
+	std::optional<FeatureAddressType> featureAddress;
+	std::optional<FeatureTypeType> featureType;
+	std::optional<std::vector<FeatureSpecificUsageType>> specificUsage;
+	std::optional<FeatureGroupType> featureGroup;
+	std::optional<RoleType> role;
+	std::optional<std::vector<FunctionPropertyType>> supportedFunction;
+	std::optional<NetworkManagementStateChangeType> lastStateChange;
+	std::optional<NetworkManagementMinimumTrustLevelType> minimumTrustLevel;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
+	std::optional<MaxResponseDelayType> maxResponseDelay;
 
-    NetworkManagementFeatureDescriptionDataType() :
-        featureAddress(FeatureAddressType{}), featureType(FeatureTypeType{}), specificUsage(std::vector<FeatureSpecificUsageType>{}),
-        featureGroup(FeatureGroupType{}), role(RoleType{}), supportedFunction(std::vector<FunctionPropertyType>{}),
-        lastStateChange(NetworkManagementStateChangeType{}), minimumTrustLevel(NetworkManagementMinimumTrustLevelType{}),
-        label(LabelType{}), description(DescriptionType{}), maxResponseDelay(MaxResponseDelayType{})
-    {
-    }
+	NetworkManagementFeatureDescriptionDataType()
+		:
+		featureAddress(FeatureAddressType{}),
+		featureType(FeatureTypeType{}),
+		specificUsage(std::vector<FeatureSpecificUsageType>{}),
+		featureGroup(FeatureGroupType{}),
+		role(RoleType{}),
+		supportedFunction(std::vector<FunctionPropertyType>{}),
+		lastStateChange(NetworkManagementStateChangeType{}),
+		minimumTrustLevel(NetworkManagementMinimumTrustLevelType{}),
+		label(LabelType{}),
+		description(DescriptionType{}),
+		maxResponseDelay(MaxResponseDelayType{})
+	{}
 };
-bool convertToJson(const NetworkManagementFeatureDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescriptionDataType &dst);
+bool convertToJson(const NetworkManagementFeatureDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementFeatureDescriptionDataType &dst);
 
 struct NetworkManagementFeatureDescriptionDataElementsType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<FeatureAddressElementsType> featureAddress;
-    std::optional<ElementTagType> featureType;
-    std::optional<ElementTagType> specificUsage;
-    std::optional<ElementTagType> featureGroup;
-    std::optional<ElementTagType> role;
-    std::optional<FunctionPropertyElementsType> supportedFunction;
-    std::optional<ElementTagType> lastStateChange;
-    std::optional<ElementTagType> minimumTrustLevel;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
-    std::optional<ElementTagType> maxResponseDelay;
+	std::optional<FeatureAddressElementsType> featureAddress;
+	std::optional<ElementTagType> featureType;
+	std::optional<ElementTagType> specificUsage;
+	std::optional<ElementTagType> featureGroup;
+	std::optional<ElementTagType> role;
+	std::optional<FunctionPropertyElementsType> supportedFunction;
+	std::optional<ElementTagType> lastStateChange;
+	std::optional<ElementTagType> minimumTrustLevel;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
+	std::optional<ElementTagType> maxResponseDelay;
 
-    NetworkManagementFeatureDescriptionDataElementsType() :
-        featureAddress(FeatureAddressElementsType{}), featureType(ElementTagType{}), specificUsage(ElementTagType{}),
-        featureGroup(ElementTagType{}), role(ElementTagType{}), supportedFunction(FunctionPropertyElementsType{}),
-        lastStateChange(ElementTagType{}), minimumTrustLevel(ElementTagType{}), label(ElementTagType{}), description(ElementTagType{}),
-        maxResponseDelay(ElementTagType{})
-    {
-    }
+	NetworkManagementFeatureDescriptionDataElementsType()
+		:
+		featureAddress(FeatureAddressElementsType{}),
+		featureType(ElementTagType{}),
+		specificUsage(ElementTagType{}),
+		featureGroup(ElementTagType{}),
+		role(ElementTagType{}),
+		supportedFunction(FunctionPropertyElementsType{}),
+		lastStateChange(ElementTagType{}),
+		minimumTrustLevel(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{}),
+		maxResponseDelay(ElementTagType{})
+	{}
 };
-bool convertToJson(const NetworkManagementFeatureDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescriptionDataElementsType &dst);
+bool convertToJson(const NetworkManagementFeatureDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementFeatureDescriptionDataElementsType &dst);
 
 struct NetworkManagementFeatureDescriptionListDataType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<std::vector<NetworkManagementFeatureDescriptionDataType>> networkManagementFeatureDescriptionData;
+	std::optional<std::vector<NetworkManagementFeatureDescriptionDataType>> networkManagementFeatureDescriptionData;
 
-    NetworkManagementFeatureDescriptionListDataType() :
-        networkManagementFeatureDescriptionData(std::vector<NetworkManagementFeatureDescriptionDataType>{})
-    {
-    }
+	NetworkManagementFeatureDescriptionListDataType()
+		:
+		networkManagementFeatureDescriptionData(std::vector<NetworkManagementFeatureDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const NetworkManagementFeatureDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescriptionListDataType &dst);
+bool convertToJson(const NetworkManagementFeatureDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementFeatureDescriptionListDataType &dst);
 
 struct NetworkManagementFeatureDescriptionListDataSelectorsType { // EEBus_SPINE_TS_NetworkManagement.xsd
-    std::optional<FeatureAddressType> featureAddress;
-    std::optional<FeatureTypeType> featureType;
+	std::optional<FeatureAddressType> featureAddress;
+	std::optional<FeatureTypeType> featureType;
 
-    NetworkManagementFeatureDescriptionListDataSelectorsType() : featureAddress(FeatureAddressType{}), featureType(FeatureTypeType{})
-    {
-    }
+	NetworkManagementFeatureDescriptionListDataSelectorsType()
+		:
+		featureAddress(FeatureAddressType{}),
+		featureType(FeatureTypeType{})
+	{}
 };
-bool convertToJson(const NetworkManagementFeatureDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescriptionListDataSelectorsType &dst);
+bool convertToJson(const NetworkManagementFeatureDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementFeatureDescriptionListDataSelectorsType &dst);
 
 struct NodeManagementSpecificationVersionListType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<std::vector<SpecificationVersionType>> specificationVersion;
+	std::optional<std::vector<SpecificationVersionType>> specificationVersion;
 
-    NodeManagementSpecificationVersionListType() : specificationVersion(std::vector<SpecificationVersionDataType>{})
-    {
-    }
+	NodeManagementSpecificationVersionListType()
+		:
+		specificationVersion(std::vector<SpecificationVersionDataType>{})
+	{}
 };
-bool convertToJson(const NodeManagementSpecificationVersionListType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementSpecificationVersionListType &dst);
+bool convertToJson(const NodeManagementSpecificationVersionListType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementSpecificationVersionListType &dst);
 
 struct NodeManagementDetailedDiscoveryDeviceInformationType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<NetworkManagementDeviceDescriptionDataType> description;
+	std::optional<NetworkManagementDeviceDescriptionDataType> description;
 
-    NodeManagementDetailedDiscoveryDeviceInformationType() : description(NetworkManagementDeviceDescriptionDataType{})
-    {
-    }
+	NodeManagementDetailedDiscoveryDeviceInformationType()
+		:
+		description(NetworkManagementDeviceDescriptionDataType{})
+	{}
 };
-bool convertToJson(const NodeManagementDetailedDiscoveryDeviceInformationType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryDeviceInformationType &dst);
+bool convertToJson(const NodeManagementDetailedDiscoveryDeviceInformationType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDetailedDiscoveryDeviceInformationType &dst);
 
 struct NodeManagementDetailedDiscoveryEntityInformationType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<NetworkManagementEntityDescriptionDataType> description;
+	std::optional<NetworkManagementEntityDescriptionDataType> description;
 
-    NodeManagementDetailedDiscoveryEntityInformationType() : description(NetworkManagementEntityDescriptionDataType{})
-    {
-    }
+	NodeManagementDetailedDiscoveryEntityInformationType()
+		:
+		description(NetworkManagementEntityDescriptionDataType{})
+	{}
 };
-bool convertToJson(const NodeManagementDetailedDiscoveryEntityInformationType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryEntityInformationType &dst);
+bool convertToJson(const NodeManagementDetailedDiscoveryEntityInformationType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDetailedDiscoveryEntityInformationType &dst);
 
 struct NodeManagementDetailedDiscoveryFeatureInformationType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<NetworkManagementFeatureDescriptionDataType> description;
+	std::optional<NetworkManagementFeatureDescriptionDataType> description;
 
-    NodeManagementDetailedDiscoveryFeatureInformationType() : description(NetworkManagementFeatureDescriptionDataType{})
-    {
-    }
+	NodeManagementDetailedDiscoveryFeatureInformationType()
+		:
+		description(NetworkManagementFeatureDescriptionDataType{})
+	{}
 };
-bool convertToJson(const NodeManagementDetailedDiscoveryFeatureInformationType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryFeatureInformationType &dst);
+bool convertToJson(const NodeManagementDetailedDiscoveryFeatureInformationType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDetailedDiscoveryFeatureInformationType &dst);
 
 struct NodeManagementDetailedDiscoveryDataType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<NodeManagementSpecificationVersionListType> specificationVersionList;
-    std::optional<NodeManagementDetailedDiscoveryDeviceInformationType> deviceInformation;
-    std::optional<std::vector<NodeManagementDetailedDiscoveryEntityInformationType>> entityInformation;
-    std::optional<std::vector<NodeManagementDetailedDiscoveryFeatureInformationType>> featureInformation;
+	std::optional<NodeManagementSpecificationVersionListType> specificationVersionList;
+	std::optional<NodeManagementDetailedDiscoveryDeviceInformationType> deviceInformation;
+	std::optional<std::vector<NodeManagementDetailedDiscoveryEntityInformationType>> entityInformation;
+	std::optional<std::vector<NodeManagementDetailedDiscoveryFeatureInformationType>> featureInformation;
 
-    NodeManagementDetailedDiscoveryDataType() :
-        specificationVersionList(NodeManagementSpecificationVersionListType{}),
-        deviceInformation(NodeManagementDetailedDiscoveryDeviceInformationType{}),
-        entityInformation(std::vector<NodeManagementDetailedDiscoveryEntityInformationType>{}),
-        featureInformation(std::vector<NodeManagementDetailedDiscoveryFeatureInformationType>{})
-    {
-    }
+	NodeManagementDetailedDiscoveryDataType()
+		:
+		specificationVersionList(NodeManagementSpecificationVersionListType{}),
+		deviceInformation(NodeManagementDetailedDiscoveryDeviceInformationType{}),
+		entityInformation(std::vector<NodeManagementDetailedDiscoveryEntityInformationType>{}),
+		featureInformation(std::vector<NodeManagementDetailedDiscoveryFeatureInformationType>{})
+	{}
 };
-bool convertToJson(const NodeManagementDetailedDiscoveryDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryDataType &dst);
+bool convertToJson(const NodeManagementDetailedDiscoveryDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDetailedDiscoveryDataType &dst);
 
 struct SpecificationVersionDataElementsType { // EEBus_SPINE_TS_Version.xsd
 
-    SpecificationVersionDataElementsType()
-
-    {
-    }
+	SpecificationVersionDataElementsType()
+		
+	{}
 };
-bool convertToJson(const SpecificationVersionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SpecificationVersionDataElementsType &dst);
+bool convertToJson(const SpecificationVersionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SpecificationVersionDataElementsType &dst);
 
 struct NodeManagementSpecificationVersionListElementsType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<SpecificationVersionDataElementsType> specificationVersion;
+	std::optional<SpecificationVersionDataElementsType> specificationVersion;
 
-    NodeManagementSpecificationVersionListElementsType() : specificationVersion(SpecificationVersionDataElementsType{})
-    {
-    }
+	NodeManagementSpecificationVersionListElementsType()
+		:
+		specificationVersion(SpecificationVersionDataElementsType{})
+	{}
 };
-bool convertToJson(const NodeManagementSpecificationVersionListElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementSpecificationVersionListElementsType &dst);
+bool convertToJson(const NodeManagementSpecificationVersionListElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementSpecificationVersionListElementsType &dst);
 
 struct NodeManagementDetailedDiscoveryDeviceInformationElementsType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<NetworkManagementDeviceDescriptionDataElementsType> description;
+	std::optional<NetworkManagementDeviceDescriptionDataElementsType> description;
 
-    NodeManagementDetailedDiscoveryDeviceInformationElementsType() : description(NetworkManagementDeviceDescriptionDataElementsType{})
-    {
-    }
+	NodeManagementDetailedDiscoveryDeviceInformationElementsType()
+		:
+		description(NetworkManagementDeviceDescriptionDataElementsType{})
+	{}
 };
-bool convertToJson(const NodeManagementDetailedDiscoveryDeviceInformationElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryDeviceInformationElementsType &dst);
+bool convertToJson(const NodeManagementDetailedDiscoveryDeviceInformationElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDetailedDiscoveryDeviceInformationElementsType &dst);
 
 struct NodeManagementDetailedDiscoveryEntityInformationElementsType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<NetworkManagementEntityDescriptionDataElementsType> description;
+	std::optional<NetworkManagementEntityDescriptionDataElementsType> description;
 
-    NodeManagementDetailedDiscoveryEntityInformationElementsType() : description(NetworkManagementEntityDescriptionDataElementsType{})
-    {
-    }
+	NodeManagementDetailedDiscoveryEntityInformationElementsType()
+		:
+		description(NetworkManagementEntityDescriptionDataElementsType{})
+	{}
 };
-bool convertToJson(const NodeManagementDetailedDiscoveryEntityInformationElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryEntityInformationElementsType &dst);
+bool convertToJson(const NodeManagementDetailedDiscoveryEntityInformationElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDetailedDiscoveryEntityInformationElementsType &dst);
 
 struct NodeManagementDetailedDiscoveryFeatureInformationElementsType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<NetworkManagementFeatureDescriptionDataElementsType> description;
+	std::optional<NetworkManagementFeatureDescriptionDataElementsType> description;
 
-    NodeManagementDetailedDiscoveryFeatureInformationElementsType() : description(NetworkManagementFeatureDescriptionDataElementsType{})
-    {
-    }
+	NodeManagementDetailedDiscoveryFeatureInformationElementsType()
+		:
+		description(NetworkManagementFeatureDescriptionDataElementsType{})
+	{}
 };
-bool convertToJson(const NodeManagementDetailedDiscoveryFeatureInformationElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryFeatureInformationElementsType &dst);
+bool convertToJson(const NodeManagementDetailedDiscoveryFeatureInformationElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDetailedDiscoveryFeatureInformationElementsType &dst);
 
 struct NodeManagementDetailedDiscoveryDataElementsType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<NodeManagementSpecificationVersionListElementsType> specificationVersionList;
-    std::optional<NodeManagementDetailedDiscoveryDeviceInformationElementsType> deviceInformation;
-    std::optional<NodeManagementDetailedDiscoveryEntityInformationElementsType> entityInformation;
-    std::optional<NodeManagementDetailedDiscoveryFeatureInformationElementsType> featureInformation;
+	std::optional<NodeManagementSpecificationVersionListElementsType> specificationVersionList;
+	std::optional<NodeManagementDetailedDiscoveryDeviceInformationElementsType> deviceInformation;
+	std::optional<NodeManagementDetailedDiscoveryEntityInformationElementsType> entityInformation;
+	std::optional<NodeManagementDetailedDiscoveryFeatureInformationElementsType> featureInformation;
 
-    NodeManagementDetailedDiscoveryDataElementsType() :
-        specificationVersionList(NodeManagementSpecificationVersionListElementsType{}),
-        deviceInformation(NodeManagementDetailedDiscoveryDeviceInformationElementsType{}),
-        entityInformation(NodeManagementDetailedDiscoveryEntityInformationElementsType{}),
-        featureInformation(NodeManagementDetailedDiscoveryFeatureInformationElementsType{})
-    {
-    }
+	NodeManagementDetailedDiscoveryDataElementsType()
+		:
+		specificationVersionList(NodeManagementSpecificationVersionListElementsType{}),
+		deviceInformation(NodeManagementDetailedDiscoveryDeviceInformationElementsType{}),
+		entityInformation(NodeManagementDetailedDiscoveryEntityInformationElementsType{}),
+		featureInformation(NodeManagementDetailedDiscoveryFeatureInformationElementsType{})
+	{}
 };
-bool convertToJson(const NodeManagementDetailedDiscoveryDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryDataElementsType &dst);
+bool convertToJson(const NodeManagementDetailedDiscoveryDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDetailedDiscoveryDataElementsType &dst);
 
 struct NodeManagementDetailedDiscoveryDataSelectorsType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<NetworkManagementDeviceDescriptionListDataSelectorsType> deviceInformation;
-    std::optional<NetworkManagementEntityDescriptionListDataSelectorsType> entityInformation;
-    std::optional<NetworkManagementFeatureDescriptionListDataSelectorsType> featureInformation;
+	std::optional<NetworkManagementDeviceDescriptionListDataSelectorsType> deviceInformation;
+	std::optional<NetworkManagementEntityDescriptionListDataSelectorsType> entityInformation;
+	std::optional<NetworkManagementFeatureDescriptionListDataSelectorsType> featureInformation;
 
-    NodeManagementDetailedDiscoveryDataSelectorsType() :
-        deviceInformation(NetworkManagementDeviceDescriptionListDataSelectorsType{}),
-        entityInformation(NetworkManagementEntityDescriptionListDataSelectorsType{}),
-        featureInformation(NetworkManagementFeatureDescriptionListDataSelectorsType{})
-    {
-    }
+	NodeManagementDetailedDiscoveryDataSelectorsType()
+		:
+		deviceInformation(NetworkManagementDeviceDescriptionListDataSelectorsType{}),
+		entityInformation(NetworkManagementEntityDescriptionListDataSelectorsType{}),
+		featureInformation(NetworkManagementFeatureDescriptionListDataSelectorsType{})
+	{}
 };
-bool convertToJson(const NodeManagementDetailedDiscoveryDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryDataSelectorsType &dst);
+bool convertToJson(const NodeManagementDetailedDiscoveryDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDetailedDiscoveryDataSelectorsType &dst);
 
 struct NodeManagementBindingDataType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<std::vector<BindingManagementEntryDataType>> bindingEntry;
+	std::optional<std::vector<BindingManagementEntryDataType>> bindingEntry;
 
-    NodeManagementBindingDataType() : bindingEntry(std::vector<BindingManagementEntryDataType>{})
-    {
-    }
+	NodeManagementBindingDataType()
+		:
+		bindingEntry(std::vector<BindingManagementEntryDataType>{})
+	{}
 };
-bool convertToJson(const NodeManagementBindingDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDataType &dst);
+bool convertToJson(const NodeManagementBindingDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementBindingDataType &dst);
 
 struct NodeManagementBindingDataElementsType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<BindingManagementEntryDataElementsType> bindingEntry;
+	std::optional<BindingManagementEntryDataElementsType> bindingEntry;
 
-    NodeManagementBindingDataElementsType() : bindingEntry(BindingManagementEntryDataElementsType{})
-    {
-    }
+	NodeManagementBindingDataElementsType()
+		:
+		bindingEntry(BindingManagementEntryDataElementsType{})
+	{}
 };
-bool convertToJson(const NodeManagementBindingDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDataElementsType &dst);
+bool convertToJson(const NodeManagementBindingDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementBindingDataElementsType &dst);
 
 struct NodeManagementBindingDataSelectorsType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<BindingManagementEntryListDataSelectorsType> bindingEntry;
+	std::optional<BindingManagementEntryListDataSelectorsType> bindingEntry;
 
-    NodeManagementBindingDataSelectorsType() : bindingEntry(BindingManagementEntryListDataSelectorsType{})
-    {
-    }
+	NodeManagementBindingDataSelectorsType()
+		:
+		bindingEntry(BindingManagementEntryListDataSelectorsType{})
+	{}
 };
-bool convertToJson(const NodeManagementBindingDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDataSelectorsType &dst);
+bool convertToJson(const NodeManagementBindingDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementBindingDataSelectorsType &dst);
 
 struct NodeManagementBindingRequestCallType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<BindingManagementRequestCallType> bindingRequest;
+	std::optional<BindingManagementRequestCallType> bindingRequest;
 
-    NodeManagementBindingRequestCallType() : bindingRequest(BindingManagementRequestCallType{})
-    {
-    }
+	NodeManagementBindingRequestCallType()
+		:
+		bindingRequest(BindingManagementRequestCallType{})
+	{}
 };
-bool convertToJson(const NodeManagementBindingRequestCallType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementBindingRequestCallType &dst);
+bool convertToJson(const NodeManagementBindingRequestCallType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementBindingRequestCallType &dst);
 
 struct NodeManagementBindingRequestCallElementsType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<BindingManagementRequestCallElementsType> bindingRequest;
+	std::optional<BindingManagementRequestCallElementsType> bindingRequest;
 
-    NodeManagementBindingRequestCallElementsType() : bindingRequest(BindingManagementRequestCallElementsType{})
-    {
-    }
+	NodeManagementBindingRequestCallElementsType()
+		:
+		bindingRequest(BindingManagementRequestCallElementsType{})
+	{}
 };
-bool convertToJson(const NodeManagementBindingRequestCallElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementBindingRequestCallElementsType &dst);
+bool convertToJson(const NodeManagementBindingRequestCallElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementBindingRequestCallElementsType &dst);
 
 struct NodeManagementBindingDeleteCallType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<BindingManagementDeleteCallType> bindingDelete;
+	std::optional<BindingManagementDeleteCallType> bindingDelete;
 
-    NodeManagementBindingDeleteCallType() : bindingDelete(BindingManagementDeleteCallType{})
-    {
-    }
+	NodeManagementBindingDeleteCallType()
+		:
+		bindingDelete(BindingManagementDeleteCallType{})
+	{}
 };
-bool convertToJson(const NodeManagementBindingDeleteCallType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDeleteCallType &dst);
+bool convertToJson(const NodeManagementBindingDeleteCallType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementBindingDeleteCallType &dst);
 
 struct NodeManagementBindingDeleteCallElementsType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<BindingManagementDeleteCallElementsType> bindingDelete;
+	std::optional<BindingManagementDeleteCallElementsType> bindingDelete;
 
-    NodeManagementBindingDeleteCallElementsType() : bindingDelete(BindingManagementDeleteCallElementsType{})
-    {
-    }
+	NodeManagementBindingDeleteCallElementsType()
+		:
+		bindingDelete(BindingManagementDeleteCallElementsType{})
+	{}
 };
-bool convertToJson(const NodeManagementBindingDeleteCallElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDeleteCallElementsType &dst);
+bool convertToJson(const NodeManagementBindingDeleteCallElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementBindingDeleteCallElementsType &dst);
 
 struct SubscriptionManagementEntryDataType { // EEBus_SPINE_TS_SubscriptionManagement.xsd
-    std::optional<SubscriptionIdType> subscriptionId;
-    std::optional<FeatureAddressType> clientAddress;
-    std::optional<FeatureAddressType> serverAddress;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<SubscriptionIdType> subscriptionId;
+	std::optional<FeatureAddressType> clientAddress;
+	std::optional<FeatureAddressType> serverAddress;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    SubscriptionManagementEntryDataType() :
-        subscriptionId(SubscriptionIdType{}), clientAddress(FeatureAddressType{}), serverAddress(FeatureAddressType{}), label(LabelType{}),
-        description(DescriptionType{})
-    {
-    }
+	SubscriptionManagementEntryDataType()
+		:
+		subscriptionId(SubscriptionIdType{}),
+		clientAddress(FeatureAddressType{}),
+		serverAddress(FeatureAddressType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const SubscriptionManagementEntryDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryDataType &dst);
+bool convertToJson(const SubscriptionManagementEntryDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SubscriptionManagementEntryDataType &dst);
 
 struct NodeManagementSubscriptionDataType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<std::vector<SubscriptionManagementEntryDataType>> subscriptionEntry;
+	std::optional<std::vector<SubscriptionManagementEntryDataType>> subscriptionEntry;
 
-    NodeManagementSubscriptionDataType() : subscriptionEntry(std::vector<SubscriptionManagementEntryDataType>{})
-    {
-    }
+	NodeManagementSubscriptionDataType()
+		:
+		subscriptionEntry(std::vector<SubscriptionManagementEntryDataType>{})
+	{}
 };
-bool convertToJson(const NodeManagementSubscriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDataType &dst);
+bool convertToJson(const NodeManagementSubscriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementSubscriptionDataType &dst);
 
 struct SubscriptionManagementEntryDataElementsType { // EEBus_SPINE_TS_SubscriptionManagement.xsd
-    std::optional<ElementTagType> subscriptionId;
-    std::optional<FeatureAddressElementsType> clientAddress;
-    std::optional<FeatureAddressElementsType> serverAddress;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> subscriptionId;
+	std::optional<FeatureAddressElementsType> clientAddress;
+	std::optional<FeatureAddressElementsType> serverAddress;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    SubscriptionManagementEntryDataElementsType() :
-        subscriptionId(ElementTagType{}), clientAddress(FeatureAddressElementsType{}), serverAddress(FeatureAddressElementsType{}),
-        label(ElementTagType{}), description(ElementTagType{})
-    {
-    }
+	SubscriptionManagementEntryDataElementsType()
+		:
+		subscriptionId(ElementTagType{}),
+		clientAddress(FeatureAddressElementsType{}),
+		serverAddress(FeatureAddressElementsType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const SubscriptionManagementEntryDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryDataElementsType &dst);
+bool convertToJson(const SubscriptionManagementEntryDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SubscriptionManagementEntryDataElementsType &dst);
 
 struct NodeManagementSubscriptionDataElementsType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<SubscriptionManagementEntryDataElementsType> subscriptionEntry;
+	std::optional<SubscriptionManagementEntryDataElementsType> subscriptionEntry;
 
-    NodeManagementSubscriptionDataElementsType() : subscriptionEntry(SubscriptionManagementEntryDataElementsType{})
-    {
-    }
+	NodeManagementSubscriptionDataElementsType()
+		:
+		subscriptionEntry(SubscriptionManagementEntryDataElementsType{})
+	{}
 };
-bool convertToJson(const NodeManagementSubscriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDataElementsType &dst);
+bool convertToJson(const NodeManagementSubscriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementSubscriptionDataElementsType &dst);
 
 struct SubscriptionManagementEntryListDataSelectorsType { // EEBus_SPINE_TS_SubscriptionManagement.xsd
-    std::optional<SubscriptionIdType> subscriptionId;
-    std::optional<FeatureAddressType> clientAddress;
-    std::optional<FeatureAddressType> serverAddress;
+	std::optional<SubscriptionIdType> subscriptionId;
+	std::optional<FeatureAddressType> clientAddress;
+	std::optional<FeatureAddressType> serverAddress;
 
-    SubscriptionManagementEntryListDataSelectorsType() :
-        subscriptionId(SubscriptionIdType{}), clientAddress(FeatureAddressType{}), serverAddress(FeatureAddressType{})
-    {
-    }
+	SubscriptionManagementEntryListDataSelectorsType()
+		:
+		subscriptionId(SubscriptionIdType{}),
+		clientAddress(FeatureAddressType{}),
+		serverAddress(FeatureAddressType{})
+	{}
 };
-bool convertToJson(const SubscriptionManagementEntryListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryListDataSelectorsType &dst);
+bool convertToJson(const SubscriptionManagementEntryListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SubscriptionManagementEntryListDataSelectorsType &dst);
 
 struct NodeManagementSubscriptionDataSelectorsType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<SubscriptionManagementEntryListDataSelectorsType> subscriptionEntry;
+	std::optional<SubscriptionManagementEntryListDataSelectorsType> subscriptionEntry;
 
-    NodeManagementSubscriptionDataSelectorsType() : subscriptionEntry(SubscriptionManagementEntryListDataSelectorsType{})
-    {
-    }
+	NodeManagementSubscriptionDataSelectorsType()
+		:
+		subscriptionEntry(SubscriptionManagementEntryListDataSelectorsType{})
+	{}
 };
-bool convertToJson(const NodeManagementSubscriptionDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDataSelectorsType &dst);
+bool convertToJson(const NodeManagementSubscriptionDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementSubscriptionDataSelectorsType &dst);
 
 struct SubscriptionManagementRequestCallType { // EEBus_SPINE_TS_SubscriptionManagement.xsd
-    std::optional<FeatureAddressType> clientAddress;
-    std::optional<FeatureAddressType> serverAddress;
-    std::optional<FeatureTypeType> serverFeatureType;
+	std::optional<FeatureAddressType> clientAddress;
+	std::optional<FeatureAddressType> serverAddress;
+	std::optional<FeatureTypeType> serverFeatureType;
 
-    SubscriptionManagementRequestCallType() :
-        clientAddress(FeatureAddressType{}), serverAddress(FeatureAddressType{}), serverFeatureType(FeatureTypeType{})
-    {
-    }
+	SubscriptionManagementRequestCallType()
+		:
+		clientAddress(FeatureAddressType{}),
+		serverAddress(FeatureAddressType{}),
+		serverFeatureType(FeatureTypeType{})
+	{}
 };
-bool convertToJson(const SubscriptionManagementRequestCallType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SubscriptionManagementRequestCallType &dst);
+bool convertToJson(const SubscriptionManagementRequestCallType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SubscriptionManagementRequestCallType &dst);
 
 struct NodeManagementSubscriptionRequestCallType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<SubscriptionManagementRequestCallType> subscriptionRequest;
+	std::optional<SubscriptionManagementRequestCallType> subscriptionRequest;
 
-    NodeManagementSubscriptionRequestCallType() : subscriptionRequest(SubscriptionManagementRequestCallType{})
-    {
-    }
+	NodeManagementSubscriptionRequestCallType()
+		:
+		subscriptionRequest(SubscriptionManagementRequestCallType{})
+	{}
 };
-bool convertToJson(const NodeManagementSubscriptionRequestCallType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionRequestCallType &dst);
+bool convertToJson(const NodeManagementSubscriptionRequestCallType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementSubscriptionRequestCallType &dst);
 
 struct SubscriptionManagementRequestCallElementsType { // EEBus_SPINE_TS_SubscriptionManagement.xsd
-    std::optional<FeatureAddressElementsType> clientAddress;
-    std::optional<FeatureAddressElementsType> serverAddress;
-    std::optional<ElementTagType> serverFeatureType;
+	std::optional<FeatureAddressElementsType> clientAddress;
+	std::optional<FeatureAddressElementsType> serverAddress;
+	std::optional<ElementTagType> serverFeatureType;
 
-    SubscriptionManagementRequestCallElementsType() :
-        clientAddress(FeatureAddressElementsType{}), serverAddress(FeatureAddressElementsType{}), serverFeatureType(ElementTagType{})
-    {
-    }
+	SubscriptionManagementRequestCallElementsType()
+		:
+		clientAddress(FeatureAddressElementsType{}),
+		serverAddress(FeatureAddressElementsType{}),
+		serverFeatureType(ElementTagType{})
+	{}
 };
-bool convertToJson(const SubscriptionManagementRequestCallElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SubscriptionManagementRequestCallElementsType &dst);
+bool convertToJson(const SubscriptionManagementRequestCallElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SubscriptionManagementRequestCallElementsType &dst);
 
 struct NodeManagementSubscriptionRequestCallElementsType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<SubscriptionManagementRequestCallElementsType> subscriptionRequest;
+	std::optional<SubscriptionManagementRequestCallElementsType> subscriptionRequest;
 
-    NodeManagementSubscriptionRequestCallElementsType() : subscriptionRequest(SubscriptionManagementRequestCallElementsType{})
-    {
-    }
+	NodeManagementSubscriptionRequestCallElementsType()
+		:
+		subscriptionRequest(SubscriptionManagementRequestCallElementsType{})
+	{}
 };
-bool convertToJson(const NodeManagementSubscriptionRequestCallElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionRequestCallElementsType &dst);
+bool convertToJson(const NodeManagementSubscriptionRequestCallElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementSubscriptionRequestCallElementsType &dst);
 
 struct SubscriptionManagementDeleteCallType { // EEBus_SPINE_TS_SubscriptionManagement.xsd
-    std::optional<SubscriptionIdType> subscriptionId;
-    std::optional<FeatureAddressType> clientAddress;
-    std::optional<FeatureAddressType> serverAddress;
+	std::optional<SubscriptionIdType> subscriptionId;
+	std::optional<FeatureAddressType> clientAddress;
+	std::optional<FeatureAddressType> serverAddress;
 
-    SubscriptionManagementDeleteCallType() :
-        subscriptionId(SubscriptionIdType{}), clientAddress(FeatureAddressType{}), serverAddress(FeatureAddressType{})
-    {
-    }
+	SubscriptionManagementDeleteCallType()
+		:
+		subscriptionId(SubscriptionIdType{}),
+		clientAddress(FeatureAddressType{}),
+		serverAddress(FeatureAddressType{})
+	{}
 };
-bool convertToJson(const SubscriptionManagementDeleteCallType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SubscriptionManagementDeleteCallType &dst);
+bool convertToJson(const SubscriptionManagementDeleteCallType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SubscriptionManagementDeleteCallType &dst);
 
 struct NodeManagementSubscriptionDeleteCallType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<SubscriptionManagementDeleteCallType> subscriptionDelete;
+	std::optional<SubscriptionManagementDeleteCallType> subscriptionDelete;
 
-    NodeManagementSubscriptionDeleteCallType() : subscriptionDelete(SubscriptionManagementDeleteCallType{})
-    {
-    }
+	NodeManagementSubscriptionDeleteCallType()
+		:
+		subscriptionDelete(SubscriptionManagementDeleteCallType{})
+	{}
 };
-bool convertToJson(const NodeManagementSubscriptionDeleteCallType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDeleteCallType &dst);
+bool convertToJson(const NodeManagementSubscriptionDeleteCallType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementSubscriptionDeleteCallType &dst);
 
 struct SubscriptionManagementDeleteCallElementsType { // EEBus_SPINE_TS_SubscriptionManagement.xsd
-    std::optional<ElementTagType> subscriptionId;
-    std::optional<FeatureAddressElementsType> clientAddress;
-    std::optional<FeatureAddressElementsType> serverAddress;
+	std::optional<ElementTagType> subscriptionId;
+	std::optional<FeatureAddressElementsType> clientAddress;
+	std::optional<FeatureAddressElementsType> serverAddress;
 
-    SubscriptionManagementDeleteCallElementsType() :
-        subscriptionId(ElementTagType{}), clientAddress(FeatureAddressElementsType{}), serverAddress(FeatureAddressElementsType{})
-    {
-    }
+	SubscriptionManagementDeleteCallElementsType()
+		:
+		subscriptionId(ElementTagType{}),
+		clientAddress(FeatureAddressElementsType{}),
+		serverAddress(FeatureAddressElementsType{})
+	{}
 };
-bool convertToJson(const SubscriptionManagementDeleteCallElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SubscriptionManagementDeleteCallElementsType &dst);
+bool convertToJson(const SubscriptionManagementDeleteCallElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SubscriptionManagementDeleteCallElementsType &dst);
 
 struct NodeManagementSubscriptionDeleteCallElementsType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<SubscriptionManagementDeleteCallElementsType> subscriptionDelete;
+	std::optional<SubscriptionManagementDeleteCallElementsType> subscriptionDelete;
 
-    NodeManagementSubscriptionDeleteCallElementsType() : subscriptionDelete(SubscriptionManagementDeleteCallElementsType{})
-    {
-    }
+	NodeManagementSubscriptionDeleteCallElementsType()
+		:
+		subscriptionDelete(SubscriptionManagementDeleteCallElementsType{})
+	{}
 };
-bool convertToJson(const NodeManagementSubscriptionDeleteCallElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDeleteCallElementsType &dst);
+bool convertToJson(const NodeManagementSubscriptionDeleteCallElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementSubscriptionDeleteCallElementsType &dst);
 
 struct NodeManagementDestinationDataType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<NetworkManagementDeviceDescriptionDataType> deviceDescription;
+	std::optional<NetworkManagementDeviceDescriptionDataType> deviceDescription;
 
-    NodeManagementDestinationDataType() : deviceDescription(NetworkManagementDeviceDescriptionDataType{})
-    {
-    }
+	NodeManagementDestinationDataType()
+		:
+		deviceDescription(NetworkManagementDeviceDescriptionDataType{})
+	{}
 };
-bool convertToJson(const NodeManagementDestinationDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationDataType &dst);
+bool convertToJson(const NodeManagementDestinationDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDestinationDataType &dst);
 
 struct NodeManagementDestinationDataElementsType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<NetworkManagementDeviceDescriptionDataElementsType> deviceDescription;
+	std::optional<NetworkManagementDeviceDescriptionDataElementsType> deviceDescription;
 
-    NodeManagementDestinationDataElementsType() : deviceDescription(NetworkManagementDeviceDescriptionDataElementsType{})
-    {
-    }
+	NodeManagementDestinationDataElementsType()
+		:
+		deviceDescription(NetworkManagementDeviceDescriptionDataElementsType{})
+	{}
 };
-bool convertToJson(const NodeManagementDestinationDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationDataElementsType &dst);
+bool convertToJson(const NodeManagementDestinationDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDestinationDataElementsType &dst);
 
 struct NodeManagementDestinationListDataType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<std::vector<NodeManagementDestinationDataType>> nodeManagementDestinationData;
+	std::optional<std::vector<NodeManagementDestinationDataType>> nodeManagementDestinationData;
 
-    NodeManagementDestinationListDataType() : nodeManagementDestinationData(std::vector<NodeManagementDestinationDataType>{})
-    {
-    }
+	NodeManagementDestinationListDataType()
+		:
+		nodeManagementDestinationData(std::vector<NodeManagementDestinationDataType>{})
+	{}
 };
-bool convertToJson(const NodeManagementDestinationListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationListDataType &dst);
+bool convertToJson(const NodeManagementDestinationListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDestinationListDataType &dst);
 
 struct NodeManagementDestinationListDataSelectorsType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<NetworkManagementDeviceDescriptionListDataSelectorsType> deviceDescription;
+	std::optional<NetworkManagementDeviceDescriptionListDataSelectorsType> deviceDescription;
 
-    NodeManagementDestinationListDataSelectorsType() : deviceDescription(NetworkManagementDeviceDescriptionListDataSelectorsType{})
-    {
-    }
+	NodeManagementDestinationListDataSelectorsType()
+		:
+		deviceDescription(NetworkManagementDeviceDescriptionListDataSelectorsType{})
+	{}
 };
-bool convertToJson(const NodeManagementDestinationListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationListDataSelectorsType &dst);
+bool convertToJson(const NodeManagementDestinationListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDestinationListDataSelectorsType &dst);
 
 struct UseCaseSupportType { // EEBus_SPINE_TS_UseCaseInformation.xsd
-    std::optional<UseCaseNameType> useCaseName;
-    std::optional<SpecificationVersionType> useCaseVersion;
-    std::optional<bool> useCaseAvailable;
-    std::optional<std::vector<UseCaseScenarioSupportType>> scenarioSupport;
-    std::optional<std::string> useCaseDocumentSubRevision;
+	std::optional<UseCaseNameType> useCaseName;
+	std::optional<SpecificationVersionType> useCaseVersion;
+	std::optional<bool> useCaseAvailable;
+	std::optional<std::vector<UseCaseScenarioSupportType>> scenarioSupport;
+	std::optional<std::string> useCaseDocumentSubRevision;
 
-    UseCaseSupportType() :
-        useCaseName(UseCaseNameType{}), useCaseVersion(SpecificationVersionType{}), useCaseAvailable(bool{}),
-        scenarioSupport(std::vector<UseCaseScenarioSupportType>{}), useCaseDocumentSubRevision(std::string{})
-    {
-    }
+	UseCaseSupportType()
+		:
+		useCaseName(UseCaseNameType{}),
+		useCaseVersion(SpecificationVersionType{}),
+		useCaseAvailable(bool{}),
+		scenarioSupport(std::vector<UseCaseScenarioSupportType>{}),
+		useCaseDocumentSubRevision(std::string{})
+	{}
 };
-bool convertToJson(const UseCaseSupportType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, UseCaseSupportType &dst);
+bool convertToJson(const UseCaseSupportType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, UseCaseSupportType &dst);
 
 struct UseCaseInformationDataType { // EEBus_SPINE_TS_UseCaseInformation.xsd
-    std::optional<FeatureAddressType> address;
-    std::optional<UseCaseActorType> actor;
-    std::optional<std::vector<UseCaseSupportType>> useCaseSupport;
+	std::optional<FeatureAddressType> address;
+	std::optional<UseCaseActorType> actor;
+	std::optional<std::vector<UseCaseSupportType>> useCaseSupport;
 
-    UseCaseInformationDataType() :
-        address(FeatureAddressType{}), actor(UseCaseActorType{}), useCaseSupport(std::vector<UseCaseSupportType>{})
-    {
-    }
+	UseCaseInformationDataType()
+		:
+		address(FeatureAddressType{}),
+		actor(UseCaseActorType{}),
+		useCaseSupport(std::vector<UseCaseSupportType>{})
+	{}
 };
-bool convertToJson(const UseCaseInformationDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, UseCaseInformationDataType &dst);
+bool convertToJson(const UseCaseInformationDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, UseCaseInformationDataType &dst);
 
 struct NodeManagementUseCaseDataType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<std::vector<UseCaseInformationDataType>> useCaseInformation;
+	std::optional<std::vector<UseCaseInformationDataType>> useCaseInformation;
 
-    NodeManagementUseCaseDataType() : useCaseInformation(std::vector<UseCaseInformationDataType>{})
-    {
-    }
+	NodeManagementUseCaseDataType()
+		:
+		useCaseInformation(std::vector<UseCaseInformationDataType>{})
+	{}
 };
-bool convertToJson(const NodeManagementUseCaseDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementUseCaseDataType &dst);
+bool convertToJson(const NodeManagementUseCaseDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementUseCaseDataType &dst);
 
 struct UseCaseSupportElementsType { // EEBus_SPINE_TS_UseCaseInformation.xsd
-    std::optional<ElementTagType> useCaseName;
-    std::optional<ElementTagType> useCaseVersion;
-    std::optional<ElementTagType> useCaseAvailable;
-    std::optional<ElementTagType> scenarioSupport;
-    std::optional<ElementTagType> useCaseDocumentSubRevision;
+	std::optional<ElementTagType> useCaseName;
+	std::optional<ElementTagType> useCaseVersion;
+	std::optional<ElementTagType> useCaseAvailable;
+	std::optional<ElementTagType> scenarioSupport;
+	std::optional<ElementTagType> useCaseDocumentSubRevision;
 
-    UseCaseSupportElementsType() :
-        useCaseName(ElementTagType{}), useCaseVersion(ElementTagType{}), useCaseAvailable(ElementTagType{}),
-        scenarioSupport(ElementTagType{}), useCaseDocumentSubRevision(ElementTagType{})
-    {
-    }
+	UseCaseSupportElementsType()
+		:
+		useCaseName(ElementTagType{}),
+		useCaseVersion(ElementTagType{}),
+		useCaseAvailable(ElementTagType{}),
+		scenarioSupport(ElementTagType{}),
+		useCaseDocumentSubRevision(ElementTagType{})
+	{}
 };
-bool convertToJson(const UseCaseSupportElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, UseCaseSupportElementsType &dst);
+bool convertToJson(const UseCaseSupportElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, UseCaseSupportElementsType &dst);
 
 struct UseCaseInformationDataElementsType { // EEBus_SPINE_TS_UseCaseInformation.xsd
-    std::optional<FeatureAddressElementsType> address;
-    std::optional<ElementTagType> actor;
-    std::optional<UseCaseSupportElementsType> useCaseSupport;
+	std::optional<FeatureAddressElementsType> address;
+	std::optional<ElementTagType> actor;
+	std::optional<UseCaseSupportElementsType> useCaseSupport;
 
-    UseCaseInformationDataElementsType() :
-        address(FeatureAddressElementsType{}), actor(ElementTagType{}), useCaseSupport(UseCaseSupportElementsType{})
-    {
-    }
+	UseCaseInformationDataElementsType()
+		:
+		address(FeatureAddressElementsType{}),
+		actor(ElementTagType{}),
+		useCaseSupport(UseCaseSupportElementsType{})
+	{}
 };
-bool convertToJson(const UseCaseInformationDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, UseCaseInformationDataElementsType &dst);
+bool convertToJson(const UseCaseInformationDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, UseCaseInformationDataElementsType &dst);
 
 struct NodeManagementUseCaseDataElementsType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<UseCaseInformationDataElementsType> useCaseInformation;
+	std::optional<UseCaseInformationDataElementsType> useCaseInformation;
 
-    NodeManagementUseCaseDataElementsType() : useCaseInformation(UseCaseInformationDataElementsType{})
-    {
-    }
+	NodeManagementUseCaseDataElementsType()
+		:
+		useCaseInformation(UseCaseInformationDataElementsType{})
+	{}
 };
-bool convertToJson(const NodeManagementUseCaseDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementUseCaseDataElementsType &dst);
+bool convertToJson(const NodeManagementUseCaseDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementUseCaseDataElementsType &dst);
 
 struct UseCaseSupportSelectorsType { // EEBus_SPINE_TS_UseCaseInformation.xsd
-    std::optional<UseCaseNameType> useCaseName;
-    std::optional<SpecificationVersionType> useCaseVersion;
-    std::optional<UseCaseScenarioSupportType> scenarioSupport;
+	std::optional<UseCaseNameType> useCaseName;
+	std::optional<SpecificationVersionType> useCaseVersion;
+	std::optional<UseCaseScenarioSupportType> scenarioSupport;
 
-    UseCaseSupportSelectorsType() :
-        useCaseName(UseCaseNameType{}), useCaseVersion(SpecificationVersionType{}), scenarioSupport(UseCaseScenarioSupportType{})
-    {
-    }
+	UseCaseSupportSelectorsType()
+		:
+		useCaseName(UseCaseNameType{}),
+		useCaseVersion(SpecificationVersionType{}),
+		scenarioSupport(UseCaseScenarioSupportType{})
+	{}
 };
-bool convertToJson(const UseCaseSupportSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, UseCaseSupportSelectorsType &dst);
+bool convertToJson(const UseCaseSupportSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, UseCaseSupportSelectorsType &dst);
 
 struct UseCaseInformationListDataSelectorsType { // EEBus_SPINE_TS_UseCaseInformation.xsd
-    std::optional<FeatureAddressType> address;
-    std::optional<UseCaseActorType> actor;
-    std::optional<UseCaseSupportSelectorsType> useCaseSupport;
+	std::optional<FeatureAddressType> address;
+	std::optional<UseCaseActorType> actor;
+	std::optional<UseCaseSupportSelectorsType> useCaseSupport;
 
-    UseCaseInformationListDataSelectorsType() :
-        address(FeatureAddressType{}), actor(UseCaseActorType{}), useCaseSupport(UseCaseSupportSelectorsType{})
-    {
-    }
+	UseCaseInformationListDataSelectorsType()
+		:
+		address(FeatureAddressType{}),
+		actor(UseCaseActorType{}),
+		useCaseSupport(UseCaseSupportSelectorsType{})
+	{}
 };
-bool convertToJson(const UseCaseInformationListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, UseCaseInformationListDataSelectorsType &dst);
+bool convertToJson(const UseCaseInformationListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, UseCaseInformationListDataSelectorsType &dst);
 
 struct NodeManagementUseCaseDataSelectorsType { // EEBus_SPINE_TS_NodeManagement.xsd
-    std::optional<UseCaseInformationListDataSelectorsType> useCaseInformation;
+	std::optional<UseCaseInformationListDataSelectorsType> useCaseInformation;
 
-    NodeManagementUseCaseDataSelectorsType() : useCaseInformation(UseCaseInformationListDataSelectorsType{})
-    {
-    }
+	NodeManagementUseCaseDataSelectorsType()
+		:
+		useCaseInformation(UseCaseInformationListDataSelectorsType{})
+	{}
 };
-bool convertToJson(const NodeManagementUseCaseDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, NodeManagementUseCaseDataSelectorsType &dst);
+bool convertToJson(const NodeManagementUseCaseDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementUseCaseDataSelectorsType &dst);
 
 struct SubscriptionManagementEntryListDataType { // EEBus_SPINE_TS_SubscriptionManagement.xsd
-    std::optional<std::vector<SubscriptionManagementEntryDataType>> subscriptionManagementEntryData;
+	std::optional<std::vector<SubscriptionManagementEntryDataType>> subscriptionManagementEntryData;
 
-    SubscriptionManagementEntryListDataType() : subscriptionManagementEntryData(std::vector<SubscriptionManagementEntryDataType>{})
-    {
-    }
+	SubscriptionManagementEntryListDataType()
+		:
+		subscriptionManagementEntryData(std::vector<SubscriptionManagementEntryDataType>{})
+	{}
 };
-bool convertToJson(const SubscriptionManagementEntryListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryListDataType &dst);
+bool convertToJson(const SubscriptionManagementEntryListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SubscriptionManagementEntryListDataType &dst);
 
 struct UseCaseInformationListDataType { // EEBus_SPINE_TS_UseCaseInformation.xsd
-    std::optional<std::vector<UseCaseInformationDataType>> useCaseInformationData;
+	std::optional<std::vector<UseCaseInformationDataType>> useCaseInformationData;
 
-    UseCaseInformationListDataType() : useCaseInformationData(std::vector<UseCaseInformationDataType>{})
-    {
-    }
+	UseCaseInformationListDataType()
+		:
+		useCaseInformationData(std::vector<UseCaseInformationDataType>{})
+	{}
 };
-bool convertToJson(const UseCaseInformationListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, UseCaseInformationListDataType &dst);
+bool convertToJson(const UseCaseInformationListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, UseCaseInformationListDataType &dst);
 
 struct SpecificationVersionListDataType { // EEBus_SPINE_TS_Version.xsd
-    std::optional<std::vector<SpecificationVersionType>> specificationVersionData;
+	std::optional<std::vector<SpecificationVersionType>> specificationVersionData;
 
-    SpecificationVersionListDataType() : specificationVersionData(std::vector<SpecificationVersionDataType>{})
-    {
-    }
+	SpecificationVersionListDataType()
+		:
+		specificationVersionData(std::vector<SpecificationVersionDataType>{})
+	{}
 };
-bool convertToJson(const SpecificationVersionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SpecificationVersionListDataType &dst);
+bool convertToJson(const SpecificationVersionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SpecificationVersionListDataType &dst);
 
 struct SpecificationVersionListDataSelectorsType { // EEBus_SPINE_TS_Version.xsd
 
-    SpecificationVersionListDataSelectorsType()
-
-    {
-    }
+	SpecificationVersionListDataSelectorsType()
+		
+	{}
 };
-bool convertToJson(const SpecificationVersionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SpecificationVersionListDataSelectorsType &dst);
+bool convertToJson(const SpecificationVersionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SpecificationVersionListDataSelectorsType &dst);
 
 struct OperatingConstraintsInterruptDataType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
-    std::optional<bool> isPausable;
-    std::optional<bool> isStoppable;
-    std::optional<bool> notInterruptibleAtHighPower;
-    std::optional<uint32_t> maxCyclesPerDay;
+	std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<bool> isPausable;
+	std::optional<bool> isStoppable;
+	std::optional<bool> notInterruptibleAtHighPower;
+	std::optional<uint32_t> maxCyclesPerDay;
 
-    OperatingConstraintsInterruptDataType() :
-        sequenceId(PowerSequenceIdType{}), isPausable(bool{}), isStoppable(bool{}), notInterruptibleAtHighPower(bool{}),
-        maxCyclesPerDay(uint32_t{})
-    {
-    }
+	OperatingConstraintsInterruptDataType()
+		:
+		sequenceId(PowerSequenceIdType{}),
+		isPausable(bool{}),
+		isStoppable(bool{}),
+		notInterruptibleAtHighPower(bool{}),
+		maxCyclesPerDay(uint32_t{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsInterruptDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptDataType &dst);
+bool convertToJson(const OperatingConstraintsInterruptDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsInterruptDataType &dst);
 
 struct OperatingConstraintsInterruptDataElementsType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<ElementTagType> sequenceId;
-    std::optional<ElementTagType> isPausable;
-    std::optional<ElementTagType> isStoppable;
-    std::optional<ElementTagType> notInterruptibleAtHighPower;
-    std::optional<ElementTagType> maxCyclesPerDay;
+	std::optional<ElementTagType> sequenceId;
+	std::optional<ElementTagType> isPausable;
+	std::optional<ElementTagType> isStoppable;
+	std::optional<ElementTagType> notInterruptibleAtHighPower;
+	std::optional<ElementTagType> maxCyclesPerDay;
 
-    OperatingConstraintsInterruptDataElementsType() :
-        sequenceId(ElementTagType{}), isPausable(ElementTagType{}), isStoppable(ElementTagType{}),
-        notInterruptibleAtHighPower(ElementTagType{}), maxCyclesPerDay(ElementTagType{})
-    {
-    }
+	OperatingConstraintsInterruptDataElementsType()
+		:
+		sequenceId(ElementTagType{}),
+		isPausable(ElementTagType{}),
+		isStoppable(ElementTagType{}),
+		notInterruptibleAtHighPower(ElementTagType{}),
+		maxCyclesPerDay(ElementTagType{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsInterruptDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptDataElementsType &dst);
+bool convertToJson(const OperatingConstraintsInterruptDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsInterruptDataElementsType &dst);
 
 struct OperatingConstraintsInterruptListDataType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<std::vector<OperatingConstraintsInterruptDataType>> operatingConstraintsInterruptData;
+	std::optional<std::vector<OperatingConstraintsInterruptDataType>> operatingConstraintsInterruptData;
 
-    OperatingConstraintsInterruptListDataType() : operatingConstraintsInterruptData(std::vector<OperatingConstraintsInterruptDataType>{})
-    {
-    }
+	OperatingConstraintsInterruptListDataType()
+		:
+		operatingConstraintsInterruptData(std::vector<OperatingConstraintsInterruptDataType>{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsInterruptListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptListDataType &dst);
+bool convertToJson(const OperatingConstraintsInterruptListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsInterruptListDataType &dst);
 
 struct OperatingConstraintsInterruptListDataSelectorsType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<PowerSequenceIdType> sequenceId;
 
-    OperatingConstraintsInterruptListDataSelectorsType() : sequenceId(PowerSequenceIdType{})
-    {
-    }
+	OperatingConstraintsInterruptListDataSelectorsType()
+		:
+		sequenceId(PowerSequenceIdType{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsInterruptListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptListDataSelectorsType &dst);
+bool convertToJson(const OperatingConstraintsInterruptListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsInterruptListDataSelectorsType &dst);
 
 struct OperatingConstraintsDurationDataType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
-    std::optional<std::string> activeDurationMin;
-    std::optional<std::string> activeDurationMax;
-    std::optional<std::string> pauseDurationMin;
-    std::optional<std::string> pauseDurationMax;
-    std::optional<std::string> activeDurationSumMin;
-    std::optional<std::string> activeDurationSumMax;
+	std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<std::string> activeDurationMin;
+	std::optional<std::string> activeDurationMax;
+	std::optional<std::string> pauseDurationMin;
+	std::optional<std::string> pauseDurationMax;
+	std::optional<std::string> activeDurationSumMin;
+	std::optional<std::string> activeDurationSumMax;
 
-    OperatingConstraintsDurationDataType() :
-        sequenceId(PowerSequenceIdType{}), activeDurationMin(std::string{}), activeDurationMax(std::string{}),
-        pauseDurationMin(std::string{}), pauseDurationMax(std::string{}), activeDurationSumMin(std::string{}),
-        activeDurationSumMax(std::string{})
-    {
-    }
+	OperatingConstraintsDurationDataType()
+		:
+		sequenceId(PowerSequenceIdType{}),
+		activeDurationMin(std::string{}),
+		activeDurationMax(std::string{}),
+		pauseDurationMin(std::string{}),
+		pauseDurationMax(std::string{}),
+		activeDurationSumMin(std::string{}),
+		activeDurationSumMax(std::string{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsDurationDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationDataType &dst);
+bool convertToJson(const OperatingConstraintsDurationDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsDurationDataType &dst);
 
 struct OperatingConstraintsDurationDataElementsType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<ElementTagType> sequenceId;
-    std::optional<ElementTagType> activeDurationMin;
-    std::optional<ElementTagType> activeDurationMax;
-    std::optional<ElementTagType> pauseDurationMin;
-    std::optional<ElementTagType> pauseDurationMax;
-    std::optional<ElementTagType> activeDurationSumMin;
-    std::optional<ElementTagType> activeDurationSumMax;
+	std::optional<ElementTagType> sequenceId;
+	std::optional<ElementTagType> activeDurationMin;
+	std::optional<ElementTagType> activeDurationMax;
+	std::optional<ElementTagType> pauseDurationMin;
+	std::optional<ElementTagType> pauseDurationMax;
+	std::optional<ElementTagType> activeDurationSumMin;
+	std::optional<ElementTagType> activeDurationSumMax;
 
-    OperatingConstraintsDurationDataElementsType() :
-        sequenceId(ElementTagType{}), activeDurationMin(ElementTagType{}), activeDurationMax(ElementTagType{}),
-        pauseDurationMin(ElementTagType{}), pauseDurationMax(ElementTagType{}), activeDurationSumMin(ElementTagType{}),
-        activeDurationSumMax(ElementTagType{})
-    {
-    }
+	OperatingConstraintsDurationDataElementsType()
+		:
+		sequenceId(ElementTagType{}),
+		activeDurationMin(ElementTagType{}),
+		activeDurationMax(ElementTagType{}),
+		pauseDurationMin(ElementTagType{}),
+		pauseDurationMax(ElementTagType{}),
+		activeDurationSumMin(ElementTagType{}),
+		activeDurationSumMax(ElementTagType{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsDurationDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationDataElementsType &dst);
+bool convertToJson(const OperatingConstraintsDurationDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsDurationDataElementsType &dst);
 
 struct OperatingConstraintsDurationListDataType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<std::vector<OperatingConstraintsDurationDataType>> operatingConstraintsDurationData;
+	std::optional<std::vector<OperatingConstraintsDurationDataType>> operatingConstraintsDurationData;
 
-    OperatingConstraintsDurationListDataType() : operatingConstraintsDurationData(std::vector<OperatingConstraintsDurationDataType>{})
-    {
-    }
+	OperatingConstraintsDurationListDataType()
+		:
+		operatingConstraintsDurationData(std::vector<OperatingConstraintsDurationDataType>{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsDurationListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationListDataType &dst);
+bool convertToJson(const OperatingConstraintsDurationListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsDurationListDataType &dst);
 
 struct OperatingConstraintsDurationListDataSelectorsType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<PowerSequenceIdType> sequenceId;
 
-    OperatingConstraintsDurationListDataSelectorsType() : sequenceId(PowerSequenceIdType{})
-    {
-    }
+	OperatingConstraintsDurationListDataSelectorsType()
+		:
+		sequenceId(PowerSequenceIdType{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsDurationListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationListDataSelectorsType &dst);
+bool convertToJson(const OperatingConstraintsDurationListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsDurationListDataSelectorsType &dst);
 
 struct OperatingConstraintsPowerDescriptionDataType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
-    std::optional<EnergyDirectionType> positiveEnergyDirection;
-    std::optional<UnitOfMeasurementType> powerUnit;
-    std::optional<UnitOfMeasurementType> energyUnit;
-    std::optional<DescriptionType> description;
+	std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<EnergyDirectionType> positiveEnergyDirection;
+	std::optional<UnitOfMeasurementType> powerUnit;
+	std::optional<UnitOfMeasurementType> energyUnit;
+	std::optional<DescriptionType> description;
 
-    OperatingConstraintsPowerDescriptionDataType() :
-        sequenceId(PowerSequenceIdType{}), positiveEnergyDirection(EnergyDirectionType{}), powerUnit(UnitOfMeasurementType{}),
-        energyUnit(UnitOfMeasurementType{}), description(DescriptionType{})
-    {
-    }
+	OperatingConstraintsPowerDescriptionDataType()
+		:
+		sequenceId(PowerSequenceIdType{}),
+		positiveEnergyDirection(EnergyDirectionType{}),
+		powerUnit(UnitOfMeasurementType{}),
+		energyUnit(UnitOfMeasurementType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsPowerDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescriptionDataType &dst);
+bool convertToJson(const OperatingConstraintsPowerDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerDescriptionDataType &dst);
 
 struct OperatingConstraintsPowerDescriptionDataElementsType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<ElementTagType> sequenceId;
-    std::optional<ElementTagType> positiveEnergyDirection;
-    std::optional<ElementTagType> powerUnit;
-    std::optional<ElementTagType> energyUnit;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> sequenceId;
+	std::optional<ElementTagType> positiveEnergyDirection;
+	std::optional<ElementTagType> powerUnit;
+	std::optional<ElementTagType> energyUnit;
+	std::optional<ElementTagType> description;
 
-    OperatingConstraintsPowerDescriptionDataElementsType() :
-        sequenceId(ElementTagType{}), positiveEnergyDirection(ElementTagType{}), powerUnit(ElementTagType{}), energyUnit(ElementTagType{}),
-        description(ElementTagType{})
-    {
-    }
+	OperatingConstraintsPowerDescriptionDataElementsType()
+		:
+		sequenceId(ElementTagType{}),
+		positiveEnergyDirection(ElementTagType{}),
+		powerUnit(ElementTagType{}),
+		energyUnit(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsPowerDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescriptionDataElementsType &dst);
+bool convertToJson(const OperatingConstraintsPowerDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerDescriptionDataElementsType &dst);
 
 struct OperatingConstraintsPowerDescriptionListDataType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<std::vector<OperatingConstraintsPowerDescriptionDataType>> operatingConstraintsPowerDescriptionData;
+	std::optional<std::vector<OperatingConstraintsPowerDescriptionDataType>> operatingConstraintsPowerDescriptionData;
 
-    OperatingConstraintsPowerDescriptionListDataType() :
-        operatingConstraintsPowerDescriptionData(std::vector<OperatingConstraintsPowerDescriptionDataType>{})
-    {
-    }
+	OperatingConstraintsPowerDescriptionListDataType()
+		:
+		operatingConstraintsPowerDescriptionData(std::vector<OperatingConstraintsPowerDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsPowerDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescriptionListDataType &dst);
+bool convertToJson(const OperatingConstraintsPowerDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerDescriptionListDataType &dst);
 
 struct OperatingConstraintsPowerDescriptionListDataSelectorsType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<PowerSequenceIdType> sequenceId;
 
-    OperatingConstraintsPowerDescriptionListDataSelectorsType() : sequenceId(PowerSequenceIdType{})
-    {
-    }
+	OperatingConstraintsPowerDescriptionListDataSelectorsType()
+		:
+		sequenceId(PowerSequenceIdType{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsPowerDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescriptionListDataSelectorsType &dst);
+bool convertToJson(const OperatingConstraintsPowerDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerDescriptionListDataSelectorsType &dst);
 
 struct OperatingConstraintsPowerRangeDataType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
-    std::optional<ScaledNumberType> powerMin;
-    std::optional<ScaledNumberType> powerMax;
-    std::optional<ScaledNumberType> energyMin;
-    std::optional<ScaledNumberType> energyMax;
+	std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<ScaledNumberType> powerMin;
+	std::optional<ScaledNumberType> powerMax;
+	std::optional<ScaledNumberType> energyMin;
+	std::optional<ScaledNumberType> energyMax;
 
-    OperatingConstraintsPowerRangeDataType() :
-        sequenceId(PowerSequenceIdType{}), powerMin(ScaledNumberType{}), powerMax(ScaledNumberType{}), energyMin(ScaledNumberType{}),
-        energyMax(ScaledNumberType{})
-    {
-    }
+	OperatingConstraintsPowerRangeDataType()
+		:
+		sequenceId(PowerSequenceIdType{}),
+		powerMin(ScaledNumberType{}),
+		powerMax(ScaledNumberType{}),
+		energyMin(ScaledNumberType{}),
+		energyMax(ScaledNumberType{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsPowerRangeDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRangeDataType &dst);
+bool convertToJson(const OperatingConstraintsPowerRangeDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerRangeDataType &dst);
 
 struct OperatingConstraintsPowerRangeDataElementsType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<ElementTagType> sequenceId;
-    std::optional<ScaledNumberElementsType> powerMin;
-    std::optional<ScaledNumberElementsType> powerMax;
-    std::optional<ScaledNumberElementsType> energyMin;
-    std::optional<ScaledNumberElementsType> energyMax;
+	std::optional<ElementTagType> sequenceId;
+	std::optional<ScaledNumberElementsType> powerMin;
+	std::optional<ScaledNumberElementsType> powerMax;
+	std::optional<ScaledNumberElementsType> energyMin;
+	std::optional<ScaledNumberElementsType> energyMax;
 
-    OperatingConstraintsPowerRangeDataElementsType() :
-        sequenceId(ElementTagType{}), powerMin(ScaledNumberElementsType{}), powerMax(ScaledNumberElementsType{}),
-        energyMin(ScaledNumberElementsType{}), energyMax(ScaledNumberElementsType{})
-    {
-    }
+	OperatingConstraintsPowerRangeDataElementsType()
+		:
+		sequenceId(ElementTagType{}),
+		powerMin(ScaledNumberElementsType{}),
+		powerMax(ScaledNumberElementsType{}),
+		energyMin(ScaledNumberElementsType{}),
+		energyMax(ScaledNumberElementsType{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsPowerRangeDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRangeDataElementsType &dst);
+bool convertToJson(const OperatingConstraintsPowerRangeDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerRangeDataElementsType &dst);
 
 struct OperatingConstraintsPowerRangeListDataType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<std::vector<OperatingConstraintsPowerRangeDataType>> operatingConstraintsPowerRangeData;
+	std::optional<std::vector<OperatingConstraintsPowerRangeDataType>> operatingConstraintsPowerRangeData;
 
-    OperatingConstraintsPowerRangeListDataType() : operatingConstraintsPowerRangeData(std::vector<OperatingConstraintsPowerRangeDataType>{})
-    {
-    }
+	OperatingConstraintsPowerRangeListDataType()
+		:
+		operatingConstraintsPowerRangeData(std::vector<OperatingConstraintsPowerRangeDataType>{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsPowerRangeListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRangeListDataType &dst);
+bool convertToJson(const OperatingConstraintsPowerRangeListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerRangeListDataType &dst);
 
 struct OperatingConstraintsPowerRangeListDataSelectorsType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<PowerSequenceIdType> sequenceId;
 
-    OperatingConstraintsPowerRangeListDataSelectorsType() : sequenceId(PowerSequenceIdType{})
-    {
-    }
+	OperatingConstraintsPowerRangeListDataSelectorsType()
+		:
+		sequenceId(PowerSequenceIdType{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsPowerRangeListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRangeListDataSelectorsType &dst);
+bool convertToJson(const OperatingConstraintsPowerRangeListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerRangeListDataSelectorsType &dst);
 
 struct OperatingConstraintsPowerLevelDataType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
-    std::optional<std::vector<ScaledNumberType>> power;
+	std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<std::vector<ScaledNumberType>> power;
 
-    OperatingConstraintsPowerLevelDataType() : sequenceId(PowerSequenceIdType{}), power(std::vector<ScaledNumberType>{})
-    {
-    }
+	OperatingConstraintsPowerLevelDataType()
+		:
+		sequenceId(PowerSequenceIdType{}),
+		power(std::vector<ScaledNumberType>{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsPowerLevelDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevelDataType &dst);
+bool convertToJson(const OperatingConstraintsPowerLevelDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerLevelDataType &dst);
 
 struct OperatingConstraintsPowerLevelDataElementsType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<ElementTagType> sequenceId;
-    std::optional<ScaledNumberElementsType> power;
+	std::optional<ElementTagType> sequenceId;
+	std::optional<ScaledNumberElementsType> power;
 
-    OperatingConstraintsPowerLevelDataElementsType() : sequenceId(ElementTagType{}), power(ScaledNumberElementsType{})
-    {
-    }
+	OperatingConstraintsPowerLevelDataElementsType()
+		:
+		sequenceId(ElementTagType{}),
+		power(ScaledNumberElementsType{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsPowerLevelDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevelDataElementsType &dst);
+bool convertToJson(const OperatingConstraintsPowerLevelDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerLevelDataElementsType &dst);
 
 struct OperatingConstraintsPowerLevelListDataType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<std::vector<OperatingConstraintsPowerLevelDataType>> operatingConstraintsPowerLevelData;
+	std::optional<std::vector<OperatingConstraintsPowerLevelDataType>> operatingConstraintsPowerLevelData;
 
-    OperatingConstraintsPowerLevelListDataType() : operatingConstraintsPowerLevelData(std::vector<OperatingConstraintsPowerLevelDataType>{})
-    {
-    }
+	OperatingConstraintsPowerLevelListDataType()
+		:
+		operatingConstraintsPowerLevelData(std::vector<OperatingConstraintsPowerLevelDataType>{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsPowerLevelListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevelListDataType &dst);
+bool convertToJson(const OperatingConstraintsPowerLevelListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerLevelListDataType &dst);
 
 struct OperatingConstraintsPowerLevelListDataSelectorsType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<PowerSequenceIdType> sequenceId;
 
-    OperatingConstraintsPowerLevelListDataSelectorsType() : sequenceId(PowerSequenceIdType{})
-    {
-    }
+	OperatingConstraintsPowerLevelListDataSelectorsType()
+		:
+		sequenceId(PowerSequenceIdType{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsPowerLevelListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevelListDataSelectorsType &dst);
+bool convertToJson(const OperatingConstraintsPowerLevelListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerLevelListDataSelectorsType &dst);
 
 struct OperatingConstraintsResumeImplicationDataType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
-    std::optional<ScaledNumberType> resumeEnergyEstimated;
-    std::optional<UnitOfMeasurementType> energyUnit;
-    std::optional<ScaledNumberType> resumeCostEstimated;
-    std::optional<CurrencyType> currency;
+	std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<ScaledNumberType> resumeEnergyEstimated;
+	std::optional<UnitOfMeasurementType> energyUnit;
+	std::optional<ScaledNumberType> resumeCostEstimated;
+	std::optional<CurrencyType> currency;
 
-    OperatingConstraintsResumeImplicationDataType() :
-        sequenceId(PowerSequenceIdType{}), resumeEnergyEstimated(ScaledNumberType{}), energyUnit(UnitOfMeasurementType{}),
-        resumeCostEstimated(ScaledNumberType{}), currency(CurrencyType{})
-    {
-    }
+	OperatingConstraintsResumeImplicationDataType()
+		:
+		sequenceId(PowerSequenceIdType{}),
+		resumeEnergyEstimated(ScaledNumberType{}),
+		energyUnit(UnitOfMeasurementType{}),
+		resumeCostEstimated(ScaledNumberType{}),
+		currency(CurrencyType{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsResumeImplicationDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImplicationDataType &dst);
+bool convertToJson(const OperatingConstraintsResumeImplicationDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsResumeImplicationDataType &dst);
 
 struct OperatingConstraintsResumeImplicationDataElementsType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<ElementTagType> sequenceId;
-    std::optional<ScaledNumberElementsType> resumeEnergyEstimated;
-    std::optional<ElementTagType> energyUnit;
-    std::optional<ScaledNumberElementsType> resumeCostEstimated;
-    std::optional<ElementTagType> currency;
+	std::optional<ElementTagType> sequenceId;
+	std::optional<ScaledNumberElementsType> resumeEnergyEstimated;
+	std::optional<ElementTagType> energyUnit;
+	std::optional<ScaledNumberElementsType> resumeCostEstimated;
+	std::optional<ElementTagType> currency;
 
-    OperatingConstraintsResumeImplicationDataElementsType() :
-        sequenceId(ElementTagType{}), resumeEnergyEstimated(ScaledNumberElementsType{}), energyUnit(ElementTagType{}),
-        resumeCostEstimated(ScaledNumberElementsType{}), currency(ElementTagType{})
-    {
-    }
+	OperatingConstraintsResumeImplicationDataElementsType()
+		:
+		sequenceId(ElementTagType{}),
+		resumeEnergyEstimated(ScaledNumberElementsType{}),
+		energyUnit(ElementTagType{}),
+		resumeCostEstimated(ScaledNumberElementsType{}),
+		currency(ElementTagType{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsResumeImplicationDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImplicationDataElementsType &dst);
+bool convertToJson(const OperatingConstraintsResumeImplicationDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsResumeImplicationDataElementsType &dst);
 
 struct OperatingConstraintsResumeImplicationListDataType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<std::vector<OperatingConstraintsResumeImplicationDataType>> operatingConstraintsResumeImplicationData;
+	std::optional<std::vector<OperatingConstraintsResumeImplicationDataType>> operatingConstraintsResumeImplicationData;
 
-    OperatingConstraintsResumeImplicationListDataType() :
-        operatingConstraintsResumeImplicationData(std::vector<OperatingConstraintsResumeImplicationDataType>{})
-    {
-    }
+	OperatingConstraintsResumeImplicationListDataType()
+		:
+		operatingConstraintsResumeImplicationData(std::vector<OperatingConstraintsResumeImplicationDataType>{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsResumeImplicationListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImplicationListDataType &dst);
+bool convertToJson(const OperatingConstraintsResumeImplicationListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsResumeImplicationListDataType &dst);
 
 struct OperatingConstraintsResumeImplicationListDataSelectorsType { // EEBus_SPINE_TS_OperatingConstraints.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<PowerSequenceIdType> sequenceId;
 
-    OperatingConstraintsResumeImplicationListDataSelectorsType() : sequenceId(PowerSequenceIdType{})
-    {
-    }
+	OperatingConstraintsResumeImplicationListDataSelectorsType()
+		:
+		sequenceId(PowerSequenceIdType{})
+	{}
 };
-bool convertToJson(const OperatingConstraintsResumeImplicationListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImplicationListDataSelectorsType &dst);
+bool convertToJson(const OperatingConstraintsResumeImplicationListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsResumeImplicationListDataSelectorsType &dst);
 
 struct SensingDataType { // EEBus_SPINE_TS_Sensing.xsd
-    std::optional<AbsoluteOrRelativeTimeType> timestamp;
-    std::optional<SensingStateType> state;
-    std::optional<ScaledNumberType> value;
+	std::optional<AbsoluteOrRelativeTimeType> timestamp;
+	std::optional<SensingStateType> state;
+	std::optional<ScaledNumberType> value;
 
-    SensingDataType() : timestamp(AbsoluteOrRelativeTimeType{}), state(SensingStateType{}), value(ScaledNumberType{})
-    {
-    }
+	SensingDataType()
+		:
+		timestamp(AbsoluteOrRelativeTimeType{}),
+		state(SensingStateType{}),
+		value(ScaledNumberType{})
+	{}
 };
-bool convertToJson(const SensingDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SensingDataType &dst);
+bool convertToJson(const SensingDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SensingDataType &dst);
 
 struct SensingDataElementsType { // EEBus_SPINE_TS_Sensing.xsd
-    std::optional<ElementTagType> timestamp;
-    std::optional<ElementTagType> state;
-    std::optional<ScaledNumberElementsType> value;
+	std::optional<ElementTagType> timestamp;
+	std::optional<ElementTagType> state;
+	std::optional<ScaledNumberElementsType> value;
 
-    SensingDataElementsType() : timestamp(ElementTagType{}), state(ElementTagType{}), value(ScaledNumberElementsType{})
-    {
-    }
+	SensingDataElementsType()
+		:
+		timestamp(ElementTagType{}),
+		state(ElementTagType{}),
+		value(ScaledNumberElementsType{})
+	{}
 };
-bool convertToJson(const SensingDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SensingDataElementsType &dst);
+bool convertToJson(const SensingDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SensingDataElementsType &dst);
 
 struct SensingListDataType { // EEBus_SPINE_TS_Sensing.xsd
-    std::optional<std::vector<SensingDataType>> sensingData;
+	std::optional<std::vector<SensingDataType>> sensingData;
 
-    SensingListDataType() : sensingData(std::vector<SensingDataType>{})
-    {
-    }
+	SensingListDataType()
+		:
+		sensingData(std::vector<SensingDataType>{})
+	{}
 };
-bool convertToJson(const SensingListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SensingListDataType &dst);
+bool convertToJson(const SensingListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SensingListDataType &dst);
 
 struct SensingListDataSelectorsType { // EEBus_SPINE_TS_Sensing.xsd
-    std::optional<TimestampIntervalType> timestampInterval;
+	std::optional<TimestampIntervalType> timestampInterval;
 
-    SensingListDataSelectorsType() : timestampInterval(TimestampIntervalType{})
-    {
-    }
+	SensingListDataSelectorsType()
+		:
+		timestampInterval(TimestampIntervalType{})
+	{}
 };
-bool convertToJson(const SensingListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SensingListDataSelectorsType &dst);
+bool convertToJson(const SensingListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SensingListDataSelectorsType &dst);
 
 struct SensingDescriptionDataType { // EEBus_SPINE_TS_Sensing.xsd
-    std::optional<SensingTypeType> sensingType;
-    std::optional<UnitOfMeasurementType> unit;
-    std::optional<ScopeTypeType> scopeType;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<SensingTypeType> sensingType;
+	std::optional<UnitOfMeasurementType> unit;
+	std::optional<ScopeTypeType> scopeType;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    SensingDescriptionDataType() :
-        sensingType(SensingTypeType{}), unit(UnitOfMeasurementType{}), scopeType(ScopeTypeType{}), label(LabelType{}),
-        description(DescriptionType{})
-    {
-    }
+	SensingDescriptionDataType()
+		:
+		sensingType(SensingTypeType{}),
+		unit(UnitOfMeasurementType{}),
+		scopeType(ScopeTypeType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const SensingDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SensingDescriptionDataType &dst);
+bool convertToJson(const SensingDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SensingDescriptionDataType &dst);
 
 struct SensingDescriptionDataElementsType { // EEBus_SPINE_TS_Sensing.xsd
-    std::optional<ElementTagType> sensingType;
-    std::optional<ElementTagType> unit;
-    std::optional<ElementTagType> scopeType;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> sensingType;
+	std::optional<ElementTagType> unit;
+	std::optional<ElementTagType> scopeType;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    SensingDescriptionDataElementsType() :
-        sensingType(ElementTagType{}), unit(ElementTagType{}), scopeType(ElementTagType{}), label(ElementTagType{}),
-        description(ElementTagType{})
-    {
-    }
+	SensingDescriptionDataElementsType()
+		:
+		sensingType(ElementTagType{}),
+		unit(ElementTagType{}),
+		scopeType(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const SensingDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SensingDescriptionDataElementsType &dst);
+bool convertToJson(const SensingDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SensingDescriptionDataElementsType &dst);
 
 struct SmartEnergyManagementPsAlternativesRelationType { // EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
-    std::optional<AlternativesIdType> alternativesId;
+	std::optional<AlternativesIdType> alternativesId;
 
-    SmartEnergyManagementPsAlternativesRelationType() : alternativesId(AlternativesIdType{})
-    {
-    }
+	SmartEnergyManagementPsAlternativesRelationType()
+		:
+		alternativesId(AlternativesIdType{})
+	{}
 };
-bool convertToJson(const SmartEnergyManagementPsAlternativesRelationType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlternativesRelationType &dst);
+bool convertToJson(const SmartEnergyManagementPsAlternativesRelationType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsAlternativesRelationType &dst);
 
 struct SmartEnergyManagementPsPowerTimeSlotValueListType { // EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
-    std::optional<std::vector<PowerTimeSlotValueDataType>> value;
+	std::optional<std::vector<PowerTimeSlotValueDataType>> value;
 
-    SmartEnergyManagementPsPowerTimeSlotValueListType() : value(std::vector<PowerTimeSlotValueDataType>{})
-    {
-    }
+	SmartEnergyManagementPsPowerTimeSlotValueListType()
+		:
+		value(std::vector<PowerTimeSlotValueDataType>{})
+	{}
 };
-bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotValueListType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTimeSlotValueListType &dst);
+bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotValueListType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsPowerTimeSlotValueListType &dst);
 
 struct SmartEnergyManagementPsPowerTimeSlotType { // EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
-    std::optional<PowerTimeSlotScheduleDataType> schedule;
-    std::optional<SmartEnergyManagementPsPowerTimeSlotValueListType> valueList;
-    std::optional<PowerTimeSlotScheduleConstraintsDataType> scheduleConstraints;
+	std::optional<PowerTimeSlotScheduleDataType> schedule;
+	std::optional<SmartEnergyManagementPsPowerTimeSlotValueListType> valueList;
+	std::optional<PowerTimeSlotScheduleConstraintsDataType> scheduleConstraints;
 
-    SmartEnergyManagementPsPowerTimeSlotType() :
-        schedule(PowerTimeSlotScheduleDataType{}), valueList(SmartEnergyManagementPsPowerTimeSlotValueListType{}),
-        scheduleConstraints(PowerTimeSlotScheduleConstraintsDataType{})
-    {
-    }
+	SmartEnergyManagementPsPowerTimeSlotType()
+		:
+		schedule(PowerTimeSlotScheduleDataType{}),
+		valueList(SmartEnergyManagementPsPowerTimeSlotValueListType{}),
+		scheduleConstraints(PowerTimeSlotScheduleConstraintsDataType{})
+	{}
 };
-bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTimeSlotType &dst);
+bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsPowerTimeSlotType &dst);
 
 struct SmartEnergyManagementPsPowerSequenceType { // EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
-    std::optional<PowerSequenceDescriptionDataType> description;
-    std::optional<PowerSequenceStateDataType> state;
-    std::optional<PowerSequenceScheduleDataType> schedule;
-    std::optional<PowerSequenceScheduleConstraintsDataType> scheduleConstraints;
-    std::optional<PowerSequenceSchedulePreferenceDataType> schedulePreference;
-    std::optional<OperatingConstraintsInterruptDataType> operatingConstraintsInterrupt;
-    std::optional<OperatingConstraintsDurationDataType> operatingConstraintsDuration;
-    std::optional<OperatingConstraintsResumeImplicationDataType> operatingConstraintsResumeImplication;
-    std::optional<std::vector<SmartEnergyManagementPsPowerTimeSlotType>> powerTimeSlot;
+	std::optional<PowerSequenceDescriptionDataType> description;
+	std::optional<PowerSequenceStateDataType> state;
+	std::optional<PowerSequenceScheduleDataType> schedule;
+	std::optional<PowerSequenceScheduleConstraintsDataType> scheduleConstraints;
+	std::optional<PowerSequenceSchedulePreferenceDataType> schedulePreference;
+	std::optional<OperatingConstraintsInterruptDataType> operatingConstraintsInterrupt;
+	std::optional<OperatingConstraintsDurationDataType> operatingConstraintsDuration;
+	std::optional<OperatingConstraintsResumeImplicationDataType> operatingConstraintsResumeImplication;
+	std::optional<std::vector<SmartEnergyManagementPsPowerTimeSlotType>> powerTimeSlot;
 
-    SmartEnergyManagementPsPowerSequenceType() :
-        description(PowerSequenceDescriptionDataType{}), state(PowerSequenceStateDataType{}), schedule(PowerSequenceScheduleDataType{}),
-        scheduleConstraints(PowerSequenceScheduleConstraintsDataType{}), schedulePreference(PowerSequenceSchedulePreferenceDataType{}),
-        operatingConstraintsInterrupt(OperatingConstraintsInterruptDataType{}),
-        operatingConstraintsDuration(OperatingConstraintsDurationDataType{}),
-        operatingConstraintsResumeImplication(OperatingConstraintsResumeImplicationDataType{}),
-        powerTimeSlot(std::vector<SmartEnergyManagementPsPowerTimeSlotType>{})
-    {
-    }
+	SmartEnergyManagementPsPowerSequenceType()
+		:
+		description(PowerSequenceDescriptionDataType{}),
+		state(PowerSequenceStateDataType{}),
+		schedule(PowerSequenceScheduleDataType{}),
+		scheduleConstraints(PowerSequenceScheduleConstraintsDataType{}),
+		schedulePreference(PowerSequenceSchedulePreferenceDataType{}),
+		operatingConstraintsInterrupt(OperatingConstraintsInterruptDataType{}),
+		operatingConstraintsDuration(OperatingConstraintsDurationDataType{}),
+		operatingConstraintsResumeImplication(OperatingConstraintsResumeImplicationDataType{}),
+		powerTimeSlot(std::vector<SmartEnergyManagementPsPowerTimeSlotType>{})
+	{}
 };
-bool convertToJson(const SmartEnergyManagementPsPowerSequenceType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerSequenceType &dst);
+bool convertToJson(const SmartEnergyManagementPsPowerSequenceType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsPowerSequenceType &dst);
 
 struct SmartEnergyManagementPsAlternativesType { // EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
-    std::optional<SmartEnergyManagementPsAlternativesRelationType> relation;
-    std::optional<std::vector<SmartEnergyManagementPsPowerSequenceType>> powerSequence;
+	std::optional<SmartEnergyManagementPsAlternativesRelationType> relation;
+	std::optional<std::vector<SmartEnergyManagementPsPowerSequenceType>> powerSequence;
 
-    SmartEnergyManagementPsAlternativesType() :
-        relation(SmartEnergyManagementPsAlternativesRelationType{}), powerSequence(std::vector<SmartEnergyManagementPsPowerSequenceType>{})
-    {
-    }
+	SmartEnergyManagementPsAlternativesType()
+		:
+		relation(SmartEnergyManagementPsAlternativesRelationType{}),
+		powerSequence(std::vector<SmartEnergyManagementPsPowerSequenceType>{})
+	{}
 };
-bool convertToJson(const SmartEnergyManagementPsAlternativesType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlternativesType &dst);
+bool convertToJson(const SmartEnergyManagementPsAlternativesType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsAlternativesType &dst);
 
 struct SmartEnergyManagementPsDataType { // EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
-    std::optional<PowerSequenceNodeScheduleInformationDataType> nodeScheduleInformation;
-    std::optional<std::vector<SmartEnergyManagementPsAlternativesType>> alternatives;
+	std::optional<PowerSequenceNodeScheduleInformationDataType> nodeScheduleInformation;
+	std::optional<std::vector<SmartEnergyManagementPsAlternativesType>> alternatives;
 
-    SmartEnergyManagementPsDataType() :
-        nodeScheduleInformation(PowerSequenceNodeScheduleInformationDataType{}),
-        alternatives(std::vector<SmartEnergyManagementPsAlternativesType>{})
-    {
-    }
+	SmartEnergyManagementPsDataType()
+		:
+		nodeScheduleInformation(PowerSequenceNodeScheduleInformationDataType{}),
+		alternatives(std::vector<SmartEnergyManagementPsAlternativesType>{})
+	{}
 };
-bool convertToJson(const SmartEnergyManagementPsDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataType &dst);
+bool convertToJson(const SmartEnergyManagementPsDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsDataType &dst);
 
 struct SmartEnergyManagementPsAlternativesRelationElementsType { // EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
-    std::optional<ElementTagType> alternativesId;
+	std::optional<ElementTagType> alternativesId;
 
-    SmartEnergyManagementPsAlternativesRelationElementsType() : alternativesId(ElementTagType{})
-    {
-    }
+	SmartEnergyManagementPsAlternativesRelationElementsType()
+		:
+		alternativesId(ElementTagType{})
+	{}
 };
-bool convertToJson(const SmartEnergyManagementPsAlternativesRelationElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlternativesRelationElementsType &dst);
+bool convertToJson(const SmartEnergyManagementPsAlternativesRelationElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsAlternativesRelationElementsType &dst);
 
 struct SmartEnergyManagementPsPowerTimeSlotValueListElementsType { // EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
-    std::optional<PowerTimeSlotValueDataElementsType> value;
+	std::optional<PowerTimeSlotValueDataElementsType> value;
 
-    SmartEnergyManagementPsPowerTimeSlotValueListElementsType() : value(PowerTimeSlotValueDataElementsType{})
-    {
-    }
+	SmartEnergyManagementPsPowerTimeSlotValueListElementsType()
+		:
+		value(PowerTimeSlotValueDataElementsType{})
+	{}
 };
-bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotValueListElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTimeSlotValueListElementsType &dst);
+bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotValueListElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsPowerTimeSlotValueListElementsType &dst);
 
 struct SmartEnergyManagementPsPowerTimeSlotElementsType { // EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
-    std::optional<PowerTimeSlotScheduleDataElementsType> schedule;
-    std::optional<SmartEnergyManagementPsPowerTimeSlotValueListElementsType> valueList;
-    std::optional<PowerTimeSlotScheduleConstraintsDataElementsType> scheduleConstraints;
+	std::optional<PowerTimeSlotScheduleDataElementsType> schedule;
+	std::optional<SmartEnergyManagementPsPowerTimeSlotValueListElementsType> valueList;
+	std::optional<PowerTimeSlotScheduleConstraintsDataElementsType> scheduleConstraints;
 
-    SmartEnergyManagementPsPowerTimeSlotElementsType() :
-        schedule(PowerTimeSlotScheduleDataElementsType{}), valueList(SmartEnergyManagementPsPowerTimeSlotValueListElementsType{}),
-        scheduleConstraints(PowerTimeSlotScheduleConstraintsDataElementsType{})
-    {
-    }
+	SmartEnergyManagementPsPowerTimeSlotElementsType()
+		:
+		schedule(PowerTimeSlotScheduleDataElementsType{}),
+		valueList(SmartEnergyManagementPsPowerTimeSlotValueListElementsType{}),
+		scheduleConstraints(PowerTimeSlotScheduleConstraintsDataElementsType{})
+	{}
 };
-bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTimeSlotElementsType &dst);
+bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsPowerTimeSlotElementsType &dst);
 
 struct SmartEnergyManagementPsPowerSequenceElementsType { // EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
-    std::optional<PowerSequenceDescriptionDataElementsType> description;
-    std::optional<PowerSequenceStateDataElementsType> state;
-    std::optional<PowerSequenceScheduleDataElementsType> schedule;
-    std::optional<PowerSequenceScheduleConstraintsDataElementsType> scheduleConstraints;
-    std::optional<PowerSequenceSchedulePreferenceDataElementsType> schedulePreference;
-    std::optional<OperatingConstraintsInterruptDataElementsType> operatingConstraintsInterrupt;
-    std::optional<OperatingConstraintsDurationDataElementsType> operatingConstraintsDuration;
-    std::optional<OperatingConstraintsResumeImplicationDataElementsType> operatingConstraintsResumeImplication;
-    std::optional<SmartEnergyManagementPsPowerTimeSlotElementsType> powerTimeSlot;
+	std::optional<PowerSequenceDescriptionDataElementsType> description;
+	std::optional<PowerSequenceStateDataElementsType> state;
+	std::optional<PowerSequenceScheduleDataElementsType> schedule;
+	std::optional<PowerSequenceScheduleConstraintsDataElementsType> scheduleConstraints;
+	std::optional<PowerSequenceSchedulePreferenceDataElementsType> schedulePreference;
+	std::optional<OperatingConstraintsInterruptDataElementsType> operatingConstraintsInterrupt;
+	std::optional<OperatingConstraintsDurationDataElementsType> operatingConstraintsDuration;
+	std::optional<OperatingConstraintsResumeImplicationDataElementsType> operatingConstraintsResumeImplication;
+	std::optional<SmartEnergyManagementPsPowerTimeSlotElementsType> powerTimeSlot;
 
-    SmartEnergyManagementPsPowerSequenceElementsType() :
-        description(PowerSequenceDescriptionDataElementsType{}), state(PowerSequenceStateDataElementsType{}),
-        schedule(PowerSequenceScheduleDataElementsType{}), scheduleConstraints(PowerSequenceScheduleConstraintsDataElementsType{}),
-        schedulePreference(PowerSequenceSchedulePreferenceDataElementsType{}),
-        operatingConstraintsInterrupt(OperatingConstraintsInterruptDataElementsType{}),
-        operatingConstraintsDuration(OperatingConstraintsDurationDataElementsType{}),
-        operatingConstraintsResumeImplication(OperatingConstraintsResumeImplicationDataElementsType{}),
-        powerTimeSlot(SmartEnergyManagementPsPowerTimeSlotElementsType{})
-    {
-    }
+	SmartEnergyManagementPsPowerSequenceElementsType()
+		:
+		description(PowerSequenceDescriptionDataElementsType{}),
+		state(PowerSequenceStateDataElementsType{}),
+		schedule(PowerSequenceScheduleDataElementsType{}),
+		scheduleConstraints(PowerSequenceScheduleConstraintsDataElementsType{}),
+		schedulePreference(PowerSequenceSchedulePreferenceDataElementsType{}),
+		operatingConstraintsInterrupt(OperatingConstraintsInterruptDataElementsType{}),
+		operatingConstraintsDuration(OperatingConstraintsDurationDataElementsType{}),
+		operatingConstraintsResumeImplication(OperatingConstraintsResumeImplicationDataElementsType{}),
+		powerTimeSlot(SmartEnergyManagementPsPowerTimeSlotElementsType{})
+	{}
 };
-bool convertToJson(const SmartEnergyManagementPsPowerSequenceElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerSequenceElementsType &dst);
+bool convertToJson(const SmartEnergyManagementPsPowerSequenceElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsPowerSequenceElementsType &dst);
 
 struct SmartEnergyManagementPsAlternativesElementsType { // EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
-    std::optional<SmartEnergyManagementPsAlternativesRelationElementsType> relation;
-    std::optional<SmartEnergyManagementPsPowerSequenceElementsType> powerSequence;
+	std::optional<SmartEnergyManagementPsAlternativesRelationElementsType> relation;
+	std::optional<SmartEnergyManagementPsPowerSequenceElementsType> powerSequence;
 
-    SmartEnergyManagementPsAlternativesElementsType() :
-        relation(SmartEnergyManagementPsAlternativesRelationElementsType{}),
-        powerSequence(SmartEnergyManagementPsPowerSequenceElementsType{})
-    {
-    }
+	SmartEnergyManagementPsAlternativesElementsType()
+		:
+		relation(SmartEnergyManagementPsAlternativesRelationElementsType{}),
+		powerSequence(SmartEnergyManagementPsPowerSequenceElementsType{})
+	{}
 };
-bool convertToJson(const SmartEnergyManagementPsAlternativesElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlternativesElementsType &dst);
+bool convertToJson(const SmartEnergyManagementPsAlternativesElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsAlternativesElementsType &dst);
 
 struct SmartEnergyManagementPsDataElementsType { // EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
-    std::optional<PowerSequenceNodeScheduleInformationDataElementsType> nodeScheduleInformation;
-    std::optional<SmartEnergyManagementPsAlternativesElementsType> alternatives;
+	std::optional<PowerSequenceNodeScheduleInformationDataElementsType> nodeScheduleInformation;
+	std::optional<SmartEnergyManagementPsAlternativesElementsType> alternatives;
 
-    SmartEnergyManagementPsDataElementsType() :
-        nodeScheduleInformation(PowerSequenceNodeScheduleInformationDataElementsType{}),
-        alternatives(SmartEnergyManagementPsAlternativesElementsType{})
-    {
-    }
+	SmartEnergyManagementPsDataElementsType()
+		:
+		nodeScheduleInformation(PowerSequenceNodeScheduleInformationDataElementsType{}),
+		alternatives(SmartEnergyManagementPsAlternativesElementsType{})
+	{}
 };
-bool convertToJson(const SmartEnergyManagementPsDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataElementsType &dst);
+bool convertToJson(const SmartEnergyManagementPsDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsDataElementsType &dst);
 
 struct SmartEnergyManagementPsDataSelectorsType { // EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
-    std::optional<PowerSequenceAlternativesRelationListDataSelectorsType> alternativesRelation;
-    std::optional<PowerSequenceDescriptionListDataSelectorsType> powerSequenceDescription;
-    std::optional<PowerTimeSlotScheduleListDataSelectorsType> powerTimeSlotSchedule;
-    std::optional<PowerTimeSlotValueListDataSelectorsType> powerTimeSlotValue;
+	std::optional<PowerSequenceAlternativesRelationListDataSelectorsType> alternativesRelation;
+	std::optional<PowerSequenceDescriptionListDataSelectorsType> powerSequenceDescription;
+	std::optional<PowerTimeSlotScheduleListDataSelectorsType> powerTimeSlotSchedule;
+	std::optional<PowerTimeSlotValueListDataSelectorsType> powerTimeSlotValue;
 
-    SmartEnergyManagementPsDataSelectorsType() :
-        alternativesRelation(PowerSequenceAlternativesRelationListDataSelectorsType{}),
-        powerSequenceDescription(PowerSequenceDescriptionListDataSelectorsType{}),
-        powerTimeSlotSchedule(PowerTimeSlotScheduleListDataSelectorsType{}), powerTimeSlotValue(PowerTimeSlotValueListDataSelectorsType{})
-    {
-    }
+	SmartEnergyManagementPsDataSelectorsType()
+		:
+		alternativesRelation(PowerSequenceAlternativesRelationListDataSelectorsType{}),
+		powerSequenceDescription(PowerSequenceDescriptionListDataSelectorsType{}),
+		powerTimeSlotSchedule(PowerTimeSlotScheduleListDataSelectorsType{}),
+		powerTimeSlotValue(PowerTimeSlotValueListDataSelectorsType{})
+	{}
 };
-bool convertToJson(const SmartEnergyManagementPsDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataSelectorsType &dst);
+bool convertToJson(const SmartEnergyManagementPsDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsDataSelectorsType &dst);
 
 struct SmartEnergyManagementPsPriceDataType { // EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
-    std::optional<std::vector<PowerSequencePriceDataType>> price;
+	std::optional<std::vector<PowerSequencePriceDataType>> price;
 
-    SmartEnergyManagementPsPriceDataType() : price(std::vector<PowerSequencePriceDataType>{})
-    {
-    }
+	SmartEnergyManagementPsPriceDataType()
+		:
+		price(std::vector<PowerSequencePriceDataType>{})
+	{}
 };
-bool convertToJson(const SmartEnergyManagementPsPriceDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceDataType &dst);
+bool convertToJson(const SmartEnergyManagementPsPriceDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsPriceDataType &dst);
 
 struct SmartEnergyManagementPsPriceDataElementsType { // EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
-    std::optional<PowerSequencePriceDataElementsType> price;
+	std::optional<PowerSequencePriceDataElementsType> price;
 
-    SmartEnergyManagementPsPriceDataElementsType() : price(PowerSequencePriceDataElementsType{})
-    {
-    }
+	SmartEnergyManagementPsPriceDataElementsType()
+		:
+		price(PowerSequencePriceDataElementsType{})
+	{}
 };
-bool convertToJson(const SmartEnergyManagementPsPriceDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceDataElementsType &dst);
+bool convertToJson(const SmartEnergyManagementPsPriceDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsPriceDataElementsType &dst);
 
 struct SmartEnergyManagementPsPriceDataSelectorsType { // EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
-    std::optional<PowerSequencePriceListDataSelectorsType> price;
+	std::optional<PowerSequencePriceListDataSelectorsType> price;
 
-    SmartEnergyManagementPsPriceDataSelectorsType() : price(PowerSequencePriceListDataSelectorsType{})
-    {
-    }
+	SmartEnergyManagementPsPriceDataSelectorsType()
+		:
+		price(PowerSequencePriceListDataSelectorsType{})
+	{}
 };
-bool convertToJson(const SmartEnergyManagementPsPriceDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceDataSelectorsType &dst);
+bool convertToJson(const SmartEnergyManagementPsPriceDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsPriceDataSelectorsType &dst);
 
 struct SmartEnergyManagementPsConfigurationRequestCallType { // EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
-    std::optional<PowerSequenceScheduleConfigurationRequestCallType> scheduleConfigurationRequest;
+	std::optional<PowerSequenceScheduleConfigurationRequestCallType> scheduleConfigurationRequest;
 
-    SmartEnergyManagementPsConfigurationRequestCallType() :
-        scheduleConfigurationRequest(PowerSequenceScheduleConfigurationRequestCallType{})
-    {
-    }
+	SmartEnergyManagementPsConfigurationRequestCallType()
+		:
+		scheduleConfigurationRequest(PowerSequenceScheduleConfigurationRequestCallType{})
+	{}
 };
-bool convertToJson(const SmartEnergyManagementPsConfigurationRequestCallType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsConfigurationRequestCallType &dst);
+bool convertToJson(const SmartEnergyManagementPsConfigurationRequestCallType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsConfigurationRequestCallType &dst);
 
 struct SmartEnergyManagementPsConfigurationRequestCallElementsType { // EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
-    std::optional<PowerSequenceScheduleConfigurationRequestCallElementsType> scheduleConfigurationRequest;
+	std::optional<PowerSequenceScheduleConfigurationRequestCallElementsType> scheduleConfigurationRequest;
 
-    SmartEnergyManagementPsConfigurationRequestCallElementsType() :
-        scheduleConfigurationRequest(PowerSequenceScheduleConfigurationRequestCallElementsType{})
-    {
-    }
+	SmartEnergyManagementPsConfigurationRequestCallElementsType()
+		:
+		scheduleConfigurationRequest(PowerSequenceScheduleConfigurationRequestCallElementsType{})
+	{}
 };
-bool convertToJson(const SmartEnergyManagementPsConfigurationRequestCallElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsConfigurationRequestCallElementsType &dst);
+bool convertToJson(const SmartEnergyManagementPsConfigurationRequestCallElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsConfigurationRequestCallElementsType &dst);
 
 struct SmartEnergyManagementPsPriceCalculationRequestCallType { // EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
-    std::optional<PowerSequencePriceCalculationRequestCallType> priceCalculationRequest;
+	std::optional<PowerSequencePriceCalculationRequestCallType> priceCalculationRequest;
 
-    SmartEnergyManagementPsPriceCalculationRequestCallType() : priceCalculationRequest(PowerSequencePriceCalculationRequestCallType{})
-    {
-    }
+	SmartEnergyManagementPsPriceCalculationRequestCallType()
+		:
+		priceCalculationRequest(PowerSequencePriceCalculationRequestCallType{})
+	{}
 };
-bool convertToJson(const SmartEnergyManagementPsPriceCalculationRequestCallType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceCalculationRequestCallType &dst);
+bool convertToJson(const SmartEnergyManagementPsPriceCalculationRequestCallType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsPriceCalculationRequestCallType &dst);
 
 struct SmartEnergyManagementPsPriceCalculationRequestCallElementsType { // EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
-    std::optional<PowerSequencePriceCalculationRequestCallElementsType> priceCalculationRequest;
+	std::optional<PowerSequencePriceCalculationRequestCallElementsType> priceCalculationRequest;
 
-    SmartEnergyManagementPsPriceCalculationRequestCallElementsType() :
-        priceCalculationRequest(PowerSequencePriceCalculationRequestCallElementsType{})
-    {
-    }
+	SmartEnergyManagementPsPriceCalculationRequestCallElementsType()
+		:
+		priceCalculationRequest(PowerSequencePriceCalculationRequestCallElementsType{})
+	{}
 };
-bool convertToJson(const SmartEnergyManagementPsPriceCalculationRequestCallElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceCalculationRequestCallElementsType &dst);
+bool convertToJson(const SmartEnergyManagementPsPriceCalculationRequestCallElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsPriceCalculationRequestCallElementsType &dst);
 
 struct StateInformationDataType { // EEBus_SPINE_TS_StateInformation.xsd
-    std::optional<stateInformationIdType> stateInformationId;
-    std::optional<StateInformationType> stateInformation;
-    std::optional<bool> isActive;
-    std::optional<StateInformationCategoryType> category;
-    std::optional<AbsoluteOrRelativeTimeType> timeOfLastChange;
+	std::optional<stateInformationIdType> stateInformationId;
+	std::optional<StateInformationType> stateInformation;
+	std::optional<bool> isActive;
+	std::optional<StateInformationCategoryType> category;
+	std::optional<AbsoluteOrRelativeTimeType> timeOfLastChange;
 
-    StateInformationDataType() :
-        stateInformationId(stateInformationIdType{}), stateInformation(StateInformationType{}), isActive(bool{}),
-        category(StateInformationCategoryType{}), timeOfLastChange(AbsoluteOrRelativeTimeType{})
-    {
-    }
+	StateInformationDataType()
+		:
+		stateInformationId(stateInformationIdType{}),
+		stateInformation(StateInformationType{}),
+		isActive(bool{}),
+		category(StateInformationCategoryType{}),
+		timeOfLastChange(AbsoluteOrRelativeTimeType{})
+	{}
 };
-bool convertToJson(const StateInformationDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, StateInformationDataType &dst);
+bool convertToJson(const StateInformationDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, StateInformationDataType &dst);
 
 struct StateInformationDataElementsType { // EEBus_SPINE_TS_StateInformation.xsd
-    std::optional<ElementTagType> stateInformationId;
-    std::optional<ElementTagType> stateInformation;
-    std::optional<ElementTagType> isActive;
-    std::optional<ElementTagType> category;
-    std::optional<ElementTagType> timeOfLastChange;
+	std::optional<ElementTagType> stateInformationId;
+	std::optional<ElementTagType> stateInformation;
+	std::optional<ElementTagType> isActive;
+	std::optional<ElementTagType> category;
+	std::optional<ElementTagType> timeOfLastChange;
 
-    StateInformationDataElementsType() :
-        stateInformationId(ElementTagType{}), stateInformation(ElementTagType{}), isActive(ElementTagType{}), category(ElementTagType{}),
-        timeOfLastChange(ElementTagType{})
-    {
-    }
+	StateInformationDataElementsType()
+		:
+		stateInformationId(ElementTagType{}),
+		stateInformation(ElementTagType{}),
+		isActive(ElementTagType{}),
+		category(ElementTagType{}),
+		timeOfLastChange(ElementTagType{})
+	{}
 };
-bool convertToJson(const StateInformationDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, StateInformationDataElementsType &dst);
+bool convertToJson(const StateInformationDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, StateInformationDataElementsType &dst);
 
 struct StateInformationListDataType { // EEBus_SPINE_TS_StateInformation.xsd
-    std::optional<std::vector<StateInformationDataType>> stateInformationData;
+	std::optional<std::vector<StateInformationDataType>> stateInformationData;
 
-    StateInformationListDataType() : stateInformationData(std::vector<StateInformationDataType>{})
-    {
-    }
+	StateInformationListDataType()
+		:
+		stateInformationData(std::vector<StateInformationDataType>{})
+	{}
 };
-bool convertToJson(const StateInformationListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, StateInformationListDataType &dst);
+bool convertToJson(const StateInformationListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, StateInformationListDataType &dst);
 
 struct StateInformationListDataSelectorsType { // EEBus_SPINE_TS_StateInformation.xsd
-    std::optional<stateInformationIdType> stateInformationId;
-    std::optional<StateInformationType> stateInformation;
-    std::optional<bool> isActive;
-    std::optional<StateInformationCategoryType> category;
+	std::optional<stateInformationIdType> stateInformationId;
+	std::optional<StateInformationType> stateInformation;
+	std::optional<bool> isActive;
+	std::optional<StateInformationCategoryType> category;
 
-    StateInformationListDataSelectorsType() :
-        stateInformationId(stateInformationIdType{}), stateInformation(StateInformationType{}), isActive(bool{}),
-        category(StateInformationCategoryType{})
-    {
-    }
+	StateInformationListDataSelectorsType()
+		:
+		stateInformationId(stateInformationIdType{}),
+		stateInformation(StateInformationType{}),
+		isActive(bool{}),
+		category(StateInformationCategoryType{})
+	{}
 };
-bool convertToJson(const StateInformationListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, StateInformationListDataSelectorsType &dst);
+bool convertToJson(const StateInformationListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, StateInformationListDataSelectorsType &dst);
 
 struct SupplyConditionDataType { // EEBus_SPINE_TS_SupplyCondition.xsd
-    std::optional<ConditionIdType> conditionId;
-    std::optional<AbsoluteOrRelativeTimeType> timestamp;
-    std::optional<SupplyConditionEventTypeType> eventType;
-    std::optional<SupplyConditionOriginatorType> originator;
-    std::optional<ThresholdIdType> thresholdId;
-    std::optional<ScaledNumberType> thresholdPercentage;
-    std::optional<TimePeriodType> relevantPeriod;
-    std::optional<DescriptionType> description;
-    std::optional<GridConditionType> gridCondition;
+	std::optional<ConditionIdType> conditionId;
+	std::optional<AbsoluteOrRelativeTimeType> timestamp;
+	std::optional<SupplyConditionEventTypeType> eventType;
+	std::optional<SupplyConditionOriginatorType> originator;
+	std::optional<ThresholdIdType> thresholdId;
+	std::optional<ScaledNumberType> thresholdPercentage;
+	std::optional<TimePeriodType> relevantPeriod;
+	std::optional<DescriptionType> description;
+	std::optional<GridConditionType> gridCondition;
 
-    SupplyConditionDataType() :
-        conditionId(ConditionIdType{}), timestamp(AbsoluteOrRelativeTimeType{}), eventType(SupplyConditionEventTypeType{}),
-        originator(SupplyConditionOriginatorType{}), thresholdId(ThresholdIdType{}), thresholdPercentage(ScaledNumberType{}),
-        relevantPeriod(TimePeriodType{}), description(DescriptionType{}), gridCondition(GridConditionType{})
-    {
-    }
+	SupplyConditionDataType()
+		:
+		conditionId(ConditionIdType{}),
+		timestamp(AbsoluteOrRelativeTimeType{}),
+		eventType(SupplyConditionEventTypeType{}),
+		originator(SupplyConditionOriginatorType{}),
+		thresholdId(ThresholdIdType{}),
+		thresholdPercentage(ScaledNumberType{}),
+		relevantPeriod(TimePeriodType{}),
+		description(DescriptionType{}),
+		gridCondition(GridConditionType{})
+	{}
 };
-bool convertToJson(const SupplyConditionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SupplyConditionDataType &dst);
+bool convertToJson(const SupplyConditionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionDataType &dst);
 
 struct SupplyConditionDataElementsType { // EEBus_SPINE_TS_SupplyCondition.xsd
-    std::optional<ElementTagType> conditionId;
-    std::optional<ElementTagType> timestamp;
-    std::optional<ElementTagType> eventType;
-    std::optional<ElementTagType> originator;
-    std::optional<ElementTagType> thresholdId;
-    std::optional<ScaledNumberElementsType> thresholdPercentage;
-    std::optional<TimePeriodElementsType> relevantPeriod;
-    std::optional<ElementTagType> description;
-    std::optional<ElementTagType> gridCondition;
+	std::optional<ElementTagType> conditionId;
+	std::optional<ElementTagType> timestamp;
+	std::optional<ElementTagType> eventType;
+	std::optional<ElementTagType> originator;
+	std::optional<ElementTagType> thresholdId;
+	std::optional<ScaledNumberElementsType> thresholdPercentage;
+	std::optional<TimePeriodElementsType> relevantPeriod;
+	std::optional<ElementTagType> description;
+	std::optional<ElementTagType> gridCondition;
 
-    SupplyConditionDataElementsType() :
-        conditionId(ElementTagType{}), timestamp(ElementTagType{}), eventType(ElementTagType{}), originator(ElementTagType{}),
-        thresholdId(ElementTagType{}), thresholdPercentage(ScaledNumberElementsType{}), relevantPeriod(TimePeriodElementsType{}),
-        description(ElementTagType{}), gridCondition(ElementTagType{})
-    {
-    }
+	SupplyConditionDataElementsType()
+		:
+		conditionId(ElementTagType{}),
+		timestamp(ElementTagType{}),
+		eventType(ElementTagType{}),
+		originator(ElementTagType{}),
+		thresholdId(ElementTagType{}),
+		thresholdPercentage(ScaledNumberElementsType{}),
+		relevantPeriod(TimePeriodElementsType{}),
+		description(ElementTagType{}),
+		gridCondition(ElementTagType{})
+	{}
 };
-bool convertToJson(const SupplyConditionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SupplyConditionDataElementsType &dst);
+bool convertToJson(const SupplyConditionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionDataElementsType &dst);
 
 struct SupplyConditionListDataType { // EEBus_SPINE_TS_SupplyCondition.xsd
-    std::optional<std::vector<SupplyConditionDataType>> supplyConditionData;
+	std::optional<std::vector<SupplyConditionDataType>> supplyConditionData;
 
-    SupplyConditionListDataType() : supplyConditionData(std::vector<SupplyConditionDataType>{})
-    {
-    }
+	SupplyConditionListDataType()
+		:
+		supplyConditionData(std::vector<SupplyConditionDataType>{})
+	{}
 };
-bool convertToJson(const SupplyConditionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SupplyConditionListDataType &dst);
+bool convertToJson(const SupplyConditionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionListDataType &dst);
 
 struct SupplyConditionListDataSelectorsType { // EEBus_SPINE_TS_SupplyCondition.xsd
-    std::optional<ConditionIdType> conditionId;
-    std::optional<TimestampIntervalType> timestampInterval;
-    std::optional<SupplyConditionEventTypeType> eventType;
-    std::optional<SupplyConditionOriginatorType> originator;
+	std::optional<ConditionIdType> conditionId;
+	std::optional<TimestampIntervalType> timestampInterval;
+	std::optional<SupplyConditionEventTypeType> eventType;
+	std::optional<SupplyConditionOriginatorType> originator;
 
-    SupplyConditionListDataSelectorsType() :
-        conditionId(ConditionIdType{}), timestampInterval(TimestampIntervalType{}), eventType(SupplyConditionEventTypeType{}),
-        originator(SupplyConditionOriginatorType{})
-    {
-    }
+	SupplyConditionListDataSelectorsType()
+		:
+		conditionId(ConditionIdType{}),
+		timestampInterval(TimestampIntervalType{}),
+		eventType(SupplyConditionEventTypeType{}),
+		originator(SupplyConditionOriginatorType{})
+	{}
 };
-bool convertToJson(const SupplyConditionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SupplyConditionListDataSelectorsType &dst);
+bool convertToJson(const SupplyConditionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionListDataSelectorsType &dst);
 
 struct SupplyConditionDescriptionDataType { // EEBus_SPINE_TS_SupplyCondition.xsd
-    std::optional<ConditionIdType> conditionId;
-    std::optional<CommodityTypeType> commodityType;
-    std::optional<EnergyDirectionType> positiveEnergyDirection;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<ConditionIdType> conditionId;
+	std::optional<CommodityTypeType> commodityType;
+	std::optional<EnergyDirectionType> positiveEnergyDirection;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    SupplyConditionDescriptionDataType() :
-        conditionId(ConditionIdType{}), commodityType(CommodityTypeType{}), positiveEnergyDirection(EnergyDirectionType{}),
-        label(LabelType{}), description(DescriptionType{})
-    {
-    }
+	SupplyConditionDescriptionDataType()
+		:
+		conditionId(ConditionIdType{}),
+		commodityType(CommodityTypeType{}),
+		positiveEnergyDirection(EnergyDirectionType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const SupplyConditionDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionDataType &dst);
+bool convertToJson(const SupplyConditionDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionDescriptionDataType &dst);
 
 struct SupplyConditionDescriptionDataElementsType { // EEBus_SPINE_TS_SupplyCondition.xsd
-    std::optional<ElementTagType> conditionId;
-    std::optional<ElementTagType> commodityType;
-    std::optional<ElementTagType> positiveEnergyDirection;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> conditionId;
+	std::optional<ElementTagType> commodityType;
+	std::optional<ElementTagType> positiveEnergyDirection;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    SupplyConditionDescriptionDataElementsType() :
-        conditionId(ElementTagType{}), commodityType(ElementTagType{}), positiveEnergyDirection(ElementTagType{}), label(ElementTagType{}),
-        description(ElementTagType{})
-    {
-    }
+	SupplyConditionDescriptionDataElementsType()
+		:
+		conditionId(ElementTagType{}),
+		commodityType(ElementTagType{}),
+		positiveEnergyDirection(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const SupplyConditionDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionDataElementsType &dst);
+bool convertToJson(const SupplyConditionDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionDescriptionDataElementsType &dst);
 
 struct SupplyConditionDescriptionListDataType { // EEBus_SPINE_TS_SupplyCondition.xsd
-    std::optional<std::vector<SupplyConditionDescriptionDataType>> supplyConditionDescriptionData;
+	std::optional<std::vector<SupplyConditionDescriptionDataType>> supplyConditionDescriptionData;
 
-    SupplyConditionDescriptionListDataType() : supplyConditionDescriptionData(std::vector<SupplyConditionDescriptionDataType>{})
-    {
-    }
+	SupplyConditionDescriptionListDataType()
+		:
+		supplyConditionDescriptionData(std::vector<SupplyConditionDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const SupplyConditionDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionListDataType &dst);
+bool convertToJson(const SupplyConditionDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionDescriptionListDataType &dst);
 
 struct SupplyConditionDescriptionListDataSelectorsType { // EEBus_SPINE_TS_SupplyCondition.xsd
-    std::optional<ConditionIdType> conditionId;
+	std::optional<ConditionIdType> conditionId;
 
-    SupplyConditionDescriptionListDataSelectorsType() : conditionId(ConditionIdType{})
-    {
-    }
+	SupplyConditionDescriptionListDataSelectorsType()
+		:
+		conditionId(ConditionIdType{})
+	{}
 };
-bool convertToJson(const SupplyConditionDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionListDataSelectorsType &dst);
+bool convertToJson(const SupplyConditionDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionDescriptionListDataSelectorsType &dst);
 
 struct SupplyConditionThresholdRelationDataType { // EEBus_SPINE_TS_SupplyCondition.xsd
-    std::optional<ConditionIdType> conditionId;
-    std::optional<std::vector<ThresholdIdType>> thresholdId;
+	std::optional<ConditionIdType> conditionId;
+	std::optional<std::vector<ThresholdIdType>> thresholdId;
 
-    SupplyConditionThresholdRelationDataType() : conditionId(ConditionIdType{}), thresholdId(std::vector<ThresholdIdType>{})
-    {
-    }
+	SupplyConditionThresholdRelationDataType()
+		:
+		conditionId(ConditionIdType{}),
+		thresholdId(std::vector<ThresholdIdType>{})
+	{}
 };
-bool convertToJson(const SupplyConditionThresholdRelationDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelationDataType &dst);
+bool convertToJson(const SupplyConditionThresholdRelationDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionThresholdRelationDataType &dst);
 
 struct SupplyConditionThresholdRelationDataElementsType { // EEBus_SPINE_TS_SupplyCondition.xsd
-    std::optional<ElementTagType> conditionId;
-    std::optional<ElementTagType> thresholdId;
+	std::optional<ElementTagType> conditionId;
+	std::optional<ElementTagType> thresholdId;
 
-    SupplyConditionThresholdRelationDataElementsType() : conditionId(ElementTagType{}), thresholdId(ElementTagType{})
-    {
-    }
+	SupplyConditionThresholdRelationDataElementsType()
+		:
+		conditionId(ElementTagType{}),
+		thresholdId(ElementTagType{})
+	{}
 };
-bool convertToJson(const SupplyConditionThresholdRelationDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelationDataElementsType &dst);
+bool convertToJson(const SupplyConditionThresholdRelationDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionThresholdRelationDataElementsType &dst);
 
 struct SupplyConditionThresholdRelationListDataType { // EEBus_SPINE_TS_SupplyCondition.xsd
-    std::optional<std::vector<SupplyConditionThresholdRelationDataType>> supplyConditionThresholdRelationData;
+	std::optional<std::vector<SupplyConditionThresholdRelationDataType>> supplyConditionThresholdRelationData;
 
-    SupplyConditionThresholdRelationListDataType() :
-        supplyConditionThresholdRelationData(std::vector<SupplyConditionThresholdRelationDataType>{})
-    {
-    }
+	SupplyConditionThresholdRelationListDataType()
+		:
+		supplyConditionThresholdRelationData(std::vector<SupplyConditionThresholdRelationDataType>{})
+	{}
 };
-bool convertToJson(const SupplyConditionThresholdRelationListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelationListDataType &dst);
+bool convertToJson(const SupplyConditionThresholdRelationListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionThresholdRelationListDataType &dst);
 
 struct SupplyConditionThresholdRelationListDataSelectorsType { // EEBus_SPINE_TS_SupplyCondition.xsd
-    std::optional<ConditionIdType> conditionId;
-    std::optional<ThresholdIdType> thresholdId;
+	std::optional<ConditionIdType> conditionId;
+	std::optional<ThresholdIdType> thresholdId;
 
-    SupplyConditionThresholdRelationListDataSelectorsType() : conditionId(ConditionIdType{}), thresholdId(ThresholdIdType{})
-    {
-    }
+	SupplyConditionThresholdRelationListDataSelectorsType()
+		:
+		conditionId(ConditionIdType{}),
+		thresholdId(ThresholdIdType{})
+	{}
 };
-bool convertToJson(const SupplyConditionThresholdRelationListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelationListDataSelectorsType &dst);
+bool convertToJson(const SupplyConditionThresholdRelationListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionThresholdRelationListDataSelectorsType &dst);
 
 struct TaskManagementDirectControlRelatedType { // EEBus_SPINE_TS_TaskManagement.xsd
 
-    TaskManagementDirectControlRelatedType()
-
-    {
-    }
+	TaskManagementDirectControlRelatedType()
+		
+	{}
 };
-bool convertToJson(const TaskManagementDirectControlRelatedType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementDirectControlRelatedType &dst);
+bool convertToJson(const TaskManagementDirectControlRelatedType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementDirectControlRelatedType &dst);
 
 struct TaskManagementDirectControlRelatedElementsType { // EEBus_SPINE_TS_TaskManagement.xsd
 
-    TaskManagementDirectControlRelatedElementsType()
-
-    {
-    }
+	TaskManagementDirectControlRelatedElementsType()
+		
+	{}
 };
-bool convertToJson(const TaskManagementDirectControlRelatedElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementDirectControlRelatedElementsType &dst);
+bool convertToJson(const TaskManagementDirectControlRelatedElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementDirectControlRelatedElementsType &dst);
 
 struct TaskManagementHvacRelatedType { // EEBus_SPINE_TS_TaskManagement.xsd
-    std::optional<HvacOverrunIdType> overrunId;
+	std::optional<HvacOverrunIdType> overrunId;
 
-    TaskManagementHvacRelatedType() : overrunId(HvacOverrunIdType{})
-    {
-    }
+	TaskManagementHvacRelatedType()
+		:
+		overrunId(HvacOverrunIdType{})
+	{}
 };
-bool convertToJson(const TaskManagementHvacRelatedType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementHvacRelatedType &dst);
+bool convertToJson(const TaskManagementHvacRelatedType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementHvacRelatedType &dst);
 
 struct TaskManagementHvacRelatedElementsType { // EEBus_SPINE_TS_TaskManagement.xsd
-    std::optional<ElementTagType> overrunId;
+	std::optional<ElementTagType> overrunId;
 
-    TaskManagementHvacRelatedElementsType() : overrunId(ElementTagType{})
-    {
-    }
+	TaskManagementHvacRelatedElementsType()
+		:
+		overrunId(ElementTagType{})
+	{}
 };
-bool convertToJson(const TaskManagementHvacRelatedElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementHvacRelatedElementsType &dst);
+bool convertToJson(const TaskManagementHvacRelatedElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementHvacRelatedElementsType &dst);
 
 struct TaskManagementLoadControlReleatedType { // EEBus_SPINE_TS_TaskManagement.xsd
-    std::optional<LoadControlEventIdType> eventId;
+	std::optional<LoadControlEventIdType> eventId;
 
-    TaskManagementLoadControlReleatedType() : eventId(LoadControlEventIdType{})
-    {
-    }
+	TaskManagementLoadControlReleatedType()
+		:
+		eventId(LoadControlEventIdType{})
+	{}
 };
-bool convertToJson(const TaskManagementLoadControlReleatedType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementLoadControlReleatedType &dst);
+bool convertToJson(const TaskManagementLoadControlReleatedType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementLoadControlReleatedType &dst);
 
 struct TaskManagementLoadControlReleatedElementsType { // EEBus_SPINE_TS_TaskManagement.xsd
-    std::optional<ElementTagType> eventId;
+	std::optional<ElementTagType> eventId;
 
-    TaskManagementLoadControlReleatedElementsType() : eventId(ElementTagType{})
-    {
-    }
+	TaskManagementLoadControlReleatedElementsType()
+		:
+		eventId(ElementTagType{})
+	{}
 };
-bool convertToJson(const TaskManagementLoadControlReleatedElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementLoadControlReleatedElementsType &dst);
+bool convertToJson(const TaskManagementLoadControlReleatedElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementLoadControlReleatedElementsType &dst);
 
 struct TaskManagementPowerSequencesRelatedType { // EEBus_SPINE_TS_TaskManagement.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<PowerSequenceIdType> sequenceId;
 
-    TaskManagementPowerSequencesRelatedType() : sequenceId(PowerSequenceIdType{})
-    {
-    }
+	TaskManagementPowerSequencesRelatedType()
+		:
+		sequenceId(PowerSequenceIdType{})
+	{}
 };
-bool convertToJson(const TaskManagementPowerSequencesRelatedType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementPowerSequencesRelatedType &dst);
+bool convertToJson(const TaskManagementPowerSequencesRelatedType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementPowerSequencesRelatedType &dst);
 
 struct TaskManagementPowerSequencesRelatedElementsType { // EEBus_SPINE_TS_TaskManagement.xsd
-    std::optional<ElementTagType> sequenceId;
+	std::optional<ElementTagType> sequenceId;
 
-    TaskManagementPowerSequencesRelatedElementsType() : sequenceId(ElementTagType{})
-    {
-    }
+	TaskManagementPowerSequencesRelatedElementsType()
+		:
+		sequenceId(ElementTagType{})
+	{}
 };
-bool convertToJson(const TaskManagementPowerSequencesRelatedElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementPowerSequencesRelatedElementsType &dst);
+bool convertToJson(const TaskManagementPowerSequencesRelatedElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementPowerSequencesRelatedElementsType &dst);
 
 struct TaskManagementSmartEnergyManagementPsRelatedType { // EEBus_SPINE_TS_TaskManagement.xsd
-    std::optional<PowerSequenceIdType> sequenceId;
+	std::optional<PowerSequenceIdType> sequenceId;
 
-    TaskManagementSmartEnergyManagementPsRelatedType() : sequenceId(PowerSequenceIdType{})
-    {
-    }
+	TaskManagementSmartEnergyManagementPsRelatedType()
+		:
+		sequenceId(PowerSequenceIdType{})
+	{}
 };
-bool convertToJson(const TaskManagementSmartEnergyManagementPsRelatedType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementSmartEnergyManagementPsRelatedType &dst);
+bool convertToJson(const TaskManagementSmartEnergyManagementPsRelatedType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementSmartEnergyManagementPsRelatedType &dst);
 
 struct TaskManagementSmartEnergyManagementPsRelatedElementsType { // EEBus_SPINE_TS_TaskManagement.xsd
-    std::optional<ElementTagType> sequenceId;
+	std::optional<ElementTagType> sequenceId;
 
-    TaskManagementSmartEnergyManagementPsRelatedElementsType() : sequenceId(ElementTagType{})
-    {
-    }
+	TaskManagementSmartEnergyManagementPsRelatedElementsType()
+		:
+		sequenceId(ElementTagType{})
+	{}
 };
-bool convertToJson(const TaskManagementSmartEnergyManagementPsRelatedElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementSmartEnergyManagementPsRelatedElementsType &dst);
+bool convertToJson(const TaskManagementSmartEnergyManagementPsRelatedElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementSmartEnergyManagementPsRelatedElementsType &dst);
 
 struct TaskManagementJobDataType { // EEBus_SPINE_TS_TaskManagement.xsd
-    std::optional<TaskManagementJobIdType> jobId;
-    std::optional<AbsoluteOrRelativeTimeType> timestamp;
-    std::optional<TaskManagementJobStateType> jobState;
-    std::optional<std::string> elapsedTime;
-    std::optional<std::string> remainingTime;
+	std::optional<TaskManagementJobIdType> jobId;
+	std::optional<AbsoluteOrRelativeTimeType> timestamp;
+	std::optional<TaskManagementJobStateType> jobState;
+	std::optional<std::string> elapsedTime;
+	std::optional<std::string> remainingTime;
 
-    TaskManagementJobDataType() :
-        jobId(TaskManagementJobIdType{}), timestamp(AbsoluteOrRelativeTimeType{}), jobState(TaskManagementJobStateType{}),
-        elapsedTime(std::string{}), remainingTime(std::string{})
-    {
-    }
+	TaskManagementJobDataType()
+		:
+		jobId(TaskManagementJobIdType{}),
+		timestamp(AbsoluteOrRelativeTimeType{}),
+		jobState(TaskManagementJobStateType{}),
+		elapsedTime(std::string{}),
+		remainingTime(std::string{})
+	{}
 };
-bool convertToJson(const TaskManagementJobDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobDataType &dst);
+bool convertToJson(const TaskManagementJobDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobDataType &dst);
 
 struct TaskManagementJobDataElementsType { // EEBus_SPINE_TS_TaskManagement.xsd
-    std::optional<ElementTagType> jobId;
-    std::optional<ElementTagType> timestamp;
-    std::optional<ElementTagType> jobState;
-    std::optional<ElementTagType> elapsedTime;
-    std::optional<ElementTagType> remainingTime;
+	std::optional<ElementTagType> jobId;
+	std::optional<ElementTagType> timestamp;
+	std::optional<ElementTagType> jobState;
+	std::optional<ElementTagType> elapsedTime;
+	std::optional<ElementTagType> remainingTime;
 
-    TaskManagementJobDataElementsType() :
-        jobId(ElementTagType{}), timestamp(ElementTagType{}), jobState(ElementTagType{}), elapsedTime(ElementTagType{}),
-        remainingTime(ElementTagType{})
-    {
-    }
+	TaskManagementJobDataElementsType()
+		:
+		jobId(ElementTagType{}),
+		timestamp(ElementTagType{}),
+		jobState(ElementTagType{}),
+		elapsedTime(ElementTagType{}),
+		remainingTime(ElementTagType{})
+	{}
 };
-bool convertToJson(const TaskManagementJobDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobDataElementsType &dst);
+bool convertToJson(const TaskManagementJobDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobDataElementsType &dst);
 
 struct TaskManagementJobListDataType { // EEBus_SPINE_TS_TaskManagement.xsd
-    std::optional<std::vector<TaskManagementJobDataType>> taskManagementJobData;
+	std::optional<std::vector<TaskManagementJobDataType>> taskManagementJobData;
 
-    TaskManagementJobListDataType() : taskManagementJobData(std::vector<TaskManagementJobDataType>{})
-    {
-    }
+	TaskManagementJobListDataType()
+		:
+		taskManagementJobData(std::vector<TaskManagementJobDataType>{})
+	{}
 };
-bool convertToJson(const TaskManagementJobListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobListDataType &dst);
+bool convertToJson(const TaskManagementJobListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobListDataType &dst);
 
 struct TaskManagementJobListDataSelectorsType { // EEBus_SPINE_TS_TaskManagement.xsd
-    std::optional<TaskManagementJobIdType> jobId;
-    std::optional<TaskManagementJobStateType> jobState;
+	std::optional<TaskManagementJobIdType> jobId;
+	std::optional<TaskManagementJobStateType> jobState;
 
-    TaskManagementJobListDataSelectorsType() : jobId(TaskManagementJobIdType{}), jobState(TaskManagementJobStateType{})
-    {
-    }
+	TaskManagementJobListDataSelectorsType()
+		:
+		jobId(TaskManagementJobIdType{}),
+		jobState(TaskManagementJobStateType{})
+	{}
 };
-bool convertToJson(const TaskManagementJobListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobListDataSelectorsType &dst);
+bool convertToJson(const TaskManagementJobListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobListDataSelectorsType &dst);
 
 struct TaskManagementJobRelationDataType { // EEBus_SPINE_TS_TaskManagement.xsd
-    std::optional<TaskManagementJobIdType> jobId;
-    std::optional<TaskManagementDirectControlRelatedType> directControlRelated;
-    std::optional<TaskManagementHvacRelatedType> hvacRelated;
-    std::optional<TaskManagementLoadControlReleatedType> loadControlReleated;
-    std::optional<TaskManagementPowerSequencesRelatedType> powerSequencesRelated;
-    std::optional<TaskManagementSmartEnergyManagementPsRelatedType> smartEnergyManagementPsRelated;
+	std::optional<TaskManagementJobIdType> jobId;
+	std::optional<TaskManagementDirectControlRelatedType> directControlRelated;
+	std::optional<TaskManagementHvacRelatedType> hvacRelated;
+	std::optional<TaskManagementLoadControlReleatedType> loadControlReleated;
+	std::optional<TaskManagementPowerSequencesRelatedType> powerSequencesRelated;
+	std::optional<TaskManagementSmartEnergyManagementPsRelatedType> smartEnergyManagementPsRelated;
 
-    TaskManagementJobRelationDataType() :
-        jobId(TaskManagementJobIdType{}), directControlRelated(TaskManagementDirectControlRelatedType{}),
-        hvacRelated(TaskManagementHvacRelatedType{}), loadControlReleated(TaskManagementLoadControlReleatedType{}),
-        powerSequencesRelated(TaskManagementPowerSequencesRelatedType{}),
-        smartEnergyManagementPsRelated(TaskManagementSmartEnergyManagementPsRelatedType{})
-    {
-    }
+	TaskManagementJobRelationDataType()
+		:
+		jobId(TaskManagementJobIdType{}),
+		directControlRelated(TaskManagementDirectControlRelatedType{}),
+		hvacRelated(TaskManagementHvacRelatedType{}),
+		loadControlReleated(TaskManagementLoadControlReleatedType{}),
+		powerSequencesRelated(TaskManagementPowerSequencesRelatedType{}),
+		smartEnergyManagementPsRelated(TaskManagementSmartEnergyManagementPsRelatedType{})
+	{}
 };
-bool convertToJson(const TaskManagementJobRelationDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationDataType &dst);
+bool convertToJson(const TaskManagementJobRelationDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobRelationDataType &dst);
 
 struct TaskManagementJobRelationDataElementsType { // EEBus_SPINE_TS_TaskManagement.xsd
-    std::optional<ElementTagType> jobId;
-    std::optional<TaskManagementDirectControlRelatedElementsType> directControlRelated;
-    std::optional<TaskManagementHvacRelatedElementsType> hvacRelated;
-    std::optional<TaskManagementLoadControlReleatedElementsType> loadControlReleated;
-    std::optional<TaskManagementPowerSequencesRelatedElementsType> powerSequencesRelated;
-    std::optional<TaskManagementSmartEnergyManagementPsRelatedElementsType> smartEnergyManagementPsRelated;
+	std::optional<ElementTagType> jobId;
+	std::optional<TaskManagementDirectControlRelatedElementsType> directControlRelated;
+	std::optional<TaskManagementHvacRelatedElementsType> hvacRelated;
+	std::optional<TaskManagementLoadControlReleatedElementsType> loadControlReleated;
+	std::optional<TaskManagementPowerSequencesRelatedElementsType> powerSequencesRelated;
+	std::optional<TaskManagementSmartEnergyManagementPsRelatedElementsType> smartEnergyManagementPsRelated;
 
-    TaskManagementJobRelationDataElementsType() :
-        jobId(ElementTagType{}), directControlRelated(TaskManagementDirectControlRelatedElementsType{}),
-        hvacRelated(TaskManagementHvacRelatedElementsType{}), loadControlReleated(TaskManagementLoadControlReleatedElementsType{}),
-        powerSequencesRelated(TaskManagementPowerSequencesRelatedElementsType{}),
-        smartEnergyManagementPsRelated(TaskManagementSmartEnergyManagementPsRelatedElementsType{})
-    {
-    }
+	TaskManagementJobRelationDataElementsType()
+		:
+		jobId(ElementTagType{}),
+		directControlRelated(TaskManagementDirectControlRelatedElementsType{}),
+		hvacRelated(TaskManagementHvacRelatedElementsType{}),
+		loadControlReleated(TaskManagementLoadControlReleatedElementsType{}),
+		powerSequencesRelated(TaskManagementPowerSequencesRelatedElementsType{}),
+		smartEnergyManagementPsRelated(TaskManagementSmartEnergyManagementPsRelatedElementsType{})
+	{}
 };
-bool convertToJson(const TaskManagementJobRelationDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationDataElementsType &dst);
+bool convertToJson(const TaskManagementJobRelationDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobRelationDataElementsType &dst);
 
 struct TaskManagementJobRelationListDataType { // EEBus_SPINE_TS_TaskManagement.xsd
-    std::optional<std::vector<TaskManagementJobRelationDataType>> taskManagementJobRelationData;
+	std::optional<std::vector<TaskManagementJobRelationDataType>> taskManagementJobRelationData;
 
-    TaskManagementJobRelationListDataType() : taskManagementJobRelationData(std::vector<TaskManagementJobRelationDataType>{})
-    {
-    }
+	TaskManagementJobRelationListDataType()
+		:
+		taskManagementJobRelationData(std::vector<TaskManagementJobRelationDataType>{})
+	{}
 };
-bool convertToJson(const TaskManagementJobRelationListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationListDataType &dst);
+bool convertToJson(const TaskManagementJobRelationListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobRelationListDataType &dst);
 
 struct TaskManagementJobRelationListDataSelectorsType { // EEBus_SPINE_TS_TaskManagement.xsd
-    std::optional<TaskManagementJobIdType> jobId;
+	std::optional<TaskManagementJobIdType> jobId;
 
-    TaskManagementJobRelationListDataSelectorsType() : jobId(TaskManagementJobIdType{})
-    {
-    }
+	TaskManagementJobRelationListDataSelectorsType()
+		:
+		jobId(TaskManagementJobIdType{})
+	{}
 };
-bool convertToJson(const TaskManagementJobRelationListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationListDataSelectorsType &dst);
+bool convertToJson(const TaskManagementJobRelationListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobRelationListDataSelectorsType &dst);
 
 struct TaskManagementJobDescriptionDataType { // EEBus_SPINE_TS_TaskManagement.xsd
-    std::optional<TaskManagementJobIdType> jobId;
-    std::optional<TaskManagementJobSourceType> jobSource;
-    std::optional<LabelType> label;
-    std::optional<DescriptionType> description;
+	std::optional<TaskManagementJobIdType> jobId;
+	std::optional<TaskManagementJobSourceType> jobSource;
+	std::optional<LabelType> label;
+	std::optional<DescriptionType> description;
 
-    TaskManagementJobDescriptionDataType() :
-        jobId(TaskManagementJobIdType{}), jobSource(TaskManagementJobSourceType{}), label(LabelType{}), description(DescriptionType{})
-    {
-    }
+	TaskManagementJobDescriptionDataType()
+		:
+		jobId(TaskManagementJobIdType{}),
+		jobSource(TaskManagementJobSourceType{}),
+		label(LabelType{}),
+		description(DescriptionType{})
+	{}
 };
-bool convertToJson(const TaskManagementJobDescriptionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionDataType &dst);
+bool convertToJson(const TaskManagementJobDescriptionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobDescriptionDataType &dst);
 
 struct TaskManagementJobDescriptionDataElementsType { // EEBus_SPINE_TS_TaskManagement.xsd
-    std::optional<ElementTagType> jobId;
-    std::optional<ElementTagType> jobSource;
-    std::optional<ElementTagType> label;
-    std::optional<ElementTagType> description;
+	std::optional<ElementTagType> jobId;
+	std::optional<ElementTagType> jobSource;
+	std::optional<ElementTagType> label;
+	std::optional<ElementTagType> description;
 
-    TaskManagementJobDescriptionDataElementsType() :
-        jobId(ElementTagType{}), jobSource(ElementTagType{}), label(ElementTagType{}), description(ElementTagType{})
-    {
-    }
+	TaskManagementJobDescriptionDataElementsType()
+		:
+		jobId(ElementTagType{}),
+		jobSource(ElementTagType{}),
+		label(ElementTagType{}),
+		description(ElementTagType{})
+	{}
 };
-bool convertToJson(const TaskManagementJobDescriptionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionDataElementsType &dst);
+bool convertToJson(const TaskManagementJobDescriptionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobDescriptionDataElementsType &dst);
 
 struct TaskManagementJobDescriptionListDataType { // EEBus_SPINE_TS_TaskManagement.xsd
-    std::optional<std::vector<TaskManagementJobDescriptionDataType>> taskManagementJobDescriptionData;
+	std::optional<std::vector<TaskManagementJobDescriptionDataType>> taskManagementJobDescriptionData;
 
-    TaskManagementJobDescriptionListDataType() : taskManagementJobDescriptionData(std::vector<TaskManagementJobDescriptionDataType>{})
-    {
-    }
+	TaskManagementJobDescriptionListDataType()
+		:
+		taskManagementJobDescriptionData(std::vector<TaskManagementJobDescriptionDataType>{})
+	{}
 };
-bool convertToJson(const TaskManagementJobDescriptionListDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionListDataType &dst);
+bool convertToJson(const TaskManagementJobDescriptionListDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobDescriptionListDataType &dst);
 
 struct TaskManagementJobDescriptionListDataSelectorsType { // EEBus_SPINE_TS_TaskManagement.xsd
-    std::optional<TaskManagementJobIdType> jobId;
-    std::optional<TaskManagementJobSourceType> jobSource;
+	std::optional<TaskManagementJobIdType> jobId;
+	std::optional<TaskManagementJobSourceType> jobSource;
 
-    TaskManagementJobDescriptionListDataSelectorsType() : jobId(TaskManagementJobIdType{}), jobSource(TaskManagementJobSourceType{})
-    {
-    }
+	TaskManagementJobDescriptionListDataSelectorsType()
+		:
+		jobId(TaskManagementJobIdType{}),
+		jobSource(TaskManagementJobSourceType{})
+	{}
 };
-bool convertToJson(const TaskManagementJobDescriptionListDataSelectorsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionListDataSelectorsType &dst);
+bool convertToJson(const TaskManagementJobDescriptionListDataSelectorsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobDescriptionListDataSelectorsType &dst);
 
 struct TaskManagementOverviewDataType { // EEBus_SPINE_TS_TaskManagement.xsd
-    std::optional<bool> remoteControllable;
-    std::optional<bool> jobsActive;
+	std::optional<bool> remoteControllable;
+	std::optional<bool> jobsActive;
 
-    TaskManagementOverviewDataType() : remoteControllable(bool{}), jobsActive(bool{})
-    {
-    }
+	TaskManagementOverviewDataType()
+		:
+		remoteControllable(bool{}),
+		jobsActive(bool{})
+	{}
 };
-bool convertToJson(const TaskManagementOverviewDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementOverviewDataType &dst);
+bool convertToJson(const TaskManagementOverviewDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementOverviewDataType &dst);
 
 struct TaskManagementOverviewDataElementsType { // EEBus_SPINE_TS_TaskManagement.xsd
-    std::optional<ElementTagType> remoteControllable;
-    std::optional<ElementTagType> jobsActive;
+	std::optional<ElementTagType> remoteControllable;
+	std::optional<ElementTagType> jobsActive;
 
-    TaskManagementOverviewDataElementsType() : remoteControllable(ElementTagType{}), jobsActive(ElementTagType{})
-    {
-    }
+	TaskManagementOverviewDataElementsType()
+		:
+		remoteControllable(ElementTagType{}),
+		jobsActive(ElementTagType{})
+	{}
 };
-bool convertToJson(const TaskManagementOverviewDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TaskManagementOverviewDataElementsType &dst);
+bool convertToJson(const TaskManagementOverviewDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementOverviewDataElementsType &dst);
 
 struct TimeInformationDataType { // EEBus_SPINE_TS_TimeInformation.xsd
-    std::optional<std::string> utc;
-    std::optional<std::string> utcOffset;
-    std::optional<DayOfWeekType> dayOfWeek;
-    std::optional<CalendarWeekType> calendarWeek;
+	std::optional<std::string> utc;
+	std::optional<std::string> utcOffset;
+	std::optional<DayOfWeekType> dayOfWeek;
+	std::optional<CalendarWeekType> calendarWeek;
 
-    TimeInformationDataType() : utc(std::string{}), utcOffset(std::string{}), dayOfWeek(DayOfWeekType{}), calendarWeek(CalendarWeekType{})
-    {
-    }
+	TimeInformationDataType()
+		:
+		utc(std::string{}),
+		utcOffset(std::string{}),
+		dayOfWeek(DayOfWeekType{}),
+		calendarWeek(CalendarWeekType{})
+	{}
 };
-bool convertToJson(const TimeInformationDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeInformationDataType &dst);
+bool convertToJson(const TimeInformationDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeInformationDataType &dst);
 
 struct TimeInformationDataElementsType { // EEBus_SPINE_TS_TimeInformation.xsd
-    std::optional<ElementTagType> utc;
-    std::optional<ElementTagType> utcOffset;
-    std::optional<ElementTagType> dayOfWeek;
-    std::optional<ElementTagType> calendarWeek;
+	std::optional<ElementTagType> utc;
+	std::optional<ElementTagType> utcOffset;
+	std::optional<ElementTagType> dayOfWeek;
+	std::optional<ElementTagType> calendarWeek;
 
-    TimeInformationDataElementsType() :
-        utc(ElementTagType{}), utcOffset(ElementTagType{}), dayOfWeek(ElementTagType{}), calendarWeek(ElementTagType{})
-    {
-    }
+	TimeInformationDataElementsType()
+		:
+		utc(ElementTagType{}),
+		utcOffset(ElementTagType{}),
+		dayOfWeek(ElementTagType{}),
+		calendarWeek(ElementTagType{})
+	{}
 };
-bool convertToJson(const TimeInformationDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeInformationDataElementsType &dst);
+bool convertToJson(const TimeInformationDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeInformationDataElementsType &dst);
 
 struct TimeDistributorDataType { // EEBus_SPINE_TS_TimeInformation.xsd
-    std::optional<bool> isTimeDistributor;
-    std::optional<uint32_t> distributorPriority;
+	std::optional<bool> isTimeDistributor;
+	std::optional<uint32_t> distributorPriority;
 
-    TimeDistributorDataType() : isTimeDistributor(bool{}), distributorPriority(uint32_t{})
-    {
-    }
+	TimeDistributorDataType()
+		:
+		isTimeDistributor(bool{}),
+		distributorPriority(uint32_t{})
+	{}
 };
-bool convertToJson(const TimeDistributorDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeDistributorDataType &dst);
+bool convertToJson(const TimeDistributorDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeDistributorDataType &dst);
 
 struct TimeDistributorDataElementsType { // EEBus_SPINE_TS_TimeInformation.xsd
-    std::optional<ElementTagType> isTimeDistributor;
-    std::optional<ElementTagType> distributorPriority;
+	std::optional<ElementTagType> isTimeDistributor;
+	std::optional<ElementTagType> distributorPriority;
 
-    TimeDistributorDataElementsType() : isTimeDistributor(ElementTagType{}), distributorPriority(ElementTagType{})
-    {
-    }
+	TimeDistributorDataElementsType()
+		:
+		isTimeDistributor(ElementTagType{}),
+		distributorPriority(ElementTagType{})
+	{}
 };
-bool convertToJson(const TimeDistributorDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeDistributorDataElementsType &dst);
+bool convertToJson(const TimeDistributorDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeDistributorDataElementsType &dst);
 
 struct TimePrecisionDataType { // EEBus_SPINE_TS_TimeInformation.xsd
-    std::optional<bool> isSynchronised;
-    std::optional<std::string> lastSyncAt;
-    std::optional<int> clockDrift;
+	std::optional<bool> isSynchronised;
+	std::optional<std::string> lastSyncAt;
+	std::optional<int> clockDrift;
 
-    TimePrecisionDataType() : isSynchronised(bool{}), lastSyncAt(std::string{}), clockDrift(int{})
-    {
-    }
+	TimePrecisionDataType()
+		:
+		isSynchronised(bool{}),
+		lastSyncAt(std::string{}),
+		clockDrift(int{})
+	{}
 };
-bool convertToJson(const TimePrecisionDataType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimePrecisionDataType &dst);
+bool convertToJson(const TimePrecisionDataType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimePrecisionDataType &dst);
 
 struct TimePrecisionDataElementsType { // EEBus_SPINE_TS_TimeInformation.xsd
-    std::optional<ElementTagType> isSynchronised;
-    std::optional<ElementTagType> lastSyncAt;
-    std::optional<ElementTagType> clockDrift;
+	std::optional<ElementTagType> isSynchronised;
+	std::optional<ElementTagType> lastSyncAt;
+	std::optional<ElementTagType> clockDrift;
 
-    TimePrecisionDataElementsType() : isSynchronised(ElementTagType{}), lastSyncAt(ElementTagType{}), clockDrift(ElementTagType{})
-    {
-    }
+	TimePrecisionDataElementsType()
+		:
+		isSynchronised(ElementTagType{}),
+		lastSyncAt(ElementTagType{}),
+		clockDrift(ElementTagType{})
+	{}
 };
-bool convertToJson(const TimePrecisionDataElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimePrecisionDataElementsType &dst);
+bool convertToJson(const TimePrecisionDataElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimePrecisionDataElementsType &dst);
 
 struct TimeDistributorEnquiryCallType { // EEBus_SPINE_TS_TimeInformation.xsd
 
-    TimeDistributorEnquiryCallType()
-
-    {
-    }
+	TimeDistributorEnquiryCallType()
+		
+	{}
 };
-bool convertToJson(const TimeDistributorEnquiryCallType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeDistributorEnquiryCallType &dst);
+bool convertToJson(const TimeDistributorEnquiryCallType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeDistributorEnquiryCallType &dst);
 
 struct TimeDistributorEnquiryCallElementsType { // EEBus_SPINE_TS_TimeInformation.xsd
 
-    TimeDistributorEnquiryCallElementsType()
-
-    {
-    }
+	TimeDistributorEnquiryCallElementsType()
+		
+	{}
 };
-bool convertToJson(const TimeDistributorEnquiryCallElementsType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, TimeDistributorEnquiryCallElementsType &dst);
+bool convertToJson(const TimeDistributorEnquiryCallElementsType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, TimeDistributorEnquiryCallElementsType &dst);
 
 struct HeaderType { // EEBus_SPINE_TS_Datagram.xsd
-    std::optional<SpecificationVersionType> specificationVersion;
-    std::optional<FeatureAddressType> addressSource;
-    std::optional<FeatureAddressType> addressDestination;
-    std::optional<FeatureAddressType> addressOriginator;
-    std::optional<MsgCounterType> msgCounter;
-    std::optional<MsgCounterType> msgCounterReference;
-    std::optional<CmdClassifierType> cmdClassifier;
-    std::optional<bool> ackRequest;
-    std::optional<AbsoluteOrRelativeTimeType> timestamp;
+	std::optional<SpecificationVersionType> specificationVersion;
+	std::optional<FeatureAddressType> addressSource;
+	std::optional<FeatureAddressType> addressDestination;
+	std::optional<FeatureAddressType> addressOriginator;
+	std::optional<MsgCounterType> msgCounter;
+	std::optional<MsgCounterType> msgCounterReference;
+	std::optional<CmdClassifierType> cmdClassifier;
+	std::optional<bool> ackRequest;
+	std::optional<AbsoluteOrRelativeTimeType> timestamp;
 
-    HeaderType() :
-        specificationVersion(SpecificationVersionType{}), addressSource(FeatureAddressType{}), addressDestination(FeatureAddressType{}),
-        addressOriginator(FeatureAddressType{}), msgCounter(MsgCounterType{}), msgCounterReference(MsgCounterType{}),
-        cmdClassifier(CmdClassifierType{}), ackRequest(bool{}), timestamp(AbsoluteOrRelativeTimeType{})
-    {
-    }
+	HeaderType()
+		:
+		specificationVersion(SpecificationVersionType{}),
+		addressSource(FeatureAddressType{}),
+		addressDestination(FeatureAddressType{}),
+		addressOriginator(FeatureAddressType{}),
+		msgCounter(MsgCounterType{}),
+		msgCounterReference(MsgCounterType{}),
+		cmdClassifier(CmdClassifierType{}),
+		ackRequest(bool{}),
+		timestamp(AbsoluteOrRelativeTimeType{})
+	{}
 };
-bool convertToJson(const HeaderType &src, JsonVariant &dst);
-void convertFromJson(const JsonVariantConst &src, HeaderType &dst);
+bool convertToJson(const HeaderType &src, JsonVariant& dst);
+void convertFromJson(const JsonVariantConst& src, HeaderType &dst);
 
-class SpineDataTypeHandler
-{
-public:
-    std::optional<MessagingNumberType> messagingnumbertype;
-    std::optional<MessagingTypeType> messagingtypetype;
-    std::optional<MessagingDataTextType> messagingdatatexttype;
-    std::optional<LabelType> labeltype;
-    std::optional<DescriptionType> descriptiontype;
-    std::optional<SpecificationVersionType> specificationversiontype;
-    std::optional<EnumExtendType> enumextendtype;
-    std::optional<AbsoluteOrRelativeTimeType> absoluteorrelativetimetype;
-    std::optional<RecurringIntervalType> recurringintervaltype;
-    std::optional<DayOfMonthType> dayofmonthtype;
-    std::optional<CalendarWeekType> calendarweektype;
-    std::optional<OccurrenceType> occurrencetype;
-    std::optional<NumberType> numbertype;
-    std::optional<ScaleType> scaletype;
-    std::optional<MaxResponseDelayType> maxresponsedelaytype;
-    std::optional<CommodityTypeType> commoditytypetype;
-    std::optional<EnergyDirectionType> energydirectiontype;
-    std::optional<EnergyModeType> energymodetype;
-    std::optional<UnitOfMeasurementType> unitofmeasurementtype;
-    std::optional<CurrencyType> currencytype;
-    std::optional<AddressDeviceType> addressdevicetype;
-    std::optional<AddressEntityType> addressentitytype;
-    std::optional<AddressFeatureType> addressfeaturetype;
-    std::optional<ScopeTypeType> scopetypetype;
-    std::optional<FeatureGroupType> featuregrouptype;
-    std::optional<DeviceTypeType> devicetypetype;
-    std::optional<EntityTypeType> entitytypetype;
-    std::optional<FeatureTypeType> featuretypetype;
-    std::optional<FeatureSpecificUsageType> featurespecificusagetype;
-    std::optional<FeatureSpecificUsageEnumType> featurespecificusageenumtype;
-    std::optional<FunctionType> functiontype;
-    std::optional<TimeSeriesIdType> timeseriesidtype;
-    std::optional<TimeSeriesSlotIdType> timeseriesslotidtype;
-    std::optional<TimeSeriesSlotCountType> timeseriesslotcounttype;
-    std::optional<TimeSeriesTypeType> timeseriestypetype;
-    std::optional<MeasurementIdType> measurementidtype;
-    std::optional<MeasurementTypeType> measurementtypetype;
-    std::optional<MeasurementValueTypeType> measurementvaluetypetype;
-    std::optional<MeasurementValueSourceType> measurementvaluesourcetype;
-    std::optional<MeasurementValueTendencyType> measurementvaluetendencytype;
-    std::optional<MeasurementValueStateType> measurementvaluestatetype;
-    std::optional<ThresholdIdType> thresholdidtype;
-    std::optional<ThresholdTypeType> thresholdtypetype;
-    std::optional<DirectControlActivityStateType> directcontrolactivitystatetype;
-    std::optional<AlternativesIdType> alternativesidtype;
-    std::optional<PowerSequenceIdType> powersequenceidtype;
-    std::optional<PowerTimeSlotNumberType> powertimeslotnumbertype;
-    std::optional<PowerTimeSlotValueTypeType> powertimeslotvaluetypetype;
-    std::optional<PowerSequenceScopeType> powersequencescopetype;
-    std::optional<PowerSequenceStateType> powersequencestatetype;
-    std::optional<ErrorNumberType> errornumbertype;
-    std::optional<BindingIdType> bindingidtype;
-    std::optional<ActuatorLevelFctType> actuatorlevelfcttype;
-    std::optional<MsgCounterType> msgcountertype;
-    std::optional<FilterIdType> filteridtype;
-    std::optional<ActuatorSwitchFctType> actuatorswitchfcttype;
-    std::optional<AlarmIdType> alarmidtype;
-    std::optional<AlarmTypeType> alarmtypetype;
-    std::optional<BillIdType> billidtype;
-    std::optional<BillTypeType> billtypetype;
-    std::optional<BillPositionIdType> billpositionidtype;
-    std::optional<BillPositionCountType> billpositioncounttype;
-    std::optional<BillPositionTypeType> billpositiontypetype;
-    std::optional<BillValueIdType> billvalueidtype;
-    std::optional<BillCostIdType> billcostidtype;
-    std::optional<BillCostTypeType> billcosttypetype;
-    std::optional<IdentificationIdType> identificationidtype;
-    std::optional<IdentificationTypeType> identificationtypetype;
-    std::optional<IdentificationValueType> identificationvaluetype;
-    std::optional<SessionIdType> sessionidtype;
-    std::optional<PurposeIdType> purposeidtype;
-    std::optional<ChannelIdType> channelidtype;
-    std::optional<DeviceClassificationStringType> deviceclassificationstringtype;
-    std::optional<PowerSourceType> powersourcetype;
-    std::optional<DeviceConfigurationKeyIdType> deviceconfigurationkeyidtype;
-    std::optional<DeviceConfigurationKeyValueStringType> deviceconfigurationkeyvaluestringtype;
-    std::optional<DeviceConfigurationKeyNameType> deviceconfigurationkeynametype;
-    std::optional<VendorStateCodeType> vendorstatecodetype;
-    std::optional<LastErrorCodeType> lasterrorcodetype;
-    std::optional<DeviceDiagnosisOperatingStateType> devicediagnosisoperatingstatetype;
-    std::optional<PowerSupplyConditionType> powersupplyconditiontype;
-    std::optional<ElectricalConnectionIdType> electricalconnectionidtype;
-    std::optional<ElectricalConnectionParameterIdType> electricalconnectionparameteridtype;
-    std::optional<ElectricalConnectionMeasurandVariantType> electricalconnectionmeasurandvarianttype;
-    std::optional<ElectricalConnectionVoltageTypeType> electricalconnectionvoltagetypetype;
-    std::optional<ElectricalConnectionAcMeasurementTypeType> electricalconnectionacmeasurementtypetype;
-    std::optional<ElectricalConnectionPhaseNameType> electricalconnectionphasenametype;
-    std::optional<ElectricalConnectionCharacteristicIdType> electricalconnectioncharacteristicidtype;
-    std::optional<ElectricalConnectionCharacteristicContextType> electricalconnectioncharacteristiccontexttype;
-    std::optional<ElectricalConnectionCharacteristicTypeType> electricalconnectioncharacteristictypetype;
-    std::optional<HvacSystemFunctionIdType> hvacsystemfunctionidtype;
-    std::optional<HvacSystemFunctionTypeType> hvacsystemfunctiontypetype;
-    std::optional<HvacOperationModeIdType> hvacoperationmodeidtype;
-    std::optional<HvacOperationModeTypeType> hvacoperationmodetypetype;
-    std::optional<HvacOverrunIdType> hvacoverrunidtype;
-    std::optional<HvacOverrunTypeType> hvacoverruntypetype;
-    std::optional<HvacOverrunStatusType> hvacoverrunstatustype;
-    std::optional<SetpointIdType> setpointidtype;
-    std::optional<SetpointTypeType> setpointtypetype;
-    std::optional<TimeTableIdType> timetableidtype;
-    std::optional<TimeSlotIdType> timeslotidtype;
-    std::optional<TimeSlotCountType> timeslotcounttype;
-    std::optional<TimeSlotTimeModeType> timeslottimemodetype;
-    std::optional<TariffIdType> tariffidtype;
-    std::optional<TariffCountType> tariffcounttype;
-    std::optional<TierBoundaryIdType> tierboundaryidtype;
-    std::optional<TierBoundaryCountType> tierboundarycounttype;
-    std::optional<TierBoundaryTypeType> tierboundarytypetype;
-    std::optional<CommodityIdType> commodityidtype;
-    std::optional<TierIdType> tieridtype;
-    std::optional<TierCountType> tiercounttype;
-    std::optional<TierTypeType> tiertypetype;
-    std::optional<IncentiveIdType> incentiveidtype;
-    std::optional<IncentiveCountType> incentivecounttype;
-    std::optional<IncentiveTypeType> incentivetypetype;
-    std::optional<IncentivePriorityType> incentiveprioritytype;
-    std::optional<IncentiveValueTypeType> incentivevaluetypetype;
-    std::optional<LoadControlEventIdType> loadcontroleventidtype;
-    std::optional<LoadControlEventActionType> loadcontroleventactiontype;
-    std::optional<LoadControlEventStateType> loadcontroleventstatetype;
-    std::optional<LoadControlLimitIdType> loadcontrollimitidtype;
-    std::optional<LoadControlLimitTypeType> loadcontrollimittypetype;
-    std::optional<LoadControlCategoryType> loadcontrolcategorytype;
-    std::optional<NetworkManagementNativeSetupType> networkmanagementnativesetuptype;
-    std::optional<NetworkManagementScanSetupType> networkmanagementscansetuptype;
-    std::optional<NetworkManagementSetupType> networkmanagementsetuptype;
-    std::optional<NetworkManagementCandidateSetupType> networkmanagementcandidatesetuptype;
-    std::optional<NetworkManagementTechnologyAddressType> networkmanagementtechnologyaddresstype;
-    std::optional<NetworkManagementCommunicationsTechnologyInformationType> networkmanagementcommunicationstechnologyinformationtype;
-    std::optional<NetworkManagementMinimumTrustLevelType> networkmanagementminimumtrustleveltype;
-    std::optional<NetworkManagementProcessTimeoutType> networkmanagementprocesstimeouttype;
-    std::optional<SubscriptionIdType> subscriptionidtype;
-    std::optional<UseCaseActorType> usecaseactortype;
-    std::optional<UseCaseActorEnumType> usecaseactorenumtype;
-    std::optional<UseCaseNameType> usecasenametype;
-    std::optional<UseCaseNameEnumType> usecasenameenumtype;
-    std::optional<UseCaseScenarioSupportType> usecasescenariosupporttype;
-    std::optional<SensingStateType> sensingstatetype;
-    std::optional<SensingTypeType> sensingtypetype;
-    std::optional<stateInformationIdType> stateinformationidtype;
-    std::optional<StateInformationType> stateinformationtype;
-    std::optional<StateInformationCategoryType> stateinformationcategorytype;
-    std::optional<ConditionIdType> conditionidtype;
-    std::optional<SupplyConditionEventTypeType> supplyconditioneventtypetype;
-    std::optional<SupplyConditionOriginatorType> supplyconditionoriginatortype;
-    std::optional<GridConditionType> gridconditiontype;
-    std::optional<TaskManagementJobIdType> taskmanagementjobidtype;
-    std::optional<TaskManagementJobStateType> taskmanagementjobstatetype;
-    std::optional<TaskManagementJobSourceType> taskmanagementjobsourcetype;
-    std::optional<SpecificationVersionDataType> specificationversiondatatype;
-    std::optional<MessagingTypeEnumType> messagingtypeenumtype;
-    std::optional<RecurringIntervalEnumType> recurringintervalenumtype;
-    std::optional<MonthType> monthtype;
-    std::optional<DayOfWeekType> dayofweektype;
-    std::optional<OccurrenceEnumType> occurrenceenumtype;
-    std::optional<CommodityTypeEnumType> commoditytypeenumtype;
-    std::optional<EnergyDirectionEnumType> energydirectionenumtype;
-    std::optional<EnergyModeEnumType> energymodeenumtype;
-    std::optional<UnitOfMeasurementEnumType> unitofmeasurementenumtype;
-    std::optional<CurrencyEnumType> currencyenumtype;
-    std::optional<ScopeTypeEnumType> scopetypeenumtype;
-    std::optional<RoleType> roletype;
-    std::optional<DeviceTypeEnumType> devicetypeenumtype;
-    std::optional<EntityTypeEnumType> entitytypeenumtype;
-    std::optional<FeatureTypeEnumType> featuretypeenumtype;
-    std::optional<FeatureDirectControlSpecificUsageEnumType> featuredirectcontrolspecificusageenumtype;
-    std::optional<FeatureHvacSpecificUsageEnumType> featurehvacspecificusageenumtype;
-    std::optional<FeatureMeasurementSpecificUsageEnumType> featuremeasurementspecificusageenumtype;
-    std::optional<FeatureSetpointSpecificUsageEnumType> featuresetpointspecificusageenumtype;
-    std::optional<FeatureSmartEnergyManagementPsSpecificUsageEnumType> featuresmartenergymanagementpsspecificusageenumtype;
-    std::optional<FunctionEnumType> functionenumtype;
-    std::optional<TimeSeriesTypeEnumType> timeseriestypeenumtype;
-    std::optional<MeasurementTypeEnumType> measurementtypeenumtype;
-    std::optional<MeasurementValueTypeEnumType> measurementvaluetypeenumtype;
-    std::optional<MeasurementValueSourceEnumType> measurementvaluesourceenumtype;
-    std::optional<MeasurementValueTendencyEnumType> measurementvaluetendencyenumtype;
-    std::optional<MeasurementValueStateEnumType> measurementvaluestateenumtype;
-    std::optional<ThresholdTypeEnumType> thresholdtypeenumtype;
-    std::optional<DirectControlActivityStateEnumType> directcontrolactivitystateenumtype;
-    std::optional<PowerTimeSlotValueTypeEnumType> powertimeslotvaluetypeenumtype;
-    std::optional<PowerSequenceScopeEnumType> powersequencescopeenumtype;
-    std::optional<PowerSequenceStateEnumType> powersequencestateenumtype;
-    std::optional<ActuatorLevelFctEnumType> actuatorlevelfctenumtype;
-    std::optional<CmdClassifierType> cmdclassifiertype;
-    std::optional<ActuatorSwitchFctEnumType> actuatorswitchfctenumtype;
-    std::optional<AlarmTypeEnumType> alarmtypeenumtype;
-    std::optional<BillTypeEnumType> billtypeenumtype;
-    std::optional<BillPositionTypeEnumType> billpositiontypeenumtype;
-    std::optional<BillCostTypeEnumType> billcosttypeenumtype;
-    std::optional<IdentificationTypeEnumType> identificationtypeenumtype;
-    std::optional<PowerSourceEnumType> powersourceenumtype;
-    std::optional<DeviceConfigurationKeyNameEnumType> deviceconfigurationkeynameenumtype;
-    std::optional<DeviceConfigurationKeyValueTypeType> deviceconfigurationkeyvaluetypetype;
-    std::optional<DeviceDiagnosisOperatingStateEnumType> devicediagnosisoperatingstateenumtype;
-    std::optional<PowerSupplyConditionEnumType> powersupplyconditionenumtype;
-    std::optional<ElectricalConnectionMeasurandVariantEnumType> electricalconnectionmeasurandvariantenumtype;
-    std::optional<ElectricalConnectionVoltageTypeEnumType> electricalconnectionvoltagetypeenumtype;
-    std::optional<ElectricalConnectionAcMeasurementTypeEnumType> electricalconnectionacmeasurementtypeenumtype;
-    std::optional<ElectricalConnectionPhaseNameEnumType> electricalconnectionphasenameenumtype;
-    std::optional<ElectricalConnectionConnectionPointType> electricalconnectionconnectionpointtype;
-    std::optional<ElectricalConnectionCharacteristicContextEnumType> electricalconnectioncharacteristiccontextenumtype;
-    std::optional<ElectricalConnectionCharacteristicTypeEnumType> electricalconnectioncharacteristictypeenumtype;
-    std::optional<HvacSystemFunctionTypeEnumType> hvacsystemfunctiontypeenumtype;
-    std::optional<HvacOperationModeTypeEnumType> hvacoperationmodetypeenumtype;
-    std::optional<HvacOverrunTypeEnumType> hvacoverruntypeenumtype;
-    std::optional<HvacOverrunStatusEnumType> hvacoverrunstatusenumtype;
-    std::optional<SetpointTypeEnumType> setpointtypeenumtype;
-    std::optional<TimeSlotTimeModeEnumType> timeslottimemodeenumtype;
-    std::optional<TierBoundaryTypeEnumType> tierboundarytypeenumtype;
-    std::optional<TierTypeEnumType> tiertypeenumtype;
-    std::optional<IncentiveTypeEnumType> incentivetypeenumtype;
-    std::optional<IncentiveValueTypeEnumType> incentivevaluetypeenumtype;
-    std::optional<LoadControlEventActionEnumType> loadcontroleventactionenumtype;
-    std::optional<LoadControlEventStateEnumType> loadcontroleventstateenumtype;
-    std::optional<LoadControlLimitTypeEnumType> loadcontrollimittypeenumtype;
-    std::optional<LoadControlCategoryEnumType> loadcontrolcategoryenumtype;
-    std::optional<NetworkManagementFeatureSetType> networkmanagementfeaturesettype;
-    std::optional<NetworkManagementProcessStateStateType> networkmanagementprocessstatestatetype;
-    std::optional<NetworkManagementStateChangeType> networkmanagementstatechangetype;
-    std::optional<SensingStateEnumType> sensingstateenumtype;
-    std::optional<SensingTypeEnumType> sensingtypeenumtype;
-    std::optional<StateInformationFunctionalityEnumType> stateinformationfunctionalityenumtype;
-    std::optional<StateInformationFailureEnumType> stateinformationfailureenumtype;
-    std::optional<StateInformationCategoryEnumType> stateinformationcategoryenumtype;
-    std::optional<SupplyConditionEventTypeEnumType> supplyconditioneventtypeenumtype;
-    std::optional<SupplyConditionOriginatorEnumType> supplyconditionoriginatorenumtype;
-    std::optional<GridConditionEnumType> gridconditionenumtype;
-    std::optional<TaskManagementJobSourceEnumType> taskmanagementjobsourceenumtype;
-    std::optional<MessagingDataType> messagingdatatype;
-    std::optional<ElementTagType> elementtagtype;
-    std::optional<MessagingDataElementsType> messagingdataelementstype;
-    std::optional<MessagingListDataType> messaginglistdatatype;
-    std::optional<TimestampIntervalType> timestampintervaltype;
-    std::optional<MessagingListDataSelectorsType> messaginglistdataselectorstype;
-    std::optional<TimePeriodType> timeperiodtype;
-    std::optional<TimePeriodElementsType> timeperiodelementstype;
-    std::optional<DaysOfWeekType> daysofweektype;
-    std::optional<AbsoluteOrRecurringTimeType> absoluteorrecurringtimetype;
-    std::optional<AbsoluteOrRecurringTimeElementsType> absoluteorrecurringtimeelementstype;
-    std::optional<RecurrenceInformationType> recurrenceinformationtype;
-    std::optional<RecurrenceInformationElementsType> recurrenceinformationelementstype;
-    std::optional<ScaledNumberType> scalednumbertype;
-    std::optional<ScaledNumberRangeType> scalednumberrangetype;
-    std::optional<ScaledNumberElementsType> scalednumberelementstype;
-    std::optional<ScaledNumberRangeElementsType> scalednumberrangeelementstype;
-    std::optional<ScaledNumberSetType> scalednumbersettype;
-    std::optional<ScaledNumberSetElementsType> scalednumbersetelementstype;
-    std::optional<DeviceAddressType> deviceaddresstype;
-    std::optional<DeviceAddressElementsType> deviceaddresselementstype;
-    std::optional<EntityAddressType> entityaddresstype;
-    std::optional<EntityAddressElementsType> entityaddresselementstype;
-    std::optional<FeatureAddressType> featureaddresstype;
-    std::optional<FeatureAddressElementsType> featureaddresselementstype;
-    std::optional<PossibleOperationsClassifierType> possibleoperationsclassifiertype;
-    std::optional<PossibleOperationsReadType> possibleoperationsreadtype;
-    std::optional<PossibleOperationsWriteType> possibleoperationswritetype;
-    std::optional<PossibleOperationsType> possibleoperationstype;
-    std::optional<PossibleOperationsElementsType> possibleoperationselementstype;
-    std::optional<FunctionPropertyType> functionpropertytype;
-    std::optional<FunctionPropertyElementsType> functionpropertyelementstype;
-    std::optional<TimeSeriesSlotType> timeseriesslottype;
-    std::optional<TimeSeriesSlotElementsType> timeseriesslotelementstype;
-    std::optional<TimeSeriesDataType> timeseriesdatatype;
-    std::optional<TimeSeriesDataElementsType> timeseriesdataelementstype;
-    std::optional<TimeSeriesListDataType> timeserieslistdatatype;
-    std::optional<TimeSeriesListDataSelectorsType> timeserieslistdataselectorstype;
-    std::optional<TimeSeriesDescriptionDataType> timeseriesdescriptiondatatype;
-    std::optional<TimeSeriesDescriptionDataElementsType> timeseriesdescriptiondataelementstype;
-    std::optional<TimeSeriesDescriptionListDataType> timeseriesdescriptionlistdatatype;
-    std::optional<TimeSeriesDescriptionListDataSelectorsType> timeseriesdescriptionlistdataselectorstype;
-    std::optional<TimeSeriesConstraintsDataType> timeseriesconstraintsdatatype;
-    std::optional<TimeSeriesConstraintsDataElementsType> timeseriesconstraintsdataelementstype;
-    std::optional<TimeSeriesConstraintsListDataType> timeseriesconstraintslistdatatype;
-    std::optional<TimeSeriesConstraintsListDataSelectorsType> timeseriesconstraintslistdataselectorstype;
-    std::optional<MeasurementDataType> measurementdatatype;
-    std::optional<MeasurementDataElementsType> measurementdataelementstype;
-    std::optional<MeasurementListDataType> measurementlistdatatype;
-    std::optional<MeasurementListDataSelectorsType> measurementlistdataselectorstype;
-    std::optional<MeasurementSeriesDataType> measurementseriesdatatype;
-    std::optional<MeasurementSeriesDataElementsType> measurementseriesdataelementstype;
-    std::optional<MeasurementSeriesListDataType> measurementserieslistdatatype;
-    std::optional<MeasurementSeriesListDataSelectorsType> measurementserieslistdataselectorstype;
-    std::optional<MeasurementConstraintsDataType> measurementconstraintsdatatype;
-    std::optional<MeasurementConstraintsDataElementsType> measurementconstraintsdataelementstype;
-    std::optional<MeasurementConstraintsListDataType> measurementconstraintslistdatatype;
-    std::optional<MeasurementConstraintsListDataSelectorsType> measurementconstraintslistdataselectorstype;
-    std::optional<MeasurementDescriptionDataType> measurementdescriptiondatatype;
-    std::optional<MeasurementDescriptionDataElementsType> measurementdescriptiondataelementstype;
-    std::optional<MeasurementDescriptionListDataType> measurementdescriptionlistdatatype;
-    std::optional<MeasurementDescriptionListDataSelectorsType> measurementdescriptionlistdataselectorstype;
-    std::optional<MeasurementThresholdRelationDataType> measurementthresholdrelationdatatype;
-    std::optional<MeasurementThresholdRelationDataElementsType> measurementthresholdrelationdataelementstype;
-    std::optional<MeasurementThresholdRelationListDataType> measurementthresholdrelationlistdatatype;
-    std::optional<MeasurementThresholdRelationListDataSelectorsType> measurementthresholdrelationlistdataselectorstype;
-    std::optional<ThresholdDataType> thresholddatatype;
-    std::optional<ThresholdDataElementsType> thresholddataelementstype;
-    std::optional<ThresholdListDataType> thresholdlistdatatype;
-    std::optional<ThresholdListDataSelectorsType> thresholdlistdataselectorstype;
-    std::optional<ThresholdConstraintsDataType> thresholdconstraintsdatatype;
-    std::optional<ThresholdConstraintsDataElementsType> thresholdconstraintsdataelementstype;
-    std::optional<ThresholdConstraintsListDataType> thresholdconstraintslistdatatype;
-    std::optional<ThresholdConstraintsListDataSelectorsType> thresholdconstraintslistdataselectorstype;
-    std::optional<ThresholdDescriptionDataType> thresholddescriptiondatatype;
-    std::optional<ThresholdDescriptionDataElementsType> thresholddescriptiondataelementstype;
-    std::optional<ThresholdDescriptionListDataType> thresholddescriptionlistdatatype;
-    std::optional<ThresholdDescriptionListDataSelectorsType> thresholddescriptionlistdataselectorstype;
-    std::optional<DirectControlActivityDataType> directcontrolactivitydatatype;
-    std::optional<DirectControlActivityDataElementsType> directcontrolactivitydataelementstype;
-    std::optional<DirectControlActivityListDataType> directcontrolactivitylistdatatype;
-    std::optional<DirectControlActivityListDataSelectorsType> directcontrolactivitylistdataselectorstype;
-    std::optional<DirectControlDescriptionDataType> directcontroldescriptiondatatype;
-    std::optional<DirectControlDescriptionDataElementsType> directcontroldescriptiondataelementstype;
-    std::optional<PowerTimeSlotScheduleDataType> powertimeslotscheduledatatype;
-    std::optional<PowerTimeSlotScheduleDataElementsType> powertimeslotscheduledataelementstype;
-    std::optional<PowerTimeSlotScheduleListDataType> powertimeslotschedulelistdatatype;
-    std::optional<PowerTimeSlotScheduleListDataSelectorsType> powertimeslotschedulelistdataselectorstype;
-    std::optional<PowerTimeSlotValueDataType> powertimeslotvaluedatatype;
-    std::optional<PowerTimeSlotValueDataElementsType> powertimeslotvaluedataelementstype;
-    std::optional<PowerTimeSlotValueListDataType> powertimeslotvaluelistdatatype;
-    std::optional<PowerTimeSlotValueListDataSelectorsType> powertimeslotvaluelistdataselectorstype;
-    std::optional<PowerTimeSlotScheduleConstraintsDataType> powertimeslotscheduleconstraintsdatatype;
-    std::optional<PowerTimeSlotScheduleConstraintsDataElementsType> powertimeslotscheduleconstraintsdataelementstype;
-    std::optional<PowerTimeSlotScheduleConstraintsListDataType> powertimeslotscheduleconstraintslistdatatype;
-    std::optional<PowerTimeSlotScheduleConstraintsListDataSelectorsType> powertimeslotscheduleconstraintslistdataselectorstype;
-    std::optional<PowerSequenceAlternativesRelationDataType> powersequencealternativesrelationdatatype;
-    std::optional<PowerSequenceAlternativesRelationDataElementsType> powersequencealternativesrelationdataelementstype;
-    std::optional<PowerSequenceAlternativesRelationListDataType> powersequencealternativesrelationlistdatatype;
-    std::optional<PowerSequenceAlternativesRelationListDataSelectorsType> powersequencealternativesrelationlistdataselectorstype;
-    std::optional<PowerSequenceDescriptionDataType> powersequencedescriptiondatatype;
-    std::optional<PowerSequenceDescriptionDataElementsType> powersequencedescriptiondataelementstype;
-    std::optional<PowerSequenceDescriptionListDataType> powersequencedescriptionlistdatatype;
-    std::optional<PowerSequenceDescriptionListDataSelectorsType> powersequencedescriptionlistdataselectorstype;
-    std::optional<PowerSequenceStateDataType> powersequencestatedatatype;
-    std::optional<PowerSequenceStateDataElementsType> powersequencestatedataelementstype;
-    std::optional<PowerSequenceStateListDataType> powersequencestatelistdatatype;
-    std::optional<PowerSequenceStateListDataSelectorsType> powersequencestatelistdataselectorstype;
-    std::optional<PowerSequenceScheduleDataType> powersequencescheduledatatype;
-    std::optional<PowerSequenceScheduleDataElementsType> powersequencescheduledataelementstype;
-    std::optional<PowerSequenceScheduleListDataType> powersequenceschedulelistdatatype;
-    std::optional<PowerSequenceScheduleListDataSelectorsType> powersequenceschedulelistdataselectorstype;
-    std::optional<PowerSequenceScheduleConstraintsDataType> powersequencescheduleconstraintsdatatype;
-    std::optional<PowerSequenceScheduleConstraintsDataElementsType> powersequencescheduleconstraintsdataelementstype;
-    std::optional<PowerSequenceScheduleConstraintsListDataType> powersequencescheduleconstraintslistdatatype;
-    std::optional<PowerSequenceScheduleConstraintsListDataSelectorsType> powersequencescheduleconstraintslistdataselectorstype;
-    std::optional<PowerSequencePriceDataType> powersequencepricedatatype;
-    std::optional<PowerSequencePriceDataElementsType> powersequencepricedataelementstype;
-    std::optional<PowerSequencePriceListDataType> powersequencepricelistdatatype;
-    std::optional<PowerSequencePriceListDataSelectorsType> powersequencepricelistdataselectorstype;
-    std::optional<PowerSequenceSchedulePreferenceDataType> powersequenceschedulepreferencedatatype;
-    std::optional<PowerSequenceSchedulePreferenceDataElementsType> powersequenceschedulepreferencedataelementstype;
-    std::optional<PowerSequenceSchedulePreferenceListDataType> powersequenceschedulepreferencelistdatatype;
-    std::optional<PowerSequenceSchedulePreferenceListDataSelectorsType> powersequenceschedulepreferencelistdataselectorstype;
-    std::optional<PowerSequenceNodeScheduleInformationDataType> powersequencenodescheduleinformationdatatype;
-    std::optional<PowerSequenceNodeScheduleInformationDataElementsType> powersequencenodescheduleinformationdataelementstype;
-    std::optional<PowerSequenceScheduleConfigurationRequestCallType> powersequencescheduleconfigurationrequestcalltype;
-    std::optional<PowerSequenceScheduleConfigurationRequestCallElementsType> powersequencescheduleconfigurationrequestcallelementstype;
-    std::optional<PowerSequencePriceCalculationRequestCallType> powersequencepricecalculationrequestcalltype;
-    std::optional<PowerSequencePriceCalculationRequestCallElementsType> powersequencepricecalculationrequestcallelementstype;
-    std::optional<ResultDataType> resultdatatype;
-    std::optional<BindingManagementEntryDataType> bindingmanagemententrydatatype;
-    std::optional<BindingManagementEntryDataElementsType> bindingmanagemententrydataelementstype;
-    std::optional<BindingManagementEntryListDataType> bindingmanagemententrylistdatatype;
-    std::optional<BindingManagementEntryListDataSelectorsType> bindingmanagemententrylistdataselectorstype;
-    std::optional<BindingManagementRequestCallType> bindingmanagementrequestcalltype;
-    std::optional<BindingManagementRequestCallElementsType> bindingmanagementrequestcallelementstype;
-    std::optional<BindingManagementDeleteCallType> bindingmanagementdeletecalltype;
-    std::optional<BindingManagementDeleteCallElementsType> bindingmanagementdeletecallelementstype;
-    std::optional<ActuatorLevelDataType> actuatorleveldatatype;
-    std::optional<ActuatorLevelDataElementsType> actuatorleveldataelementstype;
-    std::optional<ActuatorLevelDescriptionDataType> actuatorleveldescriptiondatatype;
-    std::optional<ActuatorLevelDescriptionDataElementsType> actuatorleveldescriptiondataelementstype;
-    std::optional<CmdControlType> cmdcontroltype;
-    std::optional<ActuatorSwitchDataType> actuatorswitchdatatype;
-    std::optional<ActuatorSwitchDataElementsType> actuatorswitchdataelementstype;
-    std::optional<ActuatorSwitchDescriptionDataType> actuatorswitchdescriptiondatatype;
-    std::optional<ActuatorSwitchDescriptionDataElementsType> actuatorswitchdescriptiondataelementstype;
-    std::optional<AlarmDataType> alarmdatatype;
-    std::optional<AlarmDataElementsType> alarmdataelementstype;
-    std::optional<AlarmListDataType> alarmlistdatatype;
-    std::optional<AlarmListDataSelectorsType> alarmlistdataselectorstype;
-    std::optional<BillValueType> billvaluetype;
-    std::optional<BillValueElementsType> billvalueelementstype;
-    std::optional<BillCostType> billcosttype;
-    std::optional<BillCostElementsType> billcostelementstype;
-    std::optional<BillPositionType> billpositiontype;
-    std::optional<BillPositionElementsType> billpositionelementstype;
-    std::optional<BillDataType> billdatatype;
-    std::optional<BillDataElementsType> billdataelementstype;
-    std::optional<BillListDataType> billlistdatatype;
-    std::optional<BillListDataSelectorsType> billlistdataselectorstype;
-    std::optional<BillConstraintsDataType> billconstraintsdatatype;
-    std::optional<BillConstraintsDataElementsType> billconstraintsdataelementstype;
-    std::optional<BillConstraintsListDataType> billconstraintslistdatatype;
-    std::optional<BillConstraintsListDataSelectorsType> billconstraintslistdataselectorstype;
-    std::optional<BillDescriptionDataType> billdescriptiondatatype;
-    std::optional<BillDescriptionDataElementsType> billdescriptiondataelementstype;
-    std::optional<BillDescriptionListDataType> billdescriptionlistdatatype;
-    std::optional<BillDescriptionListDataSelectorsType> billdescriptionlistdataselectorstype;
-    std::optional<IdentificationDataType> identificationdatatype;
-    std::optional<IdentificationDataElementsType> identificationdataelementstype;
-    std::optional<IdentificationListDataType> identificationlistdatatype;
-    std::optional<IdentificationListDataSelectorsType> identificationlistdataselectorstype;
-    std::optional<SessionIdentificationDataType> sessionidentificationdatatype;
-    std::optional<SessionIdentificationDataElementsType> sessionidentificationdataelementstype;
-    std::optional<SessionIdentificationListDataType> sessionidentificationlistdatatype;
-    std::optional<SessionIdentificationListDataSelectorsType> sessionidentificationlistdataselectorstype;
-    std::optional<SessionMeasurementRelationDataType> sessionmeasurementrelationdatatype;
-    std::optional<SessionMeasurementRelationDataElementsType> sessionmeasurementrelationdataelementstype;
-    std::optional<SessionMeasurementRelationListDataType> sessionmeasurementrelationlistdatatype;
-    std::optional<SessionMeasurementRelationListDataSelectorsType> sessionmeasurementrelationlistdataselectorstype;
-    std::optional<DataTunnelingHeaderType> datatunnelingheadertype;
-    std::optional<DataTunnelingHeaderElementsType> datatunnelingheaderelementstype;
-    std::optional<DataTunnelingCallType> datatunnelingcalltype;
-    std::optional<DataTunnelingCallElementsType> datatunnelingcallelementstype;
-    std::optional<DeviceClassificationManufacturerDataType> deviceclassificationmanufacturerdatatype;
-    std::optional<DeviceClassificationManufacturerDataElementsType> deviceclassificationmanufacturerdataelementstype;
-    std::optional<DeviceClassificationUserDataType> deviceclassificationuserdatatype;
-    std::optional<DeviceClassificationUserDataElementsType> deviceclassificationuserdataelementstype;
-    std::optional<DeviceConfigurationKeyValueValueType> deviceconfigurationkeyvaluevaluetype;
-    std::optional<DeviceConfigurationKeyValueValueElementsType> deviceconfigurationkeyvaluevalueelementstype;
-    std::optional<DeviceConfigurationKeyValueDataType> deviceconfigurationkeyvaluedatatype;
-    std::optional<DeviceConfigurationKeyValueDataElementsType> deviceconfigurationkeyvaluedataelementstype;
-    std::optional<DeviceConfigurationKeyValueListDataType> deviceconfigurationkeyvaluelistdatatype;
-    std::optional<DeviceConfigurationKeyValueListDataSelectorsType> deviceconfigurationkeyvaluelistdataselectorstype;
-    std::optional<DeviceConfigurationKeyValueDescriptionDataType> deviceconfigurationkeyvaluedescriptiondatatype;
-    std::optional<DeviceConfigurationKeyValueDescriptionDataElementsType> deviceconfigurationkeyvaluedescriptiondataelementstype;
-    std::optional<DeviceConfigurationKeyValueDescriptionListDataType> deviceconfigurationkeyvaluedescriptionlistdatatype;
-    std::optional<DeviceConfigurationKeyValueDescriptionListDataSelectorsType> deviceconfigurationkeyvaluedescriptionlistdataselectorstype;
-    std::optional<DeviceConfigurationKeyValueConstraintsDataType> deviceconfigurationkeyvalueconstraintsdatatype;
-    std::optional<DeviceConfigurationKeyValueConstraintsDataElementsType> deviceconfigurationkeyvalueconstraintsdataelementstype;
-    std::optional<DeviceConfigurationKeyValueConstraintsListDataType> deviceconfigurationkeyvalueconstraintslistdatatype;
-    std::optional<DeviceConfigurationKeyValueConstraintsListDataSelectorsType> deviceconfigurationkeyvalueconstraintslistdataselectorstype;
-    std::optional<DeviceDiagnosisStateDataType> devicediagnosisstatedatatype;
-    std::optional<DeviceDiagnosisStateDataElementsType> devicediagnosisstatedataelementstype;
-    std::optional<DeviceDiagnosisHeartbeatDataType> devicediagnosisheartbeatdatatype;
-    std::optional<DeviceDiagnosisHeartbeatDataElementsType> devicediagnosisheartbeatdataelementstype;
-    std::optional<DeviceDiagnosisServiceDataType> devicediagnosisservicedatatype;
-    std::optional<DeviceDiagnosisServiceDataElementsType> devicediagnosisservicedataelementstype;
-    std::optional<ElectricalConnectionParameterDescriptionDataType> electricalconnectionparameterdescriptiondatatype;
-    std::optional<ElectricalConnectionParameterDescriptionDataElementsType> electricalconnectionparameterdescriptiondataelementstype;
-    std::optional<ElectricalConnectionParameterDescriptionListDataType> electricalconnectionparameterdescriptionlistdatatype;
-    std::optional<ElectricalConnectionParameterDescriptionListDataSelectorsType>
-        electricalconnectionparameterdescriptionlistdataselectorstype;
-    std::optional<ElectricalConnectionPermittedValueSetDataType> electricalconnectionpermittedvaluesetdatatype;
-    std::optional<ElectricalConnectionPermittedValueSetDataElementsType> electricalconnectionpermittedvaluesetdataelementstype;
-    std::optional<ElectricalConnectionPermittedValueSetListDataType> electricalconnectionpermittedvaluesetlistdatatype;
-    std::optional<ElectricalConnectionPermittedValueSetListDataSelectorsType> electricalconnectionpermittedvaluesetlistdataselectorstype;
-    std::optional<ElectricalConnectionCharacteristicDataType> electricalconnectioncharacteristicdatatype;
-    std::optional<ElectricalConnectionCharacteristicDataElementsType> electricalconnectioncharacteristicdataelementstype;
-    std::optional<ElectricalConnectionCharacteristicListDataType> electricalconnectioncharacteristiclistdatatype;
-    std::optional<ElectricalConnectionCharacteristicListDataSelectorsType> electricalconnectioncharacteristiclistdataselectorstype;
-    std::optional<ElectricalConnectionStateDataType> electricalconnectionstatedatatype;
-    std::optional<ElectricalConnectionStateDataElementsType> electricalconnectionstatedataelementstype;
-    std::optional<ElectricalConnectionStateListDataType> electricalconnectionstatelistdatatype;
-    std::optional<ElectricalConnectionStateListDataSelectorsType> electricalconnectionstatelistdataselectorstype;
-    std::optional<ElectricalConnectionDescriptionDataType> electricalconnectiondescriptiondatatype;
-    std::optional<ElectricalConnectionDescriptionDataElementsType> electricalconnectiondescriptiondataelementstype;
-    std::optional<ElectricalConnectionDescriptionListDataType> electricalconnectiondescriptionlistdatatype;
-    std::optional<ElectricalConnectionDescriptionListDataSelectorsType> electricalconnectiondescriptionlistdataselectorstype;
-    std::optional<HvacSystemFunctionDataType> hvacsystemfunctiondatatype;
-    std::optional<HvacSystemFunctionDataElementsType> hvacsystemfunctiondataelementstype;
-    std::optional<HvacSystemFunctionListDataType> hvacsystemfunctionlistdatatype;
-    std::optional<HvacSystemFunctionListDataSelectorsType> hvacsystemfunctionlistdataselectorstype;
-    std::optional<HvacSystemFunctionOperationModeRelationDataType> hvacsystemfunctionoperationmoderelationdatatype;
-    std::optional<HvacSystemFunctionOperationModeRelationDataElementsType> hvacsystemfunctionoperationmoderelationdataelementstype;
-    std::optional<HvacSystemFunctionOperationModeRelationListDataType> hvacsystemfunctionoperationmoderelationlistdatatype;
-    std::optional<HvacSystemFunctionOperationModeRelationListDataSelectorsType>
-        hvacsystemfunctionoperationmoderelationlistdataselectorstype;
-    std::optional<HvacSystemFunctionSetpointRelationDataType> hvacsystemfunctionsetpointrelationdatatype;
-    std::optional<HvacSystemFunctionSetpointRelationDataElementsType> hvacsystemfunctionsetpointrelationdataelementstype;
-    std::optional<HvacSystemFunctionSetpointRelationListDataType> hvacsystemfunctionsetpointrelationlistdatatype;
-    std::optional<HvacSystemFunctionSetpointRelationListDataSelectorsType> hvacsystemfunctionsetpointrelationlistdataselectorstype;
-    std::optional<HvacSystemFunctionPowerSequenceRelationDataType> hvacsystemfunctionpowersequencerelationdatatype;
-    std::optional<HvacSystemFunctionPowerSequenceRelationDataElementsType> hvacsystemfunctionpowersequencerelationdataelementstype;
-    std::optional<HvacSystemFunctionPowerSequenceRelationListDataType> hvacsystemfunctionpowersequencerelationlistdatatype;
-    std::optional<HvacSystemFunctionPowerSequenceRelationListDataSelectorsType>
-        hvacsystemfunctionpowersequencerelationlistdataselectorstype;
-    std::optional<HvacSystemFunctionDescriptionDataType> hvacsystemfunctiondescriptiondatatype;
-    std::optional<HvacSystemFunctionDescriptionDataElementsType> hvacsystemfunctiondescriptiondataelementstype;
-    std::optional<HvacSystemFunctionDescriptionListDataType> hvacsystemfunctiondescriptionlistdatatype;
-    std::optional<HvacSystemFunctionDescriptionListDataSelectorsType> hvacsystemfunctiondescriptionlistdataselectorstype;
-    std::optional<HvacOperationModeDescriptionDataType> hvacoperationmodedescriptiondatatype;
-    std::optional<HvacOperationModeDescriptionDataElementsType> hvacoperationmodedescriptiondataelementstype;
-    std::optional<HvacOperationModeDescriptionListDataType> hvacoperationmodedescriptionlistdatatype;
-    std::optional<HvacOperationModeDescriptionListDataSelectorsType> hvacoperationmodedescriptionlistdataselectorstype;
-    std::optional<HvacOverrunDataType> hvacoverrundatatype;
-    std::optional<HvacOverrunDataElementsType> hvacoverrundataelementstype;
-    std::optional<HvacOverrunListDataType> hvacoverrunlistdatatype;
-    std::optional<HvacOverrunListDataSelectorsType> hvacoverrunlistdataselectorstype;
-    std::optional<HvacOverrunDescriptionDataType> hvacoverrundescriptiondatatype;
-    std::optional<HvacOverrunDescriptionDataElementsType> hvacoverrundescriptiondataelementstype;
-    std::optional<HvacOverrunDescriptionListDataType> hvacoverrundescriptionlistdatatype;
-    std::optional<HvacOverrunDescriptionListDataSelectorsType> hvacoverrundescriptionlistdataselectorstype;
-    std::optional<SetpointDataType> setpointdatatype;
-    std::optional<SetpointDataElementsType> setpointdataelementstype;
-    std::optional<SetpointListDataType> setpointlistdatatype;
-    std::optional<SetpointListDataSelectorsType> setpointlistdataselectorstype;
-    std::optional<SetpointConstraintsDataType> setpointconstraintsdatatype;
-    std::optional<SetpointConstraintsDataElementsType> setpointconstraintsdataelementstype;
-    std::optional<SetpointConstraintsListDataType> setpointconstraintslistdatatype;
-    std::optional<SetpointConstraintsListDataSelectorsType> setpointconstraintslistdataselectorstype;
-    std::optional<SetpointDescriptionDataType> setpointdescriptiondatatype;
-    std::optional<SetpointDescriptionDataElementsType> setpointdescriptiondataelementstype;
-    std::optional<SetpointDescriptionListDataType> setpointdescriptionlistdatatype;
-    std::optional<SetpointDescriptionListDataSelectorsType> setpointdescriptionlistdataselectorstype;
-    std::optional<TimeTableDataType> timetabledatatype;
-    std::optional<TimeTableDataElementsType> timetabledataelementstype;
-    std::optional<TimeTableListDataType> timetablelistdatatype;
-    std::optional<TimeTableListDataSelectorsType> timetablelistdataselectorstype;
-    std::optional<TimeTableConstraintsDataType> timetableconstraintsdatatype;
-    std::optional<TimeTableConstraintsDataElementsType> timetableconstraintsdataelementstype;
-    std::optional<TimeTableConstraintsListDataType> timetableconstraintslistdatatype;
-    std::optional<TimeTableConstraintsListDataSelectorsType> timetableconstraintslistdataselectorstype;
-    std::optional<TimeTableDescriptionDataType> timetabledescriptiondatatype;
-    std::optional<TimeTableDescriptionDataElementsType> timetabledescriptiondataelementstype;
-    std::optional<TimeTableDescriptionListDataType> timetabledescriptionlistdatatype;
-    std::optional<TimeTableDescriptionListDataSelectorsType> timetabledescriptionlistdataselectorstype;
-    std::optional<TariffDataType> tariffdatatype;
-    std::optional<TierDataType> tierdatatype;
-    std::optional<TierBoundaryDataType> tierboundarydatatype;
-    std::optional<IncentiveDataType> incentivedatatype;
-    std::optional<IncentiveTableTierType> incentivetabletiertype;
-    std::optional<IncentiveTableIncentiveSlotType> incentivetableincentiveslottype;
-    std::optional<IncentiveTableType> incentivetabletype;
-    std::optional<IncentiveTableDataType> incentivetabledatatype;
-    std::optional<TariffDataElementsType> tariffdataelementstype;
-    std::optional<TierDataElementsType> tierdataelementstype;
-    std::optional<TierBoundaryDataElementsType> tierboundarydataelementstype;
-    std::optional<IncentiveDataElementsType> incentivedataelementstype;
-    std::optional<IncentiveTableTierElementsType> incentivetabletierelementstype;
-    std::optional<IncentiveTableIncentiveSlotElementsType> incentivetableincentiveslotelementstype;
-    std::optional<IncentiveTableElementsType> incentivetableelementstype;
-    std::optional<IncentiveTableDataElementsType> incentivetabledataelementstype;
-    std::optional<TariffListDataSelectorsType> tarifflistdataselectorstype;
-    std::optional<IncentiveTableDataSelectorsType> incentivetabledataselectorstype;
-    std::optional<TariffDescriptionDataType> tariffdescriptiondatatype;
-    std::optional<TierDescriptionDataType> tierdescriptiondatatype;
-    std::optional<TierBoundaryDescriptionDataType> tierboundarydescriptiondatatype;
-    std::optional<IncentiveDescriptionDataType> incentivedescriptiondatatype;
-    std::optional<IncentiveTableDescriptionTierType> incentivetabledescriptiontiertype;
-    std::optional<IncentiveTableDescriptionType> incentivetabledescriptiontype;
-    std::optional<IncentiveTableDescriptionDataType> incentivetabledescriptiondatatype;
-    std::optional<TariffDescriptionDataElementsType> tariffdescriptiondataelementstype;
-    std::optional<TierDescriptionDataElementsType> tierdescriptiondataelementstype;
-    std::optional<TierBoundaryDescriptionDataElementsType> tierboundarydescriptiondataelementstype;
-    std::optional<IncentiveDescriptionDataElementsType> incentivedescriptiondataelementstype;
-    std::optional<IncentiveTableDescriptionTierElementsType> incentivetabledescriptiontierelementstype;
-    std::optional<IncentiveTableDescriptionElementsType> incentivetabledescriptionelementstype;
-    std::optional<IncentiveTableDescriptionDataElementsType> incentivetabledescriptiondataelementstype;
-    std::optional<TariffDescriptionListDataSelectorsType> tariffdescriptionlistdataselectorstype;
-    std::optional<IncentiveTableDescriptionDataSelectorsType> incentivetabledescriptiondataselectorstype;
-    std::optional<TariffOverallConstraintsDataType> tariffoverallconstraintsdatatype;
-    std::optional<IncentiveTableConstraintsType> incentivetableconstraintstype;
-    std::optional<IncentiveTableConstraintsDataType> incentivetableconstraintsdatatype;
-    std::optional<TariffOverallConstraintsDataElementsType> tariffoverallconstraintsdataelementstype;
-    std::optional<IncentiveTableConstraintsElementsType> incentivetableconstraintselementstype;
-    std::optional<IncentiveTableConstraintsDataElementsType> incentivetableconstraintsdataelementstype;
-    std::optional<IncentiveTableConstraintsDataSelectorsType> incentivetableconstraintsdataselectorstype;
-    std::optional<TariffListDataType> tarifflistdatatype;
-    std::optional<TariffTierRelationDataType> tarifftierrelationdatatype;
-    std::optional<TariffTierRelationDataElementsType> tarifftierrelationdataelementstype;
-    std::optional<TariffTierRelationListDataType> tarifftierrelationlistdatatype;
-    std::optional<TariffTierRelationListDataSelectorsType> tarifftierrelationlistdataselectorstype;
-    std::optional<TariffBoundaryRelationDataType> tariffboundaryrelationdatatype;
-    std::optional<TariffBoundaryRelationDataElementsType> tariffboundaryrelationdataelementstype;
-    std::optional<TariffBoundaryRelationListDataType> tariffboundaryrelationlistdatatype;
-    std::optional<TariffBoundaryRelationListDataSelectorsType> tariffboundaryrelationlistdataselectorstype;
-    std::optional<TariffDescriptionListDataType> tariffdescriptionlistdatatype;
-    std::optional<TierBoundaryListDataType> tierboundarylistdatatype;
-    std::optional<TierBoundaryListDataSelectorsType> tierboundarylistdataselectorstype;
-    std::optional<TierBoundaryDescriptionListDataType> tierboundarydescriptionlistdatatype;
-    std::optional<TierBoundaryDescriptionListDataSelectorsType> tierboundarydescriptionlistdataselectorstype;
-    std::optional<CommodityDataType> commoditydatatype;
-    std::optional<CommodityDataElementsType> commoditydataelementstype;
-    std::optional<CommodityListDataType> commoditylistdatatype;
-    std::optional<CommodityListDataSelectorsType> commoditylistdataselectorstype;
-    std::optional<TierListDataType> tierlistdatatype;
-    std::optional<TierListDataSelectorsType> tierlistdataselectorstype;
-    std::optional<TierIncentiveRelationDataType> tierincentiverelationdatatype;
-    std::optional<TierIncentiveRelationDataElementsType> tierincentiverelationdataelementstype;
-    std::optional<TierIncentiveRelationListDataType> tierincentiverelationlistdatatype;
-    std::optional<TierIncentiveRelationListDataSelectorsType> tierincentiverelationlistdataselectorstype;
-    std::optional<TierDescriptionListDataType> tierdescriptionlistdatatype;
-    std::optional<TierDescriptionListDataSelectorsType> tierdescriptionlistdataselectorstype;
-    std::optional<IncentiveListDataType> incentivelistdatatype;
-    std::optional<IncentiveListDataSelectorsType> incentivelistdataselectorstype;
-    std::optional<IncentiveDescriptionListDataType> incentivedescriptionlistdatatype;
-    std::optional<IncentiveDescriptionListDataSelectorsType> incentivedescriptionlistdataselectorstype;
-    std::optional<LoadControlNodeDataType> loadcontrolnodedatatype;
-    std::optional<LoadControlNodeDataElementsType> loadcontrolnodedataelementstype;
-    std::optional<LoadControlEventDataType> loadcontroleventdatatype;
-    std::optional<LoadControlEventDataElementsType> loadcontroleventdataelementstype;
-    std::optional<LoadControlEventListDataType> loadcontroleventlistdatatype;
-    std::optional<LoadControlEventListDataSelectorsType> loadcontroleventlistdataselectorstype;
-    std::optional<LoadControlStateDataType> loadcontrolstatedatatype;
-    std::optional<LoadControlStateDataElementsType> loadcontrolstatedataelementstype;
-    std::optional<LoadControlStateListDataType> loadcontrolstatelistdatatype;
-    std::optional<LoadControlStateListDataSelectorsType> loadcontrolstatelistdataselectorstype;
-    std::optional<LoadControlLimitDataType> loadcontrollimitdatatype;
-    std::optional<LoadControlLimitDataElementsType> loadcontrollimitdataelementstype;
-    std::optional<LoadControlLimitListDataType> loadcontrollimitlistdatatype;
-    std::optional<LoadControlLimitListDataSelectorsType> loadcontrollimitlistdataselectorstype;
-    std::optional<LoadControlLimitConstraintsDataType> loadcontrollimitconstraintsdatatype;
-    std::optional<LoadControlLimitConstraintsDataElementsType> loadcontrollimitconstraintsdataelementstype;
-    std::optional<LoadControlLimitConstraintsListDataType> loadcontrollimitconstraintslistdatatype;
-    std::optional<LoadControlLimitConstraintsListDataSelectorsType> loadcontrollimitconstraintslistdataselectorstype;
-    std::optional<LoadControlLimitDescriptionDataType> loadcontrollimitdescriptiondatatype;
-    std::optional<LoadControlLimitDescriptionDataElementsType> loadcontrollimitdescriptiondataelementstype;
-    std::optional<LoadControlLimitDescriptionListDataType> loadcontrollimitdescriptionlistdatatype;
-    std::optional<LoadControlLimitDescriptionListDataSelectorsType> loadcontrollimitdescriptionlistdataselectorstype;
-    std::optional<NetworkManagementAddNodeCallType> networkmanagementaddnodecalltype;
-    std::optional<NetworkManagementAddNodeCallElementsType> networkmanagementaddnodecallelementstype;
-    std::optional<NetworkManagementRemoveNodeCallType> networkmanagementremovenodecalltype;
-    std::optional<NetworkManagementRemoveNodeCallElementsType> networkmanagementremovenodecallelementstype;
-    std::optional<NetworkManagementModifyNodeCallType> networkmanagementmodifynodecalltype;
-    std::optional<NetworkManagementModifyNodeCallElementsType> networkmanagementmodifynodecallelementstype;
-    std::optional<NetworkManagementScanNetworkCallType> networkmanagementscannetworkcalltype;
-    std::optional<NetworkManagementScanNetworkCallElementsType> networkmanagementscannetworkcallelementstype;
-    std::optional<NetworkManagementDiscoverCallType> networkmanagementdiscovercalltype;
-    std::optional<NetworkManagementDiscoverCallElementsType> networkmanagementdiscovercallelementstype;
-    std::optional<NetworkManagementAbortCallType> networkmanagementabortcalltype;
-    std::optional<NetworkManagementAbortCallElementsType> networkmanagementabortcallelementstype;
-    std::optional<NetworkManagementProcessStateDataType> networkmanagementprocessstatedatatype;
-    std::optional<NetworkManagementProcessStateDataElementsType> networkmanagementprocessstatedataelementstype;
-    std::optional<NetworkManagementJoiningModeDataType> networkmanagementjoiningmodedatatype;
-    std::optional<NetworkManagementJoiningModeDataElementsType> networkmanagementjoiningmodedataelementstype;
-    std::optional<NetworkManagementReportCandidateDataType> networkmanagementreportcandidatedatatype;
-    std::optional<NetworkManagementReportCandidateDataElementsType> networkmanagementreportcandidatedataelementstype;
-    std::optional<NetworkManagementDeviceDescriptionDataType> networkmanagementdevicedescriptiondatatype;
-    std::optional<NetworkManagementDeviceDescriptionDataElementsType> networkmanagementdevicedescriptiondataelementstype;
-    std::optional<NetworkManagementDeviceDescriptionListDataType> networkmanagementdevicedescriptionlistdatatype;
-    std::optional<NetworkManagementDeviceDescriptionListDataSelectorsType> networkmanagementdevicedescriptionlistdataselectorstype;
-    std::optional<NetworkManagementEntityDescriptionDataType> networkmanagemententitydescriptiondatatype;
-    std::optional<NetworkManagementEntityDescriptionDataElementsType> networkmanagemententitydescriptiondataelementstype;
-    std::optional<NetworkManagementEntityDescriptionListDataType> networkmanagemententitydescriptionlistdatatype;
-    std::optional<NetworkManagementEntityDescriptionListDataSelectorsType> networkmanagemententitydescriptionlistdataselectorstype;
-    std::optional<NetworkManagementFeatureDescriptionDataType> networkmanagementfeaturedescriptiondatatype;
-    std::optional<NetworkManagementFeatureDescriptionDataElementsType> networkmanagementfeaturedescriptiondataelementstype;
-    std::optional<NetworkManagementFeatureDescriptionListDataType> networkmanagementfeaturedescriptionlistdatatype;
-    std::optional<NetworkManagementFeatureDescriptionListDataSelectorsType> networkmanagementfeaturedescriptionlistdataselectorstype;
-    std::optional<NodeManagementSpecificationVersionListType> nodemanagementspecificationversionlisttype;
-    std::optional<NodeManagementDetailedDiscoveryDeviceInformationType> nodemanagementdetaileddiscoverydeviceinformationtype;
-    std::optional<NodeManagementDetailedDiscoveryEntityInformationType> nodemanagementdetaileddiscoveryentityinformationtype;
-    std::optional<NodeManagementDetailedDiscoveryFeatureInformationType> nodemanagementdetaileddiscoveryfeatureinformationtype;
-    std::optional<NodeManagementDetailedDiscoveryDataType> nodemanagementdetaileddiscoverydatatype;
-    std::optional<SpecificationVersionDataElementsType> specificationversiondataelementstype;
-    std::optional<NodeManagementSpecificationVersionListElementsType> nodemanagementspecificationversionlistelementstype;
-    std::optional<NodeManagementDetailedDiscoveryDeviceInformationElementsType>
-        nodemanagementdetaileddiscoverydeviceinformationelementstype;
-    std::optional<NodeManagementDetailedDiscoveryEntityInformationElementsType>
-        nodemanagementdetaileddiscoveryentityinformationelementstype;
-    std::optional<NodeManagementDetailedDiscoveryFeatureInformationElementsType>
-        nodemanagementdetaileddiscoveryfeatureinformationelementstype;
-    std::optional<NodeManagementDetailedDiscoveryDataElementsType> nodemanagementdetaileddiscoverydataelementstype;
-    std::optional<NodeManagementDetailedDiscoveryDataSelectorsType> nodemanagementdetaileddiscoverydataselectorstype;
-    std::optional<NodeManagementBindingDataType> nodemanagementbindingdatatype;
-    std::optional<NodeManagementBindingDataElementsType> nodemanagementbindingdataelementstype;
-    std::optional<NodeManagementBindingDataSelectorsType> nodemanagementbindingdataselectorstype;
-    std::optional<NodeManagementBindingRequestCallType> nodemanagementbindingrequestcalltype;
-    std::optional<NodeManagementBindingRequestCallElementsType> nodemanagementbindingrequestcallelementstype;
-    std::optional<NodeManagementBindingDeleteCallType> nodemanagementbindingdeletecalltype;
-    std::optional<NodeManagementBindingDeleteCallElementsType> nodemanagementbindingdeletecallelementstype;
-    std::optional<SubscriptionManagementEntryDataType> subscriptionmanagemententrydatatype;
-    std::optional<NodeManagementSubscriptionDataType> nodemanagementsubscriptiondatatype;
-    std::optional<SubscriptionManagementEntryDataElementsType> subscriptionmanagemententrydataelementstype;
-    std::optional<NodeManagementSubscriptionDataElementsType> nodemanagementsubscriptiondataelementstype;
-    std::optional<SubscriptionManagementEntryListDataSelectorsType> subscriptionmanagemententrylistdataselectorstype;
-    std::optional<NodeManagementSubscriptionDataSelectorsType> nodemanagementsubscriptiondataselectorstype;
-    std::optional<SubscriptionManagementRequestCallType> subscriptionmanagementrequestcalltype;
-    std::optional<NodeManagementSubscriptionRequestCallType> nodemanagementsubscriptionrequestcalltype;
-    std::optional<SubscriptionManagementRequestCallElementsType> subscriptionmanagementrequestcallelementstype;
-    std::optional<NodeManagementSubscriptionRequestCallElementsType> nodemanagementsubscriptionrequestcallelementstype;
-    std::optional<SubscriptionManagementDeleteCallType> subscriptionmanagementdeletecalltype;
-    std::optional<NodeManagementSubscriptionDeleteCallType> nodemanagementsubscriptiondeletecalltype;
-    std::optional<SubscriptionManagementDeleteCallElementsType> subscriptionmanagementdeletecallelementstype;
-    std::optional<NodeManagementSubscriptionDeleteCallElementsType> nodemanagementsubscriptiondeletecallelementstype;
-    std::optional<NodeManagementDestinationDataType> nodemanagementdestinationdatatype;
-    std::optional<NodeManagementDestinationDataElementsType> nodemanagementdestinationdataelementstype;
-    std::optional<NodeManagementDestinationListDataType> nodemanagementdestinationlistdatatype;
-    std::optional<NodeManagementDestinationListDataSelectorsType> nodemanagementdestinationlistdataselectorstype;
-    std::optional<UseCaseSupportType> usecasesupporttype;
-    std::optional<UseCaseInformationDataType> usecaseinformationdatatype;
-    std::optional<NodeManagementUseCaseDataType> nodemanagementusecasedatatype;
-    std::optional<UseCaseSupportElementsType> usecasesupportelementstype;
-    std::optional<UseCaseInformationDataElementsType> usecaseinformationdataelementstype;
-    std::optional<NodeManagementUseCaseDataElementsType> nodemanagementusecasedataelementstype;
-    std::optional<UseCaseSupportSelectorsType> usecasesupportselectorstype;
-    std::optional<UseCaseInformationListDataSelectorsType> usecaseinformationlistdataselectorstype;
-    std::optional<NodeManagementUseCaseDataSelectorsType> nodemanagementusecasedataselectorstype;
-    std::optional<SubscriptionManagementEntryListDataType> subscriptionmanagemententrylistdatatype;
-    std::optional<UseCaseInformationListDataType> usecaseinformationlistdatatype;
-    std::optional<SpecificationVersionListDataType> specificationversionlistdatatype;
-    std::optional<SpecificationVersionListDataSelectorsType> specificationversionlistdataselectorstype;
-    std::optional<OperatingConstraintsInterruptDataType> operatingconstraintsinterruptdatatype;
-    std::optional<OperatingConstraintsInterruptDataElementsType> operatingconstraintsinterruptdataelementstype;
-    std::optional<OperatingConstraintsInterruptListDataType> operatingconstraintsinterruptlistdatatype;
-    std::optional<OperatingConstraintsInterruptListDataSelectorsType> operatingconstraintsinterruptlistdataselectorstype;
-    std::optional<OperatingConstraintsDurationDataType> operatingconstraintsdurationdatatype;
-    std::optional<OperatingConstraintsDurationDataElementsType> operatingconstraintsdurationdataelementstype;
-    std::optional<OperatingConstraintsDurationListDataType> operatingconstraintsdurationlistdatatype;
-    std::optional<OperatingConstraintsDurationListDataSelectorsType> operatingconstraintsdurationlistdataselectorstype;
-    std::optional<OperatingConstraintsPowerDescriptionDataType> operatingconstraintspowerdescriptiondatatype;
-    std::optional<OperatingConstraintsPowerDescriptionDataElementsType> operatingconstraintspowerdescriptiondataelementstype;
-    std::optional<OperatingConstraintsPowerDescriptionListDataType> operatingconstraintspowerdescriptionlistdatatype;
-    std::optional<OperatingConstraintsPowerDescriptionListDataSelectorsType> operatingconstraintspowerdescriptionlistdataselectorstype;
-    std::optional<OperatingConstraintsPowerRangeDataType> operatingconstraintspowerrangedatatype;
-    std::optional<OperatingConstraintsPowerRangeDataElementsType> operatingconstraintspowerrangedataelementstype;
-    std::optional<OperatingConstraintsPowerRangeListDataType> operatingconstraintspowerrangelistdatatype;
-    std::optional<OperatingConstraintsPowerRangeListDataSelectorsType> operatingconstraintspowerrangelistdataselectorstype;
-    std::optional<OperatingConstraintsPowerLevelDataType> operatingconstraintspowerleveldatatype;
-    std::optional<OperatingConstraintsPowerLevelDataElementsType> operatingconstraintspowerleveldataelementstype;
-    std::optional<OperatingConstraintsPowerLevelListDataType> operatingconstraintspowerlevellistdatatype;
-    std::optional<OperatingConstraintsPowerLevelListDataSelectorsType> operatingconstraintspowerlevellistdataselectorstype;
-    std::optional<OperatingConstraintsResumeImplicationDataType> operatingconstraintsresumeimplicationdatatype;
-    std::optional<OperatingConstraintsResumeImplicationDataElementsType> operatingconstraintsresumeimplicationdataelementstype;
-    std::optional<OperatingConstraintsResumeImplicationListDataType> operatingconstraintsresumeimplicationlistdatatype;
-    std::optional<OperatingConstraintsResumeImplicationListDataSelectorsType> operatingconstraintsresumeimplicationlistdataselectorstype;
-    std::optional<SensingDataType> sensingdatatype;
-    std::optional<SensingDataElementsType> sensingdataelementstype;
-    std::optional<SensingListDataType> sensinglistdatatype;
-    std::optional<SensingListDataSelectorsType> sensinglistdataselectorstype;
-    std::optional<SensingDescriptionDataType> sensingdescriptiondatatype;
-    std::optional<SensingDescriptionDataElementsType> sensingdescriptiondataelementstype;
-    std::optional<SmartEnergyManagementPsAlternativesRelationType> smartenergymanagementpsalternativesrelationtype;
-    std::optional<SmartEnergyManagementPsPowerTimeSlotValueListType> smartenergymanagementpspowertimeslotvaluelisttype;
-    std::optional<SmartEnergyManagementPsPowerTimeSlotType> smartenergymanagementpspowertimeslottype;
-    std::optional<SmartEnergyManagementPsPowerSequenceType> smartenergymanagementpspowersequencetype;
-    std::optional<SmartEnergyManagementPsAlternativesType> smartenergymanagementpsalternativestype;
-    std::optional<SmartEnergyManagementPsDataType> smartenergymanagementpsdatatype;
-    std::optional<SmartEnergyManagementPsAlternativesRelationElementsType> smartenergymanagementpsalternativesrelationelementstype;
-    std::optional<SmartEnergyManagementPsPowerTimeSlotValueListElementsType> smartenergymanagementpspowertimeslotvaluelistelementstype;
-    std::optional<SmartEnergyManagementPsPowerTimeSlotElementsType> smartenergymanagementpspowertimeslotelementstype;
-    std::optional<SmartEnergyManagementPsPowerSequenceElementsType> smartenergymanagementpspowersequenceelementstype;
-    std::optional<SmartEnergyManagementPsAlternativesElementsType> smartenergymanagementpsalternativeselementstype;
-    std::optional<SmartEnergyManagementPsDataElementsType> smartenergymanagementpsdataelementstype;
-    std::optional<SmartEnergyManagementPsDataSelectorsType> smartenergymanagementpsdataselectorstype;
-    std::optional<SmartEnergyManagementPsPriceDataType> smartenergymanagementpspricedatatype;
-    std::optional<SmartEnergyManagementPsPriceDataElementsType> smartenergymanagementpspricedataelementstype;
-    std::optional<SmartEnergyManagementPsPriceDataSelectorsType> smartenergymanagementpspricedataselectorstype;
-    std::optional<SmartEnergyManagementPsConfigurationRequestCallType> smartenergymanagementpsconfigurationrequestcalltype;
-    std::optional<SmartEnergyManagementPsConfigurationRequestCallElementsType> smartenergymanagementpsconfigurationrequestcallelementstype;
-    std::optional<SmartEnergyManagementPsPriceCalculationRequestCallType> smartenergymanagementpspricecalculationrequestcalltype;
-    std::optional<SmartEnergyManagementPsPriceCalculationRequestCallElementsType>
-        smartenergymanagementpspricecalculationrequestcallelementstype;
-    std::optional<StateInformationDataType> stateinformationdatatype;
-    std::optional<StateInformationDataElementsType> stateinformationdataelementstype;
-    std::optional<StateInformationListDataType> stateinformationlistdatatype;
-    std::optional<StateInformationListDataSelectorsType> stateinformationlistdataselectorstype;
-    std::optional<SupplyConditionDataType> supplyconditiondatatype;
-    std::optional<SupplyConditionDataElementsType> supplyconditiondataelementstype;
-    std::optional<SupplyConditionListDataType> supplyconditionlistdatatype;
-    std::optional<SupplyConditionListDataSelectorsType> supplyconditionlistdataselectorstype;
-    std::optional<SupplyConditionDescriptionDataType> supplyconditiondescriptiondatatype;
-    std::optional<SupplyConditionDescriptionDataElementsType> supplyconditiondescriptiondataelementstype;
-    std::optional<SupplyConditionDescriptionListDataType> supplyconditiondescriptionlistdatatype;
-    std::optional<SupplyConditionDescriptionListDataSelectorsType> supplyconditiondescriptionlistdataselectorstype;
-    std::optional<SupplyConditionThresholdRelationDataType> supplyconditionthresholdrelationdatatype;
-    std::optional<SupplyConditionThresholdRelationDataElementsType> supplyconditionthresholdrelationdataelementstype;
-    std::optional<SupplyConditionThresholdRelationListDataType> supplyconditionthresholdrelationlistdatatype;
-    std::optional<SupplyConditionThresholdRelationListDataSelectorsType> supplyconditionthresholdrelationlistdataselectorstype;
-    std::optional<TaskManagementDirectControlRelatedType> taskmanagementdirectcontrolrelatedtype;
-    std::optional<TaskManagementDirectControlRelatedElementsType> taskmanagementdirectcontrolrelatedelementstype;
-    std::optional<TaskManagementHvacRelatedType> taskmanagementhvacrelatedtype;
-    std::optional<TaskManagementHvacRelatedElementsType> taskmanagementhvacrelatedelementstype;
-    std::optional<TaskManagementLoadControlReleatedType> taskmanagementloadcontrolreleatedtype;
-    std::optional<TaskManagementLoadControlReleatedElementsType> taskmanagementloadcontrolreleatedelementstype;
-    std::optional<TaskManagementPowerSequencesRelatedType> taskmanagementpowersequencesrelatedtype;
-    std::optional<TaskManagementPowerSequencesRelatedElementsType> taskmanagementpowersequencesrelatedelementstype;
-    std::optional<TaskManagementSmartEnergyManagementPsRelatedType> taskmanagementsmartenergymanagementpsrelatedtype;
-    std::optional<TaskManagementSmartEnergyManagementPsRelatedElementsType> taskmanagementsmartenergymanagementpsrelatedelementstype;
-    std::optional<TaskManagementJobDataType> taskmanagementjobdatatype;
-    std::optional<TaskManagementJobDataElementsType> taskmanagementjobdataelementstype;
-    std::optional<TaskManagementJobListDataType> taskmanagementjoblistdatatype;
-    std::optional<TaskManagementJobListDataSelectorsType> taskmanagementjoblistdataselectorstype;
-    std::optional<TaskManagementJobRelationDataType> taskmanagementjobrelationdatatype;
-    std::optional<TaskManagementJobRelationDataElementsType> taskmanagementjobrelationdataelementstype;
-    std::optional<TaskManagementJobRelationListDataType> taskmanagementjobrelationlistdatatype;
-    std::optional<TaskManagementJobRelationListDataSelectorsType> taskmanagementjobrelationlistdataselectorstype;
-    std::optional<TaskManagementJobDescriptionDataType> taskmanagementjobdescriptiondatatype;
-    std::optional<TaskManagementJobDescriptionDataElementsType> taskmanagementjobdescriptiondataelementstype;
-    std::optional<TaskManagementJobDescriptionListDataType> taskmanagementjobdescriptionlistdatatype;
-    std::optional<TaskManagementJobDescriptionListDataSelectorsType> taskmanagementjobdescriptionlistdataselectorstype;
-    std::optional<TaskManagementOverviewDataType> taskmanagementoverviewdatatype;
-    std::optional<TaskManagementOverviewDataElementsType> taskmanagementoverviewdataelementstype;
-    std::optional<TimeInformationDataType> timeinformationdatatype;
-    std::optional<TimeInformationDataElementsType> timeinformationdataelementstype;
-    std::optional<TimeDistributorDataType> timedistributordatatype;
-    std::optional<TimeDistributorDataElementsType> timedistributordataelementstype;
-    std::optional<TimePrecisionDataType> timeprecisiondatatype;
-    std::optional<TimePrecisionDataElementsType> timeprecisiondataelementstype;
-    std::optional<TimeDistributorEnquiryCallType> timedistributorenquirycalltype;
-    std::optional<TimeDistributorEnquiryCallElementsType> timedistributorenquirycallelementstype;
-    std::optional<HeaderType> headertype;
-    enum class Function {
-        messagingData,
-        messagingDataElements,
-        messagingListData,
-        messagingListDataSelectors,
-        timeSeriesData,
-        timeSeriesDataElements,
-        timeSeriesListData,
-        timeSeriesListDataSelectors,
-        timeSeriesDescriptionData,
-        timeSeriesDescriptionDataElements,
-        timeSeriesDescriptionListData,
-        timeSeriesDescriptionListDataSelectors,
-        timeSeriesConstraintsData,
-        timeSeriesConstraintsDataElements,
-        timeSeriesConstraintsListData,
-        timeSeriesConstraintsListDataSelectors,
-        measurementData,
-        measurementDataElements,
-        measurementListData,
-        measurementListDataSelectors,
-        measurementSeriesData,
-        measurementSeriesDataElements,
-        measurementSeriesListData,
-        measurementSeriesListDataSelectors,
-        measurementConstraintsData,
-        measurementConstraintsDataElements,
-        measurementConstraintsListData,
-        measurementConstraintsListDataSelectors,
-        measurementDescriptionData,
-        measurementDescriptionDataElements,
-        measurementDescriptionListData,
-        measurementDescriptionListDataSelectors,
-        measurementThresholdRelationData,
-        measurementThresholdRelationDataElements,
-        measurementThresholdRelationListData,
-        measurementThresholdRelationListDataSelectors,
-        thresholdData,
-        thresholdDataElements,
-        thresholdListData,
-        thresholdListDataSelectors,
-        thresholdConstraintsData,
-        thresholdConstraintsDataElements,
-        thresholdConstraintsListData,
-        thresholdConstraintsListDataSelectors,
-        thresholdDescriptionData,
-        thresholdDescriptionDataElements,
-        thresholdDescriptionListData,
-        thresholdDescriptionListDataSelectors,
-        directControlActivityData,
-        directControlActivityDataElements,
-        directControlActivityListData,
-        directControlActivityListDataSelectors,
-        directControlDescriptionData,
-        directControlDescriptionDataElements,
-        powerTimeSlotScheduleData,
-        powerTimeSlotScheduleDataElements,
-        powerTimeSlotScheduleListData,
-        powerTimeSlotScheduleListDataSelectors,
-        powerTimeSlotValueData,
-        powerTimeSlotValueDataElements,
-        powerTimeSlotValueListData,
-        powerTimeSlotValueListDataSelectors,
-        powerTimeSlotScheduleConstraintsData,
-        powerTimeSlotScheduleConstraintsDataElements,
-        powerTimeSlotScheduleConstraintsListData,
-        powerTimeSlotScheduleConstraintsListDataSelectors,
-        powerSequenceAlternativesRelationData,
-        powerSequenceAlternativesRelationDataElements,
-        powerSequenceAlternativesRelationListData,
-        powerSequenceAlternativesRelationListDataSelectors,
-        powerSequenceDescriptionData,
-        powerSequenceDescriptionDataElements,
-        powerSequenceDescriptionListData,
-        powerSequenceDescriptionListDataSelectors,
-        powerSequenceStateData,
-        powerSequenceStateDataElements,
-        powerSequenceStateListData,
-        powerSequenceStateListDataSelectors,
-        powerSequenceScheduleData,
-        powerSequenceScheduleDataElements,
-        powerSequenceScheduleListData,
-        powerSequenceScheduleListDataSelectors,
-        powerSequenceScheduleConstraintsData,
-        powerSequenceScheduleConstraintsDataElements,
-        powerSequenceScheduleConstraintsListData,
-        powerSequenceScheduleConstraintsListDataSelectors,
-        powerSequencePriceData,
-        powerSequencePriceDataElements,
-        powerSequencePriceListData,
-        powerSequencePriceListDataSelectors,
-        powerSequenceSchedulePreferenceData,
-        powerSequenceSchedulePreferenceDataElements,
-        powerSequenceSchedulePreferenceListData,
-        powerSequenceSchedulePreferenceListDataSelectors,
-        powerSequenceNodeScheduleInformationData,
-        powerSequenceNodeScheduleInformationDataElements,
-        powerSequenceScheduleConfigurationRequestCall,
-        powerSequenceScheduleConfigurationRequestCallElements,
-        powerSequencePriceCalculationRequestCall,
-        powerSequencePriceCalculationRequestCallElements,
-        resultData,
-        bindingManagementEntryData,
-        bindingManagementEntryDataElements,
-        bindingManagementEntryListData,
-        bindingManagementEntryListDataSelectors,
-        bindingManagementRequestCall,
-        bindingManagementRequestCallElements,
-        bindingManagementDeleteCall,
-        bindingManagementDeleteCallElements,
-        actuatorLevelData,
-        actuatorLevelDataElements,
-        actuatorLevelDescriptionData,
-        actuatorLevelDescriptionDataElements,
-        cmdClassifier,
-        lastUpdateAt,
-        function,
-        cmdControl,
-        actuatorSwitchData,
-        actuatorSwitchDataElements,
-        actuatorSwitchDescriptionData,
-        actuatorSwitchDescriptionDataElements,
-        alarmData,
-        alarmDataElements,
-        alarmListData,
-        alarmListDataSelectors,
-        billData,
-        billDataElements,
-        billListData,
-        billListDataSelectors,
-        billConstraintsData,
-        billConstraintsDataElements,
-        billConstraintsListData,
-        billConstraintsListDataSelectors,
-        billDescriptionData,
-        billDescriptionDataElements,
-        billDescriptionListData,
-        billDescriptionListDataSelectors,
-        identificationData,
-        identificationDataElements,
-        identificationListData,
-        identificationListDataSelectors,
-        sessionIdentificationData,
-        sessionIdentificationDataElements,
-        sessionIdentificationListData,
-        sessionIdentificationListDataSelectors,
-        sessionMeasurementRelationData,
-        sessionMeasurementRelationDataElements,
-        sessionMeasurementRelationListData,
-        sessionMeasurementRelationListDataSelectors,
-        dataTunnelingCall,
-        dataTunnelingCallElements,
-        deviceClassificationManufacturerData,
-        deviceClassificationManufacturerDataElements,
-        deviceClassificationUserData,
-        deviceClassificationUserDataElements,
-        deviceConfigurationKeyValueData,
-        deviceConfigurationKeyValueDataElements,
-        deviceConfigurationKeyValueListData,
-        deviceConfigurationKeyValueListDataSelectors,
-        deviceConfigurationKeyValueDescriptionData,
-        deviceConfigurationKeyValueDescriptionDataElements,
-        deviceConfigurationKeyValueDescriptionListData,
-        deviceConfigurationKeyValueDescriptionListDataSelectors,
-        deviceConfigurationKeyValueConstraintsData,
-        deviceConfigurationKeyValueConstraintsDataElements,
-        deviceConfigurationKeyValueConstraintsListData,
-        deviceConfigurationKeyValueConstraintsListDataSelectors,
-        deviceDiagnosisStateData,
-        deviceDiagnosisStateDataElements,
-        deviceDiagnosisHeartbeatData,
-        deviceDiagnosisHeartbeatDataElements,
-        deviceDiagnosisServiceData,
-        deviceDiagnosisServiceDataElements,
-        electricalConnectionParameterDescriptionData,
-        electricalConnectionParameterDescriptionDataElements,
-        electricalConnectionParameterDescriptionListData,
-        electricalConnectionParameterDescriptionListDataSelectors,
-        electricalConnectionPermittedValueSetData,
-        electricalConnectionPermittedValueSetDataElements,
-        electricalConnectionPermittedValueSetListData,
-        electricalConnectionPermittedValueSetListDataSelectors,
-        electricalConnectionCharacteristicData,
-        electricalConnectionCharacteristicDataElements,
-        electricalConnectionCharacteristicListData,
-        electricalConnectionCharacteristicListDataSelectors,
-        electricalConnectionStateData,
-        electricalConnectionStateDataElements,
-        electricalConnectionStateListData,
-        electricalConnectionStateListDataSelectors,
-        electricalConnectionDescriptionData,
-        electricalConnectionDescriptionDataElements,
-        electricalConnectionDescriptionListData,
-        electricalConnectionDescriptionListDataSelectors,
-        hvacSystemFunctionData,
-        hvacSystemFunctionDataElements,
-        hvacSystemFunctionListData,
-        hvacSystemFunctionListDataSelectors,
-        hvacSystemFunctionOperationModeRelationData,
-        hvacSystemFunctionOperationModeRelationDataElements,
-        hvacSystemFunctionOperationModeRelationListData,
-        hvacSystemFunctionOperationModeRelationListDataSelectors,
-        hvacSystemFunctionSetpointRelationData,
-        hvacSystemFunctionSetpointRelationDataElements,
-        hvacSystemFunctionSetpointRelationListData,
-        hvacSystemFunctionSetpointRelationListDataSelectors,
-        hvacSystemFunctionPowerSequenceRelationData,
-        hvacSystemFunctionPowerSequenceRelationDataElements,
-        hvacSystemFunctionPowerSequenceRelationListData,
-        hvacSystemFunctionPowerSequenceRelationListDataSelectors,
-        hvacSystemFunctionDescriptionData,
-        hvacSystemFunctionDescriptionDataElements,
-        hvacSystemFunctionDescriptionListData,
-        hvacSystemFunctionDescriptionListDataSelectors,
-        hvacOperationModeDescriptionData,
-        hvacOperationModeDescriptionDataElements,
-        hvacOperationModeDescriptionListData,
-        hvacOperationModeDescriptionListDataSelectors,
-        hvacOverrunData,
-        hvacOverrunDataElements,
-        hvacOverrunListData,
-        hvacOverrunListDataSelectors,
-        hvacOverrunDescriptionData,
-        hvacOverrunDescriptionDataElements,
-        hvacOverrunDescriptionListData,
-        hvacOverrunDescriptionListDataSelectors,
-        setpointData,
-        setpointDataElements,
-        setpointListData,
-        setpointListDataSelectors,
-        setpointConstraintsData,
-        setpointConstraintsDataElements,
-        setpointConstraintsListData,
-        setpointConstraintsListDataSelectors,
-        setpointDescriptionData,
-        setpointDescriptionDataElements,
-        setpointDescriptionListData,
-        setpointDescriptionListDataSelectors,
-        timeTableData,
-        timeTableDataElements,
-        timeTableListData,
-        timeTableListDataSelectors,
-        timeTableConstraintsData,
-        timeTableConstraintsDataElements,
-        timeTableConstraintsListData,
-        timeTableConstraintsListDataSelectors,
-        timeTableDescriptionData,
-        timeTableDescriptionDataElements,
-        timeTableDescriptionListData,
-        timeTableDescriptionListDataSelectors,
-        incentiveTableData,
-        incentiveTableDataElements,
-        incentiveTableDataSelectors,
-        incentiveTableDescriptionData,
-        incentiveTableDescriptionDataElements,
-        incentiveTableDescriptionDataSelectors,
-        incentiveTableConstraintsData,
-        incentiveTableConstraintsDataElements,
-        incentiveTableConstraintsDataSelectors,
-        tariffOverallConstraintsData,
-        tariffOverallConstraintsDataElements,
-        tariffData,
-        tariffDataElements,
-        tariffListData,
-        tariffListDataSelectors,
-        tariffTierRelationData,
-        tariffTierRelationDataElements,
-        tariffTierRelationListData,
-        tariffTierRelationListDataSelectors,
-        tariffBoundaryRelationData,
-        tariffBoundaryRelationDataElements,
-        tariffBoundaryRelationListData,
-        tariffBoundaryRelationListDataSelectors,
-        tariffDescriptionData,
-        tariffDescriptionDataElements,
-        tariffDescriptionListData,
-        tariffDescriptionListDataSelectors,
-        tierBoundaryData,
-        tierBoundaryDataElements,
-        tierBoundaryListData,
-        tierBoundaryListDataSelectors,
-        tierBoundaryDescriptionData,
-        tierBoundaryDescriptionDataElements,
-        tierBoundaryDescriptionListData,
-        tierBoundaryDescriptionListDataSelectors,
-        commodityData,
-        commodityDataElements,
-        commodityListData,
-        commodityListDataSelectors,
-        tierData,
-        tierDataElements,
-        tierListData,
-        tierListDataSelectors,
-        tierIncentiveRelationData,
-        tierIncentiveRelationDataElements,
-        tierIncentiveRelationListData,
-        tierIncentiveRelationListDataSelectors,
-        tierDescriptionData,
-        tierDescriptionDataElements,
-        tierDescriptionListData,
-        tierDescriptionListDataSelectors,
-        incentiveData,
-        incentiveDataElements,
-        incentiveListData,
-        incentiveListDataSelectors,
-        incentiveDescriptionData,
-        incentiveDescriptionDataElements,
-        incentiveDescriptionListData,
-        incentiveDescriptionListDataSelectors,
-        loadControlNodeData,
-        loadControlNodeDataElements,
-        loadControlEventData,
-        loadControlEventDataElements,
-        loadControlEventListData,
-        loadControlEventListDataSelectors,
-        loadControlStateData,
-        loadControlStateDataElements,
-        loadControlStateListData,
-        loadControlStateListDataSelectors,
-        loadControlLimitData,
-        loadControlLimitDataElements,
-        loadControlLimitListData,
-        loadControlLimitListDataSelectors,
-        loadControlLimitConstraintsData,
-        loadControlLimitConstraintsDataElements,
-        loadControlLimitConstraintsListData,
-        loadControlLimitConstraintsListDataSelectors,
-        loadControlLimitDescriptionData,
-        loadControlLimitDescriptionDataElements,
-        loadControlLimitDescriptionListData,
-        loadControlLimitDescriptionListDataSelectors,
-        networkManagementAddNodeCall,
-        networkManagementAddNodeCallElements,
-        networkManagementRemoveNodeCall,
-        networkManagementRemoveNodeCallElements,
-        networkManagementModifyNodeCall,
-        networkManagementModifyNodeCallElements,
-        networkManagementScanNetworkCall,
-        networkManagementScanNetworkCallElements,
-        networkManagementDiscoverCall,
-        networkManagementDiscoverCallElements,
-        networkManagementAbortCall,
-        networkManagementAbortCallElements,
-        networkManagementProcessStateData,
-        networkManagementProcessStateDataElements,
-        networkManagementJoiningModeData,
-        networkManagementJoiningModeDataElements,
-        networkManagementReportCandidateData,
-        networkManagementReportCandidateDataElements,
-        networkManagementDeviceDescriptionData,
-        networkManagementDeviceDescriptionDataElements,
-        networkManagementDeviceDescriptionListData,
-        networkManagementDeviceDescriptionListDataSelectors,
-        networkManagementEntityDescriptionData,
-        networkManagementEntityDescriptionDataElements,
-        networkManagementEntityDescriptionListData,
-        networkManagementEntityDescriptionListDataSelectors,
-        networkManagementFeatureDescriptionData,
-        networkManagementFeatureDescriptionDataElements,
-        networkManagementFeatureDescriptionListData,
-        networkManagementFeatureDescriptionListDataSelectors,
-        nodeManagementDetailedDiscoveryData,
-        nodeManagementDetailedDiscoveryDataElements,
-        nodeManagementDetailedDiscoveryDataSelectors,
-        nodeManagementBindingData,
-        nodeManagementBindingDataElements,
-        nodeManagementBindingDataSelectors,
-        nodeManagementBindingRequestCall,
-        nodeManagementBindingRequestCallElements,
-        nodeManagementBindingDeleteCall,
-        nodeManagementBindingDeleteCallElements,
-        nodeManagementSubscriptionData,
-        nodeManagementSubscriptionDataElements,
-        nodeManagementSubscriptionDataSelectors,
-        nodeManagementSubscriptionRequestCall,
-        nodeManagementSubscriptionRequestCallElements,
-        nodeManagementSubscriptionDeleteCall,
-        nodeManagementSubscriptionDeleteCallElements,
-        nodeManagementDestinationData,
-        nodeManagementDestinationDataElements,
-        nodeManagementDestinationListData,
-        nodeManagementDestinationListDataSelectors,
-        nodeManagementUseCaseData,
-        nodeManagementUseCaseDataElements,
-        nodeManagementUseCaseDataSelectors,
-        subscriptionManagementEntryData,
-        subscriptionManagementEntryDataElements,
-        subscriptionManagementEntryListData,
-        subscriptionManagementEntryListDataSelectors,
-        subscriptionManagementRequestCall,
-        subscriptionManagementRequestCallElements,
-        subscriptionManagementDeleteCall,
-        subscriptionManagementDeleteCallElements,
-        useCaseInformationData,
-        useCaseInformationDataElements,
-        useCaseInformationListData,
-        useCaseInformationListDataSelectors,
-        specificationVersionData,
-        specificationVersionDataElements,
-        specificationVersionListData,
-        specificationVersionListDataSelectors,
-        operatingConstraintsInterruptData,
-        operatingConstraintsInterruptDataElements,
-        operatingConstraintsInterruptListData,
-        operatingConstraintsInterruptListDataSelectors,
-        operatingConstraintsDurationData,
-        operatingConstraintsDurationDataElements,
-        operatingConstraintsDurationListData,
-        operatingConstraintsDurationListDataSelectors,
-        operatingConstraintsPowerDescriptionData,
-        operatingConstraintsPowerDescriptionDataElements,
-        operatingConstraintsPowerDescriptionListData,
-        operatingConstraintsPowerDescriptionListDataSelectors,
-        operatingConstraintsPowerRangeData,
-        operatingConstraintsPowerRangeDataElements,
-        operatingConstraintsPowerRangeListData,
-        operatingConstraintsPowerRangeListDataSelectors,
-        operatingConstraintsPowerLevelData,
-        operatingConstraintsPowerLevelDataElements,
-        operatingConstraintsPowerLevelListData,
-        operatingConstraintsPowerLevelListDataSelectors,
-        operatingConstraintsResumeImplicationData,
-        operatingConstraintsResumeImplicationDataElements,
-        operatingConstraintsResumeImplicationListData,
-        operatingConstraintsResumeImplicationListDataSelectors,
-        sensingData,
-        sensingDataElements,
-        sensingListData,
-        sensingListDataSelectors,
-        sensingDescriptionData,
-        sensingDescriptionDataElements,
-        smartEnergyManagementPsData,
-        smartEnergyManagementPsDataElements,
-        smartEnergyManagementPsDataSelectors,
-        smartEnergyManagementPsPriceData,
-        smartEnergyManagementPsPriceDataElements,
-        smartEnergyManagementPsPriceDataSelectors,
-        smartEnergyManagementPsConfigurationRequestCall,
-        smartEnergyManagementPsConfigurationRequestCallElements,
-        smartEnergyManagementPsPriceCalculationRequestCall,
-        smartEnergyManagementPsPriceCalculationRequestCallElements,
-        stateInformationData,
-        stateInformationDataElements,
-        stateInformationListData,
-        stateInformationListDataSelectors,
-        supplyConditionData,
-        supplyConditionDataElements,
-        supplyConditionListData,
-        supplyConditionListDataSelectors,
-        supplyConditionDescriptionData,
-        supplyConditionDescriptionDataElements,
-        supplyConditionDescriptionListData,
-        supplyConditionDescriptionListDataSelectors,
-        supplyConditionThresholdRelationData,
-        supplyConditionThresholdRelationDataElements,
-        supplyConditionThresholdRelationListData,
-        supplyConditionThresholdRelationListDataSelectors,
-        taskManagementJobData,
-        taskManagementJobDataElements,
-        taskManagementJobListData,
-        taskManagementJobListDataSelectors,
-        taskManagementJobRelationData,
-        taskManagementJobRelationDataElements,
-        taskManagementJobRelationListData,
-        taskManagementJobRelationListDataSelectors,
-        taskManagementJobDescriptionData,
-        taskManagementJobDescriptionDataElements,
-        taskManagementJobDescriptionListData,
-        taskManagementJobDescriptionListDataSelectors,
-        taskManagementOverviewData,
-        taskManagementOverviewDataElements,
-        timeInformationData,
-        timeInformationDataElements,
-        timeDistributorData,
-        timeDistributorDataElements,
-        timePrecisionData,
-        timePrecisionDataElements,
-        timeDistributorEnquiryCall,
-        timeDistributorEnquiryCallElements,
-        header,
+
+
+
+
+
+class SpineDataTypeHandler {
+    public:
+
+        
+		std::optional<MessagingNumberType> messagingnumbertype;
+		std::optional<MessagingTypeType> messagingtypetype;
+		std::optional<MessagingDataTextType> messagingdatatexttype;
+		std::optional<LabelType> labeltype;
+		std::optional<DescriptionType> descriptiontype;
+		std::optional<SpecificationVersionType> specificationversiontype;
+		std::optional<EnumExtendType> enumextendtype;
+		std::optional<AbsoluteOrRelativeTimeType> absoluteorrelativetimetype;
+		std::optional<RecurringIntervalType> recurringintervaltype;
+		std::optional<DayOfMonthType> dayofmonthtype;
+		std::optional<CalendarWeekType> calendarweektype;
+		std::optional<OccurrenceType> occurrencetype;
+		std::optional<NumberType> numbertype;
+		std::optional<ScaleType> scaletype;
+		std::optional<MaxResponseDelayType> maxresponsedelaytype;
+		std::optional<CommodityTypeType> commoditytypetype;
+		std::optional<EnergyDirectionType> energydirectiontype;
+		std::optional<EnergyModeType> energymodetype;
+		std::optional<UnitOfMeasurementType> unitofmeasurementtype;
+		std::optional<CurrencyType> currencytype;
+		std::optional<AddressDeviceType> addressdevicetype;
+		std::optional<AddressEntityType> addressentitytype;
+		std::optional<AddressFeatureType> addressfeaturetype;
+		std::optional<ScopeTypeType> scopetypetype;
+		std::optional<FeatureGroupType> featuregrouptype;
+		std::optional<DeviceTypeType> devicetypetype;
+		std::optional<EntityTypeType> entitytypetype;
+		std::optional<FeatureTypeType> featuretypetype;
+		std::optional<FeatureSpecificUsageType> featurespecificusagetype;
+		std::optional<FeatureSpecificUsageEnumType> featurespecificusageenumtype;
+		std::optional<FunctionType> functiontype;
+		std::optional<TimeSeriesIdType> timeseriesidtype;
+		std::optional<TimeSeriesSlotIdType> timeseriesslotidtype;
+		std::optional<TimeSeriesSlotCountType> timeseriesslotcounttype;
+		std::optional<TimeSeriesTypeType> timeseriestypetype;
+		std::optional<MeasurementIdType> measurementidtype;
+		std::optional<MeasurementTypeType> measurementtypetype;
+		std::optional<MeasurementValueTypeType> measurementvaluetypetype;
+		std::optional<MeasurementValueSourceType> measurementvaluesourcetype;
+		std::optional<MeasurementValueTendencyType> measurementvaluetendencytype;
+		std::optional<MeasurementValueStateType> measurementvaluestatetype;
+		std::optional<ThresholdIdType> thresholdidtype;
+		std::optional<ThresholdTypeType> thresholdtypetype;
+		std::optional<DirectControlActivityStateType> directcontrolactivitystatetype;
+		std::optional<AlternativesIdType> alternativesidtype;
+		std::optional<PowerSequenceIdType> powersequenceidtype;
+		std::optional<PowerTimeSlotNumberType> powertimeslotnumbertype;
+		std::optional<PowerTimeSlotValueTypeType> powertimeslotvaluetypetype;
+		std::optional<PowerSequenceScopeType> powersequencescopetype;
+		std::optional<PowerSequenceStateType> powersequencestatetype;
+		std::optional<ErrorNumberType> errornumbertype;
+		std::optional<BindingIdType> bindingidtype;
+		std::optional<ActuatorLevelFctType> actuatorlevelfcttype;
+		std::optional<MsgCounterType> msgcountertype;
+		std::optional<FilterIdType> filteridtype;
+		std::optional<ActuatorSwitchFctType> actuatorswitchfcttype;
+		std::optional<AlarmIdType> alarmidtype;
+		std::optional<AlarmTypeType> alarmtypetype;
+		std::optional<BillIdType> billidtype;
+		std::optional<BillTypeType> billtypetype;
+		std::optional<BillPositionIdType> billpositionidtype;
+		std::optional<BillPositionCountType> billpositioncounttype;
+		std::optional<BillPositionTypeType> billpositiontypetype;
+		std::optional<BillValueIdType> billvalueidtype;
+		std::optional<BillCostIdType> billcostidtype;
+		std::optional<BillCostTypeType> billcosttypetype;
+		std::optional<IdentificationIdType> identificationidtype;
+		std::optional<IdentificationTypeType> identificationtypetype;
+		std::optional<IdentificationValueType> identificationvaluetype;
+		std::optional<SessionIdType> sessionidtype;
+		std::optional<PurposeIdType> purposeidtype;
+		std::optional<ChannelIdType> channelidtype;
+		std::optional<DeviceClassificationStringType> deviceclassificationstringtype;
+		std::optional<PowerSourceType> powersourcetype;
+		std::optional<DeviceConfigurationKeyIdType> deviceconfigurationkeyidtype;
+		std::optional<DeviceConfigurationKeyValueStringType> deviceconfigurationkeyvaluestringtype;
+		std::optional<DeviceConfigurationKeyNameType> deviceconfigurationkeynametype;
+		std::optional<VendorStateCodeType> vendorstatecodetype;
+		std::optional<LastErrorCodeType> lasterrorcodetype;
+		std::optional<DeviceDiagnosisOperatingStateType> devicediagnosisoperatingstatetype;
+		std::optional<PowerSupplyConditionType> powersupplyconditiontype;
+		std::optional<ElectricalConnectionIdType> electricalconnectionidtype;
+		std::optional<ElectricalConnectionParameterIdType> electricalconnectionparameteridtype;
+		std::optional<ElectricalConnectionMeasurandVariantType> electricalconnectionmeasurandvarianttype;
+		std::optional<ElectricalConnectionVoltageTypeType> electricalconnectionvoltagetypetype;
+		std::optional<ElectricalConnectionAcMeasurementTypeType> electricalconnectionacmeasurementtypetype;
+		std::optional<ElectricalConnectionPhaseNameType> electricalconnectionphasenametype;
+		std::optional<ElectricalConnectionCharacteristicIdType> electricalconnectioncharacteristicidtype;
+		std::optional<ElectricalConnectionCharacteristicContextType> electricalconnectioncharacteristiccontexttype;
+		std::optional<ElectricalConnectionCharacteristicTypeType> electricalconnectioncharacteristictypetype;
+		std::optional<HvacSystemFunctionIdType> hvacsystemfunctionidtype;
+		std::optional<HvacSystemFunctionTypeType> hvacsystemfunctiontypetype;
+		std::optional<HvacOperationModeIdType> hvacoperationmodeidtype;
+		std::optional<HvacOperationModeTypeType> hvacoperationmodetypetype;
+		std::optional<HvacOverrunIdType> hvacoverrunidtype;
+		std::optional<HvacOverrunTypeType> hvacoverruntypetype;
+		std::optional<HvacOverrunStatusType> hvacoverrunstatustype;
+		std::optional<SetpointIdType> setpointidtype;
+		std::optional<SetpointTypeType> setpointtypetype;
+		std::optional<TimeTableIdType> timetableidtype;
+		std::optional<TimeSlotIdType> timeslotidtype;
+		std::optional<TimeSlotCountType> timeslotcounttype;
+		std::optional<TimeSlotTimeModeType> timeslottimemodetype;
+		std::optional<TariffIdType> tariffidtype;
+		std::optional<TariffCountType> tariffcounttype;
+		std::optional<TierBoundaryIdType> tierboundaryidtype;
+		std::optional<TierBoundaryCountType> tierboundarycounttype;
+		std::optional<TierBoundaryTypeType> tierboundarytypetype;
+		std::optional<CommodityIdType> commodityidtype;
+		std::optional<TierIdType> tieridtype;
+		std::optional<TierCountType> tiercounttype;
+		std::optional<TierTypeType> tiertypetype;
+		std::optional<IncentiveIdType> incentiveidtype;
+		std::optional<IncentiveCountType> incentivecounttype;
+		std::optional<IncentiveTypeType> incentivetypetype;
+		std::optional<IncentivePriorityType> incentiveprioritytype;
+		std::optional<IncentiveValueTypeType> incentivevaluetypetype;
+		std::optional<LoadControlEventIdType> loadcontroleventidtype;
+		std::optional<LoadControlEventActionType> loadcontroleventactiontype;
+		std::optional<LoadControlEventStateType> loadcontroleventstatetype;
+		std::optional<LoadControlLimitIdType> loadcontrollimitidtype;
+		std::optional<LoadControlLimitTypeType> loadcontrollimittypetype;
+		std::optional<LoadControlCategoryType> loadcontrolcategorytype;
+		std::optional<NetworkManagementNativeSetupType> networkmanagementnativesetuptype;
+		std::optional<NetworkManagementScanSetupType> networkmanagementscansetuptype;
+		std::optional<NetworkManagementSetupType> networkmanagementsetuptype;
+		std::optional<NetworkManagementCandidateSetupType> networkmanagementcandidatesetuptype;
+		std::optional<NetworkManagementTechnologyAddressType> networkmanagementtechnologyaddresstype;
+		std::optional<NetworkManagementCommunicationsTechnologyInformationType> networkmanagementcommunicationstechnologyinformationtype;
+		std::optional<NetworkManagementMinimumTrustLevelType> networkmanagementminimumtrustleveltype;
+		std::optional<NetworkManagementProcessTimeoutType> networkmanagementprocesstimeouttype;
+		std::optional<SubscriptionIdType> subscriptionidtype;
+		std::optional<UseCaseActorType> usecaseactortype;
+		std::optional<UseCaseActorEnumType> usecaseactorenumtype;
+		std::optional<UseCaseNameType> usecasenametype;
+		std::optional<UseCaseNameEnumType> usecasenameenumtype;
+		std::optional<UseCaseScenarioSupportType> usecasescenariosupporttype;
+		std::optional<SensingStateType> sensingstatetype;
+		std::optional<SensingTypeType> sensingtypetype;
+		std::optional<stateInformationIdType> stateinformationidtype;
+		std::optional<StateInformationType> stateinformationtype;
+		std::optional<StateInformationCategoryType> stateinformationcategorytype;
+		std::optional<ConditionIdType> conditionidtype;
+		std::optional<SupplyConditionEventTypeType> supplyconditioneventtypetype;
+		std::optional<SupplyConditionOriginatorType> supplyconditionoriginatortype;
+		std::optional<GridConditionType> gridconditiontype;
+		std::optional<TaskManagementJobIdType> taskmanagementjobidtype;
+		std::optional<TaskManagementJobStateType> taskmanagementjobstatetype;
+		std::optional<TaskManagementJobSourceType> taskmanagementjobsourcetype;
+		std::optional<SpecificationVersionDataType> specificationversiondatatype;
+		std::optional<MessagingTypeEnumType> messagingtypeenumtype;
+		std::optional<RecurringIntervalEnumType> recurringintervalenumtype;
+		std::optional<MonthType> monthtype;
+		std::optional<DayOfWeekType> dayofweektype;
+		std::optional<OccurrenceEnumType> occurrenceenumtype;
+		std::optional<CommodityTypeEnumType> commoditytypeenumtype;
+		std::optional<EnergyDirectionEnumType> energydirectionenumtype;
+		std::optional<EnergyModeEnumType> energymodeenumtype;
+		std::optional<UnitOfMeasurementEnumType> unitofmeasurementenumtype;
+		std::optional<CurrencyEnumType> currencyenumtype;
+		std::optional<ScopeTypeEnumType> scopetypeenumtype;
+		std::optional<RoleType> roletype;
+		std::optional<DeviceTypeEnumType> devicetypeenumtype;
+		std::optional<EntityTypeEnumType> entitytypeenumtype;
+		std::optional<FeatureTypeEnumType> featuretypeenumtype;
+		std::optional<FeatureDirectControlSpecificUsageEnumType> featuredirectcontrolspecificusageenumtype;
+		std::optional<FeatureHvacSpecificUsageEnumType> featurehvacspecificusageenumtype;
+		std::optional<FeatureMeasurementSpecificUsageEnumType> featuremeasurementspecificusageenumtype;
+		std::optional<FeatureSetpointSpecificUsageEnumType> featuresetpointspecificusageenumtype;
+		std::optional<FeatureSmartEnergyManagementPsSpecificUsageEnumType> featuresmartenergymanagementpsspecificusageenumtype;
+		std::optional<FunctionEnumType> functionenumtype;
+		std::optional<TimeSeriesTypeEnumType> timeseriestypeenumtype;
+		std::optional<MeasurementTypeEnumType> measurementtypeenumtype;
+		std::optional<MeasurementValueTypeEnumType> measurementvaluetypeenumtype;
+		std::optional<MeasurementValueSourceEnumType> measurementvaluesourceenumtype;
+		std::optional<MeasurementValueTendencyEnumType> measurementvaluetendencyenumtype;
+		std::optional<MeasurementValueStateEnumType> measurementvaluestateenumtype;
+		std::optional<ThresholdTypeEnumType> thresholdtypeenumtype;
+		std::optional<DirectControlActivityStateEnumType> directcontrolactivitystateenumtype;
+		std::optional<PowerTimeSlotValueTypeEnumType> powertimeslotvaluetypeenumtype;
+		std::optional<PowerSequenceScopeEnumType> powersequencescopeenumtype;
+		std::optional<PowerSequenceStateEnumType> powersequencestateenumtype;
+		std::optional<ActuatorLevelFctEnumType> actuatorlevelfctenumtype;
+		std::optional<CmdClassifierType> cmdclassifiertype;
+		std::optional<ActuatorSwitchFctEnumType> actuatorswitchfctenumtype;
+		std::optional<AlarmTypeEnumType> alarmtypeenumtype;
+		std::optional<BillTypeEnumType> billtypeenumtype;
+		std::optional<BillPositionTypeEnumType> billpositiontypeenumtype;
+		std::optional<BillCostTypeEnumType> billcosttypeenumtype;
+		std::optional<IdentificationTypeEnumType> identificationtypeenumtype;
+		std::optional<PowerSourceEnumType> powersourceenumtype;
+		std::optional<DeviceConfigurationKeyNameEnumType> deviceconfigurationkeynameenumtype;
+		std::optional<DeviceConfigurationKeyValueTypeType> deviceconfigurationkeyvaluetypetype;
+		std::optional<DeviceDiagnosisOperatingStateEnumType> devicediagnosisoperatingstateenumtype;
+		std::optional<PowerSupplyConditionEnumType> powersupplyconditionenumtype;
+		std::optional<ElectricalConnectionMeasurandVariantEnumType> electricalconnectionmeasurandvariantenumtype;
+		std::optional<ElectricalConnectionVoltageTypeEnumType> electricalconnectionvoltagetypeenumtype;
+		std::optional<ElectricalConnectionAcMeasurementTypeEnumType> electricalconnectionacmeasurementtypeenumtype;
+		std::optional<ElectricalConnectionPhaseNameEnumType> electricalconnectionphasenameenumtype;
+		std::optional<ElectricalConnectionConnectionPointType> electricalconnectionconnectionpointtype;
+		std::optional<ElectricalConnectionCharacteristicContextEnumType> electricalconnectioncharacteristiccontextenumtype;
+		std::optional<ElectricalConnectionCharacteristicTypeEnumType> electricalconnectioncharacteristictypeenumtype;
+		std::optional<HvacSystemFunctionTypeEnumType> hvacsystemfunctiontypeenumtype;
+		std::optional<HvacOperationModeTypeEnumType> hvacoperationmodetypeenumtype;
+		std::optional<HvacOverrunTypeEnumType> hvacoverruntypeenumtype;
+		std::optional<HvacOverrunStatusEnumType> hvacoverrunstatusenumtype;
+		std::optional<SetpointTypeEnumType> setpointtypeenumtype;
+		std::optional<TimeSlotTimeModeEnumType> timeslottimemodeenumtype;
+		std::optional<TierBoundaryTypeEnumType> tierboundarytypeenumtype;
+		std::optional<TierTypeEnumType> tiertypeenumtype;
+		std::optional<IncentiveTypeEnumType> incentivetypeenumtype;
+		std::optional<IncentiveValueTypeEnumType> incentivevaluetypeenumtype;
+		std::optional<LoadControlEventActionEnumType> loadcontroleventactionenumtype;
+		std::optional<LoadControlEventStateEnumType> loadcontroleventstateenumtype;
+		std::optional<LoadControlLimitTypeEnumType> loadcontrollimittypeenumtype;
+		std::optional<LoadControlCategoryEnumType> loadcontrolcategoryenumtype;
+		std::optional<NetworkManagementFeatureSetType> networkmanagementfeaturesettype;
+		std::optional<NetworkManagementProcessStateStateType> networkmanagementprocessstatestatetype;
+		std::optional<NetworkManagementStateChangeType> networkmanagementstatechangetype;
+		std::optional<SensingStateEnumType> sensingstateenumtype;
+		std::optional<SensingTypeEnumType> sensingtypeenumtype;
+		std::optional<StateInformationFunctionalityEnumType> stateinformationfunctionalityenumtype;
+		std::optional<StateInformationFailureEnumType> stateinformationfailureenumtype;
+		std::optional<StateInformationCategoryEnumType> stateinformationcategoryenumtype;
+		std::optional<SupplyConditionEventTypeEnumType> supplyconditioneventtypeenumtype;
+		std::optional<SupplyConditionOriginatorEnumType> supplyconditionoriginatorenumtype;
+		std::optional<GridConditionEnumType> gridconditionenumtype;
+		std::optional<TaskManagementJobSourceEnumType> taskmanagementjobsourceenumtype;
+		std::optional<MessagingDataType> messagingdatatype;
+		std::optional<ElementTagType> elementtagtype;
+		std::optional<MessagingDataElementsType> messagingdataelementstype;
+		std::optional<MessagingListDataType> messaginglistdatatype;
+		std::optional<TimestampIntervalType> timestampintervaltype;
+		std::optional<MessagingListDataSelectorsType> messaginglistdataselectorstype;
+		std::optional<TimePeriodType> timeperiodtype;
+		std::optional<TimePeriodElementsType> timeperiodelementstype;
+		std::optional<DaysOfWeekType> daysofweektype;
+		std::optional<AbsoluteOrRecurringTimeType> absoluteorrecurringtimetype;
+		std::optional<AbsoluteOrRecurringTimeElementsType> absoluteorrecurringtimeelementstype;
+		std::optional<RecurrenceInformationType> recurrenceinformationtype;
+		std::optional<RecurrenceInformationElementsType> recurrenceinformationelementstype;
+		std::optional<ScaledNumberType> scalednumbertype;
+		std::optional<ScaledNumberRangeType> scalednumberrangetype;
+		std::optional<ScaledNumberElementsType> scalednumberelementstype;
+		std::optional<ScaledNumberRangeElementsType> scalednumberrangeelementstype;
+		std::optional<ScaledNumberSetType> scalednumbersettype;
+		std::optional<ScaledNumberSetElementsType> scalednumbersetelementstype;
+		std::optional<DeviceAddressType> deviceaddresstype;
+		std::optional<DeviceAddressElementsType> deviceaddresselementstype;
+		std::optional<EntityAddressType> entityaddresstype;
+		std::optional<EntityAddressElementsType> entityaddresselementstype;
+		std::optional<FeatureAddressType> featureaddresstype;
+		std::optional<FeatureAddressElementsType> featureaddresselementstype;
+		std::optional<PossibleOperationsClassifierType> possibleoperationsclassifiertype;
+		std::optional<PossibleOperationsReadType> possibleoperationsreadtype;
+		std::optional<PossibleOperationsWriteType> possibleoperationswritetype;
+		std::optional<PossibleOperationsType> possibleoperationstype;
+		std::optional<PossibleOperationsElementsType> possibleoperationselementstype;
+		std::optional<FunctionPropertyType> functionpropertytype;
+		std::optional<FunctionPropertyElementsType> functionpropertyelementstype;
+		std::optional<TimeSeriesSlotType> timeseriesslottype;
+		std::optional<TimeSeriesSlotElementsType> timeseriesslotelementstype;
+		std::optional<TimeSeriesDataType> timeseriesdatatype;
+		std::optional<TimeSeriesDataElementsType> timeseriesdataelementstype;
+		std::optional<TimeSeriesListDataType> timeserieslistdatatype;
+		std::optional<TimeSeriesListDataSelectorsType> timeserieslistdataselectorstype;
+		std::optional<TimeSeriesDescriptionDataType> timeseriesdescriptiondatatype;
+		std::optional<TimeSeriesDescriptionDataElementsType> timeseriesdescriptiondataelementstype;
+		std::optional<TimeSeriesDescriptionListDataType> timeseriesdescriptionlistdatatype;
+		std::optional<TimeSeriesDescriptionListDataSelectorsType> timeseriesdescriptionlistdataselectorstype;
+		std::optional<TimeSeriesConstraintsDataType> timeseriesconstraintsdatatype;
+		std::optional<TimeSeriesConstraintsDataElementsType> timeseriesconstraintsdataelementstype;
+		std::optional<TimeSeriesConstraintsListDataType> timeseriesconstraintslistdatatype;
+		std::optional<TimeSeriesConstraintsListDataSelectorsType> timeseriesconstraintslistdataselectorstype;
+		std::optional<MeasurementDataType> measurementdatatype;
+		std::optional<MeasurementDataElementsType> measurementdataelementstype;
+		std::optional<MeasurementListDataType> measurementlistdatatype;
+		std::optional<MeasurementListDataSelectorsType> measurementlistdataselectorstype;
+		std::optional<MeasurementSeriesDataType> measurementseriesdatatype;
+		std::optional<MeasurementSeriesDataElementsType> measurementseriesdataelementstype;
+		std::optional<MeasurementSeriesListDataType> measurementserieslistdatatype;
+		std::optional<MeasurementSeriesListDataSelectorsType> measurementserieslistdataselectorstype;
+		std::optional<MeasurementConstraintsDataType> measurementconstraintsdatatype;
+		std::optional<MeasurementConstraintsDataElementsType> measurementconstraintsdataelementstype;
+		std::optional<MeasurementConstraintsListDataType> measurementconstraintslistdatatype;
+		std::optional<MeasurementConstraintsListDataSelectorsType> measurementconstraintslistdataselectorstype;
+		std::optional<MeasurementDescriptionDataType> measurementdescriptiondatatype;
+		std::optional<MeasurementDescriptionDataElementsType> measurementdescriptiondataelementstype;
+		std::optional<MeasurementDescriptionListDataType> measurementdescriptionlistdatatype;
+		std::optional<MeasurementDescriptionListDataSelectorsType> measurementdescriptionlistdataselectorstype;
+		std::optional<MeasurementThresholdRelationDataType> measurementthresholdrelationdatatype;
+		std::optional<MeasurementThresholdRelationDataElementsType> measurementthresholdrelationdataelementstype;
+		std::optional<MeasurementThresholdRelationListDataType> measurementthresholdrelationlistdatatype;
+		std::optional<MeasurementThresholdRelationListDataSelectorsType> measurementthresholdrelationlistdataselectorstype;
+		std::optional<ThresholdDataType> thresholddatatype;
+		std::optional<ThresholdDataElementsType> thresholddataelementstype;
+		std::optional<ThresholdListDataType> thresholdlistdatatype;
+		std::optional<ThresholdListDataSelectorsType> thresholdlistdataselectorstype;
+		std::optional<ThresholdConstraintsDataType> thresholdconstraintsdatatype;
+		std::optional<ThresholdConstraintsDataElementsType> thresholdconstraintsdataelementstype;
+		std::optional<ThresholdConstraintsListDataType> thresholdconstraintslistdatatype;
+		std::optional<ThresholdConstraintsListDataSelectorsType> thresholdconstraintslistdataselectorstype;
+		std::optional<ThresholdDescriptionDataType> thresholddescriptiondatatype;
+		std::optional<ThresholdDescriptionDataElementsType> thresholddescriptiondataelementstype;
+		std::optional<ThresholdDescriptionListDataType> thresholddescriptionlistdatatype;
+		std::optional<ThresholdDescriptionListDataSelectorsType> thresholddescriptionlistdataselectorstype;
+		std::optional<DirectControlActivityDataType> directcontrolactivitydatatype;
+		std::optional<DirectControlActivityDataElementsType> directcontrolactivitydataelementstype;
+		std::optional<DirectControlActivityListDataType> directcontrolactivitylistdatatype;
+		std::optional<DirectControlActivityListDataSelectorsType> directcontrolactivitylistdataselectorstype;
+		std::optional<DirectControlDescriptionDataType> directcontroldescriptiondatatype;
+		std::optional<DirectControlDescriptionDataElementsType> directcontroldescriptiondataelementstype;
+		std::optional<PowerTimeSlotScheduleDataType> powertimeslotscheduledatatype;
+		std::optional<PowerTimeSlotScheduleDataElementsType> powertimeslotscheduledataelementstype;
+		std::optional<PowerTimeSlotScheduleListDataType> powertimeslotschedulelistdatatype;
+		std::optional<PowerTimeSlotScheduleListDataSelectorsType> powertimeslotschedulelistdataselectorstype;
+		std::optional<PowerTimeSlotValueDataType> powertimeslotvaluedatatype;
+		std::optional<PowerTimeSlotValueDataElementsType> powertimeslotvaluedataelementstype;
+		std::optional<PowerTimeSlotValueListDataType> powertimeslotvaluelistdatatype;
+		std::optional<PowerTimeSlotValueListDataSelectorsType> powertimeslotvaluelistdataselectorstype;
+		std::optional<PowerTimeSlotScheduleConstraintsDataType> powertimeslotscheduleconstraintsdatatype;
+		std::optional<PowerTimeSlotScheduleConstraintsDataElementsType> powertimeslotscheduleconstraintsdataelementstype;
+		std::optional<PowerTimeSlotScheduleConstraintsListDataType> powertimeslotscheduleconstraintslistdatatype;
+		std::optional<PowerTimeSlotScheduleConstraintsListDataSelectorsType> powertimeslotscheduleconstraintslistdataselectorstype;
+		std::optional<PowerSequenceAlternativesRelationDataType> powersequencealternativesrelationdatatype;
+		std::optional<PowerSequenceAlternativesRelationDataElementsType> powersequencealternativesrelationdataelementstype;
+		std::optional<PowerSequenceAlternativesRelationListDataType> powersequencealternativesrelationlistdatatype;
+		std::optional<PowerSequenceAlternativesRelationListDataSelectorsType> powersequencealternativesrelationlistdataselectorstype;
+		std::optional<PowerSequenceDescriptionDataType> powersequencedescriptiondatatype;
+		std::optional<PowerSequenceDescriptionDataElementsType> powersequencedescriptiondataelementstype;
+		std::optional<PowerSequenceDescriptionListDataType> powersequencedescriptionlistdatatype;
+		std::optional<PowerSequenceDescriptionListDataSelectorsType> powersequencedescriptionlistdataselectorstype;
+		std::optional<PowerSequenceStateDataType> powersequencestatedatatype;
+		std::optional<PowerSequenceStateDataElementsType> powersequencestatedataelementstype;
+		std::optional<PowerSequenceStateListDataType> powersequencestatelistdatatype;
+		std::optional<PowerSequenceStateListDataSelectorsType> powersequencestatelistdataselectorstype;
+		std::optional<PowerSequenceScheduleDataType> powersequencescheduledatatype;
+		std::optional<PowerSequenceScheduleDataElementsType> powersequencescheduledataelementstype;
+		std::optional<PowerSequenceScheduleListDataType> powersequenceschedulelistdatatype;
+		std::optional<PowerSequenceScheduleListDataSelectorsType> powersequenceschedulelistdataselectorstype;
+		std::optional<PowerSequenceScheduleConstraintsDataType> powersequencescheduleconstraintsdatatype;
+		std::optional<PowerSequenceScheduleConstraintsDataElementsType> powersequencescheduleconstraintsdataelementstype;
+		std::optional<PowerSequenceScheduleConstraintsListDataType> powersequencescheduleconstraintslistdatatype;
+		std::optional<PowerSequenceScheduleConstraintsListDataSelectorsType> powersequencescheduleconstraintslistdataselectorstype;
+		std::optional<PowerSequencePriceDataType> powersequencepricedatatype;
+		std::optional<PowerSequencePriceDataElementsType> powersequencepricedataelementstype;
+		std::optional<PowerSequencePriceListDataType> powersequencepricelistdatatype;
+		std::optional<PowerSequencePriceListDataSelectorsType> powersequencepricelistdataselectorstype;
+		std::optional<PowerSequenceSchedulePreferenceDataType> powersequenceschedulepreferencedatatype;
+		std::optional<PowerSequenceSchedulePreferenceDataElementsType> powersequenceschedulepreferencedataelementstype;
+		std::optional<PowerSequenceSchedulePreferenceListDataType> powersequenceschedulepreferencelistdatatype;
+		std::optional<PowerSequenceSchedulePreferenceListDataSelectorsType> powersequenceschedulepreferencelistdataselectorstype;
+		std::optional<PowerSequenceNodeScheduleInformationDataType> powersequencenodescheduleinformationdatatype;
+		std::optional<PowerSequenceNodeScheduleInformationDataElementsType> powersequencenodescheduleinformationdataelementstype;
+		std::optional<PowerSequenceScheduleConfigurationRequestCallType> powersequencescheduleconfigurationrequestcalltype;
+		std::optional<PowerSequenceScheduleConfigurationRequestCallElementsType> powersequencescheduleconfigurationrequestcallelementstype;
+		std::optional<PowerSequencePriceCalculationRequestCallType> powersequencepricecalculationrequestcalltype;
+		std::optional<PowerSequencePriceCalculationRequestCallElementsType> powersequencepricecalculationrequestcallelementstype;
+		std::optional<ResultDataType> resultdatatype;
+		std::optional<BindingManagementEntryDataType> bindingmanagemententrydatatype;
+		std::optional<BindingManagementEntryDataElementsType> bindingmanagemententrydataelementstype;
+		std::optional<BindingManagementEntryListDataType> bindingmanagemententrylistdatatype;
+		std::optional<BindingManagementEntryListDataSelectorsType> bindingmanagemententrylistdataselectorstype;
+		std::optional<BindingManagementRequestCallType> bindingmanagementrequestcalltype;
+		std::optional<BindingManagementRequestCallElementsType> bindingmanagementrequestcallelementstype;
+		std::optional<BindingManagementDeleteCallType> bindingmanagementdeletecalltype;
+		std::optional<BindingManagementDeleteCallElementsType> bindingmanagementdeletecallelementstype;
+		std::optional<ActuatorLevelDataType> actuatorleveldatatype;
+		std::optional<ActuatorLevelDataElementsType> actuatorleveldataelementstype;
+		std::optional<ActuatorLevelDescriptionDataType> actuatorleveldescriptiondatatype;
+		std::optional<ActuatorLevelDescriptionDataElementsType> actuatorleveldescriptiondataelementstype;
+		std::optional<CmdControlType> cmdcontroltype;
+		std::optional<ActuatorSwitchDataType> actuatorswitchdatatype;
+		std::optional<ActuatorSwitchDataElementsType> actuatorswitchdataelementstype;
+		std::optional<ActuatorSwitchDescriptionDataType> actuatorswitchdescriptiondatatype;
+		std::optional<ActuatorSwitchDescriptionDataElementsType> actuatorswitchdescriptiondataelementstype;
+		std::optional<AlarmDataType> alarmdatatype;
+		std::optional<AlarmDataElementsType> alarmdataelementstype;
+		std::optional<AlarmListDataType> alarmlistdatatype;
+		std::optional<AlarmListDataSelectorsType> alarmlistdataselectorstype;
+		std::optional<BillValueType> billvaluetype;
+		std::optional<BillValueElementsType> billvalueelementstype;
+		std::optional<BillCostType> billcosttype;
+		std::optional<BillCostElementsType> billcostelementstype;
+		std::optional<BillPositionType> billpositiontype;
+		std::optional<BillPositionElementsType> billpositionelementstype;
+		std::optional<BillDataType> billdatatype;
+		std::optional<BillDataElementsType> billdataelementstype;
+		std::optional<BillListDataType> billlistdatatype;
+		std::optional<BillListDataSelectorsType> billlistdataselectorstype;
+		std::optional<BillConstraintsDataType> billconstraintsdatatype;
+		std::optional<BillConstraintsDataElementsType> billconstraintsdataelementstype;
+		std::optional<BillConstraintsListDataType> billconstraintslistdatatype;
+		std::optional<BillConstraintsListDataSelectorsType> billconstraintslistdataselectorstype;
+		std::optional<BillDescriptionDataType> billdescriptiondatatype;
+		std::optional<BillDescriptionDataElementsType> billdescriptiondataelementstype;
+		std::optional<BillDescriptionListDataType> billdescriptionlistdatatype;
+		std::optional<BillDescriptionListDataSelectorsType> billdescriptionlistdataselectorstype;
+		std::optional<IdentificationDataType> identificationdatatype;
+		std::optional<IdentificationDataElementsType> identificationdataelementstype;
+		std::optional<IdentificationListDataType> identificationlistdatatype;
+		std::optional<IdentificationListDataSelectorsType> identificationlistdataselectorstype;
+		std::optional<SessionIdentificationDataType> sessionidentificationdatatype;
+		std::optional<SessionIdentificationDataElementsType> sessionidentificationdataelementstype;
+		std::optional<SessionIdentificationListDataType> sessionidentificationlistdatatype;
+		std::optional<SessionIdentificationListDataSelectorsType> sessionidentificationlistdataselectorstype;
+		std::optional<SessionMeasurementRelationDataType> sessionmeasurementrelationdatatype;
+		std::optional<SessionMeasurementRelationDataElementsType> sessionmeasurementrelationdataelementstype;
+		std::optional<SessionMeasurementRelationListDataType> sessionmeasurementrelationlistdatatype;
+		std::optional<SessionMeasurementRelationListDataSelectorsType> sessionmeasurementrelationlistdataselectorstype;
+		std::optional<DataTunnelingHeaderType> datatunnelingheadertype;
+		std::optional<DataTunnelingHeaderElementsType> datatunnelingheaderelementstype;
+		std::optional<DataTunnelingCallType> datatunnelingcalltype;
+		std::optional<DataTunnelingCallElementsType> datatunnelingcallelementstype;
+		std::optional<DeviceClassificationManufacturerDataType> deviceclassificationmanufacturerdatatype;
+		std::optional<DeviceClassificationManufacturerDataElementsType> deviceclassificationmanufacturerdataelementstype;
+		std::optional<DeviceClassificationUserDataType> deviceclassificationuserdatatype;
+		std::optional<DeviceClassificationUserDataElementsType> deviceclassificationuserdataelementstype;
+		std::optional<DeviceConfigurationKeyValueValueType> deviceconfigurationkeyvaluevaluetype;
+		std::optional<DeviceConfigurationKeyValueValueElementsType> deviceconfigurationkeyvaluevalueelementstype;
+		std::optional<DeviceConfigurationKeyValueDataType> deviceconfigurationkeyvaluedatatype;
+		std::optional<DeviceConfigurationKeyValueDataElementsType> deviceconfigurationkeyvaluedataelementstype;
+		std::optional<DeviceConfigurationKeyValueListDataType> deviceconfigurationkeyvaluelistdatatype;
+		std::optional<DeviceConfigurationKeyValueListDataSelectorsType> deviceconfigurationkeyvaluelistdataselectorstype;
+		std::optional<DeviceConfigurationKeyValueDescriptionDataType> deviceconfigurationkeyvaluedescriptiondatatype;
+		std::optional<DeviceConfigurationKeyValueDescriptionDataElementsType> deviceconfigurationkeyvaluedescriptiondataelementstype;
+		std::optional<DeviceConfigurationKeyValueDescriptionListDataType> deviceconfigurationkeyvaluedescriptionlistdatatype;
+		std::optional<DeviceConfigurationKeyValueDescriptionListDataSelectorsType> deviceconfigurationkeyvaluedescriptionlistdataselectorstype;
+		std::optional<DeviceConfigurationKeyValueConstraintsDataType> deviceconfigurationkeyvalueconstraintsdatatype;
+		std::optional<DeviceConfigurationKeyValueConstraintsDataElementsType> deviceconfigurationkeyvalueconstraintsdataelementstype;
+		std::optional<DeviceConfigurationKeyValueConstraintsListDataType> deviceconfigurationkeyvalueconstraintslistdatatype;
+		std::optional<DeviceConfigurationKeyValueConstraintsListDataSelectorsType> deviceconfigurationkeyvalueconstraintslistdataselectorstype;
+		std::optional<DeviceDiagnosisStateDataType> devicediagnosisstatedatatype;
+		std::optional<DeviceDiagnosisStateDataElementsType> devicediagnosisstatedataelementstype;
+		std::optional<DeviceDiagnosisHeartbeatDataType> devicediagnosisheartbeatdatatype;
+		std::optional<DeviceDiagnosisHeartbeatDataElementsType> devicediagnosisheartbeatdataelementstype;
+		std::optional<DeviceDiagnosisServiceDataType> devicediagnosisservicedatatype;
+		std::optional<DeviceDiagnosisServiceDataElementsType> devicediagnosisservicedataelementstype;
+		std::optional<ElectricalConnectionParameterDescriptionDataType> electricalconnectionparameterdescriptiondatatype;
+		std::optional<ElectricalConnectionParameterDescriptionDataElementsType> electricalconnectionparameterdescriptiondataelementstype;
+		std::optional<ElectricalConnectionParameterDescriptionListDataType> electricalconnectionparameterdescriptionlistdatatype;
+		std::optional<ElectricalConnectionParameterDescriptionListDataSelectorsType> electricalconnectionparameterdescriptionlistdataselectorstype;
+		std::optional<ElectricalConnectionPermittedValueSetDataType> electricalconnectionpermittedvaluesetdatatype;
+		std::optional<ElectricalConnectionPermittedValueSetDataElementsType> electricalconnectionpermittedvaluesetdataelementstype;
+		std::optional<ElectricalConnectionPermittedValueSetListDataType> electricalconnectionpermittedvaluesetlistdatatype;
+		std::optional<ElectricalConnectionPermittedValueSetListDataSelectorsType> electricalconnectionpermittedvaluesetlistdataselectorstype;
+		std::optional<ElectricalConnectionCharacteristicDataType> electricalconnectioncharacteristicdatatype;
+		std::optional<ElectricalConnectionCharacteristicDataElementsType> electricalconnectioncharacteristicdataelementstype;
+		std::optional<ElectricalConnectionCharacteristicListDataType> electricalconnectioncharacteristiclistdatatype;
+		std::optional<ElectricalConnectionCharacteristicListDataSelectorsType> electricalconnectioncharacteristiclistdataselectorstype;
+		std::optional<ElectricalConnectionStateDataType> electricalconnectionstatedatatype;
+		std::optional<ElectricalConnectionStateDataElementsType> electricalconnectionstatedataelementstype;
+		std::optional<ElectricalConnectionStateListDataType> electricalconnectionstatelistdatatype;
+		std::optional<ElectricalConnectionStateListDataSelectorsType> electricalconnectionstatelistdataselectorstype;
+		std::optional<ElectricalConnectionDescriptionDataType> electricalconnectiondescriptiondatatype;
+		std::optional<ElectricalConnectionDescriptionDataElementsType> electricalconnectiondescriptiondataelementstype;
+		std::optional<ElectricalConnectionDescriptionListDataType> electricalconnectiondescriptionlistdatatype;
+		std::optional<ElectricalConnectionDescriptionListDataSelectorsType> electricalconnectiondescriptionlistdataselectorstype;
+		std::optional<HvacSystemFunctionDataType> hvacsystemfunctiondatatype;
+		std::optional<HvacSystemFunctionDataElementsType> hvacsystemfunctiondataelementstype;
+		std::optional<HvacSystemFunctionListDataType> hvacsystemfunctionlistdatatype;
+		std::optional<HvacSystemFunctionListDataSelectorsType> hvacsystemfunctionlistdataselectorstype;
+		std::optional<HvacSystemFunctionOperationModeRelationDataType> hvacsystemfunctionoperationmoderelationdatatype;
+		std::optional<HvacSystemFunctionOperationModeRelationDataElementsType> hvacsystemfunctionoperationmoderelationdataelementstype;
+		std::optional<HvacSystemFunctionOperationModeRelationListDataType> hvacsystemfunctionoperationmoderelationlistdatatype;
+		std::optional<HvacSystemFunctionOperationModeRelationListDataSelectorsType> hvacsystemfunctionoperationmoderelationlistdataselectorstype;
+		std::optional<HvacSystemFunctionSetpointRelationDataType> hvacsystemfunctionsetpointrelationdatatype;
+		std::optional<HvacSystemFunctionSetpointRelationDataElementsType> hvacsystemfunctionsetpointrelationdataelementstype;
+		std::optional<HvacSystemFunctionSetpointRelationListDataType> hvacsystemfunctionsetpointrelationlistdatatype;
+		std::optional<HvacSystemFunctionSetpointRelationListDataSelectorsType> hvacsystemfunctionsetpointrelationlistdataselectorstype;
+		std::optional<HvacSystemFunctionPowerSequenceRelationDataType> hvacsystemfunctionpowersequencerelationdatatype;
+		std::optional<HvacSystemFunctionPowerSequenceRelationDataElementsType> hvacsystemfunctionpowersequencerelationdataelementstype;
+		std::optional<HvacSystemFunctionPowerSequenceRelationListDataType> hvacsystemfunctionpowersequencerelationlistdatatype;
+		std::optional<HvacSystemFunctionPowerSequenceRelationListDataSelectorsType> hvacsystemfunctionpowersequencerelationlistdataselectorstype;
+		std::optional<HvacSystemFunctionDescriptionDataType> hvacsystemfunctiondescriptiondatatype;
+		std::optional<HvacSystemFunctionDescriptionDataElementsType> hvacsystemfunctiondescriptiondataelementstype;
+		std::optional<HvacSystemFunctionDescriptionListDataType> hvacsystemfunctiondescriptionlistdatatype;
+		std::optional<HvacSystemFunctionDescriptionListDataSelectorsType> hvacsystemfunctiondescriptionlistdataselectorstype;
+		std::optional<HvacOperationModeDescriptionDataType> hvacoperationmodedescriptiondatatype;
+		std::optional<HvacOperationModeDescriptionDataElementsType> hvacoperationmodedescriptiondataelementstype;
+		std::optional<HvacOperationModeDescriptionListDataType> hvacoperationmodedescriptionlistdatatype;
+		std::optional<HvacOperationModeDescriptionListDataSelectorsType> hvacoperationmodedescriptionlistdataselectorstype;
+		std::optional<HvacOverrunDataType> hvacoverrundatatype;
+		std::optional<HvacOverrunDataElementsType> hvacoverrundataelementstype;
+		std::optional<HvacOverrunListDataType> hvacoverrunlistdatatype;
+		std::optional<HvacOverrunListDataSelectorsType> hvacoverrunlistdataselectorstype;
+		std::optional<HvacOverrunDescriptionDataType> hvacoverrundescriptiondatatype;
+		std::optional<HvacOverrunDescriptionDataElementsType> hvacoverrundescriptiondataelementstype;
+		std::optional<HvacOverrunDescriptionListDataType> hvacoverrundescriptionlistdatatype;
+		std::optional<HvacOverrunDescriptionListDataSelectorsType> hvacoverrundescriptionlistdataselectorstype;
+		std::optional<SetpointDataType> setpointdatatype;
+		std::optional<SetpointDataElementsType> setpointdataelementstype;
+		std::optional<SetpointListDataType> setpointlistdatatype;
+		std::optional<SetpointListDataSelectorsType> setpointlistdataselectorstype;
+		std::optional<SetpointConstraintsDataType> setpointconstraintsdatatype;
+		std::optional<SetpointConstraintsDataElementsType> setpointconstraintsdataelementstype;
+		std::optional<SetpointConstraintsListDataType> setpointconstraintslistdatatype;
+		std::optional<SetpointConstraintsListDataSelectorsType> setpointconstraintslistdataselectorstype;
+		std::optional<SetpointDescriptionDataType> setpointdescriptiondatatype;
+		std::optional<SetpointDescriptionDataElementsType> setpointdescriptiondataelementstype;
+		std::optional<SetpointDescriptionListDataType> setpointdescriptionlistdatatype;
+		std::optional<SetpointDescriptionListDataSelectorsType> setpointdescriptionlistdataselectorstype;
+		std::optional<TimeTableDataType> timetabledatatype;
+		std::optional<TimeTableDataElementsType> timetabledataelementstype;
+		std::optional<TimeTableListDataType> timetablelistdatatype;
+		std::optional<TimeTableListDataSelectorsType> timetablelistdataselectorstype;
+		std::optional<TimeTableConstraintsDataType> timetableconstraintsdatatype;
+		std::optional<TimeTableConstraintsDataElementsType> timetableconstraintsdataelementstype;
+		std::optional<TimeTableConstraintsListDataType> timetableconstraintslistdatatype;
+		std::optional<TimeTableConstraintsListDataSelectorsType> timetableconstraintslistdataselectorstype;
+		std::optional<TimeTableDescriptionDataType> timetabledescriptiondatatype;
+		std::optional<TimeTableDescriptionDataElementsType> timetabledescriptiondataelementstype;
+		std::optional<TimeTableDescriptionListDataType> timetabledescriptionlistdatatype;
+		std::optional<TimeTableDescriptionListDataSelectorsType> timetabledescriptionlistdataselectorstype;
+		std::optional<TariffDataType> tariffdatatype;
+		std::optional<TierDataType> tierdatatype;
+		std::optional<TierBoundaryDataType> tierboundarydatatype;
+		std::optional<IncentiveDataType> incentivedatatype;
+		std::optional<IncentiveTableTierType> incentivetabletiertype;
+		std::optional<IncentiveTableIncentiveSlotType> incentivetableincentiveslottype;
+		std::optional<IncentiveTableType> incentivetabletype;
+		std::optional<IncentiveTableDataType> incentivetabledatatype;
+		std::optional<TariffDataElementsType> tariffdataelementstype;
+		std::optional<TierDataElementsType> tierdataelementstype;
+		std::optional<TierBoundaryDataElementsType> tierboundarydataelementstype;
+		std::optional<IncentiveDataElementsType> incentivedataelementstype;
+		std::optional<IncentiveTableTierElementsType> incentivetabletierelementstype;
+		std::optional<IncentiveTableIncentiveSlotElementsType> incentivetableincentiveslotelementstype;
+		std::optional<IncentiveTableElementsType> incentivetableelementstype;
+		std::optional<IncentiveTableDataElementsType> incentivetabledataelementstype;
+		std::optional<TariffListDataSelectorsType> tarifflistdataselectorstype;
+		std::optional<IncentiveTableDataSelectorsType> incentivetabledataselectorstype;
+		std::optional<TariffDescriptionDataType> tariffdescriptiondatatype;
+		std::optional<TierDescriptionDataType> tierdescriptiondatatype;
+		std::optional<TierBoundaryDescriptionDataType> tierboundarydescriptiondatatype;
+		std::optional<IncentiveDescriptionDataType> incentivedescriptiondatatype;
+		std::optional<IncentiveTableDescriptionTierType> incentivetabledescriptiontiertype;
+		std::optional<IncentiveTableDescriptionType> incentivetabledescriptiontype;
+		std::optional<IncentiveTableDescriptionDataType> incentivetabledescriptiondatatype;
+		std::optional<TariffDescriptionDataElementsType> tariffdescriptiondataelementstype;
+		std::optional<TierDescriptionDataElementsType> tierdescriptiondataelementstype;
+		std::optional<TierBoundaryDescriptionDataElementsType> tierboundarydescriptiondataelementstype;
+		std::optional<IncentiveDescriptionDataElementsType> incentivedescriptiondataelementstype;
+		std::optional<IncentiveTableDescriptionTierElementsType> incentivetabledescriptiontierelementstype;
+		std::optional<IncentiveTableDescriptionElementsType> incentivetabledescriptionelementstype;
+		std::optional<IncentiveTableDescriptionDataElementsType> incentivetabledescriptiondataelementstype;
+		std::optional<TariffDescriptionListDataSelectorsType> tariffdescriptionlistdataselectorstype;
+		std::optional<IncentiveTableDescriptionDataSelectorsType> incentivetabledescriptiondataselectorstype;
+		std::optional<TariffOverallConstraintsDataType> tariffoverallconstraintsdatatype;
+		std::optional<IncentiveTableConstraintsType> incentivetableconstraintstype;
+		std::optional<IncentiveTableConstraintsDataType> incentivetableconstraintsdatatype;
+		std::optional<TariffOverallConstraintsDataElementsType> tariffoverallconstraintsdataelementstype;
+		std::optional<IncentiveTableConstraintsElementsType> incentivetableconstraintselementstype;
+		std::optional<IncentiveTableConstraintsDataElementsType> incentivetableconstraintsdataelementstype;
+		std::optional<IncentiveTableConstraintsDataSelectorsType> incentivetableconstraintsdataselectorstype;
+		std::optional<TariffListDataType> tarifflistdatatype;
+		std::optional<TariffTierRelationDataType> tarifftierrelationdatatype;
+		std::optional<TariffTierRelationDataElementsType> tarifftierrelationdataelementstype;
+		std::optional<TariffTierRelationListDataType> tarifftierrelationlistdatatype;
+		std::optional<TariffTierRelationListDataSelectorsType> tarifftierrelationlistdataselectorstype;
+		std::optional<TariffBoundaryRelationDataType> tariffboundaryrelationdatatype;
+		std::optional<TariffBoundaryRelationDataElementsType> tariffboundaryrelationdataelementstype;
+		std::optional<TariffBoundaryRelationListDataType> tariffboundaryrelationlistdatatype;
+		std::optional<TariffBoundaryRelationListDataSelectorsType> tariffboundaryrelationlistdataselectorstype;
+		std::optional<TariffDescriptionListDataType> tariffdescriptionlistdatatype;
+		std::optional<TierBoundaryListDataType> tierboundarylistdatatype;
+		std::optional<TierBoundaryListDataSelectorsType> tierboundarylistdataselectorstype;
+		std::optional<TierBoundaryDescriptionListDataType> tierboundarydescriptionlistdatatype;
+		std::optional<TierBoundaryDescriptionListDataSelectorsType> tierboundarydescriptionlistdataselectorstype;
+		std::optional<CommodityDataType> commoditydatatype;
+		std::optional<CommodityDataElementsType> commoditydataelementstype;
+		std::optional<CommodityListDataType> commoditylistdatatype;
+		std::optional<CommodityListDataSelectorsType> commoditylistdataselectorstype;
+		std::optional<TierListDataType> tierlistdatatype;
+		std::optional<TierListDataSelectorsType> tierlistdataselectorstype;
+		std::optional<TierIncentiveRelationDataType> tierincentiverelationdatatype;
+		std::optional<TierIncentiveRelationDataElementsType> tierincentiverelationdataelementstype;
+		std::optional<TierIncentiveRelationListDataType> tierincentiverelationlistdatatype;
+		std::optional<TierIncentiveRelationListDataSelectorsType> tierincentiverelationlistdataselectorstype;
+		std::optional<TierDescriptionListDataType> tierdescriptionlistdatatype;
+		std::optional<TierDescriptionListDataSelectorsType> tierdescriptionlistdataselectorstype;
+		std::optional<IncentiveListDataType> incentivelistdatatype;
+		std::optional<IncentiveListDataSelectorsType> incentivelistdataselectorstype;
+		std::optional<IncentiveDescriptionListDataType> incentivedescriptionlistdatatype;
+		std::optional<IncentiveDescriptionListDataSelectorsType> incentivedescriptionlistdataselectorstype;
+		std::optional<LoadControlNodeDataType> loadcontrolnodedatatype;
+		std::optional<LoadControlNodeDataElementsType> loadcontrolnodedataelementstype;
+		std::optional<LoadControlEventDataType> loadcontroleventdatatype;
+		std::optional<LoadControlEventDataElementsType> loadcontroleventdataelementstype;
+		std::optional<LoadControlEventListDataType> loadcontroleventlistdatatype;
+		std::optional<LoadControlEventListDataSelectorsType> loadcontroleventlistdataselectorstype;
+		std::optional<LoadControlStateDataType> loadcontrolstatedatatype;
+		std::optional<LoadControlStateDataElementsType> loadcontrolstatedataelementstype;
+		std::optional<LoadControlStateListDataType> loadcontrolstatelistdatatype;
+		std::optional<LoadControlStateListDataSelectorsType> loadcontrolstatelistdataselectorstype;
+		std::optional<LoadControlLimitDataType> loadcontrollimitdatatype;
+		std::optional<LoadControlLimitDataElementsType> loadcontrollimitdataelementstype;
+		std::optional<LoadControlLimitListDataType> loadcontrollimitlistdatatype;
+		std::optional<LoadControlLimitListDataSelectorsType> loadcontrollimitlistdataselectorstype;
+		std::optional<LoadControlLimitConstraintsDataType> loadcontrollimitconstraintsdatatype;
+		std::optional<LoadControlLimitConstraintsDataElementsType> loadcontrollimitconstraintsdataelementstype;
+		std::optional<LoadControlLimitConstraintsListDataType> loadcontrollimitconstraintslistdatatype;
+		std::optional<LoadControlLimitConstraintsListDataSelectorsType> loadcontrollimitconstraintslistdataselectorstype;
+		std::optional<LoadControlLimitDescriptionDataType> loadcontrollimitdescriptiondatatype;
+		std::optional<LoadControlLimitDescriptionDataElementsType> loadcontrollimitdescriptiondataelementstype;
+		std::optional<LoadControlLimitDescriptionListDataType> loadcontrollimitdescriptionlistdatatype;
+		std::optional<LoadControlLimitDescriptionListDataSelectorsType> loadcontrollimitdescriptionlistdataselectorstype;
+		std::optional<NetworkManagementAddNodeCallType> networkmanagementaddnodecalltype;
+		std::optional<NetworkManagementAddNodeCallElementsType> networkmanagementaddnodecallelementstype;
+		std::optional<NetworkManagementRemoveNodeCallType> networkmanagementremovenodecalltype;
+		std::optional<NetworkManagementRemoveNodeCallElementsType> networkmanagementremovenodecallelementstype;
+		std::optional<NetworkManagementModifyNodeCallType> networkmanagementmodifynodecalltype;
+		std::optional<NetworkManagementModifyNodeCallElementsType> networkmanagementmodifynodecallelementstype;
+		std::optional<NetworkManagementScanNetworkCallType> networkmanagementscannetworkcalltype;
+		std::optional<NetworkManagementScanNetworkCallElementsType> networkmanagementscannetworkcallelementstype;
+		std::optional<NetworkManagementDiscoverCallType> networkmanagementdiscovercalltype;
+		std::optional<NetworkManagementDiscoverCallElementsType> networkmanagementdiscovercallelementstype;
+		std::optional<NetworkManagementAbortCallType> networkmanagementabortcalltype;
+		std::optional<NetworkManagementAbortCallElementsType> networkmanagementabortcallelementstype;
+		std::optional<NetworkManagementProcessStateDataType> networkmanagementprocessstatedatatype;
+		std::optional<NetworkManagementProcessStateDataElementsType> networkmanagementprocessstatedataelementstype;
+		std::optional<NetworkManagementJoiningModeDataType> networkmanagementjoiningmodedatatype;
+		std::optional<NetworkManagementJoiningModeDataElementsType> networkmanagementjoiningmodedataelementstype;
+		std::optional<NetworkManagementReportCandidateDataType> networkmanagementreportcandidatedatatype;
+		std::optional<NetworkManagementReportCandidateDataElementsType> networkmanagementreportcandidatedataelementstype;
+		std::optional<NetworkManagementDeviceDescriptionDataType> networkmanagementdevicedescriptiondatatype;
+		std::optional<NetworkManagementDeviceDescriptionDataElementsType> networkmanagementdevicedescriptiondataelementstype;
+		std::optional<NetworkManagementDeviceDescriptionListDataType> networkmanagementdevicedescriptionlistdatatype;
+		std::optional<NetworkManagementDeviceDescriptionListDataSelectorsType> networkmanagementdevicedescriptionlistdataselectorstype;
+		std::optional<NetworkManagementEntityDescriptionDataType> networkmanagemententitydescriptiondatatype;
+		std::optional<NetworkManagementEntityDescriptionDataElementsType> networkmanagemententitydescriptiondataelementstype;
+		std::optional<NetworkManagementEntityDescriptionListDataType> networkmanagemententitydescriptionlistdatatype;
+		std::optional<NetworkManagementEntityDescriptionListDataSelectorsType> networkmanagemententitydescriptionlistdataselectorstype;
+		std::optional<NetworkManagementFeatureDescriptionDataType> networkmanagementfeaturedescriptiondatatype;
+		std::optional<NetworkManagementFeatureDescriptionDataElementsType> networkmanagementfeaturedescriptiondataelementstype;
+		std::optional<NetworkManagementFeatureDescriptionListDataType> networkmanagementfeaturedescriptionlistdatatype;
+		std::optional<NetworkManagementFeatureDescriptionListDataSelectorsType> networkmanagementfeaturedescriptionlistdataselectorstype;
+		std::optional<NodeManagementSpecificationVersionListType> nodemanagementspecificationversionlisttype;
+		std::optional<NodeManagementDetailedDiscoveryDeviceInformationType> nodemanagementdetaileddiscoverydeviceinformationtype;
+		std::optional<NodeManagementDetailedDiscoveryEntityInformationType> nodemanagementdetaileddiscoveryentityinformationtype;
+		std::optional<NodeManagementDetailedDiscoveryFeatureInformationType> nodemanagementdetaileddiscoveryfeatureinformationtype;
+		std::optional<NodeManagementDetailedDiscoveryDataType> nodemanagementdetaileddiscoverydatatype;
+		std::optional<SpecificationVersionDataElementsType> specificationversiondataelementstype;
+		std::optional<NodeManagementSpecificationVersionListElementsType> nodemanagementspecificationversionlistelementstype;
+		std::optional<NodeManagementDetailedDiscoveryDeviceInformationElementsType> nodemanagementdetaileddiscoverydeviceinformationelementstype;
+		std::optional<NodeManagementDetailedDiscoveryEntityInformationElementsType> nodemanagementdetaileddiscoveryentityinformationelementstype;
+		std::optional<NodeManagementDetailedDiscoveryFeatureInformationElementsType> nodemanagementdetaileddiscoveryfeatureinformationelementstype;
+		std::optional<NodeManagementDetailedDiscoveryDataElementsType> nodemanagementdetaileddiscoverydataelementstype;
+		std::optional<NodeManagementDetailedDiscoveryDataSelectorsType> nodemanagementdetaileddiscoverydataselectorstype;
+		std::optional<NodeManagementBindingDataType> nodemanagementbindingdatatype;
+		std::optional<NodeManagementBindingDataElementsType> nodemanagementbindingdataelementstype;
+		std::optional<NodeManagementBindingDataSelectorsType> nodemanagementbindingdataselectorstype;
+		std::optional<NodeManagementBindingRequestCallType> nodemanagementbindingrequestcalltype;
+		std::optional<NodeManagementBindingRequestCallElementsType> nodemanagementbindingrequestcallelementstype;
+		std::optional<NodeManagementBindingDeleteCallType> nodemanagementbindingdeletecalltype;
+		std::optional<NodeManagementBindingDeleteCallElementsType> nodemanagementbindingdeletecallelementstype;
+		std::optional<SubscriptionManagementEntryDataType> subscriptionmanagemententrydatatype;
+		std::optional<NodeManagementSubscriptionDataType> nodemanagementsubscriptiondatatype;
+		std::optional<SubscriptionManagementEntryDataElementsType> subscriptionmanagemententrydataelementstype;
+		std::optional<NodeManagementSubscriptionDataElementsType> nodemanagementsubscriptiondataelementstype;
+		std::optional<SubscriptionManagementEntryListDataSelectorsType> subscriptionmanagemententrylistdataselectorstype;
+		std::optional<NodeManagementSubscriptionDataSelectorsType> nodemanagementsubscriptiondataselectorstype;
+		std::optional<SubscriptionManagementRequestCallType> subscriptionmanagementrequestcalltype;
+		std::optional<NodeManagementSubscriptionRequestCallType> nodemanagementsubscriptionrequestcalltype;
+		std::optional<SubscriptionManagementRequestCallElementsType> subscriptionmanagementrequestcallelementstype;
+		std::optional<NodeManagementSubscriptionRequestCallElementsType> nodemanagementsubscriptionrequestcallelementstype;
+		std::optional<SubscriptionManagementDeleteCallType> subscriptionmanagementdeletecalltype;
+		std::optional<NodeManagementSubscriptionDeleteCallType> nodemanagementsubscriptiondeletecalltype;
+		std::optional<SubscriptionManagementDeleteCallElementsType> subscriptionmanagementdeletecallelementstype;
+		std::optional<NodeManagementSubscriptionDeleteCallElementsType> nodemanagementsubscriptiondeletecallelementstype;
+		std::optional<NodeManagementDestinationDataType> nodemanagementdestinationdatatype;
+		std::optional<NodeManagementDestinationDataElementsType> nodemanagementdestinationdataelementstype;
+		std::optional<NodeManagementDestinationListDataType> nodemanagementdestinationlistdatatype;
+		std::optional<NodeManagementDestinationListDataSelectorsType> nodemanagementdestinationlistdataselectorstype;
+		std::optional<UseCaseSupportType> usecasesupporttype;
+		std::optional<UseCaseInformationDataType> usecaseinformationdatatype;
+		std::optional<NodeManagementUseCaseDataType> nodemanagementusecasedatatype;
+		std::optional<UseCaseSupportElementsType> usecasesupportelementstype;
+		std::optional<UseCaseInformationDataElementsType> usecaseinformationdataelementstype;
+		std::optional<NodeManagementUseCaseDataElementsType> nodemanagementusecasedataelementstype;
+		std::optional<UseCaseSupportSelectorsType> usecasesupportselectorstype;
+		std::optional<UseCaseInformationListDataSelectorsType> usecaseinformationlistdataselectorstype;
+		std::optional<NodeManagementUseCaseDataSelectorsType> nodemanagementusecasedataselectorstype;
+		std::optional<SubscriptionManagementEntryListDataType> subscriptionmanagemententrylistdatatype;
+		std::optional<UseCaseInformationListDataType> usecaseinformationlistdatatype;
+		std::optional<SpecificationVersionListDataType> specificationversionlistdatatype;
+		std::optional<SpecificationVersionListDataSelectorsType> specificationversionlistdataselectorstype;
+		std::optional<OperatingConstraintsInterruptDataType> operatingconstraintsinterruptdatatype;
+		std::optional<OperatingConstraintsInterruptDataElementsType> operatingconstraintsinterruptdataelementstype;
+		std::optional<OperatingConstraintsInterruptListDataType> operatingconstraintsinterruptlistdatatype;
+		std::optional<OperatingConstraintsInterruptListDataSelectorsType> operatingconstraintsinterruptlistdataselectorstype;
+		std::optional<OperatingConstraintsDurationDataType> operatingconstraintsdurationdatatype;
+		std::optional<OperatingConstraintsDurationDataElementsType> operatingconstraintsdurationdataelementstype;
+		std::optional<OperatingConstraintsDurationListDataType> operatingconstraintsdurationlistdatatype;
+		std::optional<OperatingConstraintsDurationListDataSelectorsType> operatingconstraintsdurationlistdataselectorstype;
+		std::optional<OperatingConstraintsPowerDescriptionDataType> operatingconstraintspowerdescriptiondatatype;
+		std::optional<OperatingConstraintsPowerDescriptionDataElementsType> operatingconstraintspowerdescriptiondataelementstype;
+		std::optional<OperatingConstraintsPowerDescriptionListDataType> operatingconstraintspowerdescriptionlistdatatype;
+		std::optional<OperatingConstraintsPowerDescriptionListDataSelectorsType> operatingconstraintspowerdescriptionlistdataselectorstype;
+		std::optional<OperatingConstraintsPowerRangeDataType> operatingconstraintspowerrangedatatype;
+		std::optional<OperatingConstraintsPowerRangeDataElementsType> operatingconstraintspowerrangedataelementstype;
+		std::optional<OperatingConstraintsPowerRangeListDataType> operatingconstraintspowerrangelistdatatype;
+		std::optional<OperatingConstraintsPowerRangeListDataSelectorsType> operatingconstraintspowerrangelistdataselectorstype;
+		std::optional<OperatingConstraintsPowerLevelDataType> operatingconstraintspowerleveldatatype;
+		std::optional<OperatingConstraintsPowerLevelDataElementsType> operatingconstraintspowerleveldataelementstype;
+		std::optional<OperatingConstraintsPowerLevelListDataType> operatingconstraintspowerlevellistdatatype;
+		std::optional<OperatingConstraintsPowerLevelListDataSelectorsType> operatingconstraintspowerlevellistdataselectorstype;
+		std::optional<OperatingConstraintsResumeImplicationDataType> operatingconstraintsresumeimplicationdatatype;
+		std::optional<OperatingConstraintsResumeImplicationDataElementsType> operatingconstraintsresumeimplicationdataelementstype;
+		std::optional<OperatingConstraintsResumeImplicationListDataType> operatingconstraintsresumeimplicationlistdatatype;
+		std::optional<OperatingConstraintsResumeImplicationListDataSelectorsType> operatingconstraintsresumeimplicationlistdataselectorstype;
+		std::optional<SensingDataType> sensingdatatype;
+		std::optional<SensingDataElementsType> sensingdataelementstype;
+		std::optional<SensingListDataType> sensinglistdatatype;
+		std::optional<SensingListDataSelectorsType> sensinglistdataselectorstype;
+		std::optional<SensingDescriptionDataType> sensingdescriptiondatatype;
+		std::optional<SensingDescriptionDataElementsType> sensingdescriptiondataelementstype;
+		std::optional<SmartEnergyManagementPsAlternativesRelationType> smartenergymanagementpsalternativesrelationtype;
+		std::optional<SmartEnergyManagementPsPowerTimeSlotValueListType> smartenergymanagementpspowertimeslotvaluelisttype;
+		std::optional<SmartEnergyManagementPsPowerTimeSlotType> smartenergymanagementpspowertimeslottype;
+		std::optional<SmartEnergyManagementPsPowerSequenceType> smartenergymanagementpspowersequencetype;
+		std::optional<SmartEnergyManagementPsAlternativesType> smartenergymanagementpsalternativestype;
+		std::optional<SmartEnergyManagementPsDataType> smartenergymanagementpsdatatype;
+		std::optional<SmartEnergyManagementPsAlternativesRelationElementsType> smartenergymanagementpsalternativesrelationelementstype;
+		std::optional<SmartEnergyManagementPsPowerTimeSlotValueListElementsType> smartenergymanagementpspowertimeslotvaluelistelementstype;
+		std::optional<SmartEnergyManagementPsPowerTimeSlotElementsType> smartenergymanagementpspowertimeslotelementstype;
+		std::optional<SmartEnergyManagementPsPowerSequenceElementsType> smartenergymanagementpspowersequenceelementstype;
+		std::optional<SmartEnergyManagementPsAlternativesElementsType> smartenergymanagementpsalternativeselementstype;
+		std::optional<SmartEnergyManagementPsDataElementsType> smartenergymanagementpsdataelementstype;
+		std::optional<SmartEnergyManagementPsDataSelectorsType> smartenergymanagementpsdataselectorstype;
+		std::optional<SmartEnergyManagementPsPriceDataType> smartenergymanagementpspricedatatype;
+		std::optional<SmartEnergyManagementPsPriceDataElementsType> smartenergymanagementpspricedataelementstype;
+		std::optional<SmartEnergyManagementPsPriceDataSelectorsType> smartenergymanagementpspricedataselectorstype;
+		std::optional<SmartEnergyManagementPsConfigurationRequestCallType> smartenergymanagementpsconfigurationrequestcalltype;
+		std::optional<SmartEnergyManagementPsConfigurationRequestCallElementsType> smartenergymanagementpsconfigurationrequestcallelementstype;
+		std::optional<SmartEnergyManagementPsPriceCalculationRequestCallType> smartenergymanagementpspricecalculationrequestcalltype;
+		std::optional<SmartEnergyManagementPsPriceCalculationRequestCallElementsType> smartenergymanagementpspricecalculationrequestcallelementstype;
+		std::optional<StateInformationDataType> stateinformationdatatype;
+		std::optional<StateInformationDataElementsType> stateinformationdataelementstype;
+		std::optional<StateInformationListDataType> stateinformationlistdatatype;
+		std::optional<StateInformationListDataSelectorsType> stateinformationlistdataselectorstype;
+		std::optional<SupplyConditionDataType> supplyconditiondatatype;
+		std::optional<SupplyConditionDataElementsType> supplyconditiondataelementstype;
+		std::optional<SupplyConditionListDataType> supplyconditionlistdatatype;
+		std::optional<SupplyConditionListDataSelectorsType> supplyconditionlistdataselectorstype;
+		std::optional<SupplyConditionDescriptionDataType> supplyconditiondescriptiondatatype;
+		std::optional<SupplyConditionDescriptionDataElementsType> supplyconditiondescriptiondataelementstype;
+		std::optional<SupplyConditionDescriptionListDataType> supplyconditiondescriptionlistdatatype;
+		std::optional<SupplyConditionDescriptionListDataSelectorsType> supplyconditiondescriptionlistdataselectorstype;
+		std::optional<SupplyConditionThresholdRelationDataType> supplyconditionthresholdrelationdatatype;
+		std::optional<SupplyConditionThresholdRelationDataElementsType> supplyconditionthresholdrelationdataelementstype;
+		std::optional<SupplyConditionThresholdRelationListDataType> supplyconditionthresholdrelationlistdatatype;
+		std::optional<SupplyConditionThresholdRelationListDataSelectorsType> supplyconditionthresholdrelationlistdataselectorstype;
+		std::optional<TaskManagementDirectControlRelatedType> taskmanagementdirectcontrolrelatedtype;
+		std::optional<TaskManagementDirectControlRelatedElementsType> taskmanagementdirectcontrolrelatedelementstype;
+		std::optional<TaskManagementHvacRelatedType> taskmanagementhvacrelatedtype;
+		std::optional<TaskManagementHvacRelatedElementsType> taskmanagementhvacrelatedelementstype;
+		std::optional<TaskManagementLoadControlReleatedType> taskmanagementloadcontrolreleatedtype;
+		std::optional<TaskManagementLoadControlReleatedElementsType> taskmanagementloadcontrolreleatedelementstype;
+		std::optional<TaskManagementPowerSequencesRelatedType> taskmanagementpowersequencesrelatedtype;
+		std::optional<TaskManagementPowerSequencesRelatedElementsType> taskmanagementpowersequencesrelatedelementstype;
+		std::optional<TaskManagementSmartEnergyManagementPsRelatedType> taskmanagementsmartenergymanagementpsrelatedtype;
+		std::optional<TaskManagementSmartEnergyManagementPsRelatedElementsType> taskmanagementsmartenergymanagementpsrelatedelementstype;
+		std::optional<TaskManagementJobDataType> taskmanagementjobdatatype;
+		std::optional<TaskManagementJobDataElementsType> taskmanagementjobdataelementstype;
+		std::optional<TaskManagementJobListDataType> taskmanagementjoblistdatatype;
+		std::optional<TaskManagementJobListDataSelectorsType> taskmanagementjoblistdataselectorstype;
+		std::optional<TaskManagementJobRelationDataType> taskmanagementjobrelationdatatype;
+		std::optional<TaskManagementJobRelationDataElementsType> taskmanagementjobrelationdataelementstype;
+		std::optional<TaskManagementJobRelationListDataType> taskmanagementjobrelationlistdatatype;
+		std::optional<TaskManagementJobRelationListDataSelectorsType> taskmanagementjobrelationlistdataselectorstype;
+		std::optional<TaskManagementJobDescriptionDataType> taskmanagementjobdescriptiondatatype;
+		std::optional<TaskManagementJobDescriptionDataElementsType> taskmanagementjobdescriptiondataelementstype;
+		std::optional<TaskManagementJobDescriptionListDataType> taskmanagementjobdescriptionlistdatatype;
+		std::optional<TaskManagementJobDescriptionListDataSelectorsType> taskmanagementjobdescriptionlistdataselectorstype;
+		std::optional<TaskManagementOverviewDataType> taskmanagementoverviewdatatype;
+		std::optional<TaskManagementOverviewDataElementsType> taskmanagementoverviewdataelementstype;
+		std::optional<TimeInformationDataType> timeinformationdatatype;
+		std::optional<TimeInformationDataElementsType> timeinformationdataelementstype;
+		std::optional<TimeDistributorDataType> timedistributordatatype;
+		std::optional<TimeDistributorDataElementsType> timedistributordataelementstype;
+		std::optional<TimePrecisionDataType> timeprecisiondatatype;
+		std::optional<TimePrecisionDataElementsType> timeprecisiondataelementstype;
+		std::optional<TimeDistributorEnquiryCallType> timedistributorenquirycalltype;
+		std::optional<TimeDistributorEnquiryCallElementsType> timedistributorenquirycallelementstype;
+		std::optional<HeaderType> headertype;
+        enum class Function {
+			messagingData,
+			messagingDataElements,
+			messagingListData,
+			messagingListDataSelectors,
+			timeSeriesData,
+			timeSeriesDataElements,
+			timeSeriesListData,
+			timeSeriesListDataSelectors,
+			timeSeriesDescriptionData,
+			timeSeriesDescriptionDataElements,
+			timeSeriesDescriptionListData,
+			timeSeriesDescriptionListDataSelectors,
+			timeSeriesConstraintsData,
+			timeSeriesConstraintsDataElements,
+			timeSeriesConstraintsListData,
+			timeSeriesConstraintsListDataSelectors,
+			measurementData,
+			measurementDataElements,
+			measurementListData,
+			measurementListDataSelectors,
+			measurementSeriesData,
+			measurementSeriesDataElements,
+			measurementSeriesListData,
+			measurementSeriesListDataSelectors,
+			measurementConstraintsData,
+			measurementConstraintsDataElements,
+			measurementConstraintsListData,
+			measurementConstraintsListDataSelectors,
+			measurementDescriptionData,
+			measurementDescriptionDataElements,
+			measurementDescriptionListData,
+			measurementDescriptionListDataSelectors,
+			measurementThresholdRelationData,
+			measurementThresholdRelationDataElements,
+			measurementThresholdRelationListData,
+			measurementThresholdRelationListDataSelectors,
+			thresholdData,
+			thresholdDataElements,
+			thresholdListData,
+			thresholdListDataSelectors,
+			thresholdConstraintsData,
+			thresholdConstraintsDataElements,
+			thresholdConstraintsListData,
+			thresholdConstraintsListDataSelectors,
+			thresholdDescriptionData,
+			thresholdDescriptionDataElements,
+			thresholdDescriptionListData,
+			thresholdDescriptionListDataSelectors,
+			directControlActivityData,
+			directControlActivityDataElements,
+			directControlActivityListData,
+			directControlActivityListDataSelectors,
+			directControlDescriptionData,
+			directControlDescriptionDataElements,
+			powerTimeSlotScheduleData,
+			powerTimeSlotScheduleDataElements,
+			powerTimeSlotScheduleListData,
+			powerTimeSlotScheduleListDataSelectors,
+			powerTimeSlotValueData,
+			powerTimeSlotValueDataElements,
+			powerTimeSlotValueListData,
+			powerTimeSlotValueListDataSelectors,
+			powerTimeSlotScheduleConstraintsData,
+			powerTimeSlotScheduleConstraintsDataElements,
+			powerTimeSlotScheduleConstraintsListData,
+			powerTimeSlotScheduleConstraintsListDataSelectors,
+			powerSequenceAlternativesRelationData,
+			powerSequenceAlternativesRelationDataElements,
+			powerSequenceAlternativesRelationListData,
+			powerSequenceAlternativesRelationListDataSelectors,
+			powerSequenceDescriptionData,
+			powerSequenceDescriptionDataElements,
+			powerSequenceDescriptionListData,
+			powerSequenceDescriptionListDataSelectors,
+			powerSequenceStateData,
+			powerSequenceStateDataElements,
+			powerSequenceStateListData,
+			powerSequenceStateListDataSelectors,
+			powerSequenceScheduleData,
+			powerSequenceScheduleDataElements,
+			powerSequenceScheduleListData,
+			powerSequenceScheduleListDataSelectors,
+			powerSequenceScheduleConstraintsData,
+			powerSequenceScheduleConstraintsDataElements,
+			powerSequenceScheduleConstraintsListData,
+			powerSequenceScheduleConstraintsListDataSelectors,
+			powerSequencePriceData,
+			powerSequencePriceDataElements,
+			powerSequencePriceListData,
+			powerSequencePriceListDataSelectors,
+			powerSequenceSchedulePreferenceData,
+			powerSequenceSchedulePreferenceDataElements,
+			powerSequenceSchedulePreferenceListData,
+			powerSequenceSchedulePreferenceListDataSelectors,
+			powerSequenceNodeScheduleInformationData,
+			powerSequenceNodeScheduleInformationDataElements,
+			powerSequenceScheduleConfigurationRequestCall,
+			powerSequenceScheduleConfigurationRequestCallElements,
+			powerSequencePriceCalculationRequestCall,
+			powerSequencePriceCalculationRequestCallElements,
+			resultData,
+			bindingManagementEntryData,
+			bindingManagementEntryDataElements,
+			bindingManagementEntryListData,
+			bindingManagementEntryListDataSelectors,
+			bindingManagementRequestCall,
+			bindingManagementRequestCallElements,
+			bindingManagementDeleteCall,
+			bindingManagementDeleteCallElements,
+			actuatorLevelData,
+			actuatorLevelDataElements,
+			actuatorLevelDescriptionData,
+			actuatorLevelDescriptionDataElements,
+			cmdClassifier,
+			lastUpdateAt,
+			function,
+			cmdControl,
+			actuatorSwitchData,
+			actuatorSwitchDataElements,
+			actuatorSwitchDescriptionData,
+			actuatorSwitchDescriptionDataElements,
+			alarmData,
+			alarmDataElements,
+			alarmListData,
+			alarmListDataSelectors,
+			billData,
+			billDataElements,
+			billListData,
+			billListDataSelectors,
+			billConstraintsData,
+			billConstraintsDataElements,
+			billConstraintsListData,
+			billConstraintsListDataSelectors,
+			billDescriptionData,
+			billDescriptionDataElements,
+			billDescriptionListData,
+			billDescriptionListDataSelectors,
+			identificationData,
+			identificationDataElements,
+			identificationListData,
+			identificationListDataSelectors,
+			sessionIdentificationData,
+			sessionIdentificationDataElements,
+			sessionIdentificationListData,
+			sessionIdentificationListDataSelectors,
+			sessionMeasurementRelationData,
+			sessionMeasurementRelationDataElements,
+			sessionMeasurementRelationListData,
+			sessionMeasurementRelationListDataSelectors,
+			dataTunnelingCall,
+			dataTunnelingCallElements,
+			deviceClassificationManufacturerData,
+			deviceClassificationManufacturerDataElements,
+			deviceClassificationUserData,
+			deviceClassificationUserDataElements,
+			deviceConfigurationKeyValueData,
+			deviceConfigurationKeyValueDataElements,
+			deviceConfigurationKeyValueListData,
+			deviceConfigurationKeyValueListDataSelectors,
+			deviceConfigurationKeyValueDescriptionData,
+			deviceConfigurationKeyValueDescriptionDataElements,
+			deviceConfigurationKeyValueDescriptionListData,
+			deviceConfigurationKeyValueDescriptionListDataSelectors,
+			deviceConfigurationKeyValueConstraintsData,
+			deviceConfigurationKeyValueConstraintsDataElements,
+			deviceConfigurationKeyValueConstraintsListData,
+			deviceConfigurationKeyValueConstraintsListDataSelectors,
+			deviceDiagnosisStateData,
+			deviceDiagnosisStateDataElements,
+			deviceDiagnosisHeartbeatData,
+			deviceDiagnosisHeartbeatDataElements,
+			deviceDiagnosisServiceData,
+			deviceDiagnosisServiceDataElements,
+			electricalConnectionParameterDescriptionData,
+			electricalConnectionParameterDescriptionDataElements,
+			electricalConnectionParameterDescriptionListData,
+			electricalConnectionParameterDescriptionListDataSelectors,
+			electricalConnectionPermittedValueSetData,
+			electricalConnectionPermittedValueSetDataElements,
+			electricalConnectionPermittedValueSetListData,
+			electricalConnectionPermittedValueSetListDataSelectors,
+			electricalConnectionCharacteristicData,
+			electricalConnectionCharacteristicDataElements,
+			electricalConnectionCharacteristicListData,
+			electricalConnectionCharacteristicListDataSelectors,
+			electricalConnectionStateData,
+			electricalConnectionStateDataElements,
+			electricalConnectionStateListData,
+			electricalConnectionStateListDataSelectors,
+			electricalConnectionDescriptionData,
+			electricalConnectionDescriptionDataElements,
+			electricalConnectionDescriptionListData,
+			electricalConnectionDescriptionListDataSelectors,
+			hvacSystemFunctionData,
+			hvacSystemFunctionDataElements,
+			hvacSystemFunctionListData,
+			hvacSystemFunctionListDataSelectors,
+			hvacSystemFunctionOperationModeRelationData,
+			hvacSystemFunctionOperationModeRelationDataElements,
+			hvacSystemFunctionOperationModeRelationListData,
+			hvacSystemFunctionOperationModeRelationListDataSelectors,
+			hvacSystemFunctionSetpointRelationData,
+			hvacSystemFunctionSetpointRelationDataElements,
+			hvacSystemFunctionSetpointRelationListData,
+			hvacSystemFunctionSetpointRelationListDataSelectors,
+			hvacSystemFunctionPowerSequenceRelationData,
+			hvacSystemFunctionPowerSequenceRelationDataElements,
+			hvacSystemFunctionPowerSequenceRelationListData,
+			hvacSystemFunctionPowerSequenceRelationListDataSelectors,
+			hvacSystemFunctionDescriptionData,
+			hvacSystemFunctionDescriptionDataElements,
+			hvacSystemFunctionDescriptionListData,
+			hvacSystemFunctionDescriptionListDataSelectors,
+			hvacOperationModeDescriptionData,
+			hvacOperationModeDescriptionDataElements,
+			hvacOperationModeDescriptionListData,
+			hvacOperationModeDescriptionListDataSelectors,
+			hvacOverrunData,
+			hvacOverrunDataElements,
+			hvacOverrunListData,
+			hvacOverrunListDataSelectors,
+			hvacOverrunDescriptionData,
+			hvacOverrunDescriptionDataElements,
+			hvacOverrunDescriptionListData,
+			hvacOverrunDescriptionListDataSelectors,
+			setpointData,
+			setpointDataElements,
+			setpointListData,
+			setpointListDataSelectors,
+			setpointConstraintsData,
+			setpointConstraintsDataElements,
+			setpointConstraintsListData,
+			setpointConstraintsListDataSelectors,
+			setpointDescriptionData,
+			setpointDescriptionDataElements,
+			setpointDescriptionListData,
+			setpointDescriptionListDataSelectors,
+			timeTableData,
+			timeTableDataElements,
+			timeTableListData,
+			timeTableListDataSelectors,
+			timeTableConstraintsData,
+			timeTableConstraintsDataElements,
+			timeTableConstraintsListData,
+			timeTableConstraintsListDataSelectors,
+			timeTableDescriptionData,
+			timeTableDescriptionDataElements,
+			timeTableDescriptionListData,
+			timeTableDescriptionListDataSelectors,
+			incentiveTableData,
+			incentiveTableDataElements,
+			incentiveTableDataSelectors,
+			incentiveTableDescriptionData,
+			incentiveTableDescriptionDataElements,
+			incentiveTableDescriptionDataSelectors,
+			incentiveTableConstraintsData,
+			incentiveTableConstraintsDataElements,
+			incentiveTableConstraintsDataSelectors,
+			tariffOverallConstraintsData,
+			tariffOverallConstraintsDataElements,
+			tariffData,
+			tariffDataElements,
+			tariffListData,
+			tariffListDataSelectors,
+			tariffTierRelationData,
+			tariffTierRelationDataElements,
+			tariffTierRelationListData,
+			tariffTierRelationListDataSelectors,
+			tariffBoundaryRelationData,
+			tariffBoundaryRelationDataElements,
+			tariffBoundaryRelationListData,
+			tariffBoundaryRelationListDataSelectors,
+			tariffDescriptionData,
+			tariffDescriptionDataElements,
+			tariffDescriptionListData,
+			tariffDescriptionListDataSelectors,
+			tierBoundaryData,
+			tierBoundaryDataElements,
+			tierBoundaryListData,
+			tierBoundaryListDataSelectors,
+			tierBoundaryDescriptionData,
+			tierBoundaryDescriptionDataElements,
+			tierBoundaryDescriptionListData,
+			tierBoundaryDescriptionListDataSelectors,
+			commodityData,
+			commodityDataElements,
+			commodityListData,
+			commodityListDataSelectors,
+			tierData,
+			tierDataElements,
+			tierListData,
+			tierListDataSelectors,
+			tierIncentiveRelationData,
+			tierIncentiveRelationDataElements,
+			tierIncentiveRelationListData,
+			tierIncentiveRelationListDataSelectors,
+			tierDescriptionData,
+			tierDescriptionDataElements,
+			tierDescriptionListData,
+			tierDescriptionListDataSelectors,
+			incentiveData,
+			incentiveDataElements,
+			incentiveListData,
+			incentiveListDataSelectors,
+			incentiveDescriptionData,
+			incentiveDescriptionDataElements,
+			incentiveDescriptionListData,
+			incentiveDescriptionListDataSelectors,
+			loadControlNodeData,
+			loadControlNodeDataElements,
+			loadControlEventData,
+			loadControlEventDataElements,
+			loadControlEventListData,
+			loadControlEventListDataSelectors,
+			loadControlStateData,
+			loadControlStateDataElements,
+			loadControlStateListData,
+			loadControlStateListDataSelectors,
+			loadControlLimitData,
+			loadControlLimitDataElements,
+			loadControlLimitListData,
+			loadControlLimitListDataSelectors,
+			loadControlLimitConstraintsData,
+			loadControlLimitConstraintsDataElements,
+			loadControlLimitConstraintsListData,
+			loadControlLimitConstraintsListDataSelectors,
+			loadControlLimitDescriptionData,
+			loadControlLimitDescriptionDataElements,
+			loadControlLimitDescriptionListData,
+			loadControlLimitDescriptionListDataSelectors,
+			networkManagementAddNodeCall,
+			networkManagementAddNodeCallElements,
+			networkManagementRemoveNodeCall,
+			networkManagementRemoveNodeCallElements,
+			networkManagementModifyNodeCall,
+			networkManagementModifyNodeCallElements,
+			networkManagementScanNetworkCall,
+			networkManagementScanNetworkCallElements,
+			networkManagementDiscoverCall,
+			networkManagementDiscoverCallElements,
+			networkManagementAbortCall,
+			networkManagementAbortCallElements,
+			networkManagementProcessStateData,
+			networkManagementProcessStateDataElements,
+			networkManagementJoiningModeData,
+			networkManagementJoiningModeDataElements,
+			networkManagementReportCandidateData,
+			networkManagementReportCandidateDataElements,
+			networkManagementDeviceDescriptionData,
+			networkManagementDeviceDescriptionDataElements,
+			networkManagementDeviceDescriptionListData,
+			networkManagementDeviceDescriptionListDataSelectors,
+			networkManagementEntityDescriptionData,
+			networkManagementEntityDescriptionDataElements,
+			networkManagementEntityDescriptionListData,
+			networkManagementEntityDescriptionListDataSelectors,
+			networkManagementFeatureDescriptionData,
+			networkManagementFeatureDescriptionDataElements,
+			networkManagementFeatureDescriptionListData,
+			networkManagementFeatureDescriptionListDataSelectors,
+			nodeManagementDetailedDiscoveryData,
+			nodeManagementDetailedDiscoveryDataElements,
+			nodeManagementDetailedDiscoveryDataSelectors,
+			nodeManagementBindingData,
+			nodeManagementBindingDataElements,
+			nodeManagementBindingDataSelectors,
+			nodeManagementBindingRequestCall,
+			nodeManagementBindingRequestCallElements,
+			nodeManagementBindingDeleteCall,
+			nodeManagementBindingDeleteCallElements,
+			nodeManagementSubscriptionData,
+			nodeManagementSubscriptionDataElements,
+			nodeManagementSubscriptionDataSelectors,
+			nodeManagementSubscriptionRequestCall,
+			nodeManagementSubscriptionRequestCallElements,
+			nodeManagementSubscriptionDeleteCall,
+			nodeManagementSubscriptionDeleteCallElements,
+			nodeManagementDestinationData,
+			nodeManagementDestinationDataElements,
+			nodeManagementDestinationListData,
+			nodeManagementDestinationListDataSelectors,
+			nodeManagementUseCaseData,
+			nodeManagementUseCaseDataElements,
+			nodeManagementUseCaseDataSelectors,
+			subscriptionManagementEntryData,
+			subscriptionManagementEntryDataElements,
+			subscriptionManagementEntryListData,
+			subscriptionManagementEntryListDataSelectors,
+			subscriptionManagementRequestCall,
+			subscriptionManagementRequestCallElements,
+			subscriptionManagementDeleteCall,
+			subscriptionManagementDeleteCallElements,
+			useCaseInformationData,
+			useCaseInformationDataElements,
+			useCaseInformationListData,
+			useCaseInformationListDataSelectors,
+			specificationVersionData,
+			specificationVersionDataElements,
+			specificationVersionListData,
+			specificationVersionListDataSelectors,
+			operatingConstraintsInterruptData,
+			operatingConstraintsInterruptDataElements,
+			operatingConstraintsInterruptListData,
+			operatingConstraintsInterruptListDataSelectors,
+			operatingConstraintsDurationData,
+			operatingConstraintsDurationDataElements,
+			operatingConstraintsDurationListData,
+			operatingConstraintsDurationListDataSelectors,
+			operatingConstraintsPowerDescriptionData,
+			operatingConstraintsPowerDescriptionDataElements,
+			operatingConstraintsPowerDescriptionListData,
+			operatingConstraintsPowerDescriptionListDataSelectors,
+			operatingConstraintsPowerRangeData,
+			operatingConstraintsPowerRangeDataElements,
+			operatingConstraintsPowerRangeListData,
+			operatingConstraintsPowerRangeListDataSelectors,
+			operatingConstraintsPowerLevelData,
+			operatingConstraintsPowerLevelDataElements,
+			operatingConstraintsPowerLevelListData,
+			operatingConstraintsPowerLevelListDataSelectors,
+			operatingConstraintsResumeImplicationData,
+			operatingConstraintsResumeImplicationDataElements,
+			operatingConstraintsResumeImplicationListData,
+			operatingConstraintsResumeImplicationListDataSelectors,
+			sensingData,
+			sensingDataElements,
+			sensingListData,
+			sensingListDataSelectors,
+			sensingDescriptionData,
+			sensingDescriptionDataElements,
+			smartEnergyManagementPsData,
+			smartEnergyManagementPsDataElements,
+			smartEnergyManagementPsDataSelectors,
+			smartEnergyManagementPsPriceData,
+			smartEnergyManagementPsPriceDataElements,
+			smartEnergyManagementPsPriceDataSelectors,
+			smartEnergyManagementPsConfigurationRequestCall,
+			smartEnergyManagementPsConfigurationRequestCallElements,
+			smartEnergyManagementPsPriceCalculationRequestCall,
+			smartEnergyManagementPsPriceCalculationRequestCallElements,
+			stateInformationData,
+			stateInformationDataElements,
+			stateInformationListData,
+			stateInformationListDataSelectors,
+			supplyConditionData,
+			supplyConditionDataElements,
+			supplyConditionListData,
+			supplyConditionListDataSelectors,
+			supplyConditionDescriptionData,
+			supplyConditionDescriptionDataElements,
+			supplyConditionDescriptionListData,
+			supplyConditionDescriptionListDataSelectors,
+			supplyConditionThresholdRelationData,
+			supplyConditionThresholdRelationDataElements,
+			supplyConditionThresholdRelationListData,
+			supplyConditionThresholdRelationListDataSelectors,
+			taskManagementJobData,
+			taskManagementJobDataElements,
+			taskManagementJobListData,
+			taskManagementJobListDataSelectors,
+			taskManagementJobRelationData,
+			taskManagementJobRelationDataElements,
+			taskManagementJobRelationListData,
+			taskManagementJobRelationListDataSelectors,
+			taskManagementJobDescriptionData,
+			taskManagementJobDescriptionDataElements,
+			taskManagementJobDescriptionListData,
+			taskManagementJobDescriptionListDataSelectors,
+			taskManagementOverviewData,
+			taskManagementOverviewDataElements,
+			timeInformationData,
+			timeInformationDataElements,
+			timeDistributorData,
+			timeDistributorDataElements,
+			timePrecisionData,
+			timePrecisionDataElements,
+			timeDistributorEnquiryCall,
+			timeDistributorEnquiryCallElements,
+			header,
         None
-    };
-    enum class Type {
-        MessagingDataType,
-        MessagingDataElementsType,
-        MessagingListDataType,
-        MessagingListDataSelectorsType,
-        TimeSeriesDataType,
-        TimeSeriesDataElementsType,
-        TimeSeriesListDataType,
-        TimeSeriesListDataSelectorsType,
-        TimeSeriesDescriptionDataType,
-        TimeSeriesDescriptionDataElementsType,
-        TimeSeriesDescriptionListDataType,
-        TimeSeriesDescriptionListDataSelectorsType,
-        TimeSeriesConstraintsDataType,
-        TimeSeriesConstraintsDataElementsType,
-        TimeSeriesConstraintsListDataType,
-        TimeSeriesConstraintsListDataSelectorsType,
-        MeasurementDataType,
-        MeasurementDataElementsType,
-        MeasurementListDataType,
-        MeasurementListDataSelectorsType,
-        MeasurementSeriesDataType,
-        MeasurementSeriesDataElementsType,
-        MeasurementSeriesListDataType,
-        MeasurementSeriesListDataSelectorsType,
-        MeasurementConstraintsDataType,
-        MeasurementConstraintsDataElementsType,
-        MeasurementConstraintsListDataType,
-        MeasurementConstraintsListDataSelectorsType,
-        MeasurementDescriptionDataType,
-        MeasurementDescriptionDataElementsType,
-        MeasurementDescriptionListDataType,
-        MeasurementDescriptionListDataSelectorsType,
-        MeasurementThresholdRelationDataType,
-        MeasurementThresholdRelationDataElementsType,
-        MeasurementThresholdRelationListDataType,
-        MeasurementThresholdRelationListDataSelectorsType,
-        ThresholdDataType,
-        ThresholdDataElementsType,
-        ThresholdListDataType,
-        ThresholdListDataSelectorsType,
-        ThresholdConstraintsDataType,
-        ThresholdConstraintsDataElementsType,
-        ThresholdConstraintsListDataType,
-        ThresholdConstraintsListDataSelectorsType,
-        ThresholdDescriptionDataType,
-        ThresholdDescriptionDataElementsType,
-        ThresholdDescriptionListDataType,
-        ThresholdDescriptionListDataSelectorsType,
-        DirectControlActivityDataType,
-        DirectControlActivityDataElementsType,
-        DirectControlActivityListDataType,
-        DirectControlActivityListDataSelectorsType,
-        DirectControlDescriptionDataType,
-        DirectControlDescriptionDataElementsType,
-        PowerTimeSlotScheduleDataType,
-        PowerTimeSlotScheduleDataElementsType,
-        PowerTimeSlotScheduleListDataType,
-        PowerTimeSlotScheduleListDataSelectorsType,
-        PowerTimeSlotValueDataType,
-        PowerTimeSlotValueDataElementsType,
-        PowerTimeSlotValueListDataType,
-        PowerTimeSlotValueListDataSelectorsType,
-        PowerTimeSlotScheduleConstraintsDataType,
-        PowerTimeSlotScheduleConstraintsDataElementsType,
-        PowerTimeSlotScheduleConstraintsListDataType,
-        PowerTimeSlotScheduleConstraintsListDataSelectorsType,
-        PowerSequenceAlternativesRelationDataType,
-        PowerSequenceAlternativesRelationDataElementsType,
-        PowerSequenceAlternativesRelationListDataType,
-        PowerSequenceAlternativesRelationListDataSelectorsType,
-        PowerSequenceDescriptionDataType,
-        PowerSequenceDescriptionDataElementsType,
-        PowerSequenceDescriptionListDataType,
-        PowerSequenceDescriptionListDataSelectorsType,
-        PowerSequenceStateDataType,
-        PowerSequenceStateDataElementsType,
-        PowerSequenceStateListDataType,
-        PowerSequenceStateListDataSelectorsType,
-        PowerSequenceScheduleDataType,
-        PowerSequenceScheduleDataElementsType,
-        PowerSequenceScheduleListDataType,
-        PowerSequenceScheduleListDataSelectorsType,
-        PowerSequenceScheduleConstraintsDataType,
-        PowerSequenceScheduleConstraintsDataElementsType,
-        PowerSequenceScheduleConstraintsListDataType,
-        PowerSequenceScheduleConstraintsListDataSelectorsType,
-        PowerSequencePriceDataType,
-        PowerSequencePriceDataElementsType,
-        PowerSequencePriceListDataType,
-        PowerSequencePriceListDataSelectorsType,
-        PowerSequenceSchedulePreferenceDataType,
-        PowerSequenceSchedulePreferenceDataElementsType,
-        PowerSequenceSchedulePreferenceListDataType,
-        PowerSequenceSchedulePreferenceListDataSelectorsType,
-        PowerSequenceNodeScheduleInformationDataType,
-        PowerSequenceNodeScheduleInformationDataElementsType,
-        PowerSequenceScheduleConfigurationRequestCallType,
-        PowerSequenceScheduleConfigurationRequestCallElementsType,
-        PowerSequencePriceCalculationRequestCallType,
-        PowerSequencePriceCalculationRequestCallElementsType,
-        ResultDataType,
-        BindingManagementEntryDataType,
-        BindingManagementEntryDataElementsType,
-        BindingManagementEntryListDataType,
-        BindingManagementEntryListDataSelectorsType,
-        BindingManagementRequestCallType,
-        BindingManagementRequestCallElementsType,
-        BindingManagementDeleteCallType,
-        BindingManagementDeleteCallElementsType,
-        ActuatorLevelDataType,
-        ActuatorLevelDataElementsType,
-        ActuatorLevelDescriptionDataType,
-        ActuatorLevelDescriptionDataElementsType,
-        CmdClassifierType,
-        AbsoluteOrRelativeTimeType,
-        FunctionType,
-        CmdControlType,
-        ActuatorSwitchDataType,
-        ActuatorSwitchDataElementsType,
-        ActuatorSwitchDescriptionDataType,
-        ActuatorSwitchDescriptionDataElementsType,
-        AlarmDataType,
-        AlarmDataElementsType,
-        AlarmListDataType,
-        AlarmListDataSelectorsType,
-        BillDataType,
-        BillDataElementsType,
-        BillListDataType,
-        BillListDataSelectorsType,
-        BillConstraintsDataType,
-        BillConstraintsDataElementsType,
-        BillConstraintsListDataType,
-        BillConstraintsListDataSelectorsType,
-        BillDescriptionDataType,
-        BillDescriptionDataElementsType,
-        BillDescriptionListDataType,
-        BillDescriptionListDataSelectorsType,
-        IdentificationDataType,
-        IdentificationDataElementsType,
-        IdentificationListDataType,
-        IdentificationListDataSelectorsType,
-        SessionIdentificationDataType,
-        SessionIdentificationDataElementsType,
-        SessionIdentificationListDataType,
-        SessionIdentificationListDataSelectorsType,
-        SessionMeasurementRelationDataType,
-        SessionMeasurementRelationDataElementsType,
-        SessionMeasurementRelationListDataType,
-        SessionMeasurementRelationListDataSelectorsType,
-        DataTunnelingCallType,
-        DataTunnelingCallElementsType,
-        DeviceClassificationManufacturerDataType,
-        DeviceClassificationManufacturerDataElementsType,
-        DeviceClassificationUserDataType,
-        DeviceClassificationUserDataElementsType,
-        DeviceConfigurationKeyValueDataType,
-        DeviceConfigurationKeyValueDataElementsType,
-        DeviceConfigurationKeyValueListDataType,
-        DeviceConfigurationKeyValueListDataSelectorsType,
-        DeviceConfigurationKeyValueDescriptionDataType,
-        DeviceConfigurationKeyValueDescriptionDataElementsType,
-        DeviceConfigurationKeyValueDescriptionListDataType,
-        DeviceConfigurationKeyValueDescriptionListDataSelectorsType,
-        DeviceConfigurationKeyValueConstraintsDataType,
-        DeviceConfigurationKeyValueConstraintsDataElementsType,
-        DeviceConfigurationKeyValueConstraintsListDataType,
-        DeviceConfigurationKeyValueConstraintsListDataSelectorsType,
-        DeviceDiagnosisStateDataType,
-        DeviceDiagnosisStateDataElementsType,
-        DeviceDiagnosisHeartbeatDataType,
-        DeviceDiagnosisHeartbeatDataElementsType,
-        DeviceDiagnosisServiceDataType,
-        DeviceDiagnosisServiceDataElementsType,
-        ElectricalConnectionParameterDescriptionDataType,
-        ElectricalConnectionParameterDescriptionDataElementsType,
-        ElectricalConnectionParameterDescriptionListDataType,
-        ElectricalConnectionParameterDescriptionListDataSelectorsType,
-        ElectricalConnectionPermittedValueSetDataType,
-        ElectricalConnectionPermittedValueSetDataElementsType,
-        ElectricalConnectionPermittedValueSetListDataType,
-        ElectricalConnectionPermittedValueSetListDataSelectorsType,
-        ElectricalConnectionCharacteristicDataType,
-        ElectricalConnectionCharacteristicDataElementsType,
-        ElectricalConnectionCharacteristicListDataType,
-        ElectricalConnectionCharacteristicListDataSelectorsType,
-        ElectricalConnectionStateDataType,
-        ElectricalConnectionStateDataElementsType,
-        ElectricalConnectionStateListDataType,
-        ElectricalConnectionStateListDataSelectorsType,
-        ElectricalConnectionDescriptionDataType,
-        ElectricalConnectionDescriptionDataElementsType,
-        ElectricalConnectionDescriptionListDataType,
-        ElectricalConnectionDescriptionListDataSelectorsType,
-        HvacSystemFunctionDataType,
-        HvacSystemFunctionDataElementsType,
-        HvacSystemFunctionListDataType,
-        HvacSystemFunctionListDataSelectorsType,
-        HvacSystemFunctionOperationModeRelationDataType,
-        HvacSystemFunctionOperationModeRelationDataElementsType,
-        HvacSystemFunctionOperationModeRelationListDataType,
-        HvacSystemFunctionOperationModeRelationListDataSelectorsType,
-        HvacSystemFunctionSetpointRelationDataType,
-        HvacSystemFunctionSetpointRelationDataElementsType,
-        HvacSystemFunctionSetpointRelationListDataType,
-        HvacSystemFunctionSetpointRelationListDataSelectorsType,
-        HvacSystemFunctionPowerSequenceRelationDataType,
-        HvacSystemFunctionPowerSequenceRelationDataElementsType,
-        HvacSystemFunctionPowerSequenceRelationListDataType,
-        HvacSystemFunctionPowerSequenceRelationListDataSelectorsType,
-        HvacSystemFunctionDescriptionDataType,
-        HvacSystemFunctionDescriptionDataElementsType,
-        HvacSystemFunctionDescriptionListDataType,
-        HvacSystemFunctionDescriptionListDataSelectorsType,
-        HvacOperationModeDescriptionDataType,
-        HvacOperationModeDescriptionDataElementsType,
-        HvacOperationModeDescriptionListDataType,
-        HvacOperationModeDescriptionListDataSelectorsType,
-        HvacOverrunDataType,
-        HvacOverrunDataElementsType,
-        HvacOverrunListDataType,
-        HvacOverrunListDataSelectorsType,
-        HvacOverrunDescriptionDataType,
-        HvacOverrunDescriptionDataElementsType,
-        HvacOverrunDescriptionListDataType,
-        HvacOverrunDescriptionListDataSelectorsType,
-        SetpointDataType,
-        SetpointDataElementsType,
-        SetpointListDataType,
-        SetpointListDataSelectorsType,
-        SetpointConstraintsDataType,
-        SetpointConstraintsDataElementsType,
-        SetpointConstraintsListDataType,
-        SetpointConstraintsListDataSelectorsType,
-        SetpointDescriptionDataType,
-        SetpointDescriptionDataElementsType,
-        SetpointDescriptionListDataType,
-        SetpointDescriptionListDataSelectorsType,
-        TimeTableDataType,
-        TimeTableDataElementsType,
-        TimeTableListDataType,
-        TimeTableListDataSelectorsType,
-        TimeTableConstraintsDataType,
-        TimeTableConstraintsDataElementsType,
-        TimeTableConstraintsListDataType,
-        TimeTableConstraintsListDataSelectorsType,
-        TimeTableDescriptionDataType,
-        TimeTableDescriptionDataElementsType,
-        TimeTableDescriptionListDataType,
-        TimeTableDescriptionListDataSelectorsType,
-        IncentiveTableDataType,
-        IncentiveTableDataElementsType,
-        IncentiveTableDataSelectorsType,
-        IncentiveTableDescriptionDataType,
-        IncentiveTableDescriptionDataElementsType,
-        IncentiveTableDescriptionDataSelectorsType,
-        IncentiveTableConstraintsDataType,
-        IncentiveTableConstraintsDataElementsType,
-        IncentiveTableConstraintsDataSelectorsType,
-        TariffOverallConstraintsDataType,
-        TariffOverallConstraintsDataElementsType,
-        TariffDataType,
-        TariffDataElementsType,
-        TariffListDataType,
-        TariffListDataSelectorsType,
-        TariffTierRelationDataType,
-        TariffTierRelationDataElementsType,
-        TariffTierRelationListDataType,
-        TariffTierRelationListDataSelectorsType,
-        TariffBoundaryRelationDataType,
-        TariffBoundaryRelationDataElementsType,
-        TariffBoundaryRelationListDataType,
-        TariffBoundaryRelationListDataSelectorsType,
-        TariffDescriptionDataType,
-        TariffDescriptionDataElementsType,
-        TariffDescriptionListDataType,
-        TariffDescriptionListDataSelectorsType,
-        TierBoundaryDataType,
-        TierBoundaryDataElementsType,
-        TierBoundaryListDataType,
-        TierBoundaryListDataSelectorsType,
-        TierBoundaryDescriptionDataType,
-        TierBoundaryDescriptionDataElementsType,
-        TierBoundaryDescriptionListDataType,
-        TierBoundaryDescriptionListDataSelectorsType,
-        CommodityDataType,
-        CommodityDataElementsType,
-        CommodityListDataType,
-        CommodityListDataSelectorsType,
-        TierDataType,
-        TierDataElementsType,
-        TierListDataType,
-        TierListDataSelectorsType,
-        TierIncentiveRelationDataType,
-        TierIncentiveRelationDataElementsType,
-        TierIncentiveRelationListDataType,
-        TierIncentiveRelationListDataSelectorsType,
-        TierDescriptionDataType,
-        TierDescriptionDataElementsType,
-        TierDescriptionListDataType,
-        TierDescriptionListDataSelectorsType,
-        IncentiveDataType,
-        IncentiveDataElementsType,
-        IncentiveListDataType,
-        IncentiveListDataSelectorsType,
-        IncentiveDescriptionDataType,
-        IncentiveDescriptionDataElementsType,
-        IncentiveDescriptionListDataType,
-        IncentiveDescriptionListDataSelectorsType,
-        LoadControlNodeDataType,
-        LoadControlNodeDataElementsType,
-        LoadControlEventDataType,
-        LoadControlEventDataElementsType,
-        LoadControlEventListDataType,
-        LoadControlEventListDataSelectorsType,
-        LoadControlStateDataType,
-        LoadControlStateDataElementsType,
-        LoadControlStateListDataType,
-        LoadControlStateListDataSelectorsType,
-        LoadControlLimitDataType,
-        LoadControlLimitDataElementsType,
-        LoadControlLimitListDataType,
-        LoadControlLimitListDataSelectorsType,
-        LoadControlLimitConstraintsDataType,
-        LoadControlLimitConstraintsDataElementsType,
-        LoadControlLimitConstraintsListDataType,
-        LoadControlLimitConstraintsListDataSelectorsType,
-        LoadControlLimitDescriptionDataType,
-        LoadControlLimitDescriptionDataElementsType,
-        LoadControlLimitDescriptionListDataType,
-        LoadControlLimitDescriptionListDataSelectorsType,
-        NetworkManagementAddNodeCallType,
-        NetworkManagementAddNodeCallElementsType,
-        NetworkManagementRemoveNodeCallType,
-        NetworkManagementRemoveNodeCallElementsType,
-        NetworkManagementModifyNodeCallType,
-        NetworkManagementModifyNodeCallElementsType,
-        NetworkManagementScanNetworkCallType,
-        NetworkManagementScanNetworkCallElementsType,
-        NetworkManagementDiscoverCallType,
-        NetworkManagementDiscoverCallElementsType,
-        NetworkManagementAbortCallType,
-        NetworkManagementAbortCallElementsType,
-        NetworkManagementProcessStateDataType,
-        NetworkManagementProcessStateDataElementsType,
-        NetworkManagementJoiningModeDataType,
-        NetworkManagementJoiningModeDataElementsType,
-        NetworkManagementReportCandidateDataType,
-        NetworkManagementReportCandidateDataElementsType,
-        NetworkManagementDeviceDescriptionDataType,
-        NetworkManagementDeviceDescriptionDataElementsType,
-        NetworkManagementDeviceDescriptionListDataType,
-        NetworkManagementDeviceDescriptionListDataSelectorsType,
-        NetworkManagementEntityDescriptionDataType,
-        NetworkManagementEntityDescriptionDataElementsType,
-        NetworkManagementEntityDescriptionListDataType,
-        NetworkManagementEntityDescriptionListDataSelectorsType,
-        NetworkManagementFeatureDescriptionDataType,
-        NetworkManagementFeatureDescriptionDataElementsType,
-        NetworkManagementFeatureDescriptionListDataType,
-        NetworkManagementFeatureDescriptionListDataSelectorsType,
-        NodeManagementDetailedDiscoveryDataType,
-        NodeManagementDetailedDiscoveryDataElementsType,
-        NodeManagementDetailedDiscoveryDataSelectorsType,
-        NodeManagementBindingDataType,
-        NodeManagementBindingDataElementsType,
-        NodeManagementBindingDataSelectorsType,
-        NodeManagementBindingRequestCallType,
-        NodeManagementBindingRequestCallElementsType,
-        NodeManagementBindingDeleteCallType,
-        NodeManagementBindingDeleteCallElementsType,
-        NodeManagementSubscriptionDataType,
-        NodeManagementSubscriptionDataElementsType,
-        NodeManagementSubscriptionDataSelectorsType,
-        NodeManagementSubscriptionRequestCallType,
-        NodeManagementSubscriptionRequestCallElementsType,
-        NodeManagementSubscriptionDeleteCallType,
-        NodeManagementSubscriptionDeleteCallElementsType,
-        NodeManagementDestinationDataType,
-        NodeManagementDestinationDataElementsType,
-        NodeManagementDestinationListDataType,
-        NodeManagementDestinationListDataSelectorsType,
-        NodeManagementUseCaseDataType,
-        NodeManagementUseCaseDataElementsType,
-        NodeManagementUseCaseDataSelectorsType,
-        SubscriptionManagementEntryDataType,
-        SubscriptionManagementEntryDataElementsType,
-        SubscriptionManagementEntryListDataType,
-        SubscriptionManagementEntryListDataSelectorsType,
-        SubscriptionManagementRequestCallType,
-        SubscriptionManagementRequestCallElementsType,
-        SubscriptionManagementDeleteCallType,
-        SubscriptionManagementDeleteCallElementsType,
-        UseCaseInformationDataType,
-        UseCaseInformationDataElementsType,
-        UseCaseInformationListDataType,
-        UseCaseInformationListDataSelectorsType,
-        SpecificationVersionDataType,
-        SpecificationVersionDataElementsType,
-        SpecificationVersionListDataType,
-        SpecificationVersionListDataSelectorsType,
-        OperatingConstraintsInterruptDataType,
-        OperatingConstraintsInterruptDataElementsType,
-        OperatingConstraintsInterruptListDataType,
-        OperatingConstraintsInterruptListDataSelectorsType,
-        OperatingConstraintsDurationDataType,
-        OperatingConstraintsDurationDataElementsType,
-        OperatingConstraintsDurationListDataType,
-        OperatingConstraintsDurationListDataSelectorsType,
-        OperatingConstraintsPowerDescriptionDataType,
-        OperatingConstraintsPowerDescriptionDataElementsType,
-        OperatingConstraintsPowerDescriptionListDataType,
-        OperatingConstraintsPowerDescriptionListDataSelectorsType,
-        OperatingConstraintsPowerRangeDataType,
-        OperatingConstraintsPowerRangeDataElementsType,
-        OperatingConstraintsPowerRangeListDataType,
-        OperatingConstraintsPowerRangeListDataSelectorsType,
-        OperatingConstraintsPowerLevelDataType,
-        OperatingConstraintsPowerLevelDataElementsType,
-        OperatingConstraintsPowerLevelListDataType,
-        OperatingConstraintsPowerLevelListDataSelectorsType,
-        OperatingConstraintsResumeImplicationDataType,
-        OperatingConstraintsResumeImplicationDataElementsType,
-        OperatingConstraintsResumeImplicationListDataType,
-        OperatingConstraintsResumeImplicationListDataSelectorsType,
-        SensingDataType,
-        SensingDataElementsType,
-        SensingListDataType,
-        SensingListDataSelectorsType,
-        SensingDescriptionDataType,
-        SensingDescriptionDataElementsType,
-        SmartEnergyManagementPsDataType,
-        SmartEnergyManagementPsDataElementsType,
-        SmartEnergyManagementPsDataSelectorsType,
-        SmartEnergyManagementPsPriceDataType,
-        SmartEnergyManagementPsPriceDataElementsType,
-        SmartEnergyManagementPsPriceDataSelectorsType,
-        SmartEnergyManagementPsConfigurationRequestCallType,
-        SmartEnergyManagementPsConfigurationRequestCallElementsType,
-        SmartEnergyManagementPsPriceCalculationRequestCallType,
-        SmartEnergyManagementPsPriceCalculationRequestCallElementsType,
-        StateInformationDataType,
-        StateInformationDataElementsType,
-        StateInformationListDataType,
-        StateInformationListDataSelectorsType,
-        SupplyConditionDataType,
-        SupplyConditionDataElementsType,
-        SupplyConditionListDataType,
-        SupplyConditionListDataSelectorsType,
-        SupplyConditionDescriptionDataType,
-        SupplyConditionDescriptionDataElementsType,
-        SupplyConditionDescriptionListDataType,
-        SupplyConditionDescriptionListDataSelectorsType,
-        SupplyConditionThresholdRelationDataType,
-        SupplyConditionThresholdRelationDataElementsType,
-        SupplyConditionThresholdRelationListDataType,
-        SupplyConditionThresholdRelationListDataSelectorsType,
-        TaskManagementJobDataType,
-        TaskManagementJobDataElementsType,
-        TaskManagementJobListDataType,
-        TaskManagementJobListDataSelectorsType,
-        TaskManagementJobRelationDataType,
-        TaskManagementJobRelationDataElementsType,
-        TaskManagementJobRelationListDataType,
-        TaskManagementJobRelationListDataSelectorsType,
-        TaskManagementJobDescriptionDataType,
-        TaskManagementJobDescriptionDataElementsType,
-        TaskManagementJobDescriptionListDataType,
-        TaskManagementJobDescriptionListDataSelectorsType,
-        TaskManagementOverviewDataType,
-        TaskManagementOverviewDataElementsType,
-        TimeInformationDataType,
-        TimeInformationDataElementsType,
-        TimeDistributorDataType,
-        TimeDistributorDataElementsType,
-        TimePrecisionDataType,
-        TimePrecisionDataElementsType,
-        TimeDistributorEnquiryCallType,
-        TimeDistributorEnquiryCallElementsType,
-        HeaderType,
+        };  
+        enum class Type {
+			MessagingDataType,
+			MessagingDataElementsType,
+			MessagingListDataType,
+			MessagingListDataSelectorsType,
+			TimeSeriesDataType,
+			TimeSeriesDataElementsType,
+			TimeSeriesListDataType,
+			TimeSeriesListDataSelectorsType,
+			TimeSeriesDescriptionDataType,
+			TimeSeriesDescriptionDataElementsType,
+			TimeSeriesDescriptionListDataType,
+			TimeSeriesDescriptionListDataSelectorsType,
+			TimeSeriesConstraintsDataType,
+			TimeSeriesConstraintsDataElementsType,
+			TimeSeriesConstraintsListDataType,
+			TimeSeriesConstraintsListDataSelectorsType,
+			MeasurementDataType,
+			MeasurementDataElementsType,
+			MeasurementListDataType,
+			MeasurementListDataSelectorsType,
+			MeasurementSeriesDataType,
+			MeasurementSeriesDataElementsType,
+			MeasurementSeriesListDataType,
+			MeasurementSeriesListDataSelectorsType,
+			MeasurementConstraintsDataType,
+			MeasurementConstraintsDataElementsType,
+			MeasurementConstraintsListDataType,
+			MeasurementConstraintsListDataSelectorsType,
+			MeasurementDescriptionDataType,
+			MeasurementDescriptionDataElementsType,
+			MeasurementDescriptionListDataType,
+			MeasurementDescriptionListDataSelectorsType,
+			MeasurementThresholdRelationDataType,
+			MeasurementThresholdRelationDataElementsType,
+			MeasurementThresholdRelationListDataType,
+			MeasurementThresholdRelationListDataSelectorsType,
+			ThresholdDataType,
+			ThresholdDataElementsType,
+			ThresholdListDataType,
+			ThresholdListDataSelectorsType,
+			ThresholdConstraintsDataType,
+			ThresholdConstraintsDataElementsType,
+			ThresholdConstraintsListDataType,
+			ThresholdConstraintsListDataSelectorsType,
+			ThresholdDescriptionDataType,
+			ThresholdDescriptionDataElementsType,
+			ThresholdDescriptionListDataType,
+			ThresholdDescriptionListDataSelectorsType,
+			DirectControlActivityDataType,
+			DirectControlActivityDataElementsType,
+			DirectControlActivityListDataType,
+			DirectControlActivityListDataSelectorsType,
+			DirectControlDescriptionDataType,
+			DirectControlDescriptionDataElementsType,
+			PowerTimeSlotScheduleDataType,
+			PowerTimeSlotScheduleDataElementsType,
+			PowerTimeSlotScheduleListDataType,
+			PowerTimeSlotScheduleListDataSelectorsType,
+			PowerTimeSlotValueDataType,
+			PowerTimeSlotValueDataElementsType,
+			PowerTimeSlotValueListDataType,
+			PowerTimeSlotValueListDataSelectorsType,
+			PowerTimeSlotScheduleConstraintsDataType,
+			PowerTimeSlotScheduleConstraintsDataElementsType,
+			PowerTimeSlotScheduleConstraintsListDataType,
+			PowerTimeSlotScheduleConstraintsListDataSelectorsType,
+			PowerSequenceAlternativesRelationDataType,
+			PowerSequenceAlternativesRelationDataElementsType,
+			PowerSequenceAlternativesRelationListDataType,
+			PowerSequenceAlternativesRelationListDataSelectorsType,
+			PowerSequenceDescriptionDataType,
+			PowerSequenceDescriptionDataElementsType,
+			PowerSequenceDescriptionListDataType,
+			PowerSequenceDescriptionListDataSelectorsType,
+			PowerSequenceStateDataType,
+			PowerSequenceStateDataElementsType,
+			PowerSequenceStateListDataType,
+			PowerSequenceStateListDataSelectorsType,
+			PowerSequenceScheduleDataType,
+			PowerSequenceScheduleDataElementsType,
+			PowerSequenceScheduleListDataType,
+			PowerSequenceScheduleListDataSelectorsType,
+			PowerSequenceScheduleConstraintsDataType,
+			PowerSequenceScheduleConstraintsDataElementsType,
+			PowerSequenceScheduleConstraintsListDataType,
+			PowerSequenceScheduleConstraintsListDataSelectorsType,
+			PowerSequencePriceDataType,
+			PowerSequencePriceDataElementsType,
+			PowerSequencePriceListDataType,
+			PowerSequencePriceListDataSelectorsType,
+			PowerSequenceSchedulePreferenceDataType,
+			PowerSequenceSchedulePreferenceDataElementsType,
+			PowerSequenceSchedulePreferenceListDataType,
+			PowerSequenceSchedulePreferenceListDataSelectorsType,
+			PowerSequenceNodeScheduleInformationDataType,
+			PowerSequenceNodeScheduleInformationDataElementsType,
+			PowerSequenceScheduleConfigurationRequestCallType,
+			PowerSequenceScheduleConfigurationRequestCallElementsType,
+			PowerSequencePriceCalculationRequestCallType,
+			PowerSequencePriceCalculationRequestCallElementsType,
+			ResultDataType,
+			BindingManagementEntryDataType,
+			BindingManagementEntryDataElementsType,
+			BindingManagementEntryListDataType,
+			BindingManagementEntryListDataSelectorsType,
+			BindingManagementRequestCallType,
+			BindingManagementRequestCallElementsType,
+			BindingManagementDeleteCallType,
+			BindingManagementDeleteCallElementsType,
+			ActuatorLevelDataType,
+			ActuatorLevelDataElementsType,
+			ActuatorLevelDescriptionDataType,
+			ActuatorLevelDescriptionDataElementsType,
+			CmdClassifierType,
+			AbsoluteOrRelativeTimeType,
+			FunctionType,
+			CmdControlType,
+			ActuatorSwitchDataType,
+			ActuatorSwitchDataElementsType,
+			ActuatorSwitchDescriptionDataType,
+			ActuatorSwitchDescriptionDataElementsType,
+			AlarmDataType,
+			AlarmDataElementsType,
+			AlarmListDataType,
+			AlarmListDataSelectorsType,
+			BillDataType,
+			BillDataElementsType,
+			BillListDataType,
+			BillListDataSelectorsType,
+			BillConstraintsDataType,
+			BillConstraintsDataElementsType,
+			BillConstraintsListDataType,
+			BillConstraintsListDataSelectorsType,
+			BillDescriptionDataType,
+			BillDescriptionDataElementsType,
+			BillDescriptionListDataType,
+			BillDescriptionListDataSelectorsType,
+			IdentificationDataType,
+			IdentificationDataElementsType,
+			IdentificationListDataType,
+			IdentificationListDataSelectorsType,
+			SessionIdentificationDataType,
+			SessionIdentificationDataElementsType,
+			SessionIdentificationListDataType,
+			SessionIdentificationListDataSelectorsType,
+			SessionMeasurementRelationDataType,
+			SessionMeasurementRelationDataElementsType,
+			SessionMeasurementRelationListDataType,
+			SessionMeasurementRelationListDataSelectorsType,
+			DataTunnelingCallType,
+			DataTunnelingCallElementsType,
+			DeviceClassificationManufacturerDataType,
+			DeviceClassificationManufacturerDataElementsType,
+			DeviceClassificationUserDataType,
+			DeviceClassificationUserDataElementsType,
+			DeviceConfigurationKeyValueDataType,
+			DeviceConfigurationKeyValueDataElementsType,
+			DeviceConfigurationKeyValueListDataType,
+			DeviceConfigurationKeyValueListDataSelectorsType,
+			DeviceConfigurationKeyValueDescriptionDataType,
+			DeviceConfigurationKeyValueDescriptionDataElementsType,
+			DeviceConfigurationKeyValueDescriptionListDataType,
+			DeviceConfigurationKeyValueDescriptionListDataSelectorsType,
+			DeviceConfigurationKeyValueConstraintsDataType,
+			DeviceConfigurationKeyValueConstraintsDataElementsType,
+			DeviceConfigurationKeyValueConstraintsListDataType,
+			DeviceConfigurationKeyValueConstraintsListDataSelectorsType,
+			DeviceDiagnosisStateDataType,
+			DeviceDiagnosisStateDataElementsType,
+			DeviceDiagnosisHeartbeatDataType,
+			DeviceDiagnosisHeartbeatDataElementsType,
+			DeviceDiagnosisServiceDataType,
+			DeviceDiagnosisServiceDataElementsType,
+			ElectricalConnectionParameterDescriptionDataType,
+			ElectricalConnectionParameterDescriptionDataElementsType,
+			ElectricalConnectionParameterDescriptionListDataType,
+			ElectricalConnectionParameterDescriptionListDataSelectorsType,
+			ElectricalConnectionPermittedValueSetDataType,
+			ElectricalConnectionPermittedValueSetDataElementsType,
+			ElectricalConnectionPermittedValueSetListDataType,
+			ElectricalConnectionPermittedValueSetListDataSelectorsType,
+			ElectricalConnectionCharacteristicDataType,
+			ElectricalConnectionCharacteristicDataElementsType,
+			ElectricalConnectionCharacteristicListDataType,
+			ElectricalConnectionCharacteristicListDataSelectorsType,
+			ElectricalConnectionStateDataType,
+			ElectricalConnectionStateDataElementsType,
+			ElectricalConnectionStateListDataType,
+			ElectricalConnectionStateListDataSelectorsType,
+			ElectricalConnectionDescriptionDataType,
+			ElectricalConnectionDescriptionDataElementsType,
+			ElectricalConnectionDescriptionListDataType,
+			ElectricalConnectionDescriptionListDataSelectorsType,
+			HvacSystemFunctionDataType,
+			HvacSystemFunctionDataElementsType,
+			HvacSystemFunctionListDataType,
+			HvacSystemFunctionListDataSelectorsType,
+			HvacSystemFunctionOperationModeRelationDataType,
+			HvacSystemFunctionOperationModeRelationDataElementsType,
+			HvacSystemFunctionOperationModeRelationListDataType,
+			HvacSystemFunctionOperationModeRelationListDataSelectorsType,
+			HvacSystemFunctionSetpointRelationDataType,
+			HvacSystemFunctionSetpointRelationDataElementsType,
+			HvacSystemFunctionSetpointRelationListDataType,
+			HvacSystemFunctionSetpointRelationListDataSelectorsType,
+			HvacSystemFunctionPowerSequenceRelationDataType,
+			HvacSystemFunctionPowerSequenceRelationDataElementsType,
+			HvacSystemFunctionPowerSequenceRelationListDataType,
+			HvacSystemFunctionPowerSequenceRelationListDataSelectorsType,
+			HvacSystemFunctionDescriptionDataType,
+			HvacSystemFunctionDescriptionDataElementsType,
+			HvacSystemFunctionDescriptionListDataType,
+			HvacSystemFunctionDescriptionListDataSelectorsType,
+			HvacOperationModeDescriptionDataType,
+			HvacOperationModeDescriptionDataElementsType,
+			HvacOperationModeDescriptionListDataType,
+			HvacOperationModeDescriptionListDataSelectorsType,
+			HvacOverrunDataType,
+			HvacOverrunDataElementsType,
+			HvacOverrunListDataType,
+			HvacOverrunListDataSelectorsType,
+			HvacOverrunDescriptionDataType,
+			HvacOverrunDescriptionDataElementsType,
+			HvacOverrunDescriptionListDataType,
+			HvacOverrunDescriptionListDataSelectorsType,
+			SetpointDataType,
+			SetpointDataElementsType,
+			SetpointListDataType,
+			SetpointListDataSelectorsType,
+			SetpointConstraintsDataType,
+			SetpointConstraintsDataElementsType,
+			SetpointConstraintsListDataType,
+			SetpointConstraintsListDataSelectorsType,
+			SetpointDescriptionDataType,
+			SetpointDescriptionDataElementsType,
+			SetpointDescriptionListDataType,
+			SetpointDescriptionListDataSelectorsType,
+			TimeTableDataType,
+			TimeTableDataElementsType,
+			TimeTableListDataType,
+			TimeTableListDataSelectorsType,
+			TimeTableConstraintsDataType,
+			TimeTableConstraintsDataElementsType,
+			TimeTableConstraintsListDataType,
+			TimeTableConstraintsListDataSelectorsType,
+			TimeTableDescriptionDataType,
+			TimeTableDescriptionDataElementsType,
+			TimeTableDescriptionListDataType,
+			TimeTableDescriptionListDataSelectorsType,
+			IncentiveTableDataType,
+			IncentiveTableDataElementsType,
+			IncentiveTableDataSelectorsType,
+			IncentiveTableDescriptionDataType,
+			IncentiveTableDescriptionDataElementsType,
+			IncentiveTableDescriptionDataSelectorsType,
+			IncentiveTableConstraintsDataType,
+			IncentiveTableConstraintsDataElementsType,
+			IncentiveTableConstraintsDataSelectorsType,
+			TariffOverallConstraintsDataType,
+			TariffOverallConstraintsDataElementsType,
+			TariffDataType,
+			TariffDataElementsType,
+			TariffListDataType,
+			TariffListDataSelectorsType,
+			TariffTierRelationDataType,
+			TariffTierRelationDataElementsType,
+			TariffTierRelationListDataType,
+			TariffTierRelationListDataSelectorsType,
+			TariffBoundaryRelationDataType,
+			TariffBoundaryRelationDataElementsType,
+			TariffBoundaryRelationListDataType,
+			TariffBoundaryRelationListDataSelectorsType,
+			TariffDescriptionDataType,
+			TariffDescriptionDataElementsType,
+			TariffDescriptionListDataType,
+			TariffDescriptionListDataSelectorsType,
+			TierBoundaryDataType,
+			TierBoundaryDataElementsType,
+			TierBoundaryListDataType,
+			TierBoundaryListDataSelectorsType,
+			TierBoundaryDescriptionDataType,
+			TierBoundaryDescriptionDataElementsType,
+			TierBoundaryDescriptionListDataType,
+			TierBoundaryDescriptionListDataSelectorsType,
+			CommodityDataType,
+			CommodityDataElementsType,
+			CommodityListDataType,
+			CommodityListDataSelectorsType,
+			TierDataType,
+			TierDataElementsType,
+			TierListDataType,
+			TierListDataSelectorsType,
+			TierIncentiveRelationDataType,
+			TierIncentiveRelationDataElementsType,
+			TierIncentiveRelationListDataType,
+			TierIncentiveRelationListDataSelectorsType,
+			TierDescriptionDataType,
+			TierDescriptionDataElementsType,
+			TierDescriptionListDataType,
+			TierDescriptionListDataSelectorsType,
+			IncentiveDataType,
+			IncentiveDataElementsType,
+			IncentiveListDataType,
+			IncentiveListDataSelectorsType,
+			IncentiveDescriptionDataType,
+			IncentiveDescriptionDataElementsType,
+			IncentiveDescriptionListDataType,
+			IncentiveDescriptionListDataSelectorsType,
+			LoadControlNodeDataType,
+			LoadControlNodeDataElementsType,
+			LoadControlEventDataType,
+			LoadControlEventDataElementsType,
+			LoadControlEventListDataType,
+			LoadControlEventListDataSelectorsType,
+			LoadControlStateDataType,
+			LoadControlStateDataElementsType,
+			LoadControlStateListDataType,
+			LoadControlStateListDataSelectorsType,
+			LoadControlLimitDataType,
+			LoadControlLimitDataElementsType,
+			LoadControlLimitListDataType,
+			LoadControlLimitListDataSelectorsType,
+			LoadControlLimitConstraintsDataType,
+			LoadControlLimitConstraintsDataElementsType,
+			LoadControlLimitConstraintsListDataType,
+			LoadControlLimitConstraintsListDataSelectorsType,
+			LoadControlLimitDescriptionDataType,
+			LoadControlLimitDescriptionDataElementsType,
+			LoadControlLimitDescriptionListDataType,
+			LoadControlLimitDescriptionListDataSelectorsType,
+			NetworkManagementAddNodeCallType,
+			NetworkManagementAddNodeCallElementsType,
+			NetworkManagementRemoveNodeCallType,
+			NetworkManagementRemoveNodeCallElementsType,
+			NetworkManagementModifyNodeCallType,
+			NetworkManagementModifyNodeCallElementsType,
+			NetworkManagementScanNetworkCallType,
+			NetworkManagementScanNetworkCallElementsType,
+			NetworkManagementDiscoverCallType,
+			NetworkManagementDiscoverCallElementsType,
+			NetworkManagementAbortCallType,
+			NetworkManagementAbortCallElementsType,
+			NetworkManagementProcessStateDataType,
+			NetworkManagementProcessStateDataElementsType,
+			NetworkManagementJoiningModeDataType,
+			NetworkManagementJoiningModeDataElementsType,
+			NetworkManagementReportCandidateDataType,
+			NetworkManagementReportCandidateDataElementsType,
+			NetworkManagementDeviceDescriptionDataType,
+			NetworkManagementDeviceDescriptionDataElementsType,
+			NetworkManagementDeviceDescriptionListDataType,
+			NetworkManagementDeviceDescriptionListDataSelectorsType,
+			NetworkManagementEntityDescriptionDataType,
+			NetworkManagementEntityDescriptionDataElementsType,
+			NetworkManagementEntityDescriptionListDataType,
+			NetworkManagementEntityDescriptionListDataSelectorsType,
+			NetworkManagementFeatureDescriptionDataType,
+			NetworkManagementFeatureDescriptionDataElementsType,
+			NetworkManagementFeatureDescriptionListDataType,
+			NetworkManagementFeatureDescriptionListDataSelectorsType,
+			NodeManagementDetailedDiscoveryDataType,
+			NodeManagementDetailedDiscoveryDataElementsType,
+			NodeManagementDetailedDiscoveryDataSelectorsType,
+			NodeManagementBindingDataType,
+			NodeManagementBindingDataElementsType,
+			NodeManagementBindingDataSelectorsType,
+			NodeManagementBindingRequestCallType,
+			NodeManagementBindingRequestCallElementsType,
+			NodeManagementBindingDeleteCallType,
+			NodeManagementBindingDeleteCallElementsType,
+			NodeManagementSubscriptionDataType,
+			NodeManagementSubscriptionDataElementsType,
+			NodeManagementSubscriptionDataSelectorsType,
+			NodeManagementSubscriptionRequestCallType,
+			NodeManagementSubscriptionRequestCallElementsType,
+			NodeManagementSubscriptionDeleteCallType,
+			NodeManagementSubscriptionDeleteCallElementsType,
+			NodeManagementDestinationDataType,
+			NodeManagementDestinationDataElementsType,
+			NodeManagementDestinationListDataType,
+			NodeManagementDestinationListDataSelectorsType,
+			NodeManagementUseCaseDataType,
+			NodeManagementUseCaseDataElementsType,
+			NodeManagementUseCaseDataSelectorsType,
+			SubscriptionManagementEntryDataType,
+			SubscriptionManagementEntryDataElementsType,
+			SubscriptionManagementEntryListDataType,
+			SubscriptionManagementEntryListDataSelectorsType,
+			SubscriptionManagementRequestCallType,
+			SubscriptionManagementRequestCallElementsType,
+			SubscriptionManagementDeleteCallType,
+			SubscriptionManagementDeleteCallElementsType,
+			UseCaseInformationDataType,
+			UseCaseInformationDataElementsType,
+			UseCaseInformationListDataType,
+			UseCaseInformationListDataSelectorsType,
+			SpecificationVersionDataType,
+			SpecificationVersionDataElementsType,
+			SpecificationVersionListDataType,
+			SpecificationVersionListDataSelectorsType,
+			OperatingConstraintsInterruptDataType,
+			OperatingConstraintsInterruptDataElementsType,
+			OperatingConstraintsInterruptListDataType,
+			OperatingConstraintsInterruptListDataSelectorsType,
+			OperatingConstraintsDurationDataType,
+			OperatingConstraintsDurationDataElementsType,
+			OperatingConstraintsDurationListDataType,
+			OperatingConstraintsDurationListDataSelectorsType,
+			OperatingConstraintsPowerDescriptionDataType,
+			OperatingConstraintsPowerDescriptionDataElementsType,
+			OperatingConstraintsPowerDescriptionListDataType,
+			OperatingConstraintsPowerDescriptionListDataSelectorsType,
+			OperatingConstraintsPowerRangeDataType,
+			OperatingConstraintsPowerRangeDataElementsType,
+			OperatingConstraintsPowerRangeListDataType,
+			OperatingConstraintsPowerRangeListDataSelectorsType,
+			OperatingConstraintsPowerLevelDataType,
+			OperatingConstraintsPowerLevelDataElementsType,
+			OperatingConstraintsPowerLevelListDataType,
+			OperatingConstraintsPowerLevelListDataSelectorsType,
+			OperatingConstraintsResumeImplicationDataType,
+			OperatingConstraintsResumeImplicationDataElementsType,
+			OperatingConstraintsResumeImplicationListDataType,
+			OperatingConstraintsResumeImplicationListDataSelectorsType,
+			SensingDataType,
+			SensingDataElementsType,
+			SensingListDataType,
+			SensingListDataSelectorsType,
+			SensingDescriptionDataType,
+			SensingDescriptionDataElementsType,
+			SmartEnergyManagementPsDataType,
+			SmartEnergyManagementPsDataElementsType,
+			SmartEnergyManagementPsDataSelectorsType,
+			SmartEnergyManagementPsPriceDataType,
+			SmartEnergyManagementPsPriceDataElementsType,
+			SmartEnergyManagementPsPriceDataSelectorsType,
+			SmartEnergyManagementPsConfigurationRequestCallType,
+			SmartEnergyManagementPsConfigurationRequestCallElementsType,
+			SmartEnergyManagementPsPriceCalculationRequestCallType,
+			SmartEnergyManagementPsPriceCalculationRequestCallElementsType,
+			StateInformationDataType,
+			StateInformationDataElementsType,
+			StateInformationListDataType,
+			StateInformationListDataSelectorsType,
+			SupplyConditionDataType,
+			SupplyConditionDataElementsType,
+			SupplyConditionListDataType,
+			SupplyConditionListDataSelectorsType,
+			SupplyConditionDescriptionDataType,
+			SupplyConditionDescriptionDataElementsType,
+			SupplyConditionDescriptionListDataType,
+			SupplyConditionDescriptionListDataSelectorsType,
+			SupplyConditionThresholdRelationDataType,
+			SupplyConditionThresholdRelationDataElementsType,
+			SupplyConditionThresholdRelationListDataType,
+			SupplyConditionThresholdRelationListDataSelectorsType,
+			TaskManagementJobDataType,
+			TaskManagementJobDataElementsType,
+			TaskManagementJobListDataType,
+			TaskManagementJobListDataSelectorsType,
+			TaskManagementJobRelationDataType,
+			TaskManagementJobRelationDataElementsType,
+			TaskManagementJobRelationListDataType,
+			TaskManagementJobRelationListDataSelectorsType,
+			TaskManagementJobDescriptionDataType,
+			TaskManagementJobDescriptionDataElementsType,
+			TaskManagementJobDescriptionListDataType,
+			TaskManagementJobDescriptionListDataSelectorsType,
+			TaskManagementOverviewDataType,
+			TaskManagementOverviewDataElementsType,
+			TimeInformationDataType,
+			TimeInformationDataElementsType,
+			TimeDistributorDataType,
+			TimeDistributorDataElementsType,
+			TimePrecisionDataType,
+			TimePrecisionDataElementsType,
+			TimeDistributorEnquiryCallType,
+			TimeDistributorEnquiryCallElementsType,
+			HeaderType,
         None
-    };
-
-    Function last_cmd;
-
-    Type type_from_function(Function function);
-    Function function_from_string(const String function_name);
-    Function handle_cmd(JsonObjectConst obj);
-    String function_to_string(Function function);
+        };
+        
+        
+        Function last_cmd;
+        
+        Type type_from_function(Function function);
+        Function function_from_string(const String function_name);
+        Function handle_cmd(JsonObjectConst obj);
+        String function_to_string(Function function);
 };
+    

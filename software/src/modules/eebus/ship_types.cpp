@@ -23,8 +23,8 @@
 #include "eebus.h"
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
-#include "tools.h"
 #include "ship_connection.h"
+#include "tools.h"
 
 namespace SHIP_TYPES
 {
@@ -96,8 +96,15 @@ String ShipMessageDataType::type_to_json(ShipConnection::Message &message_outgoi
     }
 
     message_outgoing.data[0] = 2;
-    size_t size = serializeJson(doc, &message_outgoing.data[1], SHIP_TYPES_MAX_JSON_SIZE - 1);
-    message_outgoing.length = size + 1;
+    String message_outgoing_data;
+    message_outgoing_data.reserve(SHIP_TYPES_MAX_JSON_SIZE - 1); // Reserve space for the JSON data
+    serializeJson(doc, message_outgoing_data);
+    //message_outgoing_data.replace("[{", "[[{"); // spine-go expects a double array for some reason
+    //message_outgoing_data.replace("}]", "}]]");
+
+    //size_t size = serializeJson(doc, &message_outgoing.data[1], SHIP_TYPES_MAX_JSON_SIZE - 1);
+    memcpy(&message_outgoing.data[1], message_outgoing_data.c_str(), message_outgoing_data.length());
+    message_outgoing.length = message_outgoing_data.length() + 1;
     return "";
 }
 

@@ -48,8 +48,7 @@ NodeManagementUseCaseDataType NodeManagementUsecase::get_usecases()
 
     // This is done for testing. For the final implementation each usecase should report this information themselves
     UseCaseInformationDataType evcs_usecase;
-    evcs_usecase.actor = "EVCS";
-
+    evcs_usecase.actor = "EVSE";
 
     UseCaseSupportType evcs_usecase_support;
     evcs_usecase_support.useCaseName = "evChargingSummary";
@@ -70,16 +69,16 @@ NodeManagementUseCaseDataType NodeManagementUsecase::get_usecases()
     return data;
 }
 
-bool EEBusUseCases::handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonVariant response)
+bool EEBusUseCases::handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response)
 {
     if (header.destination_feature == 0 && header.destination_entity[0] == 0) {
         logger.printfln("EEBus: Received message for NodeManagementUsecase");
         logger.printfln("Function called: %s", data.function_to_string(data.last_cmd).c_str());
 
-        if (!response["nodeManagementUseCaseData"].set(node_management.get_usecases())) {
+        response["nodeManagementUseCaseData"] = node_management.get_usecases();
+        if (response["nodeManagementUseCaseData"].isNull()) {
             logger.printfln("Could not set response");
         }
-
 
         return true;
     }

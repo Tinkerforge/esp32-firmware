@@ -48,23 +48,26 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
     }
     response_doc.clear();
     //response_datagram = response_doc.to<JsonVariant>();
-    response_doc["datagram"]["payload"][0]["cmd"][0][0] = JsonVariant();
+    //response_doc["datagram"]["payload"]["cmd"][0] = JsonVariant();
 
-    const bool has_response = eebus.usecases.handle_message(received_header, eebus.data_handler, response_doc["datagram"]["payload"][0]["cmd"][0][0]);
+    JsonArray cmd_array = response_doc["datagram"][1]["payload"].createNestedArray("cmd").createNestedArray(); // Why is it double wrapped???? ship-go does this shit for some reason
+    JsonObject cmd_obj = cmd_array.createNestedObject();
+    //cmd_array.createNestedObject(); // add an empty object to the array or it might get turned into an object by ship-go
+
+    const bool has_response = eebus.usecases.handle_message(received_header, eebus.data_handler, cmd_obj);
 
     if (has_response) {
-
-        response_doc["datagram"]["header"]["specificationVersion"] = "1.3.0";
-        response_doc["datagram"]["header"]["addressSource"]["device"] = "d:_i:123456_warp3";
-        response_doc["datagram"]["header"]["addressSource"]["entity"][0] = 0;
-        response_doc["datagram"]["header"]["addressSource"]["feature"] = 0;
-        response_doc["datagram"]["header"]["addressDestination"]["device"] = received_header.source_device_id;
-        response_doc["datagram"]["header"]["addressDestination"]["entity"][0] = 0;
-        response_doc["datagram"]["header"]["addressDestination"]["feature"] = 0;
-        response_doc["datagram"]["header"]["msgCounter"] = msg_counter++;
-        response_doc["datagram"]["header"]["msgCounterReference"] = received_header.msg_counter;
-        response_doc["datagram"]["header"]["cmdClassifier"] = "reply";
-        response_doc["datagram"]["header"]["ackRequest"] = false;
+        response_doc["datagram"][0]["header"]["specificationVersion"] = "1.3.0";
+        response_doc["datagram"][0]["header"]["addressSource"]["device"] = "d:_i:123456_warp3";
+        response_doc["datagram"][0]["header"]["addressSource"]["entity"][0] = 0;
+        response_doc["datagram"][0]["header"]["addressSource"]["feature"] = 0;
+        response_doc["datagram"][0]["header"]["addressDestination"]["device"] = received_header.source_device_id;
+        response_doc["datagram"][0]["header"]["addressDestination"]["entity"][0] = 0;
+        response_doc["datagram"][0]["header"]["addressDestination"]["feature"] = 0;
+        response_doc["datagram"][0]["header"]["msgCounter"] = msg_counter++;
+        response_doc["datagram"][0]["header"]["msgCounterReference"] = received_header.msg_counter;
+        response_doc["datagram"][0]["header"]["cmdClassifier"] = "reply";
+        response_doc["datagram"][0]["header"]["ackRequest"] = false;
 
 
         //String responseString;
