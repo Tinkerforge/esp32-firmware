@@ -38,8 +38,6 @@ public:
     void register_urls() override;
     void register_events() override;
 
-    void cm_callback(bool fast_charger_in_c);
-
 private:
     enum class RuleCondition : uint8_t {
         Ignore = 0,

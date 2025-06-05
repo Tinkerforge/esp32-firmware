@@ -642,7 +642,6 @@ void ChargeManager::setup()
             this->state.get("l_max_pv")->updateInt(this->limits.max_pv);
             this->low_level_state.get("last_hyst_reset")->updateUptime(this->ca_state->last_hysteresis_reset);
 
-            const bool fast_charger_in_c_old = fast_charger_in_c;
             fast_charger_in_c = false;
             for (int i = 0; i < this->charger_count; ++i) {
                 update_charger_state_config(i);
@@ -651,13 +650,6 @@ void ChargeManager::setup()
                 this->charger_decisions[i].three.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("d3"));
                 this->charger_decisions[i].current.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("dc"));
             }
-#if MODULE_BATTERY_CONTROL_AVAILABLE()
-            if (fast_charger_in_c != fast_charger_in_c_old) {
-                battery_control.cm_callback(fast_charger_in_c);
-            }
-#else
-            (void)fast_charger_in_c_old;
-#endif
 
             this->state.get("state")->updateUint(result);
         }, 1_s);
