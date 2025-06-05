@@ -162,14 +162,36 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
         return (
             <SubPage name="batteries">
                 <ConfigForm id="batteries_config_form" title={__("batteries.content.batteries")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+                    <FormRow label={__("batteries.content.grid_charge_permitted")}>
+                        <IndicatorGroup
+                            style="width: 100%"
+                            class="flex-wrap"
+                            value={bc_state.grid_charge_permitted ? 1 : 0}
+                            items={[
+                                ["success", __("batteries.content.permitted_no")],
+                                ["warning", __("batteries.content.permitted_yes")],
+                            ]}/>
+                    </FormRow>
+
                     <FormRow label={__("batteries.content.discharge_forbidden")}>
                         <IndicatorGroup
                             style="width: 100%"
                             class="flex-wrap"
                             value={bc_state.discharge_forbidden ? 1 : 0}
                             items={[
-                                ["success", __("batteries.content.discharge_forbidden_no")],
-                                ["warning", __("batteries.content.discharge_forbidden_yes")],
+                                ["success", __("batteries.content.forbidden_no")],
+                                ["warning", __("batteries.content.forbidden_yes")],
+                            ]}/>
+                    </FormRow>
+
+                    <FormRow label={__("batteries.content.charge_forbidden")}>
+                        <IndicatorGroup
+                            style="width: 100%"
+                            class="flex-wrap"
+                            value={bc_state.charge_forbidden ? 1 : 0}
+                            items={[
+                                ["success", __("batteries.content.forbidden_no")],
+                                ["warning", __("batteries.content.forbidden_yes")],
                             ]}/>
                     </FormRow>
 
