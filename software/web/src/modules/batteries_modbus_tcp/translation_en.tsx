@@ -34,6 +34,8 @@ let x = {
             "registers_add_count": /*SFN*/(x: number, max: number) => x + " of " + max + " registers configured"/*NF*/,
             "registers_add_select_address_mode": "Select address mode first...",
             "registers_edit_title": "Edit value",
+            "registers_register_desc": "Description",
+            "registers_register_desc_muted": "optional",
             "registers_register_type": "Register type",
             "registers_register_type_holding_register": "Holding register",
             "registers_register_type_holding_register_desc": "holding register",
@@ -45,8 +47,10 @@ let x = {
             "registers_start_address_muted": "begins at 0",
             "registers_start_number": "Start number",
             "registers_start_number_muted": "begins at 1",
-            "registers_value": "Value",
-            "registers_value_desc": /*SFN*/(rtype: string, addr: number, value: number) => "Set " + rtype + " " + addr + " to " + value/*NF*/
+            "registers_values": "Values",
+            "registers_values_muted": "comma-separated",
+            "registers_values_invalid": "The values must be a comma-separated list of decimal numbers.",
+            "registers_values_desc": /*SFN*/(rtype: string, addr: number, values: number[]) => "Set " + rtype + (values.length > 1 ? " from " : " ") + addr + " to " + values.join(", ")/*NF*/
         },
         "script": {
         }

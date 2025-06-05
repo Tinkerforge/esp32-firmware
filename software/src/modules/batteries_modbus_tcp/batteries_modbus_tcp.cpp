@@ -31,25 +31,35 @@
 
 #include "gcc_warnings.h"
 
-BatteriesModbusTCP::ValueTable *BatteriesModbusTCP::read_table_config(const Config *config)
+BatteriesModbusTCP::TableSpec *BatteriesModbusTCP::read_table_config(const Config *config)
 {
-    ValueTable *table = new ValueTable;
+    TableSpec *table = new TableSpec;
 
     table->device_address = static_cast<uint8_t>(config->get("device_address")->asUint());
 
     const Config *registers_config = static_cast<const Config *>(config->get("registers"));
     size_t registers_count         = registers_config->count();
 
-    ValueSpec *values = new ValueSpec[registers_count];
+    table->registers = new RegisterSpec[registers_count];
+    table->registers_length = registers_count;
 
     for (size_t i = 0; i < registers_count; ++i) {
-        values[i].register_type = registers_config->get(i)->get("rtype")->asEnum<ModbusRegisterType>();
-        values[i].start_address = static_cast<uint16_t>(registers_config->get(i)->get("addr")->asUint());
-        values[i].value         = static_cast<uint16_t>(registers_config->get(i)->get("value")->asUint());
-    }
+        auto register_config = registers_config->get(i);
 
-    table->values = values;
-    table->values_length = registers_count;
+        table->registers[i].register_type = register_config->get("rtyp")->asEnum<ModbusRegisterType>();
+        table->registers[i].start_address = static_cast<uint16_t>(register_config->get("addr")->asUint());
+
+        auto values_config  = register_config->get("vals");
+        uint16_t values_count = static_cast<uint16_t>(values_config->count());
+
+        table->registers[i].values = new uint16_t[values_count];
+        table->registers[i].values_length = values_count;
+
+        for (uint16_t k = 0; k < values_count; ++k) {
+            // FIXME: need to bit pack values in case of coils
+            table->registers[i].values[k] = static_cast<uint16_t>(values_config->get(k)->asUint());
+        }
+    }
 
     return table;
 }
@@ -59,9 +69,15 @@ void BatteriesModbusTCP::pre_setup()
     table_prototypes.push_back({BatteryModbusTCPTableID::None, *Config::Null()});
 
     table_custom_registers_prototype = Config::Object({
-        {"rtype", Config::Enum(ModbusRegisterType::HoldingRegister)}, // FIXME: replace with function code?
+        {"desc", Config::Str("", 0, 32)},
+        {"rtyp", Config::Enum(ModbusRegisterType::HoldingRegister)}, // FIXME: replace with function code?
         {"addr", Config::Uint16(0)},
-        {"value", Config::Uint16(0)},
+        {"vals", Config::Array({},
+            Config::get_prototype_uint16_0(),
+            0,
+            BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_VALUES,
+            Config::type_id<Config::ConfUint>()
+        )},
     });
 
     table_prototypes.push_back({BatteryModbusTCPTableID::Custom, Config::Object({
@@ -177,7 +193,7 @@ static void report_success(uint32_t cookie)
 
 void BatteriesModbusTCP::register_urls()
 {
-    api.addCommand("batteries_modbus_tcp/execute", &execute_config, {}, [this](String &errmsg) {
+    api.addCommand("batteries_modbus_tcp/execute", &execute_config, {}, [this](String &/*errmsg*/) {
         uint32_t cookie = execute_config.get("cookie")->asUint();
 
         if (execute_client != nullptr) {
@@ -275,16 +291,16 @@ void BatteriesModbusTCP::write_next()
         return;
     }
 
-    if (current_execute_index >= execute_table->values_length) {
+    if (current_execute_index >= execute_table->registers_length) {
         report_success(execute_cookie);
         release_client(); // execution is done
         return;
     }
 
-    const ValueSpec *spec = &execute_table->values[current_execute_index];
+    RegisterSpec *register_ = &execute_table->registers[current_execute_index];
     TFModbusTCPFunctionCode function_code;
 
-    switch (spec->register_type) {
+    switch (register_->register_type) {
     case ModbusRegisterType::HoldingRegister:
         function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
         break;
@@ -296,21 +312,21 @@ void BatteriesModbusTCP::write_next()
     case ModbusRegisterType::InputRegister:
     case ModbusRegisterType::DiscreteInput:
     default:
-        report_errorf(execute_cookie, "Unsupported register type to write: %u", static_cast<uint8_t>(spec->register_type));
+        report_errorf(execute_cookie, "Unsupported register type to write: %u", static_cast<uint8_t>(register_->register_type));
         release_client();
         return;
     }
 
     static_cast<TFModbusTCPSharedClient *>(execute_client)->transact(execute_table->device_address,
                                                                      function_code,
-                                                                     spec->start_address,
-                                                                     1,
-                                                                     const_cast<uint16_t *>(&spec->value),
+                                                                     register_->start_address,
+                                                                     register_->values_length,
+                                                                     register_->values,
                                                                      2_s,
-    [this, spec, function_code](TFModbusTCPClientTransactionResult result) {
+    [this, function_code](TFModbusTCPClientTransactionResult result) {
         if (result != TFModbusTCPClientTransactionResult::Success) {
-            report_errorf(execute_cookie, "Execution failed at value %zu of %zu: %s (%d)",
-                          current_execute_index, execute_table->values_length,
+            report_errorf(execute_cookie, "Execution failed at register %zu of %zu: %s (%d)",
+                          current_execute_index, execute_table->registers_length,
                           get_tf_modbus_tcp_client_transaction_result_name(result),
                           static_cast<int>(result));
 
@@ -321,7 +337,7 @@ void BatteriesModbusTCP::write_next()
 
         ++current_execute_index;
 
-        if (current_execute_index >= execute_table->values_length) {
+        if (current_execute_index >= execute_table->registers_length) {
             report_success(execute_cookie);
             release_client(); // execution is done
             return;

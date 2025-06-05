@@ -35,23 +35,25 @@
 #endif
 
 #define BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTERS 16
+#define BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_VALUES 16
 
 class BatteriesModbusTCP final : public IModule, public IBatteryGenerator
 {
 public:
-    struct ValueSpec {
+    struct RegisterSpec {
         ModbusRegisterType register_type;
         uint16_t start_address;
-        uint16_t value;
+        uint16_t *values;
+        uint16_t values_length;
     };
 
-    struct ValueTable {
+    struct TableSpec {
         uint8_t device_address;
-        const ValueSpec *values;
-        size_t values_length;
+        RegisterSpec *registers;
+        size_t registers_length;
     };
 
-    static ValueTable *read_table_config(const Config *config);
+    static TableSpec *read_table_config(const Config *config);
 
     // for IModule
     void pre_setup() override;
@@ -77,7 +79,7 @@ private:
     std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> execute_table_prototypes;
     TFGenericTCPSharedClient *execute_client = nullptr;
     uint32_t execute_cookie;
-    ValueTable *execute_table = nullptr;
+    TableSpec *execute_table = nullptr;
     size_t current_execute_index;
 };
 

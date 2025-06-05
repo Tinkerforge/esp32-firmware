@@ -30,7 +30,6 @@ import { ModbusRegisterAddressMode } from "../modbus_tcp_client/modbus_register_
 import { InputText, InputTextPatterned } from "../../ts/components/input_text";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
 import { InputNumber } from "../../ts/components/input_number";
-import { InputAnyFloat } from "../../ts/components/input_any_float";
 import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { Table, TableRow } from "../../ts/components/table";
@@ -43,9 +42,10 @@ type TableConfigNone = [
 ];
 
 type Register = {
-    rtype: number; // ModbusRegisterType
+    desc: string;
+    rtyp: number; // ModbusRegisterType
     addr: number;
-    value: number;
+    vals: number[];
 };
 
 type RegisterTable = {
@@ -101,6 +101,7 @@ interface RegisterEditorProps {
 
 interface RegisterEditorState {
     register: Register,
+    values: string,
 }
 
 class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState> {
@@ -109,10 +110,12 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
 
         this.state = {
             register: {
-                rtype: null,
+                desc: "",
+                rtyp: null,
                 addr: null,
-                value: null,
+                vals: [],
             },
+            values: "",
         } as RegisterEditorState;
     }
 
@@ -120,6 +123,14 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
         let start_address_offset = this.props.register_address_mode == ModbusRegisterAddressMode.Address ? 0 : 1;
 
         return [
+            <FormRow label={__("batteries_modbus_tcp.content.registers_register_desc")} label_muted={__("batteries_modbus_tcp.content.registers_register_desc_muted")}>
+                <InputText
+                    maxLength={32}
+                    value={this.state.register.desc}
+                    onValue={(v) => {
+                        this.setState({register: {...this.state.register, desc: v}});
+                    }} />
+            </FormRow>,
             <FormRow label={__("batteries_modbus_tcp.content.registers_register_type")}>
                 <InputSelect
                     required
@@ -128,9 +139,9 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
                         [ModbusRegisterType.Coil.toString(), __("batteries_modbus_tcp.content.registers_register_type_coil")],
                     ]}
                     placeholder={__("select")}
-                    value={util.hasValue(this.state.register.rtype) ? this.state.register.rtype.toString() : undefined}
+                    value={util.hasValue(this.state.register.rtyp) ? this.state.register.rtyp.toString() : undefined}
                     onValue={(v) => {
-                        this.setState({register: {...this.state.register, rtype: parseInt(v)}});
+                        this.setState({register: {...this.state.register, rtyp: parseInt(v)}});
                     }} />
             </FormRow>,
             <FormRow
@@ -153,15 +164,15 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
                         this.setState({register: {...this.state.register, addr: v - start_address_offset}});
                     }} />
             </FormRow>,
-            <FormRow label={__("batteries_modbus_tcp.content.registers_value")}>
-                <InputAnyFloat
+            <FormRow label={__("batteries_modbus_tcp.content.registers_values")} label_muted={__("batteries_modbus_tcp.content.registers_values_muted")}>
+                <InputTextPatterned
                     required
-                    min={0}
-                    max={this.state.register.rtype == ModbusRegisterType.Coil ? 1 : 65535}
-                    value={this.state.register.value}
+                    pattern={this.state.register.rtyp == ModbusRegisterType.Coil ? "^ *[01] *(, *[01] *){0,15}$" : "^ *(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{0,3}|0) *(, *(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{0,3}|0) *){0,15}$"}
+                    value={this.state.values}
                     onValue={(v) => {
-                        this.setState({register: {...this.state.register, value: v}});
-                    }} />
+                        this.setState({values: v});
+                    }}
+                    invalidFeedback={__("batteries_modbus_tcp.content.registers_values_invalid")} />
             </FormRow>,
         ];
     }
@@ -178,6 +189,52 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
         }
     }
 
+    parse_values(values_str: string) {
+        let values_dec = values_str.split(",");
+
+        if (this.state.register.rtyp == ModbusRegisterType.Coil) {
+            if (values_dec.length >= 1968) {
+                return [];
+            }
+        }
+        else {
+            if (values_dec.length >= 123) {
+                return [];
+            }
+        }
+
+        let values: number[] = [];
+
+        for (let value_dec of values_dec) {
+            value_dec = value_dec.trim();
+
+            let value = parseInt(value_dec, 10);
+
+            if (isNaN(value)) {
+                return [];
+            }
+
+            if (this.state.register.rtyp == ModbusRegisterType.Coil) {
+                if (value > 1) {
+                    return [];
+                }
+            }
+            else {
+                if (value > 65535) {
+                    return [];
+                }
+            }
+
+            if ("" + value !== value_dec) {
+                return [];
+            }
+
+            values.push(value);
+        }
+
+        return values;
+    }
+
     render() {
         let start_address_offset = this.props.register_address_mode == ModbusRegisterAddressMode.Address ? 0 : 1;
 
@@ -185,17 +242,18 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
             nestingDepth={1}
             rows={this.props.table.registers.map((register, i) => {
                 const row: TableRow = {
-                    columnValues: [__("batteries_modbus_tcp.content.registers_value_desc")(this.get_register_type_name(register.rtype), register.addr + start_address_offset, register.value)],
+                    columnValues: [<>{register.desc.length > 0 ? <div>{register.desc}</div> : undefined}<div style={register.desc.length > 0 ? "font-size: 80%" : ""}>{__("batteries_modbus_tcp.content.registers_values_desc")(this.get_register_type_name(register.rtyp), register.addr + start_address_offset, register.vals)}</div></>],
                     onRemoveClick: async () => {
                         this.props.on_table({...this.props.table, registers: this.props.table.registers.filter((r, k) => k !== i)});
                     },
                     onEditShow: async () => {
                         this.setState({
                             register: register,
+                            values: register.vals.join(", "),
                         });
                     },
                     onEditSubmit: async () => {
-                        this.props.on_table({...this.props.table, registers: this.props.table.registers.map((r, k) => k === i ? this.state.register : r)});
+                        this.props.on_table({...this.props.table, registers: this.props.table.registers.map((r, k) => k === i ? {...this.state.register, vals: this.parse_values(this.state.values)} : r)});
                     },
                     onEditGetChildren: () => this.get_children(),
                     editTitle: __("batteries_modbus_tcp.content.registers_edit_title"),
@@ -213,15 +271,17 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
             onAddShow={async () => {
                 this.setState({
                     register: {
-                        rtype: null,
+                        desc: "",
+                        rtyp: null,
                         addr: null,
-                        value: null,
+                        vals: [],
                     },
+                    values: "",
                 });
             }}
             onAddGetChildren={() => this.get_children()}
             onAddSubmit={async () => {
-                this.props.on_table({...this.props.table, registers: this.props.table.registers.concat([this.state.register])});
+                this.props.on_table({...this.props.table, registers: this.props.table.registers.concat([{...this.state.register, vals: this.parse_values(this.state.values)}])});
             }}/>;
     }
 }
@@ -342,7 +402,12 @@ function import_register_subtable(table: RegisterTable)
             return null;
         }
 
-        if (typeof table.registers[i].rtype != "number") {
+        if (typeof table.registers[i].desc != "string") {
+            console.log("Batteries Modbus/TCP: Imported config register subtable registers item desc is not a number");
+            return null;
+        }
+
+        if (typeof table.registers[i].rtyp != "number") {
             console.log("Batteries Modbus/TCP: Imported config register subtable registers item rtype is not a number");
             return null;
         }
@@ -352,15 +417,32 @@ function import_register_subtable(table: RegisterTable)
             return null;
         }
 
-        if (typeof table.registers[i].value != "number") {
-            console.log("Batteries Modbus/TCP: Imported config register subtable registers item value is not a number");
+        if (!util.isNonNullObject(table.registers[i].vals)) {
+            console.log("Batteries Modbus/TCP: Imported config register subtable registers item vals is not an object");
             return null;
         }
 
+        if (typeof table.registers[i].vals.length != "number") {
+            console.log("Batteries Modbus/TCP: Imported config register subtable registers item vals has no length");
+            return null;
+        }
+
+        let values: number[] = [];
+
+        for (let k = 0; k < table.registers[i].vals.length; ++k) {
+            if (typeof table.registers[i].vals[k] != "number") {
+                console.log("Batteries Modbus/TCP: Imported config register subtable registers item vals item is not a number");
+                return null;
+            }
+
+            values.push(table.registers[i].vals[k]);
+        }
+
         registers.push({
-            rtype: table.registers[i].rtype,
-            addr:  table.registers[i].addr,
-            value: table.registers[i].value,
+            desc: table.registers[i].desc,
+            rtyp: table.registers[i].rtyp,
+            addr: table.registers[i].addr,
+            vals: values,
         });
     }
 
