@@ -37,9 +37,11 @@ public:
         Errors                   = 3,
         PermitGridCharge         = 4,
         RevokeGridChargeOverride = 5,
-        ForbidDisharge           = 6,
-        RevokeDishargeOverride   = 7,
-        _max                     = 7,
+        ForbidDischarge          = 6,
+        RevokeDischargeOverride  = 7,
+        ForbidCharge             = 8,
+        RevokeChargeOverride     = 9,
+        _max                     = 9,
     };
 
     Batteries()

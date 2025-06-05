@@ -26,6 +26,8 @@ let x = {
             "revoke_grid_charge_override": "Revoke grid charge permission",
             "forbid_discharge": "Forbid discharge",
             "revoke_discharge_override": "Revoke discharge forbiddance",
+            "forbid_charge": "Forbid charge",
+            "revoke_charge_override": "Revoke charge forbiddance",
             "register_address_mode": "Address mode",
             "register_address_mode_address": "Register address (begins at 0)",
             "register_address_mode_number": "Register number (begins at 1)",

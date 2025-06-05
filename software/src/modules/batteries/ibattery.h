@@ -37,7 +37,9 @@ public:
         RevokeGridChargeOverride = 1,
         ForbidDischarge          = 2,
         RevokeDischargeOverride  = 3,
-        _max                     = 3,
+        ForbidCharge             = 4,
+        RevokeChargeOverride     = 5,
+        _max                     = 5,
     };
 
     virtual ~IBattery() = default;

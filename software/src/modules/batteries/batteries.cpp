@@ -37,6 +37,8 @@ static const char *batteries_path_postfixes[] = {
     "revoke_grid_charge_override",
     "forbid_discharge",
     "revoke_discharge_override",
+    "forbid_charge",
+    "revoke_charge_override",
 };
 
 static_assert(ARRAY_SIZE(batteries_path_postfixes) == static_cast<uint32_t>(Batteries::PathType::_max) + 1, "Path postfix length mismatch");
