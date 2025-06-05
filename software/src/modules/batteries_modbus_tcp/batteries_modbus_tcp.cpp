@@ -118,6 +118,24 @@ void BatteriesModbusTCP::pre_setup()
                 Config::type_id<Config::ConfObject>()
             )},
         })},
+        {"forbid_charge", Config::Object({
+            {"device_address", Config::Uint8(1)},
+            {"registers", Config::Array({},
+                &table_custom_registers_prototype,
+                0,
+                BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTERS,
+                Config::type_id<Config::ConfObject>()
+            )},
+        })},
+        {"revoke_charge_override", Config::Object({
+            {"device_address", Config::Uint8(1)},
+            {"registers", Config::Array({},
+                &table_custom_registers_prototype,
+                0,
+                BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTERS,
+                Config::type_id<Config::ConfObject>()
+            )},
+        })},
     })});
 
     config_prototype = Config::Object({
