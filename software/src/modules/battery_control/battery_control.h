@@ -59,7 +59,7 @@ private:
     void update_avg_soc();
     void schedule_evaluation();
     bool rule_condition_failed(BatteryControl::RuleCondition cond, int32_t th, int32_t value);
-    TristateBool evaluate_rules(const control_rule *rules, size_t rules_count);
+    TristateBool evaluate_rules(const control_rule *rules, size_t rules_count, const char *rules_type_name);
     void evaluate_all_rules();
     void evaluate_summary();
     void periodic_update();
@@ -84,6 +84,7 @@ private:
     Config rule_prototype;
 
     uint64_t evaluation_task_id = 0;
+    size_t trace_buffer_idx;
 
     const control_rule *permit_grid_charge_rules = nullptr;
     const control_rule *forbid_discharge_rules   = nullptr;
