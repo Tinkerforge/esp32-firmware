@@ -43,17 +43,18 @@ public:
     struct RegisterSpec {
         ModbusRegisterType register_type;
         uint16_t start_address;
-        uint16_t *values;
-        uint16_t values_length;
+        void *values_buffer;
+        uint16_t values_count; // not bytes, but registers or coils
     };
 
     struct TableSpec {
         uint8_t device_address;
         RegisterSpec *registers;
-        size_t registers_length;
+        size_t registers_count;
     };
 
-    static TableSpec *read_table_config(const Config *config);
+    static TableSpec *init_table(const Config *config);
+    static void free_table(TableSpec *table);
 
     // for IModule
     void pre_setup() override;
@@ -81,6 +82,7 @@ private:
     uint32_t execute_cookie;
     TableSpec *execute_table = nullptr;
     size_t current_execute_index;
+    const char *execute_data_name;
 };
 
 #if defined(__GNUC__)
