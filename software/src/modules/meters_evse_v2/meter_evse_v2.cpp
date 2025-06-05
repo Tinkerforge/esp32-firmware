@@ -93,7 +93,6 @@ void MeterEVSEV2::update_from_evse_v2_all_data(EVSEV2MeterData *meter_data)
 void MeterEVSEV2::energy_meter_values_callback(float power, float current[3])
 {
     if (value_index_power == UINT32_MAX) {
-        logger.printfln_meter("Received values callback before detecting a meter");
         return;
     }
 
