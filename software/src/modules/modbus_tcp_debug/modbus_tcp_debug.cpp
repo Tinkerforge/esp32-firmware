@@ -72,16 +72,24 @@ void ModbusTCPDebug::register_urls()
             return;
         }
 
-        String host = transact_config.get("host")->asString();
+        const String &host = transact_config.get("host")->asString();
         uint16_t port = transact_config.get("port")->asUint();
         uint8_t device_address = transact_config.get("device_address")->asUint();
         TFModbusTCPFunctionCode function_code = transact_config.get("function_code")->asEnum<TFModbusTCPFunctionCode>();
         uint16_t start_address = transact_config.get("start_address")->asUint();
         uint16_t data_count = transact_config.get("data_count")->asUint();
-        String write_data = transact_config.get("write_data")->asString();
+        const String &write_data = transact_config.get("write_data")->asString();
         millis_t timeout = millis_t{transact_config.get("timeout")->asUint()};
         bool hexload_registers = false;
         bool hexdump_registers = false;
+
+        defer {
+            // When done parsing the transaction, drop Strings from config to free memory.
+            // This invalidates the "host" and "write_data" references above, which will
+            // be copied by the lambda before being cleared.
+            transact_config.get("host"      )->clearString();
+            transact_config.get("write_data")->clearString();
+        };
 
         switch (function_code) {
         case TFModbusTCPFunctionCode::ReadCoils:
