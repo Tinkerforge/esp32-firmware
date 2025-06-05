@@ -222,6 +222,7 @@ void Ship::setup_mdns()
                               "_tcp",
                               "ski",
                               eebus.state.get("ski")->asEphemeralCStr()); // 40 byte hexadecimal digits representing the 160 bit SKI value
+
     mdns_service_txt_item_set("_ship", "_tcp", "register", "false");
     // Optional Fields
     mdns_service_txt_item_set("_ship", "_tcp", "brand", "Tinkerforge");
