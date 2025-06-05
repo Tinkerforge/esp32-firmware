@@ -197,11 +197,30 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                         let values_hex: string[] = [];
 
                         if (this.state.function_code == 6 || this.state.function_code == 16) {
-                            for (let value_dec of this.state.write_data.split(",")) {
-                                let value = parseInt(value_dec);
+                            let values_dec = this.state.write_data.split(",");
+
+                            if (values_dec.length >= 123 /* 1968 for coils */) {
+                                this.setState({waiting: false, cookie: null, result: "Error: Too many values"});
+                                return;
+                            }
+
+                            for (let value_dec of values_dec) {
+                                value_dec = value_dec.trim();
+
+                                let value = parseInt(value_dec, 10);
+
+                                if (isNaN(value)) {
+                                    this.setState({waiting: false, cookie: null, result: "Error: Value is invalid"});
+                                    return;
+                                }
 
                                 if (value > 65535) {
-                                    this.setState({waiting: false, cookie: null, result: "Error: Value too big"});
+                                    this.setState({waiting: false, cookie: null, result: "Error: Value is too big"});
+                                    return;
+                                }
+
+                                if ("" + value !== value_dec) {
+                                    this.setState({waiting: false, cookie: null, result: "Error: Value is malformed"});
                                     return;
                                 }
 
@@ -296,7 +315,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                         required
                         disabled={this.state.waiting}
                         min={1}
-                        max={65535 /* FIXME: depends on function code */}
+                        max={125 /* 2000 for coils */}
                         value={this.state.data_count}
                         onValue={(v) => this.setState({data_count: v})} />
                 </FormRow>
@@ -307,7 +326,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     <InputTextPatterned
                         required
                         disabled={this.state.waiting}
-                        pattern="^[0-9]+$"
+                        pattern="^ *(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{0,3}|0) *$"
                         value={this.state.write_data}
                         onValue={(v) => this.setState({write_data: v})}
                         invalidFeedback={__("modbus_tcp_debug.content.write_data_single_register_invalid")}
@@ -320,7 +339,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     <InputTextPatterned
                         required
                         disabled={this.state.waiting}
-                        pattern="^[0-9]+(,[0-9]+)*$"
+                        pattern="^ *(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{0,3}|0) *(, *(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{0,3}|0) *){0,122}$"
                         value={this.state.write_data}
                         onValue={(v) => this.setState({write_data: v})}
                         invalidFeedback={__("modbus_tcp_debug.content.write_data_multiple_registers_invalid")}
