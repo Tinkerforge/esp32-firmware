@@ -53,7 +53,7 @@ private:
     Config *errors;
 
     BatteryModbusTCPTableID table_id;
-    BatteriesModbusTCP::TableSpec *tables[4] = {nullptr, nullptr, nullptr, nullptr};
+    BatteriesModbusTCP::TableSpec *tables[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 
     bool has_current_action = false;
     Action current_action;
@@ -64,4 +64,6 @@ private:
     BatteriesModbusTCP::TableSpec *custom_table_revoke_grid_charge_override;
     BatteriesModbusTCP::TableSpec *custom_table_forbid_discharge;
     BatteriesModbusTCP::TableSpec *custom_table_revoke_discharge_override;
+    BatteriesModbusTCP::TableSpec *custom_table_forbid_charge;
+    BatteriesModbusTCP::TableSpec *custom_table_revoke_charge_override;
 };

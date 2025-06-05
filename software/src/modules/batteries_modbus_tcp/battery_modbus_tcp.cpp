@@ -51,11 +51,15 @@ void BatteryModbusTCP::setup(const Config &ephemeral_config)
             custom_table_revoke_grid_charge_override = BatteriesModbusTCP::read_table_config(static_cast<const Config *>(table_config->get("revoke_grid_charge_override")));
             custom_table_forbid_discharge            = BatteriesModbusTCP::read_table_config(static_cast<const Config *>(table_config->get("forbid_discharge")));
             custom_table_revoke_discharge_override   = BatteriesModbusTCP::read_table_config(static_cast<const Config *>(table_config->get("revoke_discharge_override")));
+            custom_table_forbid_charge               = BatteriesModbusTCP::read_table_config(static_cast<const Config *>(table_config->get("forbid_charge")));
+            custom_table_revoke_charge_override      = BatteriesModbusTCP::read_table_config(static_cast<const Config *>(table_config->get("revoke_charge_override")));
 
             tables[static_cast<uint32_t>(IBattery::Action::PermitGridCharge)]         = custom_table_permit_grid_charge;
             tables[static_cast<uint32_t>(IBattery::Action::RevokeGridChargeOverride)] = custom_table_revoke_grid_charge_override;
             tables[static_cast<uint32_t>(IBattery::Action::ForbidDischarge)]          = custom_table_forbid_discharge;
             tables[static_cast<uint32_t>(IBattery::Action::RevokeDischargeOverride)]  = custom_table_revoke_discharge_override;
+            tables[static_cast<uint32_t>(IBattery::Action::ForbidCharge)]             = custom_table_forbid_charge;
+            tables[static_cast<uint32_t>(IBattery::Action::RevokeChargeOverride)]     = custom_table_revoke_charge_override;
         }
 
         break;
