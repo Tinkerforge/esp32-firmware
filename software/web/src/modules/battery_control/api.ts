@@ -22,4 +22,5 @@ export interface low_level_config {
 export interface state {
     grid_charge_permitted: boolean;
     discharge_forbidden:   boolean;
+    charge_forbidden:      boolean;
 }

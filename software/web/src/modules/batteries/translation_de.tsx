@@ -10,9 +10,14 @@ let x = {
         "content": {
             "batteries": "Speichersteuerung",
 
+            "permitted_no": "Nicht erlaubt",
+            "permitted_yes": "Erlaubt",
+            "forbidden_no": "Nicht verboten",
+            "forbidden_yes": "Verboten",
+
+            "grid_charge_permitted": "Ladung vom Netz",
             "discharge_forbidden": "Batterieentladung",
-            "discharge_forbidden_no": "Nicht verboten",
-            "discharge_forbidden_yes": "Verboten",
+            "charge_forbidden": "Batterieladung",
 
             "forbid_discharge_during_fast_charge": "Batterieentladung beim Schnellladen verbieten",
             "forbid_discharge_during_fast_charge_desc": "Verbietet dem Speicher, sich zu entladen, während ein Fahrzeug schnell lädt oder sein Eco-Ladeplan es erlaubt.",
