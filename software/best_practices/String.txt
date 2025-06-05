@@ -1,0 +1,164 @@
+==================================================================================
+Best practices for using String objects (WString) from the Arduino-ESP32 framework
+==================================================================================
+
+
+--------------------------------
+Declaring/creating empty Strings
+--------------------------------
+tl;dr: Use String() or String variable_name.
+
+Do not use any of these:
+- String("")
+- String str{""}
+- String str = ""
+
+Rationale:
+
+All assignments of the empty string, including passing a zero-length string
+to the char* constructor, are unreasonably inefficient. They call strlen
+on the string that is known to be zero-length, reserve 0 bytes, which is
+useless, and then call memmove for 0 bytes, which is also useless.
+
+At the moment, the String's default constructor is the same as passing
+a zero-length string to it, but hopefully, there will be a more efficient
+default constructor in the future.
+
+
+--------------------------------
+Initializing a String definition
+--------------------------------
+tl;dr: Use String str{value}.
+
+Try to avoid any of these:
+- String str;
+  str = value;
+- String str = value
+
+Rationale:
+
+Assigning a String's value after the definition will call the inefficient
+default constructor (see previous note about creating empty Strings) and then
+copy the new value into it. When definition and assignment are on the same line,
+the default constructor will probably not be called because of copy elision,
+but that is not guaranteed.
+
+Prefer the universal initialization variant to make sure that the default
+constructor is not called.
+
+
+--------------------------
+Clearing/emptying a String
+--------------------------
+tl;dr: Use string.clear().
+
+Do not use any of these:
+- string = ""
+- string = String()
+- string = String("")
+
+Rationale:
+
+All assignments of the empty string, including the String() default constructor,
+are unreasonably inefficient. See previous note about creating empty Strings.
+
+Always use string.clear() to clear strings efficiently.
+
+
+--------------------------------
+Checking for empty/blank Strings
+--------------------------------
+tl;dr: Use string.isEmpty().
+
+Do not use any of these:
+- string == ""
+- string == String()
+- string.length() == 0
+
+Rationale:
+
+Comparing with a zero-length string is a roundabout way of calling strcmp on an
+empty string, which is needlessly slow. Comparing with a default-constructed
+String object is even slower because the object has to be constructed first,
+which involves calling strlen, reserve and memmove for the empty string.
+
+Comparing the string's length with 0 is exactly what isEmpty() does, but
+isEmpty() is more readable, so that should be preferred.
+
+
+-----------------------------------------------
+Getting Strings from Config objects for reading
+-----------------------------------------------
+tl;dr: Use const String &str = config.asString().
+
+Do not use this for read-only string access:
+- String str = config.asString()
+
+Rationale:
+
+asString() only returns a const reference. Storing it as a const reference
+is free. Assigning it to a String variable will cause the whole string to be
+copied.
+
+
+-----------------------------------
+Truncating a long String's contents
+-----------------------------------
+tl;dr: Use a CoolString and call shrinkToFit().
+
+Avoid assigning shorter strings to long-lived String objects.
+
+Rationale:
+
+A simple String object's internal buffer is never shrunk unless clear() is used.
+Assigning a short string to String that already has a large buffer will waste
+RAM.
+
+Use a CoolString and call shrinkToFit() if the String is long-lived. For
+short-lived Strings use a simple String object because its memory will be freed
+shortly anyway. Using shrinkToFit() on a short-lived string would only cause
+unnecessary extra memory handling.
+
+
+----------------------------------
+String assembling or concatenation
+----------------------------------
+
+tl;dr: Use StringSumHelper or StringWriter/StringBuilder.
+
+Avoid String sums like these:
+- string_a + string_b + string_c
+- string_a + "foo" + string_b
+- String("foo") + "bar"
+- string + number
+
+Rationale:
+
+String sums are inefficient because they have quadratic complexity in terms of
+bytes copied, and linear complexity in terms of copy operations and heap
+allocations. String sums (or concatenations) with numbers are even worse
+because all number conversions are done on the heap and then copied. Strings
+themselves can't even be appended. Instead, a StringSumHelper is created
+from the first String and all further elements are concatenated to that.
+The StringSumHelper is also a String and can be returned as such.
+Why the String class itself doesn't have the plus operator overloaded is left
+as an exercise for the reader. If you have to use String sums, make sure
+to create a StringSumHelper as the leftmost element, not a String.
+
+Instead of using String sums, use the StringWriter to assemble strings on the
+stack or use the StringBuilder for anything that doesn't fit on the stack.
+Both have linear complexity in terms of copy operations and bytes copied and
+usually require only a single heap allocation at most. They also provide printf,
+which the String class doesn't.
+
+It's usually fine to allocate buffers up to 1K on the stack. If you need
+to assemble longer strings, check the stack usage via the Debug module
+or use the StringBuilder.
+
+Example for using a StringWriter to assemble a String to return:
+{
+    char buf[256]; // 255 chars max
+    StringWriter sw(buf, sizeof(buf));
+    sw.printf("Some number is %i", int_number);
+    return String(buf, sw.getLength());
+}
