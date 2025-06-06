@@ -278,9 +278,17 @@ void BatteriesModbusTCP::register_urls()
             return;
         }
 
-        String host = execute_config.get("host")->asString();
+        const String &host = execute_config.get("host")->asString();
         uint16_t port = static_cast<uint16_t>(execute_config.get("port")->asUint());
         const Config *table = static_cast<const Config *>(execute_config.get("table")->get());
+
+        defer {
+            // When done parsing the execute command, drop Strings and Array items from config
+            // to free memory. This invalidates the "host" references above, which will be copied
+            // by the lambda before being cleared.
+            execute_config.get("host")->clearString();
+            execute_config.get("table")->get()->get("registers")->removeAll();
+        };
 
         execute_cookie = cookie;
         execute_table = init_table(table);
