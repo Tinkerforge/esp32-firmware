@@ -20,6 +20,7 @@
 #include "firmware_update.h"
 
 #include <esp_app_format.h>
+#include <esp_rom_crc.h>
 #include <spi_flash_mmap.h>
 #include <Update.h>
 #include <TFJson.h>
@@ -31,7 +32,6 @@
 #include "tools/string_builder.h"
 #include "tools/semantic_version.h"
 #include "check_state.enum.h"
-#include "./crc32.h"
 
 static const SemanticVersion build_version{BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH, BUILD_VERSION_BETA, build_timestamp()};
 
@@ -174,7 +174,7 @@ bool BlockReader<T>::handle_chunk(size_t chunk_offset, uint8_t *chunk_data, size
             read_block_len += to_read;
         }
 
-        crc32_ieee_802_3_recalculate(start, len, &actual_checksum);
+        actual_checksum = esp_rom_crc32_le(actual_checksum, start, len);
 
         const size_t expected_checksum_offset = block_offset + block_len - 4;
 
