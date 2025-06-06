@@ -18,13 +18,12 @@
  */
 #include "wireguard.h"
 
-#include <WiFi.h>
 #include <mbedtls/base64.h>
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 
-String check_key(const String &key, bool enable)
+static String check_key(const String &key, bool enable)
 {
     if (key.length() > 0) {
         if (key.length() != 44)
@@ -65,19 +64,19 @@ void Wireguard::pre_setup()
     }), [](Config &cfg, ConfigSource source) -> String {
         IPAddress unused;
 
-        if (!unused.fromString(cfg.get("internal_ip")->asEphemeralCStr()))
+        if (!unused.fromString(cfg.get("internal_ip")->asUnsafeCStr()))
             return "Failed to parse \"internal_ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!unused.fromString(cfg.get("internal_subnet")->asEphemeralCStr()))
+        if (!unused.fromString(cfg.get("internal_subnet")->asUnsafeCStr()))
             return "Failed to parse \"internal_subnet\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!unused.fromString(cfg.get("internal_gateway")->asEphemeralCStr()))
+        if (!unused.fromString(cfg.get("internal_gateway")->asUnsafeCStr()))
             return "Failed to parse \"internal_gateway\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!unused.fromString(cfg.get("allowed_ip")->asEphemeralCStr()))
+        if (!unused.fromString(cfg.get("allowed_ip")->asUnsafeCStr()))
             return "Failed to parse \"allowed_ip\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
-        if (!unused.fromString(cfg.get("allowed_subnet")->asEphemeralCStr()))
+        if (!unused.fromString(cfg.get("allowed_subnet")->asUnsafeCStr()))
             return "Failed to parse \"allowed_subnet\": Expected format is dotted decimal, i.e. 10.0.0.1";
 
 
@@ -111,47 +110,26 @@ void Wireguard::pre_setup()
 
 void Wireguard::start_wireguard()
 {
-    static bool done = false;
-    if (done)
-        return;
+    private_key = config.get("private_key")->asString(); // Local copy of unsafe conf String. The network interface created by WG might hold a reference to the C string.
+    remote_host = config.get("remote_host")->asString(); // Local copy of unsafe conf String. lwip_getaddrinfo() might hold a reference to the C string.
 
-    struct timeval tv;
-    if (!rtc.clock_synced(&tv))
-        return;
+    const uint16_t remote_port = config.get("remote_port"  )->asUint();
+    const String   &psk        = config.get("preshared_key")->asString();
 
-    done = true;
+    logger.printfln("Connecting to WireGuard peer %s:%hu", remote_host.c_str(), remote_port);
 
-    IPAddress internal_ip;
-    IPAddress internal_subnet;
-    IPAddress internal_gateway;
-    IPAddress allowed_ip;
-    IPAddress allowed_subnet;
-    uint16_t local_port;
-
-    internal_ip.fromString(config.get("internal_ip")->asEphemeralCStr());
-    internal_subnet.fromString(config.get("internal_subnet")->asEphemeralCStr());
-    internal_gateway.fromString(config.get("internal_gateway")->asEphemeralCStr());
-    allowed_ip.fromString(config.get("allowed_ip")->asEphemeralCStr());
-    allowed_subnet.fromString(config.get("allowed_subnet")->asEphemeralCStr());
-    local_port = config.get("local_port")->asUint();
-
-    private_key = config.get("private_key")->asString(); // Local copy of ephemeral conf String. The network interface created by WG might hold a reference to the C string.
-    remote_host = config.get("remote_host")->asString(); // Local copy of ephemeral conf String. lwip_getaddrinfo() might hold a reference to the C string.
-
-    logger.printfln("Got NTP sync. Connecting to WireGuard peer %s:%lu", remote_host.c_str(), config.get("remote_port")->asUint());
-
-    wg.begin(internal_ip,
-             internal_subnet,
-             local_port,
-             internal_gateway,
-             private_key.c_str(),
-             remote_host.c_str(),
-             config.get("remote_public_key")->asEphemeralCStr(),
-             config.get("remote_port")->asUint(),
-             allowed_ip,
-             allowed_subnet,
-             config.get("make_default_interface")->asBool(),
-             config.get("preshared_key")->asString().length() > 0 ? config.get("preshared_key")->asEphemeralCStr() : nullptr);
+    wg.begin({config.get("internal_ip"           )->asUnsafeCStr()},
+             {config.get("internal_subnet"       )->asUnsafeCStr()},
+              config.get("local_port"            )->asUint(),
+             {config.get("internal_gateway"      )->asUnsafeCStr()},
+              private_key.c_str(),
+              remote_host.c_str(),
+              config.get("remote_public_key"     )->asUnsafeCStr(),
+              remote_port,
+             {config.get("allowed_ip"            )->asUnsafeCStr()},
+              config.get("allowed_subnet"        )->asUnsafeCStr(),
+              config.get("make_default_interface")->asBool(),
+              psk.isEmpty() ? nullptr : psk.c_str());
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         bool up = wg.is_peer_up(nullptr, nullptr);
@@ -184,13 +162,30 @@ void Wireguard::setup()
     if (!config.get("enable")->asBool())
         return;
 
-    logger.printfln("WireGuard enabled. Waiting for NTP time sync.");
+    logger.printfln("WireGuard enabled. Waiting for network and time sync.");
 
     state.get("state")->updateUint(1);
+}
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+void Wireguard::register_events()
+{
+#if MODULE_NETWORK_AVAILABLE()
+    network.on_network_connected([this](const Config *connected) {
+        if (!connected->asBool()) {
+            return EventResult::OK;
+        }
+
+        task_scheduler.scheduleWhenClockSynced([this]() {
+            start_wireguard();
+        });
+
+        return EventResult::Deregister;
+    });
+#else
+    task_scheduler.scheduleWhenClockSynced([this]() {
         start_wireguard();
-    }, 1_s, 1_s);
+    });
+#endif
 }
 
 void Wireguard::register_urls()

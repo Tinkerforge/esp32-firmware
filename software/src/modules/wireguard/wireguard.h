@@ -31,11 +31,13 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
-    void start_wireguard();
+    void register_events() override;
 
     bool port_used(uint32_t port);
 
 private:
+    void start_wireguard();
+
     ConfigRoot config;
     ConfigRoot state;
     WireGuard wg;
@@ -45,5 +47,3 @@ private:
 
     micros_t last_connected = 0_us;
 };
-
-String check_key(const String &key, bool enable);
