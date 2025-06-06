@@ -115,7 +115,7 @@ void BatteriesModbusTCP::pre_setup()
         {"addr", Config::Uint16(0)},
         {"vals", Config::Array({},
             Config::get_prototype_uint16_0(),
-            0,
+            1,
             BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_VALUES,
             Config::type_id<Config::ConfUint>()
         )},
