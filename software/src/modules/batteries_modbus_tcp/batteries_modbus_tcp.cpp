@@ -33,14 +33,17 @@
 
 BatteriesModbusTCP::TableSpec *BatteriesModbusTCP::init_table(const Config *config)
 {
-    TableSpec *table = static_cast<TableSpec *>(malloc(sizeof(TableSpec)));
-
-    table->device_address = static_cast<uint8_t>(config->get("device_address")->asUint());
-
     const Config *registers_config = static_cast<const Config *>(config->get("registers"));
     size_t registers_count         = registers_config->count();
 
-    table->registers = static_cast<RegisterSpec *>(malloc(sizeof(RegisterSpec) * registers_count));
+    if (registers_count == 0) {
+        return nullptr;
+    }
+
+    TableSpec *table = static_cast<TableSpec *>(malloc(sizeof(TableSpec)));
+
+    table->device_address  = static_cast<uint8_t>(config->get("device_address")->asUint());
+    table->registers       = static_cast<RegisterSpec *>(malloc(sizeof(RegisterSpec) * registers_count));
     table->registers_count = registers_count;
 
     for (size_t i = 0; i < registers_count; ++i) {
@@ -49,7 +52,7 @@ BatteriesModbusTCP::TableSpec *BatteriesModbusTCP::init_table(const Config *conf
         table->registers[i].register_type = register_config->get("rtyp")->asEnum<ModbusRegisterType>();
         table->registers[i].start_address = static_cast<uint16_t>(register_config->get("addr")->asUint());
 
-        auto values_config  = register_config->get("vals");
+        auto values_config    = register_config->get("vals");
         uint16_t values_count = static_cast<uint16_t>(values_config->count());
         size_t values_byte_count;
 
@@ -61,7 +64,7 @@ BatteriesModbusTCP::TableSpec *BatteriesModbusTCP::init_table(const Config *conf
         }
 
         table->registers[i].values_buffer = malloc(values_byte_count);
-        table->registers[i].values_count = values_count;
+        table->registers[i].values_count  = values_count;
 
         if (table->registers[i].register_type == ModbusRegisterType::Coil) {
             uint8_t *coils_buffer = reinterpret_cast<uint8_t *>(table->registers[i].values_buffer);
@@ -281,6 +284,11 @@ void BatteriesModbusTCP::register_urls()
 
         execute_cookie = cookie;
         execute_table = init_table(table);
+
+        if (execute_table == nullptr) {
+            report_errorf(cookie, "Table has no registers");
+            return;
+        }
 
         modbus_tcp_client.get_pool()->acquire(host.c_str(), port,
         [this, cookie, host, port](TFGenericTCPClientConnectResult connect_result, int error_number, TFGenericTCPSharedClient *shared_client) {

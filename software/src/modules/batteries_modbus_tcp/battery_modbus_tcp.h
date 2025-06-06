@@ -53,7 +53,7 @@ private:
     Config *errors;
 
     BatteryModbusTCPTableID table_id;
-    BatteriesModbusTCP::TableSpec *tables[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+    const BatteriesModbusTCP::TableSpec *tables[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 
     bool has_current_action = false;
     Action current_action;
