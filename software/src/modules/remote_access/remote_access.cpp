@@ -116,7 +116,7 @@ fail:
 static int create_sock_and_send_to(const void *payload, size_t payload_len, const ip_addr_t ip, uint16_t port, uint16_t local_port)
 {
     sockaddr_in dest_addr;
-    bzero(&dest_addr, sizeof(dest_addr));
+    memset(&dest_addr, 0, sizeof(dest_addr));
     dest_addr.sin_addr.s_addr = ip.u_addr.ip4.addr;
     dest_addr.sin_family = AF_INET;
     dest_addr.sin_port = htons(port);
@@ -134,9 +134,9 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
     }
 
     struct sockaddr_in local_addr;
-    bzero(&local_addr, sizeof(local_addr));
+    memset(&local_addr, 0, sizeof(local_addr));
 
-    local_addr.sin_addr.s_addr = inet_addr("0.0.0.0");
+    //local_addr.sin_addr.s_addr = inet_addr("0.0.0.0"); // address already set by memset
     local_addr.sin_family = AF_INET;
     local_addr.sin_port = htons(local_port);
     ret = bind(sock, (struct sockaddr *)&local_addr, sizeof(local_addr));
@@ -1070,20 +1070,21 @@ void RemoteAccess::register_events()
         return;
 
     network.on_network_connected([this](const Config *connected) {
-        if (this->task_id) {
-            task_scheduler.cancel(this->task_id);
-            this->task_id = 0;
-        }
-
         if (connected->asBool()) {
-            this->task_id = task_scheduler.scheduleWithFixedDelay(
-                [this]() {
+            // Start task if not scheduled yet.
+            if (!this->task_id) {
+                this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
                     if (!this->management_request_done) {
                         this->resolve_management();
                     }
-                },
-                0_s,
-                30_s);
+                }, 30_s);
+            }
+        } else {
+            // Cancel task if currently scheduled.
+            if (this->task_id) {
+                task_scheduler.cancel(this->task_id);
+                this->task_id = 0;
+            }
         }
         return EventResult::OK;
     });
@@ -1600,9 +1601,9 @@ bool port_valid(uint16_t port)
     }
 
     struct sockaddr_in local_addr;
-    bzero(&local_addr, sizeof(local_addr));
+    memset(&local_addr, 0, sizeof(local_addr));
 
-    local_addr.sin_addr.s_addr = inet_addr("0.0.0.0");
+    //local_addr.sin_addr.s_addr = inet_addr("0.0.0.0"); // address already set by memset
     local_addr.sin_family = AF_INET;
     local_addr.sin_port = htons(port);
     int ret = bind(sock, (struct sockaddr *)&local_addr, sizeof(local_addr));
@@ -1633,8 +1634,10 @@ void RemoteAccess::request_cleanup()
 void RemoteAccess::connect_management()
 {
     static bool done = false;
-    if (done)
+    if (done) {
+        logger.printfln("Attempted connect_management again despite being done");
         return;
+    }
 
     struct timeval tv;
     if (!rtc.clock_synced(&tv)) {
@@ -1648,19 +1651,11 @@ void RemoteAccess::connect_management()
 
     done = true;
 
-    IPAddress internal_ip;
-    IPAddress internal_subnet;
-    IPAddress internal_gateway;
-    IPAddress allowed_ip;
-    IPAddress allowed_subnet;
-    uint16_t local_port;
-
-    internal_ip.fromString("10.123.123.2");
-    internal_subnet.fromString("255.255.255.0");
-    internal_gateway.fromString("10.123.123.1");
-    allowed_ip.fromString("0.0.0.0");
-    allowed_subnet.fromString("0.0.0.0");
-    local_port = 51820;
+    const IPAddress internal_ip     { 10,123,123,2};
+    const IPAddress internal_subnet {255,255,255,0};
+    const IPAddress internal_gateway{ 10,123,123,1};
+    const IPAddress allowed_ip      (IPv4); // 0.0.0.0
+    const IPAddress allowed_subnet  (IPv4); // 0.0.0.0
 
     // WireGuard decodes those (base64 encoded) keys and stores them.
     char private_key[WG_KEY_LENGTH + 1];
@@ -1673,7 +1668,7 @@ void RemoteAccess::connect_management()
     }
 
     // Only used for BLOCKING! DNS resolve. TODO Make this non-blocking in Wireguard-ESP32-Arduino/src/WireGuard.cpp!
-    auto remote_host = config.get("relay_host")->asEphemeralCStr();
+    const char *remote_host = config.get("relay_host")->asUnsafeCStr();
 
     logger.printfln("Connecting to Management WireGuard peer %s:%u", remote_host, 51820);
 
@@ -1682,7 +1677,7 @@ void RemoteAccess::connect_management()
     }
     management = new WireGuard();
 
-    local_port = find_next_free_port(local_port);
+    const uint16_t local_port = find_next_free_port(51820);
     this->setup_inner_socket();
     management->begin(internal_ip,
                       internal_subnet,
@@ -1718,24 +1713,11 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port)
         return;
     }
 
-    IPAddress internal_ip;
-    IPAddress internal_subnet;
-    IPAddress internal_gateway;
-    IPAddress allowed_ip;
-    IPAddress allowed_subnet;
-
-    std::unique_ptr<char[]> buf = heap_alloc_array<char>(50);
-
-    // TODO: make this more efficient. For example (internal_ip.fromString("10.123.0.2") | i << 8). Maybe there is a macro that converts dotted decimal form to an int?
-    snprintf(buf.get(), 50, "10.123.%u.2", i);
-    internal_ip.fromString(buf.get());
-    internal_subnet.fromString("255.255.255.0");
-
-    // TODO: make this more efficient, see above.
-    snprintf(buf.get(), 50, "10.123.%u.1", i);
-    internal_gateway.fromString(buf.get());
-    allowed_ip.fromString("0.0.0.0");
-    allowed_subnet.fromString("0.0.0.0");
+    const IPAddress internal_ip     { 10,123,  i,2};
+    const IPAddress internal_subnet {255,255,255,0};
+    const IPAddress internal_gateway{ 10,123,  i,1};
+    const IPAddress allowed_ip      (IPv4); // 0.0.0.0
+    const IPAddress allowed_subnet  (IPv4); // 0.0.0.0
 
     // WireGuard decodes those (base64 encoded) keys and stores them.
     char private_key[WG_KEY_LENGTH + 1];
@@ -1750,7 +1732,7 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port)
     }
 
     // Only used for BLOCKING! DNS resolve. TODO Make this non-blocking in Wireguard-ESP32-Arduino/src/WireGuard.cpp!
-    auto remote_host = config.get("relay_host")->asEphemeralCStr();
+    const char *remote_host = config.get("relay_host")->asUnsafeCStr();
 
     uint8_t conn_idx = get_connection(i);
     if (conn_idx == 255) {
@@ -1793,9 +1775,9 @@ void RemoteAccess::setup_inner_socket()
     }
 
     struct sockaddr_in local_addr;
-    bzero(&local_addr, sizeof(local_addr));
+    memset(&local_addr, 0, sizeof(local_addr));
 
-    local_addr.sin_addr.s_addr = inet_addr("0.0.0.0");
+    //local_addr.sin_addr.s_addr = inet_addr("0.0.0.0"); // address is already set by memset
     local_addr.sin_family = AF_INET;
     local_addr.sin_port = htons(12345);
     int ret = bind(inner_socket, (struct sockaddr *)&local_addr, sizeof(local_addr));
