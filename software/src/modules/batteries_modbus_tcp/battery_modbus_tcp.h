@@ -58,12 +58,4 @@ private:
     bool has_current_action = false;
     Action current_action;
     size_t current_action_index;
-
-    // custom
-    BatteriesModbusTCP::TableSpec *custom_table_permit_grid_charge;
-    BatteriesModbusTCP::TableSpec *custom_table_revoke_grid_charge_override;
-    BatteriesModbusTCP::TableSpec *custom_table_forbid_discharge;
-    BatteriesModbusTCP::TableSpec *custom_table_revoke_discharge_override;
-    BatteriesModbusTCP::TableSpec *custom_table_forbid_charge;
-    BatteriesModbusTCP::TableSpec *custom_table_revoke_charge_override;
 };
