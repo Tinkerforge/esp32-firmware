@@ -74,6 +74,9 @@ bool TaskQueue::removeByTaskID(uint64_t task_id)
 {
     // The queue is locked if this function is called.
 
+    if (task_id == 0)
+        return false;
+
     auto it = std::find_if(this->c.begin(), this->c.end(), [task_id](const std::unique_ptr<Task> &t){return t->task_id == task_id;});
 
     if (it == this->c.end()) {
@@ -94,6 +97,9 @@ bool TaskQueue::removeByTaskID(uint64_t task_id)
 
 Task *TaskQueue::findByTaskID(uint64_t task_id)
 {
+    if (task_id == 0)
+        return nullptr;
+
     auto it = std::find_if(this->c.begin(), this->c.end(), [task_id](const std::unique_ptr<Task> &t){return t->task_id == task_id;});
 
     if (it == this->c.end()) {
@@ -210,6 +216,20 @@ uint64_t TaskScheduler::scheduleWithFixedDelay(std::function<void(void)> &&fn, m
 
 uint64_t TaskScheduler::scheduleWhenClockSynced(std::function<void(void)> &&fn)
 {
+    // Check if the clock is already synced and avoid the sync check task.
+    struct timeval tv;
+    if (rtc.clock_synced(&tv)) {
+        if (boot_stage < BootStage::LOOP) {
+            // Don't execute the callback now because that might break start-up sequencing,
+            // turn it into a one-shot task instead.
+            return scheduleOnce(std::move(fn));
+        } else {
+            // Clock already synced, execute the callback now because the loop stage has aready been reached.
+            fn();
+            return 0;
+        }
+    }
+
     // Check once per second if clock is synced,
     // cancel task if it is and then call
     // the user supplied function
@@ -219,7 +239,7 @@ uint64_t TaskScheduler::scheduleWhenClockSynced(std::function<void(void)> &&fn)
             this->cancel(this->currentTask->task_id);
             fn();
         }
-    }, 0_ms, 1_s);
+    }, 1_s);
 }
 
 uint64_t TaskScheduler::scheduleWallClock(std::function<void(void)> &&fn, minutes_t interval_minutes, millis_t execution_delay_ms, bool run_on_first_sync)
@@ -243,6 +263,9 @@ uint64_t TaskScheduler::scheduleWallClock(std::function<void(void)> &&fn, minute
 
 TaskScheduler::CancelResult TaskScheduler::cancel(uint64_t task_id)
 {
+    if (task_id == 0)
+        return TaskScheduler::CancelResult::NotFound;
+
     std::lock_guard<std::mutex> lock{this->task_mutex};
     if (IS_WALL_CLOCK_TASK_ID(task_id)) {
         size_t i = 0;
@@ -283,6 +306,11 @@ uint64_t TaskScheduler::currentTaskId()
 
 TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, millis_t millis_to_wait)
 {
+    if (task_id == 0) {
+        logger.printfln("Attempted to await task 0");
+        return TaskScheduler::AwaitResult::Error;
+    }
+
     if (this->rebooting)
         return TaskScheduler::AwaitResult::Timeout;
 
