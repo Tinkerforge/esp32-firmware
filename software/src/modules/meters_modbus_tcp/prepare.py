@@ -96,7 +96,7 @@ for spec in specs:
             spec_values.append(f'static const MeterValueID {spec_name.under}_ids[] = {{\n' + '\n'.join(value_ids) + '\n};')
 
         spec_values.append(f'static const uint32_t {spec_name.under}_index[] = {{\n' + '\n'.join(value_index) + '\n};')
-        spec_values.append(f'static const MeterModbusTCP::ValueTable {spec_name.under}_table = {{\n'
+        spec_values.append(f'static const MeterModbusTCP::TableSpec {spec_name.under}_table = {{\n'
                            f'    {spec_name.under}_specs,\n'
                            f'    ARRAY_SIZE({spec_name.under}_specs),\r')
 
