@@ -89,6 +89,10 @@ bool BatteryModbusTCP::supports_action(Action /*action*/)
 
 bool BatteryModbusTCP::start_action(Action action)
 {
+    if (tables[static_cast<uint32_t>(action)] == nullptr) {
+        return true; // nothing to do
+    }
+
     if (connected_client == nullptr) {
         logger.printfln_battery("Not connected, cannot start action");
         return false;
@@ -135,7 +139,7 @@ void BatteryModbusTCP::write_next()
         return;
     }
 
-    BatteriesModbusTCP::TableSpec *table = tables[static_cast<uint32_t>(current_action)];
+    const BatteriesModbusTCP::TableSpec *table = tables[static_cast<uint32_t>(current_action)];
 
     if (current_action_index >= table->registers_count) {
         has_current_action = false; // action is done
