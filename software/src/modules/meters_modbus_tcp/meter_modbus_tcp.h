@@ -75,7 +75,7 @@ public:
         float scale_factor;
     };
 
-    struct ValueTable {
+    struct TableSpec {
         const ValueSpec *specs;
         size_t specs_length;
         const MeterValueID *ids;
@@ -135,7 +135,7 @@ private:
     size_t trace_buffer_index;
 
     MeterModbusTCPTableID table_id;
-    const ValueTable *table = nullptr;
+    const TableSpec *table = nullptr;
 
     bool read_allowed = false;
     bool values_declared = false;
@@ -149,11 +149,6 @@ private:
     int sungrow_inverter_output_type;
 
     union {
-        // custom
-        struct {
-            ValueTable *table;
-        } custom;
-
         // Sungrow hybrid inverter
         struct {
             SungrowHybridInverterVirtualMeter virtual_meter;

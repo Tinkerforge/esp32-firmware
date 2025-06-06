@@ -215,35 +215,35 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             size_t registers_count = registers->count();
 
             // FIXME: leaking this, because as of right now meter instances don't get destroyed
-            ValueSpec *customs_specs = new ValueSpec[registers_count];
-            MeterValueID *customs_ids = new MeterValueID[registers_count];
-            uint32_t *customs_index = new uint32_t[registers_count];
+            TableSpec *custom_table = new TableSpec;
+            ValueSpec *custom_specs = new ValueSpec[registers_count];
+            MeterValueID *custom_ids = new MeterValueID[registers_count];
+            uint32_t *custom_index = new uint32_t[registers_count];
 
             for (size_t i = 0; i < registers_count; ++i) {
                 MeterValueID value_id = registers->get(i)->get("id")->asEnum<MeterValueID>();
 
-                customs_specs[i].name = getMeterValueName(value_id);
-                customs_specs[i].register_type = registers->get(i)->get("rtype")->asEnum<ModbusRegisterType>();
-                customs_specs[i].start_address = registers->get(i)->get("addr")->asUint();
-                customs_specs[i].value_type = registers->get(i)->get("vtype")->asEnum<ModbusValueType>();
-                customs_specs[i].drop_sign = false; // FIXME: expose in API?
-                customs_specs[i].offset = registers->get(i)->get("off")->asFloat();
-                customs_specs[i].scale_factor = registers->get(i)->get("scale")->asFloat();
+                custom_specs[i].name = getMeterValueName(value_id);
+                custom_specs[i].register_type = registers->get(i)->get("rtype")->asEnum<ModbusRegisterType>();
+                custom_specs[i].start_address = registers->get(i)->get("addr")->asUint();
+                custom_specs[i].value_type = registers->get(i)->get("vtype")->asEnum<ModbusValueType>();
+                custom_specs[i].drop_sign = false; // FIXME: expose in API?
+                custom_specs[i].offset = registers->get(i)->get("off")->asFloat();
+                custom_specs[i].scale_factor = registers->get(i)->get("scale")->asFloat();
 
-                customs_ids[i] = value_id;
+                custom_ids[i] = value_id;
 
-                customs_index[i] = i;
+                custom_index[i] = i;
             }
 
             // FIXME: leaking this, because as of right now meter instances don't get destroyed
-            custom.table = new ValueTable;
-            custom.table->specs = customs_specs;
-            custom.table->specs_length = registers_count;
-            custom.table->ids = customs_ids;
-            custom.table->ids_length = registers_count;
-            custom.table->index = customs_index;
+            custom_table->specs = custom_specs;
+            custom_table->specs_length = registers_count;
+            custom_table->ids = custom_ids;
+            custom_table->ids_length = registers_count;
+            custom_table->index = custom_index;
 
-            table = custom.table;
+            table = custom_table;
         }
 
         break;
