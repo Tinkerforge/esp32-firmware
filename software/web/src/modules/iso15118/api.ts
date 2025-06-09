@@ -109,4 +109,5 @@ export interface state_iso2 {
 }
 
 export interface state_iso20 {
+    state: number;
 }
