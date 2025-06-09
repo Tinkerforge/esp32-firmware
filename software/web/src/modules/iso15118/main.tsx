@@ -412,7 +412,7 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
 
                     <FormSeparator heading="ISO 15118-20"/>
                     <FormRow label="State">
-                        <InputNumber value={state_common.state}/>
+                        <InputNumber value={state_iso20.state}/>
                     </FormRow>
                 </ConfigForm>
             </SubPage>
