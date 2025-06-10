@@ -40,13 +40,18 @@ public:
     void pre_reboot() override;
 
     bool supports_action(Action action) override;
-    bool start_action(Action action) override;
-    bool get_current_action(Action *action) override;
+    void start_action(Action action, std::function<void(bool)> &&callback = nullptr) override;
 
 private:
+    struct Execution {
+        const BatteriesModbusTCP::TableSpec *table;
+        std::function<void(bool)> callback;
+        size_t index;
+    };
+
     void connect_callback() override;
     void disconnect_callback() override;
-    void write_next();
+    void write_next(Execution *execution);
 
     uint32_t slot;
     Config *state;
@@ -54,8 +59,4 @@ private:
 
     BatteryModbusTCPTableID table_id;
     const BatteriesModbusTCP::TableSpec *tables[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
-
-    bool has_current_action = false;
-    Action current_action;
-    size_t current_action_index;
 };
