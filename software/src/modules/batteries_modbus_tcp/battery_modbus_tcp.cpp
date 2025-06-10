@@ -177,14 +177,10 @@ void BatteryModbusTCP::write_next(Execution *execution)
                                                                        register_->values_count,
                                                                        register_->values_buffer,
                                                                        2_s,
-    [this, execution, register_, function_code](TFModbusTCPClientTransactionResult result) {
+    [this, execution](TFModbusTCPClientTransactionResult result) {
         if (result != TFModbusTCPClientTransactionResult::Success) {
-            logger.printfln_battery("Modbus write error (host='%s' port=%u devaddr=%u fcode=%d regaddr=%u): %s (%d)",
-                                    host.c_str(),
-                                    port,
-                                    execution->table->device_address,
-                                    static_cast<int>(function_code),
-                                    register_->start_address,
+            logger.printfln_battery("Action execution failed at %zu of %zu: %s (%d)",
+                                    execution->index + 1, execution->table->registers_count,
                                     get_tf_modbus_tcp_client_transaction_result_name(result),
                                     static_cast<int>(result));
 
