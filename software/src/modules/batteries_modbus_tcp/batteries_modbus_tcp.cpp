@@ -362,7 +362,6 @@ void BatteriesModbusTCP::write_next()
     }
 
     if (execute_client == nullptr) {
-        // FIXME: maybe retry if connection is lost in the middle of an action, instead of aborting
         return;
     }
 
@@ -407,7 +406,6 @@ void BatteriesModbusTCP::write_next()
                           get_tf_modbus_tcp_client_transaction_result_name(result),
                           static_cast<int>(result));
 
-            // FIXME: maybe retry on error in the middle of an action, instead of aborting
             release_client();
             return;
         }

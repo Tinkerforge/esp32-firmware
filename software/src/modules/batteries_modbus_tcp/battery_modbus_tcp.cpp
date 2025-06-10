@@ -87,36 +87,35 @@ bool BatteryModbusTCP::supports_action(Action /*action*/)
     return true;
 }
 
-bool BatteryModbusTCP::start_action(Action action)
+void BatteryModbusTCP::start_action(Action action, std::function<void(bool)> &&callback)
 {
-    if (tables[static_cast<uint32_t>(action)] == nullptr) {
-        return true; // nothing to do
+    const BatteriesModbusTCP::TableSpec *table = tables[static_cast<uint32_t>(action)];
+
+    if (table == nullptr) {
+        if (callback) {
+            callback(true);
+        }
+
+        return; // nothing to do
     }
 
     if (connected_client == nullptr) {
         logger.printfln_battery("Not connected, cannot start action");
-        return false;
+
+        if (callback) {
+            callback(false);
+        }
+
+        return;
     }
 
-    if (has_current_action) {
-        logger.printfln_battery("Another action is already in progress");
-        return false;
-    }
+    Execution *execution = new Execution;
 
-    has_current_action   = true;
-    current_action       = action;
-    current_action_index = 0;
+    execution->table = tables[static_cast<uint32_t>(action)];
+    execution->callback = std::move(callback);
+    execution->index = 0;
 
-    write_next();
-
-    return true;
-}
-
-bool BatteryModbusTCP::get_current_action(Action *action)
-{
-    *action = current_action;
-
-    return has_current_action;
+    write_next(execution);
 }
 
 void BatteryModbusTCP::connect_callback()
@@ -127,26 +126,27 @@ void BatteryModbusTCP::disconnect_callback()
 {
 }
 
-void BatteryModbusTCP::write_next()
+void BatteryModbusTCP::write_next(Execution *execution)
 {
-    if (!has_current_action) {
-        return;
+    if (execution->index >= execution->table->registers_count) {
+        if (execution->callback) {
+            execution->callback(true);
+        }
+
+        delete execution;
+        return; // action is done
     }
 
     if (connected_client == nullptr) {
-        // FIXME: maybe retry if connection is lost in the middle of an action, instead of aborting
-        has_current_action = false;
+        if (execution->callback) {
+            execution->callback(false);
+        }
+
+        delete execution;
         return;
     }
 
-    const BatteriesModbusTCP::TableSpec *table = tables[static_cast<uint32_t>(current_action)];
-
-    if (current_action_index >= table->registers_count) {
-        has_current_action = false; // action is done
-        return;
-    }
-
-    BatteriesModbusTCP::RegisterSpec *register_ = &table->registers[current_action_index];
+    BatteriesModbusTCP::RegisterSpec *register_ = &execution->table->registers[execution->index];
     TFModbusTCPFunctionCode function_code;
 
     switch (register_->register_type) {
@@ -162,39 +162,42 @@ void BatteryModbusTCP::write_next()
     case ModbusRegisterType::DiscreteInput:
     default:
         logger.printfln_battery("Unsupported register type to write: %u", static_cast<uint8_t>(register_->register_type));
-        has_current_action = false;
+
+        if (execution->callback) {
+            execution->callback(false);
+        }
+
+        delete execution;
         return;
     }
 
-    static_cast<TFModbusTCPSharedClient *>(connected_client)->transact(table->device_address,
+    static_cast<TFModbusTCPSharedClient *>(connected_client)->transact(execution->table->device_address,
                                                                        function_code,
                                                                        register_->start_address,
                                                                        register_->values_count,
                                                                        register_->values_buffer,
                                                                        2_s,
-    [this, table, register_, function_code](TFModbusTCPClientTransactionResult result) {
+    [this, execution, register_, function_code](TFModbusTCPClientTransactionResult result) {
         if (result != TFModbusTCPClientTransactionResult::Success) {
             logger.printfln_battery("Modbus write error (host='%s' port=%u devaddr=%u fcode=%d regaddr=%u): %s (%d)",
                                     host.c_str(),
                                     port,
-                                    table->device_address,
+                                    execution->table->device_address,
                                     static_cast<int>(function_code),
                                     register_->start_address,
                                     get_tf_modbus_tcp_client_transaction_result_name(result),
                                     static_cast<int>(result));
 
-            // FIXME: maybe retry on error in the middle of an action, instead of aborting
-            has_current_action = false;
+            if (execution->callback) {
+                execution->callback(false);
+            }
+
+            delete execution;
             return;
         }
 
-        ++current_action_index;
+        ++execution->index;
 
-        if (current_action_index >= table->registers_count) {
-            has_current_action = false; // action is done
-            return;
-        }
-
-        write_next(); // FIXME: maybe add a little delay between writes to avoid bursts?
+        write_next(execution); // FIXME: maybe add a little delay between writes to avoid bursts?
     });
 }

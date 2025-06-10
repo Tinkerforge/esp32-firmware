@@ -50,7 +50,6 @@ public:
     virtual void register_events()                     {}
     virtual void pre_reboot()                          {}
 
-    virtual bool supports_action(Action action)     {return false;}
-    virtual bool start_action(Action action)        {return false;}
-    virtual bool get_current_action(Action *action) {return false;}
+    virtual bool supports_action(Action action)                                              {return false;}
+    virtual void start_action(Action action, std::function<void(bool)> &&callback = nullptr) {}
 };

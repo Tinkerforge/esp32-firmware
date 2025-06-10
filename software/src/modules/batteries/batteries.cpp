@@ -146,18 +146,12 @@ void Batteries::register_urls()
             Batteries::PathType path_type = static_cast<Batteries::PathType>(static_cast<uint32_t>(Batteries::PathType::PermitGridCharge) + i);
 
             if (battery->supports_action(action)) {
-                api.addCommand(get_path(slot, path_type), Config::Null(), {}, [battery, action](String &errmsg) {
-                    IBattery::Action current_action;
-
-                    if (battery->get_current_action(&current_action)) {
-                        errmsg = "Another action is already in progress";
-                        return;
-                    }
-
-                    if (!battery->start_action(action)) {
-                        errmsg = "Could not start action";
-                        return;
-                    }
+                api.addCommand(get_path(slot, path_type), Config::Null(), {}, [slot, battery, action](String &/*errmsg*/) {
+                    battery->start_action(action, [slot, action](bool success) {
+                        if (!success) {
+                         logger.printfln_battery("Failed to start action %lu", static_cast<uint32_t>(action));
+                        }
+                    });
                 }, true);
             }
 
@@ -278,9 +272,11 @@ void Batteries::start_action_all(IBattery::Action action)
     for (uint32_t slot = 0; slot < BATTERIES_SLOTS; slot++) {
         IBattery *battery = battery_slots[slot].battery;
 
-        if (!battery->start_action(action)) {
-            logger.printfln_battery("Failed to start action %lu", static_cast<uint32_t>(action));
-        }
+        battery->start_action(action, [slot, action](bool success) {
+            if (!success) {
+                logger.printfln_battery("Failed to start action %lu", static_cast<uint32_t>(action));
+            }
+        });
     }
 }
 
