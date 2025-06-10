@@ -92,12 +92,6 @@ void NFC::pre_setup()
                     continue;
                 return "Tag ID contains unexpected character. Expected format is uppercase hex bytes separated by colons. For example \"01:23:AB:3D\".";
             }
-
-            for (size_t tag2 = tag + 1; tag2 < tags->count(); ++tag2) {
-                if (tags->get(tag)->get("tag_id")->asString() == tags->get(tag2)->get("tag_id")->asString()) {
-                    return "Tag ID " + tags->get(tag)->get("tag_id")->asString() + " is used multiple times.";
-                }
-            }
         }
 
         // Add more validation above this block!
@@ -124,6 +118,20 @@ void NFC::pre_setup()
                 uint8_t user_id = tags->get(tag)->get("user_id")->asUint();
                 if (!users.is_user_configured(user_id))
                     return String("Unknown user with ID ") + (int)user_id + ".";
+            }
+
+            // Check for duplicated tag_id+type entries
+            for (size_t tag = 0; tag < tags_count; ++tag) {
+                const String &tag_id = tags->get(tag)->get("tag_id")->asString();
+                auto tag_type = tags->get(tag)->get("tag_type")->asUint();
+                for (size_t tag2 = tag + 1; tag2 < tags_count; ++tag2) {
+                    const String &tag2_id = tags->get(tag2)->get("tag_id")->asString();
+                    auto tag2_type = tags->get(tag2)->get("tag_type")->asUint();
+
+                    if (tag_id == tag2_id && tag_type == tag2_type) {
+                        return "Tag ID " + tags->get(tag)->get("tag_id")->asString() + " is used multiple times with same tag type.";
+                    }
+                }
             }
         }
 
