@@ -73,9 +73,10 @@ void NFC::pre_setup()
         {"deadtime_post_start", Config::Uint32(30)}
     }), [this](Config &cfg, ConfigSource source) -> String {
         Config *tags = (Config *)cfg.get("authorized_tags");
+        auto tags_count = tags->count();
 
         // Check tag_id format
-        for (size_t tag = 0; tag < tags->count(); ++tag) {
+        for (size_t tag = 0; tag < tags_count; ++tag) {
             String id_copy = tags->get(tag)->get("tag_id")->asString();
             id_copy.toUpperCase();
             tags->get(tag)->get("tag_id")->updateString(id_copy);
@@ -106,7 +107,7 @@ void NFC::pre_setup()
             // can be loaded on start-up, fix the mappings instead of
             // returning an error.
             bool update_file = false;
-            for (size_t tag = 0; tag < tags->count(); ++tag) {
+            for (size_t tag = 0; tag < tags_count; ++tag) {
                 uint8_t user_id = tags->get(tag)->get("user_id")->asUint();
                 if (!users.is_user_configured(user_id)) {
                     logger.printfln("Fixing NFC tag %s referencing a deleted user.", tags->get(tag)->get("tag_id")->asEphemeralCStr());
@@ -119,7 +120,7 @@ void NFC::pre_setup()
 
         } else {
             // Check user_id_mappings
-            for (size_t tag = 0; tag < tags->count(); ++tag) {
+            for (size_t tag = 0; tag < tags_count; ++tag) {
                 uint8_t user_id = tags->get(tag)->get("user_id")->asUint();
                 if (!users.is_user_configured(user_id))
                     return String("Unknown user with ID ") + (int)user_id + ".";
