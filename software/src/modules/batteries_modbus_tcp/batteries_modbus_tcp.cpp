@@ -313,7 +313,7 @@ void BatteriesModbusTCP::register_urls()
             }
 
             execute_client = shared_client;
-            current_execute_index = 0;
+            execute_index = 0;
 
             write_next();
         },
@@ -365,24 +365,22 @@ void BatteriesModbusTCP::write_next()
         return;
     }
 
-    if (current_execute_index >= execute_table->registers_count) {
+    if (execute_index >= execute_table->registers_count) {
         report_success(execute_cookie);
         release_client(); // execution is done
         return;
     }
 
-    RegisterSpec *register_ = &execute_table->registers[current_execute_index];
+    RegisterSpec *register_ = &execute_table->registers[execute_index];
     TFModbusTCPFunctionCode function_code;
 
     switch (register_->register_type) {
     case ModbusRegisterType::HoldingRegister:
         function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
-        execute_data_name = "register";
         break;
 
     case ModbusRegisterType::Coil:
         function_code = TFModbusTCPFunctionCode::WriteMultipleCoils;
-        execute_data_name = "coil";
         break;
 
     case ModbusRegisterType::InputRegister:
@@ -401,8 +399,8 @@ void BatteriesModbusTCP::write_next()
                                                                      2_s,
     [this](TFModbusTCPClientTransactionResult result) {
         if (result != TFModbusTCPClientTransactionResult::Success) {
-            report_errorf(execute_cookie, "Execution failed at %s %zu of %zu: %s (%d)",
-                          execute_data_name, current_execute_index + 1, execute_table->registers_count,
+            report_errorf(execute_cookie, "Action execution failed at %zu of %zu: %s (%d)",
+                          execute_index + 1, execute_table->registers_count,
                           get_tf_modbus_tcp_client_transaction_result_name(result),
                           static_cast<int>(result));
 
@@ -410,13 +408,7 @@ void BatteriesModbusTCP::write_next()
             return;
         }
 
-        ++current_execute_index;
-
-        if (current_execute_index >= execute_table->registers_count) {
-            report_success(execute_cookie);
-            release_client(); // execution is done
-            return;
-        }
+        ++execute_index;
 
         write_next(); // FIXME: maybe add a little delay between writes to avoid bursts?
     });
