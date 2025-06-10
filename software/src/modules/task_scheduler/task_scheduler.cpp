@@ -217,17 +217,11 @@ uint64_t TaskScheduler::scheduleWithFixedDelay(std::function<void(void)> &&fn, m
 uint64_t TaskScheduler::scheduleWhenClockSynced(std::function<void(void)> &&fn)
 {
     // Check if the clock is already synced and avoid the sync check task.
+    // Turn the callback into a one-shot task to preserve start-up sequencing
+    // and to avoid executing it in the context of the calling task.
     struct timeval tv;
     if (rtc.clock_synced(&tv)) {
-        if (boot_stage < BootStage::LOOP) {
-            // Don't execute the callback now because that might break start-up sequencing,
-            // turn it into a one-shot task instead.
-            return scheduleOnce(std::move(fn));
-        } else {
-            // Clock already synced, execute the callback now because the loop stage has aready been reached.
-            fn();
-            return 0;
-        }
+        return scheduleOnce(std::move(fn));
     }
 
     // Check once per second if clock is synced,
