@@ -81,8 +81,7 @@ private:
     TFGenericTCPSharedClient *execute_client = nullptr;
     uint32_t execute_cookie;
     TableSpec *execute_table = nullptr;
-    size_t current_execute_index;
-    const char *execute_data_name;
+    size_t execute_index;
 };
 
 #if defined(__GNUC__)
