@@ -49,7 +49,7 @@ let x = {
             "type_4": "NFC Forum Typ 4",
             "type_5": "NFC Forum Typ 5",
             "tag_id_invalid_feedback": "Die Tag-ID muss aus vier bis zehn Gruppen mit jeweils einer zweistelligen Hexadezimalzahl, getrennt durch einen Doppelpunkt, bestehen. Zum Beispiel 01:23:45:67:89:AB",
-            "tag_id_already_exists": "Die Tag-ID ist bereits konfiguriert."
+            "tag_id_already_exists": "Dieses Tag ist bereits konfiguriert."
         },
         "automation": {
             "nfc": "Simuliere NFC-Tag",
