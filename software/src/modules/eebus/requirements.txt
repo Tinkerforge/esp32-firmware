@@ -1,0 +1,2 @@
+xsdata~=25.4
+xmlschema~=1.10.0
