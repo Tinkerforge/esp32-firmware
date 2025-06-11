@@ -11,6 +11,7 @@ template <typename T>
 void Converter<std::vector<T>>::toJson(const std::vector<T> &src, JsonVariant dst)
 {
     JsonArray array;
+    // SPINE-GO wants a double wrapped array for objects or else it breaks the JSON
     if (std::is_fundamental<T>::value) {
         array = dst.to<JsonArray>();
     }else {
