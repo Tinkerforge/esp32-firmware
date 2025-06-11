@@ -837,7 +837,7 @@ export function init() {
                                 let location = MeterLocation.Unknown;
 
                                 if (table == MeterModbusTCPTableID.TinkerforgeWARPCharger) {
-                                    location = MeterLocation.Load;
+                                    location = MeterLocation.Load; // FIXME: maybe use MeterLocation.Charger in the future?
                                 }
 
                                 on_config(util.get_updated_union(config, {location: location, table: new_table_config(table)}));
@@ -888,7 +888,7 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.HuaweiEMMA)) {
                     let virtual_meter_items: [string, string][] = [];
                     let default_location: MeterLocation = undefined; // undefined: there is no default location, null: default location is not known yet
-                    let get_default_location = (virtual_meter: number): MeterLocation => undefined;
+                    let get_default_location: (virtual_meter: number) => MeterLocation = undefined; // undefined: there is no default location
                     let default_device_address: number = 1;
 
                     if (config[1].table[0] == MeterModbusTCPTableID.SungrowHybridInverter) {
@@ -1260,11 +1260,20 @@ export function init() {
                                     placeholder={__("select")}
                                     value={virtual_meter !== null ? virtual_meter.toString() : null}
                                     onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {virtual_meter: parseInt(v)}), location: get_default_location(parseInt(v))}));
+                                        let location = config[1].location;
+
+                                        if (util.hasValue(get_default_location)) {
+                                            location = get_default_location(parseInt(v));
+                                        }
+
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {virtual_meter: parseInt(v)}), location: location}));
                                     }} />
                             </FormRow>);
 
-                        if (virtual_meter === null) {
+                        if (!util.hasValue(get_default_location)) {
+                            default_location = undefined;
+                        }
+                        else if (virtual_meter === null) {
                             default_location = null;
                         }
                         else {
