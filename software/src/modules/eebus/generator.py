@@ -1,5 +1,4 @@
 
-
 # This Script generates the C++ code for the SPINE Types required for EEBUS
 # It is only tested for SPINE 1.3.0 and might not work properly
 # Place ALL SPINE XSD files in the <spine_path> directory. By default this is "./SPINE"
@@ -65,7 +64,13 @@ namespace ArduinoJson
 template <typename T>
 void Converter<std::vector<T>>::toJson(const std::vector<T> &src, JsonVariant dst)
 {
-    JsonArray array = dst.to<JsonArray>();
+    JsonArray array;
+    // SPINE-GO wants a double wrapped array for objects or else it breaks the JSON
+    if (std::is_fundamental<T>::value) {
+        array = dst.to<JsonArray>();
+    }else {
+        array = dst.to<JsonArray>().createNestedArray();
+    }
     for (T item : src)
         array.add(item);
 }
@@ -225,7 +230,7 @@ def process_complex_type(complex_type):
     elif complex_type.content.model == "sequence":
         sequence_size = len(complex_type.content)
         elements = []
-        new_type.code = f"struct {struct_type_name} {{ // {complex_type.schema.name}\n"
+        new_type.code = f"/**\n * Datatype {struct_type_name} as defined in {complex_type.schema.name}\n*/\nstruct {struct_type_name} {{ \n"
         new_type.to_json_code = f"""bool convertToJson(const {struct_type_name} &src, JsonVariant& dst) {{\n"""
 
         new_type.from_json_code = f"""void convertFromJson(const JsonVariantConst& src, {struct_type_name} &dst) {{\n"""
@@ -307,8 +312,8 @@ def process_complex_type(complex_type):
             new_type.code += f"\n\t\t{variable_name_cpp}({variable_type}{{}}),"
         new_type.code = new_type.code[:-1]  # remove last comma
         new_type.code += "\n\t{}\n};\n"
-        new_type.code += f"""bool convertToJson(const {struct_type_name} &src, JsonVariant& dst);\n"""
-        new_type.code += f"""void convertFromJson(const JsonVariantConst& src, {struct_type_name} &dst);\n\n"""
+        new_type.code += f"""/**\n * Convert a {struct_type_name} to its JSON representation\n * @param src The {struct_type_name} to convert\n * @param dst The JSON variant to fill with the converted data.\n * @return true if the conversion was successful, false otherwise.\n */\nbool convertToJson(const {struct_type_name} &src, JsonVariant& dst);\n"""
+        new_type.code += f"""/**\n * Convert a JSON representation to a {struct_type_name}\n * @param src The JSON variant to convert\n * @param dst The {struct_type_name} to fill with the converted data.\n */\nvoid convertFromJson(const JsonVariantConst& src, {struct_type_name} &dst);\n\n"""
 
         new_type.to_json_code += "\n\treturn true;\n}\n"
         new_type.from_json_code += "\n}\n"
@@ -332,7 +337,7 @@ def process_schema(xml_schema):
                 enum_type_name = remove_namespace(simple_type.name)
                 new_type = Spine_type("enum",enum_type_name, "")
                 #create enum and function headers
-                new_type.code = "enum class " + enum_type_name + " { // " + simple_type.schema.name +"\n"
+                new_type.code = f"/**\n* Datatype {enum_type_name} as defined in {simple_type.schema.name}\n*/\nenum class {enum_type_name} {{\n"
                 new_type.to_json_code = f"""bool convertToJson(const {enum_type_name} &src, JsonVariant& dst) {{\n\tString enumName;\n\tswitch(src) {{\n"""
                 new_type.from_json_code = f"""void convertFromJson(const JsonVariantConst& src, {enum_type_name} &dst) {{\n"""
 
@@ -351,8 +356,8 @@ def process_schema(xml_schema):
                 #return last enum if json->enum fails
                 new_type.from_json_code += f"""\t return;\n}}\n"""
                 new_type.code += "};\n"
-                new_type.code += f"""bool convertToJson(const {enum_type_name} &src, JsonVariant& dst);\n"""
-                new_type.code += f"""void convertFromJson(const JsonVariantConst& src, {enum_type_name} &dst);\n\n"""
+                new_type.code += f"""/**\n * Convert the enum {enum_type_name} to its String representation\n * @param src The source {enum_type_name} value to convert.\n * @param dst The destination JsonVariant where the string will be stored.\n * @return true if the conversion was successful, false otherwise.\n */\nbool convertToJson(const {enum_type_name} &src, JsonVariant& dst);\n"""
+                new_type.code += f"""/**\n * Convert a string to a {enum_type_name} \n * @param src The JSON variant containing the string.\n * @param dst The destination {enum_type_name}.\n */\nvoid convertFromJson(const JsonVariantConst& src, {enum_type_name} &dst);\n\n"""
                 cpp_datatypes.append(new_type)
             # Using
             elif hasattr(simple_type, 'base_type'):
@@ -469,6 +474,7 @@ String SpineDataTypeHandler::function_to_string(Function function) {{
     """
 
     return output_h, output_cpp_code
+
 
 print("Loading schema...")
 

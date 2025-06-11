@@ -70,18 +70,11 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
         response_doc["datagram"][0]["header"]["ackRequest"] = false;
 
 
-        //String responseString;
-        //responseJson.shrinkToFit();
-        //serializeJson(responseJson, responseString);
-
-        //response_datagram = response_doc.as<JsonVariant>();
         logger.printfln("SPINE: Sending response: %s", response_doc.as<String>().c_str());
-        //ship_connection->send_data_message(responseJson);
-        //logger.printfln("SPINE: Sending responseobject of size: %d", datagram.memoryUsage());
 
         return true;
 
-    } else if (!has_response && received_header.wants_response) {
+    } else if (received_header.wants_response) {
         logger.printfln("SPINE: No response availabe but one was requested.");
         logger.printfln("Payload: %s", datagram.as<String>().c_str());
         return false;
@@ -90,6 +83,7 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
     }
     return false;
 }
+
 
 void SpineConnection::check_message_counter()
 {
