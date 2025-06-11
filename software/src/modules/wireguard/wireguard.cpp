@@ -169,6 +169,9 @@ void Wireguard::setup()
 
 void Wireguard::register_events()
 {
+    if (!config.get("enable")->asBool())
+        return;
+
 #if MODULE_NETWORK_AVAILABLE()
     network.on_network_connected([this](const Config *connected) {
         if (!connected->asBool()) {
