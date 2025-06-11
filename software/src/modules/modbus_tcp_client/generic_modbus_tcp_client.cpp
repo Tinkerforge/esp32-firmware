@@ -110,15 +110,13 @@ void GenericModbusTCPClient::read_next()
         if (result != TFModbusTCPClientTransactionResult::Success) {
             if (log_read_errors && (result != TFModbusTCPClientTransactionResult::Timeout || (last_read_result_burst_length % 10) == 0)) {
                 logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
-                                         "%sModbus read error (host='%s' port=%u devaddr=%u fcode=%d regaddr=%u regcnt=%u burstlen=%zu): %s (%d)",
+                                         "%sModbus error repeated %u time%s while reading %u register%s starting at address %u: %s (%d)",
                                          event_log_message_prefix,
-                                         host.c_str(),
-                                         port,
-                                         device_address,
-                                         static_cast<int>(function_code),
-                                         read_start_address,
-                                         read_count,
                                          last_read_result_burst_length,
+                                         last_read_result_burst_length > 1 ? "s" : "",
+                                         read_count,
+                                         read_count > 1 ? "s" : "",
+                                         read_start_address,
                                          get_tf_modbus_tcp_client_transaction_result_name(result),
                                          static_cast<int>(result));
             }
