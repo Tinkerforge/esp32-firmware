@@ -8,7 +8,7 @@ let x = {
             "dns_not_configured": "DNS nicht konfiguriert",
             "dns_not_configured_text": /*FFN*/(val: string[]) => {
                 return <>
-                    <p>Folgende Schnittstellen haben keinen DNS konfiguriert:</p>
+                    <p>Folgende Schnittstellen haben keinen DNS-Server konfiguriert:</p>
                     <ul class="mb-0">
                         {val.map(v => <li>{v}</li>)}
                     </ul>
