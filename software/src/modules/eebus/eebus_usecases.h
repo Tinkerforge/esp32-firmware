@@ -25,54 +25,83 @@
 
 #include "config.h"
 #include "module.h"
-#include "spine_types.h"
 #include "spine_connection.h"
+#include "spine_types.h"
 
-// The basic skeleton of a UseCase
+class EEBusUseCases; // Forward declaration of EEBusUseCases
+
+/**
+ * The basic Framework of a EEBUS UseCase.
+ */
 class UseCase
 {
 public:
     virtual ~UseCase() = default;
-    virtual JsonVariant read() = 0;
-    virtual void subscribe() = 0;
+    /**
+     * Handles a message for a usecase.
+     * @param header SPINE header of the message. Contains information about the commandclassifier and the targeted entitiy.
+     * @param data The actual Function call
+     * @param response Where to write the response to. This is a JsonObject that should be filled with the response data.
+     * @return true if a response was generated and needs to be sent, false if no response is needed.
+     */
+    virtual bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) = 0;
     virtual UseCaseInformationDataType get_usecase_information() = 0;
 };
 
-// NodeManagement not quite a full usecase but it is required
+/**
+ * The Default Nodemanagement UseCase. Needs to be supported by all EEBUS devices.
+ */
 class NodeManagementUsecase final : public UseCase
 {
 public:
-    NodeManagementUsecase();
+    NodeManagementUsecase() = default;
 
-    JsonVariant read() override;
-    void subscribe() override;
     UseCaseInformationDataType get_usecase_information() override;
 
-    NodeManagementUseCaseDataType get_usecases();
+    bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) override;
+
+    void set_usecaseManager(EEBusUseCases *usecases);
+
+private:
+    EEBusUseCases *usecase_interface{};
 };
 
+/**
+ * The EEBUSChargingSummary UseCase as defined in EEBus UC TS - EV Charging Summary V1.0.1.
+ */
 class ChargingSummaryUsecase final : public UseCase
 {
 public:
     ChargingSummaryUsecase() = default;
-    JsonVariant read() override;
-    void subscribe() override;
     UseCaseInformationDataType get_usecase_information() override;
+
+    bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) override;
 
 private:
     UseCaseInformationDataType use_case_information;
 };
 
-// Handles all usecases and is the primary interface to all usecases
+/**
+ * The central Interface for EEBus UseCases.
+ */
 class EEBusUseCases
 {
 public:
-    EEBusUseCases() = default;
+    EEBusUseCases();
 
+    /**
+     * Main interface for the EEBUS UseCases.
+     * @param header Spine Header
+     * @param data Payload of the message.
+     * @param response The response object to fill with the response data.
+     * @return true if a response was generated and needs to be sent, false if no response is needed.
+     */
     bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response);
 
     std::vector<UseCase *> usecases;
+    uint8_t feature_address_node_management = 0;
     NodeManagementUsecase node_management;
 
-
+    uint8_t feature_address_charging_summary = 1;
+    ChargingSummaryUsecase charging_summary;
 };

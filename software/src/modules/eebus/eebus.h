@@ -51,7 +51,6 @@ public:
 
     SpineDataTypeHandler data_handler{};
 
-
     /**
      * Get the index of the connection in state.get("connections") with the given ski.
      * @param ski The ski of the connection to find.
@@ -60,6 +59,9 @@ public:
     int get_state_connection_id_by_ski(const String &ski);
 
 private:
+    /**
+     * Update the peers configuration based on the current mDNS results, clean up invalid peers and add trusted peers to the persistent configuration.
+     */
     void update_peers_config();
 
 };

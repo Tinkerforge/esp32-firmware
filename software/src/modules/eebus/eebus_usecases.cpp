@@ -25,28 +25,32 @@
 #include "module_dependencies.h"
 #include "tools.h"
 
-NodeManagementUsecase::NodeManagementUsecase()
-{
-}
-
 UseCaseInformationDataType NodeManagementUsecase::get_usecase_information()
 {
     return UseCaseInformationDataType(); // This should never be used
 }
-
-JsonVariant NodeManagementUsecase::read()
+bool NodeManagementUsecase::handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response)
 {
-    return JsonVariant();
+    if (header.cmd_classifier == CmdClassifierType::read && data.last_cmd == SpineDataTypeHandler::Function::nodeManagementUseCaseData) {
+        NodeManagementUseCaseDataType node_management_usecase_data;
+        for (UseCase *uc : usecase_interface->usecases) {
+            if (!dynamic_cast<NodeManagementUsecase *>(uc)) {
+                node_management_usecase_data.useCaseInformation->push_back(uc->get_usecase_information());
+            }
+        }
+        if (node_management_usecase_data.useCaseInformation->size() > 0) {
+            response["nodeManagementUseCaseData"] = node_management_usecase_data;
+            if (response["nodeManagementUseCaseData"].isNull()) {
+                logger.printfln("Error while writing NodeManagementUseCaseData to response");
+            }
+            return true;
+        }
+    }
+    return false;
 }
-void NodeManagementUsecase::subscribe()
-{
-}
-NodeManagementUseCaseDataType NodeManagementUsecase::get_usecases()
-{
-    NodeManagementUseCaseDataType data;
-    std::vector<UseCaseInformationDataType> usecases;
 
-    // This is done for testing. For the final implementation each usecase should report this information themselves
+UseCaseInformationDataType ChargingSummaryUsecase::get_usecase_information()
+{
     UseCaseInformationDataType evcs_usecase;
     evcs_usecase.actor = "EVSE";
 
@@ -54,7 +58,7 @@ NodeManagementUseCaseDataType NodeManagementUsecase::get_usecases()
     evcs_usecase_support.useCaseName = "evChargingSummary";
     evcs_usecase_support.useCaseVersion = "1.0.1";
     evcs_usecase_support.useCaseAvailable = true;
-    evcs_usecase_support.scenarioSupport->push_back(1);
+    evcs_usecase_support.scenarioSupport->push_back(1); // TODO: Which scenarios do we support
     evcs_usecase_support.useCaseDocumentSubRevision = "release";
     evcs_usecase.useCaseSupport->push_back(evcs_usecase_support);
 
@@ -63,24 +67,36 @@ NodeManagementUseCaseDataType NodeManagementUsecase::get_usecases()
     evcs_usecase_feature_address.entity->push_back(1);
     evcs_usecase_feature_address.feature = 1;
     evcs_usecase.address = evcs_usecase_feature_address;
-
-    usecases.push_back(evcs_usecase);
-    data.useCaseInformation = usecases;
-    return data;
+    return evcs_usecase;
+}
+bool ChargingSummaryUsecase::handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response)
+{
+    return false;
 }
 
+void NodeManagementUsecase::set_usecaseManager(EEBusUseCases *new_usecase_interface)
+{
+    usecase_interface = new_usecase_interface;
+}
+
+EEBusUseCases::EEBusUseCases()
+{
+    node_management = NodeManagementUsecase();
+    node_management.set_usecaseManager(this);
+    charging_summary = ChargingSummaryUsecase();
+}
 bool EEBusUseCases::handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response)
 {
-    if (header.destination_feature == 0 && header.destination_entity[0] == 0) {
+    if (header.destination_feature == feature_address_node_management) {
+
         logger.printfln("EEBus: Received message for NodeManagementUsecase");
-        logger.printfln("Function called: %s", data.function_to_string(data.last_cmd).c_str());
-
-        response["nodeManagementUseCaseData"] = node_management.get_usecases();
-        if (response["nodeManagementUseCaseData"].isNull()) {
-            logger.printfln("Could not set response");
-        }
-
-        return true;
+        //logger.printfln("Function called: %s", data.function_to_string(data.last_cmd).c_str());
+        return node_management.handle_message(header, data, response);
+    }
+    if (header.destination_feature == feature_address_charging_summary) {
+        logger.printfln("EEBus: Received message for ChargingSummaryUsecase");
+        //logger.printfln("Function called: %s", data.function_to_string(data.last_cmd).c_str());
+        return charging_summary.handle_message(header, data, response);
     }
 
     return false;
