@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#define EVENT_LOG_PREFIX "meters_sma_swire"
+#define EVENT_LOG_PREFIX "meters_speedwire"
 
 #include "meter_sma_speedwire.h"
 
