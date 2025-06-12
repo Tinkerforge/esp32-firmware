@@ -12,3 +12,9 @@ export interface forbid_discharge___{{{battery_id}}} {
 
 export interface revoke_discharge_override___{{{battery_id}}} {
 }
+
+export interface forbid_charge___{{{battery_id}}} {
+}
+
+export interface revoke_charge_override___{{{battery_id}}} {
+}

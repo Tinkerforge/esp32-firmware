@@ -24,8 +24,8 @@ let x = {
 
             "managed_batteries": "Kontrollierte Batteriespeicher",
 
-            "table_display_name": "Anzeigename",
-            "table_class": "Klasse",
+            "table_battery_display_name": "Anzeigename",
+            "table_battery_class": "Klasse",
 
             "add_battery_title": "Batteriespeicher hinzufügen",
             "add_battery_message": /*SFN*/(have: number, max: number) => `${have} von ${max} Batteriespeichern konfiguriert`/*NF*/,
@@ -40,7 +40,33 @@ let x = {
             "battery_import_error_class_unknown": "Klasse ist unbekannt.",
             "battery_import_error_import_unsupported": "Importieren wird für diese Klasse nicht unterstüzt.",
             "battery_import_error_config_malformed": "Das Konfigurations-Format ist beschädigt.",
-            "battery_export_basename": "Batteriespeicher-Konfiguration"
+            "battery_export_basename": "Batteriespeicher-Konfiguration",
+
+            "rules_permit_grid_charge": "Regeln für Ladung-vom-Netz-Erlaubnis",
+            "rules_forbid_discharge": "Regeln für Batterieentladungs-Verbot",
+            "rules_forbid_charge": "Regeln für Batterieladungs-Verbot",
+
+            "table_rule_desc": "Beschreibung",
+            "table_rule_soc": "Batterieladestand",
+            "table_rule_price": "Dynamischer Strompreis",
+            "table_rule_forecast": "PV-Ertragsprognose",
+
+            "add_rule_title": "Regel hinzufügen",
+            "add_rule_message": /*SFN*/(have: number, max: number) => `${have} von ${max} Regeln konfiguriert`/*NF*/,
+            "add_rule_desc": "Beschreibung",
+            "add_rule_soc": "Batterieladestand",
+            "add_rule_price": "Dynamischer Strompreis",
+            "add_rule_forecast": "PV-Ertragsprognose",
+
+            "edit_rule_title": "Regel bearbeiten",
+            "edit_rule_desc": "Beschreibung",
+            "edit_rule_soc": "Batterieladestand",
+            "edit_rule_price": "Dynamischer Strompreis",
+            "edit_rule_forecast": "PV-Ertragsprognose",
+
+            "condition_ignore": "Wird ignoriert",
+            "condition_below": "Kleiner als",
+            "condition_above": "Größer als"
         },
         "script": {
             "save_failed": "Speichern der Speichersteuerungs-Einstellungen fehlgeschlagen.",

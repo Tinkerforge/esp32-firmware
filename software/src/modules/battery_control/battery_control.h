@@ -25,6 +25,7 @@
 #include "module.h"
 #include "TFTools/Micros.h"
 #include "tools/tristate_bool.h"
+#include "rule_condition.enum.h"
 
 struct battery_control_action_info;
 
@@ -39,16 +40,10 @@ public:
     void register_events() override;
 
 private:
-    enum class RuleCondition : uint8_t {
-        Ignore = 0,
-        Below  = 1,
-        Above  = 2,
-    };
-
     struct control_rule {
-        int32_t  price_th;    // in ct/1000
-        int32_t  forecast_th; // in Wh
-        uint8_t  soc_th;      // in percent
+        int32_t       price_th;    // in ct/1000
+        int32_t       forecast_th; // in Wh
+        uint8_t       soc_th;      // in percent
         RuleCondition soc_cond;
         RuleCondition price_cond;
         RuleCondition forecast_cond;
@@ -58,7 +53,7 @@ private:
 
     void update_avg_soc();
     void schedule_evaluation();
-    bool rule_condition_failed(BatteryControl::RuleCondition cond, int32_t th, int32_t value);
+    bool rule_condition_failed(RuleCondition cond, int32_t th, int32_t value);
     TristateBool evaluate_rules(const control_rule *rules, size_t rules_count, const char *rules_type_name);
     void evaluate_all_rules();
     void evaluate_summary();

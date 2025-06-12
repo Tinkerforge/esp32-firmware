@@ -29,27 +29,26 @@ import { InputSelect } from "../../ts/components/input_select";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { SubPage } from "../../ts/components/sub_page";
+import { InputText } from "../../ts/components/input_text";
+import { InputNumber } from "../../ts/components/input_number";
+import { InputFloat } from "../../ts/components/input_float";
 import { Switch } from "../../ts/components/switch";
 import { BatteryClassID } from "./battery_class_id.enum";
 import { BatteryConfig, BatteryConfigPlugin } from "./types";
+import { RuleConfig } from "../battery_control/types";
+import { RuleCondition } from "../battery_control/rule_condition.enum";
 import { plugins_init } from "./plugins";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Table } from "../../ts/components/table";
 import { Battery } from "react-feather";
+
+const MAX_RULES_PER_TYPE = 32;
 
 export function BatteriesNavbar() {
     return <NavbarItem name="batteries" module="batteries" title={__("batteries.navbar.batteries")} symbol={<Battery />} />;
 }
 
 let config_plugins: {[battery_class: number]: BatteryConfigPlugin} = {};
-
-interface BatteriesState {
-    configs: {[battery_slot: number]: BatteryConfig};
-    add_battery_slot: number;
-    add_battery_config: BatteryConfig;
-    edit_battery_slot: number;
-    edit_battery_config: BatteryConfig;
-}
 
 function get_battery_name(battery_configs: {[battery_slot: number]: BatteryConfig}, battery_slot: number) {
     let battery_name = __("batteries.script.battery")(util.hasValue(battery_slot) ? battery_slot : '?');
@@ -59,6 +58,275 @@ function get_battery_name(battery_configs: {[battery_slot: number]: BatteryConfi
     }
 
     return battery_name;
+}
+
+interface RulesEditorState {
+    add_rule_config: RuleConfig;
+    edit_rule_idx: number;
+    edit_rule_config: RuleConfig;
+}
+
+interface RulesEditorProps {
+    rules: RuleConfig[];
+    on_rules: (rules: RuleConfig[]) => void;
+}
+
+function get_column_cond(cond: number, th_str: string) {
+    switch (cond) {
+        case RuleCondition.Ignore: return '';
+        case RuleCondition.Below:  return '< ' + th_str;
+        case RuleCondition.Above:  return '> ' + th_str;
+    }
+
+    return '???';
+}
+
+class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
+    constructor(props: RulesEditorProps) {
+        super(props);
+
+        this.state = {
+            add_rule_config: null,
+            edit_rule_idx: null,
+            edit_rule_config: null,
+        } as RulesEditorState;
+    }
+
+    render() {
+        return <Table
+            columnNames={[__("batteries.content.table_rule_desc"), __("batteries.content.table_rule_soc"), __("batteries.content.table_rule_price"), __("batteries.content.table_rule_forecast")]}
+            rows={this.props.rules.map((rule_config, i) => {
+                return {
+                    columnValues: [
+                        rule_config.desc,
+                        get_column_cond(rule_config.soc_cond, `${rule_config.soc_th} %`),
+                        get_column_cond(rule_config.price_cond, `${util.toLocaleFixed(rule_config.price_th / 10, 1)} ct`),
+                        get_column_cond(rule_config.forecast_cond, `${rule_config.forecast_th} kWh`),
+                    ],
+                    editTitle: __("batteries.content.edit_rule_title"),
+                    onEditShow: async () => {
+                        this.setState({edit_rule_idx: i, edit_rule_config: {...rule_config}});
+                    },
+                    onEditGetChildren: () => {
+                        let cond_items: [string, string][] = [
+                            [RuleCondition.Ignore.toString(), __("batteries.content.condition_ignore")],
+                            [RuleCondition.Below.toString(),  __("batteries.content.condition_below")],
+                            [RuleCondition.Above.toString(),  __("batteries.content.condition_above")],
+                        ];
+
+                        return [
+                            <FormRow label={__("batteries.content.edit_rule_desc")}>
+                                <InputText
+                                    maxLength={32}
+                                    value={this.state.edit_rule_config.desc}
+                                    onValue={(v) => {
+                                        this.setState({edit_rule_config: {...this.state.edit_rule_config, desc: v}});
+                                    }} />
+                            </FormRow>,
+                            <FormRow label={__("batteries.content.edit_rule_soc")}>
+                                <InputNumber
+                                    required={this.state.edit_rule_config.soc_cond != RuleCondition.Ignore}
+                                    disabled={this.state.edit_rule_config.soc_cond == RuleCondition.Ignore}
+                                    min={0}
+                                    max={100}
+                                    unit="%"
+                                    value={this.state.edit_rule_config.soc_th}
+                                    onValue={(v) => {
+                                        this.setState({edit_rule_config: {...this.state.edit_rule_config, soc_th: v}});
+                                    }}>
+                                    <InputSelect
+                                        style="border-radius-right: 0"
+                                        placeholder={__("select")}
+                                        items={cond_items}
+                                        onValue={(v) => {
+                                            this.setState({edit_rule_config: {...this.state.edit_rule_config, soc_cond: parseInt(v)}});
+                                        }}
+                                        value={this.state.edit_rule_config.soc_cond.toString()} />
+                                </InputNumber>
+                            </FormRow>,
+                            <FormRow label={__("batteries.content.edit_rule_price")}>
+                                <InputFloat
+                                    required={this.state.edit_rule_config.price_cond != RuleCondition.Ignore}
+                                    disabled={this.state.edit_rule_config.price_cond == RuleCondition.Ignore}
+                                    min={-32768}
+                                    max={32767}
+                                    digits={1}
+                                    unit="ct"
+                                    value={this.state.edit_rule_config.price_th}
+                                    onValue={(v) => {
+                                        this.setState({edit_rule_config: {...this.state.edit_rule_config, price_th: v}});
+                                    }}>
+                                    <InputSelect
+                                        style="border-radius-right: 0"
+                                        placeholder={__("select")}
+                                        items={cond_items}
+                                        onValue={(v) => {
+                                            this.setState({edit_rule_config: {...this.state.edit_rule_config, price_cond: parseInt(v)}});
+                                        }}
+                                        value={this.state.edit_rule_config.price_cond.toString()} />
+                                </InputFloat>
+                            </FormRow>,
+                            <FormRow label={__("batteries.content.edit_rule_forecast")}>
+                                <InputNumber
+                                    required={this.state.edit_rule_config.forecast_cond != RuleCondition.Ignore}
+                                    disabled={this.state.edit_rule_config.forecast_cond == RuleCondition.Ignore}
+                                    min={0}
+                                    max={65535}
+                                    unit="kWh"
+                                    value={this.state.edit_rule_config.forecast_th}
+                                    onValue={(v) => {
+                                        this.setState({edit_rule_config: {...this.state.edit_rule_config, forecast_th: v}});
+                                    }}>
+                                    <InputSelect
+                                        style="border-radius-right: 0"
+                                        placeholder={__("select")}
+                                        items={cond_items}
+                                        onValue={(v) => {
+                                            this.setState({edit_rule_config: {...this.state.edit_rule_config, forecast_cond: parseInt(v)}});
+                                        }}
+                                        value={this.state.edit_rule_config.forecast_cond.toString()} />
+                                </InputNumber>
+                            </FormRow>,
+                        ];
+                    },
+                    onEditSubmit: async () => {
+                        let rules = [...this.props.rules];
+
+                        rules[this.state.edit_rule_idx] = this.state.edit_rule_config;
+
+                        this.props.on_rules(rules);
+                    },
+                    onEditHide: async () => {
+                    },
+                    onRemoveClick: async () => {
+                        let rules = [...this.props.rules];
+
+                        rules.splice(this.state.edit_rule_idx, 1);
+
+                        this.props.on_rules(rules);
+                    },
+                }
+            })}
+            addEnabled={this.props.rules.length < MAX_RULES_PER_TYPE}
+            addTitle={__("batteries.content.add_rule_title")}
+            addMessage={__("batteries.content.add_rule_message")(this.props.rules.length, MAX_RULES_PER_TYPE)}
+            onAddShow={async () => {
+                let rule_config: RuleConfig = {
+                    desc: "",
+                    soc_cond: RuleCondition.Ignore,
+                    soc_th: null,
+                    price_cond:RuleCondition.Ignore,
+                    price_th: null,
+                    forecast_cond: RuleCondition.Ignore,
+                    forecast_th: null,
+                };
+
+                this.setState({add_rule_config: rule_config});
+            }}
+            onAddGetChildren={() => {
+                let cond_items: [string, string][] = [
+                    [RuleCondition.Ignore.toString(), __("batteries.content.condition_ignore")],
+                    [RuleCondition.Below.toString(),  __("batteries.content.condition_below")],
+                    [RuleCondition.Above.toString(),  __("batteries.content.condition_above")],
+                ];
+
+                return [
+                    <FormRow label={__("batteries.content.add_rule_desc")}>
+                        <InputText
+                            maxLength={32}
+                            value={this.state.add_rule_config.desc}
+                            onValue={(v) => {
+                                this.setState({add_rule_config: {...this.state.add_rule_config, desc: v}});
+                            }} />
+                    </FormRow>,
+                    <FormRow label={__("batteries.content.add_rule_soc")}>
+                       <InputNumber
+                            required={this.state.add_rule_config.soc_cond != RuleCondition.Ignore}
+                            disabled={this.state.add_rule_config.soc_cond == RuleCondition.Ignore}
+                            min={0}
+                            max={100}
+                            unit="%"
+                            value={this.state.add_rule_config.soc_th}
+                            onValue={(v) => {
+                                this.setState({add_rule_config: {...this.state.add_rule_config, soc_th: v}});
+                            }}>
+                            <InputSelect
+                                style="border-radius-right: 0"
+                                placeholder={__("select")}
+                                items={cond_items}
+                                onValue={(v) => {
+                                    this.setState({add_rule_config: {...this.state.add_rule_config, soc_cond: parseInt(v)}});
+                                }}
+                                value={this.state.add_rule_config.soc_cond.toString()} />
+                        </InputNumber>
+                    </FormRow>,
+                    <FormRow label={__("batteries.content.add_rule_price")}>
+                       <InputFloat
+                            required={this.state.add_rule_config.price_cond != RuleCondition.Ignore}
+                            disabled={this.state.add_rule_config.price_cond == RuleCondition.Ignore}
+                            min={-32768}
+                            max={32767}
+                            digits={1}
+                            unit="ct"
+                            value={this.state.add_rule_config.price_th}
+                            onValue={(v) => {
+                                this.setState({add_rule_config: {...this.state.add_rule_config, price_th: v}});
+                            }}>
+                            <InputSelect
+                                style="border-radius-right: 0"
+                                placeholder={__("select")}
+                                items={cond_items}
+                                onValue={(v) => {
+                                    this.setState({add_rule_config: {...this.state.add_rule_config, price_cond: parseInt(v)}});
+                                }}
+                                value={this.state.add_rule_config.price_cond.toString()} />
+                        </InputFloat>
+                    </FormRow>,
+                    <FormRow label={__("batteries.content.add_rule_forecast")}>
+                       <InputNumber
+                            required={this.state.add_rule_config.forecast_cond != RuleCondition.Ignore}
+                            disabled={this.state.add_rule_config.forecast_cond == RuleCondition.Ignore}
+                            min={0}
+                            max={65535}
+                            unit="kWh"
+                            value={this.state.add_rule_config.forecast_th}
+                            onValue={(v) => {
+                                this.setState({add_rule_config: {...this.state.add_rule_config, forecast_th: v}});
+                            }}>
+                            <InputSelect
+                                style="border-radius-right: 0"
+                                placeholder={__("select")}
+                                items={cond_items}
+                                onValue={(v) => {
+                                    this.setState({add_rule_config: {...this.state.add_rule_config, forecast_cond: parseInt(v)}});
+                                }}
+                                value={this.state.add_rule_config.forecast_cond.toString()} />
+                        </InputNumber>
+                    </FormRow>,
+                ];
+            }}
+            onAddSubmit={async () => {
+                let rules = [...this.props.rules];
+
+                rules.push(this.state.add_rule_config);
+
+                this.props.on_rules(rules);
+            }}
+            onAddHide={async () => {
+            }}
+            />;
+    }
+}
+
+interface BatteriesState {
+    configs: {[battery_slot: number]: BatteryConfig};
+    add_battery_slot: number;
+    add_battery_config: BatteryConfig;
+    edit_battery_slot: number;
+    edit_battery_config: BatteryConfig;
+    rules_permit_grid_charge: RuleConfig[];
+    rules_forbid_discharge: RuleConfig[];
+    rules_forbid_charge: RuleConfig[];
 }
 
 export class Batteries extends ConfigComponent<'battery_control/config', {}, BatteriesState> {
@@ -71,6 +339,9 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                   add_battery_config: [BatteryClassID.None, null],
                   edit_battery_slot: null,
                   edit_battery_config: [BatteryClassID.None, null],
+                  rules_permit_grid_charge: null,
+                  rules_forbid_discharge: null,
+                  rules_forbid_charge: null,
               });
 
         for (let battery_slot = 0; battery_slot < options.BATTERIES_MAX_SLOTS; ++battery_slot) {
@@ -87,6 +358,24 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                 }
             });
         }
+
+        util.addApiEventListener('battery_control/rules_permit_grid_charge', () => {
+            if (!this.isDirty()) {
+                this.setState({rules_permit_grid_charge: API.get('battery_control/rules_permit_grid_charge') as RuleConfig[] /* FIXME */});
+            }
+        });
+
+        util.addApiEventListener('battery_control/rules_forbid_discharge', () => {
+            if (!this.isDirty()) {
+                this.setState({rules_forbid_discharge: API.get('battery_control/rules_forbid_discharge') as RuleConfig[] /* FIXME */});
+            }
+        });
+
+        util.addApiEventListener('battery_control/rules_forbid_charge', () => {
+            if (!this.isDirty()) {
+                this.setState({rules_forbid_charge: API.get('battery_control/rules_forbid_charge') as RuleConfig[] /* FIXME */});
+            }
+        });
     }
 
     override async sendSave(topic: 'battery_control/config', new_config: API.getType['battery_control/config']) {
@@ -97,6 +386,21 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                 () => __("batteries.script.save_failed"));
         }
 
+        // FIXME: API.save() cannot handle top-level array
+        await API.save_unchecked('battery_control/rules_permit_grid_charge',
+                       this.state.rules_permit_grid_charge,
+                       () => __("batteries.script.save_failed"));
+
+        // FIXME: API.save() cannot handle top-level array
+        await API.save_unchecked('battery_control/rules_forbid_discharge',
+                       this.state.rules_forbid_discharge,
+                       () => __("batteries.script.save_failed"));
+
+        // FIXME: API.save() cannot handle top-level array
+        await API.save_unchecked('battery_control/rules_forbid_charge',
+                       this.state.rules_forbid_charge,
+                       () => __("batteries.script.save_failed"));
+
         await super.sendSave(topic, new_config);
     }
 
@@ -105,13 +409,30 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
             await API.reset_unchecked(`batteries/${battery_slot}/config`, this.error_string);
         }
 
+        await API.reset('battery_control/rules_permit_grid_charge', this.error_string);
+        await API.reset('battery_control/rules_forbid_discharge', this.error_string);
+        await API.reset('battery_control/rules_forbid_charge', this.error_string);
+
         await super.sendReset(topic);
     }
 
     override getIsModified(topic: 'battery_control/config'): boolean {
         for (let battery_slot = 0; battery_slot < options.BATTERIES_MAX_SLOTS; ++battery_slot) {
-            if (API.is_modified_unchecked(`batteries/${battery_slot}/config`))
+            if (API.is_modified_unchecked(`batteries/${battery_slot}/config`)) {
                 return true;
+            }
+        }
+
+        if (API.is_modified('battery_control/rules_permit_grid_charge')) {
+            return true;
+        }
+
+        if (API.is_modified('battery_control/rules_forbid_discharge')) {
+            return true;
+        }
+
+        if (API.is_modified('battery_control/rules_forbid_charge')) {
+            return true;
         }
 
         return super.getIsModified(topic);
@@ -204,7 +525,7 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
 
                     <FormRow label={__("batteries.content.managed_batteries")}>
                         <Table
-                            columnNames={[__("batteries.content.table_display_name"), __("batteries.content.table_class")]}
+                            columnNames={[__("batteries.content.table_battery_display_name"), __("batteries.content.table_battery_class")]}
                             rows={active_battery_slots.map((battery_slot_str) => {
                                 let battery_slot = parseInt(battery_slot_str);
                                 let config = this.state.configs[battery_slot];
@@ -266,7 +587,7 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                                         </>]
 
                                         if (this.state.edit_battery_config[0] != BatteryClassID.None) {
-                                            rows = rows.concat(<Fragment key={`edit_children_${this.state.edit_battery_config[0]}`}>{config_plugins[this.state.edit_battery_config[0]].get_edit_children(this.state.edit_battery_config, (battery_config) => this.setState({edit_battery_config: battery_config}))}</Fragment>);
+                                            rows = rows.concat(<Fragment key={`edit_battery_children_${this.state.edit_battery_config[0]}`}>{config_plugins[this.state.edit_battery_config[0]].get_edit_children(this.state.edit_battery_config, (battery_config) => this.setState({edit_battery_config: battery_config}))}</Fragment>);
                                         }
 
                                         return rows;
@@ -353,7 +674,7 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                                 ];
 
                                 if (this.state.add_battery_config[0] != BatteryClassID.None) {
-                                    rows = rows.concat(<Fragment key={`edit_children_${this.state.edit_battery_config[0]}`}>{config_plugins[this.state.add_battery_config[0]].get_edit_children(this.state.add_battery_config, (battery_config) => this.setState({add_battery_config: battery_config}))}</Fragment>);
+                                    rows = rows.concat(<Fragment key={`add_battery_children_${this.state.edit_battery_config[0]}`}>{config_plugins[this.state.add_battery_config[0]].get_edit_children(this.state.add_battery_config, (battery_config) => this.setState({add_battery_config: battery_config}))}</Fragment>);
                                 }
 
                                 return rows;
@@ -375,6 +696,27 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                             } : undefined}
                             addExportBasename={__("batteries.content.battery_export_basename") + (this.state.add_battery_config[0] != BatteryClassID.None && config_plugins[this.state.add_battery_config[0]].export_basename_suffix ? config_plugins[this.state.add_battery_config[0]].export_basename_suffix() : "")}
                             />
+                    </FormRow>
+
+                    <FormRow label={__("batteries.content.rules_permit_grid_charge")}>
+                        <RulesEditor rules={this.state.rules_permit_grid_charge} on_rules={(rules: RuleConfig[]) => {
+                            this.setState({rules_permit_grid_charge: rules});
+                            this.setDirty(true);
+                        }} />
+                    </FormRow>
+
+                    <FormRow label={__("batteries.content.rules_forbid_discharge")}>
+                        <RulesEditor rules={this.state.rules_forbid_discharge} on_rules={(rules: RuleConfig[]) => {
+                            this.setState({rules_forbid_discharge: rules});
+                            this.setDirty(true);
+                        }} />
+                    </FormRow>
+
+                    <FormRow label={__("batteries.content.rules_forbid_charge")}>
+                        <RulesEditor rules={this.state.rules_forbid_charge} on_rules={(rules: RuleConfig[]) => {
+                            this.setState({rules_forbid_charge: rules});
+                            this.setDirty(true);
+                        }} />
                     </FormRow>
                 </ConfigForm>
             </SubPage>

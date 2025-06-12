@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { h, Context, Fragment } from "preact";
+import { h, Context, Fragment, ComponentChildren, toChildArray } from "preact";
 import { useId, useContext, useRef } from "preact/hooks";
 import { JSX } from 'preact';
 import { Button } from "react-bootstrap";
@@ -35,6 +35,7 @@ interface InputNumberProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement
     invalidFeedback?: string;
     disabled?: boolean;
     readonly?: boolean;
+    children?: ComponentChildren;
 }
 
 export function InputNumber(props: InputNumberProps) {
@@ -63,6 +64,7 @@ export function InputNumber(props: InputNumberProps) {
     }
 
     return <div class="input-group">
+        {toChildArray(props.children).length > 0 ? <div class="input-group-prepend">{props.children}</div> : undefined}
         <input class="form-control no-spin"
                 ref={input}
                 id={id}
