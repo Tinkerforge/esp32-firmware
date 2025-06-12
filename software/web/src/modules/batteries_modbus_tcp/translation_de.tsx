@@ -33,7 +33,7 @@ let x = {
             "register_address_mode_number": "Registernummer (beginnt bei 1)",
             "registers": "Register",
             "registers_add_title": "Register hinzufügen",
-            "registers_add_count": /*SFN*/(x: number, max: number) => x + " von " + max + " Registern konfiguriert"/*NF*/,
+            "registers_add_message": /*SFN*/(have: number, max: number) => `${have} von ${max} Registern konfiguriert`/*NF*/,
             "registers_add_select_address_mode": "Zuerst Adressmodus auswählen...",
             "registers_edit_title": "Register bearbeiten",
             "registers_register_desc": "Beschreibung",
