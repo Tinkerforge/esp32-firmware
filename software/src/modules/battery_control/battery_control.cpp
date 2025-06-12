@@ -40,13 +40,13 @@ void BatteryControl::pre_setup()
     });
 
     rule_prototype = Config::Object({
-        {"name",          Config::Str ("", 0, 32)},
-        {"soc_cond",      Config::Uint  (0, 0, 2)}, // 0 = ignore, 1 = true if below threshold, 2 = true if above threshold
-        {"soc_th",        Config::Uint8 (0      )}, // in percent (0 to 100 %)
-        {"price_cond",    Config::Uint  (0, 0, 2)},
-        {"price_th",      Config::Int16 (0      )}, // in ct/10   (-32 to 32 EUR)
-        {"forecast_cond", Config::Uint  (0, 0, 2)},
-        {"forecast_th",   Config::Uint16(0      )}, // in kWh     (0 to 65 MWh)
+        {"desc",          Config::Str   ("", 0, 32)},
+        {"soc_cond",      Config::Enum  (RuleCondition::Ignore)},
+        {"soc_th",        Config::Uint8 (0)}, // in percent (0 to 100 %)
+        {"price_cond",    Config::Enum  (RuleCondition::Ignore)},
+        {"price_th",      Config::Int16 (0)}, // in ct/10   (-32 to 32 EUR)
+        {"forecast_cond", Config::Enum  (RuleCondition::Ignore)},
+        {"forecast_th",   Config::Uint16(0)}, // in kWh     (0 to 65 MWh)
     });
 
     rules_permit_grid_charge = Config::Array({}, &rule_prototype, 0, MAX_RULES_PER_TYPE, Config::type_id<Config::ConfObject>());
