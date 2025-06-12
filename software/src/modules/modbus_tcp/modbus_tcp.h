@@ -45,6 +45,7 @@ private:
 
     void start_server();
     void stop_server();
+    void restart_server();
     void fillCache();
     bool check_read_only(TFModbusTCPExceptionCode *result);
 

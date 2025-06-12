@@ -1201,6 +1201,10 @@ void ModbusTCP::stop_server() {
 
     server.stop();
     cache = nullptr;
+
+    error_counters.get("illegal_function")->updateUint(0);
+    error_counters.get("illegal_data_address")->updateUint(0);
+    error_counters.get("ignored_write")->updateUint(0);
 }
 
 void ModbusTCP::fillCache() {
@@ -1249,11 +1253,20 @@ bool ModbusTCP::check_read_only(TFModbusTCPExceptionCode *result)
     return true;
 }
 
+void ModbusTCP::restart_server() {
+    this->stop_server();
+    if (this->config.get("enable")->asBool())
+        this->start_server();
+}
+
 void ModbusTCP::register_events() {
-    event.registerEvent("modbus_tcp/config", {}, [this](const Config *config) {
-        this->stop_server();
-        if (config->get("enable")->asBool())
-            this->start_server();
+    event.registerEvent("modbus_tcp/config", {}, [this](const Config *_config) {
+        this->restart_server();
+        return EventResult::OK;
+    });
+
+    event.registerEvent("evse/modbus_tcp_enabled", {}, [this](const Config *_config) {
+        this->restart_server();
         return EventResult::OK;
     });
 }
