@@ -54,9 +54,7 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
     JsonObject cmd_obj = cmd_array.createNestedObject();
     //cmd_array.createNestedObject(); // add an empty object to the array or it might get turned into an object by ship-go
 
-    const bool has_response = eebus.usecases.handle_message(received_header, eebus.data_handler, cmd_obj);
-
-    if (has_response) {
+    if (eebus.usecases.handle_message(received_header, eebus.data_handler, cmd_obj)) {
         response_doc["datagram"][0]["header"]["specificationVersion"] = "1.3.0";
         response_doc["datagram"][0]["header"]["addressSource"]["device"] = "d:_i:123456_warp3";
         response_doc["datagram"][0]["header"]["addressSource"]["entity"][0] = 0;
@@ -66,7 +64,7 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
         response_doc["datagram"][0]["header"]["addressDestination"]["feature"] = 0;
         response_doc["datagram"][0]["header"]["msgCounter"] = msg_counter++;
         response_doc["datagram"][0]["header"]["msgCounterReference"] = received_header.msg_counter;
-        response_doc["datagram"][0]["header"]["cmdClassifier"] = "reply";
+        response_doc["datagram"][0]["header"]["cmdClassifier"] = CmdClassifierType::reply;
         response_doc["datagram"][0]["header"]["ackRequest"] = false;
 
 
@@ -126,7 +124,7 @@ void SpineHeader::from_json(String json)
     destination_feature = json_doc[2]["addressDestination"][0]["feature"];
     msg_counter = json_doc[3]["msgCounter"];
     msg_counter_received = json_doc[3]["msgCounterReceived"];
-    cmd_classifier = json_doc[4]["cmdClassifier"].as<String>(); // "read"
+    cmd_classifier = json_doc[4]["cmdClassifier"]; // "read"
     wants_response = json_doc[5]["wantsResponse"];
 }
 
