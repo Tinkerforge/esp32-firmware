@@ -36,8 +36,6 @@ void ModbusTCPClient::setup()
     };
 
     TFNetworkUtil::resolve = [this](const char *host, std::function<void(uint32_t address, int error_number)> &&callback) {
-        dns_gethostbyname_addrtype_lwip_ctx_async_data *outer_data = new dns_gethostbyname_addrtype_lwip_ctx_async_data;
-
         dns_gethostbyname_addrtype_lwip_ctx_async(host, [callback](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
             if (data->err != ERR_OK) {
                 callback(0, err_to_errno(data->err));
@@ -48,9 +46,7 @@ void ModbusTCPClient::setup()
             else {
                 callback(data->addr_ptr->u_addr.ip4.addr, -1);
             }
-
-            delete data;
-        }, outer_data, LWIP_DNS_ADDRTYPE_IPV4);
+        }, LWIP_DNS_ADDRTYPE_IPV4);
     };
 
     initialized = true;

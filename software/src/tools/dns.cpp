@@ -114,14 +114,15 @@ static void gethostbyname_addrtype_lwip_ctx_async(const char */*host*/, const ip
 
     task_scheduler.scheduleOnce([data]() {
         data->found_callback(data);
+        delete data;
     });
 }
 
 void dns_gethostbyname_addrtype_lwip_ctx_async(const char *host,
                                                std::function<void(dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg)> &&found_callback,
-                                               dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg,
                                                u8_t dns_addrtype)
 {
+    auto *callback_arg = new dns_gethostbyname_addrtype_lwip_ctx_async_data;
     callback_arg->found_callback = std::move(found_callback);
 
     const int is_ip = ipaddr_aton_addrtype(host, &callback_arg->addr, dns_addrtype);
@@ -142,4 +143,5 @@ void dns_gethostbyname_addrtype_lwip_ctx_async(const char *host,
     callback_arg->addr_ptr = &callback_arg->addr;
 
     callback_arg->found_callback(callback_arg); // Can't call local found_callback anymore because it has been std::move'd.
+    delete callback_arg;
 }

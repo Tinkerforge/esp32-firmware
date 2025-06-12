@@ -42,5 +42,4 @@ struct dns_gethostbyname_addrtype_lwip_ctx_async_data
 [[gnu::nonnull]]
 void dns_gethostbyname_addrtype_lwip_ctx_async(const char *host,
                                                std::function<void(dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg)> &&found_callback,
-                                               dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg,
                                                u8_t dns_addrtype);

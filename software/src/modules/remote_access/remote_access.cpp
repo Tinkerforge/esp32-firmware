@@ -1901,12 +1901,10 @@ void RemoteAccess::run_management()
             local_port = find_next_free_port(local_port);
 
             uint8_t conn_no = command->connection_no;
-            dns_gethostbyname_addrtype_lwip_ctx_async_data *outer_data = new dns_gethostbyname_addrtype_lwip_ctx_async_data;
             dns_gethostbyname_addrtype_lwip_ctx_async(remote_host.c_str(), [this, response, local_port, conn_no](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
                 create_sock_and_send_to(&response, sizeof(response), data->addr, 51820, local_port);
                 connect_remote_access(conn_no, local_port);
-                delete data;
-            }, outer_data, LWIP_DNS_ADDRTYPE_IPV4);
+            }, LWIP_DNS_ADDRTYPE_IPV4);
         } break;
 
         case management_command_id::Disconnect:
@@ -2026,7 +2024,6 @@ static void on_ping_end(esp_ping_handle_t handle, void *args) {
 int RemoteAccess::start_ping() {
     const char *host = config.get("relay_host")->asEphemeralCStr();
 
-    dns_gethostbyname_addrtype_lwip_ctx_async_data *outer_data = new dns_gethostbyname_addrtype_lwip_ctx_async_data;
     dns_gethostbyname_addrtype_lwip_ctx_async(host, [this, host](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
         PingArgs *ping_args = new PingArgs();
         ping_args->that = this;
@@ -2048,8 +2045,7 @@ int RemoteAccess::start_ping() {
         char str[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &data->addr, str, sizeof(str));
         logger.printfln("Start pinging %s(%s)", host, str);
-        delete data;
-    }, outer_data, LWIP_DNS_ADDRTYPE_IPV4);
+    }, LWIP_DNS_ADDRTYPE_IPV4);
 
     return 0;
 }
