@@ -130,7 +130,7 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
     if (ret == -1) {
         char buf[100] = "<unknown>";
         strerror_r(errno, buf, ARRAY_SIZE(buf));
-        logger.printfln("Setting socket to non_blocking caused and error: (%i)%s", errno, buf);
+        logger.printfln("Setting socket to non_blocking caused and error: %s (%i)", buf, errno);
         close(sock);
         return -1;
     }
@@ -145,7 +145,7 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
     if (ret == -1) {
         char buf[100] = "<unknown>";
         strerror_r(errno, buf, ARRAY_SIZE(buf));
-        logger.printfln("Binding socket to port %u caused and error: (%i)%s", local_port, errno, buf);
+        logger.printfln("Binding socket to port %u caused and error: %s (%i)", local_port, buf, errno);
         close(sock);
         return -1;
     }
@@ -1776,7 +1776,7 @@ void RemoteAccess::setup_inner_socket()
     if (inner_socket < 0) {
         char buf[100] = "<unknown>";
         strerror_r(errno, buf, ARRAY_SIZE(buf));
-        logger.printfln("Failed to create inner socket: (%i)%s", errno, buf);
+        logger.printfln("Failed to create inner socket: %s (%i)", buf, errno);
         return;
     }
 
@@ -1790,7 +1790,7 @@ void RemoteAccess::setup_inner_socket()
     if (ret == -1) {
         char buf[100] = "<unknown>";
         strerror_r(errno, buf, ARRAY_SIZE(buf));
-        logger.printfln("Binding socket to port 12345 caused and error: (%i)%s", errno, buf);
+        logger.printfln("Binding socket to port 12345 caused and error: %s (%i)", buf, errno);
         close(inner_socket);
         inner_socket = -1;
         return;
@@ -1800,7 +1800,7 @@ void RemoteAccess::setup_inner_socket()
     if (ret == -1) {
         char buf[100] = "<unknown>";
         strerror_r(errno, buf, ARRAY_SIZE(buf));
-        logger.printfln("Setting socket to non_blocking caused and error: (%i)%s", errno, buf);
+        logger.printfln("Setting socket to non_blocking caused and error: %s (%i)", buf, errno);
         close(inner_socket);
         inner_socket = -1;
     }
