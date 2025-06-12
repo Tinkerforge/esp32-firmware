@@ -136,7 +136,7 @@ let x = {
             "needs_reboot": "Needs reboot",
             "delay": "Delay",
             "add_rule_title": "Add rule",
-            "add_rule_count": /*SFN*/(count: number, max: number) => count + " of " + max + " rules configured"/*NF*/,
+            "add_rule_message": /*SFN*/(have: number, max: number) => `${have} of ${max} rules configured`/*NF*/,
             "edit_rule_title": "Edit rule",
             "trigger_disabled": "Disabled",
             "action_disabled": "Disabled",

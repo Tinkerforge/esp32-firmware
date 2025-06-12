@@ -218,8 +218,8 @@ class MeterValueIDTable extends Component<MeterValueIDTableProps, MeterValueIDTa
             })}
             columnNames={[""]}
             addEnabled={this.props.config[1].value_ids.length < MAX_VALUES}
-            addMessage={__("meters_api.content.add_value_count")(this.props.config[1].value_ids.length, MAX_VALUES)}
             addTitle={__("meters_api.content.add_value_title")}
+            addMessage={__("meters_api.content.add_value_message")(this.props.config[1].value_ids.length, MAX_VALUES)}
             onAddShow={async () => {
                 this.setState({value_id: null});
             }}

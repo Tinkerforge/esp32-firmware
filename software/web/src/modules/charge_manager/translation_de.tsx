@@ -96,7 +96,7 @@ let x = {
             "add_charger_name": "Anzeigename",
             "add_charger_host": "Hostname oder IP-Adresse",
             "add_charger_found": "Gefundene Wallboxen",
-            "add_charger_count": /*SFN*/(x: number, max: number) => x + " von " + max + " Wallboxen konfiguriert"/*NF*/,
+            "add_charger_message": /*SFN*/(have: number, max: number) => `${have} von ${max} Wallboxen konfiguriert`/*NF*/,
             "add_charger_rotation": "Phasenrotation",
             "charger_rotation_help": <>
                 <p>Gibt an, wie die Wallbox in Relation zum Netzanschluss- bzw. PV-Überschuss-Zähler oder zu den anderen Wallboxen angeschlossen ist. Typischerweise werden nur rechtsdrehende Phasenrotationen verwendet.</p>

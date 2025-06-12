@@ -209,7 +209,7 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
                             }
                             addEnabled={state.authorized_tags.length < MAX_AUTHORIZED_TAGS}
                             addTitle={__("nfc.content.add_tag_title")}
-                            addMessage={__("nfc.content.add_tag_prefix") + state.authorized_tags.length + __("nfc.content.add_tag_infix") + MAX_AUTHORIZED_TAGS + __("nfc.content.add_tag_suffix")}
+                            addMessage={__("nfc.content.add_tag_message")(state.authorized_tags.length, MAX_AUTHORIZED_TAGS)}
                             onAddShow={async () => {
                                 this.currentlyEditing = "";
                                 this.setState({addTag: {tag_id: "", user_id: 0, tag_type: "" as any}, hasDoubledTags: false});

@@ -11,7 +11,7 @@ let x = {
             "config_value_id": "Value",
             "invalid_feedback": "Already selected",
             "add_value_title": "Add value",
-            "add_value_count": /*SFN*/(x: number, max: number) => x + " of " + max + " values configured"/*NF*/,
+            "add_value_message": /*SFN*/(have: number, max: number) => `${have} of ${max} values configured`/*NF*/,
             "edit_value_title": "Edit value",
             "api_meter_preset": "Preset",
             "api_meter_no_preset": "No preset selected",

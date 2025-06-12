@@ -31,9 +31,7 @@ let x = {
             "add_user_current": "Maximaler Ladestrom",
             "add_user_password": "Passwort",
             "add_user_password_desc": "Anmeldung deaktiviert",
-            "add_user_prefix": "",
-            "add_user_infix": " von ",
-            "add_user_suffix": " Benutzern konfiguriert",
+            "add_user_message": /*SFN*/(have: number, max: number) => `${have} von ${max} Benutzern konfiguriert`/*NF*/,
             "add_user_user_ids_exhausted": "Die maximale Anzahl an Benutzern hat Ladevorgänge aufgezeichnet. Damit ein neuer Benutzer angelegt werden kann, müssen aufgezeichnete Ladevorgänge oder ein existierender Benutzer ohne aufgezeichnete Ladevorgänge gelöscht werden.",
 
             "edit_user_title": "Benutzer bearbeiten",

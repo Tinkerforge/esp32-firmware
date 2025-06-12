@@ -37,9 +37,7 @@ let x = {
             "table_phases": "Phasen",
 
             "add_meter_title": "Stromzähler hinzufügen",
-            "add_meter_prefix": "",
-            "add_meter_infix": " von ",
-            "add_meter_suffix": " Stromzählern konfiguriert",
+            "add_meter_message": /*SFN*/(have: number, max: number) => `${have} von ${max} Stromzählern konfiguriert`/*NF*/,
             "add_meter_slot": "Nummer",
             "add_meter_class": "Klasse",
 

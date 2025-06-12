@@ -686,7 +686,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
                                 this.setState({addUser: {email: "", password: "", auth_token: "", public_key: "", note: "", user_id: ""}});
                                 setAuthToken("");
                             }}
-                            addMessage={users.length < 5 ? __("remote_access.content.user_add_message")(users.length, 5) : __("remote_access.content.all_users_in_use")}
+                            addMessage={__("remote_access.content.user_add_message")(users.length, 5)}
                             onAddGetChildren={() => {
                                 const [authMethod, setAuthMethod] = useState("password");
                                 const [invalidFeedback, setInvalidFeedback] = useState("");

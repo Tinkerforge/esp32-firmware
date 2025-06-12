@@ -96,7 +96,7 @@ let x = {
             "add_charger_name": "Display name",
             "add_charger_host": "Hostname or IP address",
             "add_charger_found": "Discovered chargers",
-            "add_charger_count": /*SFN*/(x: number, max: number) => x + " of " + max + " chargers configured"/*NF*/,
+            "add_charger_message": /*SFN*/(have: number, max: number) => `${have} of ${max} chargers configured`/*NF*/,
             "add_charger_rotation": "Phase rotation",
             "charger_rotation_help": <>
                 <p>The chargers connection from the perspective of the grid or PV meter or the other chargers. Usually only positive sequence rotations are used.</p>

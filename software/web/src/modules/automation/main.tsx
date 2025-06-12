@@ -329,7 +329,7 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
                     rows={this.assembleTable()}
                     addEnabled={this.state.tasks.length < MAX_RULES}
                     addTitle={__("automation.content.add_rule_title")}
-                    addMessage={__("automation.content.add_rule_count")(this.state.tasks.length, MAX_RULES)}
+                    addMessage={__("automation.content.add_rule_message")(this.state.tasks.length, MAX_RULES)}
                     onAddShow={async () => {
                         this.setState({
                             displayed_trigger: AutomationTriggerID.None,

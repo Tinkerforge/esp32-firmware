@@ -37,9 +37,7 @@ let x = {
             "table_phases": "Phases",
 
             "add_meter_title": "Add energy meter",
-            "add_meter_prefix": "",
-            "add_meter_infix": " of ",
-            "add_meter_suffix": " energy meters configured",
+            "add_meter_message": /*SFN*/(have: number, max: number) => `${have} of ${max} energy meters configured`/*NF*/,
             "add_meter_slot": "Number",
             "add_meter_class": "Class",
 

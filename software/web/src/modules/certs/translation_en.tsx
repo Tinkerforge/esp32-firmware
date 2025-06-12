@@ -16,7 +16,7 @@ let x = {
             "cert_file": "Certificate file",
             "cert_file_muted": "PEM format",
 
-            "add_cert_message": /*SFN*/(have: number, max: number) => `${have} of ${max} certificates configured.`/*NF*/,
+            "add_cert_message": /*SFN*/(have: number, max: number) => `${have} of ${max} certificates configured`/*NF*/,
 
             "browse": "Browse",
             "select_file": "Select file..."

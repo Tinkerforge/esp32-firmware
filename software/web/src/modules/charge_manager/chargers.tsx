@@ -460,7 +460,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                         }
                         addEnabled={state.chargers.length < MAX_CONTROLLED_CHARGERS}
                         addTitle={__("charge_manager.content.add_charger_title")}
-                        addMessage={__("charge_manager.content.add_charger_count")(state.chargers.length, MAX_CONTROLLED_CHARGERS)}
+                        addMessage={__("charge_manager.content.add_charger_message")(state.chargers.length, MAX_CONTROLLED_CHARGERS)}
                         onAddShow={async () => {
                             this.setState({addCharger: {name: "", host: "", rot: -1}});
                             this.scan_services();

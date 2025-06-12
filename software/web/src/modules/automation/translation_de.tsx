@@ -133,7 +133,7 @@ let x = {
             "needs_reboot": "Benötigt Neustart",
             "delay": "Verzögerung",
             "add_rule_title": "Regel hinzufügen",
-            "add_rule_count": /*SFN*/(count: number, max: number) => count + " von " + max + " Regeln konfiguriert"/*NF*/,
+            "add_rule_message": /*SFN*/(have: number, max: number) => `${have} von ${max} Regeln konfiguriert`/*NF*/,
             "edit_rule_title": "Regel bearbeiten",
             "trigger_disabled": "Deaktiviert",
             "action_disabled": "Deaktiviert",

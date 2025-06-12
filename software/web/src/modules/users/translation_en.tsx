@@ -31,9 +31,7 @@ let x = {
             "add_user_current": "Maximum charge current",
             "add_user_password": "Password",
             "add_user_password_desc": "Login disabled",
-            "add_user_prefix": "",
-            "add_user_infix": " of ",
-            "add_user_suffix": " users configured",
+            "add_user_message": /*SFN*/(have: number, max: number) => `${have} of ${max} users configured`/*NF*/,
             "add_user_user_ids_exhausted": "The maximum number of users has tracked charges. To be able to add a new user, tracked charges or a user without tracked charges have to be removed.",
 
             "edit_user_title": "Edit user",

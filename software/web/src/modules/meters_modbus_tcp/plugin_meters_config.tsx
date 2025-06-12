@@ -727,7 +727,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
             addEnabled={util.hasValue(this.props.table[1].register_address_mode) && this.props.table[1].registers.length < MAX_CUSTOM_REGISTERS}
             addMessage={
                 util.hasValue(this.props.table[1].register_address_mode)
-                    ? __("meters_modbus_tcp.content.registers_add_count")(this.props.table[1].registers.length, MAX_CUSTOM_REGISTERS)
+                    ? __("meters_modbus_tcp.content.registers_add_message")(this.props.table[1].registers.length, MAX_CUSTOM_REGISTERS)
                     : __("meters_modbus_tcp.content.registers_add_select_address_mode")
             }
             addTitle={__("meters_modbus_tcp.content.registers_add_title")}

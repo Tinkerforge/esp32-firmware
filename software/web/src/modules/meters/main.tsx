@@ -1062,7 +1062,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                             })}
                             addEnabled={active_meter_slots.length < METERS_SLOTS}
                             addTitle={__("meters.content.add_meter_title")}
-                            addMessage={__("meters.content.add_meter_prefix") + active_meter_slots.length + __("meters.content.add_meter_infix") + METERS_SLOTS + __("meters.content.add_meter_suffix")}
+                            addMessage={__("meters.content.add_meter_message")(active_meter_slots.length, METERS_SLOTS)}
                             onAddShow={async () => {
                                 let add_meter_slot = null;
 

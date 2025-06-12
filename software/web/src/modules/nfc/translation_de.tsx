@@ -26,13 +26,11 @@ let x = {
             "table_last_seen": "Zuletzt erkannt",
 
             "add_tag_title": "Tag hinzufügen",
+            "add_tag_message": /*SFN*/(have: number, max: number) => `${have} von ${max} Tags konfiguriert`/*NF*/,
             "add_tag_seen_tags": "Zuletzt erkannte Tags",
             "add_tag_user_id": "Zugeordneter Benutzer",
             "add_tag_tag_id": "Tag-ID",
             "add_tag_tag_type": "Tag-Typ",
-            "add_tag_prefix": "",
-            "add_tag_infix": " von ",
-            "add_tag_suffix": " Tags konfiguriert",
             "add_tag_description": "Das neue Tag kann zum Anlernen an die rechte Seite der Wallbox gehalten werden. Alternativ können Tag-ID und Tag-Typ manuell angegeben werden.",
 
             "edit_tag_title": "Tag bearbeiten",
