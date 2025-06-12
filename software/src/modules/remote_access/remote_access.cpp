@@ -128,7 +128,9 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
     }
     int ret = fcntl(sock, F_SETFL, O_NONBLOCK);
     if (ret == -1) {
-        logger.printfln("Setting socket to non_blocking caused and error: (%i)%s", errno, strerror_r(errno, nullptr, 0));
+        char buf[100] = "<unknown>";
+        strerror_r(errno, buf, ARRAY_SIZE(buf));
+        logger.printfln("Setting socket to non_blocking caused and error: (%i)%s", errno, buf);
         close(sock);
         return -1;
     }
@@ -141,7 +143,9 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
     local_addr.sin_port = htons(local_port);
     ret = bind(sock, (struct sockaddr *)&local_addr, sizeof(local_addr));
     if (ret == -1) {
-        logger.printfln("Binding socket to port %u caused and error: (%i)%s", local_port, errno, strerror_r(errno, nullptr, 0));
+        char buf[100] = "<unknown>";
+        strerror_r(errno, buf, ARRAY_SIZE(buf));
+        logger.printfln("Binding socket to port %u caused and error: (%i)%s", local_port, errno, buf);
         close(sock);
         return -1;
     }
@@ -1770,7 +1774,9 @@ void RemoteAccess::setup_inner_socket()
 
     inner_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
     if (inner_socket < 0) {
-        logger.printfln("Failed to create inner socket: (%i)%s", errno, strerror_r(errno, nullptr, 0));
+        char buf[100] = "<unknown>";
+        strerror_r(errno, buf, ARRAY_SIZE(buf));
+        logger.printfln("Failed to create inner socket: (%i)%s", errno, buf);
         return;
     }
 
@@ -1782,7 +1788,9 @@ void RemoteAccess::setup_inner_socket()
     local_addr.sin_port = htons(12345);
     int ret = bind(inner_socket, (struct sockaddr *)&local_addr, sizeof(local_addr));
     if (ret == -1) {
-        logger.printfln("Binding socket to port 12345 caused and error: (%i)%s", errno, strerror_r(errno, nullptr, 0));
+        char buf[100] = "<unknown>";
+        strerror_r(errno, buf, ARRAY_SIZE(buf));
+        logger.printfln("Binding socket to port 12345 caused and error: (%i)%s", errno, buf);
         close(inner_socket);
         inner_socket = -1;
         return;
@@ -1790,7 +1798,9 @@ void RemoteAccess::setup_inner_socket()
 
     ret = fcntl(inner_socket, F_SETFL, O_NONBLOCK);
     if (ret == -1) {
-        logger.printfln("Setting socket to non_blocking caused and error: (%i)%s", errno, strerror_r(errno, nullptr, 0));
+        char buf[100] = "<unknown>";
+        strerror_r(errno, buf, ARRAY_SIZE(buf));
+        logger.printfln("Setting socket to non_blocking caused and error: (%i)%s", errno, buf);
         close(inner_socket);
         inner_socket = -1;
     }
