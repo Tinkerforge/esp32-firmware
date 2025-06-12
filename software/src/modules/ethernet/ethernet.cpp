@@ -29,7 +29,6 @@
 #include "module_dependencies.h"
 
 #include <ETH.h>
-#include <esp_eth.h>
 
 #include "event_log_prefix.h"
 
@@ -329,14 +328,6 @@ void Ethernet::register_urls()
 {
     api.addPersistentConfig("ethernet/config", &config);
     api.addState("ethernet/state", &state);
-    api.addCommand("ethernet/force_reset", Config::Null(), {}, [this](String &/*errmsg*/) {
-        esp_eth_stop(ETH._eth_handle);
-        pinMode(5, OUTPUT);
-        digitalWrite(5, LOW);
-        delay(100);
-        digitalWrite(5, HIGH);
-        esp_eth_start(ETH._eth_handle);
-    }, true);
 }
 
 EthernetState Ethernet::get_connection_state() const
