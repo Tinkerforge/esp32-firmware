@@ -678,7 +678,11 @@ void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t h
     }, 100_ms, 100_ms);
 
     if (state_path != nullptr) {
-        api.addState(state_path, &state);
+        // TODO Add pull only states to API
+        server.on(state_path, HTTP_GET, [this](WebServerRequest request) {
+            String s = this->state.to_string();
+            return request.send(200, "application/json; charset=utf-8", s.c_str(), s.length());
+        });
     }
 }
 

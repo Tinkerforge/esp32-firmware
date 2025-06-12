@@ -126,7 +126,7 @@ void WS::register_urls()
         }
     });
 
-    web_sockets.start("/ws", "info/ws", server.httpd);
+    web_sockets.start("/ws", "/info/ws", server.httpd);
 
     task_scheduler.scheduleWithFixedDelay([this](){
         char *payload;
