@@ -28,9 +28,7 @@ let x = {
             "table_class": "Klasse",
 
             "add_battery_title": "Batteriespeicher hinzufügen",
-            "add_battery_prefix": "",
-            "add_battery_infix": " von ",
-            "add_battery_suffix": " Batteriespeichern konfiguriert",
+            "add_battery_message": /*SFN*/(have: number, max: number) => `${have} von ${max} Batteriespeichern konfiguriert`/*NF*/,
             "add_battery_slot": "Nummer",
             "add_battery_class": "Klasse",
 

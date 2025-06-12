@@ -295,7 +295,7 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                             })}
                             addEnabled={active_battery_slots.length < BATTERIES_SLOTS}
                             addTitle={__("batteries.content.add_battery_title")}
-                            addMessage={__("batteries.content.add_battery_prefix") + active_battery_slots.length + __("batteries.content.add_battery_infix") + BATTERIES_SLOTS + __("batteries.content.add_battery_suffix")}
+                            addMessage={__("batteries.content.add_battery_message")(active_battery_slots.length, BATTERIES_SLOTS)}
                             onAddShow={async () => {
                                 let add_battery_slot = null;
 
