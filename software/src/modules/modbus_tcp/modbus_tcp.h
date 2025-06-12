@@ -26,6 +26,8 @@
 
 #include <TFTools/Option.h>
 
+#include "register_table.enum.h"
+
 class ModbusTCP final : public IModule
 {
 public:
@@ -45,6 +47,8 @@ private:
     void stop_server();
     void fillCache();
     bool check_read_only(TFModbusTCPExceptionCode *result);
+
+    TFModbusTCPExceptionCode dispatch(RegisterTable table, uint8_t unit_id, TFModbusTCPFunctionCode function_code, uint16_t start_address, uint16_t data_count, void *data_values);
 
     TFModbusTCPExceptionCode getWarpCoils(uint16_t start_address, uint16_t data_count, uint8_t *data_values);
     TFModbusTCPExceptionCode getWarpDiscreteInputs(uint16_t start_address, uint16_t data_count, uint8_t *data_values);

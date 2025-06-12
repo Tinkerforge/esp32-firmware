@@ -31,7 +31,6 @@
 #include "tools/net.h"
 
 #include "module_dependencies.h"
-#include "register_table.enum.h"
 
 extern uint32_t local_uid_num;
 
@@ -339,9 +338,6 @@ TFModbusTCPExceptionCode ModbusTCP::getWarpInputRegisters(uint16_t start_address
 
         Option<TwoRegs> opt = this->getWarpInputRegister(reg, &ctx);
         if (opt.is_none()) {
-            auto illegal_data_address = error_counters.get("illegal_data_address");
-            illegal_data_address->updateUint(illegal_data_address->asUint() + 1);
-
             return TFModbusTCPExceptionCode::IllegalDataAddress;
         }
 
@@ -426,9 +422,6 @@ TFModbusTCPExceptionCode ModbusTCP::getWarpHoldingRegisters(uint16_t start_addre
 
         Option<ModbusTCP::TwoRegs> opt = this->getWarpHoldingRegister(reg);
         if (opt.is_none()) {
-            auto illegal_data_address = error_counters.get("illegal_data_address");
-            illegal_data_address->updateUint(illegal_data_address->asUint() + 1);
-
             return TFModbusTCPExceptionCode::IllegalDataAddress;
         }
 
@@ -505,9 +498,6 @@ TFModbusTCPExceptionCode ModbusTCP::getWarpDiscreteInputs(uint16_t start_address
             case 2105: REQUIRE(meter_phases); result = cache->meter_phases->get("phases_active")->get(2)->asBool(); break;
 
             default: if (this->send_illegal_data_address) {
-                auto illegal_data_address = error_counters.get("illegal_data_address");
-                illegal_data_address->updateUint(illegal_data_address->asUint() + 1);
-
                 return TFModbusTCPExceptionCode::IllegalDataAddress;
             }
         }
@@ -547,9 +537,6 @@ TFModbusTCPExceptionCode ModbusTCP::getWarpCoils(uint16_t start_address, uint16_
                 } break;
 
             default: if (this->send_illegal_data_address) {
-                auto illegal_data_address = error_counters.get("illegal_data_address");
-                illegal_data_address->updateUint(illegal_data_address->asUint() + 1);
-
                 return TFModbusTCPExceptionCode::IllegalDataAddress;
             }
         }
@@ -599,9 +586,6 @@ TFModbusTCPExceptionCode ModbusTCP::setWarpCoils(uint16_t start_address, uint16_
                 } break;
 
             default: if (this->send_illegal_data_address) {
-                auto illegal_data_address = error_counters.get("illegal_data_address");
-                illegal_data_address->updateUint(illegal_data_address->asUint() + 1);
-
                 return TFModbusTCPExceptionCode::IllegalDataAddress;
             }
         }
@@ -636,9 +620,6 @@ TFModbusTCPExceptionCode ModbusTCP::setWarpHoldingRegisters(uint16_t start_addre
             val.regs.lower = data_values[i];
             Option<TwoRegs> opt = this->getWarpHoldingRegister(reg);
             if (opt.is_none()) {
-                auto illegal_data_address = error_counters.get("illegal_data_address");
-                illegal_data_address->updateUint(illegal_data_address->asUint() + 1);
-
                 return TFModbusTCPExceptionCode::IllegalDataAddress;
             }
 
@@ -650,9 +631,6 @@ TFModbusTCPExceptionCode ModbusTCP::setWarpHoldingRegisters(uint16_t start_addre
             val.regs.upper = data_values[i];
             Option<TwoRegs> opt = this->getWarpHoldingRegister(reg);
             if (opt.is_none()) {
-                auto illegal_data_address = error_counters.get("illegal_data_address");
-                illegal_data_address->updateUint(illegal_data_address->asUint() + 1);
-
                 return TFModbusTCPExceptionCode::IllegalDataAddress;
             }
 
@@ -779,9 +757,6 @@ TFModbusTCPExceptionCode ModbusTCP::setWarpHoldingRegisters(uint16_t start_addre
     }
 
     if (this->send_illegal_data_address && report_illegal_data_address) {
-        auto illegal_data_address = error_counters.get("illegal_data_address");
-        illegal_data_address->updateUint(illegal_data_address->asUint() + 1);
-
         return TFModbusTCPExceptionCode::IllegalDataAddress;
     }
 
@@ -833,9 +808,6 @@ TFModbusTCPExceptionCode ModbusTCP::setKebaHoldingRegisters(uint16_t start_addre
                 } break;
 
             default: if(this->send_illegal_data_address) {
-                auto illegal_data_address = error_counters.get("illegal_data_address");
-                illegal_data_address->updateUint(illegal_data_address->asUint() + 1);
-
                 return TFModbusTCPExceptionCode::IllegalDataAddress;
             }
         }
@@ -864,9 +836,6 @@ TFModbusTCPExceptionCode ModbusTCP::setBenderHoldingRegisters(uint16_t start_add
             case 124: REQUIRE(evse); evse_common.set_modbus_enabled(val == 0); break;
             case 1000: REQUIRE(evse); evse_common.set_modbus_current(val * 1000); break;
             default: if (this->send_illegal_data_address) {
-                auto illegal_data_address = error_counters.get("illegal_data_address");
-                illegal_data_address->updateUint(illegal_data_address->asUint() + 1);
-
                 return TFModbusTCPExceptionCode::IllegalDataAddress;
             }
         }
@@ -888,9 +857,6 @@ TFModbusTCPExceptionCode ModbusTCP::getKebaHoldingRegisters(uint16_t start_addre
 
         Option<ModbusTCP::TwoRegs> opt = this->getKebaHoldingRegister(reg);
         if (opt.is_none()) {
-            auto illegal_data_address = error_counters.get("illegal_data_address");
-            illegal_data_address->updateUint(illegal_data_address->asUint() + 1);
-
             return TFModbusTCPExceptionCode::IllegalDataAddress;
         }
 
@@ -1113,6 +1079,73 @@ ModbusTCP::TwoRegs ModbusTCP::getBenderHoldingRegister(uint16_t reg) {
     return val;
 }
 
+TFModbusTCPExceptionCode ModbusTCP::dispatch(RegisterTable table, uint8_t unit_id, TFModbusTCPFunctionCode function_code, uint16_t start_address, uint16_t data_count, void *data_values) {
+    switch(function_code) {
+        case TFModbusTCPFunctionCode::ReadCoils:
+            switch (table) {
+                case RegisterTable::WARP:
+                    return this->getWarpCoils(start_address, data_count, (uint8_t *) data_values);
+                case RegisterTable::Bender:
+                case RegisterTable::KEBA:
+                    break;
+            }
+            break;
+        case TFModbusTCPFunctionCode::ReadDiscreteInputs:
+            switch (table) {
+                case RegisterTable::WARP:
+                    return this->getWarpDiscreteInputs(start_address, data_count, (uint8_t *) data_values);
+                case RegisterTable::Bender:
+                case RegisterTable::KEBA:
+                    break;
+            }
+            break;
+        case TFModbusTCPFunctionCode::ReadHoldingRegisters:
+            switch (table) {
+                case RegisterTable::WARP:
+                    return this->getWarpHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
+                case RegisterTable::Bender:
+                    return this->getBenderHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
+                case RegisterTable::KEBA:
+                    return this->getKebaHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
+            }
+            break;
+        case TFModbusTCPFunctionCode::ReadInputRegisters:
+            switch (table) {
+                case RegisterTable::WARP:
+                    return this->getWarpInputRegisters(start_address, data_count, (uint16_t *) data_values);
+                case RegisterTable::Bender:
+                case RegisterTable::KEBA:
+                    break;
+            }
+            break;
+        case TFModbusTCPFunctionCode::WriteMultipleCoils:
+            switch (table) {
+                case RegisterTable::WARP:
+                    return this->setWarpCoils(start_address, data_count, (uint8_t *) data_values);
+                case RegisterTable::Bender:
+                case RegisterTable::KEBA:
+                    break;
+            }
+            break;
+        case TFModbusTCPFunctionCode::WriteMultipleRegisters:
+            switch (table) {
+                case RegisterTable::WARP:
+                    return this->setWarpHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
+                case RegisterTable::Bender:
+                    return this->setBenderHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
+                case RegisterTable::KEBA:
+                    return this->setKebaHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
+            }
+            break;
+        case TFModbusTCPFunctionCode::WriteSingleCoil:
+        case TFModbusTCPFunctionCode::WriteSingleRegister:
+            esp_system_abort("WriteSingleCoils/Registers should not be passed to receive_cb!");
+            break;
+    }
+
+    return TFModbusTCPExceptionCode::IllegalFunction;
+}
+
 void ModbusTCP::start_server() {
     cache = std::unique_ptr<Cache>(new Cache());
     fillCache();
@@ -1134,73 +1167,26 @@ void ModbusTCP::start_server() {
             logger.printfln("Client %s:%u disconnected: %s (error %d)", peer_str, port, get_tf_modbus_tcp_server_client_disconnect_reason_name(reason), error_number);
         },
         [this, table](uint8_t unit_id, TFModbusTCPFunctionCode function_code, uint16_t start_address, uint16_t data_count, void *data_values) {
-            switch(function_code) {
-                case TFModbusTCPFunctionCode::ReadCoils:
-                    switch (table) {
-                        case RegisterTable::WARP:
-                            return this->getWarpCoils(start_address, data_count, (uint8_t *) data_values);
-                        case RegisterTable::Bender:
-                        case RegisterTable::KEBA:
-                            break;
-                    }
+            TFModbusTCPExceptionCode result = this->dispatch(table, unit_id, function_code, start_address, data_count, data_values);
+
+            Config *error_counter = nullptr;
+
+            switch (result) {
+                case TFModbusTCPExceptionCode::IllegalFunction:
+                    error_counter = (Config *)error_counters.get("illegal_function");
                     break;
-                case TFModbusTCPFunctionCode::ReadDiscreteInputs:
-                    switch (table) {
-                        case RegisterTable::WARP:
-                            return this->getWarpDiscreteInputs(start_address, data_count, (uint8_t *) data_values);
-                        case RegisterTable::Bender:
-                        case RegisterTable::KEBA:
-                            break;
-                    }
+                case TFModbusTCPExceptionCode::IllegalDataAddress:
+                    error_counter = (Config *)error_counters.get("illegal_data_address");
                     break;
-                case TFModbusTCPFunctionCode::ReadHoldingRegisters:
-                    switch (table) {
-                        case RegisterTable::WARP:
-                            return this->getWarpHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
-                        case RegisterTable::Bender:
-                            return this->getBenderHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
-                        case RegisterTable::KEBA:
-                            return this->getKebaHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
-                    }
-                    break;
-                case TFModbusTCPFunctionCode::ReadInputRegisters:
-                    switch (table) {
-                        case RegisterTable::WARP:
-                            return this->getWarpInputRegisters(start_address, data_count, (uint16_t *) data_values);
-                        case RegisterTable::Bender:
-                        case RegisterTable::KEBA:
-                            break;
-                    }
-                    break;
-                case TFModbusTCPFunctionCode::WriteMultipleCoils:
-                    switch (table) {
-                        case RegisterTable::WARP:
-                            return this->setWarpCoils(start_address, data_count, (uint8_t *) data_values);
-                        case RegisterTable::Bender:
-                        case RegisterTable::KEBA:
-                            break;
-                    }
-                    break;
-                case TFModbusTCPFunctionCode::WriteMultipleRegisters:
-                    switch (table) {
-                        case RegisterTable::WARP:
-                            return this->setWarpHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
-                        case RegisterTable::Bender:
-                            return this->setBenderHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
-                        case RegisterTable::KEBA:
-                            return this->setKebaHoldingRegisters(start_address, data_count, (uint16_t *) data_values);
-                    }
-                    break;
-                case TFModbusTCPFunctionCode::WriteSingleCoil:
-                case TFModbusTCPFunctionCode::WriteSingleRegister:
-                    esp_system_abort("WriteSingleCoils/Registers should not be passed to receive_cb!");
+                default:
                     break;
             }
 
-            auto illegal_function = error_counters.get("illegal_function");
-            illegal_function->updateUint(illegal_function->asUint() + 1);
+            if (error_counter != nullptr) {
+                error_counter->updateUint(error_counter->asUint() + 1);
+            }
 
-            return TFModbusTCPExceptionCode::IllegalFunction;
+            return result;
         }
     );
 
@@ -1258,9 +1244,6 @@ bool ModbusTCP::check_read_only(TFModbusTCPExceptionCode *result)
     }
     else {
         *result = TFModbusTCPExceptionCode::IllegalFunction;
-
-        auto illegal_function = error_counters.get("illegal_function");
-        illegal_function->updateUint(illegal_function->asUint() + 1);
     }
 
     return true;
