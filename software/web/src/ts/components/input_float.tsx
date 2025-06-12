@@ -19,7 +19,7 @@
 
 import * as util from "../util";
 
-import { h, Context, Fragment } from "preact";
+import { h, Context, Fragment, ComponentChildren, toChildArray } from "preact";
 import { useId, useContext, useRef, useState } from "preact/hooks";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { Minus, Plus } from "react-feather";
@@ -32,10 +32,11 @@ interface InputFloatReadonlyProps {
     digits: number;
     unit?: string;
     class?: string;
-    invalidFeedback?: string
-    required?: boolean
-    readonly?: boolean
-    disabled?: boolean
+    invalidFeedback?: string;
+    required?: boolean;
+    readonly?: boolean;
+    disabled?: boolean;
+    children?: ComponentChildren;
 }
 
 interface InputFloatProps extends InputFloatReadonlyProps {
@@ -73,7 +74,7 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
     const setTarget = 'onValue' in props ? (target: number) => {
         target = util.clamp(props.min, Math.round(target), props.max);
         input.current.parentNode.dispatchEvent(new Event('input', {bubbles: true}));
-        props.onValue(target)
+        props.onValue(target);
     } : (target: number) => {};
 
     let propValue = null;
@@ -115,6 +116,7 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
     }
 
     return <div class={"input-group " + (props.class ? props.class : "")}>
+    {toChildArray(props.children).length > 0 ? <div class="input-group-prepend">{props.children}</div> : undefined}
     <input class="form-control no-spin"
                id={id}
                type="number"
