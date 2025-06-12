@@ -243,7 +243,7 @@ void AsyncHTTPSClient::fetch(const char *url, int cert_id, esp_http_client_metho
             this->callback(&async_event);
         }
         else if (no_response) {
-            error_abort(AsyncHTTPSClientError::NoResponse);
+            error_abort(AsyncHTTPSClientError::Timeout);
         }
         else if (short_read) {
             error_abort(AsyncHTTPSClientError::ShortRead);
@@ -360,8 +360,8 @@ const char *translate_error(AsyncHTTPSClientEvent *event) {
         case AsyncHTTPSClientError::NoCert:
             return "Certificate not found";
 
-        case AsyncHTTPSClientError::NoResponse:
-            return "No response from server";
+        case AsyncHTTPSClientError::Timeout:
+            return "Connection timed out";
 
         case AsyncHTTPSClientError::ShortRead:
             return "Received incomplete response";

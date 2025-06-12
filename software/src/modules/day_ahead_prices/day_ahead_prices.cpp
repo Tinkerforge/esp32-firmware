@@ -306,8 +306,8 @@ void DayAheadPrices::update()
                 logger.printfln("Certificate with ID %li is not available", config.get("cert_id")->asInt());
                 break;
 
-            case AsyncHTTPSClientError::NoResponse:
-                logger.printfln("Server %s did not respond", get_api_url_with_path().c_str());
+            case AsyncHTTPSClientError::Timeout:
+                logger.printfln("DAP download timed out");
                 break;
 
             case AsyncHTTPSClientError::ShortRead:

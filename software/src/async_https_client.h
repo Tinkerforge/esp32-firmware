@@ -31,7 +31,7 @@ enum class AsyncHTTPSClientError
     NoHTTPSURL,
     Busy,
     NoCert,
-    NoResponse,
+    Timeout,
     ShortRead,
     HTTPError,
     HTTPClientInitFailed,

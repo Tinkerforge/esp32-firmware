@@ -1080,7 +1080,7 @@ void FirmwareUpdate::check_for_update()
                 state.get("check_state")->updateEnum(CheckState::NoCert);
                 break;
 
-            case AsyncHTTPSClientError::NoResponse:
+            case AsyncHTTPSClientError::Timeout:
                 logger.printfln("Update server %s did not respond", update_url.c_str());
                 state.get("check_state")->updateEnum(CheckState::NoResponse);
                 break;
@@ -1295,7 +1295,7 @@ void FirmwareUpdate::install_firmware(const char *url)
                 state.get("install_state")->updateEnum(InstallState::NoCert);
                 break;
 
-            case AsyncHTTPSClientError::NoResponse:
+            case AsyncHTTPSClientError::Timeout:
                 logger.printfln("Update server %s did not respond", update_url.c_str());
                 state.get("install_state")->updateEnum(InstallState::NoResponse);
                 break;
