@@ -19,21 +19,12 @@
 
 #include "task_scheduler.h"
 
-#undef scheduleOnce
-#undef scheduleWithFixedDelay
-#undef scheduleWhenClockSynced
-#undef scheduleWallClock
-#undef await
-
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 
 static uint64_t last_task_id = 0;
 
-thread_local const char *_task_scheduler_file;
-thread_local int _task_scheduler_line;
-
-Task::Task(std::function<void(void)> &&fn, uint64_t task_id, micros_t first_run_delay, micros_t delay, const char *file, int line, bool once) :
+Task::Task(std::function<void(void)> &&fn, uint64_t task_id, micros_t first_run_delay, micros_t delay, const char *file, uint_least32_t line, bool once) :
         fn(std::move(fn)),
         task_id(task_id),
         next_deadline(now_us() + first_run_delay),
@@ -116,7 +107,7 @@ void TaskScheduler::pre_reboot()
 }
 
 COREDUMP_RTC_DATA_ATTR const char *task_fn_file;
-COREDUMP_RTC_DATA_ATTR int task_fn_line;
+COREDUMP_RTC_DATA_ATTR uint_least32_t task_fn_line;
 
 void TaskScheduler::custom_loop()
 {
@@ -198,30 +189,30 @@ void TaskScheduler::custom_loop()
     }
 }
 
-uint64_t TaskScheduler::scheduleOnce(std::function<void(void)> &&fn, millis_t delay_ms)
+uint64_t TaskScheduler::scheduleOnce(std::function<void(void)> &&fn, millis_t delay_ms, const std::source_location &src_location)
 {
     std::lock_guard<std::mutex> lock{this->task_mutex};
     uint64_t task_id = ++last_task_id;
-    tasks.emplace(new Task(std::move(fn), task_id, delay_ms, 0_us, _task_scheduler_file, _task_scheduler_line, true));
+    tasks.emplace(new Task(std::move(fn), task_id, delay_ms, 0_us, src_location.file_name(), src_location.line(), true));
     return task_id;
 }
 
-uint64_t TaskScheduler::scheduleWithFixedDelay(std::function<void(void)> &&fn, millis_t first_delay_ms, millis_t delay_ms)
+uint64_t TaskScheduler::scheduleWithFixedDelay(std::function<void(void)> &&fn, millis_t first_delay_ms, millis_t delay_ms, const std::source_location &src_location)
 {
     std::lock_guard<std::mutex> lock{this->task_mutex};
     uint64_t task_id = ++last_task_id;
-    tasks.emplace(new Task(std::move(fn), task_id, first_delay_ms, delay_ms, _task_scheduler_file, _task_scheduler_line, false));
+    tasks.emplace(new Task(std::move(fn), task_id, first_delay_ms, delay_ms, src_location.file_name(), src_location.line(), false));
     return task_id;
 }
 
-uint64_t TaskScheduler::scheduleWhenClockSynced(std::function<void(void)> &&fn)
+uint64_t TaskScheduler::scheduleWhenClockSynced(std::function<void(void)> &&fn, const std::source_location &src_location)
 {
     // Check if the clock is already synced and avoid the sync check task.
     // Turn the callback into a one-shot task to preserve start-up sequencing
     // and to avoid executing it in the context of the calling task.
     struct timeval tv;
     if (rtc.clock_synced(&tv)) {
-        return scheduleOnce(std::move(fn));
+        return scheduleOnce(std::move(fn), 0_ms, src_location);
     }
 
     // Check once per second if clock is synced,
@@ -233,23 +224,23 @@ uint64_t TaskScheduler::scheduleWhenClockSynced(std::function<void(void)> &&fn)
             this->cancel(this->currentTask->task_id);
             fn();
         }
-    }, 1_s);
+    }, 0_ms, 1_s, src_location);
 }
 
-uint64_t TaskScheduler::scheduleWallClock(std::function<void(void)> &&fn, minutes_t interval_minutes, millis_t execution_delay_ms, bool run_on_first_sync)
+uint64_t TaskScheduler::scheduleWallClock(std::function<void(void)> &&fn, minutes_t interval_minutes, millis_t execution_delay_ms, bool run_on_first_sync, const std::source_location &src_location)
 {
     uint64_t task_id;
     {
         std::lock_guard<std::mutex> lock{this->task_mutex};
         task_id = ++last_task_id | (1ull << 63ull);
-        auto runner_task = std::unique_ptr<Task>(new Task(std::move(fn), task_id, 0_us, execution_delay_ms, _task_scheduler_file, _task_scheduler_line, true));
+        auto runner_task = std::unique_ptr<Task>(new Task(std::move(fn), task_id, 0_us, execution_delay_ms, src_location.file_name(), src_location.line(), true));
 
         wall_clock_tasks.emplace_back(std::move(runner_task), task_id, interval_minutes, run_on_first_sync);
     }
 
     if (!wall_clock_worker_started) {
         wall_clock_worker_started = true;
-        this->scheduleWithFixedDelay([this](){this->wall_clock_worker();}, 0_ms, 1_s); // TODO: measure how long the worker takes in the common case! Then decide oversampling interval.
+        this->scheduleWithFixedDelay([this](){this->wall_clock_worker();}, 0_ms, 1_s /* Don't forward src_location. */); // TODO: measure how long the worker takes in the common case! Then decide oversampling interval.
     }
 
     return task_id;
@@ -366,9 +357,9 @@ TaskScheduler::AwaitResult TaskScheduler::await(uint64_t task_id, millis_t milli
     return TaskScheduler::AwaitResult::Done;
 }
 
-TaskScheduler::AwaitResult TaskScheduler::await(std::function<void(void)> &&fn, millis_t millis_to_wait)
+TaskScheduler::AwaitResult TaskScheduler::await(std::function<void(void)> &&fn, millis_t millis_to_wait, const std::source_location &src_location)
 {
-    return await(scheduleOnce(std::move(fn), 0_ms), millis_to_wait);
+    return await(scheduleOnce(std::move(fn), 0_ms, src_location), millis_to_wait);
 }
 
 void TaskScheduler::wall_clock_worker() {
@@ -407,10 +398,4 @@ void TaskScheduler::wall_clock_worker() {
     }
 
     last_minute = time_struct.tm_min;
-}
-
-TaskScheduler *TaskScheduler::_task_scheduler_context(const char *f, int l) {
-    _task_scheduler_file = f;
-    _task_scheduler_line = l;
-    return this;
 }

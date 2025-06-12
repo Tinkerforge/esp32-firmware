@@ -24,6 +24,7 @@
 #include <queue>
 #include <functional>
 #include <mutex>
+#include <source_location>
 #include <time.h>
 #include <iostream>
 
@@ -37,11 +38,11 @@ struct Task {
     micros_t delay;
     TaskHandle_t awaited_by;
     const char *file;
-    int line;
+    uint_least32_t line;
     bool once;
     bool cancelled;
 
-    Task(std::function<void(void)> &&fn, uint64_t task_id, micros_t first_run_delay, micros_t delay, const char *file, int line, bool once);
+    Task(std::function<void(void)> &&fn, uint64_t task_id, micros_t first_run_delay, micros_t delay, const char *file, uint_least32_t line, bool once);
 };
 
 #define IS_WALL_CLOCK_TASK_ID(task_id) (task_id & (1ull << 63))
@@ -107,22 +108,22 @@ public:
 
     CancelResult cancel(uint64_t task_id);
 
-    uint64_t scheduleOnce(std::function<void(void)> &&fn, millis_t delay_ms = 0_ms);
+    uint64_t scheduleOnce(std::function<void(void)> &&fn, millis_t delay_ms = 0_ms, const std::source_location &src_location = std::source_location::current());
 
     // TODO Remove deprecated function. Marked as deprecated on 2024-10-09.
     [[gnu::deprecated("Use the millis_t overload of this function!")]]
-    inline uint64_t scheduleOnce(std::function<void(void)> &&fn, uint32_t delay_ms) {return this->scheduleOnce(std::move(fn), millis_t{delay_ms});}
+    inline uint64_t scheduleOnce(std::function<void(void)> &&fn, uint32_t delay_ms, const std::source_location &src_location = std::source_location::current()) {return this->scheduleOnce(std::move(fn), millis_t{delay_ms}, src_location);}
 
-    inline uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, millis_t delay_ms) {return this->scheduleWithFixedDelay(std::move(fn), millis_t{0}, delay_ms);}
-    uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, millis_t first_delay_ms, millis_t delay_ms);
+    inline uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, millis_t delay_ms, const std::source_location &src_location = std::source_location::current()) {return this->scheduleWithFixedDelay(std::move(fn), 0_ms, delay_ms, src_location);}
+    uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, millis_t first_delay_ms, millis_t delay_ms, const std::source_location &src_location = std::source_location::current());
 
     // TODO Remove deprecated function. Marked as deprecated on 2024-10-09.
     [[gnu::deprecated("Use the millis_t overload of this function!")]]
-    inline uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, uint32_t first_delay_ms, uint32_t delay_ms) {return this->scheduleWithFixedDelay(std::move(fn), millis_t{first_delay_ms}, millis_t{delay_ms});}
+    inline uint64_t scheduleWithFixedDelay(std::function<void(void)> &&fn, uint32_t first_delay_ms, uint32_t delay_ms, const std::source_location &src_location = std::source_location::current()) {return this->scheduleWithFixedDelay(std::move(fn), millis_t{first_delay_ms}, millis_t{delay_ms}, src_location);}
 
-    uint64_t scheduleWhenClockSynced(std::function<void(void)> &&fn);
+    uint64_t scheduleWhenClockSynced(std::function<void(void)> &&fn, const std::source_location &src_location = std::source_location::current());
 
-    uint64_t scheduleWallClock(std::function<void(void)> &&fn, minutes_t interval_minutes, millis_t execution_delay_ms, bool run_on_first_sync);
+    uint64_t scheduleWallClock(std::function<void(void)> &&fn, minutes_t interval_minutes, millis_t execution_delay_ms, bool run_on_first_sync, const std::source_location &src_location = std::source_location::current());
 
     enum class AwaitResult {
         Done,
@@ -130,9 +131,7 @@ public:
         Error
     };
 
-    AwaitResult await(std::function<void(void)> &&fn, millis_t millis_to_wait = 10_s);
-
-    TaskScheduler *_task_scheduler_context(const char *f, int l);
+    AwaitResult await(std::function<void(void)> &&fn, millis_t millis_to_wait = 10_s, const std::source_location &src_location = std::source_location::current());
 
 private:
     AwaitResult await(uint64_t task_id, millis_t millis_to_wait = 10_s);
@@ -149,9 +148,3 @@ private:
     void wall_clock_worker();
     void run_wall_clock_task(uint64_t task_id);
 };
-
-#define scheduleOnce _task_scheduler_context(__FILE__, __LINE__)->scheduleOnce
-#define scheduleWithFixedDelay _task_scheduler_context(__FILE__, __LINE__)->scheduleWithFixedDelay
-#define scheduleWhenClockSynced _task_scheduler_context(__FILE__, __LINE__)->scheduleWhenClockSynced
-#define scheduleWallClock _task_scheduler_context(__FILE__, __LINE__)->scheduleWallClock
-#define await _task_scheduler_context(__FILE__, __LINE__)->await
