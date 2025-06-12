@@ -150,9 +150,6 @@ void EEBus::register_urls()
     api.addPersistentConfig("eebus/config", &config);
     api.addState("eebus/state", &state);
 
-
-    
-
     api.addCommand(
         "eebus/addPeer",
         &add_peer,
@@ -246,6 +243,7 @@ void EEBus::update_peers_config()
     logger.printfln("Updating peers to config");
 
     for (size_t i= 0; i< config.get("peers")->count(); i++) {
+        // Cleanup invalid peers
         if(config.get("peers")->get(i)->get("ski")->asString().isEmpty() || config.get("peers")->get(i)->get("ski")->asString().length() < 1) {
             config.get("peers")->remove(i);
         }
