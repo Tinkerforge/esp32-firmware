@@ -47,7 +47,7 @@ struct SpineHeader {
     uint16_t destination_feature{};
     uint64_t msg_counter{};
     uint64_t msg_counter_received{};
-    CoolString cmd_classifier;
+    CmdClassifierType cmd_classifier;
     bool wants_response{};
 
     void from_json(String json);
