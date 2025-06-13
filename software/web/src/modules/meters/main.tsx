@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { METERS_SLOTS } from "../../build";
+import { METERS_SLOTS } from "../../options";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { __, translate_unchecked } from "../../ts/translation";

@@ -33,8 +33,6 @@
     #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
-#define METERS_MODBUS_TCP_MAX_CUSTOM_REGISTERS 36
-
 class MetersModbusTCP final : public IModule, public IMeterGenerator
 {
 public:

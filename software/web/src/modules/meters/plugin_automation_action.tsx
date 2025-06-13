@@ -18,13 +18,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
+import { METERS_SLOTS } from "../../options";
 import * as API from "../../ts/api";
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationAction, InitResult } from "../automation/types";
 import { AutomationActionID } from "../automation/automation_action_id.enum";
 import { FormRow } from "../../ts/components/form_row";
-import { METERS_SLOTS } from "../../build";
 import { InputSelect } from "../../ts/components/input_select";
 
 export type MeterAutomationAction = [

@@ -20,7 +20,7 @@
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
-import { METERS_SLOTS } from "../../build";
+import { METERS_SLOTS } from "../../options";
 
 import { MeterClassID } from "../meters/meter_class_id.enum";
 import { MeterLocation } from "../meters/meter_location.enum";

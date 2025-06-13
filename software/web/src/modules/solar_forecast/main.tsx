@@ -17,6 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
+import { SOLAR_FORECAST_PLANES } from "../../options";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { createRef, h, Fragment, Component, RefObject } from "preact";
@@ -36,8 +37,6 @@ import { UplotLoader } from "../../ts/components/uplot_loader";
 import { UplotData, UplotWrapperB } from "../../ts/components/uplot_wrapper_2nd";
 import { InputText } from "../../ts/components/input_text";
 import { StatusSection } from "../../ts/components/status_section";
-
-const SOLAR_FORECAST_PLANES = 6;
 
 function minus1_to_nan(val: number) {
     return val == -1 ? NaN : val;

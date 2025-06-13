@@ -19,6 +19,7 @@ src/modules/*/*.enum.cpp
 src/modules.cpp
 src/build.h
 src/build.cpp
+src/options.h
 src/main_available.h
 src/main_available_end.h
 src/main_dependencies.h
@@ -28,7 +29,7 @@ web/**/*.digest
 web/node_modules/
 web/build/
 web/src/app.tsx
-web/src/build.ts
+web/src/options.ts
 web/src/main.tsx
 web/src/main.scss
 web/src/index.html

@@ -28,8 +28,6 @@
 #include "automation_action_id.enum.h"
 #include "automation_backend.h"
 
-constexpr size_t MAX_AUTOMATION_RULES = 14;
-
 class Automation : public IModule, public IAutomationBackend
 {
 public:

@@ -30,11 +30,6 @@
 #include "meter_value_id.h"
 #include "tools.h"
 
-// string_length_visitor assumes that a float is max. 20 byte long
-// We need n+1 bytes extra for n meter values for '[', ',' and ']'
-// The MQTT send buffer is 2K on a WARP1 -> 2048/21 ~ 97,5.
-#define METERS_MAX_VALUES_PER_METER 96
-
 #define METERS_MAX_FILTER_VALUES 7
 
 #define INDEX_CACHE_POWER          0

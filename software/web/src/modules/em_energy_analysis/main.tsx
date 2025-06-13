@@ -21,7 +21,7 @@
 
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
-import { METERS_SLOTS } from "../../build";
+import { METERS_SLOTS } from "../../options";
 import { h, createRef, Fragment, Component, RefObject } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";

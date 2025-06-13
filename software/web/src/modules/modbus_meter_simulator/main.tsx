@@ -20,7 +20,7 @@
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
-import { METERS_SLOTS } from "../../build";
+import { METERS_SLOTS } from "../../options";
 import { h, Fragment } from "preact";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm      } from "../../ts/components/config_form";

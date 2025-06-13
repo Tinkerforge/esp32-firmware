@@ -18,6 +18,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
+import { AUTOMATION_MAX_RULES } from "../../options";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { h, Fragment, ComponentChild } from "preact";
@@ -39,8 +40,6 @@ import { InputNumber } from "ts/components/input_number";
 export function AutomationNavbar() {
     return <NavbarItem name="automation" module="automation" title={__("automation.navbar.automation")} symbol={<Tool />} />;
 }
-
-const MAX_RULES = 14;
 
 type AutomationState = {
     displayed_trigger: number;
@@ -327,9 +326,9 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
                         __("automation.content.action"),
                         __("automation.content.last_run")]}
                     rows={this.assembleTable()}
-                    addEnabled={this.state.tasks.length < MAX_RULES}
+                    addEnabled={this.state.tasks.length < AUTOMATION_MAX_RULES}
                     addTitle={__("automation.content.add_rule_title")}
-                    addMessage={__("automation.content.add_rule_message")(this.state.tasks.length, MAX_RULES)}
+                    addMessage={__("automation.content.add_rule_message")(this.state.tasks.length, AUTOMATION_MAX_RULES)}
                     onAddShow={async () => {
                         this.setState({
                             displayed_trigger: AutomationTriggerID.None,

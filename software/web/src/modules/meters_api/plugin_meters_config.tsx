@@ -17,6 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
+import { METERS_MAX_VALUES_PER_METER } from "../../options";
 import { h, Fragment, Component, ComponentChildren } from 'preact'
 import { __, translate_unchecked } from "../../ts/translation";
 import * as util from "../../ts/util";
@@ -31,8 +32,6 @@ import { InputText } from "../../ts/components/input_text";
 import { InputSelect } from '../../ts/components/input_select';
 import { SwitchableInputSelect } from "../../ts/components/switchable_input_select";
 import { PRESET_VALUE_IDS, PRESET_DEFAULT_LOCATIONS } from "./presets";
-
-const MAX_VALUES = 96;
 
 export type APIMetersConfig = [
     MeterClassID.API,
@@ -217,9 +216,9 @@ class MeterValueIDTable extends Component<MeterValueIDTableProps, MeterValueIDTa
                 return row
             })}
             columnNames={[""]}
-            addEnabled={this.props.config[1].value_ids.length < MAX_VALUES}
+            addEnabled={this.props.config[1].value_ids.length < METERS_MAX_VALUES_PER_METER}
             addTitle={__("meters_api.content.add_value_title")}
-            addMessage={__("meters_api.content.add_value_message")(this.props.config[1].value_ids.length, MAX_VALUES)}
+            addMessage={__("meters_api.content.add_value_message")(this.props.config[1].value_ids.length, METERS_MAX_VALUES_PER_METER)}
             onAddShow={async () => {
                 this.setState({value_id: null});
             }}
