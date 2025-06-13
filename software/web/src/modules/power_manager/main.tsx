@@ -37,7 +37,7 @@ import { MeterValueID    } from "../meters/meter_value_id";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { BatteryMode } from "./battery_mode.enum";
 import { StatusSection } from "../../ts/components/status_section";
-import { CheckCircle, Circle, Settings, Sun } from "react-feather";
+import { CheckCircle, Circle, Sun } from "react-feather";
 import { get_allowed_charge_modes } from "modules/charge_manager/main";
 
 const METER_SLOT_BATTERY_NO_BATTERY = 255;

@@ -18,15 +18,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
+import * as API from "../../ts/api";
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationAction, InitResult } from "../automation/types";
 import { AutomationActionID } from "../automation/automation_action_id.enum";
-import { ComponentChildren } from "preact";
 import { FormRow } from "../../ts/components/form_row";
 import { METERS_SLOTS } from "../../build";
 import { InputSelect } from "../../ts/components/input_select";
-import * as API from "../../ts/api";
 
 export type MeterAutomationAction = [
     AutomationActionID.MeterReset,
