@@ -24,6 +24,7 @@ import { __, translate_unchecked } from "../../ts/translation";
 import { h, Fragment, ComponentChild } from "preact";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { FormRow } from "../../ts/components/form_row";
+import { FormSeparator } from "../../ts/components/form_separator";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputSelect } from "../../ts/components/input_select";
 import { ConfigComponent } from "../../ts/components/config_component";
@@ -516,14 +517,8 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                             ]}/>
                     </FormRow>
 
-                    <FormRow label={__("batteries.content.forbid_discharge_during_fast_charge")}>
-                        <Switch desc={__("batteries.content.forbid_discharge_during_fast_charge_desc")}
-                            checked={this.state.forbid_discharge_during_fast_charge}
-                            onClick={this.toggle("forbid_discharge_during_fast_charge")}
-                        />
-                    </FormRow>
-
-                    <FormRow label={__("batteries.content.managed_batteries")}>
+                    <FormSeparator heading={__("batteries.content.managed_batteries")} />
+                    <div class="form-group">
                         <Table
                             columnNames={[__("batteries.content.table_battery_display_name"), __("batteries.content.table_battery_class")]}
                             rows={active_battery_slots.map((battery_slot_str) => {
@@ -696,28 +691,37 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                             } : undefined}
                             addExportBasename={__("batteries.content.battery_export_basename") + (this.state.add_battery_config[0] != BatteryClassID.None && config_plugins[this.state.add_battery_config[0]].export_basename_suffix ? config_plugins[this.state.add_battery_config[0]].export_basename_suffix() : "")}
                             />
-                    </FormRow>
+                    </div>
 
-                    <FormRow label={__("batteries.content.rules_permit_grid_charge")}>
+                    <FormSeparator heading={__("batteries.content.rules_permit_grid_charge")} />
+                    <div class="form-group">
                         <RulesEditor rules={this.state.rules_permit_grid_charge} on_rules={(rules: RuleConfig[]) => {
                             this.setState({rules_permit_grid_charge: rules});
                             this.setDirty(true);
                         }} />
-                    </FormRow>
+                    </div>
 
-                    <FormRow label={__("batteries.content.rules_forbid_discharge")}>
+                    <FormSeparator heading={__("batteries.content.rules_forbid_discharge")} />
+                    <div class="form-group">
+                        <FormRow label={__("batteries.content.forbid_discharge_during_fast_charge")}>
+                            <Switch desc={__("batteries.content.forbid_discharge_during_fast_charge_desc")}
+                                checked={this.state.forbid_discharge_during_fast_charge}
+                                onClick={this.toggle("forbid_discharge_during_fast_charge")}
+                            />
+                        </FormRow>
                         <RulesEditor rules={this.state.rules_forbid_discharge} on_rules={(rules: RuleConfig[]) => {
                             this.setState({rules_forbid_discharge: rules});
                             this.setDirty(true);
                         }} />
-                    </FormRow>
+                    </div>
 
-                    <FormRow label={__("batteries.content.rules_forbid_charge")}>
+                    <FormSeparator heading={__("batteries.content.rules_forbid_charge")} />
+                    <div class="form-group">
                         <RulesEditor rules={this.state.rules_forbid_charge} on_rules={(rules: RuleConfig[]) => {
                             this.setState({rules_forbid_charge: rules});
                             this.setDirty(true);
                         }} />
-                    </FormRow>
+                    </div>
                 </ConfigForm>
             </SubPage>
         );
