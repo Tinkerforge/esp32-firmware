@@ -76,6 +76,7 @@ export function InputNumber(props: InputNumberProps) {
                     }}
                 inputMode="numeric"
                 {...props}
+                value={util.hasValue(props.value) ? props.value : ""}
                 readonly={props.onValue === undefined || props.readonly}
         />
         {props.unit || (props.onValue && !props.readonly) ? <div class="input-group-append">

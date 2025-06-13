@@ -130,7 +130,7 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
                     sendInFlight();
                }}
                onFocusOut={'onValue' in props ? () => sendInFlight() : undefined}
-               value={value}
+               value={util.hasValue(value) ? value : ""}
                readonly={!('onValue' in props) || props.readonly}
                disabled={props.disabled}
                inputMode="decimal"
