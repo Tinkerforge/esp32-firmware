@@ -62,7 +62,7 @@ public:
     void register_urls() override;
     void register_events() override;
 
-    ConfigRoot &get_ping_state();
+    Config &get_ping_state();
     uint32_t get_ping_start();
 
 private:
@@ -73,17 +73,17 @@ private:
     void close_all_remote_connections();
     void run_management();
     void handle_response_chunk(const AsyncHTTPSClientEvent *event);
-    void run_request_with_next_stage(const char *url, esp_http_client_method_t method, const char *body, int body_size, ConfigRoot config, std::function<void(ConfigRoot config)> &&next_stage);
-    void get_login_salt(ConfigRoot config);
-    void parse_login_salt(ConfigRoot config);
-    void get_secret(ConfigRoot config);
-    void parse_secret(ConfigRoot config);
-    void parse_registration(ConfigRoot config, std::queue<WgKey> keys, CoolString public_key);
-    void parse_add_user(ConfigRoot cfg, std::queue<WgKey> key_cache, CoolString pub_key, CoolString email, uint32_t next_user_id);
-    void login(ConfigRoot config, CoolString &login_key);
+    void run_request_with_next_stage(const char *url, esp_http_client_method_t method, const char *body, int body_size, const Config &config, std::function<void(const Config &config)> &&next_stage);
+    void get_login_salt(const Config &config);
+    void parse_login_salt();
+    void get_secret(const Config &config);
+    void parse_secret();
+    void parse_registration(const Config &config, std::queue<WgKey> keys, const String &public_key);
+    void parse_add_user(std::queue<WgKey> key_cache, const String &pub_key, const String &email, uint32_t next_user_id);
+    void login(const Config &config, const String &login_key);
     void request_cleanup();
     void cleanup_after();
-    bool user_already_registered(const CoolString &email);
+    bool user_already_registered(const String &email);
     void setup_inner_socket();
     int start_ping();
     int stop_ping();
@@ -109,9 +109,9 @@ private:
 
     ConfigRoot config;
     ConfigRoot connection_state;
-    ConfigRoot connection_state_prototype;
+    Config     connection_state_prototype;
     ConfigRoot registration_state;
-    ConfigRoot users_config_prototype;
+    Config     users_config_prototype;
     ConfigRoot registration_config;
     ConfigRoot ping_state;
 };
