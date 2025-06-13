@@ -118,18 +118,28 @@ void Wireguard::start_wireguard()
 
     logger.printfln("Connecting to WireGuard peer %s:%hu", remote_host.c_str(), remote_port);
 
-    wg.begin({config.get("internal_ip"           )->asUnsafeCStr()},
-             {config.get("internal_subnet"       )->asUnsafeCStr()},
-              config.get("local_port"            )->asUint(),
-             {config.get("internal_gateway"      )->asUnsafeCStr()},
-              private_key.c_str(),
-              remote_host.c_str(),
-              config.get("remote_public_key"     )->asUnsafeCStr(),
-              remote_port,
-             {config.get("allowed_ip"            )->asUnsafeCStr()},
-              config.get("allowed_subnet"        )->asUnsafeCStr(),
-              config.get("make_default_interface")->asBool(),
-              psk.isEmpty() ? nullptr : psk.c_str());
+    bool success = wg.begin({config.get("internal_ip"           )->asUnsafeCStr()},
+                            {config.get("internal_subnet"       )->asUnsafeCStr()},
+                             config.get("local_port"            )->asUint(),
+                            {config.get("internal_gateway"      )->asUnsafeCStr()},
+                             private_key.c_str(),
+                             remote_host.c_str(),
+                             config.get("remote_public_key"     )->asUnsafeCStr(),
+                             remote_port,
+                            {config.get("allowed_ip"            )->asUnsafeCStr()},
+                             config.get("allowed_subnet"        )->asUnsafeCStr(),
+                             config.get("make_default_interface")->asBool(),
+                             psk.isEmpty() ? nullptr : psk.c_str());
+
+    if (!success) {
+        logger.printfln("Failed to connect to WireGuard peer. Likely unresolved host.");
+
+        task_scheduler.scheduleOnce([this]() {
+            this->start_wireguard();
+        }, 1_min);
+
+        return;
+    }
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         bool up = wg.is_peer_up(nullptr, nullptr);
