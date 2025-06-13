@@ -134,7 +134,7 @@ bool Ocpp::start_client()
         return cp->start(config_in_use.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), nullptr, 0, BasicAuthPassType::NONE);
     }
 
-    String pass = config_in_use.get("pass")->asString();
+    const String &pass = config_in_use.get("pass")->asString();
     return cp->start(config_in_use.get("url")->asEphemeralCStr(), config_in_use.get("identity")->asEphemeralCStr(), (const uint8_t *)pass.c_str(), pass.length(), BasicAuthPassType::TRY_BOTH);
 }
 

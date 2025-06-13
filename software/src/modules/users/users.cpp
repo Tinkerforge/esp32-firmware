@@ -207,9 +207,9 @@ void Users::pre_setup()
         auto id = modify.get("id")->asUint();
         auto roles = modify.get("roles")->asUint();
         auto current = modify.get("current")->asUint();
-        auto display_name = modify.get("display_name")->asString();
-        auto username = modify.get("username")->asString();
-        auto digest_hash = modify.get("digest_hash")->asString();
+        const String &display_name = modify.get("display_name")->asString();
+        const String &username = modify.get("username")->asString();
+        const String &digest_hash = modify.get("digest_hash")->asString();
 
         bool id_passed = id < 256 ;
         bool roles_passed = roles != 0;

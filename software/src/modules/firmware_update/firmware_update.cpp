@@ -218,7 +218,7 @@ void FirmwareUpdate::pre_setup()
         {"update_url", Config::Str(BUILD_FIRMWARE_UPDATE_URL, 0, 128)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
     }), [this](Config &update, ConfigSource source) -> String {
-        String update_url = update.get("update_url")->asString();
+        const String &update_url = update.get("update_url")->asString();
 
         if (update_url.length() > 0 && !update_url.startsWith("https://"))
             return "HTTPS required for update URL";
@@ -596,7 +596,7 @@ void FirmwareUpdate::register_urls()
         state.get("install_state")->updateEnum(InstallState::NotSupported);
         state.get("install_progress")->updateUint(0);
 #else
-        String version_str = install_firmware_config.get("version")->asString();
+        const String &version_str = install_firmware_config.get("version")->asString();
         SemanticVersion version;
 
         if (!version.from_string(version_str.c_str())) {
