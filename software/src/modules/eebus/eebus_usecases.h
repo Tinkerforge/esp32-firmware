@@ -30,6 +30,15 @@
 
 class EEBusUseCases; // Forward declaration of EEBusUseCases
 
+enum class UseCaseType : uint8_t {
+    NodeManagement,
+    ChargingSummary,
+    LimitationOfActivePowerConsumption,
+    CoordinatedEvCharging,
+    EvCommissioningAndConfiguration,
+    LimitationOfPowerProduction
+};
+
 /**
  * The basic Framework of a EEBUS UseCase.
  */
@@ -45,7 +54,16 @@ public:
      * @return true if a response was generated and needs to be sent, false if no response is needed.
      */
     virtual bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) = 0;
+
+    /**
+     * Returns the usecase information for this usecase.
+     * @return The UseCaseInformationDataType that contains the information about the usecase.
+     */
     virtual UseCaseInformationDataType get_usecase_information() = 0;
+
+    virtual UseCaseType get_usecase_type() const = 0;
+private:
+    uint8_t feature_address = 0; // The feature address of the usecase. This is used to identify the usecase in the NodeManagementUseCaseDataType.
 };
 
 /**
@@ -56,11 +74,14 @@ class NodeManagementUsecase final : public UseCase
 public:
     NodeManagementUsecase() = default;
 
+
     UseCaseInformationDataType get_usecase_information() override;
 
     bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) override;
 
     void set_usecaseManager(EEBusUseCases *usecases);
+
+    UseCaseType get_usecase_type() const override {return UseCaseType::NodeManagement;}
 
 private:
     EEBusUseCases *usecase_interface{};
@@ -73,12 +94,19 @@ class ChargingSummaryUsecase final : public UseCase
 {
 public:
     ChargingSummaryUsecase() = default;
+
+    /**
+    * Builds and returns the UseCaseInformationDataType as defined in EEBus UC TS - EV Charging Summary V1.0.1. 3.1.2.
+    * @return
+    */
     UseCaseInformationDataType get_usecase_information() override;
 
     bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) override;
 
+    UseCaseType get_usecase_type() const override {return UseCaseType::ChargingSummary;}
 private:
     UseCaseInformationDataType use_case_information;
+
 };
 
 /**
@@ -98,7 +126,7 @@ public:
      */
     bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response);
 
-    std::vector<UseCase *> usecases;
+    std::vector<UseCase *> usecase_list{};
     uint8_t feature_address_node_management = 0;
     NodeManagementUsecase node_management;
 
