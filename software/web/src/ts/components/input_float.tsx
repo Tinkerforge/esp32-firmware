@@ -76,14 +76,18 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
         props.onValue(target)
     } : (target: number) => {};
 
-    // Firefox does not localize numbers with a fractional part correctly.
-    // OTOH Webkit based browsers (correctly) expect setting the value to a non-localized number.
-    // Unfortunately, setting the value to a localized number (i.e. with , instead of . for German)
-    // does not raise an exception, instead only a warning on the console is shown.
-    // So to make everyone happy, we use user agent detection.
-    let propValue = fractional_numbers_require_localization
-        ? util.toLocaleFixed(props.value / pow10, props.digits)
-        : (props.value / pow10).toFixed(props.digits);
+    let propValue = null;
+
+    if (util.hasValue(props.value)) {
+        // Firefox does not localize numbers with a fractional part correctly.
+        // OTOH Webkit based browsers (correctly) expect setting the value to a non-localized number.
+        // Unfortunately, setting the value to a localized number (i.e. with , instead of . for German)
+        // does not raise an exception, instead only a warning on the console is shown.
+        // So to make everyone happy, we use user agent detection.
+        propValue = fractional_numbers_require_localization
+            ? util.toLocaleFixed(props.value / pow10, props.digits)
+            : (props.value / pow10).toFixed(props.digits);
+    }
 
     // If a user is currently typing, we have to preserve the input
     // (even if it does currently not confirm to the number format).
