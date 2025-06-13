@@ -140,7 +140,14 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                         placeholder={__("select")}
                                         items={cond_items}
                                         onValue={(v) => {
-                                            this.setState({edit_rule_config: {...this.state.edit_rule_config, soc_cond: parseInt(v)}});
+                                            let soc_cond = parseInt(v);
+                                            let soc_th = this.state.edit_rule_config.soc_th;
+
+                                            if (soc_cond == RuleCondition.Ignore) {
+                                                soc_th = rule_config.soc_th;
+                                            }
+
+                                            this.setState({edit_rule_config: {...this.state.edit_rule_config, soc_cond: soc_cond, soc_th: soc_th}});
                                         }}
                                         value={this.state.edit_rule_config.soc_cond.toString()} />
                                 </InputNumber>
@@ -162,7 +169,14 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                         placeholder={__("select")}
                                         items={cond_items}
                                         onValue={(v) => {
-                                            this.setState({edit_rule_config: {...this.state.edit_rule_config, price_cond: parseInt(v)}});
+                                            let price_cond = parseInt(v);
+                                            let price_th = this.state.edit_rule_config.price_th;
+
+                                            if (price_cond == RuleCondition.Ignore) {
+                                                price_th = rule_config.price_th;
+                                            }
+
+                                            this.setState({edit_rule_config: {...this.state.edit_rule_config, price_cond: price_cond, price_th: price_th}});
                                         }}
                                         value={this.state.edit_rule_config.price_cond.toString()} />
                                 </InputFloat>
@@ -183,7 +197,14 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                         placeholder={__("select")}
                                         items={cond_items}
                                         onValue={(v) => {
-                                            this.setState({edit_rule_config: {...this.state.edit_rule_config, forecast_cond: parseInt(v)}});
+                                            let forecast_cond = parseInt(v);
+                                            let forecast_th = this.state.edit_rule_config.forecast_th;
+
+                                            if (forecast_cond == RuleCondition.Ignore) {
+                                                forecast_th = rule_config.forecast_th;
+                                            }
+
+                                            this.setState({edit_rule_config: {...this.state.edit_rule_config, forecast_cond: forecast_cond, forecast_th: forecast_th}});
                                         }}
                                         value={this.state.edit_rule_config.forecast_cond.toString()} />
                                 </InputNumber>
@@ -256,7 +277,14 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                 placeholder={__("select")}
                                 items={cond_items}
                                 onValue={(v) => {
-                                    this.setState({add_rule_config: {...this.state.add_rule_config, soc_cond: parseInt(v)}});
+                                    let soc_cond = parseInt(v);
+                                    let soc_th = this.state.add_rule_config.soc_th;
+
+                                    if (soc_cond == RuleCondition.Ignore) {
+                                        soc_th = null;
+                                    }
+
+                                    this.setState({add_rule_config: {...this.state.add_rule_config, soc_cond: soc_cond, soc_th: soc_th}});
                                 }}
                                 value={this.state.add_rule_config.soc_cond.toString()} />
                         </InputNumber>
@@ -278,7 +306,14 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                 placeholder={__("select")}
                                 items={cond_items}
                                 onValue={(v) => {
-                                    this.setState({add_rule_config: {...this.state.add_rule_config, price_cond: parseInt(v)}});
+                                    let price_cond = parseInt(v);
+                                    let price_th = this.state.add_rule_config.price_th;
+
+                                    if (price_cond == RuleCondition.Ignore) {
+                                        price_th = null;
+                                    }
+
+                                    this.setState({add_rule_config: {...this.state.add_rule_config, price_cond: price_cond, price_th: price_th}});
                                 }}
                                 value={this.state.add_rule_config.price_cond.toString()} />
                         </InputFloat>
@@ -299,7 +334,14 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                 placeholder={__("select")}
                                 items={cond_items}
                                 onValue={(v) => {
-                                    this.setState({add_rule_config: {...this.state.add_rule_config, forecast_cond: parseInt(v)}});
+                                    let forecast_cond = parseInt(v);
+                                    let forecast_th = this.state.add_rule_config.forecast_th;
+
+                                    if (forecast_cond == RuleCondition.Ignore) {
+                                        forecast_th = null;
+                                    }
+
+                                    this.setState({add_rule_config: {...this.state.add_rule_config, forecast_cond: forecast_cond, forecast_th: forecast_th}});
                                 }}
                                 value={this.state.add_rule_config.forecast_cond.toString()} />
                         </InputNumber>
