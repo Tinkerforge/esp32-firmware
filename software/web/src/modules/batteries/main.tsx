@@ -136,7 +136,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                         this.setState({edit_rule_config: {...this.state.edit_rule_config, soc_th: v}});
                                     }}>
                                     <InputSelect
-                                        style="border-radius-right: 0"
+                                        style="border-top-right-radius: 0; border-bottom-right-radius: 0;"
                                         placeholder={__("select")}
                                         items={cond_items}
                                         onValue={(v) => {
@@ -158,7 +158,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                         this.setState({edit_rule_config: {...this.state.edit_rule_config, price_th: v}});
                                     }}>
                                     <InputSelect
-                                        style="border-radius-right: 0"
+                                        style="border-top-right-radius: 0; border-bottom-right-radius: 0;"
                                         placeholder={__("select")}
                                         items={cond_items}
                                         onValue={(v) => {
@@ -179,7 +179,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                         this.setState({edit_rule_config: {...this.state.edit_rule_config, forecast_th: v}});
                                     }}>
                                     <InputSelect
-                                        style="border-radius-right: 0"
+                                        style="border-top-right-radius: 0; border-bottom-right-radius: 0;"
                                         placeholder={__("select")}
                                         items={cond_items}
                                         onValue={(v) => {
@@ -252,7 +252,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                 this.setState({add_rule_config: {...this.state.add_rule_config, soc_th: v}});
                             }}>
                             <InputSelect
-                                style="border-radius-right: 0"
+                                style="border-top-right-radius: 0; border-bottom-right-radius: 0;"
                                 placeholder={__("select")}
                                 items={cond_items}
                                 onValue={(v) => {
@@ -274,7 +274,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                 this.setState({add_rule_config: {...this.state.add_rule_config, price_th: v}});
                             }}>
                             <InputSelect
-                                style="border-radius-right: 0"
+                                style="border-top-right-radius: 0; border-bottom-right-radius: 0;"
                                 placeholder={__("select")}
                                 items={cond_items}
                                 onValue={(v) => {
@@ -295,7 +295,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                 this.setState({add_rule_config: {...this.state.add_rule_config, forecast_th: v}});
                             }}>
                             <InputSelect
-                                style="border-radius-right: 0"
+                                style="border-top-right-radius: 0; border-bottom-right-radius: 0;"
                                 placeholder={__("select")}
                                 items={cond_items}
                                 onValue={(v) => {
