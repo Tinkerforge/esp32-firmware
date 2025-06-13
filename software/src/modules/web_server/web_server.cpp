@@ -189,7 +189,7 @@ static esp_err_t low_level_upload_handler(httpd_req_t *req)
     }
 
     if (req->content_len == 0) {
-        if (request.header("Content-Length") == "") {
+        if (request.header("Content-Length").isEmpty()) {
             // Probably a chunked encoding. Not supported.
             if (handler->callbackInMainThread) {
                 task_scheduler.await([handler, request](){handler->uploadErrorCallback(request, EBADMSG);});

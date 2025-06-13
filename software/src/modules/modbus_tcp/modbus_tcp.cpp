@@ -571,7 +571,7 @@ TFModbusTCPExceptionCode ModbusTCP::setWarpCoils(uint16_t start_address, uint16_
             case 1000: REQUIRE(evse); evse_common.set_modbus_enabled(coil); break;
             case 1001: REQUIRE(evse); {
                     String err = api.callCommand(coil ? "evse/start_charging" : "evse/stop_charging");
-                    if (err != "") {
+                    if (!err.isEmpty()) {
                         logger.printfln("Failed to %s charging: %s", coil ? "start" : "stop", err.c_str());
                     }
                 } break;
@@ -580,7 +580,7 @@ TFModbusTCPExceptionCode ModbusTCP::setWarpCoils(uint16_t start_address, uint16_
                     String err = api.callCommand("evse/gp_output_update", Config::ConfUpdateObject{{
                         {"gp_output", coil ? 1 : 0}
                     }});
-                    if (err != "") {
+                    if (!err.isEmpty()) {
                         logger.printfln("Failed to update GP output: %s", err.c_str());
                     }
                 } break;
@@ -686,7 +686,7 @@ TFModbusTCPExceptionCode ModbusTCP::setWarpHoldingRegisters(uint16_t start_addre
             case 2000: REQUIRE(meter); {
                     if (val.u == 0x3E12E5E7) {
                         String err = api.callCommand("meter/reset");
-                        if (err != "") {
+                        if (!err.isEmpty()) {
                             logger.printfln("Failed to reset energy meter: %s", err.c_str());
                         }
                     }
@@ -696,7 +696,7 @@ TFModbusTCPExceptionCode ModbusTCP::setWarpHoldingRegisters(uint16_t start_addre
                         String err = api.callCommand("power_manager/external_control_update", Config::ConfUpdateObject{{
                             {"phases_wanted", val.u}
                         }});
-                        if (err != "") {
+                        if (!err.isEmpty()) {
                             logger.printfln("Failed to switch phases: %s", err.c_str());
                         }
                     }
@@ -746,7 +746,7 @@ TFModbusTCPExceptionCode ModbusTCP::setWarpHoldingRegisters(uint16_t start_addre
                             {"tag_type", tag_type},
                             {"tag_id", CoolString{buf}}
                         }});
-                    if (err != "") {
+                    if (!err.isEmpty()) {
                         logger.printfln("Failed to inject tag: %s", err.c_str());
                     }
                     memset(cache->nfc_tag_injection_buffer, 0, sizeof(cache->nfc_tag_injection_buffer));
@@ -784,7 +784,7 @@ TFModbusTCPExceptionCode ModbusTCP::setKebaHoldingRegisters(uint16_t start_addre
                     String err = api.callCommand("charge_limits/override_energy", Config::ConfUpdateObject{{
                         {"energy_wh", (uint32_t)(val * 10)}
                     }});
-                    if (err != "")  {
+                    if (!err.isEmpty())  {
                         logger.printfln("Failed to set energy limit: %s", err.c_str());
                     }
                 }
@@ -801,7 +801,7 @@ TFModbusTCPExceptionCode ModbusTCP::setKebaHoldingRegisters(uint16_t start_addre
                         String err = api.callCommand("power_manager/external_control_update", Config::ConfUpdateObject{{
                             {"phases_wanted", val == 1 ? 3 : 1}
                         }});
-                        if (err != "") {
+                        if (!err.isEmpty()) {
                             logger.printfln("Failed to switch phases: %s", err.c_str());
                         }
                     }

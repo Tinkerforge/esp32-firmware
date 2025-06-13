@@ -132,7 +132,7 @@ struct default_validator {
         size_t i = 0;
         for (const Config &elem : *val) {
             String err = Config::apply_visitor(default_validator{}, elem.value);
-            if (err != "")
+            if (!err.isEmpty())
                 return String("[") + i + "] " + err;
             ++i;
         }
@@ -145,7 +145,7 @@ struct default_validator {
         for (size_t i = 0; i < x.getSlot()->schema->length; ++i) {
             String err = Config::apply_visitor(default_validator{}, x.getSlot()->values[i].value);
 
-            if (err != "")
+            if (!err.isEmpty())
                 return String("[\"") + x.getSlot()->schema->keys[i].val + "\"] " + err;
         }
 
@@ -660,7 +660,7 @@ struct from_json {
         for (size_t i = 0; i < arr_size; ++i) {
             // Must always call getVal() because a nested array might grow and trigger a slot array move that would invalidate any kept reference on the outer array.
             auto res = Config::apply_visitor(from_json{arr[i], force_same_keys, permit_null_updates, false}, (*x.getVal())[i].value);
-            if (res.message != "")
+            if (!res.message.isEmpty())
                 return {String("[") + i + "] " + res.message, false};
             (*x.getVal())[i].set_updated(res.changed ? 0xFF : 0);
             changed |= res.changed;
@@ -684,7 +684,7 @@ struct from_json {
             // Only allow this if the omitted key is not the confirm key.
             if (!json_node.is<JsonObject>() && is_root && size == 1 && Config::ConfirmKey() != schema->keys[0].val) {
                 auto res =  Config::apply_visitor(from_json{json_node, force_same_keys, permit_null_updates, false}, x.getSlot()->values[0].value);
-                if (res.message != "")
+                if (!res.message.isEmpty())
                     return {String("(inferred) [\"") + schema->keys[0].val + "\"] " + res.message + "\n", false};
                 else {
                     x.getSlot()->values[0].set_updated(res.changed ? 0xFF : 0);
@@ -721,7 +721,7 @@ struct from_json {
             auto res = Config::apply_visitor(from_json{obj[key], force_same_keys, permit_null_updates, false}, slot->values[i].value);
             if (obj.size() > 0)
                 obj.remove(key);
-            if (res.message != "") {
+            if (!res.message.isEmpty()) {
                 if (return_str.length() < 1000)
                     return_str += String("[\"") + key + "\"] " + res.message + "\n";
                 else
@@ -788,7 +788,7 @@ struct from_json {
 
         // We can't just return res because we could have changed the tag above.
         auto res = Config::apply_visitor(from_json{arr[1], force_same_keys, permit_null_updates, false}, x.getVal()->value);
-        if (res.message != "")
+        if (!res.message.isEmpty())
             return res;
 
         x.getVal()->set_updated(res.changed ? 0xFF : 0);
@@ -951,7 +951,7 @@ struct from_update {
         for (size_t i = 0; i < arr_size; ++i) {
             // Must always call getVal() because a nested array might grow and trigger a slot array move that would invalidate any kept reference on the outer array.
             auto res = Config::apply_visitor(from_update{&arr->elements[i]}, (*x.getVal())[i].value);
-            if (res.message != "")
+            if (!res.message.isEmpty())
                 return {String("[") + i + "] " + res.message, false};
 
             (*x.getVal())[i].set_updated(res.changed ? 0xFF : 0);
@@ -995,7 +995,7 @@ struct from_update {
                 return {String("Key ") + key + String("not found in ConfUpdate object"), false};
 
             auto res = Config::apply_visitor(from_update{&obj_elements[obj_idx].second}, value.value);
-            if (res.message != "")
+            if (!res.message.isEmpty())
                 return {String("[\"") + key + "\"] " + res.message, false};
 
             changed |= res.changed;
@@ -1023,7 +1023,7 @@ struct from_update {
 
         // We can't just return res because we could have changed the tag above.
         auto res = Config::apply_visitor(from_update{&un->value}, x.getVal()->value);
-        if (res.message != "")
+        if (!res.message.isEmpty())
             return {res.message, false};
 
         return {res.message, changed || res.changed};
