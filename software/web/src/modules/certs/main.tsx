@@ -49,7 +49,7 @@ export class Certs extends Component<{}, State> {
         return (
             <SubPage name="certs">
                 <PageHeader title={__("certs.content.certs")}/>
-                    <div class="mb-3">
+                    <div class="form-group">
                         <Table
                             tableTill="md"
                             columnNames={[]}

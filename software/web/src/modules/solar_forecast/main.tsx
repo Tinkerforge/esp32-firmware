@@ -394,7 +394,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                     </FormRow>
 
                     <FormSeparator heading={__("solar_forecast.content.planes")} />
-                    <div class="mb-3">
+                    <div class="form-group">
                     <Table columnNames={[__("solar_forecast.content.table_name"), __("solar_forecast.content.table_latitude"), __("solar_forecast.content.table_longitude"), __("solar_forecast.content.table_declination"), __("solar_forecast.content.table_azimuth"), __("solar_forecast.content.table_kwp")]}
                         tableTill="lg"
                         rows={get_active_unsaved_planes().map((active_plane_index) => {

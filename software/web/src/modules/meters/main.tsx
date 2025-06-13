@@ -700,7 +700,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                 </div>
 
                 <ConfigForm id="meters_config_form" title={show_plot ? __("meters.content.settings") : __("meters.content.meters")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty} small={show_plot}>
-                    <div class="mb-3">
+                    <div class="form-group">
                         <Table
                             tableTill="lg"
                             columnNames={[__("meters.content.table_display_name"), __("meters.content.table_power"), __("meters.content.table_energy_import"), __("meters.content.table_energy_export"), __("meters.content.table_phases")]}
