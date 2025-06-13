@@ -678,12 +678,12 @@ static void pdf_add_page(struct pdf_doc *pdf, struct pdf_object *page) {
     }
 
     for (size_t i = 0; i < page->page.image_count; ++i) {
-        struct pdf_object *obj = pdf_add_object(pdf, OBJ_image);
+        struct pdf_object *obj = pdf_add_object(pdf, OBJ_imagestream);
         obj->page_id = page->index;
     }
 
     for (size_t i = 0; i < page->page.image_count; ++i) {
-        struct pdf_object *obj = pdf_add_object(pdf, OBJ_imagestream);
+        struct pdf_object *obj = pdf_add_object(pdf, OBJ_image);
         obj->page_id = page->index;
     }
 }
@@ -792,7 +792,7 @@ static int pdf_save_object(struct pdf_doc *pdf, int index)
 
         break;
     }
-    case OBJ_image: {
+    case OBJ_imagestream: {
         struct pdf_object *page = pdf_get_page(pdf, object);
 
         pdf->callback_context.current_obj_index = object->index;
@@ -801,7 +801,7 @@ static int pdf_save_object(struct pdf_doc *pdf, int index)
         pdf->callback_context.current_obj_index = -1;
         break;
     }
-    case OBJ_imagestream: {
+    case OBJ_image: {
         struct pdf_object *page = pdf_get_page(pdf, object);
         struct pdf_object *image = pdf_get_object(pdf, object->index - page->page.image_count);
         pdf_add_image(pdf, nullptr, image, object, image->image.x, image->image.y, object->image_stream.width, object->image_stream.height);
