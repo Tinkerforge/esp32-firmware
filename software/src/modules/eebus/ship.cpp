@@ -197,7 +197,7 @@ void Ship::setup_wss()
     });
 
     // Start websocket on the HTTPS server
-    web_sockets.start("/ship/", "info/ship_wss", httpd, "ship");
+    web_sockets.start("/ship/", "/info/ship_wss", httpd, "ship");
 
     logger.printfln("setup_wss_server done");
 }
