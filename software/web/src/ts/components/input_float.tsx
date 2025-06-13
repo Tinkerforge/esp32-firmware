@@ -132,7 +132,7 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
                inputMode="decimal"
                style="min-width: 5em;"
                required={props.required}/>
-    {'unit' in props || 'onValue' in props ?
+    {'unit' in props || ('onValue' in props && !props.readonly) ?
         <div class="input-group-append">
             {'unit' in props ?
                 <div class={"form-control input-group-text" + ('showMinMax' in props ? " d-none d-sm-block" : "")}>
@@ -140,7 +140,7 @@ export function InputFloat(props: InputFloatProps | InputFloatReadonlyProps) {
                 </div>
                 : undefined
             }
-            {'onValue' in props && !props.readonly && !props.disabled ?
+            {'onValue' in props && !props.readonly ?
                 <>
                     <Button variant="primary"
                             disabled={props.disabled || (props.value == props.min)}

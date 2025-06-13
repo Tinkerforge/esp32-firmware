@@ -78,9 +78,9 @@ export function InputNumber(props: InputNumberProps) {
                 {...props}
                 readonly={props.onValue === undefined || props.readonly}
         />
-        {props.unit || props.onValue ? <div class="input-group-append">
+        {props.unit || (props.onValue && !props.readonly) ? <div class="input-group-append">
             {props.unit ? <div class="form-control input-group-text">{props.unit}</div> : undefined}
-            {props.onValue ? <>
+            {props.onValue && !props.readonly ? <>
             <Button variant="primary"
                     disabled={props.value == props.min || props.disabled || props.readonly}
                     className="form-control px-1"
