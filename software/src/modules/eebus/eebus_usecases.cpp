@@ -33,8 +33,8 @@ bool NodeManagementUsecase::handle_message(SpineHeader &header, SpineDataTypeHan
 {
     if (header.cmd_classifier == CmdClassifierType::read && data.last_cmd == SpineDataTypeHandler::Function::nodeManagementUseCaseData) {
         NodeManagementUseCaseDataType node_management_usecase_data;
-        for (UseCase *uc : usecase_interface->usecases) {
-            if (!dynamic_cast<NodeManagementUsecase *>(uc)) {
+        for (UseCase *uc : usecase_interface->usecase_list) {
+            if (uc->get_usecase_type() != UseCaseType::NodeManagement) {
                 node_management_usecase_data.useCaseInformation->push_back(uc->get_usecase_information());
             }
         }
@@ -51,19 +51,20 @@ bool NodeManagementUsecase::handle_message(SpineHeader &header, SpineDataTypeHan
 
 UseCaseInformationDataType ChargingSummaryUsecase::get_usecase_information()
 {
+
     UseCaseInformationDataType evcs_usecase;
-    evcs_usecase.actor = "EVSE";
+    evcs_usecase.actor = "EVSE"; // The actor can either be EVSE or Energy Broker but we support only EVSE
 
     UseCaseSupportType evcs_usecase_support;
     evcs_usecase_support.useCaseName = "evChargingSummary";
     evcs_usecase_support.useCaseVersion = "1.0.1";
     evcs_usecase_support.useCaseAvailable = true;
-    evcs_usecase_support.scenarioSupport->push_back(1); // TODO: Which scenarios do we support
+    evcs_usecase_support.scenarioSupport->push_back(1); //We support only scenario 1 which is defined in Chapter 2.3.1
     evcs_usecase_support.useCaseDocumentSubRevision = "release";
     evcs_usecase.useCaseSupport->push_back(evcs_usecase_support);
 
     FeatureAddressType evcs_usecase_feature_address;
-    evcs_usecase_feature_address.device = "d:_i:123456_WARP3";
+    evcs_usecase_feature_address.device = "d:_i:123456_WARP3"; //TODO: Pull this name from some global variable
     evcs_usecase_feature_address.entity->push_back(1);
     evcs_usecase_feature_address.feature = 1;
     evcs_usecase.address = evcs_usecase_feature_address;
@@ -83,7 +84,10 @@ EEBusUseCases::EEBusUseCases()
 {
     node_management = NodeManagementUsecase();
     node_management.set_usecaseManager(this);
+    usecase_list.push_back(&node_management);
+
     charging_summary = ChargingSummaryUsecase();
+    usecase_list.push_back(&charging_summary);
 }
 bool EEBusUseCases::handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response)
 {
