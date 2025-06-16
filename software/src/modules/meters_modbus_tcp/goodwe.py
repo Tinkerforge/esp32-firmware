@@ -314,7 +314,7 @@ specs = [
             {
                 'name': 'Total Energy of Load [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumImport',
-                'start_address': 35200,
+                'start_address': 35203,
                 'value_type': 'U32BE',
                 'scale_factor': 0.1,
             },
