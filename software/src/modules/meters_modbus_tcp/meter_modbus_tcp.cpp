@@ -109,6 +109,19 @@
 #define GOODWE_HYBRID_INVERTER_BATTERY_2_MODE                              static_cast<size_t>(GoodweHybridInverterBatteryAddress::Battery2Mode)
 #define GOODWE_HYBRID_INVERTER_BMS_2_PACK_TEMPERATURE                      static_cast<size_t>(GoodweHybridInverterBatteryAddress::BMS2PackTemperature)
 #define GOODWE_HYBRID_INVERTER_BATTERY_2_CAPACITY                          static_cast<size_t>(GoodweHybridInverterBatteryAddress::Battery2Capacity)
+#define GOODWE_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS                         static_cast<size_t>(GoodweHybridInverterPVAddress::PV1Voltage)
+#define GOODWE_HYBRID_INVERTER_PV1_CURRENT_ADDRESS                         static_cast<size_t>(GoodweHybridInverterPVAddress::PV1Current)
+#define GOODWE_HYBRID_INVERTER_PV1_POWER_ADDRESS                           static_cast<size_t>(GoodweHybridInverterPVAddress::PV1Power)
+#define GOODWE_HYBRID_INVERTER_PV2_VOLTAGE_ADDRESS                         static_cast<size_t>(GoodweHybridInverterPVAddress::PV2Voltage)
+#define GOODWE_HYBRID_INVERTER_PV2_CURRENT_ADDRESS                         static_cast<size_t>(GoodweHybridInverterPVAddress::PV2Current)
+#define GOODWE_HYBRID_INVERTER_PV2_POWER_ADDRESS                           static_cast<size_t>(GoodweHybridInverterPVAddress::PV2Power)
+#define GOODWE_HYBRID_INVERTER_PV3_VOLTAGE_ADDRESS                         static_cast<size_t>(GoodweHybridInverterPVAddress::PV3Voltage)
+#define GOODWE_HYBRID_INVERTER_PV3_CURRENT_ADDRESS                         static_cast<size_t>(GoodweHybridInverterPVAddress::PV3Current)
+#define GOODWE_HYBRID_INVERTER_PV3_POWER_ADDRESS                           static_cast<size_t>(GoodweHybridInverterPVAddress::PV3Power)
+#define GOODWE_HYBRID_INVERTER_PV4_VOLTAGE_ADDRESS                         static_cast<size_t>(GoodweHybridInverterPVAddress::PV4Voltage)
+#define GOODWE_HYBRID_INVERTER_PV4_CURRENT_ADDRESS                         static_cast<size_t>(GoodweHybridInverterPVAddress::PV4Current)
+#define GOODWE_HYBRID_INVERTER_PV4_POWER_ADDRESS                           static_cast<size_t>(GoodweHybridInverterPVAddress::PV4Power)
+#define GOODWE_HYBRID_INVERTER_PV_MODE_ADDRESS                             static_cast<size_t>(GoodweHybridInverterPVAddress::PVMode)
 
 #define FRONIUS_GEN24_PLUS_INPUT_ID_OR_MODEL_ID_ADDRESS                    static_cast<size_t>(FroniusGEN24PlusBatteryTypeAddress::InputIDOrModelID)
 #define FRONIUS_GEN24_PLUS_DCA_SF_ADDRESS                                  static_cast<size_t>(FroniusGEN24PlusBatteryIntegerAddress::DCA_SF)
@@ -676,6 +689,11 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         case GoodweHybridInverterVirtualMeter::Meter:
             table = &goodwe_hybrid_inverter_meter_table;
             default_location = MeterLocation::Other;
+            break;
+
+        case GoodweHybridInverterVirtualMeter::PV:
+            table = &goodwe_hybrid_inverter_pv_table;
+            default_location = MeterLocation::PV;
             break;
 
         default:
@@ -1485,6 +1503,12 @@ bool MeterModbusTCP::is_goodwe_hybrid_inverter_battery_meter() const
 {
     return table_id == MeterModbusTCPTableID::GoodweHybridInverter
         && goodwe_hybrid_inverter.virtual_meter == GoodweHybridInverterVirtualMeter::Battery;
+}
+
+bool MeterModbusTCP::is_goodwe_hybrid_inverter_pv_meter() const
+{
+    return table_id == MeterModbusTCPTableID::GoodweHybridInverter
+        && goodwe_hybrid_inverter.virtual_meter == GoodweHybridInverterVirtualMeter::PV;
 }
 
 bool MeterModbusTCP::is_fronius_gen24_plus_battery_meter() const
@@ -2425,6 +2449,85 @@ void MeterModbusTCP::parse_next()
             meters.update_value(slot, table->index[read_index + 3], nan_safe_sum(goodwe_hybrid_inverter.battery_1_power, goodwe_hybrid_inverter.battery_2_power));
             meters.update_value(slot, table->index[read_index + 4], nan_safe_avg(goodwe_hybrid_inverter.bms_1_pack_temperature, goodwe_hybrid_inverter.bms_2_pack_temperature));
             meters.update_value(slot, table->index[read_index + 5], nan_safe_avg(goodwe_hybrid_inverter.battery_1_capacity, goodwe_hybrid_inverter.battery_2_capacity));
+        }
+        else if (register_start_address == GOODWE_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS) {
+            goodwe_hybrid_inverter.pv1_voltage = value;
+        }
+        else if (register_start_address == GOODWE_HYBRID_INVERTER_PV1_CURRENT_ADDRESS) {
+            goodwe_hybrid_inverter.pv1_current = value;
+        }
+        else if (register_start_address == GOODWE_HYBRID_INVERTER_PV1_POWER_ADDRESS) {
+            goodwe_hybrid_inverter.pv1_power = value;
+        }
+        else if (register_start_address == GOODWE_HYBRID_INVERTER_PV2_VOLTAGE_ADDRESS) {
+            goodwe_hybrid_inverter.pv2_voltage = value;
+        }
+        else if (register_start_address == GOODWE_HYBRID_INVERTER_PV2_CURRENT_ADDRESS) {
+            goodwe_hybrid_inverter.pv2_current = value;
+        }
+        else if (register_start_address == GOODWE_HYBRID_INVERTER_PV2_POWER_ADDRESS) {
+            goodwe_hybrid_inverter.pv2_power = value;
+        }
+        else if (register_start_address == GOODWE_HYBRID_INVERTER_PV3_VOLTAGE_ADDRESS) {
+            goodwe_hybrid_inverter.pv3_voltage = value;
+        }
+        else if (register_start_address == GOODWE_HYBRID_INVERTER_PV3_CURRENT_ADDRESS) {
+            goodwe_hybrid_inverter.pv3_current = value;
+        }
+        else if (register_start_address == GOODWE_HYBRID_INVERTER_PV3_POWER_ADDRESS) {
+            goodwe_hybrid_inverter.pv3_power = value;
+        }
+        else if (register_start_address == GOODWE_HYBRID_INVERTER_PV4_VOLTAGE_ADDRESS) {
+            goodwe_hybrid_inverter.pv4_voltage = value;
+        }
+        else if (register_start_address == GOODWE_HYBRID_INVERTER_PV4_CURRENT_ADDRESS) {
+            goodwe_hybrid_inverter.pv4_current = value;
+        }
+        else if (register_start_address == GOODWE_HYBRID_INVERTER_PV4_POWER_ADDRESS) {
+            goodwe_hybrid_inverter.pv4_power = value;
+        }
+        else if (register_start_address == GOODWE_HYBRID_INVERTER_PV_MODE_ADDRESS) {
+            uint32_t pv_mode = c32.u;
+
+            float voltage_sum = 0.0f;
+            float voltage_count = 0.0f;
+
+            if (((pv_mode >> 0) & 0xFF) != 0) {
+                voltage_sum += goodwe_hybrid_inverter.pv1_voltage;
+                ++voltage_count;
+            }
+
+            if (((pv_mode >> 1) & 0xFF) != 0) {
+                voltage_sum += goodwe_hybrid_inverter.pv2_voltage;
+                ++voltage_count;
+            }
+
+            if (((pv_mode >> 2) & 0xFF) != 0) {
+                voltage_sum += goodwe_hybrid_inverter.pv3_voltage;
+                ++voltage_count;
+            }
+
+            if (((pv_mode >> 3) & 0xFF) != 0) {
+                voltage_sum += goodwe_hybrid_inverter.pv4_voltage;
+                ++voltage_count;
+            }
+
+            float voltage = voltage_sum / voltage_count;
+
+            float current = goodwe_hybrid_inverter.pv1_current
+                          + goodwe_hybrid_inverter.pv2_current
+                          + goodwe_hybrid_inverter.pv3_current
+                          + goodwe_hybrid_inverter.pv4_current;
+
+            float power = goodwe_hybrid_inverter.pv1_power
+                        + goodwe_hybrid_inverter.pv2_power
+                        + goodwe_hybrid_inverter.pv3_power
+                        + goodwe_hybrid_inverter.pv4_power;
+
+            meters.update_value(slot, table->index[read_index + 1], voltage);
+            meters.update_value(slot, table->index[read_index + 2], current);
+            meters.update_value(slot, table->index[read_index + 3], power);
+            meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power));
         }
     }
     else if (is_fronius_gen24_plus_battery_meter()) {

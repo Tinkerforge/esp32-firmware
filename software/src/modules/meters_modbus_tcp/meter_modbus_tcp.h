@@ -116,6 +116,7 @@ private:
     bool is_alpha_ess_hybrid_inverter_pv_meter() const;
     bool is_shelly_pro_xem_monophase() const;
     bool is_goodwe_hybrid_inverter_battery_meter() const;
+    bool is_goodwe_hybrid_inverter_pv_meter() const;
     bool is_fronius_gen24_plus_battery_meter() const;
     bool is_hailei_hybrid_inverter_pv_meter() const;
     bool is_carlo_gavazzi_em100_or_et100() const;
@@ -245,6 +246,18 @@ private:
             uint16_t battery_2_mode;
             float bms_2_pack_temperature;
             float battery_2_capacity;
+            float pv1_voltage;
+            float pv1_current;
+            float pv1_power;
+            float pv2_voltage;
+            float pv2_current;
+            float pv2_power;
+            float pv3_voltage;
+            float pv3_current;
+            float pv3_power;
+            float pv4_voltage;
+            float pv4_current;
+            float pv4_power;
         } goodwe_hybrid_inverter;
 
         // Solax hybrid inverter

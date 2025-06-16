@@ -1014,6 +1014,7 @@ export function init() {
                             [GoodweHybridInverterVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
                             [GoodweHybridInverterVirtualMeter.BackupLoad.toString(), __("meters_modbus_tcp.content.virtual_meter_backup_load")],
                             [GoodweHybridInverterVirtualMeter.Meter.toString(), __("meters_modbus_tcp.content.virtual_meter_meter")],
+                            [GoodweHybridInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
                         ];
 
                         get_default_location = (virtual_meter: number) => {
@@ -1024,6 +1025,7 @@ export function init() {
                             case GoodweHybridInverterVirtualMeter.Load: return MeterLocation.Load;
                             case GoodweHybridInverterVirtualMeter.BackupLoad: return MeterLocation.Load;
                             case GoodweHybridInverterVirtualMeter.Meter: return MeterLocation.Other;
+                            case GoodweHybridInverterVirtualMeter.PV: return MeterLocation.PV;
                             }
 
                             return MeterLocation.Unknown;
