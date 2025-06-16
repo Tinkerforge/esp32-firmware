@@ -718,6 +718,11 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
                                                         }
                                                     }} />
                                             </FormRow>
+                                            {this.state.addUser.email && invalidFeedback === "" && (
+                                                <FormRow label={__("remote_access.content.email")}>
+                                                    <InputText value={this.state.addUser.email} readonly />
+                                                </FormRow>
+                                            )}
                                        </div>
                                     </Collapse>
                                     <Collapse in={authMethod === "password"}>
