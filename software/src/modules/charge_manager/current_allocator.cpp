@@ -1415,7 +1415,7 @@ int allocate_current(
     /*const TODO: move allocated_energy into charger allocation state so that this can be const once again*/ ChargerState *charger_state,
     const char * const *hosts,
     const std::function<const char *(uint8_t)> &get_charger_name,
-    const std::function<void(uint8_t)> &clear_dns_cache_entry,
+    const std::function<void(uint8_t, micros_t)> &notify_charger_unresponsive,
 
     CurrentAllocatorState *ca_state,
     ChargerAllocationState *charger_allocation_state,
@@ -1490,7 +1490,7 @@ int allocate_current(
                 charger_alloc.state = 5;
                 if (state_was_not_five || charger_error < CHARGE_MANAGER_CLIENT_ERROR_START) {
                     charger_alloc.error = CHARGE_MANAGER_ERROR_CHARGER_UNREACHABLE;
-                    clear_dns_cache_entry(i);
+                    notify_charger_unresponsive(i, charger.last_update);
 
                     print_local_log = !ca_state->last_print_local_log_was_error;
                     ca_state->last_print_local_log_was_error = true;

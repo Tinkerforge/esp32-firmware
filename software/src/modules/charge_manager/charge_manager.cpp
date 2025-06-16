@@ -550,12 +550,12 @@ void ChargeManager::setup()
 
     start_manager_task();
 
-    auto get_charger_name_fn = [this](uint8_t i){ return this->get_charger_name(i);};
-    auto clear_dns_cache_entry_fn = [this](uint8_t i){ return cm_networking.clear_dns_cache_entry(i);};
+    auto get_charger_name_fn = [this](uint8_t idx) {return this->get_charger_name(idx);};
+    auto notify_charger_unresponsive_fn = [](uint8_t charger_index, micros_t last_response) {return cm_networking.notify_charger_unresponsive(charger_index, last_response);};
 
     this->next_allocation = now_us() + ca_config->allocation_interval;
 
-    task_scheduler.scheduleWithFixedDelay([this, get_charger_name_fn, clear_dns_cache_entry_fn](){
+    task_scheduler.scheduleWithFixedDelay([this, get_charger_name_fn, notify_charger_unresponsive_fn](){
             if (!deadline_elapsed(this->next_allocation))
                 return;
 
@@ -586,7 +586,7 @@ void ChargeManager::setup()
                 this->charger_state,
                 this->hosts.get(),
                 get_charger_name_fn,
-                clear_dns_cache_entry_fn,
+                notify_charger_unresponsive_fn,
 
                 this->ca_state,
                 this->charger_allocation_state,

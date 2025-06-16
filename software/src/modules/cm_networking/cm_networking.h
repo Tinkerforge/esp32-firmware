@@ -73,7 +73,7 @@ public:
 
     void resolve_hostname(uint8_t charger_idx);
     bool is_resolved(uint8_t charger_idx);
-    void clear_dns_cache_entry(uint8_t charger_idx);
+    void notify_charger_unresponsive(uint8_t charger_idx, micros_t last_response);
 
     void check_results();
 
