@@ -38,25 +38,25 @@ static inline String get_cert_name_path(uint8_t cert_id) {
 void Certs::pre_setup()
 {
     state_certs_prototype = Config::Object({
-        {"id", Config::Uint(0, 0, MAX_CERTS)},
+        {"id", Config::Uint(0, 0, MAX_CERT_ID)},
         {"name", Config::Str("", 0, MAX_CERT_NAME)},
     });
 
     state = Config::Object({
         {"certs", Config::Array({},
             &state_certs_prototype,
-            0, MAX_CERTS, Config::type_id<Config::ConfObject>())
+            0, CERTS_MAX_CERTS, Config::type_id<Config::ConfObject>())
         }
     });
 
     remove = Config::Object({
-        {"id", Config::Uint(0, 0, MAX_CERTS)}
+        {"id", Config::Uint(0, 0, MAX_CERT_ID)}
     });
 
     add = ConfigRoot{Config::Object({
-        {"id", Config::Uint(0, 0, MAX_CERTS)},
+        {"id", Config::Uint(0, 0, MAX_CERT_ID)},
         {"name", Config::Str("", 0, 32)},
-        {"cert", Config::Str("", 0, MAX_CERT_SIZE)}
+        {"cert", Config::Str("", 0, CERTS_MAX_CERT_SIZE)}
     }), [](Config &cfg, ConfigSource source) -> String {
         const auto &cert = cfg.get("cert")->asString();
         if (cert.length() == 0)
@@ -135,7 +135,7 @@ void Certs::update_state()
 {
     state.get("certs")->removeAll();
 
-    for (uint8_t i = 0; i < MAX_CERTS; ++i) {
+    for (uint8_t i = 0; i < CERTS_MAX_CERTS; ++i) {
         String path = get_cert_path(i);
 
         if (!LittleFS.exists(path) || !LittleFS.exists(path + "_name"))
