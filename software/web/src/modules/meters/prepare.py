@@ -7,11 +7,11 @@ tfutil.create_parent_module(__file__, 'software')
 
 from software import util
 
-with open('../../build.ts', 'r', encoding='utf-8') as f:
+with open('../../options.ts', 'r', encoding='utf-8') as f:
     content = f.read()
     match = re.search(r"export const METERS_SLOTS = (\d+);", content)
     if match is None:
-        print("Failed to find METERS_SLOTS in build.ts!")
+        print("Failed to find METERS_SLOTS in options.ts!")
         sys.exit(1)
 
     meter_count = int(match.group(1))
