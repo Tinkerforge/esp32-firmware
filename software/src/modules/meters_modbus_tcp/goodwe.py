@@ -6,8 +6,8 @@ specs = [
             {
                 'name': 'Total Power of Inverter [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
-                'start_address': 35138,
-                'value_type': 'S16',
+                'start_address': 35137,
+                'value_type': 'S32BE',
                 'scale_factor': -1.0,
             },
             {
@@ -61,8 +61,8 @@ specs = [
             {
                 'name': 'R Phase Grid Power [W]',  # FIXME: this value matches voltage times current, but seems to be too big compared to the total
                 'value_id': 'PowerActiveL1ImExDiff',
-                'start_address': 35125,
-                'value_type': 'S16',
+                'start_address': 35124,
+                'value_type': 'S32BE',
                 'scale_factor': -1.0,
             },
             {
@@ -89,8 +89,8 @@ specs = [
             {
                 'name': 'S Phase Grid Power [W]',  # FIXME: this value matches voltage times current, but seems to be too big compared to the total
                 'value_id': 'PowerActiveL2ImExDiff',
-                'start_address': 35130,
-                'value_type': 'S16',
+                'start_address': 35129,
+                'value_type': 'S32BE',
                 'scale_factor': -1.0,
             },
             {
@@ -117,29 +117,29 @@ specs = [
             {
                 'name': 'T Phase Grid Power [W]',  # FIXME: this value matches voltage times current, but seems to be too big compared to the total
                 'value_id': 'PowerActiveL3ImExDiff',
-                'start_address': 35135,
-                'value_type': 'S16',
+                'start_address': 35134,
+                'value_type': 'S32BE',
                 'scale_factor': -1.0,
             },
             {
                 'name': 'AC Active Power [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
-                'start_address': 35140,
-                'value_type': 'S16',
+                'start_address': 35139,
+                'value_type': 'S32BE',
                 'scale_factor': -1.0,
             },
             {
                 'name': 'AC Reactive Power [var]',
                 'value_id': 'PowerReactiveLSumIndCapDiff',
-                'start_address': 35142,
-                'value_type': 'S16',
+                'start_address': 35141,
+                'value_type': 'S32BE',
                 'scale_factor': -1.0,
             },
             {
                 'name': 'AC Apparent Power [VA]',
                 'value_id': 'PowerApparentLSumImExDiff',
-                'start_address': 35144,
-                'value_type': 'S16',
+                'start_address': 35143,
+                'value_type': 'S32BE',
                 'scale_factor': -1.0,
             },
             {
@@ -290,26 +290,26 @@ specs = [
             {
                 'name': 'R Phase Load Power [W]',
                 'value_id': 'PowerActiveL1ImExDiff',
-                'start_address': 35164,
-                'value_type': 'S16',
+                'start_address': 35163,
+                'value_type': 'S32BE',
             },
             {
                 'name': 'S Phase Load Power [W]',
                 'value_id': 'PowerActiveL2ImExDiff',
-                'start_address': 35166,
-                'value_type': 'S16',
+                'start_address': 35165,
+                'value_type': 'S32BE',
             },
             {
                 'name': 'T Phase Load Power [W]',
                 'value_id': 'PowerActiveL3ImExDiff',
-                'start_address': 35168,
-                'value_type': 'S16',
+                'start_address': 35167,
+                'value_type': 'S32BE',
             },
             {
                 'name': 'Total Load Power [W]',  # FIXME: this seems to be less than the sum of the RST phase load powers
                 'value_id': 'PowerActiveLSumImExDiff',
-                'start_address': 35172,
-                'value_type': 'S16',
+                'start_address': 35171,
+                'value_type': 'S32BE',
             },
             {
                 'name': 'Total Energy of Load [0.1 kWh]',
@@ -348,8 +348,8 @@ specs = [
             {
                 'name': 'R Phase Load Power of Backup [W]',
                 'value_id': 'PowerActiveL1ImExDiff',
-                'start_address': 35150,
-                'value_type': 'S16',
+                'start_address': 35149,
+                'value_type': 'S32BE',
             },
             {
                 'name': 'S Phase Load Voltage of Backup [0.1 V]',
@@ -375,8 +375,8 @@ specs = [
             {
                 'name': 'S Phase Load Power of Backup [W]',
                 'value_id': 'PowerActiveL2ImExDiff',
-                'start_address': 35156,
-                'value_type': 'S16',
+                'start_address': 35155,
+                'value_type': 'S32BE',
             },
             {
                 'name': 'T Phase Load Voltage of Backup [0.1 V]',
@@ -402,14 +402,14 @@ specs = [
             {
                 'name': 'T Phase Load Power of Backup [W]',
                 'value_id': 'PowerActiveL3ImExDiff',
-                'start_address': 35162,
-                'value_type': 'S16',
+                'start_address': 35161,
+                'value_type': 'S32BE',
             },
             {
                 'name': 'Total Load Power of Backup [W]',  # FIXME: this seems to be less than the sum of the RST phase load powers
                 'value_id': 'PowerActiveLSumImExDiff',
-                'start_address': 35170,
-                'value_type': 'S16',
+                'start_address': 35169,
+                'value_type': 'S32BE',
             },
         ],
     },
@@ -420,31 +420,31 @@ specs = [
             {
                 'name': 'R Phase Active Power [W]',
                 'value_id': 'PowerActiveL1ImExDiff',
-                'start_address': 36005,
+                'start_address': 36005,  # FIXME: use 36019 as S32BE for ARM version > 09
                 'value_type': 'S16',
             },
             {
                 'name': 'S Phase Active Power [W]',
                 'value_id': 'PowerActiveL2ImExDiff',
-                'start_address': 36006,
+                'start_address': 36006,  # FIXME: use 36021 as S32BE for ARM version > 09
                 'value_type': 'S16',
             },
             {
                 'name': 'T Phase Active Power [W]',
                 'value_id': 'PowerActiveL3ImExDiff',
-                'start_address': 36007,
+                'start_address': 36007,  # FIXME: use 36023 as S32BE for ARM version > 09
                 'value_type': 'S16',
             },
             {
                 'name': 'Total Active Power [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
-                'start_address': 36008,
+                'start_address': 36008,  # FIXME: use 36025 as S32BE for ARM version > 09
                 'value_type': 'S16',
             },
             {
                 'name': 'Total Reactive Power [W]',
                 'value_id': 'PowerReactiveLSumIndCapDiff',
-                'start_address': 36009,
+                'start_address': 36009,  # FIXME: use 36033 as S32BE for ARM version > 09
                 'value_type': 'S16',
             },
             {
