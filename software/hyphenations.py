@@ -955,6 +955,7 @@ de_hyph = [
     "Spei-cher-steu-erung",
     "Spei-cher-steu-erungs",
     "zu-rück-neh-men",
+    "Ein-stel-len",
 ]
 
 en_hyph = [
