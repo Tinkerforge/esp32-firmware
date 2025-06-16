@@ -147,7 +147,7 @@ def generate_module_dependencies(info_path, module, modules, all_modules_upper):
     all_optional_modules_upper = []
 
     if os.path.exists(info_path):
-        config = configparser.ConfigParser()
+        config = configparser.ConfigParser(inline_comment_prefixes=('#',';'))
         config.read(info_path)
         if config.has_section('Dependencies'):
             has_dependencies = True
