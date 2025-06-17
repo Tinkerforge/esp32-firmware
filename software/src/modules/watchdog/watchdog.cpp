@@ -36,7 +36,6 @@ static StackType_t xStack[WATCHDOG_STACK_SIZE];
 static TaskHandle_t xTask;
 
 struct watchdog_reg {
-    const char *name = nullptr;
     const char *message = nullptr;
     micros_t last_reset = 0_us;
     micros_t timeout = 0_us;
@@ -125,7 +124,6 @@ int Watchdog::add(const char *name, const char *message, millis_t timeout, milli
         return -1;
     }
 
-    regs[regs_used].name = name;
     regs[regs_used].message = message;
     regs[regs_used].timeout = timeout;
     regs[regs_used].initial_deadline = initial_deadline;
