@@ -805,7 +805,8 @@ void ChargeTracker::register_urls()
         uint32_t current_timestamp_min = rtc.timestamp_minutes();
 
         bool english = false;
-        auto letterhead = heap_alloc_array<char>(PDF_LETTERHEAD_MAX_SIZE + 1);
+        auto letterhead_buf = heap_alloc_array<char>(PDF_LETTERHEAD_MAX_SIZE + 1);
+        auto letterhead = letterhead_buf.get();
         int letterhead_lines = 0;
 
         {
@@ -845,37 +846,37 @@ void ChargeTracker::register_urls()
                 current_timestamp_min = doc["current_timestamp_min"] | 0l;
             }
 
-            char *lh = nullptr;
-            defer {free(lh);};
-            if (doc.containsKey("letterhead")) {
-                lh = strdup(doc["letterhead"]);
+            bool letterhead_passed = doc.containsKey("letterhead") && !doc["letterhead"].isNull();
 
-                if (strlen(lh) > PDF_LETTERHEAD_MAX_SIZE) {
+            if (letterhead_passed) {
+                if (strlen(doc["letterhead"]) > PDF_LETTERHEAD_MAX_SIZE) {
                     return request.send(400, "text/plain", "Letterhead is too long!");
                 }
+
+                strncpy(letterhead, doc["letterhead"], PDF_LETTERHEAD_MAX_SIZE + 1);
             }
 
-            task_scheduler.await([this, &lh](){
+            task_scheduler.await([this, letterhead, letterhead_passed](){
                 auto saved_letterhead = this->pdf_letterhead_config.get("letterhead");
-                if (lh != nullptr) {
-                    if (saved_letterhead->asString() != lh) {
-                        saved_letterhead->updateString(lh);
-                        API::writeConfig("charge_tracker/pdf_letterhead_config", &this->pdf_letterhead_config);
-                    }
+                if (!letterhead_passed) {
+                    strncpy(letterhead, saved_letterhead->asEphemeralCStr(), PDF_LETTERHEAD_MAX_SIZE + 1);
+                    return;
                 }
-                else {
-                    lh = strdup(saved_letterhead->asEphemeralCStr());
+
+                if (saved_letterhead->asString() != letterhead) {
+                    saved_letterhead->updateString(letterhead);
+                    API::writeConfig("charge_tracker/pdf_letterhead_config", &this->pdf_letterhead_config);
                 }
             });
 
             letterhead_lines = 1;
 
             for (size_t i = 0; i < PDF_LETTERHEAD_MAX_SIZE; ++i) {
-                if (lh[i] == '\0') {
+                if (letterhead[i] == '\0') {
                     break;
                 }
 
-                if (lh[i] == '\n') {
+                if (letterhead[i] == '\n') {
                     letterhead[i] = '\0';
 
                     if (letterhead_lines == 6) {
@@ -884,12 +885,7 @@ void ChargeTracker::register_urls()
 
                     ++letterhead_lines;
                 }
-                else {
-                    letterhead[i] = lh[i];
-                }
             }
-
-            letterhead[PDF_LETTERHEAD_MAX_SIZE] = '\0';
         }
 
         char stats_buf[384];//55 9 "Wallbox: " + 32 display name + 13 " (warp2-AbCd)" + \0
@@ -1100,7 +1096,7 @@ search_done:
         init_pdf_generator(&request,
                            english ? "WARP Charge Log" : "WARP Ladelog",
                            stats_buf, (electricity_price == 0) ? 5 : 6,
-                           letterhead.get(), letterhead_lines,
+                           letterhead, letterhead_lines,
                            english ? table_header_en : table_header_de,
                            charge_records,
                            [this,
