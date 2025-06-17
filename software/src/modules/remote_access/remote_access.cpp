@@ -513,19 +513,15 @@ void RemoteAccess::register_urls()
         TFJsonSerializer serializer{ptr.get(), json_size};
         serializer.addObject();
         serializer.addMemberArray("keys");
-        char buf[50];
         {
             int i = 0;
             // JsonArray already has reference semantics. No need for &.
             for (const auto key : doc["keys"].as<JsonArray>()) {
                 serializer.addObject();
-                // TODO optimize
-                std::snprintf(buf, sizeof(buf), "10.123.%i.2", i);
-                serializer.addMemberString("charger_address", buf);
+                serializer.addMemberStringF("charger_address", "10.123.%i.2", i);
                 serializer.addMemberString("charger_public", key["charger_public"]);
                 serializer.addMemberNumber("connection_no", (int32_t)i);
-                std::snprintf(buf, sizeof(buf), "10.123.%i.3", i);
-                serializer.addMemberString("web_address", buf);
+                serializer.addMemberStringF("web_address", "10.123.%i.3", i);
                 const String wg_key = key["web_private"];
 
                 // TODO optimize: this is always 44 bytes + crypto_box_SEALBYTES -> stack alloc
@@ -835,15 +831,12 @@ void RemoteAccess::register_urls()
         serializer.endObject();
 
         serializer.addMemberArray("wg_keys");
-        char buf[50];
         int i = 0;
         for (auto key : doc["wg_keys"].as<JsonArray>()) {
             serializer.addObject();
             int connection_number = (next_user_id - 1) * REMOTE_ACCESS_MAX_KEYS_PER_USER + i;
-            std::snprintf(buf, sizeof(buf), "10.123.%i.2", connection_number);
-            serializer.addMemberString("charger_address", buf);
-            std::snprintf(buf, sizeof(buf), "10.123.%i.3", connection_number);
-            serializer.addMemberString("web_address", buf);
+            serializer.addMemberStringF("charger_address", "10.123.%i.2", connection_number);
+            serializer.addMemberStringF("web_address", "10.123.%i.3", connection_number);
             serializer.addMemberString("charger_public", key["charger_public"]);
 
             const String psk = key["psk"];
