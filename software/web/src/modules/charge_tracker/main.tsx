@@ -376,7 +376,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         <FormRow label={__("charge_tracker.content.pdf_letterhead")} label_muted={__("charge_tracker.content.pdf_letterhead_muted")}>
                             <textarea name="letterhead" class="text-monospace form-control" id="letterhead" value={state.pdf_letterhead} onInput={(e) => {
                                 let value = (e.target as HTMLInputElement).value;
-                                if (new Blob([value]).size < 512)
+                                if (new Blob([value]).size <= 512)
                                     this.setState({pdf_letterhead: value});
                                 else
                                     this.setState({pdf_letterhead: state.pdf_letterhead});
