@@ -199,9 +199,13 @@ void RemoteAccess::pre_setup()
         {"time_elapsed_ms", Config::Uint32(0)},
     });
 
-    connection_state =
-        Config::Array({}, &connection_state_prototype, MAX_KEYS_PER_USER + 1, MAX_KEYS_PER_USER + 1, Config::type_id<Config::ConfUint>());
-    for (int i = 0; i < MAX_KEYS_PER_USER + 1; ++i) {
+    connection_state = Config::Array({},
+        &connection_state_prototype,
+        MAX_USER_CONNECTIONS + 1,
+        MAX_USER_CONNECTIONS + 1,
+        Config::type_id<Config::ConfUint>());
+
+    for (int i = 0; i < MAX_USER_CONNECTIONS + 1; ++i) {
         connection_state.add()->get("state")->updateUint(1); // Set the default here so that the generic prototype can be used.
     }
 
@@ -1820,7 +1824,7 @@ void RemoteAccess::setup_inner_socket()
 uint8_t RemoteAccess::get_connection(uint8_t conn_id)
 {
     uint8_t first_free_idx = 255;
-    for (uint8_t i = 0; i < 5; i++) {
+    for (uint8_t i = 0; i < MAX_USER_CONNECTIONS; i++) {
         if (remote_connections[i].id == conn_id) {
             return i;
         } else if (remote_connections[i].conn == nullptr && first_free_idx == 255) {
@@ -1940,7 +1944,7 @@ void RemoteAccess::close_all_remote_connections() {
     if (!rtc.clock_synced(&now)) {
         now.tv_sec = 0;
     }
-    for (uint8_t i = 0; i < 5; i++) {
+    for (uint8_t i = 0; i < MAX_USER_CONNECTIONS; i++) {
         if (remote_connections[i].conn != nullptr) {
             auto conn_state = connection_state.get(i + 1);
             logger.printfln("Closing connection %lu for user %lu",

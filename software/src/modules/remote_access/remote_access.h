@@ -28,6 +28,8 @@
 #include "async_https_client.h"
 #include "ping/ping_sock.h"
 
+#define MAX_USER_CONNECTIONS 5
+
 struct HttpResponse {
     int status;
     char *cookie = nullptr;
@@ -88,7 +90,7 @@ private:
     int start_ping();
     int stop_ping();
     WireGuard *management = nullptr;
-    Connections remote_connections[5] = {};
+    Connections remote_connections[MAX_USER_CONNECTIONS] = {};
 
     String jwt;
     int inner_socket = -1;
