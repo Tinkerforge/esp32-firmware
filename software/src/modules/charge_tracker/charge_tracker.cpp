@@ -845,24 +845,28 @@ void ChargeTracker::register_urls()
                 current_timestamp_min = doc["current_timestamp_min"] | 0l;
             }
 
-            const char *lh;
-            auto saved_letterhead = pdf_letterhead_config.get("letterhead");
-
+            char *lh = nullptr;
+            defer {free(lh);};
             if (doc.containsKey("letterhead")) {
-                lh = doc["letterhead"];
+                lh = strdup(doc["letterhead"]);
 
                 if (strlen(lh) > PDF_LETTERHEAD_MAX_SIZE) {
                     return request.send(400, "text/plain", "Letterhead is too long!");
                 }
+            }
 
-                if (strcmp(saved_letterhead->asEphemeralCStr(), lh) != 0) {
-                    saved_letterhead->updateString(lh);
-                    API::writeConfig("charge_tracker/pdf_letterhead_config", &pdf_letterhead_config);
+            task_scheduler.await([this, &lh](){
+                auto saved_letterhead = this->pdf_letterhead_config.get("letterhead");
+                if (lh != nullptr) {
+                    if (saved_letterhead->asString() != lh) {
+                        saved_letterhead->updateString(lh);
+                        API::writeConfig("charge_tracker/pdf_letterhead_config", &this->pdf_letterhead_config);
+                    }
                 }
-            }
-            else {
-                lh = saved_letterhead->asEphemeralCStr();
-            }
+                else {
+                    lh = strdup(saved_letterhead->asEphemeralCStr());
+                }
+            });
 
             letterhead_lines = 1;
 
