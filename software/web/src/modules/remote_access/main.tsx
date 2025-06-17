@@ -17,6 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
+import { REMOTE_ACCESS_MAX_USERS, REMOTE_ACCESS_MAX_KEYS_PER_USER } from "../../options";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import { h, Fragment, ComponentChildren, Component, RefObject } from "preact";
@@ -363,7 +364,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
 
         const keys: util.NoExtraProperties<API.getType["remote_access/register"]["keys"]> = [];
 
-        for (const i of util.range(0, 5)) {
+        for (const i of util.range(0, REMOTE_ACCESS_MAX_KEYS_PER_USER)) {
             const charger_keypair = (window as any).wireguard.generateKeypair();
             const web_keypair = (window as any).wireguard.generateKeypair();
 
@@ -521,7 +522,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
 
         const keys: util.NoExtraProperties<API.getType["remote_access/register"]["keys"]> = [];
 
-        for (const i of util.range(0, 5)) {
+        for (const i of util.range(0, REMOTE_ACCESS_MAX_KEYS_PER_USER)) {
             const charger_keypair = (window as any).wireguard.generateKeypair();
             const web_keypair = (window as any).wireguard.generateKeypair();
 
@@ -680,13 +681,13 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
                     <FormRow label={__("remote_access.content.user")}>
                         <Table columnNames={[__("remote_access.content.email")]}
                             rows={users}
-                            addEnabled={users.length < 5}
+                            addEnabled={users.length < REMOTE_ACCESS_MAX_USERS}
                             addTitle={__("remote_access.content.add_user")}
                             onAddShow={async () => {
                                 this.setState({addUser: {email: "", password: "", auth_token: "", public_key: "", note: "", user_id: ""}});
                                 setAuthToken("");
                             }}
-                            addMessage={__("remote_access.content.user_add_message")(users.length, 5)}
+                            addMessage={__("remote_access.content.user_add_message")(users.length, REMOTE_ACCESS_MAX_USERS)}
                             onAddGetChildren={() => {
                                 const [authMethod, setAuthMethod] = useState("password");
                                 const [invalidFeedback, setInvalidFeedback] = useState("");
