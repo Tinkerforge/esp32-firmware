@@ -148,7 +148,13 @@ static void add_wem_services() {
 
 void CMNetworking::register_urls()
 {
-    api.addCommand("charge_manager/scan", Config::Null(), {}, [this](String &/*errmsg*/) {
+    api.addCommand("charge_manager/scan", Config::Null(), {}, [this](String &errmsg) {
+#if MODULE_NETWORK_AVAILABLE()
+        if (!network.get_enable_mdns()) {
+            errmsg = "Cannot scan for chargers: mDNS is disabled.";
+            return;
+        }
+#endif
         start_scan();
     }, true);
 
@@ -176,64 +182,118 @@ void CMNetworking::register_events() {
 #endif
 }
 
-static void dns_callback(const char *host, const ip_addr_t *ip, void *args)
+// Sometimes executed by lwIP
+void CMNetworking::dns_resolved(managed_device_data *device, const ip_addr_t *ip)
 {
-    std::lock_guard<std::mutex> lock{cm_networking.dns_resolve_mutex};
-    uint8_t *resolve_state = (uint8_t *)args;
-    if (ip == nullptr && *resolve_state != RESOLVE_STATE_NOT_RESOLVED) {
-        *resolve_state = RESOLVE_STATE_NOT_RESOLVED;
-        logger.printfln("Failed to resolve %s", host);
-    }
-}
-
-void CMNetworking::resolve_hostname(uint8_t charger_idx)
-{
-    if (this->dest_addrs == nullptr)
-        esp_system_abort("Call register_manager before resolving hostnames!");
-
-    if ((this->needs_mdns & (1ull << charger_idx)) != 0) {
-        if (!periodic_scan_task_started)
-            task_scheduler.scheduleWithFixedDelay([this](){this->start_scan();}, 1_min);
-        periodic_scan_task_started = true;
+    if (ip->type != IPADDR_TYPE_V4) {
         return;
     }
-
-    ip_addr_t ip;
-    int err = dns_gethostbyname_addrtype_lwip_ctx(this->hosts[charger_idx], &ip, dns_callback, &resolve_state[charger_idx], LWIP_DNS_ADDRTYPE_IPV4);
-
-    if (err == ERR_VAL)
-        logger.printfln("Charger configured with hostname %s, but no DNS server is configured!", this->hosts[charger_idx]);
-
-    if (err != ERR_OK || ip.type != IPADDR_TYPE_V4)
-        return;
 
     in_addr_t in;
 
     // using memcpy to guarantee alignment https://mail.gnu.org/archive/html/lwip-users/2008-08/msg00166.html
-    std::memcpy(&in, &ip.u_addr, sizeof(ip4_addr_t));
+    std::memcpy(&in, &ip->u_addr.ip4, sizeof(ip->u_addr.ip4));
 
-    std::lock_guard<std::mutex> lock{dns_resolve_mutex};
-    if (resolve_state[charger_idx] != RESOLVE_STATE_RESOLVED || dest_addrs[charger_idx].sin_addr.s_addr != in) {
-        char ip_str[16];
-        tf_ip4addr_ntoa(&ip, ip_str, sizeof(ip_str));
-        // Show resolved hostname only if it wasn't already an IP
-        if (strcmp(this->hosts[charger_idx], ip_str) != 0) {
-            logger.printfln("Resolved %s to %s", this->hosts[charger_idx], ip_str);
+    if (device->addr.sin_addr.s_addr != in) {
+        device->addr.sin_addr.s_addr  = in;
+        device->resolve_state = ResolveState::Resolved;
+
+        const char *hname = device->hostname;
+        const ip4_addr_t ip4 = ip->u_addr.ip4; // Must copy the address because *ip is temporary.
+
+        task_scheduler.scheduleOnce([hname, ip4]() { // Can't access the logger from lwIP context.
+            char ip_str[16];
+            tf_ip4addr_ntoa(&ip4, ip_str, sizeof(ip_str));
+            logger.printfln("Resolved %s to %s", hname, ip_str);
+        });
+    }
+}
+
+// Executed by lwIP
+static void dns_cb(const char * /*host*/, const ip_addr_t *ip, void *callback_arg)
+{
+    cm_networking.dns_callback(ip, callback_arg);
+}
+
+// Executed by lwIP
+void CMNetworking::dns_callback(const ip_addr_t *ip, void *callback_arg)
+{
+    managed_device_data *device = static_cast<decltype(device)>(callback_arg);
+
+    if (!ip) {
+        if (device->resolve_state == ResolveState::Unknown) {
+            device->resolve_state = ResolveState::NotResolved;
+
+            const char *hname = device->hostname;
+            task_scheduler.scheduleOnce([hname]() { // Can't access the logger from lwIP context.
+                logger.printfln("Failed to resolve %s", hname);
+            });
         }
+        return;
     }
 
-    dest_addrs[charger_idx].sin_addr.s_addr = in;
-    resolve_state[charger_idx] = RESOLVE_STATE_RESOLVED;
+    dns_resolved(device, ip);
+}
+
+void CMNetworking::resolve_hostname(uint8_t charger_idx)
+{
+    if (manager_data == nullptr) {
+        esp_system_abort("Call register_manager before resolving hostnames!");
+    }
+
+    managed_device_data *device = manager_data->managed_devices + charger_idx;
+
+    if (device->host_address_type == HostAddressType::IP) {
+        logger.printfln("Attempted to resolve raw IP address"); // TODO remove
+        // Nothing to resolve for raw IP addresses.
+        return;
+    }
+
+    if (device->host_address_type == HostAddressType::mDNS) {
+        if (!manager_data->periodic_scan_task_started) {
+#if MODULE_NETWORK_AVAILABLE()
+            if (!network.get_enable_mdns()) {
+                logger.printfln("mDNS required to resolve %s but it is disabled", device->hostname);
+                // Mark the periodic scan task as started anyway, so that the error message doesn't fill the log.
+            } else
+#endif
+                task_scheduler.scheduleWithFixedDelay([this]() {this->start_scan();}, 1_min);
+            // No braces for the else branch because of the Network module check.
+        }
+
+        manager_data->periodic_scan_task_started = true;
+        return;
+    }
+
+    ip_addr_t ip;
+    err_t err = dns_gethostbyname_addrtype_lwip_ctx(device->hostname, &ip, dns_cb, device, LWIP_DNS_ADDRTYPE_IPV4);
+
+    if (err != ERR_OK) {
+        if (err == ERR_VAL) {
+            logger.printfln("Charger configured with hostname %s, but no DNS server is configured!", device->hostname);
+        }
+        return;
+    }
+
+    dns_resolved(device, &ip);
 }
 
 bool CMNetworking::is_resolved(uint8_t charger_idx)
 {
-    return resolve_state[charger_idx] == RESOLVE_STATE_RESOLVED;
+    if (!manager_data) {
+        logger.printfln("is_resolved called before register_manager");
+        return false;
+    }
+    if (charger_idx >= manager_data->managed_device_count) {
+        logger.printfln("Charger index %hhu is out of range for is_resolved", charger_idx);
+        return false;
+    }
+    return manager_data->managed_devices[charger_idx].resolve_state == ResolveState::Resolved;
 }
 
 void CMNetworking::notify_charger_unresponsive(uint8_t charger_idx, micros_t last_response)
 {
-    auto err = dns_removehost(this->hosts[charger_idx], nullptr);
+    auto err = dns_removehost(manager_data->managed_devices[charger_idx].hostname, nullptr);
     if (err != ESP_OK)
         logger.printfln("Couldn't remove hostname from cache: error %i", err);
 }
@@ -332,29 +392,43 @@ bool CMNetworking::mdns_result_is_charger(mdns_result_t *entry, const char ** re
     return true;
 }
 
-void CMNetworking::resolve_via_mdns(mdns_result_t *entry)
+void CMNetworking::resolve_via_mdns(mdns_result_t *result_entry)
 {
-    if (this->dest_addrs == nullptr)
+    if (!manager_data || !result_entry->addr) {
         return;
+    }
 
-    if (entry->addr && entry->addr->addr.type == IPADDR_TYPE_V4) {
-        for (size_t i = 0; i < charger_count; ++i) {
-            if ((this->needs_mdns & (1ull << i)) == 0)
-                continue;
+    for (size_t i = 0; i < manager_data->managed_device_count; ++i) {
+        managed_device_data *device = manager_data->managed_devices + i;
 
-            String host = String(this->hosts[i]);
-            host = host.substring(0, host.length() - 6);
-
-            if (host == entry->hostname) {
-                this->dest_addrs[i].sin_addr.s_addr = entry->addr->addr.u_addr.ip4.addr;
-                if (this->resolve_state[i] != RESOLVE_STATE_RESOLVED) {
-                    char addr_str[16];
-                    tf_ip4addr_ntoa(&entry->addr->addr, addr_str, sizeof(addr_str));
-                    logger.printfln("Resolved %s to %s (via mDNS scan)", this->hosts[i], addr_str);
-                }
-                this->resolve_state[i] = RESOLVE_STATE_RESOLVED;
-            }
+        if (device->host_address_type != HostAddressType::mDNS) {
+            continue;
         }
+
+        const char  *hostname            = device->hostname;
+        const size_t hostname_substr_len = device->mdns_hostname_len;
+
+        if (strncmp(hostname, result_entry->hostname, hostname_substr_len) != 0 || result_entry->hostname[hostname_substr_len] != 0) {
+            continue;
+        }
+
+        mdns_ip_addr_t *addr_entry = result_entry->addr;
+        do {
+            if (addr_entry->addr.type == IPADDR_TYPE_V4) {
+                if (device->addr.sin_addr.s_addr != addr_entry->addr.u_addr.ip4.addr) {
+                    device->addr.sin_addr.s_addr  = addr_entry->addr.u_addr.ip4.addr;
+                    device->resolve_state = ResolveState::Resolved;
+
+                    char addr_str[16];
+                    tf_ip4addr_ntoa(&addr_entry->addr, addr_str, sizeof(addr_str));
+                    logger.printfln("Resolved %s to %s (via mDNS scan)", device->hostname, addr_str);
+                }
+
+                return;
+            }
+
+            addr_entry = addr_entry->next;
+        } while (addr_entry);
     }
 }
 

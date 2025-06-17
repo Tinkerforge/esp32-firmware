@@ -20,10 +20,8 @@
 #include "cm_networking.h"
 
 #include <Arduino.h>
-#include <ESPmDNS.h>
-#include <lwip/ip_addr.h>
-#include <lwip/opt.h>
-#include <lwip/dns.h>
+#include <fcntl.h>
+#include <lwip/sockets.h>
 #include <cstring>
 
 #include "event_log_prefix.h"
@@ -197,29 +195,57 @@ static void manager_task(void *arg)
 }
 
 void CMNetworking::register_manager(const char *const *const hosts,
-                                    int charger_count,
+                                    size_t device_count,
                                     const std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *, cm_state_v3 *)> &manager_callback,
                                     const std::function<void(uint8_t, uint8_t)> &manager_error_callback)
 {
-    this->hosts = hosts;
-    this->charger_count = charger_count;
-
-    dest_addrs = (struct sockaddr_in *)calloc_psram_or_dram(charger_count, sizeof(struct sockaddr_in));
-
-    for (int i = 0; i < charger_count; ++i) {
-        if (endswith(hosts[i], ".local"))
-            needs_mdns |= 1ull << i;
-
-        dest_addrs[i].sin_addr.s_addr = 0;
-        resolve_state[i] = RESOLVE_STATE_UNKNOWN;
-        resolve_hostname(i);
-        dest_addrs[i].sin_family = AF_INET;
-        dest_addrs[i].sin_port = htons(CHARGE_MANAGEMENT_PORT);
+    const size_t sz = offsetof(struct manager_data_t, managed_devices) + sizeof(manager_data->managed_devices[0]) * device_count;
+    manager_data = static_cast<decltype(manager_data)>(malloc(sz));
+    if (!manager_data) {
+        logger.printfln("Cannoc allocate memory for manager data");
+        return;
     }
 
-    manager_sock = create_socket(CHARGE_MANAGER_PORT, true);
-    if (manager_sock < 0)
+    manager_data->periodic_scan_task_started = false;
+    manager_data->managed_device_count = device_count;
+
+    for (size_t i = 0; i < device_count; ++i) {
+        managed_device_data *device = manager_data->managed_devices + i;
+        const char *hostname = hosts[i];
+
+        device->hostname = hostname;
+        device->last_resolve_attempt = 0;
+
+        device->addr.sin_len    = sizeof(device->addr);
+        device->addr.sin_family = AF_INET; // IPv4 only
+        device->addr.sin_port   = htons(CHARGE_MANAGEMENT_PORT);
+
+        ip4_addr_t ip4_addr;
+        if (ip4addr_aton(hostname, &ip4_addr)) {
+            // Hostname is actually an IPv4 address that never needs resolving.
+            device->addr.sin_addr.s_addr = ip4_addr.addr;
+
+            device->host_address_type = HostAddressType::IP;
+            device->resolve_state     = ResolveState::Resolved;
+        } else {
+            device->addr.sin_addr.s_addr = 0;
+
+            if (endswith(hostname, ".local")) {
+                device->host_address_type = HostAddressType::mDNS;
+                device->resolve_state     = ResolveState::NotResolved;
+                device->mdns_hostname_len = strlen(hostname) - 6;
+            } else {
+                device->host_address_type = HostAddressType::DNS;
+                device->resolve_state     = ResolveState::Unknown;
+            }
+        }
+    }
+
+    manager_data->manager_sock = create_socket(CHARGE_MANAGER_PORT, true);
+    if (manager_data->manager_sock < 0) {
+        logger.printfln("Failed to create manager socket");
         return;
+    }
 
     // LWIP stores LWIP_UDP_RECVMBOX_SIZE (configured to 6)
     // UDP packets in the socket's receive buffer.
@@ -234,7 +260,7 @@ void CMNetworking::register_manager(const char *const *const hosts,
         return;
     }
 
-    uint8_t *queue_storage = static_cast<uint8_t *>(calloc_psram_or_dram(this->charger_count, sizeof(ManagerQueueItem)));
+    uint8_t *queue_storage = static_cast<uint8_t *>(calloc_psram_or_dram(manager_data->managed_device_count, sizeof(ManagerQueueItem)));
     if (!queue_storage) {
         logger.printfln("Failed to allocate queue storage");
         free(task_data);
@@ -242,12 +268,12 @@ void CMNetworking::register_manager(const char *const *const hosts,
     }
 
     QueueHandle_t manager_queue = xQueueCreateStatic(
-        this->charger_count,
+        manager_data->managed_device_count,
         sizeof(ManagerQueueItem),
         queue_storage,
         &task_data->xQueueBuffer);
 
-    task_data->args.manager_sock  = manager_sock;
+    task_data->args.manager_sock  = manager_data->manager_sock;
     task_data->args.manager_queue = manager_queue;
 
     TaskHandle_t xTask = xTaskCreateStatic(
@@ -293,13 +319,16 @@ void CMNetworking::register_manager(const char *const *const hosts,
             }
 
             int charger_idx = -1;
-            for(int idx = 0; idx < this->charger_count; ++idx)
-                if (source_addr.sin_family == dest_addrs[idx].sin_family &&
-                    source_addr.sin_port == dest_addrs[idx].sin_port &&
-                    source_addr.sin_addr.s_addr == dest_addrs[idx].sin_addr.s_addr) {
+            for (int idx = 0; idx < this->manager_data->managed_device_count; ++idx) {
+                managed_device_data *device = manager_data->managed_devices + idx;
+
+                if (source_addr.sin_family      == device->addr.sin_family      &&
+                    source_addr.sin_addr.s_addr == device->addr.sin_addr.s_addr &&
+                    source_addr.sin_port        == device->addr.sin_port) {
                         charger_idx = idx;
                         break;
                 }
+            }
 
             // Don't log in the first 20 seconds after startup: We are probably still resolving hostnames.
             if (charger_idx == -1) {
@@ -389,18 +418,19 @@ bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_cur
 
 bool CMNetworking::send_command_packet(uint8_t client_id, cm_command_packet *command_pkt)
 {
-    if (manager_sock < 0)
+    if (!manager_data || manager_data->manager_sock < 0)
         return true;
 
-    resolve_hostname(client_id);
-    if (!is_resolved(client_id))
+    if (!is_resolved(client_id)) {
+        resolve_hostname(client_id);
         return true;
+    }
 
 #if MODULE_EM_PHASE_SWITCHER_AVAILABLE()
     em_phase_switcher.filter_command_packet(client_id, command_pkt);
 #endif
 
-    int err = sendto(manager_sock, command_pkt, sizeof(decltype(*command_pkt)), MSG_DONTWAIT, (sockaddr *)&dest_addrs[client_id], sizeof(dest_addrs[client_id]));
+    int err = sendto(manager_data->manager_sock, command_pkt, sizeof(decltype(*command_pkt)), MSG_DONTWAIT, (sockaddr *)&manager_data->managed_devices[client_id].addr, sizeof(manager_data->managed_devices[client_id].addr));
 
     if (err < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
