@@ -156,11 +156,6 @@ void ConfigRoot::update_from_copy(Config *copy)
     this->value = copy->value;
 }
 
-OwnedConfig ConfigRoot::get_owned_copy()
-{
-    return Config::apply_visitor(to_owned{}, this->value);
-}
-
 void ConfigRoot::set_permit_null_updates(bool permit_null_updates) {
     // Store permit_null_updates == true as 0 and == false as 1
     // so that the default value is permitted.

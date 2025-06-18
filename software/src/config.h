@@ -920,8 +920,6 @@ public:
 
     String validate(ConfigSource source);
 
-    OwnedConfig get_owned_copy();
-
 #ifdef DEBUG_FS_ENABLE
     void print_api_info(StringWriter &sw);
 #endif
