@@ -21,12 +21,15 @@
 #include <esp_spiffs.h>
 #include <LittleFS.h>
 #include <esp_littlefs.h>
+#include <sys/stat.h>
 
 #include "fs.h"
 
 #include "event_log_prefix.h"
 #include "main_dependencies.h" // for logger
 #include "tools.h" // for LogSilencer
+
+#include "gcc_warnings.h"
 
 static bool is_spiffs_available(const char *part_label, const char *base_path)
 {
@@ -76,7 +79,7 @@ static bool is_littlefs_available(const char *part_label, const char *base_path)
 }
 
 // Adapted from https://github.com/espressif/arduino-esp32/blob/master/libraries/LittleFS/examples/LITTLEFS_PlatformIO/src/main.cpp
-static bool mirror_filesystem(fs::FS &fromFS, fs::FS &toFS, String root_name, int levels, uint8_t *buf, size_t buf_size)
+static bool mirror_filesystem(fs::FS &fromFS, fs::FS &toFS, const String &root_name, int levels, uint8_t *buf, size_t buf_size)
 {
     // File works RAII style, no need to close.
     File root = fromFS.open(root_name);
@@ -103,7 +106,7 @@ static bool mirror_filesystem(fs::FS &fromFS, fs::FS &toFS, String root_name, in
             logger.printfln("Recursing in directory %s. Depth left %d.", root_name.c_str(), levels - 1);
             toFS.mkdir(source.name());
 
-            if (!mirror_filesystem(fromFS, toFS, String(source.name()) + "/", levels - 1, buf, buf_size)) {
+            if (!mirror_filesystem(fromFS, toFS, StringSumHelper(source.name()) + "/", levels - 1, buf, buf_size)) {
                 return false;
             }
 
@@ -157,8 +160,9 @@ bool mount_or_format_spiffs()
 
         logger.printfln("Mirroring data to core dump partition.");
         SPIFFS.begin(false);
-        uint8_t *buf = (uint8_t *)malloc(4096);
-        mirror_filesystem(SPIFFS, LittleFS, "/", 4, buf, 4096);
+        const size_t buffer_size = 4096;
+        uint8_t *buf = static_cast<decltype(buf)>(malloc(buffer_size));
+        mirror_filesystem(SPIFFS, LittleFS, "/", 4, buf, buffer_size);
         free(buf);
         SPIFFS.end();
         LittleFS.end();
@@ -183,8 +187,9 @@ bool mount_or_format_spiffs()
         logger.printfln("Mirroring data backup to data partition.");
         fs::LittleFSFS configFS;
         configFS.begin(false, "/conf_backup", 10, "coredump");
-        uint8_t *buf = (uint8_t *)malloc(4096);
-        mirror_filesystem(configFS, LittleFS, "/", 4, buf, 4096);
+        const size_t buffer_size = 4096;
+        uint8_t *buf = static_cast<decltype(buf)>(malloc(buffer_size));
+        mirror_filesystem(configFS, LittleFS, "/", 4, buf, buffer_size);
         free(buf);
         configFS.end();
         LittleFS.end();
@@ -212,7 +217,7 @@ bool mount_or_format_spiffs()
 
     size_t part_size = LittleFS.totalBytes();
     size_t part_used = LittleFS.usedBytes();
-    logger.printfln("Mounted data partition. %u of %u bytes (%3.1f %%) used", part_used, part_size, ((float)part_used / (float)part_size) * 100.0f);
+    logger.printfln("Mounted data partition. %u of %u bytes (%3.1f %%) used", part_used, part_size, static_cast<double>(static_cast<float>(100 * part_used) / static_cast<float>(part_size)));
 
     return true;
 }
@@ -268,4 +273,66 @@ void remove_directory(const char *path)
         }, false);
 
     ::rmdir(("/spiffs" + path_string).c_str());
+}
+
+static int local_stat(struct stat *st, fs::LittleFSFS *file_system, const char *path)
+{
+    const char *mountpoint = file_system->mountpoint();
+    const size_t mp_len   = strlen(mountpoint);
+    const size_t path_len = strlen(path);
+    const size_t full_len = mp_len + path_len;
+
+    char local_path[256];
+    char *full_path;
+
+    if (full_len < sizeof(local_path)) { // less-than because of termination
+        full_path = local_path;
+    } else {
+        full_path = static_cast<decltype(full_path)>(malloc(full_len + 1));
+    }
+
+    memcpy(full_path, mountpoint, mp_len);
+    memcpy(full_path + mp_len, path, path_len + 1); // Include termination
+
+    const int ret = stat(full_path, st);
+
+    if (full_path != local_path) {
+        const int errno_save = errno;
+
+        free(full_path);
+
+        errno = errno_save;
+    }
+
+    return ret;
+}
+
+ssize_t file_size(fs::LittleFSFS &file_system, const char *path)
+{
+    struct stat st;
+
+    if (local_stat(&st, &file_system, path) != 0) {
+        return -1;
+    }
+
+    return static_cast<ssize_t>(st.st_size);
+}
+
+ssize_t file_size(fs::LittleFSFS &file_system, const String &path) {
+    return file_size(file_system, path.c_str());
+}
+
+bool file_exists(fs::LittleFSFS &file_system, const char *path)
+{
+    struct stat st;
+
+    if (local_stat(&st, &file_system, path) != 0) {
+        return false;
+    }
+
+    return (st.st_mode & S_IFMT) == S_IFREG; // Check if path points to a regular file.
+}
+
+bool file_exists(fs::LittleFSFS &file_system, const String &path) {
+    return file_exists(file_system, path.c_str());
 }

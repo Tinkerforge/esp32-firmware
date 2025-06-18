@@ -20,6 +20,7 @@
 #pragma once
 
 #include <FS.h>
+#include <LittleFS.h>
 #include "stdint.h"
 
 extern bool should_factory_reset_bricklets;
@@ -28,3 +29,9 @@ bool mount_or_format_spiffs();
 bool for_file_in(const char *dir, bool (*callback)(File *open_file), bool skip_directories = true);
 
 void remove_directory(const char *path);
+
+ssize_t file_size(fs::LittleFSFS &file_system, const char *path);
+ssize_t file_size(fs::LittleFSFS &file_system, const String &path);
+
+bool file_exists(fs::LittleFSFS &file_system, const char *path);
+bool file_exists(fs::LittleFSFS &file_system, const String &path);
