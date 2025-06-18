@@ -116,6 +116,8 @@ void EEBus::pre_setup()
             Config::type_id<Config::ConfObject>())},
     });
 
+    device_name = DNS_SD_UUID;
+
     ship.pre_setup();
 }
 
@@ -146,7 +148,7 @@ void EEBus::setup()
 
 void EEBus::register_urls()
 {
-    
+
     api.addPersistentConfig("eebus/config", &config);
     api.addState("eebus/state", &state);
 
@@ -166,22 +168,25 @@ void EEBus::register_urls()
                 if (p->get("ski")->asString() == add_peer.get("ski")->asString()) {
                     peer = p;
                     found = true;
-                    logger.printfln("Updating ship peer %s with ip %s", peer->get("ski")->asString().c_str(), peer->get("ip")->asString().c_str());
+                    logger.printfln("Updating ship peer %s with ip %s",
+                                    peer->get("ski")->asString().c_str(),
+                                    peer->get("ip")->asString().c_str());
                     break;
                 }
             }
             if (!found) {
                 peer = config.get("peers")->add();
-                logger.printfln("Adding ship peer %s with ip %s", peer->get("ski")->asString().c_str(), peer->get("ip")->asString().c_str());
+                logger.printfln("Adding ship peer %s with ip %s",
+                                peer->get("ski")->asString().c_str(),
+                                peer->get("ip")->asString().c_str());
             }
             peer->get("ip")->updateString(add_peer.get("ip")->asString());
             peer->get("port")->updateUint(add_peer.get("port")->asUint());
             peer->get("trusted")->updateBool(add_peer.get("trusted")->asBool());
             peer->get("dns_name")->updateString(add_peer.get("dns_name")->asString());
             peer->get("wss_path")->updateString(add_peer.get("wss_path")->asString());
-            peer->get("ski")->updateString(add_peer.get("ski")->asString());            
+            peer->get("ski")->updateString(add_peer.get("ski")->asString());
             api.writeConfig("eebus/config", &config);
-            
         },
         true);
 
@@ -197,16 +202,17 @@ void EEBus::register_urls()
             for (size_t i = 0; i < config.get("peers")->count(); i++) {
                 auto peer = config.get("peers")->get(i);
                 if (peer->get("ski")->asString() == remove_peer.get("ski")->asString()) {
-                    logger.printfln("Removing ship peer %s with ip %s", peer->get("ski")->asString().c_str(), peer->get("ip")->asString().c_str()); 
+                    logger.printfln("Removing ship peer %s with ip %s",
+                                    peer->get("ski")->asString().c_str(),
+                                    peer->get("ip")->asString().c_str());
                     config.get("peers")->remove(i);
                     break;
                 }
             }
             api.writeConfig("eebus/config", &config);
-            
         },
         true);
-  
+
     // Yes i realize this is not the best way
     server.on("/eebus/scan", HTTP_PUT, [this](WebServerRequest request) {
         if (ship.discovery_state == Ship_Discovery_State::SCANNING) {
@@ -225,6 +231,10 @@ void EEBus::register_urls()
     });
 
     ship.setup();
+}
+String EEBus::get_eebus_name()
+{
+    return device_name;
 }
 
 int EEBus::get_state_connection_id_by_ski(const String &ski)
