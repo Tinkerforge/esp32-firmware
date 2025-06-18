@@ -21,10 +21,8 @@
 #pragma once
 
 #include "build.h"
-#include <TFJson.h>
 
 #include "config.h"
-#include "module.h"
 #include "spine_connection.h"
 #include "spine_types.h"
 
@@ -61,7 +59,7 @@ public:
      */
     virtual UseCaseInformationDataType get_usecase_information() = 0;
 
-    virtual UseCaseType get_usecase_type() const = 0;
+    [[nodiscard]] virtual UseCaseType get_usecase_type() const = 0;
 private:
     uint8_t feature_address = 0; // The feature address of the usecase. This is used to identify the usecase in the NodeManagementUseCaseDataType.
 };
@@ -81,10 +79,15 @@ public:
 
     void set_usecaseManager(EEBusUseCases *usecases);
 
-    UseCaseType get_usecase_type() const override {return UseCaseType::NodeManagement;}
+    [[nodiscard]] UseCaseType get_usecase_type() const override {return UseCaseType::NodeManagement;}
 
 private:
     EEBusUseCases *usecase_interface{};
+
+    bool read_usecase_data(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) const;
+
+    bool read_detailed_discovery_data(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) const;
+
 };
 
 /**
@@ -103,9 +106,11 @@ public:
 
     bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) override;
 
-    UseCaseType get_usecase_type() const override {return UseCaseType::ChargingSummary;}
-private:
-    UseCaseInformationDataType use_case_information;
+    [[nodiscard]] UseCaseType get_usecase_type() const override {return UseCaseType::ChargingSummary;}
+
+    // Binding
+    std::vector<uint32_t> bound_connections{}; // List of connections that have been bound successfully
+
 
 };
 
@@ -122,9 +127,10 @@ public:
      * @param header Spine Header
      * @param data Payload of the message.
      * @param response The response object to fill with the response data.
+     * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
      * @return true if a response was generated and needs to be sent, false if no response is needed.
      */
-    bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response);
+    bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response, SpineConnection *connection);
 
     std::vector<UseCase *> usecase_list{};
     uint8_t feature_address_node_management = 0;
