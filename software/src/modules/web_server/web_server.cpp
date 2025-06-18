@@ -19,8 +19,7 @@
 
 #include "web_server.h"
 
-#include <esp_log.h>
-#include <memory>
+#include <esp_system.h>
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
@@ -507,10 +506,7 @@ WebServerRequestReturnProtect WebServerRequest::send(uint16_t code, const char *
 void WebServerRequest::beginChunkedResponse(uint16_t code, const char *content_type)
 {
     if (chunkedResponseState != ChunkedResponseState::NotStarted) {
-        // TODO: change this to esp_system_abort when 2.6.2 is released
-        logger.printfln("BUG: Multiple calls to beginChunkedResponse detected!");
-        chunkedResponseState = ChunkedResponseState::Failed;
-        return;
+        esp_system_abort("BUG: Multiple calls to beginChunkedResponse detected!");
     }
 
     auto result = httpd_resp_set_type(req, content_type);
@@ -536,15 +532,9 @@ int WebServerRequest::sendChunk(const char *chunk, ssize_t chunk_len)
         case ChunkedResponseState::Failed:
             return ESP_FAIL;
         case ChunkedResponseState::NotStarted:
-            chunkedResponseState = ChunkedResponseState::Failed;
-            // TODO: change this to esp_system_abort when 2.6.2 is released
-            logger.printfln("BUG: sendChunk was called before beginChunkedResponse!");
-            return ESP_FAIL;
+            esp_system_abort("BUG: sendChunk was called before beginChunkedResponse!");
         case ChunkedResponseState::Ended:
-            chunkedResponseState = ChunkedResponseState::Failed;
-            // TODO: change this to esp_system_abort when 2.6.2 is released
-            logger.printfln("BUG: sendChunk was called after endChunkedResponse");
-            return ESP_FAIL;
+            esp_system_abort("BUG: sendChunk was called after endChunkedResponse");
         case ChunkedResponseState::Started:
             break;
     }
@@ -569,14 +559,9 @@ WebServerRequestReturnProtect WebServerRequest::endChunkedResponse()
         case ChunkedResponseState::Failed:
             return WebServerRequestReturnProtect{};
         case ChunkedResponseState::NotStarted:
-            chunkedResponseState = ChunkedResponseState::Failed;
-            // TODO: change this to esp_system_abort when 2.6.2 is released
-            logger.printfln("BUG: endChunkedResponse was called before beginChunkedResponse!");
-            return this->send(500);
+            esp_system_abort("BUG: endChunkedResponse was called before beginChunkedResponse!");
         case ChunkedResponseState::Ended:
-            // TODO: change this to esp_system_abort when 2.6.2 is released
-            logger.printfln("BUG: endChunkedResponse was called twice!");
-            return WebServerRequestReturnProtect{};
+            esp_system_abort("BUG: endChunkedResponse was called twice!");
         case ChunkedResponseState::Started:
             break;
     }
