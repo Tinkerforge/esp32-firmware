@@ -158,19 +158,17 @@ void Ship::setup_wss()
         logger.printfln("Error starting server: %d", ret);
     }
 
-    
-
     web_sockets.onConnect_HTTPThread([this](WebSocketsClient ws_client) {
         struct sockaddr_in6 addr;
         socklen_t addr_len = sizeof(addr);
         getpeername(ws_client.fd, (struct sockaddr *)&addr, &addr_len);
         char client_ip[INET6_ADDRSTRLEN];
-  
+
         inet_ntop(AF_INET6, &addr.sin6_addr, client_ip, sizeof(client_ip));
-     
+
         CoolString peer_ski = "unknown";
         std::string peer_ip = client_ip;
-        
+
         for (size_t i = 0; i < eebus.config.get("peers")->count(); i++) {
             if (peer_ip.find(eebus.config.get("peers")->get(i)->get("ip")->asString().c_str()) != std::string::npos) {
                 peer_ski = eebus.config.get("peers")->get(i)->get("ski")->asString();
@@ -178,14 +176,13 @@ void Ship::setup_wss()
             }
         }
         logger.printfln("WebSocketsClient connected from %s:%d with SKI %s", client_ip, ntohs(addr.sin6_port), peer_ski.c_str());
-        ship_connections.push_back(ShipConnection{ws_client, ShipConnection::Role::Server, peer_ski});        
+        ship_connections.push_back(ShipConnection{ws_client, ShipConnection::Role::Server, peer_ski});
         logger.printfln("WebSocketClient connected");
 
         return true;
     });
 
     web_sockets.onBinaryDataReceived_HTTPThread([this](const int fd, httpd_ws_frame_t *ws_pkt) {
-        
         for (auto &ship_connection : ship_connections) {
             if (ship_connection.ws_client.fd == fd) {
                 ship_connection.frame_received(ws_pkt);
@@ -215,8 +212,8 @@ void Ship::setup_mdns()
     logger.printfln("mdns_service_txt_item_set");
     mdns_service_txt_item_set("_ship", "_tcp", "txtvers", "1");
     // TODO: Use UID instead of 12345
-    
-    mdns_service_txt_item_set("_ship", "_tcp", "id", "Tinkerforge-WARP3-12345"); // ManufaturerName-Model-UniqueID (max 63 bytes)
+
+    mdns_service_txt_item_set("_ship", "_tcp", "id", eebus.get_eebus_name().c_str()); // ManufaturerName-Model-UniqueID (max 63 bytes)
     mdns_service_txt_item_set("_ship", "_tcp", "path", "/ship/");
     mdns_service_txt_item_set("_ship",
                               "_tcp",
@@ -225,15 +222,15 @@ void Ship::setup_mdns()
 
     mdns_service_txt_item_set("_ship", "_tcp", "register", "false");
     // Optional Fields
-    mdns_service_txt_item_set("_ship", "_tcp", "brand", "Tinkerforge");
-    mdns_service_txt_item_set("_ship", "_tcp", "model", "WARP3");
-    mdns_service_txt_item_set("_ship", "_tcp", "type", "Wallbox"); // Or EVSE?
+    mdns_service_txt_item_set("_ship", "_tcp", "brand", EEBUS_DEVICE_MANUFACTURER);
+    mdns_service_txt_item_set("_ship", "_tcp", "model", EEBUS_DEVICE_MODEL);
+    mdns_service_txt_item_set("_ship", "_tcp", "type", EEBUS_DEVICE_TYPE); // Or EVSE?
 
     logger.printfln("setup_mdns done");
 }
 
 Ship_Discovery_State Ship::discover_ship_peers()
-{   
+{
     if (discovery_state == Ship_Discovery_State::SCANNING) {
         return discovery_state;
     }
@@ -252,12 +249,12 @@ Ship_Discovery_State Ship::discover_ship_peers()
     esp_err_t err = mdns_query_ptr(service, proto, 3000, 20, &results);
     if (err) {
         logger.printfln("EEBUS MDNS Query Failed. Error %d", err);
-update_discovery_state(Ship_Discovery_State::ERROR);
+        update_discovery_state(Ship_Discovery_State::ERROR);
         return discovery_state;
     }
     if (!results) {
         logger.printfln("EEBUS MDNS: No results found!");
-update_discovery_state(Ship_Discovery_State::SCAN_DONE);
+        update_discovery_state(Ship_Discovery_State::SCAN_DONE);
         return discovery_state;
     }
     mdns_results.clear();
@@ -305,7 +302,7 @@ update_discovery_state(Ship_Discovery_State::SCAN_DONE);
         }
 
         mdns_results.push_back(ship_node);
-        
+
         results = results->next;
     }
 
