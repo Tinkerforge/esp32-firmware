@@ -937,7 +937,7 @@ void ShipConnection::state_done()
                             message_incoming->length,
                             &message_incoming->data[1]);
             SHIP_TYPES::ShipMessageAccessMethods access_methods = SHIP_TYPES::ShipMessageAccessMethods();
-            access_methods.id = DNS_SD_UUID;
+            access_methods.id = eebus.get_eebus_name();
             String json = access_methods.type_to_json();
             // TOD: optimize this so it doesnt need to copy the string
             send_string(json.c_str(), json.length());

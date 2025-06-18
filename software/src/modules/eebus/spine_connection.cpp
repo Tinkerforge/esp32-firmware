@@ -54,7 +54,7 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
     JsonObject cmd_obj = cmd_array.createNestedObject();
     //cmd_array.createNestedObject(); // add an empty object to the array or it might get turned into an object by ship-go
 
-    if (eebus.usecases.handle_message(received_header, eebus.data_handler, cmd_obj)) {
+    if (eebus.usecases.handle_message(received_header, eebus.data_handler, cmd_obj, this)) {
         response_doc["datagram"][0]["header"]["specificationVersion"] = "1.3.0";
         response_doc["datagram"][0]["header"]["addressSource"]["device"] = "d:_i:123456_warp3";
         response_doc["datagram"][0]["header"]["addressSource"]["entity"][0] = 0;

@@ -32,23 +32,32 @@ UseCaseInformationDataType NodeManagementUsecase::get_usecase_information()
 bool NodeManagementUsecase::handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response)
 {
     if (header.cmd_classifier == CmdClassifierType::read && data.last_cmd == SpineDataTypeHandler::Function::nodeManagementUseCaseData) {
-        NodeManagementUseCaseDataType node_management_usecase_data;
-        for (UseCase *uc : usecase_interface->usecase_list) {
-            if (uc->get_usecase_type() != UseCaseType::NodeManagement) {
-                node_management_usecase_data.useCaseInformation->push_back(uc->get_usecase_information());
-            }
-        }
-        if (node_management_usecase_data.useCaseInformation->size() > 0) {
-            response["nodeManagementUseCaseData"] = node_management_usecase_data;
-            if (response["nodeManagementUseCaseData"].isNull()) {
-                logger.printfln("Error while writing NodeManagementUseCaseData to response");
-            }
-            return true;
-        }
+        read_usecase_data(header, data, response);
     }
     return false;
 }
 
+bool NodeManagementUsecase::read_usecase_data(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) const
+{
+    NodeManagementUseCaseDataType node_management_usecase_data;
+    for (UseCase *uc : usecase_interface->usecase_list) {
+        if (uc->get_usecase_type() != UseCaseType::NodeManagement) {
+            node_management_usecase_data.useCaseInformation->push_back(uc->get_usecase_information());
+        }
+    }
+    if (!node_management_usecase_data.useCaseInformation->empty()) {
+        response["nodeManagementUseCaseData"] = node_management_usecase_data;
+        if (response["nodeManagementUseCaseData"].isNull()) {
+            logger.printfln("Error while writing NodeManagementUseCaseData to response");
+        }
+        return true;
+    }
+    return false;
+}
+bool NodeManagementUsecase::read_detailed_discovery_data(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) const
+{
+    return false;
+}
 UseCaseInformationDataType ChargingSummaryUsecase::get_usecase_information()
 {
 
@@ -64,7 +73,7 @@ UseCaseInformationDataType ChargingSummaryUsecase::get_usecase_information()
     evcs_usecase.useCaseSupport->push_back(evcs_usecase_support);
 
     FeatureAddressType evcs_usecase_feature_address;
-    evcs_usecase_feature_address.device = "d:_i:123456_WARP3"; //TODO: Pull this name from some global variable
+    evcs_usecase_feature_address.device = ("d:_i:" + eebus.get_eebus_name()).c_str(); //TODO: Pull this name from some global variable
     evcs_usecase_feature_address.entity->push_back(1);
     evcs_usecase_feature_address.feature = 1;
     evcs_usecase.address = evcs_usecase_feature_address;
@@ -72,6 +81,7 @@ UseCaseInformationDataType ChargingSummaryUsecase::get_usecase_information()
 }
 bool ChargingSummaryUsecase::handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response)
 {
+    // TODO
     return false;
 }
 
@@ -89,7 +99,7 @@ EEBusUseCases::EEBusUseCases()
     charging_summary = ChargingSummaryUsecase();
     usecase_list.push_back(&charging_summary);
 }
-bool EEBusUseCases::handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response)
+bool EEBusUseCases::handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response, SpineConnection *connection)
 {
     if (header.destination_feature == feature_address_node_management) {
 
