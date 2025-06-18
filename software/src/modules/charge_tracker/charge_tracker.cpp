@@ -278,6 +278,7 @@ void ChargeTracker::removeOldRecords()
     const size_t user_id_offset = offsetof(ChargeStart, user_id);
 
     uint32_t users_to_delete[8] = {0}; // one bit per user
+    bool have_user_to_delete = false;
 
     while (this->last_charge_record - this->first_charge_record >= 30) {
         String name = chargeRecordFilename(this->first_charge_record);
@@ -292,10 +293,16 @@ void ChargeTracker::removeOldRecords()
                     continue;
                 uint8_t user_id = x;
                 users_to_delete[user_id / 32] |= (1 << (user_id % 32));
+                have_user_to_delete = true;
             }
         }
         LittleFS.remove(name);
         ++this->first_charge_record;
+    }
+
+    // Skip parsing all charge records if there aren't any users to delete.
+    if (!have_user_to_delete) {
+        return;
     }
 
     //users_to_delete has now set a bit for every user_id that was used in the deleted charge records.
