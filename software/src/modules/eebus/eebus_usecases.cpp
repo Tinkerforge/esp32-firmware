@@ -117,6 +117,7 @@ NodeManagementDetailedDiscoveryFeatureInformationType NodeManagementUsecase::get
     detailedDiscoveryData.possibleOperations->read = PossibleOperationsReadType{};
     feature.description->supportedFunction->push_back(detailedDiscoveryData);
 
+    /* We dont support all this yet, so we comment it out for now.
     // Information about current bindings
     FunctionPropertyType nodemanagementBindingData{};
     nodemanagementBindingData.function =
@@ -158,7 +159,7 @@ NodeManagementDetailedDiscoveryFeatureInformationType NodeManagementUsecase::get
         eebus.data_handler.function_to_string(SpineDataTypeHandler::Function::nodeManagementSubscriptionRequestCall).c_str();
     nodemanagementSubscriptionRequest.possibleOperations = PossibleOperationsType{};
     feature.description->supportedFunction->push_back(nodemanagementSubscriptionRequest);
-
+    */
     return feature;
 };
 
@@ -190,13 +191,50 @@ bool ChargingSummaryUsecase::handle_message(SpineHeader &header, SpineDataTypeHa
 }
 NodeManagementDetailedDiscoveryEntityInformationType ChargingSummaryUsecase::get_detailed_discovery_entity_information() const
 {
-    // TODO: Implement this as needed for the usecase
-    return NodeManagementDetailedDiscoveryEntityInformationType();
+    NodeManagementDetailedDiscoveryEntityInformationType entity{};
+    entity.description->entityAddress->entity->push_back(1); // Entity 1 is the NodeManagement entity
+    entity.description->entityType = "EVSE";                 // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.17
+    entity.description->label = "Charging Summary";          // The label of the entity. This is optional but recommended.
+
+    // We focus on returning the mandatory fields.
+    return entity;
 }
 NodeManagementDetailedDiscoveryFeatureInformationType ChargingSummaryUsecase::get_detailed_discovery_feature_information() const
 {
     // TODO: Implement this as needed for the usecase
-    return NodeManagementDetailedDiscoveryFeatureInformationType();
+
+    NodeManagementDetailedDiscoveryFeatureInformationType feature{};
+
+    feature.description->featureAddress->entity->push_back(1); // Entity 0 is the NodeManagement entity
+    feature.description->featureAddress->feature = 1;          // Feature 0 is the NodeManagement feature
+
+    feature.description->featureType = "Bill"; // The feature type as defined in EEBUS SPINE TS ResourceSpecification 4.3.19
+    feature.description->role = RoleType::server;
+
+    /* We Dont actually support these functions yet, so we comment them out for now.
+    // The following functions are needed by the ChargingSummary usecase
+    // Bill description information
+    FunctionPropertyType billDescriptionList{};
+    billDescriptionList.function = eebus.data_handler.function_to_string(SpineDataTypeHandler::Function::billDescriptionListData).c_str();
+    billDescriptionList.possibleOperations->read = PossibleOperationsReadType{};
+    feature.description->supportedFunction->push_back(billDescriptionList);
+
+    // Bill constraints information
+    FunctionPropertyType billconstraints{};
+    billconstraints.function =
+        eebus.data_handler.function_to_string(SpineDataTypeHandler::Function::billConstraintsListData).c_str();
+    billconstraints.possibleOperations->read = PossibleOperationsReadType{};
+    feature.description->supportedFunction->push_back(billconstraints);
+
+    // Bill list information
+    FunctionPropertyType billListData{};
+    billListData.function =
+        eebus.data_handler.function_to_string(SpineDataTypeHandler::Function::billListData).c_str();
+    billListData.possibleOperations->read = PossibleOperationsReadType{};
+    feature.description->supportedFunction->push_back(billListData);
+*/
+
+    return feature;
 }
 
 void NodeManagementUsecase::set_usecaseManager(EEBusUseCases *new_usecase_interface)
