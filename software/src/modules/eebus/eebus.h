@@ -31,10 +31,15 @@
 #define MAX_PEER_REMEMBERED 64 // How man ship peers configured to be remembered
 #define SHIP_AUTODISCOVER_INTERVAL 30_s // How often to autodiscover ship peers
 
+// EEBUS Device definitions
+// These can be freely defined and are not limited by the spec
 #define EEBUS_DEVICE_MANUFACTURER "Tinkerforge"
 #define EEBUS_DEVICE_MODEL "WARP3"
-#define EEBUS_DEVICE_TYPE "Wallbox"
+#define EEBUS_DEVICE_LABEL "Wallbox"
 
+#define EEBUS_DEVICE_TYPE "ChargingStation" // The device type as defined in EEBUS SPINE TS ResourceSpecification. Can be freely defined i
+
+#define SUPPORTED_SPINE_VERSION "1.3.0" // The supported SPINE version for EEBus
 
 class EEBus final : public IModule
 {
