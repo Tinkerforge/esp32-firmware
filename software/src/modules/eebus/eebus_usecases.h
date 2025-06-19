@@ -60,6 +60,10 @@ public:
     virtual UseCaseInformationDataType get_usecase_information() = 0;
 
     [[nodiscard]] virtual UseCaseType get_usecase_type() const = 0;
+
+    virtual NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const;
+    virtual NodeManagementDetailedDiscoveryFeatureInformationType get_detailed_discovery_feature_information() const;
+
 private:
     uint8_t feature_address = 0; // The feature address of the usecase. This is used to identify the usecase in the NodeManagementUseCaseDataType.
 };
@@ -72,14 +76,21 @@ class NodeManagementUsecase final : public UseCase
 public:
     NodeManagementUsecase() = default;
 
-
     UseCaseInformationDataType get_usecase_information() override;
 
     bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) override;
 
     void set_usecaseManager(EEBusUseCases *usecases);
 
-    [[nodiscard]] UseCaseType get_usecase_type() const override {return UseCaseType::NodeManagement;}
+    NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
+    NodeManagementDetailedDiscoveryFeatureInformationType get_detailed_discovery_feature_information() const override;
+
+
+    [[nodiscard]] UseCaseType get_usecase_type() const override
+    {
+        return UseCaseType::NodeManagement;
+    }
+
 
 private:
     EEBusUseCases *usecase_interface{};
@@ -87,8 +98,8 @@ private:
     bool read_usecase_data(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) const;
 
     bool read_detailed_discovery_data(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) const;
-
 };
+
 
 /**
  * The EEBUSChargingSummary UseCase as defined in EEBus UC TS - EV Charging Summary V1.0.1.
@@ -107,10 +118,12 @@ public:
     bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) override;
 
     [[nodiscard]] UseCaseType get_usecase_type() const override {return UseCaseType::ChargingSummary;}
+    NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
+    NodeManagementDetailedDiscoveryFeatureInformationType get_detailed_discovery_feature_information() const override;
+
 
     // Binding
     std::vector<uint32_t> bound_connections{}; // List of connections that have been bound successfully
-
 
 };
 
@@ -139,3 +152,5 @@ public:
     uint8_t feature_address_charging_summary = 1;
     ChargingSummaryUsecase charging_summary;
 };
+
+String get_spine_device_name();

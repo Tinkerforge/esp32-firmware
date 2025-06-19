@@ -55,8 +55,9 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
     //cmd_array.createNestedObject(); // add an empty object to the array or it might get turned into an object by ship-go
 
     if (eebus.usecases.handle_message(received_header, eebus.data_handler, cmd_obj, this)) {
-        response_doc["datagram"][0]["header"]["specificationVersion"] = "1.3.0";
-        response_doc["datagram"][0]["header"]["addressSource"]["device"] = "d:_i:123456_warp3";
+// TODO: Set the source and destination addresses correctly
+        response_doc["datagram"][0]["header"]["specificationVersion"] = SUPPORTED_SPINE_VERSION;
+        response_doc["datagram"][0]["header"]["addressSource"]["device"] = ("d:_i:" + eebus.get_eebus_name()).c_str();
         response_doc["datagram"][0]["header"]["addressSource"]["entity"][0] = 0;
         response_doc["datagram"][0]["header"]["addressSource"]["feature"] = 0;
         response_doc["datagram"][0]["header"]["addressDestination"]["device"] = received_header.source_device_id;
