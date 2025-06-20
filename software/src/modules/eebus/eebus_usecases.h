@@ -26,7 +26,11 @@
 #include "spine_connection.h"
 #include "spine_types.h"
 
+// Update this as new usecases are added
+#define EEBUS_USECASES_ACTIVE 2
+
 class EEBusUseCases; // Forward declaration of EEBusUseCases
+
 
 enum class UseCaseType : uint8_t {
     NodeManagement,
@@ -43,15 +47,26 @@ enum class UseCaseType : uint8_t {
 class UseCase
 {
 public:
+    // Usecase Handlers
     virtual ~UseCase() = default;
+
+    [[nodiscard]] virtual UseCaseType get_usecase_type() const = 0;
+    void set_entity_address(const uint8_t address)
+    {
+        entity_address = address;
+    }
+
+    // Binding management
+
     /**
-     * Handles a message for a usecase.
+     * \brief Handles a message for a usecase.
      * @param header SPINE header of the message. Contains information about the commandclassifier and the targeted entitiy.
      * @param data The actual Function call
      * @param response Where to write the response to. This is a JsonObject that should be filled with the response data.
+     * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
      * @return true if a response was generated and needs to be sent, false if no response is needed.
      */
-    virtual bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) = 0;
+    virtual bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response, SpineConnection *connection) = 0;
 
     /**
      * Returns the usecase information for this usecase.
@@ -59,13 +74,14 @@ public:
      */
     virtual UseCaseInformationDataType get_usecase_information() = 0;
 
-    [[nodiscard]] virtual UseCaseType get_usecase_type() const = 0;
-
     virtual NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const;
     virtual NodeManagementDetailedDiscoveryFeatureInformationType get_detailed_discovery_feature_information() const;
 
-private:
-    uint8_t feature_address = 0; // The feature address of the usecase. This is used to identify the usecase in the NodeManagementUseCaseDataType.
+protected:
+    uint8_t entity_address =
+        0; // The feature address of the usecase. This is used to identify the usecase in the NodeManagementUseCaseDataType.
+
+    // The SPINE Protocol specification implies in 7.3.6 that this should be stored persistently but it also allows binding information to be discarded in case the device was offline.
 };
 
 /**
@@ -76,21 +92,43 @@ class NodeManagementUsecase final : public UseCase
 public:
     NodeManagementUsecase() = default;
 
-    UseCaseInformationDataType get_usecase_information() override;
+    /**
+    * Handles a binding request for a usecase.
+    * @param data The SpineDataTypeHandler that contains the command.
+    * @param response The JsonObject to write the response to. This should be filled with the response data.
+    * @return true if a response was generated and needs to be sent, false if no response is needed.
+    */
+    bool handle_binding(SpineDataTypeHandler &data, JsonObject response);
+    // The list of bindings for this usecase.
+    BindingManagementEntryListDataType binding_management_entry_list_{};
+    /**
+     * Checks if the given client is bound to the given server entity and feature.
+     * @param client The client FeatureAddressType to check.
+     * @param server The server FeatureAddressType to check.
+     * @return true if the client is bound to the server, false otherwise.
+     */
+    bool check_is_bound(FeatureAddressType &client,FeatureAddressType &server);
 
-    bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) override;
+    UseCaseInformationDataType get_usecase_information() override;
+    /**
+    * \brief Handles a message for a usecase.
+    * @param header SPINE header of the message. Contains information about the commandclassifier and the targeted entitiy.
+    * @param data The actual Function call
+    * @param response Where to write the response to. This is a JsonObject that should be filled with the response data.
+    * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
+    * @return true if a response was generated and needs to be sent, false if no response is needed.
+    */
+    bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response, SpineConnection *connection) override;
 
     void set_usecaseManager(EEBusUseCases *usecases);
 
     NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     NodeManagementDetailedDiscoveryFeatureInformationType get_detailed_discovery_feature_information() const override;
 
-
     [[nodiscard]] UseCaseType get_usecase_type() const override
     {
         return UseCaseType::NodeManagement;
     }
-
 
 private:
     EEBusUseCases *usecase_interface{};
@@ -98,8 +136,9 @@ private:
     bool read_usecase_data(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) const;
 
     bool read_detailed_discovery_data(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) const;
-};
 
+    bool handle_subscription(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response, SpineConnection *connection);
+};
 
 /**
  * The EEBUSChargingSummary UseCase as defined in EEBus UC TS - EV Charging Summary V1.0.1.
@@ -107,6 +146,7 @@ private:
 class ChargingSummaryUsecase final : public UseCase
 {
 public:
+    // Usecase Management
     ChargingSummaryUsecase() = default;
 
     /**
@@ -115,16 +155,25 @@ public:
     */
     UseCaseInformationDataType get_usecase_information() override;
 
-    bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) override;
+    /**
+     * \brief Handles a message for a usecase.
+     * @param header SPINE header of the message. Contains information about the commandclassifier and the targeted entitiy.
+     * @param data The actual Function call
+     * @param response Where to write the response to. This is a JsonObject that should be filled with the response data.
+     * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
+     * @return true if a response was generated and needs to be sent, false if no response is needed.
+     */
+    bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response, SpineConnection *connection) override;
 
-    [[nodiscard]] UseCaseType get_usecase_type() const override {return UseCaseType::ChargingSummary;}
+    [[nodiscard]] UseCaseType get_usecase_type() const override
+    {
+        return UseCaseType::ChargingSummary;
+    }
     NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     NodeManagementDetailedDiscoveryFeatureInformationType get_detailed_discovery_feature_information() const override;
 
-
     // Binding
     std::vector<uint32_t> bound_connections{}; // List of connections that have been bound successfully
-
 };
 
 /**
@@ -145,12 +194,43 @@ public:
      */
     bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response, SpineConnection *connection);
 
-    std::vector<UseCase *> usecase_list{};
     uint8_t feature_address_node_management = 0;
-    NodeManagementUsecase node_management;
+    NodeManagementUsecase node_management{};
 
     uint8_t feature_address_charging_summary = 1;
-    ChargingSummaryUsecase charging_summary;
+    ChargingSummaryUsecase charging_summary{};
+
+    UseCase *usecase_list[EEBUS_USECASES_ACTIVE] = {&node_management, &charging_summary};
 };
 
-String get_spine_device_name();
+namespace EEBUS_USECASE_HELPERS
+{
+const char *get_spine_device_name();
+
+/**
+ * The Values specified in the EEBUS SPINE TS ResourceSpecification 3.11 Table 19
+ */
+enum class ResultErrorNumber
+{
+    NoError = 0,
+    GeneralError,
+    Timeout,
+    Overload,
+    DestinationUnknown,
+    DestinationUnreachable,
+    CommandNotSupported,
+    CommandRejected,
+    RestrictedFunctionExchangeCombinationNotSupported,
+    BindingRequired
+};
+
+/**
+ * Generate a result data object and writes it to the response object.
+ * @param response The JsonObject to write the result data to.
+ * @param error_number The error number to set in the result data. Default is NoError.
+ * @param description The description of the error set in the result data. Default is an empty string.
+ */
+void build_result_data(JsonObject &response, ResultErrorNumber error_number = ResultErrorNumber::NoError, const char *description = "");
+
+}
+
