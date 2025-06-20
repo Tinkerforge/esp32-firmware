@@ -246,6 +246,7 @@ private:
             uint16_t battery_2_mode;
             float bms_2_pack_temperature;
             float battery_2_capacity;
+            uint32_t pv_mode;
             float pv1_voltage;
             float pv1_current;
             float pv1_power;

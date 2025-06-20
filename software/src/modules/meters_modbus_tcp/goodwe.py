@@ -599,6 +599,12 @@ specs = [
         'register_type': 'HoldingRegister',
         'values': [
             {
+                'name': 'PV Mode',
+                'value_id': 'VALUE_ID_META',
+                'start_address': 35119,
+                'value_type': 'U32BE',
+            },
+            {
                 'name': 'PV1 Voltage [0.1 V]',
                 'value_id': 'VoltagePV1',
                 'start_address': 35103,
@@ -676,12 +682,6 @@ specs = [
                 'name': 'PV4 Power [W]',
                 'value_id': 'PowerPV4Export',
                 'start_address': 35117,
-                'value_type': 'U32BE',
-            },
-            {
-                'name': 'PV Mode',
-                'value_id': 'VALUE_ID_META',
-                'start_address': 35119,
                 'value_type': 'U32BE',
             },
             {
