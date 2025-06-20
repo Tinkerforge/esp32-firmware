@@ -2170,7 +2170,7 @@ void MeterModbusTCP::parse_next()
                         + victron_energy_gx.ac_coupled_pv_on_output_l2_power
                         + victron_energy_gx.ac_coupled_pv_on_output_l3_power;
 
-            meters.update_value(slot, table->index[read_index + 1], -power);
+            meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(power));
         }
     }
     else if (is_victron_energy_gx_load_meter()) {
