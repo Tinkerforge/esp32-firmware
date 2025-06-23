@@ -38,8 +38,8 @@ export function DebugNavbar() {
 
 export function FormRow(props: FormRowProps) { return <VanillaFormRow {...props} labelColClasses="col-lg-3" contentColClasses="col-lg-9" />; }
 
-function Row(props:{label?: string, l?: ComponentChild, c?: ComponentChild, r?: ComponentChild}) {
-    return <FormRow label={props.label}>
+function Row(props:{label?: string, label_muted?: string, l?: ComponentChild, c?: ComponentChild, r?: ComponentChild}) {
+    return <FormRow label={props.label} label_muted={props.label_muted}>
         <div class="row">
             <div class="mb-1 col-12 col-sm-4">{props.l}</div>
             <div class="mb-1 col-12 col-sm-4">{props.c}</div>
@@ -245,6 +245,17 @@ export class Debug extends Component {
                                 r={task_hwm.stack_size == 0 ? undefined : <OutputFloat value={task_hwm.stack_size} digits={0} scale={0} unit="B"/>}/>
 
                 })}
+
+                <FormSeparator heading={__("debug.content.sockets_header")} first={false} />
+
+                <Row l={<p class="mb-0 mt-2 form-label text-center">{__("debug.content.lwip_sockets_used")}</p>}
+                     c={<p class="mb-0 mt-2 form-label text-center">{__("debug.content.lwip_sockets_hwm")}</p>}
+                     r={<p class="mb-0 mt-2 form-label text-center">{__("debug.content.lwip_sockets_max")}</p>}/>
+
+                <Row label={__("debug.content.lwip_socket_counts")} label_muted={__("debug.content.lwip_socket_counts_muted")}
+                     l={<OutputFloat value={state_slow.ipsock_cur  } digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>}
+                     c={<OutputFloat value={state_slow.ipsock_hwm  } digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>}
+                     r={<OutputFloat value={state_static.ipsock_max} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>}/>
 
                 <FormSeparator heading={__("debug.content.clocks_buses_header")} first={false} />
 

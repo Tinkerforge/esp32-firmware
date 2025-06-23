@@ -57,6 +57,13 @@
             "heap_integrity_runtime": "Integrity check runtime",
             "heap_integrity_runtime_muted": "average, maximum",
 
+            "sockets_header": "Sockets",
+            "lwip_socket_counts": "lwIP sockets",
+            "lwip_socket_counts_muted": "ignores short-lived sockets",
+            "lwip_sockets_used": "In use",
+            "lwip_sockets_hwm": "HWM",
+            "lwip_sockets_max": "Limit",
+
             "clocks_buses_header": "Clocks and buses",
             "cpu_apb": "CPU, APB",
             "spi_clock": "Clock",

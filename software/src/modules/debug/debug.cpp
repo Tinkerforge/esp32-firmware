@@ -30,6 +30,11 @@
 #include <soc/spi_reg.h>
 #include <freertos/task.h>
 
+// lwip_socket_dbg_get_socket() in sockets_priv.h is not declared extern "C".
+extern "C" {
+#include <lwip/priv/sockets_priv.h>
+}
+
 #include "event_log_prefix.h"
 #include "config/slot_allocator.h"
 #include "module_dependencies.h"
@@ -126,6 +131,7 @@ void Debug::pre_setup()
         {"heap_iram",  Config::Uint32(iram_heap_size)},
         {"heap_psram", Config::Uint32(psram_heap_size)},
         {"psram_size", Config::Uint32(psram_size)},
+        {"ipsock_max", Config::Uint8(CONFIG_LWIP_MAX_SOCKETS)},
         {"cpu_clk",    Config::Uint32(cpu_freq_conf.freq_mhz * 1000000)},
         {"apb_clk",    Config::Uint32(rtc_clk_apb_freq_get())},
         {"spi_buses",  Config::Array({},
@@ -170,6 +176,8 @@ void Debug::pre_setup()
         {"conf_union_buf_size", Config::Uint32(0)},
         {"conf_uint53_buf_size", Config::Uint32(0)},
         {"conf_int52_buf_size", Config::Uint32(0)},
+        {"ipsock_cur", Config::Uint8(0)},
+        {"ipsock_hwm", Config::Uint8(0)},
     });
 
     state_slots_prototype = Config::Array({},
@@ -296,6 +304,26 @@ void Debug::setup()
         this->integrity_check_runtime_sum = 0;
         this->integrity_check_runtime_max = 0;
     }, 1_s, 1_s);
+
+    task_scheduler.scheduleWithFixedDelay([this]() {
+        uint8_t lwip_socks_in_use = 0;
+        // NUM_SOCKETS is expected to be CONFIG_LWIP_MAX_SOCKETS, but NUM_SOCKETS is what lwIP uses internally.
+        for (int i = 0; i < NUM_SOCKETS; i++) {
+            // Unprotected access on lwIP sockets. Dereferencing the socket pointer is safe because
+            // all socket structs live in a static array. The conn pointer might change at any time,
+            // but unprotected read access should be fine because this only gets a momentary snapshot
+            // of sockets in use anyway.
+            lwip_sock *sock = lwip_socket_dbg_get_socket(LWIP_SOCKET_OFFSET + i);
+            if (sock && sock->conn) {
+                lwip_socks_in_use++;
+            }
+        }
+        if (lwip_socks_in_use > lwip_sockets_hwm) {
+            lwip_sockets_hwm = lwip_socks_in_use;
+            state_slow.get("ipsock_hwm")->updateUint(lwip_sockets_hwm);
+        }
+        state_slow.get("ipsock_cur")->updateUint(lwip_socks_in_use);
+    }, 0_ms, 100_ms);
 
     last_state_update = now_us();
 

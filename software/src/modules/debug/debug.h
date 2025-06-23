@@ -73,4 +73,5 @@ private:
     bool     internal_heap_valid = true;
     bool     psram_heap_valid = true;
     bool     check_psram_next = false;
+    uint8_t  lwip_sockets_hwm = 0;
 };

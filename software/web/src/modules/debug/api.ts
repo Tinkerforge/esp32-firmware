@@ -9,6 +9,7 @@ export interface state_static {
     heap_iram: number;
     heap_psram: number;
     psram_size: number;
+    ipsock_max: number;
     cpu_clk: number;
     apb_clk: number;
     spi_buses: spi_state[];
@@ -45,6 +46,8 @@ export interface state_slow {
     conf_union_buf_size: number;
     conf_uint53_buf_size: number;
     conf_int52_buf_size: number;
+    ipsock_cur: number;
+    ipsock_hwm: number;
 }
 
 type slot_info = number[];
