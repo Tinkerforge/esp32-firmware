@@ -87,15 +87,15 @@
 #define ALPHA_ESS_HYBRID_INVERTER_PV6_CURRENT_ADDRESS                      static_cast<size_t>(AlphaESSHybridInverterPVAddress::PV6Current)
 #define ALPHA_ESS_HYBRID_INVERTER_PV6_POWER_ADDRESS                        static_cast<size_t>(AlphaESSHybridInverterPVAddress::PV6Power)
 
-#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_ACTIVE_POWER                    static_cast<size_t>(ShellyEMMonophaseChannel1AsL1Address::Channel1ActivePower)
-#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_TOTAL_ACTIVE_ENERGY             static_cast<size_t>(ShellyEMMonophaseChannel1AsL1Address::Channel1TotalActiveEnergyPerpetualCount)
-#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_TOTAL_ACTIVE_RETURNED_ENERGY    static_cast<size_t>(ShellyEMMonophaseChannel1AsL1Address::Channel1TotalActiveReturnedEnergyPerpetualCount)
-#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_ACTIVE_POWER                    static_cast<size_t>(ShellyEMMonophaseChannel2AsL1Address::Channel2ActivePower)
-#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_TOTAL_ACTIVE_ENERGY             static_cast<size_t>(ShellyEMMonophaseChannel2AsL1Address::Channel2TotalActiveEnergyPerpetualCount)
-#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_TOTAL_ACTIVE_RETURNED_ENERGY    static_cast<size_t>(ShellyEMMonophaseChannel2AsL1Address::Channel2TotalActiveReturnedEnergyPerpetualCount)
-#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_ACTIVE_POWER                    static_cast<size_t>(ShellyEMMonophaseChannel3AsL1Address::Channel3ActivePower)
-#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_ENERGY             static_cast<size_t>(ShellyEMMonophaseChannel3AsL1Address::Channel3TotalActiveEnergyPerpetualCount)
-#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_RETURNED_ENERGY    static_cast<size_t>(ShellyEMMonophaseChannel3AsL1Address::Channel3TotalActiveReturnedEnergyPerpetualCount)
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_ACTIVE_POWER_ADDRESS                    static_cast<size_t>(ShellyEMMonophaseChannel1AsL1Address::Channel1ActivePower)
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_TOTAL_ACTIVE_ENERGY_ADDRESS             static_cast<size_t>(ShellyEMMonophaseChannel1AsL1Address::Channel1TotalActiveEnergyPerpetualCount)
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_TOTAL_ACTIVE_RETURNED_ENERGY_ADDRESS    static_cast<size_t>(ShellyEMMonophaseChannel1AsL1Address::Channel1TotalActiveReturnedEnergyPerpetualCount)
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_ACTIVE_POWER_ADDRESS                    static_cast<size_t>(ShellyEMMonophaseChannel2AsL1Address::Channel2ActivePower)
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_TOTAL_ACTIVE_ENERGY_ADDRESS             static_cast<size_t>(ShellyEMMonophaseChannel2AsL1Address::Channel2TotalActiveEnergyPerpetualCount)
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_TOTAL_ACTIVE_RETURNED_ENERGY_ADDRESS    static_cast<size_t>(ShellyEMMonophaseChannel2AsL1Address::Channel2TotalActiveReturnedEnergyPerpetualCount)
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_ACTIVE_POWER_ADDRESS                    static_cast<size_t>(ShellyEMMonophaseChannel3AsL1Address::Channel3ActivePower)
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_ENERGY_ADDRESS             static_cast<size_t>(ShellyEMMonophaseChannel3AsL1Address::Channel3TotalActiveEnergyPerpetualCount)
+#define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_RETURNED_ENERGY_ADDRESS    static_cast<size_t>(ShellyEMMonophaseChannel3AsL1Address::Channel3TotalActiveReturnedEnergyPerpetualCount)
 
 #define GOODWE_HYBRID_INVERTER_BATTERY_1_VOLTAGE                           static_cast<size_t>(GoodweHybridInverterBatteryAddress::Battery1Voltage)
 #define GOODWE_HYBRID_INVERTER_BATTERY_1_CURRENT                           static_cast<size_t>(GoodweHybridInverterBatteryAddress::Battery1Current)
@@ -158,27 +158,27 @@
 #define HAILEI_HYBRID_INVERTER_PV6_CURRENT_ADDRESS                         static_cast<size_t>(HaileiHybridInverterPVAddress::PV6Current)
 #define HAILEI_HYBRID_INVERTER_PV6_POWER_ADDRESS                           static_cast<size_t>(HaileiHybridInverterPVAddress::PV6Power)
 
-#define CARLO_GAVAZZI_EM100_OR_ET100_W                                     static_cast<size_t>(CarloGavazziEM100andET100AtL1Address::W)
-#define CARLO_GAVAZZI_EM100_OR_ET100_KWH_POSITIVE_TOTAL                    static_cast<size_t>(CarloGavazziEM100andET100AtL1Address::KWhPositiveTotal)
-#define CARLO_GAVAZZI_EM100_OR_ET100_KWH_NEGATIVE_TOTAL                    static_cast<size_t>(CarloGavazziEM100andET100AtL1Address::KWhNegativeTotal)
-#define CARLO_GAVAZZI_EM510_W                                              static_cast<size_t>(CarloGavazziEM510atL1Address::W)
-#define CARLO_GAVAZZI_EM510_KWH_POSITIVE_TOTAL                             static_cast<size_t>(CarloGavazziEM510atL1Address::KWhPositiveTotal)
-#define CARLO_GAVAZZI_EM510_KWH_NEGATIVE_TOTAL                             static_cast<size_t>(CarloGavazziEM510atL1Address::KWhNegativeTotal)
+#define CARLO_GAVAZZI_EM100_OR_ET100_W_ADDRESS                             static_cast<size_t>(CarloGavazziEM100andET100AtL1Address::W)
+#define CARLO_GAVAZZI_EM100_OR_ET100_KWH_POSITIVE_TOTAL_ADDRESS            static_cast<size_t>(CarloGavazziEM100andET100AtL1Address::KWhPositiveTotal)
+#define CARLO_GAVAZZI_EM100_OR_ET100_KWH_NEGATIVE_TOTAL_ADDRESS            static_cast<size_t>(CarloGavazziEM100andET100AtL1Address::KWhNegativeTotal)
+#define CARLO_GAVAZZI_EM510_W_ADDRESS                                      static_cast<size_t>(CarloGavazziEM510atL1Address::W)
+#define CARLO_GAVAZZI_EM510_KWH_POSITIVE_TOTAL_ADDRESS                     static_cast<size_t>(CarloGavazziEM510atL1Address::KWhPositiveTotal)
+#define CARLO_GAVAZZI_EM510_KWH_NEGATIVE_TOTAL_ADDRESS                     static_cast<size_t>(CarloGavazziEM510atL1Address::KWhNegativeTotal)
 
-#define SOLAREDGE_BATTERY_1_TEMPERATURE                                    static_cast<size_t>(SolaredgeBatteryAddress::Battery1AverageTemperature)
-#define SOLAREDGE_BATTERY_1_VOLTAGE                                        static_cast<size_t>(SolaredgeBatteryAddress::Battery1InstantaneousVoltage)
-#define SOLAREDGE_BATTERY_1_CURRENT                                        static_cast<size_t>(SolaredgeBatteryAddress::Battery1InstantaneousCurrent)
-#define SOLAREDGE_BATTERY_1_POWER                                          static_cast<size_t>(SolaredgeBatteryAddress::Battery1InstantaneousPower)
-#define SOLAREDGE_BATTERY_1_EXPORT_ENERGY                                  static_cast<size_t>(SolaredgeBatteryAddress::Battery1LifetimeExportEnergyCounter)
-#define SOLAREDGE_BATTERY_1_IMPORT_ENERGY                                  static_cast<size_t>(SolaredgeBatteryAddress::Battery1LifetimeImportEnergyCounter)
-#define SOLAREDGE_BATTERY_1_STATE_OF_CHARGE                                static_cast<size_t>(SolaredgeBatteryAddress::Battery1StateOfEnergy)
-#define SOLAREDGE_BATTERY_2_TEMPERATURE                                    static_cast<size_t>(SolaredgeBatteryAddress::Battery2AverageTemperature)
-#define SOLAREDGE_BATTERY_2_VOLTAGE                                        static_cast<size_t>(SolaredgeBatteryAddress::Battery2InstantaneousVoltage)
-#define SOLAREDGE_BATTERY_2_CURRENT                                        static_cast<size_t>(SolaredgeBatteryAddress::Battery2InstantaneousCurrent)
-#define SOLAREDGE_BATTERY_2_POWER                                          static_cast<size_t>(SolaredgeBatteryAddress::Battery2InstantaneousPower)
-#define SOLAREDGE_BATTERY_2_EXPORT_ENERGY                                  static_cast<size_t>(SolaredgeBatteryAddress::Battery2LifetimeExportEnergyCounter)
-#define SOLAREDGE_BATTERY_2_IMPORT_ENERGY                                  static_cast<size_t>(SolaredgeBatteryAddress::Battery2LifetimeImportEnergyCounter)
-#define SOLAREDGE_BATTERY_2_STATE_OF_CHARGE                                static_cast<size_t>(SolaredgeBatteryAddress::Battery2StateOfEnergy)
+#define SOLAREDGE_BATTERY_1_TEMPERATURE_ADDRESS                            static_cast<size_t>(SolaredgeBatteryAddress::Battery1AverageTemperature)
+#define SOLAREDGE_BATTERY_1_VOLTAGE_ADDRESS                                static_cast<size_t>(SolaredgeBatteryAddress::Battery1InstantaneousVoltage)
+#define SOLAREDGE_BATTERY_1_CURRENT_ADDRESS                                static_cast<size_t>(SolaredgeBatteryAddress::Battery1InstantaneousCurrent)
+#define SOLAREDGE_BATTERY_1_POWER_ADDRESS                                  static_cast<size_t>(SolaredgeBatteryAddress::Battery1InstantaneousPower)
+#define SOLAREDGE_BATTERY_1_EXPORT_ENERGY_ADDRESS                          static_cast<size_t>(SolaredgeBatteryAddress::Battery1LifetimeExportEnergyCounter)
+#define SOLAREDGE_BATTERY_1_IMPORT_ENERGY_ADDRESS                          static_cast<size_t>(SolaredgeBatteryAddress::Battery1LifetimeImportEnergyCounter)
+#define SOLAREDGE_BATTERY_1_STATE_OF_CHARGE_ADDRESS                        static_cast<size_t>(SolaredgeBatteryAddress::Battery1StateOfEnergy)
+#define SOLAREDGE_BATTERY_2_TEMPERATURE_ADDRESS                            static_cast<size_t>(SolaredgeBatteryAddress::Battery2AverageTemperature)
+#define SOLAREDGE_BATTERY_2_VOLTAGE_ADDRESS                                static_cast<size_t>(SolaredgeBatteryAddress::Battery2InstantaneousVoltage)
+#define SOLAREDGE_BATTERY_2_CURRENT_ADDRESS                                static_cast<size_t>(SolaredgeBatteryAddress::Battery2InstantaneousCurrent)
+#define SOLAREDGE_BATTERY_2_POWER_ADDRESS                                  static_cast<size_t>(SolaredgeBatteryAddress::Battery2InstantaneousPower)
+#define SOLAREDGE_BATTERY_2_EXPORT_ENERGY_ADDRESS                          static_cast<size_t>(SolaredgeBatteryAddress::Battery2LifetimeExportEnergyCounter)
+#define SOLAREDGE_BATTERY_2_IMPORT_ENERGY_ADDRESS                          static_cast<size_t>(SolaredgeBatteryAddress::Battery2LifetimeImportEnergyCounter)
+#define SOLAREDGE_BATTERY_2_STATE_OF_CHARGE_ADDRESS                        static_cast<size_t>(SolaredgeBatteryAddress::Battery2StateOfEnergy)
 
 #define E3DC_PV_POWER_ADDRESS                                              static_cast<size_t>(E3DCPVAddress::PVPower)
 
@@ -2379,15 +2379,15 @@ void MeterModbusTCP::parse_next()
         }
     }
     else if (is_shelly_pro_xem_monophase()) {
-        if (register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_ACTIVE_POWER
-         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_TOTAL_ACTIVE_ENERGY
-         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_TOTAL_ACTIVE_RETURNED_ENERGY
-         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_ACTIVE_POWER
-         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_TOTAL_ACTIVE_ENERGY
-         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_TOTAL_ACTIVE_RETURNED_ENERGY
-         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_ACTIVE_POWER
-         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_ENERGY
-         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_RETURNED_ENERGY) {
+        if (register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_ACTIVE_POWER_ADDRESS
+         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_TOTAL_ACTIVE_ENERGY_ADDRESS
+         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_TOTAL_ACTIVE_RETURNED_ENERGY_ADDRESS
+         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_ACTIVE_POWER_ADDRESS
+         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_TOTAL_ACTIVE_ENERGY_ADDRESS
+         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_TOTAL_ACTIVE_RETURNED_ENERGY_ADDRESS
+         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_ACTIVE_POWER_ADDRESS
+         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_ENERGY_ADDRESS
+         || register_start_address == SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_RETURNED_ENERGY_ADDRESS) {
             meters.update_value(slot, table->index[read_index + 1], value);
         }
     }
@@ -2769,60 +2769,60 @@ void MeterModbusTCP::parse_next()
         }
     }
     else if (is_carlo_gavazzi_em100_or_et100()) {
-        if (register_start_address == CARLO_GAVAZZI_EM100_OR_ET100_W
-         || register_start_address == CARLO_GAVAZZI_EM100_OR_ET100_KWH_POSITIVE_TOTAL
-         || register_start_address == CARLO_GAVAZZI_EM100_OR_ET100_KWH_NEGATIVE_TOTAL) {
+        if (register_start_address == CARLO_GAVAZZI_EM100_OR_ET100_W_ADDRESS
+         || register_start_address == CARLO_GAVAZZI_EM100_OR_ET100_KWH_POSITIVE_TOTAL_ADDRESS
+         || register_start_address == CARLO_GAVAZZI_EM100_OR_ET100_KWH_NEGATIVE_TOTAL_ADDRESS) {
             meters.update_value(slot, table->index[read_index + 1], value);
         }
     }
     else if (is_carlo_gavazzi_em510()) {
-        if (register_start_address == CARLO_GAVAZZI_EM510_W
-         || register_start_address == CARLO_GAVAZZI_EM510_KWH_POSITIVE_TOTAL
-         || register_start_address == CARLO_GAVAZZI_EM510_KWH_NEGATIVE_TOTAL) {
+        if (register_start_address == CARLO_GAVAZZI_EM510_W_ADDRESS
+         || register_start_address == CARLO_GAVAZZI_EM510_KWH_POSITIVE_TOTAL_ADDRESS
+         || register_start_address == CARLO_GAVAZZI_EM510_KWH_NEGATIVE_TOTAL_ADDRESS) {
             meters.update_value(slot, table->index[read_index + 1], value);
         }
     }
     else if (is_solaredge_battery_meter()) {
-        if (register_start_address == SOLAREDGE_BATTERY_1_TEMPERATURE) {
+        if (register_start_address == SOLAREDGE_BATTERY_1_TEMPERATURE_ADDRESS) {
             solaredge.battery_1_temperature = value;
         }
-        else if (register_start_address == SOLAREDGE_BATTERY_1_VOLTAGE) {
+        else if (register_start_address == SOLAREDGE_BATTERY_1_VOLTAGE_ADDRESS) {
             solaredge.battery_1_voltage = value;
         }
-        else if (register_start_address == SOLAREDGE_BATTERY_1_CURRENT) {
+        else if (register_start_address == SOLAREDGE_BATTERY_1_CURRENT_ADDRESS) {
             solaredge.battery_1_current = value;
         }
-        else if (register_start_address == SOLAREDGE_BATTERY_1_POWER) {
+        else if (register_start_address == SOLAREDGE_BATTERY_1_POWER_ADDRESS) {
             solaredge.battery_1_power = value;
         }
-        else if (register_start_address == SOLAREDGE_BATTERY_1_EXPORT_ENERGY) {
+        else if (register_start_address == SOLAREDGE_BATTERY_1_EXPORT_ENERGY_ADDRESS) {
             solaredge.battery_1_export_energy = value;
         }
-        else if (register_start_address == SOLAREDGE_BATTERY_1_IMPORT_ENERGY) {
+        else if (register_start_address == SOLAREDGE_BATTERY_1_IMPORT_ENERGY_ADDRESS) {
             solaredge.battery_1_import_energy = value;
         }
-        else if (register_start_address == SOLAREDGE_BATTERY_1_STATE_OF_CHARGE) {
+        else if (register_start_address == SOLAREDGE_BATTERY_1_STATE_OF_CHARGE_ADDRESS) {
             solaredge.battery_1_state_of_charge = value;
         }
-        else if (register_start_address == SOLAREDGE_BATTERY_2_TEMPERATURE) {
+        else if (register_start_address == SOLAREDGE_BATTERY_2_TEMPERATURE_ADDRESS) {
             value = nan_safe_sum(solaredge.battery_1_temperature, value);
         }
-        else if (register_start_address == SOLAREDGE_BATTERY_2_VOLTAGE) {
+        else if (register_start_address == SOLAREDGE_BATTERY_2_VOLTAGE_ADDRESS) {
             value = nan_safe_avg(solaredge.battery_1_voltage, value);
         }
-        else if (register_start_address == SOLAREDGE_BATTERY_2_CURRENT) {
+        else if (register_start_address == SOLAREDGE_BATTERY_2_CURRENT_ADDRESS) {
             value = nan_safe_sum(solaredge.battery_1_current, value);
         }
-        else if (register_start_address == SOLAREDGE_BATTERY_2_POWER) {
+        else if (register_start_address == SOLAREDGE_BATTERY_2_POWER_ADDRESS) {
             value = nan_safe_sum(solaredge.battery_1_power, value);
         }
-        else if (register_start_address == SOLAREDGE_BATTERY_2_EXPORT_ENERGY) {
+        else if (register_start_address == SOLAREDGE_BATTERY_2_EXPORT_ENERGY_ADDRESS) {
             value = nan_safe_sum(solaredge.battery_1_export_energy, value);
         }
-        else if (register_start_address == SOLAREDGE_BATTERY_2_IMPORT_ENERGY) {
+        else if (register_start_address == SOLAREDGE_BATTERY_2_IMPORT_ENERGY_ADDRESS) {
             value = nan_safe_sum(solaredge.battery_1_import_energy, value);
         }
-        else if (register_start_address == SOLAREDGE_BATTERY_2_STATE_OF_CHARGE) {
+        else if (register_start_address == SOLAREDGE_BATTERY_2_STATE_OF_CHARGE_ADDRESS) {
             value = nan_safe_avg(solaredge.battery_1_state_of_charge, value);
         }
     }
