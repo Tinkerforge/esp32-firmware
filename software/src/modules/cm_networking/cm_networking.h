@@ -91,14 +91,17 @@ private:
         uint8_t mdns_hostname_len; // Length of the hostname without the .local TLD.
         HostAddressType host_address_type;
         ResolveState resolve_state;
+        uint8_t device_index;
     };
 
     struct manager_data_t {
         int manager_sock;
 
         bool periodic_scan_task_started;
+        bool connected;
+        bool dns_resolver_active;
 
-        uint16_t managed_device_count;
+        uint8_t managed_device_count;
         managed_device_data managed_devices[];
     };
     static_assert(MAX_CONTROLLED_CHARGERS < std::numeric_limits<decltype(manager_data_t::managed_device_count)>::max());
@@ -123,10 +126,12 @@ private:
 
     int create_socket(uint16_t port, bool blocking);
 
-    void resolve_hostname(uint8_t charger_idx);
-    bool is_resolved(uint8_t charger_idx);
-
     void dns_resolved(managed_device_data *device, const ip_addr_t *ip);
+    void resolve_hostname(uint8_t charger_idx);
+    void resolve_hostname_dns(uint8_t charger_idx, bool initial_request);
+    void resolve_next_dns(uint8_t current_idx);
+    bool is_resolved(uint8_t charger_idx);
+    void resolve_all();
 
     void check_results(); // TODO make a static function and pass directly to MDNS call.
 

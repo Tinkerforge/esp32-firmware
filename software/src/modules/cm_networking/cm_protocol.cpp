@@ -206,7 +206,9 @@ void CMNetworking::register_manager(const char *const *const hosts,
         return;
     }
 
+    manager_data->dns_resolver_active = false;
     manager_data->periodic_scan_task_started = false;
+    manager_data->connected = false;
     manager_data->managed_device_count = device_count;
 
     for (size_t i = 0; i < device_count; ++i) {
@@ -215,6 +217,7 @@ void CMNetworking::register_manager(const char *const *const hosts,
 
         device->hostname = hostname;
         device->last_resolve_attempt = 0;
+        device->device_index = i;
 
         device->addr.sin_len    = sizeof(device->addr);
         device->addr.sin_family = AF_INET; // IPv4 only
@@ -395,6 +398,28 @@ void CMNetworking::register_manager(const char *const *const hosts,
             }
         }
     }, 50_ms, 50_ms);
+
+#if MODULE_NETWORK_AVAILABLE()
+    // Must schedule a task because this runs before the REGISTER_EVENTS stage.
+    task_scheduler.scheduleOnce([this]() {
+        network.on_network_connected([this](const Config *connected_cfg) {
+            const bool connected = connected_cfg->asBool();
+
+            this->manager_data->connected = connected;
+
+            if (connected) {
+                this->resolve_all();
+            }
+
+            return EventResult::OK;
+        });
+    });
+#else
+    manager_data->connected = true;
+    task_scheduler.scheduleOnce([this]() {
+        this->resolve_all();
+    }, 2_s);
+#endif
 }
 
 bool CMNetworking::send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_disconnect_requested, int8_t allocated_phases)
@@ -422,7 +447,6 @@ bool CMNetworking::send_command_packet(uint8_t client_id, cm_command_packet *com
         return true;
 
     if (!is_resolved(client_id)) {
-        resolve_hostname(client_id);
         return true;
     }
 
@@ -441,7 +465,7 @@ bool CMNetworking::send_command_packet(uint8_t client_id, cm_command_packet *com
             return true;
         }
 
-        if (errno == EHOSTUNREACH && network.is_connected())
+        if (errno == EHOSTUNREACH && manager_data->connected)
             logger.printfln("Failed to send command: %s (%d)", strerror(errno), errno);
 
         return true;

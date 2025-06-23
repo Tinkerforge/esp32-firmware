@@ -220,7 +220,9 @@ void CMNetworking::dns_callback(const ip_addr_t *ip, void *callback_arg)
 {
     managed_device_data *device = static_cast<decltype(device)>(callback_arg);
 
-    if (!ip) {
+    if (ip) {
+        dns_resolved(device, ip);
+    } else {
         if (device->resolve_state == ResolveState::Unknown) {
             device->resolve_state = ResolveState::NotResolved;
 
@@ -229,10 +231,9 @@ void CMNetworking::dns_callback(const ip_addr_t *ip, void *callback_arg)
                 logger.printfln("Failed to resolve %s", hname);
             });
         }
-        return;
     }
 
-    dns_resolved(device, ip);
+    resolve_next_dns(device->device_index);
 }
 
 void CMNetworking::resolve_hostname(uint8_t charger_idx)
@@ -244,7 +245,6 @@ void CMNetworking::resolve_hostname(uint8_t charger_idx)
     managed_device_data *device = manager_data->managed_devices + charger_idx;
 
     if (device->host_address_type == HostAddressType::IP) {
-        logger.printfln("Attempted to resolve raw IP address"); // TODO remove
         // Nothing to resolve for raw IP addresses.
         return;
     }
@@ -259,23 +259,73 @@ void CMNetworking::resolve_hostname(uint8_t charger_idx)
 #endif
                 task_scheduler.scheduleWithFixedDelay([this]() {this->start_scan();}, 1_min);
             // No braces for the else branch because of the Network module check.
+
+            manager_data->periodic_scan_task_started = true;
         }
 
-        manager_data->periodic_scan_task_started = true;
         return;
     }
+
+    resolve_hostname_dns(charger_idx, true);
+}
+
+// Sometimes executed by lwIP
+void CMNetworking::resolve_hostname_dns(uint8_t charger_idx, bool initial_request) {
+    if (manager_data->dns_resolver_active) {
+        if (initial_request) {
+            return;
+        }
+    } else {
+        manager_data->dns_resolver_active = true;
+    }
+
+    managed_device_data *device = manager_data->managed_devices + charger_idx;
 
     ip_addr_t ip;
     err_t err = dns_gethostbyname_addrtype_lwip_ctx(device->hostname, &ip, dns_cb, device, LWIP_DNS_ADDRTYPE_IPV4);
 
     if (err != ERR_OK) {
         if (err == ERR_VAL) {
-            logger.printfln("Charger configured with hostname %s, but no DNS server is configured!", device->hostname);
+            const char *hname = device->hostname;
+            task_scheduler.scheduleOnce([hname]() { // Can't access the logger from lwIP context.
+                logger.printfln("Charger configured with hostname %s, but no DNS server is configured!", hname);
+            });
         }
         return;
     }
 
     dns_resolved(device, &ip);
+    resolve_next_dns(device->device_index);
+}
+
+// Sometimes executed by lwIP
+void CMNetworking::resolve_next_dns(uint8_t current_idx) {
+    const size_t current_index = current_idx;
+    size_t next_index = current_index;
+    bool wrapped = false;
+
+    do {
+        next_index = next_index + 1;
+        if (next_index >= manager_data->managed_device_count) {
+            next_index = 0;
+            wrapped = true;
+        }
+
+        managed_device_data *device = manager_data->managed_devices + next_index;
+
+        if (device->host_address_type == HostAddressType::DNS && device->resolve_state != ResolveState::Resolved) {
+            if (wrapped) {
+                task_scheduler.scheduleOnce([this, next_index]() {
+                    resolve_hostname_dns(static_cast<uint8_t>(next_index), false);
+                }, 15_s);
+            } else {
+                resolve_hostname_dns(static_cast<uint8_t>(next_index), false);
+            }
+            return;
+        }
+    } while (next_index != current_index);
+
+    manager_data->dns_resolver_active = false;
 }
 
 bool CMNetworking::is_resolved(uint8_t charger_idx)
@@ -289,6 +339,17 @@ bool CMNetworking::is_resolved(uint8_t charger_idx)
         return false;
     }
     return manager_data->managed_devices[charger_idx].resolve_state == ResolveState::Resolved;
+}
+
+void CMNetworking::resolve_all()
+{
+    if (manager_data == nullptr) {
+        esp_system_abort("Call register_manager before resolving hostnames!");
+    }
+
+    for (uint8_t i = 0; i < manager_data->managed_device_count; i++) {
+        resolve_hostname(i);
+    }
 }
 
 void CMNetworking::notify_charger_unresponsive(uint8_t charger_idx, micros_t last_response)
