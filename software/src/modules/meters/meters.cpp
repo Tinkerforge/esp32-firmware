@@ -243,7 +243,11 @@ void Meters::setup()
 
     for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
         MeterSlot &meter_slot = meter_slots[slot];
-        MeterClassID meter_class = slot == 0 ? OPTIONS_METERS_SLOT_0_DEFAULT_CLASS() : MeterClassID::None;
+        MeterClassID meter_class = MeterClassID::None;
+
+        if (slot == 0) {
+            meter_class = OPTIONS_METERS_SLOT_0_DEFAULT_CLASS();
+        }
 
         // Initialize config.
         meter_slot.config_union = Config::Union(
