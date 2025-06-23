@@ -207,6 +207,12 @@ void CMNetworking::dns_resolved(managed_device_data *device, const ip_addr_t *ip
             logger.printfln("Resolved %s to %s", hname, ip_str);
         });
     }
+
+    // Evict the resolved charger from the DNS cache.
+    // It's unlikely that it will be resolved again anytime soon
+    // and this frees up space in the cache for things that perform
+    // duplicate lookups in sequence, such as the remote access.
+    dns_removehost(device->hostname, nullptr);
 }
 
 // Executed by lwIP
@@ -285,10 +291,15 @@ void CMNetworking::resolve_hostname_dns(uint8_t charger_idx, bool initial_reques
     err_t err = dns_gethostbyname_addrtype_lwip_ctx(device->hostname, &ip, dns_cb, device, LWIP_DNS_ADDRTYPE_IPV4);
 
     if (err != ERR_OK) {
-        if (err == ERR_VAL) {
+        if (err != ERR_INPROGRESS) {
             const char *hname = device->hostname;
-            task_scheduler.scheduleOnce([hname]() { // Can't access the logger from lwIP context.
-                logger.printfln("Charger configured with hostname %s, but no DNS server is configured!", hname);
+            task_scheduler.scheduleOnce([hname, err]() { // Can't access the logger from lwIP context.
+                if (err == ERR_VAL) {
+                    logger.printfln("Charger configured with hostname %s, but no DNS server is configured!", hname);
+                } else {
+                    const int eno = err_to_errno(err);
+                    logger.printfln("Cannot resolve '%s': %s (%i|%hhi)", hname, strerror(eno), eno, err);
+                }
             });
         }
         return;
