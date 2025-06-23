@@ -1074,7 +1074,7 @@ void RemoteAccess::register_events()
             // Start task if not scheduled yet.
             if (!this->task_id) {
                 this->task_id = task_scheduler.scheduleWithFixedDelay([this]() {
-                    if (!this->management_request_done) {
+                    if (!this->management_request_done && !this->management_auth_failed) {
                         this->resolve_management();
                     }
                 }, 30_s);
@@ -1120,6 +1120,12 @@ void RemoteAccess::run_request_with_next_stage(const char *url,
                             if (!this->management_request_failed) {
                                 logger.printfln("Management request failed with HTTP-Error-Code %i", (int)event->error_http_status);
                                 this->management_request_failed = true;
+                                if (event->error_http_status == 401) {
+                                    this->management_auth_failed = true;
+                                    logger.printfln("Management authentication failed (401) - not reconnecting");
+                                    this->config.get("enable")->updateBool(false);
+                                    api.writeConfig("remote_access/config", &this->config);
+                                }
                             }
                         } else {
                             registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
@@ -1485,6 +1491,7 @@ void RemoteAccess::resolve_management()
     auto callback = [this, old_api](const Config &/*cfg*/) {
         this->management_request_failed = false;
         this->management_request_allowed = true;
+        this->management_auth_failed = false;
 
         if (old_api) {
             StaticJsonDocument<250> resp;
@@ -1545,7 +1552,10 @@ void RemoteAccess::resolve_management()
         this->management_request_done = true;
         this->last_mgmt_alive = now_us();
         this->request_cleanup();
-        this->connect_management();
+        // Don't reconnect if authentication failed
+        if (!this->management_auth_failed) {
+            this->connect_management();
+        }
         this->connection_state.get(0)->get("state")->updateUint(1);
     };
     this->management_request_allowed = false;

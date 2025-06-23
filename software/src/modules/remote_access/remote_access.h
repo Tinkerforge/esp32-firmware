@@ -98,6 +98,7 @@ private:
     bool management_request_done = false;
     bool management_request_failed = false;
     bool management_request_allowed = true;
+    bool management_auth_failed = false;
     micros_t last_mgmt_alive = 0_us;
     uint64_t task_id = 0;
 
