@@ -25,6 +25,7 @@
 #include "module_dependencies.h"
 
 #include "event_log_prefix.h"
+#include "options.h"
 #include "tools.h"
 #include "tools/string_builder.h"
 
@@ -90,7 +91,7 @@ void PowerManager::pre_setup()
         {"phase_switching_mode", Config::Uint(PHASE_SWITCHING_AUTOMATIC, PHASE_SWITCHING_MIN, PHASE_SWITCHING_MAX)},
         {"excess_charging_enable", Config::Bool(false)},
         {"default_mode", Config::Enum(ConfigChargeMode::Fast)},
-        {"meter_slot_grid_power", Config::Uint(POWER_MANAGER_DEFAULT_METER_SLOT, 0, METERS_SLOTS - 1)},
+        {"meter_slot_grid_power", Config::Uint(OPTIONS_POWER_MANAGER_DEFAULT_METER_SLOT(), 0, OPTIONS_METERS_MAX_SLOTS() - 1)},
         {"meter_slot_battery_power", Config::Uint(METER_SLOT_BATTERY_NO_BATTERY, 0, METER_SLOT_BATTERY_NO_BATTERY)},
         {"battery_mode", Config::Enum(BatteryMode::PreferChargers)},
         {"battery_inverted", Config::Bool(false)},
@@ -127,7 +128,7 @@ void PowerManager::pre_setup()
 
     dynamic_load_config = ConfigRoot{Config::Object({
         {"enabled",                  Config::Bool(false)},
-        {"meter_slot_grid_currents", Config::Uint(POWER_MANAGER_DEFAULT_METER_SLOT, 0, METERS_SLOTS - 1)},
+        {"meter_slot_grid_currents", Config::Uint(OPTIONS_POWER_MANAGER_DEFAULT_METER_SLOT(), 0, OPTIONS_METERS_MAX_SLOTS() - 1)},
         {"current_limit",            Config::Uint(    0, 0, 524287)}, // mA, maximum is 524 A
         {"largest_consumer_current", Config::Uint(32000, 0, 524287)}, // mA, maximum is 524 A
         {"safety_margin_pct",        Config::Uint(    0, 0,     50)}, // percent

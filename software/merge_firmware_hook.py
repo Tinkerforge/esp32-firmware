@@ -15,7 +15,7 @@ import subprocess
 with open(os.path.join(env.subst('$BUILD_DIR'), 'firmware_basename'), 'r', encoding='utf-8') as f:
     firmware_basename = f.read().strip()
 
-custom_name = env.GetProjectOption('custom_name')
+product_id = env.GetProjectOption('custom_product_id')
 
 env.AddPostAction(
     "$BUILD_DIR/${PROGNAME}.elf",
@@ -28,7 +28,7 @@ env.AddPostAction(
 )
 
 if env.GetProjectOption("custom_autoclean_build_dir", default="false") == "true": # Option is a string, not a Python boolean.
-    firmware_name = custom_name + "_firmware"
+    firmware_name = product_id + "_firmware"
 
     def delete_old(fwname):
         fileList = glob.glob('build/{}*'.format(fwname))
@@ -72,7 +72,7 @@ def remove_and_symlink(remove_pattern, src_path, dst_path):
 
 env.AddPostAction(
     "$BUILD_DIR/${PROGNAME}.elf",
-    env.VerboseAction(lambda env, **kwargs: remove_and_symlink(f"build_latest/{custom_name}_firmware*.elf",
+    env.VerboseAction(lambda env, **kwargs: remove_and_symlink(f"build_latest/{product_id}_firmware*.elf",
                                                                f"../build/{firmware_basename}.elf",
                                                                f"build_latest/{firmware_basename}.elf"),
                       f"Symlinking build{os.sep}{firmware_basename}.elf -> build_latest{os.sep}{firmware_basename}.elf")
@@ -81,8 +81,8 @@ env.AddPostAction(
 env.AddPostAction(
     "$BUILD_DIR/${PROGNAME}.elf",
     env.VerboseAction(lambda env, **kwargs: symlink(f"{firmware_basename}.elf",
-                                                    f"build/{custom_name}_firmware_latest.elf"),
-                      f"Symlinking build{os.sep}{firmware_basename}.elf -> build{os.sep}{custom_name}_firmware_latest.elf")
+                                                    f"build/{product_id}_firmware_latest.elf"),
+                      f"Symlinking build{os.sep}{firmware_basename}.elf -> build{os.sep}{product_id}_firmware_latest.elf")
 )
 
 env.AddPostAction(
@@ -138,7 +138,7 @@ else:
 
 env.AddPostAction(
     "$BUILD_DIR/${PROGNAME}.bin",
-    env.VerboseAction(lambda env, **kwargs: remove_and_symlink(f"build_latest/{custom_name}_firmware*_merged.bin",
+    env.VerboseAction(lambda env, **kwargs: remove_and_symlink(f"build_latest/{product_id}_firmware*_merged.bin",
                                                                f"../build/{firmware_basename}_merged.bin",
                                                                f"build_latest/{firmware_basename}_merged.bin"),
                       f"Symlinking build{os.sep}{firmware_basename}_merged.bin -> build_latest{os.sep}{firmware_basename}_merged.bin")
@@ -147,8 +147,8 @@ env.AddPostAction(
 env.AddPostAction(
     "$BUILD_DIR/${PROGNAME}.bin",
     env.VerboseAction(lambda env, **kwargs: symlink(f"{firmware_basename}_merged.bin",
-                                                    f"build/{custom_name}_firmware_latest_merged.bin"),
-                      f"Symlinking build{os.sep}{firmware_basename}_merged.bin -> build{os.sep}{custom_name}_firmware_latest_merged.bin")
+                                                    f"build/{product_id}_firmware_latest_merged.bin"),
+                      f"Symlinking build{os.sep}{firmware_basename}_merged.bin -> build{os.sep}{product_id}_firmware_latest_merged.bin")
 )
 
 env.AddPostAction(

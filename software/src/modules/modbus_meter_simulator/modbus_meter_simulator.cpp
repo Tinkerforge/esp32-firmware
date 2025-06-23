@@ -25,6 +25,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "options.h"
 #include "bindings/hal_common.h"
 #include "modules/meters/sdm_helpers.h"
 #include "tools.h"
@@ -62,7 +63,7 @@ void ModbusMeterSimulator::pre_setup()
 {
     config = Config::Object({
         {"meter_type",        Config::Uint8(METER_TYPE_NONE)},
-        {"source_meter_slot", Config::Uint(0, 0, METERS_SLOTS - 1)},
+        {"source_meter_slot", Config::Uint(0, 0, OPTIONS_METERS_MAX_SLOTS() - 1)},
     });
 }
 
@@ -103,7 +104,7 @@ void ModbusMeterSimulator::register_urls()
 
 void ModbusMeterSimulator::register_events()
 {
-    if (source_meter_slot >= METERS_SLOTS)
+    if (source_meter_slot >= OPTIONS_METERS_MAX_SLOTS())
         return;
 
     String value_ids_path = meters.get_path(source_meter_slot, Meters::PathType::ValueIDs);

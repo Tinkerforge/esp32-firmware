@@ -28,6 +28,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
+#include "options.h"
 
 void MqttAutoDiscovery::pre_setup()
 {
@@ -127,7 +128,7 @@ void MqttAutoDiscovery::prepare_topics()
 
     device_info.concat("\"device\":{\"identifiers\":\"");
     device_info.concat(client_name);
-    device_info.concat("\",\"manufacturer\":\"" BUILD_MANUFACTURER_FULL "\",\"model\":\"" BUILD_DISPLAY_NAME "\",\"name\":\"" BUILD_DISPLAY_NAME " (");
+    device_info.concat("\",\"manufacturer\":\"" OPTIONS_MANUFACTURER_FULL() "\",\"model\":\"" OPTIONS_PRODUCT_NAME() "\",\"name\":\"" OPTIONS_PRODUCT_NAME() " (");
     device_info.concat(client_name);
     device_info.concat(")\"}");
 

@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { CERTS_MAX_CERTS, CERTS_MAX_CERT_SIZE } from "../../options";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
+import * as options from "../../options";
 import { h, Fragment, Component } from "preact";
 import { __ } from "../../ts/translation";
 import { InputText } from "../../ts/components/input_text";
@@ -73,11 +73,11 @@ export class Certs extends Component<{}, State> {
                                                         accept={"application/pem-certificate-chain"}
                                                     onChange={(ev) => {
                                                         let file = (ev.target as HTMLInputElement).files[0];
-                                                        this.setState({editCert: {...state.editCert, file: file, file_too_large: file.size > CERTS_MAX_CERT_SIZE}})
+                                                        this.setState({editCert: {...state.editCert, file: file, file_too_large: file.size > options.CERTS_MAX_CERT_SIZE}})
                                                     }}/>
                                                 <label for="certs-file-input" class="custom-file-label form-control rounded-left"
                                                     data-browse={__("certs.content.browse")}>{state.editCert.file ? state.editCert.file.name : __("certs.content.select_file")}</label>
-                                                <div class="invalid-feedback">{__("certs.script.cert_too_large")(CERTS_MAX_CERT_SIZE)}</div>
+                                                <div class="invalid-feedback">{__("certs.script.cert_too_large")(options.CERTS_MAX_CERT_SIZE)}</div>
                                             </div>
                                         </FormRow>
                                     </>],
@@ -91,9 +91,9 @@ export class Certs extends Component<{}, State> {
                                     onRemoveClick: async () => { await API.call('certs/remove', {id: cert.id}, () => __("certs.script.del_cert_failed")); }
                                 }})
                             }
-                            addEnabled={API.get('certs/state').certs.length < CERTS_MAX_CERTS}
+                            addEnabled={API.get('certs/state').certs.length < options.CERTS_MAX_CERTS}
                             addTitle={__("certs.content.add_cert_title")}
-                            addMessage={__("certs.content.add_cert_message")(API.get('certs/state').certs.length, CERTS_MAX_CERTS)}
+                            addMessage={__("certs.content.add_cert_message")(API.get('certs/state').certs.length, options.CERTS_MAX_CERTS)}
                             onAddShow={async () => {
                                 this.setState({addCert: {name: "", cert: "", file: null, file_too_large: false}});
                             }}
@@ -111,11 +111,11 @@ export class Certs extends Component<{}, State> {
                                                 accept="application/pem-certificate-chain"
                                             onChange={(ev) => {
                                                 let file = (ev.target as HTMLInputElement).files[0];
-                                                this.setState({addCert: {...state.addCert, file: file, file_too_large: file.size > CERTS_MAX_CERT_SIZE}});
+                                                this.setState({addCert: {...state.addCert, file: file, file_too_large: file.size > options.CERTS_MAX_CERT_SIZE}});
                                             }}/>
                                         <label for="certs-file-input" class="custom-file-label form-control rounded-left"
                                             data-browse={__("certs.content.browse")}>{state.addCert.file ? state.addCert.file.name : __("certs.content.select_file")}</label>
-                                        <div class="invalid-feedback">{__("certs.script.cert_too_large")(CERTS_MAX_CERT_SIZE)}</div>
+                                        <div class="invalid-feedback">{__("certs.script.cert_too_large")(options.CERTS_MAX_CERT_SIZE)}</div>
                                     </div>
                                 </FormRow>
                             </>]}

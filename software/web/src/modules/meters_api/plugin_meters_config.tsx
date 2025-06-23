@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { METERS_MAX_VALUES_PER_METER } from "../../options";
+import * as options from "../../options";
 import { h, Fragment, Component, ComponentChildren } from 'preact'
 import { __, translate_unchecked } from "../../ts/translation";
 import * as util from "../../ts/util";
@@ -216,9 +216,9 @@ class MeterValueIDTable extends Component<MeterValueIDTableProps, MeterValueIDTa
                 return row
             })}
             columnNames={[""]}
-            addEnabled={this.props.config[1].value_ids.length < METERS_MAX_VALUES_PER_METER}
+            addEnabled={this.props.config[1].value_ids.length < options.METERS_MAX_VALUES_PER_METER}
             addTitle={__("meters_api.content.add_value_title")}
-            addMessage={__("meters_api.content.add_value_message")(this.props.config[1].value_ids.length, METERS_MAX_VALUES_PER_METER)}
+            addMessage={__("meters_api.content.add_value_message")(this.props.config[1].value_ids.length, options.METERS_MAX_VALUES_PER_METER)}
             onAddShow={async () => {
                 this.setState({value_id: null});
             }}

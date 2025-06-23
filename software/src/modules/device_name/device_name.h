@@ -21,8 +21,7 @@
 
 #include "module.h"
 #include "config.h"
-
-#include "build.h"
+#include "options.h"
 
 class DeviceName final : public IModule
 {
@@ -33,7 +32,7 @@ public:
     void register_urls() override;
 
     void updateDisplayType();
-#if BUILD_IS_WARP() || BUILD_IS_WARP2() || BUILD_IS_WARP3()
+#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3()
     String get20CharDisplayType();
 #endif
 

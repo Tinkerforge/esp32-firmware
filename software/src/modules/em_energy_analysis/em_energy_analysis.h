@@ -26,6 +26,7 @@
 #include "chunked_response.h"
 #include "config.h"
 #include "module.h"
+#include "options.h"
 #include "modules/em_common/structs.h"
 
 class EMEnergyAnalysis final : public IModule
@@ -66,13 +67,13 @@ private:
     ConfigRoot history_wallbox_daily;
     ConfigRoot history_energy_manager_5min;
     ConfigRoot history_energy_manager_daily;
-    bool history_meter_setup_done[METERS_SLOTS];
-    float history_meter_power_value[METERS_SLOTS]; // W
-    micros_t history_meter_power_timestamp[METERS_SLOTS];
-    double history_meter_power_sum[METERS_SLOTS] = {0}; // watt seconds
-    double history_meter_power_duration[METERS_SLOTS] = {0}; // seconds
-    double history_meter_energy_import[METERS_SLOTS] = {0}; // daWh
-    double history_meter_energy_export[METERS_SLOTS] = {0}; // daWh
+    bool history_meter_setup_done[OPTIONS_METERS_MAX_SLOTS()];
+    float history_meter_power_value[OPTIONS_METERS_MAX_SLOTS()]; // W
+    micros_t history_meter_power_timestamp[OPTIONS_METERS_MAX_SLOTS()];
+    double history_meter_power_sum[OPTIONS_METERS_MAX_SLOTS()] = {0}; // watt seconds
+    double history_meter_power_duration[OPTIONS_METERS_MAX_SLOTS()] = {0}; // seconds
+    double history_meter_energy_import[OPTIONS_METERS_MAX_SLOTS()] = {0}; // daWh
+    double history_meter_energy_export[OPTIONS_METERS_MAX_SLOTS()] = {0}; // daWh
     uint32_t history_request_seqnum = 0;
 
     // Cached EM data

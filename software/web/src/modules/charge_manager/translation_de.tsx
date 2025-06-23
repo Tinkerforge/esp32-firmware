@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import * as options from "../../options";
 import { __, removeUnicodeHacks } from "../../ts/translation";
 let x = {
     "charge_manager": {
@@ -50,13 +51,13 @@ let x = {
             "charge_manager_chargers": "Wallboxen",
             "enable_charge_manager": "Fremdsteuerung",
             "enable_charge_manager_help": /*FFN*/(has_managed_mode: boolean) => <>
-                <p>Auf dieser Seite werden die kontrollierten Wallboxen konfiguriert. Die hier vorgenommenen Einstellungen beeinflussen das <a href={removeUnicodeHacks("{{{doc_base_url}}}/docs/tutorials/chargemanagement")}>Lastmanagement</a> zwischen den Wallboxen.</p>
+                <p>Auf dieser Seite werden die kontrollierten Wallboxen konfiguriert. Die hier vorgenommenen Einstellungen beeinflussen das <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/chargemanagement`)}>Lastmanagement</a> zwischen den Wallboxen.</p>
                 <ul class="mb-0">
                     <li><strong>Deaktiviert:</strong> Es findet kein Lastmanagement statt. {__("This_device")} ist vollständig eigenständig.</li>
                     {has_managed_mode ?
                         <li><strong>Fremdgesteuert:</strong> {__("This_device")} wird von einem anderen Lastmanager verwaltet. Es müssen keine weiteren Einstellungen vorgenommen werden.</li>
                         : undefined}
-                    <li><strong>Lastmanager / PV-Überschussladen:</strong> {__("This_device")} arbeitet als Lastmanager. Dies ist auch der Fall, wenn sie nur eigenständig die Funktion <a href={removeUnicodeHacks("{{{doc_base_url}}}/docs/tutorials/pv_excess_charging/")}>PV-Überschussladen</a> ausführen soll. Es sind weitere Einstellungen vorzunehmen.</li>
+                    <li><strong>Lastmanager / PV-Überschussladen:</strong> {__("This_device")} arbeitet als Lastmanager. Dies ist auch der Fall, wenn sie nur eigenständig die Funktion <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/pv_excess_charging`)}>PV-Überschussladen</a> ausführen soll. Es sind weitere Einstellungen vorzunehmen.</li>
                 </ul>
             </>/*NF*/,
             "enable_watchdog": "Watchdog aktiviert",

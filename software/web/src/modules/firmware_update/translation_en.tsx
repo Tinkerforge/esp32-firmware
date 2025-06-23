@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import * as options from "../../options";
 import { __, removeUnicodeHacks } from "../../ts/translation";
 let x = {
     "firmware_update": {
@@ -8,8 +9,8 @@ let x = {
             "rolled_back_version": /*FFN*/(rolled_back_version: string, version: string, display_type: string) => {
                 let result = [<>{`Firmware ${rolled_back_version} seems unstable. An automatic rollback to the previous firmware ${version} has occurred.`}</>];
 
-                if ("{{{support_email}}}".length > 0) {
-                    result.push(<> Please download a <a href="#event_log">debug report</a> and send it to <a href={removeUnicodeHacks(`mailto:{{{support_email}}}?subject=${display_type} firmware ${rolled_back_version} seems unstable`)}>{{{support_email}}}</a>.</>);
+                if (options.SUPPORT_EMAIL.length > 0) {
+                    result.push(<> Please download a <a href="#event_log">debug report</a> and send it to <a href={removeUnicodeHacks(`mailto:${options.SUPPORT_EMAIL}?subject=${display_type} firmware ${rolled_back_version} seems unstable`)}>{options.SUPPORT_EMAIL}</a>.</>);
                 }
 
                 return <>{result}</>;
@@ -23,7 +24,7 @@ let x = {
             "firmware_update": "Firmware Update",
             "current_version": "Installed version",
             "manual_update": "Manual update",
-            "manual_update_muted": <><a href="{{{firmware_url}}}">recent firmwares</a></>,
+            "manual_update_muted": <><a href={options.FIRMWARE_URL}>recent firmwares</a></>,
             "browse": "Browse",
             "select_file": "Select firmware file...",
             "install_update": "Install",

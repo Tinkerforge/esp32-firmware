@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import * as options from "../../options";
 import { __ } from "../../ts/translation";
 let x = {
     "wifi": {
@@ -51,7 +52,7 @@ let x = {
             "ap_channel_auto_select": "Selected automatically",
 
             "confirm_title": "Disable WiFi Access Point?",
-            "confirm_content": <>Are you sure you want to disable the WiFi Access Point? If no connection to a configured network can be established in the future, <b>it is not possible to access {__("the_device")} anymore</b>. {__("The_device")} then has to be reset to factory defaults. <a href="{{{manual_url}}}">See manual for details.</a></>,
+            "confirm_content": <>Are you sure you want to disable the WiFi Access Point? If no connection to a configured network can be established in the future, <b>it is not possible to access {__("the_device")} anymore</b>. {__("The_device")} then has to be reset to factory defaults. <a href={options.MANUAL_URL}>See manual for details.</a></>,
             "confirm_abort": "Abort",
             "confirm_confirm": "Disable",
 

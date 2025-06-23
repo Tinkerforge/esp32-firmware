@@ -29,6 +29,7 @@
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
 #include "build.h"
+#include "options.h"
 #include "config.h"
 #include "digest_auth.h"
 #include "tools/fs.h"
@@ -171,7 +172,7 @@ static void store_key(uint8_t user_id, uint8_t key_id, const char *pri, const ch
 // Don't use LittleFS.[...] directly in migrations if not necessary!
 // Prefer to use the functions above.
 static const ConfigMigration migrations[] = {
-#if BUILD_IS_WARP()
+#if OPTIONS_PRODUCT_ID_IS_WARP()
     {
         // WARP1 1.3.0 changes
         // - Renamed xyz.json.tmp to .xyz
@@ -193,7 +194,7 @@ static const ConfigMigration migrations[] = {
     },
 #endif
 
-#if BUILD_IS_WARP() || BUILD_IS_WARP2()
+#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2()
     {
         2, 0, 0,
         // 2.0.0 changes
@@ -210,7 +211,7 @@ static const ConfigMigration migrations[] = {
                 ip.set(s);
             };
 
-            String default_hostname = String(BUILD_HOST_PREFIX) + '-';
+            String default_hostname = String(OPTIONS_HOSTNAME_PREFIX()) + '-';
             String ethernet_hostname = default_hostname;
             if (read_config_file("ethernet/config", json)) {
                 if (json.containsKey("hostname")) {
@@ -418,7 +419,7 @@ static const ConfigMigration migrations[] = {
     },
 #endif
 
-#if BUILD_IS_ENERGY_MANAGER()
+#if OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER()
     {
         1, 0, 2,
         // 1.0.2 changes
@@ -743,11 +744,11 @@ static const ConfigMigration migrations[] = {
     },
 #endif
 
-#if BUILD_IS_WARP() || BUILD_IS_WARP2() || BUILD_IS_WARP3() || BUILD_IS_ENERGY_MANAGER()
+#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER()
     {
-        #if BUILD_IS_ENERGY_MANAGER()
+        #if OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER()
         2, 2, 0,
-        #elif BUILD_IS_WARP()
+        #elif OPTIONS_PRODUCT_ID_IS_WARP()
         2, 4, 2,
         #else // WARP2, 3
         2, 5, 0,
@@ -789,11 +790,11 @@ static const ConfigMigration migrations[] = {
     },
 #endif
 
-#if BUILD_IS_WARP() || BUILD_IS_WARP2() || BUILD_IS_WARP3() || BUILD_IS_ENERGY_MANAGER() || BUILD_IS_SMART_ENERGY_BROKER()
+#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER() || OPTIONS_PRODUCT_ID_IS_SMART_ENERGY_BROKER()
     {
-        #if BUILD_IS_WARP() || BUILD_IS_WARP2() || BUILD_IS_WARP3()
+        #if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3()
         2, 6, 2,
-        #elif BUILD_IS_ENERGY_MANAGER()
+        #elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER()
         2, 2, 1, // actually 2.3.0
         #else
         1, 0, 1, // seb 1.0.1 was never released but we can't have two migrations with the same version.
@@ -817,9 +818,9 @@ static const ConfigMigration migrations[] = {
         }
     },
     {
-        #if BUILD_IS_WARP() || BUILD_IS_WARP2() || BUILD_IS_WARP3()
+        #if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3()
         2, 6, 6,
-        #elif BUILD_IS_ENERGY_MANAGER()
+        #elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER()
         2, 2, 2, // actually 2.3.0
         #else
         1, 1, 0,
@@ -839,7 +840,7 @@ static const ConfigMigration migrations[] = {
     },
 #endif
 
-#if BUILD_IS_ENERGY_MANAGER()
+#if OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER()
     {
         2, 2, 3,
         // 2.2.3 changes (actually 2.3.0)
@@ -1023,8 +1024,8 @@ void migrate_config()
         write_version_file = true;
     }
 
-    if (!config_type.isEmpty() && !config_type.equals(BUILD_CONFIG_TYPE)) {
-        logger.printfln("Config type mismatch: firmware expects '%s' but '%s' found in flash. Expect config problems.", BUILD_CONFIG_TYPE, config_type.c_str());
+    if (!config_type.isEmpty() && !config_type.equals(OPTIONS_CONFIG_TYPE())) {
+        logger.printfln("Config type mismatch: firmware expects '%s' but '%s' found in flash. Expect config problems.", OPTIONS_CONFIG_TYPE(), config_type.c_str());
         return;
     }
 
@@ -1068,7 +1069,7 @@ void migrate_config()
 
     File file = LittleFS.open(migrations_executed ? "/migration/version" : "/config/version", "w");
 
-    file.printf("{\"spiffs\": \"%u.%u.%u\", \"config_type\": \"%s\"}", current.major, current.minor, current.patch, BUILD_CONFIG_TYPE);
+    file.printf("{\"spiffs\": \"%u.%u.%u\", \"config_type\": \"%s\"}", current.major, current.minor, current.patch, OPTIONS_CONFIG_TYPE());
     file.close();
 
     if (!migrations_executed)

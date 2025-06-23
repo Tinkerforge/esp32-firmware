@@ -25,6 +25,7 @@
 #include <limits>
 #include <TFTools/Micros.h>
 
+#include "options.h"
 #include "tools/ringbuffer.h"
 #include "tools/malloc.h"
 
@@ -42,25 +43,13 @@
 
 #define HISTORY_RING_BUF_SIZE (HISTORY_HOURS * 60 / HISTORY_MINUTE_INTERVAL)
 
-#ifndef METER_VALUE_HISTORY_VALUE_TYPE
-#define METER_VALUE_HISTORY_VALUE_TYPE int16_t
-#endif
-
-#ifndef METER_VALUE_HISTORY_VALUE_MAX
-#define METER_VALUE_HISTORY_VALUE_MAX 32767
-#endif
-
-#ifndef METER_VALUE_HISTORY_VALUE_MIN
-#define METER_VALUE_HISTORY_VALUE_MIN -32767
-#endif
-
 // Check for < because ::lowest() is a reserved value.
-static_assert(std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::lowest() < METER_VALUE_HISTORY_VALUE_MIN);
-static_assert(std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::max() >= METER_VALUE_HISTORY_VALUE_MAX);
+static_assert(std::numeric_limits<OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE()>::lowest() < OPTIONS_METER_VALUE_HISTORY_VALUE_MIN());
+static_assert(std::numeric_limits<OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE()>::max() >= OPTIONS_METER_VALUE_HISTORY_VALUE_MAX());
 
 // We use int to format the buffer, so at most int is allowed.
-static_assert(std::numeric_limits<int>::lowest() <= METER_VALUE_HISTORY_VALUE_MIN);
-static_assert(std::numeric_limits<int>::max() >= METER_VALUE_HISTORY_VALUE_MAX);
+static_assert(std::numeric_limits<int>::lowest() <= OPTIONS_METER_VALUE_HISTORY_VALUE_MIN());
+static_assert(std::numeric_limits<int>::max() >= OPTIONS_METER_VALUE_HISTORY_VALUE_MAX());
 
 class StringBuilder;
 
@@ -75,7 +64,7 @@ public:
     void register_urls(String base_url);
     void register_urls_empty(String base_url);
     void add_sample(float sample);
-    void tick(micros_t now, bool update_history, METER_VALUE_HISTORY_VALUE_TYPE *live_sample, METER_VALUE_HISTORY_VALUE_TYPE *history_sample);
+    void tick(micros_t now, bool update_history, OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE() *live_sample, OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE() *history_sample);
     void format_live(micros_t now, StringBuilder *sb);
     void format_live_samples(StringBuilder *sb);
     void format_history(micros_t now, StringBuilder *sb);
@@ -95,10 +84,10 @@ public:
     uint32_t sample_count = 0;
     float sample_sum = 0;
 
-    METER_VALUE_HISTORY_VALUE_TYPE last_live_val;
+    OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE() last_live_val;
     int last_live_val_valid = 0;
 
-    TF_PackedRingbuffer<METER_VALUE_HISTORY_VALUE_TYPE,
+    TF_PackedRingbuffer<OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE(),
                   3 * 60 * HISTORY_MINUTE_INTERVAL,
                   uint32_t,
 #if defined(BOARD_HAS_PSRAM)
@@ -109,7 +98,7 @@ public:
                   free_any> live;
     micros_t live_last_update = 0_us;
 
-    TF_PackedRingbuffer<METER_VALUE_HISTORY_VALUE_TYPE,
+    TF_PackedRingbuffer<OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE(),
                   HISTORY_RING_BUF_SIZE,
                   uint32_t,
 #if defined(BOARD_HAS_PSRAM)

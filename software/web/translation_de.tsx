@@ -1,9 +1,10 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import * as options from "./src/options";
 import { __ } from "./src/ts/translation";
 let x = {
     "main": {
-        "title": "{{{display_name}}} Webinterface",
+        "title": `${options.PRODUCT_NAME} Webinterface`,
         "navbar_login": "Anmeldung",
         "content_login": "Anmeldung",
         "login_username": "Benutzername",

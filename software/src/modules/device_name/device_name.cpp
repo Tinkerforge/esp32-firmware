@@ -20,15 +20,17 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
-#include "build.h"
+#include "options.h"
 
 extern char local_uid_str[32];
+
+static const size_t options_hostname_prefix_length = constexpr_strlen(OPTIONS_HOSTNAME_PREFIX());
 
 void DeviceName::pre_setup()
 {
     name = Config::Object({
-        {"name", Config::Str("", 0, BUILD_HOST_PREFIX_LENGTH + 1 + ARRAY_SIZE(local_uid_str))},
-        {"type", Config::Str(BUILD_HOST_PREFIX, 0, BUILD_HOST_PREFIX_LENGTH)},
+        {"name", Config::Str("", 0, options_hostname_prefix_length + 1 + ARRAY_SIZE(local_uid_str))},
+        {"type", Config::Str(OPTIONS_HOSTNAME_PREFIX(), 0, options_hostname_prefix_length)},
         {"display_type", Config::Str("", 0, 64)},
         {"uid", Config::Str("", 0, 32)}
     });
@@ -38,8 +40,8 @@ void DeviceName::pre_setup()
     });
 }
 
-#if BUILD_IS_WARP() || BUILD_IS_WARP2() || BUILD_IS_WARP3()
-String getWarpDisplayName(bool add_optional_hw=true)
+#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3()
+String getWarpDisplayType(bool add_optional_hw=true)
 {
     String display_type = api.hasFeature("meter") ? " Pro" : " Smart";
 
@@ -50,13 +52,13 @@ String getWarpDisplayName(bool add_optional_hw=true)
         display_type += " w/o EVSE";
     }
 
-#if BUILD_IS_WARP()
+#if OPTIONS_PRODUCT_ID_IS_WARP()
     if (add_optional_hw && api.hasFeature("nfc")) {
         display_type += " +NFC";
     }
 #endif
 
-#if BUILD_IS_WARP() || BUILD_IS_WARP2()
+#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2()
     if (add_optional_hw && api.hasFeature("rtc")) {
         display_type += " +RTC";
     }
@@ -70,10 +72,10 @@ static bool isVowel(char c)
     return (0x208222 >> (c & 0x1f)) & 1;
 }
 
-#if BUILD_IS_WARP() || BUILD_IS_WARP2() || BUILD_IS_WARP3()
+#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3()
 String DeviceName::get20CharDisplayType() {
-    String display_type = BUILD_DISPLAY_NAME;
-    display_type += getWarpDisplayName(false);
+    String display_type = OPTIONS_PRODUCT_NAME();
+    display_type += getWarpDisplayType(false);
     display_type.replace(" Charger", "");
     display_type = display_type.substring(0, 20);
     return display_type;
@@ -82,9 +84,9 @@ String DeviceName::get20CharDisplayType() {
 
 void DeviceName::updateDisplayType()
 {
-    String display_type = BUILD_DISPLAY_NAME;
-#if BUILD_IS_WARP() || BUILD_IS_WARP2() || BUILD_IS_WARP3()
-    display_type += getWarpDisplayName(); // FIXME: Also add more details for WARP Energy Manager, similar to WARP[2] here?
+    String display_type = OPTIONS_PRODUCT_NAME();
+#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3()
+    display_type += getWarpDisplayType(); // FIXME: Also add more details for WARP Energy Manager, similar to WARP[2] here?
 #endif
 
     const char *indef_article = isVowel(display_type[0]) ? "an" : "a";
@@ -96,7 +98,7 @@ void DeviceName::updateDisplayType()
 
 void DeviceName::setup()
 {
-    name.get("name")->updateString(String(BUILD_HOST_PREFIX) + "-" + local_uid_str);
+    name.get("name")->updateString(String(OPTIONS_HOSTNAME_PREFIX()) + "-" + local_uid_str);
     name.get("uid")->updateString(String(local_uid_str));
 
     // We intentionally don't use the display_name_in_use = display_name construction here:

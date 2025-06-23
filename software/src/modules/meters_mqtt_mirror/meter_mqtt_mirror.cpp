@@ -25,6 +25,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "options.h"
 #include "modules/meters/meter_value_id.h"
 
 #include "gcc_warnings.h"
@@ -71,7 +72,7 @@ void MeterMqttMirror::setup(Config *ephemeral_config)
 }
 
 void MeterMqttMirror::onMessage(const char *topic, size_t topic_len, char *data, size_t data_len, void (MeterMqttMirror::*message_handler)(const JsonArrayConst &json_array)) {
-    StaticJsonDocument<JSON_ARRAY_SIZE(METERS_MAX_VALUES_PER_METER)> doc;
+    StaticJsonDocument<JSON_ARRAY_SIZE(OPTIONS_METERS_MAX_VALUES_PER_METER())> doc;
 
     DeserializationError error = deserializeJson(doc, data, data_len);
     if (error) {
@@ -86,8 +87,8 @@ void MeterMqttMirror::onMessage(const char *topic, size_t topic_len, char *data,
 void MeterMqttMirror::handle_mqtt_value_ids(const JsonArrayConst &array)
 {
     size_t array_size = array.size();
-    if (array_size > METERS_MAX_VALUES_PER_METER) {
-        logger.printfln_meter("Too many value IDs from mirrored meter: %zu > %i", array_size, METERS_MAX_VALUES_PER_METER);
+    if (array_size > OPTIONS_METERS_MAX_VALUES_PER_METER()) {
+        logger.printfln_meter("Too many value IDs from mirrored meter: %zu > %i", array_size, OPTIONS_METERS_MAX_VALUES_PER_METER());
         return;
     }
 
@@ -96,7 +97,7 @@ void MeterMqttMirror::handle_mqtt_value_ids(const JsonArrayConst &array)
         return;
     }
 
-    MeterValueID value_ids[METERS_MAX_VALUES_PER_METER];
+    MeterValueID value_ids[OPTIONS_METERS_MAX_VALUES_PER_METER()];
     size_t index = 0;
     // Use iterator because each getElement(index) call has a complexity of O(n).
     for (const JsonVariantConst v : array) {
@@ -163,7 +164,7 @@ void MeterMqttMirror::handle_mqtt_values(const JsonArrayConst &array)
         return;
     }
 
-    float values[METERS_MAX_VALUES_PER_METER];
+    float values[OPTIONS_METERS_MAX_VALUES_PER_METER()];
     size_t i = 0;
     // Use iterator because each getElement(index) call has a complexity of O(n).
     for (const JsonVariantConst v : array) {

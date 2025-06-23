@@ -18,8 +18,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { METERS_SLOTS } from "../../options";
 import * as API from "../../ts/api";
+import * as options from "../../options";
 import { h } from "preact";
 import { __ } from "../../ts/translation";
 import { AutomationAction, InitResult } from "../automation/types";
@@ -44,7 +44,7 @@ function get_meter_reset_table_children(action: MeterAutomationAction) {
 
 function get_meter_reset_edit_children(action: MeterAutomationAction, on_action: (action: AutomationAction) => void) {
     let items: [string, string][] = [];
-    for (let i = 0; i < METERS_SLOTS; i++) {
+    for (let i = 0; i < options.METERS_MAX_SLOTS; i++) {
         const meter = API.get_unchecked(`meters/${i}/config`);
         if (meter[1]) {
             items.push([i.toString(), meter[1].display_name]);

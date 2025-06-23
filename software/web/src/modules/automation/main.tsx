@@ -18,9 +18,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { AUTOMATION_MAX_RULES } from "../../options";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
+import * as options from "../../options";
 import { h, Fragment, ComponentChild } from "preact";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { Table, TableRow } from "../../ts/components/table";
@@ -326,9 +326,9 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
                         __("automation.content.action"),
                         __("automation.content.last_run")]}
                     rows={this.assembleTable()}
-                    addEnabled={this.state.tasks.length < AUTOMATION_MAX_RULES}
+                    addEnabled={this.state.tasks.length < options.AUTOMATION_MAX_RULES}
                     addTitle={__("automation.content.add_rule_title")}
-                    addMessage={__("automation.content.add_rule_message")(this.state.tasks.length, AUTOMATION_MAX_RULES)}
+                    addMessage={__("automation.content.add_rule_message")(this.state.tasks.length, options.AUTOMATION_MAX_RULES)}
                     onAddShow={async () => {
                         this.setState({
                             displayed_trigger: AutomationTriggerID.None,

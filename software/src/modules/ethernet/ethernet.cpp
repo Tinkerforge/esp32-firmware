@@ -33,6 +33,7 @@
 #include "event_log_prefix.h"
 
 #include "build.h"
+#include "options.h"
 #include "tools.h"
 #include "tools/malloc.h"
 #include "tools/net.h"
@@ -149,7 +150,7 @@ void Ethernet::setup()
 #if MODULE_NETWORK_AVAILABLE()
             const String &hostname = network.get_hostname();
 #else
-            String hostname{BUILD_HOST_PREFIX};
+            String hostname{OPTIONS_HOSTNAME_PREFIX()};
             hostname.concat("-", 1);
             hostname.concat(local_uid_str);
 #endif

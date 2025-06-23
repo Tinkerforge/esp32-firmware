@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import * as options from "../../options";
 import { removeUnicodeHacks } from "../../ts/translation";
 let x = {
     "evse": {
@@ -48,7 +49,7 @@ let x = {
                     <li>
                         <p>
                             <strong>Switch error:</strong>
-                            The wallbox was not installed correctly. The charge controller's switch setting remains at its factory default. See <a href={removeUnicodeHacks("{{{doc_base_url}}}/docs/warp_charger/assembly_and_installation#einstellen-des-ladestroms")}>Charging current configuration</a>.
+                            The wallbox was not installed correctly. The charge controller's switch setting remains at its factory default. See <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/warp_charger/assembly_and_installation#einstellen-des-ladestroms`)}>Charging current configuration</a>.
                         </p>
                     </li>
                     <li>
@@ -66,7 +67,7 @@ let x = {
                     <li>
                         <p>
                             <strong>Communication error:</strong>
-                            An error occurred during communication with the electric vehicle. On first occurrence, disconnect the charging cable from the vehicle, wait 10 seconds, and then reconnect the cable (restart the charging process). If the problem persists, see the <a href={removeUnicodeHacks("{{{doc_base_url}}}/docs/warp_charger/troubleshooting#led-blinkt-f%C3%BCnfmal-rot-im-intervall-dass-webinterface-zeigt-kommunikationsfehler")}>instructions</a>.
+                            An error occurred during communication with the electric vehicle. On first occurrence, disconnect the charging cable from the vehicle, wait 10 seconds, and then reconnect the cable (restart the charging process). If the problem persists, see the <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/warp_charger/troubleshooting#led-blinkt-f%C3%BCnfmal-rot-im-intervall-dass-webinterface-zeigt-kommunikationsfehler`)}>instructions</a>.
                         </p>
                     </li>
                 </ul>
@@ -209,7 +210,7 @@ let x = {
 
             // EVSE V2 and V3
             "energy_meter_type": "Energy meter type",
-            "gpio_shutdown_help": <><p>At the shutdown input, for example, a ripple control receiver can be connected. Here you can configure how changes to the shutdown input are handled. In the wallbox's standard configuration, power is limited to 4200 W when the shutdown input is closed. See <a href={removeUnicodeHacks("{{{doc_base_url}}}/docs/tutorials/verbrauchseinrichtung")}>controllable consumption device according to §14a EnWG</a>.</p></>,
+            "gpio_shutdown_help": <><p>At the shutdown input, for example, a ripple control receiver can be connected. Here you can configure how changes to the shutdown input are handled. In the wallbox's standard configuration, power is limited to 4200 W when the shutdown input is closed. See <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/verbrauchseinrichtung`)}>controllable consumption device according to §14a EnWG</a>.</p></>,
             "gpio_shutdown_not_configured": "Not configured",
             "gpio_shutdown_on_open": "Shut down on open",
             "gpio_shutdown_on_close": "Shut down on close",
@@ -260,7 +261,7 @@ let x = {
             "dc_fault_current_6_ma_20_ma": "AC and DC fault",
 
             "reset_dc_fault_title": "Reset the DC fault protector",
-            "reset_dc_fault_content": <>Resetting the DC fault protector restores the ability to charge. <b>Ensure that the reason why the DC fault protector triggered is resolved!</b> <a href="{{{manual_url}}}">See manual for details.</a> Really reset the DC fault protector?</>,
+            "reset_dc_fault_content": <>Resetting the DC fault protector restores the ability to charge. <b>Ensure that the reason why the DC fault protector triggered is resolved!</b> <a href={options.MANUAL_URL}>See manual for details.</a> Really reset the DC fault protector?</>,
             "abort": "Abort",
             "reset": "Reset",
             "trigger_dc_fault_test": "Test DC fault protector",

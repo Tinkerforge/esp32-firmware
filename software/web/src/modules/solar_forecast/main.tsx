@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { SOLAR_FORECAST_PLANES } from "../../options";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
+import * as options from "../../options";
 import { createRef, h, Fragment, Component, RefObject } from "preact";
 import { __ } from "../../ts/translation";
 import { Switch } from "../../ts/components/switch";
@@ -44,7 +44,7 @@ function minus1_to_nan(val: number) {
 
 function get_active_planes() {
     let active_planes = [];
-    for (let i = 0; i < SOLAR_FORECAST_PLANES; i++) {
+    for (let i = 0; i < options.SOLAR_FORECAST_PLANES; i++) {
         const plane_config = API.get_unchecked(`solar_forecast/planes/${i}/config`);
         if (plane_config.enable) {
             active_planes.push(i);
@@ -100,7 +100,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
             this.setState({config_enable: config.enable});
         });
 
-        for (let plane_index = 0; plane_index < SOLAR_FORECAST_PLANES; ++plane_index) {
+        for (let plane_index = 0; plane_index < options.SOLAR_FORECAST_PLANES; ++plane_index) {
             util.addApiEventListener_unchecked(`solar_forecast/planes/${plane_index}/state`, () => {
                 let state = API.get_unchecked(`solar_forecast/planes/${plane_index}/state`);
 
@@ -149,19 +149,19 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
     override async sendSave(topic: "solar_forecast/config", config: SolarForecastConfig) {
         this.setState({config_enable: config.enable}); // avoid round trip time
 
-        for (let plane_index = 0; plane_index < SOLAR_FORECAST_PLANES; plane_index++) {
+        for (let plane_index = 0; plane_index < options.SOLAR_FORECAST_PLANES; plane_index++) {
             await API.save_unchecked(
                 `solar_forecast/planes/${plane_index}/config`,
                 this.state.plane_configs[plane_index],
                 () => __("solar_forecast.script.save_failed"),
-                plane_index == SOLAR_FORECAST_PLANES - 1 ? this.reboot_string : undefined);
+                plane_index == options.SOLAR_FORECAST_PLANES - 1 ? this.reboot_string : undefined);
         }
 
         await super.sendSave(topic, config);
     }
 
     override async sendReset(topic: "solar_forecast/config") {
-        for (let plane_index = 0; plane_index < SOLAR_FORECAST_PLANES; plane_index++) {
+        for (let plane_index = 0; plane_index < options.SOLAR_FORECAST_PLANES; plane_index++) {
             await API.reset_unchecked(`solar_forecast/planes/${plane_index}/config`, this.error_string, this.reboot_string);
         }
 
@@ -169,7 +169,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
     }
 
     override getIsModified(topic: "solar_forecast/config"): boolean {
-        for (let plane_index = 0; plane_index < SOLAR_FORECAST_PLANES; plane_index++) {
+        for (let plane_index = 0; plane_index < options.SOLAR_FORECAST_PLANES; plane_index++) {
             if (API.is_modified_unchecked(`solar_forecast/planes/${plane_index}/config`))
                 return true;
         }
@@ -250,7 +250,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
         let data_available = false;
         let first_index = 0;
         let active_planes = [];
-        for (let i = 0; i < SOLAR_FORECAST_PLANES; i++) {
+        for (let i = 0; i < options.SOLAR_FORECAST_PLANES; i++) {
             // Data is available if at least one plane is active and all active planes have forecast data
             if(this.state.plane_configs[i].enable && (this.state.plane_forecasts[i].forecast.length > 0)) {
                 if (!data_available) {
@@ -329,7 +329,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
 
         function get_active_unsaved_planes() {
             let active_planes = [];
-            for (let i = 0; i < SOLAR_FORECAST_PLANES; i++) {
+            for (let i = 0; i < options.SOLAR_FORECAST_PLANES; i++) {
                 if (state.plane_configs[i].enable) {
                     active_planes.push(i);
                 }
@@ -338,7 +338,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
         }
 
         function get_next_free_unsaved_plane_index() {
-            for (let i = 0; i < SOLAR_FORECAST_PLANES; i++) {
+            for (let i = 0; i < options.SOLAR_FORECAST_PLANES; i++) {
                 if (!state.plane_configs[i].enable) {
                     return i;
                 }
@@ -421,9 +421,9 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                                 }}
                             })
                         }
-                        addEnabled={get_active_unsaved_planes().length < SOLAR_FORECAST_PLANES}
+                        addEnabled={get_active_unsaved_planes().length < options.SOLAR_FORECAST_PLANES}
                         addTitle={__("solar_forecast.content.add_plane_config_title")}
-                        addMessage={__("solar_forecast.content.add_plane_config_message")(get_active_unsaved_planes().length, SOLAR_FORECAST_PLANES)}
+                        addMessage={__("solar_forecast.content.add_plane_config_message")(get_active_unsaved_planes().length, options.SOLAR_FORECAST_PLANES)}
                         onAddShow={async () => {
                             this.setState({plane_config_tmp: {enable: true, name: "#" + get_next_free_unsaved_plane_index(), lat: 0, long: 0, dec: 0, az: 0, wp: 0}})
                         }}

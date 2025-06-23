@@ -1,6 +1,7 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
 import { __ } from "../../ts/translation";
+import * as options from "../../options";
 let x = {
     "mqtt": {
         "status": {
@@ -15,7 +16,7 @@ let x = {
         },
         "content": {
             "mqtt": "MQTT",
-            "enable_mqtt_desc": <>Hierdurch kann {__("the_device")} über den konfigurierten MQTT-Broker kontrolliert werden. <a href="{{{apidoc_url}}}">MQTT-API-Dokumentation</a></>,
+            "enable_mqtt_desc": <>Hierdurch kann {__("the_device")} über den konfigurierten MQTT-Broker kontrolliert werden. <a href={options.WARP_API_DOC_URL}>MQTT-API-Dokumentation</a></>,
             "enable_mqtt": "MQTT aktiviert",
             "read_only": "Nur Lesezugriff",
             "read_only_desc": "Ignoriert Daten, die vom MQTT-Broker (und anderen MQTT-Clients) geschickt werden.",

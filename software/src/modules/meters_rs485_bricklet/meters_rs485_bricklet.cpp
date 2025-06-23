@@ -23,7 +23,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
-#include "build.h"
+#include "options.h"
 #include "modules/meters/meter_location.enum.h"
 #include "rs485_bricklet_firmware_bin.embedded.h"
 
@@ -41,7 +41,7 @@ void MetersRS485Bricklet::pre_setup()
     this->DeviceModule::pre_setup();
 
     config_prototype = Config::Object({
-        {"display_name", Config::Str(BUILD_LOCAL_METER_DEFAULT_DISPLAY_NAME, 0, 32)},
+        {"display_name", Config::Str(OPTIONS_LOCAL_METER_DEFAULT_DISPLAY_NAME(), 0, 32)},
         {"location", Config::Enum(MeterLocation::Charger)},
         {"type_override", Config::Uint8(METER_TYPE_AUTO_DETECT)}
     });

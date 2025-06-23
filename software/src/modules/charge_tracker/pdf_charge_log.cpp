@@ -26,10 +26,9 @@
 #define CHARGE_TRACKER_PDF_LOGO_ELTAKO 1
 
 #include "pdfgen.h"
+#include "options.h"
 
-#if !defined(CHARGE_TRACKER_PDF_LOGO)
-    #error "CHARGE_TRACKER_PDF_LOGO not defined!"
-#elif CHARGE_TRACKER_PDF_LOGO == CHARGE_TRACKER_PDF_LOGO_WARP
+#if OPTIONS_CHARGE_TRACKER_PDF_LOGO() == CHARGE_TRACKER_PDF_LOGO_WARP
     static constexpr uint32_t logo_background = 0xFF545454;
     static constexpr uint8_t  logo_png[] = {
     0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
@@ -47,7 +46,7 @@
     0x00, 0xcd, 0xa5, 0xe8, 0x0e, 0xf6, 0x3c, 0x2d, 0x03, 0x00, 0x00, 0x00,
     0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82
     };
-#elif CHARGE_TRACKER_PDF_LOGO == CHARGE_TRACKER_PDF_LOGO_ELTAKO
+#elif OPTIONS_CHARGE_TRACKER_PDF_LOGO() == CHARGE_TRACKER_PDF_LOGO_ELTAKO
     static constexpr uint32_t logo_background = 0xFF0064AF;
     static constexpr uint8_t  logo_png[] = {
     0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
@@ -224,7 +223,7 @@
     0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82
     };
 #else
-    #error "unknown CHARGE_TRACKER_PDF_LOGO"
+    #error "OPTIONS_CHARGE_TRACKER_PDF_LOGO has unknown value"
 #endif
 
 #define LEFT_MARGIN PDF_MM_TO_POINT(15)

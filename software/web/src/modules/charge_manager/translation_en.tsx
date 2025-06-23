@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import * as options from "../../options";
 import { __, removeUnicodeHacks } from "../../ts/translation";
 let x = {
     "charge_manager": {
@@ -50,13 +51,13 @@ let x = {
             "charge_manager_chargers": "Chargers",
             "enable_charge_manager": "Charge management mode",
             "enable_charge_manager_help": /*FFN*/(has_managed_mode: boolean) => <>
-                <p>On this page the controlled chargers are configured. The settings applied here affect the <a href={removeUnicodeHacks("{{{doc_base_url}}}/docs/tutorials/chargemanagement")}>charge management</a> among the chargers.</p>
+                <p>On this page the controlled chargers are configured. The settings applied here affect the <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/chargemanagement`)}>charge management</a> among the chargers.</p>
                 <ul class="mb-0">
                     <li><strong>Disabled:</strong> No charge management is performed. {__("This_device")} operates completely independently.</li>
                     {has_managed_mode ?
                         <li><strong>Externally controlled:</strong> {__("This_device")} is managed by another charge manager. No further settings are required.</li>
                         : undefined}
-                    <li><strong>Charge manager / PV excess charging:</strong> {__("This_device")} functions as a charge manager. This also applies when it is solely used for <a href={removeUnicodeHacks("{{{doc_base_url}}}/docs/tutorials/pv_excess_charging/")}>PV excess charging</a>. Additional settings must be configured.</li>
+                    <li><strong>Charge manager / PV excess charging:</strong> {__("This_device")} functions as a charge manager. This also applies when it is solely used for <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/pv_excess_charging`)}>PV excess charging</a>. Additional settings must be configured.</li>
                 </ul>
             </>/*NF*/,
             "enable_watchdog": "Watchdog enabled",

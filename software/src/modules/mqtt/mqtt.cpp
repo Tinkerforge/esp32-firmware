@@ -24,8 +24,9 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
-#include "tools.h"
 #include "build.h"
+#include "options.h"
+#include "tools.h"
 #include "matchTopicFilter.h"
 
 extern char local_uid_str[32];
@@ -71,8 +72,8 @@ void Mqtt::pre_setup()
         {"broker_port", Config::Uint16(1883)},
         {"broker_username", Config::Str("", 0, 64)},
         {"broker_password", Config::Str("", 0, 64)},
-        {"global_topic_prefix", Config::Str(String(BUILD_HOST_PREFIX) + "/" + "ABC", 0, 64)},
-        {"client_name", Config::Str(String(BUILD_HOST_PREFIX) + "-" + "ABC", 1, 64)},
+        {"global_topic_prefix", Config::Str(String(OPTIONS_HOSTNAME_PREFIX()) + "/" + "ABC", 0, 64)},
+        {"client_name", Config::Str(String(OPTIONS_HOSTNAME_PREFIX()) + "-" + "ABC", 1, 64)},
         {"interval", Config::Uint(1, 0, 24 * 60 * 60)},
         // esp_mqtt_transport_t. -1 because we don't allow MQTT_TRANSPORT_UNKNOWN.
         {"protocol", Config::Uint(MQTT_TRANSPORT_OVER_TCP - 1, MQTT_TRANSPORT_OVER_TCP - 1, MQTT_TRANSPORT_OVER_WSS - 1)},
@@ -599,8 +600,8 @@ void Mqtt::setup()
     initialized = true;
 
     if (!api.restorePersistentConfig("mqtt/config", &config)) {
-        config.get("global_topic_prefix")->updateString(String(BUILD_HOST_PREFIX) + "/" + local_uid_str);
-        config.get("client_name")->updateString(String(BUILD_HOST_PREFIX) + "-" + local_uid_str);
+        config.get("global_topic_prefix")->updateString(String(OPTIONS_HOSTNAME_PREFIX()) + "/" + local_uid_str);
+        config.get("client_name")->updateString(String(OPTIONS_HOSTNAME_PREFIX()) + "-" + local_uid_str);
 
 #ifdef DEFAULT_MQTT_ENABLE
         config.get("enable_mqtt")->updateBool(DEFAULT_MQTT_ENABLE);

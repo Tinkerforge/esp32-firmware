@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-import { METERS_SLOTS } from "../../options";
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
+import * as options from "../../options";
 import { __, translate_unchecked } from "../../ts/translation";
 import { h, createRef, Fragment, Component, RefObject, ComponentChild } from "preact";
 import { Button, ButtonGroup, ListGroup, ListGroupItem, Alert } from "react-bootstrap";
@@ -107,14 +107,14 @@ function calculate_live_data(now: number, offset: number, samples_per_second: nu
     if (samples_per_second == 0) { // implies atmost one sample
         timestamp_slot_count = 1;
     } else {
-        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+        for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
             if (samples[meter_slot] !== null) {
                 timestamp_slot_count = Math.max(timestamp_slot_count, samples[meter_slot].length);
             }
         }
     }
 
-    let data: CachedData = {timestamps: new Array(timestamp_slot_count), samples: new Array(METERS_SLOTS)};
+    let data: CachedData = {timestamps: new Array(timestamp_slot_count), samples: new Array(options.METERS_MAX_SLOTS)};
     let start: number;
     let step: number;
 
@@ -133,7 +133,7 @@ function calculate_live_data(now: number, offset: number, samples_per_second: nu
         data.timestamps[timestamp_slot] = (start + timestamp_slot * step) / 1000;
     }
 
-    for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+    for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
         if (samples[meter_slot] === null) {
             data.samples[meter_slot] = [];
         }
@@ -150,13 +150,13 @@ function calculate_history_data(now: number, offset: number, samples: number[/*m
 
     let timestamp_slot_count: number = 0;
 
-    for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+    for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
         if (samples[meter_slot] !== null) {
             timestamp_slot_count = Math.max(timestamp_slot_count, samples[meter_slot].length);
         }
     }
 
-    let data: CachedData = {timestamps: new Array(timestamp_slot_count), samples: new Array(METERS_SLOTS)};
+    let data: CachedData = {timestamps: new Array(timestamp_slot_count), samples: new Array(options.METERS_MAX_SLOTS)};
     let step = HISTORY_MINUTE_INTERVAL * 60 * 1000;
 
     // (timestamp_slot_count - 1) because step defines the gaps between two samples.
@@ -170,7 +170,7 @@ function calculate_history_data(now: number, offset: number, samples: number[/*m
         data.timestamps[timestamp_slot] = (start + timestamp_slot * step) / 1000;
     }
 
-    for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+    for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
         if (samples[meter_slot] === null) {
             data.samples[meter_slot] = [];
         }
@@ -221,7 +221,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                   edit_meter_config: [MeterClassID.None, null],
               });
 
-        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+        for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
             this.live_data.samples.push([]);
             this.pending_live_data.samples.push([]);
             this.history_data.samples.push([]);
@@ -241,7 +241,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
             });
         });
 
-        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+        for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
             util.addApiEventListener_unchecked(`meters/${meter_slot}/state`, () => {
                 let state = API.get_unchecked(`meters/${meter_slot}/state`);
 
@@ -330,7 +330,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
 
             this.pending_live_data.timestamps.push(...live_extra.timestamps);
 
-            for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
                 this.pending_live_data.samples[meter_slot].push(...live_extra.samples[meter_slot]);
             }
 
@@ -350,7 +350,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
 
             this.pending_history_data.timestamps.push(...history_extra.timestamps);
 
-            for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
                 this.pending_history_data.samples[meter_slot].push(...history_extra.samples[meter_slot]);
             }
 
@@ -419,14 +419,14 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
 
         this.live_data.timestamps = array_append(this.live_data.timestamps, this.pending_live_data.timestamps, 720);
 
-        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+        for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
             this.live_data.samples[meter_slot] = array_append(this.live_data.samples[meter_slot], this.pending_live_data.samples[meter_slot], 720);
         }
 
         this.pending_live_data.timestamps = [];
         this.pending_live_data.samples = [];
 
-        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+        for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
             this.pending_live_data.samples.push([]);
         }
 
@@ -483,14 +483,14 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
 
         this.history_data.timestamps = array_append(this.history_data.timestamps, this.pending_history_data.timestamps, 720);
 
-        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+        for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
             this.history_data.samples[meter_slot] = array_append(this.history_data.samples[meter_slot], this.pending_history_data.samples[meter_slot], 720);
         }
 
         this.pending_history_data.timestamps = [];
         this.pending_history_data.samples = [];
 
-        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+        for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
             this.pending_history_data.samples.push([]);
         }
 
@@ -505,7 +505,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                 values: [this.live_data.timestamps],
             };
 
-            for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
                 if (this.live_data.samples[meter_slot].length > 0) {
                     live_data.keys.push('meter_' + meter_slot);
                     live_data.names.push(get_meter_name(this.state.configs_plot, meter_slot));
@@ -541,7 +541,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                 values: [this.history_data.timestamps.slice(-history_tail)],
             };
 
-            for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
                 if (this.history_data.samples[meter_slot].length > 0) {
                     history_data.keys.push('meter_' + meter_slot);
                     history_data.names.push(get_meter_name(this.state.configs_plot, meter_slot));
@@ -576,23 +576,23 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
     }
 
     override async sendSave(topic: null, new_config: null) {
-        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+        for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
             await API.save_unchecked(
                 `meters/${meter_slot}/config`,
                 this.state.configs_table[meter_slot],
                 () => __("meters.script.save_failed"),
-                meter_slot == METERS_SLOTS - 1 ? this.reboot_string : undefined);
+                meter_slot == options.METERS_MAX_SLOTS - 1 ? this.reboot_string : undefined);
         }
     }
 
     override async sendReset(topic: null) {
-        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
-            await API.reset_unchecked(`meters/${meter_slot}/config`, this.error_string, meter_slot == METERS_SLOTS - 1 ? this.reboot_string : undefined);
+        for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
+            await API.reset_unchecked(`meters/${meter_slot}/config`, this.error_string, meter_slot == options.METERS_MAX_SLOTS - 1 ? this.reboot_string : undefined);
         }
     }
 
     override getIsModified(topic: null): boolean {
-        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+        for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
             if (API.is_modified_unchecked(`meters/${meter_slot}/config`))
                 return true;
         }
@@ -1002,7 +1002,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                         let slots: [string, string][] = [];
                                         let classes: [string, string][] = [];
 
-                                        for (let free_meter_slot = 0; free_meter_slot < METERS_SLOTS; ++free_meter_slot) {
+                                        for (let free_meter_slot = 0; free_meter_slot < options.METERS_MAX_SLOTS; ++free_meter_slot) {
                                             if (this.state.configs_table[free_meter_slot][0] == MeterClassID.None || free_meter_slot == meter_slot) {
                                                 slots.push([free_meter_slot.toString(), free_meter_slot.toString()]);
                                             }
@@ -1060,14 +1060,14 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                     }
                                 }
                             })}
-                            addEnabled={active_meter_slots.length < METERS_SLOTS}
+                            addEnabled={active_meter_slots.length < options.METERS_MAX_SLOTS}
                             addTitle={__("meters.content.add_meter_title")}
-                            addMessage={__("meters.content.add_meter_message")(active_meter_slots.length, METERS_SLOTS)}
+                            addMessage={__("meters.content.add_meter_message")(active_meter_slots.length, options.METERS_MAX_SLOTS)}
                             onAddShow={async () => {
                                 let add_meter_slot = null;
 
                                 // Don't auto-select charger meter slot
-                                for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                                for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
                                     if (meter_slot != this.state.charger_meter_slot && this.state.configs_table[meter_slot][0] == MeterClassID.None) {
                                         add_meter_slot = meter_slot;
                                         break;
@@ -1080,7 +1080,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                 let slots: [string, string][] = [];
                                 let classes: [string, string][] = [];
 
-                                for (let free_meter_slot = 0; free_meter_slot < METERS_SLOTS; ++free_meter_slot) {
+                                for (let free_meter_slot = 0; free_meter_slot < options.METERS_MAX_SLOTS; ++free_meter_slot) {
                                     if (this.state.configs_table[free_meter_slot][0] == MeterClassID.None) {
                                         slots.push([free_meter_slot.toString(), free_meter_slot.toString()]);
                                     }
@@ -1220,7 +1220,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
             });
         });
 
-        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+        for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
             util.addApiEventListener_unchecked(`meters/${meter_slot}/config`, () => {
                 let config = API.get_unchecked(`meters/${meter_slot}/config`);
 
@@ -1371,7 +1371,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
             let battery_powers: number[] = [];
             let battery_socs: number[] = [];
 
-            for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
                 let location = get_meter_location(this.state.meter_configs, meter_slot);
 
                 if (this.state.meter_configs[meter_slot][0] != MeterClassID.None && location == MeterLocation.Unknown) {

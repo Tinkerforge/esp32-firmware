@@ -23,6 +23,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "options.h"
 #include "meter_modbus_tcp.h"
 #include "modules/meters/meter_location.enum.h"
 #include "modules/meters/meter_value_id.h"
@@ -51,7 +52,7 @@ void MetersModbusTCP::pre_setup()
         {"register_address_mode", Config::Enum(ModbusRegisterAddressMode::Address)},
         {"registers", Config::Array({},
             &table_custom_registers_prototype,
-            0, METERS_MODBUS_TCP_MAX_CUSTOM_REGISTERS, Config::type_id<Config::ConfObject>()
+            0, OPTIONS_METERS_MODBUS_TCP_MAX_CUSTOM_REGISTERS(), Config::type_id<Config::ConfObject>()
         )}
     })});
 

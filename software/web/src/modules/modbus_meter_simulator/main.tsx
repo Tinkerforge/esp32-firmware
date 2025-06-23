@@ -19,8 +19,8 @@
 
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
+import * as options from "../../options";
 import { __ } from "../../ts/translation";
-import { METERS_SLOTS } from "../../options";
 import { h, Fragment } from "preact";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm      } from "../../ts/components/config_form";
@@ -46,7 +46,7 @@ export class ModbusMeterSimulator extends ConfigComponent<'modbus_meter_simulato
             return <SubPage name="modbus_meter_simulator" />;
 
         let meter_names: [string, string][] = [];
-        for (let i = 0; i < METERS_SLOTS; i++) {
+        for (let i = 0; i < options.METERS_MAX_SLOTS; i++) {
             const meter = API.get_unchecked(`meters/${i}/config`);
             if (meter[1]) {
                 meter_names.push([i.toString(), meter[1].display_name]);

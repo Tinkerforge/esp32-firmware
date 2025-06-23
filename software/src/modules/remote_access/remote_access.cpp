@@ -35,6 +35,7 @@
 #include <sodium.h>
 
 #include "build.h"
+#include "options.h"
 #include "esp_tls.h"
 #include "esp_tls_errors.h"
 #include "event_log_prefix.h"
@@ -169,10 +170,10 @@ void RemoteAccess::pre_setup()
         {"uuid", Config::Str("", 0, 36)},
         {"enable", Config::Bool(false)},
         {"password", Config::Str("", 0, 32)},
-        {"relay_host", Config::Str(BUILD_REMOTE_ACCESS_HOST, 0, 64)},
+        {"relay_host", Config::Str(OPTIONS_REMOTE_ACCESS_HOST(), 0, 64)},
         {"relay_port", Config::Uint16(443)},
         {"cert_id", Config::Int8(-1)},
-        {"users", Config::Array({}, &users_config_prototype, 0, REMOTE_ACCESS_MAX_USERS, Config::type_id<Config::ConfObject>())},
+        {"users", Config::Array({}, &users_config_prototype, 0, OPTIONS_REMOTE_ACCESS_MAX_USERS(), Config::type_id<Config::ConfObject>())},
     });
 
     registration_config = Config::Object({
@@ -309,8 +310,8 @@ void RemoteAccess::register_urls()
         [this](String & /*errmsg*/) {
             API::removeConfig("remote_access/config");
 
-            for (uint32_t user = 0; user < REMOTE_ACCESS_MAX_USERS + 1; user++) {
-                for (int i = 0; i < REMOTE_ACCESS_MAX_KEYS_PER_USER; i++) {
+            for (uint32_t user = 0; user < OPTIONS_REMOTE_ACCESS_MAX_USERS() + 1; user++) {
+                for (int i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
                     remove_key(user, i);
                 }
             }
@@ -561,7 +562,7 @@ void RemoteAccess::register_urls()
                 i++;
 
                 // Ignore rest of keys if there were sent more than we support.
-                if (i == REMOTE_ACCESS_MAX_KEYS_PER_USER)
+                if (i == OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER())
                     break;
             }
         }
@@ -645,7 +646,7 @@ void RemoteAccess::register_urls()
                 key_cache.push(WgKey{key["charger_private"], key["psk"], key["web_public"]});
                 ++i;
                 // Ignore rest of keys if there were sent more than we support.
-                if (i == REMOTE_ACCESS_MAX_KEYS_PER_USER)
+                if (i == OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER())
                     break;
             }
         }
@@ -677,7 +678,7 @@ void RemoteAccess::register_urls()
         }
 
         uint32_t next_user_id;
-        for (uint32_t i = 1; i < REMOTE_ACCESS_MAX_USERS + 1; i++) {
+        for (uint32_t i = 1; i < OPTIONS_REMOTE_ACCESS_MAX_USERS() + 1; i++) {
             next_user_id = i;
             bool found = false;
             for (auto &user : config.get("users")) {
@@ -834,7 +835,7 @@ void RemoteAccess::register_urls()
         int i = 0;
         for (auto key : doc["wg_keys"].as<JsonArray>()) {
             serializer.addObject();
-            int connection_number = (next_user_id - 1) * REMOTE_ACCESS_MAX_KEYS_PER_USER + i;
+            int connection_number = (next_user_id - 1) * OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER() + i;
             serializer.addMemberStringF("charger_address", "10.123.%i.2", connection_number);
             serializer.addMemberStringF("web_address", "10.123.%i.3", connection_number);
             serializer.addMemberString("charger_public", key["charger_public"]);
@@ -885,7 +886,7 @@ void RemoteAccess::register_urls()
             key_cache.push(WgKey{key["charger_private"], key["psk"], key["web_public"]});
             ++a;
             // Ignore rest of keys if there were sent more than we support.
-            if (a == REMOTE_ACCESS_MAX_KEYS_PER_USER)
+            if (a == OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER())
                 break;
         }
 
@@ -943,7 +944,7 @@ void RemoteAccess::register_urls()
         }
 
         config.get("users")->remove(idx);
-        for (int i = 0; i < REMOTE_ACCESS_MAX_KEYS_PER_USER; i++) {
+        for (int i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
             remove_key(req_id, i);
         }
 
@@ -1358,7 +1359,7 @@ void RemoteAccess::parse_registration(const Config &new_config, std::queue<WgKey
     store_key(0, 0, mgmt.priv.c_str(), mgmt.psk.c_str(), management_pub);
     keys.pop();
 
-    for (int i = 0; !keys.empty() && i < REMOTE_ACCESS_MAX_KEYS_PER_USER; i++, keys.pop()) {
+    for (int i = 0; !keys.empty() && i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++, keys.pop()) {
         WgKey &key = keys.front();
         store_key(1, i, key.priv.c_str(), key.psk.c_str(), key.pub.c_str());
     }
@@ -1387,7 +1388,7 @@ void RemoteAccess::parse_registration(const Config &new_config, std::queue<WgKey
 
 void RemoteAccess::parse_add_user(std::queue<WgKey> key_cache, const String &pub_key, const String &email, uint32_t next_user_id)
 {
-    for (int i = 0; !key_cache.empty() && i < REMOTE_ACCESS_MAX_KEYS_PER_USER; i++, key_cache.pop()) {
+    for (int i = 0; !key_cache.empty() && i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++, key_cache.pop()) {
         const WgKey &key = key_cache.front();
         store_key(next_user_id, i, key.priv.c_str(), key.psk.c_str(), key.pub.c_str());
     }
@@ -1435,8 +1436,8 @@ void RemoteAccess::resolve_management()
         serializer.addMemberArray("configured_connections");
         for (auto &user : config.get("users")) {
             uint32_t user_id = user.get("id")->asUint() - 1;
-            for (int i = 0; i < REMOTE_ACCESS_MAX_KEYS_PER_USER; i++) {
-                serializer.addNumber((user_id * REMOTE_ACCESS_MAX_KEYS_PER_USER) + i);
+            for (int i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
+                serializer.addNumber((user_id * OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER()) + i);
             }
         }
         serializer.endArray();
@@ -1534,7 +1535,7 @@ void RemoteAccess::resolve_management()
 
             if (doc["configured_users"][idx] == 0) {
                 uint32_t user_id = user->get("id")->asUint();
-                for (int i = 0; i < REMOTE_ACCESS_MAX_KEYS_PER_USER; i++) {
+                for (int i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
                     remove_key(user_id, i);
                 }
                 users->remove(idx);
@@ -1740,8 +1741,8 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port)
     char psk[WG_KEY_LENGTH + 1];
     char remote_public_key[WG_KEY_LENGTH + 1];
 
-    uint8_t conn_id = i % REMOTE_ACCESS_MAX_KEYS_PER_USER;
-    uint8_t user_id = i / REMOTE_ACCESS_MAX_KEYS_PER_USER;
+    uint8_t conn_id = i % OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER();
+    uint8_t user_id = i / OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER();
     if (!get_key(user_id + 1, conn_id, private_key, psk, remote_public_key)) {
         logger.printfln("Can't connect to web interface: no WireGuard key installed!");
         return;
@@ -1877,7 +1878,7 @@ void RemoteAccess::run_management()
     }
 
     management_command *command = &command_packet->command;
-    if (static_cast<uint32_t>(command->connection_no) >= REMOTE_ACCESS_MAX_KEYS_PER_USER * REMOTE_ACCESS_MAX_USERS) {
+    if (static_cast<uint32_t>(command->connection_no) >= OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER() * OPTIONS_REMOTE_ACCESS_MAX_USERS()) {
         return;
     }
 
@@ -1897,8 +1898,8 @@ void RemoteAccess::run_management()
                 return;
             }
             if ((*conn) == nullptr) {
-                uint32_t conn_id = command->connection_no % REMOTE_ACCESS_MAX_KEYS_PER_USER;
-                uint32_t user_id = command->connection_no / REMOTE_ACCESS_MAX_KEYS_PER_USER;
+                uint32_t conn_id = command->connection_no % OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER();
+                uint32_t user_id = command->connection_no / OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER();
                 logger.printfln("Opening connection %lu for user %lu", conn_id, user_id);
             }
 

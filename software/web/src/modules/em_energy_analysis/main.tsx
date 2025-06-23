@@ -21,7 +21,7 @@
 
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
-import { METERS_SLOTS } from "../../options";
+import * as options from "../../options";
 import { h, createRef, Fragment, Component, RefObject } from "preact";
 import { __, translate_unchecked } from "../../ts/translation";
 import { PageHeader } from "../../ts/components/page_header";
@@ -469,7 +469,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             }
         });
 
-        for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+        for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
             util.addApiEventListener_unchecked(`meters/${meter_slot}/config`, () => {
                 let config = API.get_unchecked(`meters/${meter_slot}/config`);
 
@@ -555,7 +555,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                         data.power_sum[location][timestamp_slot] = null;
                     }
 
-                    for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                    for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
                         let power = changed.power[meter_slot];
 
                         data.power[meter_slot][timestamp_slot] = power;
@@ -662,7 +662,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                 data.empty = false;
                 // FIXME: how to set complete = true here?
 
-                for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
                     data.energy_import[meter_slot][timestamp_slot] = changed.energy_import[meter_slot];
                     data.energy_export[meter_slot][timestamp_slot] = changed.energy_export[meter_slot];
                 }
@@ -826,7 +826,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         let price_empty = true;
 
         if (energy_manager_data) {
-            for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
                 if (!energy_manager_data.power_empty[meter_slot]) {
                     timestamp_slot_count = Math.max(timestamp_slot_count, energy_manager_data.power[meter_slot].length);
 
@@ -1403,13 +1403,13 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
         let timestamp_slot_count: number = 0;
         let energy_manager_data = this.energy_manager_daily_cache[key];
         let energy_manager_previous_data = this.energy_manager_daily_cache[previous_key];
-        let energy_import_5min_total = new Array(METERS_SLOTS);
-        let energy_import_daily_total = new Array(METERS_SLOTS);
-        let energy_export_5min_total = new Array(METERS_SLOTS);
-        let energy_export_daily_total = new Array(METERS_SLOTS);
+        let energy_import_5min_total = new Array(options.METERS_MAX_SLOTS);
+        let energy_import_daily_total = new Array(options.METERS_MAX_SLOTS);
+        let energy_export_5min_total = new Array(options.METERS_MAX_SLOTS);
+        let energy_export_daily_total = new Array(options.METERS_MAX_SLOTS);
 
         if (energy_manager_data && !energy_manager_data.empty) {
-            for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+            for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
                 // energy_import and energy_export have the same length
                 timestamp_slot_count = Math.max(timestamp_slot_count, energy_manager_data.energy_import[meter_slot].length);
 
@@ -1796,8 +1796,8 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     empty: true,
                     complete: key < this.date_to_5min_key(new Date(now)),
                     flags: new Array(timestamp_slot_count),
-                    power: new Array(METERS_SLOTS),
-                    power_empty: new Array(METERS_SLOTS),
+                    power: new Array(options.METERS_MAX_SLOTS),
+                    power_empty: new Array(options.METERS_MAX_SLOTS),
                     power_sum: new Array(MeterLocation._max + 1),
                     power_sum_empty: new Array(MeterLocation._max + 1),
                     price: new Array(timestamp_slot_count),
@@ -1821,7 +1821,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
 
                 data.power_sum_empty.fill(true);
 
-                for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
                     data.power[meter_slot] = new Array(timestamp_slot_count);
 
                     let location = get_meter_location(this.state.meter_configs, meter_slot);
@@ -2081,14 +2081,14 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
                     use_timestamp: now,
                     empty: true,
                     complete: key < this.date_to_daily_key(new Date(now)),
-                    energy_import: new Array(METERS_SLOTS),
-                    energy_export: new Array(METERS_SLOTS),
+                    energy_import: new Array(options.METERS_MAX_SLOTS),
+                    energy_export: new Array(options.METERS_MAX_SLOTS),
                     price_min: new Array(timestamp_slot_count),
                     price_avg: new Array(timestamp_slot_count),
                     price_max: new Array(timestamp_slot_count),
                 };
 
-                for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
                     data.energy_import[meter_slot] = new Array(timestamp_slot_count);
                     data.energy_export[meter_slot] = new Array(timestamp_slot_count);
 
@@ -2369,7 +2369,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             let rows = [];
 
             if (util.hasValue(energy_total)) {
-                for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
                     let has_import = util.hasValue(energy_total.import) && util.hasValue(energy_total.import[meter_slot]) && util.hasValue(energy_total.import[meter_slot][timestamp_slot]);
                     let has_export = util.hasValue(energy_total.export) && util.hasValue(energy_total.export[meter_slot]) && util.hasValue(energy_total.export[meter_slot][timestamp_slot]);
 
@@ -2423,7 +2423,7 @@ export class EMEnergyAnalysis extends Component<EMEnergyAnalysisProps, EMEnergyA
             let rows = [];
 
             if (util.hasValue(energy_total)) {
-                for (let meter_slot = 0; meter_slot < METERS_SLOTS; ++meter_slot) {
+                for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
                     let has_import = util.hasValue(energy_total.import) && util.hasValue(energy_total.import[meter_slot]);
                     let has_export = util.hasValue(energy_total.export) && util.hasValue(energy_total.export[meter_slot]);
 

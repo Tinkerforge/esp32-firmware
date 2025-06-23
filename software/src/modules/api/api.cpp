@@ -24,9 +24,10 @@
 
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
+#include "build.h"
+#include "options.h"
 #include "bindings/hal_common.h"
 #include "bindings/errors.h"
-#include "build.h"
 #include "config_migrations.h"
 #include "tools.h"
 #include "tools/fs.h"
@@ -82,9 +83,9 @@ void API::setup()
     } else {
         logger.printfln("Failed to read config version!");
         config_version = BUILD_VERSION_STRING;
-        config_type    = BUILD_CONFIG_TYPE;
+        config_type    = OPTIONS_CONFIG_TYPE();
     }
-    logger.printfln("%s config version: %s (%s)", BUILD_DISPLAY_NAME, config_version.c_str(), config_type.c_str());
+    logger.printfln("%s config version: %s (%s)", OPTIONS_PRODUCT_NAME(), config_version.c_str(), config_type.c_str());
     version.get("config")->updateString(config_version);
     version.get("config_type")->updateString(config_type);
 

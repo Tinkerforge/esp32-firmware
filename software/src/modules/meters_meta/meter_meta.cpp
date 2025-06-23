@@ -23,6 +23,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "options.h"
 #include "meters_meta.h"
 #include "modules/meters/meter_value_id.h"
 #include "tools.h"
@@ -108,7 +109,7 @@ struct value_id_pair {
 
 static void declare_value_ids(uint32_t slot, std::vector<struct value_id_pair> &value_id_pairs)
 {
-    MeterValueID value_ids[METERS_MAX_VALUES_PER_METER];
+    MeterValueID value_ids[OPTIONS_METERS_MAX_VALUES_PER_METER()];
     size_t value_id_count = value_id_pairs.size();
 
     for (size_t i = 0; i < value_id_count; i++) {
@@ -308,7 +309,7 @@ void MeterMeta::on_values_change_task_double()
         return;
     }
 
-    float values[METERS_MAX_VALUES_PER_METER];
+    float values[OPTIONS_METERS_MAX_VALUES_PER_METER()];
 
     for (size_t i = 0; i < value_count; i++) {
         float value_a = values_a->get((*value_indices)[i][0])->asFloat();

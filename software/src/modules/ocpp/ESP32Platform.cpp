@@ -33,8 +33,9 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
-#include "tf_websocket_client.h"
 #include "build.h"
+#include "options.h"
+#include "tf_websocket_client.h"
 #include "ocpp.h"
 #include "modules/meters/meter_defs.h"
 
@@ -767,14 +768,14 @@ void platform_register_stop_callback(void *ctx, void (*cb)(int32_t, StopReason, 
 
 const char *platform_get_charge_point_vendor()
 {
-    static_assert(constexpr_strnlen(BUILD_MANUFACTURER_FULL, 21) <= 20, "OCPP: BUILD_MANUFACTURER_FULL \"" BUILD_MANUFACTURER_FULL "\" is too long for platform_get_charge_point_vendor!");
-    return BUILD_MANUFACTURER_FULL;
+    static_assert(constexpr_strnlen(OPTIONS_MANUFACTURER_FULL(), 21) <= 20, "OCPP: OPTIONS_MANUFACTURER_FULL() \"" OPTIONS_MANUFACTURER_FULL() "\" is too long for platform_get_charge_point_vendor!");
+    return OPTIONS_MANUFACTURER_FULL();
 }
 
 char model[21] = {0};
 const char *platform_get_charge_point_model()
 {
-#if BUILD_IS_WARP() || BUILD_IS_WARP2() || BUILD_IS_WARP3()
+#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3()
     device_name.get20CharDisplayType().toCharArray(model, ARRAY_SIZE(model));
     return model;
 #else

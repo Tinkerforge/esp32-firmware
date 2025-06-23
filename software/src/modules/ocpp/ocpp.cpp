@@ -24,8 +24,9 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
-#include "tools/fs.h"
 #include "build.h"
+#include "options.h"
+#include "tools/fs.h"
 
 #include "ocpp/Configuration.h"
 
@@ -142,7 +143,7 @@ void Ocpp::setup()
 {
     initialized = true;
     if (!api.restorePersistentConfig("ocpp/config", &config)) {
-        config.get("identity")->updateString(String(BUILD_HOST_PREFIX) + "-" + local_uid_str);
+        config.get("identity")->updateString(String(OPTIONS_HOSTNAME_PREFIX()) + "-" + local_uid_str);
     }
 
     if (!config.get("enable")->asBool() || config.get("url")->asString().length() == 0)

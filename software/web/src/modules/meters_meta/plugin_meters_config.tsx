@@ -19,8 +19,8 @@
 
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
+import * as options from "../../options";
 import { __ } from "../../ts/translation";
-import { METERS_SLOTS } from "../../options";
 
 import { MeterClassID } from "../meters/meter_class_id.enum";
 import { MeterLocation } from "../meters/meter_location.enum";
@@ -54,7 +54,7 @@ export function init() {
             clone_config: (config: MeterConfig) => [config[0], {...config[1]}] as MeterConfig,
             get_edit_children: (config: MetaMetersConfig, on_config: (config: MetaMetersConfig) => void): ComponentChildren => {
                 let meter_names: [string, string][] = [];
-                for (let i = 0; i < METERS_SLOTS; i++) {
+                for (let i = 0; i < options.METERS_MAX_SLOTS; i++) {
                     const meter = API.get_unchecked(`meters/${i}/config`);
                     if (meter[1]) {
                         meter_names.push([i.toString(), meter[1].display_name]);

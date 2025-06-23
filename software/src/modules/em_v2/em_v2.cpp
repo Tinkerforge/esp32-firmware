@@ -22,6 +22,7 @@
 #include "bindings/errors.h"
 #include "event_log_prefix.h"
 #include "build.h"
+#include "options.h"
 #include "tools.h"
 #include "warp_energy_manager_v2_bricklet_firmware_bin.embedded.h"
 
@@ -39,7 +40,7 @@ static constexpr auto EM_TASK_DELAY = 250_ms;
 EMV2::EMV2() : DeviceModule(warp_energy_manager_v2_bricklet_firmware_bin_data,
                             warp_energy_manager_v2_bricklet_firmware_bin_length,
                             "energy_manager",
-                            BUILD_DISPLAY_NAME, // Branding: WEM2 vs SEB.
+                            OPTIONS_PRODUCT_NAME(), // Branding: WEM2 vs SEB.
                             "Energy Manager V2", //_technically_ this is the module name, not something that has to be branded.
                             [this](){this->setup_energy_manager();}) {}
 

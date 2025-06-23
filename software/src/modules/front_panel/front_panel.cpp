@@ -21,6 +21,8 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "build.h"
+#include "options.h"
 #include "bindings/errors.h"
 #include "tools.h"
 #include "tools/malloc.h"
@@ -31,7 +33,6 @@
 #include "tools/semantic_version.h"
 #include "modules/charge_manager/charge_manager_private.h"
 #include "metadata.h"
-#include "build.h"
 
 static constexpr auto UPDATE_INTERVAL = 1_s;
 #define PAGE_FRONT_TEXT_MAX_CHAR 6
@@ -44,9 +45,9 @@ static constexpr auto UPDATE_INTERVAL = 1_s;
 #endif
 
 #if MODULE_METERS_AVAILABLE()
-#define FRONT_PANEL_METERS_SLOTS (METERS_SLOTS - 1)
+#define FRONT_PANEL_METERS_MAX_SLOTS (OPTIONS_METERS_MAX_SLOTS() - 1)
 #else
-#define FRONT_PANEL_METERS_SLOTS 0
+#define FRONT_PANEL_METERS_MAX_SLOTS 0
 #endif
 
 static void static_flash_data_done_callback(struct TF_WARPFrontPanel *warp_front_panel, void *user_data)
@@ -58,7 +59,7 @@ static void static_flash_data_done_callback(struct TF_WARPFrontPanel *warp_front
 FrontPanel::FrontPanel() : DeviceModule(warp_front_panel_bricklet_firmware_bin_data,
                                         warp_front_panel_bricklet_firmware_bin_length,
                                         "front_panel",
-                                        BUILD_DISPLAY_NAME " Front Panel",
+                                        OPTIONS_PRODUCT_NAME() " Front Panel",
                                         "Front Panel",
                                         [this](){this->setup_bricklet();}) {}
 
@@ -69,7 +70,7 @@ void FrontPanel::pre_setup()
     tile_prototypes[0] = {TileType::EmptyTile,           *Config::Null()};
     tile_prototypes[1] = {TileType::Charger,             Config::Uint(0, 0, FRONT_PANEL_CONTROLLED_CHARGES)};
     tile_prototypes[2] = {TileType::ChargeManagement,    *Config::Null()};
-    tile_prototypes[3] = {TileType::Meter,               Config::Uint(0, 0, FRONT_PANEL_METERS_SLOTS)};
+    tile_prototypes[3] = {TileType::Meter,               Config::Uint(0, 0, FRONT_PANEL_METERS_MAX_SLOTS)};
     tile_prototypes[4] = {TileType::DayAheadPrices,      Config::Enum(DAPType::CurrentPrice, DAPType::CurrentPrice, DAPType::AveragePriveTomorrow)};
     tile_prototypes[5] = {TileType::SolarForecast,       Config::Enum(SFType::ForecastToday, SFType::ForecastToday, SFType::ForecastTomorrow)};
     tile_prototypes[6] = {TileType::EnergyManagerStatus, *Config::Null()};

@@ -26,8 +26,8 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
-#include "build.h"
 #include "tools.h"
+#include "options.h"
 #include <cmath>
 
 static constexpr auto CHECK_INTERVAL = 1_min;
@@ -45,7 +45,7 @@ void DayAheadPrices::pre_setup()
 {
     config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(false)},
-        {"api_url", Config::Str(BUILD_DAY_AHEAD_PRICE_API_URL, 0, 64)},
+        {"api_url", Config::Str(OPTIONS_DAY_AHEAD_PRICE_API_URL(), 0, 64)},
         {"region", Config::Enum(Region::DE)},
         {"resolution", Config::Enum(Resolution::Min60)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},

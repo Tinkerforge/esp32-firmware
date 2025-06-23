@@ -21,8 +21,8 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "options.h"
 #include "bindings/errors.h"
-#include "build.h"
 #include "tools.h"
 #include "tools/string_builder.h"
 #include "evse_v2_bricklet_firmware_bin.embedded.h"
@@ -177,7 +177,7 @@ void EVSEV2::pre_setup()
         automation_cfg
     );
 
-#if BUILD_IS_WARP2()
+#if OPTIONS_PRODUCT_ID_IS_WARP2()
     automation.register_trigger(
         AutomationTriggerID::EVSEGPInput,
         automation_cfg
@@ -295,7 +295,7 @@ void EVSEV2::post_register_urls()
         is_in_bootloader(tf_evse_v2_set_control_pilot_disconnect(&device, control_pilot_disconnect_update.get("disconnect")->asBool(), nullptr));
     }, true);
 
-#if BUILD_IS_WARP2()
+#if OPTIONS_PRODUCT_ID_IS_WARP2()
     api.addFeature("evse_gp_output");
     api.addState("evse/gp_output", &gp_output);
     api.addCommand("evse/gp_output_update", &gp_output_update, {}, [this](String &/*errmsg*/) {
@@ -1025,9 +1025,9 @@ void EVSEV2::update_all_data()
 
     if (contactor_error_changed) {
         if (contactor_error != 0) {
-#if BUILD_IS_WARP2()
+#if OPTIONS_PRODUCT_ID_IS_WARP2()
             logger.printfln("Contactor error %u PE error %u", contactor_error >> 1, contactor_error & 1);
-#elif BUILD_IS_WARP3()
+#elif OPTIONS_PRODUCT_ID_IS_WARP3()
             if (contactor_error & 1) {
                 logger.printfln("Contactor error: PE error");
             }
@@ -1127,9 +1127,9 @@ void EVSEV2::update_all_data()
     };
 
     static InputState last_shutdown_input_state = InputState::Unknown;
-#if BUILD_IS_WARP2()
+#if OPTIONS_PRODUCT_ID_IS_WARP2()
     bool gpio_enable = gpio[5];
-#elif BUILD_IS_WARP3()
+#elif OPTIONS_PRODUCT_ID_IS_WARP3()
     bool gpio_enable = gpio[18];
 #else
     #error "GPIO layout is unknown"
@@ -1144,7 +1144,7 @@ void EVSEV2::update_all_data()
         last_shutdown_input_state = shutdown_input_state;
     }
 
-#if BUILD_IS_WARP2()
+#if OPTIONS_PRODUCT_ID_IS_WARP2()
     static InputState last_input_state = InputState::Unknown;
 
     InputState input_state = gpio[16] ? InputState::Closed : InputState::Open;
@@ -1239,7 +1239,7 @@ void EVSEV2::update_all_data()
     evse_common.automation_current.get("current")->updateUint(max_current[CHARGING_SLOT_AUTOMATION]);
 #endif
 
-#if BUILD_IS_WARP2()
+#if OPTIONS_PRODUCT_ID_IS_WARP2()
     gp_output.get("gp_output")->updateUint(gpio[10] ? TF_EVSE_V2_OUTPUT_CONNECTED_TO_GROUND : TF_EVSE_V2_OUTPUT_HIGH_IMPEDANCE);
 #endif
 
@@ -1298,7 +1298,7 @@ bool EVSEV2::has_triggered(const Config *conf, void *data)
     case AutomationTriggerID::EVSEButton:
         return true;
 
-#if BUILD_IS_WARP2()
+#if OPTIONS_PRODUCT_ID_IS_WARP2()
     case AutomationTriggerID::EVSEGPInput:
 #endif
     case AutomationTriggerID::EVSEShutdownInput:

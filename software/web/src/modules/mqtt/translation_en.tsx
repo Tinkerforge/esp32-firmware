@@ -15,7 +15,7 @@ let x = {
         },
         "content": {
             "mqtt": "MQTT",
-            "enable_mqtt_desc": <>This allows controlling {__("the_device")} over the configured MQTT broker. <a href="{{{apidoc_url}}}">MQTT API documentation</a></>,
+            "enable_mqtt_desc": <>This allows controlling {__("the_device")} over the configured MQTT broker. <a href={options.WARP_API_DOC_URL}>MQTT API documentation</a></>,
             "enable_mqtt": "MQTT enabled",
             "read_only": "Read only access",
             "read_only_desc": "Ignores data from the MQTT broker (and other MQTT clients).",

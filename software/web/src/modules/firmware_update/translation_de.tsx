@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import * as options from "../../options";
 import { __, removeUnicodeHacks } from "../../ts/translation";
 let x = {
     "firmware_update": {
@@ -8,8 +9,8 @@ let x = {
             "rolled_back_version": /*FFN*/(rolled_back_version: string, version: string, display_type: string) => {
                 let result = [<>{`Firmware ${rolled_back_version} scheint instabil zu sein. Es wurde automatisch auf die vorherige Firmware ${version} zurückgewechselt.`}</>];
 
-                if ("{{{support_email}}}".length > 0) {
-                    result.push(<> Bitte einen <a href="#event_log">Debug-Report</a> herunterladen und an <a href={removeUnicodeHacks(`mailto:{{{support_email}}}?subject=${display_type} Firmware ${rolled_back_version} scheint instabil`)}>{{{support_email}}}</a> schicken.</>);
+                if (options.SUPPORT_EMAIL.length > 0) {
+                    result.push(<> Bitte einen <a href="#event_log">Debug-Report</a> herunterladen und an <a href={removeUnicodeHacks(`mailto:${options.SUPPORT_EMAIL}?subject=${display_type} Firmware ${rolled_back_version} scheint instabil`)}>{options.SUPPORT_EMAIL}</a> schicken.</>);
                 }
 
                 return <>{result}</>;
@@ -23,7 +24,7 @@ let x = {
             "firmware_update": "Firmware-Aktualisierung",
             "current_version": "Installierte Version",
             "manual_update": "Manuelle Aktualisierung",
-            "manual_update_muted": <><a href="{{{firmware_url}}}">neueste Firmwares</a></>,
+            "manual_update_muted": <><a href={options.FIRMWARE_URL}>neueste Firmwares</a></>,
             "browse": "Durchsuchen",
             "select_file": "Firmware-Datei auswählen...",
             "install_update": "Installieren",

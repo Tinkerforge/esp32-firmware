@@ -96,13 +96,13 @@ private:
     struct firmware_info_t {
         uint8_t magic[BLOCK_READER_MAGIC_LENGTH] = {};
         uint8_t version = 0;
-        char display_name[61] = {};
+        char product_name[61] = {};
         uint8_t fw_version_major = 0;
         uint8_t fw_version_minor = 0;
         uint8_t fw_version_patch = 0;
         uint32_t fw_build_timestamp = 0;
         uint8_t fw_version_beta = 0; // since firmware info version 2, before it's 0xFF
-        char name[61] = {}; // since firmware info version 3, before it's 0xFF
+        char product_id[61] = {}; // since firmware info version 3, before it's 0xFF
     };
 
     BlockReader<firmware_info_t> firmware_info;

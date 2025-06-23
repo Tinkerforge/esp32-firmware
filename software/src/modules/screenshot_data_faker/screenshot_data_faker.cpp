@@ -63,7 +63,7 @@ void ScreenshotDataFaker::setup()
     LittleFS.open("/config/network_config", "w").write((const uint8_t *)network_config, strlen(network_config));
     LittleFS.open("/config/wifi_ap_config", "w").write((const uint8_t *)wifi_ap_config, strlen(wifi_ap_config));
     LittleFS.open("/config/mqtt_config", "w").write((const uint8_t *)mqtt_config, strlen(mqtt_config));
-#ifdef SCREENSHOT_DATA_FAKER_PRO
+#if OPTIONS_SCREENSHOT_DATA_FAKER_PRO()
     LittleFS.open("/config/charge_tracker_config", "w").write((const uint8_t *)charge_tracker_config, strlen(charge_tracker_config));
 #endif
 
@@ -72,7 +72,7 @@ void ScreenshotDataFaker::setup()
         File file = LittleFS.open("/charge-records/charge-record-1.bin", "w");
         ChargeStart cs;
         cs.timestamp_minutes = (build_timestamp() / 60) - 1540;
-#ifdef SCREENSHOT_DATA_FAKER_PRO
+#if OPTIONS_SCREENSHOT_DATA_FAKER_PRO()
         cs.meter_start = 0;
 #else
         cs.meter_start = NAN;
@@ -81,7 +81,7 @@ void ScreenshotDataFaker::setup()
 
         ChargeEnd ce;
         ce.charge_duration = 256 * 60 + 27;
-#ifdef SCREENSHOT_DATA_FAKER_PRO
+#if OPTIONS_SCREENSHOT_DATA_FAKER_PRO()
         ce.meter_end = 36.913f;
 #else
         ce.meter_end = NAN;
@@ -96,7 +96,7 @@ void ScreenshotDataFaker::setup()
         file.write(buf2, sizeof(ce));
 
         cs.timestamp_minutes = (build_timestamp() / 60) - 272;
-#ifdef SCREENSHOT_DATA_FAKER_PRO
+#if OPTIONS_SCREENSHOT_DATA_FAKER_PRO()
         cs.meter_start = ce.meter_end;
 #else
         cs.meter_start = NAN;
@@ -104,7 +104,7 @@ void ScreenshotDataFaker::setup()
         cs.user_id = 2;
 
         ce.charge_duration = 9727;
-#ifdef SCREENSHOT_DATA_FAKER_PRO
+#if OPTIONS_SCREENSHOT_DATA_FAKER_PRO()
         ce.meter_end += 33.610f;
 #else
         ce.meter_end = NAN;
@@ -132,7 +132,7 @@ void ScreenshotDataFaker::register_urls()
         {"enabled", true}
     }});
 
-#ifdef SCREENSHOT_DATA_FAKER_PRO
+#if OPTIONS_SCREENSHOT_DATA_FAKER_PRO()
     meters.meter_slots[0].power_history.history.clear();
     for (int i = 0; i < ARRAY_SIZE(meter_history); ++i)
         meters.meter_slots[0].power_history.history.push(meter_history[i]);

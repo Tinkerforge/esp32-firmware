@@ -22,6 +22,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
+#include "options.h"
 #include "modules/meters/meter_location.enum.h"
 
 #include "gcc_warnings.h"
@@ -29,7 +30,7 @@
 void MetersEVSEV2::pre_setup()
 {
     config_prototype = Config::Object({
-        {"display_name", Config::Str(BUILD_LOCAL_METER_DEFAULT_DISPLAY_NAME, 0, 32)},
+        {"display_name", Config::Str(OPTIONS_LOCAL_METER_DEFAULT_DISPLAY_NAME(), 0, 32)},
         {"location", Config::Enum(MeterLocation::Charger)},
     });
 

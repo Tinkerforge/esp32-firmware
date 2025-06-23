@@ -27,9 +27,10 @@
 #include <TFJson.h>
 
 #include "event_log_prefix.h"
+#include "build.h"
+#include "options.h"
 #include "tools.h"
 #include "tools/net.h"
-#include "build.h"
 #include "tools/string_builder.h"
 
 #include "gcc_warnings.h"
@@ -485,7 +486,7 @@ void Wifi::setup()
 #ifdef DEFAULT_WIFI_AP_SSID
         ap_config.get("ssid")->updateString(String(DEFAULT_WIFI_AP_SSID));
 #else
-        String default_ap_ssid{BUILD_HOST_PREFIX};
+        String default_ap_ssid{OPTIONS_HOSTNAME_PREFIX()};
         default_ap_ssid.concat("-", 1);
         default_ap_ssid.concat(local_uid_str);
         ap_config.get("ssid")->updateString(default_ap_ssid);
@@ -859,7 +860,7 @@ void Wifi::setup()
 #if MODULE_NETWORK_AVAILABLE()
     WiFi.setHostname(network.get_hostname().c_str());
 #else
-    WiFi.setHostname((String(BUILD_HOST_PREFIX) + "-" + local_uid_str).c_str());
+    WiFi.setHostname((String(OPTIONS_HOSTNAME_PREFIX()) + "-" + local_uid_str).c_str());
 #endif
 
     WiFi.persistent(false);

@@ -25,6 +25,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "options.h"
 #include "modules/meters/sdm_helpers.h"
 #include "tools.h"
 
@@ -67,7 +68,7 @@ void MetersLegacyAPI::setup()
     api.restorePersistentConfig("meters_legacy_api/config", &config);
 
     linked_meter_slot = config.get("linked_meter_slot")->asUint();
-    if (linked_meter_slot >= METERS_SLOTS) {
+    if (linked_meter_slot >= OPTIONS_METERS_MAX_SLOTS()) {
         if (linked_meter_slot != UINT32_MAX) {
             logger.printfln("Configured meter slot %lu not available.", linked_meter_slot);
         }
@@ -223,12 +224,12 @@ void MetersLegacyAPI::register_urls()
             return;
         }
 
-        if (this->linked_meter_value_count > METERS_MAX_VALUES_PER_METER) {
+        if (this->linked_meter_value_count > OPTIONS_METERS_MAX_VALUES_PER_METER()) {
             logger.printfln("Cannot update meter in slot %lu with too many many values (%u)", this->linked_meter_slot, this->linked_meter_value_count);
             return;
         }
 
-        float values[METERS_MAX_VALUES_PER_METER]; // Always allocate max size to avoid VLA.
+        float values[OPTIONS_METERS_MAX_VALUES_PER_METER()]; // Always allocate max size to avoid VLA.
 
         // Pre-fill values with NaN because maybe not all of the target meter's values are available.
         float *values_end = values + this->linked_meter_value_count;
@@ -255,7 +256,7 @@ void MetersLegacyAPI::register_events()
     if (!legacy_api_enabled)
         return;
 
-    if (linked_meter_slot >= METERS_SLOTS)
+    if (linked_meter_slot >= OPTIONS_METERS_MAX_SLOTS())
         return;
 
     String value_ids_path = meters.get_path(linked_meter_slot, Meters::PathType::ValueIDs);
@@ -331,12 +332,12 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
     linked_meter_value_count = cnt;
     meter_setup_done = true;
 
-    if (linked_meter_value_count > METERS_MAX_VALUES_PER_METER) {
+    if (linked_meter_value_count > OPTIONS_METERS_MAX_VALUES_PER_METER()) {
         logger.printfln("Linked meter in slot %lu has too many values (%zu)", linked_meter_slot, linked_meter_value_count);
         return EventResult::Deregister;
     }
 
-    MeterValueID meter_value_ids[METERS_MAX_VALUES_PER_METER]; // Always allocate max size to avoid VLA.
+    MeterValueID meter_value_ids[OPTIONS_METERS_MAX_VALUES_PER_METER()]; // Always allocate max size to avoid VLA.
     for (size_t i = 0; i < linked_meter_value_count; i++) {
         meter_value_ids[i] = static_cast<MeterValueID>(value_ids->get(i)->asUint());
     }

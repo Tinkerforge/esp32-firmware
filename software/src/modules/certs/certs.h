@@ -23,8 +23,9 @@
 
 #include "module.h"
 #include "config.h"
+#include "options.h"
 
-#define MAX_CERT_ID (CERTS_MAX_CERTS - 1)
+#define MAX_CERT_ID (OPTIONS_CERTS_MAX_CERTS() - 1)
 #define MAX_CERT_NAME 32
 
 class Certs final : public IModule

@@ -24,6 +24,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "options.h"
 
 #define CERT_DIRECTORY "/certs"
 
@@ -45,7 +46,7 @@ void Certs::pre_setup()
     state = Config::Object({
         {"certs", Config::Array({},
             &state_certs_prototype,
-            0, CERTS_MAX_CERTS, Config::type_id<Config::ConfObject>())
+            0, OPTIONS_CERTS_MAX_CERTS(), Config::type_id<Config::ConfObject>())
         }
     });
 
@@ -56,7 +57,7 @@ void Certs::pre_setup()
     add = ConfigRoot{Config::Object({
         {"id", Config::Uint(0, 0, MAX_CERT_ID)},
         {"name", Config::Str("", 0, 32)},
-        {"cert", Config::Str("", 0, CERTS_MAX_CERT_SIZE)}
+        {"cert", Config::Str("", 0, OPTIONS_CERTS_MAX_CERT_SIZE())}
     }), [](Config &cfg, ConfigSource source) -> String {
         const auto &cert = cfg.get("cert")->asString();
         if (cert.length() == 0)
@@ -135,7 +136,7 @@ void Certs::update_state()
 {
     state.get("certs")->removeAll();
 
-    for (uint8_t i = 0; i < CERTS_MAX_CERTS; ++i) {
+    for (uint8_t i = 0; i < OPTIONS_CERTS_MAX_CERTS(); ++i) {
         String path = get_cert_path(i);
 
         if (!LittleFS.exists(path) || !LittleFS.exists(path + "_name"))

@@ -23,6 +23,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "options.h"
 #include "model_parser_160.h"
 #include "model_parser_714.h"
 
@@ -96,7 +97,7 @@ bool MetersSunSpecParser::parse_values(const uint16_t *const register_data[2], u
 
     const uint16_t *data = model->read_twice ? register_data[1] : register_data[0];
 
-    float meter_values[METERS_MAX_VALUES_PER_METER];
+    float meter_values[OPTIONS_METERS_MAX_VALUES_PER_METER()];
     size_t value_count = detected_values.size();
     for (size_t i = 0; i < value_count; i++) {
         meter_values[i] = detected_values[i]->get_value(data, quirks, false);

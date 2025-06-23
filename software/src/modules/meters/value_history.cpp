@@ -20,6 +20,7 @@
 #include "value_history.h"
 
 #include "module_dependencies.h"
+#include "options.h"
 #include "tools.h"
 #include "tools/string_builder.h"
 
@@ -36,7 +37,7 @@ void ValueHistory::setup()
     history.clear();
     live.clear();
 
-    METER_VALUE_HISTORY_VALUE_TYPE val_min = std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::lowest();
+    OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE() val_min = std::numeric_limits<OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE()>::lowest();
 
     for (size_t i = 0; i < history.size(); ++i) {
         //float f = 5000.0 * sin(PI/120.0 * i) + 5000.0;
@@ -50,7 +51,7 @@ void ValueHistory::setup()
         live.push(val_min);
     }
 
-    chars_per_value = max(String(METER_VALUE_HISTORY_VALUE_MIN).length(), String(METER_VALUE_HISTORY_VALUE_MAX).length());
+    chars_per_value = max(String(OPTIONS_METER_VALUE_HISTORY_VALUE_MIN()).length(), String(OPTIONS_METER_VALUE_HISTORY_VALUE_MAX()).length());
     // val_min values are replaced with null -> require at least 4 chars per value.
     chars_per_value = max(4U, chars_per_value);
     // For ',' between the values.
@@ -109,15 +110,15 @@ void ValueHistory::add_sample(float sample)
     sample_sum += sample;
 }
 
-void ValueHistory::tick(micros_t now, bool update_history, METER_VALUE_HISTORY_VALUE_TYPE *live_sample, METER_VALUE_HISTORY_VALUE_TYPE *history_sample)
+void ValueHistory::tick(micros_t now, bool update_history, OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE() *live_sample, OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE() *history_sample)
 {
-    METER_VALUE_HISTORY_VALUE_TYPE val_min = std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::lowest();
-    METER_VALUE_HISTORY_VALUE_TYPE live_val = val_min;
+    OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE() val_min = std::numeric_limits<OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE()>::lowest();
+    OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE() live_val = val_min;
 
     if (sample_count > 0) {
-        live_val = clamp(static_cast<METER_VALUE_HISTORY_VALUE_TYPE>(METER_VALUE_HISTORY_VALUE_MIN),
-                         static_cast<METER_VALUE_HISTORY_VALUE_TYPE>(roundf(sample_sum / static_cast<float>(sample_count))),
-                         static_cast<METER_VALUE_HISTORY_VALUE_TYPE>(METER_VALUE_HISTORY_VALUE_MAX));
+        live_val = clamp(static_cast<OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE()>(OPTIONS_METER_VALUE_HISTORY_VALUE_MIN()),
+                         static_cast<OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE()>(roundf(sample_sum / static_cast<float>(sample_count))),
+                         static_cast<OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE()>(OPTIONS_METER_VALUE_HISTORY_VALUE_MAX()));
 
         sample_count = 0;
         sample_sum = 0;
@@ -152,12 +153,12 @@ void ValueHistory::tick(micros_t now, bool update_history, METER_VALUE_HISTORY_V
     *history_sample = val_min;
 
     if (update_history) {
-        METER_VALUE_HISTORY_VALUE_TYPE history_val;
+        OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE() history_val;
 
         if (valid_samples_this_interval == 0) {
             history_val = val_min; // TODO push 0 or intxy_t min here? intxy_t min will be translated into null when sending as json. However we document that there is only at most one block of null values at the start of the array indicating a reboot
         } else {
-            history_val = static_cast<METER_VALUE_HISTORY_VALUE_TYPE>(sum_this_interval / valid_samples_this_interval);
+            history_val = static_cast<OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE()>(sum_this_interval / valid_samples_this_interval);
         }
 
         history.push(history_val);
@@ -185,8 +186,8 @@ void ValueHistory::format_live(micros_t now, StringBuilder *sb)
 
 void ValueHistory::format_live_samples(StringBuilder *sb)
 {
-    METER_VALUE_HISTORY_VALUE_TYPE val_min = std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::lowest();
-    METER_VALUE_HISTORY_VALUE_TYPE val;
+    OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE() val_min = std::numeric_limits<OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE()>::lowest();
+    OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE() val;
 
     if (live.peek(&val)) {
         if (val == val_min) {
@@ -216,8 +217,8 @@ void ValueHistory::format_history(micros_t now, StringBuilder *sb)
 
 void ValueHistory::format_history_samples(StringBuilder *sb)
 {
-    METER_VALUE_HISTORY_VALUE_TYPE val_min = std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::lowest();
-    METER_VALUE_HISTORY_VALUE_TYPE val;
+    OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE() val_min = std::numeric_limits<OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE()>::lowest();
+    OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE() val;
 
     if (history.peek(&val)) {
         if (val == val_min) {

@@ -23,6 +23,7 @@
 
 #include "module.h"
 #include "config.h"
+#include "options.h"
 #include "imeter.h"
 #include "imeter_generator.h"
 #include "meter_value_availability.h"
@@ -69,7 +70,7 @@ public:
         MeterValueID input_ids[METERS_MAX_FILTER_VALUES];
         MeterValueID output_ids[METERS_MAX_FILTER_VALUES];
     };
-    static_assert(METERS_MAX_VALUES_PER_METER <= 256, "Increase size of input_id_count and output_id_count");
+    static_assert(OPTIONS_METERS_MAX_VALUES_PER_METER() <= 256, "Increase size of input_id_count and output_id_count");
 
     enum class ExtraValueDirection : uint8_t {
         Positive,
@@ -159,7 +160,7 @@ private:
 
     float live_samples_per_second();
 
-    MeterSlot meter_slots[METERS_SLOTS];
+    MeterSlot meter_slots[OPTIONS_METERS_MAX_SLOTS()];
 
     bool meters_feature_declared = false;
 
@@ -179,8 +180,10 @@ private:
     micros_t end_last_interval = 0_us;
 
     // For reproducable screenshots, the ScreenshotDataFaker injects values into the power_history of the first meter.
-#ifdef SCREENSHOT_DATA_FAKER_PRO
+#ifdef OPTIONS_SCREENSHOT_DATA_FAKER_PRO
+#if OPTIONS_SCREENSHOT_DATA_FAKER_PRO()
     friend class ScreenshotDataFaker;
+#endif
 #endif
 };
 

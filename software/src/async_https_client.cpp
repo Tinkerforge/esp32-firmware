@@ -26,6 +26,7 @@
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
 #include "build.h"
+#include "options.h"
 
 static constexpr micros_t ASYNC_HTTPS_CLIENT_TIMEOUT = 15_s;
 
@@ -342,7 +343,7 @@ void AsyncHTTPSClient::abort_async()
 }
 
 void AsyncHTTPSClient::add_default_headers() {
-    this->set_header("User-Agent", String(BUILD_MANUFACTURER_USER_AGENT "-" BUILD_DISPLAY_NAME_USER_AGENT "/") + build_version_full_str());
+    this->set_header("User-Agent", String(OPTIONS_MANUFACTURER_USER_AGENT() "-" OPTIONS_PRODUCT_NAME_USER_AGENT() "/") + build_version_full_str());
 }
 
 const char *translate_error(AsyncHTTPSClientEvent *event) {

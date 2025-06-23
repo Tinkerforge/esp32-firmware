@@ -1,4 +1,3 @@
-
 /** @jsxImportSource preact */
 import { h } from "preact";
 import { __ } from "../../ts/translation";

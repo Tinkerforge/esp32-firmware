@@ -24,6 +24,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
+#include "options.h"
 #include "control_period.enum.h"
 
 static constexpr auto HEATING_UPDATE_INTERVAL = 1_min;
@@ -46,7 +47,7 @@ void Heating::pre_setup()
         {"sgr_blocking_type", Config::Uint(0, 0, 1)},
         {"sgr_extended_type", Config::Uint(0, 0, 1)},
         {"min_hold_time", Config::Uint(15, 10, 60)},
-        {"meter_slot_grid_power", Config::Uint(POWER_MANAGER_DEFAULT_METER_SLOT, 0, METERS_SLOTS - 1)},
+        {"meter_slot_grid_power", Config::Uint(OPTIONS_POWER_MANAGER_DEFAULT_METER_SLOT(), 0, OPTIONS_METERS_MAX_SLOTS() - 1)},
         {"control_period", Config::Enum(ControlPeriod::Hours24)},
         {"extended_logging", Config::Bool(false)},
         {"yield_forecast", Config::Bool(false)},

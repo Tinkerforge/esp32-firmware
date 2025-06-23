@@ -39,6 +39,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
+#include "options.h"
 #include "tools.h"
 #include "tools/miniz/miniz_tdef.h"
 
@@ -65,7 +66,7 @@ void EventLog::pre_init()
     event_buf.setup();
 
     uint32_t numeric_reset_reason;
-    printfln_prefixed("", 0, "    **** " BUILD_MANUFACTURER_UPPER " " BUILD_DISPLAY_NAME_UPPER " V%s ****", build_version_full_str_upper());
+    printfln_prefixed("", 0, "    **** " OPTIONS_MANUFACTURER_UPPER() " " OPTIONS_PRODUCT_NAME_UPPER() " V%s ****", build_version_full_str_upper());
     printfln_prefixed("", 0, "Last reset reason was: %s (%lu)", tf_reset_reason(&numeric_reset_reason), numeric_reset_reason);
 }
 

@@ -9,12 +9,12 @@ from software import util
 
 with open('../../options.ts', 'r', encoding='utf-8') as f:
     content = f.read()
-    match = re.search(r"export const METERS_SLOTS = (\d+);", content)
+    match = re.search(r"export const METERS_MAX_SLOTS = (\d+);", content)
     if match is None:
-        print("Failed to find METERS_SLOTS in options.ts!")
+        print("Failed to find METERS_MAX_SLOTS in options.ts!")
         sys.exit(1)
 
-    meter_count = int(match.group(1))
+    meters_max_slots = int(match.group(1))
 
 imports = []
 inits = []
@@ -34,7 +34,7 @@ with open('api.ts', 'w', encoding='utf-8') as f:
         "{{{configs}}}": ('\n    | ' if len(configs) > 0 else '') + '\n    | '.join(configs),
     }) + '\n')
 
-    for i in range(meter_count):
+    for i in range(meters_max_slots):
         f.write(tfutil.specialize_template('api.ts.template_fragment', None, {
             "{{{meter_id}}}": str(i),
         }) + '\n')

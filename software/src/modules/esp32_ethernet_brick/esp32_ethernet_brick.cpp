@@ -27,6 +27,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
+#include "options.h"
 #include "tools.h"
 #include "tools/bricklets.h"
 #include "hal_arduino_esp32_ethernet_brick/hal_arduino_esp32_ethernet_brick.h"
@@ -69,7 +70,7 @@ static TF_Local local;
 
 static void check_for_factory_reset()
 {
-#if (BUILD_IS_ENERGY_MANAGER() || BUILD_IS_ENERGY_MANAGER_V2() || BUILD_IS_SMART_ENERGY_BROKER()) && MODULE_SYSTEM_AVAILABLE()
+#if (OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER() || OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER_V2() || OPTIONS_PRODUCT_ID_IS_SMART_ENERGY_BROKER()) && MODULE_SYSTEM_AVAILABLE()
     // A factory reset will leave the green LED on, even across a restart. Switch it off here.
     digitalWrite(green_led_pin, false);
 
@@ -132,7 +133,7 @@ static void check_for_factory_reset()
 
 bool ESP32EthernetBrick::initHAL()
 {
-#if BUILD_IS_WARP3()
+#if OPTIONS_PRODUCT_ID_IS_WARP3()
     uint8_t ports = 4;
 #else
     uint8_t ports = 6;
@@ -153,7 +154,7 @@ void ESP32EthernetBrick::pre_init()
 {
     button_pin = BUTTON;
 
-#if BUILD_IS_WARP3()
+#if OPTIONS_PRODUCT_ID_IS_WARP3()
         blue_led_pin = BLUE_LED_WARP_ESP32_ETHERNET_BRICK;
         // green LED is connected directly to 3.3 V
 #else
@@ -172,10 +173,10 @@ void ESP32EthernetBrick::setup()
     read_efuses(&local_uid_num, local_uid_str, passphrase);
 
 #if MODULE_NETWORK_AVAILABLE()
-    network.set_default_hostname(String(BUILD_HOST_PREFIX) + "-" + local_uid_str);
+    network.set_default_hostname(String(OPTIONS_HOSTNAME_PREFIX()) + "-" + local_uid_str);
 #endif
 
-#if BUILD_IS_WARP3()
+#if OPTIONS_PRODUCT_ID_IS_WARP3()
     logger.printfln("WARP ESP32 Ethernet Brick UID: %s", local_uid_str);
 #else
     logger.printfln("ESP32 Ethernet Brick UID: %s", local_uid_str);

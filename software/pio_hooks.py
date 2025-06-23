@@ -32,8 +32,8 @@ def check_call(*args, **kwargs):
         print(f'Error: Command failed: {e}')
         sys.exit(1)
 
-def get_changelog_version(name):
-    path = f'changelog_{name}.txt'
+def get_changelog_version(product_id):
+    path = f'changelog_{product_id}.txt'
     versions = []
 
     with open(path, 'r', encoding='utf-8') as f:
@@ -83,33 +83,33 @@ def get_changelog_version(name):
     version = (str(versions[-1][0]), str(versions[-1][1]), str(versions[-1][2]), str(versions[-1][3]))
     return version_oldest, version
 
-def write_firmware_info(name, display_name, version, build_timestamp):
+def write_firmware_info(product_id, product_name, version, build_timestamp):
     buf = bytearray([0xFF] * 4096)
 
     # 7121CE12F0126E
     # tink er for ge
     buf[0:7] = bytes.fromhex("7121CE12F0126E") # magic
     buf[7] = 0x03 # firmware info version, note: a new version has to be backwards compatible
-    display_name_bytes = display_name.encode("utf-8") # max 60 bytes
+    product_name_bytes = product_name.encode("utf-8") # max 60 bytes
 
-    if len(display_name_bytes) > 60:
-        raise Exception('display_name is longer than 60 bytes')
+    if len(product_name_bytes) > 60:
+        raise Exception('product_name is longer than 60 bytes')
 
-    buf[8:8 + len(display_name_bytes)] = display_name_bytes
-    buf[8 + len(display_name_bytes):68] = bytes(60 - len(display_name_bytes))
+    buf[8:8 + len(product_name_bytes)] = product_name_bytes
+    buf[8 + len(product_name_bytes):68] = bytes(60 - len(product_name_bytes))
     buf[68] = 0x00 # 0 byte to make sure string is terminated. also pads the version, so that the build timestamp will be 4-byte aligned
     buf[69] = int(version[0])
     buf[70] = int(version[1])
     buf[71] = int(version[2])
     buf[72:76] = build_timestamp.to_bytes(4, byteorder='little')
     buf[76] = int(version[3]) # since firmware info version 2
-    name_bytes = name.encode("utf-8") # max 30 bytes
+    product_id_bytes = product_id.encode("utf-8") # max 30 bytes
 
-    if len(name_bytes) > 60:
-        raise Exception('name is longer than 60 bytes')
+    if len(product_id_bytes) > 60:
+        raise Exception('product_id is longer than 60 bytes')
 
-    buf[77:77 + len(name_bytes)] = name_bytes # since firmware info version 3
-    buf[77 + len(name_bytes):137] = bytes(60 - len(name_bytes))
+    buf[77:77 + len(product_id_bytes)] = product_id_bytes # since firmware info version 3
+    buf[77 + len(product_id_bytes):137] = bytes(60 - len(product_id_bytes))
     buf[137] = 0x00 # 0 byte to make sure string is terminated
     buf[4092:4096] = crc32(buf[0:4092]).to_bytes(4, byteorder='little')
 
@@ -370,18 +370,25 @@ TSX_ADDITIONAL_HEADER_LINES = [
     'import { removeUnicodeHacks } from "./src/ts/translation";',
     'import { __, removeUnicodeHacks } from "../../ts/translation";',
     'import { __, removeUnicodeHacks } from "./src/ts/translation";',
+    'import * as options from "../../options";',
+    'import * as options from "./src/options";',
 ]
 
 TSX_LINE_COMMENT_PATTERN = re.compile(r'^[ \t]*//.*$', re.MULTILINE)
 
 TSX_FRAGMENT_PATTERN = re.compile(r'<>.*?</>', re.MULTILINE | re.DOTALL)
 TSX_FUNCTION_PATTERN = re.compile(r'/\*[SF]FN\*/.*?/\*NF\*/', re.MULTILINE | re.DOTALL)
+TSX_BACKTICK_PATTERN = re.compile(r'`.*?`', re.MULTILINE | re.DOTALL)
 
 TSX_FUNCTION_ARGS_PATTERN = re.compile(r'FN\*/\s*\(([^\)]*)\)', re.MULTILINE | re.DOTALL)
 
-TSX_JSON_REPLACEMENTS = [# Escape nested fragments in functions
+TSX_JSON_REPLACEMENTS = [
+    # Escape nested fragments in functions
     ('<>', '***START_FRAGMENT***'),
     ('</>', '***END_FRAGMENT***'),
+
+    # Escape backticks
+    ('`', '***BACKTICK***')
 ]
 
 def tsx_to_json(match):
@@ -423,13 +430,9 @@ def collect_translation(path, override=False):
                     content = content.replace(x + "\n", "", 1)
                 content = content.replace(TSX_HEADER, "", 1)
                 content = re.sub(TSX_LINE_COMMENT_PATTERN, "", content)
-                content = re.sub(TSX_FUNCTION_PATTERN,
-                                 tsx_to_json,
-                                 content)
-
-                content = re.sub(TSX_FRAGMENT_PATTERN,
-                                 tsx_to_json,
-                                 content)
+                content = re.sub(TSX_FUNCTION_PATTERN, tsx_to_json, content)
+                content = re.sub(TSX_FRAGMENT_PATTERN, tsx_to_json, content)
+                content = re.sub(TSX_BACKTICK_PATTERN, tsx_to_json, content)
             try:
                 translation[language] = json.loads(content)
             except:
@@ -507,59 +510,59 @@ def hyphenate_translation(translation, parent_key=None, lang=None):
 def repair_rtc_dir():
     path = os.path.abspath("src/modules/rtc")
 
-    for name in ["real_time_clock_v2_bricklet_firmware_bin.digest",
-                 "real_time_clock_v2_bricklet_firmware_bin.embedded.cpp",
-                 "real_time_clock_v2_bricklet_firmware_bin.embedded.h"]:
+    for filename in ["real_time_clock_v2_bricklet_firmware_bin.digest",
+                     "real_time_clock_v2_bricklet_firmware_bin.embedded.cpp",
+                     "real_time_clock_v2_bricklet_firmware_bin.embedded.h"]:
         try:
-            os.remove(os.path.join(path, name))
+            os.remove(os.path.join(path, filename))
         except FileNotFoundError:
             pass
 
 def repair_firmware_update_dir():
     path = os.path.abspath("src/modules/firmware_update")
 
-    for name in ["recovery_html.digest",
-                 "recovery_html.embedded.cpp",
-                 "recovery_html.embedded.h",
-                 "signature_public_key.embedded.cpp",
-                 "signature_public_key.embedded.h"]:
+    for filename in ["recovery_html.digest",
+                     "recovery_html.embedded.cpp",
+                     "recovery_html.embedded.h",
+                     "signature_public_key.embedded.cpp",
+                     "signature_public_key.embedded.h"]:
         try:
-            os.remove(os.path.join(path, name))
+            os.remove(os.path.join(path, filename))
         except FileNotFoundError:
             pass
 
 def repair_meters_modbus_tcp_dir():
     path = os.path.abspath("src/modules/meters_modbus_tcp")
 
-    for name in ["modbus_register_type.enum.cpp",
-                 "modbus_register_type.enum.h",
-                 "modbus_register_address_mode.enum.cpp",
-                 "modbus_register_address_mode.enum.h",
-                 "Modbus Value Type.uint8.enum",
-                 "modbus_value_type.enum.cpp",
-                 "modbus_value_type.enum.h"]:
+    for filename in ["modbus_register_type.enum.cpp",
+                     "modbus_register_type.enum.h",
+                     "modbus_register_address_mode.enum.cpp",
+                     "modbus_register_address_mode.enum.h",
+                     "Modbus Value Type.uint8.enum",
+                     "modbus_value_type.enum.cpp",
+                     "modbus_value_type.enum.h"]:
         try:
-            os.remove(os.path.join(path, name))
+            os.remove(os.path.join(path, filename))
         except FileNotFoundError:
             pass
 
     path = os.path.abspath("web/src/modules/meters_modbus_tcp")
 
-    for name in ["modbus_register_type.enum.ts",
-                 "modbus_register_address_mode.enum.ts",
-                 "modbus_value_type.enum.ts"]:
+    for filename in ["modbus_register_type.enum.ts",
+                     "modbus_register_address_mode.enum.ts",
+                     "modbus_value_type.enum.ts"]:
         try:
-            os.remove(os.path.join(path, name))
+            os.remove(os.path.join(path, filename))
         except FileNotFoundError:
             pass
 
 def repair_meters_sun_spec_dir():
     path = os.path.abspath("src/modules/meters_sun_spec")
 
-    for name in ["sun_spec_model_id.cpp",
-                 "sun_spec_model_id.h"]:
+    for filename in ["sun_spec_model_id.cpp",
+                     "sun_spec_model_id.h"]:
         try:
-            os.remove(os.path.join(path, name))
+            os.remove(os.path.join(path, filename))
         except FileNotFoundError:
             pass
 
@@ -592,48 +595,100 @@ def main():
 
     check_call([env.subst('$PYTHONEXE'), "-u", "update_packages.py"])
 
-    # Add build flags
-    build_timestamp = int(time.time())
-    name = env.GetProjectOption("custom_name")
-    manufacturer = env.GetProjectOption("custom_manufacturer")
-    manufacturer_full = env.GetProjectOption("custom_manufacturer_full")
-    manufacturer_user_agent = env.GetProjectOption("custom_manufacturer_user_agent")
-    manufacturer_user_agent.encode('ascii')
-    assert re.match(r'^[ !#$%&\'\*+\.\^_`\|~0-9a-zA-Z-]+$', manufacturer_user_agent)
-
-    config_type = env.GetProjectOption("custom_config_type")
-    host_prefix = env.GetProjectOption("custom_host_prefix")
-    display_name = env.GetProjectOption("custom_display_name")
-
-    display_name_user_agent_override = env.GetProjectOption("custom_display_name_user_agent_override")
-    display_name_user_agent = display_name_user_agent_override if display_name_user_agent_override != "" else display_name
-    display_name_user_agent.encode('ascii')
-    assert re.match(r'^[ !#$%&\'\*+\.\^_`\|~0-9a-zA-Z-]+$', display_name_user_agent)
-
-    manual_url = env.GetProjectOption("custom_manual_url")
-    apidoc_url = env.GetProjectOption("custom_apidoc_url")
-    doc_base_url = env.GetProjectOption("custom_doc_base_url")
-    firmware_url = env.GetProjectOption("custom_firmware_url")
-    firmware_update_url = env.GetProjectOption("custom_firmware_update_url")
-    remote_access_host = env.GetProjectOption("custom_remote_access_host")
-    support_email = env.GetProjectOption("custom_support_email")
-    day_ahead_price_api_url = env.GetProjectOption("custom_day_ahead_price_api_url")
-    solar_forecast_api_url = env.GetProjectOption("custom_solar_forecast_api_url")
-    require_firmware_info = env.GetProjectOption("custom_require_firmware_info")
-    branding = env.GetProjectOption("custom_branding")
     build_flags = env.GetProjectOption("build_flags")
+    product_id = env.GetProjectOption("custom_product_id", None)
+    options = env.GetProjectOption("custom_options", "")
+    web_build_flags = env.GetProjectOption("custom_web_build_flags", "")
+
+    old_style_options = {}
+
+    for key in ['name', 'manufacturer', 'manufacturer_full', 'manufacturer_user_agent', 'config_type', 'host_prefix', 'display_name', 'display_name_user_agent_override',
+                'manual_url', 'apidoc_url', 'doc_base_url', 'firmware_url', 'firmware_update_url', 'remote_access_host', 'support_email', 'day_ahead_price_api_url',
+                'solar_forecast_api_url', 'require_firmware_info', 'local_meter_default_display_name']:
+        value = env.GetProjectOption('custom_' + key, None)
+
+        if value != None:
+            old_style_options[key] = value
+
+    if len(old_style_options) > 0:
+        print('Warning: Use of old style custom_* options detected! Trying to auto-convert to the new style custom_options!')
+
+        product_id = old_style_options['name']
+        del old_style_options['name']
+
+        old_style_options.pop('manufacturer_user_agent', None)
+
+        old_style_options['hostname_prefix'] = old_style_options['host_prefix']
+        del old_style_options['host_prefix']
+
+        old_style_options['product_name'] = old_style_options['display_name']
+        del old_style_options['display_name']
+
+        old_style_options.pop('display_name_user_agent_override', None)
+
+        old_style_options['warp_api_doc_url'] = old_style_options['apidoc_url']
+        del old_style_options['apidoc_url']
+
+        old_style_options['warp_doc_base_url'] = old_style_options['doc_base_url']
+        del old_style_options['doc_base_url']
+
+        if 'remote_access_host' not in old_style_options:
+            old_style_options['remote_access_host'] = 'my.warp-charger.com'
+
+    for key, value in old_style_options.items():
+        if key not in ('require_firmware_info',):
+            value = json.dumps(value)
+
+        options += '\n' + key + ' = ' + value
+
+    old_style_build_flags = {}
+
+    for key in ['FIRMWARE_UPDATE_ENABLE_ROLLBACK', 'METER_VALUE_HISTORY_VALUE_TYPE', 'METER_VALUE_HISTORY_VALUE_MIN', 'METER_VALUE_HISTORY_VALUE_MAX',
+                'METERS_SLOTS', 'METERS_SLOT_0_DEFAULT_CLASS', 'POWER_MANAGER_DEFAULT_METER_SLOT', 'CHARGE_TRACKER_PDF_LOGO']:
+        for build_flag in build_flags:
+            if key in build_flag:
+                old_style_build_flags[key.lower()] = build_flag.split(key + '=')[-1]
+
+    if len(old_style_options) > 0:
+        print('Warning: Use of old style build_flags detected! Trying to auto-convert to the new style custom_options!')
+
+        if 'charge_tracker_pdf_logo' not in old_style_build_flags:
+            old_style_build_flags['charge_tracker_pdf_logo'] = 'CHARGE_TRACKER_PDF_LOGO_WARP'
+
+        for key, value in old_style_build_flags.items():
+            if key == 'meters_slots':
+                key = 'meters_max_slots'
+
+            options += '\n' + key + ' = ' + value
+
+    if len(web_build_flags) > 0:
+        print('Warning: Use of old style web_build_flags detected! Trying to auto-convert to the new style custom_options!')
+
+        for key_value in web_build_flags.split('\n'):
+            if len(key_value) == 0:
+                continue
+
+            key, value = key_value.split('=', 1)
+            key = key.strip().lower()
+            value = value.strip()
+
+            if key == 'meters_slots':
+                key = 'meters_max_slots'
+
+            options += '\n' + key + ' = ' + value
+
+    build_timestamp = int(time.time())
+    branding = env.GetProjectOption("custom_branding")
     frontend_debug = env.GetProjectOption("custom_frontend_debug") == "true"
     web_only = env.GetProjectOption("custom_web_only") == "true"
     prepare_only = "-DPREPARE_ONLY" in build_flags
-    options = env.GetProjectOption("custom_options")
     signature_preset = env.GetProjectOption("custom_signature_preset")
-    local_meter_default_display_name = env.GetProjectOption("custom_local_meter_default_display_name")
     monitor_speed = env.GetProjectOption("monitor_speed")
     nightly = "-DNIGHTLY" in build_flags
 
     if sys.platform.startswith('linux'):
-        firmware_elf_symlink = f'build/{name}_firmware_latest.elf'
-        firmware_bin_symlink = f'build/{name}_firmware_latest_merged.bin'
+        firmware_elf_symlink = f'build/{product_id}_firmware_latest.elf'
+        firmware_bin_symlink = f'build/{product_id}_firmware_latest_merged.bin'
 
         try:
             os.remove(firmware_elf_symlink)
@@ -669,7 +724,7 @@ def main():
             dirty_suffix = '_' + git_commit_id + "_" + branch_name.replace("_", "-")
 
     try:
-        version_oldest, version = get_changelog_version(name)
+        version_oldest, version = get_changelog_version(product_id)
     except Exception as e:
         print('Error: Could not get changelog version: {0}'.format(e))
         sys.exit(1)
@@ -690,7 +745,7 @@ def main():
             is_from_default_wifi_json = True
     except FileNotFoundError:
         try:
-            with open(os.path.join(name + '_wifi.json'), 'r', encoding='utf-8') as f:
+            with open(os.path.join(product_id + '_wifi.json'), 'r', encoding='utf-8') as f:
                 custom_wifi = json.loads(f.read())
         except FileNotFoundError:
             custom_wifi = {}
@@ -747,8 +802,6 @@ def main():
 
     env.Replace(BUILD_FLAGS=build_flags)
 
-    write_firmware_info(name, display_name, version, build_timestamp)
-
     build_lines = []
     build_lines.append('#pragma once')
     build_lines.append('#include <stdint.h>')
@@ -761,30 +814,8 @@ def main():
     build_lines.append('#define BUILD_VERSION_PATCH {}'.format(version[2]))
     build_lines.append('#define BUILD_VERSION_BETA {}'.format(version[3]))
     build_lines.append('#define BUILD_VERSION_STRING "{}.{}.{}"'.format(*version))
-    build_lines.append('#define BUILD_HOST_PREFIX "{}"'.format(host_prefix))
-    build_lines.append('#define BUILD_HOST_PREFIX_LENGTH {}'.format(len(host_prefix)))
-
-    for firmware in ['WARP', 'WARP2', 'WARP3', 'ENERGY_MANAGER', 'ENERGY_MANAGER_V2', 'SMART_ENERGY_BROKER']:
-        build_lines.append('#define BUILD_IS_{}() {}'.format(firmware, 1 if firmware == name.upper() else 0))
-
-    build_lines.append('#define BUILD_CONFIG_TYPE "{}"'.format(config_type))
-    build_lines.append('#define BUILD_NAME "{}"'.format(name))
-    build_lines.append('#define BUILD_NAME_LENGTH {}'.format(len(name)))
-    build_lines.append('#define BUILD_MANUFACTURER "{}"'.format(manufacturer))
-    build_lines.append('#define BUILD_MANUFACTURER_UPPER "{}"'.format(manufacturer.upper()))
-    build_lines.append('#define BUILD_MANUFACTURER_FULL "{}"'.format(manufacturer_full))
-    build_lines.append('#define BUILD_MANUFACTURER_USER_AGENT "{}"'.format(manufacturer_user_agent.replace(" ", "_")))
-    build_lines.append('#define BUILD_DISPLAY_NAME "{}"'.format(display_name))
-    build_lines.append('#define BUILD_DISPLAY_NAME_USER_AGENT "{}"'.format(display_name_user_agent.replace(" ", "_")))
-    build_lines.append('#define BUILD_DISPLAY_NAME_UPPER "{}"'.format(display_name.upper()))
-    build_lines.append('#define BUILD_REQUIRE_FIRMWARE_INFO {}'.format(require_firmware_info))
     build_lines.append('#define BUILD_MONITOR_SPEED {}'.format(monitor_speed))
-    build_lines.append('#define BUILD_FIRMWARE_UPDATE_URL "{}"'.format(firmware_update_url))
-    build_lines.append('#define BUILD_REMOTE_ACCESS_HOST "{}"'.format(remote_access_host))
-    build_lines.append('#define BUILD_DAY_AHEAD_PRICE_API_URL "{}"'.format(day_ahead_price_api_url))
-    build_lines.append('#define BUILD_SOLAR_FORECAST_API_URL "{}"'.format(solar_forecast_api_url))
     build_lines.append('#define BUILD_IS_SIGNED() {}'.format("1" if len(signature_preset) > 0 else "0"))
-    build_lines.append('#define BUILD_LOCAL_METER_DEFAULT_DISPLAY_NAME "{}"'.format(local_meter_default_display_name))
     build_lines.append('uint32_t build_timestamp();')
     build_lines.append('const char *build_timestamp_hex_str();')
     build_lines.append('const char *build_version_full_str();')
@@ -807,7 +838,7 @@ def main():
     tfutil.write_file_if_different(os.path.join('src', 'build.h'), '\n'.join(build_lines))
 
     firmware_basename = '{}_firmware{}{}{}_{}_{:x}{}'.format(
-        name,
+        product_id,
         "-UNSIGNED" if len(signature_preset) == 0 else "",
         "-NIGHTLY" if nightly else "",
         "-WITH-WIFI-PASSPHRASE-DO-NOT-DISTRIBUTE" if not_for_distribution else "",
@@ -912,7 +943,7 @@ def main():
         frontend_status_components.append(FrontendStatusComponent(module, component))
 
     metadata = json.dumps({
-        'name': name,
+        'product_id': product_id,
         'signature_preset': signature_preset,
         'frontend_modules': [frontend_module.under for frontend_module in frontend_modules],
         'branding_mod_path': os.path.abspath(branding_mod_path),
@@ -958,8 +989,8 @@ def main():
             sys.exit(1)
 
         for root, dirs, files in os.walk(mod_path, followlinks=True):
-            for name in files:
-                include_bindings(os.path.join(root, name))
+            for filename in files:
+                include_bindings(os.path.join(root, filename))
 
         excluded_backend_modules.remove(backend_module.under)
 
@@ -981,8 +1012,8 @@ def main():
         if pathlib.PurePath('src', 'bindings') in root_parents or pathlib.PurePath('src', 'modules') in root_parents:
             continue
 
-        for name in files:
-            include_bindings(os.path.join(root, name))
+        for filename in files:
+            include_bindings(os.path.join(root, filename))
 
     for excluded_backend_module in excluded_backend_modules:
         build_src_filter.append('-<modules/{0}/*>'.format(excluded_backend_module))
@@ -1022,7 +1053,7 @@ def main():
         if not os.path.exists(info_path):
             print(f'Warning: {backend_module.under} has no module.ini file')
         else:
-            config = configparser.ConfigParser()
+            config = configparser.ConfigParser(inline_comment_prefixes=('#',';'))
             config.read(info_path)
 
             if config.has_section('Common'):
@@ -1065,55 +1096,20 @@ def main():
 
     generate_backend_module_dependencies_header('src/main_dependencies.ini', 'src/main_', None, backend_modules, all_backend_modules_upper, backend_module_instance_names)
 
-    # Handle frontend modules
-    main_ts_entries = []
-    pre_scss_paths = []
-    post_scss_paths = []
-    translation = collect_translation('web')
+    # Generate options
+    options_value = {}
+    options_origin = {}
 
-    # Generate build options
-    options_module = {}
-    options_values = {}
-    options_h = []
-    options_ts = []
-
-    if len(options) > 0:
-        for key_value in options.split('\n'):
-            if "=" not in key_value:
-                print(f"Option {repr(key_value)} in environment is not <key>=<value>", file=sys.stderr)
-                sys.exit(1)
-
-            key, value = key_value.split('=', 1)
-            key = key.strip().lower()
-            value = value.strip()
-
-            if len(key) == 0:
-                print(f"Option {repr(key_value)} in environment has empty key", file=sys.stderr)
-                sys.exit(1)
-
-            if len(value) == 0:
-                print(f"Option {repr(key_value)} in environment has empty value", file=sys.stderr)
-                sys.exit(1)
-
-            if key in options_values:
-                print(f"Option {key} in environment is already defined as {options_values[key]}", file=sys.stderr)
-                sys.exit(1)
-
-            options_values[key] = value
-
-            options_h.append(f'#define {key.upper()} {value}\n')
-            options_ts.append(f'export const {key.upper()} = {value};\n')
-
-    for backend_module in backend_modules:
-        mod_path = os.path.join('src', 'modules', backend_module.under)
+    def collect_options(module_type, mod_path_prefix, module):
+        mod_path = os.path.join(mod_path_prefix, module.under)
 
         if not os.path.exists(mod_path) or not os.path.isdir(mod_path):
-            print("Backend module {} not found.".format(backend_module.space))
+            print(f"{module_type.capitalize()} module {module.space} not found")
         else:
             info_path = os.path.join(mod_path, 'module.ini')
 
             if os.path.exists(info_path):
-                config = configparser.ConfigParser()
+                config = configparser.ConfigParser(inline_comment_prefixes=('#',';'))
                 config.read(info_path)
 
                 if config.has_section('Options'):
@@ -1121,33 +1117,120 @@ def main():
                         value = config['Options'][key]
 
                         if len(value) == 0:
-                            print(f"Option {key} in module {backend_module.under} has empty value", file=sys.stderr)
+                            print(f"Option {key} in {module_type} module {module.under} has empty value", file=sys.stderr)
                             sys.exit(1)
 
-                        if key in options_module:
-                            print(f"Module {backend_module.under} redefines option {key} already defined in module {options_module[key]}", file=sys.stderr)
+                        if key in options_origin:
+                            print(f"{module_type.capitalize()} module {module.under} redefines option {key} already defined in {options_origin[key]}", file=sys.stderr)
                             sys.exit(1)
 
-                        if key in options_values:
-                            print(f"Module {backend_module.under} redefines option {key} already defined in environment", file=sys.stderr)
-                            sys.exit(1)
+                        options_value[key] = value
+                        options_origin[key] = f'{module_type} module {module.under}'
 
-                        options_module[key] = backend_module.under
+    for backend_module in backend_modules:
+        collect_options('backend', 'src/modules', backend_module)
 
-                        options_h.append(f'#define {key.upper()} {value}\n')
-                        options_ts.append(f'export const {key.upper()} = {value};\n')
+    for frontend_module in frontend_modules:
+        collect_options('frontend', 'web/src/modules', frontend_module)
 
-    with open(os.path.join('src', 'options.h'), 'w', encoding='utf-8') as f:
-        f.write('// WARNING: This file is generated by pio_hooks.py\n\n')
-        f.write(''.join(options_h))
+    if len(options) > 0:
+        for key_value in options.split('\n'):
+            if len(key_value) == 0:
+                continue
 
-    with open(os.path.join('web', 'src', 'options.ts'), 'w', encoding='utf-8') as f:
-        f.write('// WARNING: This file is generated by pio_hooks.py\n\n')
-        f.write(''.join(options_ts))
+            if '=' not in key_value:
+                print(f"Option {repr(key_value)} in environment is not <key>=<value>", file=sys.stderr)
+                sys.exit(1)
+
+            key, value = key_value.split('=', 1)
+            key = key.strip()
+            value = value.strip()
+
+            if len(key) == 0:
+                print(f"Option {key} in environment has empty key", file=sys.stderr)
+                sys.exit(1)
+
+            if len(value) == 0:
+                print(f"Option {key} in environment has empty value", file=sys.stderr)
+                sys.exit(1)
+
+            options_value[key] = value
+            options_origin[key] = 'environment'
+
+    assert 'product_id' not in options_value
+
+    options_value['product_id'] = json.dumps(product_id)
+    options_origin['product_id'] = 'pio_hooks.py'
+
+    for suffix in ['warp', 'warp2', 'warp3', 'energy_manager', 'energy_manager_v2', 'smart_energy_broker']:
+        key = f'product_id_is_{suffix}'
+
+        assert key not in options_value
+
+        options_value[key] = '1' if product_id == suffix else '0'
+        options_origin[key] = 'pio_hooks.py'
+
+    assert 'manufacturer_upper' not in options_value
+
+    options_value['manufacturer_upper'] = options_value['manufacturer'].upper()
+    options_origin['manufacturer_upper'] = 'pio_hooks.py'
+
+    manufacturer_user_agent = json.loads(options_value['manufacturer']).replace("²", "2").replace(" ", "_")
+    manufacturer_user_agent.encode('ascii')
+
+    assert re.match(r'^[ !#$%&\'\*+\.\^_`\|~0-9a-zA-Z-]+$', manufacturer_user_agent), manufacturer_user_agent
+    assert 'manufacturer_user_agent' not in options_value
+
+    options_value['manufacturer_user_agent'] = json.dumps(manufacturer_user_agent)
+    options_origin['manufacturer_user_agent'] = 'pio_hooks.py'
+
+    assert 'product_name_upper' not in options_value
+
+    options_value['product_name_upper'] = options_value['product_name'].upper()
+    options_origin['product_name_upper'] = 'pio_hooks.py'
+
+    product_name_user_agent = json.loads(options_value['product_name']).replace("/", " ").replace(" ", "_")
+    product_name_user_agent.encode('ascii')
+
+    assert re.match(r'^[ !#$%&\'\*+\.\^_`\|~0-9a-zA-Z-]+$', product_name_user_agent), product_name_user_agent
+    assert 'product_name_user_agent' not in options_value
+
+    options_value['product_name_user_agent'] = json.dumps(product_name_user_agent)
+    options_origin['product_name_user_agent'] = 'pio_hooks.py'
+
+    options_h = []
+    options_ts = []
+    options_key_ljust = max([len(key) for key in options_value.keys()])
+    options_value_ljust = max([len(key) for key in options_value.values()])
+
+    print('Options:')
+
+    for key, value in sorted(options_value.items()):
+        print(f'  {key.ljust(options_key_ljust)} = {str(value).ljust(options_value_ljust)} // from {options_origin[key]}')
+
+        options_h.append(f'// from {options_origin[key]}')
+        options_h.append(f'#define OPTIONS_{key.upper()}() {value}\n')
+
+        if re.match(r'^(-?\d+|".*")$', value) == None:
+            value = json.dumps(value)
+
+        options_ts.append(f'// from {options_origin[key]}')
+        options_ts.append(f'export const {key.upper()} = {value};\n')
+
+    tfutil.write_file_if_different(os.path.join('src', 'options.h'), '// WARNING: This file is generated by pio_hooks.py\n\n' + '\n'.join(options_h))
+    tfutil.write_file_if_different(os.path.join('web', 'src', 'options.ts'), '// WARNING: This file is generated by pio_hooks.py\n\n' + '\n'.join(options_ts))
+
+    write_firmware_info(product_id, options_value['product_name'], version, build_timestamp)
 
     if prepare_only:
         print("Stopping build after prepare")
         sys.exit(0)
+
+    # Handle frontend modules
+    main_ts_entries = []
+    pre_scss_paths = []
+    post_scss_paths = []
+    translation = collect_translation('web')
 
     # API
     api_imports = []
@@ -1265,15 +1348,7 @@ def main():
         print('Error: Translation missing')
         sys.exit(1)
 
-    translation_data = json.dumps(translation, indent=4, ensure_ascii=False)
-    translation_data = translation_data.replace('{{{display_name}}}', display_name)
-    translation_data = translation_data.replace('{{{manual_url}}}', manual_url)
-    translation_data = translation_data.replace('{{{doc_base_url}}}', doc_base_url)
-    translation_data = translation_data.replace('{{{apidoc_url}}}', apidoc_url)
-    translation_data = translation_data.replace('{{{firmware_url}}}', firmware_url)
-    translation_data = translation_data.replace('{{{support_email}}}', support_email)
-    tfutil.write_file_if_different(os.path.join('web', 'src', 'ts', 'translation.json'), translation_data)
-    del translation_data
+    tfutil.write_file_if_different(os.path.join('web', 'src', 'ts', 'translation.json'), json.dumps(translation, indent=4, ensure_ascii=False))
 
     with open(os.path.join(branding_mod_path, 'favicon.png'), 'rb') as f:
         favicon = b64encode(f.read()).decode('ascii')
@@ -1372,7 +1447,8 @@ def main():
                 is_fragment = value.startswith("***START_FRAGMENT***") and value.endswith("***END_FRAGMENT***")
                 is_string_function = value.startswith("/*SFN*/") and value.endswith("/*NF*/")
                 is_fragment_function = value.startswith("/*FFN*/") and value.endswith("/*NF*/")
-                is_string = not is_fragment and not is_string_function and not is_fragment_function
+                is_backtick = value.startswith("***BACKTICK***") and value.endswith("***BACKTICK***")
+                is_string = not is_fragment and not is_string_function and not is_fragment_function and not is_backtick
 
                 if type_only:
                     if is_fragment:
@@ -1389,6 +1465,8 @@ def main():
                     elif is_string_function or is_fragment_function:
                         # removeprefix/suffix are new in Python 3.9. We have to support 3.8.
                         string = json_to_tsx(value)#[len("/*SFN*/"):-len("/*NF*/")]
+                    elif is_backtick:
+                        string = json_to_tsx(value)
                     else:
                         string = '"{0}"'.format(value.replace('"', '\\"'))
 
@@ -1396,16 +1474,7 @@ def main():
                         if match := re.search(r"<[^>]*>", value):
                             print("Found HTML tag {} in non-fragment value {}".format(match.group(0), value))
 
-                    if '{{{' in string:
-                        string = string.replace('{{{display_name}}}', display_name)
-                        string = string.replace('{{{manual_url}}}', manual_url)
-                        string = string.replace('{{{doc_base_url}}}', doc_base_url)
-                        string = string.replace('{{{apidoc_url}}}', apidoc_url)
-                        string = string.replace('{{{firmware_url}}}', firmware_url)
-                        string = string.replace('{{{support_email}}}', support_email)
-
                     subtranslation[key] = string
-
                     output += [string, ',\n']
 
         output += [indent, '}']
@@ -1485,18 +1554,18 @@ def main():
         if not os.path.exists(mod_path) or not os.path.isdir(mod_path):
             print("Backend module {} not found.".format(backend_module.space))
         else:
-            for name in os.listdir(mod_path):
-                if not name.endswith(".enum"):
+            for filename in os.listdir(mod_path):
+                if not filename.endswith(".enum"):
                     continue
 
-                name_parts = name.split('.')
+                filename_parts = filename.split('.')
 
-                if len(name_parts) != 3:
-                    print('Error: Invalid enum file "{}" in backend {}'.format(name, mod_path))
+                if len(filename_parts) != 3:
+                    print('Error: Invalid enum file "{}" in backend {}'.format(filename, mod_path))
                     sys.exit(1)
 
                 enum_comments = []
-                enum_name = util.FlavoredName(name_parts[0]).get()
+                enum_name = util.FlavoredName(filename_parts[0]).get()
                 enum_values = []
                 enum_cases = []
                 value_number = -1
@@ -1504,7 +1573,7 @@ def main():
                 value_number_max = None
                 value_count = 0
 
-                with open(os.path.join(mod_path, name), 'r', encoding='utf-8') as f:
+                with open(os.path.join(mod_path, filename), 'r', encoding='utf-8') as f:
                     for line in f.readlines():
                         line = line.strip()
 
@@ -1514,7 +1583,7 @@ def main():
                         m = re.match(r'^(?:(#).*|//\s*(.*)|([A-Za-z][A-Za-z0-9 ]+?)?\s*(?:=\s*(\d+))?\s*(?://\s*(.*))?)$', line)
 
                         if m == None:
-                            print(f'Error: Malformed line enum file "{name}" in backend {mod_path}: {line}')
+                            print(f'Error: Malformed line enum file "{filename}" in backend {mod_path}: {line}')
                             sys.exit(1)
 
                         file_comment = m.group(1)
@@ -1558,11 +1627,11 @@ def main():
                         enum_cases.append(f'    case {enum_name.camel}::{value_name.camel}: return "{value_name.space}";\n')
 
                 with open(os.path.join(mod_path, enum_name.under + '.enum.h'), 'w', encoding='utf-8') as f:
-                    f.write(f'// WARNING: This file is generated from "{name}" by pio_hooks.py\n\n')
+                    f.write(f'// WARNING: This file is generated from "{filename}" by pio_hooks.py\n\n')
                     f.write('#include <stdint.h>\n\n')
                     f.write('#pragma once\n\n')
                     f.write(''.join(enum_comments))
-                    f.write(f'enum class {enum_name.camel} : {name_parts[1]}_t {{\n')
+                    f.write(f'enum class {enum_name.camel} : {filename_parts[1]}_t {{\n')
                     f.write(f'    _min = {value_number_min},\n')
                     f.write(''.join(enum_values))
                     f.write(f'    _max = {value_number_max},\n')
@@ -1571,7 +1640,7 @@ def main():
                     f.write(f'const char *get_{enum_name.under}_name({enum_name.camel} value);\n')
 
                 with open(os.path.join(mod_path, enum_name.under + '.enum.cpp'), 'w', encoding='utf-8') as f:
-                    f.write(f'// WARNING: This file is generated from "{name}" by pio_hooks.py\n\n')
+                    f.write(f'// WARNING: This file is generated from "{filename}" by pio_hooks.py\n\n')
                     f.write(f'#include "{enum_name.under}.enum.h"\n\n')
                     f.write(f'const char *get_{enum_name.under}_name({enum_name.camel} value)\n')
                     f.write('{\n')
@@ -1585,7 +1654,7 @@ def main():
 
                 if os.path.exists(frontend_mod_path) and os.path.isdir(frontend_mod_path):
                     with open(os.path.join(frontend_mod_path, enum_name.under + '.enum.ts'), 'w', encoding='utf-8') as f:
-                        f.write(f'// WARNING: This file is generated from "{name}" by pio_hooks.py\n\n')
+                        f.write(f'// WARNING: This file is generated from "{filename}" by pio_hooks.py\n\n')
                         f.write(f'export const enum {enum_name.camel} {{\n')
                         f.write(f'    _min = {value_number_min},\n')
                         f.write(''.join(enum_values))
@@ -1671,15 +1740,15 @@ def main():
     index_html_src_paths = []
     index_html_src_datas = []
 
-    for name in sorted(os.listdir('web')):
-        path = os.path.join('web', name)
+    for filename in sorted(os.listdir('web')):
+        path = os.path.join('web', filename)
 
         if os.path.isfile(path):
             index_html_src_paths.append(path)
 
     for root, dirs, files in sorted(os.walk('web/src', followlinks=True)):
-        for name in sorted(files):
-            index_html_src_paths.append(os.path.join(root, name))
+        for filename in sorted(files):
+            index_html_src_paths.append(os.path.join(root, filename))
 
     index_html_src_paths += node_modules_digest_paths
 

@@ -26,6 +26,7 @@
 #include "modules/em_common/bricklet_bindings_constants.h"
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "options.h"
 #include "modules/charge_manager/charge_manager_private.h"
 #include "tools/hexdump.h"
 
@@ -41,7 +42,7 @@ static constexpr micros_t MAX_DATA_AGE = 30_s;
 
 //#define DEBUG_LOGGING
 
-static_assert(METERS_SLOTS <= 7, "Too many meters slots");
+static_assert(OPTIONS_METERS_MAX_SLOTS() <= 7, "Too many meters slots");
 
 static const char *get_data_status_string(uint8_t status)
 {
@@ -85,7 +86,7 @@ void EMEnergyAnalysis::pre_setup()
         {"month", Config::Uint(0, 1, 12)},
     });
 
-    for (uint32_t slot = 0; slot < METERS_SLOTS; ++slot) {
+    for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); ++slot) {
         history_meter_setup_done[slot] = false;
         history_meter_power_value[slot] = NAN;
     }
@@ -120,7 +121,7 @@ void EMEnergyAnalysis::register_urls()
 
 void EMEnergyAnalysis::register_events()
 {
-    for (uint32_t slot = 0; slot < METERS_SLOTS; ++slot) {
+    for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); ++slot) {
         if (meters.get_meter_class(slot) == MeterClassID::None) {
             continue;
         }
@@ -288,7 +289,7 @@ void EMEnergyAnalysis::collect_data_points()
             flags |= outputs[3] ? (1 << 7) : 0;
 #endif
 
-            for (uint32_t slot = 0; slot < METERS_SLOTS; ++slot) {
+            for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); ++slot) {
                 // FIXME: how to tell if meter data is stale?
                 if (!isnan(history_meter_power_value[slot])) {
                     update_history_meter_power(slot, history_meter_power_value[slot]);
@@ -376,7 +377,7 @@ void EMEnergyAnalysis::collect_data_points()
         micros_t max_age = micros_t{5 * 60 * 1000 * 1000};
         MeterValueAvailability availability;
 
-        for (uint32_t slot = 0; slot < METERS_SLOTS; ++slot) {
+        for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); ++slot) {
             if (meters.get_meter_class(slot) == MeterClassID::None) {
                 continue; // don't record integrated energy values for unconfigured meters
             }
@@ -650,7 +651,7 @@ bool EMEnergyAnalysis::load_persistent_data_v2(uint8_t *buf)
         return false; // try loading persistent data v3
     }
 
-    for (uint32_t slot = 1; slot < METERS_SLOTS; ++slot) {
+    for (uint32_t slot = 1; slot < OPTIONS_METERS_MAX_SLOTS(); ++slot) {
         history_meter_energy_import[slot] = data_v2.history_meter_energy_import[slot - 1];
         history_meter_energy_export[slot] = data_v2.history_meter_energy_export[slot - 1];
     }
@@ -689,7 +690,7 @@ void EMEnergyAnalysis::load_persistent_data_v3(uint8_t *buf, uint32_t start_slot
         return;
     }
 
-    for (uint32_t slot = start_slot; slot < start_slot + 3 && slot < METERS_SLOTS; ++slot) {
+    for (uint32_t slot = start_slot; slot < start_slot + 3 && slot < OPTIONS_METERS_MAX_SLOTS(); ++slot) {
         history_meter_energy_import[slot] = data_v3.history_meter_energy_import[slot - start_slot];
         history_meter_energy_export[slot] = data_v3.history_meter_energy_export[slot - start_slot];
     }
@@ -735,7 +736,7 @@ void EMEnergyAnalysis::save_persistent_data()
     data_v1.history_meter_energy_export = history_meter_energy_export[0];
     data_v1.checksum = internet_checksum_u16(reinterpret_cast<const uint16_t *>(&data_v1), sizeof(data_v1) / sizeof(uint16_t));
 
-    for (uint32_t slot = 1; slot < METERS_SLOTS; ++slot) {
+    for (uint32_t slot = 1; slot < OPTIONS_METERS_MAX_SLOTS(); ++slot) {
         data_v2.history_meter_energy_import[slot - 1] = history_meter_energy_import[slot];
         data_v2.history_meter_energy_export[slot - 1] = history_meter_energy_export[slot];
     }
@@ -743,7 +744,7 @@ void EMEnergyAnalysis::save_persistent_data()
     data_v2.version = 2;
     data_v2.checksum = internet_checksum_u16(reinterpret_cast<const uint16_t *>(&data_v2), sizeof(data_v2) / sizeof(uint16_t));
 
-    for (uint32_t slot = 1; slot < 4 && slot < METERS_SLOTS; ++slot) {
+    for (uint32_t slot = 1; slot < 4 && slot < OPTIONS_METERS_MAX_SLOTS(); ++slot) {
         data_v3a.history_meter_energy_import[slot - 1] = history_meter_energy_import[slot];
         data_v3a.history_meter_energy_export[slot - 1] = history_meter_energy_export[slot];
     }
@@ -751,7 +752,7 @@ void EMEnergyAnalysis::save_persistent_data()
     data_v3a.version = 3;
     data_v3a.checksum = internet_checksum_u16(reinterpret_cast<const uint16_t *>(&data_v3a), sizeof(data_v3a) / sizeof(uint16_t));
 
-    for (uint32_t slot = 4; slot < METERS_SLOTS; ++slot) {
+    for (uint32_t slot = 4; slot < OPTIONS_METERS_MAX_SLOTS(); ++slot) {
         data_v3b.history_meter_energy_import[slot - 4] = history_meter_energy_import[slot];
         data_v3b.history_meter_energy_export[slot - 4] = history_meter_energy_export[slot];
     }

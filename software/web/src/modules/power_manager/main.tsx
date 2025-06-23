@@ -19,8 +19,8 @@
 
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
+import * as options from "../../options";
 import { __ } from "../../ts/translation";
-import { METERS_SLOTS } from "../../options";
 import { h, Fragment, Component, RefObject } from "preact";
 import { Button, ButtonGroup, Collapse, Spinner } from "react-bootstrap";
 import { ConfigComponent } from "../../ts/components/config_component";
@@ -56,7 +56,7 @@ export enum NoninternalMeterSelector {
 export function get_noninternal_meter_slots(required_ids : Readonly<MeterValueID[]>, meter_selector : NoninternalMeterSelector, missing_values_message: string) {
     let meter_slots: StringStringTuple[] = [];
 
-    for (let i = 0; i < METERS_SLOTS; i++) {
+    for (let i = 0; i < options.METERS_MAX_SLOTS; i++) {
         const cfg = API.get_unchecked(`meters/${i}/config`) as API.getType["meters/0/config"]
 
         if (cfg == null) {

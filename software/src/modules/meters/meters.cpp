@@ -21,6 +21,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "options.h"
 #include "meter_class_none.h"
 #include "meter_value_imexdiff.h"
 #include "tools.h"
@@ -186,11 +187,11 @@ void Meters::pre_setup()
     for (MeterSlot &meter_slot : meter_slots) {
         meter_slot.value_ids = Config::Array({},
             Config::get_prototype_uint32_0(),
-            0, METERS_MAX_VALUES_PER_METER, Config::type_id<Config::ConfUint>()
+            0, OPTIONS_METERS_MAX_VALUES_PER_METER(), Config::type_id<Config::ConfUint>()
         );
         meter_slot.values = Config::Array({},
             Config::get_prototype_float_nan(),
-            0, METERS_MAX_VALUES_PER_METER, Config::type_id<Config::ConfFloat>()
+            0, OPTIONS_METERS_MAX_VALUES_PER_METER(), Config::type_id<Config::ConfFloat>()
         );
 
         meter_slot.values_last_updated_at = INT64_MIN;
@@ -207,7 +208,7 @@ void Meters::pre_setup()
     automation.register_action(
         AutomationActionID::MeterReset,
         Config::Object({
-            {"meter_slot", Config::Uint(0, 0, METERS_SLOTS - 1)}
+            {"meter_slot", Config::Uint(0, 0, OPTIONS_METERS_MAX_SLOTS() - 1)}
         }),
         [this](const Config *config) {
             uint32_t slot = config->get("meter_slot")->asUint();
@@ -240,13 +241,9 @@ void Meters::setup()
         {"last_reset", Config::Uint53(0)}
     });
 
-    for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
+    for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
         MeterSlot &meter_slot = meter_slots[slot];
-#ifdef METERS_SLOT_0_DEFAULT_CLASS
-        MeterClassID meter_class = slot == 0 ? METERS_SLOT_0_DEFAULT_CLASS : MeterClassID::None;
-#else
-        MeterClassID meter_class = MeterClassID::None;
-#endif
+        MeterClassID meter_class = slot == 0 ? OPTIONS_METERS_SLOT_0_DEFAULT_CLASS() : MeterClassID::None;
 
         // Initialize config.
         meter_slot.config_union = Config::Union(
@@ -296,7 +293,7 @@ void Meters::setup()
     generators.clear();
     generators.shrink_to_fit();
 
-    history_chars_per_value = max(String(METER_VALUE_HISTORY_VALUE_MIN).length(), String(METER_VALUE_HISTORY_VALUE_MAX).length());
+    history_chars_per_value = max(String(OPTIONS_METER_VALUE_HISTORY_VALUE_MIN()).length(), String(OPTIONS_METER_VALUE_HISTORY_VALUE_MAX()).length());
     // val_min values are replaced with null -> require at least 4 chars per value.
     history_chars_per_value = max(4U, history_chars_per_value);
     // For ',' between the values.
@@ -306,13 +303,13 @@ void Meters::setup()
         micros_t now = now_us();
         uint32_t current_history_slot = (now / minutes_t{HISTORY_MINUTE_INTERVAL}).as<uint32_t>();
         bool update_history = current_history_slot != last_history_slot;
-        METER_VALUE_HISTORY_VALUE_TYPE live_samples[METERS_SLOTS];
-        METER_VALUE_HISTORY_VALUE_TYPE history_samples[METERS_SLOTS];
-        bool valid_samples[METERS_SLOTS];
-        METER_VALUE_HISTORY_VALUE_TYPE val_min = std::numeric_limits<METER_VALUE_HISTORY_VALUE_TYPE>::lowest();
+        OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE() live_samples[OPTIONS_METERS_MAX_SLOTS()];
+        OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE() history_samples[OPTIONS_METERS_MAX_SLOTS()];
+        bool valid_samples[OPTIONS_METERS_MAX_SLOTS()];
+        OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE() val_min = std::numeric_limits<OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE()>::lowest();
         StringBuilder sb;
 
-        for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
+        for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
             MeterSlot &meter_slot = this->meter_slots[slot];
 
             if (meter_slot.meter->get_class() != MeterClassID::None) {
@@ -334,10 +331,10 @@ void Meters::setup()
         ++samples_this_interval;
 
 #if MODULE_WS_AVAILABLE()
-        if (sb.setCapacity(METERS_SLOTS * history_chars_per_value + 100)) {
+        if (sb.setCapacity(OPTIONS_METERS_MAX_SLOTS() * history_chars_per_value + 100)) {
             sb.printf("{\"topic\":\"meters/live_samples\",\"payload\":{\"samples_per_second\":%f,\"samples\":[", static_cast<double>(live_samples_per_second()));
 
-            for (uint32_t slot = 0; slot < METERS_SLOTS && sb.getRemainingLength() > 0; slot++) {
+            for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS() && sb.getRemainingLength() > 0; slot++) {
                 if (!valid_samples[slot]) {
                     sb.printf(slot == 0 ? "[%s]" : ",[%s]", "");
                 }
@@ -369,10 +366,10 @@ void Meters::setup()
             end_this_interval = 0;
 
 #if MODULE_WS_AVAILABLE()
-            if (sb.setCapacity(METERS_SLOTS * history_chars_per_value + 100)) {
+            if (sb.setCapacity(OPTIONS_METERS_MAX_SLOTS() * history_chars_per_value + 100)) {
                 sb.puts("{\"topic\":\"meters/history_samples\",\"payload\":{\"samples\":[");
 
-                for (uint32_t slot = 0; slot < METERS_SLOTS && sb.getRemainingLength() > 0; slot++) {
+                for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS() && sb.getRemainingLength() > 0; slot++) {
                     if (!valid_samples[slot]) {
                         sb.printf(slot == 0 ? "[%s]" : ",[%s]", "");
                     }
@@ -400,7 +397,7 @@ void Meters::setup()
     initialized = true;
 }
 
-#if defined(METERS_LOW_LATENCY) && METERS_LOW_LATENCY != 0
+#if OPTIONS_METERS_LOW_LATENCY()
 #define METERS_VALUES_LOW_LATENCY true
 #else
 #define METERS_VALUES_LOW_LATENCY false
@@ -408,7 +405,7 @@ void Meters::setup()
 
 void Meters::register_urls()
 {
-    for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
+    for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
         MeterSlot &meter_slot = meter_slots[slot];
 
         api.addPersistentConfig(get_path(slot, Meters::PathType::Config), &meter_slot.config_union);
@@ -461,7 +458,7 @@ void Meters::register_urls()
         sb.printf("{\"offset\":%lu,\"samples\":[", (now_us() - last_history_update).to<millis_t>().as<uint32_t>());
         request.beginChunkedResponse(200, "application/json; charset=utf-8");
 
-        for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
+        for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
             MeterSlot &meter_slot = meter_slots[slot];
 
             if (meter_slot.meter->get_class() != MeterClassID::None) {
@@ -491,7 +488,7 @@ void Meters::register_urls()
         sb.printf("{\"offset\":%lu,\"samples_per_second\":%f,\"samples\":[", (now_us() - last_live_update).to<millis_t>().as<uint32_t>(), static_cast<double>(live_samples_per_second()));
         request.beginChunkedResponse(200, "application/json; charset=utf-8");
 
-        for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
+        for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
             MeterSlot &meter_slot = meter_slots[slot];
 
             if (meter_slot.meter->get_class() != MeterClassID::None) {
@@ -512,7 +509,7 @@ void Meters::register_urls()
     });
 
 #if MODULE_METERS_LEGACY_API_AVAILABLE()
-    if (meters_legacy_api.get_linked_meter_slot() < METERS_SLOTS) {
+    if (meters_legacy_api.get_linked_meter_slot() < OPTIONS_METERS_MAX_SLOTS()) {
         api.addState("meter/error_counters", &meter_slots[meters_legacy_api.get_linked_meter_slot()].errors);
         meter_slots[meters_legacy_api.get_linked_meter_slot()].power_history.register_urls("meter/");
     }
@@ -521,14 +518,14 @@ void Meters::register_urls()
 
 void Meters::register_events()
 {
-    for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
+    for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
         meter_slots[slot].meter->register_events();
     }
 }
 
 void Meters::pre_reboot()
 {
-    for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
+    for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
         meter_slots[slot].meter->pre_reboot();
     }
 }
@@ -576,7 +573,7 @@ IMeter *Meters::new_meter_of_class(MeterClassID meter_class, uint32_t slot, Conf
 
 IMeter *Meters::get_meter(uint32_t slot)
 {
-    if (slot >= METERS_SLOTS)
+    if (slot >= OPTIONS_METERS_MAX_SLOTS())
         return nullptr;
 
     return meter_slots[slot].meter;
@@ -585,7 +582,7 @@ IMeter *Meters::get_meter(uint32_t slot)
 uint32_t Meters::get_meters(MeterClassID meter_class, IMeter **found_meters, uint32_t found_meters_capacity)
 {
     uint32_t found_count = 0;
-    for (uint32_t i = 0; i < METERS_SLOTS; i++) {
+    for (uint32_t i = 0; i < OPTIONS_METERS_MAX_SLOTS(); i++) {
         IMeter *meter = meter_slots[i].meter;
         if (meter->get_class() == meter_class) {
             if (found_count < found_meters_capacity) {
@@ -599,7 +596,7 @@ uint32_t Meters::get_meters(MeterClassID meter_class, IMeter **found_meters, uin
 
 MeterClassID Meters::get_meter_class(uint32_t slot)
 {
-    if (slot >= METERS_SLOTS)
+    if (slot >= OPTIONS_METERS_MAX_SLOTS())
         return MeterClassID::None;
 
     return meter_slots[slot].meter->get_class();
@@ -617,7 +614,7 @@ bool Meters::meter_has_value_changed(uint32_t slot, micros_t max_age_us)
 
 MeterValueAvailability Meters::get_value_ids(uint32_t slot, const Config **value_ids)
 {
-    if (slot >= METERS_SLOTS) {
+    if (slot >= OPTIONS_METERS_MAX_SLOTS()) {
         *value_ids = nullptr;
         return MeterValueAvailability::Unavailable;
     }
@@ -661,7 +658,7 @@ static const imexdiff_mapping *mvid_find_imexdiff_mapping(MeterValueID needle)
 
 static void generate_extra_value_ids(Meters::extra_value_id **extra_value_ids_, size_t *extra_value_id_count_, const Config *value_ids_config)
 {
-    MeterValueID value_ids[METERS_MAX_VALUES_PER_METER];
+    MeterValueID value_ids[OPTIONS_METERS_MAX_VALUES_PER_METER()];
     const size_t value_id_count = value_ids_config->count();
 
     for (size_t i = 0; i < value_id_count; i++) {
@@ -716,7 +713,7 @@ static void generate_extra_value_ids(Meters::extra_value_id **extra_value_ids_, 
 
 MeterValueAvailability Meters::get_value_ids_extended(uint32_t slot, MeterValueID *value_ids_out, size_t *value_ids_length)
 {
-    if (slot >= METERS_SLOTS) {
+    if (slot >= OPTIONS_METERS_MAX_SLOTS()) {
         *value_ids_length = 0;
         return MeterValueAvailability::Unavailable;
     }
@@ -770,7 +767,7 @@ static float get_extended_value(const Config *values, const Meters::extra_value_
 
 MeterValueAvailability Meters::get_values(uint32_t slot, const Config **values, micros_t max_age)
 {
-    if (slot >= METERS_SLOTS) {
+    if (slot >= OPTIONS_METERS_MAX_SLOTS()) {
         *values = nullptr;
         return MeterValueAvailability::Unavailable;
     }
@@ -788,7 +785,7 @@ MeterValueAvailability Meters::get_values(uint32_t slot, const Config **values, 
 
 MeterValueAvailability Meters::get_values_with_cache(uint32_t slot, float *values, const uint32_t *index_cache, size_t value_count, micros_t max_age)
 {
-    if (slot >= METERS_SLOTS) {
+    if (slot >= OPTIONS_METERS_MAX_SLOTS()) {
         return MeterValueAvailability::Unavailable;
     }
 
@@ -824,7 +821,7 @@ MeterValueAvailability Meters::get_values_with_cache(uint32_t slot, float *value
 
 MeterValueAvailability Meters::get_value_by_index(uint32_t slot, uint32_t index, float *value_out, micros_t max_age)
 {
-    if (slot >= METERS_SLOTS || index == UINT32_MAX) {
+    if (slot >= OPTIONS_METERS_MAX_SLOTS() || index == UINT32_MAX) {
         *value_out = NAN;
         return MeterValueAvailability::Unavailable;
     }
@@ -855,7 +852,7 @@ MeterValueAvailability Meters::get_value_by_index(uint32_t slot, uint32_t index,
 
 MeterValueAvailability Meters::get_single_value(uint32_t slot, uint32_t kind, float *value_out, micros_t max_age)
 {
-    if (slot >= METERS_SLOTS) {
+    if (slot >= OPTIONS_METERS_MAX_SLOTS()) {
         return MeterValueAvailability::Unavailable;
     }
 
@@ -917,7 +914,7 @@ MeterValueAvailability Meters::get_energy_export(uint32_t slot, float *total_exp
 
 MeterValueAvailability Meters::get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_COUNT], micros_t max_age)
 {
-    if (slot >= METERS_SLOTS) {
+    if (slot >= OPTIONS_METERS_MAX_SLOTS()) {
         return MeterValueAvailability::Unavailable;
     }
 
@@ -955,7 +952,7 @@ MeterValueAvailability Meters::get_currents(uint32_t slot, float currents[INDEX_
 void Meters::apply_filters(MeterSlot &meter_slot, size_t base_value_count, const float *base_values)
 {
     Config &values = meter_slot.values;
-    float extra_values[METERS_MAX_VALUES_PER_METER];
+    float extra_values[OPTIONS_METERS_MAX_VALUES_PER_METER()];
     size_t filter_count = 0;
     uint32_t value_combiner_filter_bitmask = meter_slot.value_combiner_filters_bitmask;
 
@@ -987,7 +984,7 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
     if (isnan(new_value))
         return;
 
-    if (slot >= METERS_SLOTS) {
+    if (slot >= OPTIONS_METERS_MAX_SLOTS()) {
         logger.printfln_meter("Tried to update value %lu for non-existent slot", index);
         return;
     }
@@ -1016,7 +1013,7 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
     meter_slot.values_last_updated_at = t_now;
 
     if (meter_slot.value_combiner_filters_bitmask) {
-        float base_values[METERS_MAX_VALUES_PER_METER];
+        float base_values[OPTIONS_METERS_MAX_VALUES_PER_METER()];
         size_t base_value_count = meter_slot.base_value_count;
 
         for (size_t i = 0; i < base_value_count; i++) {
@@ -1029,7 +1026,7 @@ void Meters::update_value(uint32_t slot, uint32_t index, float new_value)
 
 void Meters::update_all_values(uint32_t slot, const float new_values[])
 {
-    if (slot >= METERS_SLOTS) {
+    if (slot >= OPTIONS_METERS_MAX_SLOTS()) {
         logger.printfln_meter("Tried to update all values from array for non-existent slot");
         return;
     }
@@ -1072,7 +1069,7 @@ void Meters::update_all_values(uint32_t slot, const float new_values[])
 
 void Meters::update_all_values(uint32_t slot, const Config *new_values)
 {
-    if (slot >= METERS_SLOTS) {
+    if (slot >= OPTIONS_METERS_MAX_SLOTS()) {
         logger.printfln_meter("Tried to update all values from Config for non-existent slot");
         return;
     }
@@ -1084,7 +1081,7 @@ void Meters::update_all_values(uint32_t slot, const Config *new_values)
         return;
     }
 
-    float float_values[METERS_MAX_VALUES_PER_METER];
+    float float_values[OPTIONS_METERS_MAX_VALUES_PER_METER()];
     for (size_t i = 0; i < value_count; i++) {
         float_values[i] = new_values->get(i)->asFloat();
     }
@@ -1094,7 +1091,7 @@ void Meters::update_all_values(uint32_t slot, const Config *new_values)
 
 void Meters::finish_update(uint32_t slot)
 {
-    if (slot >= METERS_SLOTS) {
+    if (slot >= OPTIONS_METERS_MAX_SLOTS()) {
         logger.printfln_meter("Tried to finish an update for non-existent slot");
         return;
     }
@@ -1109,7 +1106,7 @@ void Meters::finish_update(uint32_t slot)
 
 void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[], uint32_t value_id_count)
 {
-    if (slot >= METERS_SLOTS) {
+    if (slot >= OPTIONS_METERS_MAX_SLOTS()) {
         logger.printfln_meter("Tried to declare value IDs for meter in non-existent slot");
         return;
     }
@@ -1132,7 +1129,7 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
         return;
     }
 
-    MeterValueID total_value_ids[METERS_MAX_VALUES_PER_METER];
+    MeterValueID total_value_ids[OPTIONS_METERS_MAX_VALUES_PER_METER()];
     memcpy(total_value_ids, new_value_ids, sizeof(MeterValueID) * value_id_count);
 
     uint32_t total_value_id_count = value_id_count;
@@ -1265,7 +1262,7 @@ bool Meters::get_cached_power_index(uint32_t slot, uint32_t *index)
 
 void Meters::fill_index_cache(uint32_t slot, size_t find_value_count, const MeterValueID find_value_ids[], uint32_t index_cache[])
 {
-    if (slot >= METERS_SLOTS) {
+    if (slot >= OPTIONS_METERS_MAX_SLOTS()) {
         logger.printfln_meter("Tried to fill an index cache for non-existent slot");
         return;
     }
@@ -1275,7 +1272,7 @@ void Meters::fill_index_cache(uint32_t slot, size_t find_value_count, const Mete
     const size_t value_id_count = value_ids.count();
 
     // Cache value IDs in a simple array to avoid excessive get() calls.
-    MeterValueID value_ids_arr[METERS_MAX_VALUES_PER_METER];
+    MeterValueID value_ids_arr[OPTIONS_METERS_MAX_VALUES_PER_METER()];
     for (size_t i = 0; i < value_id_count; i++) {
         value_ids_arr[i] = value_ids.get(i)->asEnum<MeterValueID>();
     }

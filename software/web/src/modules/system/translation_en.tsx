@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import * as options from "../../options";
 import { __, removeUnicodeHacks } from "../../ts/translation";
 let x = {
     "system": {
@@ -33,8 +34,8 @@ let x = {
 
                 let result = [<>__("The_device") was rebooted unexpectedly {reason_str}.</>];
 
-                if ("{{{support_email}}}".length > 0) {
-                    result.push(<> Please download a <a href="#event_log">debug report</a> and send it to <a href={removeUnicodeHacks(`mailto:{{{support_email}}}?subject=${display_type} with firmware ${version} was rebooted unexpectedly`)}>{{{support_email}}}</a>.</>);
+                if (options.SUPPORT_EMAIL.length > 0) {
+                    result.push(<> Please download a <a href="#event_log">debug report</a> and send it to <a href={removeUnicodeHacks(`mailto:${options.SUPPORT_EMAIL}?subject=${display_type} with firmware ${version} was rebooted unexpectedly`)}>{options.SUPPORT_EMAIL}</a>.</>);
                 }
 
                 return <>{result}</>;

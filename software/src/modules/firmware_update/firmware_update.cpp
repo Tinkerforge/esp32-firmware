@@ -28,10 +28,13 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "tools.h"
+#include "options.h"
 #include "build.h"
 #include "tools/string_builder.h"
 #include "tools/semantic_version.h"
 #include "check_state.enum.h"
+
+static const size_t options_product_id_length = constexpr_strlen(OPTIONS_PRODUCT_ID());
 
 static const SemanticVersion build_version{BUILD_VERSION_MAJOR, BUILD_VERSION_MINOR, BUILD_VERSION_PATCH, BUILD_VERSION_BETA, build_timestamp()};
 
@@ -65,7 +68,7 @@ static const uint8_t signature_info_magic[BLOCK_READER_MAGIC_LENGTH] = {0xE6, 0x
 static_assert(signature_sodium_public_key_length == crypto_sign_PUBLICKEYBYTES);
 #endif
 
-#if defined(FIRMWARE_UPDATE_ENABLE_ROLLBACK) && FIRMWARE_UPDATE_ENABLE_ROLLBACK
+#if OPTIONS_FIRMWARE_UPDATE_ENABLE_ROLLBACK()
 static const bool enable_rollback = true;
 #else
 static const bool enable_rollback = false;
@@ -215,7 +218,7 @@ FirmwareUpdate::FirmwareUpdate() :
 void FirmwareUpdate::pre_setup()
 {
     config = ConfigRoot{Config::Object({
-        {"update_url", Config::Str(BUILD_FIRMWARE_UPDATE_URL, 0, 128)},
+        {"update_url", Config::Str(OPTIONS_FIRMWARE_UPDATE_URL(), 0, 128)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
     }), [this](Config &update, ConfigSource source) -> String {
         const String &update_url = update.get("update_url")->asString();
@@ -260,7 +263,7 @@ void FirmwareUpdate::pre_setup()
 
 void FirmwareUpdate::setup()
 {
-    if (strlen(BUILD_FIRMWARE_UPDATE_URL) > 0) {
+    if (strlen(OPTIONS_FIRMWARE_UPDATE_URL()) > 0) {
         api.restorePersistentConfig("firmware_update/config", &config);
     }
 
@@ -303,7 +306,7 @@ static void install_state_to_json_error(InstallState state, TFJsonSerializer *js
 
 InstallState FirmwareUpdate::check_firmware_info(bool detect_downgrade, bool log, TFJsonSerializer *json_ptr)
 {
-    if (!firmware_info.block_found && BUILD_REQUIRE_FIRMWARE_INFO) {
+    if (!firmware_info.block_found && OPTIONS_FIRMWARE_UPDATE_REQUIRE_FIRMWARE_INFO()) {
         if (log) {
             logger.printfln("Failed to update: Firmware has no info page!");
         }
@@ -321,23 +324,23 @@ InstallState FirmwareUpdate::check_firmware_info(bool detect_downgrade, bool log
             return InstallState::InfoPageCorrupted;
         }
 
-        firmware_info.block.display_name[ARRAY_SIZE(firmware_info.block.display_name) - 1] = '\0';
-        firmware_info.block.name[ARRAY_SIZE(firmware_info.block.name) - 1] = '\0';
+        firmware_info.block.product_name[ARRAY_SIZE(firmware_info.block.product_name) - 1] = '\0';
+        firmware_info.block.product_id[ARRAY_SIZE(firmware_info.block.product_id) - 1] = '\0';
 
         if (firmware_info.block.version >= 3) {
-            if (strcmp(BUILD_NAME, firmware_info.block.name) != 0) {
+            if (strcmp(OPTIONS_PRODUCT_ID(), firmware_info.block.product_id) != 0) {
                 if (log) {
                     logger.printfln("Failed to update: Firmware is for %s but this is %s!",
-                                    firmware_info.block.name, BUILD_NAME);
+                                    firmware_info.block.product_id, OPTIONS_PRODUCT_ID());
                 }
 
                 return InstallState::WrongFirmwareType;
             }
         }
-        else if (strcmp(BUILD_DISPLAY_NAME, firmware_info.block.display_name) != 0) {
+        else if (strcmp(OPTIONS_PRODUCT_NAME(), firmware_info.block.product_name) != 0) {
             if (log) {
                 logger.printfln("Failed to update: Firmware is for a %s but this is a %s!",
-                                firmware_info.block.display_name, BUILD_DISPLAY_NAME);
+                                firmware_info.block.product_name, OPTIONS_PRODUCT_NAME());
             }
 
             return InstallState::WrongFirmwareType;
@@ -576,7 +579,7 @@ static void boot_other_partition(const char *other_partition_label, String &errm
 
 void FirmwareUpdate::register_urls()
 {
-    if (strlen(BUILD_FIRMWARE_UPDATE_URL) > 0) {
+    if (strlen(OPTIONS_FIRMWARE_UPDATE_URL()) > 0) {
         api.addPersistentConfig("firmware_update/config", &config);
     }
     else {
@@ -615,7 +618,7 @@ void FirmwareUpdate::register_urls()
 
         StringBuilder firmware_url;
 
-        if (firmware_url.setCapacity(update_url.length() + BUILD_NAME_LENGTH + firmware_url_infix_len + firmware_url_version_len + firmware_url_suffix_len) == 0) {
+        if (firmware_url.setCapacity(update_url.length() + options_product_id_length + firmware_url_infix_len + firmware_url_version_len + firmware_url_suffix_len) == 0) {
             logger.printfln("Could not build firmware URL");
             state.get("install_state")->updateEnum(InstallState::InternalError);
             state.get("install_progress")->updateUint(0);
@@ -623,7 +626,7 @@ void FirmwareUpdate::register_urls()
         }
 
         firmware_url.puts(update_url.c_str(), update_url.length());
-        firmware_url.puts(BUILD_NAME, BUILD_NAME_LENGTH);
+        firmware_url.puts(OPTIONS_PRODUCT_ID(), options_product_id_length);
         firmware_url.puts(firmware_url_infix, firmware_url_infix_len);
         firmware_url.printf("%u_%u_%u", version.major, version.minor, version.patch);
 
@@ -1045,14 +1048,14 @@ void FirmwareUpdate::check_for_update()
 
     StringBuilder index_url;
 
-    if (index_url.setCapacity(update_url.length() + BUILD_NAME_LENGTH + index_url_suffix_len) == 0) {
+    if (index_url.setCapacity(update_url.length() + options_product_id_length + index_url_suffix_len) == 0) {
         logger.printfln("Could not build firmware index URL");
         state.get("check_state")->updateEnum(CheckState::InternalError);
         return;
     }
 
     index_url.puts(update_url.c_str(), update_url.length());
-    index_url.puts(BUILD_NAME, BUILD_NAME_LENGTH);
+    index_url.puts(OPTIONS_PRODUCT_ID(), options_product_id_length);
     index_url.puts(index_url_suffix, index_url_suffix_len);
 
     char *index_url_ptr = index_url.take();

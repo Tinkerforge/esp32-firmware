@@ -25,6 +25,7 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
+#include "options.h"
 
 #include "gcc_warnings.h"
 
@@ -50,11 +51,11 @@ static const size_t test_data_length = constexpr_strlen(test_data);
 
 void SolarForecast::pre_setup()
 {
-    planes = new_array_psram_or_dram<SolarForecastPlane>(SOLAR_FORECAST_PLANES);
+    planes = new_array_psram_or_dram<SolarForecastPlane>(OPTIONS_SOLAR_FORECAST_PLANES());
 
     config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(false)},
-        {"api_url", Config::Str(BUILD_SOLAR_FORECAST_API_URL, 0, 64)},
+        {"api_url", Config::Str(OPTIONS_SOLAR_FORECAST_API_URL(), 0, 64)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
     }), [this](Config &update, ConfigSource source) -> String {
         const String &api_url = update.get("api_url")->asString();
@@ -76,7 +77,7 @@ void SolarForecast::pre_setup()
         {"next_api_call",      Config::Uint32(0)}, // unix timestamp in minutes
     });
 
-    for (size_t plane_index = 0; plane_index < SOLAR_FORECAST_PLANES; plane_index++) {
+    for (size_t plane_index = 0; plane_index < OPTIONS_SOLAR_FORECAST_PLANES(); plane_index++) {
         SolarForecastPlane &plane = planes[plane_index];
         plane.config = ConfigRoot{Config::Object({
             {"enable", Config::Bool(false)},
@@ -126,7 +127,7 @@ void SolarForecast::setup()
 {
     api.restorePersistentConfig("solar_forecast/config", &config);
 
-    for (size_t plane_index = 0; plane_index < SOLAR_FORECAST_PLANES; plane_index++) {
+    for (size_t plane_index = 0; plane_index < OPTIONS_SOLAR_FORECAST_PLANES(); plane_index++) {
         SolarForecastPlane &plane = planes[plane_index];
         api.restorePersistentConfig(get_path(plane, SolarForecast::PathType::Config), &plane.config);
     }
@@ -138,7 +139,7 @@ void SolarForecast::register_urls()
 {
     api.addPersistentConfig("solar_forecast/config", &config);
     api.addState("solar_forecast/state", &state);
-    for (size_t plane_index = 0; plane_index < SOLAR_FORECAST_PLANES; plane_index++) {
+    for (size_t plane_index = 0; plane_index < OPTIONS_SOLAR_FORECAST_PLANES(); plane_index++) {
         SolarForecastPlane &plane = planes[plane_index];
         api.addPersistentConfig(get_path(plane, SolarForecast::PathType::Config), &plane.config, {}, {"lat", "long"});
         api.addState(get_path(plane, SolarForecast::PathType::State),    &plane.state, {}, {"place"});
@@ -177,7 +178,7 @@ void SolarForecast::next_update() {
     // But we wait for at least CHECK_DELAY_MIN ms before the next check.
     // This way we avoid hammering the server and also the ESP has some time in-between.
     int first_delay_ms = CHECK_INTERVAL;
-    for (size_t plane_index = 0; plane_index < SOLAR_FORECAST_PLANES; plane_index++) {
+    for (size_t plane_index = 0; plane_index < OPTIONS_SOLAR_FORECAST_PLANES(); plane_index++) {
         SolarForecastPlane &plane = planes[plane_index];
         if (plane.config.get("enable")->asBool()) {
             uint32_t next_check = plane.state.get("next_check")->asUint();
@@ -369,7 +370,7 @@ void SolarForecast::update()
 
     // Find plane that is due for update
     plane_current = nullptr;
-    for (size_t plane_index = 0; plane_index < SOLAR_FORECAST_PLANES; plane_index++) {
+    for (size_t plane_index = 0; plane_index < OPTIONS_SOLAR_FORECAST_PLANES(); plane_index++) {
         SolarForecastPlane &plane = planes[plane_index];
         if (plane.config.get("enable")->asBool()) {
             uint32_t next_check = plane.state.get("next_check")->asUint();
@@ -592,7 +593,7 @@ Option<uint32_t> SolarForecast::get_wh_range(const uint32_t start, const uint32_
     uint32_t wh    = 0;
     bool found_any_data = false;
 
-    for (size_t plane_index = 0; plane_index < SOLAR_FORECAST_PLANES; plane_index++) {
+    for (size_t plane_index = 0; plane_index < OPTIONS_SOLAR_FORECAST_PLANES(); plane_index++) {
         const SolarForecastPlane &plane = planes[plane_index];
         if (plane.config.get("enable")->asBool()) {
             const uint32_t first_date = plane.forecast.get("first_date")->asUint();
