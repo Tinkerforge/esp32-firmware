@@ -551,7 +551,7 @@ void ChargeManager::setup()
     start_manager_task();
 
     auto get_charger_name_fn = [this](uint8_t idx) {return this->get_charger_name(idx);};
-    auto notify_charger_unresponsive_fn = [](uint8_t charger_index, micros_t last_response) {return cm_networking.notify_charger_unresponsive(charger_index, last_response);};
+    auto notify_charger_unresponsive_fn = [](uint8_t charger_index) {return cm_networking.notify_charger_unresponsive(charger_index);};
 
     this->next_allocation = now_us() + ca_config->allocation_interval;
 

@@ -189,6 +189,9 @@ void CMNetworking::dns_resolved(managed_device_data *device, const ip_addr_t *ip
         return;
     }
 
+    // Always mark as resolved even if the address didn't change, in case an unresponsive charger was resolved to its previous address.
+    device->resolve_state = ResolveState::Resolved;
+
     in_addr_t in;
 
     // using memcpy to guarantee alignment https://mail.gnu.org/archive/html/lwip-users/2008-08/msg00166.html
@@ -196,7 +199,6 @@ void CMNetworking::dns_resolved(managed_device_data *device, const ip_addr_t *ip
 
     if (device->addr.sin_addr.s_addr != in) {
         device->addr.sin_addr.s_addr  = in;
-        device->resolve_state = ResolveState::Resolved;
 
         const char *hname = device->hostname;
         const ip4_addr_t ip4 = ip->u_addr.ip4; // Must copy the address because *ip is temporary.
@@ -349,7 +351,9 @@ bool CMNetworking::is_resolved(uint8_t charger_idx)
         logger.printfln("Charger index %hhu is out of range for is_resolved", charger_idx);
         return false;
     }
-    return manager_data->managed_devices[charger_idx].resolve_state == ResolveState::Resolved;
+
+    const ResolveState resolve_state = manager_data->managed_devices[charger_idx].resolve_state;
+    return resolve_state == ResolveState::Resolved || resolve_state == ResolveState::Stale;
 }
 
 void CMNetworking::resolve_all()
@@ -363,11 +367,15 @@ void CMNetworking::resolve_all()
     }
 }
 
-void CMNetworking::notify_charger_unresponsive(uint8_t charger_idx, micros_t last_response)
+void CMNetworking::notify_charger_unresponsive(uint8_t charger_idx)
 {
-    auto err = dns_removehost(manager_data->managed_devices[charger_idx].hostname, nullptr);
-    if (err != ESP_OK)
-        logger.printfln("Couldn't remove hostname from cache: error %i", err);
+    managed_device_data *device = manager_data->managed_devices + charger_idx;
+
+    if (device->resolve_state == ResolveState::Resolved) {
+        device->resolve_state = ResolveState::Stale;
+    }
+
+    resolve_hostname(charger_idx);
 }
 
 void CMNetworking::check_results()

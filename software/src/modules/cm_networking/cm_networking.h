@@ -67,7 +67,7 @@ public:
                             int8_t phases,
                             bool can_switch_phases_now);
 
-    void notify_charger_unresponsive(uint8_t charger_idx, micros_t last_response);
+    void notify_charger_unresponsive(uint8_t charger_idx);
 
     void dns_callback(const ip_addr_t *ip, void *callback_arg);
 
@@ -82,6 +82,7 @@ private:
         Unknown,
         NotResolved,
         Resolved,
+        Stale,
     };
 
     struct managed_device_data {

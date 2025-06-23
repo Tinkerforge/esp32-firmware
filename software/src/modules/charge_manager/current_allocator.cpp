@@ -43,6 +43,7 @@
 
 #define LOCAL_LOG(fmt, ...) LOCAL_LOG_FULL("    ", fmt __VA_OPT__(,) __VA_ARGS__)
 
+static constexpr micros_t RE_RESOLVE_TIMEOUT = 6_s; // Must be less than TIMEOUT.
 static constexpr micros_t TIMEOUT = 32_s;
 
 #define PRINT_COST(x) logger.printfln("%s %d %d %d %d", #x, x[0], x[1], x[2], x[3])
@@ -1415,7 +1416,7 @@ int allocate_current(
     /*const TODO: move allocated_energy into charger allocation state so that this can be const once again*/ ChargerState *charger_state,
     const char * const *hosts,
     const std::function<const char *(uint8_t)> &get_charger_name,
-    const std::function<void(uint8_t, micros_t)> &notify_charger_unresponsive,
+    const std::function<void(uint8_t)> &notify_charger_unresponsive,
 
     CurrentAllocatorState *ca_state,
     ChargerAllocationState *charger_allocation_state,
@@ -1476,24 +1477,29 @@ int allocate_current(
                 ca_state->last_print_local_log_was_error = true;
             }
 
-            // Charger does not respond anymore
-            if (deadline_elapsed(charger.last_update + TIMEOUT)) {
-                // Only shut down this charger.
-                // If a charger does not receive manager packets anymore,
-                // it will shut down after 30 seconds.
-                charger.off = true;
+            const micros_t last_update_age = now_us() - charger.last_update;
+            // Charger hasn't responded in a short while. Check if it needs to be resolved again.
+            if (last_update_age > RE_RESOLVE_TIMEOUT) {
+                notify_charger_unresponsive(i);
 
-                if (charger_alloc.error != CHARGE_MANAGER_ERROR_CHARGER_UNREACHABLE)
-                    LOCAL_LOG("Can't reach EVSE of %s (%s): last_update too old.", get_charger_name(i), hosts[i]);
+                // Charger does not respond anymore
+                if (last_update_age > TIMEOUT) {
+                    // Only shut down this charger.
+                    // If a charger does not receive manager packets anymore,
+                    // it will shut down after 30 seconds.
+                    charger.off = true;
 
-                bool state_was_not_five = charger_alloc.state != 5;
-                charger_alloc.state = 5;
-                if (state_was_not_five || charger_error < CHARGE_MANAGER_CLIENT_ERROR_START) {
-                    charger_alloc.error = CHARGE_MANAGER_ERROR_CHARGER_UNREACHABLE;
-                    notify_charger_unresponsive(i, charger.last_update);
+                    if (charger_alloc.error != CHARGE_MANAGER_ERROR_CHARGER_UNREACHABLE)
+                        LOCAL_LOG("Can't reach EVSE of %s (%s): last_update too old.", get_charger_name(i), hosts[i]);
 
-                    print_local_log = !ca_state->last_print_local_log_was_error;
-                    ca_state->last_print_local_log_was_error = true;
+                    bool state_was_not_five = charger_alloc.state != 5;
+                    charger_alloc.state = 5;
+                    if (state_was_not_five || charger_error < CHARGE_MANAGER_CLIENT_ERROR_START) {
+                        charger_alloc.error = CHARGE_MANAGER_ERROR_CHARGER_UNREACHABLE;
+
+                        print_local_log = !ca_state->last_print_local_log_was_error;
+                        ca_state->last_print_local_log_was_error = true;
+                    }
                 }
             } else if (charger_alloc.error == CHARGE_MANAGER_ERROR_CHARGER_UNREACHABLE) {
                 charger_alloc.error = CM_NETWORKING_ERROR_NO_ERROR;
