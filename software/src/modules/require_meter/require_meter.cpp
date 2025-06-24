@@ -21,6 +21,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "options.h"
 #include "tools.h"
 #include "modules/meters/meter_value_availability.h"
 
@@ -33,10 +34,16 @@
 #define WARP_PRO_DISABLED 1
 #define WARP_PRO_ENABLED 2
 
+#if OPTIONS_PRODUCT_ID_IS_ELTAKO()
+#define CONFIG_DEFAULT WARP_PRO_ENABLED // ELTAKO Wallbox always has a meter
+#else
+#define CONFIG_DEFAULT WARP_SMART
+#endif
+
 void RequireMeter::pre_setup()
 {
     config = Config::Object({
-        {"config", Config::Uint8(WARP_SMART)}
+        {"config", Config::Uint8(CONFIG_DEFAULT)}
     });
 
 #if MODULE_AUTOMATION_AVAILABLE()
