@@ -38,6 +38,7 @@ import { useMemo } from "preact/hooks";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { BatteryCharging, Calendar, Clock, Download, User, List } from "react-feather";
+import { Switch } from "ts/components/switch";
 
 export function ChargeTrackerNavbar() {
     return <NavbarItem name="charge_tracker" module="charge_tracker" title={__("charge_tracker.navbar.charge_tracker")} symbol={<List />} />;
@@ -127,6 +128,9 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                   csv_flavor: 'excel',
                   start_date: new Date(NaN),
                   end_date: new Date(NaN),
+                  enable_send: false,
+                  send_file_type: 0,
+                  user: 0,
               });
 
         util.addApiEventListener('users/config', () => {
@@ -146,7 +150,12 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 
         util.addApiEventListener('charge_tracker/config', () => {
             let config = API.get('charge_tracker/config');
-            this.setState({electricity_price: config.electricity_price});
+            this.setState({
+                electricity_price: config.electricity_price,
+                enable_send: config.enable_send,
+                send_file_type: config.send_file_type,
+                user: config.user
+            });
         });
 
         util.addApiEventListener('charge_tracker/pdf_letterhead_config', () => {
@@ -316,6 +325,41 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 //#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
         dap_enabled = API.get('day_ahead_prices/config').enable;
 //#endif
+        let sendEmailComponent = <></>;
+//#if MODULE_REMOTE_ACCESS_AVAILABLE
+        sendEmailComponent = <>
+                        <FormRow label={__("charge_tracker.content.enable_send")}>
+                            <Switch checked={state.enable_send} onClick={e => this.setState({ enable_send: !this.state.enable_send })} />
+                        </FormRow>
+
+                        <FormRow label={__("charge_tracker.content.send_file_type")}>
+                            <InputSelect
+                                value={state.send_file_type.toString()}
+                                onValue={v => this.setState({ send_file_type: parseInt(v), internal_isDirty: true })}
+                                items={[
+                                    ["0", "PDF"],
+                                    ["1", "CSV"]
+                                ]}
+                            />
+                        </FormRow>
+
+                        <FormRow label={__("charge_tracker.content.send_user")}>
+                            <InputSelect
+                                value={state.user.toString()}
+                                placeholder={__("charge_tracker.content.send_user_placeholder")}
+                                onValue={v => {
+                                    const user = parseInt(v);
+                                    if (user !== 0) {
+                                        this.setState({ enable_send: true });
+                                    }
+                                    this.setState({ user, internal_isDirty: true });
+                                }}
+                                items={API.get("remote_access/config").users.map(u => [u.id.toString(), u.email])}
+                            />
+                        </FormRow>
+        </>;
+
+//#endif
 
         return (
             <SubPage name="charge_tracker">
@@ -325,6 +369,8 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         <div class="invalid-feedback">{__("charge_tracker.content.price_invalid")}</div>
                     </FormRow>
                 </ConfigForm>
+
+                {sendEmailComponent}
 
                 <FormSeparator heading={__("charge_tracker.content.download")}/>
 
