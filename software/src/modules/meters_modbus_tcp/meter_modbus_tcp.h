@@ -234,16 +234,16 @@ private:
         // GoodWe hybrid inverter
         struct {
             GoodweHybridInverterVirtualMeter virtual_meter;
+            int battery_1_mode;
+            int battery_2_mode;
             float battery_1_voltage;
             float battery_1_current;
             float battery_1_power;
-            uint16_t battery_1_mode;
             float bms_1_pack_temperature;
             float battery_1_capacity;
             float battery_2_voltage;
             float battery_2_current;
             float battery_2_power;
-            uint16_t battery_2_mode;
             float bms_2_pack_temperature;
             float battery_2_capacity;
             uint32_t pv_mode;

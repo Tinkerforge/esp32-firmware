@@ -159,7 +159,135 @@ specs = [
         ],
     },
     {
-        'name': 'Goodwe Hybrid Inverter Battery',
+        'name': 'Goodwe Hybrid Inverter Battery Modes',
+        'register_type': 'HoldingRegister',
+        'values': [
+            {
+                'name': 'Battery 1 Mode',
+                'value_id': 'VALUE_ID_META',
+                'start_address': 35184,
+                'value_type': 'U16',
+            },
+            {
+                # Reading "BMS 2 Pack Temperature" (39001) and "Battery 2 Capacity" (39005) when "Battery 2 Mode" is 0,
+                # might result in constant timeouts, blocking the whole reading process
+                'name': 'Battery 2 Mode',
+                'value_id': 'VALUE_ID_META',
+                'start_address': 35266,
+                'value_type': 'U16',
+            },
+        ],
+    },
+    {
+        'name': 'Goodwe Hybrid Inverter Battery 1',
+        'register_type': 'HoldingRegister',
+        'values': [
+            {
+                'name': 'Battery 1 Voltage [0.1 V]',
+                'value_id': 'VoltageDC',
+                'start_address': 35180,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Battery 1 Current [0.1 A]',
+                'value_id': 'CurrentDCChaDisDiff',
+                'start_address': 35181,
+                'value_type': 'S16',
+                'scale_factor': -0.1,
+            },
+            {
+                'name': 'Battery 1 Power [W]',
+                'value_id': 'PowerDCChaDisDiff',
+                'start_address': 35182,
+                'value_type': 'S32BE',
+                'scale_factor': -1.0,
+            },
+            {
+                'name': 'Charge Energy [0.1 kWh]',
+                'value_id': 'EnergyDCCharge',
+                'start_address': 35206,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Discharge Energy [0.1 kWh]',
+                'value_id': 'EnergyDCDischarge',
+                'start_address': 35209,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'BMS 1 Pack Temperature [0.1 °C]',
+                'value_id': 'Temperature',
+                'start_address': 37003,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Battery 1 Capacity [%]',
+                'value_id': 'StateOfCharge',
+                'start_address': 37007,
+                'value_type': 'U16',
+            },
+        ],
+    },
+    {
+        'name': 'Goodwe Hybrid Inverter Battery 2',
+        'register_type': 'HoldingRegister',
+        'values': [
+            {
+                'name': 'Battery 2 Voltage [0.1 V]',
+                'value_id': 'VoltageDC',
+                'start_address': 35262,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Battery 2 Current [0.1 A]',
+                'value_id': 'CurrentDCChaDisDiff',
+                'start_address': 35263,
+                'value_type': 'S16',
+                'scale_factor': -0.1,
+            },
+            {
+                'name': 'Battery 2 Power [W]',
+                'value_id': 'PowerDCChaDisDiff',
+                'start_address': 35264,
+                'value_type': 'S32BE',
+                'scale_factor': -1.0,
+            },
+            {
+                'name': 'Charge Energy [0.1 kWh]',
+                'value_id': 'EnergyDCCharge',
+                'start_address': 35206,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Discharge Energy [0.1 kWh]',
+                'value_id': 'EnergyDCDischarge',
+                'start_address': 35209,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'BMS 2 Pack Temperature [0.1 °C]',
+                'value_id': 'Temperature',
+                'start_address': 39001,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Battery 2 Capacity [%]',
+                'value_id': 'StateOfCharge',
+                'start_address': 39005,
+                'value_type': 'U16',
+            },
+        ],
+    },
+    {
+        'name': 'Goodwe Hybrid Inverter Battery 1 And 2',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -184,12 +312,6 @@ specs = [
                 'scale_factor': -1.0,
             },
             {
-                'name': 'Battery 1 Mode',
-                'value_id': 'VALUE_ID_META',
-                'start_address': 35184,
-                'value_type': 'U16',
-            },
-            {
                 'name': 'Battery 2 Voltage [0.1 V]',
                 'value_id': 'VALUE_ID_META',
                 'start_address': 35262,
@@ -209,12 +331,6 @@ specs = [
                 'start_address': 35264,
                 'value_type': 'S32BE',
                 'scale_factor': -1.0,
-            },
-            {
-                'name': 'Battery 2 Mode',
-                'value_id': 'VALUE_ID_META',
-                'start_address': 35266,
-                'value_type': 'U16',
             },
             {
                 'name': 'Charge Energy [0.1 kWh]',

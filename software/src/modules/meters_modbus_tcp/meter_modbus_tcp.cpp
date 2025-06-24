@@ -97,18 +97,20 @@
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_ENERGY_ADDRESS             static_cast<size_t>(ShellyEMMonophaseChannel3AsL1Address::Channel3TotalActiveEnergyPerpetualCount)
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_RETURNED_ENERGY_ADDRESS    static_cast<size_t>(ShellyEMMonophaseChannel3AsL1Address::Channel3TotalActiveReturnedEnergyPerpetualCount)
 
-#define GOODWE_HYBRID_INVERTER_BATTERY_1_VOLTAGE                           static_cast<size_t>(GoodweHybridInverterBatteryAddress::Battery1Voltage)
-#define GOODWE_HYBRID_INVERTER_BATTERY_1_CURRENT                           static_cast<size_t>(GoodweHybridInverterBatteryAddress::Battery1Current)
-#define GOODWE_HYBRID_INVERTER_BATTERY_1_POWER                             static_cast<size_t>(GoodweHybridInverterBatteryAddress::Battery1Power)
-#define GOODWE_HYBRID_INVERTER_BATTERY_1_MODE                              static_cast<size_t>(GoodweHybridInverterBatteryAddress::Battery1Mode)
-#define GOODWE_HYBRID_INVERTER_BMS_1_PACK_TEMPERATURE                      static_cast<size_t>(GoodweHybridInverterBatteryAddress::BMS1PackTemperature)
-#define GOODWE_HYBRID_INVERTER_BATTERY_1_CAPACITY                          static_cast<size_t>(GoodweHybridInverterBatteryAddress::Battery1Capacity)
-#define GOODWE_HYBRID_INVERTER_BATTERY_2_VOLTAGE                           static_cast<size_t>(GoodweHybridInverterBatteryAddress::Battery2Voltage)
-#define GOODWE_HYBRID_INVERTER_BATTERY_2_CURRENT                           static_cast<size_t>(GoodweHybridInverterBatteryAddress::Battery2Current)
-#define GOODWE_HYBRID_INVERTER_BATTERY_2_POWER                             static_cast<size_t>(GoodweHybridInverterBatteryAddress::Battery2Power)
-#define GOODWE_HYBRID_INVERTER_BATTERY_2_MODE                              static_cast<size_t>(GoodweHybridInverterBatteryAddress::Battery2Mode)
-#define GOODWE_HYBRID_INVERTER_BMS_2_PACK_TEMPERATURE                      static_cast<size_t>(GoodweHybridInverterBatteryAddress::BMS2PackTemperature)
-#define GOODWE_HYBRID_INVERTER_BATTERY_2_CAPACITY                          static_cast<size_t>(GoodweHybridInverterBatteryAddress::Battery2Capacity)
+#define GOODWE_HYBRID_INVERTER_BATTERY_1_MODE_ADDRESS                      static_cast<size_t>(GoodweHybridInverterBatteryModesAddress::Battery1Mode)
+#define GOODWE_HYBRID_INVERTER_BATTERY_2_MODE_ADDRESS                      static_cast<size_t>(GoodweHybridInverterBatteryModesAddress::Battery2Mode)
+
+#define GOODWE_HYBRID_INVERTER_BATTERY_1_VOLTAGE_ADDRESS                   static_cast<size_t>(GoodweHybridInverterBattery1And2Address::Battery1Voltage)
+#define GOODWE_HYBRID_INVERTER_BATTERY_1_CURRENT_ADDRESS                   static_cast<size_t>(GoodweHybridInverterBattery1And2Address::Battery1Current)
+#define GOODWE_HYBRID_INVERTER_BATTERY_1_POWER_ADDRESS                     static_cast<size_t>(GoodweHybridInverterBattery1And2Address::Battery1Power)
+#define GOODWE_HYBRID_INVERTER_BMS_1_PACK_TEMPERATURE_ADDRESS              static_cast<size_t>(GoodweHybridInverterBattery1And2Address::BMS1PackTemperature)
+#define GOODWE_HYBRID_INVERTER_BATTERY_1_CAPACITY_ADDRESS                  static_cast<size_t>(GoodweHybridInverterBattery1And2Address::Battery1Capacity)
+#define GOODWE_HYBRID_INVERTER_BATTERY_2_VOLTAGE_ADDRESS                   static_cast<size_t>(GoodweHybridInverterBattery1And2Address::Battery2Voltage)
+#define GOODWE_HYBRID_INVERTER_BATTERY_2_CURRENT_ADDRESS                   static_cast<size_t>(GoodweHybridInverterBattery1And2Address::Battery2Current)
+#define GOODWE_HYBRID_INVERTER_BATTERY_2_POWER_ADDRESS                     static_cast<size_t>(GoodweHybridInverterBattery1And2Address::Battery2Power)
+#define GOODWE_HYBRID_INVERTER_BMS_2_PACK_TEMPERATURE_ADDRESS              static_cast<size_t>(GoodweHybridInverterBattery1And2Address::BMS2PackTemperature)
+#define GOODWE_HYBRID_INVERTER_BATTERY_2_CAPACITY_ADDRESS                  static_cast<size_t>(GoodweHybridInverterBattery1And2Address::Battery2Capacity)
+
 #define GOODWE_HYBRID_INVERTER_PV_MODE_ADDRESS                             static_cast<size_t>(GoodweHybridInverterPVAddress::PVMode)
 #define GOODWE_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS                         static_cast<size_t>(GoodweHybridInverterPVAddress::PV1Voltage)
 #define GOODWE_HYBRID_INVERTER_PV1_CURRENT_ADDRESS                         static_cast<size_t>(GoodweHybridInverterPVAddress::PV1Current)
@@ -654,6 +656,8 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
     case MeterModbusTCPTableID::GoodweHybridInverter:
         goodwe_hybrid_inverter.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<GoodweHybridInverterVirtualMeter>();
+        goodwe_hybrid_inverter.battery_1_mode = -1;
+        goodwe_hybrid_inverter.battery_2_mode = -1;
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
 
         switch (goodwe_hybrid_inverter.virtual_meter) {
@@ -672,7 +676,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case GoodweHybridInverterVirtualMeter::Battery:
-            table = &goodwe_hybrid_inverter_battery_table;
+            table = &goodwe_hybrid_inverter_battery_modes_table;
             default_location = MeterLocation::Battery;
             break;
 
@@ -1941,6 +1945,53 @@ void MeterModbusTCP::parse_next()
         return;
     }
 
+    if (is_goodwe_hybrid_inverter_battery_meter()) {
+        if (generic_read_request.start_address == GOODWE_HYBRID_INVERTER_BATTERY_1_MODE_ADDRESS) {
+            if (goodwe_hybrid_inverter.battery_1_mode < 0) {
+                goodwe_hybrid_inverter.battery_1_mode = c16.u;
+            }
+        }
+        else if (generic_read_request.start_address == GOODWE_HYBRID_INVERTER_BATTERY_2_MODE_ADDRESS) {
+            if (goodwe_hybrid_inverter.battery_2_mode < 0) {
+                goodwe_hybrid_inverter.battery_2_mode = c16.u;
+
+                bool success = true;
+
+                if (goodwe_hybrid_inverter.battery_1_mode != 0 && goodwe_hybrid_inverter.battery_2_mode != 0) {
+                    table = &goodwe_hybrid_inverter_battery_1_and_2_table;
+                    logger.printfln_meter("Goodwe hybrid inverter with battery 1 and 2 detected");
+                }
+                else if (goodwe_hybrid_inverter.battery_1_mode != 0 && goodwe_hybrid_inverter.battery_2_mode == 0) {
+                    table = &goodwe_hybrid_inverter_battery_1_table;
+                    logger.printfln_meter("Goodwe hybrid inverter with battery 1 detected");
+                }
+                else if (goodwe_hybrid_inverter.battery_1_mode == 0 && goodwe_hybrid_inverter.battery_2_mode != 0) {
+                    table = &goodwe_hybrid_inverter_battery_2_table;
+                    logger.printfln_meter("Goodwe hybrid inverter with battery 2 detected");
+                }
+                else {
+                    success = false;
+                    logger.printfln_meter("Goodwe hybrid inverter without battery detected");
+                }
+
+                if (success) {
+                    meters.declare_value_ids(slot, table->ids, table->ids_length);
+                }
+                else {
+                    goodwe_hybrid_inverter.battery_1_mode = -1;
+                    goodwe_hybrid_inverter.battery_2_mode = -1;
+                }
+            }
+
+            read_allowed = true;
+            read_index = 0;
+            register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
+
+            prepare_read();
+            return;
+        }
+    }
+
     if (is_fronius_gen24_plus_battery_meter()
      && generic_read_request.start_address == FRONIUS_GEN24_PLUS_INPUT_ID_OR_MODEL_ID_ADDRESS) {
         if (fronius_gen24_plus.input_id_or_model_id < 0) {
@@ -2391,64 +2442,57 @@ void MeterModbusTCP::parse_next()
             meters.update_value(slot, table->index[read_index + 1], value);
         }
     }
-    else if (is_goodwe_hybrid_inverter_battery_meter()) {
-        if (register_start_address == GOODWE_HYBRID_INVERTER_BATTERY_1_VOLTAGE) {
+    else if (is_goodwe_hybrid_inverter_battery_meter() && goodwe_hybrid_inverter.battery_1_mode != 0 && goodwe_hybrid_inverter.battery_2_mode != 0) {
+        if (register_start_address == GOODWE_HYBRID_INVERTER_BATTERY_1_VOLTAGE_ADDRESS) {
             goodwe_hybrid_inverter.battery_1_voltage = value;
         }
-        else if (register_start_address == GOODWE_HYBRID_INVERTER_BATTERY_1_CURRENT) {
+        else if (register_start_address == GOODWE_HYBRID_INVERTER_BATTERY_1_CURRENT_ADDRESS) {
             goodwe_hybrid_inverter.battery_1_current = value;
         }
-        else if (register_start_address == GOODWE_HYBRID_INVERTER_BATTERY_1_POWER) {
+        else if (register_start_address == GOODWE_HYBRID_INVERTER_BATTERY_1_POWER_ADDRESS) {
             goodwe_hybrid_inverter.battery_1_power = value;
         }
-        else if (register_start_address == GOODWE_HYBRID_INVERTER_BATTERY_1_MODE) {
-            goodwe_hybrid_inverter.battery_1_mode = c16.u;
-        }
-        else if (register_start_address == GOODWE_HYBRID_INVERTER_BMS_1_PACK_TEMPERATURE) {
+        else if (register_start_address == GOODWE_HYBRID_INVERTER_BMS_1_PACK_TEMPERATURE_ADDRESS) {
             goodwe_hybrid_inverter.bms_1_pack_temperature = value;
         }
-        else if (register_start_address == GOODWE_HYBRID_INVERTER_BATTERY_1_CAPACITY) {
+        else if (register_start_address == GOODWE_HYBRID_INVERTER_BATTERY_1_CAPACITY_ADDRESS) {
             goodwe_hybrid_inverter.battery_1_capacity = value;
         }
-        else if (register_start_address == GOODWE_HYBRID_INVERTER_BATTERY_2_VOLTAGE) {
+        else if (register_start_address == GOODWE_HYBRID_INVERTER_BATTERY_2_VOLTAGE_ADDRESS) {
             goodwe_hybrid_inverter.battery_2_voltage = value;
         }
-        else if (register_start_address == GOODWE_HYBRID_INVERTER_BATTERY_2_CURRENT) {
+        else if (register_start_address == GOODWE_HYBRID_INVERTER_BATTERY_2_CURRENT_ADDRESS) {
             goodwe_hybrid_inverter.battery_2_current = value;
         }
-        else if (register_start_address == GOODWE_HYBRID_INVERTER_BATTERY_2_POWER) {
+        else if (register_start_address == GOODWE_HYBRID_INVERTER_BATTERY_2_POWER_ADDRESS) {
             goodwe_hybrid_inverter.battery_2_power = value;
         }
-        else if (register_start_address == GOODWE_HYBRID_INVERTER_BATTERY_2_MODE) {
-            goodwe_hybrid_inverter.battery_2_mode = c16.u;
-        }
-        else if (register_start_address == GOODWE_HYBRID_INVERTER_BMS_2_PACK_TEMPERATURE) {
+        else if (register_start_address == GOODWE_HYBRID_INVERTER_BMS_2_PACK_TEMPERATURE_ADDRESS) {
             goodwe_hybrid_inverter.bms_2_pack_temperature = value;
         }
-        else if (register_start_address == GOODWE_HYBRID_INVERTER_BATTERY_2_CAPACITY) {
+        else if (register_start_address == GOODWE_HYBRID_INVERTER_BATTERY_2_CAPACITY_ADDRESS) {
             goodwe_hybrid_inverter.battery_2_capacity = value;
 
-            if (goodwe_hybrid_inverter.battery_1_mode == 0) {
-                goodwe_hybrid_inverter.battery_1_voltage = NAN;
-                goodwe_hybrid_inverter.battery_1_current = NAN;
-                goodwe_hybrid_inverter.battery_1_power = NAN;
-                goodwe_hybrid_inverter.bms_1_pack_temperature = NAN;
-                goodwe_hybrid_inverter.battery_1_capacity = NAN;
-            }
+            float voltage_avg = (goodwe_hybrid_inverter.battery_1_voltage
+                               + goodwe_hybrid_inverter.battery_2_voltage) / 2.0f;
 
-            if (goodwe_hybrid_inverter.battery_2_mode == 0) {
-                goodwe_hybrid_inverter.battery_2_voltage = NAN;
-                goodwe_hybrid_inverter.battery_2_current = NAN;
-                goodwe_hybrid_inverter.battery_2_power = NAN;
-                goodwe_hybrid_inverter.bms_2_pack_temperature = NAN;
-                goodwe_hybrid_inverter.battery_2_capacity = NAN;
-            }
+            float current_sum = goodwe_hybrid_inverter.battery_1_current
+                              + goodwe_hybrid_inverter.battery_2_current;
 
-            meters.update_value(slot, table->index[read_index + 1], nan_safe_avg(goodwe_hybrid_inverter.battery_1_voltage, goodwe_hybrid_inverter.battery_2_voltage));
-            meters.update_value(slot, table->index[read_index + 2], nan_safe_sum(goodwe_hybrid_inverter.battery_1_current, goodwe_hybrid_inverter.battery_2_current));
-            meters.update_value(slot, table->index[read_index + 3], nan_safe_sum(goodwe_hybrid_inverter.battery_1_power, goodwe_hybrid_inverter.battery_2_power));
-            meters.update_value(slot, table->index[read_index + 4], nan_safe_avg(goodwe_hybrid_inverter.bms_1_pack_temperature, goodwe_hybrid_inverter.bms_2_pack_temperature));
-            meters.update_value(slot, table->index[read_index + 5], nan_safe_avg(goodwe_hybrid_inverter.battery_1_capacity, goodwe_hybrid_inverter.battery_2_capacity));
+            float power_sum = goodwe_hybrid_inverter.battery_1_power
+                            + goodwe_hybrid_inverter.battery_2_power;
+
+            float temperature_avg = (goodwe_hybrid_inverter.bms_1_pack_temperature
+                                   + goodwe_hybrid_inverter.bms_2_pack_temperature) / 2.0f;
+
+            float state_of_charge_avg = (goodwe_hybrid_inverter.battery_1_capacity
+                                       + goodwe_hybrid_inverter.battery_2_capacity) / 2.0f;
+
+            meters.update_value(slot, table->index[read_index + 1], voltage_avg);
+            meters.update_value(slot, table->index[read_index + 2], current_sum);
+            meters.update_value(slot, table->index[read_index + 3], power_sum);
+            meters.update_value(slot, table->index[read_index + 4], temperature_avg);
+            meters.update_value(slot, table->index[read_index + 5], state_of_charge_avg);
         }
     }
     else if (is_goodwe_hybrid_inverter_pv_meter()) {
