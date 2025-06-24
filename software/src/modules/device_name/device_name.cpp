@@ -40,10 +40,15 @@ void DeviceName::pre_setup()
     });
 }
 
-#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3()
+#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
 String getWarpDisplayType(bool add_optional_hw=true)
 {
-    String display_type = api.hasFeature("meter") ? " Pro" : " Smart";
+    String display_type =
+#if OPTIONS_PRODUCT_ID_IS_ELTAKO()
+        ""; // ELTAKO Wallbox always has a meter
+#else
+        api.hasFeature("meter") ? " Pro" : " Smart";
+#endif
 
     if (api.hasFeature("evse")) {
         display_type += api.getState("evse/slots")->get(1)->get("max_current")->asUint() <= 20000 ? " 11" : " 22";
@@ -72,11 +77,15 @@ static bool isVowel(char c)
     return (0x208222 >> (c & 0x1f)) & 1;
 }
 
-#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3()
+#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
 String DeviceName::get20CharDisplayType() {
     String display_type = OPTIONS_PRODUCT_NAME();
     display_type += getWarpDisplayType(false);
+#if OPTIONS_PRODUCT_ID_IS_ELTAKO()
+    display_type.replace(" Wallbox", "");
+#else
     display_type.replace(" Charger", "");
+#endif
     display_type = display_type.substring(0, 20);
     return display_type;
 }
@@ -85,7 +94,7 @@ String DeviceName::get20CharDisplayType() {
 void DeviceName::updateDisplayType()
 {
     String display_type = OPTIONS_PRODUCT_NAME();
-#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3()
+#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
     display_type += getWarpDisplayType(); // FIXME: Also add more details for WARP Energy Manager, similar to WARP[2] here?
 #endif
 

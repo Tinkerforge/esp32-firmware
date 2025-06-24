@@ -775,7 +775,7 @@ const char *platform_get_charge_point_vendor()
 char model[21] = {0};
 const char *platform_get_charge_point_model()
 {
-#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3()
+#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
     device_name.get20CharDisplayType().toCharArray(model, ARRAY_SIZE(model));
     return model;
 #else

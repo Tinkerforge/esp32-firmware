@@ -1027,7 +1027,7 @@ void EVSEV2::update_all_data()
         if (contactor_error != 0) {
 #if OPTIONS_PRODUCT_ID_IS_WARP2()
             logger.printfln("Contactor error %u PE error %u", contactor_error >> 1, contactor_error & 1);
-#elif OPTIONS_PRODUCT_ID_IS_WARP3()
+#elif OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
             if (contactor_error & 1) {
                 logger.printfln("Contactor error: PE error");
             }
@@ -1129,7 +1129,7 @@ void EVSEV2::update_all_data()
     static InputState last_shutdown_input_state = InputState::Unknown;
 #if OPTIONS_PRODUCT_ID_IS_WARP2()
     bool gpio_enable = gpio[5];
-#elif OPTIONS_PRODUCT_ID_IS_WARP3()
+#elif OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
     bool gpio_enable = gpio[18];
 #else
     #error "GPIO layout is unknown"

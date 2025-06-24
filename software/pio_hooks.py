@@ -1162,7 +1162,7 @@ def main():
     options_value['product_id'] = json.dumps(product_id)
     options_origin['product_id'] = 'pio_hooks.py'
 
-    for suffix in ['warp', 'warp2', 'warp3', 'energy_manager', 'energy_manager_v2', 'smart_energy_broker']:
+    for suffix in ['warp', 'warp2', 'warp3', 'energy_manager', 'energy_manager_v2', 'smart_energy_broker', 'eltako']:
         key = f'product_id_is_{suffix}'
 
         assert key not in options_value

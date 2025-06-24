@@ -133,7 +133,7 @@ static void check_for_factory_reset()
 
 bool ESP32EthernetBrick::initHAL()
 {
-#if OPTIONS_PRODUCT_ID_IS_WARP3()
+#if OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
     uint8_t ports = 4;
 #else
     uint8_t ports = 6;
@@ -154,7 +154,7 @@ void ESP32EthernetBrick::pre_init()
 {
     button_pin = BUTTON;
 
-#if OPTIONS_PRODUCT_ID_IS_WARP3()
+#if OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
         blue_led_pin = BLUE_LED_WARP_ESP32_ETHERNET_BRICK;
         // green LED is connected directly to 3.3 V
 #else
@@ -178,6 +178,8 @@ void ESP32EthernetBrick::setup()
 
 #if OPTIONS_PRODUCT_ID_IS_WARP3()
     logger.printfln("WARP ESP32 Ethernet Brick UID: %s", local_uid_str);
+#elif OPTIONS_PRODUCT_ID_IS_ELTAKO()
+    logger.printfln("ELTAKO ESP32 Ethernet Brick UID: %s", local_uid_str);
 #else
     logger.printfln("ESP32 Ethernet Brick UID: %s", local_uid_str);
 #endif
