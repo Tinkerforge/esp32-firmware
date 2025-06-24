@@ -27,6 +27,7 @@
 #include "tools/malloc.h"
 #include "tools/fs.h"
 #include "pdf_charge_log.h"
+#include "file_type.enum.h"
 
 #define PDF_LETTERHEAD_MAX_SIZE 512
 
@@ -93,7 +94,12 @@ void ChargeTracker::pre_setup()
     });
 
     config = Config::Object({
-        {"electricity_price", Config::Uint16(0)}
+        {"electricity_price", Config::Uint16(0)},
+#if MODULE_REMOTE_ACCESS_AVAILABLE()
+        {"enable_send", Config::Bool(false)},
+        {"send_file_type", Config::Enum(FileType::PDF)},
+        {"user", Config::Uint8(0)},
+#endif
     });
 
     pdf_letterhead_config = Config::Object({
