@@ -349,7 +349,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                                 placeholder={__("charge_tracker.content.send_user_placeholder")}
                                 onValue={v => {
                                     const user = parseInt(v);
-                                    if (user !== 0) {
+                                    if (user !== -1) {
                                         this.setState({ enable_send: true });
                                     }
                                     this.setState({ user, internal_isDirty: true });
