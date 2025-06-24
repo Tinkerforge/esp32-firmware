@@ -1589,9 +1589,10 @@ bool MeterModbusTCP::is_huawei_emma_pv_meter() const
 void MeterModbusTCP::read_done_callback()
 {
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
-        trace("m%lu t%u a%zu:%x c%zu e%lu",
+        trace("m%lu t%u i%zu a%zu:%x c%zu e%lu",
               slot,
               static_cast<uint8_t>(table_id),
+              read_index,
               generic_read_request.start_address,
               generic_read_request.start_address,
               generic_read_request.register_count,
