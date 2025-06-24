@@ -232,7 +232,7 @@ void AsyncHTTPSClient::fetch(const char *url, int cert_id, esp_http_client_metho
     if (headers.size() > 0) {
         for (std::pair<String, String> header : headers) {
             if (esp_http_client_set_header(http_client, header.first.c_str(), header.second.c_str()) != ESP_OK) {
-                error_abort(AsyncHTTPSClientError::HTTPClientSetCookieFailed);
+                error_abort(AsyncHTTPSClientError::HTTPClientSetHeaderFailed);
                 return;
             }
         }
@@ -309,6 +309,102 @@ void AsyncHTTPSClient::put_async(const char *url, int cert_id, const char *body,
 void AsyncHTTPSClient::delete_async(const char *url, int cert_id, const char *body, size_t body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback)
 {
     fetch(url, cert_id, HTTP_METHOD_DELETE, body, body_size, std::move(callback));
+}
+
+void AsyncHTTPSClient::start_chunked_request(const char *url, int cert_id, esp_http_client_method_t method, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback) {
+    if (strncmp(url, https_prefix, https_prefix_len) != 0) {
+        error_abort(AsyncHTTPSClientError::NoHTTPSURL);
+        return;
+    }
+
+    if (in_progress) {
+        error_abort(AsyncHTTPSClientError::Busy);
+        return;
+    }
+
+    this->callback = std::move(callback);
+    in_progress = true;
+    abort_requested = false;
+    received_len = 0;
+
+    if (body != nullptr) {
+        owned_body = String(body, body_size);
+    }
+
+    esp_http_client_config_t http_config = {};
+
+    http_config.method = method;
+    http_config.url = url;
+    http_config.event_handler = event_handler;
+    http_config.user_data = this;
+    http_config.is_async = true;
+    http_config.timeout_ms = 50;
+    http_config.buffer_size = 1024;
+    http_config.buffer_size_tx = 1024;
+
+    if (cert_id < 0) {
+        http_config.crt_bundle_attach = esp_crt_bundle_attach;
+    }
+    else {
+#if MODULE_CERTS_AVAILABLE()
+        size_t cert_len = 0;
+        cert = certs.get_cert(static_cast<uint8_t>(cert_id), &cert_len);
+
+        if (cert == nullptr) {
+            error_abort(AsyncHTTPSClientError::NoCert);
+            return;
+        }
+
+        http_config.cert_pem = (const char *)cert.get();
+        // http_config.skip_cert_common_name_check = true;
+#else
+        logger.printfln("Can't use custom certificate: certs module is not built into this firmware!");
+        error_abort(AsyncHTTPSClientError::NoCert);
+        return;
+#endif
+    }
+
+    http_client = esp_http_client_init(&http_config);
+
+    if (http_client == nullptr) {
+        error_abort(AsyncHTTPSClientError::HTTPClientInitFailed);
+        return;
+    }
+
+    if (owned_body.length() > 0 && esp_http_client_set_post_field(http_client, owned_body.c_str(), owned_body.length())) {
+        error_abort(AsyncHTTPSClientError::HTTPClientSetBodyFailed);
+        return;
+    }
+
+    if (cookies.length() > 0) {
+        if (esp_http_client_set_header(http_client, "cookie", cookies.c_str()) != ESP_OK) {
+            error_abort(AsyncHTTPSClientError::HTTPClientSetCookieFailed);
+            return;
+        }
+    }
+    if (headers.size() > 0) {
+        for (std::pair<String, String> header : headers) {
+            if (esp_http_client_set_header(http_client, header.first.c_str(), header.second.c_str()) != ESP_OK) {
+                error_abort(AsyncHTTPSClientError::HTTPClientSetHeaderFailed);
+                return;
+            }
+        }
+    }
+
+    last_async_alive = now_us();
+
+    esp_err_t err = esp_http_client_open(http_client, owned_body.length() > 0 ? owned_body.length() : 0);
+    if (err != ESP_OK) {
+        error_abort(AsyncHTTPSClientError::HTTPClientError, err);
+        return;
+    }
+}
+
+void AsyncHTTPSClient::finish_chunked_request() {
+    if (!in_progress || http_client == nullptr) {
+        return;
+    }
+    clear();
 }
 
 void AsyncHTTPSClient::set_header(const String &key, const String &value) {
@@ -496,4 +592,12 @@ size_t translate_HTTPError_detailed(const esp_tls_error_handle_t error_handle, c
     }
 
     return sw.getLength();
+}
+
+int AsyncHTTPSClient::send_chunk(const void *data, size_t size) {
+    if (http_client == nullptr) {
+        return -1;
+    }
+    int written = esp_http_client_write(http_client, reinterpret_cast<const char *>(data), size);
+    return written;
 }
