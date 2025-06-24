@@ -56,8 +56,11 @@ void RequireMeter::setup()
     if (config.get("config")->asUint() == WARP_PRO_ENABLED) {
         evse_common.set_require_meter_enabled(true);
         start_task();
-    } else
+    }
+    else {
         evse_common.set_require_meter_enabled(false);
+    }
+
     initialized = true;
 }
 

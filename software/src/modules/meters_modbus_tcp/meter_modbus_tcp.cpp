@@ -2417,11 +2417,11 @@ void MeterModbusTCP::parse_next()
                               + alpha_ess_hybrid_inverter.pv6_current;
 
             float power_sum = alpha_ess_hybrid_inverter.pv1_power
-                        + alpha_ess_hybrid_inverter.pv2_power
-                        + alpha_ess_hybrid_inverter.pv3_power
-                        + alpha_ess_hybrid_inverter.pv4_power
-                        + alpha_ess_hybrid_inverter.pv5_power
-                        + alpha_ess_hybrid_inverter.pv6_power;
+                            + alpha_ess_hybrid_inverter.pv2_power
+                            + alpha_ess_hybrid_inverter.pv3_power
+                            + alpha_ess_hybrid_inverter.pv4_power
+                            + alpha_ess_hybrid_inverter.pv5_power
+                            + alpha_ess_hybrid_inverter.pv6_power;
 
             meters.update_value(slot, table->index[read_index + 1], voltage_avg);
             meters.update_value(slot, table->index[read_index + 2], current_sum);
