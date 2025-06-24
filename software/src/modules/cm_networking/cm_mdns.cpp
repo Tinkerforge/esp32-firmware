@@ -37,19 +37,87 @@ void CMNetworking::setup()
     initialized = true;
 }
 
+[[gnu::noinline]]
+static void add_mdns_service_base()
+{
+    mdns_txt_item_t txt_items[] = {
+        {"version", MACRO_VALUE_TO_STRING(CM_PACKET_MAGIC) "." MACRO_VALUE_TO_STRING(CM_STATE_VERSION)},
+    };
+
+    mdns_service_add(NULL, "_tf-warp-cm", "_udp", 34127, txt_items, ARRAY_SIZE(txt_items));
+}
+
+[[gnu::noinline]]
+static void add_mdns_service_enabled(bool enabled)
+{
+    mdns_service_txt_item_set("_tf-warp-cm", "_udp", "enabled", enabled ? "true" : "false");
+}
+
+#if MODULE_EVENT_AVAILABLE() && MODULE_EVSE_COMMON_AVAILABLE()
+static void add_mdns_service_enabled_by_evse_event()
+{
+    event.registerEvent("evse/management_enabled", {"enabled"}, [](const Config *cfg) {
+        add_mdns_service_enabled(cfg->asBool());
+
+        return EventResult::OK;
+    });
+}
+#endif
+
+[[gnu::noinline]] [[gnu::unused]]
+static void add_mdns_service_display_name(const char *display_name)
+{
+    mdns_service_txt_item_set("_tf-warp-cm", "_udp", "display_name", display_name);
+}
+
+#if MODULE_EVENT_AVAILABLE()
+[[gnu::unused]]
+static void add_mdns_service_display_name_by_event()
+{
+#if MODULE_DEVICE_NAME_AVAILABLE()
+    event.registerEvent("info/display_name", {"display_name"}, [](const Config *cfg) {
+        add_mdns_service_display_name(cfg->asUnsafeCStr());
+
+        return EventResult::OK;
+    });
+#endif
+}
+#endif
+
+[[gnu::noinline]] [[gnu::unused]]
+static void add_mdns_service_proxy(const char *proxy_of)
+{
+    mdns_service_txt_item_set("_tf-warp-cm", "_udp", "proxy_of", proxy_of);
+}
+
+#if MODULE_EVENT_AVAILABLE() && MODULE_EM_PHASE_SWITCHER_AVAILABLE() && MODULE_DEVICE_NAME_AVAILABLE()
+static void add_mdns_service_proxy_by_event()
+{
+    event.registerEvent("em_phase_switcher/charger_config", {"host"}, [](const Config *cfg) {
+        add_mdns_service_proxy(cfg->asUnsafeCStr());
+
+        return EventResult::OK;
+    });
+}
+#endif
+
 #if MODULE_EVSE_COMMON_AVAILABLE()
 static void add_charger_services() {
-    mdns_service_add(NULL, "_tf-warp-cm", "_udp", 34127, NULL, 0);
-    mdns_service_txt_item_set("_tf-warp-cm", "_udp", "version", MACRO_VALUE_TO_STRING(CM_PACKET_MAGIC) "." MACRO_VALUE_TO_STRING(CM_STATE_VERSION));
+    add_mdns_service_base();
 
-    task_scheduler.scheduleWithFixedDelay([](){
+#if MODULE_EVENT_AVAILABLE()
+    add_mdns_service_display_name_by_event();
+    add_mdns_service_enabled_by_evse_event();
+#else
+    task_scheduler.scheduleWithFixedDelay([]() {
 #if MODULE_DEVICE_NAME_AVAILABLE()
         // Keep "display_name" updated because it can be changed at runtime without reboot.
-        mdns_service_txt_item_set("_tf-warp-cm", "_udp", "display_name", device_name.display_name.get("display_name")->asEphemeralCStr());
+        add_mdns_service_display_name(device_name.display_name.get("display_name")->asUnsafeCStr());
 #endif
         // Keep "enabled" updated because it is retrieved from the EVSE.
-        mdns_service_txt_item_set("_tf-warp-cm", "_udp", "enabled", evse_common.get_management_enabled() ? "true" : "false");
+        add_mdns_service_enabled(evse_common.get_management_enabled());
     }, 10_s);
+#endif
 }
 #endif
 
@@ -60,17 +128,20 @@ static void add_wem_services() {
     if (!cfg->get("proxy_mode")->asBool())
         return;
 
-    mdns_service_add(NULL, "_tf-warp-cm", "_udp", 34127, NULL, 0);
-    // TODO comment
-    mdns_service_txt_item_set("_tf-warp-cm", "_udp", "version", MACRO_VALUE_TO_STRING(CM_PACKET_MAGIC) "." MACRO_VALUE_TO_STRING(CM_STATE_VERSION));
-    mdns_service_txt_item_set("_tf-warp-cm", "_udp", "enabled", "true");
+    add_mdns_service_base();
+    add_mdns_service_enabled(true);
 
 #if MODULE_DEVICE_NAME_AVAILABLE()
-    task_scheduler.scheduleWithFixedDelay([](){
+#if MODULE_EVENT_AVAILABLE()
+    add_mdns_service_display_name_by_event();
+    add_mdns_service_proxy_by_event();
+#else
+    task_scheduler.scheduleWithFixedDelay([]() {
         // Keep "display_name" updated because it can be changed at runtime without reboot.
-        mdns_service_txt_item_set("_tf-warp-cm", "_udp", "display_name", device_name.display_name.get("display_name")->asEphemeralCStr());
-        mdns_service_txt_item_set("_tf-warp-cm", "_udp", "proxy_of", cfg->get("host")->asEphemeralCStr());
+        add_mdns_service_display_name(device_name.display_name.get("display_name")->asUnsafeCStr());
+        add_mdns_service_proxy(cfg->get("host")->asEphemeralCStr());
     }, 10_s);
+#endif
 #endif
 }
 #endif
