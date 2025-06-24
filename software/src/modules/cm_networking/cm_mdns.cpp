@@ -154,7 +154,7 @@ void CMNetworking::register_urls()
             return;
         }
 #endif
-        start_scan();
+        start_mdns_scan();
     }, true);
 
     server.on_HTTPThread("/charge_manager/scan_result", HTTP_GET, [](WebServerRequest request) {
@@ -257,18 +257,13 @@ void CMNetworking::resolve_hostname(uint8_t charger_idx)
     }
 
     if (device->host_address_type == HostAddressType::mDNS) {
-        if (!manager_data->periodic_scan_task_started) {
 #if MODULE_NETWORK_AVAILABLE()
-            if (!network.get_enable_mdns()) {
-                logger.printfln("mDNS required to resolve %s but it is disabled", device->hostname);
-                // Mark the periodic scan task as started anyway, so that the error message doesn't fill the log.
-            } else
+        if (!network.get_enable_mdns()) {
+            logger.printfln("mDNS required to resolve %s but it is disabled", device->hostname);
+        } else
 #endif
-                task_scheduler.scheduleWithFixedDelay([this]() {this->start_scan();}, 1_min);
-            // No braces for the else branch because of the Network module check.
-
-            manager_data->periodic_scan_task_started = true;
-        }
+            start_mdns_scan();
+        // No braces for the else branch because of the Network module check.
 
         return;
     }
@@ -377,17 +372,31 @@ void CMNetworking::notify_charger_unresponsive(uint8_t charger_idx)
     resolve_hostname(charger_idx);
 }
 
-void CMNetworking::check_results()
+// Executed by mDNS task
+void CMNetworking::check_mdns_results_cb(mdns_search_once_t *)
 {
+    task_scheduler.scheduleOnce([]() {
+        cm_networking.check_mdns_results();
+    });
+}
+
+void CMNetworking::check_mdns_results()
+{
+    bool search_finished;
     {
         std::lock_guard<std::mutex> lock{scan_results_mutex};
-        if (!mdns_query_async_get_results(scan, 0, &scan_results, nullptr))
-            return; // This should never happen as check_results is only called if we are notified the search has finished.
+        search_finished = mdns_query_async_get_results(mdns_scan, 0, &scan_results, nullptr);
     }
 
-    mdns_query_async_delete(scan);
+    mdns_query_async_delete(mdns_scan);
+    mdns_scan = nullptr;
+    mdns_scan_active = false;
 
-    scanning = false;
+    if (!search_finished) {
+        // This should never happen as check_results is only called if we are notified the search has finished.
+        logger.printfln("mDNS query failed");
+        return;
+    }
 
 #if MODULE_WS_AVAILABLE()
     CoolString result;
@@ -409,11 +418,12 @@ void CMNetworking::check_results()
     return;
 }
 
-void CMNetworking::start_scan()
+void CMNetworking::start_mdns_scan()
 {
-    if (scanning)
+    if (mdns_scan_active) {
         return;
-    scanning = true;
+    }
+    mdns_scan_active = true;
 
     {
         std::lock_guard<std::mutex> lock{scan_results_mutex};
@@ -423,9 +433,11 @@ void CMNetworking::start_scan()
         }
     }
 
-    scan = mdns_query_async_new(NULL, "_tf-warp-cm", "_udp", MDNS_TYPE_PTR, 1000, INT8_MAX, [](mdns_search_once_t *search) {
-        task_scheduler.scheduleOnce([](){ cm_networking.check_results(); });
-    });
+    mdns_scan = mdns_query_async_new(NULL, "_tf-warp-cm", "_udp", MDNS_TYPE_PTR, 1000, INT8_MAX, &check_mdns_results_cb);
+
+    if (!mdns_scan) {
+        logger.printfln("mDNS scan could not be started");
+    }
 }
 
 bool CMNetworking::mdns_result_is_charger(mdns_result_t *entry, const char ** ret_version, const char **ret_enabled, const char **ret_display_name, const char **ret_proxy_of) {

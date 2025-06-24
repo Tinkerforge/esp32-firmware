@@ -98,7 +98,6 @@ private:
     struct manager_data_t {
         int manager_sock;
 
-        bool periodic_scan_task_started;
         bool connected;
         bool dns_resolver_active;
 
@@ -113,8 +112,8 @@ private:
     // Always allow mDNS scans
     std::mutex scan_results_mutex;
     mdns_result_t *scan_results = nullptr;
-    mdns_search_once_t *scan = nullptr;
-    bool scanning = false;
+    mdns_search_once_t *mdns_scan = nullptr;
+    bool mdns_scan_active = false;
 
     // For managers
     manager_data_t *manager_data = nullptr;
@@ -134,9 +133,10 @@ private:
     bool is_resolved(uint8_t charger_idx);
     void resolve_all();
 
-    void check_results(); // TODO make a static function and pass directly to MDNS call.
+    static void check_mdns_results_cb(mdns_search_once_t *search);
+    void check_mdns_results();
 
-    void start_scan();
+    void start_mdns_scan();
     bool mdns_result_is_charger(mdns_result_t *entry, const char **ret_version, const char **ret_enabled, const char **ret_display_name, const char **ret_proxy_of);
     void resolve_via_mdns(mdns_result_t *entry);
     bool get_scan_results(CoolString &result);

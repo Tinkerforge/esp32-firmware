@@ -207,7 +207,6 @@ void CMNetworking::register_manager(const char *const *const hosts,
     }
 
     manager_data->dns_resolver_active = false;
-    manager_data->periodic_scan_task_started = false;
     manager_data->connected = false;
     manager_data->managed_device_count = device_count;
 
