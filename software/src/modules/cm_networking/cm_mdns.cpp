@@ -21,7 +21,6 @@
 
 #include <lwip/ip_addr.h>
 #include <lwip/opt.h>
-#include <lwip/dns.h>
 #include <cstring>
 #include <TFJson.h>
 
@@ -214,7 +213,7 @@ void CMNetworking::dns_resolved(managed_device_data *device, const ip_addr_t *ip
     // It's unlikely that it will be resolved again anytime soon
     // and this frees up space in the cache for things that perform
     // duplicate lookups in sequence, such as the remote access.
-    dns_removehost(device->hostname, nullptr);
+    dns_removehostbyname_safe(device->hostname);
 }
 
 // Executed by lwIP

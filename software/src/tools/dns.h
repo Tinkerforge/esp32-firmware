@@ -43,3 +43,9 @@ struct dns_gethostbyname_addrtype_lwip_ctx_async_data
 void dns_gethostbyname_addrtype_lwip_ctx_async(const char *host,
                                                std::function<void(dns_gethostbyname_addrtype_lwip_ctx_async_data *callback_arg)> &&found_callback,
                                                u8_t dns_addrtype);
+
+[[gnu::nonnull]]
+void dns_removehostbyaddr_safe(const ip_addr_t *addr);
+
+[[gnu::nonnull]]
+void dns_removehostbyname_safe(const char *hostname);

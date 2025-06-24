@@ -20,6 +20,7 @@
 #include <esp_netif.h>
 #include <lwip/dns.h>
 #include <lwip/ip_addr.h>
+#include <lwip/tcpip.h>
 
 #include "dns.h"
 #include "main_dependencies.h"
@@ -144,4 +145,28 @@ void dns_gethostbyname_addrtype_lwip_ctx_async(const char *host,
 
     callback_arg->found_callback(callback_arg); // Can't call local found_callback anymore because it has been std::move'd.
     delete callback_arg;
+}
+
+static void dns_removehostbyaddr_safe_cb(void *ctx)
+{
+    const ip_addr_t *addr = static_cast<decltype(addr)>(ctx);
+    dns_removehost(nullptr, addr);
+}
+
+void dns_removehostbyaddr_safe(const ip_addr_t *addr)
+{
+    void *cb_ctx = const_cast<void *>(static_cast<const void *>(addr)); // Casting away the const is safe because it is restored immediately inside the callback.
+    tcpip_callback(&dns_removehostbyaddr_safe_cb, cb_ctx);              // Doesn't block until completion, returns after posting request.
+}
+
+static void dns_removehostbyname_safe_cb(void *ctx)
+{
+    const char *hostname = static_cast<decltype(hostname)>(ctx);
+    dns_removehost(hostname, nullptr);
+}
+
+void dns_removehostbyname_safe(const char *hostname)
+{
+    void *cb_ctx = const_cast<void *>(static_cast<const void *>(hostname)); // Casting away the const is safe because it is restored immediately inside the callback.
+    tcpip_callback(&dns_removehostbyname_safe_cb, cb_ctx);                  // Doesn't block until completion, returns after posting request.
 }
