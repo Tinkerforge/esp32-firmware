@@ -98,7 +98,7 @@ void ChargeTracker::pre_setup()
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
         {"enable_send", Config::Bool(false)},
         {"send_file_type", Config::Enum(FileType::PDF)},
-        {"user", Config::Uint8(0)},
+        {"user", Config::Int8(-1)},
 #endif
     });
 
