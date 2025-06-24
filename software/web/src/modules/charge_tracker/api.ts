@@ -1,3 +1,9 @@
+//#include "module_available.inc"
+
+//#if MODULE_REMOTE_ACCESS_AVAILABLE
+import { FileType } from "./file_type.enum";
+//#endif
+
 interface Charge {
     timestamp_minutes: number;
     charge_duration: number;
@@ -7,6 +13,11 @@ interface Charge {
 
 export interface config {
     electricity_price: number;
+//#if MODULE_REMOTE_ACCESS_AVAILABLE
+    enable_send: boolean;
+    send_file_type: FileType,
+    user: number;
+//#endif
 }
 
 export interface pdf_letterhead_config {

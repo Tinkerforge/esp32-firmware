@@ -60,7 +60,12 @@ let x = {
             "csv_flavor": "CSV-Format",
             "csv_flavor_muted": "",
             "csv_flavor_excel": "Excel-kompatibel (; als Feldtrenner, Windows-1252-kodiert)",
-            "csv_flavor_rfc4180": "Nach RFC4180 (, als Feldtrenner, UTF-8-kodiert)"
+            "csv_flavor_rfc4180": "Nach RFC4180 (, als Feldtrenner, UTF-8-kodiert)",
+
+            "send_file_type": "Dateityp zum Senden",
+            "enable_send": "Remote-Senden aktivieren",
+            "send_user": "Benutzer zum Senden",
+            "send_user_placeholder": "Fernzugriffsbenutzer"
         },
         "automation": {
             "charge_tracker_reset": "Aufgezeichnete Ladevorgänge löschen",

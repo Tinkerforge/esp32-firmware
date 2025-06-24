@@ -60,7 +60,12 @@ let x = {
             "csv_flavor": "CSV flavor",
             "csv_flavor_muted": "",
             "csv_flavor_excel": "Compatible to Excel (; as field separator, Windows-1252 encoded)",
-            "csv_flavor_rfc4180": "According to RFC4180 (, as field separator, UTF-8 encoded)"
+            "csv_flavor_rfc4180": "According to RFC4180 (, as field separator, UTF-8 encoded)",
+
+            "send_file_type": "Send file type",
+            "enable_send": "Enable remote send",
+            "send_user": "Send user",
+            "send_user_placeholder": "Remote access user"
         },
         "automation": {
             "charge_tracker_reset": "Remove tracked charges",
