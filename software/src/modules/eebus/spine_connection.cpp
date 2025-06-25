@@ -40,7 +40,7 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
 
     check_message_counter();
 
-    if (SpineDataTypeHandler::Function called_function = eebus.data_handler.handle_cmd(received_payload);
+    if (SpineDataTypeHandler::Function called_function = eebus.data_handler->handle_cmd(received_payload);
         called_function == SpineDataTypeHandler::Function::None) {
         logger.printfln("SPINE: No function found for the received payload");
         logger.printfln("SPINE: Payload: %s", received_payload.as<String>().c_str());
@@ -54,7 +54,7 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
     JsonObject cmd_obj = cmd_array.createNestedObject();
     //cmd_array.createNestedObject(); // add an empty object to the array or it might get turned into an object by ship-go
 
-    if (eebus.usecases.handle_message(received_header, eebus.data_handler, cmd_obj, this)) {
+    if (eebus.usecases.handle_message(received_header, eebus.data_handler.get(), cmd_obj, this)) {
 // TODO: Set the source and destination addresses correctly
         response_doc["datagram"][0]["header"]["specificationVersion"] = SUPPORTED_SPINE_VERSION;
         response_doc["datagram"][0]["header"]["addressSource"]["device"] = ("d:_i:" + eebus.get_eebus_name()).c_str();
