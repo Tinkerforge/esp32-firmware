@@ -31,7 +31,6 @@
 
 class EEBusUseCases; // Forward declaration of EEBusUseCases
 
-
 enum class UseCaseType : uint8_t {
     NodeManagement,
     ChargingSummary,
@@ -66,7 +65,7 @@ public:
      * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
      * @return true if a response was generated and needs to be sent, false if no response is needed.
      */
-    virtual bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response, SpineConnection *connection) = 0;
+    virtual bool handle_message(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) = 0;
 
     /**
      * Returns the usecase information for this usecase.
@@ -99,7 +98,7 @@ public:
     * @param response The JsonObject to write the response to. This should be filled with the response data.
     * @return true if a response was generated and needs to be sent, false if no response is needed.
     */
-    bool handle_binding(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response);
+    bool handle_binding(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response);
     // The list of bindings for this usecase.
     BindingManagementEntryListDataType binding_management_entry_list_{};
     /**
@@ -108,7 +107,7 @@ public:
      * @param server The server FeatureAddressType to check.
      * @return true if the client is bound to the server, false otherwise.
      */
-    bool check_is_bound(FeatureAddressType &client,FeatureAddressType &server) const;
+    bool check_is_bound(FeatureAddressType &client, FeatureAddressType &server) const;
 
     UseCaseInformationDataType get_usecase_information() override;
     /**
@@ -119,7 +118,7 @@ public:
     * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
     * @return true if a response was generated and needs to be sent, false if no response is needed.
     */
-    bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response, SpineConnection *connection) override;
+    bool handle_message(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
 
     void set_usecaseManager(EEBusUseCases *usecases);
 
@@ -134,11 +133,11 @@ public:
 private:
     EEBusUseCases *usecase_interface{};
 
-    bool read_usecase_data(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) const;
+    bool read_usecase_data(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response) const;
 
-    bool read_detailed_discovery_data(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) const;
+    bool read_detailed_discovery_data(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response) const;
 
-    bool handle_subscription(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response, SpineConnection *connection);
+    bool handle_subscription(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
 };
 
 /**
@@ -159,12 +158,12 @@ public:
     /**
      * \brief Handles a message for a usecase.
      * @param header SPINE header of the message. Contains information about the commandclassifier and the targeted entitiy.
-     * @param data The actual Function call
+     * @param data The actual Function call and data of the message.
      * @param response Where to write the response to. This is a JsonObject that should be filled with the response data.
      * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
      * @return true if a response was generated and needs to be sent, false if no response is needed.
      */
-    bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response, SpineConnection *connection) override;
+    bool handle_message(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
 
     [[nodiscard]] UseCaseType get_usecase_type() const override
     {
@@ -193,7 +192,7 @@ public:
      * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
      * @return true if a response was generated and needs to be sent, false if no response is needed.
      */
-    bool handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response, SpineConnection *connection);
+    bool handle_message(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
 
     uint8_t feature_address_node_management = 0;
     NodeManagementUsecase node_management{};
@@ -211,8 +210,7 @@ const char *get_spine_device_name();
 /**
  * The Values specified in the EEBUS SPINE TS ResourceSpecification 3.11 Table 19
  */
-enum class ResultErrorNumber
-{
+enum class ResultErrorNumber {
     NoError = 0,
     GeneralError,
     Timeout,
@@ -233,6 +231,4 @@ enum class ResultErrorNumber
  */
 void build_result_data(JsonObject &response, ResultErrorNumber error_number = ResultErrorNumber::NoError, const char *description = "");
 
-
-}
-
+} // namespace EEBUS_USECASE_HELPERS
