@@ -573,7 +573,7 @@ void SLAC::poll_modem(void)
             }
 
             default: {
-                logger.printfln("Unknown ethernet type: %04x", header->ethernet_type);
+                logger.printfln("Unknown ethernet type: %04x", ntohs(header->ethernet_type));
                 break;
             }
         }
