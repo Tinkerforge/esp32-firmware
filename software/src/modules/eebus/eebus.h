@@ -19,16 +19,17 @@
 
 #pragma once
 
+#include "config.h"
+#include "eebus_usecases.h"
 #include "module.h"
 #include "config.h"
 #include "ship.h"
-#include <TFJson.h>
 #include "spine_connection.h"
-#include "eebus_usecases.h"
+#include <TFJson.h>
 
 #define DNS_SD_UUID "Tinkerforge-WARP3-12345"
 #define EEBUS_PEER_FILE "/eebus/peers"
-#define MAX_PEER_REMEMBERED 64 // How man ship peers configured to be remembered
+#define MAX_PEER_REMEMBERED 64          // How man ship peers configured to be remembered
 #define SHIP_AUTODISCOVER_INTERVAL 30_s // How often to autodiscover ship peers
 
 // EEBUS Device definitions
@@ -55,17 +56,24 @@ public:
      */
     String get_eebus_name();
 
-
     Config config_peers_prototype;
     Config state_connections_prototype;
     ConfigRoot add_peer;
     ConfigRoot remove_peer;
     ConfigRoot config;
-    ConfigRoot state;    
+    ConfigRoot state;
     Ship ship;
-    EEBusUseCases usecases{};    
+    EEBusUseCases usecases{};
 
-    SpineDataTypeHandler data_handler{};
+    // To save memory the SpineDataTypeHandler is allocated to SPIRAM if its available
+    std::unique_ptr<SpineDataTypeHandler, decltype(std::free) *> data_handler =
+        std::unique_ptr<SpineDataTypeHandler, decltype(std::free) *>(
+            static_cast<SpineDataTypeHandler *>(heap_caps_calloc_prefer(sizeof(SpineDataTypeHandler),
+                                                                        sizeof(char),
+                                                                        2,
+                                                                        MALLOC_CAP_SPIRAM,
+                                                                        MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL)),
+            heap_caps_free);
 
     /**
      * Get the index of the connection in state.get("connections") with the given ski.
@@ -80,6 +88,5 @@ private:
      */
     void update_peers_config();
 
-    String device_name {};
-
+    String device_name{};
 };
