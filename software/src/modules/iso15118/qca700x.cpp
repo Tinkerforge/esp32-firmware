@@ -126,7 +126,7 @@ void QCA700x::write_register(const uint16_t reg, const uint16_t value)
 
 uint16_t QCA700x::read_burst(uint8_t *data, const uint16_t length)
 {
-    const uint16_t available = read_register(QCA700X_SPI_REG_RDBUF_BYTE_AVA);
+    const uint16_t available = std::min(length, read_register(QCA700X_SPI_REG_RDBUF_BYTE_AVA));
     if (available == 0) {
         return 0;
     }
