@@ -572,6 +572,11 @@ void SLAC::poll_modem(void)
                 break;
             }
 
+            case SLAC_ETHERNET_TYPE_IPV4: {
+                logger.printfln("Received IPv4 packet with length %d, this is not supported in ISO15118.", ethernet_frame_length);
+                break;
+            }
+
             default: {
                 logger.printfln("Unknown ethernet type: %04x", ntohs(header->ethernet_type));
                 break;
