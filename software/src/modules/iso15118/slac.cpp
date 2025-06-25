@@ -524,6 +524,12 @@ void SLAC::poll_modem(void)
 
     while (current_buffer_length >= QCA700X_RECV_BUFFER_MIN_SIZE) {
         int16_t ethernet_frame_length = iso15118.qca700x.check_receive_frame(buffer, current_buffer_length);
+
+        // Error -4 means that we received a partial frame. In that case we just need to run read_burst again in the next loop iteration.
+        if (ethernet_frame_length == -4) {
+            break;
+        }
+
         if (ethernet_frame_length < 0) {
             // TODO: Do link down if ModemReset?
             //       For now i think it is better to just remove bad data.
