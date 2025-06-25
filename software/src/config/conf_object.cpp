@@ -125,6 +125,11 @@ Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&va
         if (!string_is_in_rodata(key))
             esp_system_abort("ConfObject key not in flash! Please pass a string literal!");
 
+        for (int j = i + 1; j < len; ++j) {
+            if (key == val[j].first)
+                esp_system_abort("ConfObject key not unique in this ConfObject! Remove duplicates!");
+        }
+
         schema->keys[i].val = key;
         schema->keys[i].length = strlen(key);
     }
