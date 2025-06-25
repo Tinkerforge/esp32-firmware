@@ -632,7 +632,11 @@ void Debug::task_scheduler_idle_call()
         state_slow.get("heap_integrity_ok")->updateBool(false);
         integrity_check_print_errors = false;
     }
+}
 
+
+void Debug::custom_loop() {
+    micros_t start = now_us();
     uint32_t run = (start - last_run).as<uint32_t>();
     if (run > run_max && last_run != 0_us) {
         run_max = run;

@@ -321,6 +321,10 @@ void loop() {
     tf_hal_tick(&hal, 0);
     task_scheduler.custom_loop();
 
+#if MODULE_DEBUG_AVAILABLE()
+    debug.custom_loop();
+#endif
+
     // Round-robin for modules' loop functions, to prioritize HAL ticks and scheduler.
     if (loop_array != nullptr) {
         loop_array[loop_array_position]->loop();
