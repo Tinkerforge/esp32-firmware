@@ -25,21 +25,21 @@
 #include "module_dependencies.h"
 #include "tools.h"
 
-bool NodeManagementUsecase::handle_binding(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response)
+bool NodeManagementUsecase::handle_binding(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response)
 {
 
     // Binding Request as defined in EEBus SPINE TS ProtocolSpecification 7.3.2
-    if (data.last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingRequestCall) {
+    if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingRequestCall) {
 
-        if (data.nodemanagementbindingrequestcalltype && data.nodemanagementbindingrequestcalltype->bindingRequest
-            && data.nodemanagementbindingrequestcalltype->bindingRequest->clientAddress
-            && data.nodemanagementbindingrequestcalltype->bindingRequest->serverAddress) {
+        if (data->nodemanagementbindingrequestcalltype && data->nodemanagementbindingrequestcalltype->bindingRequest
+            && data->nodemanagementbindingrequestcalltype->bindingRequest->clientAddress
+            && data->nodemanagementbindingrequestcalltype->bindingRequest->serverAddress) {
 
             BindingManagementEntryDataType binding_entry;
-            binding_entry.clientAddress = data.nodemanagementbindingrequestcalltype->bindingRequest->clientAddress;
-            binding_entry.serverAddress = data.nodemanagementbindingrequestcalltype->bindingRequest->serverAddress;
+            binding_entry.clientAddress = data->nodemanagementbindingrequestcalltype->bindingRequest->clientAddress;
+            binding_entry.serverAddress = data->nodemanagementbindingrequestcalltype->bindingRequest->serverAddress;
             // We are supposed consider the featuretype (???) of the feature
-            std::optional<FeatureTypeType> feature_type = data.nodemanagementbindingrequestcalltype->bindingRequest->serverFeatureType;
+            std::optional<FeatureTypeType> feature_type = data->nodemanagementbindingrequestcalltype->bindingRequest->serverFeatureType;
 
             if (check_is_bound(binding_entry.clientAddress.value(), binding_entry.serverAddress.value())) {
                 logger.printfln("A Binding was requested but is already bound");
@@ -59,7 +59,7 @@ bool NodeManagementUsecase::handle_binding(SpineHeader &header, SpineDataTypeHan
         return true;
     }
     // Binding Data as defined in EEBus SPINE TS ProtocolSpecification 7.3.3
-    if (data.last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingData) {
+    if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingData) {
         NodeManagementBindingDataType binding_data;
         binding_data.bindingEntry = binding_management_entry_list_.bindingManagementEntryData;
         response["nodeManagementBindingData"] = binding_data;
@@ -67,10 +67,10 @@ bool NodeManagementUsecase::handle_binding(SpineHeader &header, SpineDataTypeHan
         return true;
     }
     // Binding Release as defined in EEBus SPINE TS ProtocolSpecification 7.3.4
-    if (data.last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingDeleteCall) {
-        if (!data.nodemanagementbindingdeletecalltype && data.nodemanagementbindingdeletecalltype->bindingDelete
-            && data.nodemanagementbindingdeletecalltype->bindingDelete->clientAddress
-            && data.nodemanagementbindingdeletecalltype->bindingDelete->serverAddress) {
+    if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingDeleteCall) {
+        if (!data->nodemanagementbindingdeletecalltype && data->nodemanagementbindingdeletecalltype->bindingDelete
+            && data->nodemanagementbindingdeletecalltype->bindingDelete->clientAddress
+            && data->nodemanagementbindingdeletecalltype->bindingDelete->serverAddress) {
             logger.printfln("A binding release was requested but no binding delete information was provided or request was malformed");
             EEBUS_USECASE_HELPERS::build_result_data(response,
                                                      EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected,
@@ -84,7 +84,7 @@ bool NodeManagementUsecase::handle_binding(SpineHeader &header, SpineDataTypeHan
                 return true;
             return *a == *b;
         };
-        NodeManagementBindingDeleteCallType binding_delete_call = data.nodemanagementbindingdeletecalltype.value();
+        NodeManagementBindingDeleteCallType binding_delete_call = data->nodemanagementbindingdeletecalltype.value();
         std::vector<size_t> to_delete_indices{};
 
         // Iterate throught the list of bindings and find the ones that match the delete request
@@ -156,21 +156,21 @@ UseCaseInformationDataType NodeManagementUsecase::get_usecase_information()
     return UseCaseInformationDataType(); // This should never be used as the NodeManagementUsecase has no usecase information
 }
 bool NodeManagementUsecase::handle_message(SpineHeader &header,
-                                           SpineDataTypeHandler &data,
+                                           SpineDataTypeHandler *data,
                                            JsonObject response,
                                            SpineConnection *connection)
 {
-    if (header.cmd_classifier == CmdClassifierType::read && data.last_cmd == SpineDataTypeHandler::Function::nodeManagementUseCaseData) {
+    if (header.cmd_classifier == CmdClassifierType::read && data->last_cmd == SpineDataTypeHandler::Function::nodeManagementUseCaseData) {
         return read_usecase_data(header, data, response);
     }
     if (header.cmd_classifier == CmdClassifierType::read
-        && data.last_cmd == SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryData) {
+        && data->last_cmd == SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryData) {
         return read_detailed_discovery_data(header, data, response);
     }
     return false;
 }
 
-bool NodeManagementUsecase::read_usecase_data(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) const
+bool NodeManagementUsecase::read_usecase_data(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response) const
 {
     NodeManagementUseCaseDataType node_management_usecase_data;
     for (UseCase *uc : usecase_interface->usecase_list) {
@@ -187,7 +187,7 @@ bool NodeManagementUsecase::read_usecase_data(SpineHeader &header, SpineDataType
     }
     return false;
 }
-bool NodeManagementUsecase::read_detailed_discovery_data(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response) const
+bool NodeManagementUsecase::read_detailed_discovery_data(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response) const
 {
     // Detailed discovery as defined in EEBus SPINE TS ProtocolSpecification 7.1.2
     NodeManagementDetailedDiscoveryDataType node_management_detailed_data;
@@ -211,7 +211,7 @@ bool NodeManagementUsecase::read_detailed_discovery_data(SpineHeader &header, Sp
 }
 
 bool NodeManagementUsecase::handle_subscription(SpineHeader &header,
-                                                SpineDataTypeHandler &data,
+                                                SpineDataTypeHandler *data,
                                                 JsonObject response,
                                                 SpineConnection *connection)
 {
@@ -244,56 +244,56 @@ NodeManagementDetailedDiscoveryFeatureInformationType NodeManagementUsecase::get
     // The following functions are supported by the Nodemanagement feature
     // Basic Usecase information
     FunctionPropertyType useCaseData{};
-    useCaseData.function = eebus.data_handler.function_to_string(SpineDataTypeHandler::Function::nodeManagementUseCaseData).c_str();
+    useCaseData.function = eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::nodeManagementUseCaseData).c_str();
     useCaseData.possibleOperations->read = PossibleOperationsReadType{};
     feature.description->supportedFunction->push_back(useCaseData);
 
     // Detailed discovery information
     FunctionPropertyType detailedDiscoveryData{};
     detailedDiscoveryData.function =
-        eebus.data_handler.function_to_string(SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryData).c_str();
+        eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryData).c_str();
     detailedDiscoveryData.possibleOperations->read = PossibleOperationsReadType{};
     feature.description->supportedFunction->push_back(detailedDiscoveryData);
 
     // Information about current bindings
     FunctionPropertyType nodemanagementBindingData{};
     nodemanagementBindingData.function =
-        eebus.data_handler.function_to_string(SpineDataTypeHandler::Function::nodeManagementBindingData).c_str();
+        eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::nodeManagementBindingData).c_str();
     nodemanagementBindingData.possibleOperations->read = PossibleOperationsReadType{};
     feature.description->supportedFunction->push_back(nodemanagementBindingData);
 
     // Binding delete calls
     FunctionPropertyType nodemanagementBindingDelete{};
     nodemanagementBindingDelete.function =
-        eebus.data_handler.function_to_string(SpineDataTypeHandler::Function::nodeManagementBindingDeleteCall).c_str();
+        eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::nodeManagementBindingDeleteCall).c_str();
     nodemanagementBindingDelete.possibleOperations = PossibleOperationsType{};
     feature.description->supportedFunction->push_back(nodemanagementBindingDelete);
 
     // Binding request calls
     FunctionPropertyType nodemanagementBindingRequest{};
     nodemanagementBindingRequest.function =
-        eebus.data_handler.function_to_string(SpineDataTypeHandler::Function::nodeManagementBindingRequestCall).c_str();
+        eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::nodeManagementBindingRequestCall).c_str();
     nodemanagementBindingRequest.possibleOperations = PossibleOperationsType{};
     feature.description->supportedFunction->push_back(nodemanagementBindingRequest);
 
     // Information about current Subscriptions
     FunctionPropertyType nodemanagemntSubscriptionData{};
     nodemanagemntSubscriptionData.function =
-        eebus.data_handler.function_to_string(SpineDataTypeHandler::Function::nodeManagementSubscriptionData).c_str();
+        eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::nodeManagementSubscriptionData).c_str();
     nodemanagemntSubscriptionData.possibleOperations->read = PossibleOperationsReadType{};
     feature.description->supportedFunction->push_back(nodemanagemntSubscriptionData);
 
     // Subscription delete calls
     FunctionPropertyType nodemanagementSubscriptionDelete{};
     nodemanagementSubscriptionDelete.function =
-        eebus.data_handler.function_to_string(SpineDataTypeHandler::Function::nodeManagementSubscriptionDeleteCall).c_str();
+        eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::nodeManagementSubscriptionDeleteCall).c_str();
     nodemanagementSubscriptionDelete.possibleOperations = PossibleOperationsType{};
     feature.description->supportedFunction->push_back(nodemanagementSubscriptionDelete);
 
     // Subscription request calls
     FunctionPropertyType nodemanagementSubscriptionRequest{};
     nodemanagementSubscriptionRequest.function =
-        eebus.data_handler.function_to_string(SpineDataTypeHandler::Function::nodeManagementSubscriptionRequestCall).c_str();
+        eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::nodeManagementSubscriptionRequestCall).c_str();
     nodemanagementSubscriptionRequest.possibleOperations = PossibleOperationsType{};
     feature.description->supportedFunction->push_back(nodemanagementSubscriptionRequest);
 
@@ -322,7 +322,7 @@ UseCaseInformationDataType ChargingSummaryUsecase::get_usecase_information()
     return evcs_usecase;
 }
 bool ChargingSummaryUsecase::handle_message(SpineHeader &header,
-                                            SpineDataTypeHandler &data,
+                                            SpineDataTypeHandler *data,
                                             JsonObject response,
                                             SpineConnection *connection)
 {
@@ -353,19 +353,19 @@ NodeManagementDetailedDiscoveryFeatureInformationType ChargingSummaryUsecase::ge
     // The following functions are needed by the ChargingSummary usecase
     // Bill description information
     FunctionPropertyType billDescriptionList{};
-    billDescriptionList.function = eebus.data_handler.function_to_string(SpineDataTypeHandler::Function::billDescriptionListData).c_str();
+    billDescriptionList.function = eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::billDescriptionListData).c_str();
     billDescriptionList.possibleOperations->read = PossibleOperationsReadType{};
     feature.description->supportedFunction->push_back(billDescriptionList);
 
     // Bill constraints information
     FunctionPropertyType billconstraints{};
-    billconstraints.function = eebus.data_handler.function_to_string(SpineDataTypeHandler::Function::billConstraintsListData).c_str();
+    billconstraints.function = eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::billConstraintsListData).c_str();
     billconstraints.possibleOperations->read = PossibleOperationsReadType{};
     feature.description->supportedFunction->push_back(billconstraints);
 
     // Bill list information
     FunctionPropertyType billListData{};
-    billListData.function = eebus.data_handler.function_to_string(SpineDataTypeHandler::Function::billListData).c_str();
+    billListData.function = eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::billListData).c_str();
     billListData.possibleOperations->read = PossibleOperationsReadType{};
     feature.description->supportedFunction->push_back(billListData);
 
@@ -387,7 +387,7 @@ EEBusUseCases::EEBusUseCases()
         usecase_list[i]->set_entity_address(i);
     }
 }
-bool EEBusUseCases::handle_message(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response, SpineConnection *connection)
+bool EEBusUseCases::handle_message(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
     if (header.destination_feature == feature_address_node_management) {
 
