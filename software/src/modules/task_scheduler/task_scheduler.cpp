@@ -153,9 +153,6 @@ void TaskScheduler::custom_loop()
         }
     }
 
-    task_fn_file = nullptr;
-    task_fn_line = 0;
-
     {
         std::lock_guard<std::mutex> lock{this->task_mutex};
         defer {this->currentTask = nullptr;};

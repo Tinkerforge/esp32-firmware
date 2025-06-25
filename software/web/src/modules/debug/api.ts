@@ -34,7 +34,9 @@ export interface state_slow {
     largest_free_dram_block: number;
     largest_free_psram_block: number;
     heap_integrity_ok: boolean;
-    main_loop_max_runtime_us: number;
+    loop_max_us: number;
+    loop_max_fn_file: string;
+    loop_max_fn_line: number;
     min_free_dram: number;
     min_free_psram: number;
     conf_uint_buf_size: number;

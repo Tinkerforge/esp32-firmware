@@ -84,7 +84,15 @@ export class Debug extends Component {
                 </FormRow>
 
                 <FormRow label={__("debug.content.main_loop_max")}>
-                    <OutputFloat value={state_slow.main_loop_max_runtime_us} digits={3} scale={3} unit="ms"/>
+                    <div class="row">
+                        <div class="mb-1 col-12 col-sm-6">
+                            <OutputFloat value={state_slow.loop_max_us} digits={3} scale={3} unit="ms"/>
+                        </div>
+                        <div class="mb-1 col-12 col-sm-6">
+                            <InputText value={state_slow.loop_max_fn_file + ":" + state_slow.loop_max_fn_line}/>
+                        </div>
+                    </div>
+
                 </FormRow>
 
                 <FormSeparator heading={__("debug.content.heap_integrity_header")} first={false} />

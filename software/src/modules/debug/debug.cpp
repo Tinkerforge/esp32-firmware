@@ -164,7 +164,9 @@ void Debug::pre_setup()
         {"largest_free_dram_block",  Config::Uint32(0)},
         {"largest_free_psram_block", Config::Uint32(0)},
         {"heap_integrity_ok", Config::Bool(true)},
-        {"main_loop_max_runtime_us", Config::Uint32(0)},
+        {"loop_max_us", Config::Uint32(0)},
+        {"loop_max_fn_file", Config::Str("", 0, 0)},
+        {"loop_max_fn_line", Config::Uint32(0)},
         {"min_free_dram", Config::Uint32(0)},
         {"min_free_psram", Config::Uint32(0)},
         {"conf_uint_buf_size", Config::Uint32(0)},
@@ -634,13 +636,19 @@ void Debug::task_scheduler_idle_call()
     }
 }
 
+extern const char *task_fn_file;
+extern uint_least32_t task_fn_line;
 
 void Debug::custom_loop() {
     micros_t start = now_us();
     uint32_t run = (start - last_run).as<uint32_t>();
     if (run > run_max && last_run != 0_us) {
         run_max = run;
-        state_slow.get("main_loop_max_runtime_us")->updateUint(run_max);
+        state_slow.get("loop_max_us")->updateUint(run_max);
+        if (task_fn_file != nullptr) {
+            state_slow.get("loop_max_fn_file")->updateString(task_fn_file);
+            state_slow.get("loop_max_fn_line")->updateUint(task_fn_line);
+        }
     }
     last_run = start;
 }
