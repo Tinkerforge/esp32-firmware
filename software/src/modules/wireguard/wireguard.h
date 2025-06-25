@@ -38,12 +38,17 @@ public:
 private:
     void start_wireguard();
 
+    struct wg_data_t {
+        micros_t last_connected = 0_us;
+
+        String private_key;
+        String remote_host;
+
+        WireGuard wg;
+    };
+
     ConfigRoot config;
     ConfigRoot state;
-    WireGuard wg;
 
-    String private_key;
-    String remote_host;
-
-    micros_t last_connected = 0_us;
+    wg_data_t *wg_data = nullptr;
 };

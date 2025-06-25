@@ -110,26 +110,25 @@ void Wireguard::pre_setup()
 
 void Wireguard::start_wireguard()
 {
-    private_key = config.get("private_key")->asString(); // Local copy of unsafe conf String. The network interface created by WG might hold a reference to the C string.
-    remote_host = config.get("remote_host")->asString(); // Local copy of unsafe conf String. lwip_getaddrinfo() might hold a reference to the C string.
-
     const uint16_t remote_port = config.get("remote_port"  )->asUint();
     const String   &psk        = config.get("preshared_key")->asString();
 
-    logger.printfln("Connecting to WireGuard peer %s:%hu", remote_host.c_str(), remote_port);
+    logger.printfln("Connecting to WireGuard peer %s:%hu", wg_data->remote_host.c_str(), remote_port);
 
-    bool success = wg.begin({config.get("internal_ip"           )->asUnsafeCStr()},
-                            {config.get("internal_subnet"       )->asUnsafeCStr()},
-                             config.get("local_port"            )->asUint(),
-                            {config.get("internal_gateway"      )->asUnsafeCStr()},
-                             private_key.c_str(),
-                             remote_host.c_str(),
-                             config.get("remote_public_key"     )->asUnsafeCStr(),
-                             remote_port,
-                            {config.get("allowed_ip"            )->asUnsafeCStr()},
-                             config.get("allowed_subnet"        )->asUnsafeCStr(),
-                             config.get("make_default_interface")->asBool(),
-                             psk.isEmpty() ? nullptr : psk.c_str());
+    const bool success = wg_data->wg.begin(
+        {config.get("internal_ip"           )->asUnsafeCStr()},
+        {config.get("internal_subnet"       )->asUnsafeCStr()},
+         config.get("local_port"            )->asUint(),
+        {config.get("internal_gateway"      )->asUnsafeCStr()},
+         wg_data->private_key.c_str(),
+         wg_data->remote_host.c_str(),
+         config.get("remote_public_key"     )->asUnsafeCStr(),
+         remote_port,
+        {config.get("allowed_ip"            )->asUnsafeCStr()},
+         config.get("allowed_subnet"        )->asUnsafeCStr(),
+         config.get("make_default_interface")->asBool(),
+         psk.isEmpty() ? nullptr : psk.c_str()
+    );
 
     if (!success) {
         logger.printfln("Failed to connect to WireGuard peer. Likely unresolved host.");
@@ -142,19 +141,19 @@ void Wireguard::start_wireguard()
     }
 
     task_scheduler.scheduleWithFixedDelay([this]() {
-        bool up = wg.is_peer_up(nullptr, nullptr);
+        bool up = this->wg_data->wg.is_peer_up(nullptr, nullptr);
 
         if(state.get("state")->updateUint(up ? 3 : 2))
         {
             if (up) {
                 logger.printfln("Wireguard connection established");
-                last_connected = now_us();
-                state.get("connection_start")->updateUint(last_connected.to<millis_t>().as<uint32_t>());
+                this->wg_data->last_connected = now_us();
+                state.get("connection_start")->updateUint(this->wg_data->last_connected.to<millis_t>().as<uint32_t>());
             } else {
                 auto now = now_us();
                 state.get("connection_end")->updateUint(now.to<millis_t>().as<uint32_t>());
 
-                auto connected_for = now - this->last_connected;
+                auto connected_for = now - this->wg_data->last_connected;
                 logger.printfln("Wireguard connection lost. Was connected for %lu seconds.", connected_for.to<millis_t>().as<uint32_t>());
             }
         }
@@ -172,6 +171,10 @@ void Wireguard::setup()
     if (!config.get("enable")->asBool())
         return;
 
+    wg_data = new wg_data_t;
+    wg_data->private_key = config.get("private_key")->asString(); // Local copy of unsafe conf String. The network interface created by WG might hold a reference to the C string.
+    wg_data->remote_host = config.get("remote_host")->asString(); // Local copy of unsafe conf String. lwip_getaddrinfo() might hold a reference to the C string.
+
     logger.printfln("WireGuard enabled. Waiting for network and time sync.");
 
     state.get("state")->updateUint(1);
@@ -179,7 +182,7 @@ void Wireguard::setup()
 
 void Wireguard::register_events()
 {
-    if (!config.get("enable")->asBool())
+    if (!wg_data)
         return;
 
 #if MODULE_NETWORK_AVAILABLE()
