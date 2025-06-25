@@ -94,11 +94,12 @@ public:
 
     /**
     * Handles a binding request for a usecase.
+    * @param header SPINE header of the message. Might be required for releasing of bindings.
     * @param data The SpineDataTypeHandler that contains the command.
     * @param response The JsonObject to write the response to. This should be filled with the response data.
     * @return true if a response was generated and needs to be sent, false if no response is needed.
     */
-    bool handle_binding(SpineDataTypeHandler &data, JsonObject response);
+    bool handle_binding(SpineHeader &header, SpineDataTypeHandler &data, JsonObject response);
     // The list of bindings for this usecase.
     BindingManagementEntryListDataType binding_management_entry_list_{};
     /**
@@ -107,7 +108,7 @@ public:
      * @param server The server FeatureAddressType to check.
      * @return true if the client is bound to the server, false otherwise.
      */
-    bool check_is_bound(FeatureAddressType &client,FeatureAddressType &server);
+    bool check_is_bound(FeatureAddressType &client,FeatureAddressType &server) const;
 
     UseCaseInformationDataType get_usecase_information() override;
     /**
@@ -225,12 +226,13 @@ enum class ResultErrorNumber
 };
 
 /**
- * Generate a result data object and writes it to the response object.
+ * Generate a result data object and writes it to the response object. Generally required when the header demands an acknowledgement or a result.
  * @param response The JsonObject to write the result data to.
  * @param error_number The error number to set in the result data. Default is NoError.
  * @param description The description of the error set in the result data. Default is an empty string.
  */
 void build_result_data(JsonObject &response, ResultErrorNumber error_number = ResultErrorNumber::NoError, const char *description = "");
+
 
 }
 
