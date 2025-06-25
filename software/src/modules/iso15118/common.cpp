@@ -90,8 +90,15 @@ void Common::setup_socket()
 
 void Common::state_machine_loop()
 {
-    if (active_socket < 0) {
-        active_socket = accept(listen_socket, (struct sockaddr *)&source_addr, &addr_len);
+    int new_socket = accept(listen_socket, (struct sockaddr *)&source_addr, &addr_len);
+    if (new_socket > 0) {
+        // We only support one socket connection at a time. If there is a new connection and one is currently open we close the old one.
+        // Usually this means the EV has reconnected. There can't be multiple EVs connected at the same time.
+        if ((active_socket > 0) && (new_socket > 0)) {
+            logger.printfln("Common: Replacing socket %d with %d", active_socket, new_socket);
+        }
+        reset_active_socket();
+        active_socket = new_socket;
         if(active_socket < 0) {
             if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
                 // No connection available, non-blocking mode
@@ -113,7 +120,7 @@ void Common::state_machine_loop()
 
         // If a new socket is opened we expect a new handshake
         exi_in_use = ExiType::AppHand;
-    } else {
+    } else if (active_socket > 0) {
         // TODO: We assume that we always read the whole packet in one go here.
         //       This is of course not necessarily true with TCP.
         //       Instead read the V2GTP header first, then determine the length of the payload,
