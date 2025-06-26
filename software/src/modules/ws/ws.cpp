@@ -63,7 +63,7 @@ void WS::register_urls()
             // TODO: Technically we'd have to log the heap size of the heap that was used for heap_alloc_array.
             // However if the allocation fails we probably used the DRAM.
             multi_heap_info_t dram_info;
-            heap_caps_get_info(&dram_info,  MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+            heap_caps_get_info(&dram_info, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
             logger.printfln("Not enough memory to send initial state. %u > %u (%u)", buf_size, dram_info.largest_free_block, dram_info.total_free_bytes);
             client.close_HTTPThread();
             return;
