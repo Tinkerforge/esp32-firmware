@@ -99,15 +99,18 @@ bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
         return false;
 
     // Use + 1 to compare: in_uri starts with /; the api paths don't.
-    for (size_t i = 0; i < api.commands.size(); i++)
+    const size_t command_size = api.commands.size();
+    for (size_t i = 0; i < command_size; i++)
         if (api.commands[i].path_len == len - 1 && memcmp(api.commands[i].path, in_uri + 1, len - 1) == 0)
             return true;
 
-    for (size_t i = 0; i < api.states.size(); i++)
+    const size_t state_size = api.states.size();
+    for (size_t i = 0; i < state_size; i++)
         if (api.states[i].path_len == len - 1 && memcmp(api.states[i].path, in_uri + 1, len - 1) == 0)
             return true;
 
-    for (size_t i = 0; i < api.responses.size(); i++)
+    const size_t response_size = api.responses.size();
+    for (size_t i = 0; i < response_size; i++)
         if (api.responses[i].path_len == len - 1 && memcmp(api.responses[i].path, in_uri + 1, len - 1) == 0)
             return true;
 
