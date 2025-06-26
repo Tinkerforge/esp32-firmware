@@ -79,6 +79,11 @@ size_t nextSlot()
             typename ConfigT::Slot *block = superblock->blocks[block_i];
             if (!block) {
                 block = ConfigT::allocSlotBuf(SlotConfig<ConfigT>::slots_per_block);
+
+                if (!block) {
+                    esp_system_abort("Couldn't allocate slot buffer");
+                }
+
                 superblock->blocks[block_i] = block;
                 RootBlock<ConfigT>::allocated_blocks++;
             }
@@ -110,6 +115,11 @@ size_t nextSlot()
 
         if (!superblock->next_superblock) {
             Superblock<ConfigT> *new_superblock = static_cast<decltype(superblock)>(calloc_32bit_addressed(1, sizeof(*superblock)));
+
+            if (!new_superblock) {
+                esp_system_abort("Couldn't allocate new superblock");
+            }
+
             superblock->next_superblock = new_superblock;
             logger.printfln("Allocated new superblock at %p for %s", new_superblock, ConfigT::variantName);
         }

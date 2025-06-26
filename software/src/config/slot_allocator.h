@@ -156,6 +156,9 @@ size_t find_last_used_slot(Superblock<ConfigT> *superblock, size_t last_slot_to_
         if (last_slot < std::numeric_limits<size_t>::max()) {
             return last_slot + SlotConfig<ConfigT>::slots_per_superblock;
         }
+
+        // Nothing in next superblock, start checking from the end of the current superblock.
+        last_slot_to_check = SlotConfig<ConfigT>::slots_per_superblock - 1;
     }
 
     size_t last_block_idx = last_slot_to_check / SlotConfig<ConfigT>::slots_per_block;
