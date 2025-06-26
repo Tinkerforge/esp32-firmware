@@ -38,7 +38,7 @@ extern char local_uid_str[32];
 
 // Also change ws.cpp WS_SEND_BUFFER_SIZE when changing MQTT_RECV_BUFFER_SIZE here!
 #if defined(BOARD_HAS_PSRAM)
-#define MQTT_RECV_BUFFER_SIZE 10240U
+#define MQTT_RECV_BUFFER_SIZE 20480U
 #define MQTT_SEND_BUFFER_SIZE 32768U
 #else
 #define MQTT_RECV_BUFFER_SIZE 4096U
