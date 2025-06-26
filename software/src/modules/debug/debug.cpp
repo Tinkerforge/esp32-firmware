@@ -233,16 +233,18 @@ void Debug::pre_setup()
 void Debug::setup()
 {
     task_scheduler.scheduleWithFixedDelay([this]() {
-        size_t free_internal = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
-
-        multi_heap_info_t dram_info;
         multi_heap_info_t psram_info;
-        heap_caps_get_info(&dram_info,  MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+        multi_heap_info_t dram_info;
         heap_caps_get_info(&psram_info, MALLOC_CAP_SPIRAM);
+        heap_caps_get_info(&dram_info,  MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+
+        // (De)Allocations can happen between getting the internal and DRAM free sizes. Don't let free_iram underflow.
+        const size_t free_internal = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
+        const size_t free_iram = free_internal > dram_info.total_free_bytes ? free_internal - dram_info.total_free_bytes : 0;
 
         state_fast.get("uptime")->updateUint(now_us().to<millis_t>().as<uint32_t>());
         state_fast.get("free_dram")->updateUint(dram_info.total_free_bytes);
-        state_fast.get("free_iram")->updateUint(free_internal - dram_info.total_free_bytes);
+        state_fast.get("free_iram")->updateUint(free_iram);
         state_fast.get("free_psram")->updateUint(psram_info.total_free_bytes);
 
         state_slow.get("largest_free_dram_block")->updateUint(dram_info.largest_free_block);
