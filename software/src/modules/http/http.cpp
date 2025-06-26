@@ -155,25 +155,29 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
     CommandRegistration &reg = api.commands[cmdidx];
 
     // Check stack usage after increasing buffer size.
-    char recv_buf[4096];
-    char *recv = recv_buf;
-    size_t recv_size = ARRAY_SIZE(recv_buf);
+    char stack_recv_buf[4096];
+    char *recv_buf;
+    size_t recv_size;
+    std::unique_ptr<char[]> heap_recv_buf;
 
-    auto content_length = req.contentLength();
+    const size_t content_length = req.contentLength();
 
-    if (content_length > recv_size) {
-        recv = (char *)malloc(content_length);
-        if (recv == nullptr)
+    if (content_length <= ARRAY_SIZE(stack_recv_buf)) {
+        recv_buf  = stack_recv_buf;
+        recv_size = ARRAY_SIZE(stack_recv_buf);
+    } else {
+        heap_recv_buf = std::unique_ptr<char[]>{new(std::nothrow) char[content_length]};
+
+        if (heap_recv_buf == nullptr) {
             return req.send(413);
+        }
+
+        recv_buf  = heap_recv_buf.get();
         recv_size = content_length;
     }
-    defer {
-        if (recv != recv_buf)
-            free(recv);
-    };
 
     // TODO: Use streamed parsing
-    int bytes_written = req.receive(recv, recv_size);
+    int bytes_written = req.receive(recv_buf, recv_size);
     if (bytes_written == -1) {
         // buffer was not large enough
         return req.send(413);
@@ -188,7 +192,7 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
     if (bytes_written == 0 && reg.config->is_null()) {
         message = api.callCommand(reg, nullptr, 0);
     } else {
-        message = api.callCommand(reg, recv, bytes_written);
+        message = api.callCommand(reg, recv_buf, bytes_written);
     }
 
     if (message.isEmpty()) {
