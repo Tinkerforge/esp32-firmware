@@ -37,6 +37,7 @@ public:
 
 private:
     void start_wireguard();
+    void connect_wireguard();
 
     struct wg_data_t {
         micros_t last_connected = 0_us;

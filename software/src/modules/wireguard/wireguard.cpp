@@ -22,6 +22,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "tools/dns.h"
 
 static String check_key(const String &key, bool enable)
 {
@@ -110,11 +111,39 @@ void Wireguard::pre_setup()
 
 void Wireguard::start_wireguard()
 {
+    // Check if hostname exists and place address in DNS cache. This avoids blocking for a long time in wg.begin().
+    dns_gethostbyname_addrtype_lwip_ctx_async(wg_data->remote_host.c_str(), [this](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
+        if (data->err != ERR_OK) {
+            const int eno = err_to_errno(data->err);
+            logger.printfln("Failed to resolve '%s': %s (%i|%hhi)", this->wg_data->remote_host.c_str(), strerror(eno), eno, data->err);
+
+            task_scheduler.scheduleOnce([this]() {
+                this->start_wireguard();
+            }, 1_min);
+            return;
+        }
+
+        if (data->addr_ptr == nullptr || data->addr_ptr->type != IPADDR_TYPE_V4) {
+            logger.printfln("Failed to resolve '%s': Unknown host", this->wg_data->remote_host.c_str());
+
+            task_scheduler.scheduleOnce([this]() {
+                this->start_wireguard();
+            }, 10_min);
+            return;
+        }
+
+        connect_wireguard();
+    }, LWIP_DNS_ADDRTYPE_IPV4);
+}
+
+void Wireguard::connect_wireguard()
+{
     const uint16_t remote_port = config.get("remote_port"  )->asUint();
     const String   &psk        = config.get("preshared_key")->asString();
 
     logger.printfln("Connecting to WireGuard peer %s:%hu", wg_data->remote_host.c_str(), remote_port);
 
+    // Performs blocking hostname lookup. Hostname should be cached first.
     const bool success = wg_data->wg.begin(
         {config.get("internal_ip"           )->asUnsafeCStr()},
         {config.get("internal_subnet"       )->asUnsafeCStr()},
