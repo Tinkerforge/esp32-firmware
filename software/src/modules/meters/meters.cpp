@@ -608,7 +608,7 @@ MeterClassID Meters::get_meter_class(uint32_t slot)
 
 MeterLocation Meters::get_meter_location(uint32_t slot)
 {
-    if (slot >= METERS_SLOTS || get_meter_class(slot) == MeterClassID::None) {
+    if (slot >= OPTIONS_METERS_MAX_SLOTS() || get_meter_class(slot) == MeterClassID::None) {
         return MeterLocation::Unknown;
     }
 
