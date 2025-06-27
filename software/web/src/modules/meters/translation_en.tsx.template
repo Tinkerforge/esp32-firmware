@@ -39,6 +39,7 @@ let x = {
             "add_meter_title": "Add energy meter",
             "add_meter_message": /*SFN*/(have: number, max: number) => `${have} of ${max} energy meters configured`/*NF*/,
             "add_meter_slot": "Number",
+            "add_meter_slot_reserved_charger": "Reserved for charger meter",
             "add_meter_class": "Class",
 
             "edit_meter_title": "Edit energy meter",

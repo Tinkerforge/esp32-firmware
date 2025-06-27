@@ -39,6 +39,7 @@ let x = {
             "add_meter_title": "Stromzähler hinzufügen",
             "add_meter_message": /*SFN*/(have: number, max: number) => `${have} von ${max} Stromzählern konfiguriert`/*NF*/,
             "add_meter_slot": "Nummer",
+            "add_meter_slot_reserved_charger": "Reserviert für Wallbox-Zähler",
             "add_meter_class": "Klasse",
 
             "edit_meter_title": "Stromzähler bearbeiten",

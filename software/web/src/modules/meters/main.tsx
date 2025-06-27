@@ -1079,10 +1079,15 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                             onAddGetChildren={() => {
                                 let slots: [string, string][] = [];
                                 let classes: [string, string][] = [];
+                                const charger_meter_slot = API.get_unchecked("evse/meter_config")?.slot;
 
                                 for (let free_meter_slot = 0; free_meter_slot < options.METERS_MAX_SLOTS; ++free_meter_slot) {
                                     if (this.state.configs_table[free_meter_slot][0] == MeterClassID.None) {
-                                        slots.push([free_meter_slot.toString(), free_meter_slot.toString()]);
+                                        let slot_name = free_meter_slot.toString();
+                                        if (free_meter_slot === charger_meter_slot) {
+                                            slot_name += " - " + __("meters.content.add_meter_slot_reserved_charger");
+                                        }
+                                        slots.push([free_meter_slot.toString(), slot_name]);
                                     }
                                 }
 
