@@ -7,7 +7,6 @@
 #include "config.h"
 #include <string>
 #include <vector>
-#include <map>
 #include <optional>
 
 namespace ArduinoJson

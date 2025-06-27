@@ -30,7 +30,6 @@
 #define SPINE_CONNECTION_MAX_JSON_SIZE 8192 // TODO: What is a sane value here?
 #define SPINE_CONNECTION_MAX_DEPTH 30       // Maximum depth of serialization of a json document
 
-#define SPINE_DEVICE_ID "d:_i:123456_WARP3" // TODO: This should be based on the device UUID
 
 
 
@@ -47,7 +46,7 @@ struct SpineHeader {
     uint16_t destination_feature{};
     uint64_t msg_counter{};
     uint64_t msg_counter_received{};
-    CmdClassifierType cmd_classifier;
+    CmdClassifierType cmd_classifier{};
     bool wants_response{};
 
     void from_json(String json);
@@ -80,11 +79,6 @@ public:
     // But for now we dont do that as it is not needed
     uint64_t msg_counter = 0;          // Our message counter
     uint64_t msg_counter_received = 0; // The message counter of the last received datagram
-
-    /**
-     * The ID of this device
-     */
-    CoolString device_id = SPINE_DEVICE_ID;
 
     /**
     * The last received header of a SPINE datagram.

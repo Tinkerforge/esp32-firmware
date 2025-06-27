@@ -22,6 +22,8 @@
 #include <FS.h> // FIXME: without this include here there is a problem with the IPADDR_NONE define in <lwip/ip4_addr.h>
 #include <esp_http_client.h>
 
+#include <utility>
+
 #include "config.h"
 #include "module.h"
 #include "modules/ws/web_sockets.h"
@@ -130,14 +132,16 @@ public:
         size_t length;
     };
     std::unique_ptr<Message, decltype(std::free) *> message_incoming = std::unique_ptr<Message, decltype(std::free) *>(
-        (Message *)heap_caps_calloc_prefer(sizeof(Message), sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+        static_cast<Message *>(
+            heap_caps_calloc_prefer(sizeof(Message), sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL)),
         heap_caps_free);
     std::unique_ptr<Message, decltype(std::free) *> message_outgoing = std::unique_ptr<Message, decltype(std::free) *>(
-        (Message *)heap_caps_calloc_prefer(sizeof(Message), sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+        static_cast<Message *>(
+            heap_caps_calloc_prefer(sizeof(Message), sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL)),
         heap_caps_free);
 
     // Set the ws_client, role and start the state machine that will branch into ClientWait or ServerWait depending on the role
-    ShipConnection(WebSocketsClient ws_client, Role role, CoolString ski) : ws_client(ws_client), role(role), peer_ski(ski)
+    ShipConnection(WebSocketsClient ws_client, const Role role, CoolString ski) : ws_client(ws_client), role(role), peer_ski(std::move(ski))
     {
         state_machine_next_step();
     }
