@@ -37,7 +37,7 @@ void CMNetworking::setup()
     initialized = true;
 }
 
-[[gnu::noinline]]
+[[gnu::noinline]] [[gnu::unused]]
 static void add_mdns_service_base()
 {
     mdns_txt_item_t txt_items[] = {
@@ -47,7 +47,7 @@ static void add_mdns_service_base()
     mdns_service_add(NULL, "_tf-warp-cm", "_udp", 34127, txt_items, ARRAY_SIZE(txt_items));
 }
 
-[[gnu::noinline]]
+[[gnu::noinline]] [[gnu::unused]]
 static void add_mdns_service_enabled(bool enabled)
 {
     mdns_service_txt_item_set("_tf-warp-cm", "_udp", "enabled", enabled ? "true" : "false");
