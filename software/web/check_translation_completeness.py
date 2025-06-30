@@ -28,13 +28,13 @@ def get_all_ts_files(folder):
     return result
 
 def main():
-    ts_files = [os.path.join("src", "main.tsx"), os.path.join("src", "app.tsx")]
+    ts_files = [os.path.join("src_tfpp", "main.tsx"), os.path.join("src_tfpp", "app.tsx")]
 
-    ts_files += get_all_ts_files("./src/ts")
-    ts_files += get_all_ts_files("./src/typings")
+    ts_files += get_all_ts_files("./src_tfpp/ts")
+    ts_files += get_all_ts_files("./src_tfpp/typings")
 
     for frontend_module in sys.argv[1:]:
-        ts_files += get_all_ts_files(os.path.join("src", "modules", frontend_module))
+        ts_files += get_all_ts_files(os.path.join("src_tfpp", "modules", frontend_module))
 
     used_placeholders, template_literals = util.parse_ts_files(ts_files)
 
