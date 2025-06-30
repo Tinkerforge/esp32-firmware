@@ -112,13 +112,13 @@ bool EMPhaseSwitcher::phase_switching_capable()
     return em_v1.get_is_contactor_installed();
 }
 
-bool EMPhaseSwitcher::can_switch_phases_now(uint32_t /*phases_wanted*/)
+bool EMPhaseSwitcher::can_switch_phases_now(uint32_t phases_wanted)
 {
     if (!em_v1.get_is_contactor_installed()) {
         return false;
     }
 
-    if (get_phase_switching_state_internal() != PhaseSwitcherBackend::SwitchingState::Ready) {
+    if (get_phase_switching_state_internal(phases_wanted == 1) != PhaseSwitcherBackend::SwitchingState::Ready) {
         return false;
     }
 
@@ -170,14 +170,14 @@ bool EMPhaseSwitcher::is_external_control_allowed()
     return charge_manager.get_charger_count() == 1;
 }
 
-PhaseSwitcherBackend::SwitchingState EMPhaseSwitcher::get_phase_switching_state_internal()
+PhaseSwitcherBackend::SwitchingState EMPhaseSwitcher::get_phase_switching_state_internal(bool ignore_contactor_error)
 {
     if (!em_v1.get_is_contactor_installed()) {
         // Don't report an error when phase_switching_capable() is false.
         return PhaseSwitcherBackend::SwitchingState::Ready;
     }
 
-    if (em_v1.get_is_contactor_error()) {
+    if (!ignore_contactor_error && em_v1.get_is_contactor_error()) {
         return PhaseSwitcherBackend::SwitchingState::Error;
     }
 
@@ -201,7 +201,7 @@ bool EMPhaseSwitcher::switch_phases_internal(uint32_t phases_wanted)
         return false;
     }
 
-    if (get_phase_switching_state_internal() != PhaseSwitcherBackend::SwitchingState::Ready) {
+    if (get_phase_switching_state_internal(phases_wanted == 1) != PhaseSwitcherBackend::SwitchingState::Ready) {
         logger.printfln("Requested phase switch while not ready.");
         return false;
     }
@@ -228,7 +228,11 @@ void EMPhaseSwitcher::filter_command_packet(size_t charger_idx, cm_command_packe
     }
 
     uint32_t allocated_phases = static_cast<uint32_t>(command_packet->v2.allocated_phases); // Negative values become large positive values, which will be filtered out.
-    if (allocated_phases == 0) {
+
+    if (em_v1.get_is_contactor_error()) {
+        command_packet->v1.allocated_current = 0;
+        allocated_phases = 1;
+    } else if (allocated_phases == 0) {
         allocated_phases = 1;
     } else if (allocated_phases == 2) {
         // Cannot allocate 2 phases, must allocate 3 instead.
@@ -296,7 +300,7 @@ void EMPhaseSwitcher::filter_command_packet(size_t charger_idx, cm_command_packe
                 command_packet->v1.command_flags |= CM_COMMAND_FLAGS_CPDISC_MASK;
             }
 
-            if (get_phase_switching_state_internal() == PhaseSwitcherBackend::SwitchingState::Ready) {
+            if (get_phase_switching_state_internal(allocated_phases == 1) == PhaseSwitcherBackend::SwitchingState::Ready) {
                 if (em_v1.get_phases() == allocated_phases) {
                     if (skip_cp_disconnect) {
                         switching_state = SwitchingState::Idle;

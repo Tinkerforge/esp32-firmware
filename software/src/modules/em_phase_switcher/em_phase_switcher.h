@@ -64,7 +64,7 @@ private:
         PostSwitchStateFaking,
     };
 
-    PhaseSwitcherBackend::SwitchingState get_phase_switching_state_internal();
+    PhaseSwitcherBackend::SwitchingState get_phase_switching_state_internal(bool ignore_contactor_error = false);
     bool switch_phases_internal(uint32_t phases_wanted);
 
     ConfigRoot charger_config;
