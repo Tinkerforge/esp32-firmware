@@ -431,12 +431,13 @@ void EMV1::update_all_data()
 
     if (contactor_installed) {
         if ((all_data.contactor_check_state & 1) == 0) {
-            logger.printfln("Contactor check tripped. Check contactor.");
             if (!contactor_check_tripped) {
+                contactor_check_tripped = true;
+                logger.printfln("Contactor check tripped. Check contactor.");
+
                 bool contactor_okay = all_data.contactor_check_state & 1;
                 AUTOMATION_TRIGGER(EMContactorMonitoring, &contactor_okay);
             }
-            contactor_check_tripped = true;
             em_common.set_error(ERROR_FLAGS_CONTACTOR_MASK);
         }
     }
