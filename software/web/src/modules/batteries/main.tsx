@@ -20,9 +20,8 @@
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import * as options from "../../options";
-import { __, translate_unchecked } from "../../ts/translation";
-import { h, Fragment, ComponentChild } from "preact";
-import { Button, ButtonGroup } from "react-bootstrap";
+import { __ } from "../../ts/translation";
+import { h, Fragment, Component, ComponentChild } from "preact";
 import { FormRow } from "../../ts/components/form_row";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
@@ -586,7 +585,7 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                                         let slots: [string, string][] = [];
                                         let classes: [string, string][] = [];
 
-                                        for (let free_battery_slot = 0; free_battery_slot < BATTERIES_SLOTS; ++free_battery_slot) {
+                                        for (let free_battery_slot = 0; free_battery_slot < options.BATTERIES_MAX_SLOTS; ++free_battery_slot) {
                                             if (this.state.configs[free_battery_slot][0] == BatteryClassID.None || free_battery_slot == battery_slot) {
                                                 slots.push([free_battery_slot.toString(), free_battery_slot.toString()]);
                                             }
@@ -651,13 +650,13 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                                     editExportBasename: __("batteries.content.battery_export_basename") + (this.state.edit_battery_config[0] != BatteryClassID.None && config_plugins[this.state.edit_battery_config[0]].export_basename_suffix ? config_plugins[this.state.edit_battery_config[0]].export_basename_suffix() : ""),
                                 }
                             })}
-                            addEnabled={active_battery_slots.length < BATTERIES_SLOTS}
+                            addEnabled={active_battery_slots.length < options.BATTERIES_MAX_SLOTS}
                             addTitle={__("batteries.content.add_battery_title")}
-                            addMessage={__("batteries.content.add_battery_message")(active_battery_slots.length, BATTERIES_SLOTS)}
+                            addMessage={__("batteries.content.add_battery_message")(active_battery_slots.length, options.BATTERIES_MAX_SLOTS)}
                             onAddShow={async () => {
                                 let add_battery_slot = null;
 
-                                for (let battery_slot = 0; battery_slot < BATTERIES_SLOTS; ++battery_slot) {
+                                for (let battery_slot = 0; battery_slot < options.BATTERIES_MAX_SLOTS; ++battery_slot) {
                                     if (this.state.configs[battery_slot][0] == BatteryClassID.None) {
                                         add_battery_slot = battery_slot;
                                         break;
@@ -670,7 +669,7 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                                 let slots: [string, string][] = [];
                                 let classes: [string, string][] = [];
 
-                                for (let free_battery_slot = 0; free_battery_slot < BATTERIES_SLOTS; ++free_battery_slot) {
+                                for (let free_battery_slot = 0; free_battery_slot < options.BATTERIES_MAX_SLOTS; ++free_battery_slot) {
                                     if (this.state.configs[free_battery_slot][0] == BatteryClassID.None) {
                                         slots.push([free_battery_slot.toString(), free_battery_slot.toString()]);
                                     }
