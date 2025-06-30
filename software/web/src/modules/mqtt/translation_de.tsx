@@ -16,7 +16,7 @@ let x = {
         },
         "content": {
             "mqtt": "MQTT",
-            "enable_mqtt_desc": <>Hierdurch kann {__("the_device")} über den konfigurierten MQTT-Broker kontrolliert werden. <a href={options.WARP_API_DOC_URL}>MQTT-API-Dokumentation</a></>,
+            "enable_mqtt_desc": /*FFN*/() => <>Hierdurch kann {__("the_device")} über den konfigurierten MQTT-Broker kontrolliert werden{options.MQTT_API_DOC_URL.length > 0 ? <>: <a href={options.MQTT_API_DOC_URL}>MQTT-API-Dokumentation</a></> : <>.</>}</>/*NF*/,
             "enable_mqtt": "MQTT aktiviert",
             "read_only": "Nur Lesezugriff",
             "read_only_desc": "Ignoriert Daten, die vom MQTT-Broker (und anderen MQTT-Clients) geschickt werden.",

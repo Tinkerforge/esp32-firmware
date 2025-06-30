@@ -626,7 +626,7 @@ def main():
 
         old_style_options.pop('display_name_user_agent_override', None)
 
-        old_style_options['warp_api_doc_url'] = old_style_options['apidoc_url']
+        old_style_options['mqtt_api_doc_url'] = old_style_options['apidoc_url']
         del old_style_options['apidoc_url']
 
         old_style_options['warp_doc_base_url'] = old_style_options['doc_base_url']

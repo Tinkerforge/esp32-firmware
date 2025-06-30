@@ -94,7 +94,7 @@ export class Mqtt extends ConfigComponent<'mqtt/config', {status_ref?: RefObject
             <SubPage name="mqtt">
                 <ConfigForm id="mqtt_config_form" title={__("mqtt.content.mqtt")} isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormRow label={__("mqtt.content.enable_mqtt")}>
-                        <Switch desc={__("mqtt.content.enable_mqtt_desc")}
+                        <Switch desc={__("mqtt.content.enable_mqtt_desc")()}
                                 checked={state.enable_mqtt}
                                 onClick={this.toggle('enable_mqtt')}/>
                     </FormRow>
