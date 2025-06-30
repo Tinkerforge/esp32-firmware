@@ -90,8 +90,6 @@ void Batteries::setup()
         config_prototypes[i] = {battery_class, *battery_generator->get_config_prototype()};
     }
 
-    bool have_battery = false;
-
     for (uint32_t slot = 0; slot < OPTIONS_BATTERIES_MAX_SLOTS(); slot++) {
         BatterySlot &battery_slot = battery_slots[slot];
         BatteryClassID battery_class = BatteryClassID::None;
