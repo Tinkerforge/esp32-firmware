@@ -46,6 +46,7 @@ let x = {
             "table_carlo_gavazzi_em510": "Carlo Gavazzi EM510 / EM511",
             "table_carlo_gavazzi_em530": "Carlo Gavazzi EM530",
             "table_carlo_gavazzi_em540": "Carlo Gavazzi EM540",
+            "table_carlo_gavazzi_em580": "Carlo Gavazzi EM580",
             "table_solaredge": "SolarEdge",
             "table_eastron_sdm630_tcp": "Eastron SDM630 TCP",
             "table_tinkerforge_warp_charger": "Tinkerforge WARP Charger",

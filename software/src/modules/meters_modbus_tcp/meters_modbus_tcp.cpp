@@ -165,6 +165,7 @@ void MetersModbusTCP::pre_setup()
     table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziEM510, carlo_gavazzi_single_phase});
     table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziEM530, carlo_gavazzi});
     table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziEM540, carlo_gavazzi});
+    table_prototypes.push_back({MeterModbusTCPTableID::CarloGavazziEM580, carlo_gavazzi});
 
     table_prototypes.push_back({MeterModbusTCPTableID::Solaredge, Config::Object({
         {"virtual_meter", Config::Enum(SolaredgeVirtualMeter::None)},

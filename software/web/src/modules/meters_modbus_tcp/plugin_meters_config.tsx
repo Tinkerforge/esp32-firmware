@@ -323,6 +323,13 @@ type TableConfigCarloGavazziEM540 = [
     },
 ];
 
+type TableConfigCarloGavazziEM580 = [
+    MeterModbusTCPTableID.CarloGavazziEM580,
+    {
+        device_address: number;
+    },
+];
+
 type TableConfigSolaredge = [
     MeterModbusTCPTableID.Solaredge,
     {
@@ -424,6 +431,7 @@ type TableConfig = TableConfigNone |
                    TableConfigCarloGavazziEM510 |
                    TableConfigCarloGavazziEM530 |
                    TableConfigCarloGavazziEM540 |
+                   TableConfigCarloGavazziEM580 |
                    TableConfigSolaredge |
                    TableConfigEastronSDM630TCP |
                    TableConfigTinkerforgeWARPCharger |
@@ -542,6 +550,9 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
 
         case MeterModbusTCPTableID.CarloGavazziEM540:
             return [MeterModbusTCPTableID.CarloGavazziEM540, {device_address: 1}];
+
+        case MeterModbusTCPTableID.CarloGavazziEM580:
+            return [MeterModbusTCPTableID.CarloGavazziEM580, {device_address: 1}];
 
         case MeterModbusTCPTableID.Solaredge:
             return [MeterModbusTCPTableID.Solaredge, {virtual_meter: null, device_address: 1}];
@@ -800,6 +811,7 @@ export function init() {
                                 [MeterModbusTCPTableID.CarloGavazziEM510.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em510")],
                                 [MeterModbusTCPTableID.CarloGavazziEM530.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em530")],
                                 [MeterModbusTCPTableID.CarloGavazziEM540.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em540")],
+                                [MeterModbusTCPTableID.CarloGavazziEM580.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em580")],
                                 [MeterModbusTCPTableID.DeyeHybridInverter.toString(), __("meters_modbus_tcp.content.table_deye_hybrid_inverter")],
                                 [MeterModbusTCPTableID.E3DC.toString(), __("meters_modbus_tcp.content.table_e3dc")],
                                 [MeterModbusTCPTableID.EastronSDM630TCP.toString(), __("meters_modbus_tcp.content.table_eastron_sdm630_tcp")],
@@ -876,6 +888,7 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM510
                   || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM530
                   || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM540
+                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM580
                   || config[1].table[0] == MeterModbusTCPTableID.Solaredge
                   || config[1].table[0] == MeterModbusTCPTableID.EastronSDM630TCP
                   || config[1].table[0] == MeterModbusTCPTableID.TinkerforgeWARPCharger

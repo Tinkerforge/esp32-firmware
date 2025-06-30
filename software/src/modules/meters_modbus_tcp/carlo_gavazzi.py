@@ -2252,4 +2252,241 @@ specs = [
             },
         ],
     },
+    {
+        'name': 'Carlo Gavazzi EM580',
+        'register_type': 'InputRegister',
+        'values': [
+            {
+                'name': 'V L1-N [0.1 V]',
+                'value_id': 'VoltageL1N',
+                'start_address': 0x00,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'V L2-N [0.1 V]',
+                'value_id': 'VoltageL2N',
+                'start_address': 0x02,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'V L3-N [0.1 V]',
+                'value_id': 'VoltageL3N',
+                'start_address': 0x04,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'V L1-L2 [0.1 V]',
+                'value_id': 'VoltageL1L2',
+                'start_address': 0x06,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'V L2-L3 [0.1 V]',
+                'value_id': 'VoltageL2L3',
+                'start_address': 0x08,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'V L3-L1 [0.1 V]',
+                'value_id': 'VoltageL3L1',
+                'start_address': 0x0A,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'A L1 [0.001 A]',
+                'value_id': 'CurrentL1ImExDiff',  # FIXME: direction?
+                'start_address': 0x0C,
+                'value_type': 'S32LE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'A L2 [0.001 A]',
+                'value_id': 'CurrentL2ImExDiff',  # FIXME: direction?
+                'start_address': 0x0E,
+                'value_type': 'S32LE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'A L3 [0.001 A]',
+                'value_id': 'CurrentL3ImExDiff',  # FIXME: direction?
+                'start_address': 0x10,
+                'value_type': 'S32LE',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'W L1 [0.1 W]',
+                'value_id': 'PowerActiveL1ImExDiff',  # FIXME: direction?
+                'start_address': 0x12,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'W L2 [0.1 W]',
+                'value_id': 'PowerActiveL2ImExDiff',  # FIXME: direction?
+                'start_address': 0x14,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'W L3 [0.1 W]',
+                'value_id': 'PowerActiveL3ImExDiff',  # FIXME: direction?
+                'start_address': 0x16,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'VA L1 [0.1 VA]',
+                'value_id': 'PowerApparentL1ImExDiff',  # FIXME: direction?
+                'start_address': 0x18,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'VA L2 [0.1 VA]',
+                'value_id': 'PowerApparentL2ImExDiff',  # FIXME: direction?
+                'start_address': 0x1A,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'VA L3 [0.1 VA]',
+                'value_id': 'PowerApparentL3ImExDiff',  # FIXME: direction?
+                'start_address': 0x1C,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'var L1 [0.1 var]',
+                'value_id': 'PowerReactiveL1IndCapDiff',  # FIXME: direction?
+                'start_address': 0x1E,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'var L2 [0.1 var]',
+                'value_id': 'PowerReactiveL2IndCapDiff',  # FIXME: direction?
+                'start_address': 0x20,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'var L3 [0.1 var]',
+                'value_id': 'PowerReactiveL3IndCapDiff',  # FIXME: direction?
+                'start_address': 0x22,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'V L-N Sum [0.1 V]',
+                'value_id': 'VoltageLNAvg',  # FIXME: datasheet says sum, but average would make more sense
+                'start_address': 0x24,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'V L-L Sum [0.1 V]',
+                'value_id': 'VoltageLLAvg',  # FIXME: datasheet says sum, but average would make more sense
+                'start_address': 0x26,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'W Sum [0.1 W]',
+                'value_id': 'PowerActiveLSumImExDiff',  # FIXME: direction?
+                'start_address': 0x28,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'VA Sum [0.1 VA]',
+                'value_id': 'PowerApparentLSumImExDiff',  # FIXME: direction?
+                'start_address': 0x2A,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'var Sum [0.1 var]',
+                'value_id': 'PowerReactiveLSumIndCapDiff',  # FIXME: direction?
+                'start_address': 0x2C,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'PF L1 [0.001]',
+                'value_id': 'PowerFactorL1Directional',
+                'start_address': 0x2E,
+                'value_type': 'S16',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'PF L2 [0.001]',
+                'value_id': 'PowerFactorL2Directional',
+                'start_address': 0x2F,
+                'value_type': 'S16',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'PF L3 [0.001]',
+                'value_id': 'PowerFactorL3Directional',
+                'start_address': 0x30,
+                'value_type': 'S16',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'PF Sum [0.001]',
+                'value_id': 'PowerFactorLSumDirectional',
+                'start_address': 0x31,
+                'value_type': 'S16',
+                'scale_factor': 0.001,
+            },
+            {
+                'name': 'Hz [0.1 Hz]',
+                'value_id': 'FrequencyLAvg',
+                'start_address': 0x33,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'kWh Positive Total [0.1 kWh]',
+                'value_id': 'EnergyActiveLSumImport',  # FIXME: direction?
+                'start_address': 0x34,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'kvarh Positive Total [0.1 kvarh]',
+                'value_id': 'EnergyReactiveLSumInductive',  # FIXME: direction?
+                'start_address': 0x36,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'kWh Negative Total [0.1 kWh]',
+                'value_id': 'EnergyActiveLSumExport',  # FIXME: direction?
+                'start_address': 0x4E,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'kvarh Negative Total [0.1 kvarh]',
+                'value_id': 'EnergyReactiveLSumCapacitive',  # FIXME: direction?
+                'start_address': 0x50,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'kVAh Total [0.1 kVAh]',
+                'value_id': 'EnergyApparentLSumImExSum',  # FIXME: sum?
+                'start_address': 0x56,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+        ],
+    },
 ]
