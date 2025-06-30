@@ -74,7 +74,7 @@ void BatteryControl::setup()
 
     initialized = true;
 
-    for (size_t i = 0; i < BATTERIES_SLOTS; i++) {
+    for (size_t i = 0; i < OPTIONS_BATTERIES_MAX_SLOTS(); i++) {
         if (batteries.get_battery_class(i) != BatteryClassID::None) {
             have_battery = true;
             break;
@@ -168,7 +168,7 @@ void BatteryControl::register_events()
         return;
     }
 
-    for (uint32_t slot = 0; slot < METERS_SLOTS; slot++) {
+    for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
         if (meters.get_meter_location(slot) != MeterLocation::Battery) {
             continue;
         }
