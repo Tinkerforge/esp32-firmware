@@ -56,7 +56,7 @@ void Batteries::pre_setup()
         automation.register_action(
             automation_id,
             Config::Object({
-                {"battery_slot", Config::Uint(0, 0, BATTERIES_SLOTS - 1)}
+                {"battery_slot", Config::Uint(0, 0, OPTIONS_BATTERIES_MAX_SLOTS() - 1)}
             }),
             [this, path_type](const Config *config) {
                 uint32_t slot = config->get("battery_slot")->asUint();
@@ -269,7 +269,7 @@ String Batteries::get_path(uint32_t slot, Batteries::PathType path_type)
 
 void Batteries::start_action_all(IBattery::Action action)
 {
-    for (uint32_t slot = 0; slot < BATTERIES_SLOTS; slot++) {
+    for (uint32_t slot = 0; slot < OPTIONS_BATTERIES_MAX_SLOTS(); slot++) {
         IBattery *battery = battery_slots[slot].battery;
 
         battery->start_action(action, [slot, action](bool success) {
