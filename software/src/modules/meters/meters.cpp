@@ -297,7 +297,7 @@ void Meters::setup()
     generators.clear();
     generators.shrink_to_fit();
 
-    history_chars_per_value = max(String(OPTIONS_METER_VALUE_HISTORY_VALUE_MIN()).length(), String(OPTIONS_METER_VALUE_HISTORY_VALUE_MAX()).length());
+    history_chars_per_value = max(String(VALUE_HISTORY_VALUE_MIN).length(), String(VALUE_HISTORY_VALUE_MAX).length());
     // val_min values are replaced with null -> require at least 4 chars per value.
     history_chars_per_value = max(4U, history_chars_per_value);
     // For ',' between the values.
@@ -307,10 +307,10 @@ void Meters::setup()
         micros_t now = now_us();
         uint32_t current_history_slot = (now / minutes_t{HISTORY_MINUTE_INTERVAL}).as<uint32_t>();
         bool update_history = current_history_slot != last_history_slot;
-        OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE() live_samples[OPTIONS_METERS_MAX_SLOTS()];
-        OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE() history_samples[OPTIONS_METERS_MAX_SLOTS()];
+        int32_t live_samples[OPTIONS_METERS_MAX_SLOTS()];
+        int32_t history_samples[OPTIONS_METERS_MAX_SLOTS()];
         bool valid_samples[OPTIONS_METERS_MAX_SLOTS()];
-        OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE() val_min = std::numeric_limits<OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE()>::lowest();
+        int32_t val_min = INT32_MIN;
         StringBuilder sb;
 
         for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {

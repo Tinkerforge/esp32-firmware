@@ -43,13 +43,12 @@
 
 #define HISTORY_RING_BUF_SIZE (HISTORY_HOURS * 60 / HISTORY_MINUTE_INTERVAL)
 
-// Check for < because ::lowest() is a reserved value.
-static_assert(std::numeric_limits<OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE()>::lowest() < OPTIONS_METER_VALUE_HISTORY_VALUE_MIN());
-static_assert(std::numeric_limits<OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE()>::max() >= OPTIONS_METER_VALUE_HISTORY_VALUE_MAX());
+#define VALUE_HISTORY_VALUE_MIN -9999999
+#define VALUE_HISTORY_VALUE_MAX  9999999
 
-// We use int to format the buffer, so at most int is allowed.
-static_assert(std::numeric_limits<int>::lowest() <= OPTIONS_METER_VALUE_HISTORY_VALUE_MIN());
-static_assert(std::numeric_limits<int>::max() >= OPTIONS_METER_VALUE_HISTORY_VALUE_MAX());
+// Check for < because INT32_MIN is a reserved value.
+static_assert(INT32_MIN < VALUE_HISTORY_VALUE_MIN);
+static_assert(INT32_MAX >= VALUE_HISTORY_VALUE_MAX);
 
 class StringBuilder;
 
@@ -64,7 +63,7 @@ public:
     void register_urls(String base_url);
     void register_urls_empty(String base_url);
     void add_sample(float sample);
-    void tick(micros_t now, bool update_history, OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE() *live_sample, OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE() *history_sample);
+    void tick(micros_t now, bool update_history, int32_t *live_sample, int32_t *history_sample);
     void format_live(micros_t now, StringBuilder *sb);
     void format_live_samples(StringBuilder *sb);
     void format_history(micros_t now, StringBuilder *sb);
@@ -84,10 +83,10 @@ public:
     uint32_t sample_count = 0;
     float sample_sum = 0;
 
-    OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE() last_live_val;
+    int32_t last_live_val;
     int last_live_val_valid = 0;
 
-    TF_PackedRingbuffer<OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE(),
+    TF_PackedRingbuffer<int32_t,
                   3 * 60 * HISTORY_MINUTE_INTERVAL,
                   uint32_t,
 #if defined(BOARD_HAS_PSRAM)
@@ -98,7 +97,7 @@ public:
                   free_any> live;
     micros_t live_last_update = 0_us;
 
-    TF_PackedRingbuffer<OPTIONS_METER_VALUE_HISTORY_VALUE_TYPE(),
+    TF_PackedRingbuffer<int32_t,
                   HISTORY_RING_BUF_SIZE,
                   uint32_t,
 #if defined(BOARD_HAS_PSRAM)

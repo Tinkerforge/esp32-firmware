@@ -643,8 +643,7 @@ def main():
 
     old_style_build_flags = {}
 
-    for key in ['FIRMWARE_UPDATE_ENABLE_ROLLBACK', 'METER_VALUE_HISTORY_VALUE_TYPE', 'METER_VALUE_HISTORY_VALUE_MIN', 'METER_VALUE_HISTORY_VALUE_MAX',
-                'METERS_SLOTS', 'METERS_SLOT_0_DEFAULT_CLASS', 'POWER_MANAGER_DEFAULT_METER_SLOT', 'CHARGE_TRACKER_PDF_LOGO']:
+    for key in ['FIRMWARE_UPDATE_ENABLE_ROLLBACK', 'METERS_SLOTS', 'METERS_SLOT_0_DEFAULT_CLASS', 'POWER_MANAGER_DEFAULT_METER_SLOT', 'CHARGE_TRACKER_PDF_LOGO']:
         for build_flag in build_flags:
             if key in build_flag:
                 old_style_build_flags[key.lower()] = build_flag.split(key + '=')[-1]
