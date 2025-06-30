@@ -23,6 +23,7 @@
 
 #include "config.h"
 #include "module.h"
+#include "options.h"
 #include "TFTools/Micros.h"
 #include "tools/tristate_bool.h"
 #include "rule_condition.enum.h"
@@ -97,7 +98,7 @@ private:
     int32_t soc_cache_avg  = std::numeric_limits<decltype(soc_cache_avg)>::min();
     int32_t price_cache    = std::numeric_limits<decltype(soc_cache_avg)>::min();
     int32_t forecast_cache = std::numeric_limits<decltype(soc_cache_avg)>::min();
-    uint8_t soc_cache[METERS_SLOTS];
+    uint8_t soc_cache[OPTIONS_METERS_MAX_SLOTS()];
     bool fast_charger_in_c_cache = false;
 
     TristateBool charge_permitted_by_rules = TristateBool::Undefined;
