@@ -27,7 +27,9 @@ bool Config::ConfString::slotEmpty(const Slot *slot)
 
 Config::ConfString::Slot *Config::ConfString::allocSlotBuf(size_t elements)
 {
-    auto *result = new Config::ConfString::Slot[elements];
+    auto *result = new(std::nothrow) Config::ConfString::Slot[elements];
+    if (result == nullptr)
+        return nullptr;
 
     // A slot is empty if the string is invalid.
     for(size_t i = 0; i < elements; ++i)

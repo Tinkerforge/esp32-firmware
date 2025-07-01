@@ -30,7 +30,7 @@ bool Config::ConfArray::slotEmpty(const Slot *slot)
 
 Config::ConfArray::Slot *Config::ConfArray::allocSlotBuf(size_t elements)
 {
-    return new Config::ConfArray::Slot[elements];
+    return new(std::nothrow) Config::ConfArray::Slot[elements];
 }
 
 [[gnu::noinline]]

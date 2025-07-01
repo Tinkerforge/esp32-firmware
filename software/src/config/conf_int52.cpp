@@ -29,6 +29,8 @@ bool Config::ConfInt52::slotEmpty(const Slot *slot)
 Config::ConfInt52::Slot *Config::ConfInt52::allocSlotBuf(size_t elements)
 {
     Config::ConfInt52::Slot *block = static_cast<decltype(block)>(malloc_32bit_addressed(elements * sizeof(*block)));
+    if (block == nullptr)
+        return nullptr;
 
     for (size_t i = 0; i < elements; i++) {
         Config::ConfInt52::Slot *slot = block + i;

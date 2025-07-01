@@ -38,6 +38,8 @@ bool Config::ConfFloat::slotEmpty(const Slot *slot) {
 Config::ConfFloat::Slot *Config::ConfFloat::allocSlotBuf(size_t elements)
 {
     Config::ConfFloat::Slot *block = static_cast<decltype(block)>(malloc_32bit_addressed(elements * sizeof(*block)));
+    if (block == nullptr)
+        return nullptr;
 
     float_uint v;
     v.f = NAN;

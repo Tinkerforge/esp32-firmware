@@ -27,7 +27,7 @@ bool Config::ConfUnion::slotEmpty(const Slot *slot)
 
 Config::ConfUnion::Slot *Config::ConfUnion::allocSlotBuf(size_t elements)
 {
-    return new Config::ConfUnion::Slot[elements];
+    return new(std::nothrow) Config::ConfUnion::Slot[elements];
 }
 
 bool Config::ConfUnion::changeUnionVariant(uint8_t tag)
