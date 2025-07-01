@@ -115,4 +115,5 @@ private:
     uint64_t tick_task;
 
     bool send_illegal_data_address = true;
+    uint8_t ignored_events = 0;
 };

@@ -1260,12 +1260,22 @@ void ModbusTCP::restart_server() {
 }
 
 void ModbusTCP::register_events() {
+    ++ignored_events;
     event.registerEvent("modbus_tcp/config", {}, [this](const Config *_config) {
+        if (ignored_events > 0) {
+            --ignored_events;
+            return EventResult::OK;
+        }
         this->restart_server();
         return EventResult::OK;
     });
 
+    ++ignored_events;
     event.registerEvent("evse/modbus_tcp_enabled", {}, [this](const Config *_config) {
+        if (ignored_events > 0) {
+            --ignored_events;
+            return EventResult::OK;
+        }
         this->restart_server();
         return EventResult::OK;
     });
@@ -1280,9 +1290,11 @@ void ModbusTCP::setup()
         return;
     }
 
-    start_server();
+    task_scheduler.scheduleOnce([this](){
+        start_server();
+        started = true;
+    });
 
-    started = true;
     initialized = true;
 }
 
