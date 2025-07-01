@@ -91,9 +91,7 @@ private:
     ConfigRoot scan_abort_config;
 
     struct Scan {
-        Scan() : client(TFModbusTCPByteOrder::Host) {}
-
-        TFModbusTCPClient client;
+        TFGenericTCPSharedClient *client = nullptr;
         micros_t last_keep_alive = 0_us;
         String host;
         uint16_t port;

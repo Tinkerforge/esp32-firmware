@@ -177,26 +177,32 @@ void MetersSunSpec::loop()
         scan_printfln("Connecting to %s:%u", scan->host.c_str(), scan->port);
         scan->state = ScanState::Connecting;
 
-        scan->client.connect(scan->host.c_str(), scan->port,
-        [this](TFGenericTCPClientConnectResult result, int error_number) {
-            if (result == TFGenericTCPClientConnectResult::Connected) {
-                scan->state = ScanState::ReadSunSpecID;
-            }
-            else {
+        modbus_tcp_client.get_pool()->acquire(scan->host.c_str(), scan->port,
+        [this](TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPSharedClient *shared_client) {
+            if (result != TFGenericTCPClientConnectResult::Connected) {
                 char buf[256] = "";
 
                 GenericTCPClientConnectorBase::format_connect_error(result, error_number, scan->host.c_str(), scan->port, buf, sizeof(buf));
                 scan_printfln("%s", buf);
 
                 scan->state = ScanState::Done;
+                return;
             }
+
+            scan->client = shared_client;
+            scan->state = ScanState::ReadSunSpecID;
         },
-        [this](TFGenericTCPClientDisconnectReason reason, int error_number) {
+        [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client) {
+            if (scan->client != shared_client) {
+                return;
+            }
+
             char buf[256] = "";
 
             GenericTCPClientConnectorBase::format_disconnect_reason(reason, error_number, scan->host.c_str(), scan->port, buf, sizeof(buf));
             scan_printfln("%s", buf);
 
+            scan->client = nullptr;
             scan->state = ScanState::Done;
         });
 
@@ -206,7 +212,10 @@ void MetersSunSpec::loop()
         break;
 
     case ScanState::Disconnect:
-        scan->client.disconnect();
+        if (scan->client != nullptr) {
+            modbus_tcp_client.get_pool()->release(scan->client);
+        }
+
         break;
 
     case ScanState::Done: {
@@ -229,7 +238,7 @@ void MetersSunSpec::loop()
             scan = nullptr;
         }
 
-        return; // don't tick the destructed client
+        break;
 
     case ScanState::NextDeviceAddress:
         if (scan->abort || scan->device_address >= scan->device_address_last) {
@@ -314,12 +323,12 @@ void MetersSunSpec::loop()
 
             scan->state = ScanState::Reading;
 
-            scan->client.transact(scan->device_address,
-                                  TFModbusTCPFunctionCode::ReadHoldingRegisters,
-                                  static_cast<uint16_t>(scan->read_address),
-                                  static_cast<uint16_t>(read_chunk_size),
-                                  &scan->read_buffer[scan->read_index],
-                                  scan->read_timeout,
+            static_cast<TFModbusTCPSharedClient *>(scan->client)->transact(scan->device_address,
+                                                                           TFModbusTCPFunctionCode::ReadHoldingRegisters,
+                                                                           static_cast<uint16_t>(scan->read_address),
+                                                                           static_cast<uint16_t>(read_chunk_size),
+                                                                           &scan->read_buffer[scan->read_index],
+                                                                           scan->read_timeout,
             [this, read_chunk_size](TFModbusTCPClientTransactionResult result) {
                 if (scan->state != ScanState::Reading) {
                     return;
@@ -701,8 +710,6 @@ void MetersSunSpec::loop()
     default:
         esp_system_abort("meters_sun_spec: Invalid state.");
     }
-
-    scan->client.tick();
 }
 
 [[gnu::const]]
