@@ -380,19 +380,6 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                                 />
                             </FormRow>
 
-                            <FormRow label={__("power_manager.content.battery_inverted")} label_muted="">
-                                <InputSelect
-                                    disabled={s.meter_slot_battery_power >= 255}
-                                    required={s.meter_slot_battery_power < 255}
-                                    items={[
-                                        ["n", __("power_manager.content.battery_inverted_n")],
-                                        ["i", __("power_manager.content.battery_inverted_i")],
-                                    ]}
-                                    value={s.battery_inverted ? "i" : "n"}
-                                    onValue={(v) => this.setState({battery_inverted: v == "i"})}
-                                />
-                            </FormRow>
-
                             <FormRow label={__("power_manager.content.battery_deadzone")} label_muted={__("power_manager.content.battery_deadzone_muted")} help={__("power_manager.content.battery_deadzone_help")}>
                                 <InputFloat
                                     disabled={s.meter_slot_battery_power >= 255}

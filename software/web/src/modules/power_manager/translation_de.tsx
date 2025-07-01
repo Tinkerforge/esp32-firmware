@@ -69,9 +69,6 @@ let x = {
             "battery_mode": "Speicherpriorität",
             "battery_mode_prefer_chargers": "Wallboxen bevorzugen, überschüssige Leistung für Speicher",
             "battery_mode_prefer_battery": "Speicher bevorzugen, überschüssige Leistung für Wallboxen",
-            "battery_inverted": "Energieflussrichtung des Speichers",
-            "battery_inverted_n": "Normal: positive Leistung beim Laden, negative Leistung beim Entladen",
-            "battery_inverted_i": "Invertiert: negative Leistung beim Laden, positive Leistung beim Entladen",
             "battery_deadzone": "Bezugs- und Einspeise-Toleranz",
             "battery_deadzone_muted": "am Netzanschluss, während der Speicher aktiv ist",
             "battery_deadzone_help": "Die meisten Batteriespeicher erlauben einen gewisse Bezug und Einspeisung beim Entladen bzw. Laden. Die Toleranz sollte auf das 1,5-fache des erwarteten Bezugs und Einspeisung gestellt werden. Lässt der Speicher einen Bezug von 50 W und eine Einspeisung von -50 W zu, sollte die Toleranz auf 75 W gestellt werden."
