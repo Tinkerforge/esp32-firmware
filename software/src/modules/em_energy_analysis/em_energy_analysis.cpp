@@ -741,7 +741,7 @@ void EMEnergyAnalysis::save_persistent_data()
     data_v2.version = 2;
     data_v2.checksum = internet_checksum_u16(reinterpret_cast<const uint16_t *>(&data_v2), sizeof(data_v2) / sizeof(uint16_t));
 
-    for (uint32_t slot = 1; slot < 4 && slot < OMETERS_MAX_SLOTS_RECORDED; ++slot) {
+    for (uint32_t slot = 1; slot < 4 && slot < METERS_MAX_SLOTS_RECORDED; ++slot) {
         data_v3a.history_meter_energy_import[slot - 1] = history_meter_energy_import[slot];
         data_v3a.history_meter_energy_export[slot - 1] = history_meter_energy_export[slot];
     }
