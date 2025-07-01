@@ -21,6 +21,7 @@ from collections import namedtuple
 import tinkerforge_util as tfutil
 import util
 from hyphenations import hyphenations, allowed_missing
+from web.tfpp import tfpp
 
 FrontendComponent = namedtuple('FrontendComponent', 'module component mode')
 FrontendStatusComponent = namedtuple('FrontendStatusComponent', 'module component')
@@ -580,6 +581,147 @@ def find_module_space(modules, name_space):
             sys.exit(1)
 
     return None, -1
+
+def preprocess_web(frontend_modules_under):
+    with tfutil.ChangedDirectory('web'):
+        try:
+            shutil.rmtree('src_tfpp')
+        except FileNotFoundError:
+            pass
+
+        for root, dirs, files in os.walk('src', followlinks=True):
+            for name in files:
+                src_path = pathlib.Path(root) / name
+
+                if src_path.parts[:2] == ('src', 'modules') and src_path.parts[2] not in frontend_modules_under:
+                    continue
+
+                src_tfpp_path = pathlib.Path('src_tfpp', *src_path.parts[1:])
+
+                if src_path.suffix in ['.ts', '.tsx']:
+                    try:
+                        tfpp(src_path, src_tfpp_path)
+                    except Exception as e:
+                        print(f'Error: {e}', file=sys.stderr)
+                        exit(42)
+                else:
+                    src_tfpp_path.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(src_path, src_tfpp_path)
+
+def build_web(js_source_map, css_source_map, no_minify):
+    with tfutil.ChangedDirectory(pathlib.Path('web', 'src_tfpp')):
+        js_analyze = False
+
+        build_dir = pathlib.Path('..', 'build')
+
+        html_minifier_terser_options = [
+            '--collapse-boolean-attributes',
+            '--collapse-inline-tag-whitespace',
+            '--collapse-whitespace',
+            '--conservative-collapse',
+            '--decode-entities',
+            '--no-include-auto-generated-tags',
+            '--minify-urls',
+            '--prevent-attributes-escaping',
+            '--process-conditional-comments',
+            '--remove-attribute-quotes',
+            '--remove-comments',
+            '--remove-empty-attributes',
+            '--remove-optional-tags',
+            '--remove-redundant-attributes',
+            '--remove-script-type-attributes',
+            '--remove-style-link-type-attributes',
+            '--sort-attributes',
+            '--sort-class-name',
+            '--trim-custom-fragments',
+            '--use-short-doctype'
+        ]
+
+        try:
+            shutil.rmtree(str(build_dir))
+        except FileNotFoundError:
+            pass
+
+        build_dir.mkdir(parents=True)
+
+        print('tsc...')
+        check_call([
+            'npx',
+            'tsc',
+            '--build',
+            'tsconfig.json'
+        ], shell=sys.platform == 'win32')
+
+        print('esbuild...')
+        esbuild_args = [
+            'npx',
+            'esbuild',
+            'main.tsx',
+            f'--metafile={build_dir / "meta.json"}',
+            '--bundle',
+            '--target=es6',
+            '--alias:argon2-browser=../node_modules/argon2-browser/dist/argon2-bundled.min.js',
+            '--alias:jquery=../node_modules/jquery/dist/jquery.slim.min',
+            f'--outfile={build_dir / "bundle.min.js"}'
+        ]
+
+        if js_analyze:
+            esbuild_args += ['--analyze']
+
+        if js_source_map:
+            esbuild_args += ['--sourcemap=inline']
+
+        if not no_minify:
+            esbuild_args += ['--minify']
+
+        check_call(esbuild_args, shell=sys.platform == 'win32')
+
+        print('sass...')
+        scss_args = [
+            'npx',
+            'sass',
+            '--silence-deprecation',
+            'color-functions,import,global-builtin,abs-percent,mixed-decls'  # still used by bootstrap 4
+        ]
+
+        if not css_source_map:
+            scss_args += ['--no-source-map']
+
+        scss_args += [
+            'main.scss',
+            str(build_dir / 'main.css')
+        ]
+
+        check_call(scss_args, shell=sys.platform == 'win32')
+
+        print('postcss...')
+        check_call([
+            'npx',
+            'postcss',
+            str(build_dir / 'main.css'),
+            '-o',
+            str(build_dir / 'main.min.css')
+        ], shell=sys.platform == 'win32')
+
+        if css_source_map:
+            css_src = (build_dir / 'main.min.css').read_text(encoding='utf-8')
+            css_map = b64encode((build_dir / 'main.min.css.map').read_bytes()).decode('ascii')
+
+            (build_dir / 'main.min.css.map').unlink()
+
+            css_src = css_src.replace('sourceMappingURL=main.min.css.map', f'sourceMappingURL=data:text/json;base64,{css_map}')
+
+            (build_dir / 'main.min.css').write_text(css_src, encoding='utf-8')
+
+        print('html-minifier-terser...')
+        check_call([
+            'npx',
+            'html-minifier-terser'] +
+            html_minifier_terser_options + [
+            '-o',
+            str(build_dir / 'index.min.html'),
+            'index.html'
+        ], shell=sys.platform == 'win32')
 
 def main():
     if env.IsCleanTarget():
@@ -1534,18 +1676,6 @@ def main():
         '{{{translation}}}': translation_str,
     })
 
-    # Check translation completeness
-    util.log('Checking translation completeness')
-
-    with tfutil.ChangedDirectory('web'):
-        check_call([env.subst('$PYTHONEXE'), "-u", "check_translation_completeness.py"] + [x.under for x in frontend_modules])
-
-    # Check translation override completeness
-    util.log('Checking translation override completeness')
-
-    with tfutil.ChangedDirectory('web'):
-        check_call([env.subst('$PYTHONEXE'), "-u", "check_override_completeness.py"])
-
     # Generate enums
     for backend_module in backend_modules:
         mod_path = os.path.join('src', 'modules', backend_module.under)
@@ -1659,6 +1789,23 @@ def main():
                         f.write(''.join(enum_values))
                         f.write(f'    _max = {value_number_max},\n')
                         f.write('}\n')
+
+    # Preprocessing web interface
+    util.log('Preprocessing web interface')
+
+    preprocess_web([x.under for x in frontend_modules])
+
+    # Check translation completeness
+    util.log('Checking translation completeness')
+
+    with tfutil.ChangedDirectory('web'):
+        check_call([env.subst('$PYTHONEXE'), "-u", "check_translation_completeness.py"] + [x.under for x in frontend_modules])
+
+    # Check translation override completeness
+    util.log('Checking translation override completeness')
+
+    with tfutil.ChangedDirectory('web'):
+        check_call([env.subst('$PYTHONEXE'), "-u", "check_override_completeness.py"])
 
     # Generate web interface
     util.log('Checking web interface dependencies')
@@ -1776,19 +1923,16 @@ def main():
 
         build_py_args = []
 
+        js_source_map = False
+        css_source_map = False
+        no_minify = False
+
         if frontend_debug:
-            build_py_args += ['--js-source-map', '--css-source-map', '--no-minify']
+            js_source_map = True
+            css_source_map = True
+            no_minify = True
 
-        for frontend_module in frontend_modules:
-            build_py_args.append(frontend_module.under)
-
-        with tfutil.ChangedDirectory('web'):
-            try:
-                check_call([env.subst('$PYTHONEXE'), "-u", "build.py"] + build_py_args)
-            except subprocess.CalledProcessError as e:
-                if e.returncode != 42:
-                    print(e, file=sys.stderr)
-                sys.exit(1)
+        build_web(js_source_map, css_source_map, no_minify)
 
         with open('web/build/main.min.css', 'r', encoding='utf-8') as f:
             css = f.read()
