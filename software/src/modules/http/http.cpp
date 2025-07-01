@@ -21,6 +21,7 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
+#include "options.h"
 
 class HTTPChunkedResponse : public IBaseChunkedResponse
 {
@@ -165,6 +166,8 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
     if (content_length <= ARRAY_SIZE(stack_recv_buf)) {
         recv_buf  = stack_recv_buf;
         recv_size = ARRAY_SIZE(stack_recv_buf);
+    } else if (content_length > OPTIONS_API_JSON_MAX_LENGTH()) {
+        return req.send(413);
     } else {
         heap_recv_buf = std::unique_ptr<char[]>{new(std::nothrow) char[content_length]};
 

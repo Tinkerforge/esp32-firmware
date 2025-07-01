@@ -36,14 +36,13 @@ extern char local_uid_str[32];
 // 6144 byte is the default value.
 #define MQTT_TASK_STACK_SIZE  6144U
 
-// Also change ws.cpp WS_SEND_BUFFER_SIZE when changing MQTT_RECV_BUFFER_SIZE here!
 #if defined(BOARD_HAS_PSRAM)
-#define MQTT_RECV_BUFFER_SIZE 20480U
 #define MQTT_SEND_BUFFER_SIZE 32768U
 #else
-#define MQTT_RECV_BUFFER_SIZE 4096U
 #define MQTT_SEND_BUFFER_SIZE 4096U
 #endif
+
+#define MQTT_RECV_BUFFER_SIZE OPTIONS_API_JSON_MAX_LENGTH()
 
 #define MQTT_RECV_BUFFER_HEADROOM (MQTT_RECV_BUFFER_SIZE / 6)
 
