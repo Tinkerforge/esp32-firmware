@@ -22,6 +22,7 @@
 #include <WireGuard-ESP32.h>
 #include <esp_http_client.h>
 #include <queue>
+#include <memory>
 
 #include "module.h"
 #include "config.h"
@@ -46,7 +47,7 @@ enum class RegistrationState {
 
 struct Connections {
     uint8_t id;
-    WireGuard *conn;
+    std::unique_ptr<WireGuard> conn = nullptr;
 };
 
 struct WgKey {
@@ -89,7 +90,7 @@ private:
     void setup_inner_socket();
     int start_ping();
     int stop_ping();
-    WireGuard *management = nullptr;
+    std::unique_ptr<WireGuard> management = nullptr;
     Connections remote_connections[MAX_USER_CONNECTIONS] = {};
 
     String jwt;

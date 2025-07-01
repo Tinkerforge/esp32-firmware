@@ -1689,10 +1689,7 @@ void RemoteAccess::connect_management()
 
     logger.printfln("Connecting to Management WireGuard peer %s:%u", remote_host, 51820);
 
-    if (management != nullptr) {
-        delete management;
-    }
-    management = new WireGuard();
+    management = std::make_unique<WireGuard>();
 
     const uint16_t local_port = find_next_free_port(51820);
     this->setup_inner_socket();
@@ -1757,13 +1754,9 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port)
         return;
     }
     remote_connections[conn_idx].id = i;
-    WireGuard **conn = &remote_connections[conn_idx].conn;
-    if (*conn != nullptr) {
-        delete *conn;
-    }
-    *conn = new WireGuard();
+    remote_connections[conn_idx].conn = std::make_unique<WireGuard>();
 
-    (*conn)->begin(internal_ip,
+    remote_connections[conn_idx].conn->begin(internal_ip,
                    internal_subnet,
                    local_port,
                    internal_gateway,
@@ -1887,17 +1880,14 @@ void RemoteAccess::run_management()
         logger.printfln("No free connection found");
         return;
     }
-    WireGuard **conn = &remote_connections[conn_idx].conn;
+    auto &conn = remote_connections[conn_idx].conn;
     switch (command->command_id) {
         case management_command_id::Connect: {
             remote_connections[conn_idx].id = command->connection_no;
+            if (conn != nullptr && conn->is_peer_up(nullptr, nullptr)) {
+                return;
+            }
             if (conn == nullptr) {
-                return;
-            }
-            if (*conn != nullptr && (*conn)->is_peer_up(nullptr, nullptr)) {
-                return;
-            }
-            if ((*conn) == nullptr) {
                 uint32_t conn_id = command->connection_no % OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER();
                 uint32_t user_id = command->connection_no / OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER();
                 logger.printfln("Opening connection %lu for user %lu", conn_id, user_id);
@@ -1910,8 +1900,8 @@ void RemoteAccess::run_management()
             memcpy(&response.connection_uuid, &command->connection_uuid, 16);
 
             const String &remote_host = config.get("relay_host")->asString();
-            if (*conn != nullptr) {
-                (*conn)->end();
+            if (conn != nullptr) {
+                conn->end();
             }
             local_port = find_next_free_port(local_port);
 
@@ -1924,7 +1914,7 @@ void RemoteAccess::run_management()
 
         case management_command_id::Disconnect:
             remote_connections[conn_idx].id = 255;
-            if (conn == nullptr || *conn == nullptr) {
+            if (conn == nullptr) {
                 logger.printfln("Not found");
                 break;
             }
@@ -1932,9 +1922,8 @@ void RemoteAccess::run_management()
             logger.printfln("Closing connection %lu for user %lu",
                             conn_state->get("connection")->asUint(),
                             conn_state->get("user")->asUint());
-            (*conn)->end();
-            delete *conn;
-            *conn = nullptr;
+            conn->end();
+            conn = nullptr;
             conn_state->get("user")->updateUint(255);
             conn_state->get("connection")->updateUint(255);
             break;
@@ -1953,7 +1942,6 @@ void RemoteAccess::close_all_remote_connections() {
                             conn_state->get("connection")->asUint(),
                             conn_state->get("user")->asUint());
             remote_connections[i].conn->end();
-            delete remote_connections[i].conn;
             remote_connections[i].conn = nullptr;
             remote_connections[i].id = 255;
             conn_state->get("user")->updateUint(255);
