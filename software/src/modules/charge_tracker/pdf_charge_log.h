@@ -24,7 +24,7 @@
 
 #include "modules/web_server/web_server.h"
 
-int init_pdf_generator(WebServerRequest *request,
+int init_pdf_generator(std::function<int(const void *data, size_t len, bool last_data)> &callback,
                        const char *title,
                        const char *stats,
                        int stats_lines,

@@ -288,7 +288,7 @@ static constexpr size_t pdf_write_buffer_size = 8 * 1274; // Half the TCP send w
 static constexpr size_t pdf_write_buffer_size = 2 * 1274;
 #endif
 
-int init_pdf_generator(WebServerRequest *request,
+int init_pdf_generator(std::function<int(const void *data, size_t len, bool last_data)> &callback,
                        const char *title,
                        const char *stats,
                        int stats_lines,
@@ -303,8 +303,8 @@ int init_pdf_generator(WebServerRequest *request,
     strncpy(info.title, title, ARRAY_SIZE(info.title) - 1);
 
     struct pdf_doc *pdf = pdf_create(PDF_A4_WIDTH, PDF_A4_HEIGHT, &info, pdf_write_buffer_size);
-    pdf_add_write_callback(pdf, [request](const void *buf, size_t len) -> int {
-        int rc = request->sendChunk((const char *)buf, len);
+    pdf_add_write_callback(pdf, [callback](const void *buf, size_t len) -> int {
+        int rc = callback(buf, len, false);
         if (rc != ESP_OK)
             return -abs(rc);
 
