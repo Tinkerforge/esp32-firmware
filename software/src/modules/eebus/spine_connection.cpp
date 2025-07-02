@@ -55,10 +55,10 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
 
     return true;
 }
-void SpineConnection::send_datagram(JsonVariant payload,
+void SpineConnection::send_datagram(JsonVariantConst payload,
                                     CmdClassifierType cmd_classifier,
-                                    FeatureAddressType sender,
-                                    FeatureAddressType receiver,
+                                    const FeatureAddressType& sender,
+                                    const FeatureAddressType& receiver,
                                     bool require_ack)
 {
     response_doc.clear();
@@ -83,6 +83,9 @@ void SpineConnection::check_message_counter()
     if (received_header.msgCounter && received_header.msgCounter.value() < msg_counter_received) {
         logger.printfln("SPINE Message counter is lower than expected. The peer might have technical issues or has been rebooted.");
         msg_counter_received = received_header.msgCounter.value();
+        msg_counter_error_count++;
+    } else {
+        msg_counter_error_count = msg_counter_error_count > 0 ? msg_counter_error_count - 1 : 0;
     }
 
     // We ignore the message counter received for now as we are not sending messages that warrant a response.
