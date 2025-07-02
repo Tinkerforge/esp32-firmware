@@ -493,17 +493,18 @@ bool API::restorePersistentConfig(const String &path, ConfigRoot *config, SavedD
     config->value.updated = 0;
 
     const String error = config->update_from_file(LittleFS.open(filename));
+    const bool restore_ok = error.isEmpty();
 
     // If the file load didn't update anything, the file's content matches the default config.
     // Remove the saved file in that case.
-    if (config->value.updated == 0 && remove_saved_default == SavedDefaultConfig::Remove) {
+    // Don't remove configs that could not be validated to not remove a user's data.
+    if (restore_ok && config->value.updated == 0 && remove_saved_default == SavedDefaultConfig::Remove) {
         removeConfig(path);
     }
 
     // Include previous updated state
     config->value.updated |= updated;
 
-    const bool restore_ok = error.isEmpty();
     if (!restore_ok) {
         logger.printfln("Failed to restore persistent config %s: %s", path.c_str(), error.c_str());
     }
