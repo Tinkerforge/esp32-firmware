@@ -481,7 +481,7 @@ def generate_data_handler_class() -> (str, str):
 
     last_cmd_to_json_mapping = ''.join(f"""
     if (last_cmd == SpineDataTypeHandler::Function::{function[0]}) {{
-        dst = *{function[1].lower()};
+        dst["{function[0]}"] = *{function[1].lower()};
     }}
     """ for function in type_function_mapping)
     cmd_types = ''.join(f"""
