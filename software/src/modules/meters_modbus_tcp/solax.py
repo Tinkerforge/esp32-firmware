@@ -206,4 +206,77 @@ specs = [
             },
         ],
     },
+    {
+        'name': 'Solax Hybrid Inverter PV',  # FIXME: some models have PV3, but it's unclear how to detect it properly: https://github.com/evcc-io/evcc/issues/19598
+        'register_type': 'InputRegister',
+        'values': [
+            {
+                'name': 'PV1 Voltage [0.1 V]',
+                'value_id': 'VoltagePV1',
+                'start_address': 0x03,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'PV2 Voltage [0.1 V]',
+                'value_id': 'VoltagePV2',
+                'start_address': 0x04,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'PV1 Current [0.1 A]',
+                'value_id': 'CurrentPV1Export',
+                'start_address': 0x05,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'PV2 Current [0.1 A]',
+                'value_id': 'CurrentPV2Export',
+                'start_address': 0x06,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'PV1 Power [W]',
+                'value_id': 'PowerPV1Export',
+                'start_address': 0x0A,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'PV2 Power [W]',
+                'value_id': 'PowerPV2Export',
+                'start_address': 0x0B,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Average PV Voltage [0.1 V]',
+                'value_id': 'VoltagePVAvg',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+            {
+                'name': 'Total PV Current [0.1 A]',
+                'value_id': 'CurrentPVSumExport',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+            {
+                'name': 'Total PV Power [W]',
+                'value_id': 'PowerPVSumExport',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+            {
+                'name': 'Total PV Power Signed [W]',
+                'value_id': 'PowerPVSumImExDiff',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+            {
+                'name': 'Total PV Energy [0.1 kWh]',
+                'value_id': 'EnergyDCExport',
+                'start_address': 0x94,  # FIXME: datasheet is unclear if this is the correct register
+                'value_type': 'U32LE',
+                'scale_factor': 0.1,
+            },
+        ],
+    },
 ]

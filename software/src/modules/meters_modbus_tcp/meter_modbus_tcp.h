@@ -117,6 +117,7 @@ private:
     bool is_shelly_pro_xem_monophase() const;
     bool is_goodwe_hybrid_inverter_battery_meter() const;
     bool is_goodwe_hybrid_inverter_pv_meter() const;
+    bool is_solax_hybrid_inverter_pv_meter() const;
     bool is_fronius_gen24_plus_battery_meter() const;
     bool is_hailei_hybrid_inverter_pv_meter() const;
     bool is_carlo_gavazzi_em100_or_et100() const;
@@ -264,6 +265,12 @@ private:
         // Solax hybrid inverter
         struct {
             SolaxHybridInverterVirtualMeter virtual_meter;
+            float pv1_voltage;
+            float pv2_voltage;
+            float pv1_current;
+            float pv2_current;
+            float pv1_power;
+            float pv2_power;
         } solax_hybrid_inverter;
 
         // Fronius GEN24 Plus

@@ -125,6 +125,13 @@
 #define GOODWE_HYBRID_INVERTER_PV4_CURRENT_ADDRESS                         static_cast<size_t>(GoodweHybridInverterPVAddress::PV4Current)
 #define GOODWE_HYBRID_INVERTER_PV4_POWER_ADDRESS                           static_cast<size_t>(GoodweHybridInverterPVAddress::PV4Power)
 
+#define SOLAX_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS                          static_cast<size_t>(SolaxHybridInverterPVAddress::PV1Voltage)
+#define SOLAX_HYBRID_INVERTER_PV2_VOLTAGE_ADDRESS                          static_cast<size_t>(SolaxHybridInverterPVAddress::PV2Voltage)
+#define SOLAX_HYBRID_INVERTER_PV1_CURRENT_ADDRESS                          static_cast<size_t>(SolaxHybridInverterPVAddress::PV1Current)
+#define SOLAX_HYBRID_INVERTER_PV2_CURRENT_ADDRESS                          static_cast<size_t>(SolaxHybridInverterPVAddress::PV2Current)
+#define SOLAX_HYBRID_INVERTER_PV1_POWER_ADDRESS                            static_cast<size_t>(SolaxHybridInverterPVAddress::PV1Power)
+#define SOLAX_HYBRID_INVERTER_PV2_POWER_ADDRESS                            static_cast<size_t>(SolaxHybridInverterPVAddress::PV2Power)
+
 #define FRONIUS_GEN24_PLUS_INPUT_ID_OR_MODEL_ID_ADDRESS                    static_cast<size_t>(FroniusGEN24PlusBatteryTypeAddress::InputIDOrModelID)
 #define FRONIUS_GEN24_PLUS_DCA_SF_ADDRESS                                  static_cast<size_t>(FroniusGEN24PlusBatteryIntegerAddress::DCA_SF)
 #define FRONIUS_GEN24_PLUS_DCV_SF_ADDRESS                                  static_cast<size_t>(FroniusGEN24PlusBatteryIntegerAddress::DCV_SF)
@@ -729,6 +736,11 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         case SolaxHybridInverterVirtualMeter::Battery:
             table = &solax_hybrid_inverter_battery_table;
             default_location = MeterLocation::Battery;
+            break;
+
+        case SolaxHybridInverterVirtualMeter::PV:
+            table = &solax_hybrid_inverter_pv_table;
+            default_location = MeterLocation::PV;
             break;
 
         default:
@@ -1518,6 +1530,12 @@ bool MeterModbusTCP::is_goodwe_hybrid_inverter_pv_meter() const
 {
     return table_id == MeterModbusTCPTableID::GoodweHybridInverter
         && goodwe_hybrid_inverter.virtual_meter == GoodweHybridInverterVirtualMeter::PV;
+}
+
+bool MeterModbusTCP::is_solax_hybrid_inverter_pv_meter() const
+{
+    return table_id == MeterModbusTCPTableID::SolaxHybridInverter
+        && solax_hybrid_inverter.virtual_meter == SolaxHybridInverterVirtualMeter::PV;
 }
 
 bool MeterModbusTCP::is_fronius_gen24_plus_battery_meter() const
@@ -2499,6 +2517,52 @@ void MeterModbusTCP::parse_next()
             meters.update_value(slot, table->index[read_index + 3], power_sum);
             meters.update_value(slot, table->index[read_index + 4], temperature_avg);
             meters.update_value(slot, table->index[read_index + 5], state_of_charge_avg);
+        }
+    }
+    else if (is_solax_hybrid_inverter_pv_meter()) {
+        if (register_start_address == SOLAX_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS) {
+            solax_hybrid_inverter.pv1_voltage = value;
+        }
+        else if (register_start_address == SOLAX_HYBRID_INVERTER_PV2_VOLTAGE_ADDRESS) {
+            solax_hybrid_inverter.pv2_voltage = value;
+        }
+        else if (register_start_address == SOLAX_HYBRID_INVERTER_PV1_CURRENT_ADDRESS) {
+            solax_hybrid_inverter.pv1_current = value;
+        }
+        else if (register_start_address == SOLAX_HYBRID_INVERTER_PV2_CURRENT_ADDRESS) {
+            solax_hybrid_inverter.pv2_current = value;
+        }
+        else if (register_start_address == SOLAX_HYBRID_INVERTER_PV1_POWER_ADDRESS) {
+            solax_hybrid_inverter.pv1_power = value;
+        }
+        else if (register_start_address == SOLAX_HYBRID_INVERTER_PV2_POWER_ADDRESS) {
+            solax_hybrid_inverter.pv2_power = value;
+
+            float voltage_sum = 0.0f;
+            float voltage_count = 0.0f;
+
+            if (!is_exactly_zero(solax_hybrid_inverter.pv1_voltage)) {
+                voltage_sum += solax_hybrid_inverter.pv1_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(solax_hybrid_inverter.pv2_voltage)) {
+                voltage_sum += solax_hybrid_inverter.pv2_voltage;
+                ++voltage_count;
+            }
+
+            float voltage_avg = voltage_sum / voltage_count;
+
+            float current_sum = solax_hybrid_inverter.pv1_current
+                              + solax_hybrid_inverter.pv2_current;
+
+            float power_sum = solax_hybrid_inverter.pv1_power
+                            + solax_hybrid_inverter.pv2_power;
+
+            meters.update_value(slot, table->index[read_index + 1], voltage_avg);
+            meters.update_value(slot, table->index[read_index + 2], current_sum);
+            meters.update_value(slot, table->index[read_index + 3], power_sum);
+            meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power_sum));
         }
     }
     else if (is_goodwe_hybrid_inverter_pv_meter()) {

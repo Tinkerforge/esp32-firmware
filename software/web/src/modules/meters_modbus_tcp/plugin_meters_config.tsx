@@ -1051,6 +1051,7 @@ export function init() {
                             [SolaxHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
                             [SolaxHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
                             [SolaxHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                            [SolaxHybridInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
                         ];
 
                         get_default_location = (virtual_meter: number) => {
@@ -1058,6 +1059,7 @@ export function init() {
                             case SolaxHybridInverterVirtualMeter.Inverter: return MeterLocation.Inverter;
                             case SolaxHybridInverterVirtualMeter.Grid: return MeterLocation.Grid;
                             case SolaxHybridInverterVirtualMeter.Battery: return MeterLocation.Battery;
+                            case SolaxHybridInverterVirtualMeter.PV: return MeterLocation.PV;
                             }
 
                             return MeterLocation.Unknown;
