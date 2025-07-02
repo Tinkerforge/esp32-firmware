@@ -355,6 +355,32 @@ const Config *BatteriesModbusTCP::get_errors_prototype()
     return Config::Null();//&errors_prototype;
 }
 
+String BatteriesModbusTCP::validate_config(Config &update, ConfigSource source) {
+    if (update.get("table")->getTag<BatteryModbusTCPTableID>() != BatteryModbusTCPTableID::Custom)
+        return String();
+
+    const char * const keys[] = {
+        "permit_grid_charge",
+        "revoke_grid_charge_override",
+        "forbid_discharge",
+        "revoke_discharge_override",
+        "forbid_charge",
+        "revoke_charge_override",
+    };
+
+    size_t used = 0;
+    for (const char *key : keys) {
+        auto regs = update.get("table")->get()->get(key)->get("registers");
+        for (size_t i = 0; i < regs->count(); ++i)
+            used += regs->get(i)->get("vals")->count();
+    }
+
+    if (used > OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTERS())
+        return "At most " MACRO_VALUE_TO_STRING(OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTERS()) " registers are allowed!";
+
+    return String();
+}
+
 void BatteriesModbusTCP::write_next()
 {
     if (execute_table == nullptr) {
