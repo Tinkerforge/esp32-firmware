@@ -163,7 +163,7 @@ public:
     }
 
     void frame_received(httpd_ws_frame_t *ws_pkt);
-    void schedule_close(const millis_t delay_ms);
+    void schedule_close(millis_t delay_ms);
     void send_cmi_message(uint8_t type, uint8_t value);
     void send_current_outgoing_message();
     void send_string(const char *str, int length);

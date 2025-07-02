@@ -21,20 +21,15 @@
 
 #include <vector>
 
-#include "module.h"
 #include "config.h"
+#include "mdns.h"
+#include "module.h"
 #include "modules/ws/web_sockets.h"
 #include "ship_connection.h"
-#include "mdns.h"
 #include <TFJson.h>
 //#include "string_builder.h"
 
-enum class NodeState {
-    Unknown = 0,
-    Discovered,
-    Connected
-};
-    
+enum class NodeState { Unknown = 0, Discovered, Connected };
 
 struct ShipNode {
 
@@ -48,7 +43,7 @@ struct ShipNode {
     String txt_vers = ""; //Maybe change to number?
     String txt_id = "";
     String txt_wss_path = "";
-    String txt_ski = ""; 
+    String txt_ski = "";
     bool txt_autoregister = false;
     // Stuff that is Optional in the TXT record
     String txt_brand = "";
@@ -57,17 +52,10 @@ struct ShipNode {
 
     // TODO Add more stuff that might be relevant like last seen, features, etc.
 
-    void as_json(StringBuilder *sb);/* */  
+    void as_json(StringBuilder *sb); /* */
 };
 
-
-
-enum Ship_Discovery_State {
-    READY = 0,
-    SCANNING,
-    SCAN_DONE,
-    ERROR
-};
+enum Ship_Discovery_State { READY = 0, SCANNING, SCAN_DONE, ERROR };
 
 class Ship
 {
@@ -76,11 +64,12 @@ private:
     void setup_wss();
 
     WebSockets web_sockets;
-    std::vector<ShipConnection> ship_connections;
 
 public:
-    Ship(){}
-    
+    Ship()
+    {
+    }
+
     void pre_setup();
     void setup();
     void remove(const ShipConnection &ship_connection);
@@ -92,4 +81,5 @@ public:
 
     std::vector<ShipNode> mdns_results;
     Ship_Discovery_State discovery_state;
+    std::vector<ShipConnection> ship_connections;
 };

@@ -26,17 +26,18 @@
 
 bool SpineConnection::process_datagram(JsonVariant datagram)
 {
-    JsonVariant datagram_header = datagram["datagram"][0]["header"];
+    last_received_time = millis();
 
-    received_payload = datagram["datagram"][1]["payload"][0]["cmd"][0][0]; // The payload should not be in an array but spine-go does these strange things
+    received_header = HeaderType(); // Reset the header to avoid using old values
+    received_header = datagram["datagram"][0]["header"];
 
+    received_payload =
+        datagram["datagram"][1]["payload"][0]["cmd"][0][0]; // The payload should not be in an array but spine-go does these strange things
 
-    if (datagram_header.isNull() || received_payload.isNull()) {
+    if (!received_header.cmdClassifier || received_header.addressSource || received_payload.isNull()) {
         logger.printfln("Error: No datagram header or payload found");
         return false;
     }
-
-    received_header.from_json(datagram_header.as<String>());
 
     check_message_counter();
 
@@ -46,126 +47,52 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
         logger.printfln("SPINE: Payload: %s", received_payload.as<String>().c_str());
         return false;
     }
+
     response_doc.clear();
-    //response_datagram = response_doc.to<JsonVariant>();
-    //response_doc["datagram"]["payload"]["cmd"][0] = JsonVariant();
+    eebus.usecases.handle_message(received_header, eebus.data_handler.get(), this);
 
-    JsonArray cmd_array = response_doc["datagram"][1]["payload"].createNestedArray("cmd").createNestedArray(); // Why is it double wrapped???? ship-go does this shit for some reason
-    JsonObject cmd_obj = cmd_array.createNestedObject();
-    //cmd_array.createNestedObject(); // add an empty object to the array or it might get turned into an object by ship-go
+    logger.printfln("SPINE: Message processed");
 
-    if (eebus.usecases.handle_message(received_header, eebus.data_handler.get(), cmd_obj, this)) {
-// TODO: Set the source and destination addresses correctly
-        response_doc["datagram"][0]["header"]["specificationVersion"] = SUPPORTED_SPINE_VERSION;
-        response_doc["datagram"][0]["header"]["addressSource"]["device"] = ("d:_i:" + eebus.get_eebus_name()).c_str();
-        response_doc["datagram"][0]["header"]["addressSource"]["entity"][0] = 0;
-        response_doc["datagram"][0]["header"]["addressSource"]["feature"] = 0;
-        response_doc["datagram"][0]["header"]["addressDestination"]["device"] = received_header.source_device_id;
-        response_doc["datagram"][0]["header"]["addressDestination"]["entity"][0] = 0;
-        response_doc["datagram"][0]["header"]["addressDestination"]["feature"] = 0;
-        response_doc["datagram"][0]["header"]["msgCounter"] = msg_counter++;
-        response_doc["datagram"][0]["header"]["msgCounterReference"] = received_header.msg_counter;
-        response_doc["datagram"][0]["header"]["cmdClassifier"] = CmdClassifierType::reply;
-        response_doc["datagram"][0]["header"]["ackRequest"] = false;
-
-
-        logger.printfln("SPINE: Sending response: %s", response_doc.as<String>().c_str());
-
-        return true;
-
-    } else if (received_header.wants_response) {
-        logger.printfln("SPINE: No response availabe but one was requested.");
-        logger.printfln("Payload: %s", datagram.as<String>().c_str());
-        return false;
-    } else {
-        logger.printfln("SPINE: No response needed");
-    }
-    return false;
+    return true;
 }
+void SpineConnection::send_datagram(JsonVariant payload,
+                                    CmdClassifierType cmd_classifier,
+                                    FeatureAddressType sender,
+                                    FeatureAddressType receiver,
+                                    bool require_ack)
+{
+    response_doc.clear();
+    HeaderType header;
+    header.ackRequest = require_ack;
+    header.cmdClassifier = cmd_classifier;
+    header.specificationVersion = SUPPORTED_SPINE_VERSION;
+    header.addressSource = sender;
+    header.addressDestination = receiver;
+    header.msgCounter = msg_counter++;
+    header.msgCounterReference = received_header.msgCounter; // The message counter of the last received datagram
 
+    response_doc["datagram"][0]["header"] = header;
+    response_doc["datagram"][1]["payload"]["cmd"][0] = payload;
+    ship_connection->send_data_message(response_doc);
+    // TODO: Handle acknowledge request
+}
 
 void SpineConnection::check_message_counter()
 {
-    if (received_header.msg_counter < msg_counter_received) {
+    // TODO: Implement a proper message counter check
+    if (received_header.msgCounter && received_header.msgCounter.value() < msg_counter_received) {
         logger.printfln("SPINE Message counter is lower than expected. The peer might have technical issues or has been rebooted.");
-        msg_counter_received = received_header.msg_counter;
+        msg_counter_received = received_header.msgCounter.value();
     }
 
     // We ignore the message counter received for now as we are not sending messages that warrant a response.
 }
-
-void SpineHeader::from_json(String json)
+bool SpineConnection::check_known_address(const FeatureAddressType &address)
 {
-    DynamicJsonDocument json_doc{SPINE_CONNECTION_MAX_JSON_SIZE};
-
-    DeserializationError error = deserializeJson(json_doc, json);
-
-    if (error) {
-        Serial.print("Failed to deserialize SPINE Datagram Header: ");
-        Serial.println(error.c_str());
-        return;
+    for (FeatureAddressType &known_address : known_addresses) {
+        if (known_address.device == address.device && known_address.feature == address.feature && known_address.entity == address.entity) {
+            return true; // The address is known
+        }
     }
-
-    version = json_doc[0]["specificationVersion"].as<String>();
-    source_device_id = json_doc[1]["addressSource"][0]["device"].as<String>(); // "device_id_0"
-    source_device_id_valid = json_doc[1]["addressSource"][0]["device"].isNull() || source_device_id.length() > 0;
-
-    int source_entity_size = json_doc[1]["addressSource"][0]["entity"].size(); // 2
-    for (int i = 0; i < source_entity_size; i++) {
-        source_entity.push_back(json_doc[1]["addressSource"][0]["entity"][i]);
-    }
-    source_feature = json_doc[1]["addressSource"][0]["feature"];
-    destination_device_id = json_doc[2]["addressDestination"][0]["device"].as<String>(); // "device_id_0"
-    destination_device_id_valid = json_doc[2]["addressDestination"][0]["device"].isNull() || destination_device_id.length() > 0;
-
-    int destination_entity_size = json_doc[2]["addressDestination"][0]["entity"].size(); // 2
-    for (int i = 0; i < destination_entity_size; i++) {
-        destination_entity.push_back(json_doc[2]["addressDestination"][0]["entity"][i]);
-    }
-    destination_feature = json_doc[2]["addressDestination"][0]["feature"];
-    msg_counter = json_doc[3]["msgCounter"];
-    msg_counter_received = json_doc[3]["msgCounterReceived"];
-    cmd_classifier = json_doc[4]["cmdClassifier"]; // "read"
-    wants_response = json_doc[5]["wantsResponse"];
-}
-
-String SpineHeader::to_json()
-{
-    DynamicJsonDocument json_doc{SPINE_CONNECTION_MAX_JSON_SIZE};
-    JsonArray datagram = json_doc.createNestedArray("datagram");
-    JsonObject header = datagram.createNestedObject();
-    header["specificationVersion"] = version;
-    JsonObject address_source = header.createNestedObject("addressSource");
-
-    if (source_device_id_valid) {
-        JsonObject address_source_device = address_source.createNestedObject("device");
-        address_source_device["device"] = source_device_id;
-    }
-    JsonArray address_source_entity = address_source.createNestedArray("entity");
-    for (const auto &entity : source_entity) {
-        address_source_entity.add(entity);
-    }
-    address_source["feature"] = source_feature;
-    JsonObject address_destination = header.createNestedObject("addressDestination");
-
-    if (destination_device_id_valid) {
-        JsonObject address_destination_device = address_destination.createNestedObject("device");
-        address_destination_device["device"] = destination_device_id;
-    }
-
-    JsonArray address_destination_entity = address_destination.createNestedArray("entity");
-    for (const auto &entity : destination_entity) {
-        address_destination_entity.add(entity);
-    }
-    address_destination["feature"] = destination_feature;
-    JsonObject msg_counter_obj = header.createNestedObject("msgCounter");
-    msg_counter_obj["msgCounter"] = msg_counter;
-    msg_counter_obj["msgCounterReceived"] = msg_counter_received;
-    header["cmdClassifier"] = cmd_classifier;
-    header["wantsResponse"] = wants_response;
-    String output;
-    //json_doc.shrinkToFit();
-    serializeJson(json_doc, output);
-    logger.printfln("SPINE Datagram Header JSON: %s", output.c_str());
-    return output;
+    return false;
 }

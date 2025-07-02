@@ -24,34 +24,11 @@
 
 #include "config.h"
 #include "module.h"
-#include <TFJson.h>
 #include "spine_types.h"
+#include <TFJson.h>
 
 #define SPINE_CONNECTION_MAX_JSON_SIZE 8192 // TODO: What is a sane value here?
 #define SPINE_CONNECTION_MAX_DEPTH 30       // Maximum depth of serialization of a json document
-
-
-
-
-struct SpineHeader {
-    CoolString version; // Version of SPINE the node is using
-    CoolString source_device_id;
-    bool source_device_id_valid = false; // True if device is present and not empty or not present. False if present and empty
-    std::vector<uint8_t> source_entity;
-    uint16_t source_feature{};
-
-    CoolString destination_device_id;
-    bool destination_device_id_valid = false;
-    std::vector<uint8_t> destination_entity;
-    uint16_t destination_feature{};
-    uint64_t msg_counter{};
-    uint64_t msg_counter_received{};
-    CmdClassifierType cmd_classifier{};
-    bool wants_response{};
-
-    void from_json(String json);
-    String to_json();
-};
 
 class ShipConnection; // Need to forward declare this here so it can be included in ship_connection.h
 
@@ -61,7 +38,6 @@ class SpineConnection
 public:
     ShipConnection *ship_connection = nullptr;
     explicit SpineConnection(ShipConnection *ship_connection) : ship_connection(ship_connection), received_header() {};
-  
 
     /**
     * Process a received SPINE datagram and passes the data to the EEBUS Usecase.
@@ -69,10 +45,32 @@ public:
     * @return true if a response was created and needs to be sent, false if no response is needed or an error occurred
     */
     bool process_datagram(JsonVariant datagram);
+
+    /**
+     * Send a SPINE datagram to the peer.
+     * @param payload The Data to be sent
+     * @param cmd_classifier The Command classifier of the datagram
+     * @param sender The FeatureAddressType of the sender of the datagram.
+     * @param receiver The FeatureAddressType of the destination of the datagram.
+     * @param require_ack Request an acknowledgement for the datagram. This is used to ensure that the peer received the datagram and can be used to detect if the peer is still alive.
+     */
+    void send_datagram(JsonVariant payload,
+                       CmdClassifierType cmd_classifier,
+                       FeatureAddressType sender,
+                       FeatureAddressType receiver,
+                       bool require_ack = false);
+
     /**
     * Check if the message counter is correct and log it if it isnt. Its not actually a problem if the message counter is lower than expected but indicates that the peer might have technical issues or has been rebooted.
     */
     void check_message_counter();
+
+    /**
+     * Check if the peer of this connection has used this address as sender before.
+     * @param address The address to check if it is known.
+     * @return True if the address is known, false if it is not known.
+     */
+    bool check_known_address(const FeatureAddressType &address);
 
     // SPINE TS 5.2.3.1
     // Specification recommends these be stored in non-volatile memory
@@ -83,7 +81,7 @@ public:
     /**
     * The last received header of a SPINE datagram.
     */
-    SpineHeader received_header;
+    HeaderType received_header;
 
     /**
     * The Payload of the last received SPINE datagram.
@@ -99,4 +97,7 @@ public:
     */
     JsonVariant response_datagram;
 
+    time_t last_received_time = 0; // The last time a message was received from the peer. This is used to detect if the peer is still alive.
+private:
+    std::vector<FeatureAddressType> known_addresses;
 };

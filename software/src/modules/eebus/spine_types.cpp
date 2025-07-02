@@ -30006,4 +30006,1924 @@ String SpineDataTypeHandler::function_to_string(Function function) {
 	if (function == SpineDataTypeHandler::Function::header) return "header";
     return "Unknown function";
 }
+
+void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst) {
+    
+    if (last_cmd == SpineDataTypeHandler::Function::messagingData) {
+        dst["messagingData"] = *messagingdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::messagingDataElements) {
+        dst["messagingDataElements"] = *messagingdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::messagingListData) {
+        dst["messagingListData"] = *messaginglistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::messagingListDataSelectors) {
+        dst["messagingListDataSelectors"] = *messaginglistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesData) {
+        dst["timeSeriesData"] = *timeseriesdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesDataElements) {
+        dst["timeSeriesDataElements"] = *timeseriesdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesListData) {
+        dst["timeSeriesListData"] = *timeserieslistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesListDataSelectors) {
+        dst["timeSeriesListDataSelectors"] = *timeserieslistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesDescriptionData) {
+        dst["timeSeriesDescriptionData"] = *timeseriesdescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesDescriptionDataElements) {
+        dst["timeSeriesDescriptionDataElements"] = *timeseriesdescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesDescriptionListData) {
+        dst["timeSeriesDescriptionListData"] = *timeseriesdescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesDescriptionListDataSelectors) {
+        dst["timeSeriesDescriptionListDataSelectors"] = *timeseriesdescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesConstraintsData) {
+        dst["timeSeriesConstraintsData"] = *timeseriesconstraintsdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesConstraintsDataElements) {
+        dst["timeSeriesConstraintsDataElements"] = *timeseriesconstraintsdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesConstraintsListData) {
+        dst["timeSeriesConstraintsListData"] = *timeseriesconstraintslistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesConstraintsListDataSelectors) {
+        dst["timeSeriesConstraintsListDataSelectors"] = *timeseriesconstraintslistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::measurementData) {
+        dst["measurementData"] = *measurementdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::measurementDataElements) {
+        dst["measurementDataElements"] = *measurementdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::measurementListData) {
+        dst["measurementListData"] = *measurementlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::measurementListDataSelectors) {
+        dst["measurementListDataSelectors"] = *measurementlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::measurementSeriesData) {
+        dst["measurementSeriesData"] = *measurementseriesdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::measurementSeriesDataElements) {
+        dst["measurementSeriesDataElements"] = *measurementseriesdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::measurementSeriesListData) {
+        dst["measurementSeriesListData"] = *measurementserieslistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::measurementSeriesListDataSelectors) {
+        dst["measurementSeriesListDataSelectors"] = *measurementserieslistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::measurementConstraintsData) {
+        dst["measurementConstraintsData"] = *measurementconstraintsdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::measurementConstraintsDataElements) {
+        dst["measurementConstraintsDataElements"] = *measurementconstraintsdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::measurementConstraintsListData) {
+        dst["measurementConstraintsListData"] = *measurementconstraintslistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::measurementConstraintsListDataSelectors) {
+        dst["measurementConstraintsListDataSelectors"] = *measurementconstraintslistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::measurementDescriptionData) {
+        dst["measurementDescriptionData"] = *measurementdescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::measurementDescriptionDataElements) {
+        dst["measurementDescriptionDataElements"] = *measurementdescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::measurementDescriptionListData) {
+        dst["measurementDescriptionListData"] = *measurementdescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::measurementDescriptionListDataSelectors) {
+        dst["measurementDescriptionListDataSelectors"] = *measurementdescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::measurementThresholdRelationData) {
+        dst["measurementThresholdRelationData"] = *measurementthresholdrelationdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::measurementThresholdRelationDataElements) {
+        dst["measurementThresholdRelationDataElements"] = *measurementthresholdrelationdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::measurementThresholdRelationListData) {
+        dst["measurementThresholdRelationListData"] = *measurementthresholdrelationlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::measurementThresholdRelationListDataSelectors) {
+        dst["measurementThresholdRelationListDataSelectors"] = *measurementthresholdrelationlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdData) {
+        dst["thresholdData"] = *thresholddatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdDataElements) {
+        dst["thresholdDataElements"] = *thresholddataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdListData) {
+        dst["thresholdListData"] = *thresholdlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdListDataSelectors) {
+        dst["thresholdListDataSelectors"] = *thresholdlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdConstraintsData) {
+        dst["thresholdConstraintsData"] = *thresholdconstraintsdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdConstraintsDataElements) {
+        dst["thresholdConstraintsDataElements"] = *thresholdconstraintsdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdConstraintsListData) {
+        dst["thresholdConstraintsListData"] = *thresholdconstraintslistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdConstraintsListDataSelectors) {
+        dst["thresholdConstraintsListDataSelectors"] = *thresholdconstraintslistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdDescriptionData) {
+        dst["thresholdDescriptionData"] = *thresholddescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdDescriptionDataElements) {
+        dst["thresholdDescriptionDataElements"] = *thresholddescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdDescriptionListData) {
+        dst["thresholdDescriptionListData"] = *thresholddescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdDescriptionListDataSelectors) {
+        dst["thresholdDescriptionListDataSelectors"] = *thresholddescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::directControlActivityData) {
+        dst["directControlActivityData"] = *directcontrolactivitydatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::directControlActivityDataElements) {
+        dst["directControlActivityDataElements"] = *directcontrolactivitydataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::directControlActivityListData) {
+        dst["directControlActivityListData"] = *directcontrolactivitylistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::directControlActivityListDataSelectors) {
+        dst["directControlActivityListDataSelectors"] = *directcontrolactivitylistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::directControlDescriptionData) {
+        dst["directControlDescriptionData"] = *directcontroldescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::directControlDescriptionDataElements) {
+        dst["directControlDescriptionDataElements"] = *directcontroldescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerTimeSlotScheduleData) {
+        dst["powerTimeSlotScheduleData"] = *powertimeslotscheduledatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerTimeSlotScheduleDataElements) {
+        dst["powerTimeSlotScheduleDataElements"] = *powertimeslotscheduledataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerTimeSlotScheduleListData) {
+        dst["powerTimeSlotScheduleListData"] = *powertimeslotschedulelistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerTimeSlotScheduleListDataSelectors) {
+        dst["powerTimeSlotScheduleListDataSelectors"] = *powertimeslotschedulelistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerTimeSlotValueData) {
+        dst["powerTimeSlotValueData"] = *powertimeslotvaluedatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerTimeSlotValueDataElements) {
+        dst["powerTimeSlotValueDataElements"] = *powertimeslotvaluedataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerTimeSlotValueListData) {
+        dst["powerTimeSlotValueListData"] = *powertimeslotvaluelistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerTimeSlotValueListDataSelectors) {
+        dst["powerTimeSlotValueListDataSelectors"] = *powertimeslotvaluelistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerTimeSlotScheduleConstraintsData) {
+        dst["powerTimeSlotScheduleConstraintsData"] = *powertimeslotscheduleconstraintsdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerTimeSlotScheduleConstraintsDataElements) {
+        dst["powerTimeSlotScheduleConstraintsDataElements"] = *powertimeslotscheduleconstraintsdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerTimeSlotScheduleConstraintsListData) {
+        dst["powerTimeSlotScheduleConstraintsListData"] = *powertimeslotscheduleconstraintslistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerTimeSlotScheduleConstraintsListDataSelectors) {
+        dst["powerTimeSlotScheduleConstraintsListDataSelectors"] = *powertimeslotscheduleconstraintslistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceAlternativesRelationData) {
+        dst["powerSequenceAlternativesRelationData"] = *powersequencealternativesrelationdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceAlternativesRelationDataElements) {
+        dst["powerSequenceAlternativesRelationDataElements"] = *powersequencealternativesrelationdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceAlternativesRelationListData) {
+        dst["powerSequenceAlternativesRelationListData"] = *powersequencealternativesrelationlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceAlternativesRelationListDataSelectors) {
+        dst["powerSequenceAlternativesRelationListDataSelectors"] = *powersequencealternativesrelationlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceDescriptionData) {
+        dst["powerSequenceDescriptionData"] = *powersequencedescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceDescriptionDataElements) {
+        dst["powerSequenceDescriptionDataElements"] = *powersequencedescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceDescriptionListData) {
+        dst["powerSequenceDescriptionListData"] = *powersequencedescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceDescriptionListDataSelectors) {
+        dst["powerSequenceDescriptionListDataSelectors"] = *powersequencedescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceStateData) {
+        dst["powerSequenceStateData"] = *powersequencestatedatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceStateDataElements) {
+        dst["powerSequenceStateDataElements"] = *powersequencestatedataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceStateListData) {
+        dst["powerSequenceStateListData"] = *powersequencestatelistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceStateListDataSelectors) {
+        dst["powerSequenceStateListDataSelectors"] = *powersequencestatelistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceScheduleData) {
+        dst["powerSequenceScheduleData"] = *powersequencescheduledatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceScheduleDataElements) {
+        dst["powerSequenceScheduleDataElements"] = *powersequencescheduledataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceScheduleListData) {
+        dst["powerSequenceScheduleListData"] = *powersequenceschedulelistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceScheduleListDataSelectors) {
+        dst["powerSequenceScheduleListDataSelectors"] = *powersequenceschedulelistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceScheduleConstraintsData) {
+        dst["powerSequenceScheduleConstraintsData"] = *powersequencescheduleconstraintsdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceScheduleConstraintsDataElements) {
+        dst["powerSequenceScheduleConstraintsDataElements"] = *powersequencescheduleconstraintsdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceScheduleConstraintsListData) {
+        dst["powerSequenceScheduleConstraintsListData"] = *powersequencescheduleconstraintslistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceScheduleConstraintsListDataSelectors) {
+        dst["powerSequenceScheduleConstraintsListDataSelectors"] = *powersequencescheduleconstraintslistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequencePriceData) {
+        dst["powerSequencePriceData"] = *powersequencepricedatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequencePriceDataElements) {
+        dst["powerSequencePriceDataElements"] = *powersequencepricedataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequencePriceListData) {
+        dst["powerSequencePriceListData"] = *powersequencepricelistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequencePriceListDataSelectors) {
+        dst["powerSequencePriceListDataSelectors"] = *powersequencepricelistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceSchedulePreferenceData) {
+        dst["powerSequenceSchedulePreferenceData"] = *powersequenceschedulepreferencedatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceSchedulePreferenceDataElements) {
+        dst["powerSequenceSchedulePreferenceDataElements"] = *powersequenceschedulepreferencedataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceSchedulePreferenceListData) {
+        dst["powerSequenceSchedulePreferenceListData"] = *powersequenceschedulepreferencelistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceSchedulePreferenceListDataSelectors) {
+        dst["powerSequenceSchedulePreferenceListDataSelectors"] = *powersequenceschedulepreferencelistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceNodeScheduleInformationData) {
+        dst["powerSequenceNodeScheduleInformationData"] = *powersequencenodescheduleinformationdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceNodeScheduleInformationDataElements) {
+        dst["powerSequenceNodeScheduleInformationDataElements"] = *powersequencenodescheduleinformationdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceScheduleConfigurationRequestCall) {
+        dst["powerSequenceScheduleConfigurationRequestCall"] = *powersequencescheduleconfigurationrequestcalltype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequenceScheduleConfigurationRequestCallElements) {
+        dst["powerSequenceScheduleConfigurationRequestCallElements"] = *powersequencescheduleconfigurationrequestcallelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequencePriceCalculationRequestCall) {
+        dst["powerSequencePriceCalculationRequestCall"] = *powersequencepricecalculationrequestcalltype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::powerSequencePriceCalculationRequestCallElements) {
+        dst["powerSequencePriceCalculationRequestCallElements"] = *powersequencepricecalculationrequestcallelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::resultData) {
+        dst["resultData"] = *resultdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementEntryData) {
+        dst["bindingManagementEntryData"] = *bindingmanagemententrydatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementEntryDataElements) {
+        dst["bindingManagementEntryDataElements"] = *bindingmanagemententrydataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementEntryListData) {
+        dst["bindingManagementEntryListData"] = *bindingmanagemententrylistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementEntryListDataSelectors) {
+        dst["bindingManagementEntryListDataSelectors"] = *bindingmanagemententrylistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementRequestCall) {
+        dst["bindingManagementRequestCall"] = *bindingmanagementrequestcalltype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementRequestCallElements) {
+        dst["bindingManagementRequestCallElements"] = *bindingmanagementrequestcallelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementDeleteCall) {
+        dst["bindingManagementDeleteCall"] = *bindingmanagementdeletecalltype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementDeleteCallElements) {
+        dst["bindingManagementDeleteCallElements"] = *bindingmanagementdeletecallelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::actuatorLevelData) {
+        dst["actuatorLevelData"] = *actuatorleveldatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::actuatorLevelDataElements) {
+        dst["actuatorLevelDataElements"] = *actuatorleveldataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::actuatorLevelDescriptionData) {
+        dst["actuatorLevelDescriptionData"] = *actuatorleveldescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::actuatorLevelDescriptionDataElements) {
+        dst["actuatorLevelDescriptionDataElements"] = *actuatorleveldescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::cmdClassifier) {
+        dst["cmdClassifier"] = *cmdclassifiertype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::lastUpdateAt) {
+        dst["lastUpdateAt"] = *absoluteorrelativetimetype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::function) {
+        dst["function"] = *functiontype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::cmdControl) {
+        dst["cmdControl"] = *cmdcontroltype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::actuatorSwitchData) {
+        dst["actuatorSwitchData"] = *actuatorswitchdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::actuatorSwitchDataElements) {
+        dst["actuatorSwitchDataElements"] = *actuatorswitchdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::actuatorSwitchDescriptionData) {
+        dst["actuatorSwitchDescriptionData"] = *actuatorswitchdescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::actuatorSwitchDescriptionDataElements) {
+        dst["actuatorSwitchDescriptionDataElements"] = *actuatorswitchdescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::alarmData) {
+        dst["alarmData"] = *alarmdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::alarmDataElements) {
+        dst["alarmDataElements"] = *alarmdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::alarmListData) {
+        dst["alarmListData"] = *alarmlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::alarmListDataSelectors) {
+        dst["alarmListDataSelectors"] = *alarmlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::billData) {
+        dst["billData"] = *billdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::billDataElements) {
+        dst["billDataElements"] = *billdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::billListData) {
+        dst["billListData"] = *billlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::billListDataSelectors) {
+        dst["billListDataSelectors"] = *billlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::billConstraintsData) {
+        dst["billConstraintsData"] = *billconstraintsdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::billConstraintsDataElements) {
+        dst["billConstraintsDataElements"] = *billconstraintsdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::billConstraintsListData) {
+        dst["billConstraintsListData"] = *billconstraintslistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::billConstraintsListDataSelectors) {
+        dst["billConstraintsListDataSelectors"] = *billconstraintslistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::billDescriptionData) {
+        dst["billDescriptionData"] = *billdescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::billDescriptionDataElements) {
+        dst["billDescriptionDataElements"] = *billdescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::billDescriptionListData) {
+        dst["billDescriptionListData"] = *billdescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::billDescriptionListDataSelectors) {
+        dst["billDescriptionListDataSelectors"] = *billdescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::identificationData) {
+        dst["identificationData"] = *identificationdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::identificationDataElements) {
+        dst["identificationDataElements"] = *identificationdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::identificationListData) {
+        dst["identificationListData"] = *identificationlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::identificationListDataSelectors) {
+        dst["identificationListDataSelectors"] = *identificationlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::sessionIdentificationData) {
+        dst["sessionIdentificationData"] = *sessionidentificationdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::sessionIdentificationDataElements) {
+        dst["sessionIdentificationDataElements"] = *sessionidentificationdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::sessionIdentificationListData) {
+        dst["sessionIdentificationListData"] = *sessionidentificationlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::sessionIdentificationListDataSelectors) {
+        dst["sessionIdentificationListDataSelectors"] = *sessionidentificationlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::sessionMeasurementRelationData) {
+        dst["sessionMeasurementRelationData"] = *sessionmeasurementrelationdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::sessionMeasurementRelationDataElements) {
+        dst["sessionMeasurementRelationDataElements"] = *sessionmeasurementrelationdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::sessionMeasurementRelationListData) {
+        dst["sessionMeasurementRelationListData"] = *sessionmeasurementrelationlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::sessionMeasurementRelationListDataSelectors) {
+        dst["sessionMeasurementRelationListDataSelectors"] = *sessionmeasurementrelationlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::dataTunnelingCall) {
+        dst["dataTunnelingCall"] = *datatunnelingcalltype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::dataTunnelingCallElements) {
+        dst["dataTunnelingCallElements"] = *datatunnelingcallelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::deviceClassificationManufacturerData) {
+        dst["deviceClassificationManufacturerData"] = *deviceclassificationmanufacturerdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::deviceClassificationManufacturerDataElements) {
+        dst["deviceClassificationManufacturerDataElements"] = *deviceclassificationmanufacturerdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::deviceClassificationUserData) {
+        dst["deviceClassificationUserData"] = *deviceclassificationuserdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::deviceClassificationUserDataElements) {
+        dst["deviceClassificationUserDataElements"] = *deviceclassificationuserdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueData) {
+        dst["deviceConfigurationKeyValueData"] = *deviceconfigurationkeyvaluedatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDataElements) {
+        dst["deviceConfigurationKeyValueDataElements"] = *deviceconfigurationkeyvaluedataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData) {
+        dst["deviceConfigurationKeyValueListData"] = *deviceconfigurationkeyvaluelistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueListDataSelectors) {
+        dst["deviceConfigurationKeyValueListDataSelectors"] = *deviceconfigurationkeyvaluelistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionData) {
+        dst["deviceConfigurationKeyValueDescriptionData"] = *deviceconfigurationkeyvaluedescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionDataElements) {
+        dst["deviceConfigurationKeyValueDescriptionDataElements"] = *deviceconfigurationkeyvaluedescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListData) {
+        dst["deviceConfigurationKeyValueDescriptionListData"] = *deviceconfigurationkeyvaluedescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListDataSelectors) {
+        dst["deviceConfigurationKeyValueDescriptionListDataSelectors"] = *deviceconfigurationkeyvaluedescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsData) {
+        dst["deviceConfigurationKeyValueConstraintsData"] = *deviceconfigurationkeyvalueconstraintsdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsDataElements) {
+        dst["deviceConfigurationKeyValueConstraintsDataElements"] = *deviceconfigurationkeyvalueconstraintsdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsListData) {
+        dst["deviceConfigurationKeyValueConstraintsListData"] = *deviceconfigurationkeyvalueconstraintslistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsListDataSelectors) {
+        dst["deviceConfigurationKeyValueConstraintsListDataSelectors"] = *deviceconfigurationkeyvalueconstraintslistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisStateData) {
+        dst["deviceDiagnosisStateData"] = *devicediagnosisstatedatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisStateDataElements) {
+        dst["deviceDiagnosisStateDataElements"] = *devicediagnosisstatedataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData) {
+        dst["deviceDiagnosisHeartbeatData"] = *devicediagnosisheartbeatdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatDataElements) {
+        dst["deviceDiagnosisHeartbeatDataElements"] = *devicediagnosisheartbeatdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisServiceData) {
+        dst["deviceDiagnosisServiceData"] = *devicediagnosisservicedatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisServiceDataElements) {
+        dst["deviceDiagnosisServiceDataElements"] = *devicediagnosisservicedataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionData) {
+        dst["electricalConnectionParameterDescriptionData"] = *electricalconnectionparameterdescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionDataElements) {
+        dst["electricalConnectionParameterDescriptionDataElements"] = *electricalconnectionparameterdescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionListData) {
+        dst["electricalConnectionParameterDescriptionListData"] = *electricalconnectionparameterdescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionListDataSelectors) {
+        dst["electricalConnectionParameterDescriptionListDataSelectors"] = *electricalconnectionparameterdescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionPermittedValueSetData) {
+        dst["electricalConnectionPermittedValueSetData"] = *electricalconnectionpermittedvaluesetdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionPermittedValueSetDataElements) {
+        dst["electricalConnectionPermittedValueSetDataElements"] = *electricalconnectionpermittedvaluesetdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionPermittedValueSetListData) {
+        dst["electricalConnectionPermittedValueSetListData"] = *electricalconnectionpermittedvaluesetlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionPermittedValueSetListDataSelectors) {
+        dst["electricalConnectionPermittedValueSetListDataSelectors"] = *electricalconnectionpermittedvaluesetlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionCharacteristicData) {
+        dst["electricalConnectionCharacteristicData"] = *electricalconnectioncharacteristicdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionCharacteristicDataElements) {
+        dst["electricalConnectionCharacteristicDataElements"] = *electricalconnectioncharacteristicdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionCharacteristicListData) {
+        dst["electricalConnectionCharacteristicListData"] = *electricalconnectioncharacteristiclistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionCharacteristicListDataSelectors) {
+        dst["electricalConnectionCharacteristicListDataSelectors"] = *electricalconnectioncharacteristiclistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionStateData) {
+        dst["electricalConnectionStateData"] = *electricalconnectionstatedatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionStateDataElements) {
+        dst["electricalConnectionStateDataElements"] = *electricalconnectionstatedataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionStateListData) {
+        dst["electricalConnectionStateListData"] = *electricalconnectionstatelistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionStateListDataSelectors) {
+        dst["electricalConnectionStateListDataSelectors"] = *electricalconnectionstatelistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionDescriptionData) {
+        dst["electricalConnectionDescriptionData"] = *electricalconnectiondescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionDescriptionDataElements) {
+        dst["electricalConnectionDescriptionDataElements"] = *electricalconnectiondescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionDescriptionListData) {
+        dst["electricalConnectionDescriptionListData"] = *electricalconnectiondescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionDescriptionListDataSelectors) {
+        dst["electricalConnectionDescriptionListDataSelectors"] = *electricalconnectiondescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionData) {
+        dst["hvacSystemFunctionData"] = *hvacsystemfunctiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionDataElements) {
+        dst["hvacSystemFunctionDataElements"] = *hvacsystemfunctiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionListData) {
+        dst["hvacSystemFunctionListData"] = *hvacsystemfunctionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionListDataSelectors) {
+        dst["hvacSystemFunctionListDataSelectors"] = *hvacsystemfunctionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionOperationModeRelationData) {
+        dst["hvacSystemFunctionOperationModeRelationData"] = *hvacsystemfunctionoperationmoderelationdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionOperationModeRelationDataElements) {
+        dst["hvacSystemFunctionOperationModeRelationDataElements"] = *hvacsystemfunctionoperationmoderelationdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionOperationModeRelationListData) {
+        dst["hvacSystemFunctionOperationModeRelationListData"] = *hvacsystemfunctionoperationmoderelationlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionOperationModeRelationListDataSelectors) {
+        dst["hvacSystemFunctionOperationModeRelationListDataSelectors"] = *hvacsystemfunctionoperationmoderelationlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionSetpointRelationData) {
+        dst["hvacSystemFunctionSetpointRelationData"] = *hvacsystemfunctionsetpointrelationdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionSetpointRelationDataElements) {
+        dst["hvacSystemFunctionSetpointRelationDataElements"] = *hvacsystemfunctionsetpointrelationdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionSetpointRelationListData) {
+        dst["hvacSystemFunctionSetpointRelationListData"] = *hvacsystemfunctionsetpointrelationlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionSetpointRelationListDataSelectors) {
+        dst["hvacSystemFunctionSetpointRelationListDataSelectors"] = *hvacsystemfunctionsetpointrelationlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionPowerSequenceRelationData) {
+        dst["hvacSystemFunctionPowerSequenceRelationData"] = *hvacsystemfunctionpowersequencerelationdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionPowerSequenceRelationDataElements) {
+        dst["hvacSystemFunctionPowerSequenceRelationDataElements"] = *hvacsystemfunctionpowersequencerelationdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionPowerSequenceRelationListData) {
+        dst["hvacSystemFunctionPowerSequenceRelationListData"] = *hvacsystemfunctionpowersequencerelationlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionPowerSequenceRelationListDataSelectors) {
+        dst["hvacSystemFunctionPowerSequenceRelationListDataSelectors"] = *hvacsystemfunctionpowersequencerelationlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionDescriptionData) {
+        dst["hvacSystemFunctionDescriptionData"] = *hvacsystemfunctiondescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionDescriptionDataElements) {
+        dst["hvacSystemFunctionDescriptionDataElements"] = *hvacsystemfunctiondescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionDescriptionListData) {
+        dst["hvacSystemFunctionDescriptionListData"] = *hvacsystemfunctiondescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionDescriptionListDataSelectors) {
+        dst["hvacSystemFunctionDescriptionListDataSelectors"] = *hvacsystemfunctiondescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacOperationModeDescriptionData) {
+        dst["hvacOperationModeDescriptionData"] = *hvacoperationmodedescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacOperationModeDescriptionDataElements) {
+        dst["hvacOperationModeDescriptionDataElements"] = *hvacoperationmodedescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacOperationModeDescriptionListData) {
+        dst["hvacOperationModeDescriptionListData"] = *hvacoperationmodedescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacOperationModeDescriptionListDataSelectors) {
+        dst["hvacOperationModeDescriptionListDataSelectors"] = *hvacoperationmodedescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacOverrunData) {
+        dst["hvacOverrunData"] = *hvacoverrundatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacOverrunDataElements) {
+        dst["hvacOverrunDataElements"] = *hvacoverrundataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacOverrunListData) {
+        dst["hvacOverrunListData"] = *hvacoverrunlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacOverrunListDataSelectors) {
+        dst["hvacOverrunListDataSelectors"] = *hvacoverrunlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacOverrunDescriptionData) {
+        dst["hvacOverrunDescriptionData"] = *hvacoverrundescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacOverrunDescriptionDataElements) {
+        dst["hvacOverrunDescriptionDataElements"] = *hvacoverrundescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacOverrunDescriptionListData) {
+        dst["hvacOverrunDescriptionListData"] = *hvacoverrundescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::hvacOverrunDescriptionListDataSelectors) {
+        dst["hvacOverrunDescriptionListDataSelectors"] = *hvacoverrundescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::setpointData) {
+        dst["setpointData"] = *setpointdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::setpointDataElements) {
+        dst["setpointDataElements"] = *setpointdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::setpointListData) {
+        dst["setpointListData"] = *setpointlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::setpointListDataSelectors) {
+        dst["setpointListDataSelectors"] = *setpointlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::setpointConstraintsData) {
+        dst["setpointConstraintsData"] = *setpointconstraintsdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::setpointConstraintsDataElements) {
+        dst["setpointConstraintsDataElements"] = *setpointconstraintsdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::setpointConstraintsListData) {
+        dst["setpointConstraintsListData"] = *setpointconstraintslistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::setpointConstraintsListDataSelectors) {
+        dst["setpointConstraintsListDataSelectors"] = *setpointconstraintslistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::setpointDescriptionData) {
+        dst["setpointDescriptionData"] = *setpointdescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::setpointDescriptionDataElements) {
+        dst["setpointDescriptionDataElements"] = *setpointdescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::setpointDescriptionListData) {
+        dst["setpointDescriptionListData"] = *setpointdescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::setpointDescriptionListDataSelectors) {
+        dst["setpointDescriptionListDataSelectors"] = *setpointdescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeTableData) {
+        dst["timeTableData"] = *timetabledatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeTableDataElements) {
+        dst["timeTableDataElements"] = *timetabledataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeTableListData) {
+        dst["timeTableListData"] = *timetablelistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeTableListDataSelectors) {
+        dst["timeTableListDataSelectors"] = *timetablelistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeTableConstraintsData) {
+        dst["timeTableConstraintsData"] = *timetableconstraintsdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeTableConstraintsDataElements) {
+        dst["timeTableConstraintsDataElements"] = *timetableconstraintsdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeTableConstraintsListData) {
+        dst["timeTableConstraintsListData"] = *timetableconstraintslistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeTableConstraintsListDataSelectors) {
+        dst["timeTableConstraintsListDataSelectors"] = *timetableconstraintslistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeTableDescriptionData) {
+        dst["timeTableDescriptionData"] = *timetabledescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeTableDescriptionDataElements) {
+        dst["timeTableDescriptionDataElements"] = *timetabledescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeTableDescriptionListData) {
+        dst["timeTableDescriptionListData"] = *timetabledescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeTableDescriptionListDataSelectors) {
+        dst["timeTableDescriptionListDataSelectors"] = *timetabledescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::incentiveTableData) {
+        dst["incentiveTableData"] = *incentivetabledatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::incentiveTableDataElements) {
+        dst["incentiveTableDataElements"] = *incentivetabledataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::incentiveTableDataSelectors) {
+        dst["incentiveTableDataSelectors"] = *incentivetabledataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::incentiveTableDescriptionData) {
+        dst["incentiveTableDescriptionData"] = *incentivetabledescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::incentiveTableDescriptionDataElements) {
+        dst["incentiveTableDescriptionDataElements"] = *incentivetabledescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::incentiveTableDescriptionDataSelectors) {
+        dst["incentiveTableDescriptionDataSelectors"] = *incentivetabledescriptiondataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::incentiveTableConstraintsData) {
+        dst["incentiveTableConstraintsData"] = *incentivetableconstraintsdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::incentiveTableConstraintsDataElements) {
+        dst["incentiveTableConstraintsDataElements"] = *incentivetableconstraintsdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::incentiveTableConstraintsDataSelectors) {
+        dst["incentiveTableConstraintsDataSelectors"] = *incentivetableconstraintsdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tariffOverallConstraintsData) {
+        dst["tariffOverallConstraintsData"] = *tariffoverallconstraintsdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tariffOverallConstraintsDataElements) {
+        dst["tariffOverallConstraintsDataElements"] = *tariffoverallconstraintsdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tariffData) {
+        dst["tariffData"] = *tariffdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tariffDataElements) {
+        dst["tariffDataElements"] = *tariffdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tariffListData) {
+        dst["tariffListData"] = *tarifflistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tariffListDataSelectors) {
+        dst["tariffListDataSelectors"] = *tarifflistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tariffTierRelationData) {
+        dst["tariffTierRelationData"] = *tarifftierrelationdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tariffTierRelationDataElements) {
+        dst["tariffTierRelationDataElements"] = *tarifftierrelationdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tariffTierRelationListData) {
+        dst["tariffTierRelationListData"] = *tarifftierrelationlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tariffTierRelationListDataSelectors) {
+        dst["tariffTierRelationListDataSelectors"] = *tarifftierrelationlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tariffBoundaryRelationData) {
+        dst["tariffBoundaryRelationData"] = *tariffboundaryrelationdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tariffBoundaryRelationDataElements) {
+        dst["tariffBoundaryRelationDataElements"] = *tariffboundaryrelationdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tariffBoundaryRelationListData) {
+        dst["tariffBoundaryRelationListData"] = *tariffboundaryrelationlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tariffBoundaryRelationListDataSelectors) {
+        dst["tariffBoundaryRelationListDataSelectors"] = *tariffboundaryrelationlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tariffDescriptionData) {
+        dst["tariffDescriptionData"] = *tariffdescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tariffDescriptionDataElements) {
+        dst["tariffDescriptionDataElements"] = *tariffdescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tariffDescriptionListData) {
+        dst["tariffDescriptionListData"] = *tariffdescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tariffDescriptionListDataSelectors) {
+        dst["tariffDescriptionListDataSelectors"] = *tariffdescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tierBoundaryData) {
+        dst["tierBoundaryData"] = *tierboundarydatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tierBoundaryDataElements) {
+        dst["tierBoundaryDataElements"] = *tierboundarydataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tierBoundaryListData) {
+        dst["tierBoundaryListData"] = *tierboundarylistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tierBoundaryListDataSelectors) {
+        dst["tierBoundaryListDataSelectors"] = *tierboundarylistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tierBoundaryDescriptionData) {
+        dst["tierBoundaryDescriptionData"] = *tierboundarydescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tierBoundaryDescriptionDataElements) {
+        dst["tierBoundaryDescriptionDataElements"] = *tierboundarydescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tierBoundaryDescriptionListData) {
+        dst["tierBoundaryDescriptionListData"] = *tierboundarydescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tierBoundaryDescriptionListDataSelectors) {
+        dst["tierBoundaryDescriptionListDataSelectors"] = *tierboundarydescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::commodityData) {
+        dst["commodityData"] = *commoditydatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::commodityDataElements) {
+        dst["commodityDataElements"] = *commoditydataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::commodityListData) {
+        dst["commodityListData"] = *commoditylistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::commodityListDataSelectors) {
+        dst["commodityListDataSelectors"] = *commoditylistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tierData) {
+        dst["tierData"] = *tierdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tierDataElements) {
+        dst["tierDataElements"] = *tierdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tierListData) {
+        dst["tierListData"] = *tierlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tierListDataSelectors) {
+        dst["tierListDataSelectors"] = *tierlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tierIncentiveRelationData) {
+        dst["tierIncentiveRelationData"] = *tierincentiverelationdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tierIncentiveRelationDataElements) {
+        dst["tierIncentiveRelationDataElements"] = *tierincentiverelationdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tierIncentiveRelationListData) {
+        dst["tierIncentiveRelationListData"] = *tierincentiverelationlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tierIncentiveRelationListDataSelectors) {
+        dst["tierIncentiveRelationListDataSelectors"] = *tierincentiverelationlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tierDescriptionData) {
+        dst["tierDescriptionData"] = *tierdescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tierDescriptionDataElements) {
+        dst["tierDescriptionDataElements"] = *tierdescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tierDescriptionListData) {
+        dst["tierDescriptionListData"] = *tierdescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::tierDescriptionListDataSelectors) {
+        dst["tierDescriptionListDataSelectors"] = *tierdescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::incentiveData) {
+        dst["incentiveData"] = *incentivedatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::incentiveDataElements) {
+        dst["incentiveDataElements"] = *incentivedataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::incentiveListData) {
+        dst["incentiveListData"] = *incentivelistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::incentiveListDataSelectors) {
+        dst["incentiveListDataSelectors"] = *incentivelistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::incentiveDescriptionData) {
+        dst["incentiveDescriptionData"] = *incentivedescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::incentiveDescriptionDataElements) {
+        dst["incentiveDescriptionDataElements"] = *incentivedescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::incentiveDescriptionListData) {
+        dst["incentiveDescriptionListData"] = *incentivedescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::incentiveDescriptionListDataSelectors) {
+        dst["incentiveDescriptionListDataSelectors"] = *incentivedescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::loadControlNodeData) {
+        dst["loadControlNodeData"] = *loadcontrolnodedatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::loadControlNodeDataElements) {
+        dst["loadControlNodeDataElements"] = *loadcontrolnodedataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::loadControlEventData) {
+        dst["loadControlEventData"] = *loadcontroleventdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::loadControlEventDataElements) {
+        dst["loadControlEventDataElements"] = *loadcontroleventdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::loadControlEventListData) {
+        dst["loadControlEventListData"] = *loadcontroleventlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::loadControlEventListDataSelectors) {
+        dst["loadControlEventListDataSelectors"] = *loadcontroleventlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::loadControlStateData) {
+        dst["loadControlStateData"] = *loadcontrolstatedatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::loadControlStateDataElements) {
+        dst["loadControlStateDataElements"] = *loadcontrolstatedataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::loadControlStateListData) {
+        dst["loadControlStateListData"] = *loadcontrolstatelistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::loadControlStateListDataSelectors) {
+        dst["loadControlStateListDataSelectors"] = *loadcontrolstatelistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::loadControlLimitData) {
+        dst["loadControlLimitData"] = *loadcontrollimitdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::loadControlLimitDataElements) {
+        dst["loadControlLimitDataElements"] = *loadcontrollimitdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::loadControlLimitListData) {
+        dst["loadControlLimitListData"] = *loadcontrollimitlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::loadControlLimitListDataSelectors) {
+        dst["loadControlLimitListDataSelectors"] = *loadcontrollimitlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::loadControlLimitConstraintsData) {
+        dst["loadControlLimitConstraintsData"] = *loadcontrollimitconstraintsdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::loadControlLimitConstraintsDataElements) {
+        dst["loadControlLimitConstraintsDataElements"] = *loadcontrollimitconstraintsdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::loadControlLimitConstraintsListData) {
+        dst["loadControlLimitConstraintsListData"] = *loadcontrollimitconstraintslistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::loadControlLimitConstraintsListDataSelectors) {
+        dst["loadControlLimitConstraintsListDataSelectors"] = *loadcontrollimitconstraintslistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::loadControlLimitDescriptionData) {
+        dst["loadControlLimitDescriptionData"] = *loadcontrollimitdescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::loadControlLimitDescriptionDataElements) {
+        dst["loadControlLimitDescriptionDataElements"] = *loadcontrollimitdescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::loadControlLimitDescriptionListData) {
+        dst["loadControlLimitDescriptionListData"] = *loadcontrollimitdescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::loadControlLimitDescriptionListDataSelectors) {
+        dst["loadControlLimitDescriptionListDataSelectors"] = *loadcontrollimitdescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementAddNodeCall) {
+        dst["networkManagementAddNodeCall"] = *networkmanagementaddnodecalltype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementAddNodeCallElements) {
+        dst["networkManagementAddNodeCallElements"] = *networkmanagementaddnodecallelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementRemoveNodeCall) {
+        dst["networkManagementRemoveNodeCall"] = *networkmanagementremovenodecalltype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementRemoveNodeCallElements) {
+        dst["networkManagementRemoveNodeCallElements"] = *networkmanagementremovenodecallelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementModifyNodeCall) {
+        dst["networkManagementModifyNodeCall"] = *networkmanagementmodifynodecalltype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementModifyNodeCallElements) {
+        dst["networkManagementModifyNodeCallElements"] = *networkmanagementmodifynodecallelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementScanNetworkCall) {
+        dst["networkManagementScanNetworkCall"] = *networkmanagementscannetworkcalltype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementScanNetworkCallElements) {
+        dst["networkManagementScanNetworkCallElements"] = *networkmanagementscannetworkcallelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementDiscoverCall) {
+        dst["networkManagementDiscoverCall"] = *networkmanagementdiscovercalltype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementDiscoverCallElements) {
+        dst["networkManagementDiscoverCallElements"] = *networkmanagementdiscovercallelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementAbortCall) {
+        dst["networkManagementAbortCall"] = *networkmanagementabortcalltype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementAbortCallElements) {
+        dst["networkManagementAbortCallElements"] = *networkmanagementabortcallelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementProcessStateData) {
+        dst["networkManagementProcessStateData"] = *networkmanagementprocessstatedatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementProcessStateDataElements) {
+        dst["networkManagementProcessStateDataElements"] = *networkmanagementprocessstatedataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementJoiningModeData) {
+        dst["networkManagementJoiningModeData"] = *networkmanagementjoiningmodedatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementJoiningModeDataElements) {
+        dst["networkManagementJoiningModeDataElements"] = *networkmanagementjoiningmodedataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementReportCandidateData) {
+        dst["networkManagementReportCandidateData"] = *networkmanagementreportcandidatedatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementReportCandidateDataElements) {
+        dst["networkManagementReportCandidateDataElements"] = *networkmanagementreportcandidatedataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementDeviceDescriptionData) {
+        dst["networkManagementDeviceDescriptionData"] = *networkmanagementdevicedescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementDeviceDescriptionDataElements) {
+        dst["networkManagementDeviceDescriptionDataElements"] = *networkmanagementdevicedescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementDeviceDescriptionListData) {
+        dst["networkManagementDeviceDescriptionListData"] = *networkmanagementdevicedescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementDeviceDescriptionListDataSelectors) {
+        dst["networkManagementDeviceDescriptionListDataSelectors"] = *networkmanagementdevicedescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementEntityDescriptionData) {
+        dst["networkManagementEntityDescriptionData"] = *networkmanagemententitydescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementEntityDescriptionDataElements) {
+        dst["networkManagementEntityDescriptionDataElements"] = *networkmanagemententitydescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementEntityDescriptionListData) {
+        dst["networkManagementEntityDescriptionListData"] = *networkmanagemententitydescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementEntityDescriptionListDataSelectors) {
+        dst["networkManagementEntityDescriptionListDataSelectors"] = *networkmanagemententitydescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementFeatureDescriptionData) {
+        dst["networkManagementFeatureDescriptionData"] = *networkmanagementfeaturedescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementFeatureDescriptionDataElements) {
+        dst["networkManagementFeatureDescriptionDataElements"] = *networkmanagementfeaturedescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementFeatureDescriptionListData) {
+        dst["networkManagementFeatureDescriptionListData"] = *networkmanagementfeaturedescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::networkManagementFeatureDescriptionListDataSelectors) {
+        dst["networkManagementFeatureDescriptionListDataSelectors"] = *networkmanagementfeaturedescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryData) {
+        dst["nodeManagementDetailedDiscoveryData"] = *nodemanagementdetaileddiscoverydatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryDataElements) {
+        dst["nodeManagementDetailedDiscoveryDataElements"] = *nodemanagementdetaileddiscoverydataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryDataSelectors) {
+        dst["nodeManagementDetailedDiscoveryDataSelectors"] = *nodemanagementdetaileddiscoverydataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingData) {
+        dst["nodeManagementBindingData"] = *nodemanagementbindingdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingDataElements) {
+        dst["nodeManagementBindingDataElements"] = *nodemanagementbindingdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingDataSelectors) {
+        dst["nodeManagementBindingDataSelectors"] = *nodemanagementbindingdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingRequestCall) {
+        dst["nodeManagementBindingRequestCall"] = *nodemanagementbindingrequestcalltype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingRequestCallElements) {
+        dst["nodeManagementBindingRequestCallElements"] = *nodemanagementbindingrequestcallelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingDeleteCall) {
+        dst["nodeManagementBindingDeleteCall"] = *nodemanagementbindingdeletecalltype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingDeleteCallElements) {
+        dst["nodeManagementBindingDeleteCallElements"] = *nodemanagementbindingdeletecallelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionData) {
+        dst["nodeManagementSubscriptionData"] = *nodemanagementsubscriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionDataElements) {
+        dst["nodeManagementSubscriptionDataElements"] = *nodemanagementsubscriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionDataSelectors) {
+        dst["nodeManagementSubscriptionDataSelectors"] = *nodemanagementsubscriptiondataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionRequestCall) {
+        dst["nodeManagementSubscriptionRequestCall"] = *nodemanagementsubscriptionrequestcalltype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionRequestCallElements) {
+        dst["nodeManagementSubscriptionRequestCallElements"] = *nodemanagementsubscriptionrequestcallelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionDeleteCall) {
+        dst["nodeManagementSubscriptionDeleteCall"] = *nodemanagementsubscriptiondeletecalltype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionDeleteCallElements) {
+        dst["nodeManagementSubscriptionDeleteCallElements"] = *nodemanagementsubscriptiondeletecallelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementDestinationData) {
+        dst["nodeManagementDestinationData"] = *nodemanagementdestinationdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementDestinationDataElements) {
+        dst["nodeManagementDestinationDataElements"] = *nodemanagementdestinationdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementDestinationListData) {
+        dst["nodeManagementDestinationListData"] = *nodemanagementdestinationlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementDestinationListDataSelectors) {
+        dst["nodeManagementDestinationListDataSelectors"] = *nodemanagementdestinationlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementUseCaseData) {
+        dst["nodeManagementUseCaseData"] = *nodemanagementusecasedatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementUseCaseDataElements) {
+        dst["nodeManagementUseCaseDataElements"] = *nodemanagementusecasedataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::nodeManagementUseCaseDataSelectors) {
+        dst["nodeManagementUseCaseDataSelectors"] = *nodemanagementusecasedataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::subscriptionManagementEntryData) {
+        dst["subscriptionManagementEntryData"] = *subscriptionmanagemententrydatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::subscriptionManagementEntryDataElements) {
+        dst["subscriptionManagementEntryDataElements"] = *subscriptionmanagemententrydataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::subscriptionManagementEntryListData) {
+        dst["subscriptionManagementEntryListData"] = *subscriptionmanagemententrylistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::subscriptionManagementEntryListDataSelectors) {
+        dst["subscriptionManagementEntryListDataSelectors"] = *subscriptionmanagemententrylistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::subscriptionManagementRequestCall) {
+        dst["subscriptionManagementRequestCall"] = *subscriptionmanagementrequestcalltype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::subscriptionManagementRequestCallElements) {
+        dst["subscriptionManagementRequestCallElements"] = *subscriptionmanagementrequestcallelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::subscriptionManagementDeleteCall) {
+        dst["subscriptionManagementDeleteCall"] = *subscriptionmanagementdeletecalltype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::subscriptionManagementDeleteCallElements) {
+        dst["subscriptionManagementDeleteCallElements"] = *subscriptionmanagementdeletecallelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::useCaseInformationData) {
+        dst["useCaseInformationData"] = *usecaseinformationdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::useCaseInformationDataElements) {
+        dst["useCaseInformationDataElements"] = *usecaseinformationdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::useCaseInformationListData) {
+        dst["useCaseInformationListData"] = *usecaseinformationlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::useCaseInformationListDataSelectors) {
+        dst["useCaseInformationListDataSelectors"] = *usecaseinformationlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::specificationVersionData) {
+        dst["specificationVersionData"] = *specificationversiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::specificationVersionDataElements) {
+        dst["specificationVersionDataElements"] = *specificationversiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::specificationVersionListData) {
+        dst["specificationVersionListData"] = *specificationversionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::specificationVersionListDataSelectors) {
+        dst["specificationVersionListDataSelectors"] = *specificationversionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsInterruptData) {
+        dst["operatingConstraintsInterruptData"] = *operatingconstraintsinterruptdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsInterruptDataElements) {
+        dst["operatingConstraintsInterruptDataElements"] = *operatingconstraintsinterruptdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsInterruptListData) {
+        dst["operatingConstraintsInterruptListData"] = *operatingconstraintsinterruptlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsInterruptListDataSelectors) {
+        dst["operatingConstraintsInterruptListDataSelectors"] = *operatingconstraintsinterruptlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsDurationData) {
+        dst["operatingConstraintsDurationData"] = *operatingconstraintsdurationdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsDurationDataElements) {
+        dst["operatingConstraintsDurationDataElements"] = *operatingconstraintsdurationdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsDurationListData) {
+        dst["operatingConstraintsDurationListData"] = *operatingconstraintsdurationlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsDurationListDataSelectors) {
+        dst["operatingConstraintsDurationListDataSelectors"] = *operatingconstraintsdurationlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsPowerDescriptionData) {
+        dst["operatingConstraintsPowerDescriptionData"] = *operatingconstraintspowerdescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsPowerDescriptionDataElements) {
+        dst["operatingConstraintsPowerDescriptionDataElements"] = *operatingconstraintspowerdescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsPowerDescriptionListData) {
+        dst["operatingConstraintsPowerDescriptionListData"] = *operatingconstraintspowerdescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsPowerDescriptionListDataSelectors) {
+        dst["operatingConstraintsPowerDescriptionListDataSelectors"] = *operatingconstraintspowerdescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsPowerRangeData) {
+        dst["operatingConstraintsPowerRangeData"] = *operatingconstraintspowerrangedatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsPowerRangeDataElements) {
+        dst["operatingConstraintsPowerRangeDataElements"] = *operatingconstraintspowerrangedataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsPowerRangeListData) {
+        dst["operatingConstraintsPowerRangeListData"] = *operatingconstraintspowerrangelistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsPowerRangeListDataSelectors) {
+        dst["operatingConstraintsPowerRangeListDataSelectors"] = *operatingconstraintspowerrangelistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsPowerLevelData) {
+        dst["operatingConstraintsPowerLevelData"] = *operatingconstraintspowerleveldatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsPowerLevelDataElements) {
+        dst["operatingConstraintsPowerLevelDataElements"] = *operatingconstraintspowerleveldataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsPowerLevelListData) {
+        dst["operatingConstraintsPowerLevelListData"] = *operatingconstraintspowerlevellistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsPowerLevelListDataSelectors) {
+        dst["operatingConstraintsPowerLevelListDataSelectors"] = *operatingconstraintspowerlevellistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsResumeImplicationData) {
+        dst["operatingConstraintsResumeImplicationData"] = *operatingconstraintsresumeimplicationdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsResumeImplicationDataElements) {
+        dst["operatingConstraintsResumeImplicationDataElements"] = *operatingconstraintsresumeimplicationdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsResumeImplicationListData) {
+        dst["operatingConstraintsResumeImplicationListData"] = *operatingconstraintsresumeimplicationlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsResumeImplicationListDataSelectors) {
+        dst["operatingConstraintsResumeImplicationListDataSelectors"] = *operatingconstraintsresumeimplicationlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::sensingData) {
+        dst["sensingData"] = *sensingdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::sensingDataElements) {
+        dst["sensingDataElements"] = *sensingdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::sensingListData) {
+        dst["sensingListData"] = *sensinglistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::sensingListDataSelectors) {
+        dst["sensingListDataSelectors"] = *sensinglistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::sensingDescriptionData) {
+        dst["sensingDescriptionData"] = *sensingdescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::sensingDescriptionDataElements) {
+        dst["sensingDescriptionDataElements"] = *sensingdescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::smartEnergyManagementPsData) {
+        dst["smartEnergyManagementPsData"] = *smartenergymanagementpsdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::smartEnergyManagementPsDataElements) {
+        dst["smartEnergyManagementPsDataElements"] = *smartenergymanagementpsdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::smartEnergyManagementPsDataSelectors) {
+        dst["smartEnergyManagementPsDataSelectors"] = *smartenergymanagementpsdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::smartEnergyManagementPsPriceData) {
+        dst["smartEnergyManagementPsPriceData"] = *smartenergymanagementpspricedatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::smartEnergyManagementPsPriceDataElements) {
+        dst["smartEnergyManagementPsPriceDataElements"] = *smartenergymanagementpspricedataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::smartEnergyManagementPsPriceDataSelectors) {
+        dst["smartEnergyManagementPsPriceDataSelectors"] = *smartenergymanagementpspricedataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::smartEnergyManagementPsConfigurationRequestCall) {
+        dst["smartEnergyManagementPsConfigurationRequestCall"] = *smartenergymanagementpsconfigurationrequestcalltype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::smartEnergyManagementPsConfigurationRequestCallElements) {
+        dst["smartEnergyManagementPsConfigurationRequestCallElements"] = *smartenergymanagementpsconfigurationrequestcallelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::smartEnergyManagementPsPriceCalculationRequestCall) {
+        dst["smartEnergyManagementPsPriceCalculationRequestCall"] = *smartenergymanagementpspricecalculationrequestcalltype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::smartEnergyManagementPsPriceCalculationRequestCallElements) {
+        dst["smartEnergyManagementPsPriceCalculationRequestCallElements"] = *smartenergymanagementpspricecalculationrequestcallelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::stateInformationData) {
+        dst["stateInformationData"] = *stateinformationdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::stateInformationDataElements) {
+        dst["stateInformationDataElements"] = *stateinformationdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::stateInformationListData) {
+        dst["stateInformationListData"] = *stateinformationlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::stateInformationListDataSelectors) {
+        dst["stateInformationListDataSelectors"] = *stateinformationlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::supplyConditionData) {
+        dst["supplyConditionData"] = *supplyconditiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::supplyConditionDataElements) {
+        dst["supplyConditionDataElements"] = *supplyconditiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::supplyConditionListData) {
+        dst["supplyConditionListData"] = *supplyconditionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::supplyConditionListDataSelectors) {
+        dst["supplyConditionListDataSelectors"] = *supplyconditionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::supplyConditionDescriptionData) {
+        dst["supplyConditionDescriptionData"] = *supplyconditiondescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::supplyConditionDescriptionDataElements) {
+        dst["supplyConditionDescriptionDataElements"] = *supplyconditiondescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::supplyConditionDescriptionListData) {
+        dst["supplyConditionDescriptionListData"] = *supplyconditiondescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::supplyConditionDescriptionListDataSelectors) {
+        dst["supplyConditionDescriptionListDataSelectors"] = *supplyconditiondescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::supplyConditionThresholdRelationData) {
+        dst["supplyConditionThresholdRelationData"] = *supplyconditionthresholdrelationdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::supplyConditionThresholdRelationDataElements) {
+        dst["supplyConditionThresholdRelationDataElements"] = *supplyconditionthresholdrelationdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::supplyConditionThresholdRelationListData) {
+        dst["supplyConditionThresholdRelationListData"] = *supplyconditionthresholdrelationlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::supplyConditionThresholdRelationListDataSelectors) {
+        dst["supplyConditionThresholdRelationListDataSelectors"] = *supplyconditionthresholdrelationlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::taskManagementJobData) {
+        dst["taskManagementJobData"] = *taskmanagementjobdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::taskManagementJobDataElements) {
+        dst["taskManagementJobDataElements"] = *taskmanagementjobdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::taskManagementJobListData) {
+        dst["taskManagementJobListData"] = *taskmanagementjoblistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::taskManagementJobListDataSelectors) {
+        dst["taskManagementJobListDataSelectors"] = *taskmanagementjoblistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::taskManagementJobRelationData) {
+        dst["taskManagementJobRelationData"] = *taskmanagementjobrelationdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::taskManagementJobRelationDataElements) {
+        dst["taskManagementJobRelationDataElements"] = *taskmanagementjobrelationdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::taskManagementJobRelationListData) {
+        dst["taskManagementJobRelationListData"] = *taskmanagementjobrelationlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::taskManagementJobRelationListDataSelectors) {
+        dst["taskManagementJobRelationListDataSelectors"] = *taskmanagementjobrelationlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::taskManagementJobDescriptionData) {
+        dst["taskManagementJobDescriptionData"] = *taskmanagementjobdescriptiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::taskManagementJobDescriptionDataElements) {
+        dst["taskManagementJobDescriptionDataElements"] = *taskmanagementjobdescriptiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::taskManagementJobDescriptionListData) {
+        dst["taskManagementJobDescriptionListData"] = *taskmanagementjobdescriptionlistdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::taskManagementJobDescriptionListDataSelectors) {
+        dst["taskManagementJobDescriptionListDataSelectors"] = *taskmanagementjobdescriptionlistdataselectorstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::taskManagementOverviewData) {
+        dst["taskManagementOverviewData"] = *taskmanagementoverviewdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::taskManagementOverviewDataElements) {
+        dst["taskManagementOverviewDataElements"] = *taskmanagementoverviewdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeInformationData) {
+        dst["timeInformationData"] = *timeinformationdatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeInformationDataElements) {
+        dst["timeInformationDataElements"] = *timeinformationdataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeDistributorData) {
+        dst["timeDistributorData"] = *timedistributordatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeDistributorDataElements) {
+        dst["timeDistributorDataElements"] = *timedistributordataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timePrecisionData) {
+        dst["timePrecisionData"] = *timeprecisiondatatype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timePrecisionDataElements) {
+        dst["timePrecisionDataElements"] = *timeprecisiondataelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeDistributorEnquiryCall) {
+        dst["timeDistributorEnquiryCall"] = *timedistributorenquirycalltype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::timeDistributorEnquiryCallElements) {
+        dst["timeDistributorEnquiryCallElements"] = *timedistributorenquirycallelementstype;
+    }
+    
+    if (last_cmd == SpineDataTypeHandler::Function::header) {
+        dst["header"] = *headertype;
+    }
+    
+}
     
