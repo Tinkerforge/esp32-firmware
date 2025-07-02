@@ -212,7 +212,36 @@ bool NodeManagementUsecase::handle_subscription(HeaderType &header,
                                                 JsonObject response,
                                                 SpineConnection *connection)
 {
-    //TODO: Implement subscription management
+
+    if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionRequestCall && header.cmdClassifier == CmdClassifierType::call) {
+
+        if (!data->nodemanagementsubscriptionrequestcalltype || !data->nodemanagementsubscriptionrequestcalltype->subscriptionRequest
+            || !data->nodemanagementsubscriptionrequestcalltype->subscriptionRequest->clientAddress
+            || !data->nodemanagementsubscriptionrequestcalltype->subscriptionRequest->serverAddress) {
+            EEBUS_USECASE_HELPERS::build_result_data(response,
+                                                     EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected,
+                                                     "Subscription request failed, no or invalid subscription request data provided");
+            return true;
+        }
+        NodeManagementSubscriptionRequestCallType request = data->nodemanagementsubscriptionrequestcalltype.value();
+        SubscriptionManagementEntryDataType entry = SubscriptionManagementEntryDataType();
+        //TODO: Implement and check trust level of the client
+        entry.clientAddress = request.subscriptionRequest->clientAddress;
+        entry.serverAddress = request.subscriptionRequest->serverAddress;
+        subscription_data.subscriptionEntry->push_back(entry);
+        EEBUS_USECASE_HELPERS::build_result_data(response,
+                                                 EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError,
+                                                 "Subscription request was successful");
+        return true;
+
+    }
+    if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionData && header.cmdClassifier == CmdClassifierType::read) {
+        response["nodeManagementSubscriptionData"] = subscription_data;
+        return true;
+    } else if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionDeleteCall) {
+        //TODO: Implement subscription delete handling
+    }
+
     return false;
 }
 
@@ -345,6 +374,7 @@ bool ChargingSummaryUsecase::handle_message(HeaderType &header,
                                             SpineConnection *connection)
 {
     // TODO: implement messagehandling for the ChargingSummary usecase
+
     return false;
 }
 NodeManagementDetailedDiscoveryEntityInformationType ChargingSummaryUsecase::get_detailed_discovery_entity_information() const
@@ -420,7 +450,11 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
         send_response = charging_summary.handle_message(header, data, response.as<JsonObject>(), connection);
     }
     if (send_response) {
-        connection->send_datagram(response.as<JsonVariant>(), CmdClassifierType::reply, *header.addressSource, *header.addressDestination, false);
+        connection->send_datagram(response.as<JsonVariant>(),
+                                  CmdClassifierType::reply,
+                                  *header.addressSource,
+                                  *header.addressDestination,
+                                  false);
     }
 }
 void EEBusUseCases::inform_subscribers(int entity, int feature, SpineDataTypeHandler *data)
