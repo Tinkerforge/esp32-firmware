@@ -914,7 +914,7 @@ void ShipConnection::state_done()
                 bool response = spine.process_datagram(data.payload);
                 if (response) {
 // logger.printfln("Response datagram: %s", spine.response_doc.as<String>().c_str());
-                    send_data_message(spine.response_doc.as<JsonVariant>());
+                    //send_data_message(spine.response_doc.as<JsonVariantConst>());
                 } else {
                     logger.printfln("No response to data message");
                 }
