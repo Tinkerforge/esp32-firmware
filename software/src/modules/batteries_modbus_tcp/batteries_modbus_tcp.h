@@ -63,6 +63,7 @@ public:
     [[gnu::const]] virtual const Config *get_config_prototype() override;
     [[gnu::const]] virtual const Config *get_state_prototype() override;
     [[gnu::const]] virtual const Config *get_errors_prototype() override;
+    virtual String validate_config(Config &update, ConfigSource source) override;
 
 private:
     void write_next();
