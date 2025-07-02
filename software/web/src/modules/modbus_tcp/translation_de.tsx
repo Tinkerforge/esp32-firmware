@@ -43,7 +43,7 @@ let x = {
                         <td>Version der Registertabelle</td>
                         <td>uint32</td>
                         <td>---</td>
-                        <td>Aktuelle Version: 3</td>
+                        <td>Aktuelle Version: 4</td>
                     </tr>
                     <tr>
                         <td>2</td>
@@ -157,6 +157,20 @@ let x = {
                         <td>evse</td>
                         <td>Aktueller Wert der Ladestromgrenzen in Milliampere. 0xFFFFFFFF falls eine Stromgrenze nicht aktiv
                             ist. 0 falls eine Stromgrenze blockiert. Sonst zwischen 6000 (6A) und 32000 (32A).</td>
+                    </tr>
+                    <tr>
+                        <td>1100</td>
+                        <td>"Taster gedrückt"-Zeitstempel</td>
+                        <td>uint32</td>
+                        <td>evse</td>
+                        <td>Zeit zu der zuletzt der Taster gedrückt wurde. 0 falls der Taster seit dem Start des Ladecontrollers nicht betätigt wurde. Um auf einen Tasterdruck zu reagieren kann dieser Wert periodisch gelesen werden. Bei jeder Änderung des Wertes wurde der Taster mindestens einmal gedrückt.</td>
+                    </tr>
+                    <tr>
+                        <td>1102</td>
+                        <td>"Taster losgelassen"-Zeitstempel</td>
+                        <td>uint32</td>
+                        <td>evse</td>
+                        <td>Zeit zu der zuletzt der Taster losgelassen wurde wurde. 0 falls der Taster seit dem Start des Ladecontrollers nicht betätigt wurde. Um auf einen Tasterdruck zu reagieren kann dieser Wert periodisch gelesen werden. Bei jeder Änderung des Wertes wurde der Taster mindestens einmal losgelassen.</td>
                     </tr>
                     <tr>
                         <td>2000</td>
@@ -497,6 +511,13 @@ let x = {
                         <td>bool</td>
                         <td>evse_gp_input</td>
                         <td>0 - geschlossen, 1 - geöffnet</td>
+                    </tr>
+                    <tr>
+                        <td>1102</td>
+                        <td>Zustand des Fronttasters</td>
+                        <td>bool</td>
+                        <td>evse</td>
+                        <td>0 - nicht gedrückt, 1 - gedrückt</td>
                     </tr>
                     <tr>
                         <td>2100</td>

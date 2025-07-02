@@ -38,7 +38,8 @@ extern uint32_t local_uid_num;
 // 1 - Initial release
 // 2 - Add coils 1000, 1001
 // 3 - Add phase switch, EVSE LED color, EVSE GPIOs, NFC tag injection
-#define MODBUS_TABLE_VERSION 3
+// 4 - Add button state
+#define MODBUS_TABLE_VERSION 4
 
 static uint8_t hextouint(const char c)
 {
@@ -237,6 +238,9 @@ Option<ModbusTCP::TwoRegs> ModbusTCP::getWarpInputRegister(uint16_t reg, void *c
 #endif
         case 1010: REQUIRE(evse); val.u = cache->evse_state->get("allowed_charging_current")->asUint(); break;
         //1012... handled below
+
+        case 1100: REQUIRE(evse); val.u = cache->evse_button_state->get("button_press_time")->asUint(); break;
+        case 1102: REQUIRE(evse); val.u = cache->evse_button_state->get("button_release_time")->asUint(); break;
 
         case 2000: REQUIRE(meter); val.u = cache->meter_state->get("type")->asUint(); break;
         case 2002: REQUIRE(meter); val.f = cache->meter_values->get("power")->asFloat(); break;
@@ -489,6 +493,7 @@ TFModbusTCPExceptionCode ModbusTCP::getWarpDiscreteInputs(uint16_t start_address
                 if (version >= 20 && version < 30)
                     result = cache->evse_ll_state->get("gpio")->get(16)->asBool();
             } break;
+            case 1102: REQUIRE(evse); result = cache->evse_button_state->get("button_pressed")->asBool(); break;
 
             case 2100: REQUIRE(meter_phases); result = cache->meter_phases->get("phases_connected")->get(0)->asBool(); break;
             case 2101: REQUIRE(meter_phases); result = cache->meter_phases->get("phases_connected")->get(1)->asBool(); break;
@@ -1220,6 +1225,7 @@ void ModbusTCP::fillCache() {
     cache->evse_indicator_led = api.getState("evse/indicator_led");
     cache->evse_gp_output = api.getState("evse/gp_output", false); // Don't log if missing: Only WARP2 has this API.
     cache->evse_hardware_configuration = api.getState("evse/hardware_configuration");
+    cache->evse_button_state = api.getState("evse/button_state");
     cache->current_charge = api.getState("charge_tracker/current_charge");
     cache->meter_state = api.getState("meter/state");
     cache->meter_values = api.getState("meter/values");

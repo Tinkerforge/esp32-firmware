@@ -43,7 +43,7 @@ let x = {
                         <td>Modbus table version</td>
                         <td>uint32</td>
                         <td>---</td>
-                        <td>Current version: 3</td>
+                        <td>Current version: 4</td>
                     </tr>
                     <tr>
                         <td>2</td>
@@ -155,6 +155,20 @@ let x = {
                         <td>evse</td>
                         <td>Value of all charging slots in milliampere. 0xFFFFFFFF if a slot is not active. 0 if a slot blocks. Else
                             between 6000 (6 A) and 32000 (32 A).</td>
+                    </tr>
+                    <tr>
+                        <td>1100</td>
+                        <td>"Button pressed" timestamp</td>
+                        <td>uint32</td>
+                        <td>evse</td>
+                        <td>Timestamp of the last button press. 0 if the button was not pressed since the EVSE boot-up. To act on a button press, read this value periodically. Every time this value changes, the button was pressed at least once.</td>
+                    </tr>
+                    <tr>
+                        <td>1102</td>
+                        <td>"Button released" timestamp</td>
+                        <td>uint32</td>
+                        <td>evse</td>
+                        <td>Timestamp of the last button release. 0 if the button was not released since the EVSE boot-up. To act on a button release, read this value periodically. Every time this value changes, the button was released at least once.</td>
                     </tr>
                     <tr>
                         <td>2000</td>
@@ -495,6 +509,13 @@ let x = {
                         <td>bool</td>
                         <td>evse_gp_input</td>
                         <td>0 - closed, 1 - open</td>
+                    </tr>
+                    <tr>
+                        <td>1102</td>
+                        <td>Front button state</td>
+                        <td>bool</td>
+                        <td>evse</td>
+                        <td>0 - not pressed, 1 - pressed</td>
                     </tr>
                     <tr>
                         <td>2100</td>
