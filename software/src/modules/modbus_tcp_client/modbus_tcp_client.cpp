@@ -41,7 +41,7 @@ void ModbusTCPClient::setup()
                 callback(0, err_to_errno(data->err));
             }
             else if (data->addr_ptr == nullptr || data->addr_ptr->type != IPADDR_TYPE_V4) {
-                callback(0, -1); // FIXME: resolve failed but no errno?
+                callback(0, -1); // no IPv4 address available for this host
             }
             else {
                 callback(data->addr_ptr->u_addr.ip4.addr, -1);
