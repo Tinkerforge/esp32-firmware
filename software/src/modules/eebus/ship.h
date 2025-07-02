@@ -20,10 +20,9 @@
 #pragma once
 
 #include <vector>
-
+#include "module.h"
 #include "config.h"
 #include "mdns.h"
-#include "module.h"
 #include "modules/ws/web_sockets.h"
 #include "ship_connection.h"
 #include <TFJson.h>

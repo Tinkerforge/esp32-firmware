@@ -38,7 +38,7 @@ bool NodeManagementUsecase::handle_binding(HeaderType &header, SpineDataTypeHand
             BindingManagementEntryDataType binding_entry;
             binding_entry.clientAddress = data->nodemanagementbindingrequestcalltype->bindingRequest->clientAddress;
             binding_entry.serverAddress = data->nodemanagementbindingrequestcalltype->bindingRequest->serverAddress;
-            // We are supposed consider the featuretype (???) of the feature
+            // We are supposed consider the featuretype of the feature
             std::optional<FeatureTypeType> feature_type = data->nodemanagementbindingrequestcalltype->bindingRequest->serverFeatureType;
 
             if (check_is_bound(binding_entry.clientAddress.value(), binding_entry.serverAddress.value())) {
@@ -307,8 +307,7 @@ void NodeManagementUsecase::inform_subscribers(int entity, int feature, SpineDat
         if (subscription.serverAddress->entity == entities && subscription.serverAddress->feature == feature) {
             for (ShipConnection &ship_connection : eebus.ship.ship_connections) {
                 if (ship_connection.spine.check_known_address(subscription.clientAddress.value())) {
-                    auto json = response.as<JsonObject>();
-                    ship_connection.spine.send_datagram(json,
+                    ship_connection.spine.send_datagram(response.as<JsonObject>(),
                                                         CmdClassifierType::notify,
                                                         subscription.serverAddress.value(),
                                                         subscription.clientAddress.value(),
@@ -408,6 +407,7 @@ EEBusUseCases::EEBusUseCases()
 }
 void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *data, SpineConnection *connection)
 {
+    //TODO: Implement a mutex so only one message can be processed at a time
     DynamicJsonDocument response = DynamicJsonDocument(8192); // The response document to be filled with the response data
     // TODO: Fix the addressing of the usecases. Maybe better address them by entity?
     bool send_response = false;
