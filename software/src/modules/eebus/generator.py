@@ -454,11 +454,13 @@ def generate_data_handler_class() -> (str,str):
     function_to_type_mapping = ''.join(f"\n\t\tcase SpineDataTypeHandler::Function::{function[0]}: return SpineDataTypeHandler::Type::{function[1]};" for function in type_function_mapping)
     string_to_function_mapping = ''.join(f"\n\tif (function_name == \"{function[0]}\") return SpineDataTypeHandler::Function::{function[0]};" for function in type_function_mapping)
     function_to_string_mapping = ''.join(f"\n\tif (function == SpineDataTypeHandler::Function::{function[0]}) return \"{function[0]}\";" for function in type_function_mapping)
-
-
-
     data_types = ''.join(f"\n\t\tstd::optional<{cpp_datatype.name}> {cpp_datatype.name.lower()};" for cpp_datatype in cpp_datatypes)
 
+    last_cmd_to_json_mapping = ''.join(f"""
+    if (last_cmd == SpineDataTypeHandler::Function::{function[0]}) {{
+        dst = *{function[1].lower()};
+    }}
+    """ for function in type_function_mapping)
     cmd_types = ''.join(f"""
     if (obj["{function[0]}"]) {{
         last_cmd = function_from_string("{function[0]}");
@@ -485,6 +487,7 @@ class SpineDataTypeHandler {{
         Function function_from_string(const String function_name);
         Function handle_cmd(JsonObjectConst obj);
         String function_to_string(Function function);
+        void last_cmd_to_json(JsonVariant &dst);
 }};
     """
     output_cpp_code = f"""
@@ -508,6 +511,10 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
 String SpineDataTypeHandler::function_to_string(Function function) {{
     {function_to_string_mapping}
     return "Unknown function";
+}}
+
+void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst) {{
+    {last_cmd_to_json_mapping}
 }}
     """
 
