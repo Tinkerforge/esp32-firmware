@@ -221,7 +221,8 @@ let x = {
                         <td>Phase switch state</td>
                         <td>uint32</td>
                         <td>phase_switch</td>
-                        <td>The current state of the phase switch control:
+                        <td>
+                            The current state of the phase switch control:
                             <ul>
                                 <li>0: Ready to switch phases.</li>
                                 <li>1: Phase switch disabled in settings.</li>
@@ -250,7 +251,8 @@ let x = {
                         <td>Type of the last NFC tag</td>
                         <td>uint8 (4x)</td>
                         <td>nfc</td>
-                        <td>Type of the last seen NFC tag as ASCII coded hex string.
+                        <td>
+                            Type of the last seen NFC tag as ASCII coded hex string.
                             <ul>
                                 <li>"0000": Mifare Classic</li>
                                 <li>"0001": NFC Forum Typ 1</li>
@@ -364,17 +366,20 @@ let x = {
                         <td>ID of the NFC tag to inject</td>
                         <td>uint8 (20x)</td>
                         <td>nfc</td>
-                        <td>By writing the registers 4000 up to and including 4013 a NFC tag can be injected (as if using the API nfc/inject_tag):
+                        <td>
+                            By writing the registers 4000 up to and including 4013 a NFC tag can be injected (as if using the API nfc/inject_tag):
                             <ul>
                                 <li>Register 4000 to 4009: The tag's ID as ASCII coded hex string.</li>
-                                <li>Register 4010 and 4011:
+                                <li>
+                                    Register 4010 and 4011:
                                     <ul>
                                         <li>"0001": The injected tag can only a start charge (as if using the API nfc/inject_tag_start)</li>
                                         <li>"0002": The injected tag can only a stop charge (as if using the API nfc/inject_tag_stop)</li>
                                         <li>all other values: The injected tag can start and stop a charge (as if using the API nfc/inject_tag)</li>
                                     </ul>
                                 </li>
-                                <li>Register 4012 and 4013: The tag's type as ASCII coded hex string:
+                                <li>
+                                    Register 4012 and 4013: The tag's type as ASCII coded hex string:
                                     <ul>
                                         <li>"0000": Mifare Classic</li>
                                         <li>"0001": NFC Forum Typ 1</li>

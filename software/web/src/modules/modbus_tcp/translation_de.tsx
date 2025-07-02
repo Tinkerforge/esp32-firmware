@@ -223,7 +223,8 @@ let x = {
                         <td>Zustand der Phasenumschaltung</td>
                         <td>uint32</td>
                         <td>phase_switch</td>
-                        <td>Aktueller Zustand der Phasenumschaltung:
+                        <td>
+                            Aktueller Zustand der Phasenumschaltung:
                             <ul>
                                 <li>0: Phasenumschaltung ist bereit für Kommandos.</li>
                                 <li>1: Phasenumschaltung ist über die Einstellungen deaktiviert.</li>
@@ -252,7 +253,8 @@ let x = {
                         <td>Typ des letzten NFC-Tags</td>
                         <td>uint8 (4x)</td>
                         <td>nfc</td>
-                        <td>Typ des zuletzt erkannten NFC-Tags als ASCII-kodierter Hex-String.
+                        <td>
+                            Typ des zuletzt erkannten NFC-Tags als ASCII-kodierter Hex-String.
                             <ul>
                                 <li>"0000": Mifare Classic</li>
                                 <li>"0001": NFC Forum Typ 1</li>
@@ -366,17 +368,20 @@ let x = {
                         <td>ID des vorzutäuschenden NFC-Tags</td>
                         <td>uint8 (20x)</td>
                         <td>nfc</td>
-                        <td>Mit den Registern 4000 bis einschließlich 4013 kann ein NFC-Tag vorgetäuscht werden (analog zur API nfc/inject_tag):
+                        <td>
+                            Mit den Registern 4000 bis einschließlich 4013 kann ein NFC-Tag vorgetäuscht werden (analog zur API nfc/inject_tag):
                             <ul>
                                 <li>Register 4000 bis 4009: Die ID des Tags als ASCII-kodierter Hex-String.</li>
-                                <li>Register 4010 und 4011:
+                                <li>
+                                    Register 4010 und 4011:
                                     <ul>
                                         <li>"0001": Mit dem vorgetäuschten Tag kann ein Ladevorgang nur gestartet werden (analog zur API nfc/inject_tag_start)</li>
                                         <li>"0002": Mit dem vorgetäuschten Tag kann ein Ladevorgang nur gestoppt werden (analog zur API nfc/inject_tag_stop)</li>
                                         <li>alle anderen Werte: Mit dem vorgetäuschten Tag kann ein Ladevorgang gestartet und gestoppt werden (analog zur API nfc/inject_tag)</li>
                                     </ul>
                                 </li>
-                                <li>Register 4012 und 4013: Der Typ des NFC-Tags als ASCII-kodierter Hex-String:
+                                <li>
+                                    Register 4012 und 4013: Der Typ des NFC-Tags als ASCII-kodierter Hex-String:
                                     <ul>
                                         <li>"0000": Mifare Classic</li>
                                         <li>"0001": NFC Forum Typ 1</li>
@@ -449,14 +454,14 @@ let x = {
                         <td>Feature "phase_switch" verfügbar</td>
                         <td>bool</td>
                         <td>---</td>
-                        <td>Hardware und Konfiguration erlauben eine Phasenumschaltung-</td>
+                        <td>Hardware und Konfiguration erlauben eine Phasenumschaltung.</td>
                     </tr>
                     <tr>
                         <td>5</td>
                         <td>Feature "nfc" verfügbar</td>
                         <td>bool</td>
                         <td>---</td>
-                        <td>Ein NFC Bricklet ist verbaut und aktiv.</td>
+                        <td>Ein NFC-Bricklet ist verbaut und aktiv.</td>
                     </tr>
                     <tr>
                         <td>6</td>
@@ -484,14 +489,14 @@ let x = {
                         <td>Zustand des Abschalteingangs</td>
                         <td>bool</td>
                         <td>evse_sd_input</td>
-                        <td> 0 - geschlossen, 1 - geöffnet</td>
+                        <td>0 - geschlossen, 1 - geöffnet</td>
                     </tr>
                     <tr>
                         <td>1101</td>
                         <td>Zustand des konfigurierbaren Eingangs</td>
                         <td>bool</td>
                         <td>evse_gp_input</td>
-                        <td> 0 - geschlossen, 1 - geöffnet</td>
+                        <td>0 - geschlossen, 1 - geöffnet</td>
                     </tr>
                     <tr>
                         <td>2100</td>
