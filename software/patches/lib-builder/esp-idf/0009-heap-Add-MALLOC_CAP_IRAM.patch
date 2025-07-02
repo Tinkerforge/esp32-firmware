@@ -1,0 +1,39 @@
+From fdf1240e8e90e5c18cc15f699e3b40bfa24a69f7 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mattias=20Sch=C3=A4ffersmann?= <mattias@tinkerforge.com>
+Date: Wed, 2 Jul 2025 19:22:14 +0200
+Subject: [PATCH] heap: Add MALLOC_CAP_IRAM
+
+---
+ components/heap/include/esp_heap_caps.h    | 2 ++
+ components/heap/port/esp32/memory_layout.c | 2 +-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/components/heap/include/esp_heap_caps.h b/components/heap/include/esp_heap_caps.h
+index 0229809c18..64ea6a9a36 100644
+--- a/components/heap/include/esp_heap_caps.h
++++ b/components/heap/include/esp_heap_caps.h
+@@ -48,6 +48,8 @@ extern "C" {
+ #define MALLOC_CAP_CACHE_ALIGNED    (1<<19) ///< Memory must be aligned to the cache line size of any intermediate caches
+ #define MALLOC_CAP_SIMD             (1<<20) ///< Memory must be capable of being used for SIMD instructions (i.e. allow for SIMD-specific-bit data accesses)
+ 
++#define MALLOC_CAP_IRAM             (1<<29) ///< Memory must be in non-DRAM IRAM
++
+ #define MALLOC_CAP_INVALID          (1<<31) ///< Memory can't be used / list end marker
+ 
+ /**
+diff --git a/components/heap/port/esp32/memory_layout.c b/components/heap/port/esp32/memory_layout.c
+index b35d8c1b3e..dbcca198ef 100644
+--- a/components/heap/port/esp32/memory_layout.c
++++ b/components/heap/port/esp32/memory_layout.c
+@@ -51,7 +51,7 @@ const soc_memory_type_desc_t soc_memory_types[] = {
+     //(This DRAM is also the region used by ROM during startup, and decrease the allocation priority to avoid MALLOC_CAP_EXEC memory running out too soon)
+     [SOC_MEMORY_TYPE_DIRAM]  = { "D/IRAM", { 0, MALLOC_CAP_DMA|MALLOC_CAP_8BIT|MALLOC_CAP_INTERNAL|MALLOC_CAP_DEFAULT, MALLOC_CAP_32BIT|MALLOC_CAP_EXEC }},
+     //Type 2: IRAM
+-    [SOC_MEMORY_TYPE_IRAM]  = { "IRAM", { MALLOC_CAP_INTERNAL|MALLOC_IRAM_CAP, 0, 0 }},
++    [SOC_MEMORY_TYPE_IRAM]  = { "IRAM", { MALLOC_CAP_INTERNAL|MALLOC_IRAM_CAP|MALLOC_CAP_IRAM, 0, 0 }},
+     //Type 3: SPI SRAM data
+     [SOC_MEMORY_TYPE_SPIRAM]  = { "SPIRAM", { MALLOC_CAP_SPIRAM|MALLOC_CAP_DEFAULT, 0, MALLOC_CAP_8BIT|MALLOC_CAP_32BIT}},
+     //Type 4: RTC Fast RAM
+-- 
+2.39.5
+

@@ -136,10 +136,12 @@ export class Debug extends Component {
 
                 <Row label={__("debug.content.heap_block")}
                      l={<OutputFloat value={state_slow.largest_free_dram_block} digits={0} scale={0} unit="B"/>}
+                     c={<OutputFloat value={state_slow.largest_free_iram_block} digits={0} scale={0} unit="B"/>}
                      r={<OutputFloat value={state_slow.largest_free_psram_block} digits={0} scale={0} unit="B"/>}/>
 
                 <Row label={__("debug.content.heap_min_free")}
                      l={<OutputFloat value={state_slow.min_free_dram} digits={0} scale={0} unit="B"/>}
+                     c={<OutputFloat value={state_slow.min_free_iram} digits={0} scale={0} unit="B"/>}
                      r={<OutputFloat value={state_slow.min_free_psram} digits={0} scale={0} unit="B"/>}/>
 
                 <Row label={__("debug.content.heap_size")}

@@ -97,9 +97,8 @@ void Debug::pre_setup()
 {
     heap_caps_register_failed_alloc_callback(malloc_failed_hook);
 
-    size_t internal_heap_size = heap_caps_get_total_size(MALLOC_CAP_INTERNAL);
     size_t dram_heap_size     = heap_caps_get_total_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    size_t iram_heap_size     = internal_heap_size - dram_heap_size;
+    size_t iram_heap_size     = heap_caps_get_total_size(MALLOC_CAP_IRAM);
     size_t psram_heap_size    = heap_caps_get_total_size(MALLOC_CAP_SPIRAM);
 
     size_t psram_size = 0;
@@ -162,12 +161,14 @@ void Debug::pre_setup()
 
     state_slow = Config::Object({
         {"largest_free_dram_block",  Config::Uint32(0)},
+        {"largest_free_iram_block",  Config::Uint32(0)},
         {"largest_free_psram_block", Config::Uint32(0)},
         {"heap_integrity_ok", Config::Bool(true)},
         {"loop_max_us", Config::Uint32(0)},
         {"loop_max_fn_file", Config::Str("", 0, 0)},
         {"loop_max_fn_line", Config::Uint32(0)},
         {"min_free_dram", Config::Uint32(0)},
+        {"min_free_iram", Config::Uint32(0)},
         {"min_free_psram", Config::Uint32(0)},
         {"conf_uint_buf_size", Config::Uint32(0)},
         {"conf_int_buf_size", Config::Uint32(0)},
@@ -233,23 +234,23 @@ void Debug::pre_setup()
 void Debug::setup()
 {
     task_scheduler.scheduleWithFixedDelay([this]() {
-        multi_heap_info_t psram_info;
         multi_heap_info_t dram_info;
-        heap_caps_get_info(&psram_info, MALLOC_CAP_SPIRAM);
+        multi_heap_info_t iram_info;
+        multi_heap_info_t psram_info;
         heap_caps_get_info(&dram_info,  MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-
-        // (De)Allocations can happen between getting the internal and DRAM free sizes. Don't let free_iram underflow.
-        const size_t free_internal = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
-        const size_t free_iram = free_internal > dram_info.total_free_bytes ? free_internal - dram_info.total_free_bytes : 0;
+        heap_caps_get_info(&iram_info,  MALLOC_CAP_IRAM);
+        heap_caps_get_info(&psram_info, MALLOC_CAP_SPIRAM);
 
         state_fast.get("uptime")->updateUint(now_us().to<millis_t>().as<uint32_t>());
         state_fast.get("free_dram")->updateUint(dram_info.total_free_bytes);
-        state_fast.get("free_iram")->updateUint(free_iram);
+        state_fast.get("free_iram")->updateUint(iram_info.total_free_bytes);
         state_fast.get("free_psram")->updateUint(psram_info.total_free_bytes);
 
         state_slow.get("largest_free_dram_block")->updateUint(dram_info.largest_free_block);
+        state_slow.get("largest_free_iram_block")->updateUint(iram_info.largest_free_block);
         state_slow.get("largest_free_psram_block")->updateUint(psram_info.largest_free_block);
         state_slow.get("min_free_dram")->updateUint(dram_info.minimum_free_bytes);
+        state_slow.get("min_free_iram")->updateUint(iram_info.minimum_free_bytes);
         state_slow.get("min_free_psram")->updateUint(psram_info.minimum_free_bytes);
 
         state_slow.get("conf_uint_buf_size"  )->updateUint(get_allocated_slot_memory<Config::ConfUint>());
