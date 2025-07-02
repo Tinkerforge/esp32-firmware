@@ -71,7 +71,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
             port: 502,
             device_address: 1,
             function_code: 3,
-            start_address: 0,
+            start_address: null,
             data_count: 1,
             write_data: "",
             timeout: 2000,
@@ -93,14 +93,20 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                 result = "Error: " + transact_result.error;
             }
             else if (transact_result.read_data !== null) {
-                let header = " Addr  Off   Hex  AS    U16     S16       U32BE       U32LE        S32BE        S32LE                 U64BE                 U64LE                  S64BE                  S64LE ";
+                let header = " AdrD  AdrH  Off   Hex  AS    U16     S16       U32BE       U32LE        S32BE        S32LE                 U64BE                 U64LE                  S64BE                  S64LE ";
 
                 result = header + "\n";
 
                 for (let r = 0; r < transact_result.read_data.length / 4; ++r) {
-                    let a_pad = "    " + (this.state.start_address + r);
+                    let a = (this.state.start_address + r);
 
-                    a_pad = a_pad.substring(a_pad.length - 5);
+                    let ad_pad = "    " + a;
+
+                    ad_pad = ad_pad.substring(ad_pad.length - 5);
+
+                    let ah_pad = "   " + a.toString(16).toUpperCase();
+
+                    ah_pad = ah_pad.substring(ah_pad.length - 4);
 
                     let r_pad = "  " + r;
 
@@ -169,7 +175,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     s64be_pad = s64be_pad.substring(s64be_pad.length - 21);
                     s64le_pad = s64le_pad.substring(s64le_pad.length - 21);
 
-                    result += "\n" + a_pad + "  " + r_pad + "  " + hex + "  " + ascii_0 + ascii_1 + "  " + u16_pad + "  " + s16_pad + "  " + u32be_pad + "  " + u32le_pad + "  " + s32be_pad + "  " + s32le_pad + "  " + u64be_pad + "  " + u64le_pad + "  " + s64be_pad + "  " + s64le_pad + " ";
+                    result += "\n" + ad_pad + "  " + ah_pad + "  " + r_pad + "  " + hex + "  " + ascii_0 + ascii_1 + "  " + u16_pad + "  " + s16_pad + "  " + u32be_pad + "  " + u32le_pad + "  " + s32be_pad + "  " + s32le_pad + "  " + u64be_pad + "  " + u64le_pad + "  " + s64be_pad + "  " + s64le_pad + " ";
 
                     if (r % 20 == 19 && r < transact_result.read_data.length / 4 - 1) {
                         result += "\n\n" + header + "\n";
@@ -299,7 +305,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     value={this.state.function_code.toString()}
                     onValue={(v) => this.setState({function_code: parseInt(v)})} />
             </FormRow>
-            <FormRow label={__("modbus_tcp_debug.content.start_address")} label_muted={__("modbus_tcp_debug.content.start_address_muted")}>
+            <FormRow label={__("modbus_tcp_debug.content.start_address_dec")} label_muted={__("modbus_tcp_debug.content.start_address_muted")}>
                 <InputNumber
                     required
                     disabled={this.state.waiting}
@@ -307,6 +313,23 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     max={65535}
                     value={this.state.start_address}
                     onValue={(v) => this.setState({start_address: v})} />
+            </FormRow>
+            <FormRow label={__("modbus_tcp_debug.content.start_address_hex")} label_muted={__("modbus_tcp_debug.content.start_address_muted")}>
+                <InputTextPatterned
+                    required
+                    disabled={this.state.waiting}
+                    pattern="^[0-9A-F]{1-4}$"
+                    value={util.hasValue(this.state.start_address) ? this.state.start_address.toString(16).toUpperCase() : null}
+                    onValue={(v) => {
+                        let start_address = parseInt(v, 16);
+
+                        if (isNaN(start_address)) {
+                            start_address = null;
+                        }
+
+                        this.setState({start_address: start_address});
+                    }}
+                    invalidFeedback={__("modbus_tcp_debug.content.start_address_hex_invalid")} />
             </FormRow>
 
             {this.state.function_code == 3 || this.state.function_code == 4 ?
