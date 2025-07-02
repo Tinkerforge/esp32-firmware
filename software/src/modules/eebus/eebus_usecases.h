@@ -55,8 +55,6 @@ public:
         entity_address = address;
     }
 
-    // Binding management
-
     /**
      * \brief Handles a message for a usecase.
      * @param header SPINE header of the message. Contains information about the commandclassifier and the targeted entitiy.
@@ -65,7 +63,7 @@ public:
      * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
      * @return true if a response was generated and needs to be sent, false if no response is needed.
      */
-    virtual bool handle_message(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) = 0;
+    virtual bool handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) = 0;
 
     /**
      * Returns the usecase information for this usecase.
@@ -73,14 +71,12 @@ public:
      */
     virtual UseCaseInformationDataType get_usecase_information() = 0;
 
-    virtual NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const;
-    virtual NodeManagementDetailedDiscoveryFeatureInformationType get_detailed_discovery_feature_information() const;
+    [[nodiscard]] virtual NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const;
+    [[nodiscard]] virtual NodeManagementDetailedDiscoveryFeatureInformationType get_detailed_discovery_feature_information() const;
 
 protected:
     uint8_t entity_address =
         0; // The feature address of the usecase. This is used to identify the usecase in the NodeManagementUseCaseDataType.
-
-    // The SPINE Protocol specification implies in 7.3.6 that this should be stored persistently but it also allows binding information to be discarded in case the device was offline.
 };
 
 /**
@@ -89,7 +85,7 @@ protected:
 class NodeManagementUsecase final : public UseCase
 {
 public:
-    NodeManagementUsecase() = default;
+    void set_usecaseManager(EEBusUseCases *usecases);
 
     /**
     * Handles a binding request for a usecase.
@@ -98,8 +94,9 @@ public:
     * @param response The JsonObject to write the response to. This should be filled with the response data.
     * @return true if a response was generated and needs to be sent, false if no response is needed.
     */
-    bool handle_binding(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response);
+    bool handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
     // The list of bindings for this usecase.
+    // The SPINE Protocol specification implies in 7.3.6 that this should be stored persistently but it also allows binding information to be discarded in case the device was offline.
     BindingManagementEntryListDataType binding_management_entry_list_{};
     /**
      * Checks if the given client is bound to the given server entity and feature.
@@ -118,26 +115,27 @@ public:
     * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
     * @return true if a response was generated and needs to be sent, false if no response is needed.
     */
-    bool handle_message(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
+    bool handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
 
-    void set_usecaseManager(EEBusUseCases *usecases);
-
-    NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
-    NodeManagementDetailedDiscoveryFeatureInformationType get_detailed_discovery_feature_information() const override;
+    [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
+    [[nodiscard]] NodeManagementDetailedDiscoveryFeatureInformationType get_detailed_discovery_feature_information() const override;
 
     [[nodiscard]] UseCaseType get_usecase_type() const override
     {
         return UseCaseType::NodeManagement;
     }
 
+    void inform_subscribers(int entity, int feature, SpineDataTypeHandler *data);
+
 private:
     EEBusUseCases *usecase_interface{};
 
-    bool read_usecase_data(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response) const;
+    NodeManagementSubscriptionDataType subscription_data{};
+    bool read_usecase_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) const;
 
-    bool read_detailed_discovery_data(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response) const;
+    bool read_detailed_discovery_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) const;
 
-    bool handle_subscription(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
+    bool handle_subscription(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
 };
 
 /**
@@ -163,14 +161,14 @@ public:
      * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
      * @return true if a response was generated and needs to be sent, false if no response is needed.
      */
-    bool handle_message(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
+    bool handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
 
     [[nodiscard]] UseCaseType get_usecase_type() const override
     {
         return UseCaseType::ChargingSummary;
     }
-    NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
-    NodeManagementDetailedDiscoveryFeatureInformationType get_detailed_discovery_feature_information() const override;
+    [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
+    [[nodiscard]] NodeManagementDetailedDiscoveryFeatureInformationType get_detailed_discovery_feature_information() const override;
 
     // Binding
     std::vector<uint32_t> bound_connections{}; // List of connections that have been bound successfully
@@ -192,7 +190,15 @@ public:
      * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
      * @return true if a response was generated and needs to be sent, false if no response is needed.
      */
-    bool handle_message(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
+    void handle_message(HeaderType &header, SpineDataTypeHandler *data, SpineConnection *connection);
+
+    /**
+     * Informs the subscribers of a feature about a change in the data.
+     * @param entity the entity address of the feature
+     * @param feature the feature address
+     * @param data The Data the subscribers should be informed about. This is a SpineDataTypeHandler that contains the data.
+     */
+    void inform_subscribers(int entity, int feature, SpineDataTypeHandler *data);
 
     uint8_t feature_address_node_management = 0;
     NodeManagementUsecase node_management{};
