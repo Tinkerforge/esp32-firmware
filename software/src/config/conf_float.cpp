@@ -29,10 +29,9 @@ typedef union {
 } float_uint;
 
 bool Config::ConfFloat::slotEmpty(const Slot *slot) {
-    float_uint max;
-    max.u = slot->max;
-    asm("" : : "r" (max.u)); // prevent slot->max access from being optimized into a float load
-    return isnan(max.f);
+    float_uint v;
+    v.f = Config::ConfFloat::Slot::MARKER;
+    return slot->val == v.u;
 }
 
 Config::ConfFloat::Slot *Config::ConfFloat::allocSlotBuf(size_t elements)
@@ -42,13 +41,11 @@ Config::ConfFloat::Slot *Config::ConfFloat::allocSlotBuf(size_t elements)
         return nullptr;
 
     float_uint v;
-    v.f = NAN;
+    v.f = Config::ConfFloat::Slot::MARKER;
 
     for (size_t i = 0; i < elements; i++) {
         Config::ConfFloat::Slot *slot = block + i;
-
-        slot->min = v.u;
-        slot->max = v.u;
+        slot->val = v.u;
     }
 
     return block;
@@ -63,44 +60,23 @@ float Config::ConfFloat::getVal() const {
 void Config::ConfFloat::setVal(float f) {
     float_uint v;
     v.f = f;
+
+    float_uint v2;
+    v2.f = Config::ConfFloat::Slot::MARKER;
+
+    if (v.u == v2.u)
+        v.f = NAN;
+
     get_slot<Config::ConfFloat>(idx)->val = v.u;
-}
-
-float Config::ConfFloat::getMin() const {
-    float_uint result;
-    result.u = get_slot<Config::ConfFloat>(idx)->min;
-    return result.f;
-}
-
-void Config::ConfFloat::setSlot(float val, float min, float max) {
-    Slot *slot = get_slot<Config::ConfFloat>(idx);
-
-    float_uint va, mi, ma;
-    va.f = val;
-    mi.f = min;
-    ma.f = max;
-    slot->val = va.u;
-    slot->min = mi.u;
-    slot->max = ma.u;
-}
-
-float Config::ConfFloat::getMax() const {
-    float_uint result;
-    result.u = get_slot<Config::ConfFloat>(idx)->max;
-    return result.f;
 }
 
 const Config::ConfFloat::Slot *Config::ConfFloat::getSlot() const { return get_slot<Config::ConfFloat>(idx); }
 Config::ConfFloat::Slot *Config::ConfFloat::getSlot() { return get_slot<Config::ConfFloat>(idx); }
 
-Config::ConfFloat::ConfFloat(float val, float min, float max)
+Config::ConfFloat::ConfFloat(float val)
 {
-    if (isnan(min) || isnan(max)) {
-        esp_system_abort("Invalid ConfFloat limits: min and max cannot be NaN");
-    }
-
     idx = nextSlot<Config::ConfFloat>();
-    this->setSlot(val, min, max);
+    this->setVal(val);
 }
 
 Config::ConfFloat::ConfFloat(const ConfFloat &cpy)
@@ -116,11 +92,10 @@ Config::ConfFloat::~ConfFloat()
         return;
 
     float_uint v;
-    v.f = NAN;
+    v.f = Config::ConfFloat::Slot::MARKER;
 
     auto *slot = this->getSlot();
-    slot->min = v.u;
-    slot->max = v.u;
+    slot->val = v.u;
 
     notify_free_slot<Config::ConfFloat>(idx);
 }
