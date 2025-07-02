@@ -97,12 +97,12 @@ Config Config::Str(String &&s, uint16_t minChars, uint16_t maxChars)
     return Config{ConfString{std::move(s), minChars, maxChars}};
 }
 
-Config Config::Float(float d, float min, float max)
+Config Config::Float(float d)
 {
     if (boot_stage < BootStage::PRE_SETUP)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
 
-    return Config{ConfFloat{d, min, max}};
+    return Config{ConfFloat{d}};
 }
 
 Config Config::Int(int32_t i, int32_t min, int32_t max)

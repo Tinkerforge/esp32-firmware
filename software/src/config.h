@@ -113,7 +113,6 @@ struct Config {
         uint16_t idx;
         Slot *getSlot();
         const Slot *getSlot() const;
-        void setSlot(float val, float min, float max);
 
     public:
         static bool slotEmpty(const Slot *slot);
@@ -121,12 +120,9 @@ struct Config {
         static Slot *allocSlotBuf(size_t elements);
 
         float getVal() const;
-        float getMin() const;
-        float getMax() const;
-
         void setVal(float f);
 
-        ConfFloat(float val, float min, float max);
+        ConfFloat(float val);
         ConfFloat(const ConfFloat &cpy);
         ~ConfFloat();
 
@@ -549,9 +545,7 @@ struct Config {
                       uint16_t minChars,
                       uint16_t maxChars);
 
-    static Config Float(float d,
-                        float min = std::numeric_limits<float>::lowest(),
-                        float max = std::numeric_limits<float>::max());
+    static Config Float(float d);
 
     static Config Int(int32_t i,
                       int32_t min = std::numeric_limits<int32_t>::lowest(),

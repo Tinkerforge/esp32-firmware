@@ -37,8 +37,7 @@ static constexpr const union {
 
 struct ConfFloatSlot {
     uint32_t val = 0;
-    uint32_t min = nan_uint.u;
-    uint32_t max = nan_uint.u;
+    static constexpr float MARKER = nanf("0x0cafe");
 };
 
 struct ConfIntSlot {

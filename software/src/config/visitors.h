@@ -42,14 +42,6 @@ struct default_validator {
 
     String operator()(const Config::ConfFloat &x) const
     {
-        const auto val = x.getVal();
-        const auto min = x.getMin();
-        const auto max = x.getMax();
-
-        if (val < min)
-            return String("Float value ") + val + " was less than the allowed minimum of " + min;
-        if (val > max)
-            return String("Float value ") + val + " was more than the allowed maximum of " + max;
         return "";
     }
 
@@ -1154,7 +1146,7 @@ struct api_info {
     }
     void operator()(const Config::ConfFloat &x)
     {
-        sw.printf("{\"type\":\"float\",\"val\":%f,\"min\":%f,\"max\":%f}", isnan(x.getVal()) ? 0.0f : x.getVal(), x.getMin(), x.getMax());
+        sw.printf("{\"type\":\"float\",\"val\":%f}", isnan(x.getVal()) ? 0.0f : x.getVal());
     }
     void operator()(const Config::ConfInt &x)
     {
