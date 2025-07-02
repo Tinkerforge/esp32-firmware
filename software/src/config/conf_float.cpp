@@ -37,7 +37,7 @@ bool Config::ConfFloat::slotEmpty(const Slot *slot) {
 
 Config::ConfFloat::Slot *Config::ConfFloat::allocSlotBuf(size_t elements)
 {
-    Config::ConfFloat::Slot *block = static_cast<decltype(block)>(malloc_32bit_addressed(elements * sizeof(*block)));
+    Config::ConfFloat::Slot *block = static_cast<decltype(block)>(malloc_iram_or_psram_or_dram(elements * sizeof(*block)));
     if (block == nullptr)
         return nullptr;
 

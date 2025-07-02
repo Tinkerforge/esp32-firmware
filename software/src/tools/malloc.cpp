@@ -36,6 +36,11 @@ void *malloc_psram_or_dram(size_t size)
     return heap_caps_malloc_prefer(size, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 }
 
+void *malloc_iram_or_psram_or_dram(size_t size)
+{
+    return heap_caps_malloc_prefer(size, 3, MALLOC_CAP_IRAM, MALLOC_CAP_SPIRAM, MALLOC_CAP_DEFAULT);
+}
+
 void *malloc_aligned_psram_or_dram(size_t alignment, size_t size)
 {
     void *ptr = nullptr;

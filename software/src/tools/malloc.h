@@ -30,6 +30,8 @@ void *malloc_psram(size_t size);
 
 void *malloc_psram_or_dram(size_t size);
 
+void *malloc_iram_or_psram_or_dram(size_t size);
+
 void *malloc_aligned_psram_or_dram(size_t alignment, size_t size);
 
 void *calloc_32bit_addressed(size_t count, size_t size);

@@ -29,7 +29,7 @@ bool Config::ConfInt::slotEmpty(const Slot *slot)
 
 Config::ConfInt::Slot *Config::ConfInt::allocSlotBuf(size_t elements)
 {
-    Config::ConfInt::Slot *block = static_cast<decltype(block)>(malloc_32bit_addressed(elements * sizeof(*block)));
+    Config::ConfInt::Slot *block = static_cast<decltype(block)>(malloc_iram_or_psram_or_dram(elements * sizeof(*block)));
     if (block == nullptr)
         return nullptr;
 

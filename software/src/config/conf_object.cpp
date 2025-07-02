@@ -116,7 +116,7 @@ Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&va
 {
     auto len = val.size();
 
-    auto schema = (ConfObjectSchema *)malloc_32bit_addressed(sizeof(ConfObjectSchema) + len * sizeof(ConfObjectSchema::Key));
+    auto schema = (ConfObjectSchema *)malloc_iram_or_psram_or_dram(sizeof(ConfObjectSchema) + len * sizeof(ConfObjectSchema::Key));
     schema->length = len;
 
     for (int i = 0; i < len; ++i) {
