@@ -119,7 +119,7 @@ void BatteriesModbusTCP::pre_setup()
         {"vals", Config::Array({},
             Config::get_prototype_uint16_0(),
             1,
-            BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_VALUES,
+            OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_VALUES(),
             Config::type_id<Config::ConfUint>()
         )},
     });
@@ -131,7 +131,7 @@ void BatteriesModbusTCP::pre_setup()
             {"registers", Config::Array({},
                 &table_custom_registers_prototype,
                 0,
-                BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTERS,
+                OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
                 Config::type_id<Config::ConfObject>()
             )},
         })},
@@ -140,7 +140,7 @@ void BatteriesModbusTCP::pre_setup()
             {"registers", Config::Array({},
                 &table_custom_registers_prototype,
                 0,
-                BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTERS,
+                OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
                 Config::type_id<Config::ConfObject>()
             )},
         })},
@@ -149,7 +149,7 @@ void BatteriesModbusTCP::pre_setup()
             {"registers", Config::Array({},
                 &table_custom_registers_prototype,
                 0,
-                BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTERS,
+                OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
                 Config::type_id<Config::ConfObject>()
             )},
         })},
@@ -158,7 +158,7 @@ void BatteriesModbusTCP::pre_setup()
             {"registers", Config::Array({},
                 &table_custom_registers_prototype,
                 0,
-                BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTERS,
+                OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
                 Config::type_id<Config::ConfObject>()
             )},
         })},
@@ -167,7 +167,7 @@ void BatteriesModbusTCP::pre_setup()
             {"registers", Config::Array({},
                 &table_custom_registers_prototype,
                 0,
-                BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTERS,
+                OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
                 Config::type_id<Config::ConfObject>()
             )},
         })},
@@ -176,7 +176,7 @@ void BatteriesModbusTCP::pre_setup()
             {"registers", Config::Array({},
                 &table_custom_registers_prototype,
                 0,
-                BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTERS,
+                OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
                 Config::type_id<Config::ConfObject>()
             )},
         })},
@@ -202,7 +202,7 @@ void BatteriesModbusTCP::pre_setup()
         {"registers", Config::Array({},
             &table_custom_registers_prototype,
             0,
-            BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTERS,
+            OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
             Config::type_id<Config::ConfObject>()
         )},
     })});
