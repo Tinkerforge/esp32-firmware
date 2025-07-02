@@ -34,9 +34,6 @@
 #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
-#define BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTERS 16
-#define BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_VALUES 16
-
 class BatteriesModbusTCP final : public IModule, public IBatteryGenerator
 {
 public:
