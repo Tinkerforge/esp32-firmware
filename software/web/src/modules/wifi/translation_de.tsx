@@ -52,7 +52,7 @@ let x = {
             "ap_channel_auto_select": "Automatische Auswahl",
 
             "confirm_title": "WLAN-Access-Point deaktivieren?",
-            "confirm_content": <>Soll der WLAN-Access-Point wirklich komplett deaktiviert werden? Falls zukünftig keine Verbindung zu einem konfigurierten Netzwerk möglich ist, <b>kann nicht mehr auf das Webinterface zugegriffen werden</b>. {__("The_device")} muss dann auf den Werkszustand zurückgesetzt werden. <a href={options.MANUAL_URL}>Siehe Betriebsanleitung für Details.</a></>,
+            "confirm_content": <>Soll der WLAN-Access-Point wirklich komplett deaktiviert werden? Falls zukünftig keine Verbindung zu einem konfigurierten Netzwerk möglich ist, <b>kann nicht mehr auf das Webinterface zugegriffen werden</b>. {__("The_device")} muss dann auf den Werkszustand zurückgesetzt werden. {options.MANUAL_URL.length > 0 ? <a href={options.MANUAL_URL}>Siehe Betriebsanleitung für Details.</a> : undefined}</>,
             "confirm_abort": "Abbrechen",
             "confirm_confirm": "Deaktivieren",
 

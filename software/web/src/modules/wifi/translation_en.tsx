@@ -52,7 +52,7 @@ let x = {
             "ap_channel_auto_select": "Selected automatically",
 
             "confirm_title": "Disable WiFi Access Point?",
-            "confirm_content": <>Are you sure you want to disable the WiFi Access Point? If no connection to a configured network can be established in the future, <b>it is not possible to access {__("the_device")} anymore</b>. {__("The_device")} then has to be reset to factory defaults. <a href={options.MANUAL_URL}>See manual for details.</a></>,
+            "confirm_content": <>Are you sure you want to disable the WiFi Access Point? If no connection to a configured network can be established in the future, <b>it is not possible to access {__("the_device")} anymore</b>. {__("The_device")} then has to be reset to factory defaults. {options.MANUAL_URL.length > 0 ? <a href={options.MANUAL_URL}>See manual for details.</a> : undefined}</>,
             "confirm_abort": "Abort",
             "confirm_confirm": "Disable",
 

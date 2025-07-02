@@ -774,6 +774,12 @@ def main():
         old_style_options['warp_doc_base_url'] = old_style_options['doc_base_url']
         del old_style_options['doc_base_url']
 
+        old_style_options['firmware_update_latest_url'] = old_style_options['firmware_url']
+        del old_style_options['firmware_url']
+
+        old_style_options['firmware_update_update_url'] = old_style_options['firmware_update_url']
+        del old_style_options['firmware_update_url']
+
         if 'remote_access_host' not in old_style_options:
             old_style_options['remote_access_host'] = 'my.warp-charger.com'
 

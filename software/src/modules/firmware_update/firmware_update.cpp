@@ -218,7 +218,7 @@ FirmwareUpdate::FirmwareUpdate() :
 void FirmwareUpdate::pre_setup()
 {
     config = ConfigRoot{Config::Object({
-        {"update_url", Config::Str(OPTIONS_FIRMWARE_UPDATE_URL(), 0, 128)},
+        {"update_url", Config::Str(OPTIONS_FIRMWARE_UPDATE_UPDATE_URL(), 0, 128)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
     }), [this](Config &update, ConfigSource source) -> String {
         const String &update_url = update.get("update_url")->asString();
@@ -263,7 +263,7 @@ void FirmwareUpdate::pre_setup()
 
 void FirmwareUpdate::setup()
 {
-    if (strlen(OPTIONS_FIRMWARE_UPDATE_URL()) > 0) {
+    if (strlen(OPTIONS_FIRMWARE_UPDATE_UPDATE_URL()) > 0) {
         api.restorePersistentConfig("firmware_update/config", &config);
     }
 
@@ -579,7 +579,7 @@ static void boot_other_partition(const char *other_partition_label, String &errm
 
 void FirmwareUpdate::register_urls()
 {
-    if (strlen(OPTIONS_FIRMWARE_UPDATE_URL()) > 0) {
+    if (strlen(OPTIONS_FIRMWARE_UPDATE_UPDATE_URL()) > 0) {
         api.addPersistentConfig("firmware_update/config", &config);
     }
     else {

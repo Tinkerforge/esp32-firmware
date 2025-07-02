@@ -225,7 +225,7 @@ let x = {
             "dc_fault_current_6_ma_20_ma": "AC- und DC-Fehler",
 
             "reset_dc_fault_title": "Zurücksetzen des DC-Fehlerstromschutzmoduls",
-            "reset_dc_fault_content": <>Durch das Zurücksetzen des Moduls kann wieder geladen werden. <b>Es muss sichergestellt sein, dass der Grund für das Auslösen des Moduls behoben wurde!</b> <a href={options.MANUAL_URL}>Siehe Betriebsanleitung für Details.</a> Soll das DC-Fehlerstromschutzmodul wirklich zurückgesetzt werden?</>,
+            "reset_dc_fault_content": <>Durch das Zurücksetzen des Moduls kann wieder geladen werden. <b>Es muss sichergestellt sein, dass der Grund für das Auslösen des Moduls behoben wurde!</b> {options.MANUAL_URL.length > 0 ? <a href={options.MANUAL_URL}>Siehe Betriebsanleitung für Details.</a> : undefined} Soll das DC-Fehlerstromschutzmodul wirklich zurückgesetzt werden?</>,
             "abort": "Abbrechen",
             "reset": "Zurücksetzen",
             "trigger_dc_fault_test": "DC-Fehlerschutz testen",

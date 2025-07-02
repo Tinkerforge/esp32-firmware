@@ -1228,7 +1228,6 @@ allowed_missing = set([
     "all_values",
     "apidoc_url",
     "display_name",
-    "firmware_url",
     "manual_url",
     "charge_release",
     "UNAVAILABLE",

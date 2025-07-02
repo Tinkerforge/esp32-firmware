@@ -24,7 +24,7 @@ let x = {
             "firmware_update": "Firmware Update",
             "current_version": "Installed version",
             "manual_update": "Manual update",
-            "manual_update_muted": <><a href={options.FIRMWARE_URL}>recent firmwares</a></>,
+            "manual_update_muted": <>{options.FIRMWARE_UPDATE_LATEST_URL.length > 0 ? <a href={options.FIRMWARE_UPDATE_LATEST_URL}>recent firmwares</a> : undefined}</>,
             "browse": "Browse",
             "select_file": "Select firmware file...",
             "install_update": "Install",
