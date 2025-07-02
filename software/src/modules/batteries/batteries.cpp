@@ -95,8 +95,13 @@ void Batteries::setup()
         BatteryClassID battery_class = BatteryClassID::None;
 
         // Initialize config.
-        battery_slot.config_union =
-            Config::Union(*get_generator_for_class(battery_class)->get_config_prototype(), battery_class, config_prototypes, class_count);
+        battery_slot.config_union = ConfigRoot{
+            Config::Union(*get_generator_for_class(battery_class)->get_config_prototype(), battery_class, config_prototypes, class_count),
+            [this](Config &cfg, ConfigSource source) -> String {
+                auto battery_class = cfg.getTag<BatteryClassID>();
+                return get_generator_for_class(battery_class)->validate_config(*(Config *)cfg.get(), source);
+            }
+        };
 
         // Load config.
         api.restorePersistentConfig(get_path(slot, Batteries::PathType::Config), &battery_slot.config_union);
