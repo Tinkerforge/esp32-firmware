@@ -33,4 +33,5 @@ public:
     virtual const Config *get_config_prototype() = 0;
     virtual const Config *get_state_prototype() = 0;
     virtual const Config *get_errors_prototype() = 0;
+    virtual String validate_config(Config &update, ConfigSource source) { return String(); }
 };
