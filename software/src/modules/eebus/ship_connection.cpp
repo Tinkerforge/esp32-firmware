@@ -911,13 +911,7 @@ void ShipConnection::state_done()
                                 message_incoming->data[0],
                                 message_incoming->length,
                                 &message_incoming->data[1]);
-                bool response = spine.process_datagram(data.payload);
-                if (response) {
-// logger.printfln("Response datagram: %s", spine.response_doc.as<String>().c_str());
-                    //send_data_message(spine.response_doc.as<JsonVariantConst>());
-                } else {
-                    logger.printfln("No response to data message");
-                }
+                spine.process_datagram(data.payload);
             } else {
                 logger.printfln("Error while trying to deserialize data message");
             }
