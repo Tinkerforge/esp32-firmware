@@ -25,7 +25,7 @@
 #include "module_dependencies.h"
 #include "tools.h"
 
-bool NodeManagementUsecase::handle_binding(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response)
+bool NodeManagementUsecase::handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
 
     // Binding Request as defined in EEBus SPINE TS ProtocolSpecification 7.3.2
@@ -96,14 +96,14 @@ bool NodeManagementUsecase::handle_binding(SpineHeader &header, SpineDataTypeHan
             FeatureAddressType server_address = binding_delete_call.bindingDelete->serverAddress.value();
             if (!binding_delete_call.bindingDelete->clientAddress->device && binding_delete_call.bindingDelete->serverAddress->device) {
                 // This implies the client is referencing its own and the servers name as device names
-                client_address.device = header.source_device_id.c_str();
-                server_address.device = header.destination_device_id.c_str();
+                client_address.device = header.addressSource->device.value();
+                server_address.device = header.addressDestination->device.value();
             } else if (binding_delete_call.bindingDelete->clientAddress->device
                        && !binding_delete_call.bindingDelete->serverAddress->device) {
-                server_address.device = header.source_device_id.c_str();
+                server_address.device = header.addressSource->device.value();
             } else if (!binding_delete_call.bindingDelete->clientAddress->device
                        && binding_delete_call.bindingDelete->serverAddress->device) {
-                client_address.device = header.destination_device_id.c_str();
+                client_address.device = header.addressDestination->device.value();
             }
             // If the device does not match to the entry we skip it
             if (client_address.device != entry.clientAddress->device && server_address.device != entry.serverAddress->device) {
@@ -155,22 +155,19 @@ UseCaseInformationDataType NodeManagementUsecase::get_usecase_information()
 {
     return UseCaseInformationDataType(); // This should never be used as the NodeManagementUsecase has no usecase information
 }
-bool NodeManagementUsecase::handle_message(SpineHeader &header,
-                                           SpineDataTypeHandler *data,
-                                           JsonObject response,
-                                           SpineConnection *connection)
+bool NodeManagementUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
-    if (header.cmd_classifier == CmdClassifierType::read && data->last_cmd == SpineDataTypeHandler::Function::nodeManagementUseCaseData) {
+    if (header.cmdClassifier == CmdClassifierType::read && data->last_cmd == SpineDataTypeHandler::Function::nodeManagementUseCaseData) {
         return read_usecase_data(header, data, response);
     }
-    if (header.cmd_classifier == CmdClassifierType::read
+    if (header.cmdClassifier == CmdClassifierType::read
         && data->last_cmd == SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryData) {
         return read_detailed_discovery_data(header, data, response);
     }
     return false;
 }
 
-bool NodeManagementUsecase::read_usecase_data(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response) const
+bool NodeManagementUsecase::read_usecase_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) const
 {
     NodeManagementUseCaseDataType node_management_usecase_data;
     for (UseCase *uc : usecase_interface->usecase_list) {
@@ -187,7 +184,7 @@ bool NodeManagementUsecase::read_usecase_data(SpineHeader &header, SpineDataType
     }
     return false;
 }
-bool NodeManagementUsecase::read_detailed_discovery_data(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response) const
+bool NodeManagementUsecase::read_detailed_discovery_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) const
 {
     // Detailed discovery as defined in EEBus SPINE TS ProtocolSpecification 7.1.2
     NodeManagementDetailedDiscoveryDataType node_management_detailed_data;
@@ -210,7 +207,7 @@ bool NodeManagementUsecase::read_detailed_discovery_data(SpineHeader &header, Sp
     return false;
 }
 
-bool NodeManagementUsecase::handle_subscription(SpineHeader &header,
+bool NodeManagementUsecase::handle_subscription(HeaderType &header,
                                                 SpineDataTypeHandler *data,
                                                 JsonObject response,
                                                 SpineConnection *connection)
@@ -298,6 +295,28 @@ NodeManagementDetailedDiscoveryFeatureInformationType NodeManagementUsecase::get
     feature.description->supportedFunction->push_back(nodemanagementSubscriptionRequest);
 
     return feature;
+}
+void NodeManagementUsecase::inform_subscribers(int entity, int feature, SpineDataTypeHandler *data)
+{
+    std::optional<std::vector<int>> entities{};
+    entities->push_back(entity);
+    DynamicJsonDocument response(8192); // TODO: Change this to use less memory or move it PSRAM
+    JsonVariant dst = response.createNestedObject(data->function_to_string(data->last_cmd));
+    data->last_cmd_to_json(dst);
+    for (SubscriptionManagementEntryDataType &subscription : subscription_data.subscriptionEntry.value()) {
+        if (subscription.serverAddress->entity == entities && subscription.serverAddress->feature == feature) {
+            for (ShipConnection &ship_connection : eebus.ship.ship_connections) {
+                if (ship_connection.spine.check_known_address(subscription.clientAddress.value())) {
+                    auto json = response.as<JsonObject>();
+                    ship_connection.spine.send_datagram(json,
+                                                        CmdClassifierType::notify,
+                                                        subscription.serverAddress.value(),
+                                                        subscription.clientAddress.value(),
+                                                        false);
+                }
+            }
+        }
+    }
 };
 
 UseCaseInformationDataType ChargingSummaryUsecase::get_usecase_information()
@@ -321,7 +340,7 @@ UseCaseInformationDataType ChargingSummaryUsecase::get_usecase_information()
     evcs_usecase.address = evcs_usecase_feature_address;
     return evcs_usecase;
 }
-bool ChargingSummaryUsecase::handle_message(SpineHeader &header,
+bool ChargingSummaryUsecase::handle_message(HeaderType &header,
                                             SpineDataTypeHandler *data,
                                             JsonObject response,
                                             SpineConnection *connection)
@@ -387,19 +406,26 @@ EEBusUseCases::EEBusUseCases()
         usecase_list[i]->set_entity_address(i);
     }
 }
-bool EEBusUseCases::handle_message(SpineHeader &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *data, SpineConnection *connection)
 {
-    if (header.destination_feature == feature_address_node_management) {
-
+    DynamicJsonDocument response = DynamicJsonDocument(8192); // The response document to be filled with the response data
+    // TODO: Fix the addressing of the usecases. Maybe better address them by entity?
+    bool send_response = false;
+    if (header.addressDestination->feature == feature_address_node_management) {
         logger.printfln("EEBus: Received message for NodeManagementUsecase");
-        return node_management.handle_message(header, data, response, connection);
+        send_response = node_management.handle_message(header, data, response.as<JsonObject>(), connection);
     }
-    if (header.destination_feature == feature_address_charging_summary) {
+    if (header.addressDestination->feature == feature_address_charging_summary) {
         logger.printfln("EEBus: Received message for ChargingSummaryUsecase");
-        return charging_summary.handle_message(header, data, response, connection);
+        send_response = charging_summary.handle_message(header, data, response.as<JsonObject>(), connection);
     }
-
-    return false;
+    if (send_response) {
+        connection->send_datagram(response.as<JsonVariant>(), CmdClassifierType::reply, *header.addressSource, *header.addressDestination, false);
+    }
+}
+void EEBusUseCases::inform_subscribers(int entity, int feature, SpineDataTypeHandler *data)
+{
+    node_management.inform_subscribers(entity, feature, data);
 }
 namespace EEBUS_USECASE_HELPERS
 {
