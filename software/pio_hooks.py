@@ -1375,10 +1375,6 @@ def main():
 
     write_firmware_info(product_id, options_value['product_name'], version, build_timestamp)
 
-    if prepare_only:
-        print("Stopping build after prepare")
-        sys.exit(0)
-
     # Handle frontend modules
     main_ts_entries = []
     pre_scss_paths = []
@@ -1818,6 +1814,10 @@ def main():
 
     with tfutil.ChangedDirectory('web'):
         check_call([env.subst('$PYTHONEXE'), "-u", "check_override_completeness.py"])
+
+    if prepare_only:
+        print("Stopping build after prepare")
+        sys.exit(0)
 
     # Generate web interface
     util.log('Checking web interface dependencies')
