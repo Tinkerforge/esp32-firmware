@@ -213,7 +213,8 @@ bool NodeManagementUsecase::handle_subscription(HeaderType &header,
                                                 SpineConnection *connection)
 {
 
-    if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionRequestCall && header.cmdClassifier == CmdClassifierType::call) {
+    if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionRequestCall
+        && header.cmdClassifier == CmdClassifierType::call) {
 
         if (!data->nodemanagementsubscriptionrequestcalltype || !data->nodemanagementsubscriptionrequestcalltype->subscriptionRequest
             || !data->nodemanagementsubscriptionrequestcalltype->subscriptionRequest->clientAddress
@@ -233,13 +234,70 @@ bool NodeManagementUsecase::handle_subscription(HeaderType &header,
                                                  EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError,
                                                  "Subscription request was successful");
         return true;
-
     }
-    if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionData && header.cmdClassifier == CmdClassifierType::read) {
+    if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionData
+        && header.cmdClassifier == CmdClassifierType::read) {
         response["nodeManagementSubscriptionData"] = subscription_data;
         return true;
-    } else if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionDeleteCall) {
-        //TODO: Implement subscription delete handling
+    }
+    if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionDeleteCall) {
+        NodeManagementSubscriptionDeleteCallType subscription_delete_call = data->nodemanagementsubscriptiondeletecalltype.value();
+        std::vector<size_t> to_delete_indices{};
+
+        // Iterate throught the list of subscriptions and find the ones that match the delete request
+        for (size_t i = 0; i < subscription_data.subscriptionEntry.value().size(); ++i) {
+            SubscriptionManagementEntryDataType entry = subscription_data.subscriptionEntry->at(i);
+
+            // Compares two optionals. If the one has no value, its considered a wildcard and matches anything in the second. If both have value, they are compared and the result returnd
+            auto optional_equal_or_undefined = [](const auto &a, const auto &b) {
+                if (!a.has_value() || !b.has_value())
+                    return true;
+                return *a == *b;
+            };
+
+            // We handle cases where the client or server address is not set which is allowed
+            FeatureAddressType client_address = subscription_delete_call.subscriptionDelete->clientAddress.value();
+            FeatureAddressType server_address = subscription_delete_call.subscriptionDelete->serverAddress.value();
+            if (!subscription_delete_call.subscriptionDelete->clientAddress->device
+                && subscription_delete_call.subscriptionDelete->serverAddress->device) {
+                // This implies the client is referencing its own and the servers name as device names
+                client_address.device = header.addressSource->device.value();
+                server_address.device = header.addressDestination->device.value();
+            } else if (subscription_delete_call.subscriptionDelete->clientAddress->device
+                       && !subscription_delete_call.subscriptionDelete->serverAddress->device) {
+                server_address.device = header.addressSource->device.value();
+            } else if (!subscription_delete_call.subscriptionDelete->clientAddress->device
+                       && subscription_delete_call.subscriptionDelete->serverAddress->device) {
+                client_address.device = header.addressDestination->device.value();
+            }
+            // If the device does not match to the entry we skip it
+            if (client_address.device != entry.clientAddress->device && server_address.device != entry.serverAddress->device) {
+                continue;
+            }
+
+            // This handles all the cases.
+            // If a value of client_address or server_address is empty it is considered a wildcard and anything matches, if it has a value it is compared
+            if (optional_equal_or_undefined(client_address.entity, entry.clientAddress->entity)
+                && optional_equal_or_undefined(server_address.entity, entry.serverAddress->entity)
+                && optional_equal_or_undefined(client_address.feature, entry.clientAddress->feature)
+                && optional_equal_or_undefined(server_address.feature, entry.serverAddress->feature)) {
+                to_delete_indices.push_back(i);
+                continue;
+            }
+        }
+
+        // delete all the found entries
+        std::sort(to_delete_indices.rbegin(), to_delete_indices.rend()); // sort descending
+        for (size_t i : to_delete_indices) {
+            if (i < subscription_data.subscriptionEntry.value().size()) {
+                // remove the element at i starting from the back. Always do it relative to the beginning so the indices stay valid
+                subscription_data.subscriptionEntry.value().erase(subscription_data.subscriptionEntry.value().begin() + i);
+            }
+        }
+        EEBUS_USECASE_HELPERS::build_result_data(response,
+                                                 EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError,
+                                                 "Removed Subscriptions successfully");
+        return true;
     }
 
     return false;
@@ -437,7 +495,7 @@ EEBusUseCases::EEBusUseCases()
 }
 void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *data, SpineConnection *connection)
 {
-    //TODO: Implement a mutex so only one message can be processed at a time
+    //TODO: Implement a mutex with waiting so only one message can be processed at a time
     DynamicJsonDocument response = DynamicJsonDocument(8192); // The response document to be filled with the response data
     // TODO: Fix the addressing of the usecases. Maybe better address them by entity?
     bool send_response = false;
