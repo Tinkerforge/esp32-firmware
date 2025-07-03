@@ -67,7 +67,7 @@ const std::vector<Config> *Config::ConfArray::getVal() const { return &get_slot<
 const Config::ConfArray::Slot *Config::ConfArray::getSlot() const { return get_slot<Config::ConfArray>(idx); }
 Config::ConfArray::Slot *Config::ConfArray::getSlot() { return get_slot<Config::ConfArray>(idx); }
 
-Config::ConfArray::ConfArray(std::vector<Config> val, const Config *prototype, uint16_t minElements, uint16_t maxElements, int8_t variantType)
+Config::ConfArray::ConfArray(std::initializer_list<Config> val, const Config *prototype, uint16_t minElements, uint16_t maxElements, int8_t variantType)
 {
     idx = nextSlot<Config::ConfArray>();
     auto *slot = this->getSlot();
