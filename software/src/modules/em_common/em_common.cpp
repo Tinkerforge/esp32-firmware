@@ -66,7 +66,7 @@ void EMCommon::set_time(const tm &tm)
                                         static_cast<uint8_t >(tm.tm_mday - 1),
                                         static_cast<uint8_t >(tm.tm_wday),
                                         static_cast<uint8_t >(tm.tm_mon),
-                                        static_cast<uint16_t>(tm.tm_year - 100));
+                                        static_cast<uint16_t>(tm.tm_year + 1900));
     check_bricklet_reachable(rc, "set_date_time");
 
     if (rc != TF_E_OK)
@@ -104,7 +104,7 @@ timeval EMCommon::get_time()
     date_time.tm_mday = tm_mday + 1;
     date_time.tm_wday = tm_wday;
     date_time.tm_mon  = tm_mon;
-    date_time.tm_year = tm_year + 100;
+    date_time.tm_year = tm_year - 1900;
 
     time.tv_sec = timegm(&date_time);
 
