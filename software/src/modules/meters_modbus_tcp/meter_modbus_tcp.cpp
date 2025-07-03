@@ -3247,7 +3247,10 @@ void MeterModbusTCP::parse_next()
         }
         else if (register_start_address == SOLAX_STRING_INVERTER_PV3_POWER_ADDRESS) {
             solax_string_inverter.pv3_power = value;
-            
+
+            float voltage_sum = 0.0f;
+            float voltage_count = 0.0f;
+
             if (!is_exactly_zero(solax_string_inverter.pv1_voltage)) {
                 voltage_sum += solax_string_inverter.pv1_voltage;
                 ++voltage_count;

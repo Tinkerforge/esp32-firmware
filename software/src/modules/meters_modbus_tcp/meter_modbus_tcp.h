@@ -427,6 +427,9 @@ private:
             float pv3_voltage;
             float pv3_current;
             float pv3_power;
+            float pv4_voltage;
+            float pv4_current;
+            float pv4_power;
         } fox_ess_h3_smart_hybrid_inverter;
 
         // Fox ESS H3 Pro hybrid inverter
