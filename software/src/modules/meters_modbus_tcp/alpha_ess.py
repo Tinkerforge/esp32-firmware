@@ -89,13 +89,6 @@ specs = [
                 'value_type': 'U16',
                 'scale_factor': 0.1,
             },
-            {
-                'name': 'Inverter Total PV Energy [0.1 kWh]',
-                'value_id': 'EnergyDCExport',
-                'start_address': 0x043E,
-                'value_type': 'U32BE',
-                'scale_factor': 0.1,
-            },
         ],
     },
     {
@@ -477,7 +470,7 @@ specs = [
             },
             {
                 'name': 'Inverter Total PV Energy [0.1 kWh]',
-                'value_id': 'EnergyDCExport',
+                'value_id': 'EnergyPVSumExport',
                 'start_address': 0x043E,
                 'value_type': 'U32BE',
                 'scale_factor': 0.1,
