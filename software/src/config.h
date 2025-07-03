@@ -267,7 +267,7 @@ struct Config {
         const std::vector<Config> *getVal() const;
         const Slot *getSlot() const;
 
-        ConfArray(std::vector<Config> val, const Config *prototype, uint16_t minElements, uint16_t maxElements, int8_t variantType);
+        ConfArray(std::initializer_list<Config> val, const Config *prototype, uint16_t minElements, uint16_t maxElements, int8_t variantType);
         ConfArray(const ConfArray &cpy);
         ~ConfArray();
 
