@@ -88,7 +88,7 @@ int64_t Event::registerEvent(const String &path, const std::vector<ConfPath> val
     const size_t api_states_count = api.states.size();
     for (stateIdx = 0; stateIdx < api_states_count; stateIdx++) {
         const StateRegistration &state = api.states[stateIdx];
-        if (path_length == state.path_len && path == state.path) {
+        if (path_length == state.get_path_len() && path == state.path) {
             state_config = state.config;
             break;
         }

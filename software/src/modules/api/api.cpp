@@ -98,7 +98,7 @@ void API::setup()
         for (size_t state_idx = 0; state_idx < states_count; ++state_idx) {
             const auto &reg = states[state_idx];
 
-            if (skip_high_latency_states && !reg.low_latency)
+            if (skip_high_latency_states && !reg.get_low_latency())
                 continue;
 
             const size_t backend_count = this->backends.size();
@@ -130,7 +130,7 @@ void API::setup()
             // If no backend wants the state update as string
             // don't serialize the payload.
             if (wsu == IAPIBackend::WantsStateUpdate::AsString)
-                payload = reg.config->to_string_except(reg.keys_to_censor, reg.keys_to_censor_len);
+                payload = reg.config->to_string_except(reg.keys_to_censor, reg.get_keys_to_censor_len());
 
             uint8_t sent = 0;
 
@@ -165,14 +165,14 @@ void API::addCommand(const char * const path, ConfigRoot *config, const std::vec
 {
     size_t path_len = strlen(path);
 
-    if (path_len > std::numeric_limits<decltype(CommandRegistration::path_len)>::max()) {
+    if (path_len > std::numeric_limits<std::result_of<decltype(&CommandRegistration::get_path_len)(CommandRegistration)>::type>::max()) {
         logger.printfln("Command %s: path too long!", path);
         return;
     }
 
     size_t ktc_size = keys_to_censor_in_debug_report.size();
 
-    if (ktc_size > std::numeric_limits<decltype(CommandRegistration::keys_to_censor_in_debug_report_len)>::max()) {
+    if (ktc_size > std::numeric_limits<std::result_of<decltype(&CommandRegistration::get_keys_to_censor_in_debug_report_len)(CommandRegistration)>::type>::max()) {
         logger.printfln("Command %s: keys_to_censor_in_debug_report too long!", path);
         return;
     }
@@ -192,14 +192,17 @@ void API::addCommand(const char * const path, ConfigRoot *config, const std::vec
         }
     }
 
+    uint32_t command_data = (path_len  & 0xFF) << 24
+                          | (ktc_size  & 0xFF) << 16
+                          | (is_action & 0xFF) <<  8;
+
+
     commands.push_back({
         path,
         ktc,
         config,
         std::move(callback),
-        path_len,
-        ktc_size,
-        is_action,
+        command_data
     });
 
     auto commandIdx = commands.size() - 1;
@@ -223,19 +226,19 @@ void API::addState(const char * const path, ConfigRoot *config, const std::vecto
 {
     size_t path_len = strlen(path);
 
-    if (path_len > std::numeric_limits<decltype(StateRegistration::path_len)>::max()) {
+    if (path_len > std::numeric_limits<std::result_of<decltype(&StateRegistration::get_path_len)(StateRegistration)>::type>::max()) {
         logger.printfln("State %s: path too long!", path);
         return;
     }
 
     size_t ktc_size = keys_to_censor.size();
-    if (ktc_size > std::numeric_limits<decltype(StateRegistration::keys_to_censor_len)>::max()) {
+    if (ktc_size > std::numeric_limits<std::result_of<decltype(&StateRegistration::get_keys_to_censor_len)(StateRegistration)>::type>::max()) {
         logger.printfln("State %s: keys_to_censor too long!", path);
         return;
     }
 
     size_t ktc_debug_size = keys_to_censor_in_debug_report.size() + ktc_size;
-    if (ktc_debug_size > std::numeric_limits<decltype(StateRegistration::keys_to_censor_in_debug_report_len)>::max()) {
+    if (ktc_debug_size > std::numeric_limits<std::result_of<decltype(&StateRegistration::get_keys_to_censor_in_debug_report_len)(StateRegistration)>::type>::max()) {
         logger.printfln("State %s: keys_to_censor_in_debug_report (includes keys_to_censor!) too long!", path);
         return;
     }
@@ -274,15 +277,17 @@ void API::addState(const char * const path, ConfigRoot *config, const std::vecto
         }
     }
 
+    uint32_t state_data = (path_len       & 0xFF) << 24
+                        | (ktc_size       & 0xFF) << 16
+                        | (ktc_debug_size & 0xFF) <<  8
+                        | (low_latency    & 0xFF) <<  0;
+
     states.push_back({
         path,
         ktc,
         ktc_debug,
         config,
-        path_len,
-        ktc_size,
-        ktc_debug_size,
-        low_latency
+        state_data
     });
 
     auto stateIdx = states.size() - 1;
@@ -539,11 +544,11 @@ void API::register_urls()
                 const auto &reg = states[i];
 
                 sw.printf("{\"path\":\"%.*s\",\"type\":\"state\",\"low_latency\":%s,\"keys_to_censor\":[",
-                                    reg.path_len, reg.path,
-                                    reg.low_latency ? "true" : "false");
+                                    reg.get_path_len(), reg.path,
+                                    reg.get_low_latency() ? "true" : "false");
 
-                for (int key = 0; key < reg.keys_to_censor_len; ++key)
-                    if (key != reg.keys_to_censor_len - 1)
+                for (int key = 0; key < reg.get_keys_to_censor_len(); ++key)
+                    if (key != reg.get_keys_to_censor_len() - 1)
                         sw.printf("\"%s\",", reg.keys_to_censor[key]);
                     else
                         sw.printf("\"%s\"", reg.keys_to_censor[key]);
@@ -586,11 +591,11 @@ void API::register_urls()
                 const auto &reg = commands[i];
 
                 sw.printf("{\"path\":\"%.*s\",\"type\":\"command\",\"is_action\":%s,\"keys_to_censor\":[",
-                                reg.path_len, reg.path,
-                                reg.is_action ? "true" : "false");
+                                reg.get_path_len(), reg.path,
+                                reg.get_is_action() ? "true" : "false");
 
-                for (int key = 0; key < reg.keys_to_censor_in_debug_report_len; ++key)
-                    if (key != reg.keys_to_censor_in_debug_report_len - 1)
+                for (int key = 0; key < reg.get_keys_to_censor_in_debug_report_len(); ++key)
+                    if (key != reg.get_keys_to_censor_in_debug_report_len() - 1)
                         sw.printf("\"%s\",", reg.keys_to_censor_in_debug_report[key]);
                     else
                         sw.printf("\"%s\"", reg.keys_to_censor_in_debug_report[key]);
@@ -762,14 +767,14 @@ void API::register_urls()
             result += ",\n \"";
             result += reg.path;
             result += "\": ";
-            result += reg.config->to_string_except(reg.keys_to_censor_in_debug_report, reg.keys_to_censor_in_debug_report_len);
+            result += reg.config->to_string_except(reg.keys_to_censor_in_debug_report, reg.get_keys_to_censor_in_debug_report_len());
         }
 
         for (auto &reg : commands) {
             result += ",\n \"";
             result += reg.path;
             result += "\": ";
-            result += reg.config->to_string_except(reg.keys_to_censor_in_debug_report, reg.keys_to_censor_in_debug_report_len);
+            result += reg.config->to_string_except(reg.keys_to_censor_in_debug_report, reg.get_keys_to_censor_in_debug_report_len());
         }
 
         for (auto &reg : responses) {
@@ -935,7 +940,7 @@ const Config *API::getState(const char *path, bool log_if_not_found, size_t path
     }
 
     for (const auto &reg : states) {
-        if (path_len != reg.path_len || strcmp(path, reg.path) != 0) {
+        if (path_len != reg.get_path_len() || strcmp(path, reg.path) != 0) {
             continue;
         }
 
@@ -972,13 +977,13 @@ void API::addFeature(const char *name)
 bool API::already_registered(const char *path, size_t path_len, const char *api_type)
 {
     for (auto &reg : this->states) {
-        if (path_len != reg.path_len || memcmp(path, reg.path, path_len) != 0)
+        if (path_len != reg.get_path_len() || memcmp(path, reg.path, path_len) != 0)
             continue;
         logger.printfln("Can't register %s %s. Already registered as state!", api_type, path);
         return true;
     }
     for (auto &reg : this->commands) {
-        if (path_len != reg.path_len || memcmp(path, reg.path, path_len) != 0)
+        if (path_len != reg.get_path_len() || memcmp(path, reg.path, path_len) != 0)
             continue;
         logger.printfln("Can't register %s %s. Already registered as command!", api_type, path);
         return true;

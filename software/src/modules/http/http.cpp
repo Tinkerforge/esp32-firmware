@@ -102,12 +102,12 @@ bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
     // Use + 1 to compare: in_uri starts with /; the api paths don't.
     const size_t command_size = api.commands.size();
     for (size_t i = 0; i < command_size; i++)
-        if (api.commands[i].path_len == len - 1 && memcmp(api.commands[i].path, in_uri + 1, len - 1) == 0)
+        if (api.commands[i].get_path_len() == len - 1 && memcmp(api.commands[i].path, in_uri + 1, len - 1) == 0)
             return true;
 
     const size_t state_size = api.states.size();
     for (size_t i = 0; i < state_size; i++)
-        if (api.states[i].path_len == len - 1 && memcmp(api.states[i].path, in_uri + 1, len - 1) == 0)
+        if (api.states[i].get_path_len() == len - 1 && memcmp(api.states[i].path, in_uri + 1, len - 1) == 0)
             return true;
 
     const size_t response_size = api.responses.size();
@@ -245,12 +245,12 @@ WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest req)
     size_t req_uri_len = strlen(req.uriCStr() + 1);
 
     for (size_t i = 0; i < api.states.size(); i++) {
-        if (api.states[i].path_len != req_uri_len || memcmp(api.states[i].path, req.uriCStr() + 1, req_uri_len) != 0)
+        if (api.states[i].get_path_len() != req_uri_len || memcmp(api.states[i].path, req.uriCStr() + 1, req_uri_len) != 0)
             continue;
 
         String response;
         auto result = task_scheduler.await([&response, i]() {
-            response = api.states[i].config->to_string_except(api.states[i].keys_to_censor, api.states[i].keys_to_censor_len);
+            response = api.states[i].config->to_string_except(api.states[i].keys_to_censor, api.states[i].get_keys_to_censor_len());
         });
         if (result == TaskScheduler::AwaitResult::Timeout)
             return req.send(500, "text/plain", "Failed to get config. Task timed out.");
@@ -259,7 +259,7 @@ WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest req)
     }
 
     for (size_t i = 0; i < api.commands.size(); i++)
-        if (api.commands[i].path_len == req_uri_len && memcmp(api.commands[i].path, req.uriCStr() + 1, req_uri_len) == 0 && api.commands[i].config->is_null())
+        if (api.commands[i].get_path_len() == req_uri_len && memcmp(api.commands[i].path, req.uriCStr() + 1, req_uri_len) == 0 && api.commands[i].config->is_null())
             return run_command(req, i);
 
     // If we reach this point, the url matcher found an API with the req.uri() as path, but we did not.
@@ -272,7 +272,7 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
     size_t req_uri_len = strlen(req.uriCStr() + 1);
 
     for (size_t i = 0; i < api.commands.size(); i++)
-        if (api.commands[i].path_len == req_uri_len && memcmp(api.commands[i].path, req.uriCStr() + 1, req_uri_len) == 0)
+        if (api.commands[i].get_path_len() == req_uri_len && memcmp(api.commands[i].path, req.uriCStr() + 1, req_uri_len) == 0)
             return run_command(req, i);
 
     for (size_t i = 0; i < api.responses.size(); i++)
@@ -284,12 +284,12 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
     }
 
     for (size_t i = 0; i < api.states.size(); i++) {
-        if (api.states[i].path_len != req_uri_len || memcmp(api.states[i].path, req.uriCStr() + 1, req_uri_len) != 0)
+        if (api.states[i].get_path_len() != req_uri_len || memcmp(api.states[i].path, req.uriCStr() + 1, req_uri_len) != 0)
             continue;
 
         String uri_update = req.uri() + "_update";
         for (size_t a = 0; a < api.commands.size(); a++)
-            if (api.commands[a].path_len == uri_update.length() - 1 && memcmp(api.commands[a].path, uri_update.c_str() + 1, uri_update.length() - 1) == 0)
+            if (api.commands[a].get_path_len() == uri_update.length() - 1 && memcmp(api.commands[a].path, uri_update.c_str() + 1, uri_update.length() - 1) == 0)
                 return run_command(req, a);
 
         // If we've found the api state that matches req.uriCStr() but did not find a corresponding command with _update,
