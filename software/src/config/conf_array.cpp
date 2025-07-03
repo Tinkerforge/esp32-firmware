@@ -66,8 +66,9 @@ const std::vector<Config> *Config::ConfArray::getVal() const { return &get_slot<
 
 const Config::ConfArray::Slot *Config::ConfArray::getSlot() const { return get_slot<Config::ConfArray>(idx); }
 Config::ConfArray::Slot *Config::ConfArray::getSlot() { return get_slot<Config::ConfArray>(idx); }
+int8_t Config::ConfArray::getVariantType() const { return (int8_t) get_slot<Config::ConfArray>(idx)->prototype->value.tag; }
 
-Config::ConfArray::ConfArray(std::initializer_list<Config> val, const Config *prototype, uint16_t minElements, uint16_t maxElements, int8_t variantType)
+Config::ConfArray::ConfArray(std::initializer_list<Config> val, const Config *prototype, uint16_t minElements, uint16_t maxElements)
 {
     idx = nextSlot<Config::ConfArray>();
     auto *slot = this->getSlot();
@@ -76,11 +77,10 @@ Config::ConfArray::ConfArray(std::initializer_list<Config> val, const Config *pr
     slot->val = val;
     slot->prototype = prototype;
     slot->minElements = minElements;
-    slot->variantType = variantType;
 
     if (maxElements < minElements) {
         slot->maxElements = minElements;
-        logger.printfln("ConfArray of variantType %i: Requested maxElements of %u raised to fit minElements of %u.", variantType, maxElements, minElements);
+        logger.printfln("ConfArray of variantType %i: Requested maxElements of %u raised to fit minElements of %u.", this->getVariantType(), maxElements, minElements);
     } else {
         slot->maxElements = maxElements;
     }
@@ -114,7 +114,6 @@ Config::ConfArray::~ConfArray()
     slot->prototype = nullptr;
     slot->minElements = 0;
     slot->maxElements = 0;
-    slot->variantType = 0;
 
     notify_free_slot<Config::ConfArray>(idx);
 }

@@ -57,7 +57,6 @@ struct ConfArraySlot {
     const Config *prototype;
     uint16_t minElements;
     uint16_t maxElements;
-    int8_t variantType;
     bool inUse = false;
 };
 
