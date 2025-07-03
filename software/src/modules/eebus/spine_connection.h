@@ -24,9 +24,8 @@
 
 #include "config.h"
 #include "module.h"
-#include <TFJson.h>
 #include "spine_types.h"
-
+#include <TFJson.h>
 
 #define SPINE_CONNECTION_MAX_JSON_SIZE 8192 // TODO: What is a sane value here?
 #define SPINE_CONNECTION_MAX_DEPTH 30       // Maximum depth of serialization of a json document
@@ -57,8 +56,8 @@ public:
      */
     void send_datagram(JsonVariantConst payload,
                        CmdClassifierType cmd_classifier,
-                       const FeatureAddressType& sender,
-                       const FeatureAddressType& receiver,
+                       const FeatureAddressType &sender,
+                       const FeatureAddressType &receiver,
                        bool require_ack = false);
 
     /**
@@ -101,5 +100,7 @@ public:
     time_t last_received_time = 0; // The last time a message was received from the peer. This is used to detect if the peer is still alive.
 private:
     std::vector<FeatureAddressType> known_addresses;
-    uint16_t msg_counter_error_count = 0; // The number of message counter errors that have occurred. This is used to detect if the peer is still alive and if it has technical issues.
+    uint16_t msg_counter_error_count =
+        0; // The number of message counter errors that have occurred. This is used to detect if the peer is still alive and if it has technical issues.
+
 };
