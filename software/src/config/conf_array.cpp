@@ -25,12 +25,12 @@
 
 bool Config::ConfArray::slotEmpty(const Slot *slot)
 {
-    return !slot->inUse;
+    return slot->minElements > slot->maxElements;
 }
 
 Config::ConfArray::Slot *Config::ConfArray::allocSlotBuf(size_t elements)
 {
-    return new(std::nothrow) Config::ConfArray::Slot[elements];
+    return new(std::nothrow) Config::ConfArray::Slot[elements]();
 }
 
 [[gnu::noinline]]
@@ -70,20 +70,18 @@ int8_t Config::ConfArray::getVariantType() const { return (int8_t) get_slot<Conf
 
 Config::ConfArray::ConfArray(std::initializer_list<Config> val, const Config *prototype, uint16_t minElements, uint16_t maxElements)
 {
+    if (minElements > maxElements) {
+        esp_system_abort("ConfArray: Requested more minElements than maxElements!");
+    }
+
     idx = nextSlot<Config::ConfArray>();
     auto *slot = this->getSlot();
-    slot->inUse = true;
+    // Set min/max before val to be sure this slot is in use before copying val.
+    slot->minElements = minElements;
+    slot->maxElements = maxElements;
 
     slot->val = val;
     slot->prototype = prototype;
-    slot->minElements = minElements;
-
-    if (maxElements < minElements) {
-        slot->maxElements = minElements;
-        logger.printfln("ConfArray of variantType %i: Requested maxElements of %u raised to fit minElements of %u.", this->getVariantType(), maxElements, minElements);
-    } else {
-        slot->maxElements = maxElements;
-    }
 }
 
 Config::ConfArray::ConfArray(const ConfArray &cpy)
@@ -92,8 +90,9 @@ Config::ConfArray::ConfArray(const ConfArray &cpy)
     // We have to mark this slot as in use here:
     // This array could contain a nested array that will be copied over
     // The inner array's copy constructor then takes the first free slot, i.e.
-    // ours if we don't mark it as inUse first.
-    this->getSlot()->inUse = true;
+    // ours if we don't mark it as in use first.
+    this->getSlot()->minElements = 0;
+    this->getSlot()->maxElements = 0;
 
     auto tmp = *cpy.getSlot();
 
@@ -108,12 +107,12 @@ Config::ConfArray::~ConfArray()
         return;
 
     auto *slot = this->getSlot();
-    slot->inUse = false;
+    // Mark slot as not in use
+    this->getSlot()->minElements = 1;
+    this->getSlot()->maxElements = 0;
 
     slot->val.clear();
     slot->prototype = nullptr;
-    slot->minElements = 0;
-    slot->maxElements = 0;
 
     notify_free_slot<Config::ConfArray>(idx);
 }
