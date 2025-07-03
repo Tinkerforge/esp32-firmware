@@ -41,6 +41,7 @@ import { ShellyEMMonophaseChannel } from "./shelly_em_monophase_channel.enum";
 import { ShellyEMMonophaseMapping } from "./shelly_em_monophase_mapping.enum";
 import { GoodweHybridInverterVirtualMeter } from "./goodwe_hybrid_inverter_virtual_meter.enum";
 import { SolaxHybridInverterVirtualMeter } from "./solax_hybrid_inverter_virtual_meter.enum";
+import { SolaxStringInverterVirtualMeter } from "./solax_string_inverter_virtual_meter.enum";
 import { FroniusGEN24PlusVirtualMeter } from "./fronius_gen24_plus_virtual_meter.enum";
 import { HaileiHybridInverterVirtualMeter } from "./hailei_hybrid_inverter_virtual_meter.enum";
 import { FoxESSH3HybridInverterVirtualMeter } from "./fox_ess_h3_hybrid_inverter_virtual_meter.enum";
@@ -398,6 +399,14 @@ type TableConfigHuaweiEMMA = [
     },
 ];
 
+type TableConfigSolaxStringInverter = [
+    MeterModbusTCPTableID.SolaxStringInverter,
+    {
+        virtual_meter: number;
+        device_address: number;
+    },
+];
+
 type TableConfig = TableConfigNone |
                    TableConfigCustom |
                    TableConfigSungrowHybridInverter |
@@ -440,7 +449,8 @@ type TableConfig = TableConfigNone |
                    TableConfigE3DC |
                    TableConfigHuaweiSUN2000 |
                    TableConfigHuaweiSUN2000SmartDongle |
-                   TableConfigHuaweiEMMA;
+                   TableConfigHuaweiEMMA |
+                   TableConfigSolaxStringInverter;
 
 export type ModbusTCPMetersConfig = [
     MeterClassID.ModbusTCP,
@@ -581,6 +591,9 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
         case MeterModbusTCPTableID.HuaweiEMMA:
             return [MeterModbusTCPTableID.HuaweiEMMA, {virtual_meter: null, device_address: 0}];
 
+        case MeterModbusTCPTableID.SolaxStringInverter:
+            return [MeterModbusTCPTableID.SolaxStringInverter, {virtual_meter: null, device_address: 1}];
+
         default:
             return [MeterModbusTCPTableID.None, null];
     }
@@ -705,7 +718,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
             rows={this.props.table[1].registers.map((register, i) => {
                 let register_type = "<unknown>";
 
-                switch (this.state.register.rtype) {
+                switch (register.rtype) {
                 case ModbusRegisterType.HoldingRegister:
                     register_type = __("meters_modbus_tcp.content.registers_register_type_holding_register");
                     break;
@@ -835,6 +848,7 @@ export function init() {
                                 [MeterModbusTCPTableID.Solaredge.toString(), __("meters_modbus_tcp.content.table_solaredge")],
                                 [MeterModbusTCPTableID.SolarmaxMaxStorage.toString(), __("meters_modbus_tcp.content.table_solarmax_max_storage")],
                                 [MeterModbusTCPTableID.SolaxHybridInverter.toString(), __("meters_modbus_tcp.content.table_solax_hybrid_inverter")],
+                                [MeterModbusTCPTableID.SolaxStringInverter.toString(), __("meters_modbus_tcp.content.table_solax_string_inverter")],
                                 [MeterModbusTCPTableID.SungrowHybridInverter.toString(), __("meters_modbus_tcp.content.table_sungrow_hybrid_inverter")],
                                 [MeterModbusTCPTableID.SungrowStringInverter.toString(), __("meters_modbus_tcp.content.table_sungrow_string_inverter")],
                                 [MeterModbusTCPTableID.TinkerforgeWARPCharger.toString(), __("meters_modbus_tcp.content.table_tinkerforge_warp_charger")],
@@ -897,7 +911,8 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.E3DC
                   || config[1].table[0] == MeterModbusTCPTableID.HuaweiSUN2000
                   || config[1].table[0] == MeterModbusTCPTableID.HuaweiSUN2000SmartDongle
-                  || config[1].table[0] == MeterModbusTCPTableID.HuaweiEMMA)) {
+                  || config[1].table[0] == MeterModbusTCPTableID.HuaweiEMMA
+                  || config[1].table[0] == MeterModbusTCPTableID.SolaxStringInverter)) {
                     let virtual_meter_items: [string, string][] = [];
                     let default_location: MeterLocation = undefined; // undefined: there is no default location, null: default location is not known yet
                     let get_default_location: (virtual_meter: number) => MeterLocation = undefined; // undefined: there is no default location
@@ -1263,6 +1278,23 @@ export function init() {
                         }
 
                         default_device_address = 0;
+                    }
+                    else if (config[1].table[0] == MeterModbusTCPTableID.SolaxStringInverter) {
+                        virtual_meter_items = [
+                            [SolaxStringInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
+                            [SolaxStringInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
+                            [SolaxStringInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
+                        ];
+
+                        get_default_location = (virtual_meter: number) => {
+                            switch (virtual_meter) {
+                            case SolaxStringInverterVirtualMeter.Inverter: return MeterLocation.Inverter;
+                            case SolaxStringInverterVirtualMeter.Grid: return MeterLocation.Grid;
+                            case SolaxStringInverterVirtualMeter.PV: return MeterLocation.PV;
+                            }
+
+                            return MeterLocation.Unknown;
+                        }
                     }
 
                     if (virtual_meter_items.length > 0) {

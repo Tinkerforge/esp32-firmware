@@ -56,6 +56,7 @@ let x = {
             "table_huawei_sun2000": "Huawei SUN2000",
             "table_huawei_sun2000_smart_dongle": "Huawei SUN2000 (Smart Dongle)",
             "table_huawei_emma": "Huawei EMMA",
+            "table_solax_string_inverter": "Solax String-Wechselrichter",
             "virtual_meter": "Virtueller Zähler",
             "virtual_meter_inverter": "Wechselrichter",
             "virtual_meter_grid": "Netzanschluss",

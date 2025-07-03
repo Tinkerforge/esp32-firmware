@@ -53,6 +53,7 @@
 #include "huawei_sun2000_virtual_meter.enum.h"
 #include "huawei_sun2000_smart_dongle_virtual_meter.enum.h"
 #include "huawei_emma_virtual_meter.enum.h"
+#include "solax_string_inverter_virtual_meter.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -130,6 +131,8 @@ private:
     bool is_huawei_sun2000_smart_dongle_pv_meter() const;
     bool is_huawei_emma_load_meter() const;
     bool is_huawei_emma_pv_meter() const;
+    bool is_solax_string_inverter_meter() const;
+    bool is_solax_string_inverter_pv_meter() const;
 
     uint32_t slot;
     Config *state;
@@ -386,6 +389,20 @@ private:
         struct {
             HuaweiEMMAVirtualMeter virtual_meter;
         } huawei_emma;
+
+        // Solax string inverter
+        struct {
+            SolaxStringInverterVirtualMeter virtual_meter;
+            float pv1_voltage;
+            float pv2_voltage;
+            float pv1_current;
+            float pv2_current;
+            float pv1_power;
+            float pv2_power;
+            float pv3_voltage;
+            float pv3_current;
+            float pv3_power;
+        } solax_string_inverter;
     };
 };
 

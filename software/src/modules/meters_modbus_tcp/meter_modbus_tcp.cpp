@@ -203,6 +203,18 @@
 
 #define HUAWEI_EMMA_PV_OUTPUT_POWER_ADDRESS                                static_cast<size_t>(HuaweiEMMAPVAddress::PVOutputPower)
 
+#define SOLAX_STRING_INVERTER_OUTPUT_POWER_ADDRESS                         static_cast<size_t>(SolaxStringInverterAddress::OutputPower)
+
+#define SOLAX_STRING_INVERTER_PV1_VOLTAGE_ADDRESS                          static_cast<size_t>(SolaxStringInverterPVAddress::PV1Voltage)
+#define SOLAX_STRING_INVERTER_PV2_VOLTAGE_ADDRESS                          static_cast<size_t>(SolaxStringInverterPVAddress::PV2Voltage)
+#define SOLAX_STRING_INVERTER_PV1_CURRENT_ADDRESS                          static_cast<size_t>(SolaxStringInverterPVAddress::PV1Current)
+#define SOLAX_STRING_INVERTER_PV2_CURRENT_ADDRESS                          static_cast<size_t>(SolaxStringInverterPVAddress::PV2Current)
+#define SOLAX_STRING_INVERTER_PV1_POWER_ADDRESS                            static_cast<size_t>(SolaxStringInverterPVAddress::PV1Power)
+#define SOLAX_STRING_INVERTER_PV2_POWER_ADDRESS                            static_cast<size_t>(SolaxStringInverterPVAddress::PV2Power)
+#define SOLAX_STRING_INVERTER_PV3_VOLTAGE_ADDRESS                          static_cast<size_t>(SolaxStringInverterPVAddress::PV3Voltage)
+#define SOLAX_STRING_INVERTER_PV3_CURRENT_ADDRESS                          static_cast<size_t>(SolaxStringInverterPVAddress::PV3Current)
+#define SOLAX_STRING_INVERTER_PV3_POWER_ADDRESS                            static_cast<size_t>(SolaxStringInverterPVAddress::PV3Power)
+
 #define MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(x) (static_cast<uint8_t>(x) & 0x07)
 #define MODBUS_VALUE_TYPE_TO_REGISTER_ORDER_LE(x) ((static_cast<uint8_t>(x) >> 5) & 1)
 
@@ -1339,6 +1351,37 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         break;
 
+    case MeterModbusTCPTableID::SolaxStringInverter:
+        solax_string_inverter.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<SolaxStringInverterVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
+
+        switch (solax_string_inverter.virtual_meter) {
+        case SolaxStringInverterVirtualMeter::None:
+            logger.printfln_meter("No Solax String Inverter Virtual Meter selected");
+            break;
+
+        case SolaxStringInverterVirtualMeter::Inverter:
+            table = &solax_string_inverter_table;
+            default_location = MeterLocation::Inverter;
+            break;
+
+        case SolaxStringInverterVirtualMeter::Grid:
+            table = &solax_string_inverter_grid_table;
+            default_location = MeterLocation::Grid;
+            break;
+
+        case SolaxStringInverterVirtualMeter::PV:
+            table = &solax_string_inverter_pv_table;
+            default_location = MeterLocation::PV;
+            break;
+
+        default:
+            logger.printfln_meter("Unknown Solax String Inverter Virtual Meter: %u", static_cast<uint8_t>(solax_string_inverter.virtual_meter));
+            break;
+        }
+
+        break;
+
     default:
         logger.printfln_meter("Unknown table: %u", static_cast<uint8_t>(table_id));
         break;
@@ -1607,6 +1650,18 @@ bool MeterModbusTCP::is_huawei_emma_pv_meter() const
 {
     return table_id == MeterModbusTCPTableID::HuaweiEMMA
         && huawei_emma.virtual_meter == HuaweiEMMAVirtualMeter::PV;
+}
+
+bool MeterModbusTCP::is_solax_string_inverter_meter() const
+{
+    return table_id == MeterModbusTCPTableID::SolaxStringInverter
+        && solax_string_inverter.virtual_meter == SolaxStringInverterVirtualMeter::Inverter;
+}
+
+bool MeterModbusTCP::is_solax_string_inverter_pv_meter() const
+{
+    return table_id == MeterModbusTCPTableID::SolaxStringInverter
+        && solax_string_inverter.virtual_meter == SolaxStringInverterVirtualMeter::PV;
 }
 
 void MeterModbusTCP::read_done_callback()
@@ -2963,6 +3018,73 @@ void MeterModbusTCP::parse_next()
     else if (is_huawei_emma_pv_meter()) {
         if (register_start_address == HUAWEI_EMMA_PV_OUTPUT_POWER_ADDRESS) {
             meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(value));
+        }
+    }
+    else if (is_solax_string_inverter_meter()) {
+        if (register_start_address == SOLAX_STRING_INVERTER_OUTPUT_POWER_ADDRESS) {
+            meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(value));
+        }
+    }
+    else if (is_solax_string_inverter_pv_meter()) {
+        if (register_start_address == SOLAX_STRING_INVERTER_PV1_VOLTAGE_ADDRESS) {
+            solax_string_inverter.pv1_voltage = value;
+        }
+        else if (register_start_address == SOLAX_STRING_INVERTER_PV2_VOLTAGE_ADDRESS) {
+            solax_string_inverter.pv2_voltage = value;
+        }
+        else if (register_start_address == SOLAX_STRING_INVERTER_PV1_CURRENT_ADDRESS) {
+            solax_string_inverter.pv1_current = value;
+        }
+        else if (register_start_address == SOLAX_STRING_INVERTER_PV2_CURRENT_ADDRESS) {
+            solax_string_inverter.pv2_current = value;
+        }
+        else if (register_start_address == SOLAX_STRING_INVERTER_PV1_POWER_ADDRESS) {
+            solax_string_inverter.pv1_power = value;
+        }
+        else if (register_start_address == SOLAX_STRING_INVERTER_PV2_POWER_ADDRESS) {
+            solax_string_inverter.pv2_power = value;
+        }
+        else if (register_start_address == SOLAX_STRING_INVERTER_PV3_VOLTAGE_ADDRESS) {
+            solax_string_inverter.pv3_voltage = value;
+        }
+        else if (register_start_address == SOLAX_STRING_INVERTER_PV3_CURRENT_ADDRESS) {
+            solax_string_inverter.pv3_current = value;
+        }
+        else if (register_start_address == SOLAX_STRING_INVERTER_PV3_POWER_ADDRESS) {
+            solax_string_inverter.pv3_power = value;
+
+            float voltage_sum = 0.0f;
+            float voltage_count = 0.0f;
+
+            if (!is_exactly_zero(solax_string_inverter.pv1_voltage)) {
+                voltage_sum += solax_string_inverter.pv1_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(solax_string_inverter.pv2_voltage)) {
+                voltage_sum += solax_string_inverter.pv2_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(solax_string_inverter.pv3_voltage)) {
+                voltage_sum += solax_string_inverter.pv3_voltage;
+                ++voltage_count;
+            }
+
+            float voltage_avg = voltage_sum / voltage_count;
+
+            float current_sum = solax_string_inverter.pv1_current
+                              + solax_string_inverter.pv2_current
+                              + solax_string_inverter.pv3_current;
+
+            float power_sum = solax_string_inverter.pv1_power
+                            + solax_string_inverter.pv2_power
+                            + solax_string_inverter.pv3_power;
+
+            meters.update_value(slot, table->index[read_index + 1], voltage_avg);
+            meters.update_value(slot, table->index[read_index + 2], current_sum);
+            meters.update_value(slot, table->index[read_index + 3], power_sum);
+            meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power_sum));
         }
     }
 
