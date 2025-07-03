@@ -371,8 +371,13 @@ String BatteriesModbusTCP::validate_config(Config &update, ConfigSource source) 
     size_t used = 0;
     for (const char *key : keys) {
         auto regs = update.get("table")->get()->get(key)->get("registers");
-        for (size_t i = 0; i < regs->count(); ++i)
+        for (size_t i = 0; i < regs->count(); ++i) {
+            auto val_count = regs->get(i)->get("vals")->count();
+            auto start_addr = regs->get(i)->get("addr")->asUint();
             used += regs->get(i)->get("vals")->count();
+            if (start_addr + val_count > 65536)
+                return "Register address + number of vals must be less than 65536!";
+        }
     }
 
     if (used > OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTERS())
