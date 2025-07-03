@@ -110,15 +110,16 @@ struct default_validator {
         const auto *slot = x.getSlot();
         const auto *val = x.getVal();
         const size_t size = val->size();
+        const auto variantType = x.getVariantType();
 
         if (slot->maxElements > 0 && size > slot->maxElements)
             return String("Array had ") + size + " entries, but only " + slot->maxElements + " are allowed.";
         if (slot->minElements > 0 && size < slot->minElements)
             return String("Array had ") + size + " entries, but at least " + slot->maxElements + " are required.";
 
-        if (slot->variantType >= 0)
+        if (variantType >= 0)
             for (size_t i = 0; i < size; ++i)
-                if ((int)x.get(i)->value.tag != slot->variantType)
+                if ((int)x.get(i)->value.tag != variantType)
                     return String("[") + i + "] has wrong type";
 
         size_t i = 0;
@@ -1176,7 +1177,7 @@ struct api_info {
     {
         sw.printf("{\"type\":\"array\",\"prototype\":");
         Config::apply_visitor(api_info{sw}, x.getSlot()->prototype->value);
-        sw.printf(",\"minElements\":%u,\"maxElements\":%u,\"variantType\":%d,\"content\":[", x.getSlot()->minElements, x.getSlot()->maxElements, x.getSlot()->variantType);
+        sw.printf(",\"minElements\":%u,\"maxElements\":%u,\"variantType\":%d,\"content\":[", x.getSlot()->minElements, x.getSlot()->maxElements, x.getVariantType());
         bool first = true;
         for (const Config &c : *x.getVal()) {
             if (!first) {

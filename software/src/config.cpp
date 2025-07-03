@@ -134,7 +134,7 @@ Config Config::Array(std::initializer_list<Config> arr, const Config *prototype,
     if (boot_stage < BootStage::PRE_SETUP)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
 
-    return Config{ConfArray{arr, prototype, minElements, maxElements, (int8_t)variantType}};
+    return Config{ConfArray{arr, prototype, minElements, maxElements}};
 }
 
 Config Config::Object(std::initializer_list<std::pair<const char *, Config>> obj)
