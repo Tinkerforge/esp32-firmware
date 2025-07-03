@@ -75,7 +75,7 @@ Config::ConfUnion::ConfUnion(const ConfUnion &cpy)
     // We have to mark this slot as in use here:
     // This union could contain a nested union that will be copied over
     // The inner union's copy constructor then takes the first free slot, i.e.
-    // ours if we don't mark it as inUse first.
+    // ours if we don't mark it as in use first.
     this->getSlot()->prototypes = cpy.getSlot()->prototypes;
 
 
