@@ -3118,18 +3118,18 @@ void MeterModbusTCP::parse_next()
                 ++voltage_count;
             }
 
-            float voltage = voltage_sum / voltage_count;
+            float voltage_avg = voltage_sum / voltage_count;
 
-            float current = fox_ess_h3_hybrid_inverter.pv1_current
-                          + fox_ess_h3_hybrid_inverter.pv2_current;
+            float current_sum = fox_ess_h3_hybrid_inverter.pv1_current
+                              + fox_ess_h3_hybrid_inverter.pv2_current;
 
-            float power = fox_ess_h3_hybrid_inverter.pv1_power
-                        + fox_ess_h3_hybrid_inverter.pv2_power;
+            float power_sum = fox_ess_h3_hybrid_inverter.pv1_power
+                            + fox_ess_h3_hybrid_inverter.pv2_power;
 
-            meters.update_value(slot, table->index[read_index + 1], voltage);
-            meters.update_value(slot, table->index[read_index + 2], current);
-            meters.update_value(slot, table->index[read_index + 3], power);
-            meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power));
+            meters.update_value(slot, table->index[read_index + 1], voltage_avg);
+            meters.update_value(slot, table->index[read_index + 2], current_sum);
+            meters.update_value(slot, table->index[read_index + 3], power_sum);
+            meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power_sum));
         }
     }
     else if (is_carlo_gavazzi_em100_or_et100()) {
@@ -3339,22 +3339,22 @@ void MeterModbusTCP::parse_next()
                 ++voltage_count;
             }
 
-            float voltage = voltage_sum / voltage_count;
+            float voltage_avg = voltage_sum / voltage_count;
 
-            float current = fox_ess_h3_smart_hybrid_inverter.pv1_current
-                          + fox_ess_h3_smart_hybrid_inverter.pv2_current
-                          + fox_ess_h3_smart_hybrid_inverter.pv3_current
-                          + fox_ess_h3_smart_hybrid_inverter.pv4_current;
+            float current_sum = fox_ess_h3_smart_hybrid_inverter.pv1_current
+                              + fox_ess_h3_smart_hybrid_inverter.pv2_current
+                              + fox_ess_h3_smart_hybrid_inverter.pv3_current
+                              + fox_ess_h3_smart_hybrid_inverter.pv4_current;
 
-            float power = fox_ess_h3_smart_hybrid_inverter.pv1_power
-                        + fox_ess_h3_smart_hybrid_inverter.pv2_power
-                        + fox_ess_h3_smart_hybrid_inverter.pv3_power
-                        + fox_ess_h3_smart_hybrid_inverter.pv4_power;
+            float power_sum = fox_ess_h3_smart_hybrid_inverter.pv1_power
+                            + fox_ess_h3_smart_hybrid_inverter.pv2_power
+                            + fox_ess_h3_smart_hybrid_inverter.pv3_power
+                            + fox_ess_h3_smart_hybrid_inverter.pv4_power;
 
-            meters.update_value(slot, table->index[read_index + 1], voltage);
-            meters.update_value(slot, table->index[read_index + 2], current);
-            meters.update_value(slot, table->index[read_index + 3], power);
-            meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power));
+            meters.update_value(slot, table->index[read_index + 1], voltage_avg);
+            meters.update_value(slot, table->index[read_index + 2], current_sum);
+            meters.update_value(slot, table->index[read_index + 3], power_sum);
+            meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power_sum));
         }
     }
     else if (is_fox_ess_h3_pro_hybrid_inverter_pv_meter()) {
@@ -3445,26 +3445,26 @@ void MeterModbusTCP::parse_next()
                 ++voltage_count;
             }
 
-            float voltage = voltage_sum / voltage_count;
+            float voltage_avg = voltage_sum / voltage_count;
 
-            float current = fox_ess_h3_pro_hybrid_inverter.pv1_current
-                          + fox_ess_h3_pro_hybrid_inverter.pv2_current
-                          + fox_ess_h3_pro_hybrid_inverter.pv3_current
-                          + fox_ess_h3_pro_hybrid_inverter.pv4_current
-                          + fox_ess_h3_pro_hybrid_inverter.pv5_current
-                          + fox_ess_h3_pro_hybrid_inverter.pv6_current;
+            float current_sum = fox_ess_h3_pro_hybrid_inverter.pv1_current
+                              + fox_ess_h3_pro_hybrid_inverter.pv2_current
+                              + fox_ess_h3_pro_hybrid_inverter.pv3_current
+                              + fox_ess_h3_pro_hybrid_inverter.pv4_current
+                              + fox_ess_h3_pro_hybrid_inverter.pv5_current
+                              + fox_ess_h3_pro_hybrid_inverter.pv6_current;
 
-            float power = fox_ess_h3_pro_hybrid_inverter.pv1_power
-                        + fox_ess_h3_pro_hybrid_inverter.pv2_power
-                        + fox_ess_h3_pro_hybrid_inverter.pv3_power
-                        + fox_ess_h3_pro_hybrid_inverter.pv4_power
-                        + fox_ess_h3_pro_hybrid_inverter.pv5_power
-                        + fox_ess_h3_pro_hybrid_inverter.pv6_power;
+            float power_sum = fox_ess_h3_pro_hybrid_inverter.pv1_power
+                            + fox_ess_h3_pro_hybrid_inverter.pv2_power
+                            + fox_ess_h3_pro_hybrid_inverter.pv3_power
+                            + fox_ess_h3_pro_hybrid_inverter.pv4_power
+                            + fox_ess_h3_pro_hybrid_inverter.pv5_power
+                            + fox_ess_h3_pro_hybrid_inverter.pv6_power;
 
-            meters.update_value(slot, table->index[read_index + 1], voltage);
-            meters.update_value(slot, table->index[read_index + 2], current);
-            meters.update_value(slot, table->index[read_index + 3], power);
-            meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power));
+            meters.update_value(slot, table->index[read_index + 1], voltage_avg);
+            meters.update_value(slot, table->index[read_index + 2], current_sum);
+            meters.update_value(slot, table->index[read_index + 3], power_sum);
+            meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power_sum));
         }
     }
 
