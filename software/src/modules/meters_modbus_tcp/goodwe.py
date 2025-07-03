@@ -822,7 +822,7 @@ specs = [
             },
             {
                 'name': 'Total PV Energy [0.1 kWh]',
-                'value_id': 'EnergyDCExport',
+                'value_id': 'EnergyPVSumExport',
                 'start_address': 35191,
                 'value_type': 'U32BE',
                 'scale_factor': 0.1,
