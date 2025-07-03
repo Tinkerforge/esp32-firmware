@@ -423,15 +423,15 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
     topic_len -= global_topic_prefix.length() + 1;
 
     for (auto &reg : api.commands) {
-        if (topic_len != reg.path_len || memcmp(topic, reg.path, topic_len) != 0)
+        if (topic_len != reg.get_path_len() || memcmp(topic, reg.path, topic_len) != 0)
             continue;
 
-        if (retain && reg.is_action) {
+        if (retain && reg.get_is_action()) {
             logger.printfln("Topic %s is an action. Ignoring retained message (data_len=%u).", reg.path, data_len);
             return;
         }
 
-        if (reg.is_action && data_len == 0) {
+        if (reg.get_is_action() && data_len == 0) {
             logger.printfln("Topic %s is an action. Ignoring empty message.", reg.path);
             return;
         }
@@ -448,7 +448,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
 
     // Don't print error message on state topics, this could be one of our own messages.
     for (auto &reg : api.states) {
-        if (topic_len != reg.path_len || memcmp(topic, reg.path, topic_len) != 0)
+        if (topic_len != reg.get_path_len() || memcmp(topic, reg.path, topic_len) != 0)
             continue;
         return;
     }

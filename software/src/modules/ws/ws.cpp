@@ -73,7 +73,7 @@ void WS::register_urls()
                 for (; i < api.states.size(); ++i) {
                     auto &reg = api.states[i];
                     auto path = reg.path;
-                    auto path_len = reg.path_len;
+                    auto path_len = reg.get_path_len();
                     auto config_len = reg.config->string_length();
                     int req = prefix_len + path_len + infix_len + config_len + suffix_len + 1; // +1 for the second \n
 
@@ -91,7 +91,7 @@ void WS::register_urls()
                     sb.puts(path, path_len);
                     sb.puts(infix, infix_len);
 
-                    reg.config->to_string_except(reg.keys_to_censor, reg.keys_to_censor_len, &sb);
+                    reg.config->to_string_except(reg.keys_to_censor, reg.get_keys_to_censor_len(), &sb);
 
                     sb.puts(suffix, suffix_len);
                 }
