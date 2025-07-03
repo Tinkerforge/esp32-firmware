@@ -419,6 +419,7 @@ private:
 
     // for CM_ATTEN_PROFILE.IND
     uint16_t aag_list[SLAC_AAG_LIST_LENGTH] = {0};
+    uint8_t indication_num_sounds = 0;
 
     uint8_t nmk[SLAC_NMK_LENGTH] = {0};
     uint8_t nid[SLAC_NID_LENGTH] = {0};

@@ -309,6 +309,11 @@ void SLAC::handle_cm_start_atten_char_indication(const CM_StartAttenCharIndicati
         return;
     }
 
+    indication_num_sounds = cm_start_atten_char_indication.num_sounds;
+    if (indication_num_sounds == 0) {
+        indication_num_sounds = SLAC_C_EV_MATCH_MNBC; // Default to the value defined by the standard
+    }
+
     api_state.get("received_sounds")->updateUint(0);
     api_state.get("received_aag_lists")->updateUint(0);
     api_state.get("atten_char_indication_tries")->updateUint(0);
@@ -357,7 +362,7 @@ void SLAC::handle_cm_atten_profile_indication(const CM_AttenProfileIndication &c
 
     const uint8_t received_aag_lists = api_state.get("received_aag_lists")->asUint() + 1;
     api_state.get("received_aag_lists")->updateUint(received_aag_lists);
-    if (received_aag_lists == SLAC_C_EV_MATCH_MNBC) {
+    if (received_aag_lists == indication_num_sounds) {
         // We have received all 10 attenuation profiles
         // We can now calculate the average attenuation profile and send the CM_ATTEN_CHAR.IND to the EV
 
