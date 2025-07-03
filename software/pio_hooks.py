@@ -796,7 +796,7 @@ def main():
             if key in build_flag:
                 old_style_build_flags[key.lower()] = build_flag.split(key + '=')[-1]
 
-    if len(old_style_options) > 0:
+    if len(old_style_build_flags) > 0:
         print('Warning: Use of old style build_flags detected! Trying to auto-convert to the new style custom_options!')
 
         if 'charge_tracker_pdf_logo' not in old_style_build_flags:
