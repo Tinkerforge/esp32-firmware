@@ -454,9 +454,15 @@ void ISO2::handle_charge_parameter_discovery_req()
 
     iso2DocEnc->V2G_Message.Body.ChargeParameterDiscoveryRes_isUsed = 1;
 
+    if (iso15118.charge_type == ISO15118::ChargeType::DC_ReadSocOnce) {
+        // Try to stop DC charging session by forcing a timeout.
+        // As far as we can tell there is no way for the EVSE to tell the EV to stop the session.
+
+        return;
+    }
     // Here we try to get the EV into a loop that calls ChargeParameterDiscoveryReq again and again
     // so we are able to continously read the SoC.
-    if (iso15118.charge_type == ISO15118::ChargeType::DC_ReadSocInLoop) {
+    else if (iso15118.charge_type == ISO15118::ChargeType::DC_ReadSocInLoop) {
         res->ResponseCode = iso2_responseCodeType_OK;
         res->EVSEProcessing = iso2_EVSEProcessingType_Ongoing;
 
