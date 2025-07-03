@@ -740,7 +740,6 @@ def main():
     build_flags = env.GetProjectOption("build_flags")
     product_id = env.GetProjectOption("custom_product_id", None)
     options = env.GetProjectOption("custom_options", "")
-    web_build_flags = env.GetProjectOption("custom_web_build_flags", "")
 
     old_style_options = {}
 
@@ -753,7 +752,8 @@ def main():
             old_style_options[key] = value
 
     if len(old_style_options) > 0:
-        print('Warning: Use of old style custom_* options detected! Trying to auto-convert to the new style custom_options!')
+        print('Warning: Use of old-style custom_* options detected! Trying to auto-convert to new-style custom_options!')
+        print('  ' + '\n  '.join([f'{key} = {value}' for key, value in old_style_options.items()]))
 
         product_id = old_style_options['name']
         del old_style_options['name']
@@ -797,7 +797,8 @@ def main():
                 old_style_build_flags[key.lower()] = build_flag.split(key + '=')[-1]
 
     if len(old_style_build_flags) > 0:
-        print('Warning: Use of old style build_flags detected! Trying to auto-convert to the new style custom_options!')
+        print('Warning: Use of old-style build_flags detected! Trying to auto-convert to new-style custom_options!')
+        print('  ' + '\n  '.join([f'{key} = {value}' for key, value in old_style_build_flags.items()]))
 
         if 'charge_tracker_pdf_logo' not in old_style_build_flags:
             old_style_build_flags['charge_tracker_pdf_logo'] = 'CHARGE_TRACKER_PDF_LOGO_WARP'
@@ -808,17 +809,21 @@ def main():
 
             options += '\n' + key + ' = ' + value
 
-    if len(web_build_flags) > 0:
-        print('Warning: Use of old style web_build_flags detected! Trying to auto-convert to the new style custom_options!')
+    web_build_flags = env.GetProjectOption("custom_web_build_flags", "")
+    old_style_web_build_flags = {}
 
-        for key_value in web_build_flags.split('\n'):
-            if len(key_value) == 0:
-                continue
+    for key_value in web_build_flags.split('\n'):
+        if len(key_value) == 0:
+            continue
 
-            key, value = key_value.split('=', 1)
-            key = key.strip().lower()
-            value = value.strip()
+        key, value = key_value.split('=', 1)
+        old_style_web_build_flags[key.strip().lower()] = value.strip()
 
+    if len(old_style_web_build_flags) > 0:
+        print('Warning: Use of old-style web_build_flags detected! Trying to auto-convert to new-style custom_options!')
+        print('  ' + '\n  '.join([f'{key} = {value}' for key, value in old_style_web_build_flags.items()]))
+
+        for key, value in old_style_web_build_flags.items():
             if key == 'meters_slots':
                 key = 'meters_max_slots'
 
