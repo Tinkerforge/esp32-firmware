@@ -30,29 +30,46 @@
 #include "tools/allocator.h"
 #include "modules/web_server/web_server.h"
 
-// Will be stored in IRAM -> use 32 bit integers even if a bool would be sufficient
+// Will be stored in IRAM -> store uint8_ts in one uint32_t
 struct StateRegistration {
     const char *const path;
     const char *const *const keys_to_censor;
     const char *const *const keys_to_censor_in_debug_report;
     ConfigRoot *const config;
 
-    const size_t path_len;
-    const size_t keys_to_censor_len;
-    const size_t keys_to_censor_in_debug_report_len;
-    const uint32_t low_latency;
+    // asm("" : : "r" (data)); forces 32 bit access
+    [[gnu::always_inline]] uint8_t get_path_len()                           const { asm("" : : "r" (data)); return (data >> 24) & 0xFF; }
+    [[gnu::always_inline]] uint8_t get_keys_to_censor_len()                 const { asm("" : : "r" (data)); return (data >> 16) & 0xFF; }
+    [[gnu::always_inline]] uint8_t get_keys_to_censor_in_debug_report_len() const { asm("" : : "r" (data)); return (data >>  8) & 0xFF; }
+    [[gnu::always_inline]] bool    get_low_latency()                        const { asm("" : : "r" (data)); return (data >>  0) & 0xFF; }
+
+    /*
+    const uint8_t path_len;
+    const uint8_t keys_to_censor_len;
+    const uint8_t keys_to_censor_in_debug_report_len;
+    const bool low_latency;
+    */
+    const uint32_t data;
 };
 
-// Will be stored in IRAM -> use 32 bit integers even if a bool would be sufficient
+// Will be stored in IRAM -> store uint8_ts in one uint32_t
 struct CommandRegistration {
     const char *const path;
     const char *const *const keys_to_censor_in_debug_report;
     ConfigRoot *const config;
     const std::function<void(String &)> callback;
 
-    const size_t path_len;
-    const size_t keys_to_censor_in_debug_report_len;
-    const uint32_t is_action;
+    // asm("" : : "r" (data)); forces 32 bit access
+    [[gnu::always_inline]] uint8_t get_path_len()                           const { asm("" : : "r" (data)); return (data >> 24) & 0xFF; }
+    [[gnu::always_inline]] uint8_t get_keys_to_censor_in_debug_report_len() const { asm("" : : "r" (data)); return (data >> 16) & 0xFF; }
+    [[gnu::always_inline]] bool    get_is_action()                          const { asm("" : : "r" (data)); return (data >>  8) & 0xFF; }
+
+    /*
+    const uint8_t path_len;
+    const uint8_t keys_to_censor_in_debug_report_len;
+    const bool is_action;
+    */
+    const uint32_t data;
 };
 
 struct ResponseRegistration {
@@ -61,8 +78,8 @@ struct ResponseRegistration {
     ConfigRoot *const config;
     const std::function<void(IChunkedResponse *, Ownership *, uint32_t)> callback;
 
-    const size_t path_len;
-    const size_t keys_to_censor_in_debug_report_len;
+    const uint8_t path_len;
+    const uint8_t keys_to_censor_in_debug_report_len;
 };
 
 class IAPIBackend
@@ -140,7 +157,7 @@ public:
 
     std::vector<StateRegistration, IRAMAlloc<StateRegistration>> states;
     std::vector<CommandRegistration, IRAMAlloc<CommandRegistration>> commands;
-    std::vector<ResponseRegistration, IRAMAlloc<ResponseRegistration>> responses;
+    std::vector<ResponseRegistration> responses;
 
     std::vector<IAPIBackend *> backends;
 
