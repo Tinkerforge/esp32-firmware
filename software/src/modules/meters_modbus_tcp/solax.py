@@ -272,7 +272,7 @@ specs = [
             },
             {
                 'name': 'Total PV Energy [0.1 kWh]',
-                'value_id': 'EnergyDCExport',
+                'value_id': 'EnergyPVSumExport',
                 'start_address': 0x94,  # FIXME: datasheet is unclear if this is the correct register
                 'value_type': 'U32LE',
                 'scale_factor': 0.1,
@@ -477,7 +477,7 @@ specs = [
             },
             {
                 'name': 'Total PV Energy [0.1 kWh]',
-                'value_id': 'EnergyDCExport',
+                'value_id': 'EnergyPVSumExport',
                 'start_address': 0x423,
                 'value_type': 'U32LE',
                 'scale_factor': 0.1,
