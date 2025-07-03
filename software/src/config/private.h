@@ -55,9 +55,9 @@ struct ConfUintSlot {
 struct ConfArraySlot {
     std::vector<Config> val;
     const Config *prototype;
-    uint16_t minElements;
-    uint16_t maxElements;
-    bool inUse = false;
+    // Slot is empty if minElements > maxElements
+    uint16_t minElements = 1;
+    uint16_t maxElements = 0;
 };
 
 struct ConfObjectSchema {
