@@ -35,6 +35,7 @@ spine_cpp_header_header = """
 
 namespace ArduinoJson
 {
+inline bool spine_go_compatibility_mode = false; // If true, the JSON will be formatted and parsed in a way that it is compatible with SPINE-GO
 template <typename T> struct Converter<std::vector<T>> {
     static void toJson(const std::vector<T> &src, JsonVariant dst);
     static std::vector<T> fromJson(JsonVariantConst src);
@@ -70,8 +71,8 @@ template <typename T>
 void Converter<std::vector<T>>::toJson(const std::vector<T> &src, JsonVariant dst)
 {
     JsonArray array;
-    // SPINE-GO wants a double wrapped array for objects or else it breaks the JSON
-    if (std::is_fundamental<T>::value) {
+    // SPINE-GO wants a double wrapped array for objects (but not for fundamental types) or else it breaks the JSON.
+    if (std::is_fundamental<T>::value || !spine_go_compatibility_mode) {
         array = dst.to<JsonArray>();
     }else {
         array = dst.to<JsonArray>().createNestedArray();
@@ -84,8 +85,14 @@ template <typename T>
 std::vector<T> Converter<std::vector<T>>::fromJson(JsonVariantConst src)
 {
     std::vector<T> dst;
-    for (T item : src.as<JsonArrayConst>())
-        dst.push_back(item);
+    if (std::is_fundamental<T>::value || !spine_go_compatibility_mode) {
+        for (T item : src.as<JsonArrayConst>())
+            dst.push_back(item);
+    } else {
+        src = src.as<JsonArrayConst>()[0];
+        for (T item : src.as<JsonArrayConst>())
+            dst.push_back(item);
+    }
     return dst;
 }
 
@@ -263,7 +270,7 @@ def process_complex_type(complex_type):
         new_type.code = f"/**\n * Datatype {struct_type_name} as defined in {complex_type.schema.name}\n*/\nstruct {struct_type_name} {{ \n"
         new_type.to_json_code = f"""bool convertToJson(const {struct_type_name} &src, JsonVariant& dst) {{\n"""
 
-        new_type.from_json_code = f"""void convertFromJson(const JsonVariantConst& src, {struct_type_name} &dst) {{\n"""
+        #new_type.from_json_code = f"""void convertFromJson(const JsonVariantConst& src, {struct_type_name} &dst) {{\n"""
         for elem in complex_type.content:
             variable_type = variable_name = ""
             is_vec = False
@@ -352,9 +359,13 @@ def process_complex_type(complex_type):
                 return
             new_type.to_json_code += f"""\tif (src.{variable_name_cpp}) {{\n\t\tdst["{variable_name_string}"] = *src.{variable_name_cpp};\n\t}}\n"""
             new_type.from_json_code += f"""\tif (src["{variable_name_string}"]) {{\n\t\tdst.{variable_name_cpp} = src["{variable_name_string}"].as<decltype(dst.{variable_name_cpp})::value_type>();\n\t}} else {{\n\t\tdst.{variable_name_cpp} = std::nullopt;\n\t}}\n"""
+        #if its an empty element, we still need to generate the to/from json code but it doesnt need to do anything
         if len(elements) < 1:
             new_type.to_json_code = f"""bool convertToJson(const {struct_type_name} &src, JsonVariant& dst) {{\n"""
             new_type.from_json_code = f"""void convertFromJson(const JsonVariantConst& src, {struct_type_name} &dst) {{\n"""
+        else:
+            from_json_reformat = f"""void convertFromJson(const JsonVariantConst& src, {struct_type_name} &dst) {{\n\tif (src.is<JsonArrayConst>()) {{\n\t\tJsonArrayConst array = src.as<JsonArrayConst>();\n\t\tfor (JsonVariantConst item : array) {{{new_type.from_json_code.replace("src", "item")}\n\t\t}}\n\t}} else {{\n\t\t{new_type.from_json_code}\n\t}}\n"""
+            new_type.from_json_code = from_json_reformat
         # make the constructor for the struct
         new_type.code += f"\n\t{struct_type_name}()\n\t\t:"
         for variable_type, variable_name, is_vec in elements:
@@ -369,6 +380,9 @@ def process_complex_type(complex_type):
         new_type.code += f"""/**\n * Convert a JSON representation to a {struct_type_name}\n * @param src The JSON variant to convert\n * @param dst The {struct_type_name} to fill with the converted data.\n */\nvoid convertFromJson(const JsonVariantConst& src, {struct_type_name} &dst);\n\n"""
 
         new_type.to_json_code += "\n\treturn true;\n}\n"
+
+        
+
         new_type.from_json_code += "\n}\n"
         cpp_datatypes.append(new_type)
         # print("type is sequence")
@@ -438,7 +452,7 @@ def process_schema(xml_schema):
                 print(
                     "simple type: " + simple_type.name + " has restriction but no enumeration. Not sure what to do with this")
         else:
-            # else its a union
+            # else its a union aka a using type
             if hasattr(simple_type, 'member_types'):
                 new_type = Spine_type("using", remove_namespace(simple_type.name), "")
                 new_type.code = "using " + remove_namespace(simple_type.name) + " = " + to_cpp_datatype(
