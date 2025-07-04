@@ -158,7 +158,15 @@ export class Table extends Component<TableProps, TableState> {
                                     </Button>
                                     <Button variant="danger"
                                             size="sm"
-                                            onClick={row.onRemoveClick}
+                                            onClick={async () => {
+                                                await row.onRemoveClick();
+
+                                                // FIXME: not the best idea to link rows and metadata about rows by index.
+                                                //        what if onRemoveClick doesn't actually remove the row?
+                                                let showRowExtra = state.showRowExtra.concat();
+                                                showRowExtra.splice(i, 1);
+                                                this.setState({showRowExtra: showRowExtra});
+                                            }}
                                             disabled={!row.onRemoveClick}>
                                         <Trash2/>
                                     </Button>
@@ -236,7 +244,15 @@ export class Table extends Component<TableProps, TableState> {
                                 <Button variant="danger"
                                         size="sm"
                                         className="ml-2"
-                                        onClick={row.onRemoveClick}
+                                        onClick={async () => {
+                                            await row.onRemoveClick();
+
+                                            // FIXME: not the best idea to link rows and metadata about rows by index.
+                                            //        what if onRemoveClick doesn't actually remove the row?
+                                            let showRowExtra = state.showRowExtra.concat();
+                                            showRowExtra.splice(i, 1);
+                                            this.setState({showRowExtra: showRowExtra});
+                                        }}
                                         disabled={!row.onRemoveClick}>
                                     <Trash2/>
                                 </Button>
