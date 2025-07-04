@@ -174,7 +174,7 @@ static void store_key(uint8_t user_id, uint8_t key_id, const char *pri, const ch
 static const ConfigMigration migrations[] = {
 #if OPTIONS_PRODUCT_ID_IS_WARP()
     {
-        // WARP1 1.3.0 changes
+        // Changes
         // - Renamed xyz.json.tmp to .xyz
         // - Renamed xyz.json to xyz
         1, 3, 0,
@@ -197,10 +197,10 @@ static const ConfigMigration migrations[] = {
 #if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2()
     {
         2, 0, 0,
-        // 2.0.0 changes
-        // - changed IPs from int array to strings in ethernet/config, wifi/sta_config and wifi/ap_config
-        // - removed hostname from those configs. Added network/config with the hostname
-        // - removed authentication/config; replaced with users/config
+        // Changes
+        // - Changed IPs from int array to strings in ethernet/config, wifi/sta_config and wifi/ap_config
+        // - Removed hostname from those configs. Added network/config with the hostname
+        // - Removed authentication/config; replaced with users/config
         // - nfc/config removed tag names, changed tag_ids to strings, added user_ids
         [](){
             DynamicJsonDocument json{16384};
@@ -385,7 +385,7 @@ static const ConfigMigration migrations[] = {
     },
     {
         2, 1, 3,
-        // 2.1.3 changes
+        // Changes
         // - Disable new automatic minimum current setting in charge manager if uset has a non-default minimum current set.
         [](){
             migrate_charge_manager_minimum_current();
@@ -393,7 +393,7 @@ static const ConfigMigration migrations[] = {
     },
     {
         2, 2, 0,
-        // 2.2.0 changes
+        // Changes
         // - Add a marker file to continue using EnergyImExSum until the next factory reset or deletion of tracked charges.
         // - Move meter/sdm630_reset to meters/0/sdm630_reset, track total, import and export value on reset
         // - Move meter/last_reset to meters/0/last_reset
@@ -422,7 +422,7 @@ static const ConfigMigration migrations[] = {
 #if OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER()
     {
         1, 0, 2,
-        // 1.0.2 changes
+        // Changes
         // - Disable new automatic minimum current setting in charge manager if uset has a non-default minimum current set.
         [](){
             migrate_charge_manager_minimum_current();
@@ -430,7 +430,7 @@ static const ConfigMigration migrations[] = {
     },
     {
         2, 0, 0,
-        // 2.0.0 changes
+        // Changes
         // - Migrate energy manager rules to automation.
         // - Migrate some settings from Energy Manager config to Power Manager config.
         // - Migrate meter config to new meters framework.
@@ -721,7 +721,7 @@ static const ConfigMigration migrations[] = {
     },
     {
         2, 0, 3,
-        // 2.0.3 changes
+        // Changes
         // - Reset charge manager's requested current margin back to 3A.
         [](){
             DynamicJsonDocument json{16384};
@@ -746,12 +746,12 @@ static const ConfigMigration migrations[] = {
 
 #if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER()
     {
-        #if OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER()
-        2, 2, 0,
-        #elif OPTIONS_PRODUCT_ID_IS_WARP()
+        #if OPTIONS_PRODUCT_ID_IS_WARP()
         2, 4, 2,
-        #else // WARP2, 3
+        #elif OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3()
         2, 5, 0,
+        #elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER()
+        2, 2, 0,
         #endif
         // Changes
         // - Move remote access keys into separate directory
@@ -795,9 +795,9 @@ static const ConfigMigration migrations[] = {
         #if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3()
         2, 6, 2,
         #elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER()
-        2, 2, 1, // actually 2.3.0
-        #else
-        1, 0, 1, // seb 1.0.1 was never released but we can't have two migrations with the same version.
+        2, 2, 1, // Actually 2.3.0
+        #elif OPTIONS_PRODUCT_ID_IS_SMART_ENERGY_BROKER()
+        1, 0, 1, // Smart Energy Broker 1.0.1 was never released but we can't have two migrations with the same version.
         #endif
         // Changes
         // - PM phase switching modes 1phase, 3phase and PV1+Fast3 have been removed, change to automatic
@@ -821,8 +821,8 @@ static const ConfigMigration migrations[] = {
         #if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3()
         2, 6, 6,
         #elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER()
-        2, 2, 2, // actually 2.3.0
-        #else
+        2, 2, 2, // Actually 2.3.0
+        #elif OPTIONS_PRODUCT_ID_IS_SMART_ENERGY_BROKER()
         1, 1, 0,
         #endif
         // Changes
@@ -842,8 +842,8 @@ static const ConfigMigration migrations[] = {
 
 #if OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER()
     {
-        2, 2, 3,
-        // 2.2.3 changes (actually 2.3.0)
+        2, 2, 3, // Actually 2.3.0
+        // Changes
         // - Migrate CM default_available_current from 0 to maximum_available_current because the EM can now use static load management too.
         // - Disable contactor setting if too many or no chargers configured.
         // - Create phase switcher's charger config.
