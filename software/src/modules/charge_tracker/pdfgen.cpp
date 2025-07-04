@@ -242,6 +242,13 @@ struct pdf_object {
     };
 };
 
+// 1274 is the guesstimated optimal MSS. See event_log.cpp.
+#ifdef BOARD_HAS_PSRAM
+static constexpr size_t pdf_write_buffer_size = 8 * 1274; // Half the TCP send window size looks best.
+#else
+static constexpr size_t pdf_write_buffer_size = 2 * 1274;
+#endif
+
 struct pdf_doc {
     char errstr[128];
     int errval;
@@ -268,7 +275,7 @@ struct pdf_doc {
     std::function<int(struct pdf_doc *pdf, uint32_t page_num, uint32_t image_num)> image_fn;
     std::function<int(struct pdf_doc *pdf, uint32_t page_num)> page_fn;
 
-    char write_buf[2048];
+    char write_buf[pdf_write_buffer_size];
     size_t write_buf_used;
     size_t write_buf_written = 0;
     size_t last_write_buf_written = 0;
@@ -698,11 +705,16 @@ static void pdf_flush_write_buf(struct pdf_doc *pdf, int target_free_space) {
     while (target_free_space > (ARRAY_SIZE(pdf->write_buf) - pdf->write_buf_used)) {
         ssize_t written = pdf->write_fn(head, pdf->write_buf_used);
         if (written <= 0) {
-            printf("write_fn failed %zd.", written);
+            printf("write_fn failed %zd.\n", written);
             pdf->write_error_occurred = true;
+            return;
         }
         pdf->write_buf_used -= written;
         head += written;
+    }
+
+    if (pdf->write_buf_used != 0 && head != pdf->write_buf) {
+        memmove(pdf->write_buf, head, pdf->write_buf_used);
     }
 }
 
@@ -717,17 +729,27 @@ static int pdf_printf(struct pdf_doc *pdf, const char *fmt, ...)
 
     force_locale(saved_locale, sizeof(saved_locale));
 
+    const size_t write_buf_remaining = ARRAY_SIZE(pdf->write_buf) - pdf->write_buf_used;
+
     va_start(ap, fmt);
     va_copy(aq, ap);
-    len = vsnprintf(nullptr, 0, fmt, ap);
+    len = vsnprintf(pdf->write_buf + pdf->write_buf_used, write_buf_remaining, fmt, ap);
     if (len > ARRAY_SIZE(pdf->write_buf)) {
-        printf("write buf too small! %u, but required are %d.", ARRAY_SIZE(pdf->write_buf), len);
-        exit(-1);
+        printf("write buf too small! %u, but required are %d.\n", ARRAY_SIZE(pdf->write_buf), len);
+        pdf->write_error_occurred = true;
+        return 0;
     }
 
-    pdf_flush_write_buf(pdf, len);
+    if (len >= write_buf_remaining) {
+        pdf_flush_write_buf(pdf, len + 1); // Include termination
 
-    vsprintf(pdf->write_buf + pdf->write_buf_used, fmt, aq);
+        // Must check for write errors again because the flag might have been set by pdf_flush_write_buf,
+        // which means that there probably isn't enough room inside the output buffer.
+        if (pdf->write_error_occurred)
+            return 0;
+
+        vsprintf(pdf->write_buf + pdf->write_buf_used, fmt, aq);
+    }
     pdf->write_buf_used += len;
     pdf->write_buf_written += len;
     va_end(ap);
@@ -743,6 +765,10 @@ static void pdf_write(struct pdf_doc *pdf, const char *buf, size_t count) {
 
     while (count > 0) {
         pdf_flush_write_buf(pdf, count);
+
+        // Must check for write errors inside the loop because the flag can also be set by pdf_flush_write_buf.
+        if (pdf->write_error_occurred)
+            return;
 
         size_t to_write = min(count, ARRAY_SIZE(pdf->write_buf) - pdf->write_buf_used);
         memcpy(pdf->write_buf + pdf->write_buf_used, buf, to_write);
