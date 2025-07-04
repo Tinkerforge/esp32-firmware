@@ -1007,18 +1007,18 @@ export function init() {
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.VictronEnergyGX) {
                         virtual_meter_items = [
-                            [VictronEnergyGXVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
                             [VictronEnergyGXVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
                             [VictronEnergyGXVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
                             [VictronEnergyGXVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
+                            [VictronEnergyGXVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
                         ];
 
                         get_default_location = (virtual_meter: number) => {
                             switch (virtual_meter) {
-                            case VictronEnergyGXVirtualMeter.Inverter: return MeterLocation.Inverter;
                             case VictronEnergyGXVirtualMeter.Grid: return MeterLocation.Grid;
                             case VictronEnergyGXVirtualMeter.Battery: return MeterLocation.Battery;
                             case VictronEnergyGXVirtualMeter.Load: return MeterLocation.Load;
+                            case VictronEnergyGXVirtualMeter.PV: return MeterLocation.PV;
                             }
 
                             return MeterLocation.Unknown;

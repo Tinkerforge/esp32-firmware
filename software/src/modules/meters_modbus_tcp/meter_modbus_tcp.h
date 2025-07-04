@@ -116,8 +116,8 @@ private:
     bool is_sungrow_string_inverter_meter() const;
     bool is_sungrow_string_inverter_grid_meter() const;
     bool is_sungrow_string_inverter_pv_meter() const;
-    bool is_victron_energy_gx_inverter_meter() const;
     bool is_victron_energy_gx_load_meter() const;
+    bool is_victron_energy_gx_pv_meter() const;
     bool is_deye_hybrid_inverter_battery_meter() const;
     bool is_deye_hybrid_inverter_pv_meter() const;
     bool is_alpha_ess_hybrid_inverter_pv_meter() const;
@@ -190,12 +190,19 @@ private:
         // Victron Energy GX
         struct {
             VictronEnergyGXVirtualMeter virtual_meter;
-            float ac_coupled_pv_on_output_l1_power;
-            float ac_coupled_pv_on_output_l2_power;
-            float ac_coupled_pv_on_output_l3_power;
-            float ac_consumption_l1_power;
-            float ac_consumption_l2_power;
-            float ac_consumption_l3_power;
+            float ac_consumption_l1;
+            float ac_consumption_l2;
+            float ac_consumption_l3;
+            float ac_coupled_pv_power_on_output_l1;
+            float ac_coupled_pv_power_on_output_l2;
+            float ac_coupled_pv_power_on_output_l3;
+            float ac_coupled_pv_power_on_input_l1;
+            float ac_coupled_pv_power_on_input_l2;
+            float ac_coupled_pv_power_on_input_l3;
+            float ac_coupled_pv_power_on_generator_l1;
+            float ac_coupled_pv_power_on_generator_l2;
+            float ac_coupled_pv_power_on_generator_l3;
+            float dc_coupled_pv_power;
         } victron_energy_gx;
 
         // Deye hybrid inverter

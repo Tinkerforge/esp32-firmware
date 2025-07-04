@@ -66,13 +66,20 @@
 #define SUNGROW_STRING_INVERTER_MPPT_2_CURRENT_ADDRESS                     static_cast<size_t>(SungrowStringInverterPVAddress::MPPT2Current)
 #define SUNGROW_STRING_INVERTER_TOTAL_DC_POWER_ADDRESS                     static_cast<size_t>(SungrowStringInverterPVAddress::TotalDCPower)
 
-#define VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L1_ADDRESS               static_cast<size_t>(VictronEnergyGXInverterAddress::ACCoupledPVOnOutputL1)
-#define VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L2_ADDRESS               static_cast<size_t>(VictronEnergyGXInverterAddress::ACCoupledPVOnOutputL2)
-#define VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L3_ADDRESS               static_cast<size_t>(VictronEnergyGXInverterAddress::ACCoupledPVOnOutputL3)
-
 #define VICTRON_ENERGY_GX_AC_CONSUMPTION_L1_ADDRESS                        static_cast<size_t>(VictronEnergyGXLoadAddress::ACConsumptionL1)
 #define VICTRON_ENERGY_GX_AC_CONSUMPTION_L2_ADDRESS                        static_cast<size_t>(VictronEnergyGXLoadAddress::ACConsumptionL2)
 #define VICTRON_ENERGY_GX_AC_CONSUMPTION_L3_ADDRESS                        static_cast<size_t>(VictronEnergyGXLoadAddress::ACConsumptionL3)
+
+#define VICTRON_ENERGY_GX_AC_COUPLED_PV_POWER_ON_OUTPUT_L1_ADDRESS         static_cast<size_t>(VictronEnergyGXPVAddress::ACCoupledPVPowerOnOutputL1)
+#define VICTRON_ENERGY_GX_AC_COUPLED_PV_POWER_ON_OUTPUT_L2_ADDRESS         static_cast<size_t>(VictronEnergyGXPVAddress::ACCoupledPVPowerOnOutputL2)
+#define VICTRON_ENERGY_GX_AC_COUPLED_PV_POWER_ON_OUTPUT_L3_ADDRESS         static_cast<size_t>(VictronEnergyGXPVAddress::ACCoupledPVPowerOnOutputL3)
+#define VICTRON_ENERGY_GX_AC_COUPLED_PV_POWER_ON_INPUT_L1_ADDRESS          static_cast<size_t>(VictronEnergyGXPVAddress::ACCoupledPVPowerOnInputL1)
+#define VICTRON_ENERGY_GX_AC_COUPLED_PV_POWER_ON_INPUT_L2_ADDRESS          static_cast<size_t>(VictronEnergyGXPVAddress::ACCoupledPVPowerOnInputL2)
+#define VICTRON_ENERGY_GX_AC_COUPLED_PV_POWER_ON_INPUT_L3_ADDRESS          static_cast<size_t>(VictronEnergyGXPVAddress::ACCoupledPVPowerOnInputL3)
+#define VICTRON_ENERGY_GX_AC_COUPLED_PV_POWER_ON_GENERATOR_L1_ADDRESS      static_cast<size_t>(VictronEnergyGXPVAddress::ACCoupledPVPowerOnGeneratorL1)
+#define VICTRON_ENERGY_GX_AC_COUPLED_PV_POWER_ON_GENERATOR_L2_ADDRESS      static_cast<size_t>(VictronEnergyGXPVAddress::ACCoupledPVPowerOnGeneratorL2)
+#define VICTRON_ENERGY_GX_AC_COUPLED_PV_POWER_ON_GENERATOR_L3_ADDRESS      static_cast<size_t>(VictronEnergyGXPVAddress::ACCoupledPVPowerOnGeneratorL3)
+#define VICTRON_ENERGY_GX_DC_COUPLED_PV_POWER_ADDRESS                      static_cast<size_t>(VictronEnergyGXPVAddress::DCCoupledPVPower)
 
 #define DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS                           static_cast<size_t>(DeyeHybridInverterDeviceTypeAddress::DeviceType)
 
@@ -464,8 +471,8 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             logger.printfln_meter("No Victron Energy GX Virtual Meter selected");
             break;
 
-        case VictronEnergyGXVirtualMeter::Inverter:
-            table = &victron_energy_gx_inverter_table;
+        case VictronEnergyGXVirtualMeter::InverterUnused:
+            logger.printfln_meter("Invalid Victron Energy GX Virtual Meter: %u", static_cast<uint8_t>(victron_energy_gx.virtual_meter));
             default_location = MeterLocation::Inverter;
             break;
 
@@ -482,6 +489,11 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         case VictronEnergyGXVirtualMeter::Load:
             table = &victron_energy_gx_load_table;
             default_location = MeterLocation::Load;
+            break;
+
+        case VictronEnergyGXVirtualMeter::PV:
+            table = &victron_energy_gx_pv_table;
+            default_location = MeterLocation::PV;
             break;
 
         default:
@@ -1711,16 +1723,16 @@ bool MeterModbusTCP::is_sungrow_string_inverter_pv_meter() const
         && sungrow_string_inverter.virtual_meter == SungrowStringInverterVirtualMeter::PV;
 }
 
-bool MeterModbusTCP::is_victron_energy_gx_inverter_meter() const
-{
-    return table_id == MeterModbusTCPTableID::VictronEnergyGX
-        && victron_energy_gx.virtual_meter == VictronEnergyGXVirtualMeter::Inverter;
-}
-
 bool MeterModbusTCP::is_victron_energy_gx_load_meter() const
 {
     return table_id == MeterModbusTCPTableID::VictronEnergyGX
         && victron_energy_gx.virtual_meter == VictronEnergyGXVirtualMeter::Load;
+}
+
+bool MeterModbusTCP::is_victron_energy_gx_pv_meter() const
+{
+    return table_id == MeterModbusTCPTableID::VictronEnergyGX
+        && victron_energy_gx.virtual_meter == VictronEnergyGXVirtualMeter::PV;
 }
 
 bool MeterModbusTCP::is_deye_hybrid_inverter_battery_meter() const
@@ -2567,38 +2579,68 @@ void MeterModbusTCP::parse_next()
             meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(value));
         }
     }
-    else if (is_victron_energy_gx_inverter_meter()) {
-        if (register_start_address == VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L1_ADDRESS) {
-            victron_energy_gx.ac_coupled_pv_on_output_l1_power = value;
-        }
-        else if (register_start_address == VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L2_ADDRESS) {
-            victron_energy_gx.ac_coupled_pv_on_output_l2_power = value;
-        }
-        else if (register_start_address == VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L3_ADDRESS) {
-            victron_energy_gx.ac_coupled_pv_on_output_l3_power = value;
-
-            float power_sum = victron_energy_gx.ac_coupled_pv_on_output_l1_power
-                            + victron_energy_gx.ac_coupled_pv_on_output_l2_power
-                            + victron_energy_gx.ac_coupled_pv_on_output_l3_power;
-
-            meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(power_sum));
-        }
-    }
     else if (is_victron_energy_gx_load_meter()) {
         if (register_start_address == VICTRON_ENERGY_GX_AC_CONSUMPTION_L1_ADDRESS) {
-            victron_energy_gx.ac_consumption_l1_power = value;
+            victron_energy_gx.ac_consumption_l1 = value;
         }
         else if (register_start_address == VICTRON_ENERGY_GX_AC_CONSUMPTION_L2_ADDRESS) {
-            victron_energy_gx.ac_consumption_l2_power = value;
+            victron_energy_gx.ac_consumption_l2 = value;
         }
         else if (register_start_address == VICTRON_ENERGY_GX_AC_CONSUMPTION_L3_ADDRESS) {
-            victron_energy_gx.ac_consumption_l3_power = value;
+            victron_energy_gx.ac_consumption_l3 = value;
 
-            float power_sum = victron_energy_gx.ac_consumption_l1_power
-                            + victron_energy_gx.ac_consumption_l2_power
-                            + victron_energy_gx.ac_consumption_l3_power;
+            float power_sum = victron_energy_gx.ac_consumption_l1
+                            + victron_energy_gx.ac_consumption_l2
+                            + victron_energy_gx.ac_consumption_l3;
 
             meters.update_value(slot, table->index[read_index + 1], power_sum);
+            meters.update_value(slot, table->index[read_index + 2], power_sum);
+        }
+    }
+    else if (is_victron_energy_gx_pv_meter()) {
+        if (register_start_address == VICTRON_ENERGY_GX_AC_COUPLED_PV_POWER_ON_OUTPUT_L1_ADDRESS) {
+            victron_energy_gx.ac_coupled_pv_power_on_output_l1 = value;
+        }
+        else if (register_start_address == VICTRON_ENERGY_GX_AC_COUPLED_PV_POWER_ON_OUTPUT_L2_ADDRESS) {
+            victron_energy_gx.ac_coupled_pv_power_on_output_l2 = value;
+        }
+        else if (register_start_address == VICTRON_ENERGY_GX_AC_COUPLED_PV_POWER_ON_OUTPUT_L3_ADDRESS) {
+            victron_energy_gx.ac_coupled_pv_power_on_output_l3 = value;
+        }
+        else if (register_start_address == VICTRON_ENERGY_GX_AC_COUPLED_PV_POWER_ON_INPUT_L1_ADDRESS) {
+            victron_energy_gx.ac_coupled_pv_power_on_input_l1 = value;
+        }
+        else if (register_start_address == VICTRON_ENERGY_GX_AC_COUPLED_PV_POWER_ON_INPUT_L2_ADDRESS) {
+            victron_energy_gx.ac_coupled_pv_power_on_input_l2 = value;
+        }
+        else if (register_start_address == VICTRON_ENERGY_GX_AC_COUPLED_PV_POWER_ON_INPUT_L3_ADDRESS) {
+            victron_energy_gx.ac_coupled_pv_power_on_input_l3 = value;
+        }
+        else if (register_start_address == VICTRON_ENERGY_GX_AC_COUPLED_PV_POWER_ON_GENERATOR_L1_ADDRESS) {
+            victron_energy_gx.ac_coupled_pv_power_on_generator_l1 = value;
+        }
+        else if (register_start_address == VICTRON_ENERGY_GX_AC_COUPLED_PV_POWER_ON_GENERATOR_L2_ADDRESS) {
+            victron_energy_gx.ac_coupled_pv_power_on_generator_l2 = value;
+        }
+        else if (register_start_address == VICTRON_ENERGY_GX_AC_COUPLED_PV_POWER_ON_GENERATOR_L3_ADDRESS) {
+            victron_energy_gx.ac_coupled_pv_power_on_generator_l3 = value;
+        }
+        else if (register_start_address == VICTRON_ENERGY_GX_DC_COUPLED_PV_POWER_ADDRESS) {
+            victron_energy_gx.dc_coupled_pv_power = value;
+
+            float power_sum = victron_energy_gx.ac_coupled_pv_power_on_output_l1
+                            + victron_energy_gx.ac_coupled_pv_power_on_output_l2
+                            + victron_energy_gx.ac_coupled_pv_power_on_output_l3
+                            + victron_energy_gx.ac_coupled_pv_power_on_input_l1
+                            + victron_energy_gx.ac_coupled_pv_power_on_input_l2
+                            + victron_energy_gx.ac_coupled_pv_power_on_input_l3
+                            + victron_energy_gx.ac_coupled_pv_power_on_generator_l1
+                            + victron_energy_gx.ac_coupled_pv_power_on_generator_l2
+                            + victron_energy_gx.ac_coupled_pv_power_on_generator_l3
+                            + victron_energy_gx.dc_coupled_pv_power;
+
+            meters.update_value(slot, table->index[read_index + 1], power_sum);
+            meters.update_value(slot, table->index[read_index + 2], zero_safe_negation(power_sum));
         }
     }
     else if (is_deye_hybrid_inverter_pv_meter()) {
