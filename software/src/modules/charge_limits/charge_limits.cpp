@@ -30,33 +30,30 @@
 # define CHARGE_LIMITS_TIME_MODIFIER 60
 #endif
 
-static constexpr uint32_t default_duration = 0;
-static constexpr uint32_t default_energy_wh = 0;
-
 static uint32_t map_duration(uint32_t val)
 {
     switch (val)
     {
         case 1:
-            return 15 * CHARGE_LIMITS_TIME_MODIFIER * 1000;
+            return      15 * CHARGE_LIMITS_TIME_MODIFIER * 1000;
         case 2:
-            return 30 * CHARGE_LIMITS_TIME_MODIFIER * 1000;
+            return      30 * CHARGE_LIMITS_TIME_MODIFIER * 1000;
         case 3:
-            return 45 * CHARGE_LIMITS_TIME_MODIFIER * 1000;
+            return      45 * CHARGE_LIMITS_TIME_MODIFIER * 1000;
         case 4:
-            return 60 * CHARGE_LIMITS_TIME_MODIFIER * 1000;
+            return      60 * CHARGE_LIMITS_TIME_MODIFIER * 1000;
         case 5:
-            return 2 * CHARGE_LIMITS_TIME_MODIFIER * 60 * 1000;
+            return  2 * 60 * CHARGE_LIMITS_TIME_MODIFIER * 1000;
         case 6:
-            return 3 * CHARGE_LIMITS_TIME_MODIFIER * 60 * 1000;
+            return  3 * 60 * CHARGE_LIMITS_TIME_MODIFIER * 1000;
         case 7:
-            return 4 * CHARGE_LIMITS_TIME_MODIFIER * 60 * 1000;
+            return  4 * 60 * CHARGE_LIMITS_TIME_MODIFIER * 1000;
         case 8:
-            return 6 * CHARGE_LIMITS_TIME_MODIFIER * 60 * 1000;
+            return  6 * 60 * CHARGE_LIMITS_TIME_MODIFIER * 1000;
         case 9:
-            return 8 * CHARGE_LIMITS_TIME_MODIFIER * 60 * 1000;
+            return  8 * 60 * CHARGE_LIMITS_TIME_MODIFIER * 1000;
         case 10:
-            return 12 * CHARGE_LIMITS_TIME_MODIFIER * 60 * 1000;
+            return 12 * 60 * CHARGE_LIMITS_TIME_MODIFIER * 1000;
         default:
             return 0;
     }
@@ -65,8 +62,8 @@ static uint32_t map_duration(uint32_t val)
 void ChargeLimits::pre_setup()
 {
     config = Config::Object({
-        {"duration", Config::Uint(default_duration, 0, 10)},
-        {"energy_wh", Config::Uint32(default_energy_wh)},
+        {"duration",  Config::Uint(0, 0, 10)},
+        {"energy_wh", Config::Uint32(0)},
     });
 
     state = Config::Object({
@@ -77,7 +74,7 @@ void ChargeLimits::pre_setup()
     });
 
     override_duration = Config::Object({
-        {"duration", Config::Uint32(0)}
+        {"duration", Config::Uint(0, 0, 10)}
     });
 
     override_energy = Config::Object({
@@ -91,8 +88,8 @@ void ChargeLimits::pre_setup()
         AutomationActionID::ChargeLimits,
         Config::Object({
             {"restart", Config::Bool(false)},
-            {"duration", Config::Int32(0)},
-            {"energy_wh", Config::Int32(0)}
+            {"duration",  Config::Int(0, -1, 10)},
+            {"energy_wh", Config::Int(0, -1)},
         }),
         [this](const Config *conf) {
             if (conf->get("restart")->asBool()) {
@@ -100,14 +97,14 @@ void ChargeLimits::pre_setup()
             }
 
             int duration = conf->get("duration")->asInt();
-            if (duration != -1) {
+            if (duration >= 0) {
                 api.callCommand("charge_limits/override_duration", Config::ConfUpdateObject {{
                     {"duration", static_cast<uint32_t>(duration)}
                 }});
             }
 
             int energy_wh = conf->get("energy_wh")->asInt();
-            if (energy_wh != -1) {
+            if (energy_wh >= 0) {
                 api.callCommand("charge_limits/override_energy", Config::ConfUpdateObject{{
                     {"energy_wh", static_cast<uint32_t>(energy_wh)}
                 }});
@@ -120,7 +117,7 @@ void ChargeLimits::pre_setup()
 void ChargeLimits::setup()
 {
     api.restorePersistentConfig("charge_limits/default_limits", &config);
-    config_in_use = config;
+    active_limits = config;
     initialized = true;
 }
 
@@ -134,11 +131,11 @@ void ChargeLimits::register_urls()
 {
     api.addPersistentConfig("charge_limits/default_limits", &config);
     api.addState("charge_limits/state", &state);
-    api.addState("charge_limits/active_limits", &config_in_use);
+    api.addState("charge_limits/active_limits", &active_limits);
 
     api.addCommand("charge_limits/override_duration", &override_duration, {}, [this](String &/*errmsg*/) {
         was_triggered = false;
-        config_in_use.get("duration")->updateUint(override_duration.get("duration")->asUint());
+        active_limits.get("duration")->updateUint(override_duration.get("duration")->asUint());
 
         if (override_duration.get("duration")->asUint() == 0)
             state.get("target_timestamp_ms")->updateUint(0);
@@ -148,11 +145,11 @@ void ChargeLimits::register_urls()
 
     api.addCommand("charge_limits/override_energy", &override_energy, {}, [this](String &/*errmsg*/) {
         was_triggered = false;
-        config_in_use.get("energy_wh")->updateUint(override_energy.get("energy_wh")->asUint());
+        active_limits.get("energy_wh")->updateUint(override_energy.get("energy_wh")->asUint());
         if (override_energy.get("energy_wh")->asUint() == 0)
             state.get("target_energy_kwh")->updateFloat(NAN);
         else
-            state.get("target_energy_kwh")->updateFloat(state.get("start_energy_kwh")->asFloat() + override_energy.get("energy_wh")->asUint() / 1000.0);
+            state.get("target_energy_kwh")->updateFloat(state.get("start_energy_kwh")->asFloat() + override_energy.get("energy_wh")->asUint() / 1000.0f);
     }, true);
 
     api.addCommand("charge_limits/restart", Config::Null(), {}, [this](String &/*errmsg*/) {
@@ -163,41 +160,37 @@ void ChargeLimits::register_urls()
         was_triggered = false;
         auto time_now = evse_common.get_low_level_state().get("uptime")->asUint();
         state.get("start_timestamp_ms")->updateUint(time_now);
-        state.get("target_timestamp_ms")->updateUint(time_now + map_duration(config_in_use.get("duration")->asUint()));
+        state.get("target_timestamp_ms")->updateUint(time_now + map_duration(active_limits.get("duration")->asUint()));
 
         float energy_now;
         evse_common.get_charger_meter_energy(&energy_now); // TODO: Use value freshness?
         if (!isnan(energy_now)) {
             state.get("start_energy_kwh")-> updateFloat(energy_now);
-            state.get("target_energy_kwh")->updateFloat(energy_now + config_in_use.get("energy_wh")->asUint() / 1000.0);
+            state.get("target_energy_kwh")->updateFloat(energy_now + active_limits.get("energy_wh")->asUint() / 1000.0f);
         }
     }, true);
 
     //if we dont set the target timestamp right away we will have 0 seconds left displayed in the webinterface until we start and end a charge.
-    state.get("target_timestamp_ms")->updateUint(map_duration(config_in_use.get("duration")->asUint()));
+    state.get("target_timestamp_ms")->updateUint(map_duration(active_limits.get("duration")->asUint()));
 
     evse_common.set_charge_limits_slot(32000, true);
 
 
     task_scheduler.scheduleWithFixedDelay([this](){
-        static bool was_charging = false;
         bool charging = charge_tracker.current_charge.get("user_id")->asInt() != -1;
         uint16_t target_current = 32000;
 
         if (!charging) {
             if (was_charging) {
-                // Read back charge_limits/default_limits to apply new default limits without rebooting the ESP.
-                if (!api.restorePersistentConfig("charge_limits/default_limits", &config_in_use))
-                {
-                    config_in_use.get("duration")->updateUint(default_duration);
-                    config_in_use.get("energy_wh")->updateUint(default_energy_wh);
-                }
+                // Reset limits to configured defaults.
+                active_limits.get("duration" )->updateUint(config.get("duration" )->asUint());
+                active_limits.get("energy_wh")->updateUint(config.get("energy_wh")->asUint());
 
                 evse_common.set_charge_limits_slot(32000, true);
 
                 state.get("start_timestamp_ms")->updateUint(0);
                 state.get("start_energy_kwh")->updateFloat(NAN);
-                state.get("target_timestamp_ms")->updateUint(map_duration(config_in_use.get("duration")->asUint()));
+                state.get("target_timestamp_ms")->updateUint(map_duration(active_limits.get("duration")->asUint()));
                 state.get("target_energy_kwh")->updateFloat(NAN);
             }
         } else { // charging
@@ -210,21 +203,21 @@ void ChargeLimits::register_urls()
                     state.get("start_energy_kwh")->updateFloat(charge_tracker.current_charge.get("meter_start")->asFloat());
             }
 
-            if (config_in_use.get("duration")->asUint() > 0) {
+            if (active_limits.get("duration")->asUint() > 0) {
                 if (!was_charging)
                     state.get("target_timestamp_ms")->updateUint(state.get("start_timestamp_ms")->asUint()
-                                                                    + map_duration(config_in_use.get("duration")->asUint()));
+                                                                    + map_duration(active_limits.get("duration")->asUint()));
 
                 uint32_t uptime = evse_common.get_low_level_state().get("uptime")->asUint();
                 if (a_after_b(uptime, state.get("target_timestamp_ms")->asUint()))
                     target_current = 0;
             }
 
-            if (config_in_use.get("energy_wh")->asUint() > 0 && !isnan(energy_now_kwh)) {
+            if (active_limits.get("energy_wh")->asUint() > 0 && !isnan(energy_now_kwh)) {
                 if (!was_charging) {
                     float start = state.get("start_energy_kwh")->asFloat();
                     if (!isnan(start)) {
-                        state.get("target_energy_kwh")->updateFloat(start + config_in_use.get("energy_wh")->asUint() / 1000.0);
+                        state.get("target_energy_kwh")->updateFloat(start + active_limits.get("energy_wh")->asUint() / 1000.0f);
                     }
                 }
 

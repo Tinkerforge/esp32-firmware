@@ -46,12 +46,13 @@ public:
 
 private:
     ConfigRoot config;
-    ConfigRoot config_in_use;
+    ConfigRoot active_limits;
     ConfigRoot state;
 
     ConfigRoot override_duration;
     ConfigRoot override_energy;
 
+    bool was_charging  = false;
     bool was_triggered = false;
 };
 
