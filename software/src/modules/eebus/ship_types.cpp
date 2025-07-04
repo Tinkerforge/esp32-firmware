@@ -29,11 +29,20 @@
 namespace SHIP_TYPES
 {
 
-DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, size_t length)
+DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, size_t length, bool compatiblity_mode)
 {
     DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
 
-    DeserializationError error = deserializeJson(doc, incoming_data, length, DeserializationOption::NestingLimit(20));
+    String incoming_data_str(reinterpret_cast<const char *>(incoming_data), length);
+    if (compatiblity_mode) {
+        incoming_data_str.replace("{}", "[]");
+        incoming_data_str.replace("}", "}]");
+        incoming_data_str.replace(",", "},{");
+        incoming_data_str.replace("{", "[{");
+    }
+    int nesting_limit = 20;
+    DeserializationError error = deserializeJson(doc, incoming_data_str, DeserializationOption::NestingLimit(nesting_limit));
+
     //doc.shrinkToFit(); // Make this a bit smaller
     if (error) {
         logger.printfln("J2T ShipMessageData Error during JSON deserialization : %s", error.c_str());
