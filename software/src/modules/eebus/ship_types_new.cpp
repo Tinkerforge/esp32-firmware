@@ -174,7 +174,27 @@ bool convertToJson(const ConnectionHelloType &src, JsonVariant& dst) {
 	return true;
 }
 void convertFromJson(const JsonVariantConst& src, ConnectionHelloType &dst) {
-	if (src["phase"]) {
+	if (src.is<JsonArrayConst>()) {
+		JsonArrayConst array = src.as<JsonArrayConst>();
+		for (JsonVariantConst item : array) {	if (item["phase"]) {
+		dst.phase = item["phase"].as<decltype(dst.phase)::value_type>();
+	} else {
+		dst.phase = std::nullopt;
+	}
+	if (item["waiting"]) {
+		dst.waiting = item["waiting"].as<decltype(dst.waiting)::value_type>();
+	} else {
+		dst.waiting = std::nullopt;
+	}
+	if (item["prolongationRequest"]) {
+		dst.prolongationRequest = item["prolongationRequest"].as<decltype(dst.prolongationRequest)::value_type>();
+	} else {
+		dst.prolongationRequest = std::nullopt;
+	}
+
+		}
+	} else {
+			if (src["phase"]) {
 		dst.phase = src["phase"].as<decltype(dst.phase)::value_type>();
 	} else {
 		dst.phase = std::nullopt;
@@ -190,6 +210,8 @@ void convertFromJson(const JsonVariantConst& src, ConnectionHelloType &dst) {
 		dst.prolongationRequest = std::nullopt;
 	}
 
+	}
+
 }
 bool convertToJson(const MessageProtocolFormatsType &src, JsonVariant& dst) {
 	if (src.format) {
@@ -199,10 +221,22 @@ bool convertToJson(const MessageProtocolFormatsType &src, JsonVariant& dst) {
 	return true;
 }
 void convertFromJson(const JsonVariantConst& src, MessageProtocolFormatsType &dst) {
-	if (src["format"]) {
+	if (src.is<JsonArrayConst>()) {
+		JsonArrayConst array = src.as<JsonArrayConst>();
+		for (JsonVariantConst item : array) {	if (item["format"]) {
+		dst.format = item["format"].as<decltype(dst.format)::value_type>();
+	} else {
+		dst.format = std::nullopt;
+	}
+
+		}
+	} else {
+			if (src["format"]) {
 		dst.format = src["format"].as<decltype(dst.format)::value_type>();
 	} else {
 		dst.format = std::nullopt;
+	}
+
 	}
 
 }
@@ -223,7 +257,32 @@ bool convertToJson(const MessageProtocolHandshakeType &src, JsonVariant& dst) {
 	return true;
 }
 void convertFromJson(const JsonVariantConst& src, MessageProtocolHandshakeType &dst) {
-	if (src["handshakeType"]) {
+	if (src.is<JsonArrayConst>()) {
+		JsonArrayConst array = src.as<JsonArrayConst>();
+		for (JsonVariantConst item : array) {	if (item["handshakeType"]) {
+		dst.handshakeType = item["handshakeType"].as<decltype(dst.handshakeType)::value_type>();
+	} else {
+		dst.handshakeType = std::nullopt;
+	}
+	if (item["major"]) {
+		dst.major = item["major"].as<decltype(dst.major)::value_type>();
+	} else {
+		dst.major = std::nullopt;
+	}
+	if (item["minor"]) {
+		dst.minor = item["minor"].as<decltype(dst.minor)::value_type>();
+	} else {
+		dst.minor = std::nullopt;
+	}
+	if (item["formats"]) {
+		dst.formats = item["formats"].as<decltype(dst.formats)::value_type>();
+	} else {
+		dst.formats = std::nullopt;
+	}
+
+		}
+	} else {
+			if (src["handshakeType"]) {
 		dst.handshakeType = src["handshakeType"].as<decltype(dst.handshakeType)::value_type>();
 	} else {
 		dst.handshakeType = std::nullopt;
@@ -244,6 +303,8 @@ void convertFromJson(const JsonVariantConst& src, MessageProtocolHandshakeType &
 		dst.formats = std::nullopt;
 	}
 
+	}
+
 }
 bool convertToJson(const MessageProtocolHandshakeErrorType &src, JsonVariant& dst) {
 	if (src.error) {
@@ -253,10 +314,22 @@ bool convertToJson(const MessageProtocolHandshakeErrorType &src, JsonVariant& ds
 	return true;
 }
 void convertFromJson(const JsonVariantConst& src, MessageProtocolHandshakeErrorType &dst) {
-	if (src["error"]) {
+	if (src.is<JsonArrayConst>()) {
+		JsonArrayConst array = src.as<JsonArrayConst>();
+		for (JsonVariantConst item : array) {	if (item["error"]) {
+		dst.error = item["error"].as<decltype(dst.error)::value_type>();
+	} else {
+		dst.error = std::nullopt;
+	}
+
+		}
+	} else {
+			if (src["error"]) {
 		dst.error = src["error"].as<decltype(dst.error)::value_type>();
 	} else {
 		dst.error = std::nullopt;
+	}
+
 	}
 
 }
@@ -271,7 +344,22 @@ bool convertToJson(const ConnectionPinStateType &src, JsonVariant& dst) {
 	return true;
 }
 void convertFromJson(const JsonVariantConst& src, ConnectionPinStateType &dst) {
-	if (src["pinState"]) {
+	if (src.is<JsonArrayConst>()) {
+		JsonArrayConst array = src.as<JsonArrayConst>();
+		for (JsonVariantConst item : array) {	if (item["pinState"]) {
+		dst.pinState = item["pinState"].as<decltype(dst.pinState)::value_type>();
+	} else {
+		dst.pinState = std::nullopt;
+	}
+	if (item["inputPermission"]) {
+		dst.inputPermission = item["inputPermission"].as<decltype(dst.inputPermission)::value_type>();
+	} else {
+		dst.inputPermission = std::nullopt;
+	}
+
+		}
+	} else {
+			if (src["pinState"]) {
 		dst.pinState = src["pinState"].as<decltype(dst.pinState)::value_type>();
 	} else {
 		dst.pinState = std::nullopt;
@@ -280,6 +368,8 @@ void convertFromJson(const JsonVariantConst& src, ConnectionPinStateType &dst) {
 		dst.inputPermission = src["inputPermission"].as<decltype(dst.inputPermission)::value_type>();
 	} else {
 		dst.inputPermission = std::nullopt;
+	}
+
 	}
 
 }
@@ -291,10 +381,22 @@ bool convertToJson(const ConnectionPinInputType &src, JsonVariant& dst) {
 	return true;
 }
 void convertFromJson(const JsonVariantConst& src, ConnectionPinInputType &dst) {
-	if (src["pin"]) {
+	if (src.is<JsonArrayConst>()) {
+		JsonArrayConst array = src.as<JsonArrayConst>();
+		for (JsonVariantConst item : array) {	if (item["pin"]) {
+		dst.pin = item["pin"].as<decltype(dst.pin)::value_type>();
+	} else {
+		dst.pin = std::nullopt;
+	}
+
+		}
+	} else {
+			if (src["pin"]) {
 		dst.pin = src["pin"].as<decltype(dst.pin)::value_type>();
 	} else {
 		dst.pin = std::nullopt;
+	}
+
 	}
 
 }
@@ -306,10 +408,22 @@ bool convertToJson(const ConnectionPinErrorType &src, JsonVariant& dst) {
 	return true;
 }
 void convertFromJson(const JsonVariantConst& src, ConnectionPinErrorType &dst) {
-	if (src["error"]) {
+	if (src.is<JsonArrayConst>()) {
+		JsonArrayConst array = src.as<JsonArrayConst>();
+		for (JsonVariantConst item : array) {	if (item["error"]) {
+		dst.error = item["error"].as<decltype(dst.error)::value_type>();
+	} else {
+		dst.error = std::nullopt;
+	}
+
+		}
+	} else {
+			if (src["error"]) {
 		dst.error = src["error"].as<decltype(dst.error)::value_type>();
 	} else {
 		dst.error = std::nullopt;
+	}
+
 	}
 
 }
@@ -321,10 +435,22 @@ bool convertToJson(const SpineHeaderType &src, JsonVariant& dst) {
 	return true;
 }
 void convertFromJson(const JsonVariantConst& src, SpineHeaderType &dst) {
-	if (src["protocolId"]) {
+	if (src.is<JsonArrayConst>()) {
+		JsonArrayConst array = src.as<JsonArrayConst>();
+		for (JsonVariantConst item : array) {	if (item["protocolId"]) {
+		dst.protocolId = item["protocolId"].as<decltype(dst.protocolId)::value_type>();
+	} else {
+		dst.protocolId = std::nullopt;
+	}
+
+		}
+	} else {
+			if (src["protocolId"]) {
 		dst.protocolId = src["protocolId"].as<decltype(dst.protocolId)::value_type>();
 	} else {
 		dst.protocolId = std::nullopt;
+	}
+
 	}
 
 }
@@ -342,7 +468,27 @@ bool convertToJson(const ExtensionType &src, JsonVariant& dst) {
 	return true;
 }
 void convertFromJson(const JsonVariantConst& src, ExtensionType &dst) {
-	if (src["extensionId"]) {
+	if (src.is<JsonArrayConst>()) {
+		JsonArrayConst array = src.as<JsonArrayConst>();
+		for (JsonVariantConst item : array) {	if (item["extensionId"]) {
+		dst.extensionId = item["extensionId"].as<decltype(dst.extensionId)::value_type>();
+	} else {
+		dst.extensionId = std::nullopt;
+	}
+	if (item["binary"]) {
+		dst.binary = item["binary"].as<decltype(dst.binary)::value_type>();
+	} else {
+		dst.binary = std::nullopt;
+	}
+	if (item["string"]) {
+		dst.string = item["string"].as<decltype(dst.string)::value_type>();
+	} else {
+		dst.string = std::nullopt;
+	}
+
+		}
+	} else {
+			if (src["extensionId"]) {
 		dst.extensionId = src["extensionId"].as<decltype(dst.extensionId)::value_type>();
 	} else {
 		dst.extensionId = std::nullopt;
@@ -356,6 +502,8 @@ void convertFromJson(const JsonVariantConst& src, ExtensionType &dst) {
 		dst.string = src["string"].as<decltype(dst.string)::value_type>();
 	} else {
 		dst.string = std::nullopt;
+	}
+
 	}
 
 }
@@ -373,7 +521,27 @@ bool convertToJson(const DataType &src, JsonVariant& dst) {
 	return true;
 }
 void convertFromJson(const JsonVariantConst& src, DataType &dst) {
-	if (src["header"]) {
+	if (src.is<JsonArrayConst>()) {
+		JsonArrayConst array = src.as<JsonArrayConst>();
+		for (JsonVariantConst item : array) {	if (item["header"]) {
+		dst.header = item["header"].as<decltype(dst.header)::value_type>();
+	} else {
+		dst.header = std::nullopt;
+	}
+	if (item["payload"]) {
+		dst.payload = item["payload"].as<decltype(dst.payload)::value_type>();
+	} else {
+		dst.payload = std::nullopt;
+	}
+	if (item["extension"]) {
+		dst.extension = item["extension"].as<decltype(dst.extension)::value_type>();
+	} else {
+		dst.extension = std::nullopt;
+	}
+
+		}
+	} else {
+			if (src["header"]) {
 		dst.header = src["header"].as<decltype(dst.header)::value_type>();
 	} else {
 		dst.header = std::nullopt;
@@ -387,6 +555,8 @@ void convertFromJson(const JsonVariantConst& src, DataType &dst) {
 		dst.extension = src["extension"].as<decltype(dst.extension)::value_type>();
 	} else {
 		dst.extension = std::nullopt;
+	}
+
 	}
 
 }
@@ -404,7 +574,27 @@ bool convertToJson(const ConnectionCloseType &src, JsonVariant& dst) {
 	return true;
 }
 void convertFromJson(const JsonVariantConst& src, ConnectionCloseType &dst) {
-	if (src["phase"]) {
+	if (src.is<JsonArrayConst>()) {
+		JsonArrayConst array = src.as<JsonArrayConst>();
+		for (JsonVariantConst item : array) {	if (item["phase"]) {
+		dst.phase = item["phase"].as<decltype(dst.phase)::value_type>();
+	} else {
+		dst.phase = std::nullopt;
+	}
+	if (item["maxTime"]) {
+		dst.maxTime = item["maxTime"].as<decltype(dst.maxTime)::value_type>();
+	} else {
+		dst.maxTime = std::nullopt;
+	}
+	if (item["reason"]) {
+		dst.reason = item["reason"].as<decltype(dst.reason)::value_type>();
+	} else {
+		dst.reason = std::nullopt;
+	}
+
+		}
+	} else {
+			if (src["phase"]) {
 		dst.phase = src["phase"].as<decltype(dst.phase)::value_type>();
 	} else {
 		dst.phase = std::nullopt;
@@ -418,6 +608,8 @@ void convertFromJson(const JsonVariantConst& src, ConnectionCloseType &dst) {
 		dst.reason = src["reason"].as<decltype(dst.reason)::value_type>();
 	} else {
 		dst.reason = std::nullopt;
+	}
+
 	}
 
 }

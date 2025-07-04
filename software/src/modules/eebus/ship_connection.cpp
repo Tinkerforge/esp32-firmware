@@ -906,7 +906,8 @@ void ShipConnection::state_done()
     switch (protocol_state) {
         case ProtocolState::Data: {
             SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
-            if (data.json_to_type(&message_incoming->data[1], message_incoming->length - 1) == SHIP_TYPES::DeserializationResult::SUCCESS) {
+            //TODO: Check if we need to run in compatibility mode here
+            if (data.json_to_type(&message_incoming->data[1], message_incoming->length - 1, false) == SHIP_TYPES::DeserializationResult::SUCCESS) {
                 logger.printfln("DATA received: %d (len %d)-> %s",
                                 message_incoming->data[0],
                                 message_incoming->length,
