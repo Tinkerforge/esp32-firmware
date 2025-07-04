@@ -27,13 +27,6 @@ inverter_values = [
         'variants': ['String'],
     },
     {
-        'name': 'Total Running Time [h]',
-        'value_id': 'VALUE_ID_DEBUG',
-        'start_address': 5006,
-        'value_type': 'U32LE',
-        'variants': ['String'],
-    },
-    {
         'name': 'Inside Temperature [0.1 °C]',
         'value_id': 'TemperatureCabinet',
         'start_address': 5008,
@@ -46,54 +39,6 @@ inverter_values = [
         'start_address': 5009,
         'value_type': 'U32LE',
         'variants': ['String'],
-    },
-    {
-        'name': 'MPPT 1 Voltage [0.1 V]',
-        'value_id': 'VALUE_ID_DEBUG',
-        'start_address': 5011,
-        'value_type': 'U16',
-        'scale_factor': 0.1,
-    },
-    {
-        'name': 'MPPT 1 Current [0.1 A]',
-        'value_id': 'VALUE_ID_DEBUG',
-        'start_address': 5012,
-        'value_type': 'U16',
-        'scale_factor': 0.1,
-    },
-    {
-        'name': 'MPPT 2 Voltage [0.1 V]',
-        'value_id': 'VALUE_ID_DEBUG',
-        'start_address': 5013,
-        'value_type': 'U16',
-        'scale_factor': 0.1,
-    },
-    {
-        'name': 'MPPT 2 Current [0.1 A]',
-        'value_id': 'VALUE_ID_DEBUG',
-        'start_address': 5014,
-        'value_type': 'U16',
-        'scale_factor': 0.1,
-    },
-    {
-        'name': 'MPPT 3 Voltage [0.1 V]',
-        'value_id': 'VALUE_ID_DEBUG',
-        'start_address': 5015,
-        'value_type': 'U16',
-        'scale_factor': 0.1,
-    },
-    {
-        'name': 'MPPT 3 Current [0.1 A]',
-        'value_id': 'VALUE_ID_DEBUG',
-        'start_address': 5016,
-        'value_type': 'U16',
-        'scale_factor': 0.1,
-    },
-    {
-        'name': 'Total DC Power [W]',
-        'value_id': 'PowerDCExport',
-        'start_address': 5017,
-        'value_type': 'U32LE',
     },
     {
         'name': 'Phase A Current [0.1 A]',  # FIXME: not available for all device types
@@ -120,14 +65,14 @@ inverter_values = [
         'variants': ['String'],
     },
     {
-        'name': 'Total Active Power Export [W]',
+        'name': 'Total Active Power [W]',
         'value_id': 'PowerActiveLSumExport',
         'start_address': 5031,
         'value_type': 'U32LE',
         'variants': ['String'],
     },
     {
-        'name': 'Total Active Power [W]',
+        'name': 'Total Active Power Signed [W]',
         'value_id': 'PowerActiveLSumImExDiff',
         'start_address': 'START_ADDRESS_VIRTUAL',
         'variants': ['String'],
@@ -167,14 +112,6 @@ inverter_values = [
         'value_type': 'U32LE',
         'scale_factor': 0.1,
         'variants': ['String'],
-    },
-    {
-        'name': 'Total PV Generation [0.1 kWh]',
-        'value_id': 'VALUE_ID_DEBUG',
-        'start_address': 13003,
-        'value_type': 'U32LE',
-        'scale_factor': 0.1,
-        'variants': ['Hybrid'],
     },
     {
         'name': 'Total Direct Energy Consumption [0.1 kWh]',
@@ -489,6 +426,77 @@ specs = [
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 13008,
                 'value_type': 'S32LE',
+                'variants': ['Hybrid'],
+            },
+        ],
+    },
+    {
+        'name': 'Sungrow {variant} Inverter PV',
+        'variants': ['Hybrid', 'String'],
+        'register_type': 'InputRegister',
+        'start_address_offset': 1,
+        'values': [
+            {
+                'name': 'MPPT1 Voltage [0.1 V]',
+                'value_id': 'VoltagePV1',
+                'start_address': 5011,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'MPPT1 Current [0.1 A]',
+                'value_id': 'CurrentPV1Export',
+                'start_address': 5012,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'MPPT2 Voltage [0.1 V]',
+                'value_id': 'VoltagePV2',
+                'start_address': 5013,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'MPPT2 Current [0.1 A]',
+                'value_id': 'CurrentPV2Export',
+                'start_address': 5014,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            # FIXME: there are up to 16 MPPT on a string inverter, but they cannot be read
+            #        blindly as this may produce IllegalDataAddress errors. one way to handle
+            #        this would be to define default values for registers that are used in
+            #        case a specific error (e.g. IllegalDataAddress) occurs. this also requires
+            #        to adapt the block reading logic, as such registers can only be read
+            #        individually to be able to detect the error condition
+            {
+                'name': 'Average MPPT Voltage [0.1 V]',
+                'value_id': 'VoltagePVAvg',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+            {
+                'name': 'Total MPPT Current [0.1 A]',
+                'value_id': 'CurrentPVSumExport',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+            {
+                'name': 'Total DC Power [W]',
+                'value_id': 'PowerPVSumExport',
+                'start_address': 5017,
+                'value_type': 'U32LE',
+            },
+            {
+                'name': 'Total DC Power Signed [W]',
+                'value_id': 'PowerPVSumImExDiff',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+            {
+                'name': 'Total PV Generation [0.1 kWh]',
+                'value_id': 'EnergyPVSumExport',
+                'start_address': 13003,
+                'value_type': 'U32LE',
+                'scale_factor': 0.1,
                 'variants': ['Hybrid'],
             },
         ],

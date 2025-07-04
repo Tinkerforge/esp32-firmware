@@ -954,6 +954,7 @@ export function init() {
                             [SungrowHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
                             [SungrowHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
                             [SungrowHybridInverterVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
+                            [SungrowHybridInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
                         ];
 
                         get_default_location = (virtual_meter: number) => {
@@ -962,6 +963,7 @@ export function init() {
                             case SungrowHybridInverterVirtualMeter.Grid: return MeterLocation.Grid;
                             case SungrowHybridInverterVirtualMeter.Battery: return MeterLocation.Battery;
                             case SungrowHybridInverterVirtualMeter.Load: return MeterLocation.Load;
+                            case SungrowHybridInverterVirtualMeter.PV: return MeterLocation.PV;
                             }
 
                             return MeterLocation.Unknown;
@@ -972,6 +974,7 @@ export function init() {
                             [SungrowStringInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
                             [SungrowStringInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
                             [SungrowStringInverterVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
+                            [SungrowStringInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
                         ];
 
                         get_default_location = (virtual_meter: number) => {
@@ -979,6 +982,7 @@ export function init() {
                             case SungrowStringInverterVirtualMeter.Inverter: return MeterLocation.Inverter;
                             case SungrowStringInverterVirtualMeter.Grid: return MeterLocation.Grid;
                             case SungrowStringInverterVirtualMeter.Load: return MeterLocation.Load;
+                            case SungrowStringInverterVirtualMeter.PV: return MeterLocation.PV;
                             }
 
                             return MeterLocation.Unknown;

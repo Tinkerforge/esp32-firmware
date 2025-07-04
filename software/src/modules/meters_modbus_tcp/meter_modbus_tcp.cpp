@@ -41,20 +41,41 @@
 #define NUMBER_TO_ADDRESS(number) ((number) - 1u)
 
 #define SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS                               static_cast<size_t>(SungrowInverterOutputTypeAddress::OutputType)
-#define SUNGROW_INVERTER_GRID_FREQUENCY_ADDRESS                            static_cast<size_t>(SungrowHybridInverterGridAddress::GridFrequency)
+
+#define SUNGROW_HYBRID_INVERTER_GRID_FREQUENCY_ADDRESS                     static_cast<size_t>(SungrowHybridInverterGridAddress::GridFrequency)
+
+#define SUNGROW_STRING_INVERTER_GRID_FREQUENCY_ADDRESS                     static_cast<size_t>(SungrowStringInverterGridAddress::GridFrequency)
+
+#define SUNGROW_HYBRID_INVERTER_TOTAL_ACTIVE_POWER_ADDRESS                 static_cast<size_t>(SungrowHybridInverter1P2LAddress::TotalActivePower)
+
+#define SUNGROW_STRING_INVERTER_TOTAL_ACTIVE_POWER_ADDRESS                 static_cast<size_t>(SungrowStringInverter1P2LAddress::TotalActivePower)
+
 #define SUNGROW_HYBRID_INVERTER_RUNNING_STATE_ADDRESS                      static_cast<size_t>(SungrowHybridInverterBatteryAddress::RunningState)
 #define SUNGROW_HYBRID_INVERTER_BATTERY_CURRENT_ADDRESS                    static_cast<size_t>(SungrowHybridInverterBatteryAddress::BatteryCurrent)
 #define SUNGROW_HYBRID_INVERTER_BATTERY_POWER_ADDRESS                      static_cast<size_t>(SungrowHybridInverterBatteryAddress::BatteryPower)
-#define SUNGROW_STRING_INVERTER_TOTAL_ACTIVE_POWER_ADDRESS                 static_cast<size_t>(SungrowStringInverter1P2LAddress::TotalActivePowerExport)
+
+#define SUNGROW_HYBRID_INVERTER_MPPT_1_VOLTAGE_ADDRESS                     static_cast<size_t>(SungrowHybridInverterPVAddress::MPPT1Voltage)
+#define SUNGROW_HYBRID_INVERTER_MPPT_1_CURRENT_ADDRESS                     static_cast<size_t>(SungrowHybridInverterPVAddress::MPPT1Current)
+#define SUNGROW_HYBRID_INVERTER_MPPT_2_VOLTAGE_ADDRESS                     static_cast<size_t>(SungrowHybridInverterPVAddress::MPPT2Voltage)
+#define SUNGROW_HYBRID_INVERTER_MPPT_2_CURRENT_ADDRESS                     static_cast<size_t>(SungrowHybridInverterPVAddress::MPPT2Current)
+#define SUNGROW_HYBRID_INVERTER_TOTAL_DC_POWER_ADDRESS                     static_cast<size_t>(SungrowHybridInverterPVAddress::TotalDCPower)
+
+#define SUNGROW_STRING_INVERTER_MPPT_1_VOLTAGE_ADDRESS                     static_cast<size_t>(SungrowStringInverterPVAddress::MPPT1Voltage)
+#define SUNGROW_STRING_INVERTER_MPPT_1_CURRENT_ADDRESS                     static_cast<size_t>(SungrowStringInverterPVAddress::MPPT1Current)
+#define SUNGROW_STRING_INVERTER_MPPT_2_VOLTAGE_ADDRESS                     static_cast<size_t>(SungrowStringInverterPVAddress::MPPT2Voltage)
+#define SUNGROW_STRING_INVERTER_MPPT_2_CURRENT_ADDRESS                     static_cast<size_t>(SungrowStringInverterPVAddress::MPPT2Current)
+#define SUNGROW_STRING_INVERTER_TOTAL_DC_POWER_ADDRESS                     static_cast<size_t>(SungrowStringInverterPVAddress::TotalDCPower)
 
 #define VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L1_ADDRESS               static_cast<size_t>(VictronEnergyGXInverterAddress::ACCoupledPVOnOutputL1)
 #define VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L2_ADDRESS               static_cast<size_t>(VictronEnergyGXInverterAddress::ACCoupledPVOnOutputL2)
 #define VICTRON_ENERGY_GX_AC_COUPLED_PV_ON_OUTPUT_L3_ADDRESS               static_cast<size_t>(VictronEnergyGXInverterAddress::ACCoupledPVOnOutputL3)
+
 #define VICTRON_ENERGY_GX_AC_CONSUMPTION_L1_ADDRESS                        static_cast<size_t>(VictronEnergyGXLoadAddress::ACConsumptionL1)
 #define VICTRON_ENERGY_GX_AC_CONSUMPTION_L2_ADDRESS                        static_cast<size_t>(VictronEnergyGXLoadAddress::ACConsumptionL2)
 #define VICTRON_ENERGY_GX_AC_CONSUMPTION_L3_ADDRESS                        static_cast<size_t>(VictronEnergyGXLoadAddress::ACConsumptionL3)
 
 #define DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS                           static_cast<size_t>(DeyeHybridInverterDeviceTypeAddress::DeviceType)
+
 #define DEYE_HYBRID_INVERTER_PV1_POWER_ADDRESS                             static_cast<size_t>(DeyeHybridInverterPVAddress::PV1Power)
 #define DEYE_HYBRID_INVERTER_PV2_POWER_ADDRESS                             static_cast<size_t>(DeyeHybridInverterPVAddress::PV2Power)
 #define DEYE_HYBRID_INVERTER_PV3_POWER_ADDRESS                             static_cast<size_t>(DeyeHybridInverterPVAddress::PV3Power)
@@ -90,9 +111,11 @@
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_ACTIVE_POWER_ADDRESS                    static_cast<size_t>(ShellyEMMonophaseChannel1AsL1Address::Channel1ActivePower)
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_TOTAL_ACTIVE_ENERGY_ADDRESS             static_cast<size_t>(ShellyEMMonophaseChannel1AsL1Address::Channel1TotalActiveEnergyPerpetualCount)
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_1_TOTAL_ACTIVE_RETURNED_ENERGY_ADDRESS    static_cast<size_t>(ShellyEMMonophaseChannel1AsL1Address::Channel1TotalActiveReturnedEnergyPerpetualCount)
+
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_ACTIVE_POWER_ADDRESS                    static_cast<size_t>(ShellyEMMonophaseChannel2AsL1Address::Channel2ActivePower)
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_TOTAL_ACTIVE_ENERGY_ADDRESS             static_cast<size_t>(ShellyEMMonophaseChannel2AsL1Address::Channel2TotalActiveEnergyPerpetualCount)
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_2_TOTAL_ACTIVE_RETURNED_ENERGY_ADDRESS    static_cast<size_t>(ShellyEMMonophaseChannel2AsL1Address::Channel2TotalActiveReturnedEnergyPerpetualCount)
+
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_ACTIVE_POWER_ADDRESS                    static_cast<size_t>(ShellyEMMonophaseChannel3AsL1Address::Channel3ActivePower)
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_ENERGY_ADDRESS             static_cast<size_t>(ShellyEMMonophaseChannel3AsL1Address::Channel3TotalActiveEnergyPerpetualCount)
 #define SHELLY_PRO_XEM_MONOPHASE_CHANNEL_3_TOTAL_ACTIVE_RETURNED_ENERGY_ADDRESS    static_cast<size_t>(ShellyEMMonophaseChannel3AsL1Address::Channel3TotalActiveReturnedEnergyPerpetualCount)
@@ -177,6 +200,7 @@
 #define CARLO_GAVAZZI_EM100_OR_ET100_W_ADDRESS                             static_cast<size_t>(CarloGavazziEM100andET100AtL1Address::W)
 #define CARLO_GAVAZZI_EM100_OR_ET100_KWH_POSITIVE_TOTAL_ADDRESS            static_cast<size_t>(CarloGavazziEM100andET100AtL1Address::KWhPositiveTotal)
 #define CARLO_GAVAZZI_EM100_OR_ET100_KWH_NEGATIVE_TOTAL_ADDRESS            static_cast<size_t>(CarloGavazziEM100andET100AtL1Address::KWhNegativeTotal)
+
 #define CARLO_GAVAZZI_EM510_W_ADDRESS                                      static_cast<size_t>(CarloGavazziEM510atL1Address::W)
 #define CARLO_GAVAZZI_EM510_KWH_POSITIVE_TOTAL_ADDRESS                     static_cast<size_t>(CarloGavazziEM510atL1Address::KWhPositiveTotal)
 #define CARLO_GAVAZZI_EM510_KWH_NEGATIVE_TOTAL_ADDRESS                     static_cast<size_t>(CarloGavazziEM510atL1Address::KWhNegativeTotal)
@@ -351,6 +375,11 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             default_location = MeterLocation::Load;
             break;
 
+        case SungrowHybridInverterVirtualMeter::PV:
+            table = &sungrow_hybrid_inverter_pv_table;
+            default_location = MeterLocation::PV;
+            break;
+
         default:
             logger.printfln_meter("Unknown Sungrow Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(sungrow_hybrid_inverter.virtual_meter));
             break;
@@ -381,6 +410,11 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         case SungrowStringInverterVirtualMeter::Load:
             table = &sungrow_string_inverter_load_table;
             default_location = MeterLocation::Load;
+            break;
+
+        case SungrowStringInverterVirtualMeter::PV:
+            table = &sungrow_string_inverter_pv_table;
+            default_location = MeterLocation::PV;
             break;
 
         default:
@@ -1635,26 +1669,46 @@ void MeterModbusTCP::read_next()
     }
 }
 
-bool MeterModbusTCP::is_sungrow_inverter_meter() const
+bool MeterModbusTCP::is_sungrow_hybrid_inverter_meter() const
 {
-    return (table_id == MeterModbusTCPTableID::SungrowHybridInverter
-         && sungrow_hybrid_inverter.virtual_meter == SungrowHybridInverterVirtualMeter::Inverter)
-        || (table_id == MeterModbusTCPTableID::SungrowStringInverter
-         && sungrow_string_inverter.virtual_meter == SungrowStringInverterVirtualMeter::Inverter);
+    return table_id == MeterModbusTCPTableID::SungrowHybridInverter
+        && sungrow_hybrid_inverter.virtual_meter == SungrowHybridInverterVirtualMeter::Inverter;
 }
 
-bool MeterModbusTCP::is_sungrow_grid_meter() const
+bool MeterModbusTCP::is_sungrow_hybrid_inverter_grid_meter() const
 {
-    return (table_id == MeterModbusTCPTableID::SungrowHybridInverter
-         && sungrow_hybrid_inverter.virtual_meter == SungrowHybridInverterVirtualMeter::Grid)
-        || (table_id == MeterModbusTCPTableID::SungrowStringInverter
-         && sungrow_string_inverter.virtual_meter == SungrowStringInverterVirtualMeter::Grid);
+    return table_id == MeterModbusTCPTableID::SungrowHybridInverter
+        && sungrow_hybrid_inverter.virtual_meter == SungrowHybridInverterVirtualMeter::Grid;
 }
 
-bool MeterModbusTCP::is_sungrow_battery_meter() const
+bool MeterModbusTCP::is_sungrow_hybrid_inverter_battery_meter() const
 {
     return table_id == MeterModbusTCPTableID::SungrowHybridInverter
         && sungrow_hybrid_inverter.virtual_meter == SungrowHybridInverterVirtualMeter::Battery;
+}
+
+bool MeterModbusTCP::is_sungrow_hybrid_inverter_pv_meter() const
+{
+    return table_id == MeterModbusTCPTableID::SungrowHybridInverter
+        && sungrow_hybrid_inverter.virtual_meter == SungrowHybridInverterVirtualMeter::PV;
+}
+
+bool MeterModbusTCP::is_sungrow_string_inverter_meter() const
+{
+    return table_id == MeterModbusTCPTableID::SungrowStringInverter
+        && sungrow_string_inverter.virtual_meter == SungrowStringInverterVirtualMeter::Inverter;
+}
+
+bool MeterModbusTCP::is_sungrow_string_inverter_grid_meter() const
+{
+    return table_id == MeterModbusTCPTableID::SungrowStringInverter
+        && sungrow_string_inverter.virtual_meter == SungrowStringInverterVirtualMeter::Grid;
+}
+
+bool MeterModbusTCP::is_sungrow_string_inverter_pv_meter() const
+{
+    return table_id == MeterModbusTCPTableID::SungrowStringInverter
+        && sungrow_string_inverter.virtual_meter == SungrowStringInverterVirtualMeter::PV;
 }
 
 bool MeterModbusTCP::is_victron_energy_gx_inverter_meter() const
@@ -2069,7 +2123,7 @@ void MeterModbusTCP::parse_next()
         value *= table->specs[read_index].scale_factor;
     }
 
-    if (is_sungrow_inverter_meter()
+    if ((is_sungrow_hybrid_inverter_meter() || is_sungrow_string_inverter_meter())
      && generic_read_request.start_address == SUNGROW_INVERTER_OUTPUT_TYPE_ADDRESS) {
         if (sungrow_inverter_output_type < 0) {
             bool success = true;
@@ -2404,8 +2458,15 @@ void MeterModbusTCP::parse_next()
         return;
     }
 
-    if (is_sungrow_grid_meter()) {
-        if (register_start_address == SUNGROW_INVERTER_GRID_FREQUENCY_ADDRESS) {
+    if (is_sungrow_hybrid_inverter_meter() || is_sungrow_string_inverter_meter()) {
+        if (register_start_address == SUNGROW_HYBRID_INVERTER_TOTAL_ACTIVE_POWER_ADDRESS
+         || register_start_address == SUNGROW_STRING_INVERTER_TOTAL_ACTIVE_POWER_ADDRESS) {
+            meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(value));
+        }
+    }
+    else if (is_sungrow_hybrid_inverter_grid_meter() || is_sungrow_string_inverter_grid_meter()) {
+        if (register_start_address == SUNGROW_HYBRID_INVERTER_GRID_FREQUENCY_ADDRESS
+         || register_start_address == SUNGROW_STRING_INVERTER_GRID_FREQUENCY_ADDRESS) {
             if (value > 100) {
                 // according to the spec the grid frequency is given
                 // as 0.1 Hz, but some inverters report it as 0.01 Hz
@@ -2413,12 +2474,7 @@ void MeterModbusTCP::parse_next()
             }
         }
     }
-    else if (is_sungrow_inverter_meter()) {
-        if (register_start_address == SUNGROW_STRING_INVERTER_TOTAL_ACTIVE_POWER_ADDRESS) {
-            meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(value));
-        }
-    }
-    else if (is_sungrow_battery_meter()) {
+    else if (is_sungrow_hybrid_inverter_battery_meter()) {
         if (register_start_address == SUNGROW_HYBRID_INVERTER_RUNNING_STATE_ADDRESS) {
             sungrow_hybrid_inverter.running_state = c16.u;
         }
@@ -2433,6 +2489,82 @@ void MeterModbusTCP::parse_next()
                 // discharging flag is set, assume unsigned value, but fabs anyway to be sure
                 value = zero_safe_negation(fabs(value));
             }
+        }
+    }
+    else if (is_sungrow_hybrid_inverter_pv_meter()) {
+        if (register_start_address == SUNGROW_HYBRID_INVERTER_MPPT_1_VOLTAGE_ADDRESS) {
+            sungrow_hybrid_inverter.mppt1_voltage = value;
+        }
+        else if (register_start_address == SUNGROW_HYBRID_INVERTER_MPPT_1_CURRENT_ADDRESS) {
+            sungrow_hybrid_inverter.mppt1_current = value;
+        }
+        else if (register_start_address == SUNGROW_HYBRID_INVERTER_MPPT_2_VOLTAGE_ADDRESS) {
+            sungrow_hybrid_inverter.mppt2_voltage = value;
+        }
+        else if (register_start_address == SUNGROW_HYBRID_INVERTER_MPPT_2_CURRENT_ADDRESS) {
+            sungrow_hybrid_inverter.mppt2_current = value;
+
+            float voltage_sum = 0.0f;
+            float voltage_count = 0.0f;
+
+            if (!is_exactly_zero(sungrow_hybrid_inverter.mppt1_voltage)) {
+                voltage_sum += sungrow_hybrid_inverter.mppt1_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(sungrow_hybrid_inverter.mppt2_voltage)) {
+                voltage_sum += sungrow_hybrid_inverter.mppt2_voltage;
+                ++voltage_count;
+            }
+
+            float voltage_avg = voltage_sum / voltage_count;
+
+            float current_sum = sungrow_hybrid_inverter.mppt1_current
+                              + sungrow_hybrid_inverter.mppt2_current;
+
+            meters.update_value(slot, table->index[read_index + 1], voltage_avg);
+            meters.update_value(slot, table->index[read_index + 2], current_sum);
+        }
+        else if (register_start_address == SUNGROW_HYBRID_INVERTER_TOTAL_DC_POWER_ADDRESS) {
+            meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(value));
+        }
+    }
+    else if (is_sungrow_string_inverter_pv_meter()) {
+        if (register_start_address == SUNGROW_STRING_INVERTER_MPPT_1_VOLTAGE_ADDRESS) {
+            sungrow_string_inverter.mppt1_voltage = value;
+        }
+        else if (register_start_address == SUNGROW_STRING_INVERTER_MPPT_1_CURRENT_ADDRESS) {
+            sungrow_string_inverter.mppt1_current = value;
+        }
+        else if (register_start_address == SUNGROW_STRING_INVERTER_MPPT_2_VOLTAGE_ADDRESS) {
+            sungrow_string_inverter.mppt2_voltage = value;
+        }
+        else if (register_start_address == SUNGROW_STRING_INVERTER_MPPT_2_CURRENT_ADDRESS) {
+            sungrow_string_inverter.mppt2_current = value;
+
+            float voltage_sum = 0.0f;
+            float voltage_count = 0.0f;
+
+            if (!is_exactly_zero(sungrow_string_inverter.mppt1_voltage)) {
+                voltage_sum += sungrow_string_inverter.mppt1_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(sungrow_string_inverter.mppt2_voltage)) {
+                voltage_sum += sungrow_string_inverter.mppt2_voltage;
+                ++voltage_count;
+            }
+
+            float voltage_avg = voltage_sum / voltage_count;
+
+            float current_sum = sungrow_string_inverter.mppt1_current
+                              + sungrow_string_inverter.mppt2_current;
+
+            meters.update_value(slot, table->index[read_index + 1], voltage_avg);
+            meters.update_value(slot, table->index[read_index + 2], current_sum);
+        }
+        else if (register_start_address == SUNGROW_STRING_INVERTER_TOTAL_DC_POWER_ADDRESS) {
+            meters.update_value(slot, table->index[read_index + 1], zero_safe_negation(value));
         }
     }
     else if (is_victron_energy_gx_inverter_meter()) {

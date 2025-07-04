@@ -109,9 +109,13 @@ private:
     bool prepare_read();
     void read_next();
     void parse_next();
-    bool is_sungrow_inverter_meter() const;
-    bool is_sungrow_grid_meter() const;
-    bool is_sungrow_battery_meter() const;
+    bool is_sungrow_hybrid_inverter_meter() const;
+    bool is_sungrow_hybrid_inverter_grid_meter() const;
+    bool is_sungrow_hybrid_inverter_battery_meter() const;
+    bool is_sungrow_hybrid_inverter_pv_meter() const;
+    bool is_sungrow_string_inverter_meter() const;
+    bool is_sungrow_string_inverter_grid_meter() const;
+    bool is_sungrow_string_inverter_pv_meter() const;
     bool is_victron_energy_gx_inverter_meter() const;
     bool is_victron_energy_gx_load_meter() const;
     bool is_deye_hybrid_inverter_battery_meter() const;
@@ -163,11 +167,19 @@ private:
         struct {
             SungrowHybridInverterVirtualMeter virtual_meter;
             uint16_t running_state;
+            float mppt1_voltage;
+            float mppt1_current;
+            float mppt2_voltage;
+            float mppt2_current;
         } sungrow_hybrid_inverter;
 
         // Sungrow string inverter
         struct {
             SungrowStringInverterVirtualMeter virtual_meter;
+            float mppt1_voltage;
+            float mppt1_current;
+            float mppt2_voltage;
+            float mppt2_current;
         } sungrow_string_inverter;
 
         // Solarmax Max Storage
