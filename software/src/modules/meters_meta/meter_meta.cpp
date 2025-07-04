@@ -292,8 +292,8 @@ void MeterMeta::on_values_change_task_double()
     const Config *values_a;
     const Config *values_b;
 
-    MeterValueAvailability availability_a = meters.get_values(source_meter_a, &values_a, micros_t{2100 * 1000}); // 2.1s
-    MeterValueAvailability availability_b = meters.get_values(source_meter_b, &values_b, micros_t{2100 * 1000}); // 2.1s
+    MeterValueAvailability availability_a = meters.get_values(source_meter_a, &values_a); // micros_t{2100 * 1000} 2.1s
+    MeterValueAvailability availability_b = meters.get_values(source_meter_b, &values_b); // micros_t{2100 * 1000} 2.1s
 
     if (values_a->count() <= 0 || values_b->count() <= 0) {
         return;
