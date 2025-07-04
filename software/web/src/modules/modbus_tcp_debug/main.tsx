@@ -96,12 +96,12 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                 result = "Error: " + transact_result.error;
             }
             else if (transact_result.read_data !== null) {
-                let header = " AdrD  AdrH  Off   Hex  AS    U16     S16       U32BE       U32LE        S32BE        S32LE                 U64BE                 U64LE                  S64BE                  S64LE ";
+                let header = " AdrD  AdrH   NumD   NumH  Idx   Hex  AS    U16     S16       U32BE       U32LE        S32BE        S32LE                 U64BE                 U64LE                  S64BE                  S64LE ";
 
                 result = header + "\n";
 
                 for (let r = 0; r < transact_result.read_data.length / 4; ++r) {
-                    let a = (this.state.start_address + r);
+                    let a = this.state.start_address + r;
 
                     let ad_pad = "    " + a;
 
@@ -110,6 +110,16 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     let ah_pad = "   " + a.toString(16).toUpperCase();
 
                     ah_pad = ah_pad.substring(ah_pad.length - 4);
+
+                    let n = this.state.start_address + r + 1;
+
+                    let nd_pad = "    " + n;
+
+                    nd_pad = nd_pad.substring(nd_pad.length - 5);
+
+                    let nh_pad = "    " + n.toString(16).toUpperCase();
+
+                    nh_pad = nh_pad.substring(nh_pad.length - 5);
 
                     let r_pad = "  " + r;
 
@@ -178,7 +188,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     s64be_pad = s64be_pad.substring(s64be_pad.length - 21);
                     s64le_pad = s64le_pad.substring(s64le_pad.length - 21);
 
-                    result += "\n" + ad_pad + "  " + ah_pad + "  " + r_pad + "  " + hex + "  " + ascii_0 + ascii_1 + "  " + u16_pad + "  " + s16_pad + "  " + u32be_pad + "  " + u32le_pad + "  " + s32be_pad + "  " + s32le_pad + "  " + u64be_pad + "  " + u64le_pad + "  " + s64be_pad + "  " + s64le_pad + " ";
+                    result += "\n" + ad_pad + "  " + ah_pad + "  " + nd_pad + "  " + nh_pad + "  " + r_pad + "  " + hex + "  " + ascii_0 + ascii_1 + "  " + u16_pad + "  " + s16_pad + "  " + u32be_pad + "  " + u32le_pad + "  " + s32be_pad + "  " + s32le_pad + "  " + u64be_pad + "  " + u64le_pad + "  " + s64be_pad + "  " + s64le_pad + " ";
 
                     if (r % 20 == 19 && r < transact_result.read_data.length / 4 - 1) {
                         result += "\n\n" + header + "\n";
