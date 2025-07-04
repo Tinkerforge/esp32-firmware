@@ -469,7 +469,9 @@ specs = [
             #        this would be to define default values for registers that are used in
             #        case a specific error (e.g. IllegalDataAddress) occurs. this also requires
             #        to adapt the block reading logic, as such registers can only be read
-            #        individually to be able to detect the error condition
+            #        individually to be able to detect the error condition. another way of
+            #        handling this would be to read the device type register 5000 and keep a
+            #        database of how many MPPT certain device types support
             {
                 'name': 'Average MPPT Voltage [0.1 V]',
                 'value_id': 'VoltagePVAvg',
