@@ -11,6 +11,7 @@
 
 namespace ArduinoJson
 {
+inline bool spine_go_compatibility_mode = false; // If true, the JSON will be formatted and parsed in a way that it is compatible with SPINE-GO
 template <typename T> struct Converter<std::vector<T>> {
     static void toJson(const std::vector<T> &src, JsonVariant dst);
     static std::vector<T> fromJson(JsonVariantConst src);

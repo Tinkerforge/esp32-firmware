@@ -99,8 +99,14 @@ public:
 
     time_t last_received_time = 0; // The last time a message was received from the peer. This is used to detect if the peer is still alive.
 private:
+    /**
+     * SPINE-GO produces JSON arrays for objects that are not arrays. This function converts those arrays to objects in place.
+     * @param json the JSON variant to convert. This will be modified in place.
+     */
+    static void fix_json_compatibility_issues(JsonVariant json);
+
     std::vector<FeatureAddressType> known_addresses;
     uint16_t msg_counter_error_count =
         0; // The number of message counter errors that have occurred. This is used to detect if the peer is still alive and if it has technical issues.
-
+    bool compatiblity_mode = false; // If true, will reformat json to be compatible with the stuff SPINE-GO produces
 };

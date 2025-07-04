@@ -26,16 +26,33 @@
 
 bool SpineConnection::process_datagram(JsonVariant datagram)
 {
+    // TODO: Handle json formatting weirdness sent by e.g. spine-go
     last_received_time = millis();
-
+    compatiblity_mode = true;
+    ArduinoJson::spine_go_compatibility_mode = this->compatiblity_mode;
     received_header = HeaderType(); // Reset the header to avoid using old values
+
     received_header = datagram["datagram"][0]["header"];
+    //logger.printfln("SPINE: Received datagram: %s", datagram.as<String>().c_str());
+    //logger.printfln("Header: %s", datagram["datagram"][0].as<String>().c_str());
 
     received_payload =
         datagram["datagram"][1]["payload"][0]["cmd"][0][0]; // The payload should not be in an array but spine-go does these strange things
 
     if (!received_header.cmdClassifier || received_header.addressSource || received_payload.isNull()) {
-        logger.printfln("Error: No datagram header or payload found");
+        logger.printfln("SPINE: ERROR: No datagram header or payload found");
+        if (!received_header.cmdClassifier) {
+            logger.printfln("SPINE: ERROR: No cmdClassifier found in the received header");
+        }
+        if (!received_header.addressSource) {
+            logger.printfln("SPINE: ERROR: No addressSource found in the received header");
+        }
+        if (received_payload.isNull()) {
+            logger.printfln("SPINE: ERROR: No payload found in the received datagram");
+            logger.printfln("SPINE: Payload section: %s", datagram["datagram"][1]["payload"][0].as<String>().c_str());
+        } else {
+            logger.printfln("Received Payload: %s", received_payload.as<String>().c_str());
+        }
         return false;
     }
 
@@ -57,8 +74,8 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
 }
 void SpineConnection::send_datagram(JsonVariantConst payload,
                                     CmdClassifierType cmd_classifier,
-                                    const FeatureAddressType& sender,
-                                    const FeatureAddressType& receiver,
+                                    const FeatureAddressType &sender,
+                                    const FeatureAddressType &receiver,
                                     bool require_ack)
 {
     response_doc.clear();
