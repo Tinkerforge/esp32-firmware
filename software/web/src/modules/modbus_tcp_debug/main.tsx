@@ -32,6 +32,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { PageHeader } from "../../ts/components/page_header";
 import { SubPage } from "../../ts/components/sub_page";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
+import { ModbusRegisterAddressMode } from "../modbus_tcp_client/modbus_register_address_mode.enum";
 
 export function ModbusTCPDebugNavbar() {
     return (
@@ -45,6 +46,7 @@ interface ModbusTCPDebugToolState {
     port: number;
     device_address: number;
     function_code: number;
+    register_address_mode: number; // ModbusRegisterAddressMode
     start_address: number;
     data_count: number;
     write_data: string;
@@ -71,7 +73,8 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
             port: 502,
             device_address: 1,
             function_code: 3,
-            start_address: null,
+            register_address_mode: ModbusRegisterAddressMode.Address,
+            start_address: 0,
             data_count: 1,
             write_data: "",
             timeout: 2000,
@@ -188,6 +191,8 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
     }
 
     render() {
+        let start_address_offset = this.state.register_address_mode == ModbusRegisterAddressMode.Address ? 0 : 1;
+
         return <form onSubmit={async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -305,29 +310,50 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     value={this.state.function_code.toString()}
                     onValue={(v) => this.setState({function_code: parseInt(v)})} />
             </FormRow>
-            <FormRow label={__("modbus_tcp_debug.content.start_address_dec")} label_muted={__("modbus_tcp_debug.content.start_address_muted")}>
+            <FormRow label={__("modbus_tcp_debug.content.register_address_mode")}>
+                <InputSelect
+                    required
+                    items={[
+                        [ModbusRegisterAddressMode.Address.toString(), __("modbus_tcp_debug.content.register_address_mode_address")],
+                        [ModbusRegisterAddressMode.Number.toString(), __("modbus_tcp_debug.content.register_address_mode_number")]
+                    ]}
+                    placeholder={__("select")}
+                    value={this.state.register_address_mode.toString()}
+                    onValue={(v) => this.setState({register_address_mode: parseInt(v)})} />
+            </FormRow>
+            <FormRow label={__("modbus_tcp_debug.content.start_address_dec")}>
                 <InputNumber
                     required
                     disabled={this.state.waiting}
-                    min={0}
-                    max={65535}
-                    value={this.state.start_address}
-                    onValue={(v) => this.setState({start_address: v})} />
+                    min={start_address_offset}
+                    max={start_address_offset + 65535}
+                    value={this.state.start_address + start_address_offset}
+                    onValue={(v) => {
+                        let start_address = Math.max(0, Math.min(v - start_address_offset, 65535));
+                        let data_count = Math.min(start_address + this.state.data_count, 65535 + 1) - start_address;
+
+                        this.setState({start_address: start_address, data_count: data_count});
+                    }} />
             </FormRow>
-            <FormRow label={__("modbus_tcp_debug.content.start_address_hex")} label_muted={__("modbus_tcp_debug.content.start_address_muted")}>
+            <FormRow label={__("modbus_tcp_debug.content.start_address_hex")}>
                 <InputTextPatterned
                     required
                     disabled={this.state.waiting}
-                    pattern="^[0-9A-F]{1-4}$"
-                    value={util.hasValue(this.state.start_address) ? this.state.start_address.toString(16).toUpperCase() : null}
+                    pattern={this.state.register_address_mode == ModbusRegisterAddressMode.Address ? "^([1-9A-F][0-9A-F]{1,3}|0)$" : "^(10000|[1-9A-F][0-9A-F]{1,3}|1)$"}
+                    value={util.hasValue(this.state.start_address) ? (this.state.start_address + start_address_offset).toString(16).toUpperCase() : null}
                     onValue={(v) => {
-                        let start_address = parseInt(v, 16);
+                        let start_address = parseInt(v, 16) - start_address_offset;
+                        let data_count = this.state.data_count;
 
                         if (isNaN(start_address)) {
                             start_address = null;
                         }
+                        else {
+                            start_address = Math.max(0, Math.min(start_address, 65535));
+                            data_count = Math.min(start_address + data_count, 65535 + 1) - start_address;
+                        }
 
-                        this.setState({start_address: start_address});
+                        this.setState({start_address: start_address, data_count: data_count});
                     }}
                     invalidFeedback={__("modbus_tcp_debug.content.start_address_hex_invalid")} />
             </FormRow>
@@ -338,9 +364,9 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                         required
                         disabled={this.state.waiting}
                         min={1}
-                        max={125 /* 2000 for coils */}
+                        max={Math.min(this.state.start_address + 125 /* 2000 for coils */, 65535 + 1) - this.state.start_address}
                         value={this.state.data_count}
-                        onValue={(v) => this.setState({data_count: v})} />
+                        onValue={(v) => this.setState({data_count: Math.min(this.state.start_address + v, 65535 + 1) - this.state.start_address})} />
                 </FormRow>
                 : undefined}
 
