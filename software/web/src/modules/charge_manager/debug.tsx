@@ -20,19 +20,12 @@
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
 import { __ } from "../../ts/translation";
-import { h, Fragment, Component } from "preact";
-import { DebugLogger    } from "../../ts/components/debug_logger";
+import { h, Fragment } from "preact";
 import { FormRow        } from "../../ts/components/form_row";
 import { FormSeparator  } from "../../ts/components/form_separator";
-import { IndicatorGroup } from "../../ts/components/indicator_group";
 import { InputText      } from "../../ts/components/input_text";
 import { OutputFloat    } from "../../ts/components/output_float";
-import { PageHeader     } from "../../ts/components/page_header";
-import { Button, Card } from "react-bootstrap";
-import { SubPage } from "../../ts/components/sub_page";
-import { NavbarItem } from "../../ts/components/navbar_item";
-import { Download, Terminal } from "react-feather";
-import { InputNumber } from "../../ts/components/input_number";
+import { Card           } from "react-bootstrap";
 
 const CMDOutFloat = (props: any) => <OutputFloat maxFractionalDigitsOnPage={3} maxUnitLengthOnPage={2} {...props}/>
 const CMDCardOutFloat = (props: any) => <OutputFloat maxUnitLengthOnPage={3.5} {...props}/>

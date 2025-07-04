@@ -38,7 +38,6 @@ import { useMemo } from "preact/hooks";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { BatteryCharging, Calendar, Clock, Download, User, List } from "react-feather";
-import { useEffect } from "react";
 
 export function ChargeTrackerNavbar() {
     return <NavbarItem name="charge_tracker" module="charge_tracker" title={__("charge_tracker.navbar.charge_tracker")} symbol={<List />} />;
