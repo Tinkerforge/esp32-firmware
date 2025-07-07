@@ -1674,11 +1674,12 @@ void RemoteAccess::connect_management()
     const IPAddress allowed_ip      (IPv4); // 0.0.0.0
     const IPAddress allowed_subnet  (IPv4); // 0.0.0.0
 
-    // WireGuard decodes those (base64 encoded) keys and stores them.
-    char private_key[WG_KEY_LENGTH + 1];
-    char psk[WG_KEY_LENGTH + 1];
-    char remote_public_key[WG_KEY_LENGTH + 1];
+    auto key_buf = heap_alloc_array<char>(3 * (WG_KEY_LENGTH + 1));
+    char *private_key       = key_buf.get() + 0 * (WG_KEY_LENGTH + 1);
+    char *psk               = key_buf.get() + 1 * (WG_KEY_LENGTH + 1);
+    char *remote_public_key = key_buf.get() + 2 * (WG_KEY_LENGTH + 1);
 
+    // WireGuard decodes those (base64 encoded) keys and stores them.
     if (!get_key(0, 0, private_key, psk, remote_public_key)) {
         logger.printfln("Can't connect to management server: no WireGuard key installed!");
         return;
@@ -1693,6 +1694,7 @@ void RemoteAccess::connect_management()
 
     const uint16_t local_port = find_next_free_port(51820);
     this->setup_inner_socket();
+    // management->begin copys the keys.
     management->begin(internal_ip,
                       internal_subnet,
                       local_port,
