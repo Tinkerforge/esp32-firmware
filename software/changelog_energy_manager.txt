@@ -446,7 +446,7 @@
 - Extend network address misconfiguration detection
 - Improve translations
 
-2025-07-07: 2.4.4 (<unknown>)
+2025-07-07: 2.4.4 (c8441c45)
 - Modbus TCP: Add support for Carlo Gavazzi EM111, EM112, ET111, ET112, EM330, EM340, ET330, ET340, EM511 and EM580
 - Modbus TCP: Add support for Fox ESS H3 Smart and Pro
 - Modbus TCP: Add support for Solax string inverter
