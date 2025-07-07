@@ -61,6 +61,7 @@ public:
 
     Config &get_ping_state();
     micros_t get_ping_start();
+    ConfigRoot config;
 
 private:
     void resolve_management();
@@ -109,7 +110,6 @@ private:
     std::unique_ptr<uint8_t[]> encrypted_secret = nullptr;
     std::unique_ptr<uint8_t[]> secret_nonce = nullptr;
 
-    ConfigRoot config;
     ConfigRoot connection_state;
     ConfigRoot registration_state;
     Config     users_config_prototype;
