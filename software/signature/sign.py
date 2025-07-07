@@ -1,5 +1,6 @@
 #!/usr/bin/python3 -u
 
+import re
 import os
 import sys
 import ctypes
@@ -93,11 +94,19 @@ def keepassxc(preset, prefix, action, args, entry, password=None, input=None):
     except:
         return None
 
+def notify(msg):
+    version = [int(x) for x in re.search(r"(\d+)\.(\d+)\.(\d+)", subprocess.check_output(["notify-send", "--version"], text=True)).groups()]
 
-def notify_send(message):
-    notify_send_path = which('notify-send')
-    if notify_send_path:
-        subprocess.call([notify_send_path, '-t', '3600000', '-i', os.path.abspath(make_path('icon.png')), 'esp32-firmware', message])
+    if version >= [0, 8, 0]:
+        return subprocess.check_output(["notify-send", "-p", "-t", "3600000", "-i", os.path.abspath(os.path.join(os.path.dirname(__file__), "icon.png")), "release_warp_firmware.py", msg], text=True).strip()
+    else:
+        subprocess.call(["notify-send", "-t", "3600000", "-i", os.path.abspath(os.path.join(os.path.dirname(__file__), "icon.png")), "release_warp_firmware.py", msg])
+        return -1
+
+def notify_clear(n_id):
+    if n_id == -1:
+        return
+    subprocess.call(["notify-send", "-r", n_id, "-t", "1", "-i", os.path.abspath(os.path.join(os.path.dirname(__file__), "icon.png")), "release_warp_firmware.py", "clear"])
 
 
 def main():
@@ -167,13 +176,15 @@ def main():
 
         if preset['sodium_secret_key_protection'] == 'password':
             if args.sodium_secret_key_password == None:
-                notify_send('Enter password for sodium secret key file')
+                n_id = notify('Enter password for sodium secret key file')
                 print(f'Enter password for sodium secret key file {sodium_secret_key_path}:')
 
                 try:
                     sodium_secret_key_password = getpass.getpass(prompt='')
                 except KeyboardInterrupt:
                     raise Exception('Aborted')
+
+                notify_clear(n_id)
             else:
                 sodium_secret_key_password = args.sodium_secret_key_password
 
@@ -273,13 +284,15 @@ def main():
 
             if preset['gpg_keyring_passphrase_protection'] == 'password':
                 if args.gpg_keyring_passphrase_password == None:
-                    notify_send('Enter password for GPG keyring passphrase file')
+                    n_id = notify('Enter password for GPG keyring passphrase file')
                     print(f'Enter password for GPG keyring passphrase file {gpg_keyring_passphrase_path}:')
 
                     try:
                         gpg_keyring_passphrase_password = getpass.getpass(prompt='')
                     except KeyboardInterrupt:
                         raise Exception('Aborted')
+
+                    notify_clear(n_id)
                 else:
                     gpg_keyring_passphrase_password = args.gpg_keyring_passphrase_password
 
