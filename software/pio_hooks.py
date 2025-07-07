@@ -1104,6 +1104,8 @@ def main():
 
     # Handle backend modules
     excluded_backend_modules = list(os.listdir('src/modules'))
+    # The order 'Task Scheduler', 'Event Log', 'API' must be exactly this one:
+    # API::setup migrates the config and expects that tasks can be scheduled and the logger is initialized
     backend_modules = [util.FlavoredName(x).get() for x in ['Task Scheduler', 'Event Log', 'API', 'Web Server', 'Rtc'] + env.GetProjectOption("custom_backend_modules").splitlines()]
 
     if nightly:
