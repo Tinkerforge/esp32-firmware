@@ -99,6 +99,7 @@ void ChargeTracker::pre_setup()
         {"enable_send", Config::Bool(false)},
         {"send_file_type", Config::Enum(FileType::PDF)},
         {"user", Config::Int8(-1)},
+        {"last_file_send", Config::Uint32(0)},
 #endif
     });
 
@@ -906,300 +907,464 @@ void ChargeTracker::register_urls()
             }
         }
 
-        char stats_buf[384];//55 9 "Wallbox: " + 32 display name + 13 " (warp2-AbCd)" + \0
-                            //31 13 "Exportiert am " + 17 (date time + \0)
-                            //55 22 "Exportierte Benutzer: " + 32 display name + \0
-                            //63 "Exportierter Zeitraum: Aufzeichnungsbeginn - Aufzeichnungsende" + \0
-                            //60 41 "Gesamtenergie exportierter Ladevorgänge: " + 17 "999999999,999 kWh" + \0
-                            //39 "Gesamtkosten: 9999,99 € (123,45 ct/kWh)" + \0
-                            //= 302
-
-        double charged_sum = 0;
-        uint32_t charged_cost_sum = 0;
-        bool seen_charges_without_meter = false;
-
-        int charge_records = 0;
-        int first_file = -1;
-        int first_charge = -1;
-        int last_file = -1;
-        int last_charge = -1;
-
-        std::lock_guard<std::mutex> lock{records_mutex};
-
-        uint8_t configured_users[MAX_ACTIVE_USERS] = {};
-        uint32_t electricity_price;
-        String dev_name = "unknown device";
-        auto await_result = task_scheduler.await([this, configured_users, &electricity_price, &dev_name]() mutable {
-            electricity_price = this->config.get("electricity_price")->asUint();
-            for (size_t i = 0; i < users.config.get("users")->count(); ++i) {
-                configured_users[i] = users.config.get("users")->get(i)->get("id")->asUint();
-            }
-#if MODULE_DEVICE_NAME_AVAILABLE()
-            dev_name = device_name.display_name.get("display_name")->asString();
-            if (device_name.display_name.get("display_name")->asString() != device_name.name.get("name")->asString())
-                dev_name += " (" + device_name.name.get("name")->asString() + ")";
-#endif
-        });
-
-        if (await_result == TaskScheduler::AwaitResult::Timeout) {
-            return request.send(500, "text/plain", "Failed to generate PDF: Task timed out");
-        }
-
-        {
-            char charge_buf[sizeof(ChargeStart) + sizeof(ChargeEnd)];
-            ChargeStart cs;
-            ChargeEnd ce;
-
-            for (int i = this->first_charge_record; i <= this->last_charge_record; ++i) {
-                File f = LittleFS.open(chargeRecordFilename(i));
-
-                for (int j = 0; j < (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE); ++j) {
-                    if (f.read((uint8_t *)charge_buf, CHARGE_RECORD_SIZE) != CHARGE_RECORD_SIZE)
-                        // This file is not "full". We don't have any tracked charges left.
-                        goto search_done;
-
-                    memcpy(&cs, charge_buf, sizeof(ChargeStart));
-                    memcpy(&ce, charge_buf + sizeof(ChargeStart), sizeof(ChargeEnd));
-
-                    if (cs.timestamp_minutes != 0 && start_timestamp_min != 0 && cs.timestamp_minutes < start_timestamp_min) {
-                        // We know when this charge started and it was before the requested start date.
-                        // This means that all charges before and including this one can't be relevant.
-                        charge_records = 0;
-                        first_file = -1;
-                        first_charge = -1;
-                        charged_sum = 0;
-                        charged_cost_sum = 0;
-                        continue;
-                    }
-
-                    if (cs.timestamp_minutes != 0 && end_timestamp_min != 0 && cs.timestamp_minutes > end_timestamp_min) {
-                        // This charge started after the requested end date. We are done searching.
-                        last_file = i;
-                        last_charge = j;
-                        goto search_done;
-                    }
-
-                    bool include_user = user_filter == USER_FILTER_ALL_USERS || (user_filter == USER_FILTER_DELETED_USERS && !user_configured(configured_users, cs.user_id)) || cs.user_id == user_filter;
-                    if (!include_user)
-                        continue;
-
-                    if (first_file == -1)
-                        first_file = i;
-
-                    if (first_charge == -1)
-                        first_charge = j;
-
-                    last_file = i;
-                    last_charge = j;
-                    ++charge_records;
-
-                    if (charged_invalid(cs, ce))
-                        seen_charges_without_meter = true;
-                    else {
-                        double charged = ce.meter_end - cs.meter_start;
-                        charged_sum += charged;
-                        if (electricity_price != 0)
-                            charged_cost_sum += round(charged * electricity_price / 100.0f);
-                    }
-                }
-            }
-        }
-search_done:
-
-        display_name_entry *display_name_cache = static_cast<decltype(display_name_cache)>(malloc_iram_or_psram_or_dram(MAX_PASSIVE_USERS * sizeof(display_name_cache[0])));
-        if (!display_name_cache) {
-            return request.send(500, "text/plain", "Failed to generate PDF: No memory");
-        }
-
-        for (size_t i = 0; i < MAX_PASSIVE_USERS; i++) {
-            display_name_cache[i].length = UINT32_MAX;
-        }
-
-        char *stats_head = stats_buf;
-        stats_head += 1 + sprintf_u(stats_head, "%s: %s", english ? "Charger" : "Wallbox", dev_name.c_str());
-
-        stats_head += sprintf_u(stats_head, "%s: ", english ? "Exported on" : "Exportiert am");
-        stats_head += 1 + timestamp_min_to_date_time_string(stats_head, current_timestamp_min, english);
-
-        stats_head += sprintf_u(stats_head, "%s: ", english ? "Exported users" : "Exportierte Benutzer");
-        if (user_filter == -2)
-            stats_head += sprintf_u(stats_head, "%s", english ? "all users" : "Alle Benutzer");
-        else if (user_filter == -1)
-            stats_head += sprintf_u(stats_head, "%s", english ? "deleted users" : "Gelöschte Benutzer");
-        else
-            stats_head += get_display_name(user_filter, stats_head, display_name_cache);
-        ++stats_head;
-
-        stats_head += sprintf_u(stats_head, "%s: ", english ? "Exported period" : "Exportierter Zeitraum");
-        if (start_timestamp_min == 0)
-            stats_head += sprintf_u(stats_head, "%s", english ? "record start" : "Aufzeichnungsbeginn");
-        else
-            stats_head += timestamp_min_to_date_time_string(stats_head, start_timestamp_min, english);
-
-        stats_head += sprintf_u(stats_head, "%s", english ? " to " : " bis ");
-
-        if (end_timestamp_min == 0)
-            stats_head += sprintf_u(stats_head, "%s", english ? "record end" : (start_timestamp_min == 0 ? "-ende" : "Aufzeichnungsende"));
-        else
-            stats_head += timestamp_min_to_date_time_string(stats_head, end_timestamp_min, english);
-        ++stats_head;
-
-        stats_head += sprintf_u(stats_head, "%s: ", english ? "Total energy of exported charges" : "Gesamtenergie exportierter Ladevorgänge");
-        if (charged_sum <= 999999999.999f) {
-            int written = sprintf_u(stats_head, "%.3f kWh", charged_sum);
-            if (!english)
-                for (int i = 0; i < written; ++i)
-                    if (stats_head[i] == '.')
-                        stats_head[i] = ',';
-            stats_head += 1 + written;
-        }
-        else {
-            memcpy(stats_head, ">=1000000000 kWh", ARRAY_SIZE(">=1000000000 kWh"));
-            stats_head += ARRAY_SIZE(">=1000000000 kWh");
-        }
-
-        if (electricity_price != 0) {
-            int written = sprintf_u(stats_head, "%s: %ld.%02ld€ (%.2f ct/kWh)%s",
-                            english ? "Total cost" : "Gesamtkosten",
-                            charged_cost_sum / 100, charged_cost_sum % 100,
-                            electricity_price / 100.0f,
-                            seen_charges_without_meter ? (english ? " Incomplete!" : " Unvollständig!") : "");
-            if (!english)
-                for (int i = 0; i < written; ++i)
-                    if (stats_head[i] == '.')
-                        stats_head[i] = ',';
-            stats_head += 1 + written;
-        }
-
-        // TODO: this is currently unnecessary, however if we support other ways of requesting a PDF
-        // we have to lock the pdf generator.
-        std::lock_guard<std::mutex> lock2{pdf_mutex};
-
-        int current_file = (first_file > -1 ? first_file : this->first_charge_record);
-        int current_charge = (first_charge > -1 ? first_charge : 0);
-        last_file = (last_file >= 0) ? last_file : this->last_charge_record;
-
-#define TABLE_LINE_LEN (17 /* start date: 01.02.3456 12:34\0 or 3456-02-01 12:34\0 */ \
-                      + 33 /* display name: max 32 chars + \0 */ \
-                      + 8  /* charged: (assumed max) "999.999\0" kWh else truncated to "> 1000\0" */ \
-                      + 11 /* charge duration max "9999:59:59\0" */ \
-                      + 16 /* meter start max 99'999'999.999\0 */ \
-                      + 8) /* cost max 9999.99\0 else truncated to >10000 */
-
-        char table_lines_buffer[8 * TABLE_LINE_LEN];
-        File f;
+        const auto callback = [this, &request](const void *data, size_t len, bool last_data) -> int {
+            return request.sendChunk(static_cast<const char *>(data), len);
+        };
 
         request.beginChunkedResponse(200, "application/pdf");
+        this->generate_pdf(callback, user_filter, start_timestamp_min, end_timestamp_min, current_timestamp_min, english, letterhead, letterhead_lines, &request);
+        return request.endChunkedResponse();
+    });
 
-        const char * table_header_de = "Startzeit\0"
-                                       "Benutzer\0"
-                                       "geladen (kWh)\0"
-                                       "Ladedauer\0"
-                                       "Zählerstand Start\0"
-                                       "Kosten (€)";
+#if MODULE_REMOTE_ACCESS_AVAILABLE()
+    if (config.get("enable_send")->asBool()) {
+        task_scheduler.scheduleWithFixedDelay([this]() {
+            timeval tv;
+            bool is_synced = rtc.clock_synced(&tv);
+            if (!is_synced) {
+                return;
+            }
 
-        const char * table_header_en = "Start time\0"
-                                       "User\0"
-                                       "Charged (kWh)\0"
-                                       "Duration\0"
-                                       "Meter start\0"
-                                       "Cost (€)";
+            tm now;
+            localtime_r(&tv.tv_sec, &now);
+            uint32_t current_minutes = tv.tv_sec / 60;
 
-        // If there are no charges tracked, still generate one page, the table header etc.
-        // We will skip creating the table content later.
-        bool any_charges_tracked = charge_records > 0;
-        if (!any_charges_tracked)
-            charge_records = 1;
+            // Check if we should retry a failed upload
+            if (upload_retry_count > 0 && current_minutes >= next_retry_time_minutes) {
+                logger.printfln("Retrying PDF upload (attempt %lu/%lu)", upload_retry_count + 1, MAX_RETRY_COUNT + 1);
+                server.runInHTTPThread([](void *arg) {
+                    auto that = static_cast<ChargeTracker *>(arg);
+                    that->send_pdf();
+                }, this);
+                return;
+            }
 
-        init_pdf_generator(&request,
-                           english ? "WARP Charge Log" : "WARP Ladelog",
-                           stats_buf, (electricity_price == 0) ? 5 : 6,
-                           letterhead, letterhead_lines,
-                           english ? table_header_en : table_header_de,
-                           charge_records,
-                           [this,
-                            user_filter,
-                            &table_lines_buffer,
-                            &f,
-                            first_file,
-                            first_charge,
-                            last_file,
-                            last_charge,
-                            &current_file,
-                            &current_charge,
-                            electricity_price,
-                            english,
-                            configured_users,
-                            &display_name_cache,
-                            any_charges_tracked]
-                           (const char * * table_lines) {
-            memset(table_lines_buffer, 0, ARRAY_SIZE(table_lines_buffer));
+            tm last_send;
+            uint32_t last_send_minutes = config.get("last_file_send")->asUint();
+            time_t last_send_time = last_send_minutes * 60;
+            localtime_r(&last_send_time, &last_send);
 
-            int lines_generated = 0;
-            char *table_lines_head = table_lines_buffer;
+            if (now.tm_mday >= 2) {
+                bool should_send = false;
 
-            char charge_buf[CHARGE_RECORD_SIZE];
-            ChargeStart cs;
-            ChargeEnd ce;
-
-            // Skip creating the table content if there were no charges tracked.
-            // charge_records is set to 1 in this case to still generate the page,
-            // table header etc.
-            while (any_charges_tracked && current_file <= last_file) {
-                if (current_charge >= (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE)) {
-                    current_charge = 0;
+                if (last_send_minutes == 0) {
+                    should_send = true;
+                } else {
+                    if (last_send.tm_year != now.tm_year || last_send.tm_mon != now.tm_mon) {
+                        should_send = true;
+                    }
                 }
 
-                if (!f) {
-                    f =  LittleFS.open(chargeRecordFilename(current_file));
-                    f.seek(CHARGE_RECORD_SIZE * current_charge);
-                }
+                if (should_send && upload_retry_count == 0) // Only start new upload if not retrying
+                    server.runInHTTPThread([](void *arg) {
+                        auto that = static_cast<ChargeTracker *>(arg);
+                        that->send_pdf();
+                    }, this);
+            }
 
-                for (; current_charge < (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE); ++current_charge) {
-                    if ((lines_generated == 8) || (current_file == last_file && current_charge > last_charge))
-                        break;
-                    if (f.read((uint8_t *)charge_buf, CHARGE_RECORD_SIZE) != CHARGE_RECORD_SIZE)
-                        break;
+        }, 10_s, 10_s);
+    }
 
-                    memcpy(&cs, charge_buf, sizeof(ChargeStart));
-                    memcpy(&ce, charge_buf + sizeof(ChargeStart), sizeof(ChargeEnd));
+    api.addCommand("charge_tracker/reset_last_send", Config::Null(), {}, [this](String &errmsg) {
+        timeval tv;
+        bool is_synced = rtc.clock_synced(&tv);
+        if (!is_synced) {
+            errmsg = "RTC not synced";
+            return;
+        }
 
-                    // No need to filter via start/end: we already know the first and last charge to be shown.
-                    bool include_user = user_filter == USER_FILTER_ALL_USERS || (user_filter == USER_FILTER_DELETED_USERS && !user_configured(configured_users, cs.user_id)) || cs.user_id == user_filter;
-                    if (!include_user)
-                        continue;
+        tm now;
+        localtime_r(&tv.tv_sec, &now);
 
+        // Set to last month
+        if (now.tm_mon == 0) {
+            now.tm_mon = 11;
+            now.tm_year--;
+        } else {
+            now.tm_mon--;
+        }
 
-                    table_lines_head = tracked_charge_to_string(table_lines_head, cs, ce, english, electricity_price, display_name_cache);
-                    ++lines_generated;
-                }
+        time_t last_month_time = mktime(&now);
+        uint32_t last_month_minutes = last_month_time / 60;
 
-                if (current_charge >= (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE)) {
-                    f.close();
-                    ++current_file;
-                    current_charge = 0;
-                }
+        config.get("last_file_send")->updateUint(last_month_minutes);
+        API::writeConfig("charge_tracker/config", &config);
+    }, true);
+#endif
+}
 
-                // >= last_charge is intentionally here: we already have this charge
-                if ((lines_generated == 8))
-                    break;
+// since this function can block for a long time, it must not be called from the main thread
+void ChargeTracker::send_pdf() {
+    if (upload_in_progress) {
+        return;
+    }
+    upload_in_progress = true;
+    logger.printfln("Starting PDF generation and remote upload...");
 
-                if (current_file == last_file && current_charge >= last_charge) {
-                    f.close();
+    String charger_uuid;
+    String password;
+    String user_uuid;
+    String url;
+    int cert_id;
+    auto ret = task_scheduler.await([this, &charger_uuid, &password, &user_uuid, &url, &cert_id]() {
+        charger_uuid = remote_access.config.get("uuid")->asString();
+        password = remote_access.config.get("password")->asString();
+        const int user_id = config.get("user")->asInt();
+        if (remote_access.config.get("users")->count() > 0) {
+            for (const auto &user : remote_access.config.get("users")) {
+                if (user.get("id")->asUint() == user_id) {
+                    user_uuid = user.get("uuid")->asString();
                     break;
                 }
             }
+        }
+        if (charger_uuid.isEmpty() || password.isEmpty() || user_uuid.isEmpty()) {
+            logger.printfln("Missing remote access credentials: charger_uuid=%s, password=%s, user_uuid=%s",
+                            charger_uuid.c_str(), password.c_str(), user_uuid.c_str());
+            return -1;
+        }
 
-            *table_lines = table_lines_buffer;
-
-            // The HTTP task generating the PDF has a higher priority than the main loop and will starve it of CPU time.
-            // Suspend execution for a moment after every block so that the main loop has a chance to run.
-            vTaskDelay(1);
-
-            return lines_generated;
-        });
-        free(display_name_cache);
-        logger.printfln("PDF generation done.");
-        return request.endChunkedResponse();
+        url = "https://" + remote_access.config.get("relay_host")->asString() + "/api/send_chargelog_to_user";
+        cert_id = remote_access.config.get("cert_id")->asInt();
+        return 0;
     });
+    if (ret != TaskScheduler::AwaitResult::Done) {
+        return;
+    }
+
+    remote_client = std::make_unique<AsyncHTTPSClient>();
+    remote_client->set_header("Content-Type", "application/json");
+
+    if (remote_client->start_chunked_request(url.c_str(), cert_id, HTTP_METHOD_POST) == -1) {
+        handle_upload_retry();
+        logger.printfln("Failed to send Charge-Log");
+        return;
+    };
+
+    String json_header = "{";
+    json_header += "\"charger_uuid\":\"" + charger_uuid + "\",";
+    json_header += "\"password\":\"" + password + "\",";
+    json_header += "\"user_uuid\":\"" + user_uuid + "\",";
+    json_header += "\"chargelog\":[";
+    remote_client->send_chunk(json_header.c_str(), json_header.length());
+
+    bool first = true;
+
+    auto pdf_stream_cb = [this, &first](const void *data, size_t len, bool last_data) -> int {
+        const uint8_t *data_u8 = static_cast<const uint8_t *>(data);
+        String chunk;
+        for (size_t i = 0; i < len; ++i) {
+            if (!first || i > 0) chunk += ",";
+            chunk += String(data_u8[i]);
+        }
+        if (len > 0) first = false;
+        int sent = remote_client->send_chunk(chunk.c_str(), chunk.length());
+        if (!chunk.isEmpty() && sent != chunk.length()) {
+            logger.printfln("Failed to send PDF chunk to remote access server");
+            return -1; // Indicate error
+        }
+        return ESP_OK;
+    };
+
+    this->generate_pdf(pdf_stream_cb, -2, 0, 0, rtc.timestamp_minutes(), true, nullptr, 0, nullptr);
+
+    String json_footer = "]}";
+    remote_client->send_chunk(json_footer.c_str(), json_footer.length());
+    remote_client->finish_chunked_request();
+
+    task_scheduler.scheduleOnce([this]() {
+        this->check_remote_client_status();
+    }, 1_s);
+}
+
+void ChargeTracker::handle_upload_retry()
+{
+    upload_retry_count++;
+    uint32_t delay_minutes = BASE_RETRY_DELAY_MINUTES * (1 << (upload_retry_count - 1));
+    if (delay_minutes > 480) {
+        delay_minutes = 480;
+    }
+
+    if (upload_retry_count <= MAX_RETRY_COUNT) {
+        next_retry_time_minutes = rtc.timestamp_minutes() + delay_minutes;
+
+        logger.printfln("PDF upload failed. Retry %lu/%lu scheduled in %lu minutes",
+                      upload_retry_count, MAX_RETRY_COUNT, delay_minutes);
+    } else {
+        upload_retry_count = MAX_RETRY_COUNT;
+        next_retry_time_minutes = delay_minutes;
+        logger.printfln("PDF upload failed. Maximum retry attempts (%lu) exceeded. Giving up.",
+                      MAX_RETRY_COUNT);
+    }
+}
+
+void ChargeTracker::check_remote_client_status()
+{
+#if MODULE_REMOTE_ACCESS_AVAILABLE()
+    if (!remote_client) {
+        logger.printfln("PDF generation and remote upload completed. Client was destroyed.");
+        return;
+    }
+
+    int status = remote_client->read_response_status();
+    if (status == ESP_ERR_HTTP_EAGAIN) {
+        task_scheduler.scheduleOnce([this]() {
+            this->check_remote_client_status();
+        }, 1_s);
+    } else if (status == 200) {
+        upload_retry_count = 0;
+        next_retry_time_minutes = 0;
+        config.get("last_file_send")->updateUint(rtc.timestamp_minutes());
+        API::writeConfig("charge_tracker/config", &config);
+        logger.printfln("PDF generation and remote upload completed successfully. Status: %d", status);
+        remote_client->close_chunked_request();
+        upload_in_progress = false;
+    } else {
+        logger.printfln("PDF generation and remote upload failed. Status: %d", status);
+        handle_upload_retry();
+        remote_client->close_chunked_request();
+        upload_in_progress = false;
+    }
+#endif
+}
+
+void ChargeTracker::generate_pdf(
+    std::function<int(const void *data, size_t len, bool last_data)> &&callback,
+    int user_filter,
+    uint32_t start_timestamp_min,
+    uint32_t end_timestamp_min,
+    uint32_t current_timestamp_min,
+    bool english,
+    const char *letterhead,
+    int letterhead_lines,
+    WebServerRequest *request
+) {
+    char stats_buf[384];
+    double charged_sum = 0;
+    uint32_t charged_cost_sum = 0;
+    bool seen_charges_without_meter = false;
+    int charge_records = 0;
+    int first_file = -1;
+    int first_charge = -1;
+    int last_file = -1;
+    int last_charge = -1;
+    std::lock_guard<std::mutex> lock{records_mutex};
+    uint8_t configured_users[MAX_ACTIVE_USERS] = {};
+    uint32_t electricity_price;
+    String dev_name = "unknown device";
+    auto await_result = task_scheduler.await([this, configured_users, &electricity_price, &dev_name]() mutable {
+        electricity_price = this->config.get("electricity_price")->asUint();
+        for (size_t i = 0; i < users.config.get("users")->count(); ++i) {
+            configured_users[i] = users.config.get("users")->get(i)->get("id")->asUint();
+        }
+#if MODULE_DEVICE_NAME_AVAILABLE()
+        dev_name = device_name.display_name.get("display_name")->asString();
+        if (device_name.display_name.get("display_name")->asString() != device_name.name.get("name")->asString())
+            dev_name += " (" + device_name.name.get("name")->asString() + ")";
+#endif
+    });
+    if (await_result == TaskScheduler::AwaitResult::Timeout) {
+        if (request != nullptr) {
+            request->send(500, "text/plain", "Failed to generate PDF: Task timed out");
+        } else {
+            logger.printfln("Failed to generate PDF: Task timed out");
+        }
+        return;
+    }
+    {
+        char charge_buf[sizeof(ChargeStart) + sizeof(ChargeEnd)];
+        ChargeStart cs;
+        ChargeEnd ce;
+        for (int i = this->first_charge_record; i <= this->last_charge_record; ++i) {
+            File f = LittleFS.open(chargeRecordFilename(i));
+            for (int j = 0; j < (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE); ++j) {
+                if (f.read((uint8_t *)charge_buf, CHARGE_RECORD_SIZE) != CHARGE_RECORD_SIZE)
+                    goto search_done;
+                memcpy(&cs, charge_buf, sizeof(ChargeStart));
+                memcpy(&ce, charge_buf + sizeof(ChargeStart), sizeof(ChargeEnd));
+                if (cs.timestamp_minutes != 0 && start_timestamp_min != 0 && cs.timestamp_minutes < start_timestamp_min) {
+                    charge_records = 0;
+                    first_file = -1;
+                    first_charge = -1;
+                    charged_sum = 0;
+                    charged_cost_sum = 0;
+                    continue;
+                }
+                if (cs.timestamp_minutes != 0 && end_timestamp_min != 0 && cs.timestamp_minutes > end_timestamp_min) {
+                    last_file = i;
+                    last_charge = j;
+                    goto search_done;
+                }
+                bool include_user = user_filter == -2 || (user_filter == -1 && !user_configured(configured_users, cs.user_id)) || cs.user_id == user_filter;
+                if (!include_user)
+                    continue;
+                if (first_file == -1)
+                    first_file = i;
+                if (first_charge == -1)
+                    first_charge = j;
+                last_file = i;
+                last_charge = j;
+                ++charge_records;
+                if (charged_invalid(cs, ce))
+                    seen_charges_without_meter = true;
+                else {
+                    double charged = ce.meter_end - cs.meter_start;
+                    charged_sum += charged;
+                    if (electricity_price != 0)
+                        charged_cost_sum += round(charged * electricity_price / 100.0f);
+                }
+            }
+        }
+    }
+search_done:
+    display_name_entry *display_name_cache = static_cast<decltype(display_name_cache)>(malloc_iram_or_psram_or_dram(MAX_PASSIVE_USERS * sizeof(display_name_cache[0])));
+    if (!display_name_cache) {
+        if (request != nullptr) {
+            request->send(500, "text/plain", "Failed to generate PDF: No memory");
+        } else {
+            logger.printfln("Failed to generate PDF: No memory");
+        }
+        return;
+    }
+    for (size_t i = 0; i < MAX_PASSIVE_USERS; i++) {
+        display_name_cache[i].length = UINT32_MAX;
+    }
+    char *stats_head = stats_buf;
+    stats_head += 1 + sprintf_u(stats_head, "%s: %s", english ? "Charger" : "Wallbox", dev_name.c_str());
+    stats_head += sprintf_u(stats_head, "%s: ", english ? "Exported on" : "Exportiert am");
+    stats_head += 1 + timestamp_min_to_date_time_string(stats_head, current_timestamp_min, english);
+    stats_head += sprintf_u(stats_head, "%s: ", english ? "Exported users" : "Exportierte Benutzer");
+    if (user_filter == -2)
+        stats_head += sprintf_u(stats_head, "%s", english ? "all users" : "Alle Benutzer");
+    else if (user_filter == -1)
+        stats_head += sprintf_u(stats_head, "%s", english ? "deleted users" : "Gelöschte Benutzer");
+    else
+        stats_head += get_display_name(user_filter, stats_head, display_name_cache);
+    ++stats_head;
+    stats_head += sprintf_u(stats_head, "%s: ", english ? "Exported period" : "Exportierter Zeitraum");
+    if (start_timestamp_min == 0)
+        stats_head += sprintf_u(stats_head, "%s", english ? "record start" : "Aufzeichnungsbeginn");
+    else
+        stats_head += timestamp_min_to_date_time_string(stats_head, start_timestamp_min, english);
+    stats_head += sprintf_u(stats_head, "%s", english ? " to " : " bis ");
+    if (end_timestamp_min == 0)
+        stats_head += sprintf_u(stats_head, "%s", english ? "record end" : (start_timestamp_min == 0 ? "-ende" : "Aufzeichnungsende"));
+    else
+        stats_head += timestamp_min_to_date_time_string(stats_head, end_timestamp_min, english);
+    ++stats_head;
+    stats_head += sprintf_u(stats_head, "%s: ", english ? "Total energy of exported charges" : "Gesamtenergie exportierter Ladevorgänge");
+    if (charged_sum <= 999999999.999f) {
+        int written = sprintf_u(stats_head, "%.3f kWh", charged_sum);
+        if (!english)
+            for (int i = 0; i < written; ++i)
+                if (stats_head[i] == '.')
+                    stats_head[i] = ',';
+        stats_head += 1 + written;
+    }
+    else {
+        memcpy(stats_head, ">=1000000000 kWh", ARRAY_SIZE(">=1000000000 kWh"));
+        stats_head += ARRAY_SIZE(">=1000000000 kWh");
+    }
+    if (electricity_price != 0) {
+        int written = sprintf_u(stats_head, "%s: %ld.%02ld€ (%.2f ct/kWh)%s",
+                        english ? "Total cost" : "Gesamtkosten",
+                        charged_cost_sum / 100, charged_cost_sum % 100,
+                        electricity_price / 100.0f,
+                        seen_charges_without_meter ? (english ? " Incomplete!" : " Unvollständig!") : "");
+        if (!english)
+            for (int i = 0; i < written; ++i)
+                if (stats_head[i] == '.')
+                    stats_head[i] = ',';
+        stats_head += 1 + written;
+    }
+    std::lock_guard<std::mutex> lock2{pdf_mutex};
+    int current_file = (first_file > -1 ? first_file : this->first_charge_record);
+    int current_charge = (first_charge > -1 ? first_charge : 0);
+    last_file = (last_file >= 0) ? last_file : this->last_charge_record;
+#define TABLE_LINE_LEN (17 + 33 + 8 + 11 + 16 + 8)
+    char table_lines_buffer[8 * TABLE_LINE_LEN];
+    File f;
+    const char * table_header_de = "Startzeit\0"
+                                   "Benutzer\0"
+                                   "geladen (kWh)\0"
+                                   "Ladedauer\0"
+                                   "Zählerstand Start\0"
+                                   "Kosten (€)";
+    const char * table_header_en = "Start time\0"
+                                   "User\0"
+                                   "Charged (kWh)\0"
+                                   "Duration\0"
+                                   "Meter start\0"
+                                   "Cost (€)";
+    bool any_charges_tracked = charge_records > 0;
+    if (!any_charges_tracked)
+        charge_records = 1;
+    init_pdf_generator(callback,
+                       english ? "WARP Charge Log" : "WARP Ladelog",
+                       stats_buf, (electricity_price == 0) ? 5 : 6,
+                       letterhead, letterhead_lines,
+                       english ? table_header_en : table_header_de,
+                       charge_records,
+                       [this,
+                        user_filter,
+                        &table_lines_buffer,
+                        &f,
+                        first_file,
+                        first_charge,
+                        last_file,
+                        last_charge,
+                        &current_file,
+                        &current_charge,
+                        electricity_price,
+                        english,
+                        configured_users,
+                        &display_name_cache,
+                        any_charges_tracked]
+                       (const char * * table_lines) {
+        memset(table_lines_buffer, 0, ARRAY_SIZE(table_lines_buffer));
+        int lines_generated = 0;
+        char *table_lines_head = table_lines_buffer;
+        char charge_buf[CHARGE_RECORD_SIZE];
+        ChargeStart cs;
+        ChargeEnd ce;
+        while (any_charges_tracked && current_file <= last_file) {
+            if (current_charge >= (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE)) {
+                current_charge = 0;
+            }
+            if (!f) {
+                f =  LittleFS.open(chargeRecordFilename(current_file));
+                f.seek(CHARGE_RECORD_SIZE * current_charge);
+            }
+            for (; current_charge < (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE); ++current_charge) {
+                if ((lines_generated == 8) || (current_file == last_file && current_charge > last_charge))
+                    break;
+                if (f.read((uint8_t *)charge_buf, CHARGE_RECORD_SIZE) != CHARGE_RECORD_SIZE)
+                    break;
+                memcpy(&cs, charge_buf, sizeof(ChargeStart));
+                memcpy(&ce, charge_buf + sizeof(ChargeStart), sizeof(ChargeEnd));
+                bool include_user = user_filter == -2 || (user_filter == -1 && !user_configured(configured_users, cs.user_id)) || cs.user_id == user_filter;
+                if (!include_user)
+                    continue;
+                table_lines_head = tracked_charge_to_string(table_lines_head, cs, ce, english, electricity_price, display_name_cache);
+                ++lines_generated;
+            }
+            if (current_charge >= (CHARGE_RECORD_MAX_FILE_SIZE / CHARGE_RECORD_SIZE)) {
+                f.close();
+                ++current_file;
+                current_charge = 0;
+            }
+            if ((lines_generated == 8))
+                break;
+            if (current_file == last_file && current_charge >= last_charge) {
+                f.close();
+                break;
+            }
+        }
+        *table_lines = table_lines_buffer;
+        vTaskDelay(1);
+        return lines_generated;
+    });
+    free(display_name_cache);
+    logger.printfln("PDF generation done.");
+    callback(nullptr, 0, true);
 }
