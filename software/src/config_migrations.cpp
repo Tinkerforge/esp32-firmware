@@ -897,6 +897,50 @@ static const ConfigMigration migrations[] = {
         }
     },
 #endif
+
+#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER() || OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER_V2() || OPTIONS_PRODUCT_ID_IS_SMART_ENERGY_BROKER()
+    {
+        #if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3()
+        2, 8, 4,
+        #elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER()
+        2, 4, 4,
+        #elif OPTIONS_PRODUCT_ID_IS_ENERGY_MANAGER_V2() || OPTIONS_PRODUCT_ID_IS_SMART_ENERGY_BROKER()
+        1, 3, 4,
+        #endif
+        // Changes
+        // - Migrate Victron Energy GX virtual meter "inverter" to "PV" and fix location
+        [](){
+            // - Migrate Victron Energy GX virtual meter "inverter" to "PV" and fix location
+            {
+                DynamicJsonDocument cfg{OPTIONS_API_JSON_MAX_LENGTH()};
+                for (size_t meter_id = 0; meter_id < OPTIONS_METERS_MAX_SLOTS(); ++meter_id) {
+                    char buf[64];
+                    StringWriter sw(buf, ARRAY_SIZE(buf));
+                    sw.printf("meters/%zu/config", meter_id);
+                    if (!read_config_file(buf, cfg))
+                        continue;
+
+                    if (cfg[0] != 6) // not a Modbus/TCP meter
+                        continue;
+
+                    if (cfg[1]["table"][0] != 5) // not a Victron Energy GX
+                        continue;
+
+                    if (cfg[1]["table"][1]["virtual_meter"] != 1) // not an inverter
+                        continue;
+
+                    cfg[1]["table"][1]["virtual_meter"] = 5; // change inverter to PV
+
+                    if (cfg[1]["location"] == 3) // change location from inverter to PV if it was not changed
+                        cfg[1]["location"] = 7;
+
+                    write_config_file(buf, cfg);
+                }
+            }
+        }
+    }
+#endif
+
 };
 
 bool prepare_migrations()
