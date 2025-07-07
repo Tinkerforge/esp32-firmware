@@ -637,8 +637,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
             const row: TableRow = {
                 columnValues: [user.email],
                 onRemoveClick: async () => {
-                    this.setState({removeUsers: this.state.removeUsers.concat(user.id)});
-                    this.setState({users: this.state.users.filter((u) => u.id != user.id)});
+                    this.setState({users: this.state.users.filter((u) => u.id != user.id), removeUsers: this.state.removeUsers.concat(user.id)});
                     this.setDirty(true);
                     return true;
                 },
