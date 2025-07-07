@@ -912,7 +912,7 @@ static const ConfigMigration migrations[] = {
         [](){
             // - Migrate Victron Energy GX virtual meter "inverter" to "PV" and fix location
             {
-                DynamicJsonDocument cfg{OPTIONS_API_JSON_MAX_LENGTH()};
+                DynamicJsonDocument cfg{16384};
                 for (size_t meter_id = 0; meter_id < OPTIONS_METERS_MAX_SLOTS(); ++meter_id) {
                     char buf[64];
                     StringWriter sw(buf, ARRAY_SIZE(buf));
