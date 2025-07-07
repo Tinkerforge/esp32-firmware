@@ -138,9 +138,11 @@ void ChargeManager::pre_setup()
     }};
 
     low_level_config = Config::Object({
-        {"global_hysteresis", Config::Uint(3 * 60, 0, 60 * 60)},
-        {"wakeup_time", Config::Uint(3 * 60, 0, 60 * 60)},
-        {"plug_in_time", Config::Uint(3 * 60, 0, 60 * 60)},
+        // 3 * 60 + 30 seconds to make sure we don't switch anything
+        // while the EVSE is waking up a vehicle via IEC state F.
+        {"global_hysteresis", Config::Uint(3 * 60 + 30, 0, 60 * 60)},
+        {"wakeup_time", Config::Uint(3 * 60 + 30, 0, 60 * 60)},
+        {"plug_in_time", Config::Uint(3 * 60 + 30, 0, 60 * 60)},
         {"enable_current_factor_pct", Config::Uint(150, 100, 300)},
         {"allocation_interval", Config::Uint(10, 1, 60 * 60)},
         {"rotation_interval", Config::Uint(15 * 60, 0, 24 * 60 * 60)},
