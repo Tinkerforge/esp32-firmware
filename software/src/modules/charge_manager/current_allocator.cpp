@@ -49,9 +49,6 @@ static constexpr micros_t TIMEOUT = 32_s;
 
 #define trace(fmt, ...) logger.tracefln_plain(charge_manager.trace_buffer_index, fmt __VA_OPT__(,) __VA_ARGS__)
 
-static constexpr int UNLIMITED = 10 * 1000 * 1000; /* mA */
-static constexpr micros_t KEEP_ACTIVE_AFTER_PHASE_SWITCH_TIME = 1_min;
-
 static void print_alloc(int stage, const StageContext &sc) {
     char buf[768] = {};
     logger.printfln("%d LIMITS raw(%6.3f,%6.3f,%6.3f,%6.3f) min(%6.3f,%6.3f,%6.3f,%6.3f) spread(%6.3f,%6.3f,%6.3f,%6.3f) max_pv %6.3f",
