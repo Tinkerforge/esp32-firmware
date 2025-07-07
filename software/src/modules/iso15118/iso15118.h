@@ -29,10 +29,11 @@
 #include "iso2.h"
 #include "iso20.h"
 
+#include "chargetype.enum.h"
+
 class ISO15118 final : public IModule
 {
 private:
-    ConfigRoot config;
     ConfigRoot state_common;
     ConfigRoot state_din70121;
     ConfigRoot state_iso2;
@@ -42,6 +43,8 @@ private:
     size_t trace_buffer_index_ll;
 
 public:
+    ConfigRoot config;
+
     ISO15118(){}
     void pre_setup() override;
     void setup() override;
@@ -57,11 +60,4 @@ public:
     DIN70121 din70121;
     ISO2 iso2;
     ISO20 iso20;
-
-    enum class ChargeType : uint8_t {
-        DC_ReadSocOnce,
-        DC_ReadSocInLoop,
-        AC_Charging
-    };
-    ChargeType charge_type = ChargeType::AC_Charging;
 };
