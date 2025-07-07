@@ -105,9 +105,11 @@ public:
     void set_header(const String &key, const String &value);
     bool is_busy() const { return in_progress; }
     void fetch(const char *url, int cert_id, esp_http_client_method_t method, const char *body, size_t body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback);
-    void start_chunked_request(const char *url, int cert_id, esp_http_client_method_t method, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback);
+    int start_chunked_request(const char *url, int cert_id, esp_http_client_method_t method);
     int send_chunk(const void *data, size_t size);
-    void finish_chunked_request();
+    int finish_chunked_request();
+    int read_response_status();
+    void close_chunked_request();
 
 private:
     void add_default_headers();

@@ -311,33 +311,25 @@ void AsyncHTTPSClient::delete_async(const char *url, int cert_id, const char *bo
     fetch(url, cert_id, HTTP_METHOD_DELETE, body, body_size, std::move(callback));
 }
 
-void AsyncHTTPSClient::start_chunked_request(const char *url, int cert_id, esp_http_client_method_t method, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback) {
+int AsyncHTTPSClient::start_chunked_request(const char *url, int cert_id, esp_http_client_method_t method) {
     if (strncmp(url, https_prefix, https_prefix_len) != 0) {
-        error_abort(AsyncHTTPSClientError::NoHTTPSURL);
-        return;
+        return -1;
     }
 
     if (in_progress) {
-        error_abort(AsyncHTTPSClientError::Busy);
-        return;
+        return -1;
     }
 
-    this->callback = std::move(callback);
     in_progress = true;
     abort_requested = false;
     received_len = 0;
-
-    if (body != nullptr) {
-        owned_body = String(body, body_size);
-    }
 
     esp_http_client_config_t http_config = {};
 
     http_config.method = method;
     http_config.url = url;
-    http_config.event_handler = event_handler;
     http_config.user_data = this;
-    http_config.is_async = true;
+    http_config.is_async = false;
     http_config.timeout_ms = 50;
     http_config.buffer_size = 1024;
     http_config.buffer_size_tx = 1024;
@@ -351,59 +343,80 @@ void AsyncHTTPSClient::start_chunked_request(const char *url, int cert_id, esp_h
         cert = certs.get_cert(static_cast<uint8_t>(cert_id), &cert_len);
 
         if (cert == nullptr) {
-            error_abort(AsyncHTTPSClientError::NoCert);
-            return;
+            logger.printfln("Certificate with ID %i not found", cert_id);
+            clear();
+            return -1;
         }
 
         http_config.cert_pem = (const char *)cert.get();
         // http_config.skip_cert_common_name_check = true;
 #else
         logger.printfln("Can't use custom certificate: certs module is not built into this firmware!");
-        error_abort(AsyncHTTPSClientError::NoCert);
-        return;
+        clear()
+        return -1;
 #endif
     }
 
     http_client = esp_http_client_init(&http_config);
 
     if (http_client == nullptr) {
-        error_abort(AsyncHTTPSClientError::HTTPClientInitFailed);
-        return;
-    }
-
-    if (owned_body.length() > 0 && esp_http_client_set_post_field(http_client, owned_body.c_str(), owned_body.length())) {
-        error_abort(AsyncHTTPSClientError::HTTPClientSetBodyFailed);
-        return;
+        logger.printfln("Failed to initialize HTTP client");
+        clear();
+        return -1;
     }
 
     if (cookies.length() > 0) {
         if (esp_http_client_set_header(http_client, "cookie", cookies.c_str()) != ESP_OK) {
-            error_abort(AsyncHTTPSClientError::HTTPClientSetCookieFailed);
-            return;
+            logger.printfln("Failed to set cookie header");
+            clear();
+            return -1;
         }
     }
     if (headers.size() > 0) {
         for (std::pair<String, String> header : headers) {
             if (esp_http_client_set_header(http_client, header.first.c_str(), header.second.c_str()) != ESP_OK) {
-                error_abort(AsyncHTTPSClientError::HTTPClientSetHeaderFailed);
-                return;
+                logger.printfln("Failed to set header: %s: %s", header.first.c_str(), header.second.c_str());
+                clear();
+                return -1;
             }
         }
     }
 
     last_async_alive = now_us();
 
-    esp_err_t err = esp_http_client_open(http_client, owned_body.length() > 0 ? owned_body.length() : 0);
+    esp_err_t err = esp_http_client_open(http_client, -1);
     if (err != ESP_OK) {
-        error_abort(AsyncHTTPSClientError::HTTPClientError, err);
-        return;
+        clear();
+        return -1;
     }
+
+    return 0;
 }
 
-void AsyncHTTPSClient::finish_chunked_request() {
+int AsyncHTTPSClient::finish_chunked_request() {
     if (!in_progress || http_client == nullptr) {
-        return;
+        return -1;
     }
+    return esp_http_client_write(http_client, "0\r\n\r\n" , 5);
+}
+
+int AsyncHTTPSClient::read_response_status() {
+    if (!in_progress || http_client == nullptr) {
+        return -1;
+    }
+
+    int ret = esp_http_client_fetch_headers(http_client);
+    ret = ~ret;
+    ret += 1;
+    if (ret == ESP_ERR_HTTP_EAGAIN) {
+        return ESP_ERR_HTTP_EAGAIN;
+    } else if (ret == ESP_FAIL) {
+        return esp_http_client_get_errno(http_client);
+    }
+    return esp_http_client_get_status_code(http_client);
+}
+
+void AsyncHTTPSClient::close_chunked_request() {
     clear();
 }
 
@@ -598,6 +611,13 @@ int AsyncHTTPSClient::send_chunk(const void *data, size_t size) {
     if (http_client == nullptr) {
         return -1;
     }
+    if (size == 0 || data == nullptr) {
+        return 0;
+    }
+    char prefix[16];
+    int prefix_size = snprintf(prefix, 16, "%X\r\n", size);
+    esp_http_client_write(http_client, prefix, prefix_size);
     int written = esp_http_client_write(http_client, reinterpret_cast<const char *>(data), size);
+    esp_http_client_write(http_client, "\r\n", 2);
     return written;
 }
