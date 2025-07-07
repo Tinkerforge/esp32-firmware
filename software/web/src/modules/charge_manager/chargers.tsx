@@ -455,6 +455,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                                 onRemoveClick: !energyManagerMode && (charger.host == '127.0.0.1' || charger.host == 'localhost') ? undefined : async () => {
                                     this.setState({chargers: state.chargers.filter((v, idx) => idx != i)});
                                     this.setDirty(true);
+                                    return true;
                                 }
                             }})
                         }

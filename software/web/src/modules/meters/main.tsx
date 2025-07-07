@@ -1057,6 +1057,7 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                     onRemoveClick: async () => {
                                         this.setState({configs_table: {...this.state.configs_table, [meter_slot]: [MeterClassID.None, null]}});
                                         this.setDirty(true);
+                                        return true;
                                     }
                                 }
                             })}

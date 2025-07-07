@@ -445,6 +445,7 @@ export class Users extends ConfigComponent<'users/config', {}, UsersState> {
                                     onRemoveClick: async () => {
                                         this.setState({users: state.users.filter((v, idx) => idx != i + 1)});
                                         this.setDirty(true);
+                                        return true;
                                     }}
                                 })
                             }

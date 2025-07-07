@@ -640,6 +640,7 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
                     this.setState({removeUsers: this.state.removeUsers.concat(user.id)});
                     this.setState({users: this.state.users.filter((u) => u.id != user.id)});
                     this.setDirty(true);
+                    return true;
                 },
             }
             users.push(row);

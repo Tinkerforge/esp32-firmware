@@ -197,6 +197,7 @@ class MeterValueIDTable extends Component<MeterValueIDTableProps, MeterValueIDTa
                     columnValues: [get_meter_value_id_name(value_id)],
                     onRemoveClick: async () => {
                         this.props.on_config(util.get_updated_union(this.props.config, {value_ids: this.props.config[1].value_ids.filter((v, k) => k !== i)}));
+                        return true;
                     },
                     onEditShow: async () => {
                         this.setState({value_id: value_id});

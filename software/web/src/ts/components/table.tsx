@@ -40,7 +40,7 @@ export interface TableRow {
     onEditCheck?: () => Promise<boolean>;
     onEditSubmit?: () => Promise<void>;
     onEditHide?: () => Promise<void>;
-    onRemoveClick?: () => Promise<void>;
+    onRemoveClick?: () => Promise<boolean>; // return true if row was actually removed, return false otherwise
     onEditStart?: never;
     onEditCommit?: never;
     onEditAbort?: never;
@@ -159,13 +159,11 @@ export class Table extends Component<TableProps, TableState> {
                                     <Button variant="danger"
                                             size="sm"
                                             onClick={async () => {
-                                                await row.onRemoveClick();
-
-                                                // FIXME: not the best idea to link rows and metadata about rows by index.
-                                                //        what if onRemoveClick doesn't actually remove the row?
-                                                let showRowExtra = state.showRowExtra.concat();
-                                                showRowExtra.splice(i, 1);
-                                                this.setState({showRowExtra: showRowExtra});
+                                                if (await row.onRemoveClick()) {
+                                                    let showRowExtra = state.showRowExtra.concat();
+                                                    showRowExtra.splice(i, 1);
+                                                    this.setState({showRowExtra: showRowExtra});
+                                                }
                                             }}
                                             disabled={!row.onRemoveClick}>
                                         <Trash2/>
@@ -245,13 +243,11 @@ export class Table extends Component<TableProps, TableState> {
                                         size="sm"
                                         className="ml-2"
                                         onClick={async () => {
-                                            await row.onRemoveClick();
-
-                                            // FIXME: not the best idea to link rows and metadata about rows by index.
-                                            //        what if onRemoveClick doesn't actually remove the row?
-                                            let showRowExtra = state.showRowExtra.concat();
-                                            showRowExtra.splice(i, 1);
-                                            this.setState({showRowExtra: showRowExtra});
+                                            if (await row.onRemoveClick()) {
+                                                let showRowExtra = state.showRowExtra.concat();
+                                                showRowExtra.splice(i, 1);
+                                                this.setState({showRowExtra: showRowExtra});
+                                            }
                                         }}
                                         disabled={!row.onRemoveClick}>
                                     <Trash2/>

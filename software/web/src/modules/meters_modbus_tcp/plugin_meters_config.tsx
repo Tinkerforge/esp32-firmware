@@ -758,6 +758,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
                     columnValues: [__("meters_modbus_tcp.content.registers_register")(register_type, register.addr + start_address_offset, get_meter_value_id_name(register.id))],
                     onRemoveClick: async () => {
                         this.props.on_table(util.get_updated_union(this.props.table, {registers: this.props.table[1].registers.filter((r, k) => k !== i)}));
+                        return true;
                     },
                     onEditShow: async () => {
                         this.setState({

@@ -418,6 +418,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                                 onRemoveClick: async () => {
                                     this.setState({plane_configs: {...state.plane_configs, [active_plane_index]: {enable: false, name: "#" + active_plane_index, lat: 0, long: 0, dec: 0, az: 0, wp: 0}}});
                                     this.setDirty(true);
+                                    return true;
                                 }}
                             })
                         }

@@ -88,7 +88,10 @@ export class Certs extends Component<{}, State> {
                                             cert: state.editCert.file == null ? null : await state.editCert.file.text()
                                         }, () => __("certs.script.mod_cert_failed"));
                                     },
-                                    onRemoveClick: async () => { await API.call('certs/remove', {id: cert.id}, () => __("certs.script.del_cert_failed")); }
+                                    onRemoveClick: async () => {
+                                        await API.call('certs/remove', {id: cert.id}, () => __("certs.script.del_cert_failed"));
+                                        return true;
+                                    }
                                 }})
                             }
                             addEnabled={API.get('certs/state').certs.length < options.CERTS_MAX_CERTS}

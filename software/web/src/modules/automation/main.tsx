@@ -297,6 +297,7 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
                 onRemoveClick: async () => {
                     this.setState({tasks: this.state.tasks.filter((_, k) => idx != k)})
                     this.setDirty(true);
+                    return true;
                 },
                 editTitle: __("automation.content.edit_rule_title"),
             };

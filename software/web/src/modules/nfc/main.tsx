@@ -204,6 +204,7 @@ export class NFC extends ConfigComponent<'nfc/config', {}, NFCState> {
                                     onRemoveClick: async () => {
                                         this.setState({authorized_tags: state.authorized_tags.filter((v, idx) => idx != i)});
                                         this.setDirty(true);
+                                        return true;
                                     }
                                 }})
                             }
