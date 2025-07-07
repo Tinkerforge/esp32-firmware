@@ -6,7 +6,29 @@ let x = {
             "power_history": null,
             "current_power": "Power",
             "power_sums": "Powers",
-            "meters_without_location": /*FFN*/(meter_names: string[]) => <p>No location is configured for the following {meter_names.length > 1 ? <>energy meters</> : <>energy meter</>}. Please select a location for {meter_names.length > 1 ? <>these <a href="#meters">energy meters</a></> : <>this <a href="#meters">energy meter</a></>}, to include {meter_names.length > 1 ? <>them</> : <>it</>} in the powers and power history:</p>/*NF*/
+            "meters_without_location": /*FFN*/(meter_names: string[]) => <p>No location is configured for the following {meter_names.length > 1 ? <>energy meters</> : <>energy meter</>}. Please select a location for {meter_names.length > 1 ? <>these <a href="#meters">energy meters</a></> : <>this <a href="#meters">energy meter</a></>}, to include {meter_names.length > 1 ? <>them</> : <>it</>} in the powers and power history:</p>/*NF*/,
+            "voltage_alert_label": "Energy Meters",
+            "voltage_alert_message": /*FFN*/(voltages_out_of_range: [string, number][]) => {
+                let result = [];
+
+                for (let voltage of voltages_out_of_range.slice(0, -1)) {
+                    if (result.length > 0) {
+                        result.push(<>, </>);
+                    }
+
+                    result.push(<><strong>{voltage[0]}</strong> ({voltage[1]} V)</>);
+                }
+
+                if (result.length > 0) {
+                    result.push(<> and </>);
+                }
+
+                let last_voltage = voltages_out_of_range.slice(-1)[0];
+
+                result.push(<><strong>{last_voltage[0]}</strong> ({last_voltage[1]} V)</>);
+
+                return <>The {result.length > 1 ? <>voltages</> : <>voltage</>} of {result} {result.length > 1 ? <>are</> : <>is</>} outside of the acceptable range. {__("The_device")} will <strong>not</strong> work properly. Please check the connection of the supply cable, especially the neutral conductor!</>;
+            }/*NF*/
         },
         "navbar": {
             "meters": "Energy Meters"

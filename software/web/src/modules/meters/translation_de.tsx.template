@@ -6,7 +6,29 @@ let x = {
             "power_history": null,
             "current_power": "Leistung",
             "power_sums": "Leistungen",
-            "meters_without_location": /*FFN*/(meter_names: string[]) => <p>Für {meter_names.length > 1 ? <>die</> : <>den</>} folgenden Stromzähler ist kein Messort konfiguriert. Bitte einen Messort für {meter_names.length > 1 ? <>diese</> : <>diesen</>} <a href="#meters">Stromzähler</a> wählen, um {meter_names.length > 1 ? <>diese</> : <>diesen</>} in die Leistungen und den Leistungsverlauf miteinzubeziehen:</p>/*NF*/
+            "meters_without_location": /*FFN*/(meter_names: string[]) => <p>Für {meter_names.length > 1 ? <>die</> : <>den</>} folgenden Stromzähler ist kein Messort konfiguriert. Bitte einen Messort für {meter_names.length > 1 ? <>diese</> : <>diesen</>} <a href="#meters">Stromzähler</a> wählen, um {meter_names.length > 1 ? <>diese</> : <>diesen</>} in die Leistungen und den Leistungsverlauf miteinzubeziehen:</p>/*NF*/,
+            "voltage_alert_label": "Stromzähler",
+            "voltage_alert_message": /*FFN*/(voltages_out_of_range: [string, number][]) => {
+                let result = [];
+
+                for (let voltage of voltages_out_of_range.slice(0, -1)) {
+                    if (result.length > 0) {
+                        result.push(<>, </>);
+                    }
+
+                    result.push(<><strong>{voltage[0]}</strong> ({voltage[1]} V)</>);
+                }
+
+                if (result.length > 0) {
+                    result.push(<> und </>);
+                }
+
+                let last_voltage = voltages_out_of_range.slice(-1)[0];
+
+                result.push(<><strong>{last_voltage[0]}</strong> ({last_voltage[1]} V)</>);
+
+                return <>Die {result.length > 1 ? <>Spannungen</> : <>Spannung</>} für {result} {result.length > 1 ? <>liegen</> : <>liegt</>} außerhalb des zulässigen Bereichs. {__("The_device")} wird <strong>nicht</strong> korrekt funktionieren. Bitte den Anschluss der Zuleitung, inbesondere des Neutralleiters, kontrollieren!</>;
+            }/*NF*/
         },
         "navbar": {
             "meters": "Stromzähler"
