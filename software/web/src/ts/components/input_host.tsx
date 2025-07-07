@@ -17,6 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
+import * as util from "../util";
 import { Context, h } from "preact";
 import { __ } from "../translation";
 import { InputTextPatterned } from "./input_text";
@@ -39,7 +40,10 @@ export function InputHost(props: InputHostProps) {
         invalidFeedback = __("component.input_host.invalid_feedback");
     }
 
-    return <InputTextPatterned {...props} invalidFeedback={invalidFeedback} maxLength={64} pattern="^[a-zA-Z0-9\-\.]+$" />
+    return <InputTextPatterned {...props}
+                invalidFeedback={invalidFeedback}
+                maxLength={64}
+                pattern={`^(?:${util.IPV4_ADDRESS_PATTERN}|.*[^0-9\.].*)$`} />
 }
 
 register_id_context_component_type(InputHost);

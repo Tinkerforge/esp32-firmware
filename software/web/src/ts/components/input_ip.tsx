@@ -17,6 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
+import * as util from "../util";
 import { h, Context, Fragment, ComponentChildren } from "preact";
 import { useId, useContext } from "preact/hooks";
 import { JSX } from 'preact';
@@ -38,7 +39,7 @@ export function InputIP(props: InputIPProps) {
                minLength={7}
                maxLength={15}
                size={15}
-               pattern="^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?|0)$"
+               pattern={`^${util.IPV4_ADDRESS_PATTERN}$`}
                onInput={(e) => props.onValue((e.target as HTMLInputElement).value)}
                {...props}/>
         <div class="invalid-feedback">{props.invalidFeedback}</div>
