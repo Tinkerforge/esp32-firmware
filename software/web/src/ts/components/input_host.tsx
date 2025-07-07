@@ -43,6 +43,7 @@ export function InputHost(props: InputHostProps) {
     return <InputTextPatterned {...props}
                 invalidFeedback={invalidFeedback}
                 maxLength={64}
+                class={props.class + (props.value.endsWith(".localhost") ? " is-invalid" : "")}
                 pattern={`^(?:${util.IPV4_ADDRESS_PATTERN}|.*[^0-9\.].*)$`} />
 }
 
