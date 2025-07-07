@@ -1069,7 +1069,7 @@ void migrate_config()
 
     File file = LittleFS.open(migrations_executed ? "/migration/version" : "/config/version", "w");
 
-    file.printf("{\"spiffs\": \"%u.%u.%u\", \"config_type\": \"%s\"}", current.major, current.minor, current.patch, OPTIONS_CONFIG_TYPE());
+    file.printf("{\"spiffs\":\"%u.%u.%u\",\"config_type\":\"%s\"}", current.major, current.minor, current.patch, OPTIONS_CONFIG_TYPE());
     file.close();
 
     if (!migrations_executed)
