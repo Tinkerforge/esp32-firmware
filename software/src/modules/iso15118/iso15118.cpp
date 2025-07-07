@@ -94,6 +94,7 @@ void ISO15118::pre_setup()
     this->trace_buffer_index_ll = logger.alloc_trace_buffer("iso15118_ll", 1 << 19);
 
     config = ConfigRoot{Config::Object({
+        {"charge_type", Config::Enum(ChargeType::DCReadSocOnce)},
     }), [this](Config &update, ConfigSource source) -> String {
         return "";
     }};

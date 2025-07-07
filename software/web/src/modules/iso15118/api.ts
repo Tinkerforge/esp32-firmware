@@ -1,4 +1,5 @@
 export interface config {
+    charge_type: number;
 }
 
 export interface state_slac {

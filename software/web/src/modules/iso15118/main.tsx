@@ -34,6 +34,7 @@ import { InputNumber } from "../../ts/components/input_number";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { UplotData, UplotWrapperB, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { UplotLoader } from "../../ts/components/uplot_loader";
+import { ChargeType } from "./chargetype.enum";
 
 export function ISO15118Navbar() {
     return <NavbarItem name="iso15118" module="iso15118" title="ISO15118" symbol={<Activity />} />;
@@ -47,8 +48,7 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
 
     constructor() {
         super('iso15118/config',
-              () => __("iso15118.script.save_failed"),
-              () => __("iso15118.script.reboot_content_changed"));
+              () => __("iso15118.script.save_failed"));
 
         util.addApiEventListener("iso15118/state_slac", () => {
             // Update chart every time new price data comes in
@@ -140,6 +140,18 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
         return (
             <SubPage name="iso15118">
                 <ConfigForm id="iso15118_config_form" title="ISO15118" isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+                    <FormSeparator heading="Configuration"/>
+                    <FormRow label="Charge Type" label_muted="This is for testing different possible modes, will probably be changed/removed in release version">
+                        <InputSelect
+                            items={[
+                                ["0", "DC Read SoC Once"],
+                                ["1", "DC Read SoC In Loop"],
+                                ["2", "AC Charging"]
+                            ]}
+                            value={state.charge_type}
+                            onValue={(v) => this.setState({charge_type: parseInt(v)})}
+                        />
+                    </FormRow>
                     <FormSeparator heading="Signal Level Attenuation Characterisation (SLAC)"/>
                     <FormRow label="State">
                         <InputNumber value={state_slac.state}/>
