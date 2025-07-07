@@ -280,6 +280,13 @@ static int get_streams_per_page(bool first_page, int *table_lines_to_place)
     return result;
 }
 
+// 1274 is the guesstimated optimal MSS. See event_log.cpp.
+#ifdef BOARD_HAS_PSRAM
+static constexpr size_t pdf_write_buffer_size = 8 * 1274; // Half the TCP send window size looks best.
+#else
+static constexpr size_t pdf_write_buffer_size = 2 * 1274;
+#endif
+
 int init_pdf_generator(WebServerRequest *request,
                        const char *title,
                        const char *stats,
@@ -294,7 +301,7 @@ int init_pdf_generator(WebServerRequest *request,
     memset(&info, 0, sizeof(info));
     strncpy(info.title, title, ARRAY_SIZE(info.title) - 1);
 
-    struct pdf_doc *pdf = pdf_create(PDF_A4_WIDTH, PDF_A4_HEIGHT, &info);
+    struct pdf_doc *pdf = pdf_create(PDF_A4_WIDTH, PDF_A4_HEIGHT, &info, pdf_write_buffer_size);
     pdf_add_write_callback(pdf, [request](const void *buf, size_t len) -> int {
         int rc = request->sendChunk((const char *)buf, len);
         if (rc != ESP_OK)

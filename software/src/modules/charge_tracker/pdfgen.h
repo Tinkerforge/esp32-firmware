@@ -213,9 +213,10 @@ enum {
  * @param width Width of the page
  * @param height Height of the page
  * @param info Optional information to be put into the PDF header
+ * @param write_buf_size Size of the write buffer that is periodically flushed with the callback passed to pdf_add_write_callback
  * @return PDF document object, or NULL on failure
  */
-struct pdf_doc *pdf_create(float width, float height, const struct pdf_info *info);
+struct pdf_doc *pdf_create(float width, float height, const struct pdf_info *info, size_t write_buf_size);
 
 /**
  * Destroy the pdf object, and all of its associated memory

@@ -242,13 +242,6 @@ struct pdf_object {
     };
 };
 
-// 1274 is the guesstimated optimal MSS. See event_log.cpp.
-#ifdef BOARD_HAS_PSRAM
-static constexpr size_t pdf_write_buffer_size = 8 * 1274; // Half the TCP send window size looks best.
-#else
-static constexpr size_t pdf_write_buffer_size = 2 * 1274;
-#endif
-
 struct pdf_doc {
     char errstr[128];
     int errval;
@@ -275,7 +268,8 @@ struct pdf_doc {
     std::function<int(struct pdf_doc *pdf, uint32_t page_num, uint32_t image_num)> image_fn;
     std::function<int(struct pdf_doc *pdf, uint32_t page_num)> page_fn;
 
-    char write_buf[pdf_write_buffer_size];
+    std::unique_ptr<char[]> write_buf;
+    size_t write_buf_size;
     size_t write_buf_used;
     size_t write_buf_written = 0;
     size_t last_write_buf_written = 0;
@@ -525,7 +519,7 @@ static struct pdf_object *pdf_add_object(struct pdf_doc *pdf, int type)
     return pdf_append_object(pdf, &obj);
 }
 
-struct pdf_doc *pdf_create(float width, float height, const struct pdf_info *info)
+struct pdf_doc *pdf_create(float width, float height, const struct pdf_info *info, size_t write_buf_size)
 {
     struct pdf_doc *pdf;
     struct pdf_object *obj;
@@ -539,6 +533,8 @@ struct pdf_doc *pdf_create(float width, float height, const struct pdf_info *inf
     pdf->height = height;
     pdf->objects = std::unique_ptr<struct pdf_object[]>(new struct pdf_object[PDF_MAX_OBJECTS_PER_PAGE]());
     pdf->offsets = std::unique_ptr<uint16_t[]>(new uint16_t[PDF_MAX_OBJECTS]());
+    pdf->write_buf = std::unique_ptr<char[]>(new char[write_buf_size]());
+    pdf->write_buf_size = write_buf_size;
 
     /* We don't want to use ID 0 */
     pdf_add_object(pdf, OBJ_none);
@@ -696,13 +692,13 @@ static void pdf_add_page(struct pdf_doc *pdf, struct pdf_object *page) {
 }
 
 static void pdf_flush_write_buf(struct pdf_doc *pdf, int target_free_space) {
-    auto *head = pdf->write_buf;
+    auto *head = pdf->write_buf.get();
     target_free_space = std::max(target_free_space, 128);
 
-    if (target_free_space > ARRAY_SIZE(pdf->write_buf))
-        target_free_space = ARRAY_SIZE(pdf->write_buf);
+    if (target_free_space > pdf->write_buf_size)
+        target_free_space = pdf->write_buf_size;
 
-    while (target_free_space > (ARRAY_SIZE(pdf->write_buf) - pdf->write_buf_used)) {
+    while (target_free_space > (pdf->write_buf_size - pdf->write_buf_used)) {
         ssize_t written = pdf->write_fn(head, pdf->write_buf_used);
         if (written <= 0) {
             printf("write_fn failed %zd.\n", written);
@@ -713,8 +709,8 @@ static void pdf_flush_write_buf(struct pdf_doc *pdf, int target_free_space) {
         head += written;
     }
 
-    if (pdf->write_buf_used != 0 && head != pdf->write_buf) {
-        memmove(pdf->write_buf, head, pdf->write_buf_used);
+    if (pdf->write_buf_used != 0 && head != pdf->write_buf.get()) {
+        memmove(pdf->write_buf.get(), head, pdf->write_buf_used);
     }
 }
 
@@ -729,13 +725,13 @@ static int pdf_printf(struct pdf_doc *pdf, const char *fmt, ...)
 
     force_locale(saved_locale, sizeof(saved_locale));
 
-    const size_t write_buf_remaining = ARRAY_SIZE(pdf->write_buf) - pdf->write_buf_used;
+    const size_t write_buf_remaining = pdf->write_buf_size - pdf->write_buf_used;
 
     va_start(ap, fmt);
     va_copy(aq, ap);
-    len = vsnprintf(pdf->write_buf + pdf->write_buf_used, write_buf_remaining, fmt, ap);
-    if (len > ARRAY_SIZE(pdf->write_buf)) {
-        printf("write buf too small! %u, but required are %d.\n", ARRAY_SIZE(pdf->write_buf), len);
+    len = vsnprintf(pdf->write_buf.get() + pdf->write_buf_used, write_buf_remaining, fmt, ap);
+    if (len > pdf->write_buf_size) {
+        printf("write buf too small! %u, but required are %d.\n", pdf->write_buf_size, len);
         pdf->write_error_occurred = true;
         return 0;
     }
@@ -748,7 +744,7 @@ static int pdf_printf(struct pdf_doc *pdf, const char *fmt, ...)
         if (pdf->write_error_occurred)
             return 0;
 
-        vsprintf(pdf->write_buf + pdf->write_buf_used, fmt, aq);
+        vsprintf(pdf->write_buf.get() + pdf->write_buf_used, fmt, aq);
     }
     pdf->write_buf_used += len;
     pdf->write_buf_written += len;
@@ -770,8 +766,8 @@ static void pdf_write(struct pdf_doc *pdf, const char *buf, size_t count) {
         if (pdf->write_error_occurred)
             return;
 
-        size_t to_write = min(count, ARRAY_SIZE(pdf->write_buf) - pdf->write_buf_used);
-        memcpy(pdf->write_buf + pdf->write_buf_used, buf, to_write);
+        size_t to_write = min(count, pdf->write_buf_size - pdf->write_buf_used);
+        memcpy(pdf->write_buf.get() + pdf->write_buf_used, buf, to_write);
         pdf->write_buf_used += to_write;
         pdf->write_buf_written += to_write;
         count -= to_write;
@@ -1090,7 +1086,7 @@ int pdf_save_file(struct pdf_doc *pdf)
 
     restore_locale(saved_locale);
 
-    pdf_flush_write_buf(pdf, ARRAY_SIZE(pdf->write_buf));
+    pdf_flush_write_buf(pdf, pdf->write_buf_size);
 
     return 0;
 }
