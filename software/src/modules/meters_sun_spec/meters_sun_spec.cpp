@@ -114,7 +114,7 @@ void MetersSunSpec::register_urls()
         scan->device_address = scan->device_address_first;
         scan->last_keep_alive = now_us();
 
-        scan_printfln("Starting scan (" OPTIONS_PRODUCT_NAME() ", version: %s)", build_version_full_str());
+        scan_printfln("Starting scan [" OPTIONS_PRODUCT_NAME() ", version: %s]", build_version_full_str());
     }, true);
 
     api.addCommand("meters_sun_spec/scan_continue", &scan_continue_config, {}, [this](String &errmsg) {
@@ -234,6 +234,7 @@ void MetersSunSpec::loop()
                 break; // need to report the scan as done before doing something else
             }
 
+            free(scan->read_error_message);
             delete_psram_or_dram(scan);
             scan = nullptr;
         }
@@ -329,7 +330,7 @@ void MetersSunSpec::loop()
                                                                            static_cast<uint16_t>(read_chunk_size),
                                                                            &scan->read_buffer[scan->read_index],
                                                                            scan->read_timeout,
-            [this, read_chunk_size](TFModbusTCPClientTransactionResult result) {
+            [this, read_chunk_size](TFModbusTCPClientTransactionResult result, const char *error_message) {
                 if (scan->state != ScanState::Reading) {
                     return;
                 }
@@ -361,6 +362,9 @@ void MetersSunSpec::loop()
                 scan->read_address += read_chunk_size;
                 scan->read_index += read_chunk_size;
                 scan->read_result = result;
+
+                free(scan->read_error_message);
+                scan->read_error_message = error_message != nullptr ? strdup(error_message) : nullptr;
 
                 if (result != TFModbusTCPClientTransactionResult::Success || scan->read_index >= scan->read_size) {
                     scan->read_index = 0;
@@ -415,16 +419,18 @@ void MetersSunSpec::loop()
             }
             else {
                 // this is not an error, this might just be no SunSpec device
-                scan_printfln("No SunSpec ID found (sun-spec-id: 0x%08lx)", sun_spec_id);
+                scan_printfln("No SunSpec ID found [sun-spec-id: 0x%08lx]", sun_spec_id);
 
                 scan->state = ScanState::NextBaseAddress;
             }
         }
         else {
             // this is not an error, this might just be no SunSpec device
-            scan_printfln("Could not read SunSpec ID (error: %s [%d])",
+            scan_printfln("Could not read SunSpec ID [error: %s (%d)%s%s]",
                           get_tf_modbus_tcp_client_transaction_result_name(scan->read_result),
-                          static_cast<int>(scan->read_result));
+                          static_cast<int>(scan->read_result),
+                          scan->read_error_message != nullptr ? " / " : "",
+                          scan->read_error_message != nullptr ? scan->read_error_message : "");
 
             scan->state = scan_get_next_state_after_read_error();
         }
@@ -485,9 +491,11 @@ void MetersSunSpec::loop()
             scan->state = ScanState::ReadModelID;
         }
         else {
-            scan_printfln("Error: Could not read Common Model block (error: %s [%d])",
+            scan_printfln("Error: Could not read Common Model block [error: %s (%d)%s%s]",
                           get_tf_modbus_tcp_client_transaction_result_name(scan->read_result),
-                          static_cast<int>(scan->read_result));
+                          static_cast<int>(scan->read_result),
+                          scan->read_error_message != nullptr ? " / " : "",
+                          scan->read_error_message != nullptr ? scan->read_error_message : "");
 
             scan->error_state = scan_get_next_state_after_read_error();
             scan->state = ScanState::ReportError;
@@ -501,7 +509,7 @@ void MetersSunSpec::loop()
             break;
         }
 
-        scan_printfln("Reading Model ID (address: %zu)", scan->read_address);
+        scan_printfln("Reading Model ID [address: %zu]", scan->read_address);
 
         scan->read_size = 1;
         scan->read_state = ScanState::ReadModelIDDone;
@@ -545,9 +553,11 @@ void MetersSunSpec::loop()
             }
         }
         else {
-            scan_printfln("Error: Could not read Model ID (error: %s [%d])",
+            scan_printfln("Error: Could not read Model ID [error: %s (%d)%s%s]",
                           get_tf_modbus_tcp_client_transaction_result_name(scan->read_result),
-                          static_cast<int>(scan->read_result));
+                          static_cast<int>(scan->read_result),
+                          scan->read_error_message != nullptr ? " / " : "",
+                          scan->read_error_message != nullptr ? scan->read_error_message : "");
 
             scan->error_state = scan_get_next_state_after_read_error();
             scan->state = ScanState::ReportError;
@@ -561,7 +571,7 @@ void MetersSunSpec::loop()
             break;
         }
 
-        scan_printfln("Reading Model %u block length (address: %zu)", scan->model_id, scan->read_address);
+        scan_printfln("Reading Model %u block length [address: %zu]", scan->model_id, scan->read_address);
 
         scan->read_size = 1;
         scan->read_state = ScanState::ReadModelBlockLengthDone;
@@ -579,7 +589,7 @@ void MetersSunSpec::loop()
             size_t block_length = scan->deserializer.read_uint16();
 
             if (scan->model_id == NON_IMPLEMENTED_UINT16) {
-                scan_printfln("End Model found (model-id: %u, block-length: %zu)", scan->model_id, block_length);
+                scan_printfln("End Model found [model-id: %u, block-length: %zu]", scan->model_id, block_length);
 
                 if (block_length != 0 && block_length != NON_IMPLEMENTED_UINT16) { // accept non-implemented block length as Sungrow quirk
                     scan_printfln("Error: End Model has unsupported block length");
@@ -592,7 +602,7 @@ void MetersSunSpec::loop()
                 }
             }
             else if (scan->model_id == COMMON_MODEL_ID) {
-                scan_printfln("Common Model found (model-id: %u, block-length: %zu)", scan->model_id, block_length);
+                scan_printfln("Common Model found [model-id: %u, block-length: %zu]", scan->model_id, block_length);
 
                 if (block_length != 65 && block_length != 66) {
                     scan_printfln("Error: Common Model has unsupported block length");
@@ -633,7 +643,7 @@ void MetersSunSpec::loop()
                     ++scan->model_instances[scan->model_id];
                 }
 
-                scan_printfln("%s Model found (model-id/instance: %u/%u, block-length: %zu)",
+                scan_printfln("%s Model found [model-id/instance: %u/%u, block-length: %zu]",
                               model_name, scan->model_id, scan->model_instances.at(scan->model_id), block_length);
 
                 // FIXME: validate block length
@@ -643,10 +653,12 @@ void MetersSunSpec::loop()
             }
         }
         else {
-            scan_printfln("Error: Could not read Model %u block length (error: %s [%d])",
+            scan_printfln("Error: Could not read Model %u block length [error: %s (%d)%s%s]",
                           scan->model_id,
                           get_tf_modbus_tcp_client_transaction_result_name(scan->read_result),
-                          static_cast<int>(scan->read_result));
+                          static_cast<int>(scan->read_result),
+                          scan->read_error_message != nullptr ? " / " : "",
+                          scan->read_error_message != nullptr ? scan->read_error_message : "");
 
             scan->error_state = scan_get_next_state_after_read_error();
             scan->state = ScanState::ReportError;

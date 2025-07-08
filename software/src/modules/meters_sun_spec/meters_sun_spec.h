@@ -115,6 +115,7 @@ private:
         bool abort = false;
         ModbusDeserializer deserializer;
         TFModbusTCPClientTransactionResult read_result;
+        char *read_error_message = nullptr;
         std::unordered_map<uint16_t, uint16_t> model_instances;
         size_t block_length;
         char printfln_buffer[512] = "";

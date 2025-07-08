@@ -177,11 +177,13 @@ void ModbusTCPDebug::register_urls()
             }
 
             static_cast<TFModbusTCPSharedClient *>(transact_client)->transact(device_address, function_code, start_address, data_count, transact_buffer, timeout,
-            [this, cookie, data_count, hexdump_registers](TFModbusTCPClientTransactionResult transact_result) {
+            [this, cookie, data_count, hexdump_registers](TFModbusTCPClientTransactionResult transact_result, const char *error_message) {
                 if (transact_result != TFModbusTCPClientTransactionResult::Success) {
-                    report_errorf(cookie, "Transaction failed: %s (%d)",
+                    report_errorf(cookie, "Transaction failed: %s (%d)%s%s",
                                   get_tf_modbus_tcp_client_transaction_result_name(transact_result),
-                                  static_cast<int>(transact_result));
+                                  static_cast<int>(transact_result),
+                                  error_message != nullptr ? " / " : "",
+                                  error_message != nullptr ? error_message : "");
                     release_client();
                     return;
                 }

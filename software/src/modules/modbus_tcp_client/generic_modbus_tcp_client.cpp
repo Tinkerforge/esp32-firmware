@@ -98,7 +98,7 @@ void GenericModbusTCPClient::read_next()
     }
 
     static_cast<TFModbusTCPSharedClient *>(connected_client)->transact(device_address, function_code, read_start_address, read_count, target_buffer, 2_s,
-    [this, function_code, read_start_address, read_count](TFModbusTCPClientTransactionResult result) {
+    [this, function_code, read_start_address, read_count](TFModbusTCPClientTransactionResult result, const char *error_message) {
         if (last_read_result == result) {
             ++last_read_result_burst_length;
         }
@@ -110,7 +110,7 @@ void GenericModbusTCPClient::read_next()
         if (result != TFModbusTCPClientTransactionResult::Success) {
             if (log_read_errors && (result != TFModbusTCPClientTransactionResult::Timeout || (last_read_result_burst_length % 10) == 0)) {
                 logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
-                                         "%sModbus error repeated %u time%s while reading %u register%s starting at address %u: %s (%d)",
+                                         "%sModbus error repeated %u time%s while reading %u register%s starting at address %u: %s (%d)%s%s",
                                          event_log_message_prefix,
                                          last_read_result_burst_length,
                                          last_read_result_burst_length > 1 ? "s" : "",
@@ -118,7 +118,9 @@ void GenericModbusTCPClient::read_next()
                                          read_count > 1 ? "s" : "",
                                          read_start_address,
                                          get_tf_modbus_tcp_client_transaction_result_name(result),
-                                         static_cast<int>(result));
+                                         static_cast<int>(result),
+                                         error_message != nullptr ? " / " : "",
+                                         error_message != nullptr ? error_message : "");
             }
 
             generic_read_request.result = result;
