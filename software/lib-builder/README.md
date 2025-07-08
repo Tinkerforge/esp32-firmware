@@ -89,9 +89,9 @@ cd ~/esp32-arduino-lib-builder
 # Update platformio.ini's platform_packages entry (of env:base_esp32 for WARP1, env.base_esp32_ethernet for WARP2/3/WEM)
 # to point to the output directory of the lib builder:
 # Change
-platform_packages = platformio/framework-arduinoespressif32 @ symlink://packages/arduino-esp32#warp-x.y.z_commit_id
+platform_packages = platformio/framework-arduinoespressif32-libs @ symlink://packages/esp32-arduino-libs#warp-x.y.z_commit_id
 # to
-platform_packages = platformio/framework-arduinoespressif32 @ symlink:///home/[user]/esp32-arduino-lib-builder/out/tools/esp32-arduino-libs
+platform_packages = platformio/framework-arduinoespressif32-libs @ symlink:///home/[user]/esp32-arduino-lib-builder/out/tools/esp32-arduino-libs
 # Then rebuild the firmware as usual
 pio run -e warp
 ```
