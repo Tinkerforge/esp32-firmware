@@ -871,7 +871,7 @@
 - Add third and fourth EV wakeup attempt via IEC state F (through EVSE 2.0 Bricklet firmware 2.2.12)
 - Improve translations
 
-2025-07-08: 2.8.5 (<unknown>)
+2025-07-08: 2.8.5 (b4d1c6c6)
 - Use meter to check supply voltages
 - Prevent WireGuard keys from being leaked via debug report
 - Increase IP input strictness to prevent typos
