@@ -27,7 +27,7 @@ let x = {
 
                 result.push(<><strong>{last_voltage[0]}</strong> ({last_voltage[1]} V)</>);
 
-                return <>Die {result.length > 1 ? <>Spannungen</> : <>Spannung</>} für {result} {result.length > 1 ? <>liegen</> : <>liegt</>} außerhalb des zulässigen Bereichs. {__("The_device")} wird <strong>nicht</strong> korrekt funktionieren. Bitte den Anschluss der Zuleitung, inbesondere des Neutralleiters, kontrollieren!</>;
+                return <>Die {result.length > 1 ? <>Spannungen</> : <>Spannung</>} für {result} {result.length > 1 ? <>liegen</> : <>liegt</>} außerhalb des zulässigen Bereichs. {__("The_device")} wird <strong>nicht</strong> korrekt funktionieren. Bitte den Anschluss der Zuleitung, insbesondere des Neutralleiters, kontrollieren!</>;
             }/*NF*/
         },
         "navbar": {
