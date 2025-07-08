@@ -65,7 +65,7 @@ private:
     bool repair_last(float);
     void repair_charges();
     void generate_pdf(std::function<int(const void *data, size_t len, bool last_data)> &&callback, int user_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, uint32_t current_timestamp_min, bool english, const char *letterhead, int letterhead_lines, WebServerRequest *request);
-    void send_pdf();
+    void send_pdf(uint32_t start_timestamp_min, uint32_t end_timestamp_min, int user_idx);
     void check_remote_client_status();
     void handle_upload_retry();
 
@@ -76,6 +76,14 @@ private:
     static constexpr uint32_t BASE_RETRY_DELAY_MINUTES = 5;
     bool upload_in_progress = false;
 
-    std::unique_ptr<AsyncHTTPSClient> remote_client;
+    std::unique_ptr<AsyncHTTPSClient> remote_client = nullptr;
     Config last_charges_prototype;
+    Config charge_log_send_prototype;
+};
+
+struct SendChargeLogArgs {
+    ChargeTracker *that;
+    uint32_t last_month_start_min;
+    uint32_t last_month_end_min;
+    int array_size;
 };
