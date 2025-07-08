@@ -96,6 +96,26 @@ struct default_validator {
         return "";
     }
 
+    String operator()(const Config::ConfUint16 &x) const
+    {
+        return "";
+    }
+
+    String operator()(const Config::ConfInt16 &x) const
+    {
+        return "";
+    }
+
+    String operator()(const Config::ConfUint8 &x) const
+    {
+        return "";
+    }
+
+    String operator()(const Config::ConfInt8 &x) const
+    {
+        return "";
+    }
+
     String operator()(const Config::ConfBool &x) const
     {
         return "";
@@ -175,6 +195,22 @@ struct to_json {
         insertHere.set(*x.getVal());
     }
     void operator()(const Config::ConfUint53 &x)
+    {
+        insertHere.set(*x.getVal());
+    }
+    void operator()(const Config::ConfUint16 &x)
+    {
+        insertHere.set(*x.getVal());
+    }
+    void operator()(const Config::ConfInt16 &x)
+    {
+        insertHere.set(*x.getVal());
+    }
+    void operator()(const Config::ConfUint8 &x)
+    {
+        insertHere.set(*x.getVal());
+    }
+    void operator()(const Config::ConfInt8 &x)
     {
         insertHere.set(*x.getVal());
     }
@@ -330,6 +366,22 @@ struct max_string_length_visitor {
     {
         return estimate_chars_per_uint64(x.getSlot()->max);
     }
+    size_t operator()(const Config::ConfUint16 &x)
+    {
+        return 5;
+    }
+    size_t operator()(const Config::ConfInt16 &x)
+    {
+        return 6;
+    }
+    size_t operator()(const Config::ConfUint8 &x)
+    {
+        return 3;
+    }
+    size_t operator()(const Config::ConfInt8 &x)
+    {
+        return 4;
+    }
     size_t operator()(const Config::ConfBool &x)
     {
         return 5;
@@ -403,6 +455,22 @@ struct string_length_visitor {
     {
         return estimate_chars_per_uint64(*x.getVal());
     }
+    size_t operator()(const Config::ConfUint16 &x)
+    {
+        return estimate_chars_per_uint(*x.getVal());
+    }
+    size_t operator()(const Config::ConfInt16 &x)
+    {
+        return estimate_chars_per_int(*x.getVal());
+    }
+    size_t operator()(const Config::ConfUint8 &x)
+    {
+        return estimate_chars_per_uint(*x.getVal());
+    }
+    size_t operator()(const Config::ConfInt8 &x)
+    {
+        return estimate_chars_per_int(*x.getVal());
+    }
     size_t operator()(const Config::ConfBool &x)
     {
         return (*x.getVal()) ? 4 : 5;
@@ -466,6 +534,22 @@ struct json_length_visitor {
         return 0;
     }
     size_t operator()(const Config::ConfUint53 &x)
+    {
+        return 0;
+    }
+    size_t operator()(const Config::ConfUint16 &x)
+    {
+        return 0;
+    }
+    size_t operator()(const Config::ConfInt16 &x)
+    {
+        return 0;
+    }
+    size_t operator()(const Config::ConfUint8 &x)
+    {
+        return 0;
+    }
+    size_t operator()(const Config::ConfInt8 &x)
     {
         return 0;
     }
@@ -589,6 +673,54 @@ struct from_json {
 
         bool changed = *x.getVal() != json_node.as<uint64_t>();
         *x.getVal() = json_node.as<uint64_t>();
+        return {"", changed};
+    }
+    UpdateResult operator()(Config::ConfUint16 &x)
+    {
+        if (json_node.isNull())
+            return {permit_null_updates ? "" : "Null updates not permitted.", false};
+
+        if (!json_node.is<uint16_t>())
+            return {"JSON node was not an unsigned integer or too big (not in 0 - 65535).", false};
+
+        bool changed = *x.getVal() != json_node.as<uint16_t>();
+        *x.getVal() = json_node.as<uint16_t>();
+        return {"", changed};
+    }
+    UpdateResult operator()(Config::ConfInt16 &x)
+    {
+        if (json_node.isNull())
+            return {permit_null_updates ? "" : "Null updates not permitted.", false};
+
+        if (!json_node.is<int16_t>())
+            return {"JSON node was not a signed integer or too big (not in -32768 - 32767).", false};
+
+        bool changed = *x.getVal() != json_node.as<int16_t>();
+        *x.getVal() = json_node.as<int16_t>();
+        return {"", changed};
+    }
+    UpdateResult operator()(Config::ConfUint8 &x)
+    {
+        if (json_node.isNull())
+            return {permit_null_updates ? "" : "Null updates not permitted.", false};
+
+        if (!json_node.is<uint8_t>())
+            return {"JSON node was not an unsigned integer or too big (not in 0 - 255).", false};
+
+        bool changed = *x.getVal() != json_node.as<uint8_t>();
+        *x.getVal() = json_node.as<uint8_t>();
+        return {"", changed};
+    }
+    UpdateResult operator()(Config::ConfInt8 &x)
+    {
+        if (json_node.isNull())
+            return {permit_null_updates ? "" : "Null updates not permitted.", false};
+
+        if (!json_node.is<int8_t>())
+            return {"JSON node was not a signed integer or too big (not in -128 - 127).", false};
+
+        bool changed = *x.getVal() != json_node.as<int8_t>();
+        *x.getVal() = json_node.as<int8_t>();
         return {"", changed};
     }
     UpdateResult operator()(Config::ConfBool &x)
@@ -889,6 +1021,74 @@ struct from_update {
         *x.getVal() = new_val;
         return {"", changed};
     }
+    UpdateResult operator()(Config::ConfUint16 &x)
+    {
+        if (Config::containsNull(update))
+            return {"", false};
+
+        uint16_t new_val = 0;
+        const auto *update_val_uint = update->get<uint16_t>();
+        if (update_val_uint == nullptr) {
+            return {"ConfUpdate node was not an unsigned integer.", false};
+        } else {
+            new_val = *update_val_uint;
+        }
+
+        bool changed = *x.getVal() != new_val;
+        *x.getVal() = new_val;
+        return {"", changed};
+    }
+    UpdateResult operator()(Config::ConfInt16 &x)
+    {
+        if (Config::containsNull(update))
+            return {"", false};
+
+        int16_t new_val = 0;
+        const auto *update_val_int = update->get<int16_t>();
+        if (update_val_int == nullptr) {
+            return {"ConfUpdate node was not a signed integer.", false};
+        } else {
+            new_val = *update_val_int;
+        }
+
+        bool changed = *x.getVal() != new_val;
+        *x.getVal() = new_val;
+        return {"", changed};
+    }
+    UpdateResult operator()(Config::ConfUint8 &x)
+    {
+        if (Config::containsNull(update))
+            return {"", false};
+
+        uint8_t new_val = 0;
+        const auto *update_val_uint = update->get<uint8_t>();
+        if (update_val_uint == nullptr) {
+            return {"ConfUpdate node was not an unsigned integer.", false};
+        } else {
+            new_val = *update_val_uint;
+        }
+
+        bool changed = *x.getVal() != new_val;
+        *x.getVal() = new_val;
+        return {"", changed};
+    }
+    UpdateResult operator()(Config::ConfInt8 &x)
+    {
+        if (Config::containsNull(update))
+            return {"", false};
+
+        int8_t new_val = 0;
+        const auto *update_val_int = update->get<int8_t>();
+        if (update_val_int == nullptr) {
+            return {"ConfUpdate node was not a signed integer.", false};
+        } else {
+            new_val = *update_val_int;
+        }
+
+        bool changed = *x.getVal() != new_val;
+        *x.getVal() = new_val;
+        return {"", changed};
+    }
     UpdateResult operator()(Config::ConfBool &x)
     {
         if (Config::containsNull(update))
@@ -1050,6 +1250,22 @@ struct is_updated {
     {
         return 0;
     }
+    uint8_t operator()(const Config::ConfUint16 &x)
+    {
+        return 0;
+    }
+    uint8_t operator()(const Config::ConfInt16 &x)
+    {
+        return 0;
+    }
+    uint8_t operator()(const Config::ConfUint8 &x)
+    {
+        return 0;
+    }
+    uint8_t operator()(const Config::ConfInt8 &x)
+    {
+        return 0;
+    }
     uint8_t operator()(const Config::ConfBool &x)
     {
         return 0;
@@ -1105,6 +1321,18 @@ struct set_updated_false {
     {
     }
     void operator()(Config::ConfUint53 &x)
+    {
+    }
+    void operator()(Config::ConfUint16 &x)
+    {
+    }
+    void operator()(Config::ConfInt16 &x)
+    {
+    }
+    void operator()(Config::ConfUint8 &x)
+    {
+    }
+    void operator()(Config::ConfInt8 &x)
     {
     }
     void operator()(Config::ConfBool &x)
@@ -1164,6 +1392,22 @@ struct api_info {
     void operator()(const Config::ConfUint53 &x)
     {
         sw.printf("{\"type\":\"uint64\",\"val\":%llu,\"min\":%llu,\"max\":%llu}", x.getSlot()->val, x.getSlot()->min, x.getSlot()->max);
+    }
+    void operator()(const Config::ConfUint16 &x)
+    {
+        sw.printf("{\"type\":\"uint\",\"val\":%lu,\"min\":0,\"max\":65535}", *x.getVal());
+    }
+    void operator()(const Config::ConfInt16 &x)
+    {
+        sw.printf("{\"type\":\"int\",\"val\":%lu,\"min\":-32768,\"max\":32767}", *x.getVal());
+    }
+    void operator()(const Config::ConfUint8 &x)
+    {
+        sw.printf("{\"type\":\"uint\",\"val\":%lu,\"min\":0,\"max\":255}", *x.getVal());
+    }
+    void operator()(const Config::ConfInt8 &x)
+    {
+        sw.printf("{\"type\":\"int\",\"val\":%lu,\"min\":-128,\"max\":127}", *x.getVal());
     }
     void operator()(const Config::ConfBool &x)
     {
