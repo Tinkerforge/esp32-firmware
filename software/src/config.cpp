@@ -110,6 +110,11 @@ Config Config::Int(int32_t i, int32_t min, int32_t max)
     if (boot_stage < BootStage::PRE_SETUP)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
 
+    if (min == std::numeric_limits<int16_t>::min() && max == std::numeric_limits<int16_t>::max())
+        return Config{ConfInt16{static_cast<int16_t>(i)}};
+    if (min == std::numeric_limits<int8_t>::min() && max == std::numeric_limits<int8_t>::max())
+        return Config{ConfInt8{static_cast<int8_t>(i)}};
+
     return Config{ConfInt{i, min, max}};
 }
 
@@ -117,6 +122,11 @@ Config Config::Uint(uint32_t u, uint32_t min, uint32_t max)
 {
     if (boot_stage < BootStage::PRE_SETUP)
         esp_system_abort("constructing configs before the pre_setup is not allowed!");
+
+    if (min == std::numeric_limits<uint16_t>::min() && max == std::numeric_limits<uint16_t>::max())
+        return Config{ConfUint16{static_cast<uint16_t>(u)}};
+    if (min == std::numeric_limits<uint8_t>::min() && max == std::numeric_limits<uint8_t>::max())
+        return Config{ConfUint8{static_cast<uint8_t>(u)}};
 
     return Config{ConfUint{u, min, max}};
 }
@@ -196,12 +206,12 @@ ConfigRoot *Config::Confirm()
 
 Config Config::Uint8(uint8_t u)
 {
-    return Config::Uint(u, std::numeric_limits<uint8_t>::lowest(), std::numeric_limits<uint8_t>::max());
+    return Config{ConfUint8{u}};
 }
 
 Config Config::Uint16(uint16_t u)
 {
-    return Config::Uint(u, std::numeric_limits<uint16_t>::lowest(), std::numeric_limits<uint16_t>::max());
+    return Config{ConfUint16{u}};
 }
 
 Config Config::Uint32(uint32_t u)
@@ -211,12 +221,12 @@ Config Config::Uint32(uint32_t u)
 
 Config Config::Int8(int8_t i)
 {
-    return Config::Int(i, std::numeric_limits<int8_t>::lowest(), std::numeric_limits<int8_t>::max());
+    return Config{ConfInt8{i}};
 }
 
 Config Config::Int16(int16_t i)
 {
-    return Config::Int(i, std::numeric_limits<int16_t>::lowest(), std::numeric_limits<int16_t>::max());
+    return Config{ConfInt16{i}};
 }
 
 Config Config::Int32(int32_t i)
@@ -483,12 +493,22 @@ float Config::asFloat() const
 uint32_t Config::asUint() const
 {
     // Asserts checked in ::get.
+    if (this->is<ConfUint16>())
+        return *this->get<ConfUint16>()->getVal();
+    if (this->is<ConfUint8>())
+        return *this->get<ConfUint8>()->getVal();
+
     return *this->get<ConfUint>()->getVal();
 }
 
 int32_t Config::asInt() const
 {
     // Asserts checked in ::get.
+    if (this->is<ConfInt16>())
+        return *this->get<ConfInt16>()->getVal();
+    if (this->is<ConfInt8>())
+        return *this->get<ConfInt8>()->getVal();
+
     return *this->get<ConfInt>()->getVal();
 }
 
@@ -588,12 +608,22 @@ bool Config::updateString(const String &value)
 bool Config::updateInt(int32_t value)
 {
     // Asserts checked in ::update_value.
+    if (this->is<ConfInt16>())
+        return update_value<int16_t, ConfInt16>(value, "int16_t");
+    if (this->is<ConfInt8>())
+        return update_value<int8_t, ConfInt8>(value, "int8_t");
+
     return update_value<int32_t, ConfInt>(value, "int32_t");
 }
 
 bool Config::updateUint(uint32_t value)
 {
     // Asserts checked in ::update_value.
+    if (this->is<ConfUint16>())
+        return update_value<uint16_t, ConfUint16>(value, "uint16_t");
+    if (this->is<ConfUint8>())
+        return update_value<uint8_t, ConfUint8>(value, "uint8_t");
+
     return update_value<uint32_t, ConfUint>(value, "uint32_t");
 }
 

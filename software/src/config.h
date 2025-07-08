@@ -239,6 +239,34 @@ struct Config {
         ConfUint53(ConfUint53 &&cpy);
         ConfUint53 &operator=(ConfUint53 &&cpy);
     };
+    struct ConfUint16 {
+        uint16_t value;
+        uint16_t *getVal();
+        const uint16_t *getVal() const;
+
+        static constexpr const char *variantName = "ConfUint16";
+    };
+    struct ConfInt16 {
+        int16_t value;
+        int16_t *getVal();
+        const int16_t *getVal() const;
+
+        static constexpr const char *variantName = "ConfInt16";
+    };
+    struct ConfUint8 {
+        uint8_t value;
+        uint8_t *getVal();
+        const uint8_t *getVal() const;
+
+        static constexpr const char *variantName = "ConfUint8";
+    };
+    struct ConfInt8 {
+        int8_t value;
+        int8_t *getVal();
+        const int8_t *getVal() const;
+
+        static constexpr const char *variantName = "ConfInt8";
+    };
 
     struct ConfBool {
         bool value;
@@ -350,7 +378,11 @@ struct Config {
         ConfUpdateObject,
         ConfUpdateUnion,
         int64_t,
-        uint64_t
+        uint64_t,
+        uint16_t,
+        int16_t,
+        uint8_t,
+        int8_t
     > ConfUpdate;
     // This is necessary as we can't use get to distinguish between
     // a get<std::nullptr_t>() that returned nullptr because the variant
@@ -384,7 +416,11 @@ struct Config {
             OBJECT,
             UNION,
             INT64,
-            UINT64
+            UINT64,
+            UINT16,
+            INT16,
+            UINT8,
+            INT8,
         };
         Tag tag;
         uint8_t updated;
@@ -401,6 +437,10 @@ struct Config {
             ConfUnion un;
             ConfInt52 i64;
             ConfUint53 u64;
+            ConfUint16 u16;
+            ConfInt16 i16;
+            ConfUint8 u8;
+            ConfInt8 i8;
             ~Val();
         } val;
 
@@ -412,8 +452,12 @@ struct Config {
         ConfVariant(ConfArray a);
         ConfVariant(ConfObject o);
         ConfVariant(ConfUnion un);
-        ConfVariant(ConfInt52 un);
-        ConfVariant(ConfUint53 un);
+        ConfVariant(ConfInt52 i52);
+        ConfVariant(ConfUint53 u53);
+        ConfVariant(ConfUint16 u16);
+        ConfVariant(ConfInt16 i16);
+        ConfVariant(ConfUint8 u8);
+        ConfVariant(ConfInt8 i8);
 
         ConfVariant();
 
@@ -457,6 +501,14 @@ struct Config {
                 return visitor(v.val.i64);
             case ConfVariant::Tag::UINT64:
                 return visitor(v.val.u64);
+            case ConfVariant::Tag::UINT16:
+                return visitor(v.val.u16);
+            case ConfVariant::Tag::INT16:
+                return visitor(v.val.i16);
+            case ConfVariant::Tag::UINT8:
+                return visitor(v.val.u8);
+            case ConfVariant::Tag::INT8:
+                return visitor(v.val.i8);
         }
         esp_system_abort("apply_visitor: ConfVariant has unknown type!");
     }
@@ -487,6 +539,14 @@ struct Config {
                 return visitor(v.val.i64);
             case ConfVariant::Tag::UINT64:
                 return visitor(v.val.u64);
+            case ConfVariant::Tag::UINT16:
+                return visitor(v.val.u16);
+            case ConfVariant::Tag::INT16:
+                return visitor(v.val.i16);
+            case ConfVariant::Tag::UINT8:
+                return visitor(v.val.u8);
+            case ConfVariant::Tag::INT8:
+                return visitor(v.val.i8);
         }
         esp_system_abort("apply_visitor: const ConfVariant has unknown type!");
     }
@@ -522,6 +582,14 @@ struct Config {
             return (int)ConfVariant::Tag::INT64;
         if (std::is_same<T, ConfUint53>())
             return (int)ConfVariant::Tag::UINT64;
+        if (std::is_same<T, ConfUint16>())
+            return (int)ConfVariant::Tag::UINT16;
+        if (std::is_same<T, ConfInt16>())
+            return (int)ConfVariant::Tag::INT16;
+        if (std::is_same<T, ConfUint8>())
+            return (int)ConfVariant::Tag::UINT8;
+        if (std::is_same<T, ConfInt8>())
+            return (int)ConfVariant::Tag::INT8;
         return -1;
     }
 
@@ -571,12 +639,12 @@ struct Config {
     static Config Uint53(uint64_t u);
 
     template<typename T>
-    static Config Enum(T u, T min, T max) {
-        return Uint(static_cast<uint32_t>(u), static_cast<uint32_t>(min), static_cast<uint32_t>(max));
+    static Config Enum(T i, T min, T max) {
+        return Int(static_cast<int32_t>(i), static_cast<int32_t>(min), static_cast<int32_t>(max));
     }
     template<typename T>
-    static Config Enum(T u) {
-        return Uint(static_cast<uint32_t>(u), static_cast<uint32_t>(T::_min), static_cast<uint32_t>(T::_max));
+    static Config Enum(T i) {
+        return Int(static_cast<int32_t>(i), static_cast<int32_t>(T::_min), static_cast<int32_t>(T::_max));
     }
 
     template<typename T>
@@ -752,11 +820,24 @@ public:
     T asEnum() const {
         if (this->is<ConfUint>()) {
             return (T) this->asUint();
-        } else if (this->is<ConfInt>()) {
-            return (T) this->asInt();
-        } else {
-            config_abort_on_type_error("asEnum", this, "ConfInt or ConfUint");
         }
+        if (this->is<ConfInt>()) {
+            return (T) this->asInt();
+        }
+        if (this->is<ConfUint16>()) {
+            return (T) this->asUint();
+        }
+        if (this->is<ConfInt16>()) {
+            return (T) this->asInt();
+        }
+        if (this->is<ConfUint8>()) {
+            return (T) this->asUint();
+        }
+        if (this->is<ConfInt8>()) {
+            return (T) this->asInt();
+        }
+
+        config_abort_on_type_error("asEnum", this, "ConfInt or ConfUint");
     }
 
     bool asBool() const;
@@ -799,13 +880,24 @@ public:
         if (this->is<ConfUint>()) {
             return updateUint(static_cast<uint32_t>(value));
         }
-        else if (this->is<ConfInt>()) {
+        if (this->is<ConfInt>()) {
             return updateInt(static_cast<int32_t>(value));
         }
-        else {
-            String value_string(static_cast<uint32_t>(value));
-            config_abort_on_type_error("updateEnum", this, "ConfInt or ConfUint", &value_string);
+        if (this->is<ConfUint16>()) {
+            return updateUint(static_cast<uint16_t>(value));
         }
+        if (this->is<ConfInt16>()) {
+            return updateInt(static_cast<int16_t>(value));
+        }
+        if (this->is<ConfUint8>()) {
+            return updateUint(static_cast<uint8_t>(value));
+        }
+        if (this->is<ConfInt8>()) {
+            return updateInt(static_cast<int8_t>(value));
+        }
+
+        String value_string(static_cast<uint32_t>(value));
+        config_abort_on_type_error("updateEnum", this, "ConfInt or ConfUint", &value_string);
     }
 
     template<typename T>
