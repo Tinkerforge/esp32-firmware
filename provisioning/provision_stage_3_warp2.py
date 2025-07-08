@@ -785,8 +785,8 @@ class Stage3:
 
     # EVSE firmwares >= 2.2.12 require that the vehicle switches to B in 3 seconds after stopping the PWM.
     # Otherwise the EVSE will wait for 60 seconds before going back to C when phase switching.
-    def switch_phases(self):
-        self.switch_phases_function(1)
+    def switch_phases(self, phases):
+        self.switch_phases_function(phases)
         while self.get_cp_pwm_function() != 1000:
             time.sleep(0.1)
         self.change_cp_pe_state('B')
