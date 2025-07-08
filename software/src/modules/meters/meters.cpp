@@ -186,7 +186,7 @@ void Meters::pre_setup()
 {
     for (MeterSlot &meter_slot : meter_slots) {
         meter_slot.value_ids = Config::Array({},
-            Config::get_prototype_uint32_0(),
+            Config::get_prototype_uint16_0(),
             0, OPTIONS_METERS_MAX_VALUES_PER_METER(), Config::type_id<Config::ConfUint>()
         );
         meter_slot.values = Config::Array({},
