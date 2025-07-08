@@ -83,18 +83,18 @@
 
 #define DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS                           static_cast<size_t>(DeyeHybridInverterDeviceTypeAddress::DeviceType)
 
-#define DEYE_HYBRID_INVERTER_PV1_POWER_ADDRESS                             static_cast<size_t>(DeyeHybridInverterPVAddress::PV1Power)
-#define DEYE_HYBRID_INVERTER_PV2_POWER_ADDRESS                             static_cast<size_t>(DeyeHybridInverterPVAddress::PV2Power)
-#define DEYE_HYBRID_INVERTER_PV3_POWER_ADDRESS                             static_cast<size_t>(DeyeHybridInverterPVAddress::PV3Power)
-#define DEYE_HYBRID_INVERTER_PV4_POWER_ADDRESS                             static_cast<size_t>(DeyeHybridInverterPVAddress::PV4Power)
-#define DEYE_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS                           static_cast<size_t>(DeyeHybridInverterPVAddress::PV1Voltage)
-#define DEYE_HYBRID_INVERTER_PV1_CURRENT_ADDRESS                           static_cast<size_t>(DeyeHybridInverterPVAddress::PV1Current)
-#define DEYE_HYBRID_INVERTER_PV2_VOLTAGE_ADDRESS                           static_cast<size_t>(DeyeHybridInverterPVAddress::PV2Voltage)
-#define DEYE_HYBRID_INVERTER_PV2_CURRENT_ADDRESS                           static_cast<size_t>(DeyeHybridInverterPVAddress::PV2Current)
-#define DEYE_HYBRID_INVERTER_PV3_VOLTAGE_ADDRESS                           static_cast<size_t>(DeyeHybridInverterPVAddress::PV3Voltage)
-#define DEYE_HYBRID_INVERTER_PV3_CURRENT_ADDRESS                           static_cast<size_t>(DeyeHybridInverterPVAddress::PV3Current)
-#define DEYE_HYBRID_INVERTER_PV4_VOLTAGE_ADDRESS                           static_cast<size_t>(DeyeHybridInverterPVAddress::PV4Voltage)
-#define DEYE_HYBRID_INVERTER_PV4_CURRENT_ADDRESS                           static_cast<size_t>(DeyeHybridInverterPVAddress::PV4Current)
+#define DEYE_HYBRID_INVERTER_PV1_POWER_ADDRESS                             static_cast<size_t>(DeyeHybridInverterLowVoltagePVAddress::PV1Power)
+#define DEYE_HYBRID_INVERTER_PV2_POWER_ADDRESS                             static_cast<size_t>(DeyeHybridInverterLowVoltagePVAddress::PV2Power)
+#define DEYE_HYBRID_INVERTER_PV3_POWER_ADDRESS                             static_cast<size_t>(DeyeHybridInverterLowVoltagePVAddress::PV3Power)
+#define DEYE_HYBRID_INVERTER_PV4_POWER_ADDRESS                             static_cast<size_t>(DeyeHybridInverterLowVoltagePVAddress::PV4Power)
+#define DEYE_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS                           static_cast<size_t>(DeyeHybridInverterLowVoltagePVAddress::PV1Voltage)
+#define DEYE_HYBRID_INVERTER_PV1_CURRENT_ADDRESS                           static_cast<size_t>(DeyeHybridInverterLowVoltagePVAddress::PV1Current)
+#define DEYE_HYBRID_INVERTER_PV2_VOLTAGE_ADDRESS                           static_cast<size_t>(DeyeHybridInverterLowVoltagePVAddress::PV2Voltage)
+#define DEYE_HYBRID_INVERTER_PV2_CURRENT_ADDRESS                           static_cast<size_t>(DeyeHybridInverterLowVoltagePVAddress::PV2Current)
+#define DEYE_HYBRID_INVERTER_PV3_VOLTAGE_ADDRESS                           static_cast<size_t>(DeyeHybridInverterLowVoltagePVAddress::PV3Voltage)
+#define DEYE_HYBRID_INVERTER_PV3_CURRENT_ADDRESS                           static_cast<size_t>(DeyeHybridInverterLowVoltagePVAddress::PV3Current)
+#define DEYE_HYBRID_INVERTER_PV4_VOLTAGE_ADDRESS                           static_cast<size_t>(DeyeHybridInverterLowVoltagePVAddress::PV4Voltage)
+#define DEYE_HYBRID_INVERTER_PV4_CURRENT_ADDRESS                           static_cast<size_t>(DeyeHybridInverterLowVoltagePVAddress::PV4Current)
 
 #define ALPHA_ESS_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS                      static_cast<size_t>(AlphaESSHybridInverterPVAddress::PV1Voltage)
 #define ALPHA_ESS_HYBRID_INVERTER_PV1_CURRENT_ADDRESS                      static_cast<size_t>(AlphaESSHybridInverterPVAddress::PV1Current)
@@ -534,7 +534,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case DeyeHybridInverterVirtualMeter::PV:
-            table = &deye_hybrid_inverter_pv_table;
+            table = &deye_hybrid_inverter_device_type_table;
             default_location = MeterLocation::PV;
             break;
 
@@ -2195,7 +2195,7 @@ void MeterModbusTCP::parse_next()
         return;
     }
 
-    if (is_deye_hybrid_inverter_battery_meter()
+    if ((is_deye_hybrid_inverter_battery_meter() || is_deye_hybrid_inverter_pv_meter())
      && generic_read_request.start_address == DEYE_HYBRID_INVERTER_DEVICE_TYPE_ADDRESS) {
         if (deye_hybrid_inverter.device_type < 0) {
             bool success = true;
@@ -2208,13 +2208,25 @@ void MeterModbusTCP::parse_next()
                 return;
 
             case 0x0005:
-                table = &deye_hybrid_inverter_low_voltage_battery_table;
+                if (is_deye_hybrid_inverter_battery_meter()) {
+                    table = &deye_hybrid_inverter_low_voltage_battery_table;
+                }
+                else {
+                    table = &deye_hybrid_inverter_low_voltage_pv_table;
+                }
+
                 logger.printfln_meter("Deye hybrid inverter with low-voltage battery detected");
                 break;
 
             case 0x0006:
             case 0x0106:
-                table = &deye_hybrid_inverter_high_voltage_battery_table;
+                if (is_deye_hybrid_inverter_battery_meter()) {
+                    table = &deye_hybrid_inverter_high_voltage_battery_table;
+                }
+                else {
+                    table = &deye_hybrid_inverter_high_voltage_pv_table;
+                }
+
                 logger.printfln_meter("Deye hybrid inverter with high-voltage battery detected: 0x%04x", c16.u);
                 break;
 

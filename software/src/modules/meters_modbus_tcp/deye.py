@@ -511,7 +511,8 @@ specs = [
         ],
     },
     {
-        'name': 'Deye Hybrid Inverter PV',
+        'name': 'Deye Hybrid Inverter {variant} PV',
+        'variants': ['Low Voltage', 'High Voltage'],
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -522,11 +523,26 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
+                'name': 'PV1 Power [W]',
+                'value_id': 'PowerPV1Export',
+                'start_address': 672,
+                'value_type': 'U16',
+                'variants': ['Low Voltage'],
+            },
+            {
                 'name': 'PV1 Power [10 W]',
                 'value_id': 'PowerPV1Export',
                 'start_address': 672,
                 'value_type': 'U16',
                 'scale_factor': 10.0,
+                'variants': ['High Voltage'],
+            },
+            {
+                'name': 'PV2 Power [W]',
+                'value_id': 'PowerPV2Export',
+                'start_address': 673,
+                'value_type': 'U16',
+                'variants': ['Low Voltage'],
             },
             {
                 'name': 'PV2 Power [10 W]',
@@ -534,6 +550,14 @@ specs = [
                 'start_address': 673,
                 'value_type': 'U16',
                 'scale_factor': 10.0,
+                'variants': ['High Voltage'],
+            },
+            {
+                'name': 'PV3 Power [W]',
+                'value_id': 'PowerPV3Export',
+                'start_address': 674,
+                'value_type': 'U16',
+                'variants': ['Low Voltage'],
             },
             {
                 'name': 'PV3 Power [10 W]',
@@ -541,6 +565,14 @@ specs = [
                 'start_address': 674,
                 'value_type': 'U16',
                 'scale_factor': 10.0,
+                'variants': ['High Voltage'],
+            },
+            {
+                'name': 'PV4 Power [W]',
+                'value_id': 'PowerPV4Export',
+                'start_address': 675,
+                'value_type': 'U16',
+                'variants': ['Low Voltage'],
             },
             {
                 'name': 'PV4 Power [10 W]',
@@ -548,6 +580,7 @@ specs = [
                 'start_address': 675,
                 'value_type': 'U16',
                 'scale_factor': 10.0,
+                'variants': ['High Voltage'],
             },
             {
                 'name': 'PV1 Voltage [0.1 V]',
