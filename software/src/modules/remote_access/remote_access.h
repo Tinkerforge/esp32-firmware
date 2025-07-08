@@ -39,10 +39,12 @@ struct HttpResponse {
 };
 
 enum class RegistrationState {
+    _min = 0,
     None,
     InProgress,
     Success,
     Error,
+    _max = 4,
 };
 
 struct Connections {
