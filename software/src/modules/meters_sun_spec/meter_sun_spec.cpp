@@ -576,6 +576,10 @@ void MeterSunSpec::scan_next()
                         else if (strncmp(m->Mn, "SUNGROW", 32) == 0) {
                             quirks |= SUN_SPEC_QUIRKS_INTEGER_INVERTER_POWER_FACTOR_IS_UNITY;
                         }
+                        else if (strncmp(m->Mn, "TQ-Systems GmbH", 32) == 0) {
+                            quirks |= SUN_SPEC_QUIRKS_ACC32_IS_INT32;
+                            quirks |= SUN_SPEC_QUIRKS_INTEGER_METER_POWER_FACTOR_IS_UNITY;
+                        }
 
                         if (quirks) {
                             logger.printfln_meter("Enabling quirks mode 0x%02lx for %.32s device", quirks, m->Mn);
