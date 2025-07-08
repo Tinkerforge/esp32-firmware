@@ -97,7 +97,8 @@ class Stage3:
                  reset_dc_fault_function,
                  switch_phases_function,
                  get_evse_uptime_function,
-                 reset_evse_function):
+                 reset_evse_function,
+                 get_cp_pwm_function):
         self.is_front_panel_button_pressed_function = is_front_panel_button_pressed_function
         self.has_evse_error_function = has_evse_error_function
         self.get_iec_state_function = get_iec_state_function
@@ -105,6 +106,7 @@ class Stage3:
         self.switch_phases_function = switch_phases_function
         self.get_evse_uptime_function = lambda: get_evse_uptime_function() / 1000.0
         self.reset_evse_function = reset_evse_function
+        self.get_cp_pwm_function = get_cp_pwm_function
         self.ipcon = IPConnection()
         self.inventory = Inventory(self.ipcon)
         self.devices = {} # by position path
@@ -781,6 +783,18 @@ class Stage3:
                         f'EVSE start {self.evse_uptime_start} now {evse_uptime_now} elapsed {evse_uptime_elapsed}\n\t'
                         f'WALL start {self.wall_clock_start} now {wall_clock_now} elapsed {wall_clock_elapsed}')
 
+    # EVSE firmwares >= 2.2.12 require that the vehicle switches to B in 3 seconds after stopping the PWM.
+    # Otherwise the EVSE will wait for 60 seconds before going back to C when phase switching.
+    def switch_phases(self):
+        self.switch_phases_function(1)
+        while self.get_cp_pwm_function() != 1000:
+            time.sleep(0.1)
+        self.change_cp_pe_state('B')
+        while self.get_cp_pwm_function() == 1000:
+            time.sleep(0.1)
+        self.change_cp_pe_state('C')
+        time.sleep(VOLTAGE_SETTLE_DURATION)
+
     # requires power_on
     def test_wallbox(self, has_phase_switch):
         assert self.has_evse_error_function != None
@@ -947,8 +961,7 @@ class Stage3:
 
             print('Testing phase switch')
 
-            self.switch_phases_function(1)
-            time.sleep(PHASE_SWITCH_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
+            self.switch_phases(1)
 
             voltages = self.read_voltage_monitors()
 
@@ -963,8 +976,7 @@ class Stage3:
             if voltages[2] > VOLTAGE_ON_THRESHOLD:
                 fatal_error('Unexpected voltage on L3')
 
-            self.switch_phases_function(3)
-            time.sleep(PHASE_SWITCH_SETTLE_DURATION + VOLTAGE_SETTLE_DURATION)
+            self.switch_phases(3)
 
             voltages = self.read_voltage_monitors()
 
@@ -1253,7 +1265,8 @@ def main():
                     reset_dc_fault_function=lambda: None,
                     switch_phases_function=lambda x: None,
                     get_evse_uptime_function=lambda: None,
-                    reset_evse_function=lambda: None)
+                    reset_evse_function=lambda: None,
+                    get_cp_pwm_function=lambda: 1000)
 
     stage3.setup()
 

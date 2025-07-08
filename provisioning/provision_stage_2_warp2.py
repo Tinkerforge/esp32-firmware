@@ -271,6 +271,10 @@ def switch_phases(phases):
     global evse
     return retry_wrapper(lambda: evse.set_phase_control(phases), "set phases")
 
+def get_cp_pwm():
+    global evse
+    return retry_wrapper(lambda: evse.get_low_level_state().cp_pwm_duty_cycle, "get cp pwm")
+
 def get_evse_uptime():
     global evse
     return retry_wrapper(lambda: evse.get_low_level_state().uptime, "get EVSE uptime")
@@ -378,7 +382,8 @@ def led_wrap():
                     reset_dc_fault_function=reset_dc_fault,
                     switch_phases_function=switch_phases,
                     get_evse_uptime_function=get_evse_uptime,
-                    reset_evse_function=reset_evse)
+                    reset_evse_function=reset_evse,
+                    get_cp_pwm_function=get_cp_pwm)
 
     stage3.setup()
     stage3.set_led_strip_color((0, 0, 255))
