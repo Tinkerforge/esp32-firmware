@@ -39,7 +39,7 @@ void EvseLed::pre_setup()
     automation.register_action(
         AutomationActionID::LED,
         Config::Object({
-            {"indication", Config::Int(-1)},
+            {"indication", Config::Int(-1, -1, Blink::ErrorEnd)},
             {"duration", Config::Uint16(0)},
             {"color_h", Config::Uint(0, 0, 360)},
             {"color_s", Config::Uint8(0)},

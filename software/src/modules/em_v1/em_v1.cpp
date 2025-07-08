@@ -106,7 +106,7 @@ void EMV1::pre_setup()
     automation.register_trigger(
         AutomationTriggerID::EMPhaseSwitch,
         Config::Object({
-            {"phases", Config::Uint(1)}
+            {"phases", Config::Uint8(1)}
         }));
 
     automation.register_trigger(

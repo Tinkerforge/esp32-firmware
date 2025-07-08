@@ -168,7 +168,7 @@ void PowerManager::pre_setup()
     automation.register_action(
         AutomationActionID::PMPhaseSwitch,
         Config::Object({
-            {"phases_wanted", Config::Uint(1)}
+            {"phases_wanted", Config::Uint8(1)}
         }),
         [this](const Config *cfg) {
             const String err = api.callCommand("power_manager/external_control_update", Config::ConfUpdateObject{{

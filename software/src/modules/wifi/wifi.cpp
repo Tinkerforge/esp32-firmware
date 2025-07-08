@@ -86,7 +86,7 @@ void Wifi::pre_setup()
         {"connection_end", Config::Uint(0)},
         {"ap_state", Config::Int(0)},
         {"ap_bssid", Config::Str("", 0, 20)},
-        {"ap_sta_count", Config::Uint(0)},
+        {"ap_sta_count", Config::Uint8(0)},
         {"sta_ip", Config::Str("0.0.0.0", 7, 15)},
         {"sta_subnet", Config::Str("0.0.0.0", 7, 15)},
         {"sta_rssi", Config::Int8(-127)},

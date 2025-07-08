@@ -83,7 +83,7 @@ void System::pre_setup()
     esp_reset_reason_t reason = esp_reset_reason();
 
     last_reset = Config::Object({
-        {"reason", Config::Uint(reason)},
+        {"reason", Config::Uint8(reason)},
         {"show_warning", Config::Bool(reason != ESP_RST_POWERON && reason != ESP_RST_SW)}
     });
 }
