@@ -112,7 +112,7 @@ void GenericTCPClientConnectorBase::disconnect_callback_common(TFGenericTCPClien
     if (keep_connected) {
         task_scheduler.scheduleOnce([this]() {
             connect_internal();
-        });
+        }, 5_s);
     }
 }
 
