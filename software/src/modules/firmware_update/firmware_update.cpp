@@ -232,10 +232,10 @@ void FirmwareUpdate::pre_setup()
     state = Config::Object({
         {"publisher", Config::Str(signature_publisher, 0, strlen(signature_publisher))},
         {"check_timestamp", Config::Uint(0)},
-        {"check_state", Config::Uint8(static_cast<uint8_t>(CheckState::Idle))},
+        {"check_state", Config::Enum<CheckState>(CheckState::Idle)},
         {"update_version", Config::Str("", 0, SEMANTIC_VERSION_MAX_STRING_LENGTH)},
         {"install_progress", Config::Uint(0, 0, 100)},
-        {"install_state", Config::Uint8(static_cast<uint8_t>(InstallState::Idle))},
+        {"install_state", Config::Enum<InstallState>(InstallState::Idle)},
         {"running_partition", Config::Str("", 0, 16)},
         {"app0_state", Config::Uint(ESP_OTA_IMG_INVALID)},
         {"app0_version", Config::Str("", 0, SEMANTIC_VERSION_MAX_STRING_LENGTH)},

@@ -32,6 +32,7 @@ public:
     void register_urls() override;
 
     enum Blink {
+        _min = -1,
         None = -1,
         Off = 0,
         /* 1 - 254 = PWM dimmed */
@@ -41,6 +42,7 @@ public:
         Nag = 1003,
         ErrorStart = 2001,
         ErrorEnd = 2010,
+        _max = 2010,
     };
 
     // If v is 0 the EVSE selects the color of the indication/state
