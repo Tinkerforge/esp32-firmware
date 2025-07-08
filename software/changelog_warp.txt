@@ -832,3 +832,10 @@
 - Charge Tracker: Allow clearing PDF letterhead
 - Fix mDNS spam
 - Improve translations
+
+2025-07-08: 2.8.5 (<unknown>)
+- Use meter to check supply voltages
+- Prevent WireGuard keys from being leaked via debug report
+- Increase IP input strictness to prevent typos
+- Modbus TCP: Fix PV power for Deye low-voltage hybrid inverters
+- Improve translations

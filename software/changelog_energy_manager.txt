@@ -467,3 +467,9 @@
 - Report contactor error only on trip
 - Fix RTC year if never set
 - Improve translations
+
+2025-07-08: 2.4.5 (<unknown>)
+- Prevent WireGuard keys from being leaked via debug report
+- Increase IP input strictness to prevent typos
+- Modbus TCP: Fix PV power for Deye low-voltage hybrid inverters
+- Improve translations
