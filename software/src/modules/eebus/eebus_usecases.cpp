@@ -157,11 +157,15 @@ UseCaseInformationDataType NodeManagementUsecase::get_usecase_information()
 }
 bool NodeManagementUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
+    logger.printfln("NodeManagementUsecase: Handling message with cmdClassifier %d and command %s",
+                    static_cast<int>(header.cmdClassifier.value()), data->function_to_string(data->last_cmd).c_str());
     if (header.cmdClassifier == CmdClassifierType::read && data->last_cmd == SpineDataTypeHandler::Function::nodeManagementUseCaseData) {
+        logger.printfln("NodeManagementUsecase: Reading usecase data");
         return read_usecase_data(header, data, response);
     }
     if (header.cmdClassifier == CmdClassifierType::read
         && data->last_cmd == SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryData) {
+            logger.printfln("NodeManagementUsecase: Reading detailed discovery data");
         return read_detailed_discovery_data(header, data, response);
     }
     return false;
@@ -182,6 +186,7 @@ bool NodeManagementUsecase::read_usecase_data(HeaderType &header, SpineDataTypeH
         }
         return true;
     }
+    logger.printfln("An error occurred while trying to read the NodeManagementUseCaseData");
     return false;
 }
 bool NodeManagementUsecase::read_detailed_discovery_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) const
@@ -204,7 +209,8 @@ bool NodeManagementUsecase::read_detailed_discovery_data(HeaderType &header, Spi
         node_management_detailed_data.entityInformation->push_back(uc->get_detailed_discovery_entity_information());
         node_management_detailed_data.featureInformation->push_back(uc->get_detailed_discovery_feature_information());
     }
-    return false;
+    response["nodeManagementDetailedDiscoveryData"] = node_management_detailed_data;
+    return true;
 }
 
 bool NodeManagementUsecase::handle_subscription(HeaderType &header,
@@ -508,6 +514,7 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
         send_response = charging_summary.handle_message(header, data, response.as<JsonObject>(), connection);
     }
     if (send_response) {
+        logger.printfln("Sending response");
         connection->send_datagram(response.as<JsonVariant>(),
                                   CmdClassifierType::reply,
                                   *header.addressSource,

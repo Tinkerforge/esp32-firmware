@@ -878,7 +878,7 @@ void ShipConnection::send_data_message(JsonVariant payload)
 
         data.type_to_json(*message_outgoing);
 
-        logger.printfln("Data: sending message with total length of %d", message_outgoing->length -1);
+        logger.printfln("Data: sending message with total length of %d", message_outgoing->length - 1);
         send_current_outgoing_message();
     } else {
         logger.printfln("send_data_message: Connection not in done state. Actual State: %d", (int)state);
@@ -906,8 +906,9 @@ void ShipConnection::state_done()
     switch (protocol_state) {
         case ProtocolState::Data: {
             SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
-            //TODO: Check if we need to run in compatibility mode here
-            if (data.json_to_type(&message_incoming->data[1], message_incoming->length - 1, false) == SHIP_TYPES::DeserializationResult::SUCCESS) {
+
+            if (data.json_to_type(&message_incoming->data[1], message_incoming->length - 1, false)
+                == SHIP_TYPES::DeserializationResult::SUCCESS) {
                 logger.printfln("DATA received: %d (len %d)-> %s",
                                 message_incoming->data[0],
                                 message_incoming->length,

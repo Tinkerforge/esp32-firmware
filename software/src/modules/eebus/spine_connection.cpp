@@ -39,7 +39,7 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
     received_payload =
         datagram["datagram"][1]["payload"][0]["cmd"][0][0]; // The payload should not be in an array but spine-go does these strange things
 
-    if (!received_header.cmdClassifier || received_header.addressSource || received_payload.isNull()) {
+    if (!received_header.cmdClassifier || !received_header.addressSource || received_payload.isNull()) {
         logger.printfln("SPINE: ERROR: No datagram header or payload found");
         if (!received_header.cmdClassifier) {
             logger.printfln("SPINE: ERROR: No cmdClassifier found in the received header");
@@ -51,17 +51,16 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
             logger.printfln("SPINE: ERROR: No payload found in the received datagram");
             logger.printfln("SPINE: Payload section: %s", datagram["datagram"][1]["payload"][0].as<String>().c_str());
         } else {
-            logger.printfln("Received Payload: %s", received_payload.as<String>().c_str());
+            //logger.printfln("Received Payload: %s", received_payload.as<String>().c_str());
         }
         return false;
     }
 
     check_message_counter();
-
-    if (SpineDataTypeHandler::Function called_function = eebus.data_handler->handle_cmd(received_payload);
-        called_function == SpineDataTypeHandler::Function::None) {
+    SpineDataTypeHandler::Function called_function = eebus.data_handler->handle_cmd(received_payload);
+    if (called_function == SpineDataTypeHandler::Function::None) {
         logger.printfln("SPINE: No function found for the received payload");
-        logger.printfln("SPINE: Payload: %s", received_payload.as<String>().c_str());
+        //logger.printfln("SPINE: Payload: %s", received_payload.as<String>().c_str());
         return false;
     }
 
@@ -78,6 +77,7 @@ void SpineConnection::send_datagram(JsonVariantConst payload,
                                     const FeatureAddressType &receiver,
                                     bool require_ack)
 {
+    logger.printfln("SPINE: Sending datagram with cmdClassifier %d", static_cast<int>(cmd_classifier));
     response_doc.clear();
     HeaderType header;
     header.ackRequest = require_ack;
