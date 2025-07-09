@@ -200,6 +200,9 @@ public:
      */
     void inform_subscribers(int entity, int feature, SpineDataTypeHandler *data);
 
+    DynamicJsonDocument response{8192}; // The response document to be filled with the response data
+
+
     uint8_t feature_address_node_management = 0;
     NodeManagementUsecase node_management{};
 

@@ -358,7 +358,7 @@ def process_complex_type(complex_type):
                 unprocessed_elements += 1
                 return
             new_type.to_json_code += f"""\tif (src.{variable_name_cpp}) {{\n\t\tdst["{variable_name_string}"] = *src.{variable_name_cpp};\n\t}}\n"""
-            new_type.from_json_code += f"""\tif (src["{variable_name_string}"]) {{\n\t\tdst.{variable_name_cpp} = src["{variable_name_string}"].as<decltype(dst.{variable_name_cpp})::value_type>();\n\t}} else {{\n\t\tdst.{variable_name_cpp} = std::nullopt;\n\t}}\n"""
+            new_type.from_json_code += f"""\tif (src["{variable_name_string}"]) {{\n\t\tdst.{variable_name_cpp} = src["{variable_name_string}"].as<decltype(dst.{variable_name_cpp})::value_type>();\n\t}} else {{\n\t\t//dst.{variable_name_cpp} = std::nullopt;\n\t}}\n"""
         #if its an empty element, we still need to generate the to/from json code but it doesnt need to do anything
         if len(elements) < 1:
             new_type.to_json_code = f"""bool convertToJson(const {struct_type_name} &src, JsonVariant& dst) {{\n"""
