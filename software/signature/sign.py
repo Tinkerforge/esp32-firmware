@@ -94,19 +94,22 @@ def keepassxc(preset, prefix, action, args, entry, password=None, input=None):
     except:
         return None
 
+
 def notify(msg):
     version = [int(x) for x in re.search(r"(\d+)\.(\d+)\.(\d+)", subprocess.check_output(["notify-send", "--version"], text=True)).groups()]
 
     if version >= [0, 8, 0]:
-        return subprocess.check_output(["notify-send", "-p", "-t", "3600000", "-i", os.path.abspath(os.path.join(os.path.dirname(__file__), "icon.png")), "release_warp_firmware.py", msg], text=True).strip()
+        return subprocess.check_output(["notify-send", "-p", "-t", "3600000", "-i", os.path.abspath(make_path("icon.png")), "esp32-firmware", msg], text=True).strip()
     else:
-        subprocess.call(["notify-send", "-t", "3600000", "-i", os.path.abspath(os.path.join(os.path.dirname(__file__), "icon.png")), "release_warp_firmware.py", msg])
+        subprocess.call(["notify-send", "-t", "3600000", "-i", os.path.abspath(make_path("icon.png")), "esp32-firmware", msg])
         return -1
+
 
 def notify_clear(n_id):
     if n_id == -1:
         return
-    subprocess.call(["notify-send", "-r", n_id, "-t", "1", "-i", os.path.abspath(os.path.join(os.path.dirname(__file__), "icon.png")), "release_warp_firmware.py", "clear"])
+
+    subprocess.call(["notify-send", "-r", n_id, "-t", "1", "-i", os.path.abspath(make_path("icon.png")), "esp32-firmware", "clear"])
 
 
 def main():
