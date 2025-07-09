@@ -21,6 +21,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 //#include <stdio.h>
 
 // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/mem_alloc.html#bit-accessible-memory
@@ -138,3 +139,35 @@ void delete_array_psram_or_dram(T *ptr)
 
     free_any(ptr_heap);
 }
+
+template <typename T>
+class DeleterAny {
+public:
+    void operator()(T *t) {
+        delete_psram_or_dram(t);
+    }
+};
+
+// A std::unique_ptr that can free non-DRAM memory correctly.
+template <typename T>
+using unique_ptr_any = std::unique_ptr<T, DeleterAny<T>>;
+
+// Allocates into PSRAM if possible, or in DRAM is no(t enough) PSRAM is available.
+template<typename T, class... Args>
+unique_ptr_any<T> make_unique_psram(Args&&... args)
+{
+    static_assert(alignof(T) <= 8);
+
+    void *ptr_heap = malloc_aligned_psram_or_dram(alignof(T), sizeof(T));
+
+    if (ptr_heap == nullptr) {
+        return unique_ptr_any<T>{nullptr};
+    }
+
+    T *ptr = static_cast<T *>(ptr_heap);
+
+    new (ptr) T(std::forward<Args>(args)...);
+
+    return unique_ptr_any<T>{ptr};
+}
+
