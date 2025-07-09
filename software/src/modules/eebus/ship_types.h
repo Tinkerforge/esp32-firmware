@@ -63,6 +63,8 @@ namespace SHIP_TYPES {
         std::vector<bool> extension_binary{}; // This technically an array of integers
         CoolString extension_string{};
 
+
+        DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
         DeserializationResult json_to_type(uint8_t *data, size_t length, bool compatiblity_mode = false);
         String type_to_json(ShipConnection::Message &message_outgoing);
 

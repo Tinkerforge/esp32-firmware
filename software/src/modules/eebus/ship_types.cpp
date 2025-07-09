@@ -31,7 +31,7 @@ namespace SHIP_TYPES
 
 DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, size_t length, bool compatiblity_mode)
 {
-    DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
+    //DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
 
     String incoming_data_str(reinterpret_cast<const char *>(incoming_data), length);
     if (compatiblity_mode) {
