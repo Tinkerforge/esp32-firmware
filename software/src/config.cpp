@@ -125,8 +125,8 @@ Config Config::Uint(uint32_t u, uint32_t min, uint32_t max)
 
     if (min == std::numeric_limits<uint16_t>::min() && max == std::numeric_limits<uint16_t>::max())
         return Config{ConfUint16{static_cast<uint16_t>(u)}};
-    if (min == std::numeric_limits<uint8_t>::min() && max == std::numeric_limits<uint8_t>::max())
-        return Config{ConfUint8{static_cast<uint8_t>(u)}};
+    if (min == std::numeric_limits<uint8_t>::min() && max <= std::numeric_limits<uint8_t>::max())
+        return Config{ConfUint8{static_cast<uint8_t>(u), static_cast<uint8_t>(max)}};
 
     return Config{ConfUint{u, min, max}};
 }
@@ -204,9 +204,9 @@ ConfigRoot *Config::Confirm()
     return &confirmconf;
 }
 
-Config Config::Uint8(uint8_t u)
+Config Config::Uint8(uint8_t u, uint8_t max)
 {
-    return Config{ConfUint8{u}};
+    return Config{ConfUint8{u, max}};
 }
 
 Config Config::Uint16(uint16_t u)

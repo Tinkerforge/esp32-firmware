@@ -255,6 +255,7 @@ struct Config {
     };
     struct ConfUint8 {
         uint8_t value;
+        uint8_t max;
         uint8_t *getVal();
         const uint8_t *getVal() const;
 
@@ -640,10 +641,16 @@ struct Config {
 
     template<typename T>
     static Config Enum(T i, T min, T max) {
+        if (min >= static_cast<T>(0) && max >= static_cast<T>(0))
+            return Uint(static_cast<uint32_t>(i), static_cast<uint32_t>(min), static_cast<uint32_t>(max));
+
         return Int(static_cast<int32_t>(i), static_cast<int32_t>(min), static_cast<int32_t>(max));
     }
     template<typename T>
     static Config Enum(T i) {
+        if (T::_min >= static_cast<T>(0) && T::_max >= static_cast<T>(0))
+            return Uint(static_cast<uint32_t>(i), static_cast<uint32_t>(T::_min), static_cast<uint32_t>(T::_max));
+
         return Int(static_cast<int32_t>(i), static_cast<int32_t>(T::_min), static_cast<int32_t>(T::_max));
     }
 
@@ -679,7 +686,7 @@ public:
     static const char *ConfirmKey() {return Config::confirm_key;}
     static constexpr const char *confirm_key = "do_i_know_what_i_am_doing";
 
-    static Config Uint8(uint8_t u);
+    static Config Uint8(uint8_t u, uint8_t max=255);
 
     static Config Uint16(uint16_t u);
 
