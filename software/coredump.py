@@ -7,16 +7,16 @@ import argparse
 import os, sys
 import subprocess
 import tempfile
-from shutil import which
+import shutil
 
 import parttool
 
 def find_gdb():
-    path = which("xtensa-esp32-elf-gdb")
+    path = shutil.which("xtensa-esp32-elf-gdb")
     if path is not None:
         return path
 
-    path = which("pio")
+    path = shutil.which("pio")
     if path is not None:
         return path + " pkg exec xtensa-esp32-elf-gdb --"
 
@@ -233,6 +233,7 @@ if __name__ == '__main__':
     parser.add_argument("-e", "--elf")
 
     group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("-c", "--coredump-elf")
     group.add_argument("path", nargs='?', default=None)
     group.add_argument("-p", "--port")
     args = parser.parse_args(sys.argv[1:])
@@ -243,6 +244,8 @@ if __name__ == '__main__':
         else:
             port = args.port
 
+    if args.coredump_elf:
+        shutil.copy2(args.coredump_elf, core_dump_path)
     if args.path:
         get_core_dump_from_debug_report(args.path)
     if args.port:
