@@ -77,7 +77,7 @@ DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, 
 
 String ShipMessageDataType::type_to_json(ShipConnection::Message &message_outgoing)
 {
-    DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
+    //DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
 
     JsonObject data = doc["data"].to<JsonObject>();
     data["header"]["protocolId"] = protocol_id;

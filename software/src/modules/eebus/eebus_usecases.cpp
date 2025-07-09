@@ -502,7 +502,8 @@ EEBusUseCases::EEBusUseCases()
 void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *data, SpineConnection *connection)
 {
     //TODO: Implement a mutex with waiting so only one message can be processed at a time
-    DynamicJsonDocument response = DynamicJsonDocument(8192); // The response document to be filled with the response data
+  //  DynamicJsonDocument response = DynamicJsonDocument(8192); // The response document to be filled with the response data
+    response.clear();
     // TODO: Fix the addressing of the usecases. Maybe better address them by entity?
     bool send_response = false;
     if (header.addressDestination->feature == feature_address_node_management) {

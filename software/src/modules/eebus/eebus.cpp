@@ -27,6 +27,9 @@
 
 void EEBus::pre_setup()
 {
+    // TODO: Fix string lengths. Spec says they are shorter
+
+    // TOOD: Rework API so this lot is a bit cleaner
     config_peers_prototype = Config::Object({
         {"ip", Config::Str("", 0, 64)},
         {"port", Config::Uint16(0)},

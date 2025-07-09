@@ -872,7 +872,6 @@ void ShipConnection::send_data_message(JsonVariant payload)
     // Technically we should only send data messages if the state is done but for some reason the done state is not set correctly
     if (/*state == State::Done*/ true) {
         SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
-        // SHIP 14.
         data.protocol_id = "ee1.0"; // We only speak ee1.0
         [[maybe_unused]] auto tmp = data.payload = payload;
 
