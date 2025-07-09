@@ -108,6 +108,8 @@ struct default_validator {
 
     String operator()(const Config::ConfUint8 &x) const
     {
+        if (x.value > x.max)
+            return String("Unsigned integer value ") + x.value + " was more than the allowed maximum of " + x.max;
         return "";
     }
 
@@ -376,7 +378,7 @@ struct max_string_length_visitor {
     }
     size_t operator()(const Config::ConfUint8 &x)
     {
-        return 3;
+        return estimate_chars_per_uint(x.max);
     }
     size_t operator()(const Config::ConfInt8 &x)
     {
@@ -1403,7 +1405,7 @@ struct api_info {
     }
     void operator()(const Config::ConfUint8 &x)
     {
-        sw.printf("{\"type\":\"uint\",\"val\":%lu,\"min\":0,\"max\":255}", *x.getVal());
+        sw.printf("{\"type\":\"uint\",\"val\":%lu,\"min\":0,\"max\":%u}", *x.getVal(), x.max);
     }
     void operator()(const Config::ConfInt8 &x)
     {
