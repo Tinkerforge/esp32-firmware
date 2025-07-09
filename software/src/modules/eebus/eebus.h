@@ -26,6 +26,7 @@
 #include "ship.h"
 #include "spine_connection.h"
 #include <TFJson.h>
+#include "tools/malloc.h"
 
 #define DNS_SD_UUID "Tinkerforge-WARP3-12345"
 #define EEBUS_PEER_FILE "/eebus/peers"
@@ -66,14 +67,7 @@ public:
     EEBusUseCases usecases{};
 
     // To save memory the SpineDataTypeHandler is allocated to SPIRAM if its available
-    std::unique_ptr<SpineDataTypeHandler, decltype(std::free) *> data_handler =
-        std::unique_ptr<SpineDataTypeHandler, decltype(std::free) *>(
-            static_cast<SpineDataTypeHandler *>(heap_caps_calloc_prefer(sizeof(SpineDataTypeHandler),
-                                                                        sizeof(char),
-                                                                        2,
-                                                                        MALLOC_CAP_SPIRAM,
-                                                                        MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL)),
-            heap_caps_free);
+    unique_ptr_any<SpineDataTypeHandler> data_handler = make_unique_psram<SpineDataTypeHandler>();
 
     /**
      * Get the index of the connection in state.get("connections") with the given ski.
