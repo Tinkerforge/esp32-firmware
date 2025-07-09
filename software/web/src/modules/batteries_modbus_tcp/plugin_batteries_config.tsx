@@ -249,6 +249,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
                     columnValues: [<>{register.desc.length > 0 ? <div>{register.desc}</div> : undefined}<div style={register.desc.length > 0 ? "font-size: 80%" : ""}>{__("batteries_modbus_tcp.content.registers_values_desc")(this.get_register_type_name(register.rtyp), register.addr + start_address_offset, register.vals)}</div></>],
                     onRemoveClick: async () => {
                         this.props.on_table({...this.props.table, registers: this.props.table.registers.filter((r, k) => k !== i)});
+                        return true;
                     },
                     onEditShow: async () => {
                         this.setState({
