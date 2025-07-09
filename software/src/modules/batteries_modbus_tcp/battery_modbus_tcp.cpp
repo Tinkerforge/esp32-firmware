@@ -177,12 +177,14 @@ void BatteryModbusTCP::write_next(Execution *execution)
                                                                        register_->values_count,
                                                                        register_->values_buffer,
                                                                        2_s,
-    [this, execution](TFModbusTCPClientTransactionResult result) {
+    [this, execution](TFModbusTCPClientTransactionResult result, const char *error_message) {
         if (result != TFModbusTCPClientTransactionResult::Success) {
-            logger.printfln_battery("Action execution failed at %zu of %zu: %s (%d)",
+            logger.printfln_battery("Action execution failed at %zu of %zu: %s (%d)%s%s",
                                     execution->index + 1, execution->table->registers_count,
                                     get_tf_modbus_tcp_client_transaction_result_name(result),
-                                    static_cast<int>(result));
+                                    static_cast<int>(result),
+                                    error_message != nullptr ? " / " : "",
+                                    error_message != nullptr ? error_message : "");
 
             if (execution->callback) {
                 execution->callback(false);
