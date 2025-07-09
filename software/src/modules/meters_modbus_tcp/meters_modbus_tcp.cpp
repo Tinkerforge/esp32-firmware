@@ -44,7 +44,7 @@ void MetersModbusTCP::pre_setup()
         {"vtype", Config::Enum(ModbusValueType::U16)},
         {"off", Config::Float(0.0f)},
         {"scale", Config::Float(1.0f)},
-        {"id", Config::Enum(MeterValueID::NotSupported)},
+        {"id", Config::Uint16(static_cast<uint16_t>(MeterValueID::NotSupported))},
     });
 
     table_prototypes.push_back({MeterModbusTCPTableID::Custom, Config::Object({
