@@ -299,11 +299,11 @@ void BatteriesModbusTCP::register_urls()
         }
 
         modbus_tcp_client.get_pool()->acquire(host.c_str(), port,
-        [this, cookie, host, port](TFGenericTCPClientConnectResult connect_result, int error_number, TFGenericTCPSharedClient *shared_client) {
+        [this, cookie, host, port](TFGenericTCPClientConnectResult connect_result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
             if (connect_result != TFGenericTCPClientConnectResult::Connected) {
                 char connect_error[256] = "";
 
-                GenericTCPClientConnectorBase::format_connect_error(connect_result, error_number, host.c_str(), port, connect_error, sizeof(connect_error));
+                GenericTCPClientConnectorBase::format_connect_error(connect_result, error_number, share_level, host.c_str(), port, connect_error, sizeof(connect_error));
                 report_errorf(cookie, "%s", connect_error);
 
                 free_table(execute_table);
@@ -317,7 +317,7 @@ void BatteriesModbusTCP::register_urls()
 
             write_next();
         },
-        [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client) {
+        [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
             if (execute_client != shared_client) {
                 return;
             }
@@ -428,12 +428,14 @@ void BatteriesModbusTCP::write_next()
                                                                      register_->values_count,
                                                                      register_->values_buffer,
                                                                      2_s,
-    [this](TFModbusTCPClientTransactionResult result) {
+    [this](TFModbusTCPClientTransactionResult result, const char *error_message) {
         if (result != TFModbusTCPClientTransactionResult::Success) {
-            report_errorf(execute_cookie, "Action execution failed at %zu of %zu: %s (%d)",
+            report_errorf(execute_cookie, "Action execution failed at %zu of %zu: %s (%d)%s%s",
                           execute_index + 1, execute_table->registers_count,
                           get_tf_modbus_tcp_client_transaction_result_name(result),
-                          static_cast<int>(result));
+                          static_cast<int>(result),
+                          error_message != nullptr ? " / " : "",
+                          error_message != nullptr ? error_message : "");
 
             release_client();
             return;
