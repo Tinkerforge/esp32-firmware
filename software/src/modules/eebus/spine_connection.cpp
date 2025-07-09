@@ -30,7 +30,8 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
     last_received_time = millis();
     compatiblity_mode = true;
     ArduinoJson::spine_go_compatibility_mode = this->compatiblity_mode;
-    received_header = HeaderType(); // Reset the header to avoid using old values
+    //received_header = HeaderType(); // Reset the header to avoid using old values
+    logger.printfln("Mark 1: Stack high water mark: %u bytes", uxTaskGetStackHighWaterMark(NULL) * sizeof(StackType_t));
 
     received_header = datagram["datagram"][0]["header"];
     //logger.printfln("SPINE: Received datagram: %s", datagram.as<String>().c_str());
@@ -49,12 +50,13 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
         }
         if (received_payload.isNull()) {
             logger.printfln("SPINE: ERROR: No payload found in the received datagram");
-            logger.printfln("SPINE: Payload section: %s", datagram["datagram"][1]["payload"][0].as<String>().c_str());
+            //logger.printfln("SPINE: Payload section: %s", datagram["datagram"][1]["payload"][0].as<String>().c_str());
         } else {
             //logger.printfln("Received Payload: %s", received_payload.as<String>().c_str());
         }
         return false;
     }
+    logger.printfln("Mark 2: Stack high water mark: %u bytes", uxTaskGetStackHighWaterMark(NULL) * sizeof(StackType_t));
 
     check_message_counter();
     SpineDataTypeHandler::Function called_function = eebus.data_handler->handle_cmd(received_payload);
@@ -63,14 +65,17 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
         //logger.printfln("SPINE: Payload: %s", received_payload.as<String>().c_str());
         return false;
     }
+    logger.printfln("Mark 3: Stack high water mark: %u bytes", uxTaskGetStackHighWaterMark(NULL) * sizeof(StackType_t));
 
-    response_doc.clear();
+    //response_doc.clear();
     eebus.usecases.handle_message(received_header, eebus.data_handler.get(), this);
+    //logger.printfln("Mark 4: Stack high water mark: %u bytes", uxTaskGetStackHighWaterMark(NULL) * sizeof(StackType_t));
 
-    logger.printfln("SPINE: Message processed");
+    //logger.printfln("SPINE: Message processed");
 
     return true;
 }
+
 void SpineConnection::send_datagram(JsonVariantConst payload,
                                     CmdClassifierType cmd_classifier,
                                     const FeatureAddressType &sender,

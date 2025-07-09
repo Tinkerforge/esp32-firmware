@@ -81,7 +81,7 @@ public:
     /**
     * The last received header of a SPINE datagram.
     */
-    HeaderType received_header;
+    HeaderType received_header{};
 
     /**
     * The Payload of the last received SPINE datagram.
