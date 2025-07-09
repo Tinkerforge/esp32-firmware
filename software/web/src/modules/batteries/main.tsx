@@ -225,6 +225,8 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                         rules.splice(this.state.edit_rule_idx, 1);
 
                         this.props.on_rules(rules);
+
+                        return true;
                     },
                 }
             })}
@@ -640,6 +642,7 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                                     onRemoveClick: async () => {
                                         this.setState({configs: {...this.state.configs, [battery_slot]: [BatteryClassID.None, null]}});
                                         this.setDirty(true);
+                                        return true;
                                     },
                                     onEditImport: async (json: string) => {
                                         this.setState({edit_battery_config: this.import_config(json, this.state.edit_battery_config)});
