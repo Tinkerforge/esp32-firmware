@@ -21,14 +21,15 @@
 
 #include <Arduino.h>
 #include <TFGenericTCPClient.h>
+#include <TFGenericTCPClientPool.h>
 
 #include "tools.h"
 
 class GenericTCPClientConnectorBase
 {
 public:
-    static void format_connect_error(TFGenericTCPClientConnectResult result, int error_number, const char *host, uint16_t port, char *buf, size_t buf_len);
-    static void format_disconnect_reason(TFGenericTCPClientDisconnectReason reason, int error_number, const char *host, uint16_t port, char *buf, size_t buf_len);
+    static void format_connect_error(TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPClientPoolShareLevel share_level, const char *host, uint16_t port, char *buf, size_t buf_len);
+    static void format_disconnect_reason(TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPClientPoolShareLevel share_level, const char *host, uint16_t port, char *buf, size_t buf_len);
 
 protected:
     GenericTCPClientConnectorBase(const char *event_log_prefix_override_, const char *event_log_message_prefix_) :
@@ -41,8 +42,8 @@ protected:
     void stop_connection();
     void force_reconnect();
 
-    void connect_callback_common(TFGenericTCPClientConnectResult result, int error_number);
-    void disconnect_callback_common(TFGenericTCPClientDisconnectReason reason, int error_number);
+    void connect_callback_common(TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPClientPoolShareLevel share_level);
+    void disconnect_callback_common(TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPClientPoolShareLevel share_level);
 
     virtual void connect_callback() = 0;
     virtual void disconnect_callback() = 0;

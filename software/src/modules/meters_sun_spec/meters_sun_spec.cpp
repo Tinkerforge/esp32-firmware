@@ -178,11 +178,11 @@ void MetersSunSpec::loop()
         scan->state = ScanState::Connecting;
 
         modbus_tcp_client.get_pool()->acquire(scan->host.c_str(), scan->port,
-        [this](TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPSharedClient *shared_client) {
+        [this](TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
             if (result != TFGenericTCPClientConnectResult::Connected) {
                 char buf[256] = "";
 
-                GenericTCPClientConnectorBase::format_connect_error(result, error_number, scan->host.c_str(), scan->port, buf, sizeof(buf));
+                GenericTCPClientConnectorBase::format_connect_error(result, error_number, share_level, scan->host.c_str(), scan->port, buf, sizeof(buf));
                 scan_printfln("%s", buf);
 
                 scan->state = ScanState::Done;
@@ -192,14 +192,14 @@ void MetersSunSpec::loop()
             scan->client = shared_client;
             scan->state = ScanState::ReadSunSpecID;
         },
-        [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client) {
+        [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
             if (scan->client != shared_client) {
                 return;
             }
 
             char buf[256] = "";
 
-            GenericTCPClientConnectorBase::format_disconnect_reason(reason, error_number, scan->host.c_str(), scan->port, buf, sizeof(buf));
+            GenericTCPClientConnectorBase::format_disconnect_reason(reason, error_number, share_level, scan->host.c_str(), scan->port, buf, sizeof(buf));
             scan_printfln("%s", buf);
 
             scan->client = nullptr;

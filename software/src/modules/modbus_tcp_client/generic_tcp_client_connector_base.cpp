@@ -51,13 +51,30 @@ void GenericTCPClientConnectorBase::force_reconnect()
     start_connection();
 }
 
-void GenericTCPClientConnectorBase::connect_callback_common(TFGenericTCPClientConnectResult result, int error_number)
+void GenericTCPClientConnectorBase::connect_callback_common(TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPClientPoolShareLevel share_level)
 {
     if (result == TFGenericTCPClientConnectResult::Connected) {
+        const char *shared;
+
+        switch (share_level) {
+        case  TFGenericTCPClientPoolShareLevel::Undefined:
+        case  TFGenericTCPClientPoolShareLevel::Primary:
+            shared = "Connected to";
+            break;
+
+        case  TFGenericTCPClientPoolShareLevel::Secondary:
+            shared = "Shared existing connection to";
+            break;
+
+        default:
+            shared = "<Unknown>";
+            break;
+        }
+
         logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len,
-                                 "%sConnected to %s:%u",
+                                 "%s%s %s:%u",
                                  event_log_message_prefix,
-                                 host.c_str(), port);
+                                 shared, host.c_str(), port);
 
         connect_backoff = 1_s;
         last_connect_result = TFGenericTCPClientConnectResult::Connected;
@@ -70,7 +87,7 @@ void GenericTCPClientConnectorBase::connect_callback_common(TFGenericTCPClientCo
         if (last_connect_result != result || last_connect_error_number != error_number) {
             char buf[256] = "";
 
-            format_connect_error(result, error_number, host.c_str(), port, buf, sizeof(buf));
+            format_connect_error(result, error_number, share_level, host.c_str(), port, buf, sizeof(buf));
             logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len, "%s%s", event_log_message_prefix, buf);
         }
 
@@ -100,11 +117,11 @@ void GenericTCPClientConnectorBase::connect_callback_common(TFGenericTCPClientCo
     last_connect_error_number = error_number;
 }
 
-void GenericTCPClientConnectorBase::disconnect_callback_common(TFGenericTCPClientDisconnectReason reason, int error_number)
+void GenericTCPClientConnectorBase::disconnect_callback_common(TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPClientPoolShareLevel share_level)
 {
     char buf[256] = "";
 
-    format_disconnect_reason(reason, error_number, host.c_str(), port, buf, sizeof(buf));
+    format_disconnect_reason(reason, error_number, share_level, host.c_str(), port, buf, sizeof(buf));
     logger.printfln_prefixed(event_log_prefix_override, event_log_prefix_override_len, "%s%s", event_log_message_prefix, buf);
 
     disconnect_callback();
@@ -116,9 +133,26 @@ void GenericTCPClientConnectorBase::disconnect_callback_common(TFGenericTCPClien
     }
 }
 
-void GenericTCPClientConnectorBase::format_connect_error(TFGenericTCPClientConnectResult result, int error_number,
+void GenericTCPClientConnectorBase::format_connect_error(TFGenericTCPClientConnectResult result, int error_number, TFGenericTCPClientPoolShareLevel share_level,
                                                          const char *host, uint16_t port, char *buf, size_t buf_len)
 {
+    const char *shared;
+
+    switch (share_level) {
+    case  TFGenericTCPClientPoolShareLevel::Undefined:
+    case  TFGenericTCPClientPoolShareLevel::Primary:
+        shared = "";
+        break;
+
+    case  TFGenericTCPClientPoolShareLevel::Secondary:
+        shared = " (shared connection)";
+        break;
+
+    default:
+        shared = " <unknown>";
+        break;
+    }
+
     if (result == TFGenericTCPClientConnectResult::Connected) {
         if (buf_len > 0) {
             *buf = '\0';
@@ -127,55 +161,72 @@ void GenericTCPClientConnectorBase::format_connect_error(TFGenericTCPClientConne
     else if (result == TFGenericTCPClientConnectResult::ResolveFailed) {
         if (error_number == EINVAL) {
             snprintf(buf, buf_len,
-                     "Could not resolve hostname %s, no DNS server available",
-                     host);
+                     "Could not resolve hostname %s, no DNS server available%s",
+                     host, shared);
         }
         else if (error_number >= 0) {
             snprintf(buf, buf_len,
-                     "Could not resolve hostname %s: %s (%d)",
-                     host,
+                     "Could not resolve hostname %s%s: %s (%d)",
+                     host, shared,
                      strerror(error_number), error_number);
         }
         else {
             snprintf(buf, buf_len,
-                     "Could not resolve hostname %s",
-                     host);
+                     "Could not resolve hostname %s%s",
+                     host, shared);
         }
     }
     else if (error_number >= 0) {
         snprintf(buf, buf_len,
-                 "Could not connect to %s:%u: %s / %s (%d)",
-                 host, port,
+                 "Could not connect to %s:%u%s: %s / %s (%d)",
+                 host, port, shared,
                  get_tf_generic_tcp_client_connect_result_name(result),
                  strerror(error_number), error_number);
     }
     else {
         snprintf(buf, buf_len,
-                 "Could not connect to %s:%u: %s",
-                 host, port,
+                 "Could not connect to %s:%u%s: %s",
+                 host, port, shared,
                  get_tf_generic_tcp_client_connect_result_name(result));
     }
 }
 
-void GenericTCPClientConnectorBase::format_disconnect_reason(TFGenericTCPClientDisconnectReason reason, int error_number,
+void GenericTCPClientConnectorBase::format_disconnect_reason(TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPClientPoolShareLevel share_level,
                                                              const char *host, uint16_t port, char *buf, size_t buf_len)
 {
+    const char *shared;
+
+    switch (share_level) {
+    case  TFGenericTCPClientPoolShareLevel::Undefined:
+    case  TFGenericTCPClientPoolShareLevel::Primary:
+        shared = "Disconnected from";
+        break;
+
+    case  TFGenericTCPClientPoolShareLevel::Secondary:
+        shared = "Unshared exising connection to";
+        break;
+
+    default:
+        shared = "<Unknown>";
+        break;
+    }
+
     if (reason == TFGenericTCPClientDisconnectReason::Requested) {
         snprintf(buf, buf_len,
-                 "Disconnected from %s:%u",
-                 host, port);
+                 "%s %s:%u",
+                 shared, host, port);
     }
     else if (error_number >= 0) {
         snprintf(buf, buf_len,
-                 "Disconnected from %s:%u: %s / %s (%d)",
-                 host, port,
+                 "%s %s:%u: %s / %s (%d)",
+                 shared, host, port,
                  get_tf_generic_tcp_client_disconnect_reason_name(reason),
                  strerror(error_number), error_number);
     }
     else {
         snprintf(buf, buf_len,
-                 "Disconnected from %s:%u: %s",
-                 host, port,
+                 "%s %s:%u: %s",
+                 shared, host, port,
                  get_tf_generic_tcp_client_disconnect_reason_name(reason));
     }
 }

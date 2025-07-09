@@ -29,12 +29,12 @@ void GenericTCPClientConnector::connect_internal()
             connected_client = shared_client;
         }
 
-        connect_callback_common(result, error_number);
+        connect_callback_common(result, error_number, TFGenericTCPClientPoolShareLevel::Undefined);
     },
     [this](TFGenericTCPClientDisconnectReason reason, int error_number) {
         connected_client = nullptr;
 
-        disconnect_callback_common(reason, error_number);
+        disconnect_callback_common(reason, error_number, TFGenericTCPClientPoolShareLevel::Undefined);
     });
 }
 
