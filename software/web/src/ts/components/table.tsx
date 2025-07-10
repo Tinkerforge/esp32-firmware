@@ -53,7 +53,7 @@ export interface TableProps {
     columnNames: string[];
     rows: TableRow[];
     addEnabled?: boolean;
-    addMessage?: string;
+    addMessage?: ComponentChildren;
     addTitle?: string;
     onAddShow?: () => Promise<void>;
     onAddGetChildren?: () => ComponentChildren;
@@ -281,7 +281,7 @@ export class Table extends Component<TableProps, TableState> {
                     {props.onAddShow ?
                     <Card className="mb-0" style={props.invalid ? "border-color: red;" : ""}>
                         <div class="card-body d-flex justify-content-between align-items-center p-2d5">
-                            <span class="text-break" style="font-size: 1rem;">{props.addMessage}</span>
+                            <div class="text-break" style="font-size: 1rem;">{props.addMessage}</div>
                             <div style="white-space: nowrap; vertical-align: middle;">
                             <Button variant="primary"
                                     size="sm"
