@@ -1397,19 +1397,19 @@ struct api_info {
     }
     void operator()(const Config::ConfUint16 &x)
     {
-        sw.printf("{\"type\":\"uint\",\"val\":%lu,\"min\":0,\"max\":65535}", *x.getVal());
+        sw.printf("{\"type\":\"uint\",\"val\":%hu,\"min\":0,\"max\":65535}", *x.getVal());
     }
     void operator()(const Config::ConfInt16 &x)
     {
-        sw.printf("{\"type\":\"int\",\"val\":%lu,\"min\":-32768,\"max\":32767}", *x.getVal());
+        sw.printf("{\"type\":\"int\",\"val\":%hi,\"min\":-32768,\"max\":32767}", *x.getVal());
     }
     void operator()(const Config::ConfUint8 &x)
     {
-        sw.printf("{\"type\":\"uint\",\"val\":%lu,\"min\":0,\"max\":%u}", *x.getVal(), x.max);
+        sw.printf("{\"type\":\"uint\",\"val\":%hhu,\"min\":0,\"max\":%hhu}", *x.getVal(), x.max);
     }
     void operator()(const Config::ConfInt8 &x)
     {
-        sw.printf("{\"type\":\"int\",\"val\":%lu,\"min\":-128,\"max\":127}", *x.getVal());
+        sw.printf("{\"type\":\"int\",\"val\":%hhi,\"min\":-128,\"max\":127}", *x.getVal());
     }
     void operator()(const Config::ConfBool &x)
     {
