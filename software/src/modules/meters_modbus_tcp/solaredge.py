@@ -2,7 +2,6 @@ specs = [
     {
         'name': 'Solaredge Battery',
         'register_type': 'HoldingRegister',
-        'start_address_offset': 0,
         'f32_negative_max_as_nan': True,
         'values': [
             {
