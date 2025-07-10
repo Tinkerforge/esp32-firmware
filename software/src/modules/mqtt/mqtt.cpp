@@ -198,7 +198,13 @@ void Mqtt::addCommand(size_t commandIdx, const CommandRegistration &reg)
 {
     auto req_size = reg.config->max_string_length();
     if (req_size > MQTT_RECV_BUFFER_SIZE) {
-        logger.printfln("Recv buf is %u bytes. %s requires %u. Bump MQTT_RECV_BUFFER_SIZE! Updates on this topic might break the MQTT connection!", MQTT_RECV_BUFFER_SIZE, reg.path, req_size);
+        // ignore the maximum size of batteries/X/config_update being larger than the limit.
+        // the limit is obeyed by limiting the total values count to 384, which is smaller
+        // than the maximum size that batteries/X/config_update could naively accept
+        if (!(strcmp(reg.path, "batteries/0/config_update") == 0 && req_size == 16995)) {
+            logger.printfln("Recv buf is %u bytes. %s requires %u. Bump MQTT_RECV_BUFFER_SIZE! Updates on this topic might break the MQTT connection!", MQTT_RECV_BUFFER_SIZE, reg.path, req_size);
+        }
+
         return;
     }
 #if MODULE_DEBUG_AVAILABLE()
