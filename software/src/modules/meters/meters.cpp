@@ -886,6 +886,7 @@ MeterValueAvailability Meters::get_single_value(uint32_t slot, uint32_t kind, fl
             case INDEX_CACHE_ENERGY_IMPORT:  supported = meter_slot.meter->supports_energy_import(); break;
             case INDEX_CACHE_ENERGY_IMEXSUM: supported = meter_slot.meter->supports_energy_imexsum(); break;
             case INDEX_CACHE_ENERGY_EXPORT:  supported = meter_slot.meter->supports_energy_export(); break;
+            case INDEX_CACHE_SOC:            supported = true; break;
             default: supported = false;
         }
         if (supported) {
@@ -922,6 +923,11 @@ MeterValueAvailability Meters::get_energy_imexsum(uint32_t slot, float *total_im
 MeterValueAvailability Meters::get_energy_export(uint32_t slot, float *total_export_kwh, micros_t max_age)
 {
     return get_single_value(slot, INDEX_CACHE_ENERGY_EXPORT, total_export_kwh, max_age);
+}
+
+MeterValueAvailability Meters::get_soc(uint32_t slot, float *soc, micros_t max_age)
+{
+    return get_single_value(slot, INDEX_CACHE_SOC, soc, max_age);
 }
 
 MeterValueAvailability Meters::get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_COUNT], micros_t max_age)
@@ -1247,6 +1253,7 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
                                                                                             MeterValueID::EnergyDCExport,
                                                                                             MeterValueID::EnergyDCDischarge,
                                                                                             MeterValueID::EnergyPVSumExport});
+    meter_slot.index_cache_single_values[INDEX_CACHE_SOC]            = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::StateOfCharge);
     meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L1]          = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::CurrentL1ImExDiff);
     meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L2]          = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::CurrentL2ImExDiff);
     meter_slot.index_cache_currents[INDEX_CACHE_CURRENT_L3]          = meters_find_id_index(total_value_ids, total_value_id_count, MeterValueID::CurrentL3ImExDiff);

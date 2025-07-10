@@ -38,7 +38,8 @@
 #define INDEX_CACHE_ENERGY_IMPORT  1
 #define INDEX_CACHE_ENERGY_IMEXSUM 2
 #define INDEX_CACHE_ENERGY_EXPORT  3
-#define INDEX_CACHE_SINGLE_VALUES_COUNT 4
+#define INDEX_CACHE_SOC            4
+#define INDEX_CACHE_SINGLE_VALUES_COUNT 5
 
 #define INDEX_CACHE_CURRENT_L1 0
 #define INDEX_CACHE_CURRENT_L2 1
@@ -108,6 +109,7 @@ public:
     MeterValueAvailability get_energy_import(uint32_t slot, float *total_import_kwh, micros_t max_age = 0_us);
     MeterValueAvailability get_energy_imexsum(uint32_t slot, float *total_imexsum_kwh, micros_t max_age = 0_us);
     MeterValueAvailability get_energy_export(uint32_t slot, float *total_export_kwh, micros_t max_age = 0_us);
+    MeterValueAvailability get_soc(uint32_t slot, float *soc, micros_t max_age = 0_us);
     MeterValueAvailability get_currents(uint32_t slot, float currents[INDEX_CACHE_CURRENT_COUNT], micros_t max_age = 0_us);
 
     void update_value(uint32_t slot, uint32_t index, float new_value);
