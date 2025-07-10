@@ -24,6 +24,7 @@ export interface config {
     meter_slot_grid_power: number;
     meter_slot_battery_power: number;
     battery_mode: number;
+    battery_target_soc: number;
     battery_inverted: boolean;
     battery_deadzone: number;
     target_power_from_grid: number;

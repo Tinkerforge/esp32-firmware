@@ -69,6 +69,10 @@ let x = {
             "battery_mode": "Battery priority",
             "battery_mode_prefer_chargers": "Prefer chargers, charge battery storage with any excess power",
             "battery_mode_prefer_battery": "Prefer battery, charge vehicles with any excess power",
+            "battery_mode_target_soc": "Prefer battery while it is below the target SoC",
+            "battery_target_soc": "Storage target SoC",
+            "battery_target_soc_muted": "desired minimum state of charge of the battery storage",
+            "battery_target_soc_help": "Prioritize charging the battery while its state of charge is below this value. Once the desired state of charge is reached, chargig vehicles is prioritized over charging the battery more. 80 % is a common value.",
             "battery_deadzone": "Import and export tolerance",
             "battery_deadzone_muted": "at the grid connection, while the battery is active",
             "battery_deadzone_help": "Most battery storages will allow some export and import while charging or discharging. The tolerance should be set to 1.5 times the expected export and import. If the battery permits an export of -50 W and an import of 50 W, the tolerance should be set to 75 W."

@@ -69,9 +69,13 @@ let x = {
             "battery_mode": "Speicherpriorität",
             "battery_mode_prefer_chargers": "Wallboxen bevorzugen, überschüssige Leistung für Speicher",
             "battery_mode_prefer_battery": "Speicher bevorzugen, überschüssige Leistung für Wallboxen",
+            "battery_mode_target_soc": "Speicher bevorzugen, solange der Ladestand unter dem Zielwert liegt",
+            "battery_target_soc": "Speicher-Ziel-Ladestand",
+            "battery_target_soc_muted": "gewünschter Mindest-Ladestand des Speichers",
+            "battery_target_soc_help": "Der Speicher wird bevorzugt geladen, solange dessen Ladestand unter dem Ziel-Ladestand liegt. Sobald der Ziel-Ladestand erreicht wurde, werden Wallboxen bevorzugt.",
             "battery_deadzone": "Bezugs- und Einspeise-Toleranz",
             "battery_deadzone_muted": "am Netzanschluss, während der Speicher aktiv ist",
-            "battery_deadzone_help": "Die meisten Batteriespeicher erlauben einen gewisse Bezug und Einspeisung beim Entladen bzw. Laden. Die Toleranz sollte auf das 1,5-fache des erwarteten Bezugs und Einspeisung gestellt werden. Lässt der Speicher einen Bezug von 50 W und eine Einspeisung von -50 W zu, sollte die Toleranz auf 75 W gestellt werden."
+            "battery_deadzone_help": "Die meisten Batteriespeicher erlauben einen gewissen Bezug und Einspeisung beim Entladen bzw. Laden. Die Toleranz sollte auf das 1,5-fache des erwarteten Bezugs und Einspeisung gestellt werden. Lässt der Speicher einen Bezug von 50 W und eine Einspeisung von -50 W zu, sollte die Toleranz auf 75 W gestellt werden."
         },
         "automation": {
             "slot": "Blockierungsslot",

@@ -367,18 +367,35 @@ export class PVExcessSettings extends ConfigComponent<'power_manager/config', {s
                                 />
                             </FormRow>
 
-                            <FormRow label={__("power_manager.content.battery_mode")} label_muted="">
+                            <FormRow label={__("power_manager.content.battery_mode")}>
                                 <InputSelect
                                     disabled={s.meter_slot_battery_power >= 255}
                                     required={s.meter_slot_battery_power < 255}
                                     items={[
                                         [BatteryMode.PreferChargers.toString(), __("power_manager.content.battery_mode_prefer_chargers")],
                                         [BatteryMode.PreferBattery.toString(), __("power_manager.content.battery_mode_prefer_battery")],
+                                        [BatteryMode.TargetSOC.toString(), __("power_manager.content.battery_mode_target_soc")],
                                     ]}
                                     value={s.battery_mode}
                                     onValue={(v) => this.setState({battery_mode: parseInt(v)})}
                                 />
                             </FormRow>
+
+                            <Collapse in={s.battery_mode == 2}>
+                                <div>
+                                    <FormRow label={__("power_manager.content.battery_target_soc")} label_muted={__("power_manager.content.battery_target_soc_muted")} help={__("power_manager.content.battery_target_soc_help")}>
+                                        <InputFloat
+                                            required={s.battery_mode == 2}
+                                            unit="%"
+                                            value={s.battery_target_soc}
+                                            onValue={this.set('battery_target_soc')}
+                                            digits={0}
+                                            min={1}
+                                            max={100}
+                                        />
+                                    </FormRow>
+                                </div>
+                            </Collapse>
 
                             <FormRow label={__("power_manager.content.battery_deadzone")} label_muted={__("power_manager.content.battery_deadzone_muted")} help={__("power_manager.content.battery_deadzone_help")}>
                                 <InputFloat

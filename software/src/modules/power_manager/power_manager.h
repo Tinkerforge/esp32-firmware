@@ -173,6 +173,7 @@ private:
 
     float    power_at_meter_raw_w = NAN;
     float    power_at_battery_raw_w = NAN;
+    float    battery_soc_raw = NAN;
     int32_t  current_pv_floating_min_ma = INT32_MAX;
     minmax_filter current_pv_minmax_ma;
     minmax_filter current_pv_long_min_ma;
@@ -203,6 +204,7 @@ private:
     uint32_t meter_slot_power         = UINT32_MAX;
     uint32_t meter_slot_battery_power = UINT32_MAX;
     BatteryMode battery_mode          = BatteryMode::PreferChargers;
+    uint8_t  battery_target_soc       = 0;
     bool     battery_inverted         = false;
     uint16_t battery_deadzone_w       = 0;
     int32_t  target_power_from_grid_w = 0;

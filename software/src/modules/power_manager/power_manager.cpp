@@ -46,8 +46,9 @@ void PowerManager::pre_setup()
     const Config *config_prototype_int32_0 = Config::get_prototype_int32_0();
 
     low_level_state = Config::Object({
-        {"power_at_meter", Config::Float(0)},
-        {"power_at_battery", Config::Float(0)},
+        {"power_at_meter", Config::Float(NAN)},
+        {"power_at_battery", Config::Float(NAN)},
+        {"battery_soc", Config::Float(NAN)},
         {"power_available", Config::Int32(0)},
         {"i_meter", Config::Array({
                 Config::Int32(0),
@@ -94,6 +95,7 @@ void PowerManager::pre_setup()
         {"meter_slot_grid_power", Config::Uint(OPTIONS_POWER_MANAGER_DEFAULT_METER_SLOT(), 0, OPTIONS_METERS_MAX_SLOTS() - 1)},
         {"meter_slot_battery_power", Config::Uint(METER_SLOT_BATTERY_NO_BATTERY, 0, METER_SLOT_BATTERY_NO_BATTERY)},
         {"battery_mode", Config::Enum(BatteryMode::PreferChargers)},
+        {"battery_target_soc", Config::Uint8(0)},
         {"battery_inverted", Config::Bool(false)},
         {"battery_deadzone", Config::Uint(100, 0, 9999)}, // in watt
         {"target_power_from_grid", Config::Int32(0)}, // in watt
@@ -334,6 +336,7 @@ void PowerManager::setup()
     target_power_from_grid_w    = config.get("target_power_from_grid")->asInt();    // watt
     meter_slot_battery_power    = config.get("meter_slot_battery_power")->asUint();
     battery_mode                = config.get("battery_mode")->asEnum<BatteryMode>();
+    battery_target_soc          = static_cast<uint8_t>(config.get("battery_target_soc")->asUint());
     battery_inverted            = config.get("battery_inverted")->asBool();
     battery_deadzone_w          = static_cast<uint16_t>(config.get("battery_deadzone")->asUint()); // watt
     phase_switching_mode        = config.get("phase_switching_mode")->asUint();
@@ -759,31 +762,39 @@ void PowerManager::update_data()
     if (meters.get_power(meter_slot_power, &power_at_meter_raw_w) != MeterValueAvailability::Fresh) {
         power_at_meter_raw_w = NAN;
     }
+
+    low_level_state.get("power_at_meter")->updateFloat(power_at_meter_raw_w);
+
     if (have_battery) {
         if (meters.get_power(meter_slot_battery_power, &power_at_battery_raw_w) != MeterValueAvailability::Fresh) {
             power_at_battery_raw_w = NAN;
         }
+
+        if (meters.get_soc(meter_slot_battery_power, &battery_soc_raw) != MeterValueAvailability::Fresh) {
+            battery_soc_raw = NAN;
+        }
+
+        if (!isnan(power_at_battery_raw_w)) {
+            if (battery_inverted) {
+                power_at_battery_raw_w *= -1;
+            }
+        }
+
+        low_level_state.get("power_at_battery")->updateFloat(power_at_battery_raw_w);
+        low_level_state.get("battery_soc"     )->updateFloat(battery_soc_raw);
     }
 #endif
 
-    if (!isnan(power_at_meter_raw_w)) {
-        low_level_state.get("power_at_meter")->updateFloat(power_at_meter_raw_w);
-
 #if MODULE_AUTOMATION_AVAILABLE()
+    if (!isnan(power_at_meter_raw_w)) {
         TristateBool drawing_power = static_cast<TristateBool>(power_at_meter_raw_w > 0);
         if (drawing_power != automation_drawing_power_last && boot_stage > BootStage::SETUP) {
             automation.trigger(AutomationTriggerID::PMGridPowerDraw, nullptr, this);
             automation_drawing_power_last = drawing_power;
         }
+    }
 #endif
-    }
 
-    if (!isnan(power_at_battery_raw_w)) {
-        if (battery_inverted) {
-            power_at_battery_raw_w *= -1;
-        }
-        low_level_state.get("power_at_battery")->updateFloat(power_at_battery_raw_w);
-    }
 
     float meter_currents[INDEX_CACHE_CURRENT_COUNT];
 #if MODULE_METERS_AVAILABLE()
@@ -844,10 +855,26 @@ void PowerManager::update_energy()
                 // Battery: +charging -discharging
                 int32_t power_battery_w = static_cast<int32_t>(power_at_battery_raw_w);
 
-                // Only take battery charging power into account if chargers are preferred,
-                // by simply ignoring the battery's power while it's charging.
-                if (power_battery_w > 0 && battery_mode != BatteryMode::PreferChargers) {
-                    power_battery_w = 0;
+                // Always avoid discharging the battery (negative values), but when the battery is charging (positive values),
+                // taking its power means prioritizing chargers, ignoring its power means prioritizing the battery.
+                if (power_battery_w > 0) {
+                    if (battery_mode == BatteryMode::PreferBattery) {
+                        power_battery_w = 0;
+                    } else if (battery_mode == BatteryMode::TargetSOC) {
+                        if (isnan(battery_soc_raw)) {
+                            // SOC unknown; let the battery do its thing.
+                            power_battery_w = 0;
+                        } else {
+                            const uint8_t soc = static_cast<uint8_t>(battery_soc_raw);
+                            if (soc < battery_target_soc) {
+                                // Battery below target SOC; let it charge.
+                                power_battery_w = 0;
+                            }
+                        }
+                    } else {
+                        // Nothing to do if chargers are preferred.
+                        // Take charging power from battery and give it to chargers.
+                    }
                 }
 
                 int32_t power_grid_adjusted_w = power_grid_raw_w;
