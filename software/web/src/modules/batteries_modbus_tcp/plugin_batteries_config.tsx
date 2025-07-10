@@ -19,6 +19,7 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
+import * as options from "../../options";
 import { h, Fragment, Component, ComponentChildren } from "preact";
 import { Button } from "react-bootstrap";
 import { __ } from "../../ts/translation";
@@ -34,14 +35,14 @@ import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { Table, TableRow } from "../../ts/components/table";
 
-const MAX_CUSTOM_REGISTERS = 16;
+const UINT16_PATTERN = "(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{0,3}|0)";
 
 type TableConfigNone = [
     BatteryModbusTCPTableID.None,
     {},
 ];
 
-type Register = {
+type RegisterBlock = {
     desc: string;
     rtyp: number; // ModbusRegisterType
     addr: number;
@@ -50,7 +51,7 @@ type Register = {
 
 type RegisterTable = {
     device_address: number;
-    registers: Register[];
+    register_blocks: RegisterBlock[];
 };
 
 type TableConfigCustom = [
@@ -84,12 +85,12 @@ function new_table_config(table: BatteryModbusTCPTableID): TableConfig {
         case BatteryModbusTCPTableID.Custom:
             return [BatteryModbusTCPTableID.Custom, {
                 register_address_mode:       null,
-                permit_grid_charge:          {device_address: 1, registers: []},
-                revoke_grid_charge_override: {device_address: 1, registers: []},
-                forbid_discharge:            {device_address: 1, registers: []},
-                revoke_discharge_override:   {device_address: 1, registers: []},
-                forbid_charge:               {device_address: 1, registers: []},
-                revoke_charge_override:      {device_address: 1, registers: []},
+                permit_grid_charge:          {device_address: 1, register_blocks: []},
+                revoke_grid_charge_override: {device_address: 1, register_blocks: []},
+                forbid_discharge:            {device_address: 1, register_blocks: []},
+                revoke_discharge_override:   {device_address: 1, register_blocks: []},
+                forbid_charge:               {device_address: 1, register_blocks: []},
+                revoke_charge_override:      {device_address: 1, register_blocks: []},
             }];
 
         default:
@@ -99,13 +100,24 @@ function new_table_config(table: BatteryModbusTCPTableID): TableConfig {
 
 interface RegisterEditorProps {
     register_address_mode: ModbusRegisterAddressMode;
+    other_total_values_count: number;
     table: RegisterTable;
     on_table: (table: RegisterTable) => void;
 }
 
 interface RegisterEditorState {
-    register: Register,
+    register_block: RegisterBlock,
     values: string,
+}
+
+function get_total_values_count(table: RegisterTable) {
+    let total_values_count = 0;
+
+    for (let register of table.register_blocks) {
+        total_values_count += register.vals.length;
+    }
+
+    return total_values_count;
 }
 
 class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState> {
@@ -113,7 +125,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
         super(props);
 
         this.state = {
-            register: {
+            register_block: {
                 desc: "",
                 rtyp: null,
                 addr: null,
@@ -127,66 +139,66 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
         let start_address_offset = this.props.register_address_mode == ModbusRegisterAddressMode.Address ? 0 : 1;
 
         return [
-            <FormRow label={__("batteries_modbus_tcp.content.registers_register_desc")} label_muted={__("batteries_modbus_tcp.content.registers_register_desc_muted")}>
+            <FormRow label={__("batteries_modbus_tcp.content.register_blocks_register_desc")} label_muted={__("batteries_modbus_tcp.content.register_blocks_register_desc_muted")}>
                 <InputText
                     maxLength={32}
-                    value={this.state.register.desc}
+                    value={this.state.register_block.desc}
                     onValue={(v) => {
-                        this.setState({register: {...this.state.register, desc: v}});
+                        this.setState({register_block: {...this.state.register_block, desc: v}});
                     }} />
             </FormRow>,
-            <FormRow label={__("batteries_modbus_tcp.content.registers_register_type")}>
+            <FormRow label={__("batteries_modbus_tcp.content.register_blocks_register_type")}>
                 <InputSelect
                     required
                     items={[
-                        [ModbusRegisterType.HoldingRegister.toString(), __("batteries_modbus_tcp.content.registers_register_type_holding_register")],
-                        [ModbusRegisterType.Coil.toString(), __("batteries_modbus_tcp.content.registers_register_type_coil")],
+                        [ModbusRegisterType.HoldingRegister.toString(), __("batteries_modbus_tcp.content.register_blocks_register_type_holding_register")],
+                        [ModbusRegisterType.Coil.toString(), __("batteries_modbus_tcp.content.register_blocks_register_type_coil")],
                     ]}
                     placeholder={__("select")}
-                    value={util.hasValue(this.state.register.rtyp) ? this.state.register.rtyp.toString() : undefined}
+                    value={util.hasValue(this.state.register_block.rtyp) ? this.state.register_block.rtyp.toString() : undefined}
                     onValue={(v) => {
-                        this.setState({register: {...this.state.register, rtyp: parseInt(v)}});
+                        this.setState({register_block: {...this.state.register_block, rtyp: parseInt(v)}});
                     }} />
             </FormRow>,
             <FormRow
                 label={
                     this.props.register_address_mode == ModbusRegisterAddressMode.Address
-                    ? __("batteries_modbus_tcp.content.registers_start_address")
-                    : __("batteries_modbus_tcp.content.registers_start_number")
+                    ? __("batteries_modbus_tcp.content.register_blocks_start_address")
+                    : __("batteries_modbus_tcp.content.register_blocks_start_number")
                 }
                 label_muted={
                     this.props.register_address_mode == ModbusRegisterAddressMode.Address
-                    ? __("batteries_modbus_tcp.content.registers_start_address_muted")
-                    : __("batteries_modbus_tcp.content.registers_start_number_muted")
+                    ? __("batteries_modbus_tcp.content.register_blocks_start_address_muted")
+                    : __("batteries_modbus_tcp.content.register_blocks_start_number_muted")
                 }>
                 <InputNumber
                     required
                     min={start_address_offset}
                     max={start_address_offset + 65535}
-                    value={this.state.register.addr + start_address_offset}
+                    value={this.state.register_block.addr + start_address_offset}
                     onValue={(v) => {
-                        this.setState({register: {...this.state.register, addr: v - start_address_offset}});
+                        this.setState({register_block: {...this.state.register_block, addr: v - start_address_offset}});
                     }} />
             </FormRow>,
-            <FormRow label={__("batteries_modbus_tcp.content.registers_values")} label_muted={__("batteries_modbus_tcp.content.registers_values_muted")}>
+            <FormRow label={__("batteries_modbus_tcp.content.register_blocks_values")} label_muted={__("batteries_modbus_tcp.content.register_blocks_values_muted")}>
                 <InputTextPatterned
                     required
-                    pattern={this.state.register.rtyp == ModbusRegisterType.Coil ? "^ *[01] *(, *[01] *){0,15}$" : "^ *(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{0,3}|0) *(, *(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{0,3}|0) *){0,15}$"}
+                    pattern={this.state.register_block.rtyp == ModbusRegisterType.Coil ? `^ *[01] *(, *[01] *){0,${options.BATTERIES_MODBUS_TCP_MAX_CUSTOM_VALUES_PER_REGISTER_BLOCK - 1}}$` : `^ *${UINT16_PATTERN} *(?:, *${UINT16_PATTERN} *){0,${options.BATTERIES_MODBUS_TCP_MAX_CUSTOM_VALUES_PER_REGISTER_BLOCK - 1}}$`}
                     value={this.state.values}
                     onValue={(v) => {
                         this.setState({values: v});
                     }}
-                    invalidFeedback={__("batteries_modbus_tcp.content.registers_values_invalid")} />
+                    invalidFeedback={__("batteries_modbus_tcp.content.register_blocks_values_invalid")} />
             </FormRow>,
         ];
     }
 
     get_register_type_name(rtype: number) {
         if (rtype == ModbusRegisterType.HoldingRegister) {
-            return __("batteries_modbus_tcp.content.registers_register_type_holding_register_desc");
+            return __("batteries_modbus_tcp.content.register_blocks_register_type_holding_register_desc");
         }
         else if (rtype == ModbusRegisterType.Coil) {
-            return __("batteries_modbus_tcp.content.registers_register_type_coil_desc");
+            return __("batteries_modbus_tcp.content.register_blocks_register_type_coil_desc");
         }
         else {
             return "?";
@@ -196,7 +208,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
     parse_values(values_str: string) {
         let values_dec = values_str.split(",");
 
-        if (this.state.register.rtyp == ModbusRegisterType.Coil) {
+        if (this.state.register_block.rtyp == ModbusRegisterType.Coil) {
             if (values_dec.length >= 1968) {
                 return [];
             }
@@ -218,7 +230,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
                 return [];
             }
 
-            if (this.state.register.rtyp == ModbusRegisterType.Coil) {
+            if (this.state.register_block.rtyp == ModbusRegisterType.Coil) {
                 if (value > 1) {
                     return [];
                 }
@@ -241,41 +253,47 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
 
     render() {
         let start_address_offset = this.props.register_address_mode == ModbusRegisterAddressMode.Address ? 0 : 1;
+        let total_values_count = this.props.other_total_values_count + get_total_values_count(this.props.table);
 
         return <Table
             nestingDepth={1}
-            rows={this.props.table.registers.map((register, i) => {
+            rows={this.props.table.register_blocks.map((register_block, i) => {
                 const row: TableRow = {
-                    columnValues: [<>{register.desc.length > 0 ? <div>{register.desc}</div> : undefined}<div style={register.desc.length > 0 ? "font-size: 80%" : ""}>{__("batteries_modbus_tcp.content.registers_values_desc")(this.get_register_type_name(register.rtyp), register.addr + start_address_offset, register.vals)}</div></>],
+                    columnValues: [<>{register_block.desc.length > 0 ? <div>{register_block.desc}</div> : undefined}<div style={register_block.desc.length > 0 ? "font-size: 80%" : ""}>{__("batteries_modbus_tcp.content.register_blocks_values_desc")(this.get_register_type_name(register_block.rtyp), register_block.addr + start_address_offset, register_block.vals)}</div></>],
                     onRemoveClick: async () => {
-                        this.props.on_table({...this.props.table, registers: this.props.table.registers.filter((r, k) => k !== i)});
+                        this.props.on_table({...this.props.table, register_blocks: this.props.table.register_blocks.filter((r, k) => k !== i)});
                         return true;
                     },
                     onEditShow: async () => {
                         this.setState({
-                            register: register,
-                            values: register.vals.join(", "),
+                            register_block: register_block,
+                            values: register_block.vals.join(", "),
                         });
                     },
                     onEditSubmit: async () => {
-                        this.props.on_table({...this.props.table, registers: this.props.table.registers.map((r, k) => k === i ? {...this.state.register, vals: this.parse_values(this.state.values)} : r)});
+                        this.props.on_table({...this.props.table, register_blocks: this.props.table.register_blocks.map((r, k) => k === i ? {...this.state.register_block, vals: this.parse_values(this.state.values)} : r)});
                     },
                     onEditGetChildren: () => this.get_children(),
-                    editTitle: __("batteries_modbus_tcp.content.registers_edit_title"),
+                    editTitle: __("batteries_modbus_tcp.content.register_blocks_edit_title"),
                 }
                 return row
             })}
             columnNames={[""]}
-            addEnabled={util.hasValue(this.props.register_address_mode) && this.props.table.registers.length < MAX_CUSTOM_REGISTERS}
+            addEnabled={util.hasValue(this.props.register_address_mode)
+                     && this.props.table.register_blocks.length < options.BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS
+                     && total_values_count < options.BATTERIES_MODBUS_TCP_MAX_CUSTOM_TOTAL_VALUES}
             addMessage={
                 util.hasValue(this.props.register_address_mode)
-                    ? __("batteries_modbus_tcp.content.registers_add_message")(this.props.table.registers.length, MAX_CUSTOM_REGISTERS)
-                    : __("batteries_modbus_tcp.content.registers_add_select_address_mode")
+                    ? <>
+                        <div>{__("batteries_modbus_tcp.content.register_blocks_add_message_register_blocks")(this.props.table.register_blocks.length, options.BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS)}</div>
+                        <div style="font-size: 80%">{__("batteries_modbus_tcp.content.register_blocks_add_message_total_values")(total_values_count, options.BATTERIES_MODBUS_TCP_MAX_CUSTOM_TOTAL_VALUES)}</div>
+                    </>
+                    : __("batteries_modbus_tcp.content.register_blocks_add_select_address_mode")
             }
-            addTitle={__("batteries_modbus_tcp.content.registers_add_title")}
+            addTitle={__("batteries_modbus_tcp.content.register_blocks_add_title")}
             onAddShow={async () => {
                 this.setState({
-                    register: {
+                    register_block: {
                         desc: "",
                         rtyp: null,
                         addr: null,
@@ -286,7 +304,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
             }}
             onAddGetChildren={() => this.get_children()}
             onAddSubmit={async () => {
-                this.props.on_table({...this.props.table, registers: this.props.table.registers.concat([{...this.state.register, vals: this.parse_values(this.state.values)}])});
+                this.props.on_table({...this.props.table, register_blocks: this.props.table.register_blocks.concat([{...this.state.register_block, vals: this.parse_values(this.state.values)}])});
             }}/>;
     }
 }
@@ -342,7 +360,7 @@ class Executor extends Component<ExecutorProps, ExecutorState> {
                     port: this.props.port,
                     table: [BatteryModbusTCPTableID.Custom, {
                         device_address: this.props.table.device_address,
-                        registers: this.props.table.registers,
+                        register_blocks: this.props.table.register_blocks,
                     }],
                     cookie: cookie,
                 })).text();
@@ -363,7 +381,7 @@ class Executor extends Component<ExecutorProps, ExecutorState> {
                 <Button
                     variant="primary"
                     className="form-control"
-                    disabled={!util.hasValue(this.props.host) || this.props.host.length == 0 || this.props.table.registers.length == 0 || this.state.waiting}
+                    disabled={!util.hasValue(this.props.host) || this.props.host.length == 0 || this.props.table.register_blocks.length == 0 || this.state.waiting}
                     onClick={async () => await this.execute()}>{__("batteries_modbus_tcp.content.execute")}
                 </Button>
             </FormRow>
@@ -377,81 +395,81 @@ class Executor extends Component<ExecutorProps, ExecutorState> {
     }
 }
 
-function import_register_subtable(table: RegisterTable)
+function import_register_table(table: RegisterTable)
 {
     if (!util.isNonNullObject(table)) {
-        console.log("Batteries Modbus/TCP: Imported config register subtable is not an object");
+        console.log("Batteries Modbus/TCP: Imported config register table is not an object");
         return null;
     }
 
     if (typeof table.device_address != "number") {
-        console.log("Batteries Modbus/TCP: Imported config register subtable device address is not a number");
+        console.log("Batteries Modbus/TCP: Imported config register table device address is not a number");
         return null;
     }
 
-    if (!util.isNonNullObject(table.registers)) {
-        console.log("Batteries Modbus/TCP: Imported config register subtable registers is not an object");
+    if (!util.isNonNullObject(table.register_blocks)) {
+        console.log("Batteries Modbus/TCP: Imported config register table register blocks is not an object");
         return null;
     }
 
-    if (typeof table.registers.length != "number") {
-        console.log("Batteries Modbus/TCP: Imported config register subtable registers has no length");
+    if (typeof table.register_blocks.length != "number") {
+        console.log("Batteries Modbus/TCP: Imported config register table register blocks has no length");
         return null;
     }
 
-    let registers: Register[] = [];
+    let register_blocks: RegisterBlock[] = [];
 
-    for (let i = 0; i < table.registers.length; ++i) {
-        if (!util.isNonNullObject(table.registers[i])) {
-            console.log("Batteries Modbus/TCP: Imported config register subtable registers item is not an object");
+    for (let i = 0; i < table.register_blocks.length; ++i) {
+        if (!util.isNonNullObject(table.register_blocks[i])) {
+            console.log("Batteries Modbus/TCP: Imported config register table register blocks item is not an object");
             return null;
         }
 
-        if (typeof table.registers[i].desc != "string") {
-            console.log("Batteries Modbus/TCP: Imported config register subtable registers item desc is not a number");
+        if (typeof table.register_blocks[i].desc != "string") {
+            console.log("Batteries Modbus/TCP: Imported config register table register blocks item desc is not a number");
             return null;
         }
 
-        if (typeof table.registers[i].rtyp != "number") {
-            console.log("Batteries Modbus/TCP: Imported config register subtable registers item rtype is not a number");
+        if (typeof table.register_blocks[i].rtyp != "number") {
+            console.log("Batteries Modbus/TCP: Imported config register table register blocks item rtype is not a number");
             return null;
         }
 
-        if (typeof table.registers[i].addr != "number") {
-            console.log("Batteries Modbus/TCP: Imported config register subtable registers item addr is not a number");
+        if (typeof table.register_blocks[i].addr != "number") {
+            console.log("Batteries Modbus/TCP: Imported config register table register blocks item addr is not a number");
             return null;
         }
 
-        if (!util.isNonNullObject(table.registers[i].vals)) {
-            console.log("Batteries Modbus/TCP: Imported config register subtable registers item vals is not an object");
+        if (!util.isNonNullObject(table.register_blocks[i].vals)) {
+            console.log("Batteries Modbus/TCP: Imported config register table register blocks item vals is not an object");
             return null;
         }
 
-        if (typeof table.registers[i].vals.length != "number") {
-            console.log("Batteries Modbus/TCP: Imported config register subtable registers item vals has no length");
+        if (typeof table.register_blocks[i].vals.length != "number") {
+            console.log("Batteries Modbus/TCP: Imported config register table register blocks item vals has no length");
             return null;
         }
 
         let values: number[] = [];
 
-        for (let k = 0; k < table.registers[i].vals.length; ++k) {
-            if (typeof table.registers[i].vals[k] != "number") {
-                console.log("Batteries Modbus/TCP: Imported config register subtable registers item vals item is not a number");
+        for (let k = 0; k < table.register_blocks[i].vals.length; ++k) {
+            if (typeof table.register_blocks[i].vals[k] != "number") {
+                console.log("Batteries Modbus/TCP: Imported config register table register blocks item vals item is not a number");
                 return null;
             }
 
-            values.push(table.registers[i].vals[k]);
+            values.push(table.register_blocks[i].vals[k]);
         }
 
-        registers.push({
-            desc: table.registers[i].desc,
-            rtyp: table.registers[i].rtyp,
-            addr: table.registers[i].addr,
+        register_blocks.push({
+            desc: table.register_blocks[i].desc,
+            rtyp: table.register_blocks[i].rtyp,
+            addr: table.register_blocks[i].addr,
             vals: values,
         });
     }
 
-    return {device_address: table.device_address, registers: registers};
+    return {device_address: table.device_address, register_blocks: register_blocks};
 }
 
 export function init() {
@@ -497,12 +515,12 @@ export function init() {
 
                         table = [BatteryModbusTCPTableID.Custom, {
                             register_address_mode:       new_config[1].table[1].register_address_mode,
-                            permit_grid_charge:          import_register_subtable(new_config[1].table[1].permit_grid_charge),
-                            revoke_grid_charge_override: import_register_subtable(new_config[1].table[1].revoke_grid_charge_override),
-                            forbid_discharge:            import_register_subtable(new_config[1].table[1].forbid_discharge),
-                            revoke_discharge_override:   import_register_subtable(new_config[1].table[1].revoke_discharge_override),
-                            forbid_charge:               import_register_subtable(new_config[1].table[1].forbid_charge),
-                            revoke_charge_override:      import_register_subtable(new_config[1].table[1].revoke_charge_override),
+                            permit_grid_charge:          import_register_table(new_config[1].table[1].permit_grid_charge),
+                            revoke_grid_charge_override: import_register_table(new_config[1].table[1].revoke_grid_charge_override),
+                            forbid_discharge:            import_register_table(new_config[1].table[1].forbid_discharge),
+                            revoke_discharge_override:   import_register_table(new_config[1].table[1].revoke_discharge_override),
+                            forbid_charge:               import_register_table(new_config[1].table[1].forbid_charge),
+                            revoke_charge_override:      import_register_table(new_config[1].table[1].revoke_charge_override),
                         }]
 
                         if (!util.hasValue(table[1].permit_grid_charge)
@@ -593,6 +611,20 @@ export function init() {
                 ];
 
                 if (util.hasValue(config[1].table) && config[1].table[0] == BatteryModbusTCPTableID.Custom) {
+                    let total_values_count_permit_grid_charge = get_total_values_count(config[1].table[1].permit_grid_charge);
+                    let total_values_count_revoke_grid_charge_override = get_total_values_count(config[1].table[1].revoke_grid_charge_override);
+                    let total_values_count_forbid_discharge = get_total_values_count(config[1].table[1].forbid_discharge);
+                    let total_values_count_revoke_discharge_override = get_total_values_count(config[1].table[1].revoke_discharge_override);
+                    let total_values_count_forbid_charge = get_total_values_count(config[1].table[1].forbid_charge);
+                    let total_values_count_revoke_charge_override = get_total_values_count(config[1].table[1].revoke_charge_override);
+
+                    let total_values_count = total_values_count_permit_grid_charge
+                                           + total_values_count_revoke_grid_charge_override
+                                           + total_values_count_forbid_discharge
+                                           + total_values_count_revoke_discharge_override
+                                           + total_values_count_forbid_charge
+                                           + total_values_count_revoke_charge_override;
+
                     edit_children.push(
                         <FormRow label={__("batteries_modbus_tcp.content.register_address_mode")}>
                             <InputSelect
@@ -619,9 +651,10 @@ export function init() {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {permit_grid_charge: {...(config[1].table as TableConfigCustom)[1].permit_grid_charge, device_address: v}})}));
                                     }} />
                             </FormRow>
-                            <FormRow label={__("batteries_modbus_tcp.content.registers")}>
+                            <FormRow label={__("batteries_modbus_tcp.content.register_blocks")}>
                                 <RegisterEditor
                                     register_address_mode={config[1].table[1].register_address_mode}
+                                    other_total_values_count={total_values_count - total_values_count_permit_grid_charge}
                                     table={config[1].table[1].permit_grid_charge}
                                     on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {permit_grid_charge: table})}))} />
                             </FormRow>
@@ -639,9 +672,10 @@ export function init() {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_grid_charge_override: {...(config[1].table as TableConfigCustom)[1].revoke_grid_charge_override, device_address: v}})}));
                                     }} />
                             </FormRow>
-                            <FormRow label={__("batteries_modbus_tcp.content.registers")}>
+                            <FormRow label={__("batteries_modbus_tcp.content.register_blocks")}>
                                 <RegisterEditor
                                     register_address_mode={config[1].table[1].register_address_mode}
+                                    other_total_values_count={total_values_count - total_values_count_revoke_grid_charge_override}
                                     table={config[1].table[1].revoke_grid_charge_override}
                                     on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_grid_charge_override: table})}))} />
                             </FormRow>
@@ -659,9 +693,10 @@ export function init() {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_discharge: {...(config[1].table as TableConfigCustom)[1].forbid_discharge, device_address: v}})}));
                                     }} />
                             </FormRow>
-                            <FormRow label={__("batteries_modbus_tcp.content.registers")}>
+                            <FormRow label={__("batteries_modbus_tcp.content.register_blocks")}>
                                 <RegisterEditor
                                     register_address_mode={config[1].table[1].register_address_mode}
+                                    other_total_values_count={total_values_count - total_values_count_forbid_discharge}
                                     table={config[1].table[1].forbid_discharge}
                                     on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_discharge: table})}))} />
                             </FormRow>
@@ -679,9 +714,10 @@ export function init() {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_discharge_override: {...(config[1].table as TableConfigCustom)[1].revoke_discharge_override, device_address: v}})}));
                                     }} />
                             </FormRow>
-                            <FormRow label={__("batteries_modbus_tcp.content.registers")}>
+                            <FormRow label={__("batteries_modbus_tcp.content.register_blocks")}>
                                 <RegisterEditor
                                     register_address_mode={config[1].table[1].register_address_mode}
+                                    other_total_values_count={total_values_count - total_values_count_revoke_discharge_override}
                                     table={config[1].table[1].revoke_discharge_override}
                                     on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_discharge_override: table})}))} />
                             </FormRow>
@@ -699,9 +735,10 @@ export function init() {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_charge: {...(config[1].table as TableConfigCustom)[1].forbid_charge, device_address: v}})}));
                                     }} />
                             </FormRow>
-                            <FormRow label={__("batteries_modbus_tcp.content.registers")}>
+                            <FormRow label={__("batteries_modbus_tcp.content.register_blocks")}>
                                 <RegisterEditor
                                     register_address_mode={config[1].table[1].register_address_mode}
+                                    other_total_values_count={total_values_count - total_values_count_forbid_charge}
                                     table={config[1].table[1].forbid_charge}
                                     on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {forbid_charge: table})}))} />
                             </FormRow>
@@ -719,9 +756,10 @@ export function init() {
                                         on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_charge_override: {...(config[1].table as TableConfigCustom)[1].revoke_charge_override, device_address: v}})}));
                                     }} />
                             </FormRow>
-                            <FormRow label={__("batteries_modbus_tcp.content.registers")}>
+                            <FormRow label={__("batteries_modbus_tcp.content.register_blocks")}>
                                 <RegisterEditor
                                     register_address_mode={config[1].table[1].register_address_mode}
+                                    other_total_values_count={total_values_count - total_values_count_revoke_charge_override}
                                     table={config[1].table[1].revoke_charge_override}
                                     on_table={(table: RegisterTable) => on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {revoke_charge_override: table})}))} />
                             </FormRow>

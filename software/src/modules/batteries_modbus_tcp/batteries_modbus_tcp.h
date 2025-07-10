@@ -37,7 +37,7 @@
 class BatteriesModbusTCP final : public IModule, public IBatteryGenerator
 {
 public:
-    struct RegisterSpec {
+    struct RegisterBlockSpec {
         ModbusRegisterType register_type;
         uint16_t start_address;
         void *values_buffer;
@@ -46,8 +46,8 @@ public:
 
     struct TableSpec {
         uint8_t device_address;
-        RegisterSpec *registers;
-        size_t registers_count;
+        RegisterBlockSpec *register_blocks;
+        size_t register_blocks_count;
     };
 
     static TableSpec *init_table(const Config *config);
@@ -70,7 +70,7 @@ private:
     void release_client();
 
     Config config_prototype;
-    Config table_custom_registers_prototype;
+    Config table_custom_register_block_prototype;
     std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> table_prototypes;
     //Config errors_prototype;
 

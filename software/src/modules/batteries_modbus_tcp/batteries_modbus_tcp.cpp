@@ -33,60 +33,60 @@
 
 BatteriesModbusTCP::TableSpec *BatteriesModbusTCP::init_table(const Config *config)
 {
-    const Config *registers_config = static_cast<const Config *>(config->get("registers"));
-    size_t registers_count         = registers_config->count();
+    const Config *register_blocks_config = static_cast<const Config *>(config->get("register_blocks"));
+    size_t register_blocks_count         = register_blocks_config->count();
 
-    if (registers_count == 0) {
+    if (register_blocks_count == 0) {
         return nullptr;
     }
 
     TableSpec *table = static_cast<TableSpec *>(malloc(sizeof(TableSpec)));
 
-    table->device_address  = static_cast<uint8_t>(config->get("device_address")->asUint());
-    table->registers       = static_cast<RegisterSpec *>(malloc(sizeof(RegisterSpec) * registers_count));
-    table->registers_count = registers_count;
+    table->device_address        = static_cast<uint8_t>(config->get("device_address")->asUint());
+    table->register_blocks       = static_cast<RegisterBlockSpec *>(malloc(sizeof(RegisterBlockSpec) * register_blocks_count));
+    table->register_blocks_count = register_blocks_count;
 
-    for (size_t i = 0; i < registers_count; ++i) {
-        auto register_config = registers_config->get(i);
+    for (size_t i = 0; i < register_blocks_count; ++i) {
+        auto register_block_config = register_blocks_config->get(i);
 
-        table->registers[i].register_type = register_config->get("rtyp")->asEnum<ModbusRegisterType>();
-        table->registers[i].start_address = static_cast<uint16_t>(register_config->get("addr")->asUint());
+        table->register_blocks[i].register_type = register_block_config->get("rtyp")->asEnum<ModbusRegisterType>();
+        table->register_blocks[i].start_address = static_cast<uint16_t>(register_block_config->get("addr")->asUint());
 
-        auto values_config    = register_config->get("vals");
+        auto values_config    = register_block_config->get("vals");
         uint16_t values_count = static_cast<uint16_t>(values_config->count());
         size_t values_byte_count;
 
-        if (table->registers[i].register_type == ModbusRegisterType::Coil) {
+        if (table->register_blocks[i].register_type == ModbusRegisterType::Coil) {
             values_byte_count = (values_count + 7u) / 8u;
         }
         else {
             values_byte_count = values_count * 2u;
         }
 
-        table->registers[i].values_buffer = malloc(values_byte_count);
-        table->registers[i].values_count  = values_count;
+        table->register_blocks[i].values_buffer = malloc(values_byte_count);
+        table->register_blocks[i].values_count  = values_count;
 
-        if (table->registers[i].register_type == ModbusRegisterType::Coil) {
-            uint8_t *coils_buffer = reinterpret_cast<uint8_t *>(table->registers[i].values_buffer);
+        if (table->register_blocks[i].register_type == ModbusRegisterType::Coil) {
+            uint8_t *values_buffer = reinterpret_cast<uint8_t *>(table->register_blocks[i].values_buffer);
 
-            coils_buffer[values_byte_count - 1] = 0;
+            values_buffer[values_byte_count - 1] = 0;
 
             for (uint16_t k = 0; k < values_count; ++k) {
                 uint8_t mask = static_cast<uint8_t>(1u << (k % 8));
 
                 if (values_config->get(k)->asUint() != 0) {
-                    coils_buffer[k / 8] |= mask;
+                    values_buffer[k / 8] |= mask;
                 }
                 else {
-                    coils_buffer[k / 8] &= ~mask;
+                    values_buffer[k / 8] &= ~mask;
                 }
             }
         }
         else {
-            uint16_t *registers_buffer = reinterpret_cast<uint16_t *>(table->registers[i].values_buffer);
+            uint16_t *values_buffer = reinterpret_cast<uint16_t *>(table->register_blocks[i].values_buffer);
 
             for (uint16_t k = 0; k < values_count; ++k) {
-                registers_buffer[k] = static_cast<uint16_t>(values_config->get(k)->asUint());
+                values_buffer[k] = static_cast<uint16_t>(values_config->get(k)->asUint());
             }
         }
     }
@@ -100,11 +100,11 @@ void BatteriesModbusTCP::free_table(BatteriesModbusTCP::TableSpec *table)
         return;
     }
 
-    for (size_t i = 0; i < table->registers_count; ++i) {
-        free(table->registers[i].values_buffer);
+    for (size_t i = 0; i < table->register_blocks_count; ++i) {
+        free(table->register_blocks[i].values_buffer);
     }
 
-    free(table->registers);
+    free(table->register_blocks);
     free(table);
 }
 
@@ -112,14 +112,14 @@ void BatteriesModbusTCP::pre_setup()
 {
     table_prototypes.push_back({BatteryModbusTCPTableID::None, *Config::Null()});
 
-    table_custom_registers_prototype = Config::Object({
+    table_custom_register_block_prototype = Config::Object({
         {"desc", Config::Str("", 0, 32)},
         {"rtyp", Config::Enum(ModbusRegisterType::HoldingRegister)}, // FIXME: replace with function code?
         {"addr", Config::Uint16(0)},
         {"vals", Config::Array({},
             Config::get_prototype_uint16_0(),
             1,
-            OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_VALUES(),
+            OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_VALUES_PER_REGISTER_BLOCK(),
             Config::type_id<Config::ConfUint>()
         )},
     });
@@ -128,8 +128,8 @@ void BatteriesModbusTCP::pre_setup()
         {"register_address_mode", Config::Enum(ModbusRegisterAddressMode::Address)},
         {"permit_grid_charge", Config::Object({
             {"device_address", Config::Uint8(1)},
-            {"registers", Config::Array({},
-                &table_custom_registers_prototype,
+            {"register_blocks", Config::Array({},
+                &table_custom_register_block_prototype,
                 0,
                 OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
                 Config::type_id<Config::ConfObject>()
@@ -137,8 +137,8 @@ void BatteriesModbusTCP::pre_setup()
         })},
         {"revoke_grid_charge_override", Config::Object({
             {"device_address", Config::Uint8(1)},
-            {"registers", Config::Array({},
-                &table_custom_registers_prototype,
+            {"register_blocks", Config::Array({},
+                &table_custom_register_block_prototype,
                 0,
                 OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
                 Config::type_id<Config::ConfObject>()
@@ -146,8 +146,8 @@ void BatteriesModbusTCP::pre_setup()
         })},
         {"forbid_discharge", Config::Object({
             {"device_address", Config::Uint8(1)},
-            {"registers", Config::Array({},
-                &table_custom_registers_prototype,
+            {"register_blocks", Config::Array({},
+                &table_custom_register_block_prototype,
                 0,
                 OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
                 Config::type_id<Config::ConfObject>()
@@ -155,8 +155,8 @@ void BatteriesModbusTCP::pre_setup()
         })},
         {"revoke_discharge_override", Config::Object({
             {"device_address", Config::Uint8(1)},
-            {"registers", Config::Array({},
-                &table_custom_registers_prototype,
+            {"register_blocks", Config::Array({},
+                &table_custom_register_block_prototype,
                 0,
                 OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
                 Config::type_id<Config::ConfObject>()
@@ -164,8 +164,8 @@ void BatteriesModbusTCP::pre_setup()
         })},
         {"forbid_charge", Config::Object({
             {"device_address", Config::Uint8(1)},
-            {"registers", Config::Array({},
-                &table_custom_registers_prototype,
+            {"register_blocks", Config::Array({},
+                &table_custom_register_block_prototype,
                 0,
                 OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
                 Config::type_id<Config::ConfObject>()
@@ -173,8 +173,8 @@ void BatteriesModbusTCP::pre_setup()
         })},
         {"revoke_charge_override", Config::Object({
             {"device_address", Config::Uint8(1)},
-            {"registers", Config::Array({},
-                &table_custom_registers_prototype,
+            {"register_blocks", Config::Array({},
+                &table_custom_register_block_prototype,
                 0,
                 OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
                 Config::type_id<Config::ConfObject>()
@@ -199,8 +199,8 @@ void BatteriesModbusTCP::pre_setup()
 
     execute_table_prototypes.push_back({BatteryModbusTCPTableID::Custom, Config::Object({
         {"device_address", Config::Uint8(1)},
-        {"registers", Config::Array({},
-            &table_custom_registers_prototype,
+        {"register_blocks", Config::Array({},
+            &table_custom_register_block_prototype,
             0,
             OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTER_BLOCKS(),
             Config::type_id<Config::ConfObject>()
@@ -287,7 +287,7 @@ void BatteriesModbusTCP::register_urls()
             // to free memory. This invalidates the "host" references above, which will be copied
             // by the lambda before being cleared.
             execute_config.get("host")->clearString();
-            execute_config.get("table")->get()->get("registers")->removeAll();
+            execute_config.get("table")->get()->get("register_blocks")->removeAll();
         };
 
         execute_cookie = cookie;
@@ -370,18 +370,18 @@ String BatteriesModbusTCP::validate_config(Config &update, ConfigSource source) 
 
     size_t used = 0;
     for (const char *key : keys) {
-        auto regs = update.get("table")->get()->get(key)->get("registers");
-        for (size_t i = 0; i < regs->count(); ++i) {
-            auto val_count = regs->get(i)->get("vals")->count();
-            auto start_addr = regs->get(i)->get("addr")->asUint();
-            used += regs->get(i)->get("vals")->count();
+        auto blocks = update.get("table")->get()->get(key)->get("register_blocks");
+        for (size_t i = 0; i < blocks->count(); ++i) {
+            auto val_count = blocks->get(i)->get("vals")->count();
+            auto start_addr = blocks->get(i)->get("addr")->asUint();
+            used += blocks->get(i)->get("vals")->count();
             if (start_addr + val_count > 65536)
                 return "Register address + number of vals must be less than 65536!";
         }
     }
 
-    if (used > OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTERS())
-        return "At most " MACRO_VALUE_TO_STRING(OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_REGISTERS()) " registers are allowed!";
+    if (used > OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_TOTAL_VALUES())
+        return "At most " MACRO_VALUE_TO_STRING(OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_TOTAL_VALUES()) " total values are allowed!";
 
     return String();
 }
@@ -396,16 +396,16 @@ void BatteriesModbusTCP::write_next()
         return;
     }
 
-    if (execute_index >= execute_table->registers_count) {
+    if (execute_index >= execute_table->register_blocks_count) {
         report_success(execute_cookie);
         release_client(); // execution is done
         return;
     }
 
-    RegisterSpec *register_ = &execute_table->registers[execute_index];
+    RegisterBlockSpec *register_block = &execute_table->register_blocks[execute_index];
     TFModbusTCPFunctionCode function_code;
 
-    switch (register_->register_type) {
+    switch (register_block->register_type) {
     case ModbusRegisterType::HoldingRegister:
         function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
         break;
@@ -417,21 +417,21 @@ void BatteriesModbusTCP::write_next()
     case ModbusRegisterType::InputRegister:
     case ModbusRegisterType::DiscreteInput:
     default:
-        report_errorf(execute_cookie, "Unsupported register type to write: %u", static_cast<uint8_t>(register_->register_type));
+        report_errorf(execute_cookie, "Unsupported register type to write: %u", static_cast<uint8_t>(register_block->register_type));
         release_client();
         return;
     }
 
     static_cast<TFModbusTCPSharedClient *>(execute_client)->transact(execute_table->device_address,
                                                                      function_code,
-                                                                     register_->start_address,
-                                                                     register_->values_count,
-                                                                     register_->values_buffer,
+                                                                     register_block->start_address,
+                                                                     register_block->values_count,
+                                                                     register_block->values_buffer,
                                                                      2_s,
     [this](TFModbusTCPClientTransactionResult result, const char *error_message) {
         if (result != TFModbusTCPClientTransactionResult::Success) {
             report_errorf(execute_cookie, "Action execution failed at %zu of %zu: %s (%d)%s%s",
-                          execute_index + 1, execute_table->registers_count,
+                          execute_index + 1, execute_table->register_blocks_count,
                           get_tf_modbus_tcp_client_transaction_result_name(result),
                           static_cast<int>(result),
                           error_message != nullptr ? " / " : "",
