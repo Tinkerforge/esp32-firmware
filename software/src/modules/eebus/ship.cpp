@@ -155,7 +155,7 @@ void Ship::setup_wss()
     httpd_handle_t httpd = nullptr;
     esp_err_t ret = httpd_ssl_start(&httpd, &config);
     if (ESP_OK != ret) {
-        logger.printfln("Error starting server: %d", ret);
+        logger.printfln("Error starting HTTPS server: %d", ret);
     }
 
     web_sockets.onConnect_HTTPThread([this](WebSocketsClient ws_client) {
@@ -175,7 +175,11 @@ void Ship::setup_wss()
                 break;
             }
         }
-        logger.printfln("WebSocketsClient connected from %s:%d with SKI %s", client_ip, ntohs(addr.sin6_port), peer_ski.c_str());
+        logger.tracefln(eebus.trace_buffer_index,
+                        "WebSocketsClient connected from %s:%d with SKI %s",
+                        client_ip,
+                        ntohs(addr.sin6_port),
+                        peer_ski.c_str());
         ship_connections.push_back(ShipConnection{ws_client, ShipConnection::Role::Server, peer_ski});
         logger.printfln("WebSocketClient connected");
 
@@ -190,26 +194,24 @@ void Ship::setup_wss()
             }
         }
 
-        logger.printfln("No ShipConnection found for fd %d", fd);
+        logger.tracefln(eebus.trace_buffer_index, "No ShipConnection found for fd %d", fd);
     });
 
     // Start websocket on the HTTPS server
     web_sockets.start("/ship/", "/info/ship_wss", httpd, "ship");
 
-    logger.printfln("setup_wss_server done");
+    logger.printfln("EEBUS SHIP started up and accepting connections");
 }
 
 void Ship::setup_mdns()
 {
-    logger.printfln("setup_mdns start");
+    logger.tracefln(eebus.trace_buffer_index, "setup_mdns() start");
 
-    logger.printfln("mdns_service_add");
     // SHIP 7.2 Service Name
     mdns_service_add(NULL, "_ship", "_tcp", 4712, NULL, 0);
 
     // SHIP 7.3.2 TXT Record
     // Mandatory Fields
-    logger.printfln("mdns_service_txt_item_set");
     mdns_service_txt_item_set("_ship", "_tcp", "txtvers", "1");
     // TODO: Use UID instead of 12345
 
@@ -226,7 +228,7 @@ void Ship::setup_mdns()
     mdns_service_txt_item_set("_ship", "_tcp", "model", EEBUS_DEVICE_MODEL);
     mdns_service_txt_item_set("_ship", "_tcp", "type", EEBUS_DEVICE_TYPE); // Or EVSE?
 
-    logger.printfln("setup_mdns done");
+    logger.tracefln(eebus.trace_buffer_index, "setup_mdns() done");
 }
 
 Ship_Discovery_State Ship::discover_ship_peers()
@@ -242,18 +244,22 @@ Ship_Discovery_State Ship::discover_ship_peers()
 
     update_discovery_state(Ship_Discovery_State::SCANNING);
 
-    logger.printfln("discover_mdns start");
+    logger.tracefln(eebus.trace_buffer_index, "discover_ship_peers start");
+    logger.printfln("EEBUS MDNS Discovery started");
+
     const char *service = "_ship";
     const char *proto = "_tcp";
     mdns_result_t *results = NULL;
     esp_err_t err = mdns_query_ptr(service, proto, 3000, 20, &results);
     if (err) {
         logger.printfln("EEBUS MDNS Query Failed. Error %d", err);
+        logger.tracefln(eebus.trace_buffer_index, "EEBUS MDNS Query Failed. Error %d", err);
         update_discovery_state(Ship_Discovery_State::ERROR);
         return discovery_state;
     }
     if (!results) {
         logger.printfln("EEBUS MDNS: No results found!");
+        logger.tracefln(eebus.trace_buffer_index, "EEBUS MDNS: No results found!");
         update_discovery_state(Ship_Discovery_State::SCAN_DONE);
         return discovery_state;
     }
@@ -306,7 +312,7 @@ Ship_Discovery_State Ship::discover_ship_peers()
         results = results->next;
     }
 
-    logger.printfln("EEBUS MDNS: Found %d results", mdns_results.size());
+    logger.printfln("EEBUS MDNS Discovery: Found %d results", mdns_results.size());
 
     mdns_query_results_free(results);
     update_discovery_state(Ship_Discovery_State::SCAN_DONE);

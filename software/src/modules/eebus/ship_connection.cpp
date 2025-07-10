@@ -36,16 +36,21 @@ void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
 
     // TODO: Does the ws_client implement some kind of keepalive? Like sending ping/pong frames? Otherwise we need to implement something like that here
     if (ws_pkt->fragmented) {
-        logger.printfln("ShipConnection ws_frame_received: fragmented %d, final %d", ws_pkt->fragmented, ws_pkt->final);
-        logger.printfln("Not yet implemented...");
+        logger.tracefln(eebus.trace_buffer_index, "ShipConnection fragmented ws_frame_received from: %s", peer_ski.c_str());
+
         return;
     }
 
     if (ws_pkt->len < 2) {
-        logger.printfln("ShipConnection ws_frame_received: payload too short: %d", ws_pkt->len);
+        logger.tracefln(eebus.trace_buffer_index, "ShipConnection ws_frame_received: payload too short: %d", ws_pkt->len);
         return;
     }
-    logger.printfln("ShipConnection ws_frame_received: %x %x", ws_pkt->payload[0], ws_pkt->payload[1]);
+    if (state != State::Done) {
+        logger.tracefln(eebus.trace_buffer_index,
+                        "ShipConnection frame received from %s during connection establishment. ",
+                        peer_ski.c_str());
+    }
+
     // Copy new message and trigger next SHIP state machine step
     memset(message_incoming->data, 0, SHIP_CONNECTION_MAX_BUFFER_SIZE);
     memcpy(message_incoming->data, ws_pkt->payload, ws_pkt->len);
@@ -57,7 +62,7 @@ void ShipConnection::schedule_close(const millis_t delay_ms)
 {
     task_scheduler.scheduleOnce(
         [this]() {
-            logger.printfln("Closing socket");
+            logger.printfln("Closing connections to %s", peer_ski.c_str());
             // Close socket and
             ws_client.close_HTTPThread();
             // remove this ShipConnection from vector of ShipConnections in Ship
@@ -74,15 +79,19 @@ void ShipConnection::send_cmi_message(uint8_t type, uint8_t value)
 
 void ShipConnection::send_current_outgoing_message()
 {
+    logger.tracefln(eebus.trace_buffer_index, "Sending Websocket message");
     if (message_outgoing->length == 0) {
         return;
     }
     if (!message_outgoing) {
-        logger.printfln("message_outgoing ist NULL!");
+        logger.tracefln(eebus.trace_buffer_index, "message_outgoing is NULL!");
         return;
     }
     if (message_outgoing->length > SHIP_CONNECTION_MAX_BUFFER_SIZE) {
-        logger.printfln("message_outgoing->length zu groß!");
+        logger.tracefln(eebus.trace_buffer_index,
+                        "Error: Message being sent exceeds maximum buffer size of %d bytes: %d bytes",
+                        SHIP_CONNECTION_MAX_BUFFER_SIZE,
+                        message_outgoing->length);
         return;
     }
     ws_client.sendOwnedNoFreeBlocking_HTTPThread((char *)message_outgoing->data, message_outgoing->length, HTTPD_WS_TYPE_BINARY);
@@ -107,6 +116,8 @@ ShipConnection::CMIMessage ShipConnection::get_cmi_message()
 
 ShipConnection::ProtocolState ShipConnection::get_protocol_state()
 {
+    // If Messagetype is %x03 then this is a termination message
+    // SHIP Specification 13.4.7.1
     if (message_incoming->data[0] == 3) {
         return ProtocolState::Terminate;
     }
@@ -137,8 +148,13 @@ ShipConnection::ProtocolState ShipConnection::get_protocol_state()
 
 void ShipConnection::set_state(State state)
 {
+    // No need to do  all this if its the same state. In State::Done this also creates a lot of spam int he log
+    if (state == this->state) {
+        return;
+    }
     State old_state = this->state;
-    logger.printfln("State Change %s(%d) -> %s(%d)",
+    logger.tracefln(eebus.trace_buffer_index,
+                    " SHIP State Change %s(%d) -> %s(%d)",
                     get_state_name(old_state),
                     static_cast<std::underlying_type<State>::type>(old_state),
                     get_state_name(state),
@@ -306,13 +322,13 @@ void ShipConnection::state_machine_next_step()
 
 void ShipConnection::state_cme_init_start()
 {
+    logger.tracefln(eebus.trace_buffer_index, "Starting SHIP Connection Mode Initialisation (CMI) for %s", peer_ski.c_str());
     // SHIP 13.4.3
     switch (role) {
         case Role::Client: {
             set_and_schedule_state(State::CmiClientSend);
             break;
         }
-
         case Role::Server: {
             set_state(State::CmiServerWait);
             timeout_task = task_scheduler.scheduleOnce(
@@ -320,7 +336,6 @@ void ShipConnection::state_cme_init_start()
                     schedule_close(0_ms);
                 },
                 SHIP_CONNECTION_CMI_TIMEOUT);
-
             break;
         }
     }
@@ -695,7 +710,8 @@ void ShipConnection::state_sme_protocol_handshake_client_init()
 
 void ShipConnection::state_sme_protocol_handshake_server_listen_proposal()
 {
-    logger.printfln("state_sme_protocol_handshake_server_listen_proposal: %d (len %d)-> %s",
+    logger.tracefln(eebus.trace_buffer_index,
+                    "state_sme_protocol_handshake_server_listen_proposal: %d (len %d)-> %s",
                     message_incoming->data[0],
                     message_incoming->length,
                     &message_incoming->data[1]);
@@ -794,7 +810,7 @@ void ShipConnection::state_sme_protocol_handshake_server_ok()
 void ShipConnection::state_sme_pin_check_init()
 {
     // Currently we don't support the PIN verification.
-    // So we just report that wie don't support it and move on.
+    // So we just report that we don't support it and move on.
     const char *pin_not_suported = "{\"connectionPinState\":[{\"pinState\":\"none\"}]}";
     message_outgoing->data[0] = 1;
     memcpy(&message_outgoing->data[1], pin_not_suported, strlen(pin_not_suported));
@@ -852,7 +868,8 @@ void ShipConnection::state_sme_pin_ask_ok()
 
 void ShipConnection::state_sme_access_method_request()
 {
-    logger.printfln("state_sme_access_method_request: %d (len %d)-> %s",
+    logger.tracefln(eebus.trace_buffer_index,
+                    "state_sme_access_method_request: %d (len %d)-> %s",
                     message_incoming->data[0],
                     message_incoming->length,
                     &message_incoming->data[1]);
@@ -877,7 +894,10 @@ void ShipConnection::send_data_message(JsonVariant payload)
 
         data.type_to_json(*message_outgoing);
 
-        logger.printfln("Data: sending message with total length of %d", message_outgoing->length - 1);
+        logger.tracefln(eebus.trace_buffer_index,
+                        "Data: sending message with total length of %d and content: %s",
+                        message_outgoing->length - 1,
+                        &message_outgoing->data[1]);
         send_current_outgoing_message();
     } else {
         logger.printfln("send_data_message: Connection not in done state. Actual State: %d", (int)state);
@@ -886,7 +906,11 @@ void ShipConnection::send_data_message(JsonVariant payload)
 
 void ShipConnection::state_done()
 {
-    logger.printfln("state_done: %d (len %d)-> %s", message_incoming->data[0], message_incoming->length, &message_incoming->data[1]);
+    logger.tracefln(eebus.trace_buffer_index,
+                    "state_done received: %d (len %d)-> %s",
+                    message_incoming->data[0],
+                    message_incoming->length,
+                    &message_incoming->data[1]);
     // If we are done we can still get the PIN Request (which we currently don't support)
     // and the SME Access Method Request. In that case we jump to the corresponding state,
     // which will then come back here.
@@ -901,7 +925,7 @@ void ShipConnection::state_done()
 
     auto protocol_state = get_protocol_state();
 
-    logger.printfln("state_done: protocol_state %d", (int)protocol_state);
+    logger.tracefln(eebus.trace_buffer_index, "state_done: protocol_state %d", static_cast<int>(protocol_state));
     switch (protocol_state) {
         case ProtocolState::Data: {
             SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
@@ -914,7 +938,7 @@ void ShipConnection::state_done()
                                 &message_incoming->data[1]);
                 spine.process_datagram(data.payload);
             } else {
-                logger.printfln("Error while trying to deserialize data message");
+                logger.printfln("Received a Data Message but encountered an error while trying to deserialize the message");
             }
             break;
         }
@@ -927,10 +951,7 @@ void ShipConnection::state_done()
             break;
         }
         case ProtocolState::AccessMethodsRequest: {
-            logger.printfln("AccessMethodsRequest received: %d (len %d)-> %s",
-                            message_incoming->data[0],
-                            message_incoming->length,
-                            &message_incoming->data[1]);
+            logger.tracefln(eebus.trace_buffer_index, "AccessMethodsRequest received");
             SHIP_TYPES::ShipMessageAccessMethods access_methods = SHIP_TYPES::ShipMessageAccessMethods();
             access_methods.id = eebus.get_eebus_name();
             String json = access_methods.type_to_json();
@@ -963,12 +984,13 @@ void ShipConnection::state_done()
         default:
             break;
     }
-    logger.printfln("After state done state: %s", get_state_name(state));
+    logger.tracefln(eebus.trace_buffer_index, "After state done state: %s", get_state_name(state));
 }
 
 void ShipConnection::state_is_not_implemented()
 {
-    logger.printfln("State %s(%d) was triggered, but is not implemented yet",
+    logger.tracefln(eebus.trace_buffer_index,
+                    "State %s(%d) was triggered, but is not implemented yet",
                     get_state_name(state),
                     static_cast<std::underlying_type<State>::type>(state));
 
@@ -1063,12 +1085,12 @@ const char *ShipConnection::get_state_name(State state)
 
 void ShipConnection::json_to_type_connection_hello(ConnectionHelloType *connection_hello)
 {
-    logger.printfln("J2T ConnectionHello json: %s", &message_incoming->data[1]);
+    //logger.printfln("J2T ConnectionHello json: %s", &message_incoming->data[1]);
 
     DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
     DeserializationError error = deserializeJson(json_doc, &message_incoming->data[1], message_incoming->length - 1);
     if (error) {
-        logger.printfln("Error during JSON deserialization: %s", error.c_str());
+        logger.tracefln(eebus.trace_buffer_index, "ConnectionHello: Error during JSON deserialization: %s", error.c_str());
     } else {
         // Initialize non-mandatory fields
         connection_hello->waiting = 0;
@@ -1091,7 +1113,8 @@ void ShipConnection::json_to_type_connection_hello(ConnectionHelloType *connecti
             }
         }
 
-        logger.printfln("J2T ConnectionHello Type: phase %d, waiting %ld(%d), prolongation_request %d(%d)'",
+        logger.tracefln(eebus.trace_buffer_index,
+                        "J2T ConnectionHello Type: phase %d, waiting %ld(%d), prolongation_request %d(%d)'",
                         static_cast<std::underlying_type<ConnectionHelloPhase::Type>::type>(connection_hello->phase),
                         connection_hello->waiting,
                         connection_hello->waiting_valid,
@@ -1102,6 +1125,7 @@ void ShipConnection::json_to_type_connection_hello(ConnectionHelloType *connecti
 
 void ShipConnection::type_to_json_connection_hello(ConnectionHelloType *connection_hello)
 {
+    // TODO: Move this json_doc to somehwere else or let it use something central
     DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
     JsonArray json_hello = json_doc.createNestedArray("connectionHello");
 
@@ -1122,17 +1146,17 @@ void ShipConnection::type_to_json_connection_hello(ConnectionHelloType *connecti
     size_t length = serializeJson(json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE - 1);
     message_outgoing->length = length + 1;
 
-    logger.printfln("T2J ConnectionHello json: %s", &message_outgoing->data[1]);
+    logger.tracefln(eebus.trace_buffer_index, "T2J ConnectionHello json: %s", &message_outgoing->data[1]);
 }
 
 void ShipConnection::json_to_type_handshake_type(ProtocolHandshakeType *handshake_type)
 {
-    logger.printfln("J2T ProtocolHandshakeType json: %s", &message_incoming->data[1]);
+    logger.tracefln(eebus.trace_buffer_index, "J2T ProtocolHandshakeType json: %s", &message_incoming->data[1]);
 
     DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
     DeserializationError error = deserializeJson(json_doc, &message_incoming->data[1], message_incoming->length - 1);
     if (error) {
-        logger.printfln("Error during JSON deserialization: %s", error.c_str());
+        logger.tracefln(eebus.trace_buffer_index, "Protocolhandshake: Error during JSON deserialization: %s", error.c_str());
     } else {
         for (JsonObject obj : json_doc["messageProtocolHandshake"].as<JsonArray>()) {
             if (obj.containsKey("handshakeType")) {
@@ -1148,7 +1172,8 @@ void ShipConnection::json_to_type_handshake_type(ProtocolHandshakeType *handshak
                 }
             }
         }
-        logger.printfln("J2T ProtocolHandshakeType Type: handshakeType %d, version %ld.%ld",
+        logger.tracefln(eebus.trace_buffer_index,
+                        "J2T ProtocolHandshakeType Type: handshakeType %d, version %ld.%ld",
                         static_cast<std::underlying_type<ProtocolHandshake::Type>::type>(handshake_type->handshakeType),
                         handshake_type->version_major,
                         handshake_type->version_minor);
@@ -1157,6 +1182,7 @@ void ShipConnection::json_to_type_handshake_type(ProtocolHandshakeType *handshak
 
 void ShipConnection::type_to_json_handshake_type(ProtocolHandshakeType *handshake_type)
 {
+    //TODO: Change this json doc to use another DynamicJsonDocument
     DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
     JsonArray json_handshake = json_doc.createNestedArray("messageProtocolHandshake");
 
@@ -1180,7 +1206,7 @@ void ShipConnection::type_to_json_handshake_type(ProtocolHandshakeType *handshak
     size_t length = serializeJson(json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE - 1);
     message_outgoing->length = length + 1;
 
-    logger.printfln("T2J ProtocolHandshakeType json: %s", &message_outgoing->data[1]);
+    logger.tracefln(eebus.trace_buffer_index, "T2J ProtocolHandshakeType json: %s", &message_outgoing->data[1]);
 }
 
 void ShipConnection::sme_protocol_abort_procedure(ProtocolAbortReason reason)
@@ -1197,7 +1223,7 @@ void ShipConnection::sme_protocol_abort_procedure(ProtocolAbortReason reason)
     size_t length = serializeJson(json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE - 1);
     message_outgoing->length = length + 1;
 
-    logger.printfln("T2J ProtocolHandshakeError json: %s", &message_outgoing->data[1]);
+    logger.tracefln(eebus.trace_buffer_index, "T2J ProtocolHandshakeError json: %s", &message_outgoing->data[1]);
     send_current_outgoing_message();
     schedule_close(0_ms);
 }
@@ -1223,7 +1249,7 @@ void ShipConnection::to_json_access_methods_type()
     size_t length = serializeJson(json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE - 1);
     message_outgoing->length = length + 1;
 
-    logger.printfln("2J AccessMethods json: %s", &message_outgoing->data[1]);
+    logger.tracefln(eebus.trace_buffer_index, "T2J AccessMethods json: %s", &message_outgoing->data[1]);
 }
 
 void ShipConnection::common_procedure_enable_data_exchange()
