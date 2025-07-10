@@ -1170,11 +1170,6 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
         table = &carlo_gavazzi_em530_and_em540_table;
         break;
 
-    case MeterModbusTCPTableID::CarloGavazziEM580:
-        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-        table = &carlo_gavazzi_em580_table;
-        break;
-
     case MeterModbusTCPTableID::Solaredge:
         solaredge.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<SolaredgeVirtualMeter>();
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
@@ -1444,6 +1439,11 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
         }
 
+        break;
+
+    case MeterModbusTCPTableID::CarloGavazziEM580:
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
+        table = &carlo_gavazzi_em580_table;
         break;
 
     case MeterModbusTCPTableID::SolaxStringInverter:

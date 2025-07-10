@@ -326,13 +326,6 @@ type TableConfigCarloGavazziEM540 = [
     },
 ];
 
-type TableConfigCarloGavazziEM580 = [
-    MeterModbusTCPTableID.CarloGavazziEM580,
-    {
-        device_address: number;
-    },
-];
-
 type TableConfigSolaredge = [
     MeterModbusTCPTableID.Solaredge,
     {
@@ -401,6 +394,13 @@ type TableConfigHuaweiEMMA = [
     },
 ];
 
+type TableConfigCarloGavazziEM580 = [
+    MeterModbusTCPTableID.CarloGavazziEM580,
+    {
+        device_address: number;
+    },
+];
+
 type TableConfigSolaxStringInverter = [
     MeterModbusTCPTableID.SolaxStringInverter,
     {
@@ -458,7 +458,6 @@ type TableConfig = TableConfigNone |
                    TableConfigCarloGavazziEM510 |
                    TableConfigCarloGavazziEM530 |
                    TableConfigCarloGavazziEM540 |
-                   TableConfigCarloGavazziEM580 |
                    TableConfigSolaredge |
                    TableConfigEastronSDM630TCP |
                    TableConfigTinkerforgeWARPCharger |
@@ -469,6 +468,7 @@ type TableConfig = TableConfigNone |
                    TableConfigHuaweiSUN2000SmartDongle |
                    TableConfigHuaweiEMMA |
                    TableConfigSolaxStringInverter |
+                   TableConfigCarloGavazziEM580 |
                    TableConfigFoxESSH3SmartHybridInverter |
                    TableConfigFoxESSH3ProHybridInverter;
 
@@ -581,9 +581,6 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
         case MeterModbusTCPTableID.CarloGavazziEM540:
             return [MeterModbusTCPTableID.CarloGavazziEM540, {device_address: 1}];
 
-        case MeterModbusTCPTableID.CarloGavazziEM580:
-            return [MeterModbusTCPTableID.CarloGavazziEM580, {device_address: 1}];
-
         case MeterModbusTCPTableID.Solaredge:
             return [MeterModbusTCPTableID.Solaredge, {virtual_meter: null, device_address: 1}];
 
@@ -610,6 +607,9 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
 
         case MeterModbusTCPTableID.HuaweiEMMA:
             return [MeterModbusTCPTableID.HuaweiEMMA, {virtual_meter: null, device_address: 0}];
+
+        case MeterModbusTCPTableID.CarloGavazziEM580:
+            return [MeterModbusTCPTableID.CarloGavazziEM580, {device_address: 1}];
 
         case MeterModbusTCPTableID.SolaxStringInverter:
             return [MeterModbusTCPTableID.SolaxStringInverter, {virtual_meter: null, device_address: 1}];
@@ -931,7 +931,6 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM510
                   || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM530
                   || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM540
-                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM580
                   || config[1].table[0] == MeterModbusTCPTableID.Solaredge
                   || config[1].table[0] == MeterModbusTCPTableID.EastronSDM630TCP
                   || config[1].table[0] == MeterModbusTCPTableID.TinkerforgeWARPCharger
@@ -941,6 +940,7 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.HuaweiSUN2000
                   || config[1].table[0] == MeterModbusTCPTableID.HuaweiSUN2000SmartDongle
                   || config[1].table[0] == MeterModbusTCPTableID.HuaweiEMMA
+                  || config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM580
                   || config[1].table[0] == MeterModbusTCPTableID.SolaxStringInverter
                   || config[1].table[0] == MeterModbusTCPTableID.FoxESSH3SmartHybridInverter
                   || config[1].table[0] == MeterModbusTCPTableID.FoxESSH3ProHybridInverter)) {
