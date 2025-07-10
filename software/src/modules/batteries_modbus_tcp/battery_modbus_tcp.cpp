@@ -128,7 +128,7 @@ void BatteryModbusTCP::disconnect_callback()
 
 void BatteryModbusTCP::write_next(Execution *execution)
 {
-    if (execution->index >= execution->table->registers_count) {
+    if (execution->index >= execution->table->register_blocks_count) {
         if (execution->callback) {
             execution->callback(true);
         }
@@ -146,10 +146,10 @@ void BatteryModbusTCP::write_next(Execution *execution)
         return;
     }
 
-    BatteriesModbusTCP::RegisterSpec *register_ = &execution->table->registers[execution->index];
+    BatteriesModbusTCP::RegisterBlockSpec *register_block = &execution->table->register_blocks[execution->index];
     TFModbusTCPFunctionCode function_code;
 
-    switch (register_->register_type) {
+    switch (register_block->register_type) {
     case ModbusRegisterType::HoldingRegister:
         function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
         break;
@@ -161,7 +161,7 @@ void BatteryModbusTCP::write_next(Execution *execution)
     case ModbusRegisterType::InputRegister:
     case ModbusRegisterType::DiscreteInput:
     default:
-        logger.printfln_battery("Unsupported register type to write: %u", static_cast<uint8_t>(register_->register_type));
+        logger.printfln_battery("Unsupported register type to write: %u", static_cast<uint8_t>(register_block->register_type));
 
         if (execution->callback) {
             execution->callback(false);
@@ -173,14 +173,14 @@ void BatteryModbusTCP::write_next(Execution *execution)
 
     static_cast<TFModbusTCPSharedClient *>(connected_client)->transact(execution->table->device_address,
                                                                        function_code,
-                                                                       register_->start_address,
-                                                                       register_->values_count,
-                                                                       register_->values_buffer,
+                                                                       register_block->start_address,
+                                                                       register_block->values_count,
+                                                                       register_block->values_buffer,
                                                                        2_s,
     [this, execution](TFModbusTCPClientTransactionResult result, const char *error_message) {
         if (result != TFModbusTCPClientTransactionResult::Success) {
             logger.printfln_battery("Action execution failed at %zu of %zu: %s (%d)%s%s",
-                                    execution->index + 1, execution->table->registers_count,
+                                    execution->index + 1, execution->table->register_blocks_count,
                                     get_tf_modbus_tcp_client_transaction_result_name(result),
                                     static_cast<int>(result),
                                     error_message != nullptr ? " / " : "",
