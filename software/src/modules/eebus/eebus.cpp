@@ -27,6 +27,9 @@
 
 void EEBus::pre_setup()
 {
+
+    this->trace_buffer_index = logger.alloc_trace_buffer("eebus", 100 * 1024);
+
     // TODO: Fix string lengths. Spec says they are shorter
 
     // TOOD: Rework API so this lot is a bit cleaner
@@ -74,7 +77,6 @@ void EEBus::pre_setup()
                                            Config::type_id<Config::ConfObject>())},
                         }),
                         [this](Config &config, ConfigSource source) -> String {
-                            
                             return "";
                         }};
     add_peer = ConfigRoot{Config::Object({{"ip", Config::Str("", 0, 64)},
@@ -95,28 +97,25 @@ void EEBus::pre_setup()
 
     add_peer.set_permit_null_updates(false);
 
-    remove_peer = ConfigRoot{Config::Object({{"ski", Config::Str("", 0, 64)}}),
-                             [this](Config &remove_peer, ConfigSource source) -> String {
+    remove_peer = ConfigRoot{Config::Object({{"ski", Config::Str("", 0, 64)}}), [this](Config &remove_peer, ConfigSource source) -> String {
                                  if (remove_peer.get("ski")->asString().isEmpty()) {
                                      return "Can't remove peer. Ski is missing.";
                                  }
                                  return "";
                              }};
 
-    
-
     state = Config::Object({
         {"ski", Config::Str("", 0, 64)},
         {"discovery_state", Config::Uint8(0)},
-        {"connections", Config::Array(
-            {Config::Object({
-                {"ski", Config::Str("", 0, 64)},
-                {"ship_state", Config::Str("", 0, 64)},
-            })},
-            &state_connections_prototype,
-            0,
-            MAX_PEER_REMEMBERED,
-            Config::type_id<Config::ConfObject>())},
+        {"connections",
+         Config::Array({Config::Object({
+                           {"ski", Config::Str("", 0, 64)},
+                           {"ship_state", Config::Str("", 0, 64)},
+                       })},
+                       &state_connections_prototype,
+                       0,
+                       MAX_PEER_REMEMBERED,
+                       Config::type_id<Config::ConfObject>())},
     });
 
     device_name = DNS_SD_UUID;
@@ -130,8 +129,8 @@ void EEBus::setup()
     update_peers_config();
 
     // All peers are unknown at startup
-    for(size_t i= 0; i < config.get("peers")->count(); i++) {
-       config.get("peers")->get(i)->get("state")->updateUint(0);
+    for (size_t i = 0; i < config.get("peers")->count(); i++) {
+        config.get("peers")->get(i)->get("state")->updateUint(0);
     }
 
     state.get("connections")->removeAll();
@@ -147,6 +146,7 @@ void EEBus::setup()
         SHIP_AUTODISCOVER_INTERVAL);
 
     initialized = true;
+    logger.tracefln(this->trace_buffer_index, "EEBUS initialized");
 }
 
 void EEBus::register_urls()
@@ -161,7 +161,8 @@ void EEBus::register_urls()
         {"ip", "port", "trusted", "dns_name", "wss_path", "ski"},
         [this](String &errmsg) {
             if (!errmsg.isEmpty()) {
-                logger.printfln("Error adding or Updating peer: %s", errmsg.c_str());
+                // TODO: Some user feedback when this goes wrong
+                logger.tracefln(this->trace_buffer_index, "Error adding or Updating peer: %s", errmsg.c_str());
                 return;
             }
             Config::Wrap peer = nullptr;
@@ -171,7 +172,8 @@ void EEBus::register_urls()
                 if (p->get("ski")->asString() == add_peer.get("ski")->asString()) {
                     peer = p;
                     found = true;
-                    logger.printfln("Updating ship peer %s with ip %s",
+                    logger.tracefln(this->trace_buffer_index,
+                                    "Updating ship peer %s with ip %s",
                                     peer->get("ski")->asString().c_str(),
                                     peer->get("ip")->asString().c_str());
                     break;
@@ -179,7 +181,8 @@ void EEBus::register_urls()
             }
             if (!found) {
                 peer = config.get("peers")->add();
-                logger.printfln("Adding ship peer %s with ip %s",
+                logger.tracefln(this->trace_buffer_index,
+                                "Adding ship peer %s with ip %s",
                                 peer->get("ski")->asString().c_str(),
                                 peer->get("ip")->asString().c_str());
             }
@@ -199,13 +202,14 @@ void EEBus::register_urls()
         {"ski"},
         [this](String &errmsg) {
             if (!errmsg.isEmpty()) {
-                logger.printfln("Error removing peer: %s", errmsg.c_str());
+                logger.tracefln(this->trace_buffer_index, "Error removing peer: %s", errmsg.c_str());
                 return;
             }
             for (size_t i = 0; i < config.get("peers")->count(); i++) {
                 auto peer = config.get("peers")->get(i);
                 if (peer->get("ski")->asString() == remove_peer.get("ski")->asString()) {
-                    logger.printfln("Removing ship peer %s with ip %s",
+                    logger.tracefln(this->trace_buffer_index,
+                                    "Removing ship peer %s with ip %s",
                                     peer->get("ski")->asString().c_str(),
                                     peer->get("ip")->asString().c_str());
                     config.get("peers")->remove(i);
@@ -253,11 +257,12 @@ int EEBus::get_state_connection_id_by_ski(const String &ski)
 void EEBus::update_peers_config()
 {
     size_t currently_configured_count = config.get("peers")->count();
-    logger.printfln("Updating peers to config");
+    logger.printfln("Updating peers configuration.");
 
-    for (size_t i= 0; i< config.get("peers")->count(); i++) {
+    for (size_t i = 0; i < config.get("peers")->count(); i++) {
         // Cleanup invalid peers
-        if(config.get("peers")->get(i)->get("ski")->asString().isEmpty() || config.get("peers")->get(i)->get("ski")->asString().length() < 1) {
+        if (config.get("peers")->get(i)->get("ski")->asString().isEmpty()
+            || config.get("peers")->get(i)->get("ski")->asString().length() < 1) {
             config.get("peers")->remove(i);
         }
     }
@@ -284,7 +289,6 @@ void EEBus::update_peers_config()
                 found = true;
                 break;
             }
-
         }
         // Add new peer
         if (!found) {
@@ -304,4 +308,3 @@ void EEBus::update_peers_config()
         }
     }
 }
-

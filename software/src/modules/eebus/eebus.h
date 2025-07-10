@@ -76,6 +76,8 @@ public:
      */
     int get_state_connection_id_by_ski(const String &ski);
 
+    size_t trace_buffer_index;
+
 private:
     /**
      * Update the peers configuration based on the current mDNS results, clean up invalid peers and add trusted peers to the persistent configuration.
