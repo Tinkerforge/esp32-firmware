@@ -467,8 +467,8 @@ type TableConfig = TableConfigNone |
                    TableConfigHuaweiSUN2000 |
                    TableConfigHuaweiSUN2000SmartDongle |
                    TableConfigHuaweiEMMA |
-                   TableConfigSolaxStringInverter |
                    TableConfigCarloGavazziEM580 |
+                   TableConfigSolaxStringInverter |
                    TableConfigFoxESSH3SmartHybridInverter |
                    TableConfigFoxESSH3ProHybridInverter;
 
