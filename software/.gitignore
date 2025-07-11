@@ -16,6 +16,7 @@ src/modules/*/module_dependencies.h
 src/modules/*/module.cpp
 src/modules/*/*.enum.h
 src/modules/*/*.enum.cpp
+src/modules/*/*.enum.previous
 src/modules.cpp
 src/build.h
 src/build.cpp

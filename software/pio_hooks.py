@@ -1703,8 +1703,15 @@ def main():
                     print('Error: Invalid enum file "{}" in backend {}'.format(filename, mod_path))
                     sys.exit(1)
 
+                try:
+                    with open(os.path.join(mod_path, filename + '.previous'), 'r', encoding='utf-8') as f:
+                        enum_previous_raw_values = json.loads(f.read())
+                except FileNotFoundError:
+                    enum_previous_raw_values = None
+
                 enum_comments = []
                 enum_name = util.FlavoredName(filename_parts[0]).get()
+                enum_raw_values = {}
                 enum_values = []
                 enum_cases = []
                 value_number = -1
@@ -1762,8 +1769,21 @@ def main():
 
                         value_count += 1
 
+                        if value_name.space in enum_raw_values:
+                            print(f'Error: Duplicate value "{value_name.space}" in enum file "{filename}" in backend {mod_path}')
+                            sys.exit(1)
+
+                        enum_raw_values[value_name.space] = value_number
                         enum_values.append(f'    {value_name.camel} = {value_number},{value_comment}\n')
                         enum_cases.append(f'    case {enum_name.camel}::{value_name.camel}: return "{value_name.space}";\n')
+
+                if enum_previous_raw_values != None:
+                    for value_name, value_number in enum_raw_values.items():
+                        if value_name in enum_previous_raw_values and enum_previous_raw_values[value_name] != value_number:
+                            print(f'Error: Invalid change to value "{value_name}" in enum file "{filename}" in backend {mod_path}')
+                            sys.exit(1)
+
+                tfutil.write_file_if_different(os.path.join(mod_path, filename + '.previous'), json.dumps(enum_raw_values))
 
                 with open(os.path.join(mod_path, enum_name.under + '.enum.h'), 'w', encoding='utf-8') as f:
                     f.write(f'// WARNING: This file is generated from "{filename}" by pio_hooks.py\n\n')
