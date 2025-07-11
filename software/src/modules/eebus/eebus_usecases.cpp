@@ -42,7 +42,7 @@ bool NodeManagementUsecase::handle_binding(HeaderType &header, SpineDataTypeHand
             std::optional<FeatureTypeType> feature_type = data->nodemanagementbindingrequestcalltype->bindingRequest->serverFeatureType;
 
             if (check_is_bound(binding_entry.clientAddress.value(), binding_entry.serverAddress.value())) {
-                logger.printfln("A Binding was requested but is already bound");
+                logger.tracefln(eebus.trace_buffer_index, "A Binding was requested but is already bound");
             } else {
                 binding_entry.bindingId = binding_management_entry_list_.bindingManagementEntryData->size();
                 binding_management_entry_list_.bindingManagementEntryData->push_back(binding_entry);
@@ -52,7 +52,7 @@ bool NodeManagementUsecase::handle_binding(HeaderType &header, SpineDataTypeHand
                                                      "Binding request was successful");
             return true;
         }
-        logger.printfln("A Binding was requested but failed");
+        logger.tracefln(eebus.trace_buffer_index, "A Binding was requested but failed");
         EEBUS_USECASE_HELPERS::build_result_data(response,
                                                  EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected,
                                                  "Binding request failed");
@@ -63,7 +63,7 @@ bool NodeManagementUsecase::handle_binding(HeaderType &header, SpineDataTypeHand
         NodeManagementBindingDataType binding_data;
         binding_data.bindingEntry = binding_management_entry_list_.bindingManagementEntryData;
         response["nodeManagementBindingData"] = binding_data;
-        logger.printfln("List of bindings was requested");
+        logger.tracefln(eebus.trace_buffer_index, "List of bindings was requested");
         return true;
     }
     // Binding Release as defined in EEBus SPINE TS ProtocolSpecification 7.3.4
@@ -71,7 +71,8 @@ bool NodeManagementUsecase::handle_binding(HeaderType &header, SpineDataTypeHand
         if (!data->nodemanagementbindingdeletecalltype && data->nodemanagementbindingdeletecalltype->bindingDelete
             && data->nodemanagementbindingdeletecalltype->bindingDelete->clientAddress
             && data->nodemanagementbindingdeletecalltype->bindingDelete->serverAddress) {
-            logger.printfln("A binding release was requested but no binding delete information was provided or request was malformed");
+            logger.tracefln(eebus.trace_buffer_index,
+                            "A binding release was requested but no binding delete information was provided or request was malformed");
             EEBUS_USECASE_HELPERS::build_result_data(response,
                                                      EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected,
                                                      "Binding release failed");
@@ -157,15 +158,17 @@ UseCaseInformationDataType NodeManagementUsecase::get_usecase_information()
 }
 bool NodeManagementUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
-    logger.printfln("NodeManagementUsecase: Handling message with cmdClassifier %d and command %s",
-                    static_cast<int>(header.cmdClassifier.value()), data->function_to_string(data->last_cmd).c_str());
+    logger.tracefln(eebus.trace_buffer_index,
+                    "NodeManagementUsecase: Handling message with cmdClassifier %d and command %s",
+                    static_cast<int>(header.cmdClassifier.value()),
+                    data->function_to_string(data->last_cmd).c_str());
     if (header.cmdClassifier == CmdClassifierType::read && data->last_cmd == SpineDataTypeHandler::Function::nodeManagementUseCaseData) {
         logger.printfln("NodeManagementUsecase: Reading usecase data");
         return read_usecase_data(header, data, response);
     }
     if (header.cmdClassifier == CmdClassifierType::read
         && data->last_cmd == SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryData) {
-            logger.printfln("NodeManagementUsecase: Reading detailed discovery data");
+        logger.printfln("NodeManagementUsecase: Reading detailed discovery data");
         return read_detailed_discovery_data(header, data, response);
     }
     return false;
@@ -182,11 +185,11 @@ bool NodeManagementUsecase::read_usecase_data(HeaderType &header, SpineDataTypeH
     if (!node_management_usecase_data.useCaseInformation->empty()) {
         response["nodeManagementUseCaseData"] = node_management_usecase_data;
         if (response["nodeManagementUseCaseData"].isNull()) {
-            logger.printfln("Error while writing NodeManagementUseCaseData to response");
+            logger.tracefln(eebus.trace_buffer_index, "Error while writing NodeManagementUseCaseData to response");
         }
         return true;
     }
-    logger.printfln("An error occurred while trying to read the NodeManagementUseCaseData");
+    logger.tracefln(eebus.trace_buffer_index, "An error occurred while trying to read the NodeManagementUseCaseData");
     return false;
 }
 bool NodeManagementUsecase::read_detailed_discovery_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) const
@@ -502,20 +505,20 @@ EEBusUseCases::EEBusUseCases()
 void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *data, SpineConnection *connection)
 {
     //TODO: Implement a mutex with waiting so only one message can be processed at a time
-  //  DynamicJsonDocument response = DynamicJsonDocument(8192); // The response document to be filled with the response data
+    //  DynamicJsonDocument response = DynamicJsonDocument(8192); // The response document to be filled with the response data
     response.clear();
     // TODO: Fix the addressing of the usecases. Maybe better address them by entity?
     bool send_response = false;
     if (header.addressDestination->feature == feature_address_node_management) {
-        logger.printfln("EEBus: Received message for NodeManagementUsecase");
+        logger.printfln("Usecases: Received message for NodeManagementUsecase");
         send_response = node_management.handle_message(header, data, response.as<JsonObject>(), connection);
     }
     if (header.addressDestination->feature == feature_address_charging_summary) {
-        logger.printfln("EEBus: Received message for ChargingSummaryUsecase");
+        logger.printfln("Usecases: Received message for ChargingSummaryUsecase");
         send_response = charging_summary.handle_message(header, data, response.as<JsonObject>(), connection);
     }
     if (send_response) {
-        logger.printfln("Sending response");
+        logger.printfln("Usecases: Sending response");
         connection->send_datagram(response.as<JsonVariant>(),
                                   CmdClassifierType::reply,
                                   *header.addressSource,

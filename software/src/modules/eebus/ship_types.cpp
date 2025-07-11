@@ -45,19 +45,19 @@ DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, 
 
     //doc.shrinkToFit(); // Make this a bit smaller
     if (error) {
-        logger.printfln("J2T ShipMessageData Error during JSON deserialization : %s", error.c_str());
+        logger.tracefln(eebus.trace_buffer_index, "J2T ShipMessageData Error during JSON deserialization : %s", error.c_str());
         return DeserializationResult::ERROR;
     }
 
     JsonObject data = doc["data"][0];
 
     if (data.isNull()) {
-        logger.printfln("J2T ShipMessageData Error: No data object found");
+        logger.tracefln(eebus.trace_buffer_index, "J2T ShipMessageData Error: No data object found");
 
         return DeserializationResult::ERROR;
     }
     if (doc["data"][0]["header"][0]["protocolId"] == nullptr || doc["data"][1]["payload"] == nullptr) {
-        logger.printfln("J2T ShipMessageData Error: Data invalid");
+        logger.tracefln(eebus.trace_buffer_index, "J2T ShipMessageData Error: Data invalid");
         valid = false;
         return DeserializationResult::ERROR;
     }
@@ -82,9 +82,9 @@ String ShipMessageDataType::type_to_json(ShipConnection::Message &message_outgoi
     JsonObject data = doc["data"].to<JsonObject>();
     data["header"]["protocolId"] = protocol_id;
     bool payload_loaded = data["payload"].set(payload);
-    logger.printfln("Payload: %s", payload.as<String>().c_str());
+    logger.tracefln(eebus.trace_buffer_index, "Payload: %s", payload.as<String>().c_str());
     if (!payload_loaded) {
-        logger.printfln("J2T ShipMessageData Error: Payload invalid");
+        logger.tracefln(eebus.trace_buffer_index, "J2T ShipMessageData Error: Payload invalid");
         return "";
     }
 
@@ -143,16 +143,19 @@ DeserializationResult ShipMessageAccessMethodsRequest::json_to_type(uint8_t *dat
 
 {
     DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
-    logger.printfln("J2T ShipMessageAccessMethodsRequest json: %s", data);
+    logger.tracefln(eebus.trace_buffer_index, "J2T ShipMessageAccessMethodsRequest json: %s", data);
     DeserializationError error = deserializeJson(doc, data, length);
     //doc.shrinkToFit(); // Make this a bit smaller
     if (error) {
-        logger.printfln("J2T ShipMessageAccessMethodsRequest Error during JSON deserialization : %s", error.c_str());
+        logger.tracefln(eebus.trace_buffer_index,
+                        "J2T ShipMessageAccessMethodsRequest Error during JSON deserialization : %s",
+                        error.c_str());
         return DeserializationResult::ERROR;
     }
     JsonObject accessMethodsRequest = doc["accessMethodsRequest"];
     if (accessMethodsRequest.isNull()) {
-        logger.printfln("J2T ShipMessageAccessMethodsShipMessageAccessMethodsRequest Error: Invalid accessMethodsRequest");
+        logger.tracefln(eebus.trace_buffer_index,
+                        "J2T ShipMessageAccessMethodsShipMessageAccessMethodsRequest Error: Invalid accessMethodsRequest");
         return DeserializationResult::ERROR;
     }
     request = accessMethodsRequest["request"].as<String>();
@@ -166,7 +169,7 @@ String ShipMessageAccessMethodsRequest::type_to_json()
     String output;
     //doc.shrinkToFit();
     serializeJson(doc, output);
-    logger.printfln("T2J ShipMessageAccessMethods json: %s", output.c_str());
+    logger.tracefln(eebus.trace_buffer_index, "T2J ShipMessageAccessMethods json: %s", output.c_str());
     return output;
 }
 
@@ -176,12 +179,15 @@ DeserializationResult ShipMessageAccessMethods::json_to_type(uint8_t *data, size
     DeserializationError error = deserializeJson(doc, data, length);
     //doc.shrinkToFit(); // Make this a bit smaller
     if (error) {
-        logger.printfln("J2T ShipMessageAccessMethods Error during JSON deserialization : %s. Data: %s", error.c_str(), data);
+        logger.tracefln(eebus.trace_buffer_index,
+                        "J2T ShipMessageAccessMethods Error during JSON deserialization : %s. Data: %s",
+                        error.c_str(),
+                        data);
         return DeserializationResult::ERROR;
     }
     JsonObject accessMethods = doc["accessMethods"];
     if (accessMethods.isNull() || accessMethods["id"] == nullptr) {
-        logger.printfln("J2T ShipMessageAccessMethods Error: Invalid accessMethods");
+        logger.tracefln(eebus.trace_buffer_index, "J2T ShipMessageAccessMethods Error: Invalid accessMethods");
         return DeserializationResult::ERROR;
     }
     id = accessMethods["id"].as<String>();
@@ -212,7 +218,7 @@ String ShipMessageAccessMethods::type_to_json()
     String output;
     //doc.shrinkToFit();
     serializeJson(doc, output);
-    logger.printfln("T2J ShipMessageAccessMethods json: %s", output.c_str());
+    logger.tracefln(eebus.trace_buffer_index, "T2J ShipMessageAccessMethods json: %s", output.c_str());
     return output;
 }
 } // namespace SHIP_TYPES
