@@ -142,7 +142,7 @@ void DeserializeOptionalField(JsonObject *data, const char *field_name, bool *fi
 DeserializationResult ShipMessageAccessMethodsRequest::json_to_type(uint8_t *data, size_t length)
 
 {
-    DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
+    DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE}; // TODO: Use a global json Doc
     logger.tracefln(eebus.trace_buffer_index, "J2T ShipMessageAccessMethodsRequest json: %s", data);
     DeserializationError error = deserializeJson(doc, data, length);
     //doc.shrinkToFit(); // Make this a bit smaller
@@ -163,7 +163,7 @@ DeserializationResult ShipMessageAccessMethodsRequest::json_to_type(uint8_t *dat
 }
 String ShipMessageAccessMethodsRequest::type_to_json()
 {
-    DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
+    DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE}; // TODO: Use a global json Doc
     JsonObject accessMethodsRequest = doc["accessMethodsRequest"].to<JsonObject>();
     accessMethodsRequest["request"] = request;
     String output;
@@ -175,7 +175,7 @@ String ShipMessageAccessMethodsRequest::type_to_json()
 
 DeserializationResult ShipMessageAccessMethods::json_to_type(uint8_t *data, size_t length)
 {
-    DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
+    DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE}; // TODO: Use a global json Doc
     DeserializationError error = deserializeJson(doc, data, length);
     //doc.shrinkToFit(); // Make this a bit smaller
     if (error) {
@@ -198,7 +198,7 @@ DeserializationResult ShipMessageAccessMethods::json_to_type(uint8_t *data, size
 }
 String ShipMessageAccessMethods::type_to_json()
 {
-    DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
+    DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE}; // TODO: Use a global json Doc
     JsonArray json_am = doc.createNestedArray("accessMethods");
     JsonObject access_methods = json_am.createNestedObject();
     access_methods["id"] = id;

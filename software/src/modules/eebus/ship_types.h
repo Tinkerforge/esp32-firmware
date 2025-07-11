@@ -64,7 +64,7 @@ namespace SHIP_TYPES {
         CoolString extension_string{};
 
 
-        DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
+        DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE}; // TODO: Use a global json doc
         DeserializationResult json_to_type(uint8_t *data, size_t length, bool compatiblity_mode = false);
         String type_to_json(ShipConnection::Message &message_outgoing);
 
