@@ -925,7 +925,7 @@ void ShipConnection::state_done()
 
     auto protocol_state = get_protocol_state();
 
-    logger.tracefln(eebus.trace_buffer_index, eebus.trace_buffer_index, "state_done: protocol_state %d", static_cast<int>(protocol_state));
+    logger.tracefln(eebus.trace_buffer_index, "state_done: protocol_state %d", static_cast<int>(protocol_state));
     switch (protocol_state) {
         case ProtocolState::Data: {
             SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
@@ -966,8 +966,8 @@ void ShipConnection::state_done()
         }
         case ProtocolState::Terminate: {
             logger.printfln("SHIP Connection Close requested. Closing connection.");
-            // TODO: Move all this json stuff into another function/type
-            DynamicJsonDocument doc{1024};
+
+            DynamicJsonDocument doc{1024}; // TODO: Move all this json stuff into another function/type
 
             JsonArray connectionClose = doc["connectionClose"].to<JsonArray>();
             connectionClose[0]["phase"] = "announce";
@@ -1088,7 +1088,7 @@ void ShipConnection::json_to_type_connection_hello(ConnectionHelloType *connecti
 {
     //logger.printfln("J2T ConnectionHello json: %s", &message_incoming->data[1]);
 
-    DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
+    DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE}; // TODO: use a global json Doc
     DeserializationError error = deserializeJson(json_doc, &message_incoming->data[1], message_incoming->length - 1);
     if (error) {
         logger.tracefln(eebus.trace_buffer_index, "ConnectionHello: Error during JSON deserialization: %s", error.c_str());
@@ -1127,7 +1127,7 @@ void ShipConnection::json_to_type_connection_hello(ConnectionHelloType *connecti
 void ShipConnection::type_to_json_connection_hello(ConnectionHelloType *connection_hello)
 {
     // TODO: Move this json_doc to somehwere else or let it use something central
-    DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
+    DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE}; // TODO: use a global json Doc
     JsonArray json_hello = json_doc.createNestedArray("connectionHello");
 
     JsonObject phase = json_hello.createNestedObject();
@@ -1154,7 +1154,7 @@ void ShipConnection::json_to_type_handshake_type(ProtocolHandshakeType *handshak
 {
     logger.tracefln(eebus.trace_buffer_index, "J2T ProtocolHandshakeType json: %s", &message_incoming->data[1]);
 
-    DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
+    DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE}; // TODO: Use a global json Doc
     DeserializationError error = deserializeJson(json_doc, &message_incoming->data[1], message_incoming->length - 1);
     if (error) {
         logger.tracefln(eebus.trace_buffer_index, "Protocolhandshake: Error during JSON deserialization: %s", error.c_str());
@@ -1183,8 +1183,7 @@ void ShipConnection::json_to_type_handshake_type(ProtocolHandshakeType *handshak
 
 void ShipConnection::type_to_json_handshake_type(ProtocolHandshakeType *handshake_type)
 {
-    //TODO: Change this json doc to use another DynamicJsonDocument
-    DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
+    DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE}; // TODO: use a global json Doc
     JsonArray json_handshake = json_doc.createNestedArray("messageProtocolHandshake");
 
     JsonObject ht = json_handshake.createNestedObject();
@@ -1214,7 +1213,7 @@ void ShipConnection::sme_protocol_abort_procedure(ProtocolAbortReason reason)
 {
     task_scheduler.cancel(protocol_handshake_timer);
 
-    DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
+    DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE}; // TODO: use a global json Doc
     JsonArray json_handshake = json_doc.createNestedArray("messageProtocolHandshakeError");
 
     JsonObject ht = json_handshake.createNestedObject();
@@ -1231,7 +1230,7 @@ void ShipConnection::sme_protocol_abort_procedure(ProtocolAbortReason reason)
 
 void ShipConnection::to_json_access_methods_type()
 {
-    DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
+    DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE}; // TODO: use a global json Doc
     JsonArray json_am = json_doc.createNestedArray("accessMethods");
 
     JsonObject access_methods = json_am.createNestedObject();

@@ -29,6 +29,7 @@
 #include "modules/ws/web_sockets.h"
 //#include "ship_types.h"
 #include "spine_connection.h"
+#include "tools/malloc.h"
 
 // Values and Timeouts as defined by SHIP document
 #define SHIP_CONNECTION_CMI_TIMEOUT 30_s // SHIP 13.4.3 Timneout procedure
@@ -131,14 +132,18 @@ public:
         uint8_t data[SHIP_CONNECTION_MAX_BUFFER_SIZE]; // TODO: Find good size
         size_t length;
     };
-    std::unique_ptr<Message, decltype(std::free) *> message_incoming = std::unique_ptr<Message, decltype(std::free) *>(
+    unique_ptr_any<Message> message_incoming = make_unique_psram<Message>();
+    unique_ptr_any<Message> message_outgoing = make_unique_psram<Message>();
+
+    DynamicJsonDocument incomig_json_doc{SHIP_CONNECTION_MAX_JSON_SIZE}; // TODO: Move this to PSRAM with a custom allocator
+    /*std::unique_ptr<Message, decltype(std::free) *> message_incoming = std::unique_ptr<Message, decltype(std::free) *>(
         static_cast<Message *>(
             heap_caps_calloc_prefer(sizeof(Message), sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL)),
         heap_caps_free);
     std::unique_ptr<Message, decltype(std::free) *> message_outgoing = std::unique_ptr<Message, decltype(std::free) *>(
         static_cast<Message *>(
             heap_caps_calloc_prefer(sizeof(Message), sizeof(char), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL)),
-        heap_caps_free);
+        heap_caps_free);*/
 
     // Set the ws_client, role and start the state machine that will branch into ClientWait or ServerWait depending on the role
     ShipConnection(WebSocketsClient ws_client, const Role role, CoolString ski) : ws_client(ws_client), role(role), peer_ski(std::move(ski))
