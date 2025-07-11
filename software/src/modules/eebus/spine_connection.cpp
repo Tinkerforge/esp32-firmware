@@ -41,15 +41,15 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
         datagram["datagram"][1]["payload"][0]["cmd"][0][0]; // The payload should not be in an array but spine-go does these strange things
 
     if (!received_header.cmdClassifier || !received_header.addressSource || received_payload.isNull()) {
-        logger.printfln("SPINE: ERROR: No datagram header or payload found");
+        logger.tracefln(eebus.trace_buffer_index, "SPINE: ERROR: No datagram header or payload found");
         if (!received_header.cmdClassifier) {
-            logger.printfln("SPINE: ERROR: No cmdClassifier found in the received header");
+            logger.tracefln(eebus.trace_buffer_index, "SPINE: ERROR: No cmdClassifier found in the received header");
         }
         if (!received_header.addressSource) {
-            logger.printfln("SPINE: ERROR: No addressSource found in the received header");
+            logger.tracefln(eebus.trace_buffer_index, "SPINE: ERROR: No addressSource found in the received header");
         }
         if (received_payload.isNull()) {
-            logger.printfln("SPINE: ERROR: No payload found in the received datagram");
+            logger.tracefln(eebus.trace_buffer_index, "SPINE: ERROR: No payload found in the received datagram");
             //logger.printfln("SPINE: Payload section: %s", datagram["datagram"][1]["payload"][0].as<String>().c_str());
         } else {
             //logger.printfln("Received Payload: %s", received_payload.as<String>().c_str());
@@ -61,7 +61,7 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
     check_message_counter();
     SpineDataTypeHandler::Function called_function = eebus.data_handler->handle_cmd(received_payload);
     if (called_function == SpineDataTypeHandler::Function::None) {
-        logger.printfln("SPINE: No function found for the received payload");
+        logger.tracefln(eebus.trace_buffer_index, "SPINE: No function found for the received payload");
         //logger.printfln("SPINE: Payload: %s", received_payload.as<String>().c_str());
         return false;
     }
@@ -82,7 +82,10 @@ void SpineConnection::send_datagram(JsonVariantConst payload,
                                     const FeatureAddressType &receiver,
                                     bool require_ack)
 {
-    logger.printfln("SPINE: Sending datagram with cmdClassifier %d", static_cast<int>(cmd_classifier));
+    logger.tracefln(eebus.trace_buffer_index,
+                    "SPINE: Sending datagram. cmdClassifier: %d, Content: %s",
+                    static_cast<int>(cmd_classifier),
+                    payload.as<String>().c_str());
     response_doc.clear();
     HeaderType header;
     header.ackRequest = require_ack;
@@ -103,7 +106,8 @@ void SpineConnection::check_message_counter()
 {
     // TODO: Implement a proper message counter check
     if (received_header.msgCounter && received_header.msgCounter.value() < msg_counter_received) {
-        logger.printfln("SPINE Message counter is lower than expected. The peer might have technical issues or has been rebooted.");
+        logger.tracefln(eebus.trace_buffer_index,
+                        "SPINE Message counter is lower than expected. The peer might have technical issues or has been rebooted.");
         msg_counter_received = received_header.msgCounter.value();
         msg_counter_error_count++;
     } else {
