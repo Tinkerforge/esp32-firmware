@@ -66,7 +66,7 @@ public:
     Ship ship;
     EEBusUseCases usecases{};
 
-    // To save memory the SpineDataTypeHandler is allocated to SPIRAM if its available
+    // To save memory the SpineDataTypeHandler is allocated to PSRAM if its available
     unique_ptr_any<SpineDataTypeHandler> data_handler = make_unique_psram<SpineDataTypeHandler>();
 
     /**

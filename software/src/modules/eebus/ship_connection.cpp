@@ -900,7 +900,7 @@ void ShipConnection::send_data_message(JsonVariant payload)
                         &message_outgoing->data[1]);
         send_current_outgoing_message();
     } else {
-        logger.printfln("send_data_message: Connection not in done state. Actual State: %d", (int)state);
+        logger.tracefln(eebus.trace_buffer_index, "send_data_message: Connection not in done state. Actual State: %d", (int)state);
     }
 }
 
@@ -925,14 +925,15 @@ void ShipConnection::state_done()
 
     auto protocol_state = get_protocol_state();
 
-    logger.tracefln(eebus.trace_buffer_index, "state_done: protocol_state %d", static_cast<int>(protocol_state));
+    logger.tracefln(eebus.trace_buffer_index, eebus.trace_buffer_index, "state_done: protocol_state %d", static_cast<int>(protocol_state));
     switch (protocol_state) {
         case ProtocolState::Data: {
             SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
 
             if (data.json_to_type(&message_incoming->data[1], message_incoming->length - 1, false)
                 == SHIP_TYPES::DeserializationResult::SUCCESS) {
-                logger.printfln("DATA received: %d (len %d)-> %s",
+                logger.tracefln(eebus.trace_buffer_index,
+                                "DATA received: %d (len %d)-> %s",
                                 message_incoming->data[0],
                                 message_incoming->length,
                                 &message_incoming->data[1]);
