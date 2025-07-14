@@ -573,14 +573,19 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
     override async sendSave(t: "remote_access/config", cfg: config): Promise<void> {
         let enable = cfg.enable;
 
-        // Make the config writeable
-        const chargeTrackerConfig = {...API.get("charge_tracker/config")};
-        const emailUser = this.state.removeUsers.find(u => u === chargeTrackerConfig.user);
-        if (emailUser !== undefined) {
-            chargeTrackerConfig.enable_send = false;
-            chargeTrackerConfig.user = -1;
-            API.save("charge_tracker/config", chargeTrackerConfig, () => __("remote_access.script.save_failed"));
+        // Remove PDF send configurations for removed users from charge tracker
+        if (this.state.removeUsers.length > 0) {
+            const chargeTrackerConfig = {...API.get("charge_tracker/config")};
+            const filteredRemoteUploadConfigs = chargeTrackerConfig.remote_upload_configs.filter(
+                config => !this.state.removeUsers.find(u => u == config.user_id)
+            );
+
+            if (filteredRemoteUploadConfigs.length !== chargeTrackerConfig.remote_upload_configs.length) {
+                chargeTrackerConfig.remote_upload_configs = filteredRemoteUploadConfigs;
+                API.save("charge_tracker/config", chargeTrackerConfig, () => __("remote_access.script.save_failed"));
+            }
         }
+
         for (const id of this.state.removeUsers) {
             API.call("remote_access/remove_user", {
                 id: id,
@@ -605,6 +610,13 @@ export class RemoteAccess extends ConfigComponent<"remote_access/config", {statu
     }
 
     override async sendReset(topic: "remote_access/config") {
+        // Remove all PDF send configurations from charge tracker since all remote access users will be removed
+        const chargeTrackerConfig = {...API.get("charge_tracker/config")};
+        if (chargeTrackerConfig.remote_upload_configs.length > 0) {
+            chargeTrackerConfig.remote_upload_configs = [];
+            API.save("charge_tracker/config", chargeTrackerConfig, () => __("remote_access.script.save_failed"));
+        }
+
         for (const user of this.state.users) {
             API.call("remote_access/remove_user", {
                 id: user.id
