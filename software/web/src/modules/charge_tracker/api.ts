@@ -11,12 +11,21 @@ interface Charge {
     energy_charged: number;
 }
 
+//#if MODULE_REMOTE_ACCESS_AVAILABLE
+interface remote_upload_config {
+    user_filter: number;
+    file_type: FileType;
+    english: boolean;
+    letterhead: string;
+    user_id: number;
+}
+//#endif
+
 export interface config {
     electricity_price: number;
 //#if MODULE_REMOTE_ACCESS_AVAILABLE
-    enable_send: boolean;
-    send_file_type: FileType,
-    user: number;
+    remote_upload_configs: remote_upload_config[];
+    last_upload_timestamp_min: number
 //#endif
 }
 
