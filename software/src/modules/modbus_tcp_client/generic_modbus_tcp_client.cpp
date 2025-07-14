@@ -43,6 +43,8 @@ void GenericModbusTCPClient::connect_callback()
 void GenericModbusTCPClient::start_generic_read()
 {
     if (connected_client == nullptr) {
+        generic_read_request.result = TFModbusTCPClientTransactionResult::NotConnected;
+        generic_read_request.done_callback();
         return;
     }
 

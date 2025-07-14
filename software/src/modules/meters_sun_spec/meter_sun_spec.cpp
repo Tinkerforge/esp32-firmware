@@ -145,6 +145,14 @@ void MeterSunSpec::connect_callback()
 void MeterSunSpec::disconnect_callback()
 {
     read_allowed = false;
+
+    task_scheduler.cancel(this->scan_task_id);
+    this->scan_task_id = 0;
+
+    free(generic_read_request.data[0]);
+
+    generic_read_request.data[0] = nullptr;
+    generic_read_request.data[1] = nullptr;
 }
 
 bool MeterSunSpec::alloc_read_buffer(size_t model_regcount)
@@ -325,7 +333,10 @@ void MeterSunSpec::read_done_callback()
 
 void MeterSunSpec::scan_start_delay()
 {
-    task_scheduler.scheduleOnce([this](){
+    task_scheduler.cancel(this->scan_task_id);
+
+    this->scan_task_id = task_scheduler.scheduleOnce([this](){
+        this->scan_task_id = 0;
         this->scan_start();
     }, 10_s);
 }
@@ -391,6 +402,11 @@ void MeterSunSpec::scan_next()
     trace_response();
 
     if (generic_read_request.result != TFModbusTCPClientTransactionResult::Success) {
+        if (generic_read_request.result == TFModbusTCPClientTransactionResult::NotConnected) {
+            logger.printfln_meter("Connection got lost while scanning %s:%u:%u", host.c_str(), port, device_address);
+            return;
+        }
+
         if (generic_read_request.result == TFModbusTCPClientTransactionResult::Timeout) {
             auto timeout = errors->get("timeout");
             timeout->updateUint(timeout->asUint() + 1);

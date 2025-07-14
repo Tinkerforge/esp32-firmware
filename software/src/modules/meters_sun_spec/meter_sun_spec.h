@@ -93,6 +93,7 @@ private:
     ModbusDeserializer scan_deserializer;
     bool scan_device_found;
     uint16_t scan_model_counter;
+    uint64_t scan_task_id = 0;
 
     uint32_t quirks = 0;
     IMetersSunSpecParser *model_parser;
