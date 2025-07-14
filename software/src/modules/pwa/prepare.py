@@ -43,5 +43,5 @@ tfutil.specialize_template('manifest.json', 'manifest.json', {
     '{{{big_icon}}}': 'data:image/png;base64, ' + icon_big,
 })
 
-with open('manifest.json', 'r', encoding='utf-8') as f:
-    util.embed_data_with_digest(f.read().encode('utf-8'), '.', 'manifest', 'char', 'ssize_t')
+with open('manifest.json', 'rb') as f:
+    util.embed_data_with_digest(f.read(), '.', 'manifest', 'char', 'ssize_t')
