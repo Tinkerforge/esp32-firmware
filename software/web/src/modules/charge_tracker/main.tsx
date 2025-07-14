@@ -21,6 +21,7 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
+import * as options from "../../options";
 import { h, Fragment, Component, RefObject } from "preact";
 import { __, get_active_language } from "../../ts/translation";
 import { FormRow } from "../../ts/components/form_row";
@@ -187,8 +188,8 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         const users_config = API.get('users/config');
 
         return remote_upload_configs.map((send_config, index) => {
-            const user_filter_str = send_config.user_filter === -2 ? "All Users" :
-                                  send_config.user_filter === -1 ? "Deleted Users" :
+            const user_filter_str = send_config.user_filter === -2 ? __("charge_tracker.script.all_users") :
+                                  send_config.user_filter === -1 ? __("charge_tracker.script.deleted_users") :
                                   this.get_user_display_name(send_config.user_filter, users_config.users);
 
             const file_type_str = send_config.file_type === 0 ? "PDF" : "CSV";
@@ -221,7 +222,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 },
                 onEditSubmit: async () => {
                     const remote_upload_configs = this.state.remote_upload_configs;
-                    remote_upload_configs.push(this.state.new_remote_upload_config);
+                    remote_upload_configs[index] = this.state.new_remote_upload_config;
                     this.setDirty(true);
                 },
             };
@@ -271,7 +272,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         const remote_access_user_items: [string, string][] = remote_access_config.map(u => [u.id.toString(), u.email]);
 
         return <>
-            <FormRow label="User Filter">
+            <FormRow label={__("charge_tracker.content.user_filter_label")}>
                 <InputSelect
                     value={this.state.new_remote_upload_config.user_filter.toString()}
                     onValue={v => this.setState({
@@ -281,13 +282,13 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         }
                     })}
                     items={[
-                        ["-2", "All Users"],
-                        ["-1", "Deleted Users"],
+                        ["-2", __("charge_tracker.script.all_users")],
+                        ["-1", __("charge_tracker.script.deleted_users")],
                         ...user_items
                     ]}
                 />
             </FormRow>
-            <FormRow label="File Type">
+            <FormRow label={__("charge_tracker.content.file_type_label")}>
                 <InputSelect
                     value={this.state.new_remote_upload_config.file_type.toString()}
                     onValue={v => this.setState({
@@ -302,7 +303,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     ]}
                 />
             </FormRow>
-            <FormRow label="English">
+            <FormRow label={__("charge_tracker.content.english_label")}>
                 <Switch
                     checked={this.state.new_remote_upload_config.english}
                     onClick={() => this.setState({
@@ -313,7 +314,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     })}
                 />
             </FormRow>
-            <FormRow label="Letterhead">
+            <FormRow label={__("charge_tracker.content.letterhead_label")}>
                 <textarea
                     class="form-control"
                     value={this.state.new_remote_upload_config.letterhead}
@@ -329,7 +330,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     rows={3}
                 />
             </FormRow>
-            <FormRow label="User ID">
+            <FormRow label={__("charge_tracker.content.target_user")}>
                 <InputSelect
                     value={this.state.new_remote_upload_config.user_id.toString()}
                     onValue={v => this.setState({
@@ -501,18 +502,18 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         let sendEmailComponent = <></>;
 //#if MODULE_REMOTE_ACCESS_AVAILABLE
         sendEmailComponent = <>
-                <FormSeparator heading="Charge Log Send Configuration"/>
-                <FormRow label="Charge Log Send Configuration" label_muted="Manage charge log send configurations">
+                <FormSeparator heading={__("charge_tracker.content.charge_log_send_config")}/>
+                <FormRow label={__("charge_tracker.content.charge_log_send_config")}>
                     <Table
                         columnNames={[
-                            "User Filter",
-                            "File Type",
-                            "Target User"
+                            __("charge_tracker.content.user_filter"),
+                            __("charge_tracker.content.file_type"),
+                            __("charge_tracker.content.target_user")
                         ]}
                         rows={this.get_remote_upload_config_table_rows()}
-                        addEnabled={true}
-                        addMessage="Add new charge log send configuration"
-                        addTitle="Add Charge Log Send"
+                        addEnabled={state.remote_upload_configs.length < options.REMOTE_ACCESS_MAX_USERS}
+                        addTitle={__("charge_tracker.content.charge_log_send_add_modal_title")}
+                        addMessage={__("charge_tracker.content.charge_log_send_add_message")(state.remote_upload_configs.length, options.REMOTE_ACCESS_MAX_USERS)}
                         onAddShow={() => this.onAddChargeShow()}
                         onAddGetChildren={() => this.onAddChargeGetChildren()}
                         onAddSubmit={() => this.onAddChargeSubmit()}
