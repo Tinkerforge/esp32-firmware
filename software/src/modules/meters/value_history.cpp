@@ -37,22 +37,20 @@ void ValueHistory::setup()
     history.clear();
     live.clear();
 
-    int32_t val_min = INT32_MIN;
-
     for (size_t i = 0; i < history.size(); ++i) {
         //float f = 5000.0 * sin(PI/120.0 * i) + 5000.0;
         // Use negative state to mark that these are pre-filled.
-        history.push(val_min);
+        history.push(INT32_MIN);
     }
 
     for (size_t i = 0; i < live.size(); ++i) {
         //float f = 5000.0 * sin(PI/120.0 * i) + 5000.0;
         // Use negative state to mark that these are pre-filled.
-        live.push(val_min);
+        live.push(INT32_MIN);
     }
 
     chars_per_value = max(String(VALUE_HISTORY_VALUE_MIN).length(), String(VALUE_HISTORY_VALUE_MAX).length());
-    // val_min values are replaced with null -> require at least 4 chars per value.
+    // INT32_MIN values are replaced with null -> require at least 4 chars per value.
     chars_per_value = max(4U, chars_per_value);
     // For ',' between the values.
     ++chars_per_value;
@@ -112,8 +110,7 @@ void ValueHistory::add_sample(float sample)
 
 void ValueHistory::tick(micros_t now, bool update_history, int32_t *live_sample, int32_t *history_sample)
 {
-    int32_t val_min = INT32_MIN;
-    int32_t live_val = val_min;
+    int32_t live_val = INT32_MIN;
 
     if (sample_count > 0) {
         live_val = clamp(static_cast<int32_t>(VALUE_HISTORY_VALUE_MIN),
@@ -145,18 +142,20 @@ void ValueHistory::tick(micros_t now, bool update_history, int32_t *live_sample,
 
     ++all_samples_this_interval;
 
-    if (live_val != val_min) {
+    if (live_val != INT32_MIN) {
         ++valid_samples_this_interval;
         sum_this_interval += live_val;
     }
 
-    *history_sample = val_min;
+    *history_sample = INT32_MIN;
 
     if (update_history) {
         int32_t history_val;
 
         if (valid_samples_this_interval == 0) {
-            history_val = val_min; // TODO push 0 or intxy_t min here? intxy_t min will be translated into null when sending as json. However we document that there is only at most one block of null values at the start of the array indicating a reboot
+            // FIXME: INT32_MIN values are replaced with null. However we document that there is only
+            //        at most one block of null values at the start of the array indicating a reboot
+            history_val = INT32_MIN;
         } else {
             history_val = static_cast<int32_t>(sum_this_interval / valid_samples_this_interval);
         }
@@ -186,11 +185,10 @@ void ValueHistory::format_live(micros_t now, StringBuilder *sb)
 
 void ValueHistory::format_live_samples(StringBuilder *sb)
 {
-    int32_t val_min = INT32_MIN;
     int32_t val;
 
     if (live.peek(&val)) {
-        if (val == val_min) {
+        if (val == INT32_MIN) {
             sb->puts("null");
         } else {
             sb->printf("%d", static_cast<int>(val));
@@ -199,7 +197,7 @@ void ValueHistory::format_live_samples(StringBuilder *sb)
         size_t used = live.used();
 
         for (size_t i = 1; i < used && live.peek_offset(&val, i) && sb->getRemainingLength() > 0; ++i) {
-            if (val == val_min) {
+            if (val == INT32_MIN) {
                 sb->puts(",null");
             } else {
                 sb->printf(",%d", static_cast<int>(val));
@@ -217,11 +215,10 @@ void ValueHistory::format_history(micros_t now, StringBuilder *sb)
 
 void ValueHistory::format_history_samples(StringBuilder *sb)
 {
-    int32_t val_min = INT32_MIN;
     int32_t val;
 
     if (history.peek(&val)) {
-        if (val == val_min) {
+        if (val == INT32_MIN) {
             sb->puts("null");
         } else {
             sb->printf("%d", static_cast<int>(val));
@@ -230,7 +227,7 @@ void ValueHistory::format_history_samples(StringBuilder *sb)
         size_t used = history.used();
 
         for (size_t i = 1; i < used && history.peek_offset(&val, i) && sb->getRemainingLength() > 0; ++i) {
-            if (val == val_min) {
+            if (val == INT32_MIN) {
                 sb->puts(",null");
             } else {
                 sb->printf(",%d", static_cast<int>(val));

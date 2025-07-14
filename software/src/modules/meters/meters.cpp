@@ -298,7 +298,7 @@ void Meters::setup()
     generators.shrink_to_fit();
 
     history_chars_per_value = max(String(VALUE_HISTORY_VALUE_MIN).length(), String(VALUE_HISTORY_VALUE_MAX).length());
-    // val_min values are replaced with null -> require at least 4 chars per value.
+    // INT32_MIN values are replaced with null -> require at least 4 chars per value.
     history_chars_per_value = max(4U, history_chars_per_value);
     // For ',' between the values.
     ++history_chars_per_value;
@@ -310,7 +310,6 @@ void Meters::setup()
         int32_t live_samples[OPTIONS_METERS_MAX_SLOTS()];
         int32_t history_samples[OPTIONS_METERS_MAX_SLOTS()];
         bool valid_samples[OPTIONS_METERS_MAX_SLOTS()];
-        int32_t val_min = INT32_MIN;
         StringBuilder sb;
 
         for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
@@ -342,7 +341,7 @@ void Meters::setup()
                 if (!valid_samples[slot]) {
                     sb.printf(slot == 0 ? "[%s]" : ",[%s]", "");
                 }
-                else if (live_samples[slot] == val_min) {
+                else if (live_samples[slot] == INT32_MIN) {
                     sb.printf(slot == 0 ? "[%s]" : ",[%s]", "null");
                 }
                 else {
@@ -377,7 +376,7 @@ void Meters::setup()
                     if (!valid_samples[slot]) {
                         sb.printf(slot == 0 ? "[%s]" : ",[%s]", "");
                     }
-                    else if (history_samples[slot] == val_min) {
+                    else if (history_samples[slot] == INT32_MIN) {
                         sb.printf(slot == 0 ? "[%s]" : ",[%s]", "null");
                     }
                     else {
