@@ -34,6 +34,7 @@ import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { InputFloat } from "../../ts/components/input_float";
 import { SubPage } from "../../ts/components/sub_page";
+import { Table, TableRow } from "../../ts/components/table";
 import { useMemo } from "preact/hooks";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
@@ -59,6 +60,13 @@ interface S {
     csv_flavor: "excel" | "rfc4180";
     show_spinner: boolean;
     last_charges: Readonly<Charge[]>;
+    new_remote_upload_config: {
+        user_filter: number;
+        file_type: number;
+        english: boolean;
+        letterhead: string;
+        user_id: number;
+    };
 }
 
 type ChargeTrackerState = S & API.getType['charge_tracker/state'];
@@ -128,9 +136,14 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                   csv_flavor: 'excel',
                   start_date: new Date(NaN),
                   end_date: new Date(NaN),
-                  enable_send: false,
-                  send_file_type: 0,
-                  user: 0,
+                  remote_upload_configs: [],
+                  new_remote_upload_config: {
+                      user_filter: -2,
+                      file_type: 0,
+                      english: false,
+                      letterhead: "",
+                      user_id: 0,
+                  },
               });
 
         util.addApiEventListener('users/config', () => {
@@ -152,9 +165,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
             let config = API.get('charge_tracker/config');
             this.setState({
                 electricity_price: config.electricity_price,
-                enable_send: config.enable_send,
-                send_file_type: config.send_file_type,
-                user: config.user
+                remote_upload_configs: config.remote_upload_configs,
             });
         });
 
@@ -169,6 +180,168 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
 
         return charges.map(c => <TrackedCharge charge={c} users={users_config.users} electricity_price={price}/>)
                       .reverse();
+    }
+
+    get_remote_upload_config_table_rows(): TableRow[] {
+        const remote_upload_configs = this.state.remote_upload_configs;
+        const users_config = API.get('users/config');
+
+        return remote_upload_configs.map((send_config, index) => {
+            const user_filter_str = send_config.user_filter === -2 ? "All Users" :
+                                  send_config.user_filter === -1 ? "Deleted Users" :
+                                  this.get_user_display_name(send_config.user_filter, users_config.users);
+
+            const file_type_str = send_config.file_type === 0 ? "PDF" : "CSV";
+            const target_user_str = this.get_remote_access_user_email(send_config.user_id, API.get("remote_access/config").users);
+
+            return {
+                key: `remote_upload_config_${index}`,
+                columnValues: [
+                    user_filter_str,
+                    file_type_str,
+                    target_user_str
+                ],
+                onEditShow: async () => {
+                    this.setState({
+                        new_remote_upload_config: {
+                            user_filter: send_config.user_filter,
+                            file_type: send_config.file_type,
+                            english: send_config.english,
+                            letterhead: send_config.letterhead,
+                            user_id: send_config.user_id,
+                        }
+                    });
+                },
+                onEditGetChildren: () => this.onAddChargeGetChildren(),
+                onRemoveClick: async () => {
+                    const newState = this.state.remote_upload_configs.filter((_, i) => i !== index);
+                    this.setState({remote_upload_configs: newState});
+                    this.setDirty(true);
+                    return true;
+                },
+                onEditSubmit: async () => {
+                    const remote_upload_configs = this.state.remote_upload_configs;
+                    remote_upload_configs.push(this.state.new_remote_upload_config);
+                    this.setDirty(true);
+                },
+            };
+        });
+    }
+
+    get_user_display_name(user_id: number, users: API.getType['users/config']['users']): string {
+        let result = __("charge_tracker.script.unknown_user");
+        let filtered = users.filter(x => x.id == user_id);
+
+        if (user_id != 0 || filtered[0]?.display_name != "Anonymous") {
+            result = __("charge_tracker.script.deleted_user");
+            if (filtered.length == 1)
+                result = filtered[0].display_name;
+        }
+        return result;
+    }
+
+    get_remote_access_user_email(user_id: number, users: API.getType['remote_access/config']['users']): string {
+        const user = users.find(u => u.id === user_id);
+        return user.email
+    }
+
+    async onAddChargeShow() {
+        this.setState({
+            new_remote_upload_config: {
+                user_filter: -2,
+                file_type: 0,
+                english: false,
+                letterhead: "",
+                user_id: 0,
+            }
+        });
+    }
+
+    async onAddChargeSubmit() {
+        const remote_upload_configs = this.state.remote_upload_configs;
+        remote_upload_configs.push(this.state.new_remote_upload_config);
+        this.setState({remote_upload_configs});
+        this.setDirty(true);
+    }
+
+    onAddChargeGetChildren() {
+        const users_config = API.get("users/config").users;;
+        const user_items: [string, string][] = users_config.map(u => [u.id.toString(), u.username]);
+        const remote_access_config = API.get("remote_access/config").users;
+        const remote_access_user_items: [string, string][] = remote_access_config.map(u => [u.id.toString(), u.email]);
+
+        return <>
+            <FormRow label="User Filter">
+                <InputSelect
+                    value={this.state.new_remote_upload_config.user_filter.toString()}
+                    onValue={v => this.setState({
+                        new_remote_upload_config: {
+                            ...this.state.new_remote_upload_config,
+                            user_filter: parseInt(v)
+                        }
+                    })}
+                    items={[
+                        ["-2", "All Users"],
+                        ["-1", "Deleted Users"],
+                        ...user_items
+                    ]}
+                />
+            </FormRow>
+            <FormRow label="File Type">
+                <InputSelect
+                    value={this.state.new_remote_upload_config.file_type.toString()}
+                    onValue={v => this.setState({
+                        new_remote_upload_config: {
+                            ...this.state.new_remote_upload_config,
+                            file_type: parseInt(v)
+                        }
+                    })}
+                    items={[
+                        ["0", "PDF"],
+                        ["1", "CSV"]
+                    ]}
+                />
+            </FormRow>
+            <FormRow label="English">
+                <Switch
+                    checked={this.state.new_remote_upload_config.english}
+                    onClick={() => this.setState({
+                        new_remote_upload_config: {
+                            ...this.state.new_remote_upload_config,
+                            english: !this.state.new_remote_upload_config.english
+                        }
+                    })}
+                />
+            </FormRow>
+            <FormRow label="Letterhead">
+                <textarea
+                    class="form-control"
+                    value={this.state.new_remote_upload_config.letterhead}
+                    onInput={(e) => {
+                        const value = (e.target as HTMLTextAreaElement).value;
+                        this.setState({
+                            new_remote_upload_config: {
+                                ...this.state.new_remote_upload_config,
+                                letterhead: value
+                            }
+                        });
+                    }}
+                    rows={3}
+                />
+            </FormRow>
+            <FormRow label="User ID">
+                <InputSelect
+                    value={this.state.new_remote_upload_config.user_id.toString()}
+                    onValue={v => this.setState({
+                        new_remote_upload_config: {
+                            ...this.state.new_remote_upload_config,
+                            user_id: parseInt(v)
+                        }
+                    })}
+                    items={remote_access_user_items}
+                />
+            </FormRow>
+        </>;
     }
 
     to_csv_line(vals: string[], flavor: 'excel' | 'rfc4180') {
@@ -328,37 +501,24 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
         let sendEmailComponent = <></>;
 //#if MODULE_REMOTE_ACCESS_AVAILABLE
         sendEmailComponent = <>
-                        <FormRow label={__("charge_tracker.content.enable_send")}>
-                            <Switch checked={state.enable_send} onClick={e => this.setState({ enable_send: !this.state.enable_send })} />
-                        </FormRow>
-
-                        <FormRow label={__("charge_tracker.content.send_file_type")}>
-                            <InputSelect
-                                value={state.send_file_type.toString()}
-                                onValue={v => this.setState({ send_file_type: parseInt(v), internal_isDirty: true })}
-                                items={[
-                                    ["0", "PDF"],
-                                    ["1", "CSV"]
-                                ]}
-                            />
-                        </FormRow>
-
-                        <FormRow label={__("charge_tracker.content.send_user")}>
-                            <InputSelect
-                                value={state.user.toString()}
-                                placeholder={__("charge_tracker.content.send_user_placeholder")}
-                                onValue={v => {
-                                    const user = parseInt(v);
-                                    if (user !== -1) {
-                                        this.setState({ enable_send: true });
-                                    }
-                                    this.setState({ user, internal_isDirty: true });
-                                }}
-                                items={API.get("remote_access/config").users.map(u => [u.id.toString(), u.email])}
-                            />
-                        </FormRow>
-        </>;
-
+                <FormSeparator heading="Charge Log Send Configuration"/>
+                <FormRow label="Charge Log Send Configuration" label_muted="Manage charge log send configurations">
+                    <Table
+                        columnNames={[
+                            "User Filter",
+                            "File Type",
+                            "Target User"
+                        ]}
+                        rows={this.get_remote_upload_config_table_rows()}
+                        addEnabled={true}
+                        addMessage="Add new charge log send configuration"
+                        addTitle="Add Charge Log Send"
+                        onAddShow={() => this.onAddChargeShow()}
+                        onAddGetChildren={() => this.onAddChargeGetChildren()}
+                        onAddSubmit={() => this.onAddChargeSubmit()}
+                    />
+                </FormRow>
+            </>
 //#endif
 
         return (
@@ -369,8 +529,6 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         <div class="invalid-feedback">{__("charge_tracker.content.price_invalid")}</div>
                     </FormRow>
                 </ConfigForm>
-
-                {sendEmailComponent}
 
                 <FormSeparator heading={__("charge_tracker.content.download")}/>
 
@@ -464,6 +622,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         </FormRow>
                     </div>
                 </Collapse>
+                {sendEmailComponent}
 
                 <Collapse in={state.file_type == "1"}>
                     <div>
