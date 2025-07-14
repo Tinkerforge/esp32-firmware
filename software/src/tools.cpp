@@ -318,7 +318,7 @@ int remove_separator(const char *const in, char *out)
 {
     int written = 0;
     size_t s = strlen(in);
-    for (int i = 0; i < s; ++i) {
+    for (size_t i = 0; i < s; ++i) {
         if (in[i] == ':')
             continue;
         out[written] = in[i];
