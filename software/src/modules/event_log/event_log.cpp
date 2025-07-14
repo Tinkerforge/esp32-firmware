@@ -110,14 +110,14 @@ void EventLog::register_urls()
     server.on_HTTPThread("/event_log", HTTP_GET, [this](WebServerRequest request) {
         std::lock_guard<std::mutex> lock{event_buf_mutex};
         char chunk_buf[CHUNK_SIZE]; // The HTTP task's stack is large enough.
-        auto used = event_buf.used();
+        const size_t used = event_buf.used();
 
         request.beginChunkedResponse(200);
 
-        for (int index = 0; index < used; index += CHUNK_SIZE) {
+        for (size_t index = 0; index < used; index += CHUNK_SIZE) {
             size_t to_write = std::min(CHUNK_SIZE, used - index);
 
-            for (int i = 0; i < to_write; ++i) {
+            for (size_t i = 0; i < to_write; ++i) {
                 event_buf.peek_offset(chunk_buf + i, index + i);
             }
 

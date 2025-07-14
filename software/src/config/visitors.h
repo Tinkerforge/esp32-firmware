@@ -117,7 +117,7 @@ struct default_validator {
     {
         const auto *slot = x.getSlot();
         const auto *val = x.getVal();
-        const auto size = val->size();
+        const size_t size = val->size();
 
         if (slot->maxElements > 0 && size > slot->maxElements)
             return String("Array had ") + size + " entries, but only " + slot->maxElements + " are allowed.";
@@ -125,7 +125,7 @@ struct default_validator {
             return String("Array had ") + size + " entries, but at least " + slot->maxElements + " are required.";
 
         if (slot->variantType >= 0)
-            for (int i = 0; i < size; ++i)
+            for (size_t i = 0; i < size; ++i)
                 if ((int)x.get(i)->value.tag != slot->variantType)
                     return String("[") + i + "] has wrong type";
 

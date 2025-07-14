@@ -114,18 +114,18 @@ Config::ConfObject::Slot *Config::ConfObject::getSlot() { return get_slot<Config
 
 Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&val)
 {
-    auto len = val.size();
+    const size_t len = val.size();
 
     auto schema = (ConfObjectSchema *)malloc_iram_or_psram_or_dram(sizeof(ConfObjectSchema) + len * sizeof(ConfObjectSchema::Key));
     schema->length = len;
 
-    for (int i = 0; i < len; ++i) {
+    for (size_t i = 0; i < len; ++i) {
         const char *key = val[i].first;
 
         if (!string_is_in_rodata(key))
             esp_system_abort("ConfObject key not in flash! Please pass a string literal!");
 
-        for (int j = i + 1; j < len; ++j) {
+        for (size_t j = i + 1; j < len; ++j) {
             if (key == val[j].first)
                 esp_system_abort("ConfObject key not unique in this ConfObject! Remove duplicates!");
         }
@@ -140,7 +140,7 @@ Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&va
 
     slot->values = new Config[len]();
 
-    for (int i = 0; i < len; ++i) {
+    for (size_t i = 0; i < len; ++i) {
         this->getSlot()->values[i] = std::move(val[i].second); //TODO: move here?
     }
 }
@@ -158,9 +158,9 @@ Config::ConfObject::ConfObject(const ConfObject &cpy)
     // ours if we don't mark it as in use first.
     this->getSlot()->schema = cpy.getSlot()->schema;
 
-    const auto len = cpy.getSlot()->schema->length;
+    const size_t len = cpy.getSlot()->schema->length;
     auto values = new Config[len]();
-    for (int i = 0; i < len; ++i)
+    for (size_t i = 0; i < len; ++i)
         values[i] = cpy.getSlot()->values[i];
 
     // Must call getSlot() again because any reference would be invalidated
@@ -196,9 +196,9 @@ Config::ConfObject &Config::ConfObject::operator=(const ConfObject &cpy)
     // ours if we don't mark it as in use first.
     this->getSlot()->schema = cpy.getSlot()->schema;
 
-    const auto len = cpy.getSlot()->schema->length;
+    const size_t len = cpy.getSlot()->schema->length;
     auto values = new Config[len]();
-    for (int i = 0; i < len; ++i)
+    for (size_t i = 0; i < len; ++i)
         values[i] = cpy.getSlot()->values[i];
 
     // Must call getSlot() again because any reference would be invalidated
