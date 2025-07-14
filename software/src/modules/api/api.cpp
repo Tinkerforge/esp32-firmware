@@ -23,7 +23,7 @@
 #include <LittleFS.h>
 
 #include "event_log_prefix.h"
-#include "main_dependencies.h"
+#include "module_dependencies.h"
 #include "build.h"
 #include "options.h"
 #include "bindings/hal_common.h"
