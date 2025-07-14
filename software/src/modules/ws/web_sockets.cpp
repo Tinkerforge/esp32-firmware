@@ -20,7 +20,7 @@
 #include "web_sockets.h"
 
 #include "event_log_prefix.h"
-#include "main_dependencies.h"
+#include "module_dependencies.h"
 #include "tools.h"
 #include "tools/net.h"
 #include "tools/memory.h"
