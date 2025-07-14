@@ -26,6 +26,9 @@
 
 #define CHARGE_TRACKER_MAX_REPAIR 200
 #define CHARGE_RECORD_FOLDER "/charge-records"
+#define MAX_RETRY_COUNT 10
+#define BASE_RETRY_DELAY_MINUTES 5
+struct SendChargeLogArgs;
 
 class ChargeTracker final : public IModule
 {
@@ -61,29 +64,37 @@ public:
     std::mutex records_mutex;
     std::mutex pdf_mutex;
 
+    bool pdf_send_in_progress = false;
+
 private:
     bool repair_last(float);
     void repair_charges();
     void generate_pdf(std::function<int(const void *data, size_t len, bool last_data)> &&callback, int user_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, uint32_t current_timestamp_min, bool english, const char *letterhead, int letterhead_lines, WebServerRequest *request);
-    void send_pdf(uint32_t start_timestamp_min, uint32_t end_timestamp_min, int user_idx);
-    void check_remote_client_status();
-    void handle_upload_retry();
+    void send_pdf(SendChargeLogArgs &&args);
 
-
-    uint32_t upload_retry_count = 0;
-    uint32_t next_retry_time_minutes = 0;
-    static constexpr uint32_t MAX_RETRY_COUNT = 10;
-    static constexpr uint32_t BASE_RETRY_DELAY_MINUTES = 5;
-    bool upload_in_progress = false;
-
-    std::unique_ptr<AsyncHTTPSClient> remote_client = nullptr;
     Config last_charges_prototype;
     Config charge_log_send_prototype;
 };
 
 struct SendChargeLogArgs {
-    ChargeTracker *that;
-    uint32_t last_month_start_min;
-    uint32_t last_month_end_min;
-    int array_size;
+    ChargeTracker *that = nullptr;
+    int user_idx = 0;
+    uint32_t last_month_start_min = 0;
+    uint32_t last_month_end_min = 0;
+    uint32_t upload_retry_count = 0;
+    millis_t next_retry_delay = millis_t(0);
+    std::shared_ptr<uint64_t> task_id = nullptr;
+    std::shared_ptr<AsyncHTTPSClient> remote_client = nullptr;
+
+    SendChargeLogArgs(){};
+    SendChargeLogArgs(const SendChargeLogArgs &other) {
+        that = other.that;
+        user_idx = other.user_idx;
+        last_month_start_min = other.last_month_start_min;
+        last_month_end_min = other.last_month_end_min;
+        upload_retry_count = other.upload_retry_count;
+        next_retry_delay = other.next_retry_delay;
+        task_id = other.task_id;
+        remote_client = other.remote_client;
+    };
 };
