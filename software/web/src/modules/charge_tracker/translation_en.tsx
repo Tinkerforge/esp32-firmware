@@ -65,7 +65,16 @@ let x = {
             "send_file_type": "Send file type",
             "enable_send": "Enable remote send",
             "send_user": "Send user",
-            "send_user_placeholder": "Remote access user"
+            "send_user_placeholder": "Remote access user",
+
+            "user_filter_label": "User Filter",
+            "file_type_label": "File Type",
+            "english_label": "English",
+            "letterhead_label": "Letterhead",
+            "target_user": "Remote access user",
+            "charge_log_send_config": "Charge log send configuration",
+            "charge_log_send_add_modal_title": "Add charge log send configuration",
+            "charge_log_send_add_message": /*SFN*/(have: number, max: number) => `${have} of ${max} users configured`/*NF*/
         },
         "automation": {
             "charge_tracker_reset": "Remove tracked charges",

@@ -65,7 +65,16 @@ let x = {
             "send_file_type": "Dateityp zum Senden",
             "enable_send": "Remote-Senden aktivieren",
             "send_user": "Benutzer zum Senden",
-            "send_user_placeholder": "Fernzugriffsbenutzer"
+            "send_user_placeholder": "Fernzugriffsbenutzer",
+
+            "user_filter_label": "Benutzerfilter",
+            "file_type_label": "Dateityp",
+            "english_label": "Englisch",
+            "letterhead_label": "Briefkopf",
+            "target_user": "Fernzugriffsbenutzer",
+            "charge_log_send_config": "E-Mail-Versandkonfiguration",
+            "charge_log_send_add_modal_title": "E-Mail-Versandkonfiguration hinzufügen",
+            "charge_log_send_add_message": /*SFN*/ (have: number, max: number) => `${have} von ${max} Benutzern konfiguriert` /*NF*/
         },
         "automation": {
             "charge_tracker_reset": "Aufgezeichnete Ladevorgänge löschen",
