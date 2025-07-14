@@ -127,12 +127,12 @@ void ChargeTracker::pre_setup()
     config = Config::Object({
         {"electricity_price", Config::Uint16(0)},
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
-        {"charge_log_send", Config::Array(
+        {"remote_upload_configs", Config::Array(
             {},
             &charge_log_send_prototype,
             0, OPTIONS_REMOTE_ACCESS_MAX_USERS(), Config::type_id<Config::ConfObject>()
         )},
-        {"last_file_send", Config::Uint32(0)},
+        {"last_upload_timestamp_min", Config::Uint32(0)},
 #endif
     });
 
@@ -934,20 +934,19 @@ void ChargeTracker::register_urls()
     });
 
 #if MODULE_REMOTE_ACCESS_AVAILABLE()
-    if (config.get("charge_log_send")->count() > 0) {
+    if (config.get("remote_upload_configs")->count() > 0) {
         task_scheduler.scheduleWithFixedDelay([this]() {
             timeval tv;
             bool is_synced = rtc.clock_synced(&tv);
-            if (!is_synced || upload_in_progress) {
+            if (!is_synced) {
                 return;
             }
 
             tm now;
             localtime_r(&tv.tv_sec, &now);
-            uint32_t current_minutes = tv.tv_sec / 60;
 
             tm last_send;
-            uint32_t last_send_minutes = config.get("last_file_send")->asUint();
+            uint32_t last_send_minutes = config.get("last_upload_timestamp_min")->asUint();
             time_t last_send_time = last_send_minutes * 60;
             localtime_r(&last_send_time, &last_send);
 
@@ -961,51 +960,29 @@ void ChargeTracker::register_urls()
             time_t last_month_start_tv = mktime(&last_month_start);
             time_t last_month_end_tv = mktime(&last_month_end);
 
-            SendChargeLogArgs *args = new SendChargeLogArgs;;
-            args->that = this;
-            args->last_month_start_min = last_month_start_tv / 60;
-            args->last_month_end_min = last_month_end_tv / 60;
-            args->array_size = config.get("charge_log_send")->count();
-
-            if (upload_retry_count > 0 && current_minutes >= next_retry_time_minutes) {
-                logger.printfln("Retrying PDF upload (attempt %lu/%lu)", upload_retry_count + 1, MAX_RETRY_COUNT + 1);
-                server.runInHTTPThread([](void *arg) {
-                    auto send_chargelog_args = static_cast<SendChargeLogArgs *>(arg);
-                    auto that = send_chargelog_args->that;
-                    for (int i = 0; i < send_chargelog_args->array_size; ++i) {
-                        that->send_pdf(send_chargelog_args->last_month_start_min,
-                                    send_chargelog_args->last_month_end_min, i);
-                    }
-                    that->upload_in_progress = false;
-                    delete send_chargelog_args;
-                }, args);
-                return;
-            }
-
-            bool should_send = false;
-            if (now.tm_mday >= 2 &&
+            if (!pdf_send_in_progress && now.tm_mday >= 2 &&
                 (last_send_minutes == 0
                     || last_send.tm_year != now.tm_year
                     || last_send.tm_mon != now.tm_mon))
             {
-                should_send = true;
+                pdf_send_in_progress = true;
+                for (int i = 0; i < config.get("remote_upload_configs")->count(); ++i) {
+                    auto task_id = std::make_shared<uint64_t>(0);
+                    auto args = new SendChargeLogArgs;
+                    args->that = this;
+                    args->last_month_start_min = last_month_start_tv / 60;
+                    args->last_month_end_min = last_month_end_tv / 60;
+                    args->user_idx = i;
+                    args->task_id = task_id;
+                    server.runInHTTPThread([](void *arg) {
+                        auto send_chargelog_args = static_cast<SendChargeLogArgs *>(arg);
+                        std::unique_ptr<SendChargeLogArgs> send_chargelog_args_unique(send_chargelog_args);
+                        auto that = send_chargelog_args_unique->that;
+                        that->send_pdf(std::move(*send_chargelog_args_unique));
+                    }, args);
+                }
             }
-            if (should_send) // Only start new upload if not retrying
-            {
-                server.runInHTTPThread([](void *arg) {
-                    auto send_chargelog_args = static_cast<SendChargeLogArgs *>(arg);
-                    auto that = send_chargelog_args->that;
-                    for (int i = 0; i < send_chargelog_args->array_size; ++i) {
-                        that->send_pdf( send_chargelog_args->last_month_start_min,
-                                    send_chargelog_args->last_month_end_min, i);
-                    }
-                    that->upload_in_progress = false;
-                    delete send_chargelog_args;
-                }, args);
-            } else {
-                delete args;
-            }
-        }, 10_s, 10_s);
+        }, 10_s, 1_s);
     }
 
     api.addCommand("charge_tracker/reset_last_send", Config::Null(), {}, [this](String &errmsg) {
@@ -1030,19 +1007,64 @@ void ChargeTracker::register_urls()
         time_t last_month_time = mktime(&now);
         uint32_t last_month_minutes = last_month_time / 60;
 
-        config.get("last_file_send")->updateUint(last_month_minutes);
+        config.get("last_upload_timestamp_min")->updateUint(last_month_minutes);
         API::writeConfig("charge_tracker/config", &config);
     }, true);
 #endif
 }
 
-// since this function can block for a long time, it must not be called from the main thread
-void ChargeTracker::send_pdf(uint32_t start_timestamp_min, uint32_t end_timestamp_min,
-                             int user_idx) {
-    if (upload_in_progress) {
+static bool handle_upload_retry(SendChargeLogArgs &data)
+{
+    data.upload_retry_count++;
+    uint32_t delay_minutes = BASE_RETRY_DELAY_MINUTES * (1 << (data.upload_retry_count - 1));
+    if (delay_minutes > 480) {
+        delay_minutes = 480;
+    }
+
+    if (data.upload_retry_count <= MAX_RETRY_COUNT) {
+        data.next_retry_delay = millis_t(delay_minutes * 60 * 1000);
+
+        logger.printfln("PDF upload failed. Retry %lu/%d scheduled in %lu minutes",
+                      data.upload_retry_count, MAX_RETRY_COUNT, delay_minutes);
+        return true;
+    } else {
+        data.that->pdf_send_in_progress = false;
+        logger.printfln("PDF upload failed. Maximum retry attempts (%d) exceeded. Giving up.",
+                      MAX_RETRY_COUNT);
+        return false;
+    }
+}
+
+static void check_remote_client_status(SendChargeLogArgs &data)
+{
+#if MODULE_REMOTE_ACCESS_AVAILABLE()
+    if (!data.remote_client) {
+        logger.printfln("PDF generation and remote upload completed. Client was destroyed.");
+        task_scheduler.cancel(*data.task_id);
         return;
     }
-    upload_in_progress = true;
+
+    int status = data.remote_client->read_response_status();
+    if (status == ESP_ERR_HTTP_EAGAIN) {
+        return;
+    } else if (status == 200) {
+        data.that->config.get("last_upload_timestamp_min")->updateUint(rtc.timestamp_minutes());
+        API::writeConfig("charge_tracker/config", &data.that->config);
+        logger.printfln("PDF generation and remote upload completed successfully. Status: %d", status);
+        data.remote_client->close_chunked_request();
+        data.that->pdf_send_in_progress = false;
+        task_scheduler.cancel(*data.task_id);
+    } else {
+        logger.printfln("PDF generation and remote upload failed. Status: %d", status);
+        // data.that->handle_upload_retry();
+        data.remote_client->close_chunked_request();
+        task_scheduler.cancel(*data.task_id);
+    }
+#endif
+}
+
+// since this function can block for a long time, it must not be called from the main thread
+void ChargeTracker::send_pdf(SendChargeLogArgs &&args) {
     logger.printfln("Starting PDF generation and remote upload...");
 
     String charger_uuid;
@@ -1056,9 +1078,9 @@ void ChargeTracker::send_pdf(uint32_t start_timestamp_min, uint32_t end_timestam
     bool english;
 
     auto ret = task_scheduler.await([this, &charger_uuid, &password, &user_uuid, &url, &cert_id,
-            &letterhead, &letterhead_lines, &user_filter, &english, user_idx]()
+            &letterhead, &letterhead_lines, &user_filter, &english, &args]()
     {
-        Config::Wrap charge_log_send = config.get("charge_log_send")->get(user_idx);
+        Config::Wrap charge_log_send = config.get("remote_upload_configs")->get(args.user_idx);
         letterhead = heap_alloc_array<char>(PDF_LETTERHEAD_MAX_SIZE + 1);
         strncpy(letterhead.get(), charge_log_send->get("letterhead")->asEphemeralCStr(), PDF_LETTERHEAD_MAX_SIZE + 1);
         letterhead_lines = read_letterhead_lines(letterhead.get());
@@ -1090,11 +1112,15 @@ void ChargeTracker::send_pdf(uint32_t start_timestamp_min, uint32_t end_timestam
         return;
     }
 
-    remote_client = std::make_unique<AsyncHTTPSClient>();
-    remote_client->set_header("Content-Type", "application/json");
+    args.remote_client = std::make_unique<AsyncHTTPSClient>();
+    args.remote_client->set_header("Content-Type", "application/json");
 
-    if (remote_client->start_chunked_request(url.c_str(), cert_id, HTTP_METHOD_POST) == -1) {
-        handle_upload_retry();
+    if (args.remote_client->start_chunked_request(url.c_str(), cert_id, HTTP_METHOD_POST) == -1) {
+        if (handle_upload_retry(args)) {
+            task_scheduler.scheduleOnce([args = std::move(args)]() mutable {
+                args.that->send_pdf(std::move(args));
+            }, args.next_retry_delay);
+        }
         logger.printfln("Failed to send Charge-Log");
         return;
     };
@@ -1104,11 +1130,11 @@ void ChargeTracker::send_pdf(uint32_t start_timestamp_min, uint32_t end_timestam
     json_header += "\"password\":\"" + password + "\",";
     json_header += "\"user_uuid\":\"" + user_uuid + "\",";
     json_header += "\"chargelog\":[";
-    remote_client->send_chunk(json_header.c_str(), json_header.length());
+    args.remote_client->send_chunk(json_header.c_str(), json_header.length());
 
     bool first = true;
 
-    auto pdf_stream_cb = [this, &first](const void *data, size_t len, bool last_data) -> int {
+    auto pdf_stream_cb = [&remote_client = args.remote_client, &first](const void *data, size_t len, bool last_data) -> int {
         const uint8_t *data_u8 = static_cast<const uint8_t *>(data);
         String chunk;
         for (size_t i = 0; i < len; ++i) {
@@ -1127,71 +1153,18 @@ void ChargeTracker::send_pdf(uint32_t start_timestamp_min, uint32_t end_timestam
     this->generate_pdf(
         pdf_stream_cb,
         user_filter,
-        start_timestamp_min,
-        end_timestamp_min,
+        args.last_month_start_min,
+        args.last_month_end_min,
         rtc.timestamp_minutes(),
         english, letterhead.get(), letterhead_lines, nullptr);
 
     String json_footer = "]}";
-    remote_client->send_chunk(json_footer.c_str(), json_footer.length());
-    remote_client->finish_chunked_request();
+    args.remote_client->send_chunk(json_footer.c_str(), json_footer.length());
+    args.remote_client->finish_chunked_request();
 
-    task_scheduler.scheduleOnce([this]() {
-        this->check_remote_client_status();
-    }, 1_s);
-}
-
-void ChargeTracker::handle_upload_retry()
-{
-    upload_retry_count++;
-    uint32_t delay_minutes = BASE_RETRY_DELAY_MINUTES * (1 << (upload_retry_count - 1));
-    if (delay_minutes > 480) {
-        delay_minutes = 480;
-    }
-
-    if (upload_retry_count <= MAX_RETRY_COUNT) {
-        next_retry_time_minutes = rtc.timestamp_minutes() + delay_minutes;
-
-        logger.printfln("PDF upload failed. Retry %lu/%lu scheduled in %lu minutes",
-                      upload_retry_count, MAX_RETRY_COUNT, delay_minutes);
-    } else {
-        upload_retry_count = MAX_RETRY_COUNT;
-        next_retry_time_minutes = delay_minutes;
-        logger.printfln("PDF upload failed. Maximum retry attempts (%lu) exceeded. Giving up.",
-                      MAX_RETRY_COUNT);
-    }
-}
-
-void ChargeTracker::check_remote_client_status()
-{
-#if MODULE_REMOTE_ACCESS_AVAILABLE()
-    if (!remote_client) {
-        logger.printfln("PDF generation and remote upload completed. Client was destroyed.");
-        return;
-    }
-
-    int status = remote_client->read_response_status();
-    if (status == ESP_ERR_HTTP_EAGAIN) {
-        task_scheduler.scheduleOnce([this]() {
-            this->check_remote_client_status();
-        }, 1_s);
-    } else if (status == 200) {
-        upload_retry_count = 0;
-        next_retry_time_minutes = 0;
-        config.get("last_file_send")->updateUint(rtc.timestamp_minutes());
-        API::writeConfig("charge_tracker/config", &config);
-        logger.printfln("PDF generation and remote upload completed successfully. Status: %d", status);
-        remote_client->close_chunked_request();
-        remote_client = nullptr;
-        upload_in_progress = false;
-    } else {
-        logger.printfln("PDF generation and remote upload failed. Status: %d", status);
-        handle_upload_retry();
-        remote_client->close_chunked_request();
-        remote_client = nullptr;
-        upload_in_progress = false;
-    }
-#endif
+    *args.task_id = task_scheduler.scheduleWithFixedDelay([status_data = std::move(args)]() mutable {
+        check_remote_client_status(status_data);
+    }, 1_s, 1_s);
 }
 
 void ChargeTracker::generate_pdf(
