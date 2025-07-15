@@ -35,8 +35,6 @@ import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import { Table, TableRow } from "../../ts/components/table";
 
-const UINT16_PATTERN = "(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{0,3}|0)";
-
 type TableConfigNone = [
     BatteryModbusTCPTableID.None,
     {},
@@ -183,7 +181,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
             <FormRow label={__("batteries_modbus_tcp.content.register_blocks_values")} label_muted={__("batteries_modbus_tcp.content.register_blocks_values_muted")}>
                 <InputTextPatterned
                     required
-                    pattern={this.state.register_block.rtyp == ModbusRegisterType.Coil ? `^ *[01] *(, *[01] *){0,${options.BATTERIES_MODBUS_TCP_MAX_CUSTOM_VALUES_PER_REGISTER_BLOCK - 1}}$` : `^ *${UINT16_PATTERN} *(?:, *${UINT16_PATTERN} *){0,${options.BATTERIES_MODBUS_TCP_MAX_CUSTOM_VALUES_PER_REGISTER_BLOCK - 1}}$`}
+                    pattern={this.state.register_block.rtyp == ModbusRegisterType.Coil ? `^ *[01] *(, *[01] *){0,${options.BATTERIES_MODBUS_TCP_MAX_CUSTOM_VALUES_PER_REGISTER_BLOCK - 1}}$` : `^ *${util.UINT16_PATTERN} *(?:, *${util.UINT16_PATTERN} *){0,${options.BATTERIES_MODBUS_TCP_MAX_CUSTOM_VALUES_PER_REGISTER_BLOCK - 1}}$`}
                     value={this.state.values}
                     onValue={(v) => {
                         this.setState({values: v});
