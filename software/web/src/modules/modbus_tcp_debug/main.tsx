@@ -385,7 +385,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     <InputTextPatterned
                         required
                         disabled={this.state.waiting}
-                        pattern="^ *(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{0,3}|0) *$"
+                        pattern={`^ *${util.UINT16_PATTERN} *$`}
                         value={this.state.write_data}
                         onValue={(v) => this.setState({write_data: v})}
                         invalidFeedback={__("modbus_tcp_debug.content.write_data_single_register_invalid")}
@@ -398,7 +398,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     <InputTextPatterned
                         required
                         disabled={this.state.waiting}
-                        pattern="^ *(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{0,3}|0) *(, *(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{0,3}|0) *){0,122}$"
+                        pattern={`^ *${util.UINT16_PATTERN} *(, *${util.UINT16_PATTERN} *){0,122}$`}
                         value={this.state.write_data}
                         onValue={(v) => this.setState({write_data: v})}
                         invalidFeedback={__("modbus_tcp_debug.content.write_data_multiple_registers_invalid")}
