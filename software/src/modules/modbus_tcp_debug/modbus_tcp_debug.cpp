@@ -82,6 +82,7 @@ void ModbusTCPDebug::register_urls()
         millis_t timeout = millis_t{transact_config.get("timeout")->asUint()};
         bool hexload_registers = false;
         bool hexdump_registers = false;
+        bool hexdump_colis = false;
 
         defer {
             // When done parsing the transaction, drop Strings from config to free memory.
@@ -94,8 +95,8 @@ void ModbusTCPDebug::register_urls()
         switch (function_code) {
         case TFModbusTCPFunctionCode::ReadCoils:
         case TFModbusTCPFunctionCode::ReadDiscreteInputs:
-            report_errorf(cookie, "Function code %u is not supported yet", static_cast<uint8_t>(function_code));
-            return;
+            hexdump_colis = true;
+            break;
 
         case TFModbusTCPFunctionCode::ReadHoldingRegisters:
         case TFModbusTCPFunctionCode::ReadInputRegisters:
@@ -120,7 +121,7 @@ void ModbusTCPDebug::register_urls()
         }
 
         modbus_tcp_client.get_pool()->acquire(host.c_str(), port,
-        [this, cookie, host, port, device_address, function_code, start_address, data_count, write_data, timeout, hexload_registers, hexdump_registers](TFGenericTCPClientConnectResult connect_result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
+        [this, cookie, host, port, device_address, function_code, start_address, data_count, write_data, timeout, hexload_registers, hexdump_registers, hexdump_colis](TFGenericTCPClientConnectResult connect_result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
             if (connect_result != TFGenericTCPClientConnectResult::Connected) {
                 char connect_error[256] = "";
 
@@ -130,7 +131,7 @@ void ModbusTCPDebug::register_urls()
             }
 
             transact_client = shared_client;
-            transact_buffer = static_cast<uint16_t *>(malloc(sizeof(uint16_t) * TF_MODBUS_TCP_MAX_READ_REGISTER_COUNT));
+            transact_buffer = malloc(TF_MODBUS_TCP_MAX_DATA_BYTE_COUNT);
 
             if (transact_buffer == nullptr) {
                 report_errorf(cookie, "Cannot allocate transaction buffer");
@@ -161,7 +162,7 @@ void ModbusTCPDebug::register_urls()
                     return;
                 }
 
-                ssize_t data_hexload_len = hexload<uint16_t>(write_data.c_str(), nibble_count, transact_buffer, TF_MODBUS_TCP_MAX_WRITE_REGISTER_COUNT);
+                ssize_t data_hexload_len = hexload<uint16_t>(write_data.c_str(), nibble_count, static_cast<uint16_t *>(transact_buffer), TF_MODBUS_TCP_MAX_WRITE_REGISTER_COUNT);
 
                 if (data_hexload_len < 0) {
                     report_errorf(cookie, "Write data is malformed");
@@ -177,7 +178,7 @@ void ModbusTCPDebug::register_urls()
             }
 
             static_cast<TFModbusTCPSharedClient *>(transact_client)->transact(device_address, function_code, start_address, data_count, transact_buffer, timeout,
-            [this, cookie, data_count, hexdump_registers](TFModbusTCPClientTransactionResult transact_result, const char *error_message) {
+            [this, cookie, data_count, hexdump_registers, hexdump_colis](TFModbusTCPClientTransactionResult transact_result, const char *error_message) {
                 if (transact_result != TFModbusTCPClientTransactionResult::Success) {
                     report_errorf(cookie, "Transaction failed: %s (%d)%s%s",
                                   get_tf_modbus_tcp_client_transaction_result_name(transact_result),
@@ -188,7 +189,7 @@ void ModbusTCPDebug::register_urls()
                     return;
                 }
 
-                char data_hexdump[TF_MODBUS_TCP_MAX_READ_REGISTER_COUNT * 4 + 1];
+                char data_hexdump[TF_MODBUS_TCP_MAX_DATA_BYTE_COUNT * 2 + 1];
                 char buf[64 + sizeof(data_hexdump)];
                 TFJsonSerializer json{buf, sizeof(buf)};
 
@@ -199,7 +200,11 @@ void ModbusTCPDebug::register_urls()
                 // FIXME: hexdump coils for coil function codes
 
                 if (hexdump_registers) {
-                    hexdump<uint16_t>(transact_buffer, data_count, data_hexdump, ARRAY_SIZE(data_hexdump), HexdumpCase::Lower);
+                    hexdump<uint16_t>(static_cast<uint16_t *>(transact_buffer), data_count, data_hexdump, ARRAY_SIZE(data_hexdump), HexdumpCase::Lower);
+                    json.addMemberString("read_data", data_hexdump);
+                }
+                else if (hexdump_colis) {
+                    hexdump<uint8_t>(static_cast<uint8_t *>(transact_buffer), (data_count + 7) / 8, data_hexdump, ARRAY_SIZE(data_hexdump), HexdumpCase::Lower);
                     json.addMemberString("read_data", data_hexdump);
                 }
                 else {

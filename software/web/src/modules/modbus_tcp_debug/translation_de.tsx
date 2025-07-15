@@ -20,6 +20,8 @@ let x = {
             "port_muted": "typischerweise 502",
             "device_address": "Geräteadresse",
             "function_code": "Funktionscode",
+            "function_code_read_coils": "1 – Coils lesen",
+            "function_code_read_discrete_inputs": "2 – Discrete Inputs lesen",
             "function_code_read_holding_registers": "3 – Holding Register lesen",
             "function_code_read_input_registers": "4 – Input Register lesen",
             "function_code_write_single_register": "6 – Einzelnes Register schreiben",

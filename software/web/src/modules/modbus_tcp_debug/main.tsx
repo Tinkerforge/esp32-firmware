@@ -96,102 +96,147 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                 result = "Error: " + transact_result.error;
             }
             else if (transact_result.read_data !== null) {
-                let header = " AdrD  AdrH   NumD   NumH  Idx   Hex  AS    U16     S16       U32BE       U32LE        S32BE        S32LE                 U64BE                 U64LE                  S64BE                  S64LE ";
+                if (this.state.function_code == 1 || this.state.function_code == 2) {
+                    let header = " AdrD  AdrH   NumD   NumH   Idx  V ";
 
-                result = header + "\n";
+                    result = header + "\n";
 
-                for (let r = 0; r < transact_result.read_data.length / 4; ++r) {
-                    let a = this.state.start_address + r;
+                    for (let i = 0, j = 0; j < transact_result.read_data.length / 2; ++j) {
+                        let values = parseInt(transact_result.read_data.substring(j * 2, j * 2 + 2), 16);
 
-                    let ad_pad = "    " + a;
+                        for (let k = 0; k < 8 && i < this.state.data_count; ++k, ++i) {
+                            let a = this.state.start_address + i;
 
-                    ad_pad = ad_pad.substring(ad_pad.length - 5);
+                            let ad_pad = "    " + a;
 
-                    let ah_pad = "   " + a.toString(16).toUpperCase();
+                            ad_pad = ad_pad.substring(ad_pad.length - 5);
 
-                    ah_pad = ah_pad.substring(ah_pad.length - 4);
+                            let ah_pad = "   " + a.toString(16).toUpperCase();
 
-                    let n = this.state.start_address + r + 1;
+                            ah_pad = ah_pad.substring(ah_pad.length - 4);
 
-                    let nd_pad = "    " + n;
+                            let n = a + 1;
 
-                    nd_pad = nd_pad.substring(nd_pad.length - 5);
+                            let nd_pad = "    " + n;
 
-                    let nh_pad = "    " + n.toString(16).toUpperCase();
+                            nd_pad = nd_pad.substring(nd_pad.length - 5);
 
-                    nh_pad = nh_pad.substring(nh_pad.length - 5);
+                            let nh_pad = "    " + n.toString(16).toUpperCase();
 
-                    let r_pad = "  " + r;
+                            nh_pad = nh_pad.substring(nh_pad.length - 5);
 
-                    r_pad = r_pad.substring(r_pad.length - 3);
+                            let i_pad = "   " + i;
 
-                    let hex = transact_result.read_data.substring(r * 4, r * 4 + 4);
+                            i_pad = i_pad.substring(i_pad.length - 4);
 
-                    let ascii_0 = printable_ascii(parseInt(hex.substring(0, 2), 16));
-                    let ascii_1 = printable_ascii(parseInt(hex.substring(2, 4), 16));
+                            let v = values & (1 << k) ? "1" : "0";
 
-                    let u16 = parseInt(hex, 16);
-                    let u16_pad = "    " + u16;
+                            result += "\n" + ad_pad + "  " + ah_pad + "  " + nd_pad + "  " + nh_pad + "  " + i_pad + "  " + v + " ";
 
-                    u16_pad = u16_pad.substring(u16_pad.length - 5);
-
-                    let s16 = (u16 << 16) >> 16;
-                    let s16_pad = "     " + s16;
-
-                    s16_pad = s16_pad.substring(s16_pad.length - 6);
-
-                    let u32be_pad = "          ";
-                    let u32le_pad = "          ";
-                    let s32be_pad = "           ";
-                    let s32le_pad = "           ";
-
-                    if ((r % 2) == 1) {
-                        let u32be = parseInt(transact_result.read_data.substring((r - 1) * 4,     (r - 1) * 4 + 8), 16);
-                        let u32le = parseInt(transact_result.read_data.substring((r - 1) * 4 + 4, (r - 1) * 4 + 8) +
-                                             transact_result.read_data.substring((r - 1) * 4,     (r - 1) * 4 + 4), 16);
-                        let s32be = u32be >> 0;
-                        let s32le = u32le >> 0;
-
-                        u32be_pad += u32be;
-                        u32le_pad += u32le;
-                        s32be_pad += s32be;
-                        s32le_pad += s32le;
+                            if (i % 20 == 19 && i < this.state.data_count - 1) {
+                                result += "\n\n" + header + "\n";
+                            }
+                        }
                     }
+                }
+                else {
+                    let header = " AdrD  AdrH   NumD   NumH  Idx   Hex  AS    U16     S16       U32BE       U32LE        S32BE        S32LE                 U64BE                 U64LE                  S64BE                  S64LE ";
 
-                    u32be_pad = u32be_pad.substring(u32be_pad.length - 10);
-                    u32le_pad = u32le_pad.substring(u32le_pad.length - 10);
-                    s32be_pad = s32be_pad.substring(s32be_pad.length - 11);
-                    s32le_pad = s32le_pad.substring(s32le_pad.length - 11);
+                    result = header + "\n";
 
-                    let u64be_pad = "                    ";
-                    let u64le_pad = "                    ";
-                    let s64be_pad = "                     ";
-                    let s64le_pad = "                     ";
+                    for (let i = 0; i < transact_result.read_data.length / 4; ++i) {
+                        let a = this.state.start_address + i;
 
-                    if ((r % 4) == 3) {
-                        let u64be = BigInt("0x" + transact_result.read_data.substring((r - 3) * 4,      (r - 3) * 4 + 16));
-                        let u64le = BigInt("0x" + transact_result.read_data.substring((r - 3) * 4 + 12, (r - 3) * 4 + 16) +
-                                                  transact_result.read_data.substring((r - 3) * 4 + 8,  (r - 3) * 4 + 12) +
-                                                  transact_result.read_data.substring((r - 3) * 4 + 4,  (r - 3) * 4 + 8) +
-                                                  transact_result.read_data.substring((r - 3) * 4,      (r - 3) * 4 + 4));
-                        let s64be = BigInt.asIntN(64, u64be);
-                        let s64le = BigInt.asIntN(64, u64le);
+                        let ad_pad = "    " + a;
 
-                        u64be_pad += u64be.toString();
-                        u64le_pad += u64le.toString();
-                        s64be_pad += s64be.toString();
-                        s64le_pad += s64le.toString();
-                    }
+                        ad_pad = ad_pad.substring(ad_pad.length - 5);
 
-                    u64be_pad = u64be_pad.substring(u64be_pad.length - 20);
-                    u64le_pad = u64le_pad.substring(u64le_pad.length - 20);
-                    s64be_pad = s64be_pad.substring(s64be_pad.length - 21);
-                    s64le_pad = s64le_pad.substring(s64le_pad.length - 21);
+                        let ah_pad = "   " + a.toString(16).toUpperCase();
 
-                    result += "\n" + ad_pad + "  " + ah_pad + "  " + nd_pad + "  " + nh_pad + "  " + r_pad + "  " + hex + "  " + ascii_0 + ascii_1 + "  " + u16_pad + "  " + s16_pad + "  " + u32be_pad + "  " + u32le_pad + "  " + s32be_pad + "  " + s32le_pad + "  " + u64be_pad + "  " + u64le_pad + "  " + s64be_pad + "  " + s64le_pad + " ";
+                        ah_pad = ah_pad.substring(ah_pad.length - 4);
 
-                    if (r % 20 == 19 && r < transact_result.read_data.length / 4 - 1) {
-                        result += "\n\n" + header + "\n";
+                        let n = a + 1;
+
+                        let nd_pad = "    " + n;
+
+                        nd_pad = nd_pad.substring(nd_pad.length - 5);
+
+                        let nh_pad = "    " + n.toString(16).toUpperCase();
+
+                        nh_pad = nh_pad.substring(nh_pad.length - 5);
+
+                        let i_pad = "  " + i;
+
+                        i_pad = i_pad.substring(i_pad.length - 3);
+
+                        let hex = transact_result.read_data.substring(i * 4, i * 4 + 4);
+
+                        let ascii_0 = printable_ascii(parseInt(hex.substring(0, 2), 16));
+                        let ascii_1 = printable_ascii(parseInt(hex.substring(2, 4), 16));
+
+                        let u16 = parseInt(hex, 16);
+                        let u16_pad = "    " + u16;
+
+                        u16_pad = u16_pad.substring(u16_pad.length - 5);
+
+                        let s16 = (u16 << 16) >> 16;
+                        let s16_pad = "     " + s16;
+
+                        s16_pad = s16_pad.substring(s16_pad.length - 6);
+
+                        let u32be_pad = "          ";
+                        let u32le_pad = "          ";
+                        let s32be_pad = "           ";
+                        let s32le_pad = "           ";
+
+                        if ((i % 2) == 1) {
+                            let u32be = parseInt(transact_result.read_data.substring((i - 1) * 4,     (i - 1) * 4 + 8), 16);
+                            let u32le = parseInt(transact_result.read_data.substring((i - 1) * 4 + 4, (i - 1) * 4 + 8) +
+                                                 transact_result.read_data.substring((i - 1) * 4,     (i - 1) * 4 + 4), 16);
+                            let s32be = u32be >> 0;
+                            let s32le = u32le >> 0;
+
+                            u32be_pad += u32be;
+                            u32le_pad += u32le;
+                            s32be_pad += s32be;
+                            s32le_pad += s32le;
+                        }
+
+                        u32be_pad = u32be_pad.substring(u32be_pad.length - 10);
+                        u32le_pad = u32le_pad.substring(u32le_pad.length - 10);
+                        s32be_pad = s32be_pad.substring(s32be_pad.length - 11);
+                        s32le_pad = s32le_pad.substring(s32le_pad.length - 11);
+
+                        let u64be_pad = "                    ";
+                        let u64le_pad = "                    ";
+                        let s64be_pad = "                     ";
+                        let s64le_pad = "                     ";
+
+                        if ((i % 4) == 3) {
+                            let u64be = BigInt("0x" + transact_result.read_data.substring((i - 3) * 4,      (i - 3) * 4 + 16));
+                            let u64le = BigInt("0x" + transact_result.read_data.substring((i - 3) * 4 + 12, (i - 3) * 4 + 16) +
+                                                      transact_result.read_data.substring((i - 3) * 4 + 8,  (i - 3) * 4 + 12) +
+                                                      transact_result.read_data.substring((i - 3) * 4 + 4,  (i - 3) * 4 + 8) +
+                                                      transact_result.read_data.substring((i - 3) * 4,      (i - 3) * 4 + 4));
+                            let s64be = BigInt.asIntN(64, u64be);
+                            let s64le = BigInt.asIntN(64, u64le);
+
+                            u64be_pad += u64be.toString();
+                            u64le_pad += u64le.toString();
+                            s64be_pad += s64be.toString();
+                            s64le_pad += s64le.toString();
+                        }
+
+                        u64be_pad = u64be_pad.substring(u64be_pad.length - 20);
+                        u64le_pad = u64le_pad.substring(u64le_pad.length - 20);
+                        s64be_pad = s64be_pad.substring(s64be_pad.length - 21);
+                        s64le_pad = s64le_pad.substring(s64le_pad.length - 21);
+
+                        result += "\n" + ad_pad + "  " + ah_pad + "  " + nd_pad + "  " + nh_pad + "  " + i_pad + "  " + hex + "  " + ascii_0 + ascii_1 + "  " + u16_pad + "  " + s16_pad + "  " + u32be_pad + "  " + u32le_pad + "  " + s32be_pad + "  " + s32le_pad + "  " + u64be_pad + "  " + u64le_pad + "  " + s64be_pad + "  " + s64le_pad + " ";
+
+                        if (i % 20 == 19 && i < transact_result.read_data.length / 4 - 1) {
+                            result += "\n\n" + header + "\n";
+                        }
                     }
                 }
             }
@@ -311,6 +356,8 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     required
                     disabled={this.state.waiting}
                     items={[
+                        ["1", __("modbus_tcp_debug.content.function_code_read_coils")],
+                        ["2", __("modbus_tcp_debug.content.function_code_read_discrete_inputs")],
                         ["3", __("modbus_tcp_debug.content.function_code_read_holding_registers")],
                         ["4", __("modbus_tcp_debug.content.function_code_read_input_registers")],
                         ["6", __("modbus_tcp_debug.content.function_code_write_single_register")],
@@ -323,6 +370,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
             <FormRow label={__("modbus_tcp_debug.content.register_address_mode")}>
                 <InputSelect
                     required
+                    disabled={this.state.waiting}
                     items={[
                         [ModbusRegisterAddressMode.Address.toString(), __("modbus_tcp_debug.content.register_address_mode_address")],
                         [ModbusRegisterAddressMode.Number.toString(), __("modbus_tcp_debug.content.register_address_mode_number")]
@@ -368,13 +416,13 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     invalidFeedback={__("modbus_tcp_debug.content.start_address_hex_invalid")} />
             </FormRow>
 
-            {this.state.function_code == 3 || this.state.function_code == 4 ?
+            {this.state.function_code == 1 || this.state.function_code == 2 || this.state.function_code == 3 || this.state.function_code == 4 ?
                 <FormRow label={__("modbus_tcp_debug.content.data_count")}>
                     <InputNumber
                         required
                         disabled={this.state.waiting}
                         min={1}
-                        max={Math.min(this.state.start_address + 125 /* 2000 for coils */, 65535 + 1) - this.state.start_address}
+                        max={Math.min(this.state.start_address + (this.state.function_code == 1 || this.state.function_code == 2 ? 2000 : 125), 65535 + 1) - this.state.start_address}
                         value={this.state.data_count}
                         onValue={(v) => this.setState({data_count: Math.min(this.state.start_address + v, 65535 + 1) - this.state.start_address})} />
                 </FormRow>

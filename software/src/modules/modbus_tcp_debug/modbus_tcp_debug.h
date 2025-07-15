@@ -37,5 +37,5 @@ private:
 
     ConfigRoot transact_config;
     TFGenericTCPSharedClient *transact_client = nullptr;
-    uint16_t *transact_buffer = nullptr;
+    void *transact_buffer = nullptr;
 };
