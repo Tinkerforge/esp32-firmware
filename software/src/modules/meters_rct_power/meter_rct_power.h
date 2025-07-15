@@ -54,6 +54,13 @@ private:
     VirtualMeter virtual_meter      = VirtualMeter::None;
     const RCTValueSpec *value_specs = nullptr;
     size_t value_specs_length       = 0;
-    size_t value_specs_index        = 0;
+    const MeterValueID *value_ids   = nullptr;
+    size_t value_ids_length         = 0;
+    size_t value_index              = 0;
     bool read_allowed               = false;
+
+    float pv1_voltage;
+    float pv1_power;
+    float pv2_voltage;
+    float pv2_power;
 };

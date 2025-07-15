@@ -12,6 +12,8 @@ let x = {
             "virtual_meter": "Virtueller Zähler",
             "virtual_meter_grid": "Netzanschluss",
             "virtual_meter_battery": "Speicher",
+            "virtual_meter_load": "Last",
+            "virtual_meter_pv": "PV",
             "location": "Messort",
             "location_matching": "Übereinstimmend",
             "location_different": "Abweichend"

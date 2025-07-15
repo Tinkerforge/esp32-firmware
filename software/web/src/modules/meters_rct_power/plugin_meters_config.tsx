@@ -48,6 +48,8 @@ function get_default_location(virtual_meter: number) {
         switch (virtual_meter) {
         case VirtualMeter.Grid: return MeterLocation.Grid;
         case VirtualMeter.Battery: return MeterLocation.Battery;
+        case VirtualMeter.Load: return MeterLocation.Load;
+        case VirtualMeter.PV: return MeterLocation.PV;
         }
     }
 
@@ -94,6 +96,8 @@ export function init() {
                             items={[
                                 [VirtualMeter.Grid.toString(), __("meters_rct_power.content.virtual_meter_grid")],
                                 [VirtualMeter.Battery.toString(), __("meters_rct_power.content.virtual_meter_battery")],
+                                [VirtualMeter.Load.toString(), __("meters_rct_power.content.virtual_meter_load")],
+                                [VirtualMeter.PV.toString(), __("meters_rct_power.content.virtual_meter_pv")],
                             ]}
                             placeholder={__("select")}
                             value={util.hasValue(config[1].virtual_meter) ? config[1].virtual_meter.toString() : null}

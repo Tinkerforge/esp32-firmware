@@ -12,6 +12,8 @@ let x = {
             "virtual_meter": "Virtual meter",
             "virtual_meter_grid": "Grid",
             "virtual_meter_battery": "Battery",
+            "virtual_meter_load": "Load",
+            "virtual_meter_pv": "PV",
             "location": "Location",
             "location_matching": "Matching",
             "location_different": "Different"
