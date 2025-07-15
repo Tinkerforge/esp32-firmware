@@ -66,7 +66,7 @@ public:
     void register_events() override;
 
     Config &get_ping_state();
-    uint32_t get_ping_start();
+    micros_t get_ping_start();
 
 private:
     void resolve_management();
@@ -104,7 +104,7 @@ private:
     uint64_t task_id = 0;
 
     esp_ping_handle_t ping = nullptr;
-    uint32_t ping_start = 0;
+    micros_t ping_start = 0_us;
 
     std::unique_ptr<AsyncHTTPSClient> https_client;
     String response_body;

@@ -1968,6 +1968,7 @@ static void on_ping_success(esp_ping_handle_t handle, void *args) {
 
     PingArgs *ping_args = static_cast<PingArgs *>(args);
     ping_args->packets_sent++;
+
     ping_args->packets_received++;
     task_scheduler.scheduleOnce(
         [ping_args]() {
@@ -1975,7 +1976,7 @@ static void on_ping_success(esp_ping_handle_t handle, void *args) {
 
             ping_state.get("packets_sent")->updateUint(ping_args->packets_sent);
             ping_state.get("packets_received")->updateUint(ping_args->packets_received);
-            ping_state.get("time_elapsed_ms")->updateUint(millis() - ping_args->that->get_ping_start());
+            ping_state.get("time_elapsed_ms")->updateUint((now_us() - ping_args->that->get_ping_start()).to<millis_t>().as<uint32_t>());
         },
     0_ms);
 }
@@ -1996,7 +1997,7 @@ static void on_ping_timeout(esp_ping_handle_t handle, void *args) {
 
             ping_state.get("packets_sent")->updateUint(ping_args->packets_sent);
             ping_state.get("packets_received")->updateUint(ping_args->packets_received);
-            ping_state.get("time_elapsed_ms")->updateUint(millis() - ping_args->that->get_ping_start());
+            ping_state.get("time_elapsed_ms")->updateUint((now_us() - ping_args->that->get_ping_start()).to<millis_t>().as<uint32_t>());
         },
     0_ms);
 }
@@ -2016,12 +2017,11 @@ static void on_ping_end(esp_ping_handle_t handle, void *args) {
         [ping_args, transmitted, received]() {
             Config &ping_state = ping_args->that->get_ping_state();
 
-            uint32_t ping_start = ping_args->that->get_ping_start();
-            uint32_t now = millis();
+            auto elapsed = (now_us() - ping_args->that->get_ping_start()).to<millis_t>().as<uint32_t>();
 
             ping_state.get("packets_sent")->updateUint(transmitted);
             ping_state.get("packets_received")->updateUint(received);
-            ping_state.get("time_elapsed_ms")->updateUint(static_cast<uint32_t>(now - ping_start));
+            ping_state.get("time_elapsed_ms")->updateUint(elapsed);
 
             delete ping_args;
         },
@@ -2071,6 +2071,6 @@ Config &RemoteAccess::get_ping_state() {
     return ping_state;
 }
 
-uint32_t RemoteAccess::get_ping_start() {
+micros_t RemoteAccess::get_ping_start() {
     return ping_start;
 }
