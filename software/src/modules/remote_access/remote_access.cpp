@@ -1972,11 +1972,11 @@ static void on_ping_success(esp_ping_handle_t handle, void *args) {
     ping_args->packets_received++;
     task_scheduler.scheduleOnce(
         [ping_args]() {
-            Config &ping_state = ping_args->that->get_ping_state();
+            Config &ping_state = remote_access.get_ping_state();
 
             ping_state.get("packets_sent")->updateUint(ping_args->packets_sent);
             ping_state.get("packets_received")->updateUint(ping_args->packets_received);
-            ping_state.get("time_elapsed_ms")->updateUint((now_us() - ping_args->that->get_ping_start()).to<millis_t>().as<uint32_t>());
+            ping_state.get("time_elapsed_ms")->updateUint((now_us() - remote_access.get_ping_start()).to<millis_t>().as<uint32_t>());
         },
     0_ms);
 }
@@ -1993,11 +1993,11 @@ static void on_ping_timeout(esp_ping_handle_t handle, void *args) {
     ping_args->packets_sent++;
     task_scheduler.scheduleOnce(
         [ping_args]() {
-            Config &ping_state = ping_args->that->get_ping_state();
+            Config &ping_state = remote_access.get_ping_state();
 
             ping_state.get("packets_sent")->updateUint(ping_args->packets_sent);
             ping_state.get("packets_received")->updateUint(ping_args->packets_received);
-            ping_state.get("time_elapsed_ms")->updateUint((now_us() - ping_args->that->get_ping_start()).to<millis_t>().as<uint32_t>());
+            ping_state.get("time_elapsed_ms")->updateUint((now_us() - remote_access.get_ping_start()).to<millis_t>().as<uint32_t>());
         },
     0_ms);
 }
@@ -2015,9 +2015,9 @@ static void on_ping_end(esp_ping_handle_t handle, void *args) {
     PingArgs *ping_args = static_cast<PingArgs *>(args);
     task_scheduler.scheduleOnce(
         [ping_args, transmitted, received]() {
-            Config &ping_state = ping_args->that->get_ping_state();
+            Config &ping_state = remote_access.get_ping_state();
 
-            auto elapsed = (now_us() - ping_args->that->get_ping_start()).to<millis_t>().as<uint32_t>();
+            auto elapsed = (now_us() - remote_access.get_ping_start()).to<millis_t>().as<uint32_t>();
 
             ping_state.get("packets_sent")->updateUint(transmitted);
             ping_state.get("packets_received")->updateUint(received);
@@ -2033,7 +2033,6 @@ int RemoteAccess::start_ping() {
 
     dns_gethostbyname_addrtype_lwip_ctx_async(host, [this, host](dns_gethostbyname_addrtype_lwip_ctx_async_data *data) {
         PingArgs *ping_args = new PingArgs();
-        ping_args->that = this;
 
         esp_ping_config_t ping_config = ESP_PING_DEFAULT_CONFIG();
         ping_config.target_addr = data->addr;

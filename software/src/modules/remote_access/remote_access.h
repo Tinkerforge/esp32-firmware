@@ -154,7 +154,6 @@ struct [[gnu::packed]] management_command_packet {
 };
 
 struct PingArgs {
-    RemoteAccess *that;
     uint32_t packets_sent;
     uint32_t packets_received;
 };
