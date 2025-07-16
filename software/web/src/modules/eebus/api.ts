@@ -32,6 +32,7 @@ export interface removePeer {
 }
 
 export interface config {
+    enable: boolean;
     cert_id: number;
     key_id: number;
     peers: Peer[];
