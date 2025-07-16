@@ -32,6 +32,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { PageHeader } from "../../ts/components/page_header";
 import { SubPage } from "../../ts/components/sub_page";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
+import { ModbusFunctionCode } from "../modbus_tcp_client/modbus_function_code.enum";
 import { ModbusRegisterAddressMode } from "../modbus_tcp_client/modbus_register_address_mode.enum";
 
 export function ModbusTCPDebugNavbar() {
@@ -45,7 +46,7 @@ interface ModbusTCPDebugToolState {
     host: string;
     port: number;
     device_address: number;
-    function_code: number;
+    function_code: number; // ModbusFunctionCode
     register_address_mode: number; // ModbusRegisterAddressMode
     start_address: number;
     data_count: number;
@@ -62,6 +63,16 @@ function printable_ascii(x: number) {
     }
 
     return '.';
+}
+
+function to_value_hex(value: number) {
+    let value_hex = value.toString(16).toUpperCase();
+
+    while (value_hex.length < 4) {
+        value_hex = "0" + value_hex;
+    }
+
+    return value_hex;
 }
 
 export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
@@ -262,7 +273,8 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                         let data_count = this.state.data_count;
                         let values_hex: string[] = [];
 
-                        if (this.state.function_code == 6 || this.state.function_code == 16) {
+                        if (this.state.function_code == ModbusFunctionCode.WriteSingleRegister
+                         || this.state.function_code == ModbusFunctionCode.WriteMultipleRegisters) {
                             let values_dec = this.state.write_data.split(",");
 
                             if (values_dec.length >= 123 /* 1968 for coils */) {
@@ -290,13 +302,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                                     return;
                                 }
 
-                                let value_hex = value.toString(16).toUpperCase();
-
-                                while (value_hex.length < 4) {
-                                    value_hex = "0" + value_hex;
-                                }
-
-                                values_hex.push(value_hex);
+                                values_hex.push(to_value_hex(value));
                             }
 
                             data_count = values_hex.length;
@@ -356,12 +362,12 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     required
                     disabled={this.state.waiting}
                     items={[
-                        ["1", __("modbus_tcp_debug.content.function_code_read_coils")],
-                        ["2", __("modbus_tcp_debug.content.function_code_read_discrete_inputs")],
-                        ["3", __("modbus_tcp_debug.content.function_code_read_holding_registers")],
-                        ["4", __("modbus_tcp_debug.content.function_code_read_input_registers")],
-                        ["6", __("modbus_tcp_debug.content.function_code_write_single_register")],
-                        ["16", __("modbus_tcp_debug.content.function_code_write_multiple_registers")],
+                        [ModbusFunctionCode.ReadCoils.toString(), __("modbus_tcp_debug.content.function_code_read_coils")],
+                        [ModbusFunctionCode.ReadDiscreteInputs.toString(), __("modbus_tcp_debug.content.function_code_read_discrete_inputs")],
+                        [ModbusFunctionCode.ReadHoldingRegisters.toString(), __("modbus_tcp_debug.content.function_code_read_holding_registers")],
+                        [ModbusFunctionCode.ReadInputRegisters.toString(), __("modbus_tcp_debug.content.function_code_read_input_registers")],
+                        [ModbusFunctionCode.WriteSingleRegister.toString(), __("modbus_tcp_debug.content.function_code_write_single_register")],
+                        [ModbusFunctionCode.WriteMultipleRegisters.toString(), __("modbus_tcp_debug.content.function_code_write_multiple_registers")],
                     ]}
                     placeholder={__("select")}
                     value={this.state.function_code.toString()}
@@ -416,7 +422,10 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     invalidFeedback={__("modbus_tcp_debug.content.start_address_hex_invalid")} />
             </FormRow>
 
-            {this.state.function_code == 1 || this.state.function_code == 2 || this.state.function_code == 3 || this.state.function_code == 4 ?
+            {this.state.function_code == ModbusFunctionCode.ReadCoils
+          || this.state.function_code == ModbusFunctionCode.ReadDiscreteInputs
+          || this.state.function_code == ModbusFunctionCode.ReadHoldingRegisters
+          || this.state.function_code == ModbusFunctionCode.ReadInputRegisters ?
                 <FormRow label={__("modbus_tcp_debug.content.data_count")}>
                     <InputNumber
                         required
@@ -428,7 +437,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                 </FormRow>
                 : undefined}
 
-            {this.state.function_code == 6 ?
+            {this.state.function_code == ModbusFunctionCode.WriteSingleRegister ?
                 <FormRow label={__("modbus_tcp_debug.content.write_data_single_register")}>
                     <InputTextPatterned
                         required
@@ -441,7 +450,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                 </FormRow>
                 : undefined}
 
-            {this.state.function_code == 16 ?
+            {this.state.function_code == ModbusFunctionCode.WriteMultipleRegisters ?
                 <FormRow label={__("modbus_tcp_debug.content.write_data_multiple_registers")} label_muted={__("modbus_tcp_debug.content.write_data_multiple_registers_muted")}>
                     <InputTextPatterned
                         required
