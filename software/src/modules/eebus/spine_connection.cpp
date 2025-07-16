@@ -68,7 +68,7 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
     logger.printfln("Mark 3: Stack high water mark: %u bytes", uxTaskGetStackHighWaterMark(NULL) * sizeof(StackType_t));
 
     //response_doc.clear();
-    eebus.usecases.handle_message(received_header, eebus.data_handler.get(), this);
+    eebus.usecases->handle_message(received_header, eebus.data_handler.get(), this);
     //logger.printfln("Mark 4: Stack high water mark: %u bytes", uxTaskGetStackHighWaterMark(NULL) * sizeof(StackType_t));
 
     //logger.printfln("SPINE: Message processed");
