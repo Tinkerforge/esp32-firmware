@@ -26,7 +26,7 @@
 #include "module.h"
 #include "battery_modbus_tcp_table_id.enum.h"
 #include "modules/batteries/ibattery_generator.h"
-#include "modules/modbus_tcp_client/modbus_register_type.enum.h"
+#include "modules/modbus_tcp_client/modbus_function_code.enum.h"
 
 #if defined(__GNUC__)
 #pragma GCC diagnostic push
@@ -38,7 +38,7 @@ class BatteriesModbusTCP final : public IModule, public IBatteryGenerator
 {
 public:
     struct RegisterBlockSpec {
-        ModbusRegisterType register_type;
+        ModbusFunctionCode function_code;
         uint16_t start_address;
         void *values_buffer;
         uint16_t values_count; // not bytes, but registers or coils
