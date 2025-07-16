@@ -54,6 +54,7 @@ void EEBus::pre_setup()
     });
 
     config = ConfigRoot{Config::Object({
+                            {"enable", Config::Bool(false)},
                             {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
                             {"key_id", Config::Int(-1, -1, MAX_CERT_ID)},
                             {"peers",
@@ -145,6 +146,9 @@ void EEBus::setup()
         SHIP_AUTODISCOVER_INTERVAL,
         SHIP_AUTODISCOVER_INTERVAL);
 
+    if (is_enabled) {
+        usecases = make_unique_psram<EEBusUseCases>();
+    }
     initialized = true;
     logger.tracefln(this->trace_buffer_index, "EEBUS initialized");
 }
@@ -154,7 +158,7 @@ void EEBus::register_urls()
 
     api.addPersistentConfig("eebus/config", &config);
     api.addState("eebus/state", &state);
-
+    is_enabled = config.get("enable")->asBool();
     api.addCommand(
         "eebus/addPeer",
         &add_peer,
