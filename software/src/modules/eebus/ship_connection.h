@@ -31,6 +31,7 @@
 #include "TFJson.h"
 //#include "spine_connection.h"
 #include "tools/malloc.h"
+#include "tools/allocator.h"
 
 // Values and Timeouts as defined by SHIP specification
 #define SHIP_CONNECTION_CMI_TIMEOUT 30_s // SHIP 13.4.3 Timneout procedure

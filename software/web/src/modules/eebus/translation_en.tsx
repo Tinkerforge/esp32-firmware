@@ -3,6 +3,8 @@ import { h } from "preact";
 let x = {
     "eebus": {
         "content": {
+            "enable_eebus": "EEBUS aktivieren",
+            "enable_eebus_desc": "Erlaubt die Kommunikation mit EEBUS Geräten (neustart erforderlich)",
             "cert": "certificate",
             "key": "key",
             "ski": "SKI",
