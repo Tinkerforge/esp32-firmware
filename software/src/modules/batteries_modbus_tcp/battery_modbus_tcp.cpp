@@ -149,19 +149,25 @@ void BatteryModbusTCP::write_next(Execution *execution)
     BatteriesModbusTCP::RegisterBlockSpec *register_block = &execution->table->register_blocks[execution->index];
     TFModbusTCPFunctionCode function_code;
 
-    switch (register_block->register_type) {
-    case ModbusRegisterType::HoldingRegister:
-        function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
+    switch (register_block->function_code) {
+    case ModbusFunctionCode::WriteSingleCoil:
+        function_code = TFModbusTCPFunctionCode::WriteSingleCoil;
         break;
 
-    case ModbusRegisterType::Coil:
+    case ModbusFunctionCode::WriteSingleRegister:
+        function_code = TFModbusTCPFunctionCode::WriteSingleRegister;
+        break;
+
+    case ModbusFunctionCode::WriteMultipleCoils:
         function_code = TFModbusTCPFunctionCode::WriteMultipleCoils;
         break;
 
-    case ModbusRegisterType::InputRegister:
-    case ModbusRegisterType::DiscreteInput:
+    case ModbusFunctionCode::WriteMultipleRegisters:
+        function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
+        break;
+
     default:
-        logger.printfln_battery("Unsupported register type to write: %u", static_cast<uint8_t>(register_block->register_type));
+        logger.printfln_battery("Unsupported function code: %u", static_cast<uint8_t>(register_block->function_code));
 
         if (execution->callback) {
             execution->callback(false);
