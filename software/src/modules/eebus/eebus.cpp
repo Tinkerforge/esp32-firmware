@@ -28,7 +28,7 @@
 void EEBus::pre_setup()
 {
 
-    this->trace_buffer_index = logger.alloc_trace_buffer("eebus", 100 * 1024);
+    this->trace_buffer_index = logger.alloc_trace_buffer("eebus", 131072);
 
     // TODO: Fix string lengths. Spec says they are shorter
 
