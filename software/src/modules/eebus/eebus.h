@@ -56,6 +56,7 @@ public:
      * @return The unique name of the device.
      */
     String get_eebus_name();
+    
 
     Config config_peers_prototype;
     Config state_connections_prototype;
@@ -64,7 +65,9 @@ public:
     ConfigRoot config;
     ConfigRoot state;
     Ship ship;
-    EEBusUseCases usecases{};
+    unique_ptr_any<EEBusUseCases> usecases;
+    //EEBusUseCases usecases{};
+    bool is_enabled = false;;
 
     // To save memory the SpineDataTypeHandler is allocated to PSRAM if its available
     unique_ptr_any<SpineDataTypeHandler> data_handler = make_unique_psram<SpineDataTypeHandler>();

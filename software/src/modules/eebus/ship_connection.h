@@ -132,7 +132,7 @@ public:
     // in PSRAM (which we have plenty of) and with the uinque_ptr we make sure that it is automatically
     // freed as soon as it is removed from the ShipConnection list in Ship.
     struct Message {
-        uint8_t data[SHIP_CONNECTION_MAX_BUFFER_SIZE]; // TODO: Find good size
+        uint8_t data[SHIP_CONNECTION_MAX_BUFFER_SIZE]; 
         size_t length;
     };
     unique_ptr_any<Message> message_incoming = make_unique_psram<Message>();
@@ -144,7 +144,7 @@ public:
     WebSocketsClient ws_client;
     Role role;
     CoolString peer_ski = "";
-    std::unique_ptr<SpineConnection> spine;
+    unique_ptr_any<SpineConnection> spine;
     bool connection_established = false;
 
     // Set the ws_client, role and start the state machine that will branch into ClientWait or ServerWait depending on the role

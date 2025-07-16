@@ -56,21 +56,25 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
 void Ship::pre_setup()
 {
-    web_sockets.pre_setup();
+    //web_sockets.pre_setup(); // Moved to setup_wss(), is this needed this early?
 }
 
 void Ship::setup()
 {
+
+    if (eebus.is_enabled) {
 #ifdef SHIP_USE_INTERNAL_CERTS
-    eebus.state.get("ski")->updateString(ship_ski);
+        eebus.state.get("ski")->updateString(ship_ski);
 #endif
-    setup_wss();
+        setup_wss();
+    }
     setup_mdns();
 }
 
 void Ship::setup_wss()
 {
-    logger.printfln("setup_wss_server start");
+    logger.printfln("setup_wss_server start"); // TODO Move to tracelog
+    web_sockets.pre_setup();
 
 #ifndef SHIP_USE_INTERNAL_CERTS
     int cert_id = eebus.config.get("cert_id")->asInt();
