@@ -27,8 +27,8 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "ship_types.h"
-#include "tools.h"
 #include "spine_connection.h"
+#include "tools.h"
 
 extern EEBus eebus;
 
@@ -36,7 +36,7 @@ ShipConnection::ShipConnection(WebSocketsClient ws_client, const Role role, Cool
     ws_client(ws_client), role(role), peer_ski(std::move(ski))
 {
     // SpineConnection nach der ShipConnection Initialisierung erstellen
-    spine = std::make_unique<SpineConnection>(this);
+    spine = make_unique_psram<SpineConnection>(this);
     state_machine_next_step();
 }
 
