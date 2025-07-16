@@ -49,14 +49,15 @@ BatteriesModbusTCP::TableSpec *BatteriesModbusTCP::init_table(const Config *conf
     for (size_t i = 0; i < register_blocks_count; ++i) {
         auto register_block_config = register_blocks_config->get(i);
 
-        table->register_blocks[i].register_type = register_block_config->get("rtyp")->asEnum<ModbusRegisterType>();
+        table->register_blocks[i].function_code = register_block_config->get("func")->asEnum<ModbusFunctionCode>();
         table->register_blocks[i].start_address = static_cast<uint16_t>(register_block_config->get("addr")->asUint());
 
         auto values_config    = register_block_config->get("vals");
         uint16_t values_count = static_cast<uint16_t>(values_config->count());
         size_t values_byte_count;
 
-        if (table->register_blocks[i].register_type == ModbusRegisterType::Coil) {
+        if (table->register_blocks[i].function_code == ModbusFunctionCode::WriteSingleCoil
+         || table->register_blocks[i].function_code == ModbusFunctionCode::WriteMultipleCoils) {
             values_byte_count = (values_count + 7u) / 8u;
         }
         else {
@@ -66,8 +67,9 @@ BatteriesModbusTCP::TableSpec *BatteriesModbusTCP::init_table(const Config *conf
         table->register_blocks[i].values_buffer = malloc(values_byte_count);
         table->register_blocks[i].values_count  = values_count;
 
-        if (table->register_blocks[i].register_type == ModbusRegisterType::Coil) {
-            uint8_t *values_buffer = reinterpret_cast<uint8_t *>(table->register_blocks[i].values_buffer);
+        if (table->register_blocks[i].function_code == ModbusFunctionCode::WriteSingleCoil
+         || table->register_blocks[i].function_code == ModbusFunctionCode::WriteMultipleCoils) {
+            uint8_t *values_buffer = static_cast<uint8_t *>(table->register_blocks[i].values_buffer);
 
             values_buffer[values_byte_count - 1] = 0;
 
@@ -83,7 +85,7 @@ BatteriesModbusTCP::TableSpec *BatteriesModbusTCP::init_table(const Config *conf
             }
         }
         else {
-            uint16_t *values_buffer = reinterpret_cast<uint16_t *>(table->register_blocks[i].values_buffer);
+            uint16_t *values_buffer = static_cast<uint16_t *>(table->register_blocks[i].values_buffer);
 
             for (uint16_t k = 0; k < values_count; ++k) {
                 values_buffer[k] = static_cast<uint16_t>(values_config->get(k)->asUint());
@@ -114,7 +116,7 @@ void BatteriesModbusTCP::pre_setup()
 
     table_custom_register_block_prototype = Config::Object({
         {"desc", Config::Str("", 0, 32)},
-        {"rtyp", Config::Enum(ModbusRegisterType::HoldingRegister)}, // FIXME: replace with function code?
+        {"func", Config::Enum(ModbusFunctionCode::WriteMultipleRegisters)},
         {"addr", Config::Uint16(0)},
         {"vals", Config::Array({},
             Config::get_prototype_uint16_0(),
@@ -355,9 +357,11 @@ const Config *BatteriesModbusTCP::get_errors_prototype()
     return Config::Null();//&errors_prototype;
 }
 
-String BatteriesModbusTCP::validate_config(Config &update, ConfigSource source) {
-    if (update.get("table")->getTag<BatteryModbusTCPTableID>() != BatteryModbusTCPTableID::Custom)
+String BatteriesModbusTCP::validate_config(Config &update, ConfigSource source)
+{
+    if (update.get("table")->getTag<BatteryModbusTCPTableID>() != BatteryModbusTCPTableID::Custom) {
         return String();
+    }
 
     const char * const keys[] = {
         "permit_grid_charge",
@@ -368,20 +372,28 @@ String BatteriesModbusTCP::validate_config(Config &update, ConfigSource source) 
         "revoke_charge_override",
     };
 
-    size_t used = 0;
+    size_t total_values_count = 0;
+
     for (const char *key : keys) {
-        auto blocks = update.get("table")->get()->get(key)->get("register_blocks");
-        for (size_t i = 0; i < blocks->count(); ++i) {
-            auto val_count = blocks->get(i)->get("vals")->count();
-            auto start_addr = blocks->get(i)->get("addr")->asUint();
-            used += blocks->get(i)->get("vals")->count();
-            if (start_addr + val_count > 65536)
-                return "Register address + number of vals must be less than 65536!";
+        auto register_blocks = update.get("table")->get()->get(key)->get("register_blocks");
+
+        for (size_t i = 0; i < register_blocks->count(); ++i) {
+            // FIXME: validate func is valid and vals length match func restrictions
+
+            auto start_address = register_blocks->get(i)->get("addr")->asUint();
+            auto values_count  = register_blocks->get(i)->get("vals")->count();
+
+            total_values_count += values_count;
+
+            if (start_address + values_count > 65536) {
+                return "Register address + number of values must be less than 65536!";
+            }
         }
     }
 
-    if (used > OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_TOTAL_VALUES())
+    if (total_values_count > OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_TOTAL_VALUES()) {
         return "At most " MACRO_VALUE_TO_STRING(OPTIONS_BATTERIES_MODBUS_TCP_MAX_CUSTOM_TOTAL_VALUES()) " total values are allowed!";
+    }
 
     return String();
 }
@@ -405,19 +417,29 @@ void BatteriesModbusTCP::write_next()
     RegisterBlockSpec *register_block = &execute_table->register_blocks[execute_index];
     TFModbusTCPFunctionCode function_code;
 
-    switch (register_block->register_type) {
-    case ModbusRegisterType::HoldingRegister:
-        function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
+    switch (register_block->function_code) {
+    case ModbusFunctionCode::WriteSingleCoil:
+        function_code = TFModbusTCPFunctionCode::WriteSingleCoil;
         break;
 
-    case ModbusRegisterType::Coil:
+    case ModbusFunctionCode::WriteSingleRegister:
+        function_code = TFModbusTCPFunctionCode::WriteSingleRegister;
+        break;
+
+    case ModbusFunctionCode::WriteMultipleCoils:
         function_code = TFModbusTCPFunctionCode::WriteMultipleCoils;
         break;
 
-    case ModbusRegisterType::InputRegister:
-    case ModbusRegisterType::DiscreteInput:
+    case ModbusFunctionCode::WriteMultipleRegisters:
+        function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
+        break;
+
+    case ModbusFunctionCode::ReadCoils:
+    case ModbusFunctionCode::ReadDiscreteInputs:
+    case ModbusFunctionCode::ReadHoldingRegisters:
+    case ModbusFunctionCode::ReadInputRegisters:
     default:
-        report_errorf(execute_cookie, "Unsupported register type to write: %u", static_cast<uint8_t>(register_block->register_type));
+        report_errorf(execute_cookie, "Unsupported function code: %u", static_cast<uint8_t>(register_block->function_code));
         release_client();
         return;
     }
