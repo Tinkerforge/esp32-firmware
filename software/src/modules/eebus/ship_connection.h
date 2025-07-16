@@ -28,10 +28,9 @@
 #include "module.h"
 #include "modules/ws/web_sockets.h"
 //#include "ship_types.h"
-#include "spine_connection.h"
-#include "tools/malloc.h"
 #include "TFJson.h"
-
+//#include "spine_connection.h"
+#include "tools/malloc.h"
 
 // Values and Timeouts as defined by SHIP specification
 #define SHIP_CONNECTION_CMI_TIMEOUT 30_s // SHIP 13.4.3 Timneout procedure
@@ -42,6 +41,8 @@
 
 #define SHIP_CONNECTION_MAX_JSON_SIZE 8192          // TODO: What is a sane value here? Not that important since it now lives in PSRAM
 #define SHIP_CONNECTION_MAX_BUFFER_SIZE (1024 * 10) // TODO: What is a sane value here? Not that important since it now lives in PSRAM
+
+class SpineConnection; // Forward declaration to avoid circular dependency
 
 class ShipConnection
 {
@@ -140,16 +141,14 @@ public:
     BasicJsonDocument<ArduinoJsonPsramAllocator> incoming_json_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
     BasicJsonDocument<ArduinoJsonPsramAllocator> outgoing_json_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
 
-    // Set the ws_client, role and start the state machine that will branch into ClientWait or ServerWait depending on the role
-    ShipConnection(WebSocketsClient ws_client, const Role role, CoolString ski) : ws_client(ws_client), role(role), peer_ski(std::move(ski))
-    {
-        state_machine_next_step();
-    }
     WebSocketsClient ws_client;
     Role role;
     CoolString peer_ski = "";
-    SpineConnection spine{this};
+    std::unique_ptr<SpineConnection> spine;
     bool connection_established = false;
+
+    // Set the ws_client, role and start the state machine that will branch into ClientWait or ServerWait depending on the role
+    ShipConnection(WebSocketsClient ws_client, const Role role, CoolString ski);
 
     State state = State::CmiInitStart;
     State previous_state = State::CmiInitStart;

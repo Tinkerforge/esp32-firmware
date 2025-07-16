@@ -86,7 +86,7 @@ void SpineConnection::send_datagram(JsonVariantConst payload,
                     "SPINE: Sending datagram. cmdClassifier: %d, Content: %s",
                     static_cast<int>(cmd_classifier),
                     payload.as<String>().c_str());
-    response_doc.clear();
+    response_doc->clear();
     HeaderType header;
     header.ackRequest = require_ack;
     header.cmdClassifier = cmd_classifier;
@@ -96,9 +96,9 @@ void SpineConnection::send_datagram(JsonVariantConst payload,
     header.msgCounter = msg_counter++;
     header.msgCounterReference = received_header.msgCounter; // The message counter of the last received datagram
 
-    response_doc["datagram"][0]["header"] = header;
-    response_doc["datagram"][1]["payload"]["cmd"][0] = payload;
-    ship_connection->send_data_message(response_doc);
+    (*response_doc)["datagram"][0]["header"] = header;
+    (*response_doc)["datagram"][1]["payload"]["cmd"][0] = payload;
+    ship_connection->send_data_message(response_doc->as<JsonVariant>());
     // TODO: Handle acknowledge request
 }
 

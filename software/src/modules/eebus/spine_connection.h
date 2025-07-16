@@ -24,6 +24,7 @@
 
 #include "config.h"
 #include "module.h"
+#include "ship_connection.h"
 #include "spine_types.h"
 #include <TFJson.h>
 
@@ -37,7 +38,9 @@ class SpineConnection
 
 public:
     ShipConnection *ship_connection = nullptr;
-    explicit SpineConnection(ShipConnection *ship_connection) : ship_connection(ship_connection), received_header() {};
+    explicit SpineConnection(ShipConnection *ship_connection) : ship_connection(ship_connection) {
+        response_doc = &ship_connection->outgoing_json_doc;
+    };
 
     /**
     * Process a received SPINE datagram and passes the data to the EEBUS Usecase.
@@ -91,7 +94,8 @@ public:
     /**
     * The JSON Document used for holding the response
     */
-    DynamicJsonDocument response_doc{SPINE_CONNECTION_MAX_JSON_SIZE}; // TODO: Maybe allocate this in PSRAM
+    JsonDocument *response_doc;
+    //DynamicJsonDocument response_doc{SPINE_CONNECTION_MAX_JSON_SIZE}; // TODO: Maybe allocate this in PSRAM
     /**
     * The response datagram to be retrieved by the SPINE Connection and sent back to the peer.
     */

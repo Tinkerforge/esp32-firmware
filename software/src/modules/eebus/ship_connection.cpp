@@ -28,8 +28,17 @@
 #include "module_dependencies.h"
 #include "ship_types.h"
 #include "tools.h"
+#include "spine_connection.h"
 
 extern EEBus eebus;
+
+ShipConnection::ShipConnection(WebSocketsClient ws_client, const Role role, CoolString ski) :
+    ws_client(ws_client), role(role), peer_ski(std::move(ski))
+{
+    // SpineConnection nach der ShipConnection Initialisierung erstellen
+    spine = std::make_unique<SpineConnection>(this);
+    state_machine_next_step();
+}
 
 void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
 {
@@ -937,7 +946,7 @@ void ShipConnection::state_done()
                                 message_incoming->data[0],
                                 message_incoming->length,
                                 &message_incoming->data[1]);
-                spine.process_datagram(data.payload);
+                spine->process_datagram(data.payload);
             } else {
                 logger.printfln("Received a Data Message but encountered an error while trying to deserialize the message");
             }
