@@ -1,0 +1,8 @@
+Read Coils = 1
+Read Discrete Inputs = 2
+Read Holding Registers = 3
+Read Input Registers = 4
+Write Single Coil = 5
+Write Single Register = 6
+Write Multiple Coils = 15
+Write Multiple Registers = 16
