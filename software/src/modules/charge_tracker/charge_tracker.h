@@ -23,9 +23,9 @@
 #include "config.h"
 #include "../web_server/web_server.h"
 #include "async_https_client.h"
+#include "csv_charge_log.h"
 
 #define CHARGE_TRACKER_MAX_REPAIR 200
-#define CHARGE_RECORD_FOLDER "/charge-records"
 #define MAX_RETRY_COUNT 10
 #define BASE_RETRY_DELAY_MINUTES 5
 struct SendChargeLogArgs;
@@ -64,20 +64,19 @@ public:
     std::mutex records_mutex;
     std::mutex pdf_mutex;
 
-    bool pdf_send_in_progress = false;
+    bool send_in_progress = false;
 
 private:
     bool repair_last(float);
     void repair_charges();
     void generate_pdf(std::function<int(const void *data, size_t len, bool last_data)> &&callback, int user_filter, uint32_t start_timestamp_min, uint32_t end_timestamp_min, uint32_t current_timestamp_min, bool english, const char *letterhead, int letterhead_lines, WebServerRequest *request);
-    void send_pdf(SendChargeLogArgs &&args);
+    void send_file(SendChargeLogArgs &&args);
 
     Config last_charges_prototype;
     Config charge_log_send_prototype;
 };
 
 struct SendChargeLogArgs {
-    ChargeTracker *that = nullptr;
     int user_idx = 0;
     uint32_t last_month_start_min = 0;
     uint32_t last_month_end_min = 0;
@@ -88,7 +87,6 @@ struct SendChargeLogArgs {
 
     SendChargeLogArgs(){};
     SendChargeLogArgs(const SendChargeLogArgs &other) {
-        that = other.that;
         user_idx = other.user_idx;
         last_month_start_min = other.last_month_start_min;
         last_month_end_min = other.last_month_end_min;
