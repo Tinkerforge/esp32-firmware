@@ -82,7 +82,7 @@ void ModbusTCPDebug::register_urls()
         millis_t timeout = millis_t{transact_config.get("timeout")->asUint()};
         bool hexload_registers = false;
         bool hexdump_registers = false;
-        bool hexdump_colis = false;
+        bool hexdump_coils = false;
 
         defer {
             // When done parsing the transaction, drop Strings from config to free memory.
@@ -95,7 +95,7 @@ void ModbusTCPDebug::register_urls()
         switch (function_code) {
         case TFModbusTCPFunctionCode::ReadCoils:
         case TFModbusTCPFunctionCode::ReadDiscreteInputs:
-            hexdump_colis = true;
+            hexdump_coils = true;
             break;
 
         case TFModbusTCPFunctionCode::ReadHoldingRegisters:
@@ -121,7 +121,7 @@ void ModbusTCPDebug::register_urls()
         }
 
         modbus_tcp_client.get_pool()->acquire(host.c_str(), port,
-        [this, cookie, host, port, device_address, function_code, start_address, data_count, write_data, timeout, hexload_registers, hexdump_registers, hexdump_colis](TFGenericTCPClientConnectResult connect_result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
+        [this, cookie, host, port, device_address, function_code, start_address, data_count, write_data, timeout, hexload_registers, hexdump_registers, hexdump_coils](TFGenericTCPClientConnectResult connect_result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
             if (connect_result != TFGenericTCPClientConnectResult::Connected) {
                 char connect_error[256] = "";
 
@@ -178,7 +178,7 @@ void ModbusTCPDebug::register_urls()
             }
 
             static_cast<TFModbusTCPSharedClient *>(transact_client)->transact(device_address, function_code, start_address, data_count, transact_buffer, timeout,
-            [this, cookie, data_count, hexdump_registers, hexdump_colis](TFModbusTCPClientTransactionResult transact_result, const char *error_message) {
+            [this, cookie, data_count, hexdump_registers, hexdump_coils](TFModbusTCPClientTransactionResult transact_result, const char *error_message) {
                 if (transact_result != TFModbusTCPClientTransactionResult::Success) {
                     report_errorf(cookie, "Transaction failed: %s (%d)%s%s",
                                   get_tf_modbus_tcp_client_transaction_result_name(transact_result),
@@ -203,7 +203,7 @@ void ModbusTCPDebug::register_urls()
                     hexdump<uint16_t>(static_cast<uint16_t *>(transact_buffer), data_count, data_hexdump, ARRAY_SIZE(data_hexdump), HexdumpCase::Lower);
                     json.addMemberString("read_data", data_hexdump);
                 }
-                else if (hexdump_colis) {
+                else if (hexdump_coils) {
                     hexdump<uint8_t>(static_cast<uint8_t *>(transact_buffer), (data_count + 7) / 8, data_hexdump, ARRAY_SIZE(data_hexdump), HexdumpCase::Lower);
                     json.addMemberString("read_data", data_hexdump);
                 }
