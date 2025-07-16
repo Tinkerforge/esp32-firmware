@@ -200,8 +200,11 @@ public:
      */
     void inform_subscribers(int entity, int feature, SpineDataTypeHandler *data);
 
-    DynamicJsonDocument response{8192}; // The response document to be filled with the response data
+    BasicJsonDocument<ArduinoJsonPsramAllocator> temporary_json_doc{
+        SPINE_CONNECTION_MAX_JSON_SIZE}; // If a temporary doc is needed, use this one.
 
+    BasicJsonDocument<ArduinoJsonPsramAllocator> response{
+        SPINE_CONNECTION_MAX_JSON_SIZE}; // The response document to be filled with the response data
 
     uint8_t feature_address_node_management = 0;
     NodeManagementUsecase node_management{};

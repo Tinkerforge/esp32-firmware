@@ -29,10 +29,9 @@
 namespace SHIP_TYPES
 {
 
-DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, size_t length, bool compatiblity_mode)
+DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, size_t length, bool compatiblity_mode, JsonDocument &doc)
 {
-    //DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
-
+    doc.clear();
     String incoming_data_str(reinterpret_cast<const char *>(incoming_data), length);
     if (compatiblity_mode) {
         incoming_data_str.replace("{}", "[]");
@@ -77,7 +76,7 @@ DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, 
 
 String ShipMessageDataType::type_to_json(ShipConnection::Message &message_outgoing)
 {
-    //DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE};
+    DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE}; // This exists just in this function
 
     JsonObject data = doc["data"].to<JsonObject>();
     data["header"]["protocolId"] = protocol_id;
