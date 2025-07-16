@@ -930,7 +930,7 @@ void ShipConnection::state_done()
         case ProtocolState::Data: {
             SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
 
-            if (data.json_to_type(&message_incoming->data[1], message_incoming->length - 1, false)
+            if (data.json_to_type(&message_incoming->data[1], message_incoming->length - 1, false, incoming_json_doc)
                 == SHIP_TYPES::DeserializationResult::SUCCESS) {
                 logger.tracefln(eebus.trace_buffer_index,
                                 "DATA received: %d (len %d)-> %s",
@@ -967,15 +967,14 @@ void ShipConnection::state_done()
         case ProtocolState::Terminate: {
             logger.printfln("SHIP Connection Close requested. Closing connection.");
 
-            DynamicJsonDocument doc{1024}; // TODO: Move all this json stuff into another function/type
-
-            JsonArray connectionClose = doc["connectionClose"].to<JsonArray>();
+            outgoing_json_doc.clear();
+            JsonArray connectionClose = outgoing_json_doc["connectionClose"];
             connectionClose[0]["phase"] = "announce";
             connectionClose[1]["maxTime"] = 500;
             connectionClose[2]["reason"] = "User close";
 
             String output;
-            serializeJson(doc, output);
+            serializeJson(outgoing_json_doc, output);
             message_outgoing->data[0] = 3;
             memcpy(&message_outgoing->data[1], output.c_str(), output.length());
             message_outgoing->length = output.length() + 1;
@@ -1088,8 +1087,8 @@ void ShipConnection::json_to_type_connection_hello(ConnectionHelloType *connecti
 {
     //logger.printfln("J2T ConnectionHello json: %s", &message_incoming->data[1]);
 
-    DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE}; // TODO: use a global json Doc
-    DeserializationError error = deserializeJson(json_doc, &message_incoming->data[1], message_incoming->length - 1);
+    incoming_json_doc.clear();
+    DeserializationError error = deserializeJson(incoming_json_doc, &message_incoming->data[1], message_incoming->length - 1);
     if (error) {
         logger.tracefln(eebus.trace_buffer_index, "ConnectionHello: Error during JSON deserialization: %s", error.c_str());
     } else {
@@ -1101,7 +1100,7 @@ void ShipConnection::json_to_type_connection_hello(ConnectionHelloType *connecti
 
         // Go through array of objects and parse all fields
         // This will overwrite the optional fields if they are present
-        for (JsonObject obj : json_doc["connectionHello"].as<JsonArray>()) {
+        for (JsonObject obj : incoming_json_doc["connectionHello"].as<JsonArray>()) {
             if (obj.containsKey("phase")) {
                 connection_hello->phase =
                     static_cast<ConnectionHelloPhase::Type>(ConnectionHelloPhase::from_str(obj["phase"].as<String>().c_str()));
@@ -1126,9 +1125,9 @@ void ShipConnection::json_to_type_connection_hello(ConnectionHelloType *connecti
 
 void ShipConnection::type_to_json_connection_hello(ConnectionHelloType *connection_hello)
 {
-    // TODO: Move this json_doc to somehwere else or let it use something central
-    DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE}; // TODO: use a global json Doc
-    JsonArray json_hello = json_doc.createNestedArray("connectionHello");
+
+    outgoing_json_doc.clear();
+    JsonArray json_hello = outgoing_json_doc.createNestedArray("connectionHello");
 
     JsonObject phase = json_hello.createNestedObject();
     phase["phase"] = ConnectionHelloPhase::to_str(connection_hello->phase);
@@ -1144,7 +1143,7 @@ void ShipConnection::type_to_json_connection_hello(ConnectionHelloType *connecti
     }
 
     message_outgoing->data[0] = 1;
-    size_t length = serializeJson(json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE - 1);
+    size_t length = serializeJson(outgoing_json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE - 1);
     message_outgoing->length = length + 1;
 
     logger.tracefln(eebus.trace_buffer_index, "T2J ConnectionHello json: %s", &message_outgoing->data[1]);
@@ -1153,13 +1152,12 @@ void ShipConnection::type_to_json_connection_hello(ConnectionHelloType *connecti
 void ShipConnection::json_to_type_handshake_type(ProtocolHandshakeType *handshake_type)
 {
     logger.tracefln(eebus.trace_buffer_index, "J2T ProtocolHandshakeType json: %s", &message_incoming->data[1]);
-
-    DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE}; // TODO: Use a global json Doc
-    DeserializationError error = deserializeJson(json_doc, &message_incoming->data[1], message_incoming->length - 1);
+    incoming_json_doc.clear();
+    DeserializationError error = deserializeJson(incoming_json_doc, &message_incoming->data[1], message_incoming->length - 1);
     if (error) {
         logger.tracefln(eebus.trace_buffer_index, "Protocolhandshake: Error during JSON deserialization: %s", error.c_str());
     } else {
-        for (JsonObject obj : json_doc["messageProtocolHandshake"].as<JsonArray>()) {
+        for (JsonObject obj : incoming_json_doc["messageProtocolHandshake"].as<JsonArray>()) {
             if (obj.containsKey("handshakeType")) {
                 handshake_type->handshakeType =
                     static_cast<ProtocolHandshake::Type>(ProtocolHandshake::from_str(obj["handshakeType"].as<String>().c_str()));
@@ -1183,8 +1181,8 @@ void ShipConnection::json_to_type_handshake_type(ProtocolHandshakeType *handshak
 
 void ShipConnection::type_to_json_handshake_type(ProtocolHandshakeType *handshake_type)
 {
-    DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE}; // TODO: use a global json Doc
-    JsonArray json_handshake = json_doc.createNestedArray("messageProtocolHandshake");
+    outgoing_json_doc.clear();
+    JsonArray json_handshake = outgoing_json_doc.createNestedArray("messageProtocolHandshake");
 
     JsonObject ht = json_handshake.createNestedObject();
     ht["handshakeType"] = ProtocolHandshake::to_str(handshake_type->handshakeType);
@@ -1203,7 +1201,7 @@ void ShipConnection::type_to_json_handshake_type(ProtocolHandshakeType *handshak
     format_list.add("JSON-UTF8");
 
     message_outgoing->data[0] = 1;
-    size_t length = serializeJson(json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE - 1);
+    size_t length = serializeJson(outgoing_json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE - 1);
     message_outgoing->length = length + 1;
 
     logger.tracefln(eebus.trace_buffer_index, "T2J ProtocolHandshakeType json: %s", &message_outgoing->data[1]);
@@ -1213,7 +1211,7 @@ void ShipConnection::sme_protocol_abort_procedure(ProtocolAbortReason reason)
 {
     task_scheduler.cancel(protocol_handshake_timer);
 
-    DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE}; // TODO: use a global json Doc
+    DynamicJsonDocument json_doc{1024}; // 1kB should be enough for the error message
     JsonArray json_handshake = json_doc.createNestedArray("messageProtocolHandshakeError");
 
     JsonObject ht = json_handshake.createNestedObject();
@@ -1230,8 +1228,8 @@ void ShipConnection::sme_protocol_abort_procedure(ProtocolAbortReason reason)
 
 void ShipConnection::to_json_access_methods_type()
 {
-    DynamicJsonDocument json_doc{SHIP_CONNECTION_MAX_JSON_SIZE}; // TODO: use a global json Doc
-    JsonArray json_am = json_doc.createNestedArray("accessMethods");
+    outgoing_json_doc.clear();
+    JsonArray json_am = outgoing_json_doc.createNestedArray("accessMethods");
 
     JsonObject access_methods = json_am.createNestedObject();
     access_methods["id"] = "Tinkerforge-WARP3-12345"; // TODO
@@ -1246,7 +1244,7 @@ void ShipConnection::to_json_access_methods_type()
 #endif
 
     message_outgoing->data[0] = 1;
-    size_t length = serializeJson(json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE - 1);
+    size_t length = serializeJson(outgoing_json_doc, &message_outgoing->data[1], SHIP_CONNECTION_MAX_JSON_SIZE - 1);
     message_outgoing->length = length + 1;
 
     logger.tracefln(eebus.trace_buffer_index, "T2J AccessMethods json: %s", &message_outgoing->data[1]);
