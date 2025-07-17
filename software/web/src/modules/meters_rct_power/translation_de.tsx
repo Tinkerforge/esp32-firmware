@@ -10,6 +10,7 @@ let x = {
             "port": "Port",
             "port_muted": "typischerweise 8899",
             "virtual_meter": "Virtueller Zähler",
+            "virtual_meter_inverter": "Wechselrichter",
             "virtual_meter_grid": "Netzanschluss",
             "virtual_meter_battery": "Speicher",
             "virtual_meter_load": "Last",

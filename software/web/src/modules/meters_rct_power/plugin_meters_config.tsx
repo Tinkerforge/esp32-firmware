@@ -46,6 +46,7 @@ export type RCTPowerMetersConfig = [
 function get_default_location(virtual_meter: number) {
     if (util.hasValue(virtual_meter)) {
         switch (virtual_meter) {
+        case VirtualMeter.Inverter: return MeterLocation.Inverter;
         case VirtualMeter.Grid: return MeterLocation.Grid;
         case VirtualMeter.Battery: return MeterLocation.Battery;
         case VirtualMeter.Load: return MeterLocation.Load;
@@ -94,6 +95,7 @@ export function init() {
                         <InputSelect
                             required
                             items={[
+                                [VirtualMeter.Inverter.toString(), __("meters_rct_power.content.virtual_meter_inverter")],
                                 [VirtualMeter.Grid.toString(), __("meters_rct_power.content.virtual_meter_grid")],
                                 [VirtualMeter.Battery.toString(), __("meters_rct_power.content.virtual_meter_battery")],
                                 [VirtualMeter.Load.toString(), __("meters_rct_power.content.virtual_meter_load")],

@@ -10,6 +10,7 @@ let x = {
             "port": "Port",
             "port_muted": "typically 8899",
             "virtual_meter": "Virtual meter",
+            "virtual_meter_inverter": "Inverter",
             "virtual_meter_grid": "Grid",
             "virtual_meter_battery": "Battery",
             "virtual_meter_load": "Load",

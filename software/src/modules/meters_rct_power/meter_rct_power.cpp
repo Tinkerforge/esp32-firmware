@@ -25,50 +25,98 @@
 #include "modules/meters/meter_location.enum.h"
 #include "tools/float.h"
 
+static const MeterValueID inverter_value_ids[] = {
+    MeterValueID::VoltageL1N,
+    MeterValueID::VoltageL2N,
+    MeterValueID::VoltageL3N,
+    MeterValueID::VoltageL1L2,
+    MeterValueID::VoltageL2L3,
+    MeterValueID::VoltageL3L1,
+    MeterValueID::CurrentL1ImExSum,
+    MeterValueID::CurrentL2ImExSum,
+    MeterValueID::CurrentL3ImExSum,
+    MeterValueID::PowerActiveL1ImExDiff,
+    MeterValueID::PowerActiveL2ImExDiff,
+    MeterValueID::PowerActiveL3ImExDiff,
+    MeterValueID::PowerActiveLSumImExDiff,
+    MeterValueID::PowerApparentL1ImExDiff,
+    MeterValueID::PowerApparentL2ImExDiff,
+    MeterValueID::PowerApparentL3ImExDiff,
+    MeterValueID::PowerApparentLSumImExDiff,
+    MeterValueID::PowerReactiveL1IndCapDiff,
+    MeterValueID::PowerReactiveL2IndCapDiff,
+    MeterValueID::PowerReactiveL3IndCapDiff,
+    MeterValueID::PowerReactiveLSumIndCapDiff,
+};
+
+static const RCTValueSpec inverter_rct_value_specs[] = {
+    {0xCF053085,  1.0f}, // AC voltage phase 1 [V]       / g_sync.u_l_rms[0]
+    {0x54B4684E,  1.0f}, // AC voltage phase 2 [V]       / g_sync.u_l_rms[1]
+    {0x2545E22D,  1.0f}, // AC voltage phase 3 [V]       / g_sync.u_l_rms[2]
+    {0x63476DBE,  1.0f}, // Phase to phase voltage 1 [V] / g_sync.u_ptp_rms[0]
+    {0x485AD749,  1.0f}, // Phase to phase voltage 2 [V] / g_sync.u_ptp_rms[1]
+    {0xF25C339B,  1.0f}, // Phase to phase voltage 3 [V] / g_sync.u_ptp_rms[2]
+    {0x89EE3EB5,  1.0f}, // Current phase 1 [A]          / g_sync.i_dr_eff[0]
+    {0x650C1ED7,  1.0f}, // Current phase 2 [A]          / g_sync.i_dr_eff[1]
+    {0x92BC682B,  1.0f}, // Current phase 3 [A]          / g_sync.i_dr_eff[2]
+    {0x71E10B51, -1.0f}, // AC power phase 1 [W]         / g_sync.p_ac_lp[0]
+    {0x6E1C5B78, -1.0f}, // AC power phase 2 [W]         / g_sync.p_ac_lp[1]
+    {0xB9928C51, -1.0f}, // AC power phase 3 [W]         / g_sync.p_ac_lp[2]
+    {0xDB2D69AE, -1.0f}, // AC power [W]                 / g_sync.p_ac_sum_lp
+    {0x3A444FC6, -1.0f}, // Apparent power phase 1 [VA]  / g_sync.s_ac_lp[0]
+    {0x4077335D, -1.0f}, // Apparent power phase 2 [VA]  / g_sync.s_ac_lp[1]
+    {0x883DE9AB, -1.0f}, // Apparent power phase 3 [VA]  / g_sync.s_ac_lp[2]
+    {0xDCA1CF26, -1.0f}, // Apparent power [VA]          / g_sync.s_ac_sum_lp
+    {0xE94C2EFC,  1.0f}, // Reactive power phase 1 [var] / g_sync.q_ac[0]
+    {0x82E3C121,  1.0f}, // Reactive power phase 2 [var] / g_sync.q_ac[1]
+    {0xBCA77559,  1.0f}, // Reactive power phase 3 [var] / g_sync.q_ac[2]
+    {0x7C78CBAC,  1.0f}, // Reactive power [var]         / g_sync.q_ac_sum_lp
+};
+
 static const MeterValueID grid_value_ids[] = {
+    MeterValueID::PowerActiveLSumImExDiff,
     MeterValueID::EnergyActiveLSumExport,
     MeterValueID::EnergyActiveLSumImport,
-    MeterValueID::PowerActiveLSumImExDiff,
 };
 
 static const RCTValueSpec grid_rct_value_specs[] = {
-    {0x44D4C533, -0.001f}, // Total energy grid feed-in [Wh]
-    {0x62FBE7DC,  0.001f}, // Total energy grid load [Wh]
-    {0x91617C58,  1.0f},   // Total grid power [W]
+    {0x91617C58,  1.0f},   // Total grid power [W]           / g_sync.p_ac_grid_sum_lp
+    {0x44D4C533, -0.001f}, // Total energy grid feed-in [Wh] / energy.e_grid_feed_total
+    {0x62FBE7DC,  0.001f}, // Total energy grid load [Wh]    / energy.e_grid_load_total
 };
 
 static const MeterValueID battery_value_ids[] = {
-    MeterValueID::CurrentDC,
+    MeterValueID::VoltageDC,
+    MeterValueID::CurrentDCChaDisDiff,
     MeterValueID::PowerDCChaDisDiff,
     MeterValueID::EnergyDCCharge,
-    MeterValueID::VoltageDC,
-    MeterValueID::Temperature,
-    MeterValueID::StateOfCharge,
     MeterValueID::EnergyDCDischarge,
+    MeterValueID::StateOfCharge,
+    MeterValueID::Temperature,
 };
 
 static const RCTValueSpec battery_rct_value_specs[] = {
-    {0x21961B58,  -1.0f},   // Battery current [A]
-    {0x400F015B,  -1.0f},   // Battery power [W]
-    {0x5570401B,   0.001f}, // Total energy flow into battery [Wh]
-    {0x65EED11B,   1.0f},   // Battery voltage [V]
-    {0x902AFAFB,   1.0f},   // Battery temperature [°C]
-    {0x959930BF, 100.0f},   // Battery SOC [0.01 %]
-    {0xA9033880,   0.001f}, // Total energy flow from battery [Wh]
+    {0x65EED11B,   1.0f},   // Battery voltage [V]                 / battery.voltage
+    {0x21961B58,  -1.0f},   // Battery current [A]                 / battery.current
+    {0x400F015B,  -1.0f},   // Battery power [W]                   / g_sync.p_acc_lp
+    {0x5570401B,   0.001f}, // Total energy flow into battery [Wh] / battery.stored_energy
+    {0xA9033880,   0.001f}, // Total energy flow from battery [Wh] / battery.used_energy
+    {0x959930BF, 100.0f},   // Battery SOC [0.01 %]                / battery.soc
+    {0x902AFAFB,   1.0f},   // Battery temperature [°C]            / battery.temperature
 };
 
 static const MeterValueID load_value_ids[] = {
     MeterValueID::PowerActiveL1ImExDiff,
     MeterValueID::PowerActiveL2ImExDiff,
-    MeterValueID::EnergyActiveLSumImExDiff,
     MeterValueID::PowerActiveL3ImExDiff,
+    MeterValueID::EnergyActiveLSumImExDiff,
 };
 
 static const RCTValueSpec load_rct_value_specs[] = {
-    {0x03A39CA2, 1.0f},   // Load household phase 1 [W]
-    {0x2788928C, 1.0f},   // Load household phase 2 [W]
-    {0xEFF4B537, 0.001f}, // Household total energy [Wh] // FIXME: direction?
-    {0xF0B436DD, 1.0f},   // Load household phase 3 [W]
+    {0x3A39CA2,  1.0f},   // Load household phase 1 [W]  / g_sync.p_ac_load[0]
+    {0x2788928C, 1.0f},   // Load household phase 2 [W]  / g_sync.p_ac_load[1]
+    {0xF0B436DD, 1.0f},   // Load household phase 3 [W]  / g_sync.p_ac_load[2]
+    {0xEFF4B537, 0.001f}, // Household total energy [Wh] / energy.e_load_total
 };
 
 static const MeterValueID pv_value_ids[] = {
@@ -106,10 +154,13 @@ void MeterRCTPower::setup(Config *ephemeral_config)
         logger.printfln_meter("No Virtual Meter selected");
         return;
 
-    case VirtualMeter::InverterUnused:
-        logger.printfln_meter("Invalid Virtual Meter: %u", static_cast<uint8_t>(virtual_meter));
+    case VirtualMeter::Inverter:
+        value_specs = inverter_rct_value_specs;
+        value_specs_length = ARRAY_SIZE(inverter_rct_value_specs);
+        value_ids = inverter_value_ids;
+        value_ids_length = ARRAY_SIZE(inverter_value_ids);
         default_location = MeterLocation::Inverter;
-        return;
+        break;
 
     case VirtualMeter::Grid:
         value_specs = grid_rct_value_specs;
