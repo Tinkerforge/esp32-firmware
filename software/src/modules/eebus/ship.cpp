@@ -67,8 +67,8 @@ void Ship::setup()
         eebus.state.get("ski")->updateString(ship_ski);
 #endif
         setup_wss();
+        setup_mdns();
     }
-    setup_mdns();
 }
 
 void Ship::setup_wss()
@@ -256,7 +256,7 @@ Ship_Discovery_State Ship::discover_ship_peers()
     mdns_result_t *results = NULL;
     esp_err_t err = mdns_query_ptr(service, proto, 3000, 20, &results);
     if (err) {
-        logger.printfln("EEBUS MDNS Query Failed. Error %d", err);
+        logger.printfln("EEBUS MDNS Query Failed.");
         logger.tracefln(eebus.trace_buffer_index, "EEBUS MDNS Query Failed. Error %d", err);
         update_discovery_state(Ship_Discovery_State::ERROR);
         return discovery_state;

@@ -70,7 +70,7 @@ public:
     bool is_enabled = false;;
 
     // To save memory the SpineDataTypeHandler is allocated to PSRAM if its available
-    unique_ptr_any<SpineDataTypeHandler> data_handler = make_unique_psram<SpineDataTypeHandler>();
+    unique_ptr_any<SpineDataTypeHandler> data_handler;
 
     /**
      * Get the index of the connection in state.get("connections") with the given ski.
