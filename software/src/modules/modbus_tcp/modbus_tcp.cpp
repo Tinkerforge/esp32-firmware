@@ -1146,6 +1146,8 @@ TFModbusTCPExceptionCode ModbusTCP::dispatch(RegisterTable table, uint8_t unit_i
         case TFModbusTCPFunctionCode::WriteSingleRegister:
             esp_system_abort("WriteSingleCoils/Registers should not be passed to receive_cb!");
             break;
+        case TFModbusTCPFunctionCode::MaskWriteRegister:
+            break;
     }
 
     return TFModbusTCPExceptionCode::IllegalFunction;
