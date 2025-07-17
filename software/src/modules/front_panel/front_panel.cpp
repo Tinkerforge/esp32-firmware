@@ -275,6 +275,10 @@ void FrontPanel::pre_reboot()
     // Stop the update() task from accessing the display
     flash_update_in_progress = true;
 
+    if (!initialized) {
+        return;
+    }
+
     size_t tile_count = config.get("tiles")->count();
     for (size_t i = 0; i < tile_count; ++i) {
         if (i == 1) {
