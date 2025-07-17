@@ -331,13 +331,12 @@ export class FirmwareUpdateStatus extends Component
 
         let state = API.get('firmware_update/state');
         let version = API.get('info/version').firmware;
-        let display_type = API.get('info/name').display_type;
 
         return <StatusSection name="firmware_update">
             {state.rolled_back_version.length > 0 ?
                 <FormRow label={__("firmware_update.status.firmware_update")}>
                     <Alert variant="warning" className="mb-0" onClose={() => API.call("firmware_update/clear_rolled_back_version", {}, () => __("firmware_update.status.clear_rolled_back_version_failed"))} dismissible>
-                        {__("firmware_update.status.rolled_back_version")(state.rolled_back_version, version, display_type)}
+                        {__("firmware_update.status.rolled_back_version")(state.rolled_back_version, version)}
                     </Alert>
                 </FormRow> : undefined}
             </StatusSection>;

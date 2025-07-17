@@ -6,11 +6,11 @@ let x = {
     "firmware_update": {
         "status": {
             "firmware_update": "Firmware update",
-            "rolled_back_version": /*FFN*/(rolled_back_version: string, version: string, display_type: string) => {
+            "rolled_back_version": /*FFN*/(rolled_back_version: string, version: string) => {
                 let result = [<>{`Firmware ${rolled_back_version} seems unstable. An automatic rollback to the previous firmware ${version} has occurred.`}</>];
 
                 if (options.SUPPORT_EMAIL.length > 0) {
-                    result.push(<> Please download a <a href="#event_log">debug report</a> and send it to <a href={removeUnicodeHacks(`mailto:${options.SUPPORT_EMAIL}?subject=${display_type} firmware ${rolled_back_version} seems unstable`)}>{options.SUPPORT_EMAIL}</a>.</>);
+                    result.push(<> Please download a <a href="#event_log">debug report</a> and send it to <a href={removeUnicodeHacks(`mailto:${options.SUPPORT_EMAIL}?subject=${options.PRODUCT_NAME} firmware ${rolled_back_version} seems unstable`)}>{options.SUPPORT_EMAIL}</a>.</>);
                 }
 
                 return <>{result}</>;

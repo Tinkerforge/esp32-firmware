@@ -6,7 +6,7 @@ let x = {
     "system": {
         "status": {
             "system": "System",
-            "last_reset": /*FFN*/(reason: number, version: string, display_type: string) => {
+            "last_reset": /*FFN*/(reason: number, version: string) => {
                 let reason_table = [
                     "wegen unbekannter Ursache",
                     "wegen dem Einschalten der Stromversorgung",
@@ -35,7 +35,7 @@ let x = {
                 let result = [<>__("The_device") wurde {reason_str} unerwartet neu gestartet.</>];
 
                 if (options.SUPPORT_EMAIL.length > 0) {
-                    result.push(<> Bitte einen <a href="#event_log">Debug-Report</a> herunterladen und an <a href={removeUnicodeHacks(`mailto:${options.SUPPORT_EMAIL}?subject=${display_type} mit Firmware ${version} wurde unerwartet neu gestartet`)}>{options.SUPPORT_EMAIL}</a> schicken.</>);
+                    result.push(<> Bitte einen <a href="#event_log">Debug-Report</a> herunterladen und an <a href={removeUnicodeHacks(`mailto:${options.SUPPORT_EMAIL}?subject=${options.PRODUCT_NAME} mit Firmware ${version} wurde unerwartet neu gestartet`)}>{options.SUPPORT_EMAIL}</a> schicken.</>);
                 }
 
                 return <>{result}</>;
