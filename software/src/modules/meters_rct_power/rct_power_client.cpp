@@ -92,7 +92,12 @@ const char *get_rct_power_client_transaction_result_name(RCTPowerClientTransacti
 
 void RCTPowerClient::read(const RCTValueSpec *spec, micros_t timeout, RCTPowerClientTransactionCallback &&callback)
 {
-    if (spec == nullptr || timeout < 0_s || !callback) {
+    if (!callback) {
+        debugfln("callback=nullptr");
+        return;
+    }
+
+    if (spec == nullptr || timeout < 0_s) {
         callback(RCTPowerClientTransactionResult::InvalidArgument, NAN);
         return;
     }
