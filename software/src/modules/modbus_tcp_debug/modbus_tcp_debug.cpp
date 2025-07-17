@@ -27,6 +27,7 @@
 #include "module_dependencies.h"
 #include "tools/hexdump.h"
 #include "modules/modbus_tcp_client/generic_tcp_client_connector_base.h"
+#include "modules/modbus_tcp_client/modbus_function_code.enum.h"
 
 void ModbusTCPDebug::pre_setup()
 {
@@ -34,7 +35,7 @@ void ModbusTCPDebug::pre_setup()
         {"host", Config::Str("", 0, 64)},
         {"port", Config::Uint16(502)},
         {"device_address", Config::Uint8(0)},
-        {"function_code", Config::Uint8(0)},
+        {"function_code", Config::Enum(ModbusFunctionCode::ReadHoldingRegisters)},
         {"start_address", Config::Uint16(0)},
         {"data_count", Config::Uint16(0)},
         {"write_data", Config::Str("", 0, TF_MODBUS_TCP_MAX_WRITE_REGISTER_COUNT * 4)},
@@ -75,14 +76,15 @@ void ModbusTCPDebug::register_urls()
         const String &host = transact_config.get("host")->asString();
         uint16_t port = transact_config.get("port")->asUint();
         uint8_t device_address = transact_config.get("device_address")->asUint();
-        TFModbusTCPFunctionCode function_code = transact_config.get("function_code")->asEnum<TFModbusTCPFunctionCode>();
+        ModbusFunctionCode config_function_code = transact_config.get("function_code")->asEnum<ModbusFunctionCode>();
+        TFModbusTCPFunctionCode protocol_function_code;
         uint16_t start_address = transact_config.get("start_address")->asUint();
         uint16_t data_count = transact_config.get("data_count")->asUint();
         const String &write_data = transact_config.get("write_data")->asString();
         millis_t timeout = millis_t{transact_config.get("timeout")->asUint()};
         bool hexload_registers = false;
-        bool hexdump_registers = false;
         bool hexdump_coils = false;
+        bool hexdump_registers = false;
 
         defer {
             // When done parsing the transaction, drop Strings from config to free memory.
@@ -92,36 +94,61 @@ void ModbusTCPDebug::register_urls()
             transact_config.get("write_data")->clearString();
         };
 
-        switch (function_code) {
-        case TFModbusTCPFunctionCode::ReadCoils:
-        case TFModbusTCPFunctionCode::ReadDiscreteInputs:
+        switch (config_function_code) {
+        case ModbusFunctionCode::ReadCoils:
+            protocol_function_code = TFModbusTCPFunctionCode::ReadCoils;
             hexdump_coils = true;
             break;
 
-        case TFModbusTCPFunctionCode::ReadHoldingRegisters:
-        case TFModbusTCPFunctionCode::ReadInputRegisters:
+        case ModbusFunctionCode::ReadDiscreteInputs:
+            protocol_function_code = TFModbusTCPFunctionCode::ReadDiscreteInputs;
+            hexdump_coils = true;
+            break;
+
+        case ModbusFunctionCode::ReadHoldingRegisters:
+            protocol_function_code = TFModbusTCPFunctionCode::ReadHoldingRegisters;
             hexdump_registers = true;
             break;
 
-        case TFModbusTCPFunctionCode::WriteSingleCoil:
-            report_errorf(cookie, "Function code %u is not supported yet", static_cast<uint8_t>(function_code));
+        case ModbusFunctionCode::ReadInputRegisters:
+            protocol_function_code = TFModbusTCPFunctionCode::ReadInputRegisters;
+            hexdump_registers = true;
+            break;
+
+        case ModbusFunctionCode::WriteSingleCoil:
+            protocol_function_code = TFModbusTCPFunctionCode::WriteSingleCoil;
+            report_errorf(cookie, "Function code %u is not supported yet", static_cast<uint8_t>(config_function_code));
             return;
 
-        case TFModbusTCPFunctionCode::WriteSingleRegister:
+        case ModbusFunctionCode::WriteSingleRegister:
+            protocol_function_code = TFModbusTCPFunctionCode::WriteSingleRegister;
             hexload_registers = true;
             break;
 
-        case TFModbusTCPFunctionCode::WriteMultipleCoils:
-            report_errorf(cookie, "Function code %u is not supported yet", static_cast<uint8_t>(function_code));
+        case ModbusFunctionCode::WriteMultipleCoils:
+            protocol_function_code = TFModbusTCPFunctionCode::WriteMultipleCoils;
+            report_errorf(cookie, "Function code %u is not supported yet", static_cast<uint8_t>(config_function_code));
             return;
 
-        case TFModbusTCPFunctionCode::WriteMultipleRegisters:
+        case ModbusFunctionCode::WriteMultipleRegisters:
+            protocol_function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
             hexload_registers = true;
             break;
+
+        case ModbusFunctionCode::MaskWriteRegister:
+            protocol_function_code = TFModbusTCPFunctionCode::MaskWriteRegister;
+            hexload_registers = true;
+            break;
+
+        default:
+            report_errorf(cookie, "Unsupported function code: %u", static_cast<uint8_t>(config_function_code));
+            return;
         }
 
         modbus_tcp_client.get_pool()->acquire(host.c_str(), port,
-        [this, cookie, host, port, device_address, function_code, start_address, data_count, write_data, timeout, hexload_registers, hexdump_registers, hexdump_coils](TFGenericTCPClientConnectResult connect_result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
+        [this, cookie, host, port, device_address, config_function_code, protocol_function_code,
+         start_address, data_count, write_data, timeout, hexload_registers, hexdump_coils, hexdump_registers]
+        (TFGenericTCPClientConnectResult connect_result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
             if (connect_result != TFGenericTCPClientConnectResult::Connected) {
                 char connect_error[256] = "";
 
@@ -177,8 +204,8 @@ void ModbusTCPDebug::register_urls()
                 }
             }
 
-            static_cast<TFModbusTCPSharedClient *>(transact_client)->transact(device_address, function_code, start_address, data_count, transact_buffer, timeout,
-            [this, cookie, data_count, hexdump_registers, hexdump_coils](TFModbusTCPClientTransactionResult transact_result, const char *error_message) {
+            static_cast<TFModbusTCPSharedClient *>(transact_client)->transact(device_address, protocol_function_code, start_address, data_count, transact_buffer, timeout,
+            [this, cookie, data_count, hexdump_coils, hexdump_registers](TFModbusTCPClientTransactionResult transact_result, const char *error_message) {
                 if (transact_result != TFModbusTCPClientTransactionResult::Success) {
                     report_errorf(cookie, "Transaction failed: %s (%d)%s%s",
                                   get_tf_modbus_tcp_client_transaction_result_name(transact_result),
@@ -199,12 +226,12 @@ void ModbusTCPDebug::register_urls()
 
                 // FIXME: hexdump coils for coil function codes
 
-                if (hexdump_registers) {
-                    hexdump<uint16_t>(static_cast<uint16_t *>(transact_buffer), data_count, data_hexdump, ARRAY_SIZE(data_hexdump), HexdumpCase::Lower);
+                if (hexdump_coils) {
+                    hexdump<uint8_t>(static_cast<uint8_t *>(transact_buffer), (data_count + 7) / 8, data_hexdump, ARRAY_SIZE(data_hexdump), HexdumpCase::Lower);
                     json.addMemberString("read_data", data_hexdump);
                 }
-                else if (hexdump_coils) {
-                    hexdump<uint8_t>(static_cast<uint8_t *>(transact_buffer), (data_count + 7) / 8, data_hexdump, ARRAY_SIZE(data_hexdump), HexdumpCase::Lower);
+                else if (hexdump_registers) {
+                    hexdump<uint16_t>(static_cast<uint16_t *>(transact_buffer), data_count, data_hexdump, ARRAY_SIZE(data_hexdump), HexdumpCase::Lower);
                     json.addMemberString("read_data", data_hexdump);
                 }
                 else {

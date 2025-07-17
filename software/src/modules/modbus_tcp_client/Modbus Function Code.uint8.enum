@@ -6,3 +6,4 @@ Write Single Coil = 5
 Write Single Register = 6
 Write Multiple Coils = 15
 Write Multiple Registers = 16
+Mask Write Register = 22

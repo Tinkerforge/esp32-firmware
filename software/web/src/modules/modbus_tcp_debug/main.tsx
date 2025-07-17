@@ -275,9 +275,18 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
 
                         if (this.state.function_code == ModbusFunctionCode.WriteSingleRegister
                          || this.state.function_code == ModbusFunctionCode.WriteMultipleRegisters) {
+                            let max_values = 0;
+
+                            if (this.state.function_code == ModbusFunctionCode.WriteSingleRegister) {
+                                max_values = 1;
+                            }
+                            else if (this.state.function_code == ModbusFunctionCode.WriteMultipleRegisters) {
+                                max_values = 123;
+                            }
+
                             let values_dec = this.state.write_data.split(",");
 
-                            if (values_dec.length >= 123 /* 1968 for coils */) {
+                            if (values_dec.length > max_values) {
                                 this.setState({waiting: false, cookie: null, result: "Error: Too many values"});
                                 return;
                             }
@@ -303,6 +312,53 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                                 }
 
                                 values_hex.push(to_value_hex(value));
+                            }
+
+                            data_count = values_hex.length;
+                        }
+                        else if (this.state.function_code == ModbusFunctionCode.MaskWriteRegister) {
+                            let masks = this.state.write_data.split(",");
+
+                            if (masks.length > 1) {
+                                this.setState({waiting: false, cookie: null, result: "Error: Too many bitmasks"});
+                                return;
+                            }
+
+                            for (let mask of masks) {
+                                mask = mask.trim().toUpperCase();
+
+                                if (mask.length > 16) {
+                                    this.setState({waiting: false, cookie: null, result: "Error: Bitmask is too long"});
+                                    return;
+                                }
+
+                                let mask_pad = "XXXXXXXXXXXXXXX" + mask;
+
+                                mask_pad = mask_pad.substring(mask_pad.length - 16);
+
+                                let and_mask = 0x0000;
+                                let or_mask = 0x0000;
+
+                                for (let i = 0; i < 16; ++i) {
+                                    let bit = mask_pad[15 - i];
+
+                                    if (bit == '1') {
+                                        or_mask |= 1 << i;
+                                    }
+                                    else if (bit == '0') {
+                                        // masks already correct
+                                    }
+                                    else if (bit == 'X') {
+                                        and_mask |= 1 << i;
+                                    }
+                                    else {
+                                        this.setState({waiting: false, cookie: null, result: "Error: Bitmask is malformed"});
+                                        return;
+                                    }
+                                }
+
+                                values_hex.push(to_value_hex(and_mask));
+                                values_hex.push(to_value_hex(or_mask));
                             }
 
                             data_count = values_hex.length;
@@ -368,6 +424,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                         [ModbusFunctionCode.ReadInputRegisters.toString(), __("modbus_tcp_debug.content.function_code_read_input_registers")],
                         [ModbusFunctionCode.WriteSingleRegister.toString(), __("modbus_tcp_debug.content.function_code_write_single_register")],
                         [ModbusFunctionCode.WriteMultipleRegisters.toString(), __("modbus_tcp_debug.content.function_code_write_multiple_registers")],
+                        [ModbusFunctionCode.MaskWriteRegister.toString(), __("modbus_tcp_debug.content.function_code_mask_write_register")],
                     ]}
                     placeholder={__("select")}
                     value={this.state.function_code.toString()}
@@ -438,27 +495,40 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                 : undefined}
 
             {this.state.function_code == ModbusFunctionCode.WriteSingleRegister ?
-                <FormRow label={__("modbus_tcp_debug.content.write_data_single_register")}>
+                <FormRow label={__("modbus_tcp_debug.content.write_data_single_value")}>
                     <InputTextPatterned
                         required
                         disabled={this.state.waiting}
                         pattern={`^ *${util.UINT16_PATTERN} *$`}
                         value={this.state.write_data}
                         onValue={(v) => this.setState({write_data: v})}
-                        invalidFeedback={__("modbus_tcp_debug.content.write_data_single_register_invalid")}
+                        invalidFeedback={__("modbus_tcp_debug.content.write_data_single_value_invalid")}
                         />
                 </FormRow>
                 : undefined}
 
             {this.state.function_code == ModbusFunctionCode.WriteMultipleRegisters ?
-                <FormRow label={__("modbus_tcp_debug.content.write_data_multiple_registers")} label_muted={__("modbus_tcp_debug.content.write_data_multiple_registers_muted")}>
+                <FormRow label={__("modbus_tcp_debug.content.write_data_multiple_values")} label_muted={__("modbus_tcp_debug.content.write_data_multiple_values_muted")}>
                     <InputTextPatterned
                         required
                         disabled={this.state.waiting}
                         pattern={`^ *${util.UINT16_PATTERN} *(, *${util.UINT16_PATTERN} *){0,122}$`}
                         value={this.state.write_data}
                         onValue={(v) => this.setState({write_data: v})}
-                        invalidFeedback={__("modbus_tcp_debug.content.write_data_multiple_registers_invalid")}
+                        invalidFeedback={__("modbus_tcp_debug.content.write_data_multiple_values_invalid")}
+                        />
+                </FormRow>
+                : undefined}
+
+            {this.state.function_code == ModbusFunctionCode.MaskWriteRegister ?
+                <FormRow label={__("modbus_tcp_debug.content.write_data_mask")}>
+                    <InputTextPatterned
+                        required
+                        disabled={this.state.waiting}
+                        pattern={`^ *[01Xx]{1,16} *$`}
+                        value={this.state.write_data}
+                        onValue={(v) => this.setState({write_data: v.toUpperCase()})}
+                        invalidFeedback={__("modbus_tcp_debug.content.write_data_mask_invalid")}
                         />
                 </FormRow>
                 : undefined}
