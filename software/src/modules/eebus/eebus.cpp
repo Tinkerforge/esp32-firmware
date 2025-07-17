@@ -28,8 +28,7 @@
 void EEBus::pre_setup()
 {
 
-    this->trace_buffer_index = logger.alloc_trace_buffer("eebus", 131072);
-
+    this->trace_buffer_index = logger.alloc_trace_buffer("eebus", 32768); // This makes the PSRAM usage gigantic even when the module is disabled but we cant set this anywhere else. Maybe make smaller?
     // TODO: Fix string lengths. Spec says they are shorter
 
     // TOOD: Rework API so this lot is a bit cleaner
@@ -148,6 +147,11 @@ void EEBus::setup()
 
     if (is_enabled) {
         usecases = make_unique_psram<EEBusUseCases>();
+        data_handler = make_unique_psram<SpineDataTypeHandler>();
+
+    }
+    else {
+
     }
     initialized = true;
     logger.tracefln(this->trace_buffer_index, "EEBUS initialized");
