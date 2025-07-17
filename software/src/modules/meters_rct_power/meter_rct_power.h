@@ -61,6 +61,8 @@ private:
 
     float pv1_voltage;
     float pv1_power;
+    float pv1_energy;
     float pv2_voltage;
     float pv2_power;
+    float pv2_energy;
 };

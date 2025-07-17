@@ -120,20 +120,26 @@ static const RCTValueSpec load_rct_value_specs[] = {
 };
 
 static const MeterValueID pv_value_ids[] = {
-    MeterValueID::VoltagePV2,
-    MeterValueID::PowerPV2Export,
     MeterValueID::VoltagePV1,
     MeterValueID::PowerPV1Export,
+    MeterValueID::EnergyPV1Export,
+    MeterValueID::VoltagePV2,
+    MeterValueID::PowerPV2Export,
+    MeterValueID::EnergyPV2Export,
+
     MeterValueID::VoltagePVAvg,
     MeterValueID::PowerPVSumExport,
     MeterValueID::PowerPVSumImExDiff,
+    MeterValueID::EnergyPVSumExport
 };
 
 static const RCTValueSpec pv_rct_value_specs[] = {
-    {0x5BB8075A, 1.0f}, // Solar generator B voltage [V]
-    {0xAA9AA253, 1.0f}, // Solar generator B power [W]
-    {0xB298395D, 1.0f}, // Solar generator A voltage [V]
-    {0xB5317B78, 1.0f}, // Solar generator A power [W]
+    {0xB298395D, 1.0f},   // Solar generator A voltage [V]       / dc_conv.dc_conv_struct[0].u_sg_lp
+    {0xB5317B78, 1.0f},   // Solar generator A power [W]         / dc_conv.dc_conv_struct[0].p_dc
+    {0xFC724A9E, 0.001f}, // Solar generator A total energy [Wh] / energy.e_dc_total[0]
+    {0x5BB8075A, 1.0f},   // Solar generator B voltage [V]       / dc_conv.dc_conv_struct[1].u_sg_lp
+    {0xAA9AA253, 1.0f},   // Solar generator B power [W]         / dc_conv.dc_conv_struct[1].p_dc
+    {0x68EEFD3D, 0.001f}, // Solar generator B total energy [Wh] / energy.e_dc_total[1]
 };
 
 MeterClassID MeterRCTPower::get_class() const
@@ -281,17 +287,23 @@ void MeterRCTPower::read_next()
             meters.update_value(slot, value_index, value);
 
             if (virtual_meter == VirtualMeter::PV) {
-                if (value_ids[value_index] == MeterValueID::VoltagePV2) {
-                    pv2_voltage = value;
-                }
-                else if (value_ids[value_index] == MeterValueID::PowerPV2Export) {
-                    pv2_power = value;
-                }
                 if (value_ids[value_index] == MeterValueID::VoltagePV1) {
                     pv1_voltage = value;
                 }
                 else if (value_ids[value_index] == MeterValueID::PowerPV1Export) {
                     pv1_power = value;
+                }
+                else if (value_ids[value_index] == MeterValueID::EnergyPV1Export) {
+                    pv1_energy = value;
+                }
+                else if (value_ids[value_index] == MeterValueID::VoltagePV2) {
+                    pv2_voltage = value;
+                }
+                else if (value_ids[value_index] == MeterValueID::PowerPV2Export) {
+                    pv2_power = value;
+                }
+                else if (value_ids[value_index] == MeterValueID::EnergyPV2Export) {
+                    pv2_energy = value;
 
                     float voltage_sum = 0.0f;
                     float voltage_count = 0.0f;
@@ -308,10 +320,12 @@ void MeterRCTPower::read_next()
 
                     float voltage_avg = voltage_sum / voltage_count;
                     float power_sum = pv1_power + pv2_power;
+                    float energy_sum = pv1_energy + pv2_energy;
 
                     meters.update_value(slot, value_index + 1, voltage_avg);
                     meters.update_value(slot, value_index + 2, power_sum);
                     meters.update_value(slot, value_index + 3, zero_safe_negation(power_sum));
+                    meters.update_value(slot, value_index + 4, energy_sum);
                 }
             }
 
