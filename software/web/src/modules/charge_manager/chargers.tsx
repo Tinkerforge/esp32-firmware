@@ -216,6 +216,8 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
             emCharger_copy.proxy_mode = true;
             emConfig_copy.contactor_installed = true;
         } else {
+            emCharger_copy.idx = 255;
+            emCharger_copy.host = "";
             emCharger_copy.proxy_mode = false;
             emConfig_copy.contactor_installed = false;
         }
