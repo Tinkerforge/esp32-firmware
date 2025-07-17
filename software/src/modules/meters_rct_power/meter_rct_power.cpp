@@ -74,15 +74,23 @@ static const RCTValueSpec inverter_rct_value_specs[] = {
 };
 
 static const MeterValueID grid_value_ids[] = {
+    MeterValueID::PowerActiveL1ImExDiff,
+    MeterValueID::PowerActiveL2ImExDiff,
+    MeterValueID::PowerActiveL3ImExDiff,
     MeterValueID::PowerActiveLSumImExDiff,
     MeterValueID::EnergyActiveLSumExport,
     MeterValueID::EnergyActiveLSumImport,
+    MeterValueID::FrequencyLAvg,
 };
 
 static const RCTValueSpec grid_rct_value_specs[] = {
+    {0x27BE51D9,  1.0f},   // Grid power phase 1 [W]         / g_sync.p_ac_sc[0]
+    {0xF5584F90,  1.0f},   // Grid power phase 2 [W]         / g_sync.p_ac_sc[1]
+    {0xB221BCFA,  1.0f},   // Grid power phase 3 [W]         / g_sync.p_ac_sc[2]
     {0x91617C58,  1.0f},   // Total grid power [W]           / g_sync.p_ac_grid_sum_lp
     {0x44D4C533, -0.001f}, // Total energy grid feed-in [Wh] / energy.e_grid_feed_total
     {0x62FBE7DC,  0.001f}, // Total energy grid load [Wh]    / energy.e_grid_load_total
+    {0x1C4A665F,  1.0f},   // Grid frequency [Hz]            / grid_pll[0].f
 };
 
 static const MeterValueID battery_value_ids[] = {
