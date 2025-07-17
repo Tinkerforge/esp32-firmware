@@ -75,7 +75,7 @@ void DayAheadPrices::pre_setup()
             state.get("last_sync")->updateUint(0);
             state.get("last_check")->updateUint(0);
             state.get("next_check")->updateUint(0);
-            state.get("current_price")->updateInt(0);
+            state.get("current_price")->updateInt(INT32_MAX);
             prices.get("first_date")->updateUint(0);
             prices.get("prices")->removeAll();
             prices.get("resolution")->updateEnum(update.get("resolution")->asEnum<Resolution>());
