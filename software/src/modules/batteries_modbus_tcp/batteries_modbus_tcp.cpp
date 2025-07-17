@@ -434,6 +434,10 @@ void BatteriesModbusTCP::write_next()
         function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
         break;
 
+    case ModbusFunctionCode::MaskWriteRegister:
+        function_code = TFModbusTCPFunctionCode::MaskWriteRegister;
+        break;
+
     case ModbusFunctionCode::ReadCoils:
     case ModbusFunctionCode::ReadDiscreteInputs:
     case ModbusFunctionCode::ReadHoldingRegisters:

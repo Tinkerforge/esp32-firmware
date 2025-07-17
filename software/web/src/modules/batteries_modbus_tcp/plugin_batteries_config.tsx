@@ -138,30 +138,44 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
         let values_pattern = "";
         let values_label = undefined;
         let values_label_muted = undefined;
+        let values_invalid = "";
+        let values_filter = (v: string) => v;
 
         switch (this.state.register_block.func) {
         case ModbusFunctionCode.WriteSingleCoil:
             values_pattern = "^ *[01] *$";
             values_label = __("batteries_modbus_tcp.content.register_blocks_value");
             values_label_muted = __("batteries_modbus_tcp.content.register_blocks_value_muted");
+            values_invalid = __("batteries_modbus_tcp.content.register_blocks_value_invalid");
             break;
 
         case ModbusFunctionCode.WriteSingleRegister:
             values_pattern = `^ *${util.UINT16_PATTERN} *$`;
             values_label = __("batteries_modbus_tcp.content.register_blocks_value");
             values_label_muted = __("batteries_modbus_tcp.content.register_blocks_value_muted");
+            values_invalid = __("batteries_modbus_tcp.content.register_blocks_value_invalid");
             break;
 
         case ModbusFunctionCode.WriteMultipleCoils:
             values_pattern = `^ *[01] *(, *[01] *){0,${options.BATTERIES_MODBUS_TCP_MAX_CUSTOM_VALUES_PER_REGISTER_BLOCK - 1}}$`;
             values_label = __("batteries_modbus_tcp.content.register_blocks_values");
             values_label_muted = __("batteries_modbus_tcp.content.register_blocks_values_muted");
+            values_invalid = __("batteries_modbus_tcp.content.register_blocks_values_invalid");
             break;
 
         case ModbusFunctionCode.WriteMultipleRegisters:
             values_pattern = `^ *${util.UINT16_PATTERN} *(?:, *${util.UINT16_PATTERN} *){0,${options.BATTERIES_MODBUS_TCP_MAX_CUSTOM_VALUES_PER_REGISTER_BLOCK - 1}}$`;
             values_label = __("batteries_modbus_tcp.content.register_blocks_values");
             values_label_muted = __("batteries_modbus_tcp.content.register_blocks_values_muted");
+            values_invalid = __("batteries_modbus_tcp.content.register_blocks_values_invalid");
+            break;
+
+        case ModbusFunctionCode.MaskWriteRegister:
+            values_pattern = "^ *[01Xx]{1,16} *$";
+            values_label = __("batteries_modbus_tcp.content.register_blocks_mask");
+            values_label_muted = __("batteries_modbus_tcp.content.register_blocks_mask_muted");
+            values_invalid = __("batteries_modbus_tcp.content.register_blocks_mask_invalid");
+            values_filter = (v: string) => v.toUpperCase();
             break;
         }
 
@@ -182,6 +196,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
                         [ModbusFunctionCode.WriteSingleRegister.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_write_single_register")],
                         [ModbusFunctionCode.WriteMultipleCoils.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_write_multiple_coils")],
                         [ModbusFunctionCode.WriteMultipleRegisters.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_write_multiple_registers")],
+                        [ModbusFunctionCode.MaskWriteRegister.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_mask_write_register")],
                     ]}
                     placeholder={__("select")}
                     value={util.hasValue(this.state.register_block.func) ? this.state.register_block.func.toString() : undefined}
@@ -215,68 +230,142 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
                     pattern={values_pattern}
                     value={this.state.values}
                     onValue={(v) => {
-                        this.setState({values: v});
+                        this.setState({values: values_filter(v)});
                     }}
-                    invalidFeedback={__("batteries_modbus_tcp.content.register_blocks_values_invalid")} />
+                    invalidFeedback={values_invalid} />
             </FormRow>,
         ];
     }
 
-    parse_values(values_str: string) {
-        let max_values_count = 0;
-        let max_value = 0;
+    format_vals(function_code: number, vals: number[]) {
+        let values = "";
 
-        switch (this.state.register_block.func) {
-        case ModbusFunctionCode.WriteSingleCoil:
-            max_values_count = 1;
-            max_value = 1;
-            break;
-
-        case ModbusFunctionCode.WriteSingleRegister:
-            max_values_count = 1;
-            max_value = 65535;
-            break;
-
-        case ModbusFunctionCode.WriteMultipleCoils:
-            max_values_count = 1968;
-            max_value = 1;
-            break;
-
-        case ModbusFunctionCode.WriteMultipleRegisters:
-            max_values_count = 123;
-            max_value = 65535;
-            break;
+        if (function_code == ModbusFunctionCode.WriteSingleCoil
+         || function_code == ModbusFunctionCode.WriteSingleRegister
+         || function_code == ModbusFunctionCode.WriteMultipleCoils
+         || function_code == ModbusFunctionCode.WriteMultipleRegisters) {
+            values = vals.join(", ");
         }
+        else if (function_code == ModbusFunctionCode.MaskWriteRegister) {
+            let and_mask = vals[0];
+            let or_mask = vals[1];
 
-        let values_dec = values_str.split(",");
-
-        if (values_dec.length > max_values_count) {
-            return [];
-        }
-
-        let values: number[] = [];
-
-        for (let value_dec of values_dec) {
-            value_dec = value_dec.trim();
-
-            let value = parseInt(value_dec, 10);
-
-            if (isNaN(value)) {
-                return [];
+            for (let i = 15; i >= 0; --i) {
+                if ((and_mask & (1 << i)) != 0) {
+                    values += "X";
+                }
+                else if ((or_mask & (1 << i)) != 0) {
+                    values += "1";
+                }
+                else {
+                    values += "0";
+                }
             }
 
-            if (value > max_value) {
-                return [];
+            while (values.length > 1 && values[0] == "X") {
+                values = values.substring(1);
             }
-
-            if ("" + value !== value_dec) {
-                return [];
-            }
-
-            values.push(value);
         }
 
         return values;
+    }
+
+    parse_values(function_code: number, values_str: string) {
+        let vals: number[] = [];
+
+        if (function_code == ModbusFunctionCode.WriteSingleCoil
+         || function_code == ModbusFunctionCode.WriteSingleRegister
+         || function_code == ModbusFunctionCode.WriteMultipleCoils
+         || function_code == ModbusFunctionCode.WriteMultipleRegisters) {
+            let max_values = 0;
+            let mac_value = 0;
+
+            if (function_code == ModbusFunctionCode.WriteSingleCoil) {
+                max_values = 1;
+                mac_value = 1;
+            }
+            else if (function_code == ModbusFunctionCode.WriteSingleRegister) {
+                max_values = 1;
+                mac_value = 65535;
+            }
+            else if (function_code == ModbusFunctionCode.WriteMultipleCoils) {
+                max_values = 1968;
+                mac_value = 1;
+            }
+            else if (function_code == ModbusFunctionCode.WriteMultipleRegisters) {
+                max_values = 123;
+                mac_value = 65535;
+            }
+
+            let values_dec = values_str.split(",");
+
+            if (values_dec.length > max_values) {
+                return [];
+            }
+
+            for (let value_dec of values_dec) {
+                value_dec = value_dec.trim();
+
+                let value = parseInt(value_dec, 10);
+
+                if (isNaN(value)) {
+                    return [];
+                }
+
+                if (value > mac_value) {
+                    return [];
+                }
+
+                if ("" + value !== value_dec) {
+                    return [];
+                }
+
+                vals.push(value);
+            }
+        }
+        else if (function_code == ModbusFunctionCode.MaskWriteRegister) {
+            let masks = values_str.split(",");
+
+            if (masks.length > 1) {
+                return [];
+            }
+
+            for (let mask of masks) {
+                mask = mask.trim().toUpperCase();
+
+                if (mask.length > 16) {
+                    return [];
+                }
+
+                mask = "XXXXXXXXXXXXXXX" + mask;
+                mask = mask.substring(mask.length - 16);
+
+                let and_mask = 0x0000;
+                let or_mask = 0x0000;
+
+                for (let i = 0; i < 16; ++i) {
+                    let bit = mask[15 - i];
+
+                    if (bit == '1') {
+                        or_mask |= 1 << i;
+                    }
+                    else if (bit == '0') {
+                        // masks already correct
+                    }
+                    else if (bit == 'X') {
+                        and_mask |= 1 << i;
+                    }
+                    else {
+                        return [];
+                    }
+                }
+
+                vals.push(and_mask);
+                vals.push(or_mask);
+            }
+        }
+
+        return vals;
     }
 
     render() {
@@ -287,7 +376,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
             nestingDepth={1}
             rows={this.props.table.register_blocks.map((register_block, i) => {
                 const row: TableRow = {
-                    columnValues: [<>{register_block.desc.length > 0 ? <div>{register_block.desc}</div> : undefined}<div style={register_block.desc.length > 0 ? "font-size: 80%" : ""}>{__("batteries_modbus_tcp.content.register_blocks_values_desc")(register_block.func, register_block.addr + start_address_offset, register_block.vals)}</div></>],
+                    columnValues: [<>{register_block.desc.length > 0 ? <div>{register_block.desc}</div> : undefined}<div style={register_block.desc.length > 0 ? "font-size: 80%" : ""}>{__("batteries_modbus_tcp.content.register_blocks_values_desc")(register_block.func, register_block.addr + start_address_offset, this.format_vals(register_block.func, register_block.vals))}</div></>],
                     onRemoveClick: async () => {
                         this.props.on_table({...this.props.table, register_blocks: this.props.table.register_blocks.filter((r, k) => k !== i)});
                         return true;
@@ -295,11 +384,11 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
                     onEditShow: async () => {
                         this.setState({
                             register_block: register_block,
-                            values: register_block.vals.join(", "),
+                            values: this.format_vals(register_block.func, register_block.vals),
                         });
                     },
                     onEditSubmit: async () => {
-                        this.props.on_table({...this.props.table, register_blocks: this.props.table.register_blocks.map((r, k) => k === i ? {...this.state.register_block, vals: this.parse_values(this.state.values)} : r)});
+                        this.props.on_table({...this.props.table, register_blocks: this.props.table.register_blocks.map((r, k) => k === i ? {...this.state.register_block, vals: this.parse_values(this.state.register_block.func, this.state.values)} : r)});
                     },
                     onEditGetChildren: () => this.get_children(),
                     editTitle: __("batteries_modbus_tcp.content.register_blocks_edit_title"),
@@ -332,7 +421,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
             }}
             onAddGetChildren={() => this.get_children()}
             onAddSubmit={async () => {
-                this.props.on_table({...this.props.table, register_blocks: this.props.table.register_blocks.concat([{...this.state.register_block, vals: this.parse_values(this.state.values)}])});
+                this.props.on_table({...this.props.table, register_blocks: this.props.table.register_blocks.concat([{...this.state.register_block, vals: this.parse_values(this.state.register_block.func, this.state.values)}])});
             }}/>;
     }
 }
