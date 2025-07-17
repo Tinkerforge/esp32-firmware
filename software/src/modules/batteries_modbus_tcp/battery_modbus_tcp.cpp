@@ -166,6 +166,10 @@ void BatteryModbusTCP::write_next(Execution *execution)
         function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
         break;
 
+    case ModbusFunctionCode::MaskWriteRegister:
+        function_code = TFModbusTCPFunctionCode::MaskWriteRegister;
+        break;
+
     default:
         logger.printfln_battery("Unsupported function code: %u", static_cast<uint8_t>(register_block->function_code));
 
