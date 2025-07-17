@@ -48,7 +48,7 @@ struct deflate_outbuf {
     char printbuf[128];
 };
 
-static constexpr const char gzip_header[] = {
+static constexpr const uint8_t gzip_header[] = {
     0x1F, // ID1 (magic)
     0x8B, // ID2
     0x08, // CM  (deflate)
