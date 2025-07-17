@@ -73,6 +73,8 @@ static const RCTValueSpec inverter_rct_value_specs[] = {
     {0x7C78CBAC,  1.0f}, // Reactive power [var]         / g_sync.q_ac_sum_lp
 };
 
+static_assert(ARRAY_SIZE(inverter_value_ids) == ARRAY_SIZE(inverter_rct_value_specs));
+
 static const MeterValueID grid_value_ids[] = {
     MeterValueID::PowerActiveL1ImExDiff,
     MeterValueID::PowerActiveL2ImExDiff,
@@ -92,6 +94,8 @@ static const RCTValueSpec grid_rct_value_specs[] = {
     {0x62FBE7DC,  0.001f}, // Total energy grid load [Wh]    / energy.e_grid_load_total
     {0x1C4A665F,  1.0f},   // Grid frequency [Hz]            / grid_pll[0].f
 };
+
+static_assert(ARRAY_SIZE(grid_value_ids) == ARRAY_SIZE(grid_rct_value_specs));
 
 static const MeterValueID battery_value_ids[] = {
     MeterValueID::VoltageDC,
@@ -113,6 +117,8 @@ static const RCTValueSpec battery_rct_value_specs[] = {
     {0x902AFAFB,   1.0f},   // Battery temperature [°C]            / battery.temperature
 };
 
+static_assert(ARRAY_SIZE(battery_value_ids) == ARRAY_SIZE(battery_rct_value_specs));
+
 static const MeterValueID load_value_ids[] = {
     MeterValueID::PowerActiveL1ImExDiff,
     MeterValueID::PowerActiveL2ImExDiff,
@@ -126,6 +132,8 @@ static const RCTValueSpec load_rct_value_specs[] = {
     {0xF0B436DD, 1.0f},   // Load household phase 3 [W]  / g_sync.p_ac_load[2]
     {0xEFF4B537, 0.001f}, // Household total energy [Wh] / energy.e_load_total
 };
+
+static_assert(ARRAY_SIZE(load_value_ids) == ARRAY_SIZE(load_rct_value_specs));
 
 static const MeterValueID pv_value_ids[] = {
     MeterValueID::VoltagePV1,
@@ -149,6 +157,8 @@ static const RCTValueSpec pv_rct_value_specs[] = {
     {0xAA9AA253, 1.0f},   // Solar generator B power [W]         / dc_conv.dc_conv_struct[1].p_dc
     {0x68EEFD3D, 0.001f}, // Solar generator B total energy [Wh] / energy.e_dc_total[1]
 };
+
+static_assert(ARRAY_SIZE(pv_value_ids) - 4 == ARRAY_SIZE(pv_rct_value_specs));
 
 MeterClassID MeterRCTPower::get_class() const
 {
