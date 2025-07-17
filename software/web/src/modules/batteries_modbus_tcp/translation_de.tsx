@@ -44,31 +44,37 @@ let x = {
             "register_blocks_function_code_write_single_register": "6 – Einzelnes Register schreiben",
             "register_blocks_function_code_write_multiple_coils": "15 – Mehrere Coils schreiben",
             "register_blocks_function_code_write_multiple_registers": "16 – Mehrere Register schreiben",
+            "register_blocks_function_code_mask_write_register": "22 – Register maskiert schreiben",
             "register_blocks_start_address": "Startadresse",
             "register_blocks_start_address_muted": "beginnt bei 0",
             "register_blocks_start_number": "Startnummer",
             "register_blocks_start_number_muted": "beginnt bei 1",
             "register_blocks_value": "Wert",
             "register_blocks_value_muted": "",
+            "register_blocks_value_invalid": "Der Wert muss eine Dezimalzahl sein.",
             "register_blocks_values": "Werte",
             "register_blocks_values_muted": "kommagetrennt",
             "register_blocks_values_invalid": "Die Werte müssen eine kommagetrennte Liste von Dezimalzahlen sein.",
-            "register_blocks_values_desc": /*SFN*/(func: number, addr: number, values: number[]) => {
+            "register_blocks_mask": "Bitmaske",
+            "register_blocks_mask_muted": "",
+            "register_blocks_mask_invalid": "Die Bitmaske muss eine Folge von 0, 1 oder X sein.",
+            "register_blocks_values_desc": /*SFN*/(func: number, addr: number, values: string) => {
                 let rtyp = "Unbekannt";
 
                 switch (func) {
                 case 5:
                 case 15:
-                    rtyp = values.length > 1 ? "Coils" : "Coil";
+                    rtyp = values.indexOf(",") >= 0 ? "Coils" : "Coil";
                     break;
 
                 case 6:
                 case 16:
+                case 22:
                     rtyp = "Register";
                     break;
                 }
 
-                return "Setze " + rtyp + (values.length > 1 ? " ab " : " ") + addr + " auf " + values.join(", ");
+                return "Setze " + (values.indexOf(",") >= 0 ? "ab" : "") + " " + rtyp + " " + addr + " auf " + values;
             }/*NF*/
         },
         "script": {
