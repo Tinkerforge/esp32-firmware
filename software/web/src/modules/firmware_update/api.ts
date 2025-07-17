@@ -10,6 +10,11 @@ export interface state {
     update_version: string,
     install_progress: number,
     install_state: number,
+    running_partition: string,
+    app0_state: string,
+    app0_version: string,
+    app1_state: string,
+    app1_version: string,
     rolled_back_version: string,
 }
 

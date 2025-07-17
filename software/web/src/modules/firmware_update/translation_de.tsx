@@ -22,6 +22,7 @@ let x = {
         },
         "content": {
             "firmware_update": "Firmware-Aktualisierung",
+            "unstable_firmware": "Instabile Firmware",
             "current_version": "Installierte Version",
             "manual_update": "Manuelle Aktualisierung",
             "manual_update_muted": <>{options.FIRMWARE_UPDATE_LATEST_URL.length > 0 ? <a href={options.FIRMWARE_UPDATE_LATEST_URL}>neueste Firmwares</a> : undefined}</>,

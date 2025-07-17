@@ -51,6 +51,7 @@ interface FirmwareUpdateState {
     update_version: string,
     install_state: number,
     install_progress: number,
+    rolled_back_version: string,
 };
 
 export class FirmwareUpdate extends Component<FirmwareUpdateProps, FirmwareUpdateState> {
@@ -66,6 +67,7 @@ export class FirmwareUpdate extends Component<FirmwareUpdateProps, FirmwareUpdat
             update_version: null,
             install_state: null,
             install_progress: 0,
+            rolled_back_version: "",
         } as any;
 
         util.addApiEventListener('info/version', () => {
@@ -92,6 +94,7 @@ export class FirmwareUpdate extends Component<FirmwareUpdateProps, FirmwareUpdat
                 update_version: state.update_version,
                 install_state: state.install_state,
                 install_progress: state.install_progress,
+                rolled_back_version: state.rolled_back_version,
             });
         });
     }
@@ -177,6 +180,13 @@ export class FirmwareUpdate extends Component<FirmwareUpdateProps, FirmwareUpdat
         return (
             <SubPage name="firmware_update">
                 <PageHeader title={__("firmware_update.content.firmware_update")} />
+
+                {this.state.rolled_back_version.length > 0 ?
+                    <FormRow label={__("firmware_update.content.unstable_firmware")}>
+                        <Alert variant="warning" className="mb-0" onClose={() => API.call("firmware_update/clear_rolled_back_version", {}, () => __("firmware_update.status.clear_rolled_back_version_failed"))} dismissible>
+                            {__("firmware_update.status.rolled_back_version")(this.state.rolled_back_version, this.state.current_firmware)}
+                        </Alert>
+                    </FormRow> : undefined}
 
                 <FormRow label={__("firmware_update.content.current_version")}>
                     <InputText value={this.state.current_firmware + this.format_build_extra(this.state.current_firmware, this.state.publisher)}/>
