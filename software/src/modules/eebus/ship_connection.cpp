@@ -35,8 +35,10 @@ extern EEBus eebus;
 ShipConnection::ShipConnection(WebSocketsClient ws_client, const Role role, CoolString ski) :
     ws_client(ws_client), role(role), peer_ski(std::move(ski))
 {
-    // SpineConnection nach der ShipConnection Initialisierung erstellen
     spine = make_unique_psram<SpineConnection>(this);
+    message_incoming = make_unique_psram<Message>();
+    message_outgoing = make_unique_psram<Message>();
+
     state_machine_next_step();
 }
 
@@ -900,8 +902,11 @@ void ShipConnection::send_data_message(JsonVariant payload)
         SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
         data.protocol_id = "ee1.0"; // We only speak ee1.0
         [[maybe_unused]] auto tmp = data.payload = payload;
-
-        data.type_to_json(*message_outgoing);
+        if (!message_outgoing) {
+            message_outgoing = make_unique_psram<Message>(); // TODO: Check why message_outgoing becomes a nullptr somewhere as this might lead to memory leaks otherwise
+            logger.printfln("Created new message outgoing");
+        }
+        data.type_to_json(message_outgoing.get());
 
         logger.tracefln(eebus.trace_buffer_index,
                         "Data: sending message with total length of %d and content: %s",
@@ -938,8 +943,8 @@ void ShipConnection::state_done()
     switch (protocol_state) {
         case ProtocolState::Data: {
             SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
-
-            if (data.json_to_type(&message_incoming->data[1], message_incoming->length - 1, false, incoming_json_doc)
+            DynamicJsonDocument dynamic_json_document{8192}; //TESTING MEMORY STUFF
+            if (data.json_to_type(&message_incoming->data[1], message_incoming->length - 1, false, dynamic_json_document)
                 == SHIP_TYPES::DeserializationResult::SUCCESS) {
                 logger.tracefln(eebus.trace_buffer_index,
                                 "DATA received: %d (len %d)-> %s",
