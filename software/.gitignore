@@ -30,6 +30,7 @@ web/node_modules/
 web/build/
 web/src/app.tsx
 web/src/options.ts
+web/src/options.inc
 web/src/main.tsx
 web/src/main.scss
 web/src/index.html
