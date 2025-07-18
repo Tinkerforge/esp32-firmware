@@ -132,7 +132,7 @@ let x = {
             "mode_manager": "Lastmanager / PV-Überschussladen",
             "mode_manager_em_with_ps": "Lastmanager / PV-Überschussladen / Phasenumschaltung / fremdgesteuert von EVCC",
             "mode_managed": "Fremdgesteuert",
-            "mode_managed_em_with_ps": "Fremdgesteuert von WARP Charger oder Energy Manager / nur Phasenumschaltung",
+            "mode_managed_em_with_ps": "Fremdgesteuert von WARP Charger oder WARP Energy Manager / nur Phasenumschaltung",
 
             "managed_boxes": "Kontrollierte Wallboxen",
 

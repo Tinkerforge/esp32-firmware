@@ -8,7 +8,7 @@ let x = {
     },
     "system": {
         "content": {
-            "factory_reset_modal_text": <>Hiermit wird die gesamte Konfiguration auf den Werkszustand zurückgesetzt. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Der SEB öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus der beiliegenden Betriebsanleitung. Fortfahren?</>,
+            "factory_reset_modal_text": <>Hiermit wird die gesamte Konfiguration auf den Werkszustand zurückgesetzt. <b>Diese Aktion kann nicht rückgängig gemacht werden!</b> Der Smart Energy Broker öffnet dann wieder einen eigenen WLAN-Access-Point mit dem Netzwerknamen (SSID) und der Passphrase aus der beiliegenden Betriebsanleitung. Fortfahren?</>,
             "reboot_desc": "",
             "config_reset_modal_text": "",
             "factory_reset_desc": "löscht die gesamte Konfiguration",
@@ -42,11 +42,11 @@ let x = {
     },
     "modbus_tcp": {
         "content": {
-            "warp": "SEB"
+            "warp": "Smart Energy Broker"
         }
     },
     "branding": {
-        "device": "SEB",
+        "device": "Smart Energy Broker",
         "the": "der",
         "The": "Der",
         "this": "dieser",
