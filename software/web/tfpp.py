@@ -41,7 +41,7 @@ def parse_file(input_path, defines, ifs_elses):
             if m != None:
                 directive = m.group(1)
                 end = m.group(2)
-                m = re.match(r'^(include\s|define\s|undef\s|ifdef\s|if\s|else|endif|region|endregion)\s*(.*?)\s*$', directive)
+                m = re.match(r'^(include\s|define\s|undef\s|ifdef\s|ifndef\s|if\s|ifn\s|else|endif|region|endregion)\s*(.*?)\s*$', directive)
 
                 if m == None:
                     raise Exception(f'Malformed directive at {input_path}:{i + 1}: {line_rstripped}')
@@ -55,20 +55,20 @@ def parse_file(input_path, defines, ifs_elses):
                     m = re.match(r'^(?:"([^"]+)"|\'([^\']+)\')$', arguments)
 
                     if m == None:
-                        raise Exception(f'Malformed path in #include directive at {input_path}:{i + 1}: {line_rstripped}')
+                        raise Exception(f'Malformed path in #{verb} directive at {input_path}:{i + 1}: {line_rstripped}')
 
                     include_path = input_path.parent / pathlib.Path(m.group(1))
 
                     if not any_zero(ifs_elses):
                         if not include_path.exists():
-                            raise Exception(f'File in #include directive at {input_path}:{i + 1} is missing: {include_path}')
+                            raise Exception(f'File in #{verb} directive at {input_path}:{i + 1} is missing: {include_path}')
 
                         parse_file(include_path, defines, ifs_elses)
                 elif verb == 'define':
                     m = re.match(r'^([A-Za-z_-][A-Za-z0-9_-]*)\s+(0|1)$', arguments)
 
                     if m == None:
-                        raise Exception(f'Malformed arguments in #define directive at {input_path}:{i + 1}: {line_rstripped}')
+                        raise Exception(f'Malformed arguments in #{verb} directive at {input_path}:{i + 1}: {line_rstripped}')
 
                     if not any_zero(ifs_elses):
                         symbol = m.group(1)
@@ -76,29 +76,29 @@ def parse_file(input_path, defines, ifs_elses):
                         define = defines.get(symbol)
 
                         if define != None:
-                            raise Exception(f'Symbol {symbol} in #define directive at {input_path}:{i + 1} is already defined as {define.value} at {define.location}: {line_rstripped}')
+                            raise Exception(f'Symbol {symbol} in #{verb} directive at {input_path}:{i + 1} is already defined as {define.value} at {define.location}: {line_rstripped}')
                         else:
                             defines[symbol] = Define(value, f'{input_path}:{i + 1}')
                 elif verb == 'undef':
                     m = re.match(r'^([A-Za-z_-][A-Za-z0-9_-]*)$', arguments)
 
                     if m == None:
-                        raise Exception(f'Malformed arguments in #undef directive at {input_path}:{i + 1}: {line_rstripped}')
+                        raise Exception(f'Malformed arguments in #{verb} directive at {input_path}:{i + 1}: {line_rstripped}')
 
                     if not any_zero(ifs_elses):
                         symbol = m.group(1)
                         define = defines.get(symbol)
 
                         if define == None:
-                            raise Exception(f'Symbol {symbol} in #undef directive at {input_path}:{i + 1} is not defined: {line_rstripped}')
+                            raise Exception(f'Symbol {symbol} in #{verb} directive at {input_path}:{i + 1} is not defined: {line_rstripped}')
 
                         line = remove_end(line_rstripped, end) + f' [defined at {define.location}]{end}\n'
                         defines.pop(symbol)
-                elif verb == 'ifdef':
+                elif verb == 'ifdef' or verb == 'ifndef':
                     m = re.match(r'^([A-Za-z_-][A-Za-z0-9_-]*)$', arguments)
 
                     if m == None:
-                        raise Exception(f'Malformed arguments in #ifdef directive at {input_path}:{i + 1}: {line_rstripped}')
+                        raise Exception(f'Malformed arguments in #{verb} directive at {input_path}:{i + 1}: {line_rstripped}')
 
                     symbol = m.group(1)
                     value = None
@@ -107,18 +107,18 @@ def parse_file(input_path, defines, ifs_elses):
                         define = defines.get(symbol)
 
                         if define != None:
-                            value = 1
+                            value = 1 if verb == 'ifdef' else 0
                             line = remove_end(line_rstripped, end) + f' [defined as {define.value} at {define.location}]{end}\n'
                         else:
-                            value = 0
+                            value = 0 if verb == 'ifdef' else 1
                             line = remove_end(line_rstripped, end) + f' [not defined]{end}\n'
 
                     ifs_elses.append(If(value, f'{input_path}:{i + 1}'))
-                elif verb == 'if':
+                elif verb == 'if' or verb == 'ifn':
                     m = re.match(r'^(1|0|[A-Za-z_-][A-Za-z0-9_-]*)$', arguments)
 
                     if m == None:
-                        raise Exception(f'Malformed arguments in #if directive at {input_path}:{i + 1}: {line_rstripped}')
+                        raise Exception(f'Malformed arguments in #{verb} directive at {input_path}:{i + 1}: {line_rstripped}')
 
                     value_or_symbol = m.group(1)
                     value = None
@@ -131,23 +131,26 @@ def parse_file(input_path, defines, ifs_elses):
                             define = defines.get(symbol)
 
                             if define == None:
-                                raise Exception(f'Symbol {symbol} in #if directive at {input_path}:{i + 1} is not defined: {line_rstripped}')
+                                raise Exception(f'Symbol {symbol} in #{verb} directive at {input_path}:{i + 1} is not defined: {line_rstripped}')
 
                             value = define.value
                             line = remove_end(line_rstripped, end) + f' [defined as {value} at {define.location}]{end}\n'
 
+                        if verb == 'ifn':
+                            value = 1 - value
+
                     ifs_elses.append(If(value, f'{input_path}:{i + 1}'))
                 elif verb == 'else':
                     if len(arguments) > 0:
-                        raise Exception(f'Unexpected arguments in #else directive at {input_path}:{i + 1}: {line_rstripped}')
+                        raise Exception(f'Unexpected arguments in #{verb} directive at {input_path}:{i + 1}: {line_rstripped}')
 
                     if len(ifs_elses) == 0:
-                        raise Exception(f'Missing #if directive for #else directive at {input_path}:{i + 1}: {line_rstripped}')
+                        raise Exception(f'Missing #if* directive for #{verb} directive at {input_path}:{i + 1}: {line_rstripped}')
 
                     if_else = ifs_elses.pop()
 
                     if isinstance(if_else, Else):
-                        raise Exception(f'Duplicate #else directive at {input_path}:{i + 1}: {line_rstripped}')
+                        raise Exception(f'Duplicate #{verb} directive at {input_path}:{i + 1}: {line_rstripped}')
 
                     value = if_else.value
 
@@ -157,10 +160,10 @@ def parse_file(input_path, defines, ifs_elses):
                     ifs_elses.append(Else(value, f'{input_path}:{i + 1}'))
                 elif verb == 'endif':
                     if len(arguments) > 0:
-                        raise Exception(f'Unexpected arguments in #endif directive at {input_path}:{i + 1}: {line_rstripped}')
+                        raise Exception(f'Unexpected arguments in #{verb} directive at {input_path}:{i + 1}: {line_rstripped}')
 
                     if len(ifs_elses) == 0:
-                        raise Exception(f'Missing #if directive for #endif directive at {input_path}:{i + 1}: {line_rstripped}')
+                        raise Exception(f'Missing #if* directive for #{verb} directive at {input_path}:{i + 1}: {line_rstripped}')
 
                     ifs_elses.pop()
                 elif verb == 'region' or verb == 'endregion':
