@@ -74,11 +74,11 @@ DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, 
     return DeserializationResult::SUCCESS;
 }
 
-String ShipMessageDataType::type_to_json(ShipConnection::Message &message_outgoing)
+String ShipMessageDataType::type_to_json(ShipConnection::Message *message_outgoing)
 {
     DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE}; // This exists just in this function
 
-    JsonObject data = doc["data"].to<JsonObject>();
+    JsonObject data = doc["data"];
     data["header"]["protocolId"] = protocol_id;
     bool payload_loaded = data["payload"].set(payload);
     logger.tracefln(eebus.trace_buffer_index, "Payload: %s", payload.as<String>().c_str());
@@ -89,6 +89,7 @@ String ShipMessageDataType::type_to_json(ShipConnection::Message &message_outgoi
 
     if (extension_id_valid || extension_binary_valid || extension_string_valid) {
         JsonObject data_extension = data.createNestedObject("extension");
+        logger.printfln("Valid: %d, Binary: %d, String: %d", extension_id_valid, extension_binary_valid, extension_string_valid);
         if (extension_id_valid) {
             data_extension["extensionId"] = extension_id;
         }
@@ -103,16 +104,17 @@ String ShipMessageDataType::type_to_json(ShipConnection::Message &message_outgoi
         }
     }
 
-    message_outgoing.data[0] = 2;
+    message_outgoing->data[0] = 2;
     String message_outgoing_data;
     message_outgoing_data.reserve(SHIP_TYPES_MAX_JSON_SIZE - 1); // Reserve space for the JSON data
     serializeJson(doc, message_outgoing_data);
+
     //message_outgoing_data.replace("[{", "[[{"); // spine-go expects a double array for some reason
     //message_outgoing_data.replace("}]", "}]]");
 
     //size_t size = serializeJson(doc, &message_outgoing.data[1], SHIP_TYPES_MAX_JSON_SIZE - 1);
-    memcpy(&message_outgoing.data[1], message_outgoing_data.c_str(), message_outgoing_data.length());
-    message_outgoing.length = message_outgoing_data.length() + 1;
+    memcpy(&message_outgoing->data[1], message_outgoing_data.c_str(), message_outgoing_data.length());
+    message_outgoing->length = message_outgoing_data.length() + 1;
     return "";
 }
 

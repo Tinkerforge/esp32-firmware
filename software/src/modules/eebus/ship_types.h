@@ -50,7 +50,7 @@ namespace SHIP_TYPES {
         // SHIP 13.4.5.2.1
         // Mandatory
         bool valid = false;
-        CoolString protocol_id{};
+        String protocol_id{};
         JsonVariant payload{}; 
 
         // Optional
@@ -59,13 +59,13 @@ namespace SHIP_TYPES {
         bool extension_id_valid = false;
         bool extension_binary_valid = false;
         bool extension_string_valid = false;
-        CoolString extension_id{};
+        String extension_id{};
         std::vector<bool> extension_binary{}; // This technically an array of integers
-        CoolString extension_string{};
+        String extension_string{};
 
 
         DeserializationResult json_to_type(uint8_t *data, size_t length, bool compatiblity_mode, JsonDocument &doc); // Needs a jsondoc otherwise the payload cant be stored
-        String type_to_json(ShipConnection::Message &message_outgoing);
+        String type_to_json(ShipConnection::Message *message_outgoing);
 
     };
 

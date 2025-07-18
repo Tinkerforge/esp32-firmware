@@ -136,8 +136,8 @@ public:
         uint8_t data[SHIP_CONNECTION_MAX_BUFFER_SIZE]; 
         size_t length;
     };
-    unique_ptr_any<Message> message_incoming = make_unique_psram<Message>();
-    unique_ptr_any<Message> message_outgoing = make_unique_psram<Message>();
+    unique_ptr_any<Message> message_incoming;
+    unique_ptr_any<Message> message_outgoing;
 
     BasicJsonDocument<ArduinoJsonPsramAllocator> incoming_json_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
     BasicJsonDocument<ArduinoJsonPsramAllocator> outgoing_json_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
