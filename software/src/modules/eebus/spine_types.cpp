@@ -43014,7 +43014,11 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
         return last_cmd;
     }
     if (obj["nodeManagementDetailedDiscoveryData"]) {
-        last_cmd = function_from_string("nodeManagementDetailedDiscoveryData");
+        logger.printfln("Test1");
+        logger.printfln("this = %p\n", this);
+        last_cmd = Function::nodeManagementDetailedDiscoveryData;
+            //function_from_string("nodeManagementDetailedDiscoveryData");
+        logger.printfln("Test2");
         nodemanagementdetaileddiscoverydatatype =
             obj["nodeManagementDetailedDiscoveryData"].as<decltype(nodemanagementdetaileddiscoverydatatype)::value_type>();
         return last_cmd;
