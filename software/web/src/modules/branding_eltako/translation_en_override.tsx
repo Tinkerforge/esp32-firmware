@@ -1,9 +1,14 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { __ } from "../../ts/translation";
 let x = {
     "charge_manager": {
         "status": {
             "charge_manager": "Charge Manager"
+        },
+        "script": {
+            "mode_explainer_1": <>{__("This_device")} is part of a charge management group with other ELTAKO Wallboxes. Another device controls this group to make sure the configured current is never exceeded.</>,
+            "mode_explainer_2": <>{__("This_device")} either uses the PV excess charging or controls a charge management group with other ELTAKO Wallboxes to make sure the configured current is never exceeded.</>
         }
     },
     "system": {
@@ -33,6 +38,11 @@ let x = {
     "modbus_tcp": {
         "content": {
             "warp": "ELTAKO Wallbox"
+        }
+    },
+    "modbus_tcp_debug": {
+        "content": {
+            "server_missing_github": <></>
         }
     },
     "branding": {
