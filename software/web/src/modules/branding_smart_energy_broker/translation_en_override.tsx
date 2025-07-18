@@ -8,7 +8,7 @@ let x = {
     },
     "system": {
         "content": {
-            "factory_reset_modal_text": <>A factory reset will reset all configuration to their default values. <b>This action cannot be undone!</b> The SEB will re-open the WiFi access point with the default SSID and passphrase from the manual. Are you sure?</>,
+            "factory_reset_modal_text": <>A factory reset will reset all configuration to their default values. <b>This action cannot be undone!</b> The Smart Energy Broker will re-open the WiFi access point with the default SSID and passphrase from the manual. Continue?</>,
             "reboot_desc": "",
             "config_reset_modal_text": "",
             "factory_reset_desc": "removes all configuration",
@@ -42,10 +42,10 @@ let x = {
     },
     "modbus_tcp": {
         "content": {
-            "warp": "SEB"
+            "warp": "Smart Energy Broker"
         }
     },
     "branding": {
-        "device": "SEB"
+        "device": "Smart Energy Broker"
     }
 }
