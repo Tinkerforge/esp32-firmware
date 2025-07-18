@@ -30,7 +30,7 @@ let x = {
 
             "header_excess_charging": "Photovoltaic Excess Charging",
             "enable_excess_charging": "Excess charging enabled",
-            "enable_excess_charging_help": <><p>The <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/pv_excess_charging`)}>tutorial PV-excess-charging</a> helps configuring this.</p></>,
+            "enable_excess_charging_help": /*FFN*/() => options.WARP_DOC_BASE_URL.length > 0 ? <p>The <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/pv_excess_charging`)}>tutorial PV-excess-charging</a> helps configuring this.</p> : undefined/*NF*/,
             "enable_excess_charging_desc": "Will adjust the power consumption of controlled chargers, depending on the power generation of a photovoltaic system and the charge mode.",
             "default_mode": "Default charging mode",
             "default_mode_muted": "will be used after reboot",

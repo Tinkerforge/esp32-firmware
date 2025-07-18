@@ -1325,6 +1325,9 @@ def main():
         options_value[key] = '1' if product_id == suffix else '0'
         options_origin[key] = 'pio_hooks.py'
 
+    options_value['product_id_is_warp_any'] = '1' if product_id in ['warp', 'warp2', 'warp3'] else '0'
+    options_origin['product_id_is_warp_any'] = 'pio_hooks.py'
+
     assert 'manufacturer_upper' not in options_value
 
     options_value['manufacturer_upper'] = options_value['manufacturer'].upper()

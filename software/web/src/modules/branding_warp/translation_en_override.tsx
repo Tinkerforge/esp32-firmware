@@ -25,6 +25,11 @@ let x = {
             "power_history": "Charge history"
         }
     },
+    "modbus_tcp": {
+        "content": {
+            "warp": "WARP Charger"
+        }
+    },
     "branding": {
         "device": "WARP Charger"
     }

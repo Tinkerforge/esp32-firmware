@@ -17,12 +17,17 @@ let x = {
     },
     "firmware_update": {
         "script": {
-            "install_state_19": "Firmware-Datei ist beschädigt oder für WARP1 Charger (Firmware-Info-Seite fehlt)"
+            "install_state_19": "Firmware-Datei ist beschädigt (Firmware-Info-Seite fehlt)"
         }
     },
     "meters": {
         "status": {
             "power_history": "Ladeverlauf"
+        }
+    },
+    "modbus_tcp": {
+        "content": {
+            "warp": "ELTAKO Wallbox"
         }
     },
     "branding": {

@@ -20,6 +20,11 @@ let x = {
             "install_state_19": "Firmware-Datei ist beschädigt (Firmware-Info-Seite fehlt)"
         }
     },
+    "modbus_tcp": {
+        "content": {
+            "warp": "Brick"
+        }
+    },
     "branding": {
         "device": "Brick",
         "the": "der",

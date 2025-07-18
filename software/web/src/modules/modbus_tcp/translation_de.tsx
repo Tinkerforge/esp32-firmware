@@ -13,7 +13,7 @@ let x = {
             "ignore_writes": "Nur Lesezugriff (Schreibzugriffe ignorieren)",
             "full_access": "Lese-/Schreibzugriff",
             "table": "Registertabelle",
-            "warp": "WARP Charger",
+            "warp": null,
             "bender_emulate": "Open Modbus Charge Control Interface (OMCCI); Kompatibel zu Bender CC613",
             "keba_emulate": "Kompatibel zu Keba P30 C-Series",
             "modbus_tcp": "Modbus/TCP",
@@ -21,7 +21,7 @@ let x = {
             "port": "Port",
             "port_muted": "typischerweise 502",
             "debug": "Debug-Client",
-            "table_docu": "WARP Register-Dokumentation",
+            "table_docu": "Register-Dokumentation",
             "table_content": <>
                 <thead class="thead-light">
                     <tr>
@@ -180,7 +180,7 @@ let x = {
                         <td>
                             <ul>
                                 <li>0: Kein Stromzähler verfügbar</li>
-                                <li>1: SDM72 (nur WARP1)</li>
+                                <li>1: SDM72{options.PRODUCT_ID_IS_WARP_ANY ? <span> (nur WARP1)</span> : undefined}</li>
                                 <li>2: SDM630</li>
                                 <li>3: SDM72 V2</li>
                                 <li>4: SDM72CTM</li>
@@ -223,7 +223,7 @@ let x = {
                         <td>weitere Stromzähler-Werte</td>
                         <td>float32 (85x)</td>
                         <td>all_values</td>
-                        <td>Siehe <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/mqtt_http/api_reference/meter/#meter_all_values_any`)}>API-Dokumentation</a></td>
+                        <td>{options.WARP_DOC_BASE_URL.length > 0 ? <span>Siehe <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/mqtt_http/api_reference/meter/#meter_all_values_any`)}>API-Dokumentation</a></span> : undefined}</td>
                     </tr>
                     <tr>
                         <td>3100</td>
@@ -315,12 +315,10 @@ let x = {
                         <td>uint32</td>
                         <td>evse</td>
                         <td>
-                            Steuert die LED des Tasters in der Wallbox-Front.
-                            <strong>
-                            Blinkmuster und -dauer müssen mit einem Modbus-Befehl geschrieben werden!
-                            Falls auch die Farbe gesetzt werden soll (nur WARP3), müssen die Register 1004 bis einschließlich 1013 in einem Befehl geschrieben werden.
-                            </strong>
-                            Damit die LED kontrolliert werden kann muss die Option "Status-LED-Steuerung" aktiviert sein.
+                            Steuert die LED des Tasters in der Wallbox-Front. <strong>Blinkmuster und -dauer müssen mit einem Modbus-Befehl geschrieben
+                            werden! Falls auch die Farbe gesetzt werden soll{options.PRODUCT_ID_IS_WARP_ANY ? <span> (nur WARP3)</span> : undefined},
+                            müssen die Register 1004 bis einschließlich 1013 in einem Befehl geschrieben werden.</strong> Damit die LED kontrolliert
+                            werden kann muss die Option "Status-LED-Steuerung" aktiviert sein.
 
                             <ul>
                                 <li>0xFFFFFFFF: EVSE kontrolliert LED</li>
@@ -347,21 +345,21 @@ let x = {
                         <td>Front-LED-Blinkfarbwert (Hue)</td>
                         <td>uint32</td>
                         <td>evse</td>
-                        <td>Der Farbwert der Farbe (im <a href="https://de.wikipedia.org/wiki/HSV-Farbraum">HSV-Farbraum</a>) in der das im Register 1004 gesetzte Blinkmuster angezeigt werden soll. Nur Werte zwischen 0 und 359 (°) sind erlaubt. Die Farbe kann nur bei einem WARP3 Charger gesetzt werden. WARP und WARP2 Charger besitzen eine einfarbig blaue LED.</td>
+                        <td>Der Farbwert der Farbe (im <a href="https://de.wikipedia.org/wiki/HSV-Farbraum">HSV-Farbraum</a>) in der das im Register 1004 gesetzte Blinkmuster angezeigt werden soll. Nur Werte zwischen 0 und 359 (°) sind erlaubt.{options.PRODUCT_ID_IS_WARP_ANY ? <span> Die Farbe kann nur bei einem WARP3 Charger gesetzt werden. WARP und WARP2 Charger besitzen eine einfarbig blaue LED.</span> : undefined}</td>
                     </tr>
                     <tr>
                         <td>1010</td>
                         <td>Front-LED-Blinkfarbsättigung (Saturation)</td>
                         <td>uint32</td>
                         <td>evse</td>
-                        <td>Die Farbsättigung der Farbe (im <a href="https://de.wikipedia.org/wiki/HSV-Farbraum">HSV-Farbraum</a>) in der das im Register 1004 gesetzte Blinkmuster angezeigt werden soll. Nur Werte zwischen 0 und 255 sind erlaubt. Die Farbe kann nur bei einem WARP3 Charger gesetzt werden. WARP und WARP2 Charger besitzen eine einfarbig blaue LED.</td>
+                        <td>Die Farbsättigung der Farbe (im <a href="https://de.wikipedia.org/wiki/HSV-Farbraum">HSV-Farbraum</a>) in der das im Register 1004 gesetzte Blinkmuster angezeigt werden soll. Nur Werte zwischen 0 und 255 sind erlaubt.{options.PRODUCT_ID_IS_WARP_ANY ? <span> Die Farbe kann nur bei einem WARP3 Charger gesetzt werden. WARP und WARP2 Charger besitzen eine einfarbig blaue LED.</span> : undefined}</td>
                     </tr>
                     <tr>
                         <td>1012</td>
                         <td>Front-LED-Blinkfarbhelligkeit (Value)</td>
                         <td>uint32</td>
                         <td>evse</td>
-                        <td>Die Helligkeit der Farbe (im <a href="https://de.wikipedia.org/wiki/HSV-Farbraum">HSV-Farbraum</a>) in der das im Register 1004 gesetzte Blinkmuster angezeigt werden soll. Nur Werte zwischen 0 und 255 sind erlaubt. Die Farbe kann nur bei einem WARP3 Charger gesetzt werden. WARP und WARP2 Charger besitzen eine einfarbig blaue LED.</td>
+                        <td>Die Helligkeit der Farbe (im <a href="https://de.wikipedia.org/wiki/HSV-Farbraum">HSV-Farbraum</a>) in der das im Register 1004 gesetzte Blinkmuster angezeigt werden soll. Nur Werte zwischen 0 und 255 sind erlaubt.{options.PRODUCT_ID_IS_WARP_ANY ? <span> Die Farbe kann nur bei einem WARP3 Charger gesetzt werden. WARP und WARP2 Charger besitzen eine einfarbig blaue LED.</span> : undefined}</td>
                     </tr>
                     <tr>
                         <td>2000</td>
@@ -407,9 +405,12 @@ let x = {
                                 </li>
                             </ul>
                             <br/>
-                            <strong>Schreiben der Register 4012 und 4013 startet das Vortäuschen das Tags. Danach werden die Holding Register 4000 bis 4013 geleert!</strong>
-                            Das Datenformat der Holding Register 4000 bis 4013 ist identisch zum Format der Input Register 4000 bis 4013 (die das zuletzt gesehen NFC-Tag enthalten).
-                            Ein physisch existierendes Tag kann also (wieder) vorgetäuscht werden, indem es einmal an die Wallbox gehalten wird und die dabei erzeugten Werte in den Input Registern 4000 bis 4013 später in die Holding Register 4000 bis 4013 geschrieben werden.
+                            <strong>Schreiben der Register 4012 und 4013 startet das Vortäuschen das Tags. Danach werden die Holding
+                            Register 4000 bis 4013 geleert!</strong> Das Datenformat der Holding Register 4000 bis 4013 ist identisch
+                            zum Format der Input Register 4000 bis 4013 (die das zuletzt gesehen NFC-Tag enthalten). Ein physisch
+                            existierendes Tag kann also (wieder) vorgetäuscht werden, indem es einmal an die Wallbox gehalten wird
+                            und die dabei erzeugten Werte in den Input Registern 4000 bis 4013 später in die Holding Register 4000
+                            bis 4013 geschrieben werden.
                         </td>
                     </tr>
                     <tr>
@@ -438,7 +439,7 @@ let x = {
                         <td>Feature "evse" verfügbar</td>
                         <td>bool</td>
                         <td>---</td>
-                        <td>Ein Ladecontroller steht zur Verfügung. Dieses Feature sollte bei allen WARP Chargern, deren Hardware
+                        <td>Ein Ladecontroller steht zur Verfügung. Dieses Feature sollte bei allen Wallboxen, deren Hardware
                             funktionsfähig ist, vorhanden sein.</td>
                     </tr>
                     <tr>
