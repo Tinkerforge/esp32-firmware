@@ -126,6 +126,7 @@ void EEBus::pre_setup()
 void EEBus::setup()
 {
     api.restorePersistentConfig("eebus/config", &config);
+    is_enabled = config.get("enable")->asBool();
     update_peers_config();
 
     // All peers are unknown at startup
@@ -148,12 +149,10 @@ void EEBus::setup()
     if (is_enabled) {
         usecases = make_unique_psram<EEBusUseCases>();
         data_handler = make_unique_psram<SpineDataTypeHandler>();
-
-    }
-    else {
-
+        logger.printfln("EEBUS Module active");
     }
     initialized = true;
+    logger.printfln("EEBUS initialized");
     logger.tracefln(this->trace_buffer_index, "EEBUS initialized");
 }
 
@@ -162,7 +161,7 @@ void EEBus::register_urls()
 
     api.addPersistentConfig("eebus/config", &config);
     api.addState("eebus/state", &state);
-    is_enabled = config.get("enable")->asBool();
+
     api.addCommand(
         "eebus/addPeer",
         &add_peer,
