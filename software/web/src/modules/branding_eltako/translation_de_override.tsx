@@ -1,9 +1,14 @@
 /** @jsxImportSource preact */
 import { h } from "preact";
+import { __ } from "../../ts/translation";
 let x = {
     "charge_manager": {
         "status": {
             "charge_manager": "Lastmanager"
+        },
+        "script": {
+            "mode_explainer_1": <>{__("This_device")} ist Teil eines Lastmanagement-Verbunds mit anderen ELTAKO Wallboxen. Ein anderes Gerät steuert diesen Lastmanagement-Verbund, um sicherzustellen, dass nie mehr als der verfügbare Strom bezogen wird.</>,
+            "mode_explainer_2": <>{__("This_device")} verwendet entweder das PV-Überschussladen oder steuert einen Lastmanagement-Verbund mit anderen ELTAKO Wallboxen um sicherzustellen, dass nie mehr als der verfügbare Strom bezogen wird.</>
         }
     },
     "system": {
@@ -33,6 +38,11 @@ let x = {
     "modbus_tcp": {
         "content": {
             "warp": "ELTAKO Wallbox"
+        }
+    },
+    "modbus_tcp_debug": {
+        "content": {
+            "server_missing_github": <></>
         }
     },
     "branding": {
