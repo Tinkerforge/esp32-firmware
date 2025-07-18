@@ -1371,6 +1371,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         case HuaweiSUN2000SmartDongleVirtualMeter::InverterUnused:
             logger.printfln_meter("Invalid Huawei SUN2000 Smart Dongle Virtual Meter: %u", static_cast<uint8_t>(huawei_sun2000_smart_dongle.virtual_meter));
+            default_location = MeterLocation::Inverter;
             break;
 
         case HuaweiSUN2000SmartDongleVirtualMeter::Grid:
