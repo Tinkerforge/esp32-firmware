@@ -5,6 +5,7 @@ import re
 import sys
 import argparse
 import socket
+import time
 import tinkerforge_util as tfutil  # sudo apt install python3-tinkerforge-util
 
 BASE58 = '123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ'
@@ -74,6 +75,7 @@ def print_esp32_label(ssid, passphrase, copies, stdout):
     else:
         with socket.create_connection((tfutil.get_tf_printer_host('esp32'), 9100)) as s:
             s.send(data)
+            time.sleep(1)
 
 
 def main():
