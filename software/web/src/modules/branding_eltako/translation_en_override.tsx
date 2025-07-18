@@ -25,6 +25,11 @@ let x = {
             "power_history": "Charge history"
         }
     },
+    "meters_modbus_tcp": {
+        "content": {
+            "table_tinkerforge_warp_charger": "ELTAKO Wallbox"
+        }
+    },
     "modbus_tcp": {
         "content": {
             "warp": "ELTAKO Wallbox"

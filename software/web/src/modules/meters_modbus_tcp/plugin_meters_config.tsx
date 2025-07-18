@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "../../options.inc"
+
 import * as options from "../../options";
 import * as util from "../../ts/util";
 import { h, Fragment, Component, ComponentChildren } from "preact";
@@ -855,6 +857,9 @@ export function init() {
                                 [MeterModbusTCPTableID.DeyeHybridInverter.toString(), __("meters_modbus_tcp.content.table_deye_hybrid_inverter")],
                                 [MeterModbusTCPTableID.E3DC.toString(), __("meters_modbus_tcp.content.table_e3dc")],
                                 [MeterModbusTCPTableID.EastronSDM630TCP.toString(), __("meters_modbus_tcp.content.table_eastron_sdm630_tcp")],
+//#if OPTIONS_PRODUCT_ID_IS_ELTAKO
+                                [MeterModbusTCPTableID.TinkerforgeWARPCharger.toString(), __("meters_modbus_tcp.content.table_tinkerforge_warp_charger")],
+//#endif
                                 [MeterModbusTCPTableID.FoxESSH3HybridInverter.toString(), __("meters_modbus_tcp.content.table_fox_ess_h3_hybrid_inverter")],
                                 [MeterModbusTCPTableID.FoxESSH3SmartHybridInverter.toString(), __("meters_modbus_tcp.content.table_fox_ess_h3_smart_hybrid_inverter")],
                                 [MeterModbusTCPTableID.FoxESSH3ProHybridInverter.toString(), __("meters_modbus_tcp.content.table_fox_ess_h3_pro_hybrid_inverter")],
@@ -880,7 +885,9 @@ export function init() {
                                 [MeterModbusTCPTableID.SolaxStringInverter.toString(), __("meters_modbus_tcp.content.table_solax_string_inverter")],
                                 [MeterModbusTCPTableID.SungrowHybridInverter.toString(), __("meters_modbus_tcp.content.table_sungrow_hybrid_inverter")],
                                 [MeterModbusTCPTableID.SungrowStringInverter.toString(), __("meters_modbus_tcp.content.table_sungrow_string_inverter")],
+//#ifn OPTIONS_PRODUCT_ID_IS_ELTAKO
                                 [MeterModbusTCPTableID.TinkerforgeWARPCharger.toString(), __("meters_modbus_tcp.content.table_tinkerforge_warp_charger")],
+//#endif
                                 [MeterModbusTCPTableID.VictronEnergyGX.toString(), __("meters_modbus_tcp.content.table_victron_energy_gx")],
                                 [MeterModbusTCPTableID.Custom.toString(), __("meters_modbus_tcp.content.table_custom")],
                             ]}
