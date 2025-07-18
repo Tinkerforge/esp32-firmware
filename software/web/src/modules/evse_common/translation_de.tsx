@@ -46,10 +46,10 @@ let x = {
             "error_state": "Fehlerzustand",
             "error_state_help": <>
                 <ul class="mb-0">
-                    <li><p><strong>Schalterfehler:</strong> Die Wallbox wurde nicht korrekt installiert. Die Schaltereinstellung des Ladecontrollers ist noch auf dem Werkszustand. Siehe <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/warp_charger/assembly_and_installation#einstellen-des-ladestroms`)}>Einstellen des Ladestroms</a>.</p></li>
+                    <li><p><strong>Schalterfehler:</strong> Die Wallbox wurde nicht korrekt installiert. Die Schaltereinstellung des Ladecontrollers ist noch auf dem Werkszustand.{options.WARP_DOC_BASE_URL.length > 0 ? <span> Siehe <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/warp_charger/assembly_and_installation#einstellen-des-ladestroms`)}>Einstellen des Ladestroms</a>.</span> : undefined}</p></li>
                     <li><p><strong>DC-Fehler:</strong> Ein DC-Fehlerstrom wurde erkannt. Der Fehler kann entweder über die Webseite der Wallbox oder über ein kurzzeitiges Trennen der Stromversorgung der Wallbox zurückgesetzt werden.</p></li>
                     <li><p><strong>Schützfehler/PE-Fehler:</strong> Eines der Schütze schaltet nicht korrekt (Siehe Schützprüfung/-zustand), Phase L1 ist stromlos oder Erdungsfehler.</p></li>
-                    <li><p><strong>Kommunikationsfehler:</strong> Fehler bei der Kommunikation mit dem Elektrofahrzeug. Bei erstmaligem Auftreten das Ladekabel vom Fahrzeug trennen, 10 Sekunden warten und das Ladekabel erneut mit dem Fahrzeug verbinden (erneuter Ladevorgang). Sollte das Problem bestehen bleiben siehe <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/warp_charger/troubleshooting#led-blinkt-f%C3%BCnfmal-rot-im-intervall-dass-webinterface-zeigt-kommunikationsfehler`)}>Anleitung</a>.</p></li>
+                    <li><p><strong>Kommunikationsfehler:</strong> Fehler bei der Kommunikation mit dem Elektrofahrzeug. Bei erstmaligem Auftreten das Ladekabel vom Fahrzeug trennen, 10 Sekunden warten und das Ladekabel erneut mit dem Fahrzeug verbinden (erneuter Ladevorgang).{options.WARP_DOC_BASE_URL.length > 0 ? <span> Sollte das Problem bestehen bleiben siehe <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/warp_charger/troubleshooting#led-blinkt-f%C3%BCnfmal-rot-im-intervall-dass-webinterface-zeigt-kommunikationsfehler`)}>Anleitung</a>.</span> : undefined}</p></li>
                 </ul>
             </>,
             "error_ok": "OK",
@@ -108,7 +108,7 @@ let x = {
             "auto_start_enable": "Erzwingt, dass Ladevorgänge immer über das Webinterface, die API oder (je nach Tastereinstellung) den Taster manuell gestartet werden müssen.",
 
             "external_description": "Externe Steuerung",
-            "external_description_muted": <><a href="https://www.warp-charger.com/evcc.html?v=2">siehe Einrichtungs-Tutorial für Details</a></>,
+            "external_description_muted": <>{options.WARP_DOC_BASE_URL.length > 0 ? <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/smart_home/evcc/`)}>siehe Einrichtungs-Tutorial für Details</a> : undefined}</>,
             "external_enable": <>Erlaubt einer externen Steuerung (z.B. <a href="https://evcc.io/">EVCC</a>) diese Wallbox zu steuern</>,
 
             "boost_mode_desc": "Boost-Modus",
@@ -182,7 +182,7 @@ let x = {
 
             // EVSE V2 and V3
             "energy_meter_type": "Stromzählertyp",
-            "gpio_shutdown_help": <><p>Am Abschalteingang kann zum Beispiel ein Rundsteuerempfänger angeschlossen werden. Hier kann eingestellt werden, wie auf Änderungen am Abschalteingang reagiert werden soll. In der Standardkonfiguration der Wallbox wird auf 4200 W limitiert, wenn der Abschalteingang geschlossen ist, siehe <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/verbrauchseinrichtung`)}>Steuerbare Verbrauchseinrichtung nach §14a EnWG</a>.</p></>,
+            "gpio_shutdown_help": <><p>Am Abschalteingang kann zum Beispiel ein Rundsteuerempfänger angeschlossen werden. Hier kann eingestellt werden, wie auf Änderungen am Abschalteingang reagiert werden soll. In der Standardkonfiguration der Wallbox wird auf 4200 W limitiert, wenn der Abschalteingang geschlossen ist{options.WARP_DOC_BASE_URL.length > 0 ? <span>, siehe <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/verbrauchseinrichtung`)}>Steuerbare Verbrauchseinrichtung nach §14a EnWG</a></span> : undefined}.</p></>,
             "gpio_shutdown_not_configured": "Nicht konfiguriert",
             "gpio_shutdown_on_open": "Abschalten, wenn geöffnet",
             "gpio_shutdown_on_close": "Abschalten, wenn geschlossen",

@@ -25,6 +25,11 @@ let x = {
             "power_history": "Power history"
         }
     },
+    "modbus_tcp": {
+        "content": {
+            "warp": "Energy Manager"
+        }
+    },
     "branding": {
         "device": "Energy Manager"
     }

@@ -20,6 +20,11 @@ let x = {
             "install_state_19": "Firmware file corrupted (info page missing)"
         }
     },
+    "modbus_tcp": {
+        "content": {
+            "warp": "Brick"
+        }
+    },
     "branding": {
         "device": "Brick"
     }

@@ -40,6 +40,11 @@ let x = {
             "server_missing_github": <></>
         }
     },
+    "modbus_tcp": {
+        "content": {
+            "warp": "SEB"
+        }
+    },
     "branding": {
         "device": "SEB"
     }

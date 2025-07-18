@@ -13,7 +13,7 @@ let x = {
             "ignore_writes": "Read access only (ignore writes)",
             "full_access": "Read/write access",
             "table": "Register table",
-            "warp": "WARP Charger",
+            "warp": null,
             "bender_emulate": "Open Modbus Charge Control Interface (OMCCI); Bender CC613 compatible",
             "keba_emulate": "Keba P30 C-series compatible",
             "modbus_tcp": "Modbus/TCP",
@@ -21,7 +21,7 @@ let x = {
             "port": "Port",
             "port_muted": "typically 502",
             "debug": "Debug client",
-            "table_docu": "WARP register documentation",
+            "table_docu": "Register documentation",
             "table_content": <>
                 <thead class="thead-light">
                     <tr>
@@ -178,7 +178,7 @@ let x = {
                         <td>
                             <ul>
                                 <li>0: No meter available</li>
-                                <li>1: SDM72 (WARP1 only)</li>
+                                <li>1: SDM72{options.PRODUCT_ID_IS_WARP_ANY ? <span> (WARP1 only)</span> : undefined}</li>
                                 <li>2: SDM630</li>
                                 <li>3: SDM72 V2</li>
                                 <li>4: SDM72CTM</li>
@@ -221,7 +221,7 @@ let x = {
                         <td>More meter values</td>
                         <td>float32 (85x)</td>
                         <td>all_values</td>
-                        <td>See <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/mqtt_http/api_reference/meter/#meter_all_values_any`)}>API Documentation</a></td>
+                        <td>{options.WARP_DOC_BASE_URL.length > 0 ? <span>See <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/mqtt_http/api_reference/meter/#meter_all_values_any`)}>API Documentation</a></span> : undefined}</td>
                     </tr>
                     <tr>
                         <td>3100</td>
@@ -313,12 +313,10 @@ let x = {
                         <td>uint32</td>
                         <td>evse</td>
                         <td>
-                            Controls the LED in the charger's front button.
-                            <strong>
-                            Blink pattern and duration must be written with a single modbus command!
-                            To also set the blink color (only WARP3), registers 1004 to and including 1013 must be written with a single command.
-                            </strong>
-                            The setting "Status LED control" must be enabled to be able to control the LED.
+                            Controls the LED in the charger's front button. <strong>Blink pattern and duration must be written with a single
+                            Modbus command! To also set the blink color{options.PRODUCT_ID_IS_WARP_ANY ? <span> (WARP3 only)</span> : undefined},
+                            registers 1004 to and including 1013 must be written with a single command.</strong> The setting "Status LED control"
+                            must be enabled to be able to control the LED.
 
                             <ul>
                                 <li>0xFFFFFFFF: EVSE controls LED</li>
@@ -345,21 +343,21 @@ let x = {
                         <td>Front LED blink hue</td>
                         <td>uint32</td>
                         <td>evse</td>
-                        <td>Hue of the color (in the <a href="https://en.wikipedia.org/wiki/HSL_and_HSV">HSV color representation</a>) that the blink pattern set in register 1004 should be shown in. Only values between 0 and 359 (°) are allowed. The color can only be set for a WARP3 charger. WARP and WARP2 Charger use a blue LED.</td>
+                        <td>Hue of the color (in the <a href="https://en.wikipedia.org/wiki/HSL_and_HSV">HSV color representation</a>) that the blink pattern set in register 1004 should be shown in. Only values between 0 and 359 (°) are allowed.{options.PRODUCT_ID_IS_WARP_ANY ? <span> The color can only be set for a WARP3 charger. WARP and WARP2 Charger use a blue LED.</span> : undefined}</td>
                     </tr>
                     <tr>
                         <td>1010</td>
                         <td>Front LED blink saturation</td>
                         <td>uint32</td>
                         <td>evse</td>
-                        <td>Saturation of the color (in the <a href="https://en.wikipedia.org/wiki/HSL_and_HSV">HSV color representation</a>) that the blink pattern set in register 1004 should be shown in. Only values between 0 and 255 are allowed. The color can only be set for a WARP3 charger. WARP and WARP2 Charger use a blue LED.</td>
+                        <td>Saturation of the color (in the <a href="https://en.wikipedia.org/wiki/HSL_and_HSV">HSV color representation</a>) that the blink pattern set in register 1004 should be shown in. Only values between 0 and 255 are allowed.{options.PRODUCT_ID_IS_WARP_ANY ? <span> The color can only be set for a WARP3 charger. WARP and WARP2 Charger use a blue LED.</span> : undefined}</td>
                     </tr>
                     <tr>
                         <td>1012</td>
                         <td>Front LED blink value</td>
                         <td>uint32</td>
                         <td>evse</td>
-                        <td>Value of the color (in the <a href="https://en.wikipedia.org/wiki/HSL_and_HSV">HSV color representation</a>) that the blink pattern set in register 1004 should be shown in. Only values between 0 and 255 are allowed. The color can only be set for a WARP3 charger. WARP and WARP2 Charger use a blue LED.</td>
+                        <td>Value of the color (in the <a href="https://en.wikipedia.org/wiki/HSL_and_HSV">HSV color representation</a>) that the blink pattern set in register 1004 should be shown in. Only values between 0 and 255 are allowed.{options.PRODUCT_ID_IS_WARP_ANY ? <span> The color can only be set for a WARP3 charger. WARP and WARP2 Charger use a blue LED.</span> : undefined}</td>
                     </tr>
                     <tr>
                         <td>2000</td>
@@ -405,9 +403,11 @@ let x = {
                                 </li>
                             </ul>
                             <br/>
-                            <strong>Writing registers 4012 and 4013 starts the tag injection. Holding Registers 4000 to 4013 will be cleared afterwards!</strong>
-                            The data format of holding registers 4000 to 4013 is identical to the one of input registers 4000 to 4013 (that contain the last seen NFC tag).
-                            A physically existing tag can later be (re-)injected by presenting it to the charger and copying the values read from input registers 4000 to 4013 into holding registers 4000 to 4013.
+                            <strong>Writing registers 4012 and 4013 starts the tag injection. Holding Registers 4000 to 4013 will
+                            be cleared afterwards!</strong> The data format of holding registers 4000 to 4013 is identical to the
+                            one of input registers 4000 to 4013 (that contain the last seen NFC tag). A physically existing tag can
+                            later be (re-)injected by presenting it to the charger and copying the values read from input registers
+                            4000 to 4013 into holding registers 4000 to 4013.
                         </td>
                     </tr>
                     <tr>
@@ -436,7 +436,7 @@ let x = {
                         <td>Feature "evse" available</td>
                         <td>bool</td>
                         <td>---</td>
-                        <td>A charge controller is available. This feature should be available on all WARP chargers provided the
+                        <td>A charge controller is available. This feature should be available on all chargers provided the
                             hardware is working correctly.</td>
                     </tr>
                     <tr>

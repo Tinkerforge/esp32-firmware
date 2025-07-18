@@ -51,13 +51,13 @@ let x = {
             "charge_manager_chargers": "Chargers",
             "enable_charge_manager": "Charge management mode",
             "enable_charge_manager_help": /*FFN*/(has_managed_mode: boolean) => <>
-                <p>On this page the controlled chargers are configured. The settings applied here affect the <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/chargemanagement`)}>charge management</a> among the chargers.</p>
+                <p>On this page the controlled chargers are configured. The settings applied here affect the {options.WARP_DOC_BASE_URL.length > 0 ? <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/chargemanagement`)}>charge management</a> : <span>charge management</span>} among the chargers.</p>
                 <ul class="mb-0">
                     <li><strong>Disabled:</strong> No charge management is performed. {__("This_device")} operates completely independently.</li>
                     {has_managed_mode ?
                         <li><strong>Externally controlled:</strong> {__("This_device")} is managed by another charge manager. No further settings are required.</li>
                         : undefined}
-                    <li><strong>Charge manager / PV excess charging:</strong> {__("This_device")} functions as a charge manager. This also applies when it is solely used for <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/pv_excess_charging`)}>PV excess charging</a>. Additional settings must be configured.</li>
+                    <li><strong>Charge manager / PV excess charging:</strong> {__("This_device")} functions as a charge manager. This also applies when it is solely used for {options.WARP_DOC_BASE_URL.length > 0 ? <a href={removeUnicodeHacks(`${options.WARP_DOC_BASE_URL}/docs/tutorials/pv_excess_charging`)}>PV excess charging</a> : <span>PV excess charging</span>}. Additional settings must be configured.</li>
                 </ul>
             </>/*NF*/,
             "enable_watchdog": "Watchdog enabled",
@@ -269,9 +269,9 @@ let x = {
             "mode_explainer_0_em": <>{__("This_device")} does not control any chargers.</>,
             "mode_explainer_2_em": <>{__("This_device")} controls one or more chargers.</>,
 
-            "mode_explainer_0_em_with_ps": "This Energy Manager does not control any chargers. Phase switching is disabled.",
-            "mode_explainer_1_em_with_ps": "This Energy Manager is controlled by another Energy Manager or WARP Charger and performs phase switching for a single controlled charger that is connected to its contactor.",
-            "mode_explainer_2_em_with_ps": "This Energy Manager controls one or more WARP chargers and can perform phase switching for a single controlled charger that is connected to its contactor.",
+            "mode_explainer_0_em_with_ps": <>{__("This_device")} does not control any chargers. Phase switching is disabled.</>,
+            "mode_explainer_1_em_with_ps": <>{__("This_device")} is controlled by another WARP Energy Manager or WARP Charger and performs phase switching for a single controlled charger that is connected to its contactor.</>,
+            "mode_explainer_2_em_with_ps": <>{__("This_device")} controls one or more WARP Chargers and can perform phase switching for a single controlled charger that is connected to its contactor.</>,
 
             "mode_change_failed": "Failed to change charging mode."
         }

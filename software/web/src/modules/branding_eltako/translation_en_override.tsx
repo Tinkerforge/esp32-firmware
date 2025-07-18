@@ -17,12 +17,17 @@ let x = {
     },
     "firmware_update": {
         "script": {
-            "install_state_19": "Firmware file corrupted or for WARP1 Charger (info page missing)"
+            "install_state_19": "Firmware file corrupted (info page missing)"
         }
     },
     "meters": {
         "status": {
             "power_history": "Charge history"
+        }
+    },
+    "modbus_tcp": {
+        "content": {
+            "warp": "ELTAKO Wallbox"
         }
     },
     "branding": {
