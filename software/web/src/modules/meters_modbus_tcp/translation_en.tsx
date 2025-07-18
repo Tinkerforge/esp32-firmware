@@ -59,6 +59,7 @@ let x = {
             "table_solax_string_inverter": "Solax string inverter",
             "table_fox_ess_h3_smart_hybrid_inverter": "Fox ESS H3 Smart hybrid inverter",
             "table_fox_ess_h3_pro_hybrid_inverter": "Fox ESS H3 Pro hybrid inverter",
+            "table_sma_hybrid_inverter": "SMA hybrid inverter",
             "virtual_meter": "Virtual meter",
             "virtual_meter_inverter": "Inverter",
             "virtual_meter_grid": "Grid",

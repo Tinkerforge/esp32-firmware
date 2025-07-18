@@ -59,6 +59,7 @@ let x = {
             "table_solax_string_inverter": "Solax String-Wechselrichter",
             "table_fox_ess_h3_smart_hybrid_inverter": "Fox ESS H3 Smart Hybrid-Wechselrichter",
             "table_fox_ess_h3_pro_hybrid_inverter": "Fox ESS H3 Pro Hybrid-Wechselrichter",
+            "table_sma_hybrid_inverter": "SMA Hybrid-Wechselrichter",
             "virtual_meter": "Virtueller Zähler",
             "virtual_meter_inverter": "Wechselrichter",
             "virtual_meter_grid": "Netzanschluss",

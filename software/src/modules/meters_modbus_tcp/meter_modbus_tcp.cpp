@@ -285,6 +285,9 @@
 #define FOX_ESS_H3_PRO_HYBRID_INVERTER_PV6_CURRENT_ADDRESS                 static_cast<size_t>(FoxESSH3ProHybridInverterPVAddress::PV6Current)
 #define FOX_ESS_H3_PRO_HYBRID_INVERTER_PV6_POWER_ADDRESS                   static_cast<size_t>(FoxESSH3ProHybridInverterPVAddress::PV6Power)
 
+#define SMA_HYBRID_INVERTER_BATTERY_CHARGE_POWER_ADDRESS                   static_cast<size_t>(SMAHybridInverterBatteryAddress::BatChrgCurBatCha)
+#define SMA_HYBRID_INVERTER_BATTERY_DISCHARGE_POWER_ADDRESS                static_cast<size_t>(SMAHybridInverterBatteryAddress::BatDschCurBatDsch)
+
 #define MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(x) (static_cast<uint8_t>(x) & 0x07)
 #define MODBUS_VALUE_TYPE_TO_REGISTER_ORDER_LE(x) ((static_cast<uint8_t>(x) >> 5) & 1)
 
@@ -1560,6 +1563,47 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         break;
 
+    case MeterModbusTCPTableID::SMAHybridInverter:
+        sma_hybrid_inverter.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<SMAHybridInverterVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
+
+        switch (sma_hybrid_inverter.virtual_meter) {
+        case SMAHybridInverterVirtualMeter::None:
+            logger.printfln_meter("No SMA Hybrid Inverter Virtual Meter selected");
+            return;
+
+        case SMAHybridInverterVirtualMeter::InverterUnused:
+            logger.printfln_meter("Invalid SMA Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(sma_hybrid_inverter.virtual_meter));
+            default_location = MeterLocation::Inverter;
+            break;
+
+        case SMAHybridInverterVirtualMeter::GridUnused:
+            logger.printfln_meter("Invalid SMA Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(sma_hybrid_inverter.virtual_meter));
+            default_location = MeterLocation::Grid;
+            break;
+
+        case SMAHybridInverterVirtualMeter::Battery:
+            table = &sma_hybrid_inverter_battery_table;
+            default_location = MeterLocation::Battery;
+            break;
+
+        case SMAHybridInverterVirtualMeter::LoadUnused:
+            logger.printfln_meter("Invalid SMA Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(sma_hybrid_inverter.virtual_meter));
+            default_location = MeterLocation::Load;
+            break;
+
+        case SMAHybridInverterVirtualMeter::PVUnused:
+            logger.printfln_meter("Invalid SMA Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(sma_hybrid_inverter.virtual_meter));
+            default_location = MeterLocation::PV;
+            break;
+
+        default:
+            logger.printfln_meter("Unknown SMA Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(sma_hybrid_inverter.virtual_meter));
+            return;
+        }
+
+        break;
+
     default:
         logger.printfln_meter("Unknown table: %u", static_cast<uint8_t>(table_id));
         break;
@@ -1879,6 +1923,12 @@ bool MeterModbusTCP::is_fox_ess_h3_pro_hybrid_inverter_pv_meter() const
 {
     return table_id == MeterModbusTCPTableID::FoxESSH3ProHybridInverter
         && fox_ess_h3_pro_hybrid_inverter.virtual_meter == FoxESSH3ProHybridInverterVirtualMeter::PV;
+}
+
+bool MeterModbusTCP::is_sma_hybrid_inverter_battery_meter() const
+{
+    return table_id == MeterModbusTCPTableID::SMAHybridInverter
+        && sma_hybrid_inverter.virtual_meter == SMAHybridInverterVirtualMeter::Battery;
 }
 
 void MeterModbusTCP::read_done_callback()
@@ -3656,6 +3706,18 @@ void MeterModbusTCP::parse_next()
             meters.update_value(slot, table->index[read_index + 2], current_sum);
             meters.update_value(slot, table->index[read_index + 3], power_sum);
             meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power_sum));
+        }
+    }
+    else if (is_sma_hybrid_inverter_battery_meter()) {
+        if (register_start_address == SMA_HYBRID_INVERTER_BATTERY_CHARGE_POWER_ADDRESS) {
+            sma_hybrid_inverter.battery_charge_power = value;
+        }
+        else if (register_start_address == SMA_HYBRID_INVERTER_BATTERY_DISCHARGE_POWER_ADDRESS) {
+            sma_hybrid_inverter.battery_discharge_power = value;
+
+            float power = sma_hybrid_inverter.battery_charge_power - sma_hybrid_inverter.battery_discharge_power;
+
+            meters.update_value(slot, table->index[read_index + 1], power);
         }
     }
 

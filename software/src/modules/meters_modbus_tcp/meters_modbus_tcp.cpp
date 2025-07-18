@@ -224,6 +224,11 @@ void MetersModbusTCP::pre_setup()
         {"device_address", Config::Uint8(247)},
     })});
 
+    table_prototypes.push_back({MeterModbusTCPTableID::SMAHybridInverter, Config::Object({
+        {"virtual_meter", Config::Enum(SMAHybridInverterVirtualMeter::None)},
+        {"device_address", Config::Uint8(3)},
+    })});
+
     config_prototype = Config::Object({
         {"display_name",   Config::Str("", 0, 32)},
         {"location",       Config::Enum(MeterLocation::Unknown)},

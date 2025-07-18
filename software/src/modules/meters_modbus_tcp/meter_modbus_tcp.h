@@ -56,6 +56,7 @@
 #include "solax_string_inverter_virtual_meter.enum.h"
 #include "fox_ess_h3_smart_hybrid_inverter_virtual_meter.enum.h"
 #include "fox_ess_h3_pro_hybrid_inverter_virtual_meter.enum.h"
+#include "sma_hybrid_inverter_virtual_meter.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -142,6 +143,7 @@ private:
     bool is_solax_string_inverter_pv_meter() const;
     bool is_fox_ess_h3_smart_hybrid_inverter_pv_meter() const;
     bool is_fox_ess_h3_pro_hybrid_inverter_pv_meter() const;
+    bool is_sma_hybrid_inverter_battery_meter() const;
 
     uint32_t slot;
     Config *state;
@@ -473,6 +475,13 @@ private:
             float pv6_current;
             float pv6_power;
         } fox_ess_h3_pro_hybrid_inverter;
+
+        // SMA hybrid inverter
+        struct {
+            SMAHybridInverterVirtualMeter virtual_meter;
+            float battery_charge_power;
+            float battery_discharge_power;
+        } sma_hybrid_inverter;
     };
 };
 
