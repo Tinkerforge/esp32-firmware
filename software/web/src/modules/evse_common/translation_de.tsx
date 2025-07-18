@@ -186,8 +186,8 @@ let x = {
             "gpio_shutdown_not_configured": "Nicht konfiguriert",
             "gpio_shutdown_on_open": "Abschalten, wenn geöffnet",
             "gpio_shutdown_on_close": "Abschalten, wenn geschlossen",
-            "gpio_4200w_on_open": "Max. 4200 W, wenn geöffnet (§14 EnWG)",
-            "gpio_4200w_on_close": "Max. 4200 W, wenn geschlossen (§14 EnWG)",
+            "gpio_4200w_on_open": "Max. 4200 W, wenn geöffnet (§14a EnWG)",
+            "gpio_4200w_on_close": "Max. 4200 W, wenn geschlossen (§14a EnWG)",
             "not_configured": "Nicht konfiguriert",
             "active_low_blocked": "Blockiert wenn geschlossen",
             "active_low_prefix": "Limitiert Ladestrom auf ",
@@ -243,7 +243,7 @@ let x = {
             "phases_state": "Zustand der Phasenumschaltung",
 
             "phases_connected": "Zuleitung",
-            "phases_connected_help": <><p>Hier wird konfiguriert, ob die Wallbox dreiphasig oder einphasig angeschlossen ist. Ist die Wallbox nur einphasig angeschlossen und hier auch so konfiguriert, wird das zweite Schütz für die Phasen L2 und L3 nie geschaltet, außerdem wird die Begrenzung der Ladeleistung nach §14 EnWG entsprechend berechnet.</p></>,
+            "phases_connected_help": <><p>Hier wird konfiguriert, ob die Wallbox dreiphasig oder einphasig angeschlossen ist. Ist die Wallbox nur einphasig angeschlossen und hier auch so konfiguriert, wird das zweite Schütz für die Phasen L2 und L3 nie geschaltet, außerdem wird die Begrenzung der Ladeleistung nach §14a EnWG entsprechend berechnet.</p></>,
             "phases_connected_1": "Einphasig",
             "phases_connected_3": "Dreiphasig"
 

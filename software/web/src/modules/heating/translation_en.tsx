@@ -28,7 +28,7 @@ let x = {
             "dpc_high": "Blocking for the most expensive",
             "pv_excess_control": "If PV excess is above",
             "pv_yield_forecast": "PV yield is below",
-            "p14_enwg_control_enabled": "Control of heating based on §14 EnWG enabled (only relevant for Germany)",
+            "p14_enwg_control_enabled": "Control of heating based on §14a EnWG enabled (only relevant for Germany)",
             "input": "Input",
             "output": "Output",
             "throttled_if_input": "Throttled if Input",

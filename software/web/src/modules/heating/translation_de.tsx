@@ -28,7 +28,7 @@ let x = {
             "dpc_high": "Blockieren für die teuersten",
             "pv_excess_control": "Bei PV-Überschuss ab",
             "pv_yield_forecast": "PV-Ertragsprognose unter",
-            "p14_enwg_control_enabled": "Aktiviert die Kontrolle der Heizung nach §14 EnWG",
+            "p14_enwg_control_enabled": "Aktiviert die Kontrolle der Heizung nach §14a EnWG",
             "input": "Eingang",
             "output": "Ausgang",
             "throttled_if_input": "Drosselung",
