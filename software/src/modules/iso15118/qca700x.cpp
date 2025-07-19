@@ -35,40 +35,40 @@
 #include "lwip/ip_addr.h"
 #include "bindings/hal_common.h"
 
+#define QCA700X_SPI_CHIP_SELECT_PIN 4
+#define QCA700X_SPI_MISO_PIN 39 // SENSOR_VN
+#define QCA700X_SPI_MOSI_PIN 15
+#define QCA700X_SPI_CLOCK_PIN 2
+
 extern TF_HAL hal;
+
+void QCA700x::spi_transceive(const uint8_t *write_buffer, uint8_t *read_buffer, const uint32_t length) {
+    memcpy(read_buffer, write_buffer, length);
+    vspi->transfer(read_buffer, length);
+}
 
 void QCA700x::spi_select()
 {
-    int rc = tf_hal_chip_select(&hal, QCA700X_HAL_SPI_PORT, true);
-    if (rc != 0) {
-        logger.printfln("spi_select error %d", rc);
-    }
+    vspi->beginTransaction(spi_settings);
+    REG_WRITE(GPIO_OUT_W1TC_REG, 1 << QCA700X_SPI_CHIP_SELECT_PIN);
 }
 
 void QCA700x::spi_deselect()
 {
-    int rc = tf_hal_chip_select(&hal, QCA700X_HAL_SPI_PORT, false);
-    if (rc != 0) {
-        logger.printfln("spi_deselect error %d", rc);
-    }
+    REG_WRITE(GPIO_OUT_W1TS_REG, 1 << QCA700X_SPI_CHIP_SELECT_PIN);
+    vspi->endTransaction();
 }
 
 void QCA700x::spi_write(const uint8_t *data, const uint16_t length)
 {
     uint8_t tmp_read_buf[length] = {0};
-    int rc = tf_hal_transceive(&hal, QCA700X_HAL_SPI_PORT, data, tmp_read_buf, length);
-    if (rc != 0) {
-        logger.printfln("spi_write error %d", rc);
-    }
+    spi_transceive(data, tmp_read_buf, length);
 }
 
 void QCA700x::spi_read(uint8_t *data, const uint32_t length)
 {
     const uint8_t tmp_write_buf[length] = {0};
-    int rc = tf_hal_transceive(&hal, QCA700X_HAL_SPI_PORT, tmp_write_buf, data, length);
-    if (rc != 0) {
-        logger.printfln("spi_write error %d", rc);
-    }
+    spi_transceive(tmp_write_buf, data, length);
 }
 
 void QCA700x::spi_write_16bit_value(const uint16_t value)
@@ -104,6 +104,16 @@ void QCA700x::spi_write_footer()
 {
     const uint8_t data[QCA700X_SEND_FOOTER_SIZE] = {0x55, 0x55};
     spi_write(data, 2);
+}
+
+void QCA700x::spi_init()
+{
+    pinMode(QCA700X_SPI_CHIP_SELECT_PIN, OUTPUT);
+    REG_WRITE(GPIO_OUT_W1TS_REG, 1 << QCA700X_SPI_CHIP_SELECT_PIN);
+
+    spi_settings = SPISettings(1400000, SPI_MSBFIRST, SPI_MODE3);
+    vspi = new SPIClass(VSPI);
+    vspi->begin(QCA700X_SPI_CLOCK_PIN, QCA700X_SPI_MISO_PIN, QCA700X_SPI_MOSI_PIN);
 }
 
 uint16_t QCA700x::read_register(const uint16_t reg)
@@ -206,6 +216,8 @@ int16_t QCA700x::check_receive_frame(const uint8_t *data, const uint16_t length)
 
 void QCA700x::setup_netif()
 {
+    spi_init();
+
     // Base config is default eth base config, with different key and description
     esp_netif_inherent_config_t base_config = {
         .flags = (esp_netif_flags_t)(ESP_NETIF_FLAG_GARP | ESP_NETIF_FLAG_EVENT_IP_MODIFIED | ESP_NETIF_FLAG_AUTOUP),

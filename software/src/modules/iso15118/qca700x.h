@@ -22,6 +22,8 @@
 #include "module.h"
 #include "config.h"
 
+#include <SPI.h>
+
 #include "esp_netif.h"
 #include "esp_eth_netif_glue.h"
 
@@ -73,6 +75,7 @@ typedef struct esp_qca700x_netif_driver_s {
 class QCA700x final
 {
 private:
+    void spi_transceive(const uint8_t *write_buffer, uint8_t *read_buffer, const uint32_t length);
     void spi_select();
     void spi_deselect();
     void spi_write_16bit_value(const uint16_t value);
@@ -81,6 +84,10 @@ private:
     void spi_write(const uint8_t *data, const uint16_t length);
     void spi_write_header(const uint16_t length);
     void spi_write_footer();
+    void spi_init();
+
+    SPISettings spi_settings;
+    SPIClass *vspi;
 
 public:
     esp_qca700x_netif_driver_t driver;
