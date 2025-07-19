@@ -1,5 +1,5 @@
 /* esp32-firmware
- * Copyright (C) 2022 - 2023 Frederic Henrichs <frederic@tinkerforge.com>
+ * Copyright (C) 2025 Olaf Lüke <olaf@tinkerforge.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
