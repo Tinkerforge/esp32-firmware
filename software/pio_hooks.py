@@ -1317,7 +1317,7 @@ def main():
     options_value['product_id'] = json.dumps(product_id)
     options_origin['product_id'] = 'pio_hooks.py'
 
-    for suffix in ['warp', 'warp2', 'warp3', 'energy_manager', 'energy_manager_v2', 'smart_energy_broker', 'eltako']:
+    for suffix in ['warp', 'warp2', 'warp3', 'warp4', 'energy_manager', 'energy_manager_v2', 'smart_energy_broker', 'eltako']:
         key = f'product_id_is_{suffix}'
 
         assert key not in options_value
@@ -1325,7 +1325,7 @@ def main():
         options_value[key] = '1' if product_id == suffix else '0'
         options_origin[key] = 'pio_hooks.py'
 
-    options_value['product_id_is_warp_any'] = '1' if product_id in ['warp', 'warp2', 'warp3'] else '0'
+    options_value['product_id_is_warp_any'] = '1' if product_id in ['warp', 'warp2', 'warp3', 'warp4'] else '0'
     options_origin['product_id_is_warp_any'] = 'pio_hooks.py'
 
     assert 'manufacturer_upper' not in options_value

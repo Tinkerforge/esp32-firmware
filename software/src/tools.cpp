@@ -198,12 +198,17 @@ void set_main_task_handle()
 
 void led_blink(int8_t led_pin, int interval_ms, int blinks_per_interval, int off_time_ms)
 {
+    led_blink(led_pin, interval_ms, blinks_per_interval, off_time_ms, digitalWrite);
+}
+
+void led_blink(int8_t led_pin, int interval_ms, int blinks_per_interval, int off_time_ms, std::function<void(uint8_t, uint8_t)> led_write)
+{
     if (led_pin < 0)
         return;
 
     int t_in_second = now_us().to<millis_t>().as<int64_t>() % interval_ms;
     if (off_time_ms != 0 && (interval_ms - t_in_second <= off_time_ms)) {
-        digitalWrite(led_pin, 1);
+        led_write(led_pin, 1);
         return;
     }
 
@@ -212,7 +217,7 @@ void led_blink(int8_t led_pin, int interval_ms, int blinks_per_interval, int off
     int state_interval = (interval_ms - off_time_ms) / state_count;
     bool led = (t_in_second / state_interval) % 2 != 0;
 
-    digitalWrite(led_pin, led);
+    led_write(led_pin, led);
 }
 
 uint16_t internet_checksum_u16(const uint16_t *data, size_t word_count)

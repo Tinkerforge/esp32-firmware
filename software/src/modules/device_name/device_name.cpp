@@ -40,7 +40,7 @@ void DeviceName::pre_setup()
     });
 }
 
-#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
+#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_WARP4() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
 String getWarpDisplayType(bool add_optional_hw=true)
 {
     String display_type =
@@ -77,7 +77,7 @@ static bool isVowel(char c)
     return (0x208222 >> (c & 0x1f)) & 1;
 }
 
-#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
+#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_WARP4() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
 String DeviceName::get20CharDisplayType() {
     String display_type = OPTIONS_PRODUCT_NAME();
     display_type += getWarpDisplayType(false);
@@ -94,7 +94,7 @@ String DeviceName::get20CharDisplayType() {
 void DeviceName::updateDisplayType()
 {
     String display_type = OPTIONS_PRODUCT_NAME();
-#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
+#if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_WARP4() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
     display_type += getWarpDisplayType(); // FIXME: Also add more details for WARP Energy Manager, similar to WARP[2] here?
 #endif
 

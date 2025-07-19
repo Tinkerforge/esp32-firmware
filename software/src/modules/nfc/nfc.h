@@ -41,7 +41,7 @@ class NFC : public DeviceModule<TF_NFC,
                                 tf_nfc_get_bootloader_mode,
                                 tf_nfc_reset,
                                 tf_nfc_destroy,
-                                OPTIONS_PRODUCT_ID_IS_WARP2() | OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_ELTAKO()>
+                                OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_WARP4() || OPTIONS_PRODUCT_ID_IS_ELTAKO()>
 #if MODULE_AUTOMATION_AVAILABLE()
           , public IAutomationBackend
 #endif

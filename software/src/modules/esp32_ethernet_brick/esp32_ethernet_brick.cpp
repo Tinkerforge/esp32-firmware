@@ -152,7 +152,15 @@ bool ESP32EthernetBrick::destroyHAL() {
 
 void ESP32EthernetBrick::pre_init()
 {
+    // Initialize buttons
     button_pin = BUTTON;
+    pinMode(button_pin, INPUT);
+
+    // Initialize LEDs
+#if OPTIONS_PRODUCT_ID_IS_WARP4()
+    // WARP4 LEDs are controlled through WARP ESP32 Ethernet V2 Co Bricklet
+    return;
+#endif
 
 #if OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
         blue_led_pin = BLUE_LED_WARP_ESP32_ETHERNET_BRICK;
@@ -165,7 +173,6 @@ void ESP32EthernetBrick::pre_init()
 #endif
 
     pinMode(blue_led_pin, OUTPUT);
-    pinMode(button_pin, INPUT);
 }
 
 void ESP32EthernetBrick::setup()
@@ -180,6 +187,8 @@ void ESP32EthernetBrick::setup()
     logger.printfln("WARP ESP32 Ethernet Brick UID: %s", local_uid_str);
 #elif OPTIONS_PRODUCT_ID_IS_ELTAKO()
     logger.printfln("ELTAKO ESP32 Ethernet Brick UID: %s", local_uid_str);
+#elif OPTIONS_PRODUCT_ID_IS_WARP4()
+    logger.printfln("WARP ESP32 Ethernet Brick V2 UID: %s", local_uid_str);
 #else
     logger.printfln("ESP32 Ethernet Brick UID: %s", local_uid_str);
 #endif
@@ -202,7 +211,14 @@ void ESP32EthernetBrick::setup()
     static int watchdog_handle = watchdog.add("esp_ethernet_led_blink", "Main thread blocked");
     watchdog.reset(watchdog_handle);
 #endif
-        led_blink(blue_led_pin, 2000, 1, 0);
+
+#if OPTIONS_PRODUCT_ID_IS_WARP4() && MODULE_ESP32_ETHERNET_V2_CO_BRICKLET_AVAILABLE()
+    led_blink(0, 2000, 1, 0, [](uint8_t pin, uint8_t val) {
+        esp32_ethernet_v2_co_bricklet.set_blue_led(val == 0 ? false : true);
+    });
+#else
+    led_blink(blue_led_pin, 2000, 1, 0);
+#endif
     }, 100_ms);
 
     initialized = true;

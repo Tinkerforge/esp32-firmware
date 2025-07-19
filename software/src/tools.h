@@ -48,6 +48,7 @@ inline bool running_in_main_task()
     return mainTaskHandle == xTaskGetCurrentTaskHandle();
 }
 
+void led_blink(int8_t led_pin, int interval, int blinks_per_interval, int off_time_ms, std::function<void(uint8_t, uint8_t)> led_write);
 void led_blink(int8_t led_pin, int interval, int blinks_per_interval, int off_time_ms);
 
 uint16_t internet_checksum_u16(const uint16_t *data, size_t word_count);
