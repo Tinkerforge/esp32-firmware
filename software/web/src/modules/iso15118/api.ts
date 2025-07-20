@@ -1,4 +1,5 @@
 export interface config {
+    enable: boolean;
     charge_type: number;
 }
 

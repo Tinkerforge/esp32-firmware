@@ -25,6 +25,7 @@ import { __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
+import { Switch } from "../../ts/components/switch";
 import { InputSelect } from "../../ts/components/input_select";
 import { InputText } from "../../ts/components/input_text";
 import { SubPage } from "../../ts/components/sub_page";
@@ -139,8 +140,14 @@ export class ISO15118 extends ConfigComponent<'iso15118/config', {}> {
 
         return (
             <SubPage name="iso15118">
-                <ConfigForm id="iso15118_config_form" title="ISO15118" isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
+                <ConfigForm id="iso15118_config_form" title="ISO 15118" isModified={this.isModified()} isDirty={this.isDirty()} onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormSeparator heading="Configuration"/>
+                    <FormRow label="ISO 15118 enabled">
+                        <Switch desc="ISO 15118 allows to read the State of Charge and identify an EV for Plug and Charge"
+                                checked={state.enable}
+                                onClick={this.toggle('enable')}
+                        />
+                    </FormRow>
                     <FormRow label="Charge Type" label_muted="This is for testing different possible modes, will probably be changed/removed in release version">
                         <InputSelect
                             items={[

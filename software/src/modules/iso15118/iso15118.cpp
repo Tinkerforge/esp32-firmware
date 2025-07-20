@@ -94,8 +94,43 @@ void ISO15118::pre_setup()
     this->trace_buffer_index_ll = logger.alloc_trace_buffer("iso15118_ll", 1 << 18);
 
     config = ConfigRoot{Config::Object({
+        {"enable", Config::Bool(false)},
         {"charge_type", Config::Enum(ChargeType::DCReadSocOnce)},
     }), [this](Config &update, ConfigSource source) -> String {
+        if (update.get("enable")->asBool() != config.get("enable")->asBool()) {
+            if (update.get("enable")->asBool()) {
+                if (!is_setup) {
+                    task_scheduler.scheduleOnce([this]() {
+                        qca700x.setup_netif();
+                        sdp.setup_socket();
+                        common.setup_socket();
+                        is_setup = true;
+                    });
+                }
+
+                if (state_machine_task == 0) {
+                    state_machine_task = task_scheduler.scheduleWithFixedDelay([this]() {
+                        this->state_machines_loop();
+                    }, 20_ms, 20_ms);
+                }
+
+                // TODO: Check if charge is currently ongoing:
+                //       If IEC 61851 charge is ongoing, we should only change the protocol after the charge is done.
+                //       If no charge is ongoing, we can change the protocol immediately.
+                //       If the EVSE Bricklet is already in ISO 15118 mode, we can continue with the state it is already in.
+                evse_v2.set_charging_protocol(1, 50);
+            } else {
+                // TODO: Close sockets and set is_setup = false
+                task_scheduler.cancel(state_machine_task);
+                state_machine_task = 0;
+
+                // TODO: Check if charge is currently ongoing:
+                //       If IEC 61851 charge is ongoing, we should only change the protocol after the charge is done.
+                //       If no charge is ongoing, we can change the protocol immediately.
+                //       If the EVSE Bricklet is already in IEC 61851 mode, we can continue with the state it is already in.
+                evse_v2.set_charging_protocol(0, 1000);
+            }
+        }
         return "";
     }};
 
@@ -113,9 +148,14 @@ void ISO15118::setup()
 
     initialized = true;
 
-    qca700x.setup_netif();
-    sdp.setup_socket();
-    common.setup_socket();
+    if (config.get("enable")->asBool()) {
+        qca700x.setup_netif();
+        sdp.setup_socket();
+        common.setup_socket();
+        is_setup = true;
+    } else {
+        is_setup = false;
+    }
 }
 
 void ISO15118::register_urls()
@@ -129,12 +169,12 @@ void ISO15118::register_urls()
     api.addState("iso15118/state_iso20",    &iso20.api_state);
 
     // Enable ISO15118 on the EVSE Bricklet
-    // TODO: This probably needs to be a user configuration
-    evse_v2.set_charging_protocol(1, 50);
-
-    task_scheduler.scheduleWithFixedDelay([this]() {
-        this->state_machines_loop();
-    }, 1000_ms, 20_ms);
+    if (config.get("enable")->asBool()) {
+        evse_v2.set_charging_protocol(1, 50);
+        state_machine_task = task_scheduler.scheduleWithFixedDelay([this]() {
+            this->state_machines_loop();
+        }, 1000_ms, 20_ms);
+    }
 }
 
 void ISO15118::state_machines_loop()

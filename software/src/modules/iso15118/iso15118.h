@@ -42,6 +42,9 @@ private:
     size_t trace_buffer_index;
     size_t trace_buffer_index_ll;
 
+    bool is_setup = false;
+    uint64_t state_machine_task = 0;
+
 public:
     ConfigRoot config;
 
