@@ -139,7 +139,8 @@ void ISO15118::register_urls()
 
 void ISO15118::state_machines_loop()
 {
-    // TODO: Only run the state machines that are needed depending on link state?
+    // We always run all state machines, since an EV can for example loose connection
+    // and start a new SLAC session while we are still processing a DIN or ISO messages.
     qca700x.state_machine_loop();
     slac.state_machine_loop();
     sdp.state_machine_loop();
