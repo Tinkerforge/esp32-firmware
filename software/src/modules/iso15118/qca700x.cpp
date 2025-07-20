@@ -17,8 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-// QCA7000/QCA7005 SPI driver for tinkerforge hal with simplet netif setup.
-// With this QCA can be used in parallel with Bricklets on same SPI port.
+// QCA7000/QCA7005 SPI driver for ESP32
 
 #include "qca700x.h"
 
