@@ -44,6 +44,8 @@ public:
     int64_t registerEvent(const String &path, const std::vector<Config::Key> values, std::function<EventResult(const Config *)> &&callback);
     void deregisterEvent(int64_t eventID);
 
+    inline uint8_t get_api_backend_flag() { return api_backend_flag; }
+
     // IAPIBackend implementation
     void addCommand(size_t commandIdx, const CommandRegistration &reg) override;
     void addState(size_t stateIdx, const StateRegistration &reg) override;
