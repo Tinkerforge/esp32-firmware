@@ -25,4 +25,5 @@ export interface RuleConfig {
     price_th:      number; // ct/10
     forecast_cond: number;
     forecast_th:   number; // kWh
+    schedule_cond: number;
 }
