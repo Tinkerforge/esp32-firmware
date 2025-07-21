@@ -1149,6 +1149,9 @@ void FirmwareUpdate::check_for_update()
 
             check_for_update_in_progress = false;
             break;
+
+        case AsyncHTTPSClientEventType::Redirect:
+            break;
         }
     });
 
@@ -1381,6 +1384,9 @@ void FirmwareUpdate::install_firmware(const char *url)
             state.get("install_progress")->updateUint(0);
             trigger_reboot("firmware update", 1_s);
             install_firmware_in_progress = false;
+            break;
+
+        case AsyncHTTPSClientEventType::Redirect:
             break;
         }
     });
