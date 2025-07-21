@@ -62,7 +62,6 @@ function get_battery_name(battery_configs: {[battery_slot: number]: BatteryConfi
 
 interface RulesEditorState {
     add_rule_config: RuleConfig;
-    edit_rule_idx: number;
     edit_rule_config: RuleConfig;
 }
 
@@ -87,7 +86,6 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
 
         this.state = {
             add_rule_config: null,
-            edit_rule_idx: null,
             edit_rule_config: null,
         } as RulesEditorState;
     }
@@ -105,7 +103,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                     ],
                     editTitle: __("batteries.content.edit_rule_title"),
                     onEditShow: async () => {
-                        this.setState({edit_rule_idx: i, edit_rule_config: {...rule_config}});
+                        this.setState({edit_rule_config: {...rule_config}});
                     },
                     onEditGetChildren: () => {
                         let cond_items: [string, string][] = [
@@ -211,21 +209,12 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                         ];
                     },
                     onEditSubmit: async () => {
-                        let rules = [...this.props.rules];
-
-                        rules[this.state.edit_rule_idx] = this.state.edit_rule_config;
-
-                        this.props.on_rules(rules);
+                        this.props.on_rules(this.props.rules.map((r, k) => k === i ? this.state.edit_rule_config : r));
                     },
                     onEditHide: async () => {
                     },
                     onRemoveClick: async () => {
-                        let rules = [...this.props.rules];
-
-                        rules.splice(this.state.edit_rule_idx, 1);
-
-                        this.props.on_rules(rules);
-
+                        this.props.on_rules(this.props.rules.filter((r, k) => k !== i));
                         return true;
                     },
                 }
