@@ -328,22 +328,36 @@ InstallState FirmwareUpdate::check_firmware_info(bool detect_downgrade, bool log
         firmware_info.block.product_id[ARRAY_SIZE(firmware_info.block.product_id) - 1] = '\0';
 
         if (firmware_info.block.version >= 3) {
-            if (strcmp(OPTIONS_PRODUCT_ID(), firmware_info.block.product_id) != 0) {
+            const char *expected_product_id = OPTIONS_PRODUCT_ID();
+
+            if (strlen(OPTIONS_FIRMWARE_INFO_PRODUCT_ID_OVERRIDE()) > 0) {
+                expected_product_id = OPTIONS_FIRMWARE_INFO_PRODUCT_ID_OVERRIDE();
+            }
+
+            if (strcmp(firmware_info.block.product_id, expected_product_id) != 0) {
                 if (log) {
                     logger.printfln("Failed to update: Firmware is for %s but this is %s!",
-                                    firmware_info.block.product_id, OPTIONS_PRODUCT_ID());
+                                    firmware_info.block.product_id, expected_product_id);
                 }
 
                 return InstallState::WrongFirmwareType;
             }
         }
-        else if (strcmp(OPTIONS_PRODUCT_NAME(), firmware_info.block.product_name) != 0) {
-            if (log) {
-                logger.printfln("Failed to update: Firmware is for a %s but this is a %s!",
-                                firmware_info.block.product_name, OPTIONS_PRODUCT_NAME());
+        else {
+            const char *expected_product_name = OPTIONS_PRODUCT_NAME();
+
+            if (strlen(OPTIONS_FIRMWARE_INFO_PRODUCT_NAME_OVERRIDE()) > 0) {
+                expected_product_name = OPTIONS_FIRMWARE_INFO_PRODUCT_NAME_OVERRIDE();
             }
 
-            return InstallState::WrongFirmwareType;
+            if (strcmp(firmware_info.block.product_name, expected_product_name) != 0) {
+                if (log) {
+                    logger.printfln("Failed to update: Firmware is for a %s but this is a %s!",
+                                    firmware_info.block.product_name, expected_product_name);
+                }
+
+                return InstallState::WrongFirmwareType;
+            }
         }
 
         SemanticVersion fw_version{firmware_info.block.fw_version_major, firmware_info.block.fw_version_minor, firmware_info.block.fw_version_patch,
