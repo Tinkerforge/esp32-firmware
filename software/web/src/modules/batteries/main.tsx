@@ -22,6 +22,7 @@ import * as API from "../../ts/api";
 import * as options from "../../options";
 import { __ } from "../../ts/translation";
 import { h, Fragment, Component, ComponentChild } from "preact";
+import { Alert, Collapse } from "react-bootstrap";
 import { FormRow } from "../../ts/components/form_row";
 import { FormSeparator } from "../../ts/components/form_separator";
 import { IndicatorGroup } from "../../ts/components/indicator_group";
@@ -37,6 +38,7 @@ import { BatteryClassID } from "./battery_class_id.enum";
 import { BatteryConfig, BatteryConfigPlugin } from "./types";
 import { RuleConfig } from "../battery_control/types";
 import { RuleCondition } from "../battery_control/rule_condition.enum";
+import { ScheduleRuleCondition } from "../battery_control/schedule_rule_condition.enum";
 import { plugins_init } from "./plugins";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Table } from "../../ts/components/table";
@@ -63,6 +65,7 @@ function get_battery_name(battery_configs: {[battery_slot: number]: BatteryConfi
 interface RulesEditorState {
     add_rule_config: RuleConfig;
     edit_rule_config: RuleConfig;
+    all_conditions_ignored: boolean;
 }
 
 interface RulesEditorProps {
@@ -80,6 +83,19 @@ function get_column_cond(cond: number, th_str: string) {
     return '???';
 }
 
+function get_column_schedule_cond(cond: number) {
+    switch (cond) {
+        case ScheduleRuleCondition.Ignore:       return '';
+        case ScheduleRuleCondition.Cheap:        return __("batteries.content.condition_schedule_cheap");
+        case ScheduleRuleCondition.NotCheap:     return __("batteries.content.condition_schedule_not_cheap");
+        case ScheduleRuleCondition.Expensive:    return __("batteries.content.condition_schedule_expensive");
+        case ScheduleRuleCondition.NotExpensive: return __("batteries.content.condition_schedule_not_expensive");
+        case ScheduleRuleCondition.Moderate:     return __("batteries.content.condition_schedule_moderate");
+    }
+
+    return '???';
+}
+
 class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
     constructor(props: RulesEditorProps) {
         super(props);
@@ -87,12 +103,13 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
         this.state = {
             add_rule_config: null,
             edit_rule_config: null,
+            all_conditions_ignored: false,
         } as RulesEditorState;
     }
 
     render() {
         return <Table
-            columnNames={[__("batteries.content.table_rule_desc"), __("batteries.content.table_rule_soc"), __("batteries.content.table_rule_price"), __("batteries.content.table_rule_forecast")]}
+            columnNames={[__("batteries.content.table_rule_desc"), __("batteries.content.table_rule_soc"), __("batteries.content.table_rule_price"), __("batteries.content.table_rule_forecast"), __("batteries.content.table_rule_schedule")]}
             rows={this.props.rules.map((rule_config, i) => {
                 return {
                     columnValues: [
@@ -100,10 +117,11 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                         get_column_cond(rule_config.soc_cond, `${rule_config.soc_th} %`),
                         get_column_cond(rule_config.price_cond, `${util.toLocaleFixed(rule_config.price_th / 10, 1)} ct`),
                         get_column_cond(rule_config.forecast_cond, `${rule_config.forecast_th} kWh`),
+                        get_column_schedule_cond(rule_config.schedule_cond),
                     ],
                     editTitle: __("batteries.content.edit_rule_title"),
                     onEditShow: async () => {
-                        this.setState({edit_rule_config: {...rule_config}});
+                        this.setState({edit_rule_config: {...rule_config}, all_conditions_ignored: false});
                     },
                     onEditGetChildren: () => {
                         let cond_items: [string, string][] = [
@@ -142,6 +160,8 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
 
                                             if (soc_cond == RuleCondition.Ignore) {
                                                 soc_th = rule_config.soc_th;
+                                            } else {
+                                                this.setState({all_conditions_ignored: false});
                                             }
 
                                             this.setState({edit_rule_config: {...this.state.edit_rule_config, soc_cond: soc_cond, soc_th: soc_th}});
@@ -171,6 +191,8 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
 
                                             if (price_cond == RuleCondition.Ignore) {
                                                 price_th = rule_config.price_th;
+                                            } else {
+                                                this.setState({all_conditions_ignored: false});
                                             }
 
                                             this.setState({edit_rule_config: {...this.state.edit_rule_config, price_cond: price_cond, price_th: price_th}});
@@ -199,6 +221,8 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
 
                                             if (forecast_cond == RuleCondition.Ignore) {
                                                 forecast_th = rule_config.forecast_th;
+                                            } else {
+                                                this.setState({all_conditions_ignored: false});
                                             }
 
                                             this.setState({edit_rule_config: {...this.state.edit_rule_config, forecast_cond: forecast_cond, forecast_th: forecast_th}});
@@ -206,7 +230,46 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                         value={this.state.edit_rule_config.forecast_cond.toString()} />
                                 </InputNumber>
                             </FormRow>,
+                            <FormRow label={__("batteries.content.edit_rule_schedule")}>
+                                <InputSelect
+                                    placeholder={__("select")}
+                                    items={[
+                                        [ScheduleRuleCondition.Ignore.toString(),       __("batteries.content.condition_ignore")],
+                                        [ScheduleRuleCondition.Cheap.toString(),        __("batteries.content.condition_schedule_cheap")],
+                                        [ScheduleRuleCondition.NotCheap.toString(),     __("batteries.content.condition_schedule_not_cheap")],
+                                        [ScheduleRuleCondition.Expensive.toString(),    __("batteries.content.condition_schedule_expensive")],
+                                        [ScheduleRuleCondition.NotExpensive.toString(), __("batteries.content.condition_schedule_not_expensive")],
+                                        [ScheduleRuleCondition.Moderate.toString(),     __("batteries.content.condition_schedule_moderate")],
+                                            ]}
+                                    onValue={(v) => {
+                                        const schedule_cond = parseInt(v);
+
+                                        if (schedule_cond != ScheduleRuleCondition.Ignore) {
+                                            this.setState({all_conditions_ignored: false});
+                                        }
+
+                                        this.setState({edit_rule_config: {...this.state.edit_rule_config, schedule_cond: schedule_cond}});
+                                    }}
+                                    value={this.state.edit_rule_config.schedule_cond.toString()} />
+                            </FormRow>,
+                            <Collapse in={this.state.all_conditions_ignored}>
+                                <div>
+                                    <Alert variant="danger">
+                                        {__("batteries.content.invalid_feedback_all_ignored")}
+                                    </Alert>
+                                </div>
+                            </Collapse>,
                         ];
+                    },
+                    onEditCheck: async () => {
+                        const all_ignored = this.state.edit_rule_config.soc_cond      == RuleCondition.Ignore &&
+                                            this.state.edit_rule_config.price_cond    == RuleCondition.Ignore &&
+                                            this.state.edit_rule_config.forecast_cond == RuleCondition.Ignore &&
+                                            this.state.edit_rule_config.schedule_cond == ScheduleRuleCondition.Ignore;
+
+                        return new Promise<boolean>((resolve) => {
+                            this.setState({all_conditions_ignored: all_ignored}, () => resolve(!all_ignored));
+                        });
                     },
                     onEditSubmit: async () => {
                         this.props.on_rules(this.props.rules.map((r, k) => k === i ? this.state.edit_rule_config : r));
@@ -231,9 +294,10 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                     price_th: null,
                     forecast_cond: RuleCondition.Ignore,
                     forecast_th: null,
+                    schedule_cond: ScheduleRuleCondition.Ignore,
                 };
 
-                this.setState({add_rule_config: rule_config});
+                this.setState({add_rule_config: rule_config, all_conditions_ignored: false});
             }}
             onAddGetChildren={() => {
                 let cond_items: [string, string][] = [
@@ -272,6 +336,8 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
 
                                     if (soc_cond == RuleCondition.Ignore) {
                                         soc_th = null;
+                                    } else {
+                                        this.setState({all_conditions_ignored: false});
                                     }
 
                                     this.setState({add_rule_config: {...this.state.add_rule_config, soc_cond: soc_cond, soc_th: soc_th}});
@@ -301,6 +367,8 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
 
                                     if (price_cond == RuleCondition.Ignore) {
                                         price_th = null;
+                                    } else {
+                                        this.setState({all_conditions_ignored: false});
                                     }
 
                                     this.setState({add_rule_config: {...this.state.add_rule_config, price_cond: price_cond, price_th: price_th}});
@@ -329,6 +397,8 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
 
                                     if (forecast_cond == RuleCondition.Ignore) {
                                         forecast_th = null;
+                                    } else {
+                                        this.setState({all_conditions_ignored: false});
                                     }
 
                                     this.setState({add_rule_config: {...this.state.add_rule_config, forecast_cond: forecast_cond, forecast_th: forecast_th}});
@@ -336,7 +406,46 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                 value={this.state.add_rule_config.forecast_cond.toString()} />
                         </InputNumber>
                     </FormRow>,
+                    <FormRow label={__("batteries.content.add_rule_schedule")}>
+                        <InputSelect
+                            placeholder={__("select")}
+                            items={[
+                                [ScheduleRuleCondition.Ignore.toString(),       __("batteries.content.condition_ignore")],
+                                [ScheduleRuleCondition.Cheap.toString(),        __("batteries.content.condition_schedule_cheap")],
+                                [ScheduleRuleCondition.NotCheap.toString(),     __("batteries.content.condition_schedule_not_cheap")],
+                                [ScheduleRuleCondition.Expensive.toString(),    __("batteries.content.condition_schedule_expensive")],
+                                [ScheduleRuleCondition.NotExpensive.toString(), __("batteries.content.condition_schedule_not_expensive")],
+                                [ScheduleRuleCondition.Moderate.toString(),     __("batteries.content.condition_schedule_moderate")],
+                            ]}
+                            onValue={(v) => {
+                                const schedule_cond = parseInt(v);
+
+                                if (schedule_cond != ScheduleRuleCondition.Ignore) {
+                                    this.setState({all_conditions_ignored: false});
+                                }
+
+                                this.setState({add_rule_config: {...this.state.add_rule_config, schedule_cond: schedule_cond}});
+                            }}
+                            value={this.state.add_rule_config.schedule_cond.toString()} />
+                    </FormRow>,
+                    <Collapse in={this.state.all_conditions_ignored}>
+                        <div>
+                            <Alert variant="danger">
+                                {__("batteries.content.invalid_feedback_all_ignored")}
+                            </Alert>
+                        </div>
+                    </Collapse>,
                 ];
+            }}
+            onAddCheck={async () => {
+                const all_ignored = this.state.add_rule_config.soc_cond      == RuleCondition.Ignore &&
+                                    this.state.add_rule_config.price_cond    == RuleCondition.Ignore &&
+                                    this.state.add_rule_config.forecast_cond == RuleCondition.Ignore &&
+                                    this.state.add_rule_config.schedule_cond == ScheduleRuleCondition.Ignore;
+
+                return new Promise<boolean>((resolve) => {
+                    this.setState({all_conditions_ignored: all_ignored}, () => resolve(!all_ignored));
+                });
             }}
             onAddSubmit={async () => {
                 let rules = [...this.props.rules];
@@ -725,6 +834,29 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                             addExportBasename={__("batteries.content.battery_export_basename") + (this.state.add_battery_config[0] != BatteryClassID.None && config_plugins[this.state.add_battery_config[0]].export_basename_suffix ? config_plugins[this.state.add_battery_config[0]].export_basename_suffix() : "")}
                             />
                     </div>
+
+                    <FormSeparator heading={__("batteries.content.dynamic_tariff_schedule")} />
+                    <FormRow label={__("batteries.content.schedule_cheap_hours")} label_muted={__("batteries.content.schedule_hours_muted")} help={__("batteries.content.schedule_cheap_hours_help")}>
+                        <InputFloat
+                            unit="h"
+                            value={this.state.cheap_tariff_quarters * 100 / 4}
+                            onValue={(v) => this.setState({cheap_tariff_quarters: Math.round(v * 4 / 100)})}
+                            digits={2}
+                            min={0}
+                            max={2400}
+                        />
+                    </FormRow>
+
+                    <FormRow label={__("batteries.content.schedule_expensive_hours")} label_muted={__("batteries.content.schedule_hours_muted")} help={__("batteries.content.schedule_expensive_hours_help")}>
+                        <InputFloat
+                            unit="h"
+                            value={this.state.expensive_tariff_quarters * 100 / 4}
+                            onValue={(v) => this.setState({expensive_tariff_quarters: Math.round(v * 4 / 100)})}
+                            digits={2}
+                            min={0}
+                            max={2400}
+                        />
+                    </FormRow>
 
                     <FormSeparator heading={__("batteries.content.rules_permit_grid_charge")} />
                     <div class="form-group">
