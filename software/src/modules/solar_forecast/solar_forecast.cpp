@@ -481,7 +481,6 @@ void SolarForecast::update()
             download_state = SF_DOWNLOAD_STATE_ERROR;
             handle_cleanup();
             next_update();
-
             break;
 
         case AsyncHTTPSClientEventType::Data:
@@ -515,9 +514,9 @@ void SolarForecast::update()
                 next_sync_forced = rtc.timestamp_minutes() + 30;
                 download_state = SF_DOWNLOAD_STATE_ABORTED;
             }
+
             handle_cleanup();
             next_update();
-
             break;
 
         case AsyncHTTPSClientEventType::Finished:
@@ -539,7 +538,9 @@ void SolarForecast::update()
             }
 
             next_update();
+            break;
 
+        case AsyncHTTPSClientEventType::Redirect:
             break;
 
         default:

@@ -389,6 +389,9 @@ void DayAheadPrices::update()
             }
 
             break;
+
+        case AsyncHTTPSClientEventType::Redirect:
+            break;
         }
     });
 }

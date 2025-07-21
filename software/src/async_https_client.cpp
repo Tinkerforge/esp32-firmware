@@ -73,6 +73,12 @@ esp_err_t AsyncHTTPSClient::event_handler(esp_http_client_event_t *event)
 
         break;
 
+    case HTTP_EVENT_ON_CONNECTED:
+        break;
+
+    case HTTP_EVENT_HEADERS_SENT:
+        break;
+
     case HTTP_EVENT_ON_HEADER:
         if (that->use_cookies) {
             for (int i = 0; event->header_key[i] != 0; i++) {
@@ -88,7 +94,14 @@ esp_err_t AsyncHTTPSClient::event_handler(esp_http_client_event_t *event)
         that->last_async_alive = now_us();
         http_status = esp_http_client_get_status_code(that->http_client);
 
-        if (http_status != 200) {
+        if (http_status == 301 /* Moved Permanently */
+         || http_status == 302 /* Found */
+         || http_status == 303 /* See Other */
+         || http_status == 307 /* Temporary Redirect */
+         || http_status == 308 /* Permanent Redirect */) {
+            break;
+        }
+        else if (http_status != 200) {
             that->in_progress = false;
 
             async_event.type = AsyncHTTPSClientEventType::Error;
@@ -119,7 +132,20 @@ esp_err_t AsyncHTTPSClient::event_handler(esp_http_client_event_t *event)
 
         break;
 
-    default:
+    case HTTP_EVENT_ON_FINISH:
+        break;
+
+    case HTTP_EVENT_DISCONNECTED:
+        break;
+
+    case HTTP_EVENT_REDIRECT:
+        async_event.type = AsyncHTTPSClientEventType::Redirect;
+        async_event.redirect_status_code = static_cast<esp_http_client_redirect_event_data *>(event->data)->status_code;
+
+        if (!that->abort_requested) {
+            that->callback(&async_event);
+        }
+
         break;
     }
 

@@ -48,6 +48,7 @@ enum class AsyncHTTPSClientEventType
     Data,
     Aborted,
     Finished,
+    Redirect,
 };
 
 struct AsyncHTTPSClientEvent
@@ -70,6 +71,11 @@ struct AsyncHTTPSClientEvent
             size_t data_chunk_len;
             ssize_t data_complete_len; // -1 if chunked response
             bool data_is_complete;
+        };
+
+        // AsyncHTTPSClientEventType::Redirect
+        struct {
+            int redirect_status_code;
         };
     };
 };

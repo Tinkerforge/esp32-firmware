@@ -1167,13 +1167,18 @@ void RemoteAccess::run_request_with_next_stage(const char *url,
                 registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
                 this->cleanup_after();
                 break;
+
             case AsyncHTTPSClientEventType::Data:
                 handle_response_chunk(event);
                 break;
+
             case AsyncHTTPSClientEventType::Finished:
                 task_scheduler.scheduleOnce([this, next_stage, config]() {
                     next_stage(config);
                 });
+                break;
+
+            case AsyncHTTPSClientEventType::Redirect:
                 break;
         }
     };
