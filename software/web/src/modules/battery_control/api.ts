@@ -2,6 +2,8 @@ import { RuleConfig } from "./types";
 
 export interface config {
     forbid_discharge_during_fast_charge: boolean;
+    cheap_tariff_quarters: number;
+    expensive_tariff_quarters: number;
 }
 
 export type rules_permit_grid_charge = RuleConfig[];

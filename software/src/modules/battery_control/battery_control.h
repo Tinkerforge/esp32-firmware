@@ -27,6 +27,12 @@
 #include "TFTools/Micros.h"
 #include "tools/tristate_bool.h"
 #include "rule_condition.enum.h"
+#include "schedule_rule_condition.enum.h"
+
+#define BC_SCHEDULE_CHEAP_POS      (0)
+#define BC_SCHEDULE_CHEAP_MASK     (1 << BC_SCHEDULE_CHEAP_POS)
+#define BC_SCHEDULE_EXPENSIVE_POS  (1)
+#define BC_SCHEDULE_EXPENSIVE_MASK (1 << BC_SCHEDULE_EXPENSIVE_POS)
 
 struct battery_control_action_info;
 
@@ -48,13 +54,15 @@ private:
         RuleCondition soc_cond;
         RuleCondition price_cond;
         RuleCondition forecast_cond;
+        ScheduleRuleCondition schedule_cond;
     };
 
     void preprocess_rules(const Config *rules_config, control_rule *rules, size_t rules_count);
 
     void update_avg_soc();
+    void update_tariff_schedule();
+    void evaluate_tariff_schedule();
     void schedule_evaluation();
-    bool rule_condition_failed(RuleCondition cond, int32_t th, int32_t value);
     TristateBool evaluate_rules(const control_rule *rules, size_t rules_count, const char *rules_type_name);
     void evaluate_all_rules();
     void evaluate_summary();
@@ -95,11 +103,15 @@ private:
     bool have_battery = false;
     bool network_connect_seen = false;
 
-    int32_t soc_cache_avg  = std::numeric_limits<decltype(soc_cache_avg)>::min();
-    int32_t price_cache    = std::numeric_limits<decltype(soc_cache_avg)>::min();
-    int32_t forecast_cache = std::numeric_limits<decltype(soc_cache_avg)>::min();
+    int32_t soc_cache_avg  = std::numeric_limits<decltype(soc_cache_avg )>::min();
+    int32_t price_cache    = std::numeric_limits<decltype(price_cache   )>::min();
+    int32_t forecast_cache = std::numeric_limits<decltype(forecast_cache)>::min();
     uint8_t soc_cache[OPTIONS_METERS_MAX_SLOTS()];
     bool fast_charger_in_c_cache = false;
+
+    int32_t tariff_schedule_start_min = 0;
+    uint8_t tariff_schedule[24 * 4] = {0};
+    uint8_t tariff_schedule_cache = 0;
 
     TristateBool charge_permitted_by_rules = TristateBool::Undefined;
     TristateBool charge_permitted          = TristateBool::Undefined;
