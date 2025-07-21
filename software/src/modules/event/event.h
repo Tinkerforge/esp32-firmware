@@ -44,6 +44,8 @@ public:
     int64_t registerEvent(const String &path, const std::vector<Config::Key> values, std::function<EventResult(const Config *)> &&callback);
     void deregisterEvent(int64_t eventID);
 
+    inline uint8_t get_api_backend_flag() { return api_backend_flag; }
+
     // IAPIBackend implementation
     bool pushStateUpdate(size_t stateIdx, const String &payload, const String &path) override;
     WantsStateUpdate wantsStateUpdate(size_t stateIdx) override;
