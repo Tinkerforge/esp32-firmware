@@ -37,16 +37,19 @@ void BatteryControl::pre_setup()
 
     config = Config::Object({
         {"forbid_discharge_during_fast_charge", Config::Bool(false)},
+        {"cheap_tariff_quarters",     Config::Uint8(0, sizeof(tariff_schedule))},
+        {"expensive_tariff_quarters", Config::Uint8(0, sizeof(tariff_schedule))},
     });
 
     rule_prototype = Config::Object({
         {"desc",          Config::Str   ("", 0, 32)},
         {"soc_cond",      Config::Enum  (RuleCondition::Ignore)},
-        {"soc_th",        Config::Uint8 (0)}, // in percent (0 to 100 %)
+        {"soc_th",        Config::Uint8 (0, 100)}, // in percent (0 to 100 %)
         {"price_cond",    Config::Enum  (RuleCondition::Ignore)},
         {"price_th",      Config::Int16 (0)}, // in ct/10   (-32 to 32 EUR)
         {"forecast_cond", Config::Enum  (RuleCondition::Ignore)},
         {"forecast_th",   Config::Uint16(0)}, // in kWh     (0 to 65 MWh)
+        {"schedule_cond", Config::Enum  (ScheduleRuleCondition::Ignore)},
     });
 
     rules_permit_grid_charge = Config::Array({}, &rule_prototype, 0, MAX_RULES_PER_TYPE, Config::type_id<Config::ConfObject>());
@@ -172,14 +175,14 @@ void BatteryControl::register_events()
         if (meters.get_meter_location(slot) != MeterLocation::Battery) {
             continue;
         }
-        logger.tracefln(this->trace_buffer_idx, "Meter %lu is a battery", slot); // TODO remove
+        logger.tracefln(this->trace_buffer_idx, "Meter %lu is a battery", slot);
 
         // Register on the ConfigRoot.
         event.registerEvent(meters.get_path(slot, Meters::PathType::ValueIDs), {}, [this, slot](const Config *cfg) {
             const size_t count = cfg->count();
 
             if (count == 0) {
-                logger.tracefln(this->trace_buffer_idx, "Ignoring blank value IDs update from meter in slot %lu.", slot); // TODO remove
+                logger.tracefln(this->trace_buffer_idx, "Ignoring blank value IDs update from meter in slot %lu.", slot);
                 return EventResult::OK;
             }
 
@@ -201,7 +204,7 @@ void BatteryControl::register_events()
                         this->evaluation_must_check_rules = true;
                         this->schedule_evaluation();
                     } else {
-                        logger.tracefln(this->trace_buffer_idx, "Ignoring uninitialized SOC from battery meter %lu", slot); // TODO remove
+                        logger.tracefln(this->trace_buffer_idx, "Ignoring uninitialized SOC from battery meter %lu", slot);
                     }
 
                     return EventResult::OK;
@@ -213,21 +216,56 @@ void BatteryControl::register_events()
     }
 
 #if MODULE_DAY_AHEAD_PRICES_AVAILABLE()
-    event.registerEvent("day_ahead_prices/state", {"current_price"}, [this](const Config *cfg) {
-        const int32_t price = cfg->asInt();
+    event.registerEvent("day_ahead_prices/state", {}, [this](const Config *cfg) {
+        const uint8_t event_api_backend_flag = event.get_api_backend_flag();
 
-        if (price == std::numeric_limits<decltype(price)>::max()) {
-            logger.tracefln(this->trace_buffer_idx, "Ignoring uninitialized current_price"); // TODO remove
-            return EventResult::OK;
+        const Config *current_price_cfg = static_cast<const Config *>(cfg->get("current_price"));
+
+        if (current_price_cfg->was_updated(event_api_backend_flag)) {
+            const int32_t price = current_price_cfg->asInt();
+
+            logger.tracefln(this->trace_buffer_idx, "current_price=%li", price);
+
+            if (price == std::numeric_limits<decltype(price)>::max()) {
+                this->price_cache = std::numeric_limits<decltype(this->price_cache)>::min();
+            } else {
+                this->price_cache = price;
+            }
+
+            this->evaluation_must_check_rules = true;
+            this->schedule_evaluation();
         }
 
-        logger.tracefln(this->trace_buffer_idx, "current_price=%li", price);
-        this->price_cache = price;
-        this->evaluation_must_check_rules = true;
-        this->schedule_evaluation();
+        const Config *last_sync_cfg = static_cast<const Config *>(cfg->get("last_sync"));
+
+        if (last_sync_cfg->was_updated(event_api_backend_flag) && last_sync_cfg->asUint() != 0) {
+            logger.tracefln(this->trace_buffer_idx, "DAP last_sync at %lu", last_sync_cfg->asUint());
+            this->update_tariff_schedule();
+        }
 
         return EventResult::OK;
     });
+
+    if (config.get("cheap_tariff_quarters")->asUint() != 0 || config.get("expensive_tariff_quarters")->asUint() != 0) {
+        // Call update_tariff_schedule at 20:00.
+        // The wall clock task has to run hourly and check the local time manually.
+        // Registering the wall clock task with a 24h interval and a time-zone-dependent delay would schedule the task at midnight with a large delay.
+        // If the device was restarted between midnight and 20:00, the task would not be scheduled until the next day.
+        // Checking the local time here also means that DST doesn't matter.
+        task_scheduler.scheduleWallClock([this]() {
+            time_t time_utc = time(nullptr);
+            struct tm tm_local;
+            localtime_r(&time_utc, &tm_local);
+
+            if (tm_local.tm_hour == 20) {
+                this->update_tariff_schedule();
+            }
+        }, 1_h, 0_ms, false);
+
+        task_scheduler.scheduleWallClock([this]() {
+            this->evaluate_tariff_schedule();
+        }, 15_min, 100_ms, false); // Slightly delayed to give the previous task a chance to update the schedule first.
+    }
 #endif
 
 #if MODULE_SOLAR_FORECAST_AVAILABLE()
@@ -235,7 +273,7 @@ void BatteryControl::register_events()
         const int32_t wh_tomorrow = cfg->asInt();
 
         if (wh_tomorrow < 0) {
-            logger.tracefln(this->trace_buffer_idx, "Ignoring uninitialized forecast: %li", wh_tomorrow); // TODO remove
+            logger.tracefln(this->trace_buffer_idx, "Ignoring uninitialized forecast: %li", wh_tomorrow);
             return EventResult::OK;
         }
 
@@ -261,6 +299,7 @@ void BatteryControl::preprocess_rules(const Config *rules_config, control_rule *
         rule->price_th      =                       rule_config->get("price_th"     )->asInt()  *  100;         // ct/10 -> ct/1000
         rule->forecast_cond =                       rule_config->get("forecast_cond")->asEnum<RuleCondition>();
         rule->forecast_th   = static_cast<int32_t >(rule_config->get("forecast_th"  )->asUint() * 1000);        // kWh -> Wh
+        rule->schedule_cond =                       rule_config->get("schedule_cond")->asEnum<ScheduleRuleCondition>();
     }
 }
 
@@ -279,7 +318,7 @@ void BatteryControl::update_avg_soc()
     }
 
     if (soc_count == 0) {
-        logger.tracefln(this->trace_buffer_idx, "soc_avg has no data: No battery meters have SOC data."); // TODO remove
+        logger.tracefln(this->trace_buffer_idx, "soc_avg has no data: No battery meters have SOC data.");
         return;
     }
 
@@ -288,13 +327,109 @@ void BatteryControl::update_avg_soc()
     logger.tracefln(trace_buffer_idx, "soc_avg=%li", soc_cache_avg);
 }
 
+void BatteryControl::update_tariff_schedule()
+{
+    const uint8_t cheap_tariff_quarters     = static_cast<uint8_t>(config.get("cheap_tariff_quarters"    )->asUint());
+    const uint8_t expensive_tariff_quarters = static_cast<uint8_t>(config.get("expensive_tariff_quarters")->asUint());
+
+    if (cheap_tariff_quarters == 0 && expensive_tariff_quarters == 0) {
+        return;
+    }
+
+    time_t now_s = time(nullptr);
+    time_t schedule_start_s = now_s;
+
+    do {
+        struct tm start_date;
+        localtime_r(&schedule_start_s, &start_date);
+
+        // Set local time to 20h today
+        start_date.tm_hour  = 20;
+        start_date.tm_min   =  0;
+        start_date.tm_sec   =  0;
+        start_date.tm_isdst = -1; // let mktime figure out if DST is in effect
+
+        schedule_start_s = mktime(&start_date);
+
+        if (schedule_start_s <= now_s) {
+            logger.tracefln(this->trace_buffer_idx, "Schedule begins %llis in the past | %i-%02i-%02i %02i:%02i:%02i", now_s - schedule_start_s, start_date.tm_year+1900, start_date.tm_mon+1, start_date.tm_mday, start_date.tm_hour, start_date.tm_min, start_date.tm_sec);
+            break;
+        }
+
+        schedule_start_s -= 24 * 60 * 60; // yesterday
+        // Loop to readjust to 20h in case DST changed.
+    } while (true);
+
+    tariff_schedule_start_min = static_cast<int32_t>(schedule_start_s / 60);
+
+    bool cheap_hours    [sizeof(tariff_schedule)];
+    bool expensive_hours[sizeof(tariff_schedule)];
+    bool any_data_available = false;
+
+    if (day_ahead_prices.get_cheap_and_expensive_15m(tariff_schedule_start_min, sizeof(cheap_hours),     cheap_tariff_quarters,     cheap_hours, nullptr)) {
+        any_data_available = true;
+    } else {
+        memset(cheap_hours, false, sizeof(cheap_hours));
+    }
+
+    if (day_ahead_prices.get_cheap_and_expensive_15m(tariff_schedule_start_min, sizeof(expensive_hours), expensive_tariff_quarters, nullptr,     expensive_hours)) {
+        any_data_available = true;
+    } else {
+        memset(expensive_hours, false, sizeof(expensive_hours));
+    }
+
+    if (any_data_available) {
+        for (size_t i = 0; i < sizeof(tariff_schedule); i++) {
+            tariff_schedule[i] = cheap_hours[i]     << BC_SCHEDULE_CHEAP_POS
+                               | expensive_hours[i] << BC_SCHEDULE_EXPENSIVE_POS;
+        }
+    } else {
+        memset(tariff_schedule, 0, sizeof(tariff_schedule));
+    }
+
+    char str[sizeof(tariff_schedule) + 1];
+    for (size_t i = 0; i < sizeof(tariff_schedule); i++) {
+        str[i] = '0' + tariff_schedule[i];
+    }
+    str[sizeof(str) - 1] = 0;
+    logger.tracefln(this->trace_buffer_idx, "Schedule: %s", str);
+
+    evaluate_tariff_schedule();
+}
+
+void BatteryControl::evaluate_tariff_schedule()
+{
+    const int32_t now_min = static_cast<int32_t>(time(nullptr) / 60);
+
+    if (now_min < tariff_schedule_start_min) {
+        logger.printfln("Tariff schedule starts in the future: %li < %li", now_min, tariff_schedule_start_min);
+        tariff_schedule_cache = 0;
+        return;
+    }
+
+    const uint32_t quarter_index = static_cast<uint32_t>(now_min - tariff_schedule_start_min) / 15;
+
+    if (quarter_index >= sizeof(tariff_schedule)) {
+        logger.printfln("Quarter index beyond tariff schedule: %lu >= %u", quarter_index, sizeof(tariff_schedule));
+        tariff_schedule_cache = 0;
+        return;
+    }
+
+    const uint8_t charge_permitted_schedule_cache_update = tariff_schedule[quarter_index];
+
+    if (tariff_schedule_cache != charge_permitted_schedule_cache_update) {
+        tariff_schedule_cache  = charge_permitted_schedule_cache_update;
+        logger.tracefln(this->trace_buffer_idx, "tariff_schedule_cache=%hhu", tariff_schedule_cache);
+        evaluation_must_check_rules = true;
+        schedule_evaluation();
+    }
+}
+
 void BatteryControl::schedule_evaluation()
 {
     if (evaluation_task_id != 0) {
         return;
     }
-
-    logger.tracefln(this->trace_buffer_idx, "Scheduling evaluation"); // TODO remove
 
     evaluation_task_id = task_scheduler.scheduleOnce([this]() {
         logger.tracefln(this->trace_buffer_idx, "Evaluating");
@@ -317,8 +452,7 @@ void BatteryControl::schedule_evaluation()
     });
 }
 
-[[gnu::const]]
-bool BatteryControl::rule_condition_failed(const RuleCondition cond, const int32_t th, const int32_t value)
+static bool rule_condition_failed(const RuleCondition cond, const int32_t th, const int32_t value)
 {
     if (cond == RuleCondition::Ignore) {
         return false;
@@ -336,6 +470,32 @@ bool BatteryControl::rule_condition_failed(const RuleCondition cond, const int32
     return !(value > th); // intentionally negated
 }
 
+static bool schedule_rule_condition_failed(const ScheduleRuleCondition cond, const uint8_t value)
+{
+    if (cond == ScheduleRuleCondition::Ignore) {
+        return false;
+    }
+
+    if (cond == ScheduleRuleCondition::Cheap) {
+        return !(value & BC_SCHEDULE_CHEAP_MASK); // intentionally negated
+    }
+
+    if (cond == ScheduleRuleCondition::NotCheap) {
+        return   value & BC_SCHEDULE_CHEAP_MASK; // intentionally inverted
+    }
+
+    if (cond == ScheduleRuleCondition::Expensive) {
+        return !(value & BC_SCHEDULE_EXPENSIVE_MASK); // intentionally negated
+    }
+
+    if (cond == ScheduleRuleCondition::NotExpensive) {
+        return   value & BC_SCHEDULE_EXPENSIVE_MASK; // intentionally inverted
+    }
+
+    // ScheduleRuleCondition::Moderate
+    return value != 0; // 0 = neither cheap nor expensive
+}
+
 TristateBool BatteryControl::evaluate_rules(const control_rule *rules, size_t rules_count, const char *rules_type_name)
 {
     for (size_t i = 0; i < rules_count; i++) {
@@ -344,6 +504,7 @@ TristateBool BatteryControl::evaluate_rules(const control_rule *rules, size_t ru
         if (rule_condition_failed(rule->soc_cond,      rule->soc_th,      soc_cache_avg )) continue;
         if (rule_condition_failed(rule->price_cond,    rule->price_th,    price_cache   )) continue;
         if (rule_condition_failed(rule->forecast_cond, rule->forecast_th, forecast_cache)) continue;
+        if (schedule_rule_condition_failed(rule->schedule_cond, tariff_schedule_cache)) continue;
 
         // Complete rule matches.
         logger.tracefln(this->trace_buffer_idx, "%s rule %zu matches", rules_type_name, i);
@@ -359,7 +520,7 @@ void BatteryControl::evaluate_all_rules()
     discharge_forbidden_by_rules = evaluate_rules(forbid_discharge_rules,   forbid_discharge_rules_count,   "forbid_discharge"  );
     charge_forbidden_by_rules    = evaluate_rules(forbid_charge_rules,      forbid_charge_rules_count,      "forbid_charge"     );
 
-    logger.tracefln(this->trace_buffer_idx, "charge_permitted_by_rules=%u discharge_forbidden_by_rules=%u charge_forbidden_by_rules=%u", static_cast<unsigned>(charge_permitted_by_rules), static_cast<unsigned>(discharge_forbidden_by_rules), static_cast<unsigned>(charge_forbidden_by_rules)); // TODO remove
+    logger.tracefln(this->trace_buffer_idx, "charge_permitted_by_rules=%u discharge_forbidden_by_rules=%u charge_forbidden_by_rules=%u", static_cast<unsigned>(charge_permitted_by_rules), static_cast<unsigned>(discharge_forbidden_by_rules), static_cast<unsigned>(charge_forbidden_by_rules));
 }
 
 void BatteryControl::evaluate_summary()
@@ -406,17 +567,14 @@ void BatteryControl::periodic_update()
     }
 
     if (deadline_elapsed(next_permit_grid_charge_update)) {
-        logger.tracefln(this->trace_buffer_idx, "next_permit_grid_charge_update running"); // TODO remove
         update_charge_permitted(false);
     }
 
     if (!skip_discharge_forbidden && deadline_elapsed(next_discharge_forbidden_update)) {
-        logger.tracefln(this->trace_buffer_idx, "next_discharge_forbidden_update running"); // TODO remove
         update_discharge_forbidden(false);
     }
 
     if (deadline_elapsed(next_charge_forbidden_update)) {
-        logger.tracefln(this->trace_buffer_idx, "next_charge_forbidden_update running"); // TODO remove
         update_charge_forbidden(false);
     }
 }
