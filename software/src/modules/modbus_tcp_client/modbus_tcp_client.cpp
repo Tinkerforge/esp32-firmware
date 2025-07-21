@@ -29,6 +29,8 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 
+#include "gcc_warnings.h"
+
 void ModbusTCPClient::setup()
 {
     TFNetworkUtil::vlogfln = [](const char *fmt, va_list args) {
@@ -57,6 +59,7 @@ void ModbusTCPClient::loop()
     pool.tick();
 }
 
+[[gnu::const]]
 TFModbusTCPClientPool *ModbusTCPClient::get_pool()
 {
     return &pool;

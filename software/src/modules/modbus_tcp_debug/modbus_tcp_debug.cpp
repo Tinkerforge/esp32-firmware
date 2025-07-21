@@ -29,6 +29,8 @@
 #include "modules/modbus_tcp_client/generic_tcp_client_connector_base.h"
 #include "modules/modbus_tcp_client/modbus_function_code.enum.h"
 
+#include "gcc_warnings.h"
+
 void ModbusTCPDebug::pre_setup()
 {
     transact_config = Config::Object({
@@ -74,12 +76,12 @@ void ModbusTCPDebug::register_urls()
         }
 
         const String &host = transact_config.get("host")->asString();
-        uint16_t port = transact_config.get("port")->asUint();
-        uint8_t device_address = transact_config.get("device_address")->asUint();
+        uint16_t port = static_cast<uint16_t>(transact_config.get("port")->asUint());
+        uint8_t device_address = static_cast<uint8_t>(transact_config.get("device_address")->asUint());
         ModbusFunctionCode config_function_code = transact_config.get("function_code")->asEnum<ModbusFunctionCode>();
         TFModbusTCPFunctionCode protocol_function_code;
-        uint16_t start_address = transact_config.get("start_address")->asUint();
-        uint16_t data_count = transact_config.get("data_count")->asUint();
+        uint16_t start_address = static_cast<uint16_t>(transact_config.get("start_address")->asUint());
+        uint16_t data_count = static_cast<uint16_t>(transact_config.get("data_count")->asUint());
         const String &write_data = transact_config.get("write_data")->asString();
         millis_t timeout = millis_t{transact_config.get("timeout")->asUint()};
         bool hexload_registers = false;
@@ -227,7 +229,7 @@ void ModbusTCPDebug::register_urls()
                 // FIXME: hexdump coils for coil function codes
 
                 if (hexdump_coils) {
-                    hexdump<uint8_t>(static_cast<uint8_t *>(transact_buffer), (data_count + 7) / 8, data_hexdump, ARRAY_SIZE(data_hexdump), HexdumpCase::Lower);
+                    hexdump<uint8_t>(static_cast<uint8_t *>(transact_buffer), (data_count + 7u) / 8u, data_hexdump, ARRAY_SIZE(data_hexdump), HexdumpCase::Lower);
                     json.addMemberString("read_data", data_hexdump);
                 }
                 else if (hexdump_registers) {

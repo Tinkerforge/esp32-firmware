@@ -21,6 +21,8 @@
 
 #include "modbus_tcp_tools.h"
 
+#include "gcc_warnings.h"
+
 void modbus_bswap_registers(uint16_t *register_start, size_t register_count)
 {
     for (size_t i = 0; i < register_count; i++) {
