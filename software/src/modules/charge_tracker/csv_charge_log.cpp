@@ -39,27 +39,27 @@ String chargeRecordFilename(uint32_t i)
 }
 
 const char* CSVTranslations::getHeaderStart(bool english) {
-    return english ? "Start" : "Start";
+    return english ? "Start time" : "Startzeit";
 }
 
 const char* CSVTranslations::getHeaderDisplayName(bool english) {
-    return english ? "Display Name" : "Anzeigename";
+    return english ? "Display name" : "Anzeigename";
 }
 
 const char* CSVTranslations::getHeaderEnergy(bool english) {
-    return english ? "Energy (kWh)" : "Energie (kWh)";
+    return english ? "Charged energy in kWh" : "Geladene Energie in kWh";
 }
 
 const char* CSVTranslations::getHeaderDuration(bool english) {
-    return english ? "Duration (s)" : "Dauer (s)";
+    return english ? "Charge duration in s" : "Ladedauer in s";
 }
 
 const char* CSVTranslations::getHeaderMeterStart(bool english) {
-    return english ? "Meter Start (kWh)" : "Zählerstand Start (kWh)";
+    return english ? "Meter reading start" : "Zähler­stand Start";
 }
 
 const char* CSVTranslations::getHeaderMeterEnd(bool english) {
-    return english ? "Meter End (kWh)" : "Zählerstand Ende (kWh)";
+    return english ? "Meter reading end" : "Zähler­stand Ende";
 }
 
 const char* CSVTranslations::getHeaderUsername(bool english) {
@@ -67,7 +67,7 @@ const char* CSVTranslations::getHeaderUsername(bool english) {
 }
 
 const char* CSVTranslations::getHeaderPrice(bool english) {
-    return english ? "Price (€)" : "Preis (€)";
+    return english ? "Charging costs in € Working price " : "Ladekosten in €; Arbeitspreis ";
 }
 
 const char* CSVTranslations::getUnknownUser(bool english) {
