@@ -71,7 +71,6 @@ let x = {
             "file_type_label": "Dateityp",
             "english_label": "Englisch",
             "letterhead_label": "Briefkopf",
-            "csv_delimiter_label": "CSV-Trennzeichen",
             "target_user": "Fernzugriffsbenutzer",
             "charge_log_send_config": "E-Mail-Versandkonfiguration",
             "charge_log_send_add_modal_title": "E-Mail-Versandkonfiguration hinzufügen",
