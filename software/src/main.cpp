@@ -196,7 +196,7 @@ static void register_default_urls() {
         // Normally the firmware update pre_reboot hook would do this
         firmware_update.change_running_partition_from_pending_verify_to_new(true);
 #endif
-        ESP.restart();
+        esp_restart();
         return request.send(200, "text/plain", "Forced reboot.");
     });
 

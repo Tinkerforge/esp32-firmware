@@ -22,6 +22,7 @@
 #include <LittleFS.h>
 #include <esp_littlefs.h>
 #include <sys/stat.h>
+#include <esp_partition.h>
 
 #include "fs.h"
 
@@ -196,7 +197,7 @@ bool mount_or_format_spiffs()
 
         logger.printfln("Erasing core dump partition.");
         auto _partition = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_COREDUMP, "coredump");
-        ESP.partitionEraseRange(_partition, 0, 0x10000);
+        esp_partition_erase_range(_partition, 0, 0x10000);
         logger.printfln("Migration done!");
     }
 
