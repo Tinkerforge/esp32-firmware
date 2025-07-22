@@ -18,6 +18,7 @@ import time
 import traceback
 import urllib.request
 import csv
+import fcntl
 
 from provisioning.tinkerforge.bricklet_rgb_led_v2 import BrickletRGBLEDV2
 from provisioning.tinkerforge.ip_connection import IPConnection, base58encode, base58decode, BASE58
@@ -343,32 +344,67 @@ def handle_voltage_fuses(set_voltage_fuses):
     print("Burning flash voltage eFuse to 3.3V")
     espefuse(["set_flash_voltage", "3.3V", "--do-not-confirm"])
 
-def handle_block3_fuses(set_block_3, uid, passphrase):
+# Copied over from https://stagingwww.tinkerforge.com/uid implementation
+def sn_helper(next_uid_path):
+    sn_path = str(next_uid_path)
+
+    f = open(sn_path, 'r+')
+    f.seek(0)
+    timeout = time.time() + 10
+
+    while timeout > time.time():
+        try:
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            break
+        except OSError as e:
+            if e.errno in [errno.EACCES, errno.EAGAIN]:
+                time.sleep(0.1)
+                continue
+
+            raise
+    else:
+        raise Exception('Error: timeout while locking ' + sn_path)
+
+    sn = int(f.read().strip()) + 1
+
+    f.seek(0)
+    f.write(str(sn))
+    f.close()
+
+    return sn
+
+def handle_block3_fuses(set_block_3, uid, passphrase, offline=False):
     if not set_block_3:
         print("Block 3 eFuses already set. UID: {}, Passphrase valid".format(uid))
         return uid, passphrase
 
-    print("Reading staging password")
-    try:
-        with open('staging_password.txt', 'rb') as f:
-            staging_password = f.read().decode('utf-8').split('\n')[0].strip()
-    except:
-        fatal_error('staging_password.txt missing or malformed')
-        sys.exit(0)
+    if offline:
+        uid = base58encode(sn_helper("/home/tester/next_uid.txt"))
+    else:
+        print("Reading staging password")
+        try:
+            with open('staging_password.txt', 'rb') as f:
+                staging_password = f.read().decode('utf-8').split('\n')[0].strip()
+        except:
+            fatal_error('staging_password.txt missing or malformed')
+            sys.exit(0)
 
-    print("Installing auth_handler")
-    context = ssl.create_default_context()
+        print("Installing auth_handler")
+        context = ssl.create_default_context()
 
-    https_handler = urllib.request.HTTPSHandler(context=context)
+        https_handler = urllib.request.HTTPSHandler(context=context)
 
-    auth_handler = urllib.request.HTTPBasicAuthHandler()
-    auth_handler.add_password(realm='Staging',
-                                uri='https://stagingwww.tinkerforge.com',
-                                user='staging',
-                                passwd=staging_password)
+        auth_handler = urllib.request.HTTPBasicAuthHandler()
+        auth_handler.add_password(realm='Staging',
+                                    uri='https://stagingwww.tinkerforge.com',
+                                    user='staging',
+                                    passwd=staging_password)
 
-    opener = urllib.request.build_opener(https_handler, auth_handler)
-    urllib.request.install_opener(opener)
+        opener = urllib.request.build_opener(https_handler, auth_handler)
+        urllib.request.install_opener(opener)
+
+        print("Generating UID")
+        uid = base58encode(get_new_uid())
 
     print("Generating passphrase")
     # smallest 4-char-base58 string is "2111" = 195112 ("ZZZ"(= 195111) + 1)
@@ -376,8 +412,6 @@ def handle_block3_fuses(set_block_3, uid, passphrase):
     # Directly selecting chars out of the BASE58 alphabet can result in numbers with leading 1s
     # (those map to 0, so de- and reencoding will produce the same number without the leading 1)
     wifi_passphrase = [base58encode(rnd.randint(base58decode("2111"), base58decode("ZZZZ"))) for i in range(4)]
-    print("Generating UID")
-    uid = base58encode(get_new_uid())
 
     print("UID: " + uid)
     #print("Passphrase: {}-{}-{}-{}".format(*wifi_passphrase))

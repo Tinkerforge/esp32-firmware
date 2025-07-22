@@ -59,7 +59,7 @@ def main():
 
     handle_voltage_fuses(set_voltage_fuses)
 
-    uid, passphrase = handle_block3_fuses(set_block_3, uid, passphrase)
+    uid, passphrase = handle_block3_fuses(set_block_3, uid, passphrase, offline=firmware_type == "eltako")
 
     print("Verifying eFuses")
     _set_voltage_fuses, _set_block_3, _passphrase, _uid = get_espefuse_tasks()
