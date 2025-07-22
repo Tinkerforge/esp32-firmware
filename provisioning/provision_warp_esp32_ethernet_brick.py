@@ -204,7 +204,7 @@ def test_rtc_time(ip, wait_for_ntp):
     if (esp_time - datetime.datetime.now(datetime.timezone.utc)).total_seconds() > 3:
         fatal_error("RTC time wrong!")
 
-def get_esp_ssid(serial_port, result):
+def get_esp_ssid(serial_port, result, ssid_prefix):
 
     print("Checking ESP state")
     mac_address = check_if_esp_is_sane_and_get_mac(allowed_revision=[3.0, 3.1], override_port=serial_port)
@@ -219,7 +219,7 @@ def get_esp_ssid(serial_port, result):
 
     result["uid"] = uid
 
-    ssid = "warp3-" + uid
+    ssid = f"{ssid_prefix}-{uid}"
 
     return ssid, passphrase
 
@@ -617,6 +617,9 @@ def main():
         raise
 
     config = json.loads(Path("provision_warp_esp32_ethernet.config").read_text())
+    ssid_prefix = config["ssid_prefix"] # warp3 / wallbox
+    firmware_prefix = config["firmware_prefix"] # warp3 / eltako
+    firmware_directory = config["firmware_directory"] # warp3_charger / eltako_wallbox
     host_ip = config["host_ip"]
     static_ips = config["static_ips"]
     subnet = config["subnet"]
@@ -633,7 +636,7 @@ def main():
         # lambda with default parameter value to fix the late binding issue. If v was used directly, it would behave as if "captured by reference" -> fun with multithreading.
         t = ThreadWithReturnValue(target=lambda port=v: \
             subprocess.run(
-                [sys.executable, 'provision_stage_0_warp2.py', '../../firmwares/bricks/warp3_charger/brick_warp3_charger_firmware_latest.bin', port, "warp3"],
+                [sys.executable, 'provision_stage_0_warp2.py', f'../../firmwares/bricks/{firmware_directory}/brick_{firmware_directory}_firmware_latest.bin', port, firmware_prefix],
                 capture_output=True,
                 encoding='utf-8'))
         t.start()
@@ -656,7 +659,7 @@ def main():
     print(green(f"{len(relay_to_serial)} ESPs flashed successfully"))
 
     def get_esp_ssid_fn(serial_port, result):
-        return lambda: get_esp_ssid(serial_port, result)
+        return lambda: get_esp_ssid(serial_port, result, ssid_prefix)
 
     test_reports = {k: {"start": now()} for k in relay_to_serial.keys()}
 

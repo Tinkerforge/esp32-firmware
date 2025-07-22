@@ -35,7 +35,7 @@ def main():
         fatal_error("Firmware {} not found.".format(sys.argv[1]))
 
     firmware_type = sys.argv[3]
-    if firmware_type not in ["esp32", "esp32_ethernet", "warp2", "energy_manager", "energy_manager_v2", "smart_energy_broker", "warp3"]:
+    if firmware_type not in ["esp32", "esp32_ethernet", "warp2", "energy_manager", "energy_manager_v2", "smart_energy_broker", "warp3", "eltako"]:
         fatal_error("Unknown firmware type {}".format(firmware_type))
 
     PORT = sys.argv[2]
