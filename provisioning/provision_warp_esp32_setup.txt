@@ -1,0 +1,11 @@
+mkdir ~/tf
+cd ~/tf
+git clone https://github.com/Tinkerforge/esp32-firmware
+git clone https://github.com/Tinkerforge/firmwares
+https://www.tinkerforge.com/de/doc/Software/APT_Repository.html#apt-repository einrichten
+sudo apt install libusb-1.0-0-dev brickd
+esp32-firmware/provisioning/provision_stage_0_install.txt
+venv/bin/pip install tinkerforge_util pyside6
+sudo raspi-config -> localization options -> wlan country -> de
+99-esptester-X.rules nach /etc/udev/rules packen (als root), dabei seriennummern anpassen
+sudo udevadm control --reload-rules && sudo udevadm trigger 
