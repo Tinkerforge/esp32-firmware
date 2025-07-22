@@ -662,7 +662,8 @@ def main():
     threads.clear()
 
     run(["sudo", "systemctl", "restart", "NetworkManager.service"])
-    run(["sudo", "iw", "reg", "set", "DE"])
+    if shutil.which("iw") is not None:
+        run(["sudo", "iw", "reg", "set", "DE"])
 
     for k, v in list(relay_to_serial.items()):
         with contextlib.redirect_stdout(logs[k][0]):
