@@ -372,6 +372,8 @@ def run_stage_1_tests(serial_port, ethernet_ip, power_off_fn, power_on_fn, resul
     rgb_led = BrickletRGBLEDV2(rgb_led_uid, ipcon)
     rgb_led.set_rgb_value(0, 127, 0)
 
+    print(green("All tests successful!"))
+
     return ipcon, rgb_led_uid
 
 
@@ -419,14 +421,29 @@ IQR_UID_BLACKLIST = [
 ]
 
 def ansi_escape_to_html(s):
-    return s.replace(colors["blue"],  '<font color="#0000FF">')\
-            .replace(colors["cyan"],  '<font color="#00FFFF">')\
-            .replace(colors["green"], '<font color="#00AA00">')\
-            .replace(colors["red"],   '<font color="#FF0000">')\
-            .replace(colors["gray"],  '<font color="#555555">')\
-            .replace(colors["blink"], '<font>')\
-            .replace(colors["off"], '</font>')\
-            .replace("\n", "<br/>")
+    x = [
+        (colors["blue"],  '#0000FF'),
+        (colors["cyan"],  '#00FFFF'),
+        (colors["green"], '#00AA00'),
+        (colors["red"],   '#FF0000'),
+        (colors["gray"],  '#555555')
+    ]
+
+    result = (-1, '#FFFFFF')
+
+    for l, r in x:
+        i = s.rfind(l)
+        if i > result[0]:
+            result = (i, r)
+
+    return (s.replace(colors["blue"],  '')\
+            .replace(colors["cyan"],  '')\
+            .replace(colors["green"], '')\
+            .replace(colors["red"],   '')\
+            .replace(colors["gray"],  '')\
+            .replace(colors["blink"], '')\
+            .replace(colors["off"], '')\
+            .replace("\n", "<br/>"), result[1])
 
 reprint_enabled = False
 reprint_clicked = False
@@ -451,7 +468,9 @@ def update_logs(edits, restart_button, reprint_button):
     reprint_button.setEnabled(reprint_enabled)
 
     for k, v in edits.items():
-        v.setHtml(ansi_escape_to_html(logs[k][0].getvalue() + "\n---\n" + logs[k][1].getvalue()))
+        new_log, back_color = ansi_escape_to_html(logs[k][0].getvalue() + "\n---\n" + logs[k][1].getvalue())
+        v.setHtml(new_log)
+        v.setStyleSheet(f"background-color: {back_color};")
         v.verticalScrollBar().triggerAction(QAbstractSlider.SliderToMaximum)
 
 def quit():
@@ -629,7 +648,7 @@ def main():
     print("Starting NTP server")
     Thread(target=start_ntpserver,args=("0.0.0.0",1234)).start()
 
-    print(green(f"Flashing {len(relay_to_serial)} ESPs..."))
+    print(f"Flashing {len(relay_to_serial)} ESPs...")
 
     threads = []
     for k, v in relay_to_serial.items():
@@ -656,7 +675,7 @@ def main():
 
     threads.clear()
 
-    print(green(f"{len(relay_to_serial)} ESPs flashed successfully"))
+    print(f"{len(relay_to_serial)} ESPs flashed successfully")
 
     def get_esp_ssid_fn(serial_port, result):
         return lambda: get_esp_ssid(serial_port, result, ssid_prefix)
@@ -682,7 +701,7 @@ def main():
             relay_to_ssid[k] = result[0]
             relay_to_passphrase[k] = result[1]
 
-    print(green(str(relay_to_ssid)))
+    print(str(relay_to_ssid))
 
     threads.clear()
 
@@ -703,7 +722,7 @@ def main():
         return lambda: run_stage_1_tests(serial_port, ethernet_ip, lambda: iqr.set_selected_value(relay_pin, False), lambda: iqr.set_selected_value(relay_pin, True), test_report)
 
     for k, v in relay_to_serial.items():
-        print(green(f"{k}: {static_ips[k]}"))
+        print(f"{k}: {static_ips[k]}")
         t = ThreadWithReturnValue(target=run_stage_1_tests_fn(v, static_ips[k], k, test_reports[k]))
         t.start()
         thread_ids[t.ident] = k
@@ -764,7 +783,7 @@ def main():
                     if restart_clicked:
                         print("restart")
                         return
-                    print(green(f"Removed {next_brick}"))
+                    print(f"Removed {next_brick}")
                     iqr.set_selected_value(next_brick, False)
                     rgb_led = relay_to_rgb_led.pop(next_brick)
                     rgb_led.ipcon.disconnect()
