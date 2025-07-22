@@ -1,2 +1,2 @@
-<unknown>: 2.8.6 (<unknown>)
+2025-07-22: 2.8.6 (<unknown>)
 - Initial release
