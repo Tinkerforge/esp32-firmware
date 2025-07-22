@@ -823,6 +823,11 @@ public:
 
     int64_t asInt52() const;
 
+    uint8_t asUint8() const;
+    int8_t asInt8() const;
+    uint16_t asUint16() const;
+    int16_t asInt16() const;
+
     template<typename T>
     T asEnum() const {
         if (this->is<ConfUint>()) {

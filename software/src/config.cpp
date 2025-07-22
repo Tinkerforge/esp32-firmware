@@ -512,6 +512,30 @@ int32_t Config::asInt() const
     return *this->get<ConfInt>()->getVal();
 }
 
+uint8_t Config::asUint8() const
+{
+    // Asserts checked in ::get.
+    return *this->get<ConfUint8>()->getVal();
+}
+
+int8_t Config::asInt8() const
+{
+    // Asserts checked in ::get.
+    return *this->get<ConfInt8>()->getVal();
+}
+
+uint16_t Config::asUint16() const
+{
+    // Asserts checked in ::get.
+    return *this->get<ConfUint16>()->getVal();
+}
+
+int16_t Config::asInt16() const
+{
+    // Asserts checked in ::get.
+    return *this->get<ConfInt16>()->getVal();
+}
+
 bool Config::asBool() const
 {
     // Asserts checked in ::get.
