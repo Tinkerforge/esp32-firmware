@@ -19,7 +19,8 @@
 
 #pragma once
 
-#include <Arduino.h>
+#include <stdint.h>
+#include <stdlib.h>
 
 #define SEMANTIC_VERSION_MAX_STRING_LENGTH (29 + 1) // strlen("MAJ.MIN.PAT-beta.BET+TIMESTAM") == 29 + 1 for NUL-terminator
 

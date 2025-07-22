@@ -19,6 +19,11 @@
 
 #include "semantic_version.h"
 
+#include <stdio.h>
+#include <string.h>
+
+#include "gcc_warnings.h"
+
 // <major:int>.<minor:int>.<patch:int>[-beta.<beta:int>][+<timestamp:hex>]
 bool SemanticVersion::from_string(const char *buf, Format format)
 {
@@ -75,10 +80,10 @@ bool SemanticVersion::from_string(const char *buf, Format format)
         }
     }
 
-    major = major_candidate;
-    minor = minor_candidate;
-    patch = patch_candidate;
-    beta = beta_candidate;
+    major     = static_cast<uint8_t>(major_candidate);
+    minor     = static_cast<uint8_t>(minor_candidate);
+    patch     = static_cast<uint8_t>(patch_candidate);
+    beta      = static_cast<uint8_t>(beta_candidate);
     timestamp = timestamp_candidate;
 
     return true;
