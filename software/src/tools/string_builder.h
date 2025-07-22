@@ -43,7 +43,7 @@ public:
     ssize_t puts(const char *string, ssize_t string_len = -1);
     ssize_t putc(char c);
     ssize_t putcn(char c, size_t n);
-    ssize_t vprintf(const char *fmt, va_list args);
+    [[gnu::format(__printf__, 2, 0)]] ssize_t vprintf(const char *fmt, va_list args);
     [[gnu::format(__printf__, 2, 3)]] ssize_t printf(const char *fmt, ...);
 
 protected:

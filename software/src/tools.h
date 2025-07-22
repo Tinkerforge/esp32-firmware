@@ -64,6 +64,7 @@ size_t sprintf_u(char *buf, const char *fmt, ...);
 size_t snprintf_u(char *buf, size_t len, const char *fmt, ...);
 
 // Unchecked vsnprintf that returns size_t
+[[gnu::format(__printf__, 3, 0)]]
 size_t vsnprintf_u(char *buf, size_t len, const char *fmt, va_list args);
 
 class LogSilencer

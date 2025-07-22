@@ -22,11 +22,13 @@
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
 
+[[gnu::format(__printf__, 2, 0)]]
 int header_vprintfln(const char *prefix, const char *fmt, va_list args)
 {
     return logger.vprintfln_prefixed(prefix, strlen(prefix), fmt, args);
 }
 
+[[gnu::format(__printf__, 2, 3)]]
 int header_printfln(const char *prefix, const char *fmt, ...)
 {
     va_list args;

@@ -44,26 +44,26 @@ public:
     void post_setup();
 
     void format_timestamp(char buf[EVENT_LOG_TIMESTAMP_LENGTH + 1 /* \0 */]);
-    size_t vsnprintf_prefixed(char *buf, size_t buf_len, const char *prefix, size_t prefix_len, const char *fmt, va_list args);
+    [[gnu::format(__printf__, 6, 0)]] size_t vsnprintf_prefixed(char *buf, size_t buf_len, const char *prefix, size_t prefix_len, const char *fmt, va_list args);
 
     void print_drop(size_t count);
     void print_timestamp();
     size_t print_plain(const char *buf, size_t len);
 
-    size_t vprintfln_plain(const char *fmt, va_list args);
+    [[gnu::format(__printf__, 2, 0)]] size_t vprintfln_plain(const char *fmt, va_list args);
     [[gnu::format(__printf__, 2, 3)]] size_t printfln_plain(const char *fmt, ...);
 
-    size_t vprintfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args);
+    [[gnu::format(__printf__, 4, 0)]] size_t vprintfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, va_list args);
     [[gnu::format(__printf__, 4, 5)]] size_t printfln_prefixed(const char *prefix, size_t prefix_len, const char *fmt, ...);
 
     void trace_drop(size_t trace_buf_idx, size_t count);
     void trace_timestamp(size_t trace_buf_idx);
     size_t trace_plain(size_t trace_buf_idx, const char *buf, size_t len);
 
-    size_t vtracefln_plain(size_t trace_buf_idx, const char *fmt, va_list args);
+    [[gnu::format(__printf__, 3, 0)]] size_t vtracefln_plain(size_t trace_buf_idx, const char *fmt, va_list args);
     [[gnu::format(__printf__, 3, 4)]] size_t tracefln_plain(size_t trace_buf_idx, const char *fmt, ...);
 
-    size_t vtracefln_prefixed(size_t trace_buf_idx, const char *prefix, size_t prefix_len, const char *fmt, va_list args);
+    [[gnu::format(__printf__, 5, 0)]] size_t vtracefln_prefixed(size_t trace_buf_idx, const char *prefix, size_t prefix_len, const char *fmt, va_list args);
     [[gnu::format(__printf__, 5, 6)]] size_t tracefln_prefixed(size_t trace_buf_idx, const char *prefix, size_t prefix_len, const char *fmt, ...);
 
     // The following functions are intentionally not implemented.
@@ -132,7 +132,7 @@ private:
 // If this is in a c (not cpp) file, also add
 // extern int tf_event_log_vprintfln(const char *fmt, va_list args);
 // instead of including event_log.h (a C++ header)
-extern "C" int tf_event_log_vprintfln(const char *fmt, va_list args);
+extern "C" [[gnu::format(__printf__, 1, 0)]] int tf_event_log_vprintfln(const char *fmt, va_list args);
 
 // To directly print from external C code, add
 // extern int tf_event_log_printfln(const char *fmt, ...);

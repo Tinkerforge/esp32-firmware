@@ -33,7 +33,7 @@
 
 void ModbusTCPClient::setup()
 {
-    TFNetworkUtil::vlogfln = [](const char *fmt, va_list args) {
+    TFNetworkUtil::vlogfln = [](const char *fmt, va_list args) __attribute__((format(printf, 2, 0))) {
         logger.vprintfln(fmt, args);
     };
 

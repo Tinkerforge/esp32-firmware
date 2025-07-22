@@ -80,7 +80,7 @@ class IChunkedResponse : public IBaseChunkedResponse
 {
 public:
     [[gnu::format(__printf__, 2, 3)]] virtual bool writef(const char *fmt, ...) = 0;
-    virtual bool vwritef(const char *fmt, va_list args) = 0;
+    [[gnu::format(__printf__, 2, 0)]] virtual bool vwritef(const char *fmt, va_list args) = 0;
     virtual bool flush() = 0;
 
     void *metadata = nullptr;

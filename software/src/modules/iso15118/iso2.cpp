@@ -751,14 +751,19 @@ void ISO2::trace_header(const struct iso2_MessageHeaderType *header, const char 
     iso15118.trace("  SessionID.bytesLen: %d", header->SessionID.bytesLen);
     iso15118.trace("  Notification_isUsed: %d", header->Notification_isUsed);
     if (header->Notification_isUsed) {
-        iso15118.trace("  Notification: %d", header->Notification);
+        iso15118.trace("  Notification.FaultCode: %d", header->Notification.FaultCode);
+        iso15118.trace("  Notification.FaultMsg_isUsed: %d", header->Notification.FaultMsg_isUsed);
+        if (header->Notification.FaultMsg_isUsed) {
+            iso15118.trace("  Notification.FaultMsg.characters: %s", header->Notification.FaultMsg.characters);
+            iso15118.trace("  Notification.FaultMsg.charactersLen: %d", header->Notification.FaultMsg.charactersLen);
+        }
     }
     iso15118.trace("  Signature_isUsed: %d", header->Signature_isUsed);
     if (header->Signature_isUsed) {
         iso15118.trace("  Signature.Id_isUsed: %d", header->Signature.Id_isUsed);
         if (header->Signature.Id_isUsed) {
             iso15118.trace("  Signature.Id.characters: %s", header->Signature.Id.characters);
-            iso15118.trace("  Signature.Id.charactersLen: %s", header->Signature.Id.charactersLen);
+            iso15118.trace("  Signature.Id.charactersLen: %d", header->Signature.Id.charactersLen);
         }
         iso15118.trace("  Signature.SignatureValue.Id_isUsed: %d", header->Signature.SignatureValue.Id_isUsed);
         if (header->Signature.SignatureValue.Id_isUsed) {
@@ -860,7 +865,7 @@ void ISO2::trace_request_response()
         iso15118.trace("   RequestedEnergyTransferMode: %d", req->RequestedEnergyTransferMode);
         iso15118.trace("   AC_EVChargeParameter_isUsed: %d", req->AC_EVChargeParameter_isUsed);
         if (req->AC_EVChargeParameter_isUsed) {
-            iso15118.trace("    DepartureTime: %d", req->AC_EVChargeParameter.DepartureTime);
+            iso15118.trace("    DepartureTime: %lu", req->AC_EVChargeParameter.DepartureTime);
             iso15118.trace("    DepartureTime_isUsed: %d", req->AC_EVChargeParameter.DepartureTime_isUsed);
             iso15118.trace("    EAmount.Value: %d", req->AC_EVChargeParameter.EAmount.Value);
             iso15118.trace("    EAmount.Multiplier: %d", req->AC_EVChargeParameter.EAmount.Multiplier);
@@ -874,7 +879,7 @@ void ISO2::trace_request_response()
 
         iso15118.trace("   DC_EVChargeParameter_isUsed: %d", req->DC_EVChargeParameter_isUsed);
         if (req->DC_EVChargeParameter_isUsed) {
-            iso15118.trace("    DepartureTime: %d", req->DC_EVChargeParameter.DepartureTime);
+            iso15118.trace("    DepartureTime: %lu", req->DC_EVChargeParameter.DepartureTime);
             iso15118.trace("    DepartureTime_isUsed: %d", req->DC_EVChargeParameter.DepartureTime_isUsed);
             iso15118.trace("    DC_EVStatus.EVRESSSOC: %d", req->DC_EVChargeParameter.DC_EVStatus.EVRESSSOC);
             iso15118.trace("    DC_EVStatus.EVReady: %d", req->DC_EVChargeParameter.DC_EVStatus.EVReady);
@@ -914,7 +919,7 @@ void ISO2::trace_request_response()
                 iso15118.trace("     ChargingProfileEntryMaxPower.Value: %d", req->ChargingProfile.ProfileEntry.array[i].ChargingProfileEntryMaxPower.Value);
                 iso15118.trace("     ChargingProfileEntryMaxPower.Multiplier: %d", req->ChargingProfile.ProfileEntry.array[i].ChargingProfileEntryMaxPower.Multiplier);
                 iso15118.trace("     ChargingProfileEntryMaxPower.Unit: %d", req->ChargingProfile.ProfileEntry.array[i].ChargingProfileEntryMaxPower.Unit);
-                iso15118.trace("     ChargingProfileEntryStart: %d", req->ChargingProfile.ProfileEntry.array[i].ChargingProfileEntryStart);
+                iso15118.trace("     ChargingProfileEntryStart: %lu", req->ChargingProfile.ProfileEntry.array[i].ChargingProfileEntryStart);
             }
         }
 
@@ -951,8 +956,8 @@ void ISO2::trace_request_response()
         iso15118.trace("   ResponseCode: %d", res->ResponseCode);
         iso15118.trace("   EVSEID: %s", res->EVSEID.characters);
         iso15118.trace("   EVSEID.charactersLen: %d", res->EVSEID.charactersLen);
-        iso15118.trace("   EVSETimeStamp: %ld", res->EVSETimeStamp);
-        iso15118.trace("   EVSETimeStamp_isUsed: %ld", res->EVSETimeStamp_isUsed);
+        iso15118.trace("   EVSETimeStamp: %lld", res->EVSETimeStamp);
+        iso15118.trace("   EVSETimeStamp_isUsed: %d", res->EVSETimeStamp_isUsed);
     } else if (iso2DocEnc->V2G_Message.Body.ServiceDiscoveryRes_isUsed) {
         iso2_ServiceDiscoveryResType *res = &iso2DocEnc->V2G_Message.Body.ServiceDiscoveryRes;
 
@@ -1003,8 +1008,8 @@ void ISO2::trace_request_response()
                         iso15118.trace("       RelativeTimeInterval_isUsed: %d", res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].RelativeTimeInterval_isUsed);
                         if (res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].RelativeTimeInterval_isUsed) {
                             iso15118.trace("       RelativeTimeInterval");
-                            iso15118.trace("        start: %d", res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].RelativeTimeInterval.start);
-                            iso15118.trace("        duration: %d", res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].RelativeTimeInterval.duration);
+                            iso15118.trace("        start: %lu", res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].RelativeTimeInterval.start);
+                            iso15118.trace("        duration: %lu", res->SAScheduleList.SAScheduleTuple.array[i].PMaxSchedule.PMaxScheduleEntry.array[j].RelativeTimeInterval.duration);
                         }
                     }
                 }

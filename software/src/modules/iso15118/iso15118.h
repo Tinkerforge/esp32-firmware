@@ -53,7 +53,7 @@ public:
     void setup() override;
     void register_urls() override;
     void state_machines_loop();
-    void trace(const char *fmt, ...);
+    [[gnu::format(__printf__, 2, 3)]] void trace(const char *fmt, ...);
     void trace_packet(const uint8_t *packet, const size_t packet_size);
 
     QCA700x qca700x;
