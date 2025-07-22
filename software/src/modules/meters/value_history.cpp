@@ -49,9 +49,9 @@ void ValueHistory::setup()
         live.push(INT32_MIN);
     }
 
-    chars_per_value = max(String(VALUE_HISTORY_VALUE_MIN).length(), String(VALUE_HISTORY_VALUE_MAX).length());
+    chars_per_value = std::max(String(VALUE_HISTORY_VALUE_MIN).length(), String(VALUE_HISTORY_VALUE_MAX).length());
     // INT32_MIN values are replaced with null -> require at least 4 chars per value.
-    chars_per_value = max(4U, chars_per_value);
+    chars_per_value = std::max(4U, chars_per_value);
     // For ',' between the values.
     ++chars_per_value;
 }

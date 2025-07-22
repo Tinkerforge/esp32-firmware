@@ -321,8 +321,8 @@ struct max_string_length_visitor {
     }
     size_t operator()(const Config::ConfInt &x)
     {
-        return max(estimate_chars_per_int(x.getSlot()->max),
-                   estimate_chars_per_int(x.getSlot()->min));
+        return std::max(estimate_chars_per_int(x.getSlot()->max),
+                        estimate_chars_per_int(x.getSlot()->min));
     }
     size_t operator()(const Config::ConfUint &x)
     {
@@ -330,8 +330,8 @@ struct max_string_length_visitor {
     }
     size_t operator()(const Config::ConfInt52 &x)
     {
-        return max(estimate_chars_per_int64(x.getSlot()->max),
-                   estimate_chars_per_int64(x.getSlot()->min));
+        return std::max(estimate_chars_per_int64(x.getSlot()->max),
+                        estimate_chars_per_int64(x.getSlot()->min));
     }
     size_t operator()(const Config::ConfUint53 &x)
     {
