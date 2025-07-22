@@ -19,10 +19,10 @@
 
 #pragma once
 
-#include <esp_http_server.h>
 #include <forward_list>
 #include <functional>
-#include <Arduino.h>
+#include <WString.h>
+#include <esp_http_server.h>
 
 #include "module.h"
 

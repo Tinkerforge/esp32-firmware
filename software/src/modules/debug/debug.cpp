@@ -19,7 +19,6 @@
 
 #include "debug.h"
 
-#include <Arduino.h>
 #include <esp_debug_helpers.h>
 #include <esp_system.h>
 #include <esp_task.h>

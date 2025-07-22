@@ -19,11 +19,11 @@
 
 #pragma once
 
-#include <Arduino.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <limits>
 #include <TFTools/Micros.h>
+#include <WString.h>
 
 #include "options.h"
 #include "tools/ringbuffer.h"

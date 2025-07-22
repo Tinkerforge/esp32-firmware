@@ -19,12 +19,11 @@
 
 #pragma once
 
-#include <Arduino.h>
-#include <esp_http_server.h>
 #include <functional>
 #include <atomic>
 #include <mutex>
 #include <deque>
+#include <esp_http_server.h>
 
 #include "config.h"
 

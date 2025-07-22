@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #define CHARGE_TRACKER_PDF_LOGO_WARP 0
 #define CHARGE_TRACKER_PDF_LOGO_ELTAKO 1

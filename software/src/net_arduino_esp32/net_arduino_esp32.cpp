@@ -8,7 +8,7 @@
 
 #include "net_arduino_esp32.h"
 
-#include <Arduino.h>
+#include <algorithm>
 #include <lwip/err.h>
 #include <lwip/sockets.h>
 #include <lwip/sys.h>

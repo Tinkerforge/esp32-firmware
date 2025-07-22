@@ -19,7 +19,6 @@
 
 #include "mqtt.h"
 
-#include <Arduino.h>
 #include <esp_crt_bundle.h>
 
 #include "event_log_prefix.h"

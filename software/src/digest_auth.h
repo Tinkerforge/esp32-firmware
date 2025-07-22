@@ -25,7 +25,7 @@
 
 #pragma once
 
-#include <Arduino.h>
+#include <WString.h>
 
 #define DEFAULT_REALM "esp32-lib"
 

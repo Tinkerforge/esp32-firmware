@@ -19,7 +19,6 @@
 
 #include "cm_networking.h"
 
-#include <Arduino.h>
 #include <fcntl.h>
 #include <lwip/sockets.h>
 #include <cstring>

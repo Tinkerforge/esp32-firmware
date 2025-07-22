@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include <Arduino.h>
+#include <WString.h>
 #include <TFGenericTCPClient.h>
 #include <TFGenericTCPClientPool.h>
 

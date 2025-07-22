@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include <Arduino.h>
+#include <WString.h>
 #include <functional>
 #include <initializer_list>
 #include <vector>

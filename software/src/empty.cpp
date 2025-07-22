@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <Arduino.h>
 #include <stdint.h>
 
 typedef struct {

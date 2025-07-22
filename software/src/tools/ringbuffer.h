@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <type_traits>
+#include <esp_system.h>
 
 template <typename T, size_t SIZE, typename AlignedT, void*(*malloc_fn)(size_t), void(*free_fn)(void*)>
 class TF_PackedRingbuffer {

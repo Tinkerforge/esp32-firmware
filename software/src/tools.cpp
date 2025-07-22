@@ -19,7 +19,6 @@
 
 #include "tools.h"
 
-#include <Arduino.h>
 #include <esp_efuse.h>
 #include <esp_system.h>
 #include <esp_timer.h>

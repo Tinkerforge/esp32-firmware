@@ -19,8 +19,6 @@
 
 #include "debug_protocol.h"
 
-#include <Arduino.h>
-
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "debug_protocol_backend.h"

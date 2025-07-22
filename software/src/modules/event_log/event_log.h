@@ -21,7 +21,6 @@
 
 #include <stdarg.h>
 #include <mutex>
-#include <Arduino.h>
 
 #include "module.h"
 #include "config.h"

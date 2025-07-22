@@ -1,6 +1,6 @@
 #pragma once
 
-#include "WString.h"
+#include <WString.h>
 
 // Arduino String that allows accessing more methods.
 class CoolString : public String

@@ -17,8 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <Arduino.h>
-
 #include <stdio.h>
 #include <string.h>
 #include <esp_task.h>
