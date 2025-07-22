@@ -368,7 +368,7 @@ def print_label(ssid, passphrase, stage_1_test_report, relay_to_rgb_led):
         if restart_clicked:
             return
         reprint_clicked = False
-        run(["python3", "print-esp32-label.py", ssid, passphrase, "-c", "4"])
+        run([sys.executable, "print-esp32-label.py", ssid, passphrase, "-c", "4"])
         label_prompt = "Stick one label on the ESP, put ESP{} in the ESD bag. Press 'Print label again' button to retry printing the label{}. Remove next ESP to continue. Press 'Restart' when all finished ESPs are removed and new ESPs are inserted.".format(
                 " and the other three labels",
                 "s")
@@ -611,7 +611,7 @@ def main():
         # lambda with default parameter value to fix the late binding issue. If v was used directly, it would behave as if "captured by reference" -> fun with multithreading.
         t = ThreadWithReturnValue(target=lambda port=v: \
             subprocess.run(
-                ['python', 'provision_stage_0_warp2.py', '../../firmwares/bricks/warp3_charger/brick_warp3_charger_firmware_latest.bin', port, "warp3"],
+                [sys.executable, 'provision_stage_0_warp2.py', '../../firmwares/bricks/warp3_charger/brick_warp3_charger_firmware_latest.bin', port, "warp3"],
                 capture_output=True,
                 encoding='utf-8'))
         t.start()
