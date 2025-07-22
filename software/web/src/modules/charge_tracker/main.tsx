@@ -623,7 +623,6 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         </FormRow>
                     </div>
                 </Collapse>
-                {sendEmailComponent}
 
                 <Collapse in={state.file_type == "1"}>
                     <div>
@@ -664,6 +663,8 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                         </FormRow>
                     </div>
                 </Collapse>
+
+                {sendEmailComponent}
 
                 <FormSeparator heading={__("charge_tracker.content.tracked_charges")}/>
 
