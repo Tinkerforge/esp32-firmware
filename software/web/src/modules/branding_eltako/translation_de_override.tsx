@@ -7,6 +7,7 @@ let x = {
             "charge_manager": "Lastmanager"
         },
         "script": {
+            "mode_explainer_0": <>{__("This_device")} ist nicht Teil eines Lastmanagement-Verbunds mit anderen ELTAKO Wallboxen. PV-Überschussladen ist deaktiviert.</>,
             "mode_explainer_1": <>{__("This_device")} ist Teil eines Lastmanagement-Verbunds mit anderen ELTAKO Wallboxen. Ein anderes Gerät steuert diesen Lastmanagement-Verbund, um sicherzustellen, dass nie mehr als der verfügbare Strom bezogen wird.</>,
             "mode_explainer_2": <>{__("This_device")} verwendet entweder das PV-Überschussladen oder steuert einen Lastmanagement-Verbund mit anderen ELTAKO Wallboxen um sicherzustellen, dass nie mehr als der verfügbare Strom bezogen wird.</>
         }
