@@ -843,7 +843,7 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                             onValue={(v) => this.setState({cheap_tariff_quarters: Math.round(v * 4 / 100)})}
                             digits={2}
                             min={0}
-                            max={2400}
+                            max={2000 - this.state.expensive_tariff_quarters * 100 / 4}
                         />
                     </FormRow>
 
@@ -854,7 +854,7 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                             onValue={(v) => this.setState({expensive_tariff_quarters: Math.round(v * 4 / 100)})}
                             digits={2}
                             min={0}
-                            max={2400}
+                            max={2000 - this.state.cheap_tariff_quarters * 100 / 4}
                         />
                     </FormRow>
 
