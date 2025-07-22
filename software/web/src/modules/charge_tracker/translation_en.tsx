@@ -71,7 +71,6 @@ let x = {
             "file_type_label": "File Type",
             "english_label": "English",
             "letterhead_label": "Letterhead",
-            "csv_delimiter_label": "CSV Delimiter",
             "target_user": "Remote access user",
             "charge_log_send_config": "Charge log send configuration",
             "charge_log_send_add_modal_title": "Add charge log send configuration",

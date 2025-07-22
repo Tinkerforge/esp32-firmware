@@ -310,7 +310,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
             </FormRow>
             <Collapse in={this.state.new_remote_upload_config.file_type === 1}>
                 <div>
-                    <FormRow label="CSV Delimiter">
+                    <FormRow label={__("charge_tracker.content.csv_flavor")}>
                         <InputSelect
                             value={this.state.new_remote_upload_config.csv_delimiter.toString()}
                             onValue={v => this.setState({
