@@ -27,31 +27,15 @@
 #include "tools/malloc.h"
 #include "tools/fs.h"
 #include "pdf_charge_log.h"
+#include "csv_charge_log.h"
 #include "file_type.enum.h"
+#include "csv_flavor.enum.h"
 
 #define PDF_LETTERHEAD_MAX_SIZE 512
 
-struct [[gnu::packed]] ChargeStart {
-    uint32_t timestamp_minutes = 0;
-    float meter_start = 0.0f;
-    uint8_t user_id = 0;
-};
-
-static_assert(sizeof(ChargeStart) == 9, "Unexpected size of ChargeStart");
-
-struct [[gnu::packed]] ChargeEnd {
-    uint32_t charge_duration : 24;
-    float meter_end = 0.0f;
-};
-
-struct [[gnu::packed]] Charge {
-    ChargeStart cs;
-    ChargeEnd ce;
-};
 
 static bool repair_logic(Charge *);
 
-static_assert(sizeof(ChargeEnd) == 7, "Unexpected size of ChargeEnd");
 
 #define CHARGE_RECORD_SIZE (sizeof(ChargeStart) + sizeof(ChargeEnd))
 
@@ -121,6 +105,7 @@ void ChargeTracker::pre_setup()
         {"english", Config::Bool(false)},
         {"letterhead", Config::Str("", 0, PDF_LETTERHEAD_MAX_SIZE)},
         {"user_filter", Config::Int(0)},
+        {"csv_delimiter", Config::Enum(CSVFlavor::Excel)},
     });
 #endif
 
@@ -152,16 +137,6 @@ void ChargeTracker::pre_setup()
 //         }
 //     );
 // #endif
-}
-
-String ChargeTracker::chargeRecordFilename(uint32_t i)
-{
-    char buf[64];
-    StringWriter sw(buf, sizeof(buf));
-
-    sw.printf(CHARGE_RECORD_FOLDER "/charge-record-%lu.bin", i);
-
-    return String(buf, sw.getLength());
 }
 
 bool ChargeTracker::repair_last(float meter_start)
@@ -1075,9 +1050,10 @@ void ChargeTracker::send_file(SendChargeLogArgs &&args) {
     int user_filter;
     bool english;
     FileType file_type = FileType::PDF;
+    CSVFlavor csv_delimiter = CSVFlavor::Excel;
 
     auto ret = task_scheduler.await([this, &charger_uuid, &password, &user_uuid, &url, &cert_id,
-            &letterhead, &letterhead_lines, &user_filter, &english, &args, &file_type]()
+            &letterhead, &letterhead_lines, &user_filter, &english, &args, &file_type, &csv_delimiter]()
     {
         Config::Wrap charge_log_send = config.get("remote_upload_configs")->get(args.user_idx);
         letterhead = heap_alloc_array<char>(PDF_LETTERHEAD_MAX_SIZE + 1);
@@ -1086,8 +1062,9 @@ void ChargeTracker::send_file(SendChargeLogArgs &&args) {
         user_filter = charge_log_send->get("user_filter")->asInt();
         english = charge_log_send->get("english")->asBool();
         file_type = charge_log_send->get("file_type")->asEnum<FileType>();
-        const int user_id = charge_log_send->get("user_id")->asInt();
+        csv_delimiter = charge_log_send->get("csv_delimiter")->asEnum<CSVFlavor>();
 
+        const int user_id = charge_log_send->get("user_id")->asInt();
         charger_uuid = remote_access.config.get("uuid")->asString();
         password = remote_access.config.get("password")->asString();
         if (remote_access.config.get("users")->count() > 0) {
@@ -1129,6 +1106,7 @@ void ChargeTracker::send_file(SendChargeLogArgs &&args) {
     json_header += "\"charger_uuid\":\"" + charger_uuid + "\",";
     json_header += "\"password\":\"" + password + "\",";
     json_header += "\"user_uuid\":\"" + user_uuid + "\",";
+    json_header += "\"filename\":\"chargelog." + String(file_type == FileType::PDF ? "pdf" : "csv") + "\",";
     json_header += "\"chargelog\":[";
     args.remote_client->send_chunk(json_header.c_str(), json_header.length());
 
@@ -1146,7 +1124,7 @@ void ChargeTracker::send_file(SendChargeLogArgs &&args) {
             int sent = remote_client->send_chunk(chunk.c_str(), chunk.length());
             if (!chunk.isEmpty() && sent != chunk.length()) {
                 logger.printfln("Failed to send PDF chunk to remote access server");
-                return -1; // Indicate error
+                return -1;
             }
             return ESP_OK;
         };
@@ -1160,7 +1138,37 @@ void ChargeTracker::send_file(SendChargeLogArgs &&args) {
             english, letterhead.get(), letterhead_lines, nullptr);
 
     } else {
+        CSVGenerationParams csv_params;
+        csv_params.user_filter = user_filter;
+        csv_params.start_timestamp_min = args.last_month_start_min;
+        csv_params.end_timestamp_min = args.last_month_end_min;
+        csv_params.english = english;
+        csv_params.flavor = csv_delimiter;
+        task_scheduler.await([this, &csv_params]() {
+            csv_params.electricity_price = this->config.get("electricity_price")->asUint();
+            return 0;
+        });
 
+        auto csv_stream_cb = [&remote_client = args.remote_client, &first](const char* data, size_t len) -> bool {
+            String chunk;
+            for (size_t i = 0; i < len; ++i) {
+                if (!first || i > 0) chunk += ",";
+                chunk += String((uint8_t)data[i]);
+            }
+            if (len > 0) first = false;
+
+            int sent = remote_client->send_chunk(chunk.c_str(), chunk.length());
+            if (!chunk.isEmpty() && sent != chunk.length()) {
+                logger.printfln("Failed to send CSV chunk to remote access server");
+                return false;
+            }
+            return true;
+        };
+
+        CSVChargeLogGenerator csv_generator;
+        if (!csv_generator.generateCSV(csv_params, csv_stream_cb)) {
+            logger.printfln("Failed to generate CSV for remote upload");
+        }
     }
 
     String json_footer = "]}";
