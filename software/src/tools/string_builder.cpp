@@ -19,13 +19,15 @@
 
 #include "string_builder.h"
 
-#include <Arduino.h>
+#include <esp_system.h>
 #include <stdio.h>
 #include <string.h>
 
+#include "gcc_warnings.h"
+
 char *StringWriter::empty = const_cast<char *>("");
 
-StringWriter::StringWriter(char *buffer, size_t buffer_len) : capacity(buffer_len - 1), buffer(buffer)
+StringWriter::StringWriter(char *buffer_, size_t buffer_len) : capacity(buffer_len - 1), buffer(buffer_)
 {
     if (buffer_len < 1) {
         esp_system_abort("StringWriter: Buffer too short");
@@ -47,16 +49,21 @@ void StringWriter::setLength(size_t new_length)
     buffer[length] = '\0';
 }
 
-ssize_t StringWriter::puts(const char *string, ssize_t string_len)
+size_t StringWriter::puts(const char *string, ssize_t string_len_opt)
 {
-    ssize_t remaining = getRemainingLength();
+    size_t remaining = getRemainingLength();
 
-    if (remaining <= 0) {
+    if (remaining == 0) {
         return 0;
     }
 
-    if (string_len < 0) {
+    size_t string_len;
+
+    if (string_len_opt < 0) {
         string_len = strlen(string);
+    }
+    else {
+        string_len = static_cast<size_t>(string_len_opt);
     }
 
     if (string_len > remaining) {
@@ -72,9 +79,9 @@ ssize_t StringWriter::puts(const char *string, ssize_t string_len)
     return string_len;
 }
 
-ssize_t StringWriter::putc(char c)
+size_t StringWriter::putc(char c)
 {
-    if (getRemainingLength() <= 0) {
+    if (getRemainingLength() == 0) {
         return 0;
     }
 
@@ -85,11 +92,11 @@ ssize_t StringWriter::putc(char c)
     return 1;
 }
 
-ssize_t StringWriter::putcn(char c, size_t n)
+size_t StringWriter::putcn(char c, size_t n)
 {
-    ssize_t remaining = getRemainingLength();
+    size_t remaining = getRemainingLength();
 
-    if (remaining <= 0) {
+    if (remaining == 0) {
         return 0;
     }
 
@@ -105,19 +112,23 @@ ssize_t StringWriter::putcn(char c, size_t n)
     return n;
 }
 
-ssize_t StringWriter::vprintf(const char *fmt, va_list args)
+size_t StringWriter::vprintf(const char *fmt, va_list args)
 {
-    ssize_t remaining = getRemainingLength();
+    size_t remaining = getRemainingLength();
 
-    if (remaining <= 0) {
+    if (remaining == 0) {
         return 0;
     }
 
-    ssize_t written = vsnprintf(buffer + length, remaining + 1 /* +1 for NUL-terminator */, fmt, args);
+    ssize_t written_or_error = vsnprintf(buffer + length, remaining + 1 /* +1 for NUL-terminator */, fmt, args);
 
-    if (written < 0) {
-        return -1;
+    if (written_or_error < 0) {
+        buffer[length] = '\0'; // undo whatever vsnprintf might have done
+
+        return 0;
     }
+
+    size_t written = static_cast<size_t>(written_or_error);
 
     if (written > remaining) {
         written = remaining;
@@ -128,13 +139,13 @@ ssize_t StringWriter::vprintf(const char *fmt, va_list args)
     return written;
 }
 
-ssize_t StringWriter::printf(const char *fmt, ...)
+size_t StringWriter::printf(const char *fmt, ...)
 {
     va_list args;
 
     va_start(args, fmt);
 
-    ssize_t written = vprintf(fmt, args);
+    size_t written = vprintf(fmt, args);
 
     va_end(args);
 

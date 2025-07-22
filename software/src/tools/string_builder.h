@@ -27,7 +27,7 @@
 class StringWriter
 {
 public:
-    StringWriter(char *buffer, size_t buffer_len);
+    StringWriter(char *buffer_, size_t buffer_len);
     StringWriter(const StringWriter &other) = delete;
     const StringWriter &operator=(const StringWriter &other) = delete;
 
@@ -40,11 +40,11 @@ public:
     size_t getRemainingLength() const { return capacity - length; }
     char *getPtr() const { return buffer; }
     char *getRemainingPtr() const { return buffer + length; }
-    ssize_t puts(const char *string, ssize_t string_len = -1);
-    ssize_t putc(char c);
-    ssize_t putcn(char c, size_t n);
-    [[gnu::format(__printf__, 2, 0)]] ssize_t vprintf(const char *fmt, va_list args);
-    [[gnu::format(__printf__, 2, 3)]] ssize_t printf(const char *fmt, ...);
+    size_t puts(const char *string, ssize_t string_len_opt = -1);
+    size_t putc(char c);
+    size_t putcn(char c, size_t n);
+    [[gnu::format(__printf__, 2, 0)]] size_t vprintf(const char *fmt, va_list args);
+    [[gnu::format(__printf__, 2, 3)]] size_t printf(const char *fmt, ...);
 
 protected:
     size_t capacity; // excluding NUL-terminator
