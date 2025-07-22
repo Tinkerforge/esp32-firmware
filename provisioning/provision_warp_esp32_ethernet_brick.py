@@ -29,6 +29,8 @@ from provisioning.tinkerforge.bricklet_piezo_speaker_v2 import BrickletPiezoSpea
 
 from provisioning.provision_common.provision_common import *
 
+from provisioning.ntpserver import start_ntpserver
+
 main_thread = threading.get_ident()
 original_stdout = sys.stdout
 original_stderr = sys.stderr
@@ -221,7 +223,7 @@ def get_esp_ssid(serial_port, result):
 
     return ssid, passphrase
 
-def test_wifi(ssid, passphrase, ethernet_ip, ethernet_gateway, ethernet_subnet, ethernet_dns, result):
+def test_wifi(ssid, passphrase, host_ip, ethernet_ip, ethernet_gateway, ethernet_subnet, ethernet_dns, result):
     print("Waiting for ESP wifi. Takes about one minute.")
     if not wait_for_wifi(ssid, 90):
         fatal_error("ESP wifi not found after 90 seconds")
@@ -243,6 +245,22 @@ def test_wifi(ssid, passphrase, ethernet_ip, ethernet_gateway, ethernet_subnet, 
         except Exception as e:
             print(e)
             fatal_error("Failed to set ethernet config!")
+
+        req = urllib.request.Request("http://10.0.0.1/ntp/config_update",
+                                     data=json.dumps({"enable": None,
+                                                      "use_dhcp": False,
+                                                      "timezone": None,
+                                                      "server": host_ip,
+                                                      "server2": None}).encode("utf-8"),
+                                     method='PUT',
+                                     headers={"Content-Type": "application/json"})
+        try:
+            with urllib.request.urlopen(req, timeout=10) as f:
+                f.read()
+        except Exception as e:
+            print(e)
+            fatal_error("Failed to set ethernet config!")
+
         req = urllib.request.Request("http://10.0.0.1/reboot", data=b'null', method='PUT', headers={"Content-Type": "application/json"})
         try:
             with urllib.request.urlopen(req, timeout=10) as f:
@@ -599,10 +617,14 @@ def main():
         raise
 
     config = json.loads(Path("provision_warp_esp32_ethernet.config").read_text())
+    host_ip = config["host_ip"]
     static_ips = config["static_ips"]
     subnet = config["subnet"]
     gateway = config["gateway"]
     dns = config["dns"]
+
+    print("Starting NTP server")
+    Thread(target=start_ntpserver,args=("0.0.0.0",1234)).start()
 
     print(green(f"Flashing {len(relay_to_serial)} ESPs..."))
 
@@ -669,7 +691,7 @@ def main():
         with contextlib.redirect_stdout(logs[k][0]):
             with contextlib.redirect_stdout(logs[k][1]):
                 try:
-                    test_wifi(relay_to_ssid[k], relay_to_passphrase[k], static_ips[k], gateway, subnet, dns, test_reports[k])
+                    test_wifi(relay_to_ssid[k], relay_to_passphrase[k], host_ip, static_ips[k], gateway, subnet, dns, test_reports[k])
                 except BaseException as e:
                     print(red(f"Failed to test WiFi for {k} {v}: {e}"))
                     relay_to_serial.pop(k)
