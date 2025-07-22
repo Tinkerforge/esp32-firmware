@@ -96,6 +96,9 @@ def keepassxc(preset, prefix, action, args, entry, password=None, input=None):
 
 
 def notify(msg):
+    if not which('notify-send'):
+        return -1
+
     version = [int(x) for x in re.search(r"(\d+)\.(\d+)\.(\d+)", subprocess.check_output(["notify-send", "--version"], text=True)).groups()]
 
     if version >= [0, 8, 0]:
