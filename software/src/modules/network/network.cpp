@@ -21,8 +21,8 @@
 
 #include <esp_netif.h>
 #include <sdkconfig.h> // For CONFIG_MDNS_TASK_STACK_SIZE
+#include <mdns.h>
 
-#include "mdns.h"
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "tools/string_builder.h"
