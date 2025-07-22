@@ -21,7 +21,7 @@
 
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
-import { h, Fragment, RefObject } from "preact";
+import { h, Fragment, RefObject, ComponentChild } from "preact";
 import { translate_unchecked, __ } from "../../ts/translation";
 import { ConfigComponent } from "../../ts/components/config_component";
 import { ConfigForm } from "../../ts/components/config_form";
@@ -181,15 +181,15 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
 
     override async sendSave(topic: "charge_manager/config", cfg: ChargeManagerConfig) {
         const modal = util.async_modal_ref.current;
-        let illegal_chargers = "";
+        let illegal_chargers: ComponentChild[] = [];
         for (let i = 0; i < cfg.chargers.length; i++) {
             if (this.isMultiOrBroadcastIp(cfg.chargers[i].host))
-                illegal_chargers += cfg.chargers[i].name + ": " + cfg.chargers[i].host + "<br>";
+                illegal_chargers.push(<li>{cfg.chargers[i].name}: {cfg.chargers[i].host}</li>)
         }
 
-        if (illegal_chargers != "" && !await modal.show({
+        if (illegal_chargers.length > 0 && !await modal.show({
             title: () => __("charge_manager.content.multi_broadcast_modal_title"),
-            body: () => __("charge_manager.content.multi_broadcast_modal_body") + "<br><br>" + illegal_chargers + "<br>" + __("charge_manager.content.multi_broadcast_modal_body_end"),
+            body: () => <><p>{__("charge_manager.content.multi_broadcast_modal_body")}</p> <ul>{illegal_chargers}</ul> <p class="mb-0">{__("charge_manager.content.multi_broadcast_modal_body_end")}</p></>,
             no_text: () => __("charge_manager.content.multi_broadcast_modal_cancel"),
             yes_text: () => __("charge_manager.content.multi_broadcast_modal_save"),
             no_variant: "secondary",
