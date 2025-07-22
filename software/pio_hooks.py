@@ -1033,8 +1033,17 @@ def main():
     frontend_modules = [util.FlavoredName(x).get() for x in env.GetProjectOption("custom_frontend_modules").splitlines()]
 
     if nightly:
-        frontend_modules.append(util.FlavoredName("Nightly").get())
-        frontend_modules.append(util.FlavoredName("Debug").get())
+        for frontend_module in frontend_modules:
+            if frontend_module.space == "Nightly":
+                break
+        else:
+            frontend_modules.append(util.FlavoredName("Nightly").get())
+
+        for frontend_module in frontend_modules:
+            if frontend_module.space == "Debug":
+                break
+        else:
+            frontend_modules.append(util.FlavoredName("Debug").get())
 
     branding_module = util.FlavoredName('Branding ' + branding).get()
     frontend_modules.append(branding_module)
@@ -1073,9 +1082,13 @@ def main():
         frontend_components.append(FrontendComponent(module, component, mode))
 
     if nightly:
-        module = util.FlavoredName("Debug").get()
-        component = module
-        frontend_components.append(FrontendComponent(module, component, None))
+        for frontend_component in frontend_components:
+            if frontend_component.module.space == "Debug" and frontend_component.component.space == "Debug":
+                break
+        else:
+            module = util.FlavoredName("Debug").get()
+            component = module
+            frontend_components.append(FrontendComponent(module, component, None))
 
     frontend_status_components = []
     for entry in env.GetProjectOption("custom_frontend_status_components").splitlines():
@@ -1111,7 +1124,11 @@ def main():
     backend_modules = [util.FlavoredName(x).get() for x in ['Task Scheduler', 'Event Log', 'API', 'Web Server', 'Rtc'] + env.GetProjectOption("custom_backend_modules").splitlines()]
 
     if nightly:
-        backend_modules.append(util.FlavoredName("Debug").get())
+        for backend_module in backend_modules:
+            if backend_module.space == "Debug":
+                break
+        else:
+            backend_modules.append(util.FlavoredName("Debug").get())
 
     with tfutil.ChangedDirectory('src'):
         excluded_bindings = [pathlib.PurePath(x).as_posix() for x in glob.glob('bindings/brick_*') + glob.glob('bindings/bricklet_*')]
