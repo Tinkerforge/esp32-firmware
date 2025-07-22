@@ -41,6 +41,7 @@ import { NavbarItem } from "../../ts/components/navbar_item";
 import { StatusSection } from "../../ts/components/status_section";
 import { BatteryCharging, Calendar, Clock, Download, User, List } from "react-feather";
 import { Switch } from "ts/components/switch";
+import { CSVFlavor } from "./csv_flavor.enum";
 
 export function ChargeTrackerNavbar() {
     return <NavbarItem name="charge_tracker" module="charge_tracker" title={__("charge_tracker.navbar.charge_tracker")} symbol={<List />} />;
@@ -67,6 +68,7 @@ interface S {
         english: boolean;
         letterhead: string;
         user_id: number;
+        csv_delimiter: CSVFlavor;
     };
 }
 
@@ -139,11 +141,12 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                   end_date: new Date(NaN),
                   remote_upload_configs: [],
                   new_remote_upload_config: {
-                      user_filter: -2,
-                      file_type: 0,
-                      english: false,
-                      letterhead: "",
-                      user_id: 0,
+                    user_filter: -2,
+                    file_type: 0,
+                    english: false,
+                    letterhead: "",
+                    user_id: 0,
+                    csv_delimiter: CSVFlavor.Excel,
                   },
               });
 
@@ -210,6 +213,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                             english: send_config.english,
                             letterhead: send_config.letterhead,
                             user_id: send_config.user_id,
+                            csv_delimiter: send_config.csv_delimiter,
                         }
                     });
                 },
@@ -254,6 +258,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                 english: false,
                 letterhead: "",
                 user_id: 0,
+                csv_delimiter: CSVFlavor.Excel,
             }
         });
     }
@@ -303,6 +308,25 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     ]}
                 />
             </FormRow>
+            <Collapse in={this.state.new_remote_upload_config.file_type === 1}>
+                <div>
+                    <FormRow label="CSV Delimiter">
+                        <InputSelect
+                            value={this.state.new_remote_upload_config.csv_delimiter.toString()}
+                            onValue={v => this.setState({
+                                new_remote_upload_config: {
+                                    ...this.state.new_remote_upload_config,
+                                    csv_delimiter: parseInt(v) as CSVFlavor
+                                }
+                            })}
+                            items={[
+                                [CSVFlavor.Excel.toString(), __("charge_tracker.content.csv_flavor_excel")],
+                                [CSVFlavor.RFC4180.toString(), __("charge_tracker.content.csv_flavor_rfc4180")]
+                            ]}
+                        />
+                    </FormRow>
+                </div>
+            </Collapse>
             <FormRow label={__("charge_tracker.content.english_label")}>
                 <Switch
                     checked={this.state.new_remote_upload_config.english}

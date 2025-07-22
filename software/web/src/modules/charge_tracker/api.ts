@@ -2,6 +2,7 @@
 
 //#if MODULE_REMOTE_ACCESS_AVAILABLE
 import { FileType } from "./file_type.enum";
+import { CSVFlavor } from "./csv_flavor.enum";
 //#endif
 
 interface Charge {
@@ -18,6 +19,7 @@ interface remote_upload_config {
     english: boolean;
     letterhead: string;
     user_id: number;
+    csv_delimiter: CSVFlavor;
 }
 //#endif
 
