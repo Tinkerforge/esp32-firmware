@@ -338,22 +338,26 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
                     })}
                 />
             </FormRow>
-            <FormRow label={__("charge_tracker.content.letterhead_label")}>
-                <textarea
-                    class="form-control"
-                    value={this.state.new_remote_upload_config.letterhead}
-                    onInput={(e) => {
-                        const value = (e.target as HTMLTextAreaElement).value;
-                        this.setState({
-                            new_remote_upload_config: {
-                                ...this.state.new_remote_upload_config,
-                                letterhead: value
-                            }
-                        });
-                    }}
-                    rows={3}
-                />
-            </FormRow>
+            <Collapse in={this.state.new_remote_upload_config.file_type === 0}>
+                <div>
+                    <FormRow label={__("charge_tracker.content.letterhead_label")}>
+                        <textarea
+                            class="form-control"
+                            value={this.state.new_remote_upload_config.letterhead}
+                            onInput={(e) => {
+                                const value = (e.target as HTMLTextAreaElement).value;
+                                this.setState({
+                                    new_remote_upload_config: {
+                                        ...this.state.new_remote_upload_config,
+                                        letterhead: value
+                                    }
+                                });
+                            }}
+                            rows={3}
+                        />
+                    </FormRow>
+                </div>
+            </Collapse>
             <FormRow label={__("charge_tracker.content.target_user")}>
                 <InputSelect
                     value={this.state.new_remote_upload_config.user_id.toString()}
