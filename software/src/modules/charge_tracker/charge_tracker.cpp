@@ -1015,12 +1015,12 @@ static void check_remote_client_status(SendChargeLogArgs &upload_args)
     } else if (status == 200) {
         charge_tracker.config.get("last_upload_timestamp_min")->updateUint(rtc.timestamp_minutes());
         API::writeConfig("charge_tracker/config", &charge_tracker.config);
-        logger.printfln("charge-log generation and remote upload completed successfully. Status: %d", status);
+        logger.printfln("Charge-log generation and remote upload completed successfully. Status: %d", status);
         upload_args.remote_client->close_chunked_request();
         charge_tracker.send_in_progress = false;
         task_scheduler.cancel(*upload_args.task_id);
     } else {
-        logger.printfln("charge-log generation and remote upload failed. Status: %d", status);
+        logger.printfln("Charge-log generation and remote upload failed. Status: %d", status);
         handle_upload_retry(upload_args);
         task_scheduler.scheduleOnce([upload_args = std::move(upload_args)]() mutable {
             auto upload_request = new SendChargeLogArgs(upload_args);
