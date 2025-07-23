@@ -284,7 +284,7 @@ let x = {
             "shutting_down_off_or_error": "TODOTRANSLATE Deaktiviert wegen Fehler oder Lademodus \"Aus\"",
             "welcome_charge_for": /*SFN*/ (timespan: string) => "TODOTRANSLATE welcome charge for " + timespan /*NF*/,
             "shutting_down_phase_overload": /*SFN*/ (phase: number, overload_mA: number) => "TODOTRANSLATE Deaktiviert: " + ["PV-Überschuss", "Phase L1", "Phase L2", "Phase L3"][phase] + " um " + toLocaleFixed(overload_mA / 1000, 3) + " A überlastet" /*NF*/,
-            "cant_activate_phase_minimum": /*SFN*/ (phase: number, required: number, min: number) => "TODOTRANSLATE Kann nicht aktiviert werden: " + toLocaleFixed((min - required) / 1000, 3) + ["PV-Überschuss fehlen", "fehlen auf Phase L1", "fehlen auf Phase L2", "fehlen auf Phase L3"][phase] /*NF*/,
+            "cant_activate_phase_minimum": /*SFN*/ (phase: number, required: number, min: number) => "TODOTRANSLATE Kann nicht aktiviert werden: " + toLocaleFixed((required - min) / 1000, 3) + ["PV-Überschuss fehlen", "fehlen auf Phase L1", "fehlen auf Phase L2", "fehlen auf Phase L3"][phase] /*NF*/,
             "activating": /*SFN*/ (phase_count: number) => "TODOTRANSLATE " + ["", "Ein", "Zwei", "Drei"][phase_count] + "phasig aktiviert"/*NF*/,
             "phase_switching": "TODOTRANSLATE Schalte um auf dreiphasig",
             "phase_switching_unblocked_at": /*SFN*/ (timespan: string) => "TODOTRANSLATE Phasenumschaltung blockiert für " + timespan /*NF*/,
