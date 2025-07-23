@@ -66,8 +66,10 @@ void EventLog::pre_init()
     event_buf.setup();
 
     uint32_t numeric_reset_reason;
+    const char *reset_reason = tf_reset_reason(&numeric_reset_reason);
+
     printfln_prefixed("", 0, "    **** " OPTIONS_MANUFACTURER_UPPER() " " OPTIONS_PRODUCT_NAME_UPPER() " V%s ****", build_version_full_str_upper());
-    printfln_prefixed("", 0, "Last reset reason was: %s (%lu)", tf_reset_reason(&numeric_reset_reason), numeric_reset_reason);
+    printfln_prefixed("", 0, "Last reset reason was: %s (%lu)", reset_reason, numeric_reset_reason);
 }
 
 size_t EventLog::alloc_trace_buffer(const char *name, size_t size) {
