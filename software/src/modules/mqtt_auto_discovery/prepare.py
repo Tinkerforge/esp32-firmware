@@ -105,6 +105,27 @@ Entity(True, Component.SENSOR, Feature.METER, "energyrel", "meter/values", "Stro
      "state_class": "total"},
     {}),
 
+Entity(True, Component.SENSOR, Feature.METER, "current_l1", "meter/all_values", "Strom L1", "Current L1", "", "", "",
+    {"value_template":"{{value_json[3] | round(3)}}",
+     "unit_of_measurement":"A",
+     "device_class":"current",
+     "state_class": "measurement"},
+    {}),
+
+Entity(True, Component.SENSOR, Feature.METER, "current_l2", "meter/all_values", "Strom L2", "Current L2", "", "", "",
+    {"value_template":"{{value_json[4] | round(3)}}",
+     "unit_of_measurement":"A",
+     "device_class":"current",
+     "state_class": "measurement"},
+    {}),
+
+Entity(True, Component.SENSOR, Feature.METER, "current_l3", "meter/all_values", "Strom L3", "Current L3", "", "", "",
+    {"value_template":"{{value_json[5] | round(3)}}",
+     "unit_of_measurement":"A",
+     "device_class":"current",
+     "state_class": "measurement"},
+    {}),
+
 Entity(True, Component.SENSOR, Feature.EVSE, "chargerstate", "evse/state", "Ladestatus", "Charge state", "", "", "",
     {"value_template":"{{value_json.charger_state}}",
      "icon": "mdi:ev-plug-type2"},
@@ -127,11 +148,6 @@ Entity(True, Component.SENSOR, Feature.EVSE, "allowedcurrent", "evse/state", "Er
      "state_class": "measurement",
      "min": 0,
      "max": 32},
-    {}),
-
-Entity(True, Component.SENSOR, Feature.EVSE, "phases", "evse/low_level_state", "Phasen in Verwendung", "Phases used", "", "", "",
-    {"value_template":"{{value_json.phases_current}}",
-     "icon": "mdi:numeric"},
     {}),
 
 Entity(True, Component.BUTTON, Feature.EVSE, "startcharge", "evse/start_charging", "Ladevorgang starten", "Start charging", "", "", "",
