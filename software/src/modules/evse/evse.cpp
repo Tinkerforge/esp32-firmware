@@ -120,7 +120,11 @@ void EVSE::pre_setup()
             }, Config::get_prototype_bool_false(), 5, 5, Config::type_id<Config::ConfBool>())},
         {"charging_time", Config::Uint32(0)},
         {"time_since_state_change", Config::Uint32(0)},
-        {"uptime", Config::Uint32(0)}
+        {"uptime", Config::Uint32(0)},
+        {"phases_current", Config::Uint16(3)},
+        {"phases_requested", Config::Uint16(3)},
+        {"phases_state", Config::Uint16(0)},
+        {"phases_info", Config::Uint16(0)}
     });
 
     user_calibration = Config::Object({
