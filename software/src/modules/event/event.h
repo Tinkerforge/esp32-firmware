@@ -33,10 +33,10 @@ typedef strict_variant::variant<
 
 struct StateUpdateRegistration {
     int64_t eventID;
-    size_t stateIdx;
     std::function<EventResult(const Config *)> callback;
     std::unique_ptr<ConfPath[]> conf_path;
     size_t conf_path_len;
+    StateUpdateRegistration *next_registration;
 };
 
 class Event final : public IModule, public IAPIBackend
@@ -45,7 +45,6 @@ public:
     Event() {}
     void pre_setup() override;
     void setup() override;
-
 
     int64_t registerEvent(const String &path, const std::vector<ConfPath> values, std::function<EventResult(const Config *)> &&callback);
     void deregisterEvent(int64_t eventID);
@@ -59,9 +58,20 @@ public:
     WantsStateUpdate wantsStateUpdate(size_t stateIdx) override;
 
 private:
-    size_t backendIdx;
-    std::vector<StateUpdateRegistration> state_updates;
-    std::atomic<bool> state_update_in_progress;
+    struct RegistrationBlock {
+        RegistrationBlock *next_block;
+        StateUpdateRegistration regs[16];
+    };
+
+    struct StateLUTBlock {
+        StateLUTBlock *next_block;
+        size_t states_count;
+        StateUpdateRegistration *registrations[];
+    };
 
     int64_t lastEventID = -1;
+    StateLUTBlock *state_lut = nullptr;
+    RegistrationBlock *registration_block_chain = nullptr;
+    std::atomic<bool> state_update_in_progress;
+    uint8_t api_backend_flag = 0;
 };
