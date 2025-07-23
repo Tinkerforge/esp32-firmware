@@ -84,13 +84,15 @@ export function get_allowed_charge_modes(params: {with_default: boolean, pv_enab
 }
 
 function ChargeModeButton(props: {current_mode: ConfigChargeMode, disabled?: boolean, mode: ConfigChargeMode, name: string}) {
+    const selected = props.current_mode == props.mode;
+    const disabled = props.disabled;
     return <Button
         style="display: flex;align-items: center;justify-content: center;"
         className="m-1 rounded-left rounded-right"
-        variant={props.disabled ? "secondary" : (props.current_mode == props.mode ? "success" : "primary")}
-        disabled={props.disabled || props.current_mode == props.mode}
+        variant={selected ? "success" : (disabled ? "secondary" : "primary")}
+        disabled={disabled || selected}
         onClick={() => change_charge_mode(props.mode)}>
-        {props.disabled || props.current_mode != props.mode ? <Circle size="20"/> : <CheckCircle size="20"/>} <span>&nbsp;&nbsp;</span><span>{props.name}</span>
+        {selected ? <CheckCircle size="20"/> : <Circle size="20"/>} <span>&nbsp;&nbsp;</span><span>{props.name}</span>
     </Button>
 }
 
