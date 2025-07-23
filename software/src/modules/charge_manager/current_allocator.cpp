@@ -837,7 +837,10 @@ static constexpr int CHECK_IMPROVEMENT = 4;
 static constexpr int CHECK_IMPROVEMENT_ALL_PHASE = 8;
 static constexpr int CHECK_SPREAD = 16;
 
-static bool can_activate(StringWriter &sw, const Cost &check_phase, const Cost &new_cost, const Cost &new_enable_cost, const Cost &wnd_min, const Cost &wnd_max, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg, bool is_unknown_rotated_1p_3p_switch, int guaranteed_pv_current) {
+static bool can_activate(StageContext &sc, int charger_idx, StringWriter &sw, const Cost &check_phase, const Cost &new_cost, const Cost &new_enable_cost, const Cost &wnd_min, const Cost &wnd_max, bool is_unknown_rotated_1p_3p_switch, int guaranteed_pv_current) {
+    const CurrentLimits *limits = sc.limits;
+    float enable_current_factor = sc.cfg->enable_current_factor;
+
     // Spread
     bool check_spread = ((check_phase.pv | check_phase.l1 | check_phase.l2 | check_phase.l3) & CHECK_SPREAD) != 0;
     bool check_improvement = ((check_phase.pv | check_phase.l1 | check_phase.l2 | check_phase.l3) & (CHECK_IMPROVEMENT | CHECK_IMPROVEMENT_ALL_PHASE)) != 0;
@@ -846,7 +849,7 @@ static bool can_activate(StringWriter &sw, const Cost &check_phase, const Cost &
         if ((check_phase[p] & CHECK_SPREAD) == 0 || new_cost[p] <= 0)
             continue;
 
-        auto required = wnd_min[p] * cfg->enable_current_factor + new_enable_cost[p];
+        auto required = wnd_min[p] * enable_current_factor + new_enable_cost[p];
 
         if (limits->spread[p] < required) {
             improves_all_spread = false;
@@ -906,14 +909,14 @@ static bool can_activate(StringWriter &sw, const Cost &check_phase, const Cost &
 
         auto required = 0;
         if ((check_phase[p] & CHECK_MIN_WINDOW_ENABLE) != 0)
-            required = wnd_min[p] * cfg->enable_current_factor + new_enable_cost[p];
+            required = wnd_min[p] * enable_current_factor + new_enable_cost[p];
         else if ((check_phase[p] & CHECK_MIN_WINDOW_MIN) != 0)
             required = wnd_min[p] + new_cost[p];
 
         if (limits->min[p] < required) {
             sw.printf(" No: p%zu min %d < req %d ", p, limits->min[p], required);
             // FIXME: Pass stage context, etc. to here to be able to call this.
-            //set_charger_decision(sc, charger_idx, AllocatorDecision::CantActivatePhaseMinimum3, p, required, limits->min[p]);
+            set_charger_decision(sc, charger_idx, AllocatorDecision::CantActivatePhaseMinimum3, p, required, limits->min[p]);
             return false;
         }
     }
@@ -952,14 +955,14 @@ static int get_enable_cost(const ChargerState *state, bool activate_3p, bool hav
 // Activates the charger if possible.
 // Returns false if the charger can't be activated (see can_activate).
 // If true is returned, *spent is the cost that was spent to enable the charger.
-static bool try_activate(StringWriter &sw, const ChargerState *state, bool activate_3p, bool have_active_chargers, Cost *spent, const CurrentLimits *limits, const CurrentAllocatorConfig *cfg, const CurrentAllocatorState *ca_state) {
-    Cost wnd_min = ca_state->control_window_min;
-    Cost wnd_max = ca_state->control_window_max;
+static bool try_activate(StageContext &sc, int charger_idx, StringWriter &sw, const ChargerState *state, bool activate_3p, bool have_active_chargers, Cost *spent) {
+    Cost wnd_min = sc.ca_state->control_window_min;
+    Cost wnd_max = sc.ca_state->control_window_max;
 
     Cost new_cost;
     Cost new_enable_cost;
 
-    get_enable_cost(state, activate_3p, have_active_chargers, &new_cost, &new_enable_cost, cfg);
+    get_enable_cost(state, activate_3p, have_active_chargers, &new_cost, &new_enable_cost, sc.cfg);
 
     // If this charger's mode is at least Min, it has a guaranteed PV current > 0.
     // If this current is sufficient to enable the charger, we don't have to check
@@ -981,7 +984,7 @@ static bool try_activate(StringWriter &sw, const ChargerState *state, bool activ
         improve_check | CHECK_MIN_WINDOW_ENABLE
     };
 
-    bool result = can_activate(sw, check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, limits, cfg, false, state->guaranteed_pv_current);
+    bool result = can_activate(sc, charger_idx, sw, check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, false, state->guaranteed_pv_current);
     if (result && spent != nullptr)
         *spent = new_enable_cost;
     return result;
@@ -1080,13 +1083,13 @@ static void stage_4(StageContext &sc) {
 
         uint8_t phase_alloc = 0;
 
-        if (try_3p && try_activate(sw, state, true, have_active_chargers, nullptr, sc.limits, sc.cfg, sc.ca_state)) {
+        if (try_3p && try_activate(sc, sc.idx_array[i], sw, state, true, have_active_chargers, nullptr)) {
             set_charger_decision(sc, sc.idx_array[i], AllocatorDecision::Activating1, 3);
             try_1p = false;
             phase_alloc = 3;
         }
 
-        if (try_1p && try_activate(sw, state, false, have_active_chargers, nullptr, sc.limits, sc.cfg, sc.ca_state)) {
+        if (try_1p && try_activate(sc, sc.idx_array[i], sw, state, false, have_active_chargers, nullptr)) {
             set_charger_decision(sc, sc.idx_array[i], AllocatorDecision::Activating1, 1);
             phase_alloc = 1;
         }
@@ -1201,7 +1204,7 @@ static void stage_5(StageContext &sc) {
         StringWriter sw{buf, ARRAY_SIZE(buf)};
 
         sw.printf("5: %d:", sc.idx_array[i]);
-        if (!can_activate(sw, check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, sc.limits, sc.cfg, state->phase_rotation == PhaseRotation::Unknown, state->guaranteed_pv_current - already_allocated.pv)) {
+        if (!can_activate(sc, sc.idx_array[i], sw, check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, state->phase_rotation == PhaseRotation::Unknown, state->guaranteed_pv_current - already_allocated.pv)) {
             trace("%s", buf);
             continue;
         }
