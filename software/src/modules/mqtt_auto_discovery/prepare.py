@@ -129,6 +129,11 @@ Entity(True, Component.SENSOR, Feature.EVSE, "allowedcurrent", "evse/state", "Er
      "max": 32},
     {}),
 
+Entity(True, Component.SENSOR, Feature.EVSE, "phases", "evse/low_level_state", "Phasen in Verwendung", "Phases used", "", "", "",
+    {"value_template":"{{value_json.phases_current}}",
+     "icon": "mdi:numeric"},
+    {}),
+
 Entity(True, Component.BUTTON, Feature.EVSE, "startcharge", "evse/start_charging", "Ladevorgang starten", "Start charging", "", "", "",
     {"payload_press": "null",   # for Home Assistant
      "payload_on":"null",       # for Domoticz
