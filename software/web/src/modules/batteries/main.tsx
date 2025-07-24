@@ -21,7 +21,8 @@ import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import * as options from "../../options";
 import { __ } from "../../ts/translation";
-import { h, Fragment, Component, ComponentChild } from "preact";
+import { h, Fragment, Component, ComponentChild, createRef } from "preact";
+import { effect } from "@preact/signals-core";
 import { Alert, Collapse } from "react-bootstrap";
 import { FormRow } from "../../ts/components/form_row";
 import { FormSeparator } from "../../ts/components/form_separator";
@@ -39,9 +40,12 @@ import { BatteryConfig, BatteryConfigPlugin } from "./types";
 import { RuleConfig } from "../battery_control/types";
 import { RuleCondition } from "../battery_control/rule_condition.enum";
 import { ScheduleRuleCondition } from "../battery_control/schedule_rule_condition.enum";
+import { get_price_from_index } from "../day_ahead_prices/main";
 import { plugins_init } from "./plugins";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Table } from "../../ts/components/table";
+import { UplotLoader } from "../../ts/components/uplot_loader";
+import { UplotData, UplotWrapperB, UplotPath } from "../../ts/components/uplot_wrapper_2nd";
 import { Battery } from "react-feather";
 
 const MAX_RULES_PER_TYPE = 32;
@@ -169,7 +173,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                         value={this.state.edit_rule_config.soc_cond.toString()} />
                                 </InputNumber>
                             </FormRow>,
-                            <FormRow label={__("batteries.content.edit_rule_price")}>
+                            <FormRow label={__("batteries.content.edit_rule_price")} label_muted={__("batteries.content.edit_rule_price_muted")}>
                                 <InputFloat
                                     required={this.state.edit_rule_config.price_cond != RuleCondition.Ignore}
                                     disabled={this.state.edit_rule_config.price_cond == RuleCondition.Ignore}
@@ -345,7 +349,7 @@ class RulesEditor extends Component<RulesEditorProps, RulesEditorState> {
                                 value={this.state.add_rule_config.soc_cond.toString()} />
                         </InputNumber>
                     </FormRow>,
-                    <FormRow label={__("batteries.content.add_rule_price")}>
+                    <FormRow label={__("batteries.content.add_rule_price")} label_muted={__("batteries.content.add_rule_price_muted")}>
                        <InputFloat
                             required={this.state.add_rule_config.price_cond != RuleCondition.Ignore}
                             disabled={this.state.add_rule_config.price_cond == RuleCondition.Ignore}
@@ -472,6 +476,9 @@ interface BatteriesState {
 }
 
 export class Batteries extends ConfigComponent<'battery_control/config', {}, BatteriesState> {
+    uplot_loader_ref  = createRef();
+    uplot_wrapper_ref = createRef();
+
     constructor() {
         super('battery_control/config',
               () => __("batteries.script.save_failed"),
@@ -518,6 +525,14 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                 this.setState({rules_forbid_charge: API.get('battery_control/rules_forbid_charge') as RuleConfig[] /* FIXME */});
             }
         });
+
+        util.addApiEventListener("day_ahead_prices/prices", () => {
+            // Update chart every time new price data comes in
+            this.update_uplot();
+        });
+
+        // Update vertical "now" line on time change
+        effect(() => this.update_uplot());
     }
 
     override async sendSave(topic: 'battery_control/config', new_config: API.getType['battery_control/config']) {
@@ -578,6 +593,137 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
         }
 
         return super.getIsModified(topic);
+    }
+
+    date_with_day_offset(date: Date, day_offset: number) {
+        let date_copy = new Date(date);
+        date_copy.setDate(date_copy.getDate() + day_offset);
+        return date_copy;
+    }
+
+    clamp(value: number, min: number, max: number) {
+        if (value < min) {
+            return min;
+        }
+        if (value > max) {
+            return max;
+        }
+        return value;
+    }
+
+    draw_selected_bars(uplot_data: UplotData, data_first_date_min: number, date_start: Date, date_end: Date, quarters: number, cheap: boolean, color: [number, number, number, number]) {
+        const start_index = this.clamp((date_start.valueOf() / (60 * 1000) - data_first_date_min) / 15, 0, uplot_data.values[1].length - 1); // Subtract duplicated value at the end.
+        const end_index   = this.clamp((date_end.valueOf()   / (60 * 1000) - data_first_date_min) / 15, 0, uplot_data.values[1].length - 1);
+
+        if (start_index >= end_index) {
+            return;
+        }
+
+        const price_index_pairs = uplot_data.values[1].slice(start_index, end_index).map((price, index) => ({ price, index }));
+        const sorted_pairs      = cheap ? price_index_pairs.sort((a, b) => a.price - b.price) : price_index_pairs.sort((a, b) => b.price - a.price);
+        const selected_indices  = sorted_pairs.slice(0, quarters).map(item => item.index + start_index);
+
+        selected_indices.forEach(index => {
+            uplot_data.lines_vertical.push({'index': index, 'text': '', 'color': color});
+        });
+    }
+
+    draw_cheap_expensive_bars(uplot_data: UplotData, data_first_date_min: number, date_start: Date, date_end: Date, cheap_quarters: number, expensive_quarters: number) {
+        this.draw_selected_bars(uplot_data, data_first_date_min, date_start, date_end, cheap_quarters,     true,  [40, 167, 69, 0.5]);
+        this.draw_selected_bars(uplot_data, data_first_date_min, date_start, date_end, expensive_quarters, false, [220, 53, 69, 0.5]);
+    }
+
+    update_uplot() {
+        // Use signal here to make effect() record its use, even
+        // if this function might exit early on its first call
+        const date_now = util.get_date_now_1m_update_rate();
+
+        if (this.uplot_wrapper_ref.current == null) {
+            return;
+        }
+
+        const dap_prices = API.get("day_ahead_prices/prices");
+        let data: UplotData;
+
+        if (dap_prices.prices.length == 0) {
+            data = {
+                keys: [null],
+                names: [null],
+                values: [null],
+                stacked: [null],
+                paths: [null],
+            }
+        } else {
+            data = {
+                keys: [null, 'price'],
+                names: [null, __("day_ahead_prices.content.electricity_price")],
+                values: [[], [], [], []],
+                stacked: [null, true],
+                paths: [null, UplotPath.Step],
+                default_visibilty: [null, true],
+                lines_vertical: []
+            }
+
+            let today_20h = new Date(date_now);
+            today_20h.setHours(20, 0, 0, 0);
+
+            const yesterday_20h = this.date_with_day_offset(today_20h, -1);
+            const tomorrow_20h  = this.date_with_day_offset(today_20h,  1);
+
+            const yesterday_20h_s = yesterday_20h.valueOf() / 1000;
+            const today_20h_s     = today_20h.valueOf()     / 1000;
+            const tomorrow_20h_s  = tomorrow_20h.valueOf()  / 1000;
+
+            const resolution_multiplier = dap_prices.resolution == 0 ? 15 : 60
+            const quarter_multiplier = resolution_multiplier / 15;
+
+            const data_end_time = (dap_prices.first_date + dap_prices.prices.length * resolution_multiplier) * 60;
+            const graph_end_time = data_end_time > tomorrow_20h_s ? tomorrow_20h_s : today_20h_s;
+            let graph_start_time = undefined;
+            let sample_time;
+            let sample_percent;
+
+            for (let i = 0; i < dap_prices.prices.length; i++) {
+                sample_time = (dap_prices.first_date + i * resolution_multiplier) * 60;
+
+                if (sample_time < yesterday_20h_s) {
+                    continue;
+                }
+
+                if (graph_start_time === undefined) {
+                    graph_start_time = sample_time;
+                }
+
+                if (sample_time >= graph_end_time) {
+                    break;
+                }
+
+                sample_percent = get_price_from_index(i) / 1000.0;
+
+                for (let j = 0; j < quarter_multiplier; j++) {
+                    data.values[0].push(sample_time);
+                    data.values[1].push(sample_percent);
+                    sample_time += 15 * 60;
+                }
+            }
+
+            // Duplicate final values to avoid cutting off the last bar.
+            data.values[0].push(sample_time);
+            data.values[1].push(sample_percent);
+
+            this.draw_cheap_expensive_bars(data, graph_start_time / 60, yesterday_20h, today_20h,    this.state.cheap_tariff_quarters, this.state.expensive_tariff_quarters);
+            this.draw_cheap_expensive_bars(data, graph_start_time / 60, today_20h,     tomorrow_20h, this.state.cheap_tariff_quarters, this.state.expensive_tariff_quarters);
+
+            // Add vertical line at current time
+            const resolution_divisor = 15;
+            const diff = Math.trunc(date_now / 60000) - Math.trunc(graph_start_time / 60);
+            const index = Math.trunc(diff / resolution_divisor);
+            data.lines_vertical.push({'index': index, 'text': __("day_ahead_prices.content.now"), 'color': [64, 64, 64, 0.2]});
+        }
+
+        // Show loader or data depending on the availability of data
+        this.uplot_loader_ref.current.set_data(data && data.keys.length > 1);
+        this.uplot_wrapper_ref.current.set_data(data);
     }
 
     import_config(json: string, current_config: BatteryConfig) {
@@ -840,7 +986,7 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                         <InputFloat
                             unit="h"
                             value={this.state.cheap_tariff_quarters * 100 / 4}
-                            onValue={(v) => this.setState({cheap_tariff_quarters: Math.round(v * 4 / 100)})}
+                            onValue={(v) => this.setState({cheap_tariff_quarters: Math.round(v * 4 / 100)}, this.update_uplot)}
                             digits={2}
                             min={0}
                             max={2000 - this.state.expensive_tariff_quarters * 100 / 4}
@@ -851,11 +997,44 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                         <InputFloat
                             unit="h"
                             value={this.state.expensive_tariff_quarters * 100 / 4}
-                            onValue={(v) => this.setState({expensive_tariff_quarters: Math.round(v * 4 / 100)})}
+                            onValue={(v) => this.setState({expensive_tariff_quarters: Math.round(v * 4 / 100)}, this.update_uplot)}
                             digits={2}
                             min={0}
                             max={2000 - this.state.cheap_tariff_quarters * 100 / 4}
                         />
+                    </FormRow>
+
+                    <FormRow label={__("batteries.content.schedule_graph")} label_muted={__("batteries.content.schedule_graph_muted")}>
+                        <div class="card">
+                            <div style="position: relative;"> {/* this plain div is necessary to make the size calculation stable in safari. without this div the height continues to grow */}
+                                <UplotLoader
+                                    ref={this.uplot_loader_ref}
+                                    show={true}
+                                    marker_class={'h4'}
+                                    no_data={__("day_ahead_prices.content.no_data")}
+                                    loading={__("day_ahead_prices.content.loading")}>
+                                    <UplotWrapperB
+                                        ref={this.uplot_wrapper_ref}
+                                        class="batteries-chart"
+                                        sub_page="batteries"
+                                        color_cache_group="batteries.default"
+                                        show={true}
+                                        on_mount={() => this.update_uplot()}
+                                        legend_time_label={__("day_ahead_prices.content.time")}
+                                        legend_time_with_minutes={true}
+                                        aspect_ratio={3}
+                                        x_format={{hour: '2-digit', minute: '2-digit'}}
+                                        x_padding_factor={0}
+                                        x_include_date={true}
+                                        y_unit="ct/kWh"
+                                        y_label={__("day_ahead_prices.content.price_ct_per_kwh")}
+                                        y_digits={3}
+                                        only_show_visible={true}
+                                        padding={[30, 15, null, 5]}
+                                    />
+                                </UplotLoader>
+                            </div>
+                        </div>
                     </FormRow>
 
                     <FormSeparator heading={__("batteries.content.rules_permit_grid_charge")} />
