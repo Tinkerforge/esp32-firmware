@@ -21,6 +21,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <algorithm>
 
 #include "TFTools/Micros.h"
 
