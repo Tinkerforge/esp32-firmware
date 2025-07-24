@@ -25,9 +25,11 @@
 static Config prototype_float_nan;
 static Config prototype_int16_0;
 static Config prototype_int32_0;
+static Config prototype_int52_0;
 static Config prototype_uint8_0;
 static Config prototype_uint16_0;
 static Config prototype_uint32_0;
+static Config prototype_uint53_0;
 static Config prototype_bool_false;
 
 const Config *Config::get_prototype_float_nan()
@@ -54,6 +56,14 @@ const Config *Config::get_prototype_int32_0()
     return &prototype_int32_0;
 }
 
+const Config *Config::get_prototype_int52_0()
+{
+    if (prototype_int52_0.is_null()) {
+        prototype_int52_0 = Config::Int52(0);
+    }
+    return &prototype_int52_0;
+}
+
 const Config *Config::get_prototype_uint8_0()
 {
     if (prototype_uint8_0.is_null()) {
@@ -76,6 +86,14 @@ const Config *Config::get_prototype_uint32_0()
         prototype_uint32_0 = Config::Uint(0);
     }
     return &prototype_uint32_0;
+}
+
+const Config *Config::get_prototype_uint53_0()
+{
+    if (prototype_uint53_0.is_null()) {
+        prototype_uint53_0 = Config::Uint53(0);
+    }
+    return &prototype_uint53_0;
 }
 
 const Config *Config::get_prototype_bool_false()

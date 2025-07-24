@@ -971,9 +971,11 @@ public:
     [[gnu::const]] static const Config *get_prototype_float_nan();
     [[gnu::const]] static const Config *get_prototype_int16_0();
     [[gnu::const]] static const Config *get_prototype_int32_0();
+    [[gnu::const]] static const Config *get_prototype_int52_0();
     [[gnu::const]] static const Config *get_prototype_uint8_0();
     [[gnu::const]] static const Config *get_prototype_uint16_0();
     [[gnu::const]] static const Config *get_prototype_uint32_0();
+    [[gnu::const]] static const Config *get_prototype_uint53_0();
     [[gnu::const]] static const Config *get_prototype_bool_false();
 };
 
