@@ -1074,7 +1074,7 @@ void migrate_config()
     }
 
     bool first = true;
-    for (int i = 0; i < migration_count; ++i) {
+    for (size_t i = 0; i < migration_count; ++i) {
         auto &mig = migrations[i];
 
         if (i > 0) {
