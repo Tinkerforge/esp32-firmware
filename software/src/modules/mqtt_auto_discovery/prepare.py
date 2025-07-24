@@ -31,6 +31,7 @@ class Component(Enum):
 class Feature(Enum):
     EVSE = "evse"
     METER = "meter"
+    METER_PHASES = "meter_phases"
 
 @dataclass
 class Entity:
@@ -105,21 +106,21 @@ Entity(True, Component.SENSOR, Feature.METER, "energyrel", "meter/values", "Stro
      "state_class": "total"},
     {}),
 
-Entity(True, Component.SENSOR, Feature.METER, "current_l1", "meter/all_values", "Strom L1", "Current L1", "", "", "",
+Entity(True, Component.SENSOR, Feature.METER_PHASES, "current_l1", "meter/all_values", "Strom L1", "Current L1", "", "", "",
     {"value_template":"{{value_json[3] | round(3)}}",
      "unit_of_measurement":"A",
      "device_class":"current",
      "state_class": "measurement"},
     {}),
 
-Entity(True, Component.SENSOR, Feature.METER, "current_l2", "meter/all_values", "Strom L2", "Current L2", "", "", "",
+Entity(True, Component.SENSOR, Feature.METER_PHASES, "current_l2", "meter/all_values", "Strom L2", "Current L2", "", "", "",
     {"value_template":"{{value_json[4] | round(3)}}",
      "unit_of_measurement":"A",
      "device_class":"current",
      "state_class": "measurement"},
     {}),
 
-Entity(True, Component.SENSOR, Feature.METER, "current_l3", "meter/all_values", "Strom L3", "Current L3", "", "", "",
+Entity(True, Component.SENSOR, Feature.METER_PHASES, "current_l3", "meter/all_values", "Strom L3", "Current L3", "", "", "",
     {"value_template":"{{value_json[5] | round(3)}}",
      "unit_of_measurement":"A",
      "device_class":"current",
