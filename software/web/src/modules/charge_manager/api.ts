@@ -15,7 +15,7 @@ type alloc_desc =
 { d: AllocatorDecision.CantActivatePhaseMinimum3, d1: number, d2: number, d3: number } |
 { d: AllocatorDecision.Activating1, d1: number } |
 { d: AllocatorDecision.PhaseSwitching0 } |
-{ d: AllocatorDecision.PhaseSwitchingUnblockedAt2, d1: number, d2: number } |
+{ d: AllocatorDecision.PhaseSwitchingBlockedUntil2, d1: number, d2: number } |
 { d: AllocatorDecision.WakingUp0 };
 
 type global_alloc_desc =

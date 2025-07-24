@@ -161,7 +161,7 @@ function alloc_decision_to_text(x: API.getType['charge_manager/state']['chargers
         case AllocatorDecision.CantActivatePhaseMinimum3: return __("charge_manager.script.cant_activate_phase_minimum")(x.d1, x.d2, x.d3);
         case AllocatorDecision.Activating1: return __("charge_manager.script.activating")(x.d1);
         case AllocatorDecision.PhaseSwitching0: return __("charge_manager.script.phase_switching");
-        case AllocatorDecision.PhaseSwitchingUnblockedAt2: return with_timespan(__("charge_manager.script.phase_switching_unblocked_at"), x);
+        case AllocatorDecision.PhaseSwitchingBlockedUntil2: return with_timespan(__("charge_manager.script.phase_switching_blocked_until"), x);
         case AllocatorDecision.WakingUp0: return __("charge_manager.script.waking_up");
         case AllocatorDecision.None0: return "";
     }

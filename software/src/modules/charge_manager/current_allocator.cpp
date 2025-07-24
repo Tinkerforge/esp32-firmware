@@ -1169,7 +1169,7 @@ static void stage_5(StageContext &sc) {
         // This could have been a phase switch, so don't switch again immediately.
         if (!deadline_elapsed(state->last_phase_switch + sc.cfg->global_hysteresis)) {
             auto hyst = (state->last_phase_switch + sc.cfg->global_hysteresis).to<seconds_t>();
-            set_charger_decision(sc, sc.idx_array[i], AllocatorDecision::PhaseSwitchingUnblockedAt2, (int)((int64_t)hyst >> 32), (int)((int64_t)hyst & 0xFFFFFFFF));
+            set_charger_decision(sc, sc.idx_array[i], AllocatorDecision::PhaseSwitchingBlockedUntil2, (int)((int64_t)hyst >> 32), (int)((int64_t)hyst & 0xFFFFFFFF));
             continue;
         }
 
