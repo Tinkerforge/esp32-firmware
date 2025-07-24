@@ -310,7 +310,7 @@ void Ethernet::setup()
     #pragma GCC diagnostic ignored "-Wuseless-cast"
 #endif
 
-    const BaseType_t ret = xTaskCreatePinnedToCore(eth_async_begin, "eth_async_begin", 2560, nullptr, ESP_TASK_PRIO_MAX - 2, nullptr, 1);
+    const BaseType_t ret = xTaskCreatePinnedToCore(eth_async_begin, "eth_async_begin", 2560, nullptr, uxTaskPriorityGet(nullptr) + 1, nullptr, 1); // Priority of current task + 1
     if (ret == pdPASS) {
         logger.printfln("Starting");
     } else {
