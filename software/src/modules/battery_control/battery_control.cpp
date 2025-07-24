@@ -327,6 +327,7 @@ void BatteryControl::update_avg_soc()
     logger.tracefln(trace_buffer_idx, "soc_avg=%li", soc_cache_avg);
 }
 
+#if MODULE_DAY_AHEAD_PRICES_AVAILABLE()
 void BatteryControl::update_tariff_schedule()
 {
     const uint8_t cheap_tariff_quarters     = static_cast<uint8_t>(config.get("cheap_tariff_quarters"    )->asUint());
@@ -396,6 +397,7 @@ void BatteryControl::update_tariff_schedule()
 
     evaluate_tariff_schedule();
 }
+#endif
 
 void BatteryControl::evaluate_tariff_schedule()
 {

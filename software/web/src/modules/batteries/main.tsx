@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "module_available.inc"
+
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import * as options from "../../options";
@@ -40,7 +42,9 @@ import { BatteryConfig, BatteryConfigPlugin } from "./types";
 import { RuleConfig } from "../battery_control/types";
 import { RuleCondition } from "../battery_control/rule_condition.enum";
 import { ScheduleRuleCondition } from "../battery_control/schedule_rule_condition.enum";
+//#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
 import { get_price_from_index } from "../day_ahead_prices/main";
+//#endif
 import { plugins_init } from "./plugins";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Table } from "../../ts/components/table";
@@ -526,13 +530,15 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
             }
         });
 
-        util.addApiEventListener("day_ahead_prices/prices", () => {
+//#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
+util.addApiEventListener("day_ahead_prices/prices", () => {
             // Update chart every time new price data comes in
             this.update_uplot();
         });
 
         // Update vertical "now" line on time change
         effect(() => this.update_uplot());
+//#endif
     }
 
     override async sendSave(topic: 'battery_control/config', new_config: API.getType['battery_control/config']) {
@@ -595,6 +601,7 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
         return super.getIsModified(topic);
     }
 
+//#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
     date_with_day_offset(date: Date, day_offset: number) {
         let date_copy = new Date(date);
         date_copy.setDate(date_copy.getDate() + day_offset);
@@ -725,6 +732,7 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
         this.uplot_loader_ref.current.set_data(data && data.keys.length > 1);
         this.uplot_wrapper_ref.current.set_data(data);
     }
+//#endif
 
     import_config(json: string, current_config: BatteryConfig) {
         let new_config;
@@ -981,6 +989,7 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                             />
                     </div>
 
+{/*#if MODULE_DAY_AHEAD_PRICES_AVAILABLE*/}
                     <FormSeparator heading={__("batteries.content.dynamic_tariff_schedule")} />
                     <FormRow label={__("batteries.content.schedule_cheap_hours")} label_muted={__("batteries.content.schedule_hours_muted")} help={__("batteries.content.schedule_cheap_hours_help")}>
                         <InputFloat
@@ -1036,6 +1045,7 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
                             </div>
                         </div>
                     </FormRow>
+{/*#endif*/}
 
                     <FormSeparator heading={__("batteries.content.rules_permit_grid_charge")} />
                     <div class="form-group">
