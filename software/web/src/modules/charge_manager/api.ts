@@ -21,7 +21,7 @@ type alloc_desc =
 type global_alloc_desc =
 { d: GlobalAllocatorDecision.None0 } |
 { d: GlobalAllocatorDecision.NextRotationAt2, d1: number, d2: number } |
-{ d: GlobalAllocatorDecision.PVExcessOverloadedHysteresisElapsesAt3, d1: number, d2: number, d3: number } |
+{ d: GlobalAllocatorDecision.PVExcessOverloadedHysteresisBlocksUntil3, d1: number, d2: number, d3: number } |
 { d: GlobalAllocatorDecision.HysteresisElapsesAt2, d1: number, d2: number };
 
 type ChargerState = {

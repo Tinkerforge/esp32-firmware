@@ -171,7 +171,7 @@ function global_alloc_decision_to_text(x: API.getType['charge_manager/state']): 
     switch (x.d) {
         case GlobalAllocatorDecision.None0: return "";
         case GlobalAllocatorDecision.NextRotationAt2: return with_timespan(__("charge_manager.script.next_rotation_at"), x);
-        case GlobalAllocatorDecision.PVExcessOverloadedHysteresisElapsesAt3: return with_timespan((ts) => __("charge_manager.script.pv_excess_overloaded_hysteresis_not_elapsed")(x.d3, ts), x);
+        case GlobalAllocatorDecision.PVExcessOverloadedHysteresisBlocksUntil3: return with_timespan((ts) => __("charge_manager.script.pv_excess_overloaded_hysteresis_blocks_until")(x.d3, ts), x);
         case GlobalAllocatorDecision.HysteresisElapsesAt2: return with_timespan(__("charge_manager.script.hysteresis_elapses_at"), x);
     }
 }

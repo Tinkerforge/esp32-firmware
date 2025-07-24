@@ -798,7 +798,7 @@ static void stage_3(StageContext &sc) {
         // to shut down chargers if we don't find one that will be shut down soon.
         if (!sc.ca_state->global_hysteresis_elapsed) {
             auto hyst_elapsed_at = (sc.ca_state->last_hysteresis_reset + sc.cfg->global_hysteresis).to<seconds_t>();;
-            set_global_decision(sc, GlobalAllocatorDecision::PVExcessOverloadedHysteresisElapsesAt3, (int)((int64_t)hyst_elapsed_at >> 32), (int)((int64_t)hyst_elapsed_at & 0xFFFFFFFF),  wnd_min.pv - sc.limits->max_pv);
+            set_global_decision(sc, GlobalAllocatorDecision::PVExcessOverloadedHysteresisBlocksUntil3, (int)((int64_t)hyst_elapsed_at >> 32), (int)((int64_t)hyst_elapsed_at & 0xFFFFFFFF),  wnd_min.pv - sc.limits->max_pv);
             break;
         }
 
