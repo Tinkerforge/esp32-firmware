@@ -267,7 +267,7 @@ let x = {
             "waking_up": "Versuche Fahrzeug aufzuwecken",
 
             "next_rotation_at": /*SFN*/ (timespan: string) => "Nächste Rotation in " + timespan /*NF*/,
-            "pv_excess_overloaded_hysteresis_not_elapsed": /*SFN*/ (overload_mA: number, timespan: string) => "PV-Überschuss um " + toLocaleFixed(overload_mA / 1000, 3) + " A überlastet. Werde in " + timespan + " beginnen, Wallboxen abzuschalten." /*NF*/,
+            "pv_excess_overloaded_hysteresis_blocks_until": /*SFN*/ (overload_mA: number, timespan: string) => "PV-Überschuss um " + toLocaleFixed(overload_mA / 1000, 3) + " A überlastet. Werde in " + timespan + " beginnen, Wallboxen abzuschalten." /*NF*/,
             "hysteresis_elapses_at": /*SFN*/ (timespan: string) => "Hysterese läuft ab in " + timespan /*NF*/
 
 
