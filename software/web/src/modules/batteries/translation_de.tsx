@@ -25,6 +25,8 @@ let x = {
             "schedule_expensive_hours": "Teure Stunden",
             "schedule_expensive_hours_help": "Wähle die x teuersten Stunden in einem 24-Stunden-Zeitfenster zwischen 20:00 und 20:00 des Folgetages aus. Viertelstunden können eingegeben werden, indem Vielfache von 0,25 eingegeben werden. 1,25 h ist eine Stunde und 15 Minuten.",
             "schedule_hours_muted": "in 0,25 h-Schritten",
+            "schedule_graph": "Zeitplan",
+            "schedule_graph_muted": "jeweils von 20:00 bis 20:00",
 
             "forbid_discharge_during_fast_charge": "Batterieentladung beim Schnellladen verbieten",
             "forbid_discharge_during_fast_charge_desc": "Verbietet dem Speicher, sich zu entladen, während ein Fahrzeug schnell lädt oder sein Eco-Ladeplan es erlaubt.",
@@ -64,6 +66,7 @@ let x = {
             "add_rule_desc": "Beschreibung",
             "add_rule_soc": "Batterieladestand",
             "add_rule_price": "Dynamischer Strompreis",
+            "add_rule_price_muted": "Börsenpreis",
             "add_rule_forecast": "PV-Ertragsprognose",
             "add_rule_schedule": "Dynamischer Strompreisplan",
 
@@ -71,6 +74,7 @@ let x = {
             "edit_rule_desc": "Beschreibung",
             "edit_rule_soc": "Batterieladestand",
             "edit_rule_price": "Dynamischer Strompreis",
+            "edit_rule_price_muted": "Börsenpreis",
             "edit_rule_forecast": "PV-Ertragsprognose",
             "edit_rule_schedule": "Dynamischer Strompreisplan",
 
