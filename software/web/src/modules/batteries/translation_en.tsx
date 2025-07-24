@@ -25,6 +25,8 @@ let x = {
             "schedule_expensive_hours": "Expensive hours",
             "schedule_expensive_hours_help": "Select the most expensive x hours within a 24 hour window between 20:00 and 20:00 of the following day. Quarters of an hour can be selected by entering multiples of 0.25. 1.25 h is one hour and 15 minutes.",
             "schedule_hours_muted": "in 0.25 h steps",
+            "schedule_graph": "Schedule",
+            "schedule_graph_muted": "intervals from 20:00 to 20:00",
 
             "forbid_discharge_during_fast_charge": "Forbid discharge during fast charge",
             "forbid_discharge_during_fast_charge_desc": "Will forbid the battery to discharge while a vehicle is fast charging or is allowed to do so by its Eco charge plan.",
@@ -64,6 +66,7 @@ let x = {
             "add_rule_desc": "Description",
             "add_rule_soc": "State of charge",
             "add_rule_price": "Dynamic energy price",
+            "add_rule_price_muted" : "market price",
             "add_rule_forecast": "Solar forecast",
             "add_rule_schedule": "Dynamic tariff schedule",
 
@@ -71,6 +74,7 @@ let x = {
             "edit_rule_desc": "Description",
             "edit_rule_soc": "State of charge",
             "edit_rule_price": "Dynamic energy price",
+            "edit_rule_price_muted" : "market price",
             "edit_rule_forecast": "Solar forecast",
             "edit_rule_schedule": "Dynamic tariff schedule",
 
