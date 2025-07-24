@@ -22,6 +22,7 @@
 #include <esp_task.h>
 #include <esp_task_wdt.h>
 #include <mutex>
+#include <soc/dport_reg.h>
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
@@ -142,6 +143,27 @@ void Watchdog::reset(int handle)
     regs[handle].last_reset = now_us();
 }
 
+static size_t parse_intr_status_reg(char *buf, size_t buflen, const char *name, uint32_t addr, uint32_t intr_flag_ignore_mask)
+{
+    uint32_t reg = *reinterpret_cast<uint32_t *>(addr) & ~intr_flag_ignore_mask;
+
+    if (reg == 0) {
+        return 0;
+    }
+
+    size_t offset = 0;
+
+    offset += snprintf_u(buf + offset, buflen - offset, " %s:", name);
+
+    do {
+        const int bit_pos = 31 - __builtin_clz(reg);
+        offset += snprintf_u(buf + offset, buflen - offset, "%i+", bit_pos);
+        reg &= ~(1u << bit_pos);
+    } while (reg != 0);
+
+    return offset - 1;
+}
+
 // When the ESP WDT triggers, store triggered task data in RTC memory that ends up in the core dump.
 COREDUMP_RTC_DATA_ATTR char wdt_info[256];
 static size_t wdt_info_len = 0;
@@ -157,4 +179,15 @@ static void wdt_msg_handler(void *, const char *msg)
 void esp_task_wdt_isr_user_handler()
 {
     esp_task_wdt_print_triggered_tasks(wdt_msg_handler, nullptr, nullptr);
+
+    wdt_info_len += snprintf_u(wdt_info + wdt_info_len, sizeof(wdt_info) - wdt_info_len, "\nINTR:");
+
+    wdt_info_len += parse_intr_status_reg(wdt_info + wdt_info_len, sizeof(wdt_info) - wdt_info_len, "APP0", DPORT_APP_INTR_STATUS_0_REG, 1 << 28); // Ignore always-set SPI_INTR_0
+    wdt_info_len += parse_intr_status_reg(wdt_info + wdt_info_len, sizeof(wdt_info) - wdt_info_len, "APP1", DPORT_APP_INTR_STATUS_1_REG, 0);
+    wdt_info_len += parse_intr_status_reg(wdt_info + wdt_info_len, sizeof(wdt_info) - wdt_info_len, "APP2", DPORT_APP_INTR_STATUS_2_REG, 0);
+    wdt_info_len += parse_intr_status_reg(wdt_info + wdt_info_len, sizeof(wdt_info) - wdt_info_len, "PRO0", DPORT_PRO_INTR_STATUS_0_REG, 1 << 28); // Ignore always-set SPI_INTR_0
+    wdt_info_len += parse_intr_status_reg(wdt_info + wdt_info_len, sizeof(wdt_info) - wdt_info_len, "PRO1", DPORT_PRO_INTR_STATUS_1_REG, 0);
+    wdt_info_len += parse_intr_status_reg(wdt_info + wdt_info_len, sizeof(wdt_info) - wdt_info_len, "PRO2", DPORT_PRO_INTR_STATUS_2_REG, 0);
+
+    wdt_info[wdt_info_len] = '\0';
 }
