@@ -287,7 +287,7 @@ let x = {
             "cant_activate_phase_minimum": /*SFN*/ (phase: number, required: number, min: number) => "TODOTRANSLATE Kann nicht aktiviert werden: " + toLocaleFixed((required - min) / 1000, 3) + ["PV-Überschuss fehlen", "fehlen auf Phase L1", "fehlen auf Phase L2", "fehlen auf Phase L3"][phase] /*NF*/,
             "activating": /*SFN*/ (phase_count: number) => "TODOTRANSLATE " + ["", "Ein", "Zwei", "Drei"][phase_count] + "phasig aktiviert"/*NF*/,
             "phase_switching": "TODOTRANSLATE Schalte um auf dreiphasig",
-            "phase_switching_unblocked_at": /*SFN*/ (timespan: string) => "TODOTRANSLATE Phasenumschaltung blockiert für " + timespan /*NF*/,
+            "phase_switching_blocked_until": /*SFN*/ (timespan: string) => "TODOTRANSLATE Phasenumschaltung blockiert für " + timespan /*NF*/,
             "waking_up": "TODOTRANSLATE Versuche Fahrzeug aufzuwecken",
 
             "next_rotation_at": /*SFN*/ (timespan: string) => "TODOTRANSLATE Nächste Rotation in " + timespan /*NF*/,
