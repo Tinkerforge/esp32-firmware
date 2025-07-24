@@ -263,7 +263,7 @@ let x = {
             "cant_activate_phase_minimum": /*SFN*/ (phase: number, required: number, min: number) => "Kann nicht aktiviert werden: " + toLocaleFixed((required - min) / 1000, 3) + " A " + ["PV-Überschuss fehlen", "fehlen auf Phase L1", "fehlen auf Phase L2", "fehlen auf Phase L3"][phase] /*NF*/,
             "activating": /*SFN*/ (phase_count: number) => ["", "Ein", "Zwei", "Drei"][phase_count] + "phasig aktiviert"/*NF*/,
             "phase_switching": "Schalte um auf dreiphasig",
-            "phase_switching_unblocked_at": /*SFN*/ (timespan: string) => "Phasenumschaltung blockiert für " + timespan /*NF*/,
+            "phase_switching_blocked_until": /*SFN*/ (timespan: string) => "Phasenumschaltung blockiert für " + timespan /*NF*/,
             "waking_up": "Versuche Fahrzeug aufzuwecken",
 
             "next_rotation_at": /*SFN*/ (timespan: string) => "Nächste Rotation in " + timespan /*NF*/,
