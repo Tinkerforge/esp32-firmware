@@ -103,7 +103,7 @@ env.AddPostAction(
         "-u",
         env.subst("$PROJECT_PACKAGES_DIR/tool-esptoolpy/esptool.py"),
         "--chip", "esp32",
-        "merge_bin",
+        "merge-bin",
         "-o", env.subst("$BUILD_DIR/${PROGNAME}_merged.bin"),
         "--target-offset", "0x1000",
         "0x1000", env.subst("$BUILD_DIR/bootloader.bin"),
