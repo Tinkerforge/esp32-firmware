@@ -3,26 +3,26 @@ import { AllocatorDecision } from "modules/charge_manager/allocator_decision.enu
 import { GlobalAllocatorDecision } from "modules/charge_manager/global_allocator_decision.enum";
 
 type alloc_desc =
-{ d: AllocatorDecision.None0 } |
-{ d: AllocatorDecision.WaitingForRotation0 } |
-{ d: AllocatorDecision.ShuttingDownUnknown0 } |
-{ d: AllocatorDecision.ShuttingDownNotActive0 } |
-{ d: AllocatorDecision.ShuttingDownRotatedForB10 } |
-{ d: AllocatorDecision.ShuttingDownRotatedForHigherPrio0 } |
-{ d: AllocatorDecision.ShuttingDownOffOrError0 } |
-{ d: AllocatorDecision.WelcomeChargeUntil2, d1: number, d2: number } |
-{ d: AllocatorDecision.ShuttingDownPhaseOverload2, d1: number, d2: number } |
-{ d: AllocatorDecision.CantActivatePhaseMinimum3, d1: number, d2: number, d3: number } |
-{ d: AllocatorDecision.Activating1, d1: number } |
-{ d: AllocatorDecision.PhaseSwitching0 } |
-{ d: AllocatorDecision.PhaseSwitchingBlockedUntil2, d1: number, d2: number } |
-{ d: AllocatorDecision.WakingUp0 };
+[ AllocatorDecision.None0 ] |
+[ AllocatorDecision.WaitingForRotation0 ] |
+[ AllocatorDecision.ShuttingDownUnknown0 ] |
+[ AllocatorDecision.ShuttingDownNotActive0 ] |
+[ AllocatorDecision.ShuttingDownRotatedForB10 ] |
+[ AllocatorDecision.ShuttingDownRotatedForHigherPrio0 ] |
+[ AllocatorDecision.ShuttingDownOffOrError0 ] |
+[ AllocatorDecision.WelcomeChargeUntil2, timestamp_s: number ] |
+[ AllocatorDecision.ShuttingDownPhaseOverload2, [phase: number, overload_ma: number ] ] |
+[ AllocatorDecision.CantActivatePhaseMinimum3, [phase: number, required_ma: number, min_ma: number ] ] |
+[ AllocatorDecision.Activating1, phase_alloc: number ] |
+[ AllocatorDecision.PhaseSwitching0 ] |
+[ AllocatorDecision.PhaseSwitchingBlockedUntil2, timestamp_s: number ] |
+[ AllocatorDecision.WakingUp0 ];
 
 type global_alloc_desc =
-{ d: GlobalAllocatorDecision.None0 } |
-{ d: GlobalAllocatorDecision.NextRotationAt2, d1: number, d2: number } |
-{ d: GlobalAllocatorDecision.PVExcessOverloadedHysteresisBlocksUntil3, d1: number, d2: number, d3: number } |
-{ d: GlobalAllocatorDecision.HysteresisElapsesAt2, d1: number, d2: number };
+[ GlobalAllocatorDecision.None0 ] |
+[ GlobalAllocatorDecision.NextRotationAt2, timestamp_s: number ] |
+[ GlobalAllocatorDecision.PVExcessOverloadedHysteresisBlocksUntil3, [overload_ma: number, timestamp_s: number]] |
+[ GlobalAllocatorDecision.HysteresisElapsesAt2, timestamp_s: number];
 
 type ChargerState = {
     s: number,
@@ -34,7 +34,8 @@ type ChargerState = {
     lu: number,
     n: string,
     u: number
-} & alloc_desc;
+    d: alloc_desc
+};
 
 interface ServCharger {
     hostname: string;
@@ -54,8 +55,9 @@ export type state = {
     l_min: number[],
     l_spread: number[],
     l_max_pv: number,
-    alloc: number[]
-} & global_alloc_desc
+    alloc: number[],
+    d: global_alloc_desc
+}
 
 interface ChargerConfig {
     host: string,
