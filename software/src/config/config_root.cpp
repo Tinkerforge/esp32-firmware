@@ -52,27 +52,45 @@ String ConfigRoot::update_from_cstr(char *c, size_t len)
     return "";
 }
 
+// Don't inline; keeps the buffer off the stack when there isn't any error.
+[[gnu::noinline]]
+static String get_updated_copy_error(DeserializationError error, size_t payload_len)
+{
+    char buf[160];
+    StringWriter sw(buf, sizeof(buf));
+
+    sw.puts("Failed to deserialize: ");
+
+    switch (error.code()) {
+        case DeserializationError::NoMemory:
+            sw.puts("JSON payload was longer than expected and possibly contained unknown keys."); break;
+        case DeserializationError::EmptyInput:
+            sw.puts("Payload was empty. Please send valid JSON."); break;
+        case DeserializationError::IncompleteInput:
+            sw.puts("JSON payload incomplete or truncated."); break;
+        case DeserializationError::InvalidInput:
+            sw.puts("JSON payload could not be parsed."); break;
+        case DeserializationError::TooDeep:
+            sw.puts("JSON payload nested too deeply."); break;
+        default:
+            sw.puts(error.c_str());
+    }
+
+    sw.printf(" Payload length was %zu.", payload_len);
+
+    return String(buf, sw.getLength());
+}
+
 String ConfigRoot::get_updated_copy(char *c, size_t payload_len, Config *out_config, ConfigSource source)
 {
     DynamicJsonDocument doc(this->json_size(true));
     DeserializationError error = deserializeJson(doc, c, payload_len);
 
-    switch (error.code()) {
-        case DeserializationError::Ok:
-            return this->get_updated_copy(doc.as<JsonVariant>(), true, out_config, source);
-        case DeserializationError::NoMemory:
-            return String("Failed to deserialize: JSON payload was longer than expected and possibly contained unknown keys.");
-        case DeserializationError::EmptyInput:
-            return String("Failed to deserialize: Payload was empty. Please send valid JSON.");
-        case DeserializationError::IncompleteInput:
-            return String("Failed to deserialize: JSON payload incomplete or truncated");
-        case DeserializationError::InvalidInput:
-            return String("Failed to deserialize: JSON payload could not be parsed");
-        case DeserializationError::TooDeep:
-            return String("Failed to deserialize: JSON payload nested too deep");
-        default:
-            return String("Failed to deserialize string: ") + String(error.c_str());
+    if (error.code() != DeserializationError::Ok) {
+        return get_updated_copy_error(error, payload_len);
     }
+
+    return this->get_updated_copy(doc.as<JsonVariant>(), true, out_config, source);
 }
 
 String ConfigRoot::update_from_json(JsonVariant root, bool force_same_keys, ConfigSource source)
