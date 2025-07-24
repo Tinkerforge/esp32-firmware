@@ -140,8 +140,7 @@ interface ChargeManagerStatusState {
     uptime: number
 }
 
-function with_timespan(fn: (timespan: string) => string, x: {d1: number, d2: number}) {
-    const ts = x.d1 * Math.pow(2, 32) + x.d2;
+function with_timespan(fn: (timespan: string) => string, ts: number) {
     const now = API.get('info/keep_alive').uptime / 1000;
     if (ts < now)
         return ""
@@ -149,30 +148,30 @@ function with_timespan(fn: (timespan: string) => string, x: {d1: number, d2: num
 }
 
 function alloc_decision_to_text(x: API.getType['charge_manager/state']['chargers'][0]): string {
-    switch (x.d) {
+    switch (x.d[0]) {
         case AllocatorDecision.WaitingForRotation0: return __("charge_manager.script.waiting_for_rotation");
         case AllocatorDecision.ShuttingDownUnknown0: return __("charge_manager.script.shutting_down_unknown");
         case AllocatorDecision.ShuttingDownNotActive0: return __("charge_manager.script.shutting_down_not_active");
         case AllocatorDecision.ShuttingDownRotatedForB10: return __("charge_manager.script.shutting_down_rotated_for_b1");
         case AllocatorDecision.ShuttingDownRotatedForHigherPrio0: return __("charge_manager.script.shutting_down_rotated_for_higher_prio");
         case AllocatorDecision.ShuttingDownOffOrError0: return __("charge_manager.script.shutting_down_off_or_error");
-        case AllocatorDecision.WelcomeChargeUntil2: return with_timespan(__("charge_manager.script.welcome_charge_for"), x);
-        case AllocatorDecision.ShuttingDownPhaseOverload2: return __("charge_manager.script.shutting_down_phase_overload")(x.d1, x.d2);
-        case AllocatorDecision.CantActivatePhaseMinimum3: return __("charge_manager.script.cant_activate_phase_minimum")(x.d1, x.d2, x.d3);
-        case AllocatorDecision.Activating1: return __("charge_manager.script.activating")(x.d1);
+        case AllocatorDecision.WelcomeChargeUntil2: return with_timespan(__("charge_manager.script.welcome_charge_for"), x.d[1]);
+        case AllocatorDecision.ShuttingDownPhaseOverload2: return __("charge_manager.script.shutting_down_phase_overload")(x.d[1][0], x.d[1][1]);
+        case AllocatorDecision.CantActivatePhaseMinimum3: return __("charge_manager.script.cant_activate_phase_minimum")(x.d[1][0], x.d[1][1], x.d[1][2]);
+        case AllocatorDecision.Activating1: return __("charge_manager.script.activating")(x.d[1]);
         case AllocatorDecision.PhaseSwitching0: return __("charge_manager.script.phase_switching");
-        case AllocatorDecision.PhaseSwitchingBlockedUntil2: return with_timespan(__("charge_manager.script.phase_switching_blocked_until"), x);
+        case AllocatorDecision.PhaseSwitchingBlockedUntil2: return with_timespan(__("charge_manager.script.phase_switching_blocked_until"), x.d[1]);
         case AllocatorDecision.WakingUp0: return __("charge_manager.script.waking_up");
         case AllocatorDecision.None0: return "";
     }
 }
 
 function global_alloc_decision_to_text(x: API.getType['charge_manager/state']): string {
-    switch (x.d) {
+    switch (x.d[0]) {
         case GlobalAllocatorDecision.None0: return "";
-        case GlobalAllocatorDecision.NextRotationAt2: return with_timespan(__("charge_manager.script.next_rotation_at"), x);
-        case GlobalAllocatorDecision.PVExcessOverloadedHysteresisBlocksUntil3: return with_timespan((ts) => __("charge_manager.script.pv_excess_overloaded_hysteresis_blocks_until")(x.d3, ts), x);
-        case GlobalAllocatorDecision.HysteresisElapsesAt2: return with_timespan(__("charge_manager.script.hysteresis_elapses_at"), x);
+        case GlobalAllocatorDecision.NextRotationAt2: return with_timespan(__("charge_manager.script.next_rotation_at"), x.d[1]);
+        case GlobalAllocatorDecision.PVExcessOverloadedHysteresisBlocksUntil3: return with_timespan((ts) => __("charge_manager.script.pv_excess_overloaded_hysteresis_blocks_until")((x as any).d[1][0], ts), x.d[1][1]);
+        case GlobalAllocatorDecision.HysteresisElapsesAt2: return with_timespan(__("charge_manager.script.hysteresis_elapses_at"), x.d[1]);
     }
 }
 
