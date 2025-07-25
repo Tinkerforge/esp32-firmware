@@ -1619,7 +1619,7 @@ void MeterModbusTCP::connect_callback()
     generic_read_request.done_callback = [this]{ read_done_callback(); };
 
     read_index = 0;
-    register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE;
+    register_buffer_index = METER_MODBUS_TCP_REGISTER_BUFFER_SIZE; // this tells read_next() that generic_read_request is not fully initialized
 
     prepare_read();
     read_next();
@@ -1653,7 +1653,8 @@ void MeterModbusTCP::read_next()
 {
     read_allowed = false;
 
-    if (register_buffer_index < generic_read_request.register_count
+    if (register_buffer_index != METER_MODBUS_TCP_REGISTER_BUFFER_SIZE // only use fully initialized generic_read_request from last read
+     && register_buffer_index < generic_read_request.register_count
      && generic_read_request.register_type == table->specs[read_index].register_type
      && generic_read_request.start_address + register_buffer_index == table->specs[read_index].start_address
      && register_buffer_index + MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(table->specs[read_index].value_type) <= generic_read_request.register_count) {
