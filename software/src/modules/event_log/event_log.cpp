@@ -33,15 +33,14 @@
 #include <limits>
 #include <time.h>
 #include <inttypes.h>
+#include <miniz.h>
 #include <TFJson.h>
-#include <esp_rom_crc.h>
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
 #include "options.h"
 #include "tools.h"
-#include "tools/miniz/miniz_tdef.h"
 
 struct deflate_outbuf {
     char outbuf[1274]; // 1390 (conservative optimal WireGuard MTU) - 8 (PPPoE) - 40 (IP) - 60 (max TCP) - 8 (HTTP chunk metadata)
@@ -226,7 +225,7 @@ void EventLog::register_urls()
         size_t avail_out = ARRAY_SIZE(buf->outbuf) - sizeof(gzip_header);
 
         size_t uncompressed_len = 0;
-        uint32_t crc32 = 0;
+        uint32_t crc32 = MZ_CRC32_INIT;
 
         constexpr   uint32_t HEADER_PREPARE = 0;
         //constexpr uint32_t HEADER_SEND    = 1;
@@ -264,9 +263,13 @@ void EventLog::register_urls()
                         avail_in = snprintf_u(buf->printbuf, ARRAY_SIZE(buf->printbuf), "__%s_%.100s__\n", label, trace_buffer.name);
                     }
 
-                    crc32 = esp_rom_crc32_le(crc32, reinterpret_cast<const uint8_t *>(next_in), avail_in);
+                    if (avail_in > 0) {
+                        // If ptr == NULL, mz_crc32 returns 0 instead of the last CRC value. That happens when there is no second chunk.
+                        // avail_in is 0 in that case and when the first chunk is empty, so check that to skip all unnecessary function calls.
+                        crc32 = mz_crc32(crc32, reinterpret_cast<const uint8_t *>(next_in), avail_in);
 
-                    uncompressed_len += avail_in;
+                        uncompressed_len += avail_in;
+                    }
 
                     state++; // Advance to send state
                 }
