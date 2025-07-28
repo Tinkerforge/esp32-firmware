@@ -1046,6 +1046,12 @@ def main():
 
     env.Replace(BUILD_FLAGS=build_flags)
 
+    if '-m32' in build_flags:
+        # When compiling with -m32 then -m32 also needs to be passed to the linker.
+        # Only passing -Wl,-melf_i386 is not enough to make the linker pick up the
+        # correct versions of the system libraries
+        env.Prepend(LINKFLAGS=['-m32'])
+
     version_full_str = "{}.{}.{}{}+{:x}".format(*version[:3], f"-beta.{version[3]}" if version[3] != "255" else "", build_timestamp)
 
     build_lines = []
