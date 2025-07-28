@@ -163,7 +163,7 @@ StringBuilder::~StringBuilder()
 bool StringBuilder::setCapacity(size_t new_capacity)
 {
     if (capacity == 0 && new_capacity > 0) {
-        char *new_buffer = new char[new_capacity + 1]; // +1 for NUL-terminator
+        char *new_buffer = static_cast<char *>(malloc(new_capacity + 1)); // +1 for NUL-terminator
 
         if (new_buffer == nullptr) {
             return false;
