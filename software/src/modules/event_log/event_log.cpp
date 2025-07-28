@@ -225,7 +225,7 @@ void EventLog::register_urls()
         size_t avail_out = ARRAY_SIZE(buf->outbuf) - sizeof(gzip_header);
 
         size_t uncompressed_len = 0;
-        uint32_t checkusm = MZ_CRC32_INIT;
+        uint32_t crc32 = MZ_CRC32_INIT;
 
         constexpr   uint32_t HEADER_PREPARE = 0;
         //constexpr uint32_t HEADER_SEND    = 1;
@@ -266,7 +266,7 @@ void EventLog::register_urls()
                     if (avail_in > 0) {
                         // If ptr == NULL, mz_crc32 returns 0 instead of the last CRC value. That happens when there is no second chunk.
                         // avail_in is 0 in that case and when the first chunk is empty, so check that to skip all unnecessary function calls.
-                        checkusm = mz_crc32(checkusm, reinterpret_cast<const uint8_t *>(next_in), avail_in);
+                        crc32 = mz_crc32(crc32, reinterpret_cast<const uint8_t *>(next_in), avail_in);
 
                         uncompressed_len += avail_in;
                     }
@@ -333,7 +333,7 @@ void EventLog::register_urls()
         } while (t_status != TDEFL_STATUS_DONE);
 
         {
-            uint32_t gzip_tail[2] = {checkusm, uncompressed_len};
+            uint32_t gzip_tail[2] = {crc32, uncompressed_len};
 
             int result = request.sendChunk(reinterpret_cast<const char *>(gzip_tail), sizeof(gzip_tail));
 
