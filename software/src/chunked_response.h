@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <functional>
 #include <WString.h>
 #include <assert.h>
 #include <stdlib.h>
