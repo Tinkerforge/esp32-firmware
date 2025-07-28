@@ -65,7 +65,7 @@ void WS::register_urls()
 
         sb.printf("{\"topic\":\"info/keep_alive\",\"payload\":{\"uptime\":%llu}}\n", now_us().to<millis_t>().as<uint64_t>());
 
-        int i = 0;
+        size_t i = 0;
         bool done = false;
 
         while (!done) {
@@ -75,7 +75,7 @@ void WS::register_urls()
                     auto path = reg.path;
                     auto path_len = reg.path_len;
                     auto config_len = reg.config->string_length();
-                    int req = prefix_len + path_len + infix_len + config_len + suffix_len + 1; // +1 for the second \n
+                    size_t req = prefix_len + path_len + infix_len + config_len + suffix_len + 1; // +1 for the second \n
 
                     if (sb.getRemainingLength() < req) {
                         done = false;

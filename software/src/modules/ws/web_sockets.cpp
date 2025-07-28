@@ -262,7 +262,7 @@ void WebSockets::keepAliveRemove(int fd)
 {
     {
         std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
-        for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+        for (size_t i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
             if (keep_alive_fds[i] != fd)
                 continue;
             keep_alive_fds[i] = -1;
@@ -273,8 +273,8 @@ void WebSockets::keepAliveRemove(int fd)
 
     {
         std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
-        for (int i = 0; i < work_queue.size(); ++i)
-            for (int j = 0; j < MAX_WEB_SOCKET_CLIENTS; ++j)
+        for (size_t i = 0; i < work_queue.size(); ++i)
+            for (size_t j = 0; j < MAX_WEB_SOCKET_CLIENTS; ++j)
                 if (work_queue[i].fds[j] == fd)
                     work_queue[i].fds[j] = -1;
     }
