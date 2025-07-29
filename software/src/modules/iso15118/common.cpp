@@ -104,7 +104,7 @@ void Common::state_machine_loop()
                 // No connection available, non-blocking mode
                 return;
             }
-            logger.printfln("Common: Failed to accept connection: %d (errno %d [%s])", active_socket, errno, strerror_r(errno, nullptr, 0));
+            logger.printfln("Common: Failed to accept connection: %d (errno %d [%s])", active_socket, errno, strerror(errno));
             return;
         }
 
@@ -136,7 +136,7 @@ void Common::state_machine_loop()
                 reset_active_socket();
                 return;
             }
-            logger.printfln("Common: Failed to receive data: %d (errno %d [%s])", length, errno, strerror_r(errno, nullptr, 0));
+            logger.printfln("Common: Failed to receive data: %d (errno %d [%s])", length, errno, strerror(errno));
             reset_active_socket();
         } else if(length == 0) {
             logger.printfln("Common: Connection closed");

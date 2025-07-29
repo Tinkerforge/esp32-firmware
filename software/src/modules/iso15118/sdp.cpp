@@ -60,12 +60,12 @@ void SDP::setup_socket()
 
     sdp_socket = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
     if (sdp_socket < 0) {
-        logger.printfln("Failed to create socket: (errno %i [%s])", errno, strerror_r(errno, nullptr, 0));
+        logger.printfln("Failed to create socket: (errno %i [%s])", errno, strerror(errno));
         return;
     }
 
     if (bind(sdp_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-        logger.printfln("Failed to bind socket: (errno %i [%s])", errno, strerror_r(errno, nullptr, 0));
+        logger.printfln("Failed to bind socket: (errno %i [%s])", errno, strerror(errno));
         close(sdp_socket);
         sdp_socket = -1;
         return;
@@ -74,7 +74,7 @@ void SDP::setup_socket()
     const int flags = fcntl(sdp_socket, F_GETFL, 0);
     int ret = fcntl(sdp_socket, F_SETFL, flags | O_NONBLOCK);
     if (ret < 0) {
-        logger.printfln("Failed to set non-blocking mode: (errno %i [%s])", errno, strerror_r(errno, nullptr, 0));
+        logger.printfln("Failed to set non-blocking mode: (errno %i [%s])", errno, strerror(errno));
         close(sdp_socket);
         sdp_socket = -1;
         return;
@@ -96,7 +96,7 @@ void SDP::state_machine_loop()
             // No data available, non-blocking mode
             return;
         } else {
-            logger.printfln("SDP recv failed: (errno %i [%s])", errno, strerror_r(errno, nullptr, 0));
+            logger.printfln("SDP recv failed: (errno %i [%s])", errno, strerror(errno));
             close(sdp_socket);
             sdp_socket = -1;
             setup_socket();
@@ -154,7 +154,7 @@ void SDP::state_machine_loop()
 
         int ret = sendto(sdp_socket, &response, sizeof(response), 0, (struct sockaddr*)&recv_addr, recv_addr_length);
         if (ret < 0) {
-            logger.printfln("SDP sendto failed: (%i)%s", errno, strerror_r(errno, nullptr, 0));
+            logger.printfln("SDP sendto failed: (%i)%s", errno, strerror(errno));
             close(sdp_socket);
             sdp_socket = -1;
             setup_socket();

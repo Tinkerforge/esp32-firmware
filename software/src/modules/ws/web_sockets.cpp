@@ -614,8 +614,7 @@ void WebSockets::updateDebugState()
             struct sockaddr_storage addr;
             socklen_t len = sizeof(addr);
             if (getpeername(keep_alive_fds[i], (sockaddr *)&addr, &len) != 0) {
-                strerror_r(errno, ip_str, ARRAY_SIZE(ip_str));
-                state_keep_alive_peers->get(i)->updateString(ip_str);
+                state_keep_alive_peers->get(i)->updateString(strerror(errno));
                 continue;
             }
 
