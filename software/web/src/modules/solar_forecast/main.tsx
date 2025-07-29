@@ -182,6 +182,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
         return [<>
             <FormRow label={__("solar_forecast.content.plane_config_name")}>
                 <InputText
+                    required
                     value={this.state.plane_config_tmp.name}
                     onValue={(v) => this.setState({plane_config_tmp: {...this.state.plane_config_tmp, name: v}})}
                     minLength={1}
@@ -190,6 +191,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
             </FormRow>
             <FormRow label={__("solar_forecast.content.plane_config_latitude")} label_muted={__("solar_forecast.content.plane_config_latitude_muted")}>
                 <InputFloat
+                    required
                     unit="°"
                     value={this.state.plane_config_tmp.lat}
                     onValue={(v) => this.setState({plane_config_tmp: {...this.state.plane_config_tmp, lat: v}})}
@@ -200,6 +202,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
             </FormRow>
             <FormRow label={__("solar_forecast.content.plane_config_longitude")} label_muted={__("solar_forecast.content.plane_config_longitude_muted")}>
                 <InputFloat
+                    required
                     unit="°"
                     value={this.state.plane_config_tmp.long}
                     onValue={(v) => this.setState({plane_config_tmp: {...this.state.plane_config_tmp, long: v}})}
@@ -210,6 +213,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
             </FormRow>
             <FormRow label={__("solar_forecast.content.plane_config_declination")} label_muted={__("solar_forecast.content.plane_config_declination_muted")}>
                 <InputNumber
+                    required
                     unit="°"
                     value={this.state.plane_config_tmp.dec}
                     onValue={(v) => this.setState({plane_config_tmp: {...this.state.plane_config_tmp, dec: v}})}
@@ -219,6 +223,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
             </FormRow>
             <FormRow label={__("solar_forecast.content.plane_config_azimuth")} label_muted={__("solar_forecast.content.plane_config_azimuth_muted")}>
                 <InputNumber
+                    required
                     unit="°"
                     value={this.state.plane_config_tmp.az}
                     onValue={(v) => this.setState({plane_config_tmp: {...this.state.plane_config_tmp, az: v}})}
@@ -228,11 +233,12 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
             </FormRow>
             <FormRow label={__("solar_forecast.content.plane_config_kwp")} label_muted={__("solar_forecast.content.plane_config_kwp_muted")}>
                 <InputFloat
+                    required
                     unit="kWp"
                     value={this.state.plane_config_tmp.wp}
                     onValue={(v) => this.setState({plane_config_tmp: {...this.state.plane_config_tmp, wp: v}})}
                     digits={3}
-                    min={0}
+                    min={1}
                     max={100000}
                 />
             </FormRow>
@@ -318,12 +324,28 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                 // Darauf hinweisen das noch nicht gespeichert wurde falls isDirty()
                 return <div class="form-group row"><span class="col-12">{__("solar_forecast.content.not_set_for_this_plane")}</span></div>;
             } else {
-                return <div>
-                        <div class="form-group row"><span class="col-4">{__("solar_forecast.content.address_of_pv_plane")}</span><span class="col-8"> {plane_state.place}</span></div>
-                        <div class="form-group row"><span class="col-4">{__("solar_forecast.content.last_update_attempt")}</span><span class="col-8">{plane_state.last_check == 0 ? __("solar_forecast.content.not_yet_queried") : new Date(plane_state.last_check*60*1000).toLocaleString()}</span></div>
-                        <div class="form-group row"><span class="col-4">{__("solar_forecast.content.last_successful_update")}</span><span class="col-8">{plane_state.last_sync == 0 ? __("solar_forecast.content.not_yet_queried") :  new Date(plane_state.last_sync*60*1000).toLocaleString()}</span></div>
-                        <div class="form-group row"><span class="col-4">{__("solar_forecast.content.next_update")}</span><span class="col-8">{plane_state.next_check == 0 ? __("solar_forecast.content.unknown") : new Date(plane_state.next_check*60*1000).toLocaleString()}</span></div>
-                       </div>;
+                let place_or_error;
+
+                if (plane_state.last_sync == 0 && plane_state.place.length <= 3) {
+                    const status_code = parseInt(plane_state.place);
+
+                    if (status_code == 404) {
+                        place_or_error = <div class="form-group row"><span class="col-12">{__("solar_forecast.content.server_error_404")}</span></div>;
+                    } else if (status_code == 422) {
+                        place_or_error = <div class="form-group row"><span class="col-12">{__("solar_forecast.content.server_error_422")}</span></div>;
+                    } else {
+                        place_or_error = <div class="form-group row"><span class="col-12">{__("solar_forecast.content.server_error_other")} {status_code.toString()}</span></div>;
+                    }
+                } else {
+                    place_or_error = <div class="form-group row"><span class="col-4">{__("solar_forecast.content.address_of_pv_plane")}</span><span class="col-8"> {plane_state.place}</span></div>;
+                }
+
+                return <>
+                    {place_or_error}
+                    <div class="form-group row"><span class="col-4">{__("solar_forecast.content.last_update_attempt")   }</span><span class="col-8">{new Date(plane_state.last_check * 60 * 1000).toLocaleString()}</span></div>
+                    <div class="form-group row"><span class="col-4">{__("solar_forecast.content.last_successful_update")}</span><span class="col-8">{plane_state.last_sync  == 0 ? __("solar_forecast.content.not_yet_queried") : new Date(plane_state.last_sync  * 60 * 1000).toLocaleString()}</span></div>
+                    <div class="form-group row"><span class="col-4">{__("solar_forecast.content.next_update")           }</span><span class="col-8">{plane_state.next_check == 0 ? __("solar_forecast.content.unknown")         : new Date(plane_state.next_check * 60 * 1000).toLocaleString()}</span></div>
+                </>;
             }
         }
 
@@ -416,7 +438,7 @@ export class SolarForecast extends ConfigComponent<"solar_forecast/config", {sta
                                     this.setDirty(true);
                                 },
                                 onRemoveClick: async () => {
-                                    this.setState({plane_configs: {...state.plane_configs, [active_plane_index]: {enable: false, name: "#" + active_plane_index, lat: 0, long: 0, dec: 0, az: 0, wp: 0}}});
+                                    this.setState({plane_configs: {...state.plane_configs, [active_plane_index]: {enable: false, name: "", lat: 0, long: 0, dec: 0, az: 0, wp: 0}}});
                                     this.setDirty(true);
                                     return true;
                                 }}

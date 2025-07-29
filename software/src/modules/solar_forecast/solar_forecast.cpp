@@ -77,17 +77,33 @@ void SolarForecast::pre_setup()
         {"next_api_call",      Config::Uint32(0)}, // unix timestamp in minutes
     });
 
+    const Config plane_config_prototype = Config::Object({
+        {"enable", Config::Bool(false)},
+        {"name",   Config::Str("", 0, 16)},
+        {"lat",    Config::Int  (0,  -900000,  900000)}, // in 1/10000 degrees
+        {"long",   Config::Int  (0, -1800000, 1800000)}, // in 1/10000 degrees
+        {"dec",    Config::Uint8(0,   /* 0 */      90)}, // in degrees
+        {"az",     Config::Int  (0,     -180,     180)}, // in degrees
+        {"wp",     Config::Uint32(0)},                  // in watt-peak
+    });
+
+    const Config plane_state_prototype = Config::Object({
+        {"last_sync",  Config::Uint32(0)}, // unix timestamp in minutes
+        {"last_check", Config::Uint32(0)}, // unix timestamp in minutes
+        {"next_check", Config::Uint32(0)}, // unix timestamp in minutes
+        {"place",      Config::Str("Unknown", 0, 128)},
+    });
+
+    const Config plane_forecast_prototype = Config::Object({
+        {"first_date", Config::Uint32(0)}, // unix timestamp in minutes
+        {"resolution", Config::Uint(RESOLUTION_60MIN, RESOLUTION_15MIN, RESOLUTION_60MIN)}, // currently only 60 minutes supported
+        {"forecast",   Config::Array({}, Config::get_prototype_uint32_0(), 0, 49)} // in watt hours, 48 hours + 1 for switch to DST
+    });
+
     for (size_t plane_index = 0; plane_index < OPTIONS_SOLAR_FORECAST_PLANES(); plane_index++) {
         SolarForecastPlane &plane = planes[plane_index];
-        plane.config = ConfigRoot{Config::Object({
-            {"enable", Config::Bool(false)},
-            {"name", Config::Str(String("#") + plane_index, 0, 16)},
-            {"lat", Config::Int(0, -900000, 900000)},    // in 1/10000 degrees
-            {"long", Config::Int(0, -1800000, 1800000)}, // in 1/10000 degrees
-            {"dec", Config::Uint(0, 0, 90)},             // in degrees
-            {"az", Config::Int(0, -180, 180)},           // in degrees
-            {"wp", Config::Uint(0)}                      // in watt-peak
-        }), [this, plane_index](Config &update, ConfigSource source) -> String {
+
+        plane.config = ConfigRoot{plane_config_prototype, [this, plane_index](Config &update, ConfigSource source) -> String {
             // If the config changes for a plane, we reset the state and forecast and trigger a new update
             SolarForecastPlane &p = this->planes[plane_index];
             p.state.get("next_check")->updateUint(0);
@@ -102,20 +118,9 @@ void SolarForecast::pre_setup()
             return "";
         }};
 
-        plane.state = Config::Object({
-            {"last_sync",  Config::Uint32(0)}, // unix timestamp in minutes
-            {"last_check", Config::Uint32(0)}, // unix timestamp in minutes
-            {"next_check", Config::Uint32(0)}, // unix timestamp in minutes
-            {"place", Config::Str("Unknown", 0, 128)}
-        });
-
-        plane.forecast = Config::Object({
-            {"first_date", Config::Uint32(0)}, // unix timestamp in minutes
-            {"resolution", Config::Uint(RESOLUTION_60MIN, RESOLUTION_15MIN, RESOLUTION_60MIN)}, // currently only 60 minutes supported
-            {"forecast",   Config::Array({}, Config::get_prototype_uint32_0(), 0, 49, Config::type_id<Config::ConfUint>())} // in watt hours, 48 hours + 1 for switch to DST
-        });
-
-        plane.index = plane_index;
+        plane.state    = plane_state_prototype;
+        plane.forecast = plane_forecast_prototype;
+        plane.index    = plane_index;
     }
 
 #ifdef DEBUG_FS_ENABLE
@@ -332,6 +337,19 @@ void SolarForecast::handle_new_data()
     }
 }
 
+void SolarForecast::handle_http_status_error(int status_code)
+{
+    plane_current->state.get("place")->updateString(String(status_code, 10));
+
+    if (status_code == 404) {
+        logger.printfln("HTTP error while downloading solar forecast: 404 - Probably invalid latitude/longitude");
+    } else if (status_code == 422) {
+        logger.printfln("HTTP error while downloading solar forecast: 422 - Probably invalid declination/azimuth/power");
+    } else {
+        logger.printfln("HTTP error while downloading solar forecast: %d", status_code);
+    }
+}
+
 void SolarForecast::handle_cleanup()
 {
     free_any(json_buffer);
@@ -455,7 +473,7 @@ void SolarForecast::update()
                 break;
 
             case AsyncHTTPSClientError::HTTPStatusError:
-                logger.printfln("HTTP error while downloading solar forecast: %d", event->error_http_status);
+                handle_http_status_error(event->error_http_status);
                 break;
 
             // use default to prevent warnings since we dont use a body, cookies or headers here

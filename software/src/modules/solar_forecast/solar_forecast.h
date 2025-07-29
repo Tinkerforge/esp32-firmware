@@ -82,6 +82,7 @@ private:
     String get_api_url_with_path(const SolarForecastPlane &plane);
     uint32_t get_timestamp_today_00_00_in_minutes();
     void handle_new_data();
+    void handle_http_status_error(int status_code);
     void handle_cleanup();
     void update_cached_wh_state();
 
