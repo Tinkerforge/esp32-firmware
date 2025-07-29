@@ -51,6 +51,38 @@ bool operator==(const DebugAlloc<T>&, const DebugAlloc<U>&) { return true; }
 template <class T, class U>
 bool operator!=(const DebugAlloc<T>&, const DebugAlloc<U>&) { return false; }
 
+constexpr size_t HEAP_ALLOC_OVERHEAD = 16; // 16 bytes overhead per heap allocation.
+extern size_t allocated_by_counting_allocator;
+extern size_t overhead_allocated_by_counting_allocator_heap;
+
+// minimal C++11 allocator with debug output
+template <class Tp>
+struct CountingAllocator {
+    typedef Tp value_type;
+    CountingAllocator() = default;
+    template <class T> CountingAllocator(const CountingAllocator<T>&) {}
+
+    Tp *allocate(std::size_t n)
+    {
+        overhead_allocated_by_counting_allocator_heap += 16;
+        allocated_by_counting_allocator += sizeof(Tp) * n;
+        n *= sizeof(Tp);
+        printf("!!! allocated %zu bytes; %zu bytes overhead\n", allocated_by_counting_allocator, overhead_allocated_by_counting_allocator_heap);
+        return static_cast<Tp *>(::operator new(n));
+    }
+    void deallocate(Tp *p, std::size_t n)
+    {
+        allocated_by_counting_allocator -= sizeof(Tp) * n;
+        overhead_allocated_by_counting_allocator_heap -= 16;
+        printf("!!! allocated %zu bytes; %zu bytes overhead\n", allocated_by_counting_allocator, overhead_allocated_by_counting_allocator_heap);
+        ::operator delete(p);
+    }
+};
+template <class T, class U>
+bool operator==(const CountingAllocator<T>&, const CountingAllocator<U>&) { return true; }
+template <class T, class U>
+bool operator!=(const CountingAllocator<T>&, const CountingAllocator<U>&) { return false; }
+
 template <class Tp>
 struct IRAMAlloc {
     typedef Tp value_type;
