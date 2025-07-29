@@ -286,22 +286,22 @@ void CMNetworking::resolve_hostname_dns(uint8_t charger_idx, bool initial_reques
     ip_addr_t ip;
     err_t err = dns_gethostbyname_addrtype_lwip_ctx(device->hostname, &ip, dns_cb, device, LWIP_DNS_ADDRTYPE_IPV4);
 
-    if (err != ERR_OK) {
-        if (err != ERR_INPROGRESS) {
-            const char *hname = device->hostname;
-            task_scheduler.scheduleOnce([hname, err]() { // Can't access the logger from lwIP context.
-                if (err == ERR_VAL) {
-                    logger.printfln("Charger configured with hostname %s, but no DNS server is configured!", hname);
-                } else {
-                    const int eno = err_to_errno(err);
-                    logger.printfln("Cannot resolve '%s': %s (%i|%hhi)", hname, strerror(eno), eno, err);
-                }
-            });
-        }
+    if (err == ERR_INPROGRESS) {
         return;
+    } else if (err == ERR_OK) {
+        dns_resolved(device, &ip);
+    } else {
+        const char *hname = device->hostname;
+        task_scheduler.scheduleOnce([hname, err]() { // Can't access the logger from lwIP context.
+            if (err == ERR_VAL) {
+                logger.printfln("Charger configured with hostname %s, but no DNS server is configured!", hname);
+            } else {
+                const int eno = err_to_errno(err);
+                logger.printfln("Cannot resolve '%s': %s (%i|%hhi)", hname, strerror(eno), eno, err);
+            }
+        });
     }
 
-    dns_resolved(device, &ip);
     resolve_next_dns(device->device_index);
 }
 
@@ -363,6 +363,12 @@ void CMNetworking::resolve_all()
 
 void CMNetworking::notify_charger_unresponsive(uint8_t charger_idx)
 {
+    // If the network is not connected, there's nothing that can be done.
+    // Wait for another unresponsive notification once the network is connected.
+    if (!manager_data->connected) {
+        return;
+    }
+
     managed_device_data *device = manager_data->managed_devices + charger_idx;
 
     if (device->resolve_state == ResolveState::Resolved) {
