@@ -60,7 +60,7 @@ void Automation::pre_setup()
         {"registered_actions",  Config::Array({}, conf_uint8_prototype, 0, AUTOMATION_ACTION_ID_COUNT,  Config::type_id<Config::ConfUint>())},
         {"enabled_triggers",    Config::Array({}, conf_uint8_prototype, 0, AUTOMATION_TRIGGER_ID_COUNT, Config::type_id<Config::ConfUint>())},
         {"enabled_actions",     Config::Array({}, conf_uint8_prototype, 0, AUTOMATION_ACTION_ID_COUNT,  Config::type_id<Config::ConfUint>())},
-        {"last_run",            Config::Array({}, Config::get_prototype_uint32_0(), 0, OPTIONS_AUTOMATION_MAX_RULES(), Config::type_id<Config::ConfBool>())},
+        {"last_run",            Config::Array({}, Config::get_prototype_uint32_0(), 0, OPTIONS_AUTOMATION_MAX_RULES(), Config::type_id<Config::ConfUint>())},
     });
 }
 
