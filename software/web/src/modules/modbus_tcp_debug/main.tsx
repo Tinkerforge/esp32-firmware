@@ -17,8 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "module_available.inc"
+
 import * as API from "../../ts/api";
 import * as util from "../../ts/util";
+import * as options from "../../options";
 import { __ } from "../../ts/translation";
 import { h, Fragment, Component } from "preact";
 import { Button, Alert } from "react-bootstrap";
@@ -34,6 +37,13 @@ import { SubPage } from "../../ts/components/sub_page";
 import { CollapsedSection } from "../../ts/components/collapsed_section";
 import { ModbusFunctionCode } from "../modbus_tcp_client/modbus_function_code.enum";
 import { ModbusRegisterAddressMode } from "../modbus_tcp_client/modbus_register_address_mode.enum";
+//#if MODULE_METERS_AVAILABLE
+import { MeterClassID } from "../meters/meter_class_id.enum";
+import { MeterConfig } from "../meters/types";
+//#endif
+//#if MODULE_METERS_MODBUS_TCP_AVAILABLE
+import { MeterModbusTCPTableID } from "../meters_modbus_tcp/meter_modbus_tcp_table_id.enum";
+//#endif
 
 export function ModbusTCPDebugNavbar() {
     return (
@@ -43,9 +53,16 @@ export function ModbusTCPDebugNavbar() {
 }
 
 interface ModbusTCPDebugToolState {
-    host: string;
-    port: number;
-    device_address: number;
+//#if MODULE_METERS_AVAILABLE
+    meter_configs: {[meter_slot: number]: MeterConfig};
+    meter_slot: number;
+    meter_host: string;
+    meter_port: number;
+    meter_device_address: number;
+//#endif
+    custom_host: string;
+    custom_port: number;
+    custom_device_address: number;
     function_code: number; // ModbusFunctionCode
     register_address_mode: number; // ModbusRegisterAddressMode
     start_address: number;
@@ -80,9 +97,16 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
         super();
 
         this.state = {
-            host: "",
-            port: 502,
-            device_address: 1,
+//#if MODULE_METERS_AVAILABLE
+            meter_configs: {},
+            meter_slot: -1,
+            meter_host: "",
+            meter_port: 502,
+            meter_device_address: 1,
+//#endif
+            custom_host: "",
+            custom_port: 502,
+            custom_device_address: 1,
             function_code: 3,
             register_address_mode: ModbusRegisterAddressMode.Address,
             start_address: 0,
@@ -93,6 +117,21 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
             cookie: null,
             result: "",
         } as any;
+
+//#if MODULE_METERS_AVAILABLE
+        for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
+            util.addApiEventListener_unchecked(`meters/${meter_slot}/config`, () => {
+                let config = API.get_unchecked(`meters/${meter_slot}/config`);
+
+                this.setState((prevState) => ({
+                    meter_configs: {
+                        ...prevState.meter_configs,
+                        [meter_slot]: config
+                    }
+                }));
+            });
+        }
+//#endif
 
         util.addApiEventListener('modbus_tcp_debug/transact_result', () => {
             let transact_result = API.get('modbus_tcp_debug/transact_result');
@@ -258,6 +297,20 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
 
     render() {
         let start_address_offset = this.state.register_address_mode == ModbusRegisterAddressMode.Address ? 0 : 1;
+//#if MODULE_METERS_AVAILABLE
+        let meter_items: [string, string][] = [["-1", __("modbus_tcp_debug.content.meter_none")]];
+
+        for (let meter_slot = 0; meter_slot < options.METERS_MAX_SLOTS; ++meter_slot) {
+            if (util.hasValue(this.state.meter_configs[meter_slot])) {
+                let meter_config = this.state.meter_configs[meter_slot];
+
+                if (meter_config[0] == MeterClassID.SunSpec
+                 || meter_config[0] == MeterClassID.ModbusTCP) {
+                    meter_items.push([meter_slot.toString(), meter_config[1].display_name]);
+                }
+            }
+        }
+//#endif
 
         return <form onSubmit={async (e) => {
                     e.preventDefault();
@@ -366,11 +419,21 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
 
                         let result = "<unknown>";
 
+//#if MODULE_METERS_AVAILABLE
+                        let host = this.state.meter_slot >= 0 ? this.state.meter_host : this.state.custom_host;
+                        let port = this.state.meter_slot >= 0 ? this.state.meter_port : this.state.custom_port;
+                        let device_address = this.state.meter_slot >= 0 ? this.state.meter_device_address : this.state.custom_device_address;
+//#else
+                        let host = this.state.custom_host;
+                        let port = this.state.custom_port;
+                        let device_address = this.state.custom_device_address;
+//#endif
+
                         try {
                             result = await (await util.put("/modbus_tcp_debug/transact", {
-                                host: this.state.host,
-                                port: this.state.port,
-                                device_address: this.state.device_address,
+                                host: host,
+                                port: port,
+                                device_address: device_address,
                                 function_code: this.state.function_code,
                                 start_address: this.state.start_address,
                                 data_count: data_count,
@@ -388,30 +451,75 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                         }
                     });
                 }}>
+{/*#if MODULE_METERS_AVAILABLE*/}
+            <FormRow label={__("modbus_tcp_debug.content.meter")}>
+                <InputSelect
+                    required
+                    disabled={this.state.waiting}
+                    items={meter_items}
+                    value={util.hasValue(this.state.meter_slot) ? this.state.meter_slot.toString() : "-1"}
+                    onValue={(v) => {
+                        let meter_slot = parseInt(v);
+                        let meter_host = "";
+                        let meter_port = 502;
+                        let meter_device_address = 1;
+
+                        if (meter_slot >= 0) {
+                            let meter_config = this.state.meter_configs[meter_slot];
+
+                            if (meter_config[0] == MeterClassID.SunSpec) {
+                                meter_host = meter_config[1].host;
+                                meter_port = meter_config[1].port;
+                                meter_device_address = meter_config[1].device_address;
+                            }
+//#if MODULE_METERS_MODBUS_TCP_AVAILABLE
+                            else if (meter_config[0] == MeterClassID.ModbusTCP && meter_config[1].table[0] != MeterModbusTCPTableID.None) {
+                                meter_host = meter_config[1].host;
+                                meter_port = meter_config[1].port;
+
+                                if (meter_config[1].table[0] != MeterModbusTCPTableID.TinkerforgeWARPCharger) {
+                                    meter_device_address = meter_config[1].table[1].device_address;
+                                }
+                                else {
+                                    meter_device_address = 1;
+                                }
+                            }
+//#endif
+                        }
+
+                        this.setState({
+                            meter_slot: meter_slot,
+                            meter_host: meter_host,
+                            meter_port: meter_port,
+                            meter_device_address: meter_device_address,
+                        });
+                    }} />
+            </FormRow>
+{/*#endif*/}
             <FormRow label={__("modbus_tcp_debug.content.host")}>
                 <InputHost
                     required
-                    disabled={this.state.waiting}
-                    value={this.state.host}
-                    onValue={(v) => this.setState({host: v})} />
+                    disabled={this.state.waiting || this.state.meter_slot >= 0}
+                    value={this.state.meter_slot >= 0 ? this.state.meter_host : this.state.custom_host}
+                    onValue={(v) => this.state.meter_slot < 0 ? this.setState({custom_host: v}) : undefined} />
             </FormRow>
             <FormRow label={__("modbus_tcp_debug.content.port")} label_muted={__("modbus_tcp_debug.content.port_muted")}>
                 <InputNumber
                     required
-                    disabled={this.state.waiting}
+                    disabled={this.state.waiting || this.state.meter_slot >= 0}
                     min={1}
                     max={65535}
-                    value={this.state.port}
-                    onValue={(v) => this.setState({port: v})} />
+                    value={this.state.meter_slot >= 0 ? this.state.meter_port : this.state.custom_port}
+                    onValue={(v) => this.state.meter_slot < 0 ? this.setState({custom_port: v}) : undefined} />
             </FormRow>
             <FormRow label={__("modbus_tcp_debug.content.device_address")}>
                 <InputNumber
                     required
-                    disabled={this.state.waiting}
+                    disabled={this.state.waiting || this.state.meter_slot >= 0}
                     min={0}
                     max={255}
-                    value={this.state.device_address}
-                    onValue={(v) => this.setState({device_address: v})} />
+                    value={this.state.meter_slot >= 0 ? this.state.meter_device_address : this.state.custom_device_address}
+                    onValue={(v) => this.state.meter_slot < 0 ? this.setState({custom_device_address: v}) : undefined} />
             </FormRow>
             <FormRow label={__("modbus_tcp_debug.content.function_code")}>
                 <InputSelect

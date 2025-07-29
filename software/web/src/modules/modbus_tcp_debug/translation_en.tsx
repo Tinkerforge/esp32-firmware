@@ -15,6 +15,8 @@ let x = {
             "server_missing_github": <>, see <a href={removeUnicodeHacks("https://github.com/Tinkerforge/esp32-firmware/issues/215")}>GitHub issue #215</a></>,
 
             "debug": "Debug client",
+            "meter": "Meter",
+            "meter_none": "No meter",
             "host": "Hostname or IP address",
             "port": "Port",
             "port_muted": "typically 502",
