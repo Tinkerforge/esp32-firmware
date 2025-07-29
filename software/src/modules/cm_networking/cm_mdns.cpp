@@ -371,7 +371,7 @@ void CMNetworking::notify_charger_unresponsive(uint8_t charger_idx)
 
     managed_device_data *device = manager_data->managed_devices + charger_idx;
 
-    if (device->resolve_state == ResolveState::Resolved) {
+    if (device->resolve_state == ResolveState::Resolved && device->host_address_type != HostAddressType::IP) {
         device->resolve_state = ResolveState::Stale;
     }
 
