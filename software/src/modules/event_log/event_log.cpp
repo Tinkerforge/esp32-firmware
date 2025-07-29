@@ -369,7 +369,7 @@ void EventLog::format_timestamp(char buf[EVENT_LOG_TIMESTAMP_LENGTH + 1 /* \0 */
 
         // ISO 8601 allows omitting the T between date and time. Also  ',' is the preferred decimal sign.
         size_t written = strftime(buf, EVENT_LOG_TIMESTAMP_LENGTH + 1, "%F %T", &timeinfo);
-        snprintf(buf + written, EVENT_LOG_TIMESTAMP_LENGTH + 1 - written, ",%03ld", tv_now.tv_usec / 1000);
+        snprintf(buf + written, EVENT_LOG_TIMESTAMP_LENGTH + 1 - written, ",%03ld", static_cast<uint32_t>(tv_now.tv_usec) / 1000);
     } else {
         auto now = now_us();
         auto secs = now.to<seconds_t>();

@@ -250,7 +250,7 @@ bool Rtc::push_system_time(const timeval &time, Quality quality)
 
         char buf[EVENT_LOG_TIMESTAMP_LENGTH + 1] = {};
         size_t written = strftime(buf, ARRAY_SIZE(buf), "%F %T", &timeinfo);
-        snprintf(buf + written, EVENT_LOG_TIMESTAMP_LENGTH + 1 - written, ",%03ld", time.tv_usec / 1000);
+        snprintf(buf + written, EVENT_LOG_TIMESTAMP_LENGTH + 1 - written, ",%03ld", static_cast<uint32_t>(time.tv_usec) / 1000);
 
         logger.tracefln(this->trace_buffer_index, "Set time to %s at %llu. Quality %s", buf, now_us().to<millis_t>().as<uint64_t>(), get_quality_name(quality));
 
