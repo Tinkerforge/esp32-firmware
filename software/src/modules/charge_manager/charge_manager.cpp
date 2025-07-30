@@ -344,7 +344,7 @@ void ChargeManager::pre_setup()
         }),
         [this](const Config *cfg) {
             const String err = api.callCommand("power_manager/charge_mode_update", Config::ConfUpdateObject{{
-                {"mode", (uint32_t)cfg->get("mode")->asEnum<ConfigChargeMode>()}
+                {"mode", cfg->get("mode")->asEnumUnderlyingType<ConfigChargeMode>()}
             }});
             if (!err.isEmpty()) {
                 logger.printfln("Automation couldn't switch charge mode: %s", err.c_str());
