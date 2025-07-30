@@ -944,7 +944,7 @@ bool extract_int(const Config::ConfUpdate *update, T *result, T min = std::numer
         return false;
     }
 
-    if (x < min || x > max)
+    if (x < (int64_t)min || x > (int64_t)max)
         header_printfln("from_update", "ConfUpdate int %lld out of range: allowed are [%lld; %lld]", x, (int64_t)min, (int64_t)max);
 
     *result = (T) x;
