@@ -402,7 +402,6 @@ let x = {
                                     </ul>
                                 </li>
                             </ul>
-                            <br/>
                             <strong>Writing registers 4012 and 4013 starts the tag injection. Holding Registers 4000 to 4013 will
                             be cleared afterwards!</strong> The data format of holding registers 4000 to 4013 is identical to the
                             one of input registers 4000 to 4013 (that contain the last seen NFC tag). A physically existing tag can

@@ -404,7 +404,6 @@ let x = {
                                     </ul>
                                 </li>
                             </ul>
-                            <br/>
                             <strong>Schreiben der Register 4012 und 4013 startet das Vortäuschen das Tags. Danach werden die Holding
                             Register 4000 bis 4013 geleert!</strong> Das Datenformat der Holding Register 4000 bis 4013 ist identisch
                             zum Format der Input Register 4000 bis 4013 (die das zuletzt gesehen NFC-Tag enthalten). Ein physisch
