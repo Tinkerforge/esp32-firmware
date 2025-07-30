@@ -57,9 +57,11 @@ void MetersLegacyAPI::pre_setup()
     });
 
     config = Config::Object({
-        {"linked_meter_slot", Config::Uint32(0)}, // link to meter in slot 0 by default
+        {"linked_meter_slot", Config::Uint8(0)}, // link to meter in slot 0 by default
     });
 }
+
+static_assert(OPTIONS_METERS_MAX_SLOTS() < std::numeric_limits<uint8_t>::max());
 
 void MetersLegacyAPI::setup()
 {
@@ -67,10 +69,10 @@ void MetersLegacyAPI::setup()
 
     api.restorePersistentConfig("meters_legacy_api/config", &config);
 
-    linked_meter_slot = config.get("linked_meter_slot")->asUint();
+    linked_meter_slot = config.get("linked_meter_slot")->asUint8();
     if (linked_meter_slot >= OPTIONS_METERS_MAX_SLOTS()) {
-        if (linked_meter_slot != UINT32_MAX) {
-            logger.printfln("Configured meter slot %lu not available.", linked_meter_slot);
+        if (linked_meter_slot != std::numeric_limits<decltype(linked_meter_slot)>::max()) {
+            logger.printfln("Configured meter slot %hhu not available.", linked_meter_slot);
         }
         return;
     }
@@ -163,15 +165,15 @@ void MetersLegacyAPI::register_urls()
 
     api.addCommand("meter/state_update", &legacy_state_update, {}, [this](String &/*errmsg*/) {
         if (!this->meter_writable) {
-            logger.printfln("Meter %lu cannot be updated via the API. Only an API meter can be updated.", this->linked_meter_slot);
+            logger.printfln("Meter %hhu cannot be updated via the API. Only an API meter can be updated.", this->linked_meter_slot);
             return;
         }
-        logger.printfln("Meter %lu state cannot be updated. Change the meter's configuration instead.", this->linked_meter_slot);
+        logger.printfln("Meter %hhu state cannot be updated. Change the meter's configuration instead.", this->linked_meter_slot);
     }, false);
 
     api.addCommand("meter/values_update", &legacy_values_update, {}, [this](String &/*errmsg*/) {
         if (!this->meter_writable) {
-            logger.printfln("Meter %lu cannot be updated via the API. Only an API meter can be updated.", this->linked_meter_slot);
+            logger.printfln("Meter %hhu cannot be updated via the API. Only an API meter can be updated.", this->linked_meter_slot);
             return;
         }
 
@@ -191,7 +193,7 @@ void MetersLegacyAPI::register_urls()
 
     api.addCommand("meter/phases_update", &legacy_phases_update, {}, [this](String &/*errmsg*/) {
         if (!this->meter_writable) {
-            logger.printfln("Meter %lu cannot be updated via the API. Only an API meter can be updated.", this->linked_meter_slot);
+            logger.printfln("Meter %hhu cannot be updated via the API. Only an API meter can be updated.", this->linked_meter_slot);
             return;
         }
         if (!this->has_phases) {
@@ -215,17 +217,17 @@ void MetersLegacyAPI::register_urls()
 
     api.addCommand("meter/all_values_update", &legacy_all_values_update, {}, [this](String &/*errmsg*/) {
         if (!this->meter_writable) {
-            logger.printfln("Meter in slot %lu cannot be updated via the API. Only an API meter can be updated", this->linked_meter_slot);
+            logger.printfln("Meter in slot %hhu cannot be updated via the API. Only an API meter can be updated", this->linked_meter_slot);
             return;
         }
 
         if (this->linked_meter_value_count == 0) {
-            logger.printfln("Cannot update meter in slot %lu that holds no values", this->linked_meter_slot);
+            logger.printfln("Cannot update meter in slot %hhu that holds no values", this->linked_meter_slot);
             return;
         }
 
         if (this->linked_meter_value_count > OPTIONS_METERS_MAX_VALUES_PER_METER()) {
-            logger.printfln("Cannot update meter in slot %lu with too many many values (%u)", this->linked_meter_slot, this->linked_meter_value_count);
+            logger.printfln("Cannot update meter in slot %hhu with too many many values (%zu)", this->linked_meter_slot, this->linked_meter_value_count);
             return;
         }
 
@@ -324,7 +326,7 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
     auto cnt = value_ids->count();
     if (cnt == 0) {
         if (show_blank_value_id_update_warnings) {
-            logger.printfln("Ignoring blank value IDs update from linked meter in slot %lu.", linked_meter_slot);
+            logger.printfln("Ignoring blank value IDs update from linked meter in slot %hhu.", linked_meter_slot);
         }
         return EventResult::OK;
     }
@@ -333,7 +335,7 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
     meter_setup_done = true;
 
     if (linked_meter_value_count > OPTIONS_METERS_MAX_VALUES_PER_METER()) {
-        logger.printfln("Linked meter in slot %lu has too many values (%zu)", linked_meter_slot, linked_meter_value_count);
+        logger.printfln("Linked meter in slot %hhu has too many values (%zu)", linked_meter_slot, linked_meter_value_count);
         return EventResult::Deregister;
     }
 
@@ -374,7 +376,7 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
 
     if (value_indices_legacy_values_to_linked_meter[2] == UINT16_MAX && value_indices_legacy_values_to_linked_meter[1] != UINT16_MAX) {
         value_indices_legacy_values_to_linked_meter[2] = value_indices_legacy_values_to_linked_meter[1];
-        logger.printfln("Meter in slot %lu doesn't provide energy_abs; copying energy_rel instead.", linked_meter_slot);
+        logger.printfln("Meter in slot %hhu doesn't provide energy_abs; copying energy_rel instead.", linked_meter_slot);
     }
 
 

@@ -61,10 +61,10 @@ private:
     ConfigRoot legacy_phases_update;
     ConfigRoot legacy_all_values_update;
 
-    uint32_t linked_meter_slot = UINT32_MAX;
     size_t   linked_meter_value_count = 0;
     uint16_t value_indices_legacy_all_values_to_linked_meter[METER_ALL_VALUES_LEGACY_COUNT];
     uint16_t value_indices_legacy_values_to_linked_meter[METER_VALUES_LEGACY_COUNT];
+    uint8_t  linked_meter_slot     = std::numeric_limits<decltype(linked_meter_slot)>::max();
     bool     legacy_api_enabled    = false;
     bool     has_all_values        = false;
     bool     has_phases            = false;
