@@ -531,7 +531,7 @@ export class Batteries extends ConfigComponent<'battery_control/config', {}, Bat
         });
 
 //#if MODULE_DAY_AHEAD_PRICES_AVAILABLE
-util.addApiEventListener("day_ahead_prices/prices", () => {
+        util.addApiEventListener("day_ahead_prices/prices", () => {
             // Update chart every time new price data comes in
             this.update_uplot();
         });
