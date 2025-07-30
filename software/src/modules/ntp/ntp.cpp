@@ -65,16 +65,17 @@ void NTP::setup()
 
     api.restorePersistentConfig("ntp/config", &config);
 
-    const char *timezone = config.get("timezone")->asUnsafeCStr();
-    const char *tzstring = lookup_timezone(timezone);
+    const char *tz_name = config.get("timezone")->asUnsafeCStr();
+    const char *tz_string = lookup_timezone(tz_name);
 
-    if (!tzstring) {
-        logger.printfln("Failed to look up timezone information for %s. Will not set timezone", timezone);
+    if (tz_string == nullptr) {
+        logger.printfln("Failed to look up timezone information for %s. Will not set timezone", tz_name);
         return;
     }
-    setenv("TZ", tzstring, 1);
+
+    setenv("TZ", tz_string, 1);
     tzset();
-    logger.printfln("Set timezone to %s", timezone);
+    logger.printfln("Set timezone to %s", tz_name);
 
     if (!config.get("enable")->asBool()) {
         return;
