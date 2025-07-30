@@ -47,3 +47,4 @@ coredump_py_gdb_cmds
 api_info.json
 signature/config.ini
 signature/keys/
+.venv/
