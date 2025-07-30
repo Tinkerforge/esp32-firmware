@@ -852,6 +852,30 @@ public:
         config_abort_on_type_error("asEnum", this, "ConfInt or ConfUint");
     }
 
+    template<typename T>
+    std::underlying_type_t<T> asEnumUnderlyingType() const {
+        if (this->is<ConfUint>()) {
+            return (std::underlying_type_t<T>) this->asUint();
+        }
+        if (this->is<ConfInt>()) {
+            return (std::underlying_type_t<T>) this->asInt();
+        }
+        if (this->is<ConfUint16>()) {
+            return (std::underlying_type_t<T>) this->asUint();
+        }
+        if (this->is<ConfInt16>()) {
+            return (std::underlying_type_t<T>) this->asInt();
+        }
+        if (this->is<ConfUint8>()) {
+            return (std::underlying_type_t<T>) this->asUint();
+        }
+        if (this->is<ConfInt8>()) {
+            return (std::underlying_type_t<T>) this->asInt();
+        }
+
+        config_abort_on_type_error("asEnum", this, "ConfInt or ConfUint");
+    }
+
     bool asBool() const;
 
 private:
