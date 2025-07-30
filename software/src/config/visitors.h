@@ -928,6 +928,29 @@ struct from_json {
     bool is_root;
 };
 
+
+template<typename T>
+bool extract_int(const Config::ConfUpdate *update, T *result, T min = std::numeric_limits<T>::min(), T max = std::numeric_limits<T>::max()) {
+    int64_t x = 0;
+    if      (update->get< int8_t >() != nullptr) { x = *update->get< int8_t >(); }
+    else if (update->get<uint8_t >() != nullptr) { x = *update->get<uint8_t >(); }
+    else if (update->get< int16_t>() != nullptr) { x = *update->get< int16_t>(); }
+    else if (update->get<uint16_t>() != nullptr) { x = *update->get<uint16_t>(); }
+    else if (update->get< int32_t>() != nullptr) { x = *update->get< int32_t>(); }
+    else if (update->get<uint32_t>() != nullptr) { x = *update->get<uint32_t>(); }
+    else if (update->get< int64_t>() != nullptr) { x = *update->get< int64_t>(); }
+    else if (update->get<uint64_t>() != nullptr) { x = *update->get<uint64_t>(); }
+    else {
+        return false;
+    }
+
+    if (x < min || x > max)
+        header_printfln("from_update", "ConfUpdate int %lld out of range: allowed are [%lld; %lld]", x, (int64_t)min, (int64_t)max);
+
+    *result = (T) x;
+    return true;
+}
+
 struct from_update {
     UpdateResult operator()(Config::ConfString &x)
     {
@@ -960,12 +983,12 @@ struct from_update {
         if (Config::containsNull(update))
             return {"", false};
 
-        const auto *update_val = update->get<int32_t>();
-        if (update_val == nullptr)
+        int32_t new_value = 0;
+        if (!extract_int<int32_t>(update, &new_value, ((const Config::ConfInt &)x).getSlot()->min, ((const Config::ConfInt &)x).getSlot()->max))
             return {"ConfUpdate node was not a signed integer.", false};
 
-        bool changed = *x.getVal() != *update_val;
-        *x.getVal() = *update_val;
+        bool changed = *x.getVal() != new_value;
+        *x.getVal() = new_value;
         return {"", changed};
     }
     UpdateResult operator()(Config::ConfUint &x)
@@ -973,20 +996,12 @@ struct from_update {
         if (Config::containsNull(update))
             return {"", false};
 
-        uint32_t new_val = 0;
-        const auto *update_val_uint = update->get<uint32_t>();
-        if (update_val_uint == nullptr) {
-            const auto *update_val_int = update->get<int32_t>();
-            if (update_val_int == nullptr || *update_val_int < 0)
-                return {"ConfUpdate node was not an unsigned integer.", false};
+        uint32_t new_value = 0;
+        if (!extract_int<uint32_t>(update, &new_value, ((const Config::ConfInt &)x).getSlot()->min, ((const Config::ConfInt &)x).getSlot()->max))
+            return {"ConfUpdate node was not an unsigned integer.", false};
 
-            new_val = (uint32_t)*update_val_int;
-        } else {
-            new_val = *update_val_uint;
-        }
-
-        bool changed = *x.getVal() != new_val;
-        *x.getVal() = new_val;
+        bool changed = *x.getVal() != new_value;
+        *x.getVal() = new_value;
         return {"", changed};
     }
     UpdateResult operator()(Config::ConfInt52 &x)
@@ -994,12 +1009,12 @@ struct from_update {
         if (Config::containsNull(update))
             return {"", false};
 
-        const auto *update_val = update->get<int64_t>();
-        if (update_val == nullptr)
+        int64_t new_value = 0;
+        if (!extract_int<int64_t>(update, &new_value, -9007199254740991l, 9007199254740991l)) // FIXME: those are +-2^53! Maybe remove ConfUint53 and change ConfInt52 to 53
             return {"ConfUpdate node was not a signed integer.", false};
 
-        bool changed = *x.getVal() != *update_val;
-        *x.getVal() = *update_val;
+        bool changed = *x.getVal() != new_value;
+        *x.getVal() = new_value;
         return {"", changed};
     }
     UpdateResult operator()(Config::ConfUint53 &x)
@@ -1007,20 +1022,12 @@ struct from_update {
         if (Config::containsNull(update))
             return {"", false};
 
-        uint64_t new_val = 0;
-        const auto *update_val_uint = update->get<uint64_t>();
-        if (update_val_uint == nullptr) {
-            const auto *update_val_int = update->get<int64_t>();
-            if (update_val_int == nullptr || *update_val_int < 0)
-                return {"ConfUpdate node was not an unsigned integer.", false};
+        uint64_t new_value = 0;
+        if (!extract_int<uint64_t>(update, &new_value, 0, 9007199254740991l)) // FIXME: those are +-2^53! Maybe remove ConfUint53 and change ConfInt52 to 53
+            return {"ConfUpdate node was not a signed integer.", false};
 
-            new_val = (uint64_t)*update_val_int;
-        } else {
-            new_val = *update_val_uint;
-        }
-
-        bool changed = *x.getVal() != new_val;
-        *x.getVal() = new_val;
+        bool changed = *x.getVal() != new_value;
+        *x.getVal() = new_value;
         return {"", changed};
     }
     UpdateResult operator()(Config::ConfUint16 &x)
@@ -1028,16 +1035,12 @@ struct from_update {
         if (Config::containsNull(update))
             return {"", false};
 
-        uint16_t new_val = 0;
-        const auto *update_val_uint = update->get<uint16_t>();
-        if (update_val_uint == nullptr) {
+        uint16_t new_value = 0;
+        if (!extract_int<uint16_t>(update, &new_value))
             return {"ConfUpdate node was not an unsigned integer.", false};
-        } else {
-            new_val = *update_val_uint;
-        }
 
-        bool changed = *x.getVal() != new_val;
-        *x.getVal() = new_val;
+        bool changed = *x.getVal() != new_value;
+        *x.getVal() = new_value;
         return {"", changed};
     }
     UpdateResult operator()(Config::ConfInt16 &x)
@@ -1045,16 +1048,12 @@ struct from_update {
         if (Config::containsNull(update))
             return {"", false};
 
-        int16_t new_val = 0;
-        const auto *update_val_int = update->get<int16_t>();
-        if (update_val_int == nullptr) {
-            return {"ConfUpdate node was not a signed integer.", false};
-        } else {
-            new_val = *update_val_int;
-        }
+        int16_t new_value = 0;
+        if (!extract_int<int16_t>(update, &new_value))
+            return {"ConfUpdate node was not an unsigned integer.", false};
 
-        bool changed = *x.getVal() != new_val;
-        *x.getVal() = new_val;
+        bool changed = *x.getVal() != new_value;
+        *x.getVal() = new_value;
         return {"", changed};
     }
     UpdateResult operator()(Config::ConfUint8 &x)
@@ -1062,16 +1061,12 @@ struct from_update {
         if (Config::containsNull(update))
             return {"", false};
 
-        uint8_t new_val = 0;
-        const auto *update_val_uint = update->get<uint8_t>();
-        if (update_val_uint == nullptr) {
+        uint8_t new_value = 0;
+        if (!extract_int<uint8_t>(update, &new_value))
             return {"ConfUpdate node was not an unsigned integer.", false};
-        } else {
-            new_val = *update_val_uint;
-        }
 
-        bool changed = *x.getVal() != new_val;
-        *x.getVal() = new_val;
+        bool changed = *x.getVal() != new_value;
+        *x.getVal() = new_value;
         return {"", changed};
     }
     UpdateResult operator()(Config::ConfInt8 &x)
@@ -1079,16 +1074,12 @@ struct from_update {
         if (Config::containsNull(update))
             return {"", false};
 
-        int8_t new_val = 0;
-        const auto *update_val_int = update->get<int8_t>();
-        if (update_val_int == nullptr) {
+        int8_t new_value = 0;
+        if (!extract_int<int8_t>(update, &new_value))
             return {"ConfUpdate node was not a signed integer.", false};
-        } else {
-            new_val = *update_val_int;
-        }
 
-        bool changed = *x.getVal() != new_val;
-        *x.getVal() = new_val;
+        bool changed = *x.getVal() != new_value;
+        *x.getVal() = new_value;
         return {"", changed};
     }
     UpdateResult operator()(Config::ConfBool &x)
