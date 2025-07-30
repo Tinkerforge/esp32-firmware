@@ -318,7 +318,7 @@ void ChargeManager::pre_setup()
     automation.register_action(
         AutomationActionID::SetManagerCurrent,
         Config::Object({
-            {"current", Config::Uint(0)}
+            {"current", Config::Uint32(0)}
         }),
         [this](const Config *config) {
             String err = api.callCommand("charge_manager/available_current_update", Config::ConfUpdateObject{{

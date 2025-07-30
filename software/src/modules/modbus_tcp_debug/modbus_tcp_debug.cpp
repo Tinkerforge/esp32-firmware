@@ -41,7 +41,7 @@ void ModbusTCPDebug::pre_setup()
         {"start_address", Config::Uint16(0)},
         {"data_count", Config::Uint16(0)},
         {"write_data", Config::Str("", 0, TF_MODBUS_TCP_MAX_WRITE_REGISTER_COUNT * 4)},
-        {"timeout", Config::Uint(2000)},
+        {"timeout", Config::Uint32(2000)},
         {"cookie", Config::Uint32(0)},
     });
 }

@@ -48,13 +48,13 @@ void Eco::pre_setup()
     config = ConfigRoot{Config::Object({
         {"enable", Config::Bool(false)},
         {"park_time", Config::Bool(false)},
-        {"park_time_duration", Config::Uint(8)}, // in hours
+        {"park_time_duration", Config::Uint32(8)}, // in hours
         {"charge_below", Config::Bool(false)},
         {"charge_below_threshold", Config::Int32(0)}, // in ct
         {"block_above", Config::Bool(false)},
         {"block_above_threshold", Config::Int32(20)}, // in ct
         {"yield_forecast", Config::Bool(false)},
-        {"yield_forecast_threshold", Config::Uint(0)} // in kWh/day
+        {"yield_forecast_threshold", Config::Uint32(0)} // in kWh/day
     }), [this](Config &update, ConfigSource source) -> String {
         task_scheduler.scheduleOnce([this]() {
             this->update();
@@ -66,17 +66,17 @@ void Eco::pre_setup()
         {"enable",Config::Bool(false)},
         {"departure", Config::Enum(Departure::Tomorrow)},
         {"time", Config::Uint(8*60, 0, 24*60)}, // localtime in minutes since 00:00
-        {"amount", Config::Uint(4)}  // h or kWh depending on configuration (currently only h supported)
+        {"amount", Config::Uint32(4)}  // h or kWh depending on configuration (currently only h supported)
     });
 
     state_chargers_prototype = Config::Object({
-        {"start", Config::Uint(0)}, // Start of charge (minutes since epoch)
-        {"amount", Config::Uint(0)}, // Amount of charge since start (currently in minutes)
+        {"start", Config::Uint32(0)}, // Start of charge (minutes since epoch)
+        {"amount", Config::Uint32(0)}, // Amount of charge since start (currently in minutes)
         {"chart", Config::Str("", 0, 33)} // Base64 encoded chart data
     });
 
     state = Config::Object({
-        {"last_save", Config::Uint(0)},
+        {"last_save", Config::Uint32(0)},
         {"chargers", Config::Array(
             {},
             &state_chargers_prototype,

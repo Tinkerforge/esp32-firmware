@@ -47,17 +47,17 @@ void Heating::pre_setup()
         {"sgr_blocking_type", Config::Uint(0, 0, 1)},
         {"sgr_extended_type", Config::Uint(0, 0, 1)},
         {"min_hold_time", Config::Uint(15, 10, 60)},
-        {"meter_slot_grid_power", Config::Uint(OPTIONS_POWER_MANAGER_DEFAULT_METER_SLOT(), 0, OPTIONS_METERS_MAX_SLOTS() - 1)},
+        {"meter_slot_grid_power", Config::Uint32(OPTIONS_POWER_MANAGER_DEFAULT_METER_SLOT(), 0, OPTIONS_METERS_MAX_SLOTS() - 1)},
         {"control_period", Config::Enum(ControlPeriod::Hours24)},
         {"extended_logging", Config::Bool(false)},
         {"yield_forecast", Config::Bool(false)},
-        {"yield_forecast_threshold", Config::Uint(0)},
+        {"yield_forecast_threshold", Config::Uint32(0)},
         {"extended", Config::Bool(false)},
         {"extended_hours", Config::Uint(4, 0, 24)},
         {"blocking", Config::Bool(false)},
         {"blocking_hours", Config::Uint(0, 0, 24)},
         {"pv_excess_control", Config::Bool(false)},
-        {"pv_excess_control_threshold", Config::Uint(0)},
+        {"pv_excess_control_threshold", Config::Uint32(0)},
         {"p14enwg", Config::Bool(false)},
         {"p14enwg_input", Config::Uint(0, 0, 3)},
         {"p14enwg_type", Config::Uint(0, 0, 1)}
@@ -77,7 +77,7 @@ void Heating::pre_setup()
         {"sgr_blocking", Config::Bool(false)},
         {"sgr_extended", Config::Bool(false)},
         {"p14enwg", Config::Bool(false)},
-        {"next_update", Config::Uint(0)} // Unix timestamp in minutes, 0 = next update not yet known
+        {"next_update", Config::Uint32(0)} // Unix timestamp in minutes, 0 = next update not yet known
     });
 }
 

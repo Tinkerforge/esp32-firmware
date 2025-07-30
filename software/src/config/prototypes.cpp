@@ -51,7 +51,7 @@ const Config *Config::get_prototype_int16_0()
 const Config *Config::get_prototype_int32_0()
 {
     if (prototype_int32_0.is_null()) {
-        prototype_int32_0 = Config::Int(0);
+        prototype_int32_0 = Config::Int32(0);
     }
     return &prototype_int32_0;
 }
@@ -83,7 +83,7 @@ const Config *Config::get_prototype_uint16_0()
 const Config *Config::get_prototype_uint32_0()
 {
     if (prototype_uint32_0.is_null()) {
-        prototype_uint32_0 = Config::Uint(0);
+        prototype_uint32_0 = Config::Uint32(0);
     }
     return &prototype_uint32_0;
 }

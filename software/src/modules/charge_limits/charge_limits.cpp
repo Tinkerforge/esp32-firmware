@@ -86,7 +86,7 @@ void ChargeLimits::pre_setup()
         Config::Object({
             {"restart", Config::Bool(false)},
             {"duration",  Config::Int(0, -1, 10)},
-            {"energy_wh", Config::Int(0, -1)},
+            {"energy_wh", Config::Int(0, -1, std::numeric_limits<int32_t>::max())},
         }),
         [this](const Config *conf) {
             if (conf->get("restart")->asBool()) {

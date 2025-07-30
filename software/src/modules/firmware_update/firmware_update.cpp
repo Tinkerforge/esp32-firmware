@@ -231,15 +231,15 @@ void FirmwareUpdate::pre_setup()
 
     state = Config::Object({
         {"publisher", Config::Str(signature_publisher, 0, strlen(signature_publisher))},
-        {"check_timestamp", Config::Uint(0)},
+        {"check_timestamp", Config::Uint32(0)},
         {"check_state", Config::Enum<CheckState>(CheckState::Idle)},
         {"update_version", Config::Str("", 0, SEMANTIC_VERSION_MAX_STRING_LENGTH)},
         {"install_progress", Config::Uint(0, 0, 100)},
         {"install_state", Config::Enum<InstallState>(InstallState::Idle)},
         {"running_partition", Config::Str("", 0, 16)},
-        {"app0_state", Config::Uint(ESP_OTA_IMG_INVALID)},
+        {"app0_state", Config::Uint32(ESP_OTA_IMG_INVALID)},
         {"app0_version", Config::Str("", 0, SEMANTIC_VERSION_MAX_STRING_LENGTH)},
-        {"app1_state", Config::Uint(ESP_OTA_IMG_INVALID)},
+        {"app1_state", Config::Uint32(ESP_OTA_IMG_INVALID)},
         {"app1_version", Config::Str("", 0, SEMANTIC_VERSION_MAX_STRING_LENGTH)},
         {"rolled_back_version", Config::Str("", 0, SEMANTIC_VERSION_MAX_STRING_LENGTH)},
     });

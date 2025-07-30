@@ -103,8 +103,8 @@ void Wireguard::pre_setup()
     }};
 
     state = Config::Object({
-        {"connection_start", Config::Uint(0)},
-        {"connection_end", Config::Uint(0)},
+        {"connection_start", Config::Uint32(0)},
+        {"connection_end", Config::Uint32(0)},
         {"state", Config::Uint8(0)} // 0 not configured, 1 waiting for time sync 2 not connected 3 connected
     });
 }

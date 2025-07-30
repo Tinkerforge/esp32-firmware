@@ -82,9 +82,9 @@ void Wifi::pre_setup()
     }};
     state = Config::Object({
         {"connection_state", Config::Enum(WifiState::NotConfigured)},
-        {"connection_start", Config::Uint(0)},
-        {"connection_end", Config::Uint(0)},
-        {"ap_state", Config::Int(0)},
+        {"connection_start", Config::Uint32(0)},
+        {"connection_end", Config::Uint32(0)},
+        {"ap_state", Config::Int32(0)},
         {"ap_bssid", Config::Str("", 0, 20)},
         {"ap_sta_count", Config::Uint8(0)},
         {"sta_ip", Config::Str("0.0.0.0", 7, 15)},

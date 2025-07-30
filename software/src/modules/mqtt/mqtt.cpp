@@ -93,9 +93,9 @@ void Mqtt::pre_setup()
 
     state = Config::Object({
         {"connection_state", Config::Enum(MqttConnectionState::NotConfigured)},
-        {"connection_start", Config::Uint(0)},
-        {"connection_end", Config::Uint(0)},
-        {"last_error", Config::Int(0)}
+        {"connection_start", Config::Uint32(0)},
+        {"connection_end", Config::Uint32(0)},
+        {"last_error", Config::Int32(0)}
     });
 
 #if MODULE_AUTOMATION_AVAILABLE()

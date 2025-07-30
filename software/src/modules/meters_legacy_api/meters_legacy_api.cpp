@@ -57,7 +57,7 @@ void MetersLegacyAPI::pre_setup()
     });
 
     config = Config::Object({
-        {"linked_meter_slot", Config::Uint(0)}, // link to meter in slot 0 by default
+        {"linked_meter_slot", Config::Uint32(0)}, // link to meter in slot 0 by default
     });
 }
 

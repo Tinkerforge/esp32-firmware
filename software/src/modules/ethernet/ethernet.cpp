@@ -84,8 +84,8 @@ void Ethernet::pre_setup()
 
     state = Config::Object({
         {"connection_state", Config::Enum(EthernetState::NotConfigured)},
-        {"connection_start", Config::Uint(0)},
-        {"connection_end", Config::Uint(0)},
+        {"connection_start", Config::Uint32(0)},
+        {"connection_end", Config::Uint32(0)},
         {"ip", Config::Str("0.0.0.0", 7, 15)},
         {"subnet", Config::Str("0.0.0.0", 7, 15)},
         {"full_duplex", Config::Bool(false)},
