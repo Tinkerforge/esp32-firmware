@@ -484,6 +484,7 @@ static size_t platform_get_supported_measurand_count(int32_t connector_id, Sampl
     return result;
 }
 
+// Only used for custom values. "Normal" meter values identified by MVID use another lookup-table. See mvid_to_measurand.cpp
 const SampledValueUnit measurand_to_unit[(int)SampledValueMeasurand::NONE + 1] {
     SampledValueUnit::K_WH, /*ENERGY_ACTIVE_EXPORT_REGISTER*/
     SampledValueUnit::K_WH, /*ENERGY_ACTIVE_IMPORT_REGISTER*/
@@ -504,7 +505,7 @@ const SampledValueUnit measurand_to_unit[(int)SampledValueMeasurand::NONE + 1] {
     SampledValueUnit::A, /*CURRENT_OFFERED*/
     SampledValueUnit::V, /*VOLTAGE*/
     SampledValueUnit::NONE, /*FREQUENCY*/
-    SampledValueUnit::CELSIUS, /*TEMPERATURE*/
+    SampledValueUnit::CELCIUS, /*TEMPERATURE*/
     SampledValueUnit::PERCENT, /*SO_C*/
     SampledValueUnit::NONE, /*RPM*/
     SampledValueUnit::NONE, /*NONE*/

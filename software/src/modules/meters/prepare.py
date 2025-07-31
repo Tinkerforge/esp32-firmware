@@ -80,7 +80,7 @@ direction_map = []
 kinds = ['None']
 kind_map = []
 
-OCPP_UNIT_OVERRIDE = {"Hz": "NONE", "°C": "Celsius", "%": "PERCENT", "": "NONE", "var": "VAR", "kWh": "K_WH", "kvarh": "KVARH", "rpm": "NONE"}
+OCPP_UNIT_OVERRIDE = {"Hz": "NONE", "°C": "CELCIUS", "%": "PERCENT", "": "NONE", "var": "VAR", "kWh": "K_WH", "kvarh": "KVARH", "rpm": "NONE"}
 
 ocpp_map = []
 
