@@ -19,6 +19,8 @@
 
 #include "task_scheduler.h"
 
+#include <algorithm>
+
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 
