@@ -71,7 +71,7 @@ struct ConfUnionPrototype;
 
 enum class ConfigSource {
     File, // The new config was read from the ESP's flash
-    API, // The new config was passed via the APi
+    API, // The new config was passed via the API
     Code // The new config was created from a ConfUpdate
 };
 
