@@ -967,6 +967,8 @@ de_hyph = [
     "Neu-tral-lei-ters",
     "kon-trol-lie-ren",
     "ge-wünsch-ter",
+    "Pro-gno-se-ser-ver",
+    "Un-gül-ti-ger",
 ]
 
 en_hyph = [
@@ -1229,6 +1231,7 @@ en_hyph = [
     "es-pe-cial-ly",
     "Pri-or-i-tize",
     "pri-or-i-tized",
+    "dec-li-na-tion",
 ]
 
 hyphenations = [(x.replace("-", ""), x.replace("-", "\u00AD")) for x in de_hyph + en_hyph]
