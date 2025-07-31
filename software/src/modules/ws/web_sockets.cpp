@@ -562,10 +562,12 @@ void WebSockets::triggerHttpThread()
 }
 
 void WebSockets::pre_setup() {
+    state_peers_prototype = Config::Str("", 0, INET6_ADDRSTRLEN);
+
     state = Config::Object({
         {"keep_alive_fds", Config::Array({}, Config::get_prototype_int32_0(), MAX_WEB_SOCKET_CLIENTS, MAX_WEB_SOCKET_CLIENTS, Config::type_id<Config::ConfInt>())},
         {"keep_alive_pongs", Config::Array({},Config::get_prototype_uint32_0(), MAX_WEB_SOCKET_CLIENTS, MAX_WEB_SOCKET_CLIENTS, Config::type_id<Config::ConfUint>())},
-        {"keep_alive_peers", Config::Array({}, new Config{Config::Str("", 0, INET6_ADDRSTRLEN)}, MAX_WEB_SOCKET_CLIENTS, MAX_WEB_SOCKET_CLIENTS, Config::type_id<Config::ConfString>())},
+        {"keep_alive_peers", Config::Array({}, &state_peers_prototype, MAX_WEB_SOCKET_CLIENTS, MAX_WEB_SOCKET_CLIENTS, Config::type_id<Config::ConfString>())},
         {"worker_active", Config::Uint8(WEBSOCKET_WORKER_DONE)},
         {"last_worker_run", Config::Uint32(0)},
         {"queue_len", Config::Uint16(0)}

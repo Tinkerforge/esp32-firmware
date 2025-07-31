@@ -108,6 +108,7 @@ public:
     std::function<void(WebSocketsClient)> on_client_connect_fn;
     std::function<void(const int fd, httpd_ws_frame_t *ws_pkt)> on_binary_data_received_fn;
 
+    Config state_peers_prototype;
     ConfigRoot state;
 
     const char *handler_uri;
