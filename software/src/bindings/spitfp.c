@@ -521,6 +521,9 @@ int tf_spitfp_tick(TF_SPITFP *spitfp, uint32_t deadline_us) {
 
             return TF_TICK_AGAIN;
         }
+        // unreachable
+        default:
+            break;
     }
 
     // unreachable

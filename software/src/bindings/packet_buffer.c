@@ -156,7 +156,7 @@ void tf_packet_buffer_print(TF_PacketBuffer *pb) {
         end += TF_PACKET_BUFFER_SIZE;
     }
 
-    printf("TF_PacketBuffer (start %u, end %u, size %u): [\n",
+    printf("TF_PacketBuffer (start %u, end %u, size %d): [\n",
            pb->start, pb->end, TF_PACKET_BUFFER_SIZE);
 
     for (i = 0; i < end; i++) {

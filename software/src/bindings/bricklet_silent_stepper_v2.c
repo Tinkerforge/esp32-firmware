@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-02-20.      *
+ * This file was automatically generated on 2025-07-31.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -103,6 +103,20 @@ static bool tf_silent_stepper_v2_callback_handler(void *device, uint8_t fid, TF_
             break;
         }
 
+        case TF_SILENT_STEPPER_V2_CALLBACK_MOTOR_STALLED: {
+            TF_SilentStepperV2_MotorStalledHandler fn = silent_stepper_v2->motor_stalled_handler;
+            void *user_data = silent_stepper_v2->motor_stalled_user_data;
+            if (fn == NULL) {
+                return false;
+            }
+
+            int32_t position = tf_packet_buffer_read_int32_t(payload);
+            hal_common->locked = true;
+            fn(silent_stepper_v2, position, user_data);
+            hal_common->locked = false;
+            break;
+        }
+
         default:
             return false;
     }
@@ -134,7 +148,7 @@ int tf_silent_stepper_v2_create(TF_SilentStepperV2 *silent_stepper_v2, const cha
     silent_stepper_v2->magic = 0x5446;
     silent_stepper_v2->response_expected[0] = 0x00;
     silent_stepper_v2->response_expected[1] = 0x00;
-    silent_stepper_v2->response_expected[2] = 0x14;
+    silent_stepper_v2->response_expected[2] = 0x94;
     silent_stepper_v2->response_expected[3] = 0x00;
     return TF_E_OK;
 }
@@ -280,24 +294,29 @@ int tf_silent_stepper_v2_get_response_expected(TF_SilentStepperV2 *silent_steppe
                 *ret_response_expected = (silent_stepper_v2->response_expected[2] & (1 << 6)) != 0;
             }
             break;
-        case TF_SILENT_STEPPER_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
+        case TF_SILENT_STEPPER_V2_FUNCTION_SET_MOTOR_STALLED_CALLBACK_CONFIGURATION:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (silent_stepper_v2->response_expected[2] & (1 << 7)) != 0;
             }
             break;
-        case TF_SILENT_STEPPER_V2_FUNCTION_SET_STATUS_LED_CONFIG:
+        case TF_SILENT_STEPPER_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (silent_stepper_v2->response_expected[3] & (1 << 0)) != 0;
             }
             break;
-        case TF_SILENT_STEPPER_V2_FUNCTION_RESET:
+        case TF_SILENT_STEPPER_V2_FUNCTION_SET_STATUS_LED_CONFIG:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (silent_stepper_v2->response_expected[3] & (1 << 1)) != 0;
             }
             break;
-        case TF_SILENT_STEPPER_V2_FUNCTION_WRITE_UID:
+        case TF_SILENT_STEPPER_V2_FUNCTION_RESET:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (silent_stepper_v2->response_expected[3] & (1 << 2)) != 0;
+            }
+            break;
+        case TF_SILENT_STEPPER_V2_FUNCTION_WRITE_UID:
+            if (ret_response_expected != NULL) {
+                *ret_response_expected = (silent_stepper_v2->response_expected[3] & (1 << 3)) != 0;
             }
             break;
         default:
@@ -478,32 +497,39 @@ int tf_silent_stepper_v2_set_response_expected(TF_SilentStepperV2 *silent_steppe
                 silent_stepper_v2->response_expected[2] &= ~(1 << 6);
             }
             break;
-        case TF_SILENT_STEPPER_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
+        case TF_SILENT_STEPPER_V2_FUNCTION_SET_MOTOR_STALLED_CALLBACK_CONFIGURATION:
             if (response_expected) {
                 silent_stepper_v2->response_expected[2] |= (1 << 7);
             } else {
                 silent_stepper_v2->response_expected[2] &= ~(1 << 7);
             }
             break;
-        case TF_SILENT_STEPPER_V2_FUNCTION_SET_STATUS_LED_CONFIG:
+        case TF_SILENT_STEPPER_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
             if (response_expected) {
                 silent_stepper_v2->response_expected[3] |= (1 << 0);
             } else {
                 silent_stepper_v2->response_expected[3] &= ~(1 << 0);
             }
             break;
-        case TF_SILENT_STEPPER_V2_FUNCTION_RESET:
+        case TF_SILENT_STEPPER_V2_FUNCTION_SET_STATUS_LED_CONFIG:
             if (response_expected) {
                 silent_stepper_v2->response_expected[3] |= (1 << 1);
             } else {
                 silent_stepper_v2->response_expected[3] &= ~(1 << 1);
             }
             break;
-        case TF_SILENT_STEPPER_V2_FUNCTION_WRITE_UID:
+        case TF_SILENT_STEPPER_V2_FUNCTION_RESET:
             if (response_expected) {
                 silent_stepper_v2->response_expected[3] |= (1 << 2);
             } else {
                 silent_stepper_v2->response_expected[3] &= ~(1 << 2);
+            }
+            break;
+        case TF_SILENT_STEPPER_V2_FUNCTION_WRITE_UID:
+            if (response_expected) {
+                silent_stepper_v2->response_expected[3] |= (1 << 3);
+            } else {
+                silent_stepper_v2->response_expected[3] &= ~(1 << 3);
             }
             break;
         default:
@@ -3401,6 +3427,123 @@ int tf_silent_stepper_v2_get_gpio_state(TF_SilentStepperV2 *silent_stepper_v2, b
     return tf_tfp_get_error(_error_code);
 }
 
+int tf_silent_stepper_v2_set_motor_stalled_callback_configuration(TF_SilentStepperV2 *silent_stepper_v2, bool enabled) {
+    if (silent_stepper_v2 == NULL) {
+        return TF_E_NULL;
+    }
+
+    if (silent_stepper_v2->magic != 0x5446 || silent_stepper_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
+    TF_HAL *_hal = silent_stepper_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(_hal)->locked) {
+        return TF_E_LOCKED;
+    }
+
+    bool _response_expected = true;
+    tf_silent_stepper_v2_get_response_expected(silent_stepper_v2, TF_SILENT_STEPPER_V2_FUNCTION_SET_MOTOR_STALLED_CALLBACK_CONFIGURATION, &_response_expected);
+    tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_SET_MOTOR_STALLED_CALLBACK_CONFIGURATION, 1, _response_expected);
+
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(silent_stepper_v2->tfp);
+
+    _send_buf[0] = enabled ? 1 : 0;
+
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
+
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
+
+    if (_result < 0) {
+        return _result;
+    }
+
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
+    }
+
+    _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
+
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
+    }
+
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
+}
+
+int tf_silent_stepper_v2_get_motor_stalled_callback_configuraton(TF_SilentStepperV2 *silent_stepper_v2, bool *ret_enabled) {
+    if (silent_stepper_v2 == NULL) {
+        return TF_E_NULL;
+    }
+
+    if (silent_stepper_v2->magic != 0x5446 || silent_stepper_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
+    TF_HAL *_hal = silent_stepper_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(_hal)->locked) {
+        return TF_E_LOCKED;
+    }
+
+    bool _response_expected = true;
+    tf_tfp_prepare_send(silent_stepper_v2->tfp, TF_SILENT_STEPPER_V2_FUNCTION_GET_MOTOR_STALLED_CALLBACK_CONFIGURATON, 0, _response_expected);
+
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
+
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(silent_stepper_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
+
+    if (_result < 0) {
+        return _result;
+    }
+
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(silent_stepper_v2->tfp);
+        if (_error_code != 0 || _length != 1) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_enabled != NULL) { *ret_enabled = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+        }
+        tf_tfp_packet_processed(silent_stepper_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
+    }
+
+    _result = tf_tfp_finish_send(silent_stepper_v2->tfp, _result, _deadline);
+
+    if (_error_code == 0 && _length != 1) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
+    }
+
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
+}
+
 int tf_silent_stepper_v2_get_spitfp_error_count(TF_SilentStepperV2 *silent_stepper_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (silent_stepper_v2 == NULL) {
         return TF_E_NULL;
@@ -4193,6 +4336,22 @@ int tf_silent_stepper_v2_register_gpio_state_callback(TF_SilentStepperV2 *silent
 
     silent_stepper_v2->gpio_state_handler = handler;
     silent_stepper_v2->gpio_state_user_data = user_data;
+
+    return TF_E_OK;
+}
+
+
+int tf_silent_stepper_v2_register_motor_stalled_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2_MotorStalledHandler handler, void *user_data) {
+    if (silent_stepper_v2 == NULL) {
+        return TF_E_NULL;
+    }
+
+    if (silent_stepper_v2->magic != 0x5446 || silent_stepper_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
+    silent_stepper_v2->motor_stalled_handler = handler;
+    silent_stepper_v2->motor_stalled_user_data = user_data;
 
     return TF_E_OK;
 }

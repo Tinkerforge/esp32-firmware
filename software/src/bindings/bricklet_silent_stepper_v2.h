@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-02-20.      *
+ * This file was automatically generated on 2025-07-31.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -33,6 +33,7 @@ typedef void (*TF_SilentStepperV2_PositionReachedHandler)(struct TF_SilentSteppe
 typedef void (*TF_SilentStepperV2_AllDataHandler)(struct TF_SilentStepperV2 *silent_stepper_v2, uint16_t current_velocity, int32_t current_position, int32_t remaining_steps, uint16_t input_voltage, uint16_t current_consumption, void *user_data);
 typedef void (*TF_SilentStepperV2_NewStateHandler)(struct TF_SilentStepperV2 *silent_stepper_v2, uint8_t state_new, uint8_t state_previous, void *user_data);
 typedef void (*TF_SilentStepperV2_GPIOStateHandler)(struct TF_SilentStepperV2 *silent_stepper_v2, bool gpio_state[2], void *user_data);
+typedef void (*TF_SilentStepperV2_MotorStalledHandler)(struct TF_SilentStepperV2 *silent_stepper_v2, int32_t position, void *user_data);
 
 #endif
 /**
@@ -57,6 +58,9 @@ typedef struct TF_SilentStepperV2 {
 
     TF_SilentStepperV2_GPIOStateHandler gpio_state_handler;
     void *gpio_state_user_data;
+
+    TF_SilentStepperV2_MotorStalledHandler motor_stalled_handler;
+    void *motor_stalled_user_data;
 
 #endif
     uint16_t magic;
@@ -306,6 +310,16 @@ typedef struct TF_SilentStepperV2 {
 /**
  * \ingroup TF_SilentStepperV2
  */
+#define TF_SILENT_STEPPER_V2_FUNCTION_SET_MOTOR_STALLED_CALLBACK_CONFIGURATION 56
+
+/**
+ * \ingroup TF_SilentStepperV2
+ */
+#define TF_SILENT_STEPPER_V2_FUNCTION_GET_MOTOR_STALLED_CALLBACK_CONFIGURATON 57
+
+/**
+ * \ingroup TF_SilentStepperV2
+ */
 #define TF_SILENT_STEPPER_V2_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
@@ -389,6 +403,11 @@ typedef struct TF_SilentStepperV2 {
  * \ingroup TF_SilentStepperV2
  */
 #define TF_SILENT_STEPPER_V2_CALLBACK_GPIO_STATE 55
+
+/**
+ * \ingroup TF_SilentStepperV2
+ */
+#define TF_SILENT_STEPPER_V2_CALLBACK_MOTOR_STALLED 58
 
 #endif
 
@@ -896,6 +915,20 @@ int tf_silent_stepper_v2_register_new_state_callback(TF_SilentStepperV2 *silent_
  * This callback is triggered by GPIO changes if it is activated through {@link tf_silent_stepper_v2_set_gpio_action}.
  */
 int tf_silent_stepper_v2_register_gpio_state_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2_GPIOStateHandler handler, void *user_data);
+
+
+/**
+ * \ingroup TF_SilentStepperV2
+ *
+ * Registers the given \c handler to the Motor Stalled callback. The
+ * \c user_data will be passed as the last parameter to the \c handler.
+ *
+ * Signature: \code void callback(int32_t position, void *user_data) \endcode
+ *
+ * This callback is triggered whenever the motor stalled parameter in the status is set (changes from false to true).
+ * See {@link tf_silent_stepper_v2_get_driver_status}.
+ */
+int tf_silent_stepper_v2_register_motor_stalled_callback(TF_SilentStepperV2 *silent_stepper_v2, TF_SilentStepperV2_MotorStalledHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
@@ -1527,6 +1560,21 @@ int tf_silent_stepper_v2_get_gpio_action(TF_SilentStepperV2 *silent_stepper_v2, 
  * false if the state is ``low``.
  */
 int tf_silent_stepper_v2_get_gpio_state(TF_SilentStepperV2 *silent_stepper_v2, bool ret_gpio_state[2]);
+
+/**
+ * \ingroup TF_SilentStepperV2
+ *
+ * Sets the period with which the {@link tf_silent_stepper_v2_register_all_data_callback} callback is triggered
+ * periodically. A value of 0 turns the callback off.
+ */
+int tf_silent_stepper_v2_set_motor_stalled_callback_configuration(TF_SilentStepperV2 *silent_stepper_v2, bool enabled);
+
+/**
+ * \ingroup TF_SilentStepperV2
+ *
+ * Returns the period as set by {@link tf_silent_stepper_v2_set_all_callback_configuration}.
+ */
+int tf_silent_stepper_v2_get_motor_stalled_callback_configuraton(TF_SilentStepperV2 *silent_stepper_v2, bool *ret_enabled);
 
 /**
  * \ingroup TF_SilentStepperV2

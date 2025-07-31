@@ -311,8 +311,6 @@ static int accept_connections(TF_Net *net) {
     clients[insert_idx].send_buf_used = 0;
     ++net->clients_used;
 
-    printf("clients used: %d\n", net->clients_used);
-
     if (net->clients_used == max_clients) {
         // We already have the maximum amount of clients, don't accept more.
         close(net->server_fd);

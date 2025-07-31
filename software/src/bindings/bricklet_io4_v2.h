@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-02-20.      *
+ * This file was automatically generated on 2025-07-31.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -31,6 +31,7 @@ struct TF_IO4V2;
 typedef void (*TF_IO4V2_InputValueHandler)(struct TF_IO4V2 *io4_v2, uint8_t channel, bool changed, bool value, void *user_data);
 typedef void (*TF_IO4V2_AllInputValueHandler)(struct TF_IO4V2 *io4_v2, bool changed[4], bool value[4], void *user_data);
 typedef void (*TF_IO4V2_MonoflopDoneHandler)(struct TF_IO4V2 *io4_v2, uint8_t channel, bool value, void *user_data);
+typedef void (*TF_IO4V2_CaptureInputHandler)(struct TF_IO4V2 *io4_v2, uint8_t data[64], void *user_data);
 
 #endif
 /**
@@ -49,6 +50,9 @@ typedef struct TF_IO4V2 {
 
     TF_IO4V2_MonoflopDoneHandler monoflop_done_handler;
     void *monoflop_done_user_data;
+
+    TF_IO4V2_CaptureInputHandler capture_input_handler;
+    void *capture_input_user_data;
 
 #endif
     uint16_t magic;
@@ -138,6 +142,16 @@ typedef struct TF_IO4V2 {
 /**
  * \ingroup TF_IO4V2
  */
+#define TF_IO4_V2_FUNCTION_SET_CAPTURE_INPUT_CALLBACK_CONFIGURATION 20
+
+/**
+ * \ingroup TF_IO4V2
+ */
+#define TF_IO4_V2_FUNCTION_GET_CAPTURE_INPUT_CALLBACK_CONFIGURATION 21
+
+/**
+ * \ingroup TF_IO4V2
+ */
 #define TF_IO4_V2_FUNCTION_GET_SPITFP_ERROR_COUNT 234
 
 /**
@@ -211,6 +225,11 @@ typedef struct TF_IO4V2 {
  * \ingroup TF_IO4V2
  */
 #define TF_IO4_V2_CALLBACK_MONOFLOP_DONE 19
+
+/**
+ * \ingroup TF_IO4V2
+ */
+#define TF_IO4_V2_CALLBACK_CAPTURE_INPUT 22
 
 #endif
 
@@ -442,6 +461,23 @@ int tf_io4_v2_register_all_input_value_callback(TF_IO4V2 *io4_v2, TF_IO4V2_AllIn
  * (the value after the monoflop).
  */
 int tf_io4_v2_register_monoflop_done_callback(TF_IO4V2 *io4_v2, TF_IO4V2_MonoflopDoneHandler handler, void *user_data);
+
+
+/**
+ * \ingroup TF_IO4V2
+ *
+ * Registers the given \c handler to the Capture Input callback. The
+ * \c user_data will be passed as the last parameter to the \c handler.
+ *
+ * Signature: \code void callback(uint8_t data[64], void *user_data) \endcode
+ *
+ * Returns a stream of IO-4 inputs encoded as bitmasks. There are two samples per 8 bit (i.e. 128 samples per callback). Each sample has a time distance as defined by {@link tf_io4_v2_set_capture_input_callback_configuration}.
+ *
+ * The data starts to stream when the callback is enabled and stops after it is disabled again.
+ *
+ * .. versionadded:: 2.0.5$nbsp;(Plugin)
+ */
+int tf_io4_v2_register_capture_input_callback(TF_IO4V2 *io4_v2, TF_IO4V2_CaptureInputHandler handler, void *user_data);
 #endif
 #if TF_IMPLEMENT_CALLBACKS != 0
 /**
@@ -673,6 +709,28 @@ int tf_io4_v2_set_pwm_configuration(TF_IO4V2 *io4_v2, uint8_t channel, uint32_t 
  * Returns the PWM configuration as set by {@link tf_io4_v2_set_pwm_configuration}.
  */
 int tf_io4_v2_get_pwm_configuration(TF_IO4V2 *io4_v2, uint8_t channel, uint32_t *ret_frequency, uint16_t *ret_duty_cycle);
+
+/**
+ * \ingroup TF_IO4V2
+ *
+ * If `enable` is set to true, the {@link tf_io4_v2_register_capture_input_callback} callback is started. The sample frequency is given with the `time between capture` parameter (in us).
+ * For example: A time between capture of 50us corresponds to a sampling frequency of 20kHz. The maximum sampling frquency is 50kHz.
+ *
+ * Note: When the {@link tf_io4_v2_register_capture_input_callback} callback is activated, all other functions of the IO-4 Bricklet 2.0 stop working.
+ *
+ * .. versionadded:: 2.0.5$nbsp;(Plugin)
+ */
+int tf_io4_v2_set_capture_input_callback_configuration(TF_IO4V2 *io4_v2, bool enable, uint16_t time_between_capture);
+
+/**
+ * \ingroup TF_IO4V2
+ *
+ * Returns the callback configuration as set by
+ * {@link tf_io4_v2_set_capture_input_callback_configuration}.
+ *
+ * .. versionadded:: 2.0.5$nbsp;(Plugin)
+ */
+int tf_io4_v2_get_capture_input_callback_configuration(TF_IO4V2 *io4_v2, bool *ret_enable, uint16_t *ret_time_between_capture);
 
 /**
  * \ingroup TF_IO4V2

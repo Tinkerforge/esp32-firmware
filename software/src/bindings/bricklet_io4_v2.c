@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2024-02-20.      *
+ * This file was automatically generated on 2025-07-31.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -74,6 +74,20 @@ static bool tf_io4_v2_callback_handler(void *device, uint8_t fid, TF_PacketBuffe
             break;
         }
 
+        case TF_IO4_V2_CALLBACK_CAPTURE_INPUT: {
+            TF_IO4V2_CaptureInputHandler fn = io4_v2->capture_input_handler;
+            void *user_data = io4_v2->capture_input_user_data;
+            if (fn == NULL) {
+                return false;
+            }
+            size_t _i;
+            uint8_t data[64]; for (_i = 0; _i < 64; ++_i) data[_i] = tf_packet_buffer_read_uint8_t(payload);
+            hal_common->locked = true;
+            fn(io4_v2, data, user_data);
+            hal_common->locked = false;
+            break;
+        }
+
         default:
             return false;
     }
@@ -104,7 +118,7 @@ int tf_io4_v2_create(TF_IO4V2 *io4_v2, const char *uid_or_port_name, TF_HAL *hal
     io4_v2->tfp->cb_handler = tf_io4_v2_callback_handler;
     io4_v2->magic = 0x5446;
     io4_v2->response_expected[0] = 0x18;
-    io4_v2->response_expected[1] = 0x00;
+    io4_v2->response_expected[1] = 0x01;
     return TF_E_OK;
 }
 
@@ -174,24 +188,29 @@ int tf_io4_v2_get_response_expected(TF_IO4V2 *io4_v2, uint8_t function_id, bool 
                 *ret_response_expected = (io4_v2->response_expected[0] & (1 << 7)) != 0;
             }
             break;
-        case TF_IO4_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
+        case TF_IO4_V2_FUNCTION_SET_CAPTURE_INPUT_CALLBACK_CONFIGURATION:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (io4_v2->response_expected[1] & (1 << 0)) != 0;
             }
             break;
-        case TF_IO4_V2_FUNCTION_SET_STATUS_LED_CONFIG:
+        case TF_IO4_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (io4_v2->response_expected[1] & (1 << 1)) != 0;
             }
             break;
-        case TF_IO4_V2_FUNCTION_RESET:
+        case TF_IO4_V2_FUNCTION_SET_STATUS_LED_CONFIG:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (io4_v2->response_expected[1] & (1 << 2)) != 0;
             }
             break;
-        case TF_IO4_V2_FUNCTION_WRITE_UID:
+        case TF_IO4_V2_FUNCTION_RESET:
             if (ret_response_expected != NULL) {
                 *ret_response_expected = (io4_v2->response_expected[1] & (1 << 3)) != 0;
+            }
+            break;
+        case TF_IO4_V2_FUNCTION_WRITE_UID:
+            if (ret_response_expected != NULL) {
+                *ret_response_expected = (io4_v2->response_expected[1] & (1 << 4)) != 0;
             }
             break;
         default:
@@ -267,32 +286,39 @@ int tf_io4_v2_set_response_expected(TF_IO4V2 *io4_v2, uint8_t function_id, bool 
                 io4_v2->response_expected[0] &= ~(1 << 7);
             }
             break;
-        case TF_IO4_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
+        case TF_IO4_V2_FUNCTION_SET_CAPTURE_INPUT_CALLBACK_CONFIGURATION:
             if (response_expected) {
                 io4_v2->response_expected[1] |= (1 << 0);
             } else {
                 io4_v2->response_expected[1] &= ~(1 << 0);
             }
             break;
-        case TF_IO4_V2_FUNCTION_SET_STATUS_LED_CONFIG:
+        case TF_IO4_V2_FUNCTION_SET_WRITE_FIRMWARE_POINTER:
             if (response_expected) {
                 io4_v2->response_expected[1] |= (1 << 1);
             } else {
                 io4_v2->response_expected[1] &= ~(1 << 1);
             }
             break;
-        case TF_IO4_V2_FUNCTION_RESET:
+        case TF_IO4_V2_FUNCTION_SET_STATUS_LED_CONFIG:
             if (response_expected) {
                 io4_v2->response_expected[1] |= (1 << 2);
             } else {
                 io4_v2->response_expected[1] &= ~(1 << 2);
             }
             break;
-        case TF_IO4_V2_FUNCTION_WRITE_UID:
+        case TF_IO4_V2_FUNCTION_RESET:
             if (response_expected) {
                 io4_v2->response_expected[1] |= (1 << 3);
             } else {
                 io4_v2->response_expected[1] &= ~(1 << 3);
+            }
+            break;
+        case TF_IO4_V2_FUNCTION_WRITE_UID:
+            if (response_expected) {
+                io4_v2->response_expected[1] |= (1 << 4);
+            } else {
+                io4_v2->response_expected[1] &= ~(1 << 4);
             }
             break;
         default:
@@ -1297,6 +1323,125 @@ int tf_io4_v2_get_pwm_configuration(TF_IO4V2 *io4_v2, uint8_t channel, uint32_t 
     return tf_tfp_get_error(_error_code);
 }
 
+int tf_io4_v2_set_capture_input_callback_configuration(TF_IO4V2 *io4_v2, bool enable, uint16_t time_between_capture) {
+    if (io4_v2 == NULL) {
+        return TF_E_NULL;
+    }
+
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
+    TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(_hal)->locked) {
+        return TF_E_LOCKED;
+    }
+
+    bool _response_expected = true;
+    tf_io4_v2_get_response_expected(io4_v2, TF_IO4_V2_FUNCTION_SET_CAPTURE_INPUT_CALLBACK_CONFIGURATION, &_response_expected);
+    tf_tfp_prepare_send(io4_v2->tfp, TF_IO4_V2_FUNCTION_SET_CAPTURE_INPUT_CALLBACK_CONFIGURATION, 3, _response_expected);
+
+    uint8_t *_send_buf = tf_tfp_get_send_payload_buffer(io4_v2->tfp);
+
+    _send_buf[0] = enable ? 1 : 0;
+    time_between_capture = tf_leconvert_uint16_to(time_between_capture); memcpy(_send_buf + 1, &time_between_capture, 2);
+
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
+
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(io4_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
+
+    if (_result < 0) {
+        return _result;
+    }
+
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        tf_tfp_packet_processed(io4_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(io4_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
+    }
+
+    _result = tf_tfp_finish_send(io4_v2->tfp, _result, _deadline);
+
+    if (_error_code == 0 && _length != 0) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
+    }
+
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
+}
+
+int tf_io4_v2_get_capture_input_callback_configuration(TF_IO4V2 *io4_v2, bool *ret_enable, uint16_t *ret_time_between_capture) {
+    if (io4_v2 == NULL) {
+        return TF_E_NULL;
+    }
+
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
+    TF_HAL *_hal = io4_v2->tfp->spitfp->hal;
+
+    if (tf_hal_get_common(_hal)->locked) {
+        return TF_E_LOCKED;
+    }
+
+    bool _response_expected = true;
+    tf_tfp_prepare_send(io4_v2->tfp, TF_IO4_V2_FUNCTION_GET_CAPTURE_INPUT_CALLBACK_CONFIGURATION, 0, _response_expected);
+
+    uint32_t _deadline = tf_hal_current_time_us(_hal) + tf_hal_get_common(_hal)->timeout;
+
+    uint8_t _error_code = 0;
+    uint8_t _length = 0;
+    int _result = tf_tfp_send_packet(io4_v2->tfp, _response_expected, _deadline, &_error_code, &_length, TF_NEW_PACKET);
+
+    if (_result < 0) {
+        return _result;
+    }
+
+
+    if (_result & TF_TICK_PACKET_RECEIVED) {
+        TF_PacketBuffer *_recv_buf = tf_tfp_get_receive_buffer(io4_v2->tfp);
+        if (_error_code != 0 || _length != 3) {
+            tf_packet_buffer_remove(_recv_buf, _length);
+        } else {
+            if (ret_enable != NULL) { *ret_enable = tf_packet_buffer_read_bool(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 1); }
+            if (ret_time_between_capture != NULL) { *ret_time_between_capture = tf_packet_buffer_read_uint16_t(_recv_buf); } else { tf_packet_buffer_remove(_recv_buf, 2); }
+        }
+        tf_tfp_packet_processed(io4_v2->tfp);
+    }
+
+
+    if (_result & TF_TICK_TIMEOUT) {
+        _result = tf_tfp_finish_send(io4_v2->tfp, _result, _deadline);
+        (void) _result;
+        return TF_E_TIMEOUT;
+    }
+
+    _result = tf_tfp_finish_send(io4_v2->tfp, _result, _deadline);
+
+    if (_error_code == 0 && _length != 3) {
+        return TF_E_WRONG_RESPONSE_LENGTH;
+    }
+
+    if (_result < 0) {
+        return _result;
+    }
+
+    return tf_tfp_get_error(_error_code);
+}
+
 int tf_io4_v2_get_spitfp_error_count(TF_IO4V2 *io4_v2, uint32_t *ret_error_count_ack_checksum, uint32_t *ret_error_count_message_checksum, uint32_t *ret_error_count_frame, uint32_t *ret_error_count_overflow) {
     if (io4_v2 == NULL) {
         return TF_E_NULL;
@@ -2057,6 +2202,22 @@ int tf_io4_v2_register_monoflop_done_callback(TF_IO4V2 *io4_v2, TF_IO4V2_Monoflo
 
     io4_v2->monoflop_done_handler = handler;
     io4_v2->monoflop_done_user_data = user_data;
+
+    return TF_E_OK;
+}
+
+
+int tf_io4_v2_register_capture_input_callback(TF_IO4V2 *io4_v2, TF_IO4V2_CaptureInputHandler handler, void *user_data) {
+    if (io4_v2 == NULL) {
+        return TF_E_NULL;
+    }
+
+    if (io4_v2->magic != 0x5446 || io4_v2->tfp == NULL) {
+        return TF_E_NOT_INITIALIZED;
+    }
+
+    io4_v2->capture_input_handler = handler;
+    io4_v2->capture_input_user_data = user_data;
 
     return TF_E_OK;
 }

@@ -260,6 +260,8 @@ void tf_hal_printf(const char *fmt, ...) {
 
                 continue;
             }
+            default:
+                break;
         }
 
         // Parse integer placeholders
@@ -360,6 +362,8 @@ void tf_hal_printf(const char *fmt, ...) {
                     value = va_arg(va, uint64_t);
                 }
 
+                break;
+            default:
                 break;
         }
 
