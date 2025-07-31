@@ -55,8 +55,8 @@ public:
     void setup() override;
     void register_urls() override;
 
-    void register_action(AutomationActionID id, Config cfg, ActionCb &&callback, ValidatorCb &&validator = nullptr, bool enable = true);
-    void register_trigger(AutomationTriggerID id, Config cfg, ValidatorCb &&validator = nullptr, bool enable = true);
+    void register_action(AutomationActionID id, const Config &cfg, ActionCb &&callback, ValidatorCb &&validator = nullptr, bool enable = true);
+    void register_trigger(AutomationTriggerID id, const Config &cfg, ValidatorCb &&validator = nullptr, bool enable = true);
 
     void set_enabled(AutomationActionID id, bool enable);
     void set_enabled(AutomationTriggerID id, bool enable);
@@ -69,6 +69,8 @@ public:
 
 private:
     Config config_tasks_prototype;
+    Config state_actions_prototype;
+    Config state_triggers_prototype;
     ConfigRoot config;
     ConfigRoot config_in_use;
     ConfigRoot state;

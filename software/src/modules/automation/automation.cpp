@@ -53,11 +53,14 @@ void Automation::pre_setup()
         })
     );
 
+    state_actions_prototype  = Config::Enum<AutomationActionID>(AutomationActionID::None);
+    state_triggers_prototype = Config::Enum<AutomationTriggerID>(AutomationTriggerID::None);
+
     state = Config::Object({
-        {"registered_triggers", Config::Array({}, new Config{Config::Enum<AutomationTriggerID>(AutomationTriggerID::None)}, 0, AUTOMATION_TRIGGER_ID_COUNT, Config::type_id<Config::ConfUint>())},
-        {"registered_actions",  Config::Array({}, new Config{Config::Enum<AutomationActionID>(AutomationActionID::None)},  0, AUTOMATION_ACTION_ID_COUNT,  Config::type_id<Config::ConfUint>())},
-        {"enabled_triggers",    Config::Array({}, new Config{Config::Enum<AutomationTriggerID>(AutomationTriggerID::None)}, 0, AUTOMATION_TRIGGER_ID_COUNT, Config::type_id<Config::ConfUint>())},
-        {"enabled_actions",     Config::Array({}, new Config{Config::Enum<AutomationActionID>(AutomationActionID::None)},  0, AUTOMATION_ACTION_ID_COUNT,  Config::type_id<Config::ConfUint>())},
+        {"registered_triggers", Config::Array({}, &state_triggers_prototype, 0, AUTOMATION_TRIGGER_ID_COUNT, Config::type_id<Config::ConfUint>())},
+        {"registered_actions",  Config::Array({}, &state_actions_prototype,  0, AUTOMATION_ACTION_ID_COUNT,  Config::type_id<Config::ConfUint>())},
+        {"enabled_triggers",    Config::Array({}, &state_triggers_prototype, 0, AUTOMATION_TRIGGER_ID_COUNT, Config::type_id<Config::ConfUint>())},
+        {"enabled_actions",     Config::Array({}, &state_actions_prototype,  0, AUTOMATION_ACTION_ID_COUNT,  Config::type_id<Config::ConfUint>())},
         {"last_run",            Config::Array({}, Config::get_prototype_uint32_0(), 0, OPTIONS_AUTOMATION_MAX_RULES(), Config::type_id<Config::ConfUint>())},
     });
 }
@@ -177,7 +180,7 @@ void Automation::register_urls()
     api.addState("automation/state", &state);
 }
 
-void Automation::register_action(AutomationActionID id, Config cfg, ActionCb &&callback, ValidatorCb &&validator, bool enable)
+void Automation::register_action(AutomationActionID id, const Config &cfg, ActionCb &&callback, ValidatorCb &&validator, bool enable)
 {
     if (boot_stage > BootStage::PRE_SETUP) {
 #ifdef DEBUG_FS_ENABLE
@@ -197,7 +200,7 @@ void Automation::register_action(AutomationActionID id, Config cfg, ActionCb &&c
     action_map[id] = ActionValue{std::move(callback), std::move(validator), enable};
 }
 
-void Automation::register_trigger(AutomationTriggerID id, Config cfg, ValidatorCb &&validator, bool enable)
+void Automation::register_trigger(AutomationTriggerID id, const Config &cfg, ValidatorCb &&validator, bool enable)
 {
     if (boot_stage > BootStage::PRE_SETUP) {
 #ifdef DEBUG_FS_ENABLE
