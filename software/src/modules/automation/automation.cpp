@@ -303,7 +303,7 @@ bool Automation::trigger(AutomationTriggerID number, void *data, IAutomationBack
                 continue;
             }
 
-            auto cb = action_map[action_ident].callback;
+            const ActionCb &cb = action_map[action_ident].callback;
             if (delay > 0_s) {
                 logger.printfln("Running rule #%d in %lu seconds", current_rule, delay.as<uint32_t>());
                 task_scheduler.scheduleOnce([cb, action](){
