@@ -120,7 +120,7 @@ void Debug::pre_setup()
 
     state_spi_bus_prototype = Config::Object({
         {"clk",          Config::Uint32(0)},
-        {"dummy_cycles", Config::Uint32(0)},
+        {"dummy_cycles", Config::Uint8(0)},
         {"spi_mode",     Config::Str("", 0, 14)}
     });
 
@@ -134,7 +134,7 @@ void Debug::pre_setup()
         {"apb_clk",    Config::Uint32(rtc_clk_apb_freq_get())},
         {"spi_buses",  Config::Array({},
             &state_spi_bus_prototype,
-            0, 4, Config::type_id<Config::ConfObject>()
+            0, 4
         )},
         {"dram_benchmark",   Config::Float(dram_speed)},
         {"iram_benchmark",   Config::Float(iram_speed)},
@@ -155,7 +155,7 @@ void Debug::pre_setup()
         {"free_psram", Config::Uint32(0)},
         {"heap_check_time_avg", Config::Uint32(0)},
         {"heap_check_time_max", Config::Uint32(0)},
-        {"cpu_usage",  Config::Uint32(0)},
+        {"cpu_usage",  Config::Uint8(0)},
     });
 
     state_slow = Config::Object({
@@ -184,12 +184,12 @@ void Debug::pre_setup()
 
     state_slots_prototype = Config::Array({},
         Config::get_prototype_uint16_0(),
-        5, 5, Config::type_id<Config::ConfUint>()
+        5, 5
     );
 
     state_slots = Config::Array({},
         &state_slots_prototype,
-        CONFIG_TYPES, CONFIG_TYPES, Config::type_id<Config::ConfArray>()
+        CONFIG_TYPES, CONFIG_TYPES
     );
 
     for (size_t i = 0; i < CONFIG_TYPES; i++) {
@@ -202,13 +202,13 @@ void Debug::pre_setup()
 
     state_hwm_prototype = Config::Object({
         {"task_name",  Config::Str("", 0, CONFIG_FREERTOS_MAX_TASK_NAME_LEN)},
-        {"hwm",        Config::Uint32(0)},
-        {"stack_size", Config::Uint32(0)},
+        {"hwm",        Config::Uint16(0)},
+        {"stack_size", Config::Uint16(0)},
     });
 
     state_hwm = Config::Array({},
         &state_hwm_prototype,
-        0, 64, Config::type_id<Config::ConfObject>()
+        0, 64
     );
 
 

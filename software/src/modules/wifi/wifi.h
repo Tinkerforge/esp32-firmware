@@ -51,7 +51,7 @@ private:
     void apply_soft_ap_config_and_start();
     bool apply_sta_config_and_connect();
 
-    int get_ap_state();
+    uint8_t get_ap_state();
 
     void start_scan();
     void get_scan_results(StringBuilder *sb, size_t network_count);

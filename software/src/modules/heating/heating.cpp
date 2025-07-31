@@ -51,7 +51,7 @@ void Heating::pre_setup()
         {"control_period", Config::Enum(ControlPeriod::Hours24)},
         {"extended_logging", Config::Bool(false)},
         {"yield_forecast", Config::Bool(false)},
-        {"yield_forecast_threshold", Config::Uint32(0)},
+        {"yield_forecast_threshold", Config::Uint16(0)},
         {"extended", Config::Bool(false)},
         {"extended_hours", Config::Uint(4, 0, 24)},
         {"blocking", Config::Bool(false)},

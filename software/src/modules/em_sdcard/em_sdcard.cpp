@@ -27,9 +27,9 @@
 void EMSDcard::pre_setup()
 {
     state = Config::Object({
-        {"sd_status",       Config::Uint32(0)},
-        {"lfs_status",      Config::Uint32(0)},
-        {"card_type",       Config::Uint32(0)},
+        {"sd_status",       Config::Uint16(0)},
+        {"lfs_status",      Config::Uint16(0)},
+        {"card_type",       Config::Uint16(0)},
         {"sector_count",    Config::Uint32(0)},
         {"sector_size",     Config::Uint16(0)},
         {"manufacturer_id", Config::Uint8(0)},

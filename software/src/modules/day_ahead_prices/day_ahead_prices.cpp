@@ -101,16 +101,16 @@ void DayAheadPrices::pre_setup()
     prices = Config::Object({
         {"first_date", Config::Uint32(0)}, // unix timestamp in minutes
         {"resolution", Config::Enum(Resolution::Min60)},
-        {"prices",     Config::Array({}, Config::get_prototype_int32_0(), 0, DAY_AHEAD_PRICE_MAX_AMOUNT, Config::type_id<Config::ConfInt>())}
+        {"prices",     Config::Array({}, Config::get_prototype_int32_0(), 0, DAY_AHEAD_PRICE_MAX_AMOUNT)}
     });
 
 #if MODULE_AUTOMATION_AVAILABLE()
     automation.register_trigger(
         AutomationTriggerID::DayAheadPriceNow,
         Config::Object({
-            {"type", Config::Int32(INT32_MAX)},
-            {"comparison", Config::Int32(INT32_MAX)},
-            {"value", Config::Int32(INT32_MAX)},
+            {"type",       Config::Uint8(0, 1)},
+            {"comparison", Config::Uint8(0, 1)},
+            {"value",      Config::Int32(0)},
         })
     );
 #endif
@@ -839,8 +839,8 @@ bool DayAheadPrices::has_triggered(const Config *conf, void *data)
 {
     if (conf->getTag<AutomationTriggerID>() == AutomationTriggerID::DayAheadPriceNow) {
         const Config *cfg = static_cast<const Config *>(conf->get());
-        const int32_t type          = cfg->get("type"      )->asInt();
-        const int32_t comparison    = cfg->get("comparison")->asInt();
+        const uint32_t type         = cfg->get("type"      )->asUint();
+        const uint32_t comparison   = cfg->get("comparison")->asUint();
         const int32_t value         = cfg->get("value"     )->asInt();
         const int32_t current_price = *static_cast<int32_t *>(data);
 

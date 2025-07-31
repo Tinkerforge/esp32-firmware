@@ -84,7 +84,7 @@ void Wifi::pre_setup()
         {"connection_state", Config::Enum(WifiState::NotConfigured)},
         {"connection_start", Config::Uint32(0)},
         {"connection_end", Config::Uint32(0)},
-        {"ap_state", Config::Int32(0)},
+        {"ap_state", Config::Uint8(0)},
         {"ap_bssid", Config::Str("", 0, 20)},
         {"ap_sta_count", Config::Uint8(0)},
         {"sta_ip", Config::Str("0.0.0.0", 7, 15)},
@@ -930,7 +930,7 @@ void Wifi::setup()
         }
 
         task_scheduler.scheduleWithFixedDelay([this]() {
-            state.get("ap_state")->updateInt(get_ap_state());
+            state.get("ap_state")->updateUint(get_ap_state());
         }, 5_s, 5_s);
     }
 
@@ -1108,7 +1108,7 @@ bool Wifi::is_sta_enabled() const
     return runtime_sta != nullptr;
 }
 
-int Wifi::get_ap_state()
+uint8_t Wifi::get_ap_state()
 {
     if (runtime_ap == nullptr)
         return 0; // Disabled
