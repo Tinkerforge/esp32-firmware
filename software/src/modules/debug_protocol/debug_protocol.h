@@ -31,12 +31,11 @@ class DebugProtocol final : public IModule
 public:
     DebugProtocol(){}
     void register_urls() override;
-    void loop() override;
 
+    void debug_task();
     void register_backend(IDebugProtocolBackend *backend);
-    void check_debug();
 
-    micros_t last_debug_keep_alive = 0_us;
-    bool debug = false;
+    micros_t debug_keep_alive_until = 0_us;
+    uint64_t debug_task_id = 0;
     std::vector<IDebugProtocolBackend *> backends;
 };

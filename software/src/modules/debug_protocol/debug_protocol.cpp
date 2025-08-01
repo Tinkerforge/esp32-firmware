@@ -29,6 +29,9 @@
 static const char *debug_header_prefix = "\"millis\"";
 static const size_t debug_header_prefix_len = strlen(debug_header_prefix);
 
+static constexpr millis_t debug_log_interval        = 40_ms; // One task run takes about 10 ms, so this will result in a total interval length of 50 ms.
+static constexpr millis_t debug_keep_alive_interval = 180_s;
+
 void DebugProtocol::register_urls()
 {
     // TODO: Make this an API command?
@@ -54,57 +57,68 @@ void DebugProtocol::register_urls()
         sb.putc('"');
         ws.pushRawStateUpdateEnd(&sb);
 
-        last_debug_keep_alive = now_us();
+        debug_keep_alive_until = now_us() + debug_keep_alive_interval;
 
-        if (debug)
+        if (debug_task_id != 0) {
             return request.send(200);
+        }
 
-        check_debug();
+        debug_task_id = task_scheduler.scheduleWithFixedDelay([this]() {
+            this->debug_task();
+        }, 0_ms, debug_log_interval);
 
-        debug = true;
         return request.send(200);
     });
 
     // TODO: Make this an API command?
     server.on("/debug_protocol/continue", HTTP_GET, [this](WebServerRequest request) {
-        last_debug_keep_alive = now_us();
+        debug_keep_alive_until = now_us() + debug_keep_alive_interval;
+
         return request.send(200);
     });
 
     // TODO: Make this an API command?
     server.on("/debug_protocol/stop", HTTP_GET, [this](WebServerRequest request) {
-        debug = false;
+        task_scheduler.cancel(this->debug_task_id);
+        this->debug_task_id = 0;
+
         return request.send(200);
     });
 }
 
-void DebugProtocol::loop()
+void DebugProtocol::debug_task()
 {
-    static micros_t last_debug = 0_us;
-    if (debug && deadline_elapsed(last_debug + 50_ms)) {
-        last_debug = now_us();
+    const micros_t t_now = now_us();
 
-        StringBuilder sb;
-        size_t payload_len = 1 + 10 + 1; // "%u"
+    if (t_now >= debug_keep_alive_until) {
+        logger.printfln("Debug protocol creation canceled because no continue call was received for more than 180 seconds.");
 
-        for (IDebugProtocolBackend *backend : backends) {
-            payload_len += 1 + backend->get_debug_line_length(); // +1 for comma
-        }
+        task_scheduler.cancel(debug_task_id);
+        debug_task_id = 0;
 
-        if (!ws.pushRawStateUpdateBegin(&sb, payload_len, "debug_protocol/line")) {
-            return;
-        }
-
-        sb.printf("\"%lu", last_debug.to<millis_t>().as<uint32_t>());
-
-        for (IDebugProtocolBackend *backend : backends) {
-            sb.putc(',');
-            backend->get_debug_line(&sb);
-        }
-
-        sb.putc('"');
-        ws.pushRawStateUpdateEnd(&sb);
+        return;
     }
+
+    StringBuilder sb;
+    size_t payload_len = 1 + 10 + 1; // "%u"
+
+    for (IDebugProtocolBackend *backend : backends) {
+        payload_len += 1 + backend->get_debug_line_length(); // +1 for comma
+    }
+
+    if (!ws.pushRawStateUpdateBegin(&sb, payload_len, "debug_protocol/line")) {
+        return;
+    }
+
+    sb.printf("\"%lu", t_now.to<millis_t>().as<uint32_t>());
+
+    for (IDebugProtocolBackend *backend : backends) {
+        sb.putc(',');
+        backend->get_debug_line(&sb);
+    }
+
+    sb.putc('"');
+    ws.pushRawStateUpdateEnd(&sb);
 }
 
 void DebugProtocol::register_backend(IDebugProtocolBackend *backend)
@@ -114,17 +128,4 @@ void DebugProtocol::register_backend(IDebugProtocolBackend *backend)
     }
 
     backends.push_back(backend);
-}
-
-void DebugProtocol::check_debug()
-{
-    task_scheduler.scheduleOnce([this](){
-        if (deadline_elapsed(last_debug_keep_alive + 180_s) && debug) {
-            logger.printfln("Debug protocol creation canceled because no continue call was received for more than 180 seconds.");
-            debug = false;
-        }
-        else if (debug) {
-            check_debug();
-        }
-    }, 10_s);
 }
