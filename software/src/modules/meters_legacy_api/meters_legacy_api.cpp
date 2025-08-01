@@ -472,9 +472,7 @@ EventResult MetersLegacyAPI::on_value_ids_change(const Config *value_ids)
     // ==== Get values and set up event handler ====
 
     if (has_all_values) {
-        for (size_t i = legacy_all_values.count(); i < METER_ALL_VALUES_LEGACY_COUNT; ++i) {
-            legacy_all_values.add();
-        }
+        legacy_all_values.setCount(METER_ALL_VALUES_LEGACY_COUNT);
     }
 
     String values_path = meters.get_path(linked_meter_slot, Meters::PathType::Values);

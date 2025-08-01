@@ -577,6 +577,10 @@ void WebSockets::pre_setup() {
     Config *state_keep_alive_pongs = static_cast<Config *>(state.get("keep_alive_pongs"));
     Config *state_keep_alive_peers = static_cast<Config *>(state.get("keep_alive_peers"));
 
+    state_keep_alive_fds->reserve(MAX_WEB_SOCKET_CLIENTS);
+    state_keep_alive_pongs->reserve(MAX_WEB_SOCKET_CLIENTS);
+    state_keep_alive_peers->reserve(MAX_WEB_SOCKET_CLIENTS);
+
     for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
         state_keep_alive_fds->add()->updateInt(-1); // Override default from shared prototype.
         state_keep_alive_pongs->add();

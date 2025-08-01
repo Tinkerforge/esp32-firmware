@@ -41,6 +41,8 @@ void UptimeTracker::pre_setup()
         &uptimes_prototype,
         0, MAX_UPTIMES, Config::type_id<Config::ConfObject>()
     );
+
+    uptimes.reserve(MAX_UPTIMES);
 }
 
 void UptimeTracker::setup()

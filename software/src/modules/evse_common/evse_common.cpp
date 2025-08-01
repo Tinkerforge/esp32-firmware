@@ -57,8 +57,7 @@ void EvseCommon::pre_setup()
         CHARGING_SLOT_COUNT, CHARGING_SLOT_COUNT,
         Config::type_id<Config::ConfObject>());
 
-    for (int i = 0; i < CHARGING_SLOT_COUNT; ++i)
-        slots.add();
+    slots.setCount(CHARGING_SLOT_COUNT);
 
     indicator_led = Config::Object({
         {"indication", Config::Int16(0)},

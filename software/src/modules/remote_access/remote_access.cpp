@@ -200,6 +200,8 @@ void RemoteAccess::pre_setup()
         MAX_USER_CONNECTIONS + 1,
         Config::type_id<Config::ConfUint>());
 
+    connection_state.reserve(MAX_USER_CONNECTIONS + 1);
+
     for (int i = 0; i < MAX_USER_CONNECTIONS + 1; ++i) {
         connection_state.add()->get("state")->updateUint(1); // Set the default here so that the generic prototype can be used.
     }

@@ -90,9 +90,11 @@ void Eco::setup()
     api.restorePersistentConfig("eco/config", &config);
 
     const size_t controlled_chargers = charge_manager.get_charger_count();
+
+    state.get("chargers")->setCount(controlled_chargers);
+
     for (size_t i = 0; i < controlled_chargers; i++) {
         last_seen_plug_in[i] = 0_us;
-        state.get("chargers")->add();
     }
 
     std::fill_n(charge_decision, MAX_CONTROLLED_CHARGERS, ChargeDecision::Normal);

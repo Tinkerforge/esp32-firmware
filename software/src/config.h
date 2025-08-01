@@ -771,6 +771,8 @@ public:
     bool removeLast();
     bool removeAll();
     bool remove(size_t i);
+    bool setCount(size_t count);
+    bool reserve(size_t count);
     size_t count() const;
     std::vector<Config>::iterator begin();
     std::vector<Config>::iterator end();

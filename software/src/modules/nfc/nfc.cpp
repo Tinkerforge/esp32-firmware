@@ -433,9 +433,7 @@ void NFC::setup()
     api.restorePersistentConfig("nfc/config", &config);
     setup_auth_tags();
 
-    for (int i = 0; i < TAG_LIST_LENGTH; ++i) {
-        seen_tags.add();
-    }
+    seen_tags.setCount(TAG_LIST_LENGTH);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         this->check_nfc_state();

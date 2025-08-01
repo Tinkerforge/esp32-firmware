@@ -134,7 +134,7 @@ void Debug::pre_setup()
         {"apb_clk",    Config::Uint32(rtc_clk_apb_freq_get())},
         {"spi_buses",  Config::Array({},
             &state_spi_bus_prototype,
-            0, 4
+            4, 4
         )},
         {"dram_benchmark",   Config::Float(dram_speed)},
         {"iram_benchmark",   Config::Float(iram_speed)},
@@ -143,10 +143,7 @@ void Debug::pre_setup()
         {"text_benchmark",   Config::Float(text_speed)},
     });
 
-    for (uint32_t i = 0; i < 4; i++) {
-        // add() can trigger a move of ConfObjects, so get() must be called inside the loop.
-        state_static.get("spi_buses")->add();
-    }
+    state_static.get("spi_buses")->setCount(4);
 
     state_fast = Config::Object({
         {"uptime",     Config::Uint32(0)},
@@ -192,12 +189,10 @@ void Debug::pre_setup()
         CONFIG_TYPES, CONFIG_TYPES
     );
 
+    state_slots.setCount(CONFIG_TYPES);
+
     for (size_t i = 0; i < CONFIG_TYPES; i++) {
-        state_slots.add();
-        for (size_t j = 0; j < 5; j++) {
-            // add() can trigger a move of ConfObjects, so get() must be called inside the loop.
-            state_slots.get(i)->add();
-        }
+        state_slots.get(i)->setCount(5);
     }
 
     state_hwm_prototype = Config::Object({

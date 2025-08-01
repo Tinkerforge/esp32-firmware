@@ -420,6 +420,73 @@ bool Config::remove(size_t i)
     return true;
 }
 
+bool Config::setCount(size_t new_size)
+{
+    // Asserts checked in ::is.
+    if (!this->is<Config::ConfArray>()) {
+        esp_system_abort("Tried to set the count of a node that is not an array!");
+    }
+    std::vector<Config> &children = this->asArray();
+
+    const size_t old_size = children.size();
+
+    if (new_size == old_size)
+        return true; // Return early because nothing will be modified.
+
+    if (new_size < old_size) {
+        children.erase(children.begin() + new_size, children.end());
+    } else {
+        const auto &arr = value.val.a;
+        const auto *slot = arr.getSlot();
+
+        const auto max_elements = slot->maxElements;
+        if (new_size > max_elements) {
+            abort_on_array_add_max_failure(max_elements);
+        }
+
+        children.reserve(new_size);
+
+        for (size_t i = old_size; i < new_size; i++) {
+            Config copy = *slot->prototype;
+
+            // Copying the prototype might invalidate the children reference
+            // when ConfArray slots are moved, so asArray() must be called again.
+            children = this->asArray();
+
+            children.push_back(std::move(copy));
+        }
+    }
+
+    this->set_updated(0xFF);
+    return true;
+}
+
+bool Config::reserve(size_t new_size)
+{
+    // Asserts checked in ::is.
+    if (!this->is<Config::ConfArray>()) {
+        esp_system_abort("Tried to reserve on a node that is not an array!");
+    }
+    std::vector<Config> &children = this->asArray();
+
+    const size_t old_size = children.size();
+
+    if (new_size <= old_size)
+        return true; // Nothing to do.
+
+    const auto &arr = value.val.a;
+    const auto *slot = arr.getSlot();
+
+    const auto max_elements = slot->maxElements;
+    if (new_size > max_elements) {
+        abort_on_array_add_max_failure(max_elements);
+    }
+
+    children.reserve(new_size);
+
+    return true;
+}
+
 size_t Config::count() const
 {
     // Asserts checked in ::is.

@@ -271,6 +271,8 @@ void SolarForecast::handle_new_data()
 
             Config *forecast_cfg = static_cast<Config *>(plane_current->forecast.get("forecast"));
 
+            forecast_cfg->reserve(48);
+
             size_t forecast_count = forecast_cfg->count();
             for (size_t i = 0; i < forecast_count; i++) {
                 forecast_cfg->get(i)->updateUint(0);

@@ -483,6 +483,8 @@ void ChargeTracker::setup()
         return;
     }
 
+    last_charges.reserve(CHARGE_RECORD_LAST_CHARGES_SIZE);
+
     const String last_file_name = chargeRecordFilename(this->last_charge_record);
     if (!file_exists(LittleFS, last_file_name))
         LittleFS.open(last_file_name, "w", true);

@@ -1228,12 +1228,14 @@ void Meters::declare_value_ids(uint32_t slot, const MeterValueID new_value_ids[]
     }
     meter_slot.value_combiner_filters_data = filter_data_compact;
 
+    value_ids.reserve(total_value_id_count);
+
     for (uint32_t i = 0; i < total_value_id_count; i++) {
         auto val = value_ids.add();
         val->updateUint(static_cast<uint32_t>(total_value_ids[i]));
-
-        values.add();
     }
+
+    values.setCount(total_value_id_count);
 
     meter_slot.index_cache_single_values[INDEX_CACHE_POWER]          = meters_find_id_index(total_value_ids, total_value_id_count, {
                                                                                             MeterValueID::PowerActiveLSumImExDiff,

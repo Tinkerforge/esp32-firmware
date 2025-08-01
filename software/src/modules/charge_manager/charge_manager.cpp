@@ -508,6 +508,10 @@ void ChargeManager::setup()
 
     auto default_current = config.get("default_available_current")->asUint();
     available_current.get("current")->updateUint(default_current);
+
+    low_level_state.get("chargers")->reserve(charger_count);
+    state.get("chargers")->reserve(charger_count);
+
     for (size_t i = 0; i < charger_count; ++i) {
         low_level_state.get("chargers")->add();
         auto state_last_charger = state.get("chargers")->add();
