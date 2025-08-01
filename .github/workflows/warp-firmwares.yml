@@ -8,7 +8,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        environment: [warp3, warp2, warp, energy_manager_v2, energy_manager, smart_energy_broker, esp32, esp32_ethernet]
+        environment: [warp4, warp3, warp2, warp, energy_manager_v2, energy_manager, eltako, smart_energy_broker, esp32_ethernet, esp32]
         os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
