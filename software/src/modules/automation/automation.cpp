@@ -147,10 +147,11 @@ void Automation::setup()
     api.restorePersistentConfig("automation/config", &config);
     config_in_use = config;
 
-    for(size_t i = 0; i < config.get("tasks")->count(); ++i)
-        this->state.get("last_run")->add();
+    const size_t task_count = config.get("tasks")->count();
 
-    last_run = heap_alloc_array<micros_t>(config.get("tasks")->count());
+    this->state.get("last_run")->setCount(task_count);
+
+    last_run = heap_alloc_array<micros_t>(task_count);
 
     if (has_task_with_trigger(AutomationTriggerID::Cron)) {
         task_scheduler.scheduleWithFixedDelay([this]() {
@@ -277,8 +278,6 @@ bool Automation::trigger(AutomationTriggerID number, void *data, IAutomationBack
     bool triggered = false;
     int current_rule = 1;
     for (size_t i = 0; i < config_in_use.get("tasks")->count(); ++i) {
-        const Config *conf = static_cast<const Config *>(config_in_use.get("tasks")->get(i));
-        Config *last_run_cfg = static_cast<Config *>(state.get("last_run")->get(i));
         micros_t *last_run_timestamp = &last_run[i];
 
         // If last_run is in the future, this rule's trigger has fired
@@ -287,11 +286,13 @@ bool Automation::trigger(AutomationTriggerID number, void *data, IAutomationBack
         if (!deadline_elapsed(*last_run_timestamp))
             continue;
 
+        const Config *conf = static_cast<const Config *>(config_in_use.get("tasks")->get(i));
         const Config *trigger = static_cast<const Config *>(conf->get("trigger"));
 
         if (trigger->getTag<AutomationTriggerID>() == number && backend->has_triggered(trigger, data)) {
             auto delay = seconds_t{conf->get("delay")->asUint()};
             *last_run_timestamp = now_us() + delay;
+            Config *last_run_cfg = static_cast<Config *>(state.get("last_run")->get(i));
             last_run_cfg->updateUint(last_run_timestamp->to<seconds_t>().as<uint32_t>());
 
             triggered = true;
