@@ -29,10 +29,12 @@ import { ConfigForm } from "../../ts/components/config_form";
 import { FormRow } from "../../ts/components/form_row";
 import { InputTextPatterned } from "../../ts/components/input_text";
 import { InputNumber } from "../../ts/components/input_number";
+import { InputSelect } from "../../ts/components/input_select";
 import { SubPage } from "../../ts/components/sub_page";
 import { NavbarItem } from "../../ts/components/navbar_item";
 import { Settings } from "react-feather";
 import { useEffect } from "preact/hooks";
+import { TransportMode } from "./transport_mode.enum";
 
 export function NetworkNavbar() {
     return <NavbarItem name="network" module="network" title={__("network.navbar.network")} symbol={<Settings />} />;
@@ -253,7 +255,10 @@ export class Network extends ConfigComponent<'network/config', {}, NetworkState>
             }
         }, [JSON.stringify(interfacesMissingDNS)]);
 
-        return (
+        const cert_state = API.get_unchecked('certs/state');
+        const certs = cert_state == null ? [] : cert_state.certs.map((c: any) => [c.id.toString(), c.name]) as [string, string][];
+
+return (
             <SubPage name="network">
                 <ConfigForm id="network_config_form"
                             title={__("network.content.network")}
@@ -278,12 +283,58 @@ export class Network extends ConfigComponent<'network/config', {}, NetworkState>
                                 onClick={this.toggle('enable_mdns')}/>
                     </FormRow>
 
+                    <FormRow label={__("network.content.transport_mode")}>
+                        <InputSelect
+                            items={[
+                                ["0", __("network.content.insecure")],
+                                ["1", __("network.content.secure")],
+                                ["2", __("network.content.insecure_and_secure")],
+                            ]}
+                            value={state.transport_mode}
+                            onValue={(v) => this.setState({transport_mode: parseInt(v)})}
+                        />
+                    </FormRow>
+
                     <FormRow label={__("network.content.web_server_port")}>
-                        <InputNumber required
-                                     min={1}
-                                     max={65535}
-                                     value={state.web_server_port}
-                                     onValue={this.set("web_server_port")}/>
+                        <InputNumber
+                            required
+                            min={1}
+                            max={65535}
+                            value={state.web_server_port}
+                            onValue={this.set("web_server_port")}
+                            disabled={state.transport_mode == 1}
+                        />
+                    </FormRow>
+
+                    <FormRow label={__("network.content.web_server_port_secure")}>
+                        <InputNumber
+                            disabled={state.transport_mode == 0}
+                            required
+                            min={1}
+                            max={65535}
+                            value={state.web_server_port_secure}
+                            onValue={this.set("web_server_port_secure")}
+                        />
+                    </FormRow>
+
+                    <FormRow label={__("network.content.cert")}>
+                        <InputSelect
+                            disabled={(cert_state == null) || state.transport_mode == 0}
+                            required={state.key_id != -1}
+                            items={[["-1", __("network.content.no_cert")],].concat(certs) as [string, string][]}
+                            value={state.cert_id}
+                            onValue={(v) => this.setState({cert_id: parseInt(v)})}
+                        />
+                    </FormRow>
+
+                    <FormRow label={__("network.content.key")}>
+                        <InputSelect
+                            disabled={(cert_state == null) || state.transport_mode == 0}
+                            required={state.cert_id != -1}
+                            items={[["-1", __("network.content.no_key")],].concat(certs) as [string, string][]}
+                            value={state.key_id}
+                            onValue={(v) => this.setState({key_id: parseInt(v)})}
+                        />
                     </FormRow>
                 </ConfigForm>
             </SubPage>

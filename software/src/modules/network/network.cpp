@@ -38,6 +38,10 @@
 #include "modules/wifi/wifi_state.enum.h"
 #endif
 
+#if !MODULE_CERTS_AVAILABLE()
+#define MAX_CERT_ID -1
+#endif
+
 extern char local_uid_str[32];
 
 void Network::pre_setup()
@@ -45,15 +49,24 @@ void Network::pre_setup()
     config = ConfigRoot{Config::Object({
         {"hostname", Config::Str("hostname", 1, 32)}, // Will be replaced with stored config or sensible default. Cannot be empty.
         {"enable_mdns", Config::Bool(true)},
-        {"web_server_port", Config::Uint16(80)}
+        {"transport_mode", Config::Enum<TransportMode>(TransportMode::Insecure)},
+        {"web_server_port", Config::Uint16(80)},
+        {"web_server_port_secure", Config::Uint16(443)},
+        {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
+        {"key_id", Config::Int(-1, -1, MAX_CERT_ID)},
     }), [this](Config &update, ConfigSource source) -> String {
-        const uint16_t new_port = static_cast<uint16_t>(update.get("web_server_port")->asUint());
+        const uint16_t new_port_http  = static_cast<uint16_t>(update.get("web_server_port")->asUint());
+        const uint16_t new_port_https = static_cast<uint16_t>(update.get("web_server_port_secure")->asUint());
 
         for (size_t i = 0; i < unsafe_ports_length; ++i) {
-            if (unsafe_ports[i] == new_port) {
-                return "Selected web server port is regarded as unsafe by web browsers. Please select another port.";
+            if (unsafe_ports[i] == new_port_http) {
+                return "Selected http web server port is regarded as unsafe by web browsers. Please select another port.";
+            }
+            if (unsafe_ports[i] == new_port_https) {
+                return "Selected https web server port is regarded as unsafe by web browsers. Please select another port.";
             }
         }
+
         return "";
     }};
 
@@ -73,9 +86,13 @@ void Network::setup()
     }
     this->default_hostname.make_invalid();
 
-    this->hostname = config.get("hostname")->asString();
-    this->enable_mdns = config.get("enable_mdns")->asBool();
-    this->web_server_port = config.get("web_server_port")->asUint();
+    this->hostname               = config.get("hostname")->asString();
+    this->enable_mdns            = config.get("enable_mdns")->asBool();
+    this->transport_mode         = config.get("transport_mode")->asEnum<TransportMode>();
+    this->web_server_port        = config.get("web_server_port")->asUint();
+    this->web_server_port_secure = config.get("web_server_port_secure")->asUint();
+    this->cert_id                = config.get("cert_id")->asInt();
+    this->key_id                 = config.get("key_id")->asInt();
 
     esp_netif_init();
 
@@ -90,21 +107,21 @@ void Network::register_urls()
     register_urls_late();
 #endif
 
-    if (!this->enable_mdns) {
+    if (!get_enable_mdns()) {
         return;
     }
 
     if (mdns_init() != ESP_OK) {
         logger.printfln("Error initializing mDNS responder");
     } else {
-        if(mdns_hostname_set(this->hostname.c_str()) != ESP_OK) {
+        if(mdns_hostname_set(get_hostname().c_str()) != ESP_OK) {
             logger.printfln("Error initializing mDNS hostname");
         } else {
             logger.printfln("mDNS responder started");
         }
     }
 
-    mdns_service_add(NULL, "_http", "_tcp", this->web_server_port, NULL, 0);
+    mdns_service_add(NULL, "_http", "_tcp", get_web_server_port(), NULL, 0);
 
 #if MODULE_DEBUG_AVAILABLE()
     debug.register_task("mdns", CONFIG_MDNS_TASK_STACK_SIZE);
