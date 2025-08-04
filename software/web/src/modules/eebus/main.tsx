@@ -79,9 +79,6 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
             ski = __("eebus.content.unknown");
         }
 
-        let cert_state = API.get_unchecked('certs/state');
-        let certs = cert_state == null ? [] : cert_state.certs.map((c: any) => [c.id.toString(), c.name]) as [string, string][];
-
         return (
             <SubPage name="eebus">
                 <ConfigForm id="eebus_config_form" title="EEBUS" isModified={this.isModified()} isDirty={this.isDirty()}
@@ -90,28 +87,6 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                         <Switch desc={__("eebus.content.enable_eebus_desc")}
                                 checked={state.config.enable}
                                 onClick={this.toggle('enable')}/>
-                    </FormRow>
-                    <FormRow label={__("eebus.content.cert")}>
-                        <InputSelect items={[
-                            ["-1", __("eebus.content.no_cert")],
-                        ].concat(certs) as [string, string][]
-                        }
-                                     value={this.state.config.cert_id}
-                                     onValue={(v) => this.setState({cert_id: parseInt(v)})}
-                                     disabled={cert_state == null}
-                                     required={state.config.key_id != -1}
-                        />
-                    </FormRow>
-                    <FormRow label={__("eebus.content.key")}>
-                        <InputSelect items={[
-                            ["-1", __("eebus.content.no_cert")],
-                        ].concat(certs) as [string, string][]
-                        }
-                                     value={state.config.key_id}
-                                     onValue={(v) => this.setState({key_id: parseInt(v)})}
-                                     disabled={cert_state == null}
-                                     required={state.config.cert_id != -1}
-                        />
                     </FormRow>
                     <FormRow label={__("eebus.content.ski")}>
                         <InputText value={ski}/>
