@@ -24,6 +24,9 @@
 #include <WString.h>
 #include <esp_http_server.h>
 
+#include "tools/malloc.h"
+#include "cert.h"
+
 #include "module.h"
 
 // This struct is used to make sure a registered handler always calls
@@ -162,4 +165,5 @@ private:
                                  wshCallback &&callback,
                                  wshUploadCallback &&uploadCallback,
                                  wshUploadErrorCallback &&uploadErrorCallback);
+    unique_ptr_any<Cert> cert = nullptr;
 };

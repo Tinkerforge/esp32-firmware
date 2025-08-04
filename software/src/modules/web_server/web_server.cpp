@@ -27,7 +27,6 @@
 #include "cool_string.h"
 #include "esp_httpd_priv.h"
 
-
 #include "sdkconfig.h"
 #ifndef CONFIG_ESP_HTTPS_SERVER_ENABLE
 #define CONFIG_ESP_HTTPS_SERVER_ENABLE 0
@@ -97,7 +96,21 @@ void WebServer::post_setup()
 #endif
 
     if (!use_external_cert) {
-        // TODO
+        if (cert == nullptr) {
+            cert = make_unique_psram<Cert>();
+        }
+        if (!cert->read()) {
+            logger.printfln("Failed to read self-signed certificate");
+            return;
+        }
+
+        // TODO: This is only for debugging, remove later
+        cert->log();
+
+        config.servercert     = cert->crt;
+        config.servercert_len = cert->crt_length + 1;
+        config.prvtkey_pem    = cert->key;
+        config.prvtkey_len    = cert->key_length + 1;
     }
 
     const auto transport_mode = network.get_transport_mode();
