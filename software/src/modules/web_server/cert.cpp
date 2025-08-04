@@ -141,7 +141,8 @@ bool Cert::generate()
 
     mbedtls_x509write_crt_set_version(&mbed_cert, 2);
 
-    // CHANGE: Use your HTTPS hostname or IP for CN!
+    // Set hostname or IP for CN
+    // TODO: Get proper hostname or IP dynamically
     ret = mbedtls_x509write_crt_set_subject_name(&mbed_cert, "C=DE,O=Tinkerforge GmbH,CN=warp3-2b6h.local");
     if (ret != 0) {
         logger.printfln("mbedtls_x509write_crt_set_subject_name failed: 0x%04x", ret);
@@ -159,21 +160,21 @@ bool Cert::generate()
         return false;
     }
 
-    // CHANGE: For HTTPS, CA = FALSE
+    // For HTTPS we need CA = FALSE
     ret = mbedtls_x509write_crt_set_basic_constraints(&mbed_cert, 0, -1);
     if (ret != 0) {
         logger.printfln("mbedtls_x509write_crt_set_basic_constraints failed: 0x%04x", ret);
         return false;
     }
 
-    // CHANGE: For HTTPS, set key usage to digital signature and key encipherment
+    // For HTTPS set key usage to digital signature and key encipherment
     ret = mbedtls_x509write_crt_set_key_usage(&mbed_cert, MBEDTLS_X509_KU_DIGITAL_SIGNATURE | MBEDTLS_X509_KU_KEY_ENCIPHERMENT);
     if (ret != 0) {
         logger.printfln("mbedtls_x509write_crt_set_key_usage failed: 0x%04x", ret);
         return false;
     }
 
-    // CHANGE: For HTTPS, set extended key usage to serverAuth
+    // For HTTPS set extended key usage to serverAuth
     const unsigned char ext_key_usage_der[] = {0x30, 0x0a, 0x06, 0x08, 0x2b, 0x06, 0x01, 0x05, 0x05, 0x07, 0x03, 0x01};
     ret = mbedtls_x509write_crt_set_extension(
         &mbed_cert,
@@ -187,9 +188,9 @@ bool Cert::generate()
         return false;
     }
 
+    // TODO: This does not make any difference for what the browsers show.
+    //       I don't think we need it.
 #if 0
-    // OPTIONAL: Add Subject Alternative Name (SAN) for browsers
-    // Example for DNS SAN "mydevice.local"
     const unsigned char san_der[] = {0x30, 0x11, 0x82, 0x0f, 'm','y','d','e','v','i','c','e','.','l','o','c','a','l'};
     ret = mbedtls_x509write_crt_set_extension(
         &mbed_cert,
@@ -211,8 +212,7 @@ bool Cert::generate()
     mbedtls_pk_free(&mbed_key);
     mbedtls_x509write_crt_free(&mbed_cert);
 
-
-    // Save generated cert and key in DER format as PEM files
+    // Save generated cert and key that are in DER format as PEM files
     unsigned char base64[768];
     size_t base64_len = 0;
 
