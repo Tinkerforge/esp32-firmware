@@ -1,0 +1,21 @@
+[req]
+default_bits       = 2048
+distinguished_name = req_distinguished_name
+x509_extensions    = v3_req
+prompt             = no
+
+[req_distinguished_name]
+C  = DE
+ST = Germany
+L  = Schloss Holte-Stukenbrock 
+O  = Tinkerforge GmbH
+CN = warp3-2b6h.local
+
+[v3_req]
+keyUsage = keyEncipherment, digitalSignature
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = warp3-2b6h.local
+IP.1  = 192.168.0.33
