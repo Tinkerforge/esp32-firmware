@@ -200,12 +200,6 @@ bool Cert::generate()
     );
 #endif
 
-    ret = mbedtls_x509write_crt_set_subject_key_identifier(&mbed_cert);
-    if (ret != 0) {
-        logger.printfln("mbedtls_x509write_crt_set_subject_key_identifier failed: 0x%04x", ret);
-        return false;
-    }
-
     crt_length = mbedtls_x509write_crt_der(&mbed_cert, crt, sizeof(crt), mbedtls_ctr_drbg_random, &ctr_drbg);
     memmove(crt, crt + sizeof(crt) - crt_length, crt_length);
     logger.printfln("Cert (DER) with length %d generated (first byte: %x)", crt_length, crt[0]);
