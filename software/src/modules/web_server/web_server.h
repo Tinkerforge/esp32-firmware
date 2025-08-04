@@ -25,6 +25,9 @@
 #include <esp_http_server.h>
 #include <TFJson.h>
 
+#include "tools/malloc.h"
+#include "cert.h"
+
 #include "module.h"
 #include "tools/string_builder.h"
 
@@ -189,4 +192,5 @@ private:
                                  wshCallback &&callback,
                                  wshUploadCallback &&uploadCallback,
                                  wshUploadErrorCallback &&uploadErrorCallback);
+    unique_ptr_any<Cert> cert = nullptr;
 };
