@@ -69,10 +69,12 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
     }
 
 
-    render(props: {}, state: EEBusState) {
+    render(props: {}, state: EEBusState & EEBusConfig) {
         if (!util.render_allowed())
             return <SubPage name="eebus"/>;
 
+        // Is EEBUS enabled on ESP32
+        let is_enabled = state.config.enable;
 
         let ski = state.state.ski;
         if (ski == "") {
@@ -85,7 +87,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                             onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormRow label={__("eebus.content.enable_eebus")}>
                         <Switch desc={__("eebus.content.enable_eebus_desc")}
-                                checked={state.config.enable}
+                                checked={state.enable}
                                 onClick={this.toggle('enable')}/>
                     </FormRow>
                     <FormRow label={__("eebus.content.peer_info.peers")}>
@@ -328,8 +330,11 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                 });
                             }}
                         />
-                        <Button className="form-control rounded-right" variant="primary"
-                                onClick={() => this.scan_peers()} disabled={state.state.discovery_state === 1}>
+                        <Button
+                            className="form-control rounded-right"
+                            variant="primary"
+                            onClick={() => this.scan_peers()}
+                            disabled={!is_enabled || (state.state.discovery_state === 1)}>
                             {state.state.discovery_state === 0
                                 ? __("eebus.content.search_peers")
                                 : state.state.discovery_state === 1
