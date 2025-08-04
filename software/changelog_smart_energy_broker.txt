@@ -176,7 +176,7 @@
 - SunSpec: Fix wrong energy values for TQ-Systems EM420
 - Modbus TCP: Fix reading wrong registers for Solaredge, Eastron SDM630 TCP, WARP Charger, SAX Power Home, E3DC and Huawei meters
 
-2025-08-04: 1.3.7 (<unknown>)
+2025-08-04: 1.3.7 (5049fb30)
 - Modbus TCP: Add support for SMA hybrid inverter battery virtual meter
 - RCT Power: Add support for inverter, load and PV virtual meters
 - RCT Power: Add support for phase power value to virtual grid meter
