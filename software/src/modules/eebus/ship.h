@@ -23,6 +23,7 @@
 #include "module.h"
 #include "config.h"
 #include "mdns.h"
+#include "cert.h"
 #include "modules/ws/web_sockets.h"
 #include "ship_connection.h"
 #include <TFJson.h>
@@ -63,6 +64,7 @@ private:
     void setup_wss();
 
     WebSockets web_sockets;
+    unique_ptr_any<Cert> cert = nullptr;
 
 public:
     Ship()
