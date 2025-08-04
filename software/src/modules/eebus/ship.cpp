@@ -26,32 +26,6 @@
 #include "module_dependencies.h"
 #include "tools.h"
 
-#define SHIP_USE_INTERNAL_CERTS
-
-#ifdef SHIP_USE_INTERNAL_CERTS
-// .crt, .key und the corresponding SKI for testing
-const char *ship_crt = "-----BEGIN CERTIFICATE-----\n\
-MIIBxDCCAWugAwIBAgIRAtyCMn08UNUlV7c18gP8QvgwCgYIKoZIzj0EAwIwQjEL\n\
-MAkGA1UEBhMCREUxDTALBgNVBAoTBERlbW8xDTALBgNVBAsTBERlbW8xFTATBgNV\n\
-BAMTDERlbW8tVW5pdC0wMjAeFw0yMjA0MTcxNzQ2NDlaFw0zMjA0MTQxNzQ2NDla\n\
-MEIxCzAJBgNVBAYTAkRFMQ0wCwYDVQQKEwREZW1vMQ0wCwYDVQQLEwREZW1vMRUw\n\
-EwYDVQQDEwxEZW1vLVVuaXQtMDIwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAARv\n\
-6RjCK1tqv1ogMaVtlPcI4GXDas42IGvOyebPeeuFqImf6B4oVosaXa96I/IsxV73\n\
-iUzXntJq0Q/SChBQKKWlo0IwQDAOBgNVHQ8BAf8EBAMCB4AwDwYDVR0TAQH/BAUw\n\
-AwEB/zAdBgNVHQ4EFgQUQcmLG75fx2V84xGYGVHxLTBKtBkwCgYIKoZIzj0EAwID\n\
-RwAwRAIgcN7IhCSK2T1VzWI6EbGEa8Uv1Cl8J5RV3833d/AEBqkCIDKGf5I42AuP\n\
-nvBcrk/bo5UsVFlRPRqw0tCoTtqZY7et\n\
------END CERTIFICATE-----\n";
-
-const char *ship_key = "-----BEGIN EC PRIVATE KEY-----\n\
-MHcCAQEEILjqbjlvJr6x1Us8xdSm7lc67zRuUzTXsrWnv3gtVU3YoAoGCCqGSM49\n\
-AwEHoUQDQgAEb+kYwitbar9aIDGlbZT3COBlw2rONiBrzsnmz3nrhaiJn+geKFaL\n\
-Gl2veiPyLMVe94lM157SatEP0goQUCilpQ==\n\
------END EC PRIVATE KEY-----\n";
-
-const char *ship_ski = "41c98b1bbe5fc7657ce311981951f12d304ab419";
-#endif
-
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
 void Ship::pre_setup()
@@ -75,49 +49,6 @@ void Ship::setup_wss()
 {
     logger.printfln("setup_wss_server start"); // TODO Move to tracelog
     web_sockets.pre_setup();
-
-#ifndef SHIP_USE_INTERNAL_CERTS
-    int cert_id = eebus.config.get("cert_id")->asInt();
-    if (cert_id == -1) {
-        logger.printfln("Certificate ID is not set");
-        return;
-    }
-
-    size_t cert_crt_len = 0;
-    auto cert_crt = certs.get_cert(cert_id, &cert_crt_len);
-    if (cert_crt == nullptr) {
-        logger.printfln("Certificate with ID 0 is not available");
-        return;
-    }
-
-    int key_id = eebus.config.get("key_id")->asInt();
-    if (key_id == -1) {
-        logger.printfln("Key ID is not set");
-        return;
-    }
-
-    size_t cert_key_len = 0;
-    auto cert_key = certs.get_cert(1, &cert_key_len);
-    if (cert_key == nullptr) {
-        logger.printfln("Certificate with ID 1 is not available");
-        return;
-    }
-
-    // Get subject key id from certificate
-    mbedtls_x509_crt x509_crt;
-    mbedtls_x509_crt_init(&x509_crt);
-    int mbedtls_ret = mbedtls_x509_crt_parse(&x509_crt, (const unsigned char *)cert_crt.get(), cert_crt_len + 1);
-    if (mbedtls_ret != 0) {
-        logger.printfln("Failed to parse certificate: %d", mbedtls_ret);
-        return;
-    }
-
-    char ship_ski[64] = {0};
-    for (size_t i = 0; i < x509_crt.subject_key_id.len; i++) {
-        sprintf(&ship_ski[i * 2], "%02x", x509_crt.subject_key_id.p[i]);
-    }
-    eebus.state.get("ski")->updateString(ship_ski);
-#endif
 
     // HTTPS server configuration.
     // This HTTPS server is just used to provide the send/recv for a secure websocket.
@@ -143,17 +74,75 @@ void Ship::setup_wss()
     config.port_secure = 4712;
     config.port_insecure = 0;
 
-#ifdef SHIP_USE_INTERNAL_CERTS
-    config.servercert = (uint8_t *)ship_crt;
-    config.servercert_len = strlen(ship_crt) + 1; // +1 since the length must include the null terminator
-    config.prvtkey_pem = (uint8_t *)ship_key;
-    config.prvtkey_len = strlen(ship_key) + 1; // +1 since the length must include the null terminator
-#else
-    config.servercert = cert_crt.release();
-    config.servercert_len = cert_crt_len + 1; // +1 since the length must include the null terminator
-    config.prvtkey_pem = cert_key.release();
-    config.prvtkey_len = cert_key_len + 1; // +1 since the length must include the null terminator
-#endif
+    // Lambda to parse the X509 certificate
+    auto parse_x509_crt = [](const unsigned char *buf, size_t buflen) -> int {
+        mbedtls_x509_crt x509_crt;
+        mbedtls_x509_crt_init(&x509_crt);
+        int ret = mbedtls_x509_crt_parse(&x509_crt, buf, buflen);
+        if (ret != 0) {
+            logger.printfln("mbedtls_x509_crt_parse failed: 0x%04x", ret);
+        } else {
+            char ship_ski[64] = {0};
+            for (size_t i = 0; i < x509_crt.subject_key_id.len; i++) {
+                sprintf(&ship_ski[i * 2], "%02x", x509_crt.subject_key_id.p[i]);
+            }
+            eebus.state.get("ski")->updateString(ship_ski);
+        }
+
+        return ret;
+    };
+
+    const int32_t cert_id = eebus.config.get("cert_id")->asInt();
+    const int32_t key_id = eebus.config.get("key_id")->asInt();
+
+    const bool use_external_certs = (cert_id != -1) && (key_id != -1);
+
+    // If both cert and key are set externally, we use them.
+    // Oterwise we generate and use a self-signed certificate.
+    if (use_external_certs) {
+        size_t cert_crt_len = 0;
+        auto cert_crt = certs.get_cert(cert_id, &cert_crt_len);
+        if (cert_crt == nullptr) {
+            logger.printfln("Certificate with ID %ld is not available", cert_id);
+            return;
+        }
+
+        size_t cert_key_len = 0;
+        auto cert_key = certs.get_cert(key_id, &cert_key_len);
+        if (cert_key == nullptr) {
+            logger.printfln("Certificate with ID %ld is not available", key_id);
+            return;
+        }
+
+        if (!parse_x509_crt(cert_crt.get(), cert_crt_len+1)) {
+            return;
+        }
+
+        config.servercert     = cert_crt.release();
+        config.servercert_len = cert_crt_len + 1; // +1 since the length must include the null terminator
+        config.prvtkey_pem    = cert_key.release();
+        config.prvtkey_len    = cert_key_len + 1; // +1 since the length must include the null terminator
+    } else {
+        if (cert == nullptr) {
+            cert = make_unique_psram<Cert>();
+        }
+        if (!cert->read()) {
+            logger.printfln("Failed to read self-signed certificate");
+            return;
+        }
+
+        // TODO: This is only for debugging, remove later
+        cert->log();
+
+        if (!parse_x509_crt(cert->crt, cert->crt_length)) {
+            return;
+        }
+
+        config.servercert     = cert->crt;
+        config.servercert_len = cert->crt_length;
+        config.prvtkey_pem    = cert->key;
+        config.prvtkey_len    = cert->key_length;
+    }
 
     // Start HTTPS server
     httpd_handle_t httpd = nullptr;
