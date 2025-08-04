@@ -88,9 +88,6 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                 checked={state.config.enable}
                                 onClick={this.toggle('enable')}/>
                     </FormRow>
-                    <FormRow label={__("eebus.content.ski")}>
-                        <InputText value={ski}/>
-                    </FormRow>
                     <FormRow label={__("eebus.content.peer_info.peers")}>
                         <Table
                             columnNames={[
@@ -341,6 +338,9 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                         ? __("eebus.content.search_completed")
                                         : __("eebus.content.search_failed")}
                         </Button>
+                    </FormRow>
+                    <FormRow label={__("eebus.content.ski")}>
+                        <InputText value={ski}/>
                     </FormRow>
                 </ConfigForm>
             </SubPage>
