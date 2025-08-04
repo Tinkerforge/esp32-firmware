@@ -34,7 +34,16 @@ let x = {
             "hostname_invalid": `The hostname must contain only upper and lower case letters A-Z and a-z the digits 0-9 or dashes. For example ${options.HOSTNAME_PREFIX}-A1c`,
             "enable_mdns": "mDNS enabled",
             "enable_mdns_desc": <>Allows other devices in this network to find {__("the_device")}.</>,
-            "web_server_port": "Web interface listen port"
+            "web_server_port": "Web interface listen port (HTTP)",
+            "web_server_port_secure": "Web interface secure listen port (HTTPS)",
+            "cert": "Certificate for HTTPS",
+            "key": "Private key for HTTPS",
+            "no_cert": "Internal self-signed certificate",
+            "no_key": "Internal self-generated private key",
+            "transport_mode": "Transport mode",
+            "insecure": "Insecure (HTTP)",
+            "secure": "Secure (HTTPS)",
+            "insecure_and_secure": "Insecure and secure at the same time (HTTP and HTTPS)"
         },
         "script": {
             "save_failed": "Failed to save the network settings",

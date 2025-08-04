@@ -34,7 +34,16 @@ let x = {
             "hostname_invalid": `Der Hostname darf nur aus den Groß- und Kleinbuchstaben A-Z und a-z, sowie den Ziffern 0-9 und Bindestrichen bestehen. Zum Beispiel ${options.HOSTNAME_PREFIX}-A1c`,
             "enable_mdns": "mDNS aktiviert",
             "enable_mdns_desc": <>{__("The_device")} kann von anderen Geräten in diesem Netzwerk per mDNS gefunden werden.</>,
-            "web_server_port": "Listen-Port des Webinterfaces"
+            "web_server_port": "Listen-Port des Webinterfaces (HTTP)",
+            "web_server_port_secure": "Sicherer Listen-Port des Webinterfaces (HTTPS)",
+            "cert": "Zertifikat für HTTPS",
+            "key": "Privater Schlüssel für HTTPS",
+            "no_cert": "Internes selbst-signiertes Zertifikat",
+            "no_key": "Interner selbst-generierter privater Schlüssel",
+            "transport_mode": "Verbindungsmodus",
+            "insecure": "Unsicher (HTTP)",
+            "secure": "Sicher (HTTPS)",
+            "insecure_and_secure": "Unsicher und sicher gleichzeitig (HTTP und HTTPS)"
         },
         "script": {
             "save_failed": "Speichern der Netzwerkeinstellungen fehlgeschlagen",

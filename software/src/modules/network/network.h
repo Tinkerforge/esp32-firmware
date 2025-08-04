@@ -22,6 +22,7 @@
 #include "config.h"
 #include "module.h"
 #include "modules/event/event_result.h"
+#include "transport_mode.enum.h"
 
 class Network final : public IModule
 {
@@ -38,11 +39,16 @@ public:
 
     inline bool get_enable_mdns() { return enable_mdns; }
     inline const String &get_hostname() { return hostname; }
+    inline TransportMode get_transport_mode() { return transport_mode; }
     inline uint16_t get_web_server_port() { return web_server_port; }
+    inline uint16_t get_web_server_port_secure() { return web_server_port_secure; }
+    inline int8_t get_cert_id() { return cert_id; }
+    inline int8_t get_key_id() { return key_id; }
 
     void set_default_hostname(const String &hostname);
 
     int64_t on_network_connected(std::function<EventResult(const Config *)> &&callback);
+
 
 private:
     void update_connected();
@@ -53,7 +59,11 @@ private:
     String hostname;
     CoolString default_hostname;
     bool enable_mdns;
+    TransportMode transport_mode;
     uint16_t web_server_port;
+    uint16_t web_server_port_secure;
+    int8_t cert_id;
+    int8_t key_id;
 
     bool connected = false;
 

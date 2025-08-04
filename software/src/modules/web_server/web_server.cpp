@@ -39,9 +39,10 @@
 
 // HTTPS is available if
 // - the board has PSRAM,
+// - the network module is available (for configuration),
 // - certificates are available and
 // - the HTTPS server is enabled in pio.
-#if (defined(BOARD_HAS_PSRAM) && MODULE_CERTS_AVAILABLE() && CONFIG_ESP_HTTPS_SERVER_ENABLE)
+#if (defined(BOARD_HAS_PSRAM) && MODULE_CERTS_AVAILABLE() && MODULE_NETWORK_AVAILABLE() && CONFIG_ESP_HTTPS_SERVER_ENABLE)
 #define HTTPS_AVAILABLE() 1
 #else
 #define HTTPS_AVAILABLE() 0
@@ -49,6 +50,10 @@
 
 #if HTTPS_AVAILABLE()
 #include <esp_https_server.h>
+#endif
+
+#if MODULE_NETWORK_AVAILABLE()
+#include "modules/network/transport_mode.enum.h"
 #endif
 
 #define MAX_URI_HANDLERS 128
@@ -63,28 +68,59 @@ void WebServer::post_setup()
 #if HTTPS_AVAILABLE()
     httpd_ssl_config_t config = HTTPD_SSL_CONFIG_DEFAULT();
 
-    size_t cert_crt_len = 0;
-    auto cert_crt = certs.get_cert(0, &cert_crt_len); // TODO: Get cert ID from network config
-    if (cert_crt == nullptr) {
-        logger.printfln("Certificate with ID 0 is not available");
-        return;
+    const int8_t cert_id = network.get_cert_id();
+    const int8_t key_id  = network.get_key_id();
+    const bool use_external_cert = (cert_id != -1) && (key_id != -1);
+
+#if MODULE_CERTS_AVAILABLE()
+    if (use_external_cert) {
+        size_t cert_crt_len = 0;
+        auto cert_crt = certs.get_cert(cert_id, &cert_crt_len);
+        if (cert_crt == nullptr) {
+            logger.printfln("Certificate with ID %d is not available", cert_id);
+            return;
+        }
+
+        size_t cert_key_len = 0;
+        auto cert_key = certs.get_cert(key_id, &cert_key_len);
+        if (cert_key == nullptr) {
+            logger.printfln("Certificate with ID %d is not available", key_id);
+            return;
+        }
+
+        // cert config for external certs
+        config.servercert     = cert_crt.release();
+        config.servercert_len = cert_crt_len + 1; // +1 since the length must include the null terminator
+        config.prvtkey_pem    = cert_key.release();
+        config.prvtkey_len    = cert_key_len + 1; // +1 since the length must include the null terminator
+    }
+#endif
+
+    if (!use_external_cert) {
+        // TODO
     }
 
-    size_t cert_key_len = 0;
-    auto cert_key = certs.get_cert(1, &cert_key_len); // TODO: Get cert ID from network config
-    if (cert_key == nullptr) {
-        logger.printfln("Certificate with ID 1 is not available");
-        return;
+    const auto transport_mode = network.get_transport_mode();
+
+    switch(transport_mode) {
+        case TransportMode::Insecure:
+            config.transport_mode = HTTPD_SSL_TRANSPORT_INSECURE;
+            break;
+        case TransportMode::Secure:
+            config.transport_mode = HTTPD_SSL_TRANSPORT_SECURE;
+            break;
+        case TransportMode::InsecureAndSecure:
+            // TODO: Currently we only support one transport mode at a time.
+            config.transport_mode = HTTPD_SSL_TRANSPORT_SECURE;
+            break;
+        default:
+            config.transport_mode = HTTPD_SSL_TRANSPORT_INSECURE;
+            logger.printfln("Invalid transport mode %d", static_cast<int>(transport_mode));
+            break;
     }
 
-    // SSL config
-    config.transport_mode = HTTPD_SSL_TRANSPORT_SECURE; // TODO: Get transport mode from network config
-    config.port_secure    = 443; // TODO: Get from network config
-    config.port_insecure  = 80; // TODO: Get from network config
-    config.cacert_pem     = cert_crt.release();
-    config.cacert_len     = cert_crt_len + 1; // +1 since the length must include the null terminator
-    config.prvtkey_pem    = cert_key.release();
-    config.prvtkey_len    = cert_key_len + 1; // +1 since the length must include the null terminator
+    config.port_secure    = network.get_web_server_port_secure();
+    config.port_insecure  = network.get_web_server_port();
 #else
     // Use fake ssl_config_t to be able to reuse code
     typedef struct {
@@ -114,20 +150,26 @@ void WebServer::post_setup()
     config.httpd.uri_match_fn = custom_uri_match;
 #endif
 
-    /*config.task_priority = tskIDLE_PRIORITY+7;
-    config.httpd.core_id = 1;*/
-
     // Start the httpd server
 #if HTTPS_AVAILABLE()
-    auto result = httpd_ssl_start(&this->httpd, &config);
-#else
-    auto result = httpd_start(&this->httpd, &config.httpd);
+    if (config.transport_mode == HTTPD_SSL_TRANSPORT_SECURE) {
+        auto result_https = httpd_ssl_start(&this->httpd, &config);
+        if (result_https != ESP_OK) {
+            httpd = nullptr;
+            logger.printfln("Failed to start https web server: %s (0x%X)", esp_err_to_name(result_https), static_cast<unsigned>(result_https));
+            return;
+        }
+    } else if (config.transport_mode == HTTPD_SSL_TRANSPORT_INSECURE) {
 #endif
-    if (result != ESP_OK) {
-        httpd = nullptr;
-        logger.printfln("Failed to start web server: %s (0x%X)", esp_err_to_name(result), static_cast<unsigned>(result));
-        return;
+        auto result_http = httpd_start(&this->httpd, &config.httpd);
+        if (result_http != ESP_OK) {
+            httpd = nullptr;
+            logger.printfln("Failed to start http web server: %s (0x%X)", esp_err_to_name(result_http), static_cast<unsigned>(result_http));
+            return;
+        }
+#if HTTPS_AVAILABLE()
     }
+#endif
 
 #if MODULE_DEBUG_AVAILABLE()
     debug.register_task("httpd", HTTPD_STACK_SIZE);
