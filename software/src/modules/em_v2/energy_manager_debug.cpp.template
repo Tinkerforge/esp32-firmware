@@ -1,0 +1,93 @@
+// WARNING: Edit only energy_manager_debug.cpp.template. Do not edit energy_manager_debug.cpp.
+
+#include "em_v2.h"
+
+#include "module_dependencies.h"
+#include "tools.h"
+#include "tools/string_builder.h"
+
+#include "gcc_warnings.h"
+
+#define MAX_FMT_LENGTH 512
+#define MAX_DEBUG_LINE_LENGTH 512
+
+//extern inline const char* fmt(SwitchingState) {return "%u";  }
+extern inline const char* fmt(bool          ) {return "%i";  } // implicitly converted to int
+extern inline const char* fmt(uint8_t       ) {return "%i";  } // implicitly converted to int
+extern inline const char* fmt(uint16_t      ) {return "%i";  } // implicitly converted to int
+extern inline const char* fmt(int32_t       ) {return "%i";  }
+extern inline const char* fmt(uint32_t      ) {return "%u";  }
+extern inline const char* fmt(float         ) {return "%03f";}
+extern inline const char* fmt(void          ) {return "";    }
+
+static char *fmtstr;
+
+[[gnu::noinline]]
+const char *EMV2::prepare_fmtstr() {
+    const char * const fmts[{{{varcount}}}] = {
+        {{{formats}}}
+    };
+
+    StringBuilder sb;
+    if (!sb.setCapacity(MAX_FMT_LENGTH)) {
+        return "out of memory";
+    }
+
+    sb.puts(fmts[0]);
+    for (unsigned long i = 1; i < {{{varcount}}}; i++) {
+        sb.putc(',');
+        sb.puts(fmts[i]);
+    }
+
+    sb.shrink();
+    fmtstr = sb.take();
+
+    //logger.printfln("Using fmtstr='%s'", fmtstr);
+
+    return nullptr;
+}
+
+static const char *debug_header =
+{{{header}}};
+
+static const size_t debug_header_len = strlen(debug_header);
+
+[[gnu::const]]
+size_t EMV2::get_debug_header_length() const
+{
+    return debug_header_len;
+}
+
+void EMV2::get_debug_header(StringBuilder *sb)
+{
+    sb->puts(debug_header, static_cast<ssize_t>(debug_header_len));
+}
+
+[[gnu::const]]
+size_t EMV2::get_debug_line_length() const
+{
+    return MAX_DEBUG_LINE_LENGTH;
+}
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wdouble-promotion"
+    #pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
+
+void EMV2::get_debug_line(StringBuilder *sb)
+{
+    if (!fmtstr) {
+        const char *err = prepare_fmtstr();
+        if (err != nullptr) {
+            sb->puts(err);
+            return;
+        }
+    }
+    sb->printf(fmtstr,
+               {{{data}}});
+}
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif

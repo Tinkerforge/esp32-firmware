@@ -22,7 +22,7 @@
 #include "bindings/bricklet_warp_energy_manager_v2.h"
 #include "config.h"
 #include "device_module.h"
-//#include "modules/debug_protocol/debug_protocol_backend.h"
+#include "modules/debug_protocol/debug_protocol_backend.h"
 #include "modules/em_common/em_common.h"
 #include "modules/em_common/structs.h"
 
@@ -46,7 +46,7 @@ class EMV2 final : public DeviceModule<TF_WARPEnergyManagerV2,
                                        tf_warp_energy_manager_v2_reset,
                                        tf_warp_energy_manager_v2_destroy>,
                    public IEMBackend
-               //, public IDebugProtocolBackend
+                 , public IDebugProtocolBackend
 #if MODULE_AUTOMATION_AVAILABLE()
                  , public IAutomationBackend
 #endif
@@ -95,10 +95,10 @@ protected:
 public:
 
     void setup_energy_manager();
-    //[[gnu::const]] size_t get_debug_header_length() const override;
-    //void get_debug_header(StringBuilder *sb) override;
-    //[[gnu::const]] size_t get_debug_line_length() const override;
-    //void get_debug_line(StringBuilder *sb) override;
+    [[gnu::const]] size_t get_debug_header_length() const override;
+    void get_debug_header(StringBuilder *sb) override;
+    [[gnu::const]] size_t get_debug_line_length() const override;
+    void get_debug_line(StringBuilder *sb) override;
 
     bool get_input(uint32_t index);
     void set_sg_ready_output(uint32_t index, bool value);
@@ -115,6 +115,8 @@ private:
     void update_all_data_triggers(T id, void *data);
     void update_all_data();
     void update_all_data_struct();
+
+    const char *prepare_fmtstr();
 
     EnergyManagerV2AllData all_data;
 

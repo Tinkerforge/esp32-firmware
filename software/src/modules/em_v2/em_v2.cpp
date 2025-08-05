@@ -167,10 +167,7 @@ void EMV2::setup()
         return;
     }
 
-    //update_status_led();
-    //debug_protocol.register_backend(this);
-
-    //api.restorePersistentConfig("energy_manager/config", &em_common.config);
+    debug_protocol.register_backend(this);
 
     // Cache config
 
