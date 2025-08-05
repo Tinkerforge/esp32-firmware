@@ -589,6 +589,7 @@ for model in models:
         value_is_integer_inverter_power_factor = model_id >= 100 and model_id < 110 and re.match(r"^PowerFactorL.+Directional$", value_id_mapping[0])
         value_is_der_phase_current = model_id >= 700 and model_id < 800 and re.match(r"^CurrentL[123]ImExDiff$", value_id_mapping[0])
         value_is_der_phase_power_factor = model_id >= 700 and model_id < 800 and re.match(r"^PowerFactorL[123]Directional$", value_id_mapping[0])
+        value_is_phase_to_phase_voltage = re.match(r"^(VoltageL[123]L[123]|VoltageLLAvg)$", value_id_mapping[0])
 
         get_fn_name =  f"get_model_{model_id:03d}_{name}"
         value['get_fn_name'] = get_fn_name
@@ -597,6 +598,10 @@ for model in models:
 
         print_cpp(f"static float {get_fn_name}(const void *register_data, uint32_t quirks, bool detection)")
         print_cpp(r"{")
+
+        if value_is_phase_to_phase_voltage:
+            print_cpp(r"    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;")
+
         print_cpp(f"    const struct {struct_name} *model = static_cast<const struct {struct_name} *>(register_data);")
 
         # Retrieve value from struct

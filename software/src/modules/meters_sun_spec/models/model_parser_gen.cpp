@@ -153,6 +153,7 @@ static float get_model_101_AphC(const void *register_data, uint32_t quirks, bool
 
 static float get_model_101_PPVphAB(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     uint16_t val = model->PPVphAB;
     if (val == UINT16_MAX) return NAN;
@@ -163,6 +164,7 @@ static float get_model_101_PPVphAB(const void *register_data, uint32_t quirks, b
 
 static float get_model_101_PPVphBC(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     uint16_t val = model->PPVphBC;
     if (val == UINT16_MAX) return NAN;
@@ -173,6 +175,7 @@ static float get_model_101_PPVphBC(const void *register_data, uint32_t quirks, b
 
 static float get_model_101_PPVphCA(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecInverterModel101_s *model = static_cast<const struct SunSpecInverterModel101_s *>(register_data);
     uint16_t val = model->PPVphCA;
     if (val == UINT16_MAX) return NAN;
@@ -474,6 +477,7 @@ static float get_model_102_AphC(const void *register_data, uint32_t quirks, bool
 
 static float get_model_102_PPVphAB(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     uint16_t val = model->PPVphAB;
     if (val == UINT16_MAX) return NAN;
@@ -484,6 +488,7 @@ static float get_model_102_PPVphAB(const void *register_data, uint32_t quirks, b
 
 static float get_model_102_PPVphBC(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     uint16_t val = model->PPVphBC;
     if (val == UINT16_MAX) return NAN;
@@ -494,6 +499,7 @@ static float get_model_102_PPVphBC(const void *register_data, uint32_t quirks, b
 
 static float get_model_102_PPVphCA(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecInverterModel102_s *model = static_cast<const struct SunSpecInverterModel102_s *>(register_data);
     uint16_t val = model->PPVphCA;
     if (val == UINT16_MAX) return NAN;
@@ -795,6 +801,7 @@ static float get_model_103_AphC(const void *register_data, uint32_t quirks, bool
 
 static float get_model_103_PPVphAB(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     uint16_t val = model->PPVphAB;
     if (val == UINT16_MAX) return NAN;
@@ -805,6 +812,7 @@ static float get_model_103_PPVphAB(const void *register_data, uint32_t quirks, b
 
 static float get_model_103_PPVphBC(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     uint16_t val = model->PPVphBC;
     if (val == UINT16_MAX) return NAN;
@@ -815,6 +823,7 @@ static float get_model_103_PPVphBC(const void *register_data, uint32_t quirks, b
 
 static float get_model_103_PPVphCA(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecInverterModel103_s *model = static_cast<const struct SunSpecInverterModel103_s *>(register_data);
     uint16_t val = model->PPVphCA;
     if (val == UINT16_MAX) return NAN;
@@ -1087,6 +1096,7 @@ static float get_model_111_AphC(const void *register_data, uint32_t quirks, bool
 
 static float get_model_111_PPVphAB(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(&model->PPVphAB, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -1095,6 +1105,7 @@ static float get_model_111_PPVphAB(const void *register_data, uint32_t quirks, b
 
 static float get_model_111_PPVphBC(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(&model->PPVphBC, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -1103,6 +1114,7 @@ static float get_model_111_PPVphBC(const void *register_data, uint32_t quirks, b
 
 static float get_model_111_PPVphCA(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecInverterFLOATModel111_s *model = static_cast<const struct SunSpecInverterFLOATModel111_s *>(register_data);
     float val = convert_me_float(&model->PPVphCA, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -1324,6 +1336,7 @@ static float get_model_112_AphC(const void *register_data, uint32_t quirks, bool
 
 static float get_model_112_PPVphAB(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(&model->PPVphAB, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -1332,6 +1345,7 @@ static float get_model_112_PPVphAB(const void *register_data, uint32_t quirks, b
 
 static float get_model_112_PPVphBC(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(&model->PPVphBC, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -1340,6 +1354,7 @@ static float get_model_112_PPVphBC(const void *register_data, uint32_t quirks, b
 
 static float get_model_112_PPVphCA(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecInverterFLOATModel112_s *model = static_cast<const struct SunSpecInverterFLOATModel112_s *>(register_data);
     float val = convert_me_float(&model->PPVphCA, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -1561,6 +1576,7 @@ static float get_model_113_AphC(const void *register_data, uint32_t quirks, bool
 
 static float get_model_113_PPVphAB(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(&model->PPVphAB, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -1569,6 +1585,7 @@ static float get_model_113_PPVphAB(const void *register_data, uint32_t quirks, b
 
 static float get_model_113_PPVphBC(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(&model->PPVphBC, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -1577,6 +1594,7 @@ static float get_model_113_PPVphBC(const void *register_data, uint32_t quirks, b
 
 static float get_model_113_PPVphCA(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecInverterFLOATModel113_s *model = static_cast<const struct SunSpecInverterFLOATModel113_s *>(register_data);
     float val = convert_me_float(&model->PPVphCA, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -1846,6 +1864,7 @@ static float get_model_201_PhVphC(const void *register_data, uint32_t quirks, bo
 
 static float get_model_201_PPV(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->PPV;
     if (val == INT16_MIN) return NAN;
@@ -1856,6 +1875,7 @@ static float get_model_201_PPV(const void *register_data, uint32_t quirks, bool 
 
 static float get_model_201_PPVphAB(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->PPVphAB;
     if (val == INT16_MIN) return NAN;
@@ -1866,6 +1886,7 @@ static float get_model_201_PPVphAB(const void *register_data, uint32_t quirks, b
 
 static float get_model_201_PPVphBC(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->PPVphBC;
     if (val == INT16_MIN) return NAN;
@@ -1876,6 +1897,7 @@ static float get_model_201_PPVphBC(const void *register_data, uint32_t quirks, b
 
 static float get_model_201_PPVphCA(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecSinglePhaseMeterModel201_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel201_s *>(register_data);
     int16_t val = model->PPVphCA;
     if (val == INT16_MIN) return NAN;
@@ -2666,6 +2688,7 @@ static float get_model_202_PhVphC(const void *register_data, uint32_t quirks, bo
 
 static float get_model_202_PPV(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->PPV;
     if (val == INT16_MIN) return NAN;
@@ -2676,6 +2699,7 @@ static float get_model_202_PPV(const void *register_data, uint32_t quirks, bool 
 
 static float get_model_202_PhVphAB(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->PhVphAB;
     if (val == INT16_MIN) return NAN;
@@ -2686,6 +2710,7 @@ static float get_model_202_PhVphAB(const void *register_data, uint32_t quirks, b
 
 static float get_model_202_PhVphBC(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->PhVphBC;
     if (val == INT16_MIN) return NAN;
@@ -2696,6 +2721,7 @@ static float get_model_202_PhVphBC(const void *register_data, uint32_t quirks, b
 
 static float get_model_202_PhVphCA(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecSplitSinglePhaseMeterModel202_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel202_s *>(register_data);
     int16_t val = model->PhVphCA;
     if (val == INT16_MIN) return NAN;
@@ -3486,6 +3512,7 @@ static float get_model_203_PhVphC(const void *register_data, uint32_t quirks, bo
 
 static float get_model_203_PPV(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->PPV;
     if (val == INT16_MIN) return NAN;
@@ -3496,6 +3523,7 @@ static float get_model_203_PPV(const void *register_data, uint32_t quirks, bool 
 
 static float get_model_203_PhVphAB(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->PhVphAB;
     if (val == INT16_MIN) return NAN;
@@ -3506,6 +3534,7 @@ static float get_model_203_PhVphAB(const void *register_data, uint32_t quirks, b
 
 static float get_model_203_PhVphBC(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->PhVphBC;
     if (val == INT16_MIN) return NAN;
@@ -3516,6 +3545,7 @@ static float get_model_203_PhVphBC(const void *register_data, uint32_t quirks, b
 
 static float get_model_203_PhVphCA(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecWyeConnectThreePhaseMeterModel203_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel203_s *>(register_data);
     int16_t val = model->PhVphCA;
     if (val == INT16_MIN) return NAN;
@@ -4306,6 +4336,7 @@ static float get_model_204_PhVphC(const void *register_data, uint32_t quirks, bo
 
 static float get_model_204_PPV(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->PPV;
     if (val == INT16_MIN) return NAN;
@@ -4316,6 +4347,7 @@ static float get_model_204_PPV(const void *register_data, uint32_t quirks, bool 
 
 static float get_model_204_PhVphAB(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->PhVphAB;
     if (val == INT16_MIN) return NAN;
@@ -4326,6 +4358,7 @@ static float get_model_204_PhVphAB(const void *register_data, uint32_t quirks, b
 
 static float get_model_204_PhVphBC(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->PhVphBC;
     if (val == INT16_MIN) return NAN;
@@ -4336,6 +4369,7 @@ static float get_model_204_PhVphBC(const void *register_data, uint32_t quirks, b
 
 static float get_model_204_PhVphCA(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel204_s *>(register_data);
     int16_t val = model->PhVphCA;
     if (val == INT16_MIN) return NAN;
@@ -5110,6 +5144,7 @@ static float get_model_211_PhVphC(const void *register_data, uint32_t quirks, bo
 
 static float get_model_211_PPV(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(&model->PPV, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -5118,6 +5153,7 @@ static float get_model_211_PPV(const void *register_data, uint32_t quirks, bool 
 
 static float get_model_211_PPVphAB(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(&model->PPVphAB, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -5126,6 +5162,7 @@ static float get_model_211_PPVphAB(const void *register_data, uint32_t quirks, b
 
 static float get_model_211_PPVphBC(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(&model->PPVphBC, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -5134,6 +5171,7 @@ static float get_model_211_PPVphBC(const void *register_data, uint32_t quirks, b
 
 static float get_model_211_PPVphCA(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecSinglePhaseMeterModel211_s *model = static_cast<const struct SunSpecSinglePhaseMeterModel211_s *>(register_data);
     float val = convert_me_float(&model->PPVphCA, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -5721,6 +5759,7 @@ static float get_model_212_PhVphC(const void *register_data, uint32_t quirks, bo
 
 static float get_model_212_PPV(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(&model->PPV, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -5729,6 +5768,7 @@ static float get_model_212_PPV(const void *register_data, uint32_t quirks, bool 
 
 static float get_model_212_PPVphAB(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(&model->PPVphAB, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -5737,6 +5777,7 @@ static float get_model_212_PPVphAB(const void *register_data, uint32_t quirks, b
 
 static float get_model_212_PPVphBC(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(&model->PPVphBC, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -5745,6 +5786,7 @@ static float get_model_212_PPVphBC(const void *register_data, uint32_t quirks, b
 
 static float get_model_212_PPVphCA(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecSplitSinglePhaseMeterModel212_s *model = static_cast<const struct SunSpecSplitSinglePhaseMeterModel212_s *>(register_data);
     float val = convert_me_float(&model->PPVphCA, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -6332,6 +6374,7 @@ static float get_model_213_PhVphC(const void *register_data, uint32_t quirks, bo
 
 static float get_model_213_PPV(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(&model->PPV, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -6340,6 +6383,7 @@ static float get_model_213_PPV(const void *register_data, uint32_t quirks, bool 
 
 static float get_model_213_PPVphAB(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(&model->PPVphAB, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -6348,6 +6392,7 @@ static float get_model_213_PPVphAB(const void *register_data, uint32_t quirks, b
 
 static float get_model_213_PPVphBC(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(&model->PPVphBC, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -6356,6 +6401,7 @@ static float get_model_213_PPVphBC(const void *register_data, uint32_t quirks, b
 
 static float get_model_213_PPVphCA(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecWyeConnectThreePhaseMeterModel213_s *model = static_cast<const struct SunSpecWyeConnectThreePhaseMeterModel213_s *>(register_data);
     float val = convert_me_float(&model->PPVphCA, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -6943,6 +6989,7 @@ static float get_model_214_PhVphC(const void *register_data, uint32_t quirks, bo
 
 static float get_model_214_PPV(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(&model->PPV, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -6951,6 +6998,7 @@ static float get_model_214_PPV(const void *register_data, uint32_t quirks, bool 
 
 static float get_model_214_PPVphAB(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(&model->PPVphAB, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -6959,6 +7007,7 @@ static float get_model_214_PPVphAB(const void *register_data, uint32_t quirks, b
 
 static float get_model_214_PPVphBC(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(&model->PPVphBC, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -6967,6 +7016,7 @@ static float get_model_214_PPVphBC(const void *register_data, uint32_t quirks, b
 
 static float get_model_214_PPVphCA(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *model = static_cast<const struct SunSpecDeltaConnectThreePhaseMeterModel214_s *>(register_data);
     float val = convert_me_float(&model->PPVphCA, quirks & SUN_SPEC_QUIRKS_FLOAT_IS_LE32);
     float fval = val;
@@ -7541,6 +7591,7 @@ static float get_model_701_A(const void *register_data, uint32_t quirks, bool de
 
 static float get_model_701_LLV(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
     uint16_t val = model->LLV;
     if (val == UINT16_MAX) return NAN;
@@ -7704,6 +7755,7 @@ static float get_model_701_AL1(const void *register_data, uint32_t quirks, bool 
 
 static float get_model_701_VL1L2(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
     uint16_t val = model->VL1L2;
     if (val == UINT16_MAX) return NAN;
@@ -7817,6 +7869,7 @@ static float get_model_701_AL2(const void *register_data, uint32_t quirks, bool 
 
 static float get_model_701_VL2L3(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
     uint16_t val = model->VL2L3;
     if (val == UINT16_MAX) return NAN;
@@ -7930,6 +7983,7 @@ static float get_model_701_AL3(const void *register_data, uint32_t quirks, bool 
 
 static float get_model_701_VL3L1(const void *register_data, uint32_t quirks, bool detection)
 {
+    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;
     const struct SunSpecDERACMeasurementModel701_s *model = static_cast<const struct SunSpecDERACMeasurementModel701_s *>(register_data);
     uint16_t val = model->VL3L1;
     if (val == UINT16_MAX) return NAN;
