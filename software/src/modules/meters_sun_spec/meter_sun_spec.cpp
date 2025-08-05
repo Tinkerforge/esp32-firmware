@@ -589,6 +589,9 @@ void MeterSunSpec::scan_next()
                             quirks |= SUN_SPEC_QUIRKS_DER_PHASE_CURRENT_IS_UINT16;
                             quirks |= SUN_SPEC_QUIRKS_DER_PHASE_POWER_FACTOR_IS_UINT16;
                         }
+                        else if (strncmp(m->Mn, "WattNode", 32) == 0) {
+                            quirks |= SUN_SPEC_QUIRKS_ACTIVE_POWER_IS_INVERTED;
+                        }
                         else if (strncmp(m->Mn, "SUNGROW", 32) == 0) {
                             quirks |= SUN_SPEC_QUIRKS_INTEGER_INVERTER_POWER_FACTOR_IS_UNITY;
                         }
