@@ -20,6 +20,7 @@
 #include "model_parser.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
@@ -29,7 +30,7 @@
 
 #include "gcc_warnings.h"
 
-IMetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t slot, uint16_t model_id, DCPortType dc_port_type)
+IMetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t slot, const char *manufacturer_name, uint16_t model_id, DCPortType dc_port_type)
 {
     if (model_id == 160) {
         return new MetersSunSpecParser160(slot);
@@ -45,9 +46,36 @@ IMetersSunSpecParser *MetersSunSpecParser::new_parser(uint32_t slot, uint16_t mo
     }
 
     for (size_t i = 0; i < meters_sun_spec_all_model_data.model_count; i++) {
-        auto *model_data = meters_sun_spec_all_model_data.model_data[i];
+        const ModelData *model_data = meters_sun_spec_all_model_data.model_data[i];
+
         if (model_data->model_id == model_id) {
-            return new MetersSunSpecParser(slot, model_data);
+            const ModelData *actual_model_data = model_data;
+
+            // WattNode meter reports phase currents as ImExDiff
+            if (strcmp(manufacturer_name, "WattNode") == 0 && model_id >= 200 && model_id < 300) {
+                logger.printfln_meter("Mapping phase currents as ImExDiff for WattNode meter");
+
+                size_t model_data_length = sizeof(ModelData) + sizeof(ValueData) * model_data->value_count;
+
+                // FIXME: leaking this, as meter instances are not destroyed
+                ModelData *patched_model_data = static_cast<ModelData *>(malloc(model_data_length));
+                memcpy(patched_model_data, model_data, model_data_length);
+
+                for (size_t k = 0; k < patched_model_data->value_count; ++k) {
+                    MeterValueID value_id = patched_model_data->value_data[k].value_id;
+
+                    if      (value_id == MeterValueID::CurrentL1ImExSum)   value_id = MeterValueID::CurrentL1ImExDiff;
+                    else if (value_id == MeterValueID::CurrentL2ImExSum)   value_id = MeterValueID::CurrentL2ImExDiff;
+                    else if (value_id == MeterValueID::CurrentL3ImExSum)   value_id = MeterValueID::CurrentL3ImExDiff;
+                    else if (value_id == MeterValueID::CurrentLSumImExSum) value_id = MeterValueID::CurrentLSumImExDiff;
+
+                    patched_model_data->value_data[k].value_id = value_id;
+                }
+
+                actual_model_data = patched_model_data;
+            }
+
+            return new MetersSunSpecParser(slot, actual_model_data);
         }
     }
 
