@@ -342,3 +342,7 @@
 - Rework phase switching special handling for Polestar EVs and BMW PHEVs (through EVSE 2.0 Bricklet firmware 2.2.14)
 - Increase CP disconnect time for phase switching from 5s (not enough for Polestar EVs) to 15s (through EVSE 2.0 Bricklet firmware 2.2.14)
 - Improve translations
+
+2025-08-06: 2.8.8 (<unknown>)
+- SunSpec: Fix power and phase-to-phase voltage values for WattNode meters
+- Fix crash in the common config logic
