@@ -997,7 +997,7 @@ struct from_update {
             return {"", false};
 
         uint32_t new_value = 0;
-        if (!extract_int<uint32_t>(update, &new_value, ((const Config::ConfInt &)x).getSlot()->min, ((const Config::ConfInt &)x).getSlot()->max))
+        if (!extract_int<uint32_t>(update, &new_value, ((const Config::ConfUint &)x).getSlot()->min, ((const Config::ConfUint &)x).getSlot()->max))
             return {"ConfUpdate node was not an unsigned integer.", false};
 
         bool changed = *x.getVal() != new_value;
