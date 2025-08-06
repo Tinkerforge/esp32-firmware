@@ -104,7 +104,7 @@ void ChargeTracker::pre_setup()
         {"file_type", Config::Enum(FileType::PDF)},
         {"english", Config::Bool(false)},
         {"letterhead", Config::Str("", 0, PDF_LETTERHEAD_MAX_SIZE)},
-        {"user_filter", Config::Int(0)},
+        {"user_filter", Config::Int8(0)},
         {"csv_delimiter", Config::Enum(CSVFlavor::Excel)},
     });
 #endif
