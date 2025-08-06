@@ -488,3 +488,8 @@
 - Solar forecast: Stricter plane configuration checks
 - Hide eco plan if eco mode or charge manager is disabled
 - Improve translations
+
+2025-08-06: 2.4.8 (<unknown>)
+- SunSpec: Fix power and phase-to-phase voltage values for WattNode meters
+- Remote Access: Fix adding new user
+- Fix crash in the common config logic
