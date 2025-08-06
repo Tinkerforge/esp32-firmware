@@ -361,6 +361,7 @@ export class ChargeTracker extends ConfigComponent<'charge_tracker/config', {sta
             <FormRow label={__("charge_tracker.content.target_user")}>
                 <InputSelect
                     value={this.state.new_remote_upload_config.user_id.toString()}
+                    placeholder={__("charge_tracker.content.target_user_placeholder")}
                     onValue={v => this.setState({
                         new_remote_upload_config: {
                             ...this.state.new_remote_upload_config,

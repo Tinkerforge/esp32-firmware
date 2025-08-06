@@ -72,6 +72,7 @@ let x = {
             "english_label": "English",
             "letterhead_label": "Letterhead",
             "target_user": "Remote access user",
+            "target_user_placeholder": "Select user",
             "charge_log_send_config": "Charge log send configuration",
             "charge_log_send_add_modal_title": "Add charge log send configuration",
             "charge_log_send_add_message": /*SFN*/(have: number, max: number) => `${have} of ${max} users configured`/*NF*/
