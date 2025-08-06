@@ -1,3 +1,4 @@
+import { RegistrationState } from "./registration_state.enum";
 
 export interface config {
     enable: boolean,
@@ -26,13 +27,6 @@ interface KeyObject {
     web_public: string,
     web_private: string,
     psk: string,
-}
-
-export enum RegistrationState {
-    None,
-    InProgress,
-    Success,
-    Error,
 }
 
 export interface registration_state {
