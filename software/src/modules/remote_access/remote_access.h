@@ -28,6 +28,7 @@
 #include "config.h"
 #include "async_https_client.h"
 #include "ping/ping_sock.h"
+#include "registration_state.enum.h"
 
 #define MAX_USER_CONNECTIONS 5
 
@@ -36,15 +37,6 @@ struct HttpResponse {
     char *cookie = nullptr;
     String body;
     uint64_t data_read = 0;
-};
-
-enum class RegistrationState {
-    _min = 0,
-    None,
-    InProgress,
-    Success,
-    Error,
-    _max = 4,
 };
 
 struct Connections {
