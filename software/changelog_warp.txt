@@ -857,7 +857,7 @@
 - Add phases_* values to evse/low_level_state API matching WARP3 API to indicate fixed three-phase connection
 - Improve translations
 
-2025-08-06: 2.8.8 (<unknown>)
+2025-08-06: 2.8.8 (e537a982)
 - SunSpec: Fix power and phase-to-phase voltage values for WattNode meters
 - Remote Access: Fix adding new user
 - Fix crash in the common config logic
