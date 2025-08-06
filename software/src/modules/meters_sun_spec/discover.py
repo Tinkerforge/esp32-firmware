@@ -1,4 +1,4 @@
-#!/usr/bin/python3 -u
+#!/usr/bin/env -S python3 -u
 
 # https://github.com/sunspec/models/blob/master/json
 

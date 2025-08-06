@@ -1,4 +1,4 @@
-#!/usr/bin/python3 -B
+#!/usr/bin/env -S python3 -u -B
 
 import glob
 import io

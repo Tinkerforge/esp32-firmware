@@ -1,4 +1,4 @@
-#!/usr/bin/python -u
+#!/usr/bin/env -S python3 -u
 
 import json
 import argparse

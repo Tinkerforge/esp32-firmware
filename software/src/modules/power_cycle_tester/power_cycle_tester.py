@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env -S python3 -u
 
 HOST = "localhost"
 PORT = 4223
