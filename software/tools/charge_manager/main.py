@@ -1,3 +1,5 @@
+#!/usr/bin/env -S python3 -u
+
 from dataclasses import dataclass, field
 from enum import IntEnum
 from collections.abc import Callable

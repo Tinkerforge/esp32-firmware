@@ -1,3 +1,5 @@
+#!/usr/bin/env -S python3 -u
+
 import sys
 
 if sys.hexversion < 0x3060000:
