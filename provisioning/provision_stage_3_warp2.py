@@ -793,7 +793,7 @@ class Stage3:
         while self.get_cp_pwm_function() == 1000:
             time.sleep(0.1)
         self.change_cp_pe_state('C')
-        time.sleep(VOLTAGE_SETTLE_DURATION)
+        time.sleep(PHASE_SWITCH_SETTLE_DURATION)
 
     # requires power_on
     def test_wallbox(self, has_phase_switch):
