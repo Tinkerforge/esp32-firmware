@@ -60,6 +60,8 @@ let x = {
             "table_fox_ess_h3_smart_hybrid_inverter": "Fox ESS H3 Smart hybrid inverter",
             "table_fox_ess_h3_pro_hybrid_inverter": "Fox ESS H3 Pro hybrid inverter",
             "table_sma_hybrid_inverter": "SMA hybrid inverter",
+            "table_varta_element": "VARTA element / one / pulse / link",
+            "table_varta_flex": "VARTA pulse neo / flex storage",
             "virtual_meter": "Virtual meter",
             "virtual_meter_inverter": "Inverter",
             "virtual_meter_grid": "Grid",

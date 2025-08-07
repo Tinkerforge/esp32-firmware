@@ -57,6 +57,7 @@
 #include "fox_ess_h3_smart_hybrid_inverter_virtual_meter.enum.h"
 #include "fox_ess_h3_pro_hybrid_inverter_virtual_meter.enum.h"
 #include "sma_hybrid_inverter_virtual_meter.enum.h"
+#include "varta_virtual_meter.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -144,6 +145,8 @@ private:
     bool is_fox_ess_h3_smart_hybrid_inverter_pv_meter() const;
     bool is_fox_ess_h3_pro_hybrid_inverter_pv_meter() const;
     bool is_sma_hybrid_inverter_battery_meter() const;
+    bool is_varta_flex_grid_meter() const;
+    bool is_varta_flex_battery_meter() const;
 
     uint32_t slot;
     Config *state;
@@ -482,6 +485,24 @@ private:
             float battery_charge_power;
             float battery_discharge_power;
         } sma_hybrid_inverter;
+
+        // VARTA element
+        struct {
+            VARTAVirtualMeter virtual_meter;
+        } varta_element;
+
+        // VARTA flex
+        struct {
+            VARTAVirtualMeter virtual_meter;
+            float grid_power;
+            float grid_power_sf;
+            float battery_active_power;
+            float battery_apparent_power;
+            float battery_total_charge_energy;
+            float battery_active_power_sf;
+            float battery_apparent_power_sf;
+            float battery_total_charge_energy_sf;
+        } varta_flex;
     };
 };
 

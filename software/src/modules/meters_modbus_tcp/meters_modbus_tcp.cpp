@@ -229,6 +229,16 @@ void MetersModbusTCP::pre_setup()
         {"device_address", Config::Uint8(3)},
     })});
 
+    table_prototypes.push_back({MeterModbusTCPTableID::VARTAElement, Config::Object({
+        {"virtual_meter", Config::Enum(VARTAVirtualMeter::None)},
+        {"device_address", Config::Uint8(255)},
+    })});
+
+    table_prototypes.push_back({MeterModbusTCPTableID::VARTAFlex, Config::Object({
+        {"virtual_meter", Config::Enum(VARTAVirtualMeter::None)},
+        {"device_address", Config::Uint8(255)},
+    })});
+
     config_prototype = Config::Object({
         {"display_name",   Config::Str("", 0, 32)},
         {"location",       Config::Enum(MeterLocation::Unknown)},

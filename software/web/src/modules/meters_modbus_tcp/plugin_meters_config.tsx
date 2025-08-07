@@ -59,6 +59,7 @@ import { HuaweiEMMAVirtualMeter } from "./huawei_emma_virtual_meter.enum";
 import { FoxESSH3SmartHybridInverterVirtualMeter } from "./fox_ess_h3_smart_hybrid_inverter_virtual_meter.enum";
 import { FoxESSH3ProHybridInverterVirtualMeter } from "./fox_ess_h3_pro_hybrid_inverter_virtual_meter.enum";
 import { SMAHybridInverterVirtualMeter } from "./sma_hybrid_inverter_virtual_meter.enum";
+import { VARTAVirtualMeter } from "./varta_virtual_meter.enum";
 import { InputText } from "../../ts/components/input_text";
 import { InputHost } from "../../ts/components/input_host";
 import { InputNumber } from "../../ts/components/input_number";
@@ -436,6 +437,22 @@ type TableConfigSMAHybridInverter = [
     },
 ];
 
+type TableConfigVARTAElement = [
+    MeterModbusTCPTableID.VARTAElement,
+    {
+        virtual_meter: number;
+        device_address: number;
+    },
+];
+
+type TableConfigVARTAFlex = [
+    MeterModbusTCPTableID.VARTAFlex,
+    {
+        virtual_meter: number;
+        device_address: number;
+    },
+];
+
 type TableConfig = TableConfigNone |
                    TableConfigCustom |
                    TableConfigSungrowHybridInverter |
@@ -482,7 +499,9 @@ type TableConfig = TableConfigNone |
                    TableConfigSolaxStringInverter |
                    TableConfigFoxESSH3SmartHybridInverter |
                    TableConfigFoxESSH3ProHybridInverter |
-                   TableConfigSMAHybridInverter;
+                   TableConfigSMAHybridInverter |
+                   TableConfigVARTAElement |
+                   TableConfigVARTAFlex;
 
 export type ModbusTCPMetersConfig = [
     MeterClassID.ModbusTCP,
@@ -634,6 +653,12 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
 
         case MeterModbusTCPTableID.SMAHybridInverter:
             return [MeterModbusTCPTableID.SMAHybridInverter, {virtual_meter: null, device_address: 3}];
+
+        case MeterModbusTCPTableID.VARTAElement:
+            return [MeterModbusTCPTableID.VARTAElement, {virtual_meter: null, device_address: 255}];
+
+        case MeterModbusTCPTableID.VARTAFlex:
+            return [MeterModbusTCPTableID.VARTAFlex, {virtual_meter: null, device_address: 255}];
 
         default:
             return [MeterModbusTCPTableID.None, null];
@@ -902,6 +927,8 @@ export function init() {
 //#ifn OPTIONS_PRODUCT_ID_IS_ELTAKO
                                 [MeterModbusTCPTableID.TinkerforgeWARPCharger.toString(), __("meters_modbus_tcp.content.table_tinkerforge_warp_charger")],
 //#endif
+                                [MeterModbusTCPTableID.VARTAElement.toString(), __("meters_modbus_tcp.content.table_varta_element")],
+                                [MeterModbusTCPTableID.VARTAFlex.toString(), __("meters_modbus_tcp.content.table_varta_flex")],
                                 [MeterModbusTCPTableID.VictronEnergyGX.toString(), __("meters_modbus_tcp.content.table_victron_energy_gx")],
                                 [MeterModbusTCPTableID.Custom.toString(), __("meters_modbus_tcp.content.table_custom")],
                             ]}
@@ -965,7 +992,9 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.SolaxStringInverter
                   || config[1].table[0] == MeterModbusTCPTableID.FoxESSH3SmartHybridInverter
                   || config[1].table[0] == MeterModbusTCPTableID.FoxESSH3ProHybridInverter
-                  || config[1].table[0] == MeterModbusTCPTableID.SMAHybridInverter)) {
+                  || config[1].table[0] == MeterModbusTCPTableID.SMAHybridInverter
+                  || config[1].table[0] == MeterModbusTCPTableID.VARTAElement
+                  || config[1].table[0] == MeterModbusTCPTableID.VARTAFlex)) {
                     let virtual_meter_items: [string, string][] = [];
                     let default_location: MeterLocation = undefined; // undefined: there is no default location, null: default location is not known yet
                     let get_default_location: (virtual_meter: number) => MeterLocation = undefined; // undefined: there is no default location
@@ -1417,6 +1446,40 @@ export function init() {
                         }
 
                         default_device_address = 3;
+                    }
+                    else if (config[1].table[0] == MeterModbusTCPTableID.VARTAElement) {
+                        virtual_meter_items = [
+                            [VARTAVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
+                            [VARTAVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                        ];
+
+                        get_default_location = (virtual_meter: number) => {
+                            switch (virtual_meter) {
+                            case VARTAVirtualMeter.Grid: return MeterLocation.Grid;
+                            case VARTAVirtualMeter.Battery: return MeterLocation.Battery;
+                            }
+
+                            return MeterLocation.Unknown;
+                        }
+
+                        default_device_address = 255;
+                    }
+                    else if (config[1].table[0] == MeterModbusTCPTableID.VARTAFlex) {
+                        virtual_meter_items = [
+                            [VARTAVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
+                            [VARTAVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                        ];
+
+                        get_default_location = (virtual_meter: number) => {
+                            switch (virtual_meter) {
+                            case VARTAVirtualMeter.Grid: return MeterLocation.Grid;
+                            case VARTAVirtualMeter.Battery: return MeterLocation.Battery;
+                            }
+
+                            return MeterLocation.Unknown;
+                        }
+
+                        default_device_address = 255;
                     }
 
                     if (virtual_meter_items.length > 0) {

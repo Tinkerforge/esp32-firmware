@@ -288,6 +288,16 @@
 #define SMA_HYBRID_INVERTER_BATTERY_CHARGE_POWER_ADDRESS                   static_cast<size_t>(SMAHybridInverterBatteryAddress::BatChrgCurBatCha)
 #define SMA_HYBRID_INVERTER_BATTERY_DISCHARGE_POWER_ADDRESS                static_cast<size_t>(SMAHybridInverterBatteryAddress::BatDschCurBatDsch)
 
+#define VARTA_FLEX_GRID_POWER_ADDRESS                                      static_cast<size_t>(VARTAFlexGridAddress::GridPower)
+#define VARTA_FLEX_GRID_POWER_SF_ADDRESS                                   static_cast<size_t>(VARTAFlexGridAddress::GridPowerSF)
+
+#define VARTA_FLEX_BATTERY_ACTIVE_POWER_ADDRESS                            static_cast<size_t>(VARTAFlexBatteryAddress::ActivePower)
+#define VARTA_FLEX_BATTERY_APPARENT_POWER_ADDRESS                          static_cast<size_t>(VARTAFlexBatteryAddress::ApparentPower)
+#define VARTA_FLEX_BATTERY_TOTAL_CHARGE_ENERGY_ADDRESS                     static_cast<size_t>(VARTAFlexBatteryAddress::TotalChargeEnergy)
+#define VARTA_FLEX_BATTERY_ACTIVE_POWER_SF_ADDRESS                         static_cast<size_t>(VARTAFlexBatteryAddress::ActivePowerSF)
+#define VARTA_FLEX_BATTERY_APPARENT_POWER_SF_ADDRESS                       static_cast<size_t>(VARTAFlexBatteryAddress::ApparentPowerSF)
+#define VARTA_FLEX_BATTERY_TOTAL_CHARGE_ENERGY_SF_ADDRESS                  static_cast<size_t>(VARTAFlexBatteryAddress::TotalChargeEnergySF)
+
 #define MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(x) (static_cast<uint8_t>(x) & 0x07)
 #define MODBUS_VALUE_TYPE_TO_REGISTER_ORDER_LE(x) ((static_cast<uint8_t>(x) >> 5) & 1)
 
@@ -1604,6 +1614,68 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         break;
 
+    case MeterModbusTCPTableID::VARTAElement:
+        varta_element.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<VARTAVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
+
+        switch (varta_element.virtual_meter) {
+        case VARTAVirtualMeter::None:
+            logger.printfln_meter("No VARTA Element Virtual Meter selected");
+            break;
+
+        case VARTAVirtualMeter::InverterUnused:
+            logger.printfln_meter("Invalid VARTA Element Virtual Meter: %u", static_cast<uint8_t>(varta_element.virtual_meter));
+            default_location = MeterLocation::Inverter;
+            break;
+
+        case VARTAVirtualMeter::Grid:
+            table = &varta_element_grid_table;
+            default_location = MeterLocation::Grid;
+            break;
+
+        case VARTAVirtualMeter::Battery:
+            table = &varta_element_battery_table;
+            default_location = MeterLocation::Battery;
+            break;
+
+        default:
+            logger.printfln_meter("Unknown VARTA Element Virtual Meter: %u", static_cast<uint8_t>(varta_element.virtual_meter));
+            break;
+        }
+
+        break;
+
+    case MeterModbusTCPTableID::VARTAFlex:
+        varta_flex.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<VARTAVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
+
+        switch (varta_flex.virtual_meter) {
+        case VARTAVirtualMeter::None:
+            logger.printfln_meter("No VARTA Flex Virtual Meter selected");
+            break;
+
+        case VARTAVirtualMeter::InverterUnused:
+            logger.printfln_meter("Invalid VARTA Flex Virtual Meter: %u", static_cast<uint8_t>(varta_flex.virtual_meter));
+            default_location = MeterLocation::Inverter;
+            break;
+
+        case VARTAVirtualMeter::Grid:
+            table = &varta_flex_grid_table;
+            default_location = MeterLocation::Grid;
+            break;
+
+        case VARTAVirtualMeter::Battery:
+            table = &varta_flex_battery_table;
+            default_location = MeterLocation::Battery;
+            break;
+
+        default:
+            logger.printfln_meter("Unknown VARTA Flex Virtual Meter: %u", static_cast<uint8_t>(varta_flex.virtual_meter));
+            break;
+        }
+
+        break;
+
     default:
         logger.printfln_meter("Unknown table: %u", static_cast<uint8_t>(table_id));
         break;
@@ -1929,6 +2001,18 @@ bool MeterModbusTCP::is_sma_hybrid_inverter_battery_meter() const
 {
     return table_id == MeterModbusTCPTableID::SMAHybridInverter
         && sma_hybrid_inverter.virtual_meter == SMAHybridInverterVirtualMeter::Battery;
+}
+
+bool MeterModbusTCP::is_varta_flex_grid_meter() const
+{
+    return table_id == MeterModbusTCPTableID::VARTAFlex
+        && varta_flex.virtual_meter == VARTAVirtualMeter::Grid;
+}
+
+bool MeterModbusTCP::is_varta_flex_battery_meter() const
+{
+    return table_id == MeterModbusTCPTableID::VARTAFlex
+        && varta_flex.virtual_meter == VARTAVirtualMeter::Battery;
 }
 
 void MeterModbusTCP::read_done_callback()
@@ -3718,6 +3802,46 @@ void MeterModbusTCP::parse_next()
             float power = sma_hybrid_inverter.battery_charge_power - sma_hybrid_inverter.battery_discharge_power;
 
             meters.update_value(slot, table->index[read_index + 1], power);
+        }
+    }
+    else if (is_varta_flex_grid_meter()) {
+        if (register_start_address == VARTA_FLEX_GRID_POWER_ADDRESS) {
+            varta_flex.grid_power = value;
+        }
+        else if (register_start_address == VARTA_FLEX_GRID_POWER_SF_ADDRESS) {
+            varta_flex.grid_power_sf = value;
+
+            float grid_power = varta_flex.grid_power * get_sun_spec_scale_factor(varta_flex.grid_power_sf);
+
+            meters.update_value(slot, table->index[read_index + 1], grid_power);
+        }
+    }
+    else if (is_varta_flex_battery_meter()) {
+        if (register_start_address == VARTA_FLEX_BATTERY_ACTIVE_POWER_ADDRESS) {
+            varta_flex.battery_active_power = value;
+        }
+        else if (register_start_address == VARTA_FLEX_BATTERY_APPARENT_POWER_ADDRESS) {
+            varta_flex.battery_apparent_power = value;
+        }
+        else if (register_start_address == VARTA_FLEX_BATTERY_TOTAL_CHARGE_ENERGY_ADDRESS) {
+            varta_flex.battery_total_charge_energy = value;
+        }
+        else if (register_start_address == VARTA_FLEX_BATTERY_ACTIVE_POWER_SF_ADDRESS) {
+            varta_flex.battery_active_power_sf = value;
+        }
+        else if (register_start_address == VARTA_FLEX_BATTERY_APPARENT_POWER_SF_ADDRESS) {
+            varta_flex.battery_apparent_power_sf = value;
+        }
+        else if (register_start_address == VARTA_FLEX_BATTERY_TOTAL_CHARGE_ENERGY_SF_ADDRESS) {
+            varta_flex.battery_total_charge_energy_sf = value;
+
+            float active_power = varta_flex.battery_active_power * get_sun_spec_scale_factor(varta_flex.battery_active_power_sf);
+            float apparent_power = varta_flex.battery_apparent_power * get_sun_spec_scale_factor(varta_flex.battery_apparent_power_sf);
+            float total_charge_energy = varta_flex.battery_total_charge_energy * get_sun_spec_scale_factor(varta_flex.battery_total_charge_energy_sf);
+
+            meters.update_value(slot, table->index[read_index + 1], active_power);
+            meters.update_value(slot, table->index[read_index + 2], apparent_power);
+            meters.update_value(slot, table->index[read_index + 3], total_charge_energy);
         }
     }
 
