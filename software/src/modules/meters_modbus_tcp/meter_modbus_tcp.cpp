@@ -3809,7 +3809,7 @@ void MeterModbusTCP::parse_next()
             varta_flex.grid_power = value;
         }
         else if (register_start_address == VARTA_FLEX_GRID_POWER_SF_ADDRESS) {
-            varta_flex.grid_power_sf = value;
+            varta_flex.grid_power_sf = static_cast<int16_t>(c16.u);
 
             float grid_power = varta_flex.grid_power * get_sun_spec_scale_factor(varta_flex.grid_power_sf);
 
@@ -3827,13 +3827,13 @@ void MeterModbusTCP::parse_next()
             varta_flex.battery_total_charge_energy = value;
         }
         else if (register_start_address == VARTA_FLEX_BATTERY_ACTIVE_POWER_SF_ADDRESS) {
-            varta_flex.battery_active_power_sf = value;
+            varta_flex.battery_active_power_sf = static_cast<int16_t>(c16.u);
         }
         else if (register_start_address == VARTA_FLEX_BATTERY_APPARENT_POWER_SF_ADDRESS) {
-            varta_flex.battery_apparent_power_sf = value;
+            varta_flex.battery_apparent_power_sf = static_cast<int16_t>(c16.u);
         }
         else if (register_start_address == VARTA_FLEX_BATTERY_TOTAL_CHARGE_ENERGY_SF_ADDRESS) {
-            varta_flex.battery_total_charge_energy_sf = value;
+            varta_flex.battery_total_charge_energy_sf = static_cast<int16_t>(c16.u);
 
             float active_power = varta_flex.battery_active_power * get_sun_spec_scale_factor(varta_flex.battery_active_power_sf);
             float apparent_power = varta_flex.battery_apparent_power * get_sun_spec_scale_factor(varta_flex.battery_apparent_power_sf);

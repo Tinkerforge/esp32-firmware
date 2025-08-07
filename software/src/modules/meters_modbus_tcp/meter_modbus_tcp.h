@@ -495,13 +495,13 @@ private:
         struct {
             VARTAVirtualMeter virtual_meter;
             float grid_power;
-            float grid_power_sf;
+            int16_t grid_power_sf;
             float battery_active_power;
             float battery_apparent_power;
             float battery_total_charge_energy;
-            float battery_active_power_sf;
-            float battery_apparent_power_sf;
-            float battery_total_charge_energy_sf;
+            int16_t battery_active_power_sf;
+            int16_t battery_apparent_power_sf;
+            int16_t battery_total_charge_energy_sf;
         } varta_flex;
     };
 };
