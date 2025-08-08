@@ -30,8 +30,6 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
     last_received_time = millis();
     compatiblity_mode = true;
     ArduinoJson::spine_go_compatibility_mode = this->compatiblity_mode;
-    //received_header = HeaderType(); // Reset the header to avoid using old values
-    logger.printfln("Mark 1: Stack high water mark: %u bytes", uxTaskGetStackHighWaterMark(NULL) * sizeof(StackType_t));
 
     received_header = datagram["datagram"][0]["header"];
     //logger.printfln("SPINE: Received datagram: %s", datagram.as<String>().c_str());
@@ -56,22 +54,16 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
         }
         return false;
     }
-    logger.printfln("Mark 2: Stack high water mark: %u bytes", uxTaskGetStackHighWaterMark(NULL) * sizeof(StackType_t));
-
     check_message_counter();
     SpineDataTypeHandler::Function called_function = eebus.data_handler->handle_cmd(received_payload);
     if (called_function == SpineDataTypeHandler::Function::None) {
-        logger.tracefln(eebus.trace_buffer_index, "SPINE: No function found for the received payload");
-        //logger.printfln("SPINE: Payload: %s", received_payload.as<String>().c_str());
+        logger.tracefln(eebus.trace_buffer_index,
+                        "SPINE: No function found for the received payload %s ",
+                        received_payload.as<String>().c_str());
         return false;
     }
-    logger.printfln("Mark 3: Stack high water mark: %u bytes", uxTaskGetStackHighWaterMark(NULL) * sizeof(StackType_t));
 
-    //response_doc.clear();
     eebus.usecases->handle_message(received_header, eebus.data_handler.get(), this);
-    //logger.printfln("Mark 4: Stack high water mark: %u bytes", uxTaskGetStackHighWaterMark(NULL) * sizeof(StackType_t));
-
-    //logger.printfln("SPINE: Message processed");
 
     return true;
 }
