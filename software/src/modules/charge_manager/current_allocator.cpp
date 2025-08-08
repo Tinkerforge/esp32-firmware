@@ -807,7 +807,7 @@ static bool can_activate(StringWriter &sw, const Cost &check_phase, const Cost &
             required = wnd_min[p] + new_cost[p];
 
         if (limits->min[p] < required) {
-            sw.printf(" No: p%d min %d < req %d ", p, limits->min[p], required);
+            sw.printf(" No: p%zu min %d < req %d ", p, limits->min[p], required);
             return false;
         }
     }
