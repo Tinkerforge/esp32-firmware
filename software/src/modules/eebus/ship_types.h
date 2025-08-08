@@ -65,7 +65,7 @@ namespace SHIP_TYPES {
 
 
         DeserializationResult json_to_type(uint8_t *data, size_t length, bool compatiblity_mode, JsonDocument &doc); // Needs a jsondoc otherwise the payload cant be stored
-        String type_to_json(ShipConnection::Message *message_outgoing);
+        String type_to_json();
 
     };
 

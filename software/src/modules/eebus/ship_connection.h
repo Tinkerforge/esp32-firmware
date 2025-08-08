@@ -30,8 +30,8 @@
 //#include "ship_types.h"
 #include "TFJson.h"
 //#include "spine_connection.h"
-#include "tools/malloc.h"
 #include "tools/allocator.h"
+#include "tools/malloc.h"
 
 // Values and Timeouts as defined by SHIP specification
 #define SHIP_CONNECTION_CMI_TIMEOUT 30_s // SHIP 13.4.3 Timneout procedure
@@ -133,7 +133,7 @@ public:
     // in PSRAM (which we have plenty of) and with the uinque_ptr we make sure that it is automatically
     // freed as soon as it is removed from the ShipConnection list in Ship.
     struct Message {
-        uint8_t data[SHIP_CONNECTION_MAX_BUFFER_SIZE]; 
+        uint8_t data[SHIP_CONNECTION_MAX_BUFFER_SIZE];
         size_t length;
     };
     unique_ptr_any<Message> message_incoming;
@@ -166,7 +166,7 @@ public:
     void schedule_close(millis_t delay_ms);
     void send_cmi_message(uint8_t type, uint8_t value);
     void send_current_outgoing_message();
-    void send_string(const char *str, int length);
+    void send_string(const char *str, int length, int msg_classifier = 1);
     void send_data_message(JsonVariant payload);
 
     CMIMessage get_cmi_message();
