@@ -74,7 +74,7 @@ DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, 
     return DeserializationResult::SUCCESS;
 }
 
-String ShipMessageDataType::type_to_json(ShipConnection::Message *message_outgoing)
+String ShipMessageDataType::type_to_json()
 {
     DynamicJsonDocument doc(SHIP_TYPES_MAX_JSON_SIZE); // This exists just in this function
 
@@ -105,21 +105,26 @@ String ShipMessageDataType::type_to_json(ShipConnection::Message *message_outgoi
             data_extension["string"] = extension_string;
         }
     }
-
+    /*
     message_outgoing->data[0] = 2;
+    size_t length = serializeJson(doc, &message_outgoing->data[1], SHIP_TYPES_MAX_JSON_SIZE - 1);
+    message_outgoing->length = length + 1;
+    */
+
     String message_outgoing_data = "";
     message_outgoing_data.reserve(SHIP_TYPES_MAX_JSON_SIZE - 1); // Reserve space for the JSON data
     const size_t bytes_written = serializeJson(doc, message_outgoing_data);
     logger.printfln("Serialized json %s with %d bytes written", message_outgoing_data.c_str(), bytes_written);
     logger.printfln("Payload: %s", payload.as<String>().c_str());
-
+/*
     //message_outgoing_data.replace("[{", "[[{"); // spine-go expects a double array for some reason
     //message_outgoing_data.replace("}]", "}]]");
 
     //size_t size = serializeJson(doc, &message_outgoing.data[1], SHIP_TYPES_MAX_JSON_SIZE - 1);
     memcpy(&message_outgoing->data[1], message_outgoing_data.c_str(), message_outgoing_data.length());
     message_outgoing->length = message_outgoing_data.length() + 1;
-    return "";
+*/
+    return message_outgoing_data;
 }
 
 void DeserializeOptionalField(JsonObject *data, const char *field_name, bool *field_valid, String *field_value)
