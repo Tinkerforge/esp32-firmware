@@ -48,7 +48,6 @@ void Ship::setup()
 void Ship::setup_wss()
 {
     logger.printfln("setup_wss_server start"); // TODO Move to tracelog
-    //web_sockets.pre_setup();
 
     // HTTPS server configuration.
     // This HTTPS server is just used to provide the send/recv for a secure websocket.
@@ -88,14 +87,16 @@ void Ship::setup_wss()
             }
             eebus.state.get("ski")->updateString(ship_ski);
         }
-
+        logger.printfln("ret: %d, SKI: %s", ret, eebus.state.get("ski")->asString().c_str());
         return ret;
     };
 
     const int32_t cert_id = eebus.config.get("cert_id")->asInt();
     const int32_t key_id = eebus.config.get("key_id")->asInt();
 
-    const bool use_external_certs = (cert_id != -1) && (key_id != -1);
+    bool use_external_certs = (cert_id != -1) && (key_id != -1);
+
+    use_external_certs = false;
 
     // If both cert and key are set externally, we use them.
     // Oterwise we generate and use a self-signed certificate.
@@ -114,14 +115,14 @@ void Ship::setup_wss()
             return;
         }
 
-        if (!parse_x509_crt(cert_crt.get(), cert_crt_len+1)) {
+        if (!parse_x509_crt(cert_crt.get(), cert_crt_len + 1)) {
             return;
         }
 
-        config.servercert     = cert_crt.release();
+        config.servercert = cert_crt.release();
         config.servercert_len = cert_crt_len + 1; // +1 since the length must include the null terminator
-        config.prvtkey_pem    = cert_key.release();
-        config.prvtkey_len    = cert_key_len + 1; // +1 since the length must include the null terminator
+        config.prvtkey_pem = cert_key.release();
+        config.prvtkey_len = cert_key_len + 1; // +1 since the length must include the null terminator
     } else {
         if (cert == nullptr) {
             cert = make_unique_psram<Cert>();
@@ -134,14 +135,15 @@ void Ship::setup_wss()
         // TODO: This is only for debugging, remove later
         cert->log();
 
-        if (!parse_x509_crt(cert->crt, cert->crt_length)) {
+        if (parse_x509_crt(cert->crt, cert->crt_length) != 0) {
+            logger.printfln("An error occured while starting EEBUS SHIP Server");
             return;
         }
 
-        config.servercert     = cert->crt;
+        config.servercert = cert->crt;
         config.servercert_len = cert->crt_length;
-        config.prvtkey_pem    = cert->key;
-        config.prvtkey_len    = cert->key_length;
+        config.prvtkey_pem = cert->key;
+        config.prvtkey_len = cert->key_length;
     }
 
     // Start HTTPS server
