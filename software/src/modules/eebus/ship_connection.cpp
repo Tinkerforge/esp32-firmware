@@ -111,17 +111,45 @@ void ShipConnection::send_current_outgoing_message()
                     message_outgoing->length - 1,
                     &message_outgoing->data[1]);
 
-    ws_client.sendOwnedNoFreeBlocking_HTTPThread(reinterpret_cast<char *>(message_outgoing->data),
-                                                 message_outgoing->length,
-                                                 HTTPD_WS_TYPE_BINARY);
+    ws_client.sendOwnedNoFreeBlocking_HTTPThread((char *)message_outgoing->data, message_outgoing->length, HTTPD_WS_TYPE_BINARY);
 }
 
-void ShipConnection::send_string(const char *str, const int length)
+void ShipConnection::send_string(const char *str, const int length, const int msg_classifier)
 {
-    message_outgoing->data[0] = 1;
+    if (!message_outgoing) {
+        message_outgoing = make_unique_psram<
+            Message>(); // TODO: Check why message_outgoing becomes a nullptr somewhere as this might lead to memory leaks otherwise
+        logger.printfln("Created new message outgoing");
+    }
+    /*
+    message_outgoing->data[0] = msg_classifier;
     memcpy(&message_outgoing->data[1], str, length);
-    message_outgoing->length = length + 1;
-    send_current_outgoing_message();
+    message_outgoing->length = length;
+    */
+
+    char *buffer = new char[length + 1];
+    buffer[0] = static_cast<char>(msg_classifier);
+    memcpy(buffer + 1, str, length);
+    ws_client.sendOwnedNoFreeBlocking_HTTPThread(buffer, length + 1, HTTPD_WS_TYPE_BINARY);
+    delete[] buffer;
+
+    //send_current_outgoing_message();
+}
+void ShipConnection::send_data_message(JsonVariant payload)
+{
+    // Technically we should only send data messages if the state is done but for some reason the done state is not set correctly
+    if (/*state == State::Done*/ true) {
+        SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
+        data.protocol_id = "ee1.0"; // We only speak ee1.0
+        [[maybe_unused]] auto tmp = data.payload = payload;
+
+        String data_to_send = data.type_to_json();
+        logger.printfln("Sending message with content: %s", data_to_send.c_str());
+        ;
+        send_string(data_to_send.c_str(), data_to_send.length(), 2);
+    } else {
+        logger.tracefln(eebus.trace_buffer_index, "send_data_message: Connection not in done state. Actual State: %d", (int)state);
+    }
 }
 
 ShipConnection::CMIMessage ShipConnection::get_cmi_message()
@@ -900,32 +928,6 @@ void ShipConnection::state_sme_access_method_request()
         message_incoming->length = 0;
         set_state(State::Done);
         send_current_outgoing_message();
-    }
-}
-
-void ShipConnection::send_data_message(JsonVariant payload)
-{
-    // Technically we should only send data messages if the state is done but for some reason the done state is not set correctly
-    if (/*state == State::Done*/ true) {
-        SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
-        data.protocol_id = "ee1.0"; // We only speak ee1.0
-        [[maybe_unused]] auto tmp = data.payload = payload;
-        if (!message_outgoing) {
-            message_outgoing = make_unique_psram<
-                Message>(); // TODO: Check why message_outgoing becomes a nullptr somewhere as this might lead to memory leaks otherwise
-            logger.printfln("Created new message outgoing");
-        }
-        data.type_to_json(message_outgoing.get());
-
-        logger.tracefln(eebus.trace_buffer_index,
-                        "Data: sending message with total length of %d and content: %s",
-                        message_outgoing->length - 1,
-                        &message_outgoing->data[1]);
-        logger.printfln("Sending message with content: %s", &message_outgoing->data[1]);
-        ;
-        send_current_outgoing_message();
-    } else {
-        logger.tracefln(eebus.trace_buffer_index, "send_data_message: Connection not in done state. Actual State: %d", (int)state);
     }
 }
 
