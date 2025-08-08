@@ -506,20 +506,22 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
 {
     //TODO: Implement a mutex with waiting so only one message can be processed at a time
     //  DynamicJsonDocument response = DynamicJsonDocument(8192); // The response document to be filled with the response data
-    response.clear();
+    //response.clear();
+    //connection->ship_connection->outgoing_json_doc.clear();
+    BasicJsonDocument<ArduinoJsonPsramAllocator> response_doc{8182};
     // TODO: Fix the addressing of the usecases. Maybe better address them by entity?
     bool send_response = false;
     if (header.addressDestination->feature == feature_address_node_management) {
         logger.printfln("Usecases: Received message for NodeManagementUsecase");
-        send_response = node_management.handle_message(header, data, response.as<JsonObject>(), connection);
+        send_response = node_management.handle_message(header, data, response_doc.as<JsonObject>(), connection);
     }
     if (header.addressDestination->feature == feature_address_charging_summary) {
         logger.printfln("Usecases: Received message for ChargingSummaryUsecase");
-        send_response = charging_summary.handle_message(header, data, response.as<JsonObject>(), connection);
+        send_response = charging_summary.handle_message(header, data, response_doc.as<JsonObject>(), connection);
     }
     if (send_response) {
         logger.printfln("Usecases: Sending response");
-        connection->send_datagram(response.as<JsonVariant>(),
+        connection->send_datagram(response_doc,
                                   CmdClassifierType::reply,
                                   *header.addressSource,
                                   *header.addressDestination,

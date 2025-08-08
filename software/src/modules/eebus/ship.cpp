@@ -30,7 +30,7 @@ extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
 void Ship::pre_setup()
 {
-    //web_sockets.pre_setup(); // Moved to setup_wss(), is this needed this early?
+    web_sockets.pre_setup(); // Moved to setup_wss(), is this needed this early?
 }
 
 void Ship::setup()
@@ -48,7 +48,7 @@ void Ship::setup()
 void Ship::setup_wss()
 {
     logger.printfln("setup_wss_server start"); // TODO Move to tracelog
-    web_sockets.pre_setup();
+    //web_sockets.pre_setup();
 
     // HTTPS server configuration.
     // This HTTPS server is just used to provide the send/recv for a secure websocket.

@@ -84,7 +84,7 @@ void ShipConnection::schedule_close(const millis_t delay_ms)
 
 void ShipConnection::send_cmi_message(uint8_t type, uint8_t value)
 {
-    char payload[2] = {type, value};
+    char payload[2] = {static_cast<char>(type), static_cast<char>(value)};
     ws_client.sendOwnedNoFreeBlocking_HTTPThread(payload, 2, HTTPD_WS_TYPE_BINARY);
 }
 
@@ -103,9 +103,17 @@ void ShipConnection::send_current_outgoing_message()
                         "Error: Message being sent exceeds maximum buffer size of %d bytes: %d bytes",
                         SHIP_CONNECTION_MAX_BUFFER_SIZE,
                         message_outgoing->length);
+        logger.printfln("an error occurred while sending a message. Check tracelog for details.");
         return;
     }
-    ws_client.sendOwnedNoFreeBlocking_HTTPThread((char *)message_outgoing->data, message_outgoing->length, HTTPD_WS_TYPE_BINARY);
+
+    logger.printfln("Data: sending message with total length of %d and content: %s",
+                    message_outgoing->length - 1,
+                    &message_outgoing->data[1]);
+
+    ws_client.sendOwnedNoFreeBlocking_HTTPThread(reinterpret_cast<char *>(message_outgoing->data),
+                                                 message_outgoing->length,
+                                                 HTTPD_WS_TYPE_BINARY);
 }
 
 void ShipConnection::send_string(const char *str, const int length)
@@ -903,7 +911,8 @@ void ShipConnection::send_data_message(JsonVariant payload)
         data.protocol_id = "ee1.0"; // We only speak ee1.0
         [[maybe_unused]] auto tmp = data.payload = payload;
         if (!message_outgoing) {
-            message_outgoing = make_unique_psram<Message>(); // TODO: Check why message_outgoing becomes a nullptr somewhere as this might lead to memory leaks otherwise
+            message_outgoing = make_unique_psram<
+                Message>(); // TODO: Check why message_outgoing becomes a nullptr somewhere as this might lead to memory leaks otherwise
             logger.printfln("Created new message outgoing");
         }
         data.type_to_json(message_outgoing.get());
@@ -912,6 +921,8 @@ void ShipConnection::send_data_message(JsonVariant payload)
                         "Data: sending message with total length of %d and content: %s",
                         message_outgoing->length - 1,
                         &message_outgoing->data[1]);
+        logger.printfln("Sending message with content: %s", &message_outgoing->data[1]);
+        ;
         send_current_outgoing_message();
     } else {
         logger.tracefln(eebus.trace_buffer_index, "send_data_message: Connection not in done state. Actual State: %d", (int)state);
