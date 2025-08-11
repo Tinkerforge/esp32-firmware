@@ -90,7 +90,9 @@ void SpineConnection::send_datagram(JsonVariantConst payload,
 
     (*response_doc)["datagram"][0]["header"] = header;
     (*response_doc)["datagram"][1]["payload"]["cmd"][0] = payload;
+#ifdef EEBUS_DEV_ENABLE_RESPONSE
     ship_connection->send_data_message(response_doc->as<JsonVariant>());
+#endif
     // TODO: Handle acknowledge request
 }
 

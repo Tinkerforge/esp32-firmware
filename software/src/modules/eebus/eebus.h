@@ -43,6 +43,8 @@
 
 #define SUPPORTED_SPINE_VERSION "1.3.0" // The supported SPINE version for EEBus
 
+#define EEBUS_DEV_ENABLE_RESPONSE // If defined, the EEBus device will respond to SPINE requests. Currently this is used for testing purposes only.
+
 class EEBus final : public IModule
 {
 public:
