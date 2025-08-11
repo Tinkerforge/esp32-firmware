@@ -43,7 +43,7 @@
 
 #define SUPPORTED_SPINE_VERSION "1.3.0" // The supported SPINE version for EEBus
 
-#define EEBUS_DEV_ENABLE_RESPONSE // If defined, the EEBus device will respond to SPINE requests. Currently this is used for testing purposes only.
+//#define EEBUS_DEV_ENABLE_RESPONSE // If defined, the EEBus device will respond to SPINE requests. Currently this is used for testing purposes only.
 
 class EEBus final : public IModule
 {
@@ -52,6 +52,12 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+
+    /**
+     * Toggle the eebus module
+     * @param enable true, enables the eebus module if its not enabled, false disables the module and removes all elements
+     */
+    void toggle_module (bool enable);
 
     /**
      * Returns the Unique Name of the device. Used for mDns, SPINE and the usecases.
@@ -66,6 +72,7 @@ public:
     ConfigRoot remove_peer;
     ConfigRoot config;
     ConfigRoot state;
+    ConfigRoot switch_enable_config;
     Ship ship;
     unique_ptr_any<EEBusUseCases> usecases;
     //EEBusUseCases usecases{};
