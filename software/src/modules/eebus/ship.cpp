@@ -104,8 +104,6 @@ void Ship::setup_wss()
 
     bool use_external_certs = (cert_id != -1) && (key_id != -1);
 
-    use_external_certs = false;
-
     // If both cert and key are set externally, we use them.
     // Oterwise we generate and use a self-signed certificate.
     if (use_external_certs) {
@@ -141,7 +139,7 @@ void Ship::setup_wss()
         }
 
         // TODO: This is only for debugging, remove later
-        cert->log();
+        //cert->log();
 
         if (parse_x509_crt(cert->crt, cert->crt_length) != 0) {
             logger.printfln("An error occured while starting EEBUS SHIP Server");
