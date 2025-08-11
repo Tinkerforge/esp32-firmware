@@ -28,7 +28,9 @@
 void EEBus::pre_setup()
 {
 
-    this->trace_buffer_index = logger.alloc_trace_buffer("eebus", 32768); // This makes the PSRAM usage gigantic even when the module is disabled but we cant set this anywhere else. Maybe make smaller?
+    this->trace_buffer_index = logger.alloc_trace_buffer(
+        "eebus",
+        32768); // This makes the PSRAM usage gigantic even when the module is disabled but we cant set this anywhere else. Maybe make smaller?
     // TODO: Fix string lengths. Spec says they are shorter
 
     // TOOD: Rework API so this lot is a bit cleaner
@@ -52,8 +54,14 @@ void EEBus::pre_setup()
         {"ship_state", Config::Str("", 0, 64)},
     });
 
+    switch_enable_config =
+        ConfigRoot{Config::Object({{"enable", Config::Bool(false)}}), [this](Config &config, ConfigSource source) -> String {
+                       logger.printfln("Updating enable state");
+                       return "";
+                   }};
+
     config = ConfigRoot{Config::Object({
-                            {"enable", Config::Bool(false)},
+                            {"enabled", Config::Bool(false)},
                             {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
                             {"key_id", Config::Int(-1, -1, MAX_CERT_ID)},
                             {"peers",
@@ -77,6 +85,7 @@ void EEBus::pre_setup()
                                            Config::type_id<Config::ConfObject>())},
                         }),
                         [this](Config &config, ConfigSource source) -> String {
+                            logger.printfln("Updating config");
                             return "";
                         }};
     add_peer = ConfigRoot{Config::Object({{"ip", Config::Str("", 0, 64)},
@@ -105,6 +114,7 @@ void EEBus::pre_setup()
                              }};
 
     state = Config::Object({
+        {"enabled", Config::Bool(false)},
         {"ski", Config::Str("", 0, 64)},
         {"discovery_state", Config::Uint8(0)},
         {"connections",
@@ -119,14 +129,15 @@ void EEBus::pre_setup()
     });
 
     device_name = DNS_SD_UUID;
-
     ship.pre_setup();
 }
 
 void EEBus::setup()
 {
     api.restorePersistentConfig("eebus/config", &config);
-    is_enabled = config.get("enable")->asBool();
+    is_enabled = config.get("enabled")->asBool();
+    //is_enabled = true;
+    toggle_module(is_enabled);
     update_peers_config();
 
     // All peers are unknown at startup
@@ -136,21 +147,6 @@ void EEBus::setup()
 
     state.get("connections")->removeAll();
 
-    task_scheduler.scheduleWithFixedDelay(
-        [this]() {
-            if (ship.discovery_state == Ship_Discovery_State::READY) {
-                ship.discover_ship_peers();
-                update_peers_config();
-            }
-        },
-        SHIP_AUTODISCOVER_INTERVAL,
-        SHIP_AUTODISCOVER_INTERVAL);
-
-    if (is_enabled) {
-        usecases = make_unique_psram<EEBusUseCases>();
-        data_handler = make_unique_psram<SpineDataTypeHandler>();
-        logger.printfln("EEBUS Module active");
-    }
     initialized = true;
     logger.printfln("EEBUS initialized");
     logger.tracefln(this->trace_buffer_index, "EEBUS initialized");
@@ -160,13 +156,17 @@ void EEBus::register_urls()
 {
 
     api.addPersistentConfig("eebus/config", &config);
-    api.addState("eebus/state", &state);
+    api.addState("eebus/state", &state, {}, {}, true);
 
     api.addCommand(
         "eebus/addPeer",
         &add_peer,
         {"ip", "port", "trusted", "dns_name", "wss_path", "ski"},
         [this](String &errmsg) {
+            if (!initialized) {
+                logger.tracefln(this->trace_buffer_index, "Tried adding or editing peer while EEBUS is disabled");
+                return;
+            }
             if (!errmsg.isEmpty()) {
                 // TODO: Some user feedback when this goes wrong
                 logger.tracefln(this->trace_buffer_index, "Error adding or Updating peer: %s", errmsg.c_str());
@@ -208,6 +208,11 @@ void EEBus::register_urls()
         &remove_peer,
         {"ski"},
         [this](String &errmsg) {
+            if (!is_enabled) {
+                logger.tracefln(this->trace_buffer_index, "Tried removing peer while EEBUS is disabled");
+                return;
+            }
+
             if (!errmsg.isEmpty()) {
                 logger.tracefln(this->trace_buffer_index, "Error removing peer: %s", errmsg.c_str());
                 return;
@@ -227,8 +232,22 @@ void EEBus::register_urls()
         },
         true);
 
+    api.addCommand(
+        "eebus/enable",
+        &switch_enable_config,
+        {},
+        [this](String &errmsg) {
+            logger.printfln("Received eebus/enable. Got %d", switch_enable_config.get("enable")->asBool());
+            bool enabled = switch_enable_config.get("enable")->asBool();
+            this->toggle_module(enabled);
+        },
+        true);
+
     // Yes i realize this is not the best way
     server.on("/eebus/scan", HTTP_PUT, [this](WebServerRequest request) {
+        if (!is_enabled) {
+            return request.send(200, "text/plain; charset=utf-8", "EEBUS not enabled");
+        }
         if (ship.discovery_state == Ship_Discovery_State::SCANNING) {
             return request.send(200, "text/plain; charset=utf-8", "scan in progress");
         }
@@ -243,8 +262,38 @@ void EEBus::register_urls()
         }
         return request.send(200, "text/plain; charset=utf-8", "scan done");
     });
+}
+void EEBus::toggle_module(const bool enable)
+{
+    if (enable == is_enabled && initialized) {
+        return;
+    }
+    is_enabled = enable;
+    state.get("enabled")->updateBool(is_enabled);
+    config.get("enabled")->updateBool(is_enabled);
 
-    ship.setup();
+    if (enable) {
+
+        usecases = make_unique_psram<EEBusUseCases>();
+        data_handler = make_unique_psram<SpineDataTypeHandler>();
+        logger.printfln("EEBUS Module active");
+
+        ship.setup();
+
+        task_scheduler.scheduleWithFixedDelay(
+            [this]() {
+                if (ship.discovery_state == Ship_Discovery_State::READY) {
+                    ship.discover_ship_peers();
+                    update_peers_config();
+                }
+            },
+            SHIP_AUTODISCOVER_INTERVAL,
+            SHIP_AUTODISCOVER_INTERVAL);
+    } else {
+        usecases = nullptr;
+        data_handler = nullptr;
+        ship.disable_ship();
+    }
 }
 String EEBus::get_eebus_name()
 {
