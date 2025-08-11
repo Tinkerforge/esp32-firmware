@@ -35,14 +35,26 @@ void Ship::pre_setup()
 
 void Ship::setup()
 {
-
+    is_enabled = false;
     if (eebus.is_enabled) {
 #ifdef SHIP_USE_INTERNAL_CERTS
         eebus.state.get("ski")->updateString(ship_ski);
 #endif
         setup_wss();
         setup_mdns();
+        is_enabled = true;
     }
+}
+void Ship::disable_ship()
+{
+    for (ShipConnection &conn: ship_connections) {
+        conn.schedule_close(0_ms);
+    }
+    mdns_service_remove("_ship","_tcp");
+    httpd_ssl_stop(httpd);
+    //httpd = nullptr;
+    // TODO: What happens to the websockets when the underlying httpd server is stopped? Just no more messages? Lets hope for the best
+    logger.printfln("disabled ship");
 }
 
 void Ship::setup_wss()
@@ -145,8 +157,8 @@ void Ship::setup_wss()
     }
 
     // Start HTTPS server
-    httpd_handle_t httpd = nullptr;
     esp_err_t ret = httpd_ssl_start(&httpd, &config);
+
     if (ESP_OK != ret) {
         logger.printfln("Error starting HTTPS server: %d", ret);
     }
@@ -191,6 +203,7 @@ void Ship::setup_wss()
     });
 
     // Start websocket on the HTTPS server
+
     web_sockets.start("/ship/", "/info/ship_wss", httpd, "ship");
 
     logger.printfln("EEBUS SHIP started up and accepting connections");
@@ -232,7 +245,7 @@ Ship_Discovery_State Ship::discover_ship_peers()
 
     auto update_discovery_state = [this](Ship_Discovery_State state) {
         this->discovery_state = state;
-        eebus.state.get("discovery_state")->updateUint((uint8_t)state);
+        eebus.state.get("discovery_state")->updateUint(static_cast<uint8_t>(state));
     };
 
     update_discovery_state(Ship_Discovery_State::SCANNING);

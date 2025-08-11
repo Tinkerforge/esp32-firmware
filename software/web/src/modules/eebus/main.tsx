@@ -43,6 +43,7 @@ type EEBusScan = API.getType["eebus/scan"];
 type EEBusAddPeer = API.getType["eebus/addPeer"];
 type EEBusRemovePeer = API.getType["eebus/removePeer"];
 type EEBusStateType = API.getType["eebus/state"];
+type EEBusEnable = API.getType["eebus/enable"];
 
 interface EEBusState {
     addPeer: EEBusAddPeer;
@@ -64,17 +65,13 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
         });
     }
 
-    scan_peers() {
-        API.call('eebus/scan', {});
-    }
-
 
     render(props: {}, state: EEBusState & EEBusConfig) {
         if (!util.render_allowed())
             return <SubPage name="eebus"/>;
 
         // Is EEBUS enabled on ESP32
-        let is_enabled = state.config.enable;
+        let is_enabled = state.state.enabled;
 
         let ski = state.state.ski;
         if (ski == "") {
@@ -87,8 +84,13 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                             onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormRow label={__("eebus.content.enable_eebus")}>
                         <Switch desc={__("eebus.content.enable_eebus_desc")}
-                                checked={state.enable}
-                                onClick={this.toggle('enable')}/>
+                                checked={is_enabled}
+                                onClick={async (event) => {
+                                    const enablePayload: EEBusEnable = { enable: !is_enabled };
+                                    await API.call('eebus/enable', enablePayload);
+
+
+                                }}/>
                     </FormRow>
                     <FormRow label={__("eebus.content.peer_info.peers")}>
                         <Table
@@ -254,7 +256,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     }
                                 })
                             }
-                            addEnabled={true}
+                            addEnabled={is_enabled}
                             addTitle={__("eebus.content.add_peers")}
                             addMessage={__("eebus.content.add_peers")}
                             onAddShow={async () => {
@@ -333,14 +335,17 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                         <Button
                             className="form-control rounded-right"
                             variant="primary"
-                            onClick={() => this.scan_peers()}
+                            onClick={async () => {
+                                await API.call('eebus/scan', {});
+
+                            }}
                             disabled={!is_enabled || (state.state.discovery_state === 1)}>
                             {state.state.discovery_state === 0
                                 ? __("eebus.content.search_peers")
                                 : state.state.discovery_state === 1
                                     ? __("eebus.content.searching_peers")
                                     : state.state.discovery_state === 2
-                                        ? __("eebus.content.search_completed")
+                                        ? __("eebus.content.search_peers")
                                         : __("eebus.content.search_failed")}
                         </Button>
                     </FormRow>

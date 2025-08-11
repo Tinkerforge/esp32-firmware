@@ -66,6 +66,8 @@ private:
     WebSockets web_sockets;
     unique_ptr_any<Cert> cert = nullptr;
 
+    httpd_handle_t httpd = nullptr;
+
 public:
     Ship()
     {
@@ -73,14 +75,18 @@ public:
 
     void pre_setup();
     void setup();
+
+    void disable_ship();
+
     void remove(const ShipConnection &ship_connection);
     Ship_Discovery_State discover_ship_peers();
     void print_skis(StringBuilder *sb);
 
-    ConfigRoot config;
-    ConfigRoot state;
+    //ConfigRoot config;
+    //ConfigRoot state;
 
     std::vector<ShipNode> mdns_results;
     Ship_Discovery_State discovery_state;
     std::vector<ShipConnection> ship_connections;
+    bool is_enabled;
 };
