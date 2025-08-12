@@ -65,20 +65,7 @@ void EEBus::pre_setup()
                             {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
                             {"key_id", Config::Int(-1, -1, MAX_CERT_ID)},
                             {"peers",
-                             Config::Array({Config::Object({
-                                               {"ip", Config::Str("", 0, 64)},
-                                               {"port", Config::Uint16(0)},
-                                               {"trusted", Config::Bool(false)},
-                                               {"dns_name", Config::Str("", 0, 64)},
-                                               {"id", Config::Str("", 0, 64)},
-                                               {"wss_path", Config::Str("", 0, 64)},
-                                               {"ski", Config::Str("", 0, 64)},
-                                               {"autoregister", Config::Bool(false)},
-                                               {"model_brand", Config::Str("", 0, 64)},
-                                               {"model_model", Config::Str("", 0, 64)},
-                                               {"mode_type", Config::Str("", 0, 64)},
-                                               {"state", Config::Uint8(0)},
-                                           })},
+                             Config::Array({config_peers_prototype},
                                            &config_peers_prototype,
                                            0,
                                            MAX_PEER_REMEMBERED,
@@ -135,8 +122,9 @@ void EEBus::pre_setup()
 void EEBus::setup()
 {
     api.restorePersistentConfig("eebus/config", &config);
+
     is_enabled = config.get("enabled")->asBool();
-    //is_enabled = true;
+
     toggle_module(is_enabled);
     update_peers_config();
 
@@ -271,6 +259,7 @@ void EEBus::toggle_module(const bool enable)
     is_enabled = enable;
     state.get("enabled")->updateBool(is_enabled);
     config.get("enabled")->updateBool(is_enabled);
+    api.writeConfig("eebus/config", &config);
 
     if (enable) {
 
@@ -280,15 +269,7 @@ void EEBus::toggle_module(const bool enable)
 
         ship.setup();
 
-        task_scheduler.scheduleWithFixedDelay(
-            [this]() {
-                if (ship.discovery_state == Ship_Discovery_State::READY) {
-                    ship.discover_ship_peers();
-                    update_peers_config();
-                }
-            },
-            SHIP_AUTODISCOVER_INTERVAL,
-            SHIP_AUTODISCOVER_INTERVAL);
+
     } else {
         usecases = nullptr;
         data_handler = nullptr;
