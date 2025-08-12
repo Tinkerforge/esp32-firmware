@@ -51,6 +51,7 @@ void Ship::disable_ship()
         conn.schedule_close(0_ms);
     }
     mdns_service_remove("_ship", "_tcp");
+    web_sockets.stop();
 
     // We do not stop
     httpd_ssl_stop(httpd);
@@ -212,7 +213,7 @@ void Ship::setup_wss()
 
     // Start websocket on the HTTPS server
 
-    web_sockets.start("/ship/", "/info/ship_wss", httpd, "ship");
+    web_sockets.start("/ship/", nullptr, httpd, "ship");
 
     logger.printfln("EEBUS SHIP started up and accepting connections");
 }
