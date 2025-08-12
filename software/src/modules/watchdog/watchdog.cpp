@@ -142,14 +142,25 @@ int Watchdog::add(const char *name, const char *message, millis_t timeout, milli
     logger.printfln("Can't register %s to watchdog: All registrations used.", name);
     return -1;
 }
+
+bool Watchdog::remove(int &handle) {
+    std::lock_guard<std::mutex> l{regs_mutex};
+
+    if (handle >= ARRAY_SIZE(regs) || handle < 0) {
+        logger.printfln("Can't remove watchdog handle %d: out of bounds", handle);
+        return false;
     }
 
-    regs[regs_used].message = message;
-    regs[regs_used].timeout = timeout;
-    regs[regs_used].initial_deadline = initial_deadline;
-    regs[regs_used].last_reset = now_us();
-    ++regs_used;
-    return regs_used - 1;
+    if (regs[handle].is_empty()) {
+        logger.printfln("Can't remove watchdog handle %d: not added or already removed", handle);
+        return false;
+    }
+
+    regs[handle] = watchdog_reg{};
+
+    handle = -1;
+
+    return true;
 }
 
 void Watchdog::reset(int handle)
