@@ -31,10 +31,6 @@
 
 static constexpr micros_t KEEP_ALIVE_TIMEOUT = 10_s;
 
-#if MODULE_WATCHDOG_AVAILABLE()
-static int watchdog_handle = -1;
-#endif
-
 void clear_ws_work_item(ws_work_item *wi)
 {
     free(wi->payload);
@@ -132,7 +128,7 @@ static void work(void *arg)
 
     ws->worker_active = WEBSOCKET_WORKER_DONE;
 #if MODULE_WATCHDOG_AVAILABLE()
-    watchdog.reset(watchdog_handle);
+    watchdog.reset(ws->watchdog_handle);
 #endif
 }
 
@@ -685,7 +681,7 @@ void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t h
     }, 1_s, 1_s);
 
 #if MODULE_WATCHDOG_AVAILABLE()
-    watchdog_handle = watchdog.add(
+    this->watchdog_handle = watchdog.add(
         "websocket_worker",
         "Websocket worker was not able to start for five minutes. The control socket is probably dead.",
         WEB_SERVER_DEAD_TIMEOUT,

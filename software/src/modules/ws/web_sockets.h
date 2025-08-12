@@ -113,4 +113,6 @@ public:
     ConfigRoot state;
 
     const char *handler_uri;
+
+    int watchdog_handle;
 };
