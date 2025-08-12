@@ -672,11 +672,11 @@ void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t h
 
     httpd_register_uri_handler(httpd, &ws);
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+    this->task_ids[0] = task_scheduler.scheduleWithFixedDelay([this](){
         this->triggerHttpThread();
     }, 100_ms, 100_ms);
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+    this->task_ids[1] = task_scheduler.scheduleWithFixedDelay([this](){
         this->updateDebugState();
     }, 1_s, 1_s);
 
@@ -689,20 +689,66 @@ void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t h
         true); // Force the initial deadline to WEB_SERVER_DEAD_TIMEOUT (currently 5 minutes). The firmware is accepted as good after 7 minutes.
 #endif
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+    this->task_ids[2] = task_scheduler.scheduleWithFixedDelay([this](){
         this->pingActiveClients();
     }, 1_s, 1_s);
 
-    task_scheduler.scheduleWithFixedDelay([this](){
+    this->task_ids[3] = task_scheduler.scheduleWithFixedDelay([this](){
         checkActiveClients();
     }, 100_ms, 100_ms);
 
     if (state_path != nullptr) {
         // TODO Add pull only states to API
-        server.on(state_path, HTTP_GET, [this](WebServerRequest request) {
+        this->state_handler = server.on(state_path, HTTP_GET, [this](WebServerRequest request) {
             String s = this->state.to_string();
             return request.send_json(200, s);
         });
+    }
+}
+
+void WebSockets::stop() {
+    if (this->httpd == nullptr)
+        return;
+
+    // Deregister handler before disconnecting clients to make sure
+    // no client (re)connects before the handler is deregistered
+    httpd_unregister_uri_handler(this->httpd, handler_uri, HTTP_GET);
+
+    // Send close frame to all clients
+    this->sendToAll("0", 1, HTTPD_WS_TYPE_CLOSE);
+    worker_active = WEBSOCKET_WORKER_ENQUEUED;
+    httpd_queue_work(httpd, work, this);
+    // Give http thread 200ms to send the close frames.
+    for(int i = 0; i < 10 && worker_active != WEBSOCKET_WORKER_DONE; ++i)
+        delay(20);
+
+    // Disconnect clients
+    std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
+    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+        if (keep_alive_fds[i] != -1)
+            continue;
+
+        this->keepAliveCloseDead(keep_alive_fds[i]);
+    }
+
+    if (state_handler != nullptr) {
+        logger.printfln("Stopping a WebSockets instance that has the state path set is not supported yet! This will leak memory!");
+    }
+
+#if MODULE_WATCHDOG_AVAILABLE()
+    watchdog.remove(this->watchdog_handle);
+#endif
+
+    for (size_t i = 0; i < ARRAY_SIZE(this->task_ids); ++i) {
+        task_scheduler.cancel(this->task_ids[i]);
+        this->task_ids[i] = 0;
+    }
+
+    this->httpd = nullptr;
+
+    if (!address_is_in_rodata(this->handler_uri)) {
+        free((void *)this->handler_uri);
+        this->handler_uri = nullptr;
     }
 }
 
@@ -723,20 +769,5 @@ void WebSockets::onBinaryDataReceived_HTTPThread(std::function<void(const int fd
 }
 
 void WebSockets::pre_reboot() {
-    this->sendToAll("0", 1, HTTPD_WS_TYPE_CLOSE);
-    worker_active = WEBSOCKET_WORKER_ENQUEUED;
-    httpd_queue_work(httpd, work, this);
-    // Give http thread 200ms to send the close frames.
-    for(int i = 0; i < 10 && worker_active != WEBSOCKET_WORKER_DONE; ++i)
-        delay(20);
-
-    std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
-    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
-        if (keep_alive_fds[i] != -1)
-            continue;
-
-        this->keepAliveCloseDead(keep_alive_fds[i]);
-    }
-
-    httpd_unregister_uri_handler(this->httpd, handler_uri, HTTP_GET);
+    this->stop();
 }

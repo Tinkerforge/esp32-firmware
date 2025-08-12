@@ -53,6 +53,8 @@ void clear_ws_work_item(ws_work_item *wi);
 #define WEBSOCKET_WORKER_RUNNING 1
 #define WEBSOCKET_WORKER_DONE 2
 
+struct WebServerHandler;
+
 class WebSockets
 {
 public:
@@ -61,6 +63,7 @@ public:
     void pre_setup();
     void pre_reboot();
     void start(const char *uri, const char *state_path, httpd_handle_t httpd, const char *supported_subprotocol = nullptr);
+    void stop();
 
     bool sendToClient(const char *payload, size_t payload_len, int sock, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
     bool sendToClientOwned(char *payload, size_t payload_len, int sock, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
@@ -113,6 +116,8 @@ public:
     ConfigRoot state;
 
     const char *handler_uri;
+    uint64_t task_ids[4];
+    WebServerHandler *state_handler = nullptr;
 
     int watchdog_handle;
 };
