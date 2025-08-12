@@ -47,14 +47,16 @@ void Ship::setup()
 }
 void Ship::disable_ship()
 {
-    for (ShipConnection &conn: ship_connections) {
+    for (ShipConnection &conn : ship_connections) {
         conn.schedule_close(0_ms);
     }
-    mdns_service_remove("_ship","_tcp");
+    mdns_service_remove("_ship", "_tcp");
+
+    // We do not stop
     httpd_ssl_stop(httpd);
-    //httpd = nullptr;
+    httpd = nullptr;
     // TODO: What happens to the websockets when the underlying httpd server is stopped? Just no more messages? Lets hope for the best
-    logger.printfln("disabled ship");
+    logger.tracefln(eebus.trace_buffer_index, "SHIP disabled");
 }
 
 void Ship::setup_wss()
@@ -164,7 +166,10 @@ void Ship::setup_wss()
     }
 
     web_sockets.onConnect_HTTPThread([this](WebSocketsClient ws_client) {
-        struct sockaddr_in6 addr;
+        if (!eebus.is_enabled) {
+            return false;
+        }
+        sockaddr_in6 addr;
         socklen_t addr_len = sizeof(addr);
         getpeername(ws_client.fd, (struct sockaddr *)&addr, &addr_len);
         char client_ip[INET6_ADDRSTRLEN];
@@ -192,6 +197,9 @@ void Ship::setup_wss()
     });
 
     web_sockets.onBinaryDataReceived_HTTPThread([this](const int fd, httpd_ws_frame_t *ws_pkt) {
+        if (!eebus.is_enabled) {
+            return;
+        }
         for (auto &ship_connection : ship_connections) {
             if (ship_connection.ws_client.fd == fd) {
                 ship_connection.frame_received(ws_pkt);

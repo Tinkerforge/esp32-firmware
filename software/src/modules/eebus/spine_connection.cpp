@@ -93,7 +93,7 @@ void SpineConnection::send_datagram(JsonVariantConst payload,
 #ifdef EEBUS_DEV_ENABLE_RESPONSE
     ship_connection->send_data_message(response_doc->as<JsonVariant>());
 #endif
-    // TODO: Handle acknowledge request
+    // TODO: Handle acknowledge request. Some messages require acknowledgement from the other side. If we send one of those we need to handle this
 }
 
 void SpineConnection::check_message_counter()
