@@ -45,11 +45,12 @@ struct watchdog_reg {
     // This timeout must be reached before the watchdog logic starts checking for timeouts.
     // Prevents boot-loops if a watchdog is triggered immediately after booting.
     micros_t initial_deadline = 0_us;
+
+    bool is_empty() { return timeout == 0_us; }
 };
 
 static std::mutex regs_mutex{};
-static watchdog_reg regs[WATCHDOG_MAX_REGS];
-static int regs_used = 0;
+static watchdog_reg regs[WATCHDOG_MAX_REGS]{};
 
 static void watchdog_task(void *arg)
 {
@@ -57,9 +58,8 @@ static void watchdog_task(void *arg)
     for (;;) {
         {
             std::lock_guard<std::mutex> l{regs_mutex};
-            for (int i = 0; i < regs_used; ++i) {
-                // Timeout 0 means that this registration is not initialized or disabled.
-                if (regs[i].timeout == 0_us)
+            for (int i = 0; i < ARRAY_SIZE(regs); ++i) {
+                if (regs[i].is_empty())
                     continue;
 
                 // Don't trigger the watchdog if the initial deadline has not been reached.
@@ -108,6 +108,11 @@ void Watchdog::setup()
 
 int Watchdog::add(const char *name, const char *message, millis_t timeout, millis_t initial_deadline, bool force)
 {
+    if (timeout == 0_us) {
+        logger.printfln("Can't register %s to watchdog: Timeout 0 is not allowed (used as 'registration not in use'-marker)", name);
+        return -1;
+    }
+
     // This makes sure that we don't reboot too often, giving the user a chance to connect
     // to the web interface to diagnose and potentially fix the issue that will trigger the watchdog.
     if (!force && initial_deadline < 30_min) {
@@ -122,9 +127,21 @@ int Watchdog::add(const char *name, const char *message, millis_t timeout, milli
     }
 
     std::lock_guard<std::mutex> l{regs_mutex};
-    if (regs_used >= WATCHDOG_MAX_REGS) {
-        logger.printfln("Can't register %s to watchdog: All registrations used.", name);
-        return -1;
+    for (int i = 0; i < ARRAY_SIZE(regs); ++i) {
+        if (!regs[i].is_empty())
+            continue;
+
+        regs[i].name = name;
+        regs[i].message = message;
+        regs[i].timeout = timeout;
+        regs[i].initial_deadline = initial_deadline;
+        regs[i].last_reset = now_us();
+        return i;
+    }
+
+    logger.printfln("Can't register %s to watchdog: All registrations used.", name);
+    return -1;
+}
     }
 
     regs[regs_used].message = message;
@@ -138,7 +155,13 @@ int Watchdog::add(const char *name, const char *message, millis_t timeout, milli
 void Watchdog::reset(int handle)
 {
     std::lock_guard<std::mutex> l{regs_mutex};
-    if (handle >= regs_used || handle < 0) {
+    if (handle >= ARRAY_SIZE(regs) || handle < 0) {
+        logger.printfln("Can't reset watchdog handle %d: out of bounds", handle);
+        return;
+    }
+
+    if (regs[handle].is_empty()) {
+        logger.printfln("Can't reset watchdog handle %d: not added or already removed", handle);
         return;
     }
 
