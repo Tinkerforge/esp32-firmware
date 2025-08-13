@@ -99,20 +99,23 @@ bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
     if (strncmp_with_same_len(ref_uri, "/*", 2) != 0 || len < 2)
         return false;
 
-    // Use + 1 to compare: in_uri starts with /; the api paths don't.
+    // Skip first char when matching APIs: in_uri starts with /; the api paths don't.
+    in_uri += 1;
+    len -= 1;
+
     const size_t command_size = api.commands.size();
     for (size_t i = 0; i < command_size; i++)
-        if (api.commands[i].get_path_len() == len - 1 && memcmp(api.commands[i].path, in_uri + 1, len - 1) == 0)
+        if (api.commands[i].get_path_len() == len && memcmp(api.commands[i].path, in_uri, len) == 0)
             return true;
 
     const size_t state_size = api.states.size();
     for (size_t i = 0; i < state_size; i++)
-        if (api.states[i].get_path_len() == len - 1 && memcmp(api.states[i].path, in_uri + 1, len - 1) == 0)
+        if (api.states[i].get_path_len() == len && memcmp(api.states[i].path, in_uri, len) == 0)
             return true;
 
     const size_t response_size = api.responses.size();
     for (size_t i = 0; i < response_size; i++)
-        if (api.responses[i].path_len == len - 1 && memcmp(api.responses[i].path, in_uri + 1, len - 1) == 0)
+        if (api.responses[i].path_len == len && memcmp(api.responses[i].path, in_uri, len) == 0)
             return true;
 
     return false;
