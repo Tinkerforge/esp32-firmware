@@ -347,7 +347,7 @@ struct Config {
         static constexpr const char *variantName = "ConfUnion";
         static Slot *allocSlotBuf(size_t elements);
 
-        uint8_t getTag() const;
+        Config *getTag() const;
         bool changeUnionVariant(uint8_t tag);
 
         Config *getVal();
@@ -744,7 +744,7 @@ public:
     Wrap get(const String &s);
     const ConstWrap get(const String &s) const;
 
-    // for ConfArray
+    // for ConfArray and ConfUnion (0 returns union tag, 1 returns union value)
                Wrap get(int8_t )       = delete;
     const ConstWrap get(int8_t ) const = delete;
                Wrap get(int16_t)       = delete;
@@ -785,7 +785,7 @@ public:
         if (!this->is<Config::ConfUnion>()) {
             esp_system_abort("Tried to get tag of a node that is not a union!");
         }
-        return (T) this->get<ConfUnion>()->getTag();
+        return (T) this->get<ConfUnion>()->getTag()->asUint8();
     }
 
 private:
