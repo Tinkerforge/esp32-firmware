@@ -1003,6 +1003,11 @@ public:
     [[gnu::const]] static const Config *get_prototype_uint32_0();
     [[gnu::const]] static const Config *get_prototype_uint53_0();
     [[gnu::const]] static const Config *get_prototype_bool_false();
+
+    typedef strict_variant::variant<
+        const char *,
+        size_t
+    > Path;
 };
 
 static_assert(sizeof(Config) == 4, "Config size unexpected!");

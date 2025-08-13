@@ -26,15 +26,10 @@
 #include "module.h"
 #include "modules/api/api.h"
 
-typedef strict_variant::variant<
-    const char *,
-    size_t
-> ConfPath;
-
 struct StateUpdateRegistration {
     int64_t eventID;
     std::function<EventResult(const Config *)> callback;
-    std::unique_ptr<ConfPath[]> conf_path;
+    std::unique_ptr<Config::Path[]> conf_path;
     size_t conf_path_len;
     StateUpdateRegistration *next_registration;
 };
@@ -46,7 +41,7 @@ public:
     void pre_setup() override;
     void setup() override;
 
-    int64_t registerEvent(const String &path, const std::vector<ConfPath> values, std::function<EventResult(const Config *)> &&callback);
+    int64_t registerEvent(const String &path, const std::vector<Config::Path> values, std::function<EventResult(const Config *)> &&callback);
     void deregisterEvent(int64_t eventID);
 
     // IAPIBackend implementation
