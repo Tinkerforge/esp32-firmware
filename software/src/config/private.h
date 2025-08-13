@@ -89,6 +89,6 @@ struct ConfInt52Slot {
 
 struct ConfUint53Slot {
     uint64_t val = std::numeric_limits<uint64_t>::max();
-    static constexpr const int64_t min = 0;
-    static constexpr const int64_t max = (1ll << 53ll) - 1;
+    static constexpr const uint64_t min = 0;
+    static constexpr const uint64_t max = (1ll << 53ll) - 1;
 };

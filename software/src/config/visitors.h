@@ -1404,7 +1404,7 @@ struct api_info {
     }
     void operator()(const Config::ConfFloat &x)
     {
-        sw.printf("{\"type\":\"float\",\"val\":%f}", isnan(x.getVal()) ? 0.0f : x.getVal());
+        sw.printf("{\"type\":\"float\",\"val\":%f}", static_cast<double>(isnan(x.getVal()) ? 0.0f : x.getVal()));
     }
     void operator()(const Config::ConfInt &x)
     {
@@ -1474,7 +1474,7 @@ struct api_info {
                 sw.printf(",");
             }
             first = false;
-            sw.printf("{\"key\":\"%.*s\",\"value\":", slot->schema->keys[i].length, slot->schema->keys[i].val);
+            sw.printf("{\"key\":\"%.*s\",\"value\":", static_cast<int>(slot->schema->keys[i].length), slot->schema->keys[i].val);
             Config::apply_visitor(api_info{sw}, slot->values[i].value);
             sw.printf("}");
         }
