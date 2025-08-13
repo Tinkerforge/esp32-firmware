@@ -207,7 +207,7 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
     return req.send(400, "text/plain; charset=utf-8", message.c_str(), message.length());
 }
 
-WebServerRequestReturnProtect Http::run_response(WebServerRequest req, ResponseRegistration &reg)
+WebServerRequestReturnProtect Http::run_response(WebServerRequest req, size_t respidx)
 {
     // Check stack usage after increasing buffer size.
     char recv_buf[2048];
@@ -228,8 +228,8 @@ WebServerRequestReturnProtect Http::run_response(WebServerRequest req, ResponseR
     BufferedChunkedResponse buffered_response(&queued_response);
 
     task_scheduler.scheduleOnce(
-        [this, &reg, &recv_buf, bytes_written, &buffered_response, response_owner_id] {
-            api.callResponse(reg, recv_buf, bytes_written, &buffered_response, &response_ownership, response_owner_id);
+        [this, respidx, &recv_buf, bytes_written, &buffered_response, response_owner_id] {
+            api.callResponse(api.responses[respidx], recv_buf, bytes_written, &buffered_response, &response_ownership, response_owner_id);
         });
 
     String error = queued_response.wait();
