@@ -19,7 +19,8 @@
 
 #pragma once
 
-bool is_exactly_zero(float f);
+bool is_exactly_equal(float a, float b);
+inline bool is_exactly_zero(float f) { return is_exactly_equal(f, 0.0f); }
 float nan_safe_sum(float a, float b);
 float nan_safe_avg(float a, float b);
 float zero_safe_negation(float f);

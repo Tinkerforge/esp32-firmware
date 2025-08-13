@@ -22,8 +22,13 @@
 #include "config/private.h"
 
 #include "header_logger.h"
-
 #include "tools.h"
+#include "tools/float.h"
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #include "gcc_warnings.h"
+#endif
 
 struct default_validator {
     String operator()(const Config::ConfString &x) const
@@ -32,12 +37,12 @@ struct default_validator {
         const auto length = x.getVal()->length();
 
         if (length < slot->minChars)
-            return String("String of minimum length ") + slot->minChars + " was expected, but got " + length;
+            return String("String of minimum length ") + static_cast<size_t>(slot->minChars) + " was expected, but got " + length;
 
         if (slot->maxChars == 0 || length <= slot->maxChars)
             return "";
 
-        return String("String of maximum length ") + slot->maxChars + " was expected, but got " + length;
+        return String("String of maximum length ") + static_cast<size_t>(slot->maxChars) + " was expected, but got " + length;
     }
 
     String operator()(const Config::ConfFloat &x) const
@@ -132,16 +137,17 @@ struct default_validator {
         const auto *slot = x.getSlot();
         const auto *val = x.getVal();
         const size_t size = val->size();
-        const auto variantType = x.getVariantType();
+        const int8_t variantType = x.getVariantType();
 
         if (slot->maxElements > 0 && size > slot->maxElements)
-            return String("Array had ") + size + " entries, but only " + slot->maxElements + " are allowed.";
+            return String("Array had ") + size + " entries, but only " + static_cast<size_t>(slot->maxElements) + " are allowed.";
+
         if (slot->minElements > 0 && size < slot->minElements)
-            return String("Array had ") + size + " entries, but at least " + slot->maxElements + " are required.";
+            return String("Array had ") + size + " entries, but at least " + static_cast<size_t>(slot->minElements) + " are required.";
 
         if (variantType >= 0)
             for (size_t i = 0; i < size; ++i)
-                if ((int)x.get(i)->value.tag != variantType)
+                if (static_cast<int8_t>(x.get(i)->value.tag) != variantType)
                     return String("[") + i + "] has wrong type";
 
         size_t i = 0;
@@ -625,7 +631,7 @@ struct from_json {
         if (!json_node.is<float>())
             return {"JSON node was not a float.", false};
 
-        bool changed = x.getVal() != json_node.as<float>();
+        bool changed = !is_exactly_equal(x.getVal(), json_node.as<float>());
         x.setVal(json_node.as<float>());
         return {"", changed};
     }
@@ -928,26 +934,54 @@ struct from_json {
     bool is_root;
 };
 
-
 template<typename T>
-bool extract_int(const Config::ConfUpdate *update, T *result, T min = std::numeric_limits<T>::min(), T max = std::numeric_limits<T>::max()) {
-    int64_t x = 0;
-    if      (update->get< int8_t >() != nullptr) { x = *update->get< int8_t >(); }
-    else if (update->get<uint8_t >() != nullptr) { x = *update->get<uint8_t >(); }
-    else if (update->get< int16_t>() != nullptr) { x = *update->get< int16_t>(); }
-    else if (update->get<uint16_t>() != nullptr) { x = *update->get<uint16_t>(); }
-    else if (update->get< int32_t>() != nullptr) { x = *update->get< int32_t>(); }
-    else if (update->get<uint32_t>() != nullptr) { x = *update->get<uint32_t>(); }
-    else if (update->get< int64_t>() != nullptr) { x = *update->get< int64_t>(); }
-    else if (update->get<uint64_t>() != nullptr) { x = *update->get<uint64_t>(); }
-    else {
+bool extract_int(const Config::ConfUpdate *update, T *result, T min = std::numeric_limits<T>::min(), T max = std::numeric_limits<T>::max())
+{
+    static constexpr std::size_t int8_idx   = Config::ConfUpdate::find_which<  int8_t>::value;
+    static constexpr std::size_t uint8_idx  = Config::ConfUpdate::find_which< uint8_t>::value;
+    static constexpr std::size_t int16_idx  = Config::ConfUpdate::find_which< int16_t>::value;
+    static constexpr std::size_t uint16_idx = Config::ConfUpdate::find_which<uint16_t>::value;
+    static constexpr std::size_t int32_idx  = Config::ConfUpdate::find_which< int32_t>::value;
+    static constexpr std::size_t uint32_idx = Config::ConfUpdate::find_which<uint32_t>::value;
+    static constexpr std::size_t int64_idx  = Config::ConfUpdate::find_which< int64_t>::value;
+    static constexpr std::size_t uint64_idx = Config::ConfUpdate::find_which<uint64_t>::value;
+    int64_t value = 0;
+
+    switch (update->which()) {
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wnull-dereference"
+#endif
+    case int8_idx:   value = *update->get<  int8_idx>(); break;
+    case uint8_idx:  value = *update->get< uint8_idx>(); break;
+    case int16_idx:  value = *update->get< int16_idx>(); break;
+    case uint16_idx: value = *update->get<uint16_idx>(); break;
+    case int32_idx:  value = *update->get< int32_idx>(); break;
+    case uint32_idx: value = *update->get<uint32_idx>(); break;
+    case int64_idx:  value = *update->get< int64_idx>(); break;
+
+    case uint64_idx: {
+        uint64_t value_u64 = *update->get<uint64_idx>();
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
+
+        if (value_u64 > static_cast<uint64_t>(INT64_MAX)) {
+            header_printfln("from_update", "ConfUpdate int %llu out of int64_t range", value_u64);
+        }
+
+        value = static_cast<int64_t>(value_u64);
+        break;
+    }
+
+    default:
         return false;
     }
 
-    if (x < (int64_t)min || x > (int64_t)max)
-        header_printfln("from_update", "ConfUpdate int %lld out of range: allowed are [%lld; %lld]", x, (int64_t)min, (int64_t)max);
+    if (value < static_cast<int64_t>(min) || value > static_cast<int64_t>(max))
+        header_printfln("from_update", "ConfUpdate int %lld out of range: allowed are [%lld; %lld]", value, static_cast<int64_t>(min), static_cast<int64_t>(max));
 
-    *result = (T) x;
+    *result = static_cast<T>(value);
     return true;
 }
 
@@ -974,7 +1008,7 @@ struct from_update {
         if (update_val == nullptr)
             return {"ConfUpdate node was not a float.", false};
 
-        bool changed = x.getVal() != *update_val;
+        bool changed = !is_exactly_equal(x.getVal(), *update_val);
         x.setVal(*update_val);
         return {"", changed};
     }
@@ -983,8 +1017,9 @@ struct from_update {
         if (Config::containsNull(update))
             return {"", false};
 
+        const auto *slot = const_cast<const Config::ConfInt &>(x).getSlot();
         int32_t new_value = 0;
-        if (!extract_int<int32_t>(update, &new_value, ((const Config::ConfInt &)x).getSlot()->min, ((const Config::ConfInt &)x).getSlot()->max))
+        if (!extract_int<int32_t>(update, &new_value, slot->min, slot->max))
             return {"ConfUpdate node was not a signed integer.", false};
 
         bool changed = *x.getVal() != new_value;
@@ -996,8 +1031,9 @@ struct from_update {
         if (Config::containsNull(update))
             return {"", false};
 
+        const auto *slot = const_cast<const Config::ConfUint &>(x).getSlot();
         uint32_t new_value = 0;
-        if (!extract_int<uint32_t>(update, &new_value, ((const Config::ConfUint &)x).getSlot()->min, ((const Config::ConfUint &)x).getSlot()->max))
+        if (!extract_int<uint32_t>(update, &new_value, slot->min, slot->max))
             return {"ConfUpdate node was not an unsigned integer.", false};
 
         bool changed = *x.getVal() != new_value;
@@ -1414,7 +1450,7 @@ struct api_info {
     {
         sw.printf("{\"type\":\"array\",\"prototype\":");
         Config::apply_visitor(api_info{sw}, x.getSlot()->prototype->value);
-        sw.printf(",\"minElements\":%u,\"maxElements\":%u,\"variantType\":%d,\"content\":[", x.getSlot()->minElements, x.getSlot()->maxElements, x.getVariantType());
+        sw.printf(",\"minElements\":%u,\"maxElements\":%u,\"variantType\":%d,\"content\":[", x.getSlot()->minElements, x.getSlot()->maxElements, static_cast<uint8_t>(x.getVariantType()));
         bool first = true;
         for (const Config &c : *x.getVal()) {
             if (!first) {
@@ -1467,4 +1503,8 @@ struct api_info {
 
     StringWriter &sw;
 };
+#endif
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
 #endif

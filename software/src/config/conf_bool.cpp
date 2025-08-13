@@ -19,5 +19,10 @@
 
 #include "config/private.h"
 
+#include "gcc_warnings.h"
+
+[[gnu::const]]
 bool *Config::ConfBool::getVal() { return &value; }
+
+[[gnu::const]]
 const bool *Config::ConfBool::getVal() const { return &value; }

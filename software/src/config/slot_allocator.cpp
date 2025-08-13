@@ -23,6 +23,8 @@
 #include "main_dependencies.h"
 #include "tools/malloc.h"
 
+#include "gcc_warnings.h"
+
 [[gnu::section(".iram.data")]] static Superblock<Config::ConfUint>   first_superblock_ConfUint;
 [[gnu::section(".iram.data")]] static Superblock<Config::ConfInt>    first_superblock_ConfInt;
 [[gnu::section(".iram.data")]] static Superblock<Config::ConfFloat>  first_superblock_ConfFloat;
@@ -58,7 +60,7 @@ template<typename ConfT> size_t RootBlock<ConfT>::frees              = 0;
 #endif
 
 template<typename ConfigT>
-size_t nextSlot()
+uint16_t nextSlot()
 {
     ASSERT_MAIN_THREAD();
 
@@ -90,7 +92,7 @@ size_t nextSlot()
 
             for (; slot_i < SlotConfig<ConfigT>::slots_per_block; slot_i++) {
                 if (ConfigT::slotEmpty(block + slot_i)) {
-                    size_t idx = superblock_offset * SlotConfig<ConfigT>::slots_per_superblock + block_i * SlotConfig<ConfigT>::slots_per_block + slot_i;
+                    uint16_t idx = static_cast<uint16_t>(superblock_offset * SlotConfig<ConfigT>::slots_per_superblock + block_i * SlotConfig<ConfigT>::slots_per_block + slot_i);
                     RootBlock<ConfigT>::first_free_slot = idx + 1;
 
 #if MODULE_DEBUG_AVAILABLE()
@@ -121,7 +123,7 @@ size_t nextSlot()
             }
 
             superblock->next_superblock = new_superblock;
-            logger.printfln("Allocated new superblock at %p for %s", new_superblock, ConfigT::variantName);
+            logger.printfln("Allocated new superblock at %p for %s", static_cast<void *>(new_superblock), ConfigT::variantName);
         }
         superblock = superblock->next_superblock;
         superblock_offset++;
@@ -130,18 +132,18 @@ size_t nextSlot()
     }
 }
 
-template size_t nextSlot<Config::ConfUint>();
-template size_t nextSlot<Config::ConfInt>();
-template size_t nextSlot<Config::ConfFloat>();
-template size_t nextSlot<Config::ConfString>();
-template size_t nextSlot<Config::ConfArray>();
-template size_t nextSlot<Config::ConfObject>();
-template size_t nextSlot<Config::ConfUnion>();
-template size_t nextSlot<Config::ConfUint53>();
-template size_t nextSlot<Config::ConfInt52>();
+template uint16_t nextSlot<Config::ConfUint>();
+template uint16_t nextSlot<Config::ConfInt>();
+template uint16_t nextSlot<Config::ConfFloat>();
+template uint16_t nextSlot<Config::ConfString>();
+template uint16_t nextSlot<Config::ConfArray>();
+template uint16_t nextSlot<Config::ConfObject>();
+template uint16_t nextSlot<Config::ConfUnion>();
+template uint16_t nextSlot<Config::ConfUint53>();
+template uint16_t nextSlot<Config::ConfInt52>();
 
 template<typename ConfigT>
-typename ConfigT::Slot *get_slot(size_t idx)
+typename ConfigT::Slot *get_slot(uint16_t idx)
 {
     Superblock<ConfigT> *superblock = RootBlock<ConfigT>::first_superblock;
 
@@ -156,15 +158,15 @@ typename ConfigT::Slot *get_slot(size_t idx)
     return superblock->blocks[block_idx] + slot_idx;
 }
 
-template Config::ConfUint::Slot   *get_slot<Config::ConfUint>(size_t idx);
-template Config::ConfInt::Slot    *get_slot<Config::ConfInt>(size_t idx);
-template Config::ConfFloat::Slot  *get_slot<Config::ConfFloat>(size_t idx);
-template Config::ConfString::Slot *get_slot<Config::ConfString>(size_t idx);
-template Config::ConfArray::Slot  *get_slot<Config::ConfArray>(size_t idx);
-template Config::ConfObject::Slot *get_slot<Config::ConfObject>(size_t idx);
-template Config::ConfUnion::Slot  *get_slot<Config::ConfUnion>(size_t idx);
-template Config::ConfUint53::Slot *get_slot<Config::ConfUint53>(size_t idx);
-template Config::ConfInt52::Slot  *get_slot<Config::ConfInt52>(size_t idx);
+template Config::ConfUint::Slot   *get_slot<Config::ConfUint>(uint16_t idx);
+template Config::ConfInt::Slot    *get_slot<Config::ConfInt>(uint16_t idx);
+template Config::ConfFloat::Slot  *get_slot<Config::ConfFloat>(uint16_t idx);
+template Config::ConfString::Slot *get_slot<Config::ConfString>(uint16_t idx);
+template Config::ConfArray::Slot  *get_slot<Config::ConfArray>(uint16_t idx);
+template Config::ConfObject::Slot *get_slot<Config::ConfObject>(uint16_t idx);
+template Config::ConfUnion::Slot  *get_slot<Config::ConfUnion>(uint16_t idx);
+template Config::ConfUint53::Slot *get_slot<Config::ConfUint53>(uint16_t idx);
+template Config::ConfInt52::Slot  *get_slot<Config::ConfInt52>(uint16_t idx);
 
 #ifdef DEBUG_FS_ENABLE
 template<typename ConfigT>

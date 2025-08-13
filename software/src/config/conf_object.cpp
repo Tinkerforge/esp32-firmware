@@ -24,6 +24,8 @@
 #include "main_dependencies.h"
 #include "tools/memory.h"
 
+#include "gcc_warnings.h"
+
 bool Config::ConfObject::slotEmpty(const Slot *slot)
 {
     return slot->schema == nullptr;
@@ -31,7 +33,7 @@ bool Config::ConfObject::slotEmpty(const Slot *slot)
 
 Config::ConfObject::Slot *Config::ConfObject::allocSlotBuf(size_t elements)
 {
-    return (Config::ConfObject::Slot *)calloc_32bit_addressed(elements, sizeof(Config::ConfObject::Slot));
+    return static_cast<Config::ConfObject::Slot *>(calloc_32bit_addressed(elements, sizeof(Config::ConfObject::Slot)));
 }
 
 [[gnu::noinline]]
@@ -112,11 +114,11 @@ const Config *Config::ConfObject::get(const char *needle, size_t needle_len) con
 const Config::ConfObject::Slot *Config::ConfObject::getSlot() const { return get_slot<Config::ConfObject>(idx); }
 Config::ConfObject::Slot *Config::ConfObject::getSlot() { return get_slot<Config::ConfObject>(idx); }
 
-Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&val)
+Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&val) : idx(nextSlot<Config::ConfObject>())
 {
     const size_t len = val.size();
 
-    auto schema = (ConfObjectSchema *)malloc_iram_or_psram_or_dram(sizeof(ConfObjectSchema) + len * sizeof(ConfObjectSchema::Key));
+    auto schema = static_cast<ConfObjectSchema *>(malloc_iram_or_psram_or_dram(sizeof(ConfObjectSchema) + len * sizeof(ConfObjectSchema::Key)));
     schema->length = len;
 
     for (size_t i = 0; i < len; ++i) {
@@ -134,7 +136,6 @@ Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&va
         schema->keys[i].length = strlen(key);
     }
 
-    idx = nextSlot<Config::ConfObject>();
     auto *slot = this->getSlot();
     slot->schema = schema;
 
@@ -145,10 +146,8 @@ Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&va
     }
 }
 
-Config::ConfObject::ConfObject(const ConfObject &cpy)
+Config::ConfObject::ConfObject(const ConfObject &cpy) : idx(nextSlot<Config::ConfObject>())
 {
-    idx = nextSlot<Config::ConfObject>();
-
     // TODO: could we just use *this = cpy here?
 
     // We have to mark this slot as in use here:
@@ -210,12 +209,13 @@ Config::ConfObject &Config::ConfObject::operator=(const ConfObject &cpy)
     return *this;
 }
 
-Config::ConfObject::ConfObject(ConfObject &&cpy) {
-    this->idx = cpy.idx;
+Config::ConfObject::ConfObject(ConfObject &&cpy)  : idx(cpy.idx)
+{
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
 }
 
-Config::ConfObject &Config::ConfObject::operator=(ConfObject &&cpy) {
+Config::ConfObject &Config::ConfObject::operator=(ConfObject &&cpy)
+{
     this->idx = cpy.idx;
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
     return *this;

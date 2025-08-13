@@ -19,5 +19,10 @@
 
 #include "config/private.h"
 
-int16_t* Config::ConfInt16::getVal() { return &this->value; }
-const int16_t* Config::ConfInt16::getVal() const { return &this->value; }
+#include "gcc_warnings.h"
+
+[[gnu::const]]
+int16_t *Config::ConfInt16::getVal() { return &this->value; }
+
+[[gnu::const]]
+const int16_t *Config::ConfInt16::getVal() const { return &this->value; }

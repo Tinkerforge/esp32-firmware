@@ -23,6 +23,8 @@
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
 
+#include "gcc_warnings.h"
+
 bool Config::ConfArray::slotEmpty(const Slot *slot)
 {
     return slot->minElements > slot->maxElements;
@@ -66,15 +68,14 @@ const std::vector<Config> *Config::ConfArray::getVal() const { return &get_slot<
 
 const Config::ConfArray::Slot *Config::ConfArray::getSlot() const { return get_slot<Config::ConfArray>(idx); }
 Config::ConfArray::Slot *Config::ConfArray::getSlot() { return get_slot<Config::ConfArray>(idx); }
-int8_t Config::ConfArray::getVariantType() const { return (int8_t) get_slot<Config::ConfArray>(idx)->prototype->value.tag; }
+int8_t Config::ConfArray::getVariantType() const { return static_cast<int8_t>(get_slot<Config::ConfArray>(idx)->prototype->value.tag); }
 
-Config::ConfArray::ConfArray(std::initializer_list<Config> val, const Config *prototype, uint16_t minElements, uint16_t maxElements)
+Config::ConfArray::ConfArray(std::initializer_list<Config> val, const Config *prototype, uint16_t minElements, uint16_t maxElements) : idx(nextSlot<Config::ConfArray>())
 {
     if (minElements > maxElements) {
         esp_system_abort("ConfArray: Requested more minElements than maxElements!");
     }
 
-    idx = nextSlot<Config::ConfArray>();
     auto *slot = this->getSlot();
     // Set min/max before val to be sure this slot is in use before copying val.
     slot->minElements = minElements;
@@ -84,9 +85,8 @@ Config::ConfArray::ConfArray(std::initializer_list<Config> val, const Config *pr
     slot->prototype = prototype;
 }
 
-Config::ConfArray::ConfArray(const ConfArray &cpy)
+Config::ConfArray::ConfArray(const ConfArray &cpy) : idx(nextSlot<Config::ConfArray>())
 {
-    idx = nextSlot<Config::ConfArray>();
     // We have to mark this slot as in use here:
     // This array could contain a nested array that will be copied over
     // The inner array's copy constructor then takes the first free slot, i.e.
@@ -127,12 +127,13 @@ Config::ConfArray &Config::ConfArray::operator=(const ConfArray &cpy)
     return *this;
 }
 
-Config::ConfArray::ConfArray(ConfArray &&cpy) {
-    this->idx = cpy.idx;
+Config::ConfArray::ConfArray(ConfArray &&cpy) : idx(cpy.idx)
+{
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
 }
 
-Config::ConfArray &Config::ConfArray::operator=(ConfArray &&cpy) {
+Config::ConfArray &Config::ConfArray::operator=(ConfArray &&cpy)
+{
     this->idx = cpy.idx;
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
     return *this;

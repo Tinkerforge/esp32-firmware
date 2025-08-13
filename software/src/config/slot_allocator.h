@@ -134,17 +134,17 @@ struct RootBlock {
 };
 
 template<typename ConfigT>
-size_t nextSlot();
+uint16_t nextSlot();
 
-extern template size_t nextSlot<Config::ConfUint>();
-extern template size_t nextSlot<Config::ConfInt>();
-extern template size_t nextSlot<Config::ConfFloat>();
-extern template size_t nextSlot<Config::ConfString>();
-extern template size_t nextSlot<Config::ConfArray>();
-extern template size_t nextSlot<Config::ConfObject>();
-extern template size_t nextSlot<Config::ConfUnion>();
-extern template size_t nextSlot<Config::ConfInt52>();
-extern template size_t nextSlot<Config::ConfUint53>();
+extern template uint16_t nextSlot<Config::ConfUint>();
+extern template uint16_t nextSlot<Config::ConfInt>();
+extern template uint16_t nextSlot<Config::ConfFloat>();
+extern template uint16_t nextSlot<Config::ConfString>();
+extern template uint16_t nextSlot<Config::ConfArray>();
+extern template uint16_t nextSlot<Config::ConfObject>();
+extern template uint16_t nextSlot<Config::ConfUnion>();
+extern template uint16_t nextSlot<Config::ConfInt52>();
+extern template uint16_t nextSlot<Config::ConfUint53>();
 
 #if MODULE_DEBUG_AVAILABLE()
 template<typename ConfigT>
@@ -190,12 +190,12 @@ size_t find_last_used_slot(Superblock<ConfigT> *superblock, size_t last_slot_to_
 #endif
 
 template<typename ConfigT>
-inline void notify_free_slot(size_t idx)
+inline void notify_free_slot(uint16_t idx)
 {
     ASSERT_MAIN_THREAD();
 
     if (idx < RootBlock<ConfigT>::first_free_slot) {
-        RootBlock<ConfigT>::first_free_slot = static_cast<uint16_t>(idx);
+        RootBlock<ConfigT>::first_free_slot = idx;
     }
 
 #if MODULE_DEBUG_AVAILABLE()
@@ -217,17 +217,17 @@ inline void notify_free_slot(size_t idx)
 }
 
 template<typename ConfigT>
-typename ConfigT::Slot *get_slot(size_t idx);
+typename ConfigT::Slot *get_slot(uint16_t idx);
 
-extern template Config::ConfUint::Slot   *get_slot<Config::ConfUint>(size_t idx);
-extern template Config::ConfInt::Slot    *get_slot<Config::ConfInt>(size_t idx);
-extern template Config::ConfFloat::Slot  *get_slot<Config::ConfFloat>(size_t idx);
-extern template Config::ConfString::Slot *get_slot<Config::ConfString>(size_t idx);
-extern template Config::ConfArray::Slot  *get_slot<Config::ConfArray>(size_t idx);
-extern template Config::ConfObject::Slot *get_slot<Config::ConfObject>(size_t idx);
-extern template Config::ConfUnion::Slot  *get_slot<Config::ConfUnion>(size_t idx);
-extern template Config::ConfUint53::Slot *get_slot<Config::ConfUint53>(size_t idx);
-extern template Config::ConfInt52::Slot  *get_slot<Config::ConfInt52>(size_t idx);
+extern template Config::ConfUint::Slot   *get_slot<Config::ConfUint>(uint16_t idx);
+extern template Config::ConfInt::Slot    *get_slot<Config::ConfInt>(uint16_t idx);
+extern template Config::ConfFloat::Slot  *get_slot<Config::ConfFloat>(uint16_t idx);
+extern template Config::ConfString::Slot *get_slot<Config::ConfString>(uint16_t idx);
+extern template Config::ConfArray::Slot  *get_slot<Config::ConfArray>(uint16_t idx);
+extern template Config::ConfObject::Slot *get_slot<Config::ConfObject>(uint16_t idx);
+extern template Config::ConfUnion::Slot  *get_slot<Config::ConfUnion>(uint16_t idx);
+extern template Config::ConfUint53::Slot *get_slot<Config::ConfUint53>(uint16_t idx);
+extern template Config::ConfInt52::Slot  *get_slot<Config::ConfInt52>(uint16_t idx);
 
 template<typename ConfigT>
 size_t get_allocated_slot_memory()
@@ -253,7 +253,6 @@ void get_slot_debug_info(SlotDebugInfo *slot_info)
     slot_info->slots_hwm       = RootBlock<ConfigT>::slots_hwm;
     slot_info->allocated_slots = RootBlock<ConfigT>::allocated_blocks * SlotConfig<ConfigT>::slots_per_block;
 }
-
 #endif
 
 #include "main_available_end.h"

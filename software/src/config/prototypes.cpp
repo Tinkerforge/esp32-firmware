@@ -22,6 +22,8 @@
 #include <limits>
 #include <math.h>
 
+#include "gcc_warnings.h"
+
 static Config prototype_float_nan;
 static Config prototype_int16_0;
 static Config prototype_int32_0;

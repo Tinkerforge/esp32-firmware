@@ -19,6 +19,8 @@
 
 #include "config/private.h"
 
+#include "gcc_warnings.h"
+
 Config::ConfVariant::Val::Val() : e(Empty{}) {}
 Config::ConfVariant::Val::~Val() {}
 
@@ -39,7 +41,7 @@ Config::ConfVariant::ConfVariant(ConfInt8 u)   : tag(Tag::INT8),   updated(0xFF)
 
 Config::ConfVariant::ConfVariant() : tag(Tag::EMPTY), updated(0xFF), val() {}
 
-Config::ConfVariant::ConfVariant(const ConfVariant &cpy)
+Config::ConfVariant::ConfVariant(const ConfVariant &cpy) : tag(cpy.tag), updated(cpy.updated), val()
 {
     switch (cpy.tag) {
         case ConfVariant::Tag::EMPTY:
@@ -87,9 +89,9 @@ Config::ConfVariant::ConfVariant(const ConfVariant &cpy)
         case ConfVariant::Tag::INT8:
             new(&val.i8) ConfInt8(cpy.val.i8);
             break;
+        default:
+            esp_system_abort("ConfVariant::ConfVariant: Unknown tag!");
     }
-    this->tag = cpy.tag;
-    this->updated = cpy.updated;
 }
 
 Config::ConfVariant &Config::ConfVariant::operator=(const ConfVariant &cpy)
@@ -101,6 +103,9 @@ Config::ConfVariant &Config::ConfVariant::operator=(const ConfVariant &cpy)
     if (tag != Tag::EMPTY)
         destroyUnionMember();
 
+    this->tag = cpy.tag;
+    this->updated = cpy.updated;
+
     switch (cpy.tag) {
         case ConfVariant::Tag::EMPTY:
             new(&val.e) Empty(cpy.val.e);
@@ -147,9 +152,9 @@ Config::ConfVariant &Config::ConfVariant::operator=(const ConfVariant &cpy)
         case ConfVariant::Tag::INT8:
             new(&val.i8) ConfInt8(cpy.val.i8);
             break;
+        default:
+            esp_system_abort("ConfVariant::operator=: Unknown tag!");
     }
-    this->tag = cpy.tag;
-    this->updated = cpy.updated;
 
     return *this;
 }
@@ -202,6 +207,8 @@ void Config::ConfVariant::destroyUnionMember()
         case ConfVariant::Tag::INT8:
             val.i8.~ConfInt8();
             break;
+        default:
+            esp_system_abort("ConfVariant::destroyUnionMember: Unknown tag!");
     }
 }
 
@@ -243,11 +250,13 @@ const char *Config::ConfVariant::getVariantName() const
             return val.u8.variantName;
         case ConfVariant::Tag::INT8:
             return val.i8.variantName;
+        default:
+            esp_system_abort("ConfVariant::getVariantName: Unknown tag!");
     }
-    esp_system_abort("getVariantName: ConfVariant has unknown type!");
 }
 
-Config::ConfVariant::ConfVariant(ConfVariant &&cpy) {
+Config::ConfVariant::ConfVariant(ConfVariant &&cpy) : tag(cpy.tag), updated(cpy.updated), val()
+{
     switch (cpy.tag) {
         case ConfVariant::Tag::EMPTY:
             new(&val.e) Empty(std::move(cpy.val.e));
@@ -294,16 +303,20 @@ Config::ConfVariant::ConfVariant(ConfVariant &&cpy) {
         case ConfVariant::Tag::INT8:
             new(&val.i8) ConfInt8(std::move(cpy.val.i8));
             break;
+        default:
+            esp_system_abort("ConfVariant::ConfVariant(&&): Unknown tag!");
     }
-    this->tag = cpy.tag;
-    this->updated = cpy.updated;
 
     cpy.tag = ConfVariant::Tag::EMPTY;
 }
 
-Config::ConfVariant &Config::ConfVariant::operator=(ConfVariant &&cpy) {
+Config::ConfVariant &Config::ConfVariant::operator=(ConfVariant &&cpy)
+{
     if (tag != Tag::EMPTY)
         destroyUnionMember();
+
+    this->tag = cpy.tag;
+    this->updated = cpy.updated;
 
     switch (cpy.tag) {
         case ConfVariant::Tag::EMPTY:
@@ -351,9 +364,9 @@ Config::ConfVariant &Config::ConfVariant::operator=(ConfVariant &&cpy) {
         case ConfVariant::Tag::INT8:
             new(&val.i8) ConfInt8(std::move(cpy.val.i8));
             break;
+        default:
+            esp_system_abort("ConfVariant::operator=(&&): Unknown tag!");
     }
-    this->tag = cpy.tag;
-    this->updated = cpy.updated;
 
     cpy.tag = ConfVariant::Tag::EMPTY;
 

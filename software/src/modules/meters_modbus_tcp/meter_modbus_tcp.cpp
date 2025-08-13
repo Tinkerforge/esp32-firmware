@@ -2189,14 +2189,7 @@ void MeterModbusTCP::parse_next()
               register_buffer[register_buffer_index + 1],
               static_cast<double>(c32.f));
 
-#if defined(__GNUC__)
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wfloat-equal"
-#endif
-        if (!table->f32_negative_max_as_nan || c32.f != -FLT_MAX) { // Really compare exactly with -FLT_MAX
-#if defined(__GNUC__)
-    #pragma GCC diagnostic pop
-#endif
+        if (!table->f32_negative_max_as_nan || !is_exactly_equal(c32.f, -FLT_MAX)) {
             value = c32.f;
         }
 

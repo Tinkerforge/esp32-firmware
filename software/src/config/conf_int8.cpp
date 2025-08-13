@@ -19,5 +19,10 @@
 
 #include "config/private.h"
 
-int8_t* Config::ConfInt8::getVal() { return &this->value; }
-const int8_t* Config::ConfInt8::getVal() const { return &this->value; }
+#include "gcc_warnings.h"
+
+[[gnu::const]]
+int8_t *Config::ConfInt8::getVal() { return &this->value; }
+
+[[gnu::const]]
+const int8_t *Config::ConfInt8::getVal() const { return &this->value; }

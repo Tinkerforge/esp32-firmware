@@ -20,6 +20,8 @@
 #include "config/private.h"
 #include "config/slot_allocator.h"
 
+#include "gcc_warnings.h"
+
 bool Config::ConfString::slotEmpty(const Slot *slot)
 {
     return !slot->val;
@@ -44,9 +46,8 @@ const CoolString* Config::ConfString::getVal() const { return &get_slot<Config::
 const Config::ConfString::Slot* Config::ConfString::getSlot() const { return get_slot<Config::ConfString>(idx); }
 Config::ConfString::Slot* Config::ConfString::getSlot() { return get_slot<Config::ConfString>(idx); }
 
-Config::ConfString::ConfString(const char *val, uint16_t minChars, uint16_t maxChars)
+Config::ConfString::ConfString(const char *val, uint16_t minChars, uint16_t maxChars) : idx(nextSlot<Config::ConfString>())
 {
-    idx = nextSlot<Config::ConfString>();
     auto *slot = this->getSlot();
 
     slot->val = val;
@@ -54,9 +55,8 @@ Config::ConfString::ConfString(const char *val, uint16_t minChars, uint16_t maxC
     slot->maxChars = maxChars;
 }
 
-Config::ConfString::ConfString(const String &val, uint16_t minChars, uint16_t maxChars)
+Config::ConfString::ConfString(const String &val, uint16_t minChars, uint16_t maxChars) : idx(nextSlot<Config::ConfString>())
 {
-    idx = nextSlot<Config::ConfString>();
     auto *slot = this->getSlot();
 
     slot->val = val;
@@ -64,9 +64,8 @@ Config::ConfString::ConfString(const String &val, uint16_t minChars, uint16_t ma
     slot->maxChars = maxChars;
 }
 
-Config::ConfString::ConfString(String &&val, uint16_t minChars, uint16_t maxChars)
+Config::ConfString::ConfString(String &&val, uint16_t minChars, uint16_t maxChars) : idx(nextSlot<Config::ConfString>())
 {
-    idx = nextSlot<Config::ConfString>();
     auto *slot = this->getSlot();
 
     slot->val = std::move(val);
@@ -74,10 +73,8 @@ Config::ConfString::ConfString(String &&val, uint16_t minChars, uint16_t maxChar
     slot->maxChars = maxChars;
 }
 
-Config::ConfString::ConfString(const ConfString &cpy)
+Config::ConfString::ConfString(const ConfString &cpy) : idx(nextSlot<Config::ConfString>())
 {
-    idx = nextSlot<Config::ConfString>();
-
     // this->getSlot() is evaluated before the RHS of the assignment is copied over.
     // This results in the LHS pointing to a deallocated array if copying the RHS
     // resizes the slot array. Copying into a temp value (which resizes the array if necessary)
@@ -111,12 +108,13 @@ Config::ConfString &Config::ConfString::operator=(const ConfString &cpy)
     return *this;
 }
 
-Config::ConfString::ConfString(ConfString &&cpy) {
-    this->idx = cpy.idx;
+Config::ConfString::ConfString(ConfString &&cpy) : idx(cpy.idx)
+{
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
 }
 
-Config::ConfString &Config::ConfString::operator=(ConfString &&cpy) {
+Config::ConfString &Config::ConfString::operator=(ConfString &&cpy)
+{
     this->idx = cpy.idx;
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
     return *this;

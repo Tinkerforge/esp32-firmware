@@ -17,11 +17,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <math.h>
-
 #include "config/private.h"
 #include "config/slot_allocator.h"
+
+#include <math.h>
+
 #include "tools/malloc.h"
+
+#include "gcc_warnings.h"
 
 typedef union {
     float f;
@@ -73,15 +76,13 @@ void Config::ConfFloat::setVal(float f) {
 const Config::ConfFloat::Slot *Config::ConfFloat::getSlot() const { return get_slot<Config::ConfFloat>(idx); }
 Config::ConfFloat::Slot *Config::ConfFloat::getSlot() { return get_slot<Config::ConfFloat>(idx); }
 
-Config::ConfFloat::ConfFloat(float val)
+Config::ConfFloat::ConfFloat(float val) : idx(nextSlot<Config::ConfFloat>())
 {
-    idx = nextSlot<Config::ConfFloat>();
     this->setVal(val);
 }
 
-Config::ConfFloat::ConfFloat(const ConfFloat &cpy)
+Config::ConfFloat::ConfFloat(const ConfFloat &cpy) : idx(nextSlot<Config::ConfFloat>())
 {
-    idx = nextSlot<Config::ConfFloat>();
     auto tmp = *cpy.getSlot();
     *this->getSlot() = std::move(tmp);
 }
@@ -110,12 +111,13 @@ Config::ConfFloat &Config::ConfFloat::operator=(const ConfFloat &cpy)
     return *this;
 }
 
-Config::ConfFloat::ConfFloat(ConfFloat &&cpy) {
-    this->idx = cpy.idx;
+Config::ConfFloat::ConfFloat(ConfFloat &&cpy) : idx(cpy.idx)
+{
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
 }
 
-Config::ConfFloat &Config::ConfFloat::operator=(ConfFloat &&cpy) {
+Config::ConfFloat &Config::ConfFloat::operator=(ConfFloat &&cpy)
+{
     this->idx = cpy.idx;
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
     return *this;

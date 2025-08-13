@@ -24,13 +24,13 @@
 #include "gcc_warnings.h"
 
 [[gnu::const]]
-bool is_exactly_zero(float f)
+bool is_exactly_equal(float a, float b)
 {
     #if defined(__GNUC__)
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
-    return f == 0.0f; // Really compare exactly with 0.0f
+    return a == b;
 #if defined(__GNUC__)
     #pragma GCC diagnostic pop
 #endif

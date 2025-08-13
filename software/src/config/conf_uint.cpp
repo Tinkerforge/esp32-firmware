@@ -17,11 +17,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <limits>
-
 #include "config/private.h"
 #include "config/slot_allocator.h"
+
+#include <limits>
+
 #include "tools/malloc.h"
+
+#include "gcc_warnings.h"
 
 bool Config::ConfUint::slotEmpty(const Slot *slot) {
     return slot->min == std::numeric_limits<decltype(slot->min)>::max()
@@ -50,22 +53,20 @@ const uint32_t* Config::ConfUint::getVal() const { return &get_slot<Config::Conf
 const Config::ConfUint::Slot *Config::ConfUint::getSlot() const { return get_slot<Config::ConfUint>(idx); }
 Config::ConfUint::Slot *Config::ConfUint::getSlot() { return get_slot<Config::ConfUint>(idx); }
 
-Config::ConfUint::ConfUint(uint32_t val, uint32_t min, uint32_t max)
+Config::ConfUint::ConfUint(uint32_t val, uint32_t min, uint32_t max) : idx(nextSlot<Config::ConfUint>())
 {
     if (min > max) {
         esp_system_abort("Invalid ConfUint limits: min > max");
     }
 
-    idx = nextSlot<Config::ConfUint>();
     auto *slot = this->getSlot();
     slot->val = val;
     slot->min = min;
     slot->max = max;
 }
 
-Config::ConfUint::ConfUint(const ConfUint &cpy)
+Config::ConfUint::ConfUint(const ConfUint &cpy) : idx(nextSlot<Config::ConfUint>())
 {
-    idx = nextSlot<Config::ConfUint>();
     auto tmp = *cpy.getSlot();
     *this->getSlot() = std::move(tmp);
 }
@@ -92,12 +93,13 @@ Config::ConfUint &Config::ConfUint::operator=(const ConfUint &cpy)
     return *this;
 }
 
-Config::ConfUint::ConfUint(ConfUint &&cpy) {
-    this->idx = cpy.idx;
+Config::ConfUint::ConfUint(ConfUint &&cpy) : idx(cpy.idx)
+{
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
 }
 
-Config::ConfUint &Config::ConfUint::operator=(ConfUint &&cpy) {
+Config::ConfUint &Config::ConfUint::operator=(ConfUint &&cpy)
+{
     this->idx = cpy.idx;
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
     return *this;

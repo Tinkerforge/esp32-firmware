@@ -17,11 +17,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <limits>
-
 #include "config/private.h"
 #include "config/slot_allocator.h"
+
+#include <limits>
+
 #include "tools/malloc.h"
+
+#include "gcc_warnings.h"
 
 bool Config::ConfUint53::slotEmpty(const Slot *slot) {
     return slot->val == std::numeric_limits<uint64_t>::max();
@@ -48,18 +51,16 @@ const uint64_t* Config::ConfUint53::getVal() const { return &get_slot<Config::Co
 const Config::ConfUint53::Slot *Config::ConfUint53::getSlot() const { return get_slot<Config::ConfUint53>(idx); }
 Config::ConfUint53::Slot *Config::ConfUint53::getSlot() { return get_slot<Config::ConfUint53>(idx); }
 
-Config::ConfUint53::ConfUint53(uint64_t val)
+Config::ConfUint53::ConfUint53(uint64_t val) : idx(nextSlot<Config::ConfUint53>())
 {
-    idx = nextSlot<Config::ConfUint53>();
     auto *slot = this->getSlot();
 
     // TODO check val against limits here
     slot->val = val;
 }
 
-Config::ConfUint53::ConfUint53(const ConfUint53 &cpy)
+Config::ConfUint53::ConfUint53(const ConfUint53 &cpy) : idx(nextSlot<Config::ConfUint53>())
 {
-    idx = nextSlot<Config::ConfUint53>();
     auto tmp = *cpy.getSlot();
     *this->getSlot() = std::move(tmp);
 }
@@ -85,12 +86,13 @@ Config::ConfUint53 &Config::ConfUint53::operator=(const ConfUint53 &cpy)
     return *this;
 }
 
-Config::ConfUint53::ConfUint53(ConfUint53 &&cpy) {
-    this->idx = cpy.idx;
+Config::ConfUint53::ConfUint53(ConfUint53 &&cpy)  : idx(cpy.idx)
+{
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
 }
 
-Config::ConfUint53 &Config::ConfUint53::operator=(ConfUint53 &&cpy) {
+Config::ConfUint53 &Config::ConfUint53::operator=(ConfUint53 &&cpy)
+{
     this->idx = cpy.idx;
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
     return *this;

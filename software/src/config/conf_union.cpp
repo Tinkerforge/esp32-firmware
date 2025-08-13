@@ -20,6 +20,8 @@
 #include "config/private.h"
 #include "config/slot_allocator.h"
 
+#include "gcc_warnings.h"
+
 bool Config::ConfUnion::slotEmpty(const Slot *slot)
 {
     return slot->prototypes == nullptr;
@@ -53,13 +55,11 @@ const Config* Config::ConfUnion::getVal() const { return &get_slot<Config::ConfU
 const Config::ConfUnion::Slot* Config::ConfUnion::getSlot() const { return get_slot<Config::ConfUnion>(idx); }
 Config::ConfUnion::Slot* Config::ConfUnion::getSlot() { return get_slot<Config::ConfUnion>(idx); }
 
-Config::ConfUnion::ConfUnion(const Config &val, uint8_t tag, uint8_t prototypes_len, const ConfUnionPrototypeInternal prototypes[])
+Config::ConfUnion::ConfUnion(const Config &val, uint8_t tag, uint8_t prototypes_len, const ConfUnionPrototypeInternal prototypes[]) : idx(nextSlot<Config::ConfUnion>())
 {
     if (prototypes == nullptr) {
         esp_system_abort("Invalid ConfUnion: prototypes cannot be a nullptr");
     }
-
-    idx = nextSlot<Config::ConfUnion>();
 
     auto *slot = this->getSlot();
     slot->tag = tag;
@@ -68,16 +68,13 @@ Config::ConfUnion::ConfUnion(const Config &val, uint8_t tag, uint8_t prototypes_
     slot->val = val;
 }
 
-Config::ConfUnion::ConfUnion(const ConfUnion &cpy)
+Config::ConfUnion::ConfUnion(const ConfUnion &cpy) : idx(nextSlot<Config::ConfUnion>())
 {
-    idx = nextSlot<Config::ConfUnion>();
-
     // We have to mark this slot as in use here:
     // This union could contain a nested union that will be copied over
     // The inner union's copy constructor then takes the first free slot, i.e.
     // ours if we don't mark it as in use first.
     this->getSlot()->prototypes = cpy.getSlot()->prototypes;
-
 
     // this->getSlot() is evaluated before the RHS of the assignment is copied over.
     // This results in the LHS pointing to a deallocated array if copying the RHS
@@ -112,12 +109,13 @@ Config::ConfUnion &Config::ConfUnion::operator=(const ConfUnion &cpy)
     return *this;
 }
 
-Config::ConfUnion::ConfUnion(ConfUnion &&cpy) {
-    this->idx = cpy.idx;
+Config::ConfUnion::ConfUnion(ConfUnion &&cpy)  : idx(cpy.idx)
+{
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
 }
 
-Config::ConfUnion &Config::ConfUnion::operator=(ConfUnion &&cpy) {
+Config::ConfUnion &Config::ConfUnion::operator=(ConfUnion &&cpy)
+{
     this->idx = cpy.idx;
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
     return *this;

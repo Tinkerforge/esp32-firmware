@@ -19,7 +19,10 @@
 
 #include "config/private.h"
 #include "config/slot_allocator.h"
+
 #include "tools/malloc.h"
+
+#include "gcc_warnings.h"
 
 bool Config::ConfInt::slotEmpty(const Slot *slot)
 {
@@ -49,22 +52,20 @@ const int32_t* Config::ConfInt::getVal() const { return &get_slot<Config::ConfIn
 const Config::ConfInt::Slot *Config::ConfInt::getSlot() const { return get_slot<Config::ConfInt>(idx); }
 Config::ConfInt::Slot *Config::ConfInt::getSlot() { return get_slot<Config::ConfInt>(idx); }
 
-Config::ConfInt::ConfInt(int32_t val, int32_t min, int32_t max)
+Config::ConfInt::ConfInt(int32_t val, int32_t min, int32_t max) : idx(nextSlot<Config::ConfInt>())
 {
     if (min > max) {
         esp_system_abort("Invalid ConfInt limits: min > max");
     }
 
-    idx = nextSlot<Config::ConfInt>();
     auto *slot = this->getSlot();
     slot->val = val;
     slot->min = min;
     slot->max = max;
 }
 
-Config::ConfInt::ConfInt(const ConfInt &cpy)
+Config::ConfInt::ConfInt(const ConfInt &cpy) : idx(nextSlot<Config::ConfInt>())
 {
-    idx = nextSlot<Config::ConfInt>();
     auto tmp = *cpy.getSlot();
     *this->getSlot() = std::move(tmp);
 }
@@ -92,12 +93,13 @@ Config::ConfInt &Config::ConfInt::operator=(const ConfInt &cpy)
     return *this;
 }
 
-Config::ConfInt::ConfInt(ConfInt &&cpy) {
-    this->idx = cpy.idx;
+Config::ConfInt::ConfInt(ConfInt &&cpy) : idx(cpy.idx)
+{
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
 }
 
-Config::ConfInt &Config::ConfInt::operator=(ConfInt &&cpy) {
+Config::ConfInt &Config::ConfInt::operator=(ConfInt &&cpy)
+{
     this->idx = cpy.idx;
     cpy.idx = std::numeric_limits<decltype(idx)>::max();
     return *this;

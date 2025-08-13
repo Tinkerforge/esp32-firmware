@@ -20,11 +20,13 @@
 #include "config/private.h"
 #include "config/visitors.h"
 
+#include "gcc_warnings.h"
+
 ConfigRoot::ConfigRoot() : validator(nullptr) {}
 
 ConfigRoot::ConfigRoot(Config cfg) : Config(cfg), validator(nullptr) {}
 
-ConfigRoot::ConfigRoot(Config cfg, Validator &&validator) : Config(cfg), validator(new Validator(std::move(validator))) {}
+ConfigRoot::ConfigRoot(Config cfg, Validator &&validator_) : Config(cfg), validator(new Validator(std::move(validator_))) {}
 
 String ConfigRoot::update_from_file(File &&file)
 {
@@ -62,18 +64,26 @@ static String get_updated_copy_error(DeserializationError error, size_t payload_
     sw.puts("Failed to deserialize: ");
 
     switch (error.code()) {
+        case DeserializationError::Ok:
+            break;
         case DeserializationError::NoMemory:
-            sw.puts("JSON payload was longer than expected and possibly contained unknown keys."); break;
+            sw.puts("JSON payload was longer than expected and possibly contained unknown keys.");
+            break;
         case DeserializationError::EmptyInput:
-            sw.puts("Payload was empty. Please send valid JSON."); break;
+            sw.puts("Payload was empty. Please send valid JSON.");
+            break;
         case DeserializationError::IncompleteInput:
-            sw.puts("JSON payload incomplete or truncated."); break;
+            sw.puts("JSON payload incomplete or truncated.");
+            break;
         case DeserializationError::InvalidInput:
-            sw.puts("JSON payload could not be parsed."); break;
+            sw.puts("JSON payload could not be parsed.");
+            break;
         case DeserializationError::TooDeep:
-            sw.puts("JSON payload nested too deeply."); break;
+            sw.puts("JSON payload nested too deeply.");
+            break;
         default:
             sw.puts(error.c_str());
+            break;
     }
 
     sw.printf(" Payload length was %zu.", payload_len);
@@ -128,10 +138,10 @@ String ConfigRoot::get_updated_copy(T visitor, Config *out_config, ConfigSource 
     if (!err.isEmpty())
         return err;
 
-    auto *validator = (ConfigRoot::Validator *)(((std::uintptr_t)this->validator) & (~0x01));
+    auto *validator_ = reinterpret_cast<ConfigRoot::Validator *>(reinterpret_cast<std::uintptr_t>(this->validator) & (~0x01u));
 
-    if (validator != nullptr) {
-        err = (*validator)(*out_config, source);
+    if (validator_ != nullptr) {
+        err = (*validator_)(*out_config, source);
         if (!err.isEmpty())
             return err;
     }
@@ -160,10 +170,10 @@ String ConfigRoot::update(const Config::ConfUpdate *val)
 String ConfigRoot::validate(ConfigSource source)
 {
     ASSERT_MAIN_THREAD();
-    auto *validator = (ConfigRoot::Validator *)(((std::uintptr_t)this->validator) & (~0x01));
+    auto *validator_ = reinterpret_cast<ConfigRoot::Validator *>(reinterpret_cast<std::uintptr_t>(this->validator) & (~0x01u));
 
-    if (validator != nullptr) {
-        return (*validator)(*this, source);
+    if (validator_ != nullptr) {
+        return (*validator_)(*this, source);
     }
     return "";
 }
@@ -178,14 +188,14 @@ void ConfigRoot::set_permit_null_updates(bool permit_null_updates) {
     // Store permit_null_updates == true as 0 and == false as 1
     // so that the default value is permitted.
     if (permit_null_updates)
-        this->validator = (ConfigRoot::Validator *)(((std::uintptr_t)this->validator) & (~0x01));
+        this->validator = reinterpret_cast<ConfigRoot::Validator *>(reinterpret_cast<std::uintptr_t>(this->validator) & (~0x01u));
     else
-        this->validator = (ConfigRoot::Validator *)(((std::uintptr_t)this->validator) | 0x01);
+        this->validator = reinterpret_cast<ConfigRoot::Validator *>(reinterpret_cast<std::uintptr_t>(this->validator) | 0x01u);
 }
 
 bool ConfigRoot::get_permit_null_updates() {
     // Inverted; see set_permit_null_updates.
-    return (((std::uintptr_t)this->validator) & 0x01) == 0;
+    return (reinterpret_cast<std::uintptr_t>(this->validator) & 0x01) == 0;
 }
 
 #ifdef DEBUG_FS_ENABLE
