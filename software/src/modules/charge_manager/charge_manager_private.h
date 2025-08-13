@@ -4,6 +4,8 @@
 #include <memory>
 
 #include "current_limits.h"
+#include "allocator_decision.enum.h"
+#include "global_allocator_decision.enum.h"
 
 #include "tools.h"
 
@@ -13,6 +15,21 @@
 #define CHARGE_MANAGER_ERROR_EVSE_UNREACHABLE 129
 #define CHARGE_MANAGER_ERROR_EVSE_NONREACTIVE 130
 #define CHARGE_MANAGER_CLIENT_ERROR_START 192
+
+struct ChargerDecision {
+    AllocatorDecision decision;
+    int param_1;
+    int param_2;
+    int param_3;
+};
+
+struct GlobalDecision {
+    GlobalAllocatorDecision decision;
+    int param_1;
+    int param_2;
+    int param_3;
+};
+
 
 // Initialized by charge_manager.cpp; never changed
 struct CurrentAllocatorConfig {
