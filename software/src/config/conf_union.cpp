@@ -37,7 +37,7 @@ bool Config::ConfUnion::changeUnionVariant(uint8_t tag)
     Slot *slot = get_slot<Config::ConfUnion>(idx);
     for (int i = 0; i < slot->prototypes_len; ++i) {
         if (slot->prototypes[i].tag == tag) {
-            slot->tag = tag;
+            slot->tag.updateUint(tag);
             slot->val = slot->prototypes[i].config;
             slot->val.set_updated(0xFF);
             return true;
@@ -47,7 +47,7 @@ bool Config::ConfUnion::changeUnionVariant(uint8_t tag)
     return false;
 }
 
-uint8_t Config::ConfUnion::getTag() const { return get_slot<Config::ConfUnion>(idx)->tag; }
+Config* Config::ConfUnion::getTag() const { return &get_slot<Config::ConfUnion>(idx)->tag; }
 
 Config* Config::ConfUnion::getVal() { return &get_slot<Config::ConfUnion>(idx)->val; }
 const Config* Config::ConfUnion::getVal() const { return &get_slot<Config::ConfUnion>(idx)->val; }
@@ -62,7 +62,7 @@ Config::ConfUnion::ConfUnion(const Config &val, uint8_t tag, uint8_t prototypes_
     }
 
     auto *slot = this->getSlot();
-    slot->tag = tag;
+    slot->tag = Config::Uint8(tag);
     slot->prototypes_len = prototypes_len;
     slot->prototypes = prototypes;
     slot->val = val;
@@ -91,7 +91,7 @@ Config::ConfUnion::~ConfUnion()
 
     auto *slot = this->getSlot();
     slot->val = *Config::Null();
-    slot->tag = 0;
+    slot->tag.updateUint(0);
     slot->prototypes_len = 0;
     slot->prototypes = nullptr;
 

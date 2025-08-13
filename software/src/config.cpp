@@ -317,26 +317,47 @@ static void abort_on_array_get_failure(const Config *conf, size_t i)
     esp_system_abort(msg);
 }
 
+[[gnu::noinline]]
+[[gnu::noreturn]]
+static void abort_on_union_out_of_range(size_t i)
+{
+    char msg[48];
+    snprintf(msg, ARRAY_SIZE(msg), "Tried to get %zu of ConfUnion: Out of range.", i);
+    esp_system_abort(msg);
+}
+
 Config::Wrap Config::get(size_t i)
 {
     // Asserts checked in ::is.
-    if (!this->is<Config::ConfArray>()) {
-        abort_on_array_get_failure(this, i);
+    if (this->is<Config::ConfArray>()) {
+        return Wrap{value.val.a.get(i)};
     }
-    Wrap wrap(value.val.a.get(i));
+    if (this->is<Config::ConfUnion>()) {
+        if (i == 0)
+            return Wrap{value.val.un.getTag()};
+        if (i == 1)
+            return Wrap{value.val.un.getVal()};
+        abort_on_union_out_of_range(i);
+    }
 
-    return wrap;
+    abort_on_array_get_failure(this, i);
 }
 
 const Config::ConstWrap Config::get(size_t i) const
 {
     // Asserts checked in ::is.
-    if (!this->is<Config::ConfArray>()) {
-        abort_on_array_get_failure(this, i);
+    if (this->is<Config::ConfArray>()) {
+        return ConstWrap{value.val.a.get(i)};
     }
-    ConstWrap wrap(value.val.a.get(i));
+    if (this->is<Config::ConfUnion>()) {
+        if (i == 0)
+            return ConstWrap{value.val.un.getTag()};
+        if (i == 1)
+            return ConstWrap{value.val.un.getVal()};
+        abort_on_union_out_of_range(i);
+    }
 
-    return wrap;
+    abort_on_array_get_failure(this, i);
 }
 
 [[gnu::noinline]]

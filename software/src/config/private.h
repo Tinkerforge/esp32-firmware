@@ -75,8 +75,8 @@ struct ConfObjectSlot {
 };
 
 struct ConfUnionSlot {
-    uint8_t tag = 0;
     uint8_t prototypes_len = 0;
+    Config tag;
     Config val;
     const ConfUnionPrototypeInternal *prototypes = nullptr;
 };

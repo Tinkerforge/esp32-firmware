@@ -294,7 +294,7 @@ struct to_json {
         const auto *val = x.getVal();
 
         JsonArray arr = insertHere.as<JsonArray>();
-        arr.add(x.getSlot()->tag);
+        arr.add(x.getSlot()->tag.asUint8());
         if (val->is<Config::ConfObject>()) {
             arr.createNestedObject();
         } else if (val->is<Config::ConfArray>() || val->is<Config::ConfUnion>()) {
@@ -516,7 +516,7 @@ struct string_length_visitor {
 
     size_t operator()(const Config::ConfUnion &x)
     {
-        return Config::apply_visitor(string_length_visitor{}, x.getVal()->value) + estimate_chars_per_uint(x.getTag()) + 3; // [,]
+        return Config::apply_visitor(string_length_visitor{}, x.getVal()->value) + estimate_chars_per_uint(x.getTag()->asUint8()) + 3; // [,]
     }
 };
 
@@ -897,7 +897,7 @@ struct from_json {
             return {"JSON array had length != 2.", false};
         }
 
-        uint8_t old_tag = x.getTag();
+        uint8_t old_tag = x.getTag()->asUint8();
         uint8_t new_tag = old_tag;
 
         bool changed = false;
@@ -1238,7 +1238,7 @@ struct from_update {
 
         bool changed = false;
 
-        if (un->tag != as_const(x).getSlot()->tag) {
+        if (un->tag != as_const(x).getSlot()->tag.asUint8()) {
             changed = true;
             x.changeUnionVariant(un->tag);
         }
@@ -1482,7 +1482,7 @@ struct api_info {
     }
     void operator()(const Config::ConfUnion &x)
     {
-        sw.printf("{\"type\":\"union\",\"tag\":%u,\"prototypes_len\":%u,\"prototypes\":[", x.getSlot()->tag, x.getSlot()->prototypes_len);
+        sw.printf("{\"type\":\"union\",\"tag\":%u,\"prototypes_len\":%u,\"prototypes\":[", x.getSlot()->tag.asUint8(), x.getSlot()->prototypes_len);
 
         bool first = true;
         for (size_t i = 0; i < x.getSlot()->prototypes_len; ++i) {
