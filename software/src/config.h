@@ -291,6 +291,7 @@ struct Config {
         static Slot *allocSlotBuf(size_t elements);
 
         Config *get(size_t i);
+        Config *get_or_null(size_t i);
         const Config *get(size_t i) const;
         std::vector<Config> *getVal();
         const std::vector<Config> *getVal() const;
@@ -320,6 +321,7 @@ struct Config {
         static Slot *allocSlotBuf(size_t elements);
 
         Config *get(const char *s, size_t s_len);
+        Config *get_or_null(const char *s, size_t s_len);
         const Config *get(const char *s, size_t s_len) const;
         const Slot *getSlot() const;
         Slot *getSlot();
@@ -740,6 +742,7 @@ public:
 
     // for ConfObject
     Wrap get(const char *s, size_t s_len = 0);
+    Wrap get_or_null(const char *s, size_t s_len = 0);
     const ConstWrap get(const char *s, size_t s_len = 0) const;
     Wrap get(const String &s);
     const ConstWrap get(const String &s) const;
@@ -766,6 +769,7 @@ public:
     inline const ConstWrap get(uint32_t i) const {return get(static_cast<size_t>(i));}
 
     Wrap get(size_t i);
+    Wrap get_or_null(size_t i);
     const ConstWrap get(size_t i) const;
     Wrap add();
     bool removeLast();
@@ -1008,6 +1012,26 @@ public:
         const char *,
         size_t
     > Path;
+
+    template<typename T>
+    Config *walk(T path) {
+        Config *ptr = this;
+
+        for (const Config::Path &value : path) {
+            const char *const *obj_variant = strict_variant::get<const char *>(&value);
+            const bool is_obj = obj_variant != nullptr;
+            if (is_obj)
+                ptr = (Config *)ptr->get_or_null(*obj_variant);
+            else
+                ptr = (Config *)ptr->get_or_null(*strict_variant::get<size_t>(&value));
+
+            if (ptr == nullptr) {
+                return nullptr;
+            }
+        }
+
+        return ptr;
+    }
 };
 
 static_assert(sizeof(Config) == 4, "Config size unexpected!");
