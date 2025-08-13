@@ -91,8 +91,9 @@ Config::ConfArray::ConfArray(const ConfArray &cpy) : idx(nextSlot<Config::ConfAr
     // This array could contain a nested array that will be copied over
     // The inner array's copy constructor then takes the first free slot, i.e.
     // ours if we don't mark it as in use first.
-    this->getSlot()->minElements = 0;
-    this->getSlot()->maxElements = 0;
+    auto *slot = this->getSlot();
+    slot->minElements = 0;
+    slot->maxElements = 0;
 
     auto tmp = *cpy.getSlot();
 
@@ -108,8 +109,8 @@ Config::ConfArray::~ConfArray()
 
     auto *slot = this->getSlot();
     // Mark slot as not in use
-    this->getSlot()->minElements = 1;
-    this->getSlot()->maxElements = 0;
+    slot->minElements = 1;
+    slot->maxElements = 0;
 
     slot->val.clear();
     slot->prototype = nullptr;
