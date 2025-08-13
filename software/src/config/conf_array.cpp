@@ -54,6 +54,15 @@ Config *Config::ConfArray::get(size_t i)
     return &(*val)[i];
 }
 
+Config *Config::ConfArray::get_or_null(size_t i)
+{
+    auto *val = this->getVal();
+    if (i >= val->size()) {
+        return nullptr;
+    }
+    return &(*val)[i];
+}
+
 const Config *Config::ConfArray::get(size_t i) const
 {
     const auto *val = this->getVal();

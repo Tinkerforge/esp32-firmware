@@ -78,6 +78,39 @@ Config *Config::ConfObject::get(const char *needle, size_t needle_len)
     abort_on_key_not_found(needle);
 }
 
+Config *Config::ConfObject::get_or_null(const char *needle, size_t needle_len)
+{
+    const auto *slot = this->getSlot();
+    const auto schema = slot->schema;
+    const auto size = schema->length;
+    const auto keys = schema->keys;
+
+    if (string_is_in_rodata(needle)) {
+        for (size_t i = 0; i < size; ++i) {
+            if (keys[i].val == needle) { // Address comparison, not string comparison
+                return &slot->values[i];
+            }
+        }
+#ifdef DEBUG_FS_ENABLE
+        logger.printfln("Key '%s' in rodata but not in keys.", needle);
+#endif
+    }
+
+    if (!needle_len) {
+        needle_len = strlen(needle);
+    }
+
+    for (size_t i = 0; i < size; ++i) {
+        if (keys[i].length != needle_len)
+            continue;
+
+        if (memcmp(keys[i].val, needle, needle_len) == 0)
+            return &slot->values[i];
+    }
+
+    return nullptr;
+}
+
 const Config *Config::ConfObject::get(const char *needle, size_t needle_len) const
 {
     const auto *slot = this->getSlot();

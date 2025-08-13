@@ -285,6 +285,17 @@ Config::Wrap Config::get(const char *s, size_t s_len)
     return wrap;
 }
 
+Config::Wrap Config::get_or_null(const char *s, size_t s_len)
+{
+    // Asserts checked in ::is.
+    if (!this->is<Config::ConfObject>()) {
+        return Wrap{nullptr};
+    }
+    Wrap wrap(value.val.o.get_or_null(s, s_len));
+
+    return wrap;
+}
+
 const Config::ConstWrap Config::get(const char *s, size_t s_len) const
 {
     // Asserts checked in ::is.
@@ -341,6 +352,23 @@ Config::Wrap Config::get(size_t i)
     }
 
     abort_on_array_get_failure(this, i);
+}
+
+Config::Wrap Config::get_or_null(size_t i)
+{
+    // Asserts checked in ::is.
+    if (this->is<Config::ConfArray>()) {
+        return Wrap{value.val.a.get_or_null(i)};
+    }
+    if (this->is<Config::ConfUnion>()) {
+        if (i == 0)
+            return Wrap{value.val.un.getTag()};
+        if (i == 1)
+            return Wrap{value.val.un.getVal()};
+        return Wrap{nullptr};
+    }
+
+    return Wrap{nullptr};
 }
 
 const Config::ConstWrap Config::get(size_t i) const
