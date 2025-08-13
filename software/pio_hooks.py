@@ -1758,7 +1758,9 @@ def main():
                 enum_cases = []
                 value_number = -1
                 value_number_min = None
+                value_number_min_name = None
                 value_number_max = None
+                value_number_max_name = None
                 value_count = 0
 
                 with open(os.path.join(mod_path, filename), 'r', encoding='utf-8') as f:
@@ -1799,15 +1801,13 @@ def main():
                         else:
                             value_comment = ' // ' + value_comment
 
-                        if value_number_min == None:
+                        if value_number_min == None or value_number < value_number_min:
                             value_number_min = value_number
-                        else:
-                            value_number_min = min(value_number_min, value_number)
+                            value_number_min_name = value_name
 
-                        if value_number_max == None:
+                        if value_number_max == None or value_number > value_number_max:
                             value_number_max = value_number
-                        else:
-                            value_number_max = max(value_number_max, value_number)
+                            value_number_max_name = value_name
 
                         value_count += 1
 
@@ -1833,9 +1833,10 @@ def main():
                     f.write('#pragma once\n\n')
                     f.write(''.join(enum_comments))
                     f.write(f'enum class {enum_name.camel} : {filename_parts[1]}_t {{\n')
-                    f.write(f'    _min = {value_number_min},\n')
                     f.write(''.join(enum_values))
-                    f.write(f'    _max = {value_number_max},\n')
+                    f.write('\n')
+                    f.write(f'    _min = {value_number_min_name.camel},\n')
+                    f.write(f'    _max = {value_number_max_name.camel},\n')
                     f.write('};\n\n')
                     f.write(f'#define {enum_name.upper}_COUNT {value_count}\n\n')
                     f.write(f'const char *get_{enum_name.under}_name({enum_name.camel} value);\n')
@@ -1857,9 +1858,10 @@ def main():
                     with open(os.path.join(frontend_mod_path, enum_name.under + '.enum.ts'), 'w', encoding='utf-8') as f:
                         f.write(f'// WARNING: This file is generated from "{filename}" by pio_hooks.py\n\n')
                         f.write(f'export const enum {enum_name.camel} {{\n')
-                        f.write(f'    _min = {value_number_min},\n')
                         f.write(''.join(enum_values))
-                        f.write(f'    _max = {value_number_max},\n')
+                        f.write('\n')
+                        f.write(f'    _min = {value_number_min_name.camel},\n')
+                        f.write(f'    _max = {value_number_max_name.camel},\n')
                         f.write('}\n')
 
     # Preprocessing web interface
