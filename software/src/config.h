@@ -369,7 +369,7 @@ struct Config {
     struct ConfUpdateUnion;
 
     typedef strict_variant::variant<
-        std::nullptr_t, // DON'T MOVE THIS!
+        std::nullptr_t,
         CoolString,
         float,
         uint32_t,
@@ -388,7 +388,7 @@ struct Config {
     // This is necessary as we can't use get to distinguish between
     // a get<std::nullptr_t>() that returned nullptr because the variant
     // had another type and the same call that returned nullptr because
-    // the variant has the std::nullptr_type and thus contains a nullptr.
+    // the variant has the std::nullptr_t and thus contains a nullptr.
     static bool containsNull(const ConfUpdate *update);
 
     struct ConfUpdateArray {

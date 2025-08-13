@@ -65,7 +65,9 @@ void config_abort_on_type_error(const char *fn_name, const Config *config_is, co
 
 bool Config::containsNull(const ConfUpdate *update)
 {
-    return update->which() == 0;
+    static constexpr std::size_t nullptr_idx = ConfUpdate::find_which<std::nullptr_t>::value;
+
+    return update->which() == nullptr_idx;
 }
 
 bool Config::is_null() const
