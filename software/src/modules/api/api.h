@@ -80,6 +80,9 @@ struct ResponseRegistration {
 
     const uint8_t path_len;
     const uint8_t keys_to_censor_in_debug_report_len;
+
+    [[gnu::always_inline]] uint8_t get_path_len()                           const { return path_len; }
+    [[gnu::always_inline]] uint8_t get_keys_to_censor_in_debug_report_len() const { return keys_to_censor_in_debug_report_len; }
 };
 
 class IAPIBackend

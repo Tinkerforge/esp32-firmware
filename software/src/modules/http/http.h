@@ -77,7 +77,7 @@ public:
 #endif
 
 private:
-    WebServerRequestReturnProtect run_response(WebServerRequest req, ResponseRegistration &reg);
+    WebServerRequestReturnProtect run_response(WebServerRequest req, size_t respidx);
 
     Ownership response_ownership;
 };
