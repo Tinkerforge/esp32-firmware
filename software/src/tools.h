@@ -188,3 +188,26 @@ constexpr size_t constexpr_strlen(const char *s) {
     return (s == nullptr || s[0] == '\0') ? 0
             : (constexpr_strlen(&s[1]) + 1);
 }
+
+template<typename T, size_t capacity>
+struct FixedStackVector {
+    FixedStackVector() {}
+
+    T &operator[](size_t pos) {return val[pos];}
+    const T &operator[](size_t pos) const {return val[pos];}
+
+    T *begin() { return val; }
+    T *end() { return val + used; }
+
+    bool add(T &&elem) {
+        if (used >= capacity)
+             return false;
+
+        val[used] = elem;
+        ++used;
+        return true;
+    }
+
+    size_t used = 0;
+    T val[capacity];
+};
