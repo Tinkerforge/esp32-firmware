@@ -1516,12 +1516,30 @@ void FirmwareUpdate::read_app_partition_state()
     if (app0_state == ESP_OTA_IMG_ABORTED && app1_state == ESP_OTA_IMG_ABORTED) {
         logger.printfln("Trying to recover from an aborted/aborted app partition state");
 
+        // FIXME: add state flag to indicate this situation in a debug report and add a frontend warning for it
+
         if (running_partition != nullptr) {
             change_partition_ota_state_from_to(running_partition, ESP_OTA_IMG_ABORTED, ESP_OTA_IMG_PENDING_VERIFY, false);
         }
 
         if (update_partition != nullptr) {
             change_partition_ota_state_from_to(update_partition, ESP_OTA_IMG_ABORTED, ESP_OTA_IMG_NEW, false);
+        }
+    }
+
+    // it has been observed in the wild that the bootloader left the running app partition in new state.
+    // this is not allowed. the bootloader should change the running app partition from new state to
+    // pending-verify state to advance the rollback logic. due to the app partition staying in new state
+    // rollback never happens. try to recover from this situation by changing the running app partition
+    // from new state to pending-verify state hoping that the bootloader would do it's job for the
+    // pending-verify state to aborted state transition.
+    if ((app0_running && app0_state == ESP_OTA_IMG_NEW) || (app1_running && app1_state == ESP_OTA_IMG_NEW)) {
+        logger.printfln("Bootloader left the running app partition in new state, trying to recover");
+
+        // FIXME: add state flag to indicate this situation in a debug report and add a frontend warning for it
+
+        if (running_partition != nullptr) {
+            change_partition_ota_state_from_to(running_partition, ESP_OTA_IMG_NEW, ESP_OTA_IMG_PENDING_VERIFY, false);
         }
     }
 }
