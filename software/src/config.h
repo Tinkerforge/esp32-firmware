@@ -76,6 +76,9 @@ enum class ConfigSource {
 };
 
 struct Config {
+    // This is the assumed maximum nesting of configs. Increase if longer paths etc. are required.
+    static constexpr size_t MAX_NESTING = 8;
+
     struct ConfString {
         friend struct api_info;
         using Slot = ConfStringSlot;
@@ -1047,12 +1050,11 @@ public:
 
     // Intentionally take a non-const char * here:
     // This allows ArduinoJson to deserialize in zero-copy mode
-    String update_from_cstr(char *c, size_t payload_len);
-    String get_updated_copy(char *c, size_t payload_len, Config *out_config, ConfigSource source);
+    String update_from_cstr(char *c, size_t payload_len,const Config::Key *config_path = nullptr, size_t config_path_len = 0);
+    String get_updated_copy(char *c, size_t payload_len, Config *out_config, ConfigSource source,const Config::Key *config_path = nullptr, size_t config_path_len = 0);
 
-    String update_from_json(JsonVariant root, bool force_same_keys, ConfigSource source);
-    String get_updated_copy(JsonVariant root, bool force_same_keys, Config *out_config, ConfigSource source);
-
+    String update_from_json(JsonVariant root, bool force_same_keys, ConfigSource source,const Config::Key *config_path = nullptr, size_t config_path_len = 0);
+    String get_updated_copy(JsonVariant root, bool force_same_keys, Config *out_config, ConfigSource source,const Config::Key *config_path = nullptr, size_t config_path_len = 0);
     String update(const Config::ConfUpdate *val);
 
     String validate(ConfigSource source);
@@ -1063,10 +1065,10 @@ public:
 
 private:
     template<typename T>
-    String update_from_visitor(T visitor, ConfigSource source);
+    String update_from_visitor(T visitor, ConfigSource source,const Config::Key *config_path = nullptr, size_t config_path_len = 0);
 
     template<typename T>
-    String get_updated_copy(T visitor, Config *out_config, ConfigSource source);
+    String get_updated_copy(T visitor, Config *out_config, ConfigSource source,const Config::Key *config_path = nullptr, size_t config_path_len = 0);
 };
 
 template<typename T>

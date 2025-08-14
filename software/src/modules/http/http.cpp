@@ -62,8 +62,45 @@ private:
     WebServerRequest *request;
 };
 
+template<typename T>
+static inline bool complete_or_prefix_match(const char *in_uri, size_t in_uri_len, const T& api_reg) [[gnu::always_inline]] {
+    const char *path = api_reg.path;
+    size_t path_len = api_reg.get_path_len();
+
+    // Complete match
+    if (path_len == in_uri_len && memcmp(path, in_uri, path_len) == 0)
+        return true;
+
+    // Prefix match with / in URI. For example evse/state/charger_state matches the API evse/state (and should return the charger_state value only)
+    if (path_len < in_uri_len && in_uri[path_len] == '/' && memcmp(path, in_uri, path_len) == 0)
+        return true;
+
+    return false;
+}
+
+template<typename T>
+static inline bool complete_match(const char *in_uri, size_t in_uri_len, const T& api_reg) [[gnu::always_inline]] {
+    const char *path = api_reg.path;
+    size_t path_len = api_reg.get_path_len();
+
+    // Complete match
+    if (path_len == in_uri_len && memcmp(path, in_uri, path_len) == 0)
+        return true;
+
+    return false;
+}
+
+static enum {NONE, STATE, COMMAND, RESPONSE} last_matched_api_type = NONE;
+static size_t last_matched_api_idx = 0;
+static const char * last_matched_api_suffix = 0;
+static size_t last_matched_api_suffix_len = 0;
 bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
 {
+    last_matched_api_type = NONE;
+    last_matched_api_idx = 0;
+    last_matched_api_suffix = nullptr;
+    last_matched_api_suffix_len = 0;
+
     if (boot_stage <= BootStage::REGISTER_URLS)
         return false;
 
@@ -105,18 +142,37 @@ bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
 
     const size_t command_size = api.commands.size();
     for (size_t i = 0; i < command_size; i++)
-        if (api.commands[i].get_path_len() == len && memcmp(api.commands[i].path, in_uri, len) == 0)
+        if (complete_or_prefix_match(in_uri, len, api.commands[i])) {
+            last_matched_api_type = COMMAND;
+            last_matched_api_idx = i;
+            last_matched_api_suffix = in_uri + api.commands[i].get_path_len();
+            last_matched_api_suffix_len = len - api.commands[i].get_path_len();
+            logger.printfln("%d %d %s %zu", last_matched_api_type, last_matched_api_idx, last_matched_api_suffix, last_matched_api_suffix_len);
             return true;
+        }
 
     const size_t state_size = api.states.size();
     for (size_t i = 0; i < state_size; i++)
-        if (api.states[i].get_path_len() == len && memcmp(api.states[i].path, in_uri, len) == 0)
+        if (complete_or_prefix_match(in_uri, len, api.states[i])) {
+            last_matched_api_type = STATE;
+            last_matched_api_idx = i;
+            last_matched_api_suffix = in_uri + api.states[i].get_path_len();
+            last_matched_api_suffix_len = len - api.states[i].get_path_len();
+            logger.printfln("%d %d %s %zu", last_matched_api_type, last_matched_api_idx, last_matched_api_suffix, last_matched_api_suffix_len);
             return true;
+        }
 
     const size_t response_size = api.responses.size();
     for (size_t i = 0; i < response_size; i++)
-        if (api.responses[i].path_len == len && memcmp(api.responses[i].path, in_uri, len) == 0)
+        // prefix matches are not supported for responses
+        if (complete_match(in_uri, len, api.responses[i])) {
+            last_matched_api_type = RESPONSE;
+            last_matched_api_idx = i;
+            last_matched_api_suffix = in_uri + api.responses[i].get_path_len();
+            last_matched_api_suffix_len = len - api.responses[i].get_path_len();
+            logger.printfln("%d %d %s %zu", last_matched_api_type, last_matched_api_idx, last_matched_api_suffix, last_matched_api_suffix_len);
             return true;
+        }
 
     return false;
 }
@@ -154,7 +210,59 @@ void Http::setup()
     initialized = true;
 }
 
-static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cmdidx)
+struct SuffixPath {
+    std::unique_ptr<char[]> suffix;
+    FixedStackVector<Config::Key, Config::MAX_NESTING> path;
+};
+
+static bool build_suffix_path(SuffixPath &suffix_path, const char *suffix, size_t suffix_len, WebServerRequest req) {
+    // If len == 1 the suffix must be / or else it would not have been matched against this API. / points to the complete API -> no need to walk
+    if (suffix_len <= 1) {
+        suffix_path.suffix = nullptr;
+        return true;
+    }
+
+    // Copy suffix into suffix_path, has to have the same lifetime.
+    suffix_path.suffix = heap_alloc_array<char>(suffix_len + 1);
+    memcpy(suffix_path.suffix.get(), suffix, suffix_len);
+    suffix_path.suffix[suffix_len] = '\0';
+
+    // Skip first /
+    char *ptr = suffix_path.suffix.get();
+    ++ptr;
+
+    while (true) {
+        size_t next_len = 0;
+        bool is_number = true;
+        while(ptr[next_len] != '\0' && ptr[next_len] != '/') {
+            is_number &= ptr[next_len] >= '0' && ptr[next_len] <= '9';
+            ++next_len;
+        }
+
+        if (next_len == 0) {
+            req.send(404, "text/plain", "path may not contain // or end on a /"); return false;
+        }
+
+        if (is_number) {
+            if (!suffix_path.path.add((size_t)strtoul(ptr, nullptr, 10))) {
+                req.send(413, "text/plain", "path too long"); return false;
+            }
+        } else {
+            if (!suffix_path.path.add(ptr)) {
+                req.send(413, "text/plain", "path too long"); return false;
+            }
+        }
+
+        if (ptr[next_len] == '\0')
+            break;
+
+        ptr[next_len] = '\0';
+        ptr += next_len + 1;
+    }
+    return true;
+}
+
+static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cmdidx, const SuffixPath &suffix_path = {})
 {
     CommandRegistration &reg = api.commands[cmdidx];
 
@@ -196,9 +304,9 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
 
     String message;
     if (bytes_written == 0 && reg.config->is_null()) {
-        message = api.callCommand(reg, nullptr, 0);
+        message = api.callCommand(reg, nullptr, 0, suffix_path.path.data(), suffix_path.path.size());
     } else {
-        message = api.callCommand(reg, recv_buf, bytes_written);
+        message = api.callCommand(reg, recv_buf, bytes_written, suffix_path.path.data(), suffix_path.path.size());
     }
 
     if (message.isEmpty()) {
@@ -242,28 +350,47 @@ WebServerRequestReturnProtect Http::run_response(WebServerRequest req, size_t re
     return WebServerRequestReturnProtect{};
 }
 
-// Use + 1 to compare: req.uriCStr() starts with /; the api paths don't.
 WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest req)
 {
-    size_t req_uri_len = strlen(req.uriCStr() + 1);
+    switch (last_matched_api_type) {
+        case NONE:
+            return req.send(500, "text/plain", "URI matcher did not match API but api_handler_get was called. This should never happen");
+        case STATE: {
+            SuffixPath suffix_path;
 
-    for (size_t i = 0; i < api.states.size(); i++) {
-        if (api.states[i].get_path_len() != req_uri_len || memcmp(api.states[i].path, req.uriCStr() + 1, req_uri_len) != 0)
-            continue;
+            if (!build_suffix_path(suffix_path, last_matched_api_suffix, last_matched_api_suffix_len, req))
+                return req.unsafe_ResponseAlreadySent();
 
-        String response;
-        auto result = task_scheduler.await([&response, i]() {
-            response = api.states[i].config->to_string_except(api.states[i].keys_to_censor, api.states[i].get_keys_to_censor_len());
-        });
-        if (result == TaskScheduler::AwaitResult::Timeout)
-            return req.send(500, "text/plain", "Failed to get config. Task timed out.");
+            String response;
+            uint16_t status_code = 200;
+            auto result = task_scheduler.await([&response, &status_code, i=last_matched_api_idx, &suffix_path]() {
+                Config *cfg = api.states[i].config;
+                cfg = cfg->walk(suffix_path.path.data(), suffix_path.path.size());
+                if (cfg == nullptr) {
+                    status_code = 404;
+                    response = "path not found";
+                    return;
+                }
 
-        return req.send(200, "application/json; charset=utf-8", response.c_str(), response.length());
+                response = cfg->to_string_except(api.states[i].keys_to_censor, api.states[i].get_keys_to_censor_len());
+            });
+            if (result == TaskScheduler::AwaitResult::Timeout)
+                return req.send(500, "text/plain", "Failed to get config. Task timed out.");
+
+            return req.send(status_code, status_code == 200 ? "application/json; charset=utf-8" : "text/plain", response.c_str(), response.length());
+
+        }
+        case COMMAND: {
+            SuffixPath suffix_path;
+
+            if (!build_suffix_path(suffix_path, last_matched_api_suffix, last_matched_api_suffix_len, req))
+                return req.unsafe_ResponseAlreadySent();
+
+            return run_command(req, last_matched_api_idx, suffix_path);
+        }
+        case RESPONSE:
+            break;
     }
-
-    for (size_t i = 0; i < api.commands.size(); i++)
-        if (api.commands[i].get_path_len() == req_uri_len && memcmp(api.commands[i].path, req.uriCStr() + 1, req_uri_len) == 0 && api.commands[i].config->is_null())
-            return run_command(req, i);
 
     // If we reach this point, the url matcher found an API with the req.uri() as path, but we did not.
     // This was probably a raw command or a command that requires a payload. Return 405 - Method not allowed
@@ -272,32 +399,40 @@ WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest req)
 
 WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
 {
-    size_t req_uri_len = strlen(req.uriCStr() + 1);
+    switch (last_matched_api_type) {
+        case NONE:
+            return req.send(500, "text/plain", "URI matcher did not match API but api_handler_get was called. This should never happen");
+        case RESPONSE:
+            return run_response(req, last_matched_api_idx);
+        case STATE: {
+            // If the matched API type is state, the user wants to call the corresponding _update command.
+            // For example `curl warp-abc/foo/bar -X PUT -d {"enable": true}` should be the same as if foo/bar_update was called.
 
-    for (size_t i = 0; i < api.commands.size(); i++)
-        if (api.commands[i].get_path_len() == req_uri_len && memcmp(api.commands[i].path, req.uriCStr() + 1, req_uri_len) == 0)
-            return run_command(req, i);
+            String uri_update = StringSumHelper(api.states[last_matched_api_idx].path) + "_update";
+            size_t command_idx = 0xFFFFFFFF;
+            for (size_t a = 0; a < api.commands.size(); a++) {
+                if (api.commands[a].get_path_len() == uri_update.length() && memcmp(api.commands[a].path, uri_update.c_str(), uri_update.length()) == 0) {
+                    command_idx = a;
+                    break;
+                }
+            }
 
-    for (size_t i = 0; i < api.responses.size(); i++)
-        if (api.responses[i].path_len == req_uri_len && memcmp(api.responses[i].path, req.uriCStr() + 1, req_uri_len) == 0)
-            return run_response(req, api.responses[i]);
+            // foo/bar exists as a state (as it was matched by the uri matcher), but we could not find foo/bar_update
+            if (command_idx == 0xFFFFFFFF)
+                return req.send(405, "text/plain", "Request method for this URI is not handled by server");
 
-    if (req.uri().endsWith("_update")) {
-        return req.send(405, "text/plain", "Request method for this URI is not handled by server");
-    }
+            // We've found the command that was meant to be called. Update the api index and fall through to normal command handling
+            last_matched_api_idx = command_idx;
+            [[fallthrough]];
+        }
+        case COMMAND: {
+            SuffixPath suffix_path;
 
-    for (size_t i = 0; i < api.states.size(); i++) {
-        if (api.states[i].get_path_len() != req_uri_len || memcmp(api.states[i].path, req.uriCStr() + 1, req_uri_len) != 0)
-            continue;
+            if (!build_suffix_path(suffix_path, last_matched_api_suffix, last_matched_api_suffix_len, req))
+                return req.unsafe_ResponseAlreadySent();
 
-        String uri_update = req.uri() + "_update";
-        for (size_t a = 0; a < api.commands.size(); a++)
-            if (api.commands[a].get_path_len() == uri_update.length() - 1 && memcmp(api.commands[a].path, uri_update.c_str() + 1, uri_update.length() - 1) == 0)
-                return run_command(req, a);
-
-        // If we've found the api state that matches req.uriCStr() but did not find a corresponding command with _update,
-        // break here because there can't be two states with the same path. We don't have to check the rest.
-        break;
+            return run_command(req, last_matched_api_idx, suffix_path);
+        }
     }
 
     // If we reach this point, the url matcher found an API with the req.uri() as path, but we did not.

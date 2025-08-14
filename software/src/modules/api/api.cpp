@@ -802,7 +802,7 @@ size_t API::registerBackend(IAPIBackend *backend)
     return backendIdx;
 }
 
-String API::callCommand(CommandRegistration &reg, char *payload, size_t len)
+String API::callCommand(CommandRegistration &reg, char *payload, size_t len, const Config::Key *config_path, size_t config_path_len)
 {
     if (running_in_main_task()) {
         return "Use ConfUpdate overload of callCommand in main thread!";
@@ -811,16 +811,18 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t len)
     String result;
 
     auto await_result = task_scheduler.await(
-        [&result, reg, payload, len]() mutable {
+        [&result, reg, payload, len, config_path, config_path_len]() mutable {
             if (payload == nullptr && !reg.config->is_null()) {
                 result = "empty payload only allowed for null configs";
                 return;
             }
 
             if (payload != nullptr) {
-                result = reg.config->update_from_cstr(payload, len);
+                result = reg.config->update_from_cstr(payload, len, config_path, config_path_len);
                 if (!result.isEmpty())
                     return;
+            } else if (config_path_len > 0) {
+                result = "suffix not allowed for null configs";
             }
 
             reg.callback(result);

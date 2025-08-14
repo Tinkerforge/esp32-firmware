@@ -42,11 +42,11 @@ String ConfigRoot::update_from_file(File &&file)
 
 // Intentionally take a non-const char * here:
 // This allows ArduinoJson to deserialize in zero-copy mode
-String ConfigRoot::update_from_cstr(char *c, size_t len)
+String ConfigRoot::update_from_cstr(char *c, size_t len, const Config::Key *config_path, size_t config_path_len)
 {
     ASSERT_MAIN_THREAD();
     Config copy;
-    String err = this->get_updated_copy(c, len, &copy, ConfigSource::API);
+    String err = this->get_updated_copy(c, len, &copy, ConfigSource::API, config_path, config_path_len);
     if (!err.isEmpty())
         return err;
 
@@ -91,7 +91,7 @@ static String get_updated_copy_error(DeserializationError error, size_t payload_
     return String(buf, sw.getLength());
 }
 
-String ConfigRoot::get_updated_copy(char *c, size_t payload_len, Config *out_config, ConfigSource source)
+String ConfigRoot::get_updated_copy(char *c, size_t payload_len, Config *out_config, ConfigSource source, const Config::Key *config_path, size_t config_path_len)
 {
     DynamicJsonDocument doc(this->json_size(true));
     DeserializationError error = deserializeJson(doc, c, payload_len);
@@ -100,13 +100,13 @@ String ConfigRoot::get_updated_copy(char *c, size_t payload_len, Config *out_con
         return get_updated_copy_error(error, payload_len);
     }
 
-    return this->get_updated_copy(doc.as<JsonVariant>(), true, out_config, source);
+    return this->get_updated_copy(doc.as<JsonVariant>(), true, out_config, source, config_path, config_path_len);
 }
 
-String ConfigRoot::update_from_json(JsonVariant root, bool force_same_keys, ConfigSource source)
+String ConfigRoot::update_from_json(JsonVariant root, bool force_same_keys, ConfigSource source, const Config::Key *config_path, size_t config_path_len)
 {
     Config copy;
-    String err = this->get_updated_copy(root, force_same_keys, &copy, source);
+    String err = this->get_updated_copy(root, force_same_keys, &copy, source, config_path, config_path_len);
     if (!err.isEmpty())
         return err;
 
@@ -114,19 +114,23 @@ String ConfigRoot::update_from_json(JsonVariant root, bool force_same_keys, Conf
     return "";
 }
 
-String ConfigRoot::get_updated_copy(JsonVariant root, bool force_same_keys, Config *out_config, ConfigSource source)
+String ConfigRoot::get_updated_copy(JsonVariant root, bool force_same_keys, Config *out_config, ConfigSource source, const Config::Key *config_path, size_t config_path_len)
 {
-    String result = this->get_updated_copy(from_json{root, force_same_keys, this->get_permit_null_updates(), true}, out_config, source);
+    String result = this->get_updated_copy(from_json{root, force_same_keys, this->get_permit_null_updates(), true}, out_config, source, config_path, config_path_len);
     // The from_json visitor can report multiple errors with newlines at the end of each line. Remove the last newline.
     result.trim();
     return result;
 }
 
 template<typename T>
-String ConfigRoot::get_updated_copy(T visitor, Config *out_config, ConfigSource source) {
+String ConfigRoot::get_updated_copy(T visitor, Config *out_config, ConfigSource source, const Config::Key *config_path, size_t config_path_len) {
     ASSERT_MAIN_THREAD();
     *out_config = *this;
-    UpdateResult res = Config::apply_visitor(visitor, out_config->value);
+    Config *sub_config = out_config->walk(config_path, config_path_len);
+    if (sub_config == nullptr)
+        return "path not found";
+
+    UpdateResult res = Config::apply_visitor(visitor, sub_config->value);
 
     if (!res.message.isEmpty())
         return res.message;
@@ -149,11 +153,11 @@ String ConfigRoot::get_updated_copy(T visitor, Config *out_config, ConfigSource 
 }
 
 template<typename T>
-String ConfigRoot::update_from_visitor(T visitor, ConfigSource source) {
+String ConfigRoot::update_from_visitor(T visitor, ConfigSource source, const Config::Key *config_path, size_t config_path_len) {
     ASSERT_MAIN_THREAD();
     Config copy;
 
-    String err = this->get_updated_copy(visitor, &copy, source);
+    String err = this->get_updated_copy(visitor, &copy, source, config_path, config_path_len);
     if (!err.isEmpty())
         return err;
 
