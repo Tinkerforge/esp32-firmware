@@ -80,10 +80,7 @@ String ShipMessageDataType::type_to_json()
 
     //JsonObject data = doc["data"];
     doc["data"]["header"]["protocolId"] = protocol_id;
-    // TODO: Remove logging here when done debugging
-    logger.printfln("Payload: %s", doc.as<String>().c_str());
     bool payload_loaded = doc["data"]["payload"].set(payload);
-    logger.tracefln(eebus.trace_buffer_index, "Payload: %s", payload.as<String>().c_str());
     if (!payload_loaded) {
         logger.tracefln(eebus.trace_buffer_index, "J2T ShipMessageData Error: Payload invalid");
         return "";
@@ -114,8 +111,7 @@ String ShipMessageDataType::type_to_json()
     String message_outgoing_data = "";
     message_outgoing_data.reserve(SHIP_TYPES_MAX_JSON_SIZE - 1); // Reserve space for the JSON data
     const size_t bytes_written = serializeJson(doc, message_outgoing_data);
-    logger.printfln("Serialized json %s with %d bytes written", message_outgoing_data.c_str(), bytes_written);
-    logger.printfln("Payload: %s", payload.as<String>().c_str());
+
 /*
     //message_outgoing_data.replace("[{", "[[{"); // spine-go expects a double array for some reason
     //message_outgoing_data.replace("}]", "}]]");
@@ -217,7 +213,7 @@ String ShipMessageAccessMethods::type_to_json()
     for (auto &value : dns_sd_mdns) {
         access_methods["dns_sd_mdns"].add(value);
     }
-    /* This is standard conform, but ship-go does not accept it. remove it for now..
+    /* This is standard conform, but ship-go throws a fit if its in the message. remove it for now..
     JsonArray dns = json_am.createNestedObject().createNestedArray("dns");
     for (const auto &value : dns) {
         access_methods["dns"].add(value);
