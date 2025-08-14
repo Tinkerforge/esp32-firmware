@@ -40,7 +40,7 @@ void ModbusTCPDebug::pre_setup()
         {"function_code", Config::Enum(ModbusFunctionCode::ReadHoldingRegisters)},
         {"start_address", Config::Uint16(0)},
         {"data_count", Config::Uint16(0)},
-        {"write_data", Config::Str("", 0, TF_MODBUS_TCP_MAX_WRITE_REGISTER_COUNT * 4)},
+        {"write_data", Config::Str("", 0, TF_MODBUS_TCP_MAX_WRITE_REGISTER_COUNT * 4 * 2)},
         {"timeout", Config::Uint32(2000)},
         {"cookie", Config::Uint32(0)},
     });
@@ -59,6 +59,34 @@ static void report_errorf(uint32_t cookie, const char *fmt, ...)
     json.addMemberStringVF("error", fmt, args);
     json.addMemberNull("read_data");
     va_end(args);
+    json.endObject();
+    json.end();
+
+    ws.pushRawStateUpdate(buf, "modbus_tcp_debug/transact_result");
+}
+
+static void report_result(uint32_t cookie, uint16_t data_count, const void *transact_buffer, bool hexdump_coils, bool hexdump_registers)
+{
+    char data_hexdump[TF_MODBUS_TCP_MAX_DATA_BYTE_COUNT * 2 + 1];
+    char buf[64 + sizeof(data_hexdump)];
+    TFJsonSerializer json{buf, sizeof(buf)};
+
+    json.addObject();
+    json.addMemberNumber("cookie", cookie);
+    json.addMemberNull("error");
+
+    if (hexdump_coils) {
+        hexdump<uint8_t>(static_cast<const uint8_t *>(transact_buffer), (data_count + 7u) / 8u, data_hexdump, ARRAY_SIZE(data_hexdump), HexdumpCase::Lower);
+        json.addMemberString("read_data", data_hexdump);
+    }
+    else if (hexdump_registers) {
+        hexdump<uint16_t>(static_cast<const uint16_t *>(transact_buffer), data_count, data_hexdump, ARRAY_SIZE(data_hexdump), HexdumpCase::Lower);
+        json.addMemberString("read_data", data_hexdump);
+    }
+    else {
+        json.addMemberNull("read_data");
+    }
+
     json.endObject();
     json.end();
 
@@ -160,6 +188,43 @@ void ModbusTCPDebug::register_urls()
             hexload_registers = true;
             break;
 
+        case ModbusFunctionCode::ReadMaskWriteSingleRegister:
+            protocol_function_code = TFModbusTCPFunctionCode::ReadHoldingRegisters;
+
+            if (write_data.length() != 4 * 2) {
+                report_errorf(cookie, "Write data has invalid length");
+                return;
+            }
+
+            if (data_count != 1) {
+                report_errorf(cookie, "Data count is out-of-range");
+                return;
+            }
+
+            break;
+
+        case ModbusFunctionCode::ReadMaskWriteMultipleRegisters:
+            protocol_function_code = TFModbusTCPFunctionCode::ReadHoldingRegisters;
+
+            if (write_data.length() > TF_MODBUS_TCP_MAX_WRITE_REGISTER_COUNT * 4 * 2) {
+                report_errorf(cookie, "Write data has invalid length");
+                return;
+            }
+
+            if ((write_data.length() % 4) != 0) {
+                report_errorf(cookie, "Write data length must be multiple of 4");
+                release_client();
+                return;
+            }
+
+            if (write_data.length() != data_count * 4 * 2) {
+                report_errorf(cookie, "Write data nibble count mismatch");
+                release_client();
+                return;
+            }
+
+            break;
+
         default:
             report_errorf(cookie, "Unsupported function code: %u", static_cast<uint8_t>(config_function_code));
             return;
@@ -230,7 +295,7 @@ void ModbusTCPDebug::register_urls()
             }
 
             static_cast<TFModbusTCPSharedClient *>(client)->transact(device_address, protocol_function_code, start_address, data_count, buffer, timeout,
-            [this, cookie, data_count, hexdump_coils, hexdump_registers](TFModbusTCPClientTransactionResult transact_result, const char *error_message) {
+            [this, cookie, device_address, config_function_code, start_address, data_count, write_data, timeout, hexdump_coils, hexdump_registers](TFModbusTCPClientTransactionResult transact_result, const char *error_message) {
                 if (transact_result != TFModbusTCPClientTransactionResult::Success) {
                     report_errorf(cookie, "Transaction failed: %s (%d)%s%s",
                                   get_tf_modbus_tcp_client_transaction_result_name(transact_result),
@@ -241,34 +306,60 @@ void ModbusTCPDebug::register_urls()
                     return;
                 }
 
-                char data_hexdump[TF_MODBUS_TCP_MAX_DATA_BYTE_COUNT * 2 + 1];
-                char buf[64 + sizeof(data_hexdump)];
-                TFJsonSerializer json{buf, sizeof(buf)};
+                if (config_function_code == ModbusFunctionCode::ReadMaskWriteSingleRegister
+                 || config_function_code == ModbusFunctionCode::ReadMaskWriteMultipleRegisters) {
+                    for (uint16_t i = 0; i < data_count; ++i) {
+                        uint16_t masks[2];
+                        ssize_t data_hexload_len = hexload<uint16_t>(write_data.c_str() + i * 4 * 2, 4 * 2, masks, 2);
 
-                json.addObject();
-                json.addMemberNumber("cookie", cookie);
-                json.addMemberNull("error");
+                        if (data_hexload_len < 0) {
+                            report_errorf(cookie, "Write data is malformed");
+                            release_client();
+                            return;
+                        }
 
-                // FIXME: hexdump coils for coil function codes
+                        if (data_hexload_len != 2) {
+                            report_errorf(cookie, "Write data register count mismatch");
+                            release_client();
+                            return;
+                        }
 
-                if (hexdump_coils) {
-                    hexdump<uint8_t>(static_cast<uint8_t *>(buffer), (data_count + 7u) / 8u, data_hexdump, ARRAY_SIZE(data_hexdump), HexdumpCase::Lower);
-                    json.addMemberString("read_data", data_hexdump);
-                }
-                else if (hexdump_registers) {
-                    hexdump<uint16_t>(static_cast<uint16_t *>(buffer), data_count, data_hexdump, ARRAY_SIZE(data_hexdump), HexdumpCase::Lower);
-                    json.addMemberString("read_data", data_hexdump);
+                        uint16_t value = static_cast<uint16_t *>(buffer)[i];
+
+                        value = (value & masks[0]) | (masks[1] & ~masks[0]);
+
+                        static_cast<uint16_t *>(buffer)[i] = value;
+                    }
+
+                    TFModbusTCPFunctionCode second_function_code;
+
+                    if (config_function_code == ModbusFunctionCode::ReadMaskWriteSingleRegister) {
+                        second_function_code = TFModbusTCPFunctionCode::WriteSingleRegister;
+                    }
+                    else {
+                        second_function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
+                    }
+
+                    static_cast<TFModbusTCPSharedClient *>(client)->transact(device_address, second_function_code, start_address, data_count, buffer, timeout,
+                    [this, cookie](TFModbusTCPClientTransactionResult second_transact_result, const char *second_error_message) {
+                        if (second_transact_result != TFModbusTCPClientTransactionResult::Success) {
+                            report_errorf(cookie, "Second transaction failed: %s (%d)%s%s",
+                                          get_tf_modbus_tcp_client_transaction_result_name(second_transact_result),
+                                          static_cast<int>(second_transact_result),
+                                          second_error_message != nullptr ? " / " : "",
+                                          second_error_message != nullptr ? second_error_message : "");
+                            release_client();
+                            return;
+                        }
+
+                        report_result(cookie, 0, nullptr, false, false);
+                        release_client();
+                    });
                 }
                 else {
-                    json.addMemberNull("read_data");
+                    report_result(cookie, data_count, buffer, hexdump_coils, hexdump_registers);
+                    release_client();
                 }
-
-                json.endObject();
-                json.end();
-
-                ws.pushRawStateUpdate(buf, "modbus_tcp_debug/transact_result");
-
-                release_client();
             });
         },
         [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
