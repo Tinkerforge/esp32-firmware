@@ -1011,9 +1011,9 @@ public:
     typedef strict_variant::variant<
         const char *,
         size_t
-    > Path;
+    > Key;
 
-    Config *walk(const Path *path, size_t path_len) {
+    Config *walk(const Key *path, size_t path_len) {
         Config *ptr = this;
 
         for (size_t i = 0; i < path_len; ++i) {
