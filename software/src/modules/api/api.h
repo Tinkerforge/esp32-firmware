@@ -116,7 +116,7 @@ public:
     void register_urls() override;
 
     // Call this method only if you are a IAPIBackend and run in another FreeRTOS task!
-    String callCommand(CommandRegistration &reg, char *payload, size_t len);
+    String callCommand(CommandRegistration &reg, char *payload, size_t len, const Config::Key *config_path = nullptr, size_t config_path_len = 0);
 
     // Call this method only if you are a IAPIBackend and run in another FreeRTOS task!
     void callCommandNonBlocking(CommandRegistration &reg, const char *payload, size_t len, const std::function<void(const String &errmsg)> &done_cb);
