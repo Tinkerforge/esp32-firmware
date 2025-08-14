@@ -71,6 +71,7 @@ void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)
 
 void ShipConnection::schedule_close(const millis_t delay_ms)
 {
+    logger.printfln("Close requested for SHIP Connection");
     task_scheduler.scheduleOnce(
         [this]() {
             logger.printfln("Closing connections to %s", peer_ski.c_str());
@@ -107,7 +108,7 @@ void ShipConnection::send_current_outgoing_message()
         return;
     }
 
-    logger.printfln("Data: sending message with total length of %d and content: %s",
+    logger.tracefln(eebus.trace_buffer_index, "ShipConnection::send_current_outgoing_message: sending message with total length of %d and content: %s",
                     message_outgoing->length - 1,
                     &message_outgoing->data[1]);
 
@@ -119,15 +120,17 @@ void ShipConnection::send_string(const char *str, const int length, const int ms
     if (!message_outgoing) {
         message_outgoing = make_unique_psram<
             Message>(); // TODO: Check why message_outgoing becomes a nullptr somewhere as this might lead to memory leaks otherwise
-        logger.printfln("Created new message outgoing");
+        logger.tracefln(eebus.trace_buffer_index, "ShipConnection::send_string: Message Outgoing became a nullptr. Recreating...");
     }
+    logger.tracefln(eebus.trace_buffer_index, "ShipConnection::send_string: Sending Message classified as %d with length %d: %s", msg_classifier, length, str);
+
     /*
     message_outgoing->data[0] = msg_classifier;
     memcpy(&message_outgoing->data[1], str, length);
     message_outgoing->length = length;
     */
 
-    char *buffer = new char[length + 1];
+    auto buffer = new char[length + 1];
     buffer[0] = static_cast<char>(msg_classifier);
     memcpy(buffer + 1, str, length);
     ws_client.sendOwnedNoFreeBlocking_HTTPThread(buffer, length + 1, HTTPD_WS_TYPE_BINARY);
@@ -144,8 +147,6 @@ void ShipConnection::send_data_message(JsonVariant payload)
         [[maybe_unused]] auto tmp = data.payload = payload;
 
         String data_to_send = data.type_to_json();
-        logger.printfln("Sending message with content: %s", data_to_send.c_str());
-        ;
         send_string(data_to_send.c_str(), data_to_send.length(), 2);
     } else {
         logger.tracefln(eebus.trace_buffer_index, "send_data_message: Connection not in done state. Actual State: %d", (int)state);
