@@ -193,7 +193,7 @@ bool RCTPowerClient::receive_hook()
         }
 
         uint8_t received_byte;
-        ssize_t result = recv(socket_fd, &received_byte, 1, 0);
+        ssize_t result = recv(&received_byte, 1);
 
         if (result < 0) {
             if (errno != EAGAIN && errno != EWOULDBLOCK) {

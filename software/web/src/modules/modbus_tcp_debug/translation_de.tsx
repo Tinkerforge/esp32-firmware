@@ -45,7 +45,8 @@ let x = {
             "write_data_mask_invalid": "Die Bitmaske muss eine Folge von 0, 1 oder X sein.",
             "transact_timeout": "Ausführungs-Timeout",
             "execute": "Ausführen",
-            "response": "Antwort"
+            "result": "Ergebnis",
+            "transfer": "Übertragung"
         },
         "script": {
         }

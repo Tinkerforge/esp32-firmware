@@ -72,6 +72,7 @@ interface ModbusTCPDebugToolState {
     waiting: boolean;
     cookie: number;
     result: string;
+    transfer: string;
 }
 
 function printable_ascii(x: number) {
@@ -116,6 +117,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
             waiting: false,
             cookie: null,
             result: "",
+            transfer: "",
         } as any;
 
 //#if MODULE_METERS_AVAILABLE
@@ -293,6 +295,37 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
 
             this.setState({waiting: false, cookie: null, result: result});
         });
+
+        util.addApiEventListener('modbus_tcp_debug/transact_transfer', () => {
+            let transact_transfer = API.get('modbus_tcp_debug/transact_transfer');
+
+
+            if (!this.state.waiting || transact_transfer.cookie !== this.state.cookie) {
+                return;
+            }
+
+            let transfer = this.state.transfer;
+            let buffer = transact_transfer.buffer.slice(0, 2);
+
+            for (let i = 2; i < transact_transfer.buffer.length; i += 2) {
+                buffer += " " + transact_transfer.buffer.slice(i, i + 2);
+            }
+
+            let lines = transfer.split("\n");
+
+            if (lines[lines.length - 1].startsWith(transact_transfer.direction + ": ")) {
+                transfer += " / " + buffer;
+            }
+            else {
+                if (transfer.length > 0) {
+                    transfer += '\n';
+                }
+
+                transfer += transact_transfer.direction + ": " + buffer;
+            }
+
+            this.setState({transfer: transfer});
+        });
     }
 
     render() {
@@ -322,7 +355,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
 
                     let cookie: number = Math.floor(Math.random() * 0xFFFFFFFF);
 
-                    this.setState({waiting: true, cookie: cookie, result: ""}, async () => {
+                    this.setState({waiting: true, cookie: cookie, result: "", transfer: ""}, async () => {
                         let data_count = this.state.data_count;
                         let values_hex: string[] = [];
 
@@ -348,6 +381,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                                 value_dec = value_dec.trim();
 
                                 let value = parseInt(value_dec, 10);
+
 
                                 if (isNaN(value)) {
                                     this.setState({waiting: false, cookie: null, result: "Error: Value is invalid"});
@@ -654,8 +688,14 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
             </FormRow>
 
             {this.state.waiting || this.state.result.length > 0 ?
-                <FormRow label={__("modbus_tcp_debug.content.response")}>
+                <FormRow label={__("modbus_tcp_debug.content.result")}>
                     <OutputTextarea rows={15} resize="vertical" value={this.state.waiting ? "Waiting..." : this.state.result} />
+                </FormRow>
+                : undefined}
+
+            {this.state.transfer.length > 0 ?
+                <FormRow label={__("modbus_tcp_debug.content.transfer")}>
+                    <OutputTextarea rows={3} resize="vertical" value={this.state.transfer} />
                 </FormRow>
                 : undefined}
         </form>;

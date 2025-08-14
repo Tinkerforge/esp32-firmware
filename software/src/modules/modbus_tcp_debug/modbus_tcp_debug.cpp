@@ -65,12 +65,30 @@ static void report_errorf(uint32_t cookie, const char *fmt, ...)
     ws.pushRawStateUpdate(buf, "modbus_tcp_debug/transact_result");
 }
 
+static void report_transfer(uint32_t cookie, TFGenericTCPClientTransferDirection direction, const uint8_t *buffer, size_t length)
+{
+    char buffer_hexdump[sizeof(TFModbusTCPResponse) * 2 + 1];
+    char buf[64 + ARRAY_SIZE(buffer_hexdump)];
+    TFJsonSerializer json{buf, sizeof(buf)};
+
+    hexdump<uint8_t>(buffer, length, buffer_hexdump, ARRAY_SIZE(buffer_hexdump), HexdumpCase::Lower);
+
+    json.addObject();
+    json.addMemberNumber("cookie", cookie);
+    json.addMemberString("direction", direction == TFGenericTCPClientTransferDirection::Send ? "Send" : "Recv");
+    json.addMemberString("buffer", buffer_hexdump);
+    json.endObject();
+    json.end();
+
+    ws.pushRawStateUpdate(buf, "modbus_tcp_debug/transact_transfer");
+}
+
 void ModbusTCPDebug::register_urls()
 {
     api.addCommand("modbus_tcp_debug/transact", &transact_config, {}, [this](String &errmsg) {
         uint32_t cookie = transact_config.get("cookie")->asUint();
 
-        if (transact_client != nullptr) {
+        if (client != nullptr) {
             report_errorf(cookie, "Another transaction is already in progress");
             return;
         }
@@ -159,11 +177,16 @@ void ModbusTCPDebug::register_urls()
                 return;
             }
 
-            transact_client = shared_client;
-            transact_buffer = malloc(TF_MODBUS_TCP_MAX_DATA_BYTE_COUNT);
+            client = shared_client;
 
-            if (transact_buffer == nullptr) {
-                report_errorf(cookie, "Cannot allocate transaction buffer");
+            transfer_hook = client->add_transfer_hook([cookie](TFGenericTCPClientTransferDirection direction, const uint8_t *buffer_, size_t length) {
+                report_transfer(cookie, direction, buffer_, length);
+            });
+
+            buffer = malloc(TF_MODBUS_TCP_MAX_DATA_BYTE_COUNT);
+
+            if (buffer == nullptr) {
+                report_errorf(cookie, "Could not allocate transaction buffer");
                 release_client();
                 return;
             }
@@ -191,7 +214,7 @@ void ModbusTCPDebug::register_urls()
                     return;
                 }
 
-                ssize_t data_hexload_len = hexload<uint16_t>(write_data.c_str(), nibble_count, static_cast<uint16_t *>(transact_buffer), TF_MODBUS_TCP_MAX_WRITE_REGISTER_COUNT);
+                ssize_t data_hexload_len = hexload<uint16_t>(write_data.c_str(), nibble_count, static_cast<uint16_t *>(buffer), TF_MODBUS_TCP_MAX_WRITE_REGISTER_COUNT);
 
                 if (data_hexload_len < 0) {
                     report_errorf(cookie, "Write data is malformed");
@@ -206,7 +229,7 @@ void ModbusTCPDebug::register_urls()
                 }
             }
 
-            static_cast<TFModbusTCPSharedClient *>(transact_client)->transact(device_address, protocol_function_code, start_address, data_count, transact_buffer, timeout,
+            static_cast<TFModbusTCPSharedClient *>(client)->transact(device_address, protocol_function_code, start_address, data_count, buffer, timeout,
             [this, cookie, data_count, hexdump_coils, hexdump_registers](TFModbusTCPClientTransactionResult transact_result, const char *error_message) {
                 if (transact_result != TFModbusTCPClientTransactionResult::Success) {
                     report_errorf(cookie, "Transaction failed: %s (%d)%s%s",
@@ -229,11 +252,11 @@ void ModbusTCPDebug::register_urls()
                 // FIXME: hexdump coils for coil function codes
 
                 if (hexdump_coils) {
-                    hexdump<uint8_t>(static_cast<uint8_t *>(transact_buffer), (data_count + 7u) / 8u, data_hexdump, ARRAY_SIZE(data_hexdump), HexdumpCase::Lower);
+                    hexdump<uint8_t>(static_cast<uint8_t *>(buffer), (data_count + 7u) / 8u, data_hexdump, ARRAY_SIZE(data_hexdump), HexdumpCase::Lower);
                     json.addMemberString("read_data", data_hexdump);
                 }
                 else if (hexdump_registers) {
-                    hexdump<uint16_t>(static_cast<uint16_t *>(transact_buffer), data_count, data_hexdump, ARRAY_SIZE(data_hexdump), HexdumpCase::Lower);
+                    hexdump<uint16_t>(static_cast<uint16_t *>(buffer), data_count, data_hexdump, ARRAY_SIZE(data_hexdump), HexdumpCase::Lower);
                     json.addMemberString("read_data", data_hexdump);
                 }
                 else {
@@ -249,14 +272,19 @@ void ModbusTCPDebug::register_urls()
             });
         },
         [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
-            if (transact_client != shared_client) {
+            if (client != shared_client) {
                 return;
             }
 
-            transact_client = nullptr;
+            if (transfer_hook != nullptr) {
+                client->remove_transfer_hook(transfer_hook);
+                transfer_hook = nullptr;
+            }
 
-            free(transact_buffer);
-            transact_buffer = nullptr;
+            client = nullptr;
+
+            free(buffer);
+            buffer = nullptr;
         });
     }, true);
 }
@@ -264,8 +292,8 @@ void ModbusTCPDebug::register_urls()
 void ModbusTCPDebug::release_client()
 {
     task_scheduler.scheduleOnce([this]() {
-        if (transact_client != nullptr) {
-            modbus_tcp_client.get_pool()->release(transact_client);
+        if (client != nullptr) {
+            modbus_tcp_client.get_pool()->release(client);
         }
     });
 }

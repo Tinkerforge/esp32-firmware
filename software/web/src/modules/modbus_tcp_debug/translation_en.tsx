@@ -45,7 +45,8 @@ let x = {
             "write_data_mask_invalid": "The bitmask must be a sequence of 0, 1 or X.",
             "transact_timeout": "Execution timeout",
             "execute": "Execute",
-            "response": "Response"
+            "result": "Result",
+            "transfer": "Transfer"
         },
         "script": {
         }

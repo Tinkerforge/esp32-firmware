@@ -51,6 +51,12 @@ void ModbusTCPClient::setup()
         }, LWIP_DNS_ADDRTYPE_IPV4);
     };
 
+    TFNetworkUtil::get_random_uint16 = []() {
+        uint32_t r = esp_random();
+
+        return (r >> 16) ^ r;
+    };
+
     initialized = true;
 }
 

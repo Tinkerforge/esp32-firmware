@@ -3,3 +3,9 @@ export interface transact_result {
     error: string;
     read_data: string;
 }
+
+export interface transact_transfer {
+    cookie: number;
+    direction: string;
+    buffer: string;
+}

@@ -36,6 +36,7 @@ private:
     void release_client();
 
     ConfigRoot transact_config;
-    TFGenericTCPSharedClient *transact_client = nullptr;
-    void *transact_buffer = nullptr;
+    TFGenericTCPSharedClient *client = nullptr;
+    TFGenericTCPClientTransferHook *transfer_hook = nullptr;
+    void *buffer = nullptr;
 };
