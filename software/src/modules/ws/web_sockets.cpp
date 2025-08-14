@@ -26,6 +26,8 @@
 #include "tools/memory.h"
 #include "esp_httpd_priv.h"
 
+#include "gcc_warnings.h"
+
 static constexpr micros_t KEEP_ALIVE_TIMEOUT = 10_s;
 
 #if MODULE_WATCHDOG_AVAILABLE()
@@ -91,13 +93,13 @@ static bool send_ws_work_item(WebSockets *ws, ws_work_item wi)
     httpd_ws_frame_t ws_pkt;
     memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
 
-    ws_pkt.payload = (uint8_t *)wi.payload;
+    ws_pkt.payload = reinterpret_cast<uint8_t *>(wi.payload);
     ws_pkt.len = wi.payload_len;
     ws_pkt.type = wi.payload_len == 0 ? HTTPD_WS_TYPE_PING : wi.ws_type;
 
     bool result = true;
 
-    struct httpd_data *hd = (struct httpd_data *)ws->httpd;
+    struct httpd_data *hd = static_cast<struct httpd_data *>(ws->httpd);
 
     for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
         if (wi.fds[i] == -1) {
@@ -119,7 +121,7 @@ static bool send_ws_work_item(WebSockets *ws, ws_work_item wi)
 
 static void work(void *arg)
 {
-    WebSockets *ws = (WebSockets *)arg;
+    WebSockets *ws = static_cast<WebSockets *>(arg);
     ws->worker_active = WEBSOCKET_WORKER_RUNNING;
 
     ws_work_item wi;
@@ -147,14 +149,14 @@ static esp_err_t ws_handler(httpd_req_t *req)
             return ESP_OK;
         }
 
-        struct httpd_req_aux *aux = (struct httpd_req_aux *)req->aux;
+        struct httpd_req_aux *aux = static_cast<struct httpd_req_aux *>(req->aux);
         if (aux->ws_handshake_detect) {
-            WebSockets *ws = (WebSockets *)req->user_ctx;
+            WebSockets *ws = static_cast<WebSockets *>(req->user_ctx);
             if (!ws->haveFreeSlot()) {
                 ws->closeLRUClient();
             }
 
-            struct httpd_data *hd = (struct httpd_data *)ws->httpd;
+            struct httpd_data *hd = static_cast<struct httpd_data *>(ws->httpd);
             esp_err_t ret = httpd_ws_respond_server_handshake(&hd->hd_req, nullptr);
             if (ret != ESP_OK) {
                 return ret;
@@ -195,7 +197,7 @@ static esp_err_t ws_handler(httpd_req_t *req)
 
     if (ws_pkt.len) {
         /* ws_pkt.len + 1 is for NULL termination as we are expecting a string */
-        buf = (uint8_t *)calloc(1, ws_pkt.len + 1);
+        buf = static_cast<uint8_t *>(calloc(1, ws_pkt.len + 1));
         if (buf == NULL) {
             logger.printfln("Failed to calloc memory for buf");
             return ESP_ERR_NO_MEM;
@@ -217,20 +219,20 @@ static esp_err_t ws_handler(httpd_req_t *req)
         httpd_ws_send_frame(req, &ws_pkt);
     } else if (ws_pkt.type == HTTPD_WS_TYPE_PONG) {
         // If it was a PONG, update the keep-alive
-        WebSockets *ws = (WebSockets *)req->user_ctx;
+        WebSockets *ws = static_cast<WebSockets *>(req->user_ctx);
         ws->receivedPong(httpd_req_to_sockfd(req));
     } else if (ws_pkt.type == HTTPD_WS_TYPE_TEXT) {
         // If it was a TEXT message, print it
         logger.printfln("Ignoring received packet with message: \"%s\" (web sockets are unidirectional for now)", ws_pkt.payload);
         // FIXME: input handling
     } else if (ws_pkt.type == HTTPD_WS_TYPE_BINARY) {
-        WebSockets *ws = (WebSockets *)req->user_ctx;
+        WebSockets *ws = static_cast<WebSockets *>(req->user_ctx);
         if (ws->on_binary_data_received_fn != nullptr) {
             ws->on_binary_data_received_fn(httpd_req_to_sockfd(req), &ws_pkt);
         }
     } else if (ws_pkt.type == HTTPD_WS_TYPE_CLOSE) {
         // If it was a CLOSE, remove it from the keep-alive list
-        WebSockets *ws = (WebSockets *)req->user_ctx;
+        WebSockets *ws = static_cast<WebSockets *>(req->user_ctx);
         ws->keepAliveRemove(httpd_req_to_sockfd(req));
     }
     free(buf);
@@ -301,7 +303,7 @@ void WebSockets::keepAliveCloseDead(int fd)
     // faster than we are able to throw it away via send timeouts.
     // Unfortunately there is no API to throw away a web socket connection, so
     // we have to poke around in the internal structures here.
-    struct httpd_data *hd = (struct httpd_data *)httpd;
+    struct httpd_data *hd = static_cast<struct httpd_data *>(httpd);
 
     struct sock_db *current = hd->hd_sd;
     struct sock_db *end = hd->hd_sd + hd->config.max_open_sockets - 1;
@@ -407,7 +409,7 @@ bool WebSockets::sendToClient(const char *payload, size_t payload_len, int fd, h
     if (httpd_ws_get_fd_info(httpd, fd) != HTTPD_WS_CLIENT_WEBSOCKET)
         return true;
 
-    char *payload_copy = (char *)malloc(payload_len * sizeof(char));
+    char *payload_copy = static_cast<char *>(malloc(payload_len * sizeof(char)));
     if (payload_copy == nullptr) {
         return false;
     }
@@ -490,7 +492,7 @@ bool WebSockets::sendToAll(const char *payload, size_t payload_len, httpd_ws_typ
     if (!this->haveActiveClient())
         return true;
 
-    char *payload_copy = (char *)malloc(payload_len * sizeof(char));
+    char *payload_copy = static_cast<char *>(malloc(payload_len * sizeof(char)));
     if (payload_copy == nullptr) {
         return false;
     }
@@ -619,7 +621,7 @@ void WebSockets::updateDebugState()
             char ip_str[INET6_ADDRSTRLEN];
             struct sockaddr_storage addr;
             socklen_t len = sizeof(addr);
-            if (getpeername(keep_alive_fds[i], (sockaddr *)&addr, &len) != 0) {
+            if (getpeername(keep_alive_fds[i], reinterpret_cast<sockaddr *>(&addr), &len) != 0) {
                 state_keep_alive_peers->get(i)->updateString(strerror(errno));
                 continue;
             }
@@ -638,7 +640,7 @@ void WebSockets::updateDebugState()
     }
 }
 
-void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t httpd, const char *supported_subprotocol)
+void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t httpd_, const char *supported_subprotocol)
 {
     if (string_is_in_rodata(uri)) {
         this->handler_uri = uri;
@@ -646,7 +648,7 @@ void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t h
         this->handler_uri = strdup(uri);
     }
 
-    this->httpd = httpd;
+    this->httpd = httpd_;
 
     httpd_uri_t ws = {};
     ws.uri = uri;
@@ -686,7 +688,7 @@ void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t h
         // TODO Add pull only states to API
         server.on(state_path, HTTP_GET, [this](WebServerRequest request) {
             String s = this->state.to_string();
-            return request.send(200, "application/json; charset=utf-8", s.c_str(), s.length());
+            return request.send(200, "application/json; charset=utf-8", s.c_str(), static_cast<ssize_t>(s.length()));
         });
     }
 }
