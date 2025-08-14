@@ -29,7 +29,7 @@
 struct StateUpdateRegistration {
     int64_t eventID;
     std::function<EventResult(const Config *)> callback;
-    std::unique_ptr<Config::Path[]> conf_path;
+    std::unique_ptr<Config::Key[]> conf_path;
     size_t conf_path_len;
     StateUpdateRegistration *next_registration;
 };
@@ -41,7 +41,7 @@ public:
     void pre_setup() override;
     void setup() override;
 
-    int64_t registerEvent(const String &path, const std::vector<Config::Path> values, std::function<EventResult(const Config *)> &&callback);
+    int64_t registerEvent(const String &path, const std::vector<Config::Key> values, std::function<EventResult(const Config *)> &&callback);
     void deregisterEvent(int64_t eventID);
 
     // IAPIBackend implementation

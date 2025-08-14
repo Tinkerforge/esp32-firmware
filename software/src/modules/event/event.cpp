@@ -72,7 +72,7 @@ static void registerEvent_stage_abort(const String &path)
     esp_system_abort(msg);
 }
 
-int64_t Event::registerEvent(const String &path, const std::vector<Config::Path> values, std::function<EventResult(const Config *)> &&callback)
+int64_t Event::registerEvent(const String &path, const std::vector<Config::Key> values, std::function<EventResult(const Config *)> &&callback)
 {
     ASSERT_MAIN_THREAD();
 
@@ -99,16 +99,16 @@ int64_t Event::registerEvent(const String &path, const std::vector<Config::Path>
         return -1;
     }
 
-    // Walk Config::Path to find requested member inside state.
+    // Walk Config::Key to find requested member inside state.
     const Config *state_member = state_config;
-    std::unique_ptr<Config::Path []> conf_path;
+    std::unique_ptr<Config::Key []> conf_path;
     size_t conf_path_written = 0;
 
     const size_t values_count = values.size();
     if (values_count > 0) {
-        conf_path = heap_alloc_array<Config::Path>(values_count);
+        conf_path = heap_alloc_array<Config::Key>(values_count);
 
-        for (const Config::Path &value : values) {
+        for (const Config::Key &value : values) {
             const char *const *obj_variant = strict_variant::get<const char *>(&value);
             const bool is_obj = obj_variant != nullptr;
             if (is_obj) {
@@ -288,7 +288,7 @@ void Event::addResponse(size_t responseIdx, const ResponseRegistration &reg)
 static void pushStateUpdate_ConfPath_abort(const char *state_path)
 {
     char msg[128];
-    snprintf(msg, ARRAY_SIZE(msg), "Reached end of nested config in %s before reaching end of Config::Path", state_path);
+    snprintf(msg, ARRAY_SIZE(msg), "Reached end of nested config in %s before reaching end of Config::Key", state_path);
     esp_system_abort(msg);
 }
 
@@ -320,9 +320,9 @@ bool Event::pushStateUpdate(size_t stateIdx, const String &/*payload*/, const St
             StateUpdateRegistration *reg = *reg_ptr;
             const Config *config = config_root;
 
-            // Walk registration's Config::Path to find desired Config.
+            // Walk registration's Config::Key to find desired Config.
             for (size_t conf_path_idx = 0; conf_path_idx < reg->conf_path_len; ++conf_path_idx) {
-                const Config::Path *value = &reg->conf_path[conf_path_idx];
+                const Config::Key *value = &reg->conf_path[conf_path_idx];
                 const char *const *obj_variant = strict_variant::get<const char *>(value);
                 if (obj_variant != nullptr) { // is ConfObject
                     config = (const Config *)config->get(*obj_variant);
