@@ -28,6 +28,8 @@
 #include "module_dependencies.h"
 #include "tools.h"
 
+#include "gcc_warnings.h"
+
 #define WATCHDOG_MAX_REGS 10
 // Highest observed stack usage was 768.
 #define WATCHDOG_STACK_SIZE 1024
@@ -47,9 +49,9 @@ struct watchdog_reg {
 
 static std::mutex regs_mutex{};
 static watchdog_reg regs[WATCHDOG_MAX_REGS];
-static size_t regs_used = 0;
+static int regs_used = 0;
 
-void watchdog_task(void *arg)
+static void watchdog_task(void *arg)
 {
     esp_task_wdt_add(xTask);
     for (;;) {
@@ -71,7 +73,7 @@ void watchdog_task(void *arg)
             }
         }
         esp_task_wdt_reset();
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay_ms(1000);
     }
 }
 

@@ -30,6 +30,15 @@
 #include "main_dependencies.h"
 #include "bindings/base58.h"
 
+void vTaskDelay_ms(uint32_t delay_ms)
+{
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+    // portTICK_PERIOD_MS expands to an old style cast.
+    vTaskDelay(delay_ms / portTICK_PERIOD_MS);
+#pragma GCC diagnostic pop
+}
+
 const char *tf_reset_reason(uint32_t *numeric_reason_out)
 {
     esp_reset_reason_t reason = esp_reset_reason();
