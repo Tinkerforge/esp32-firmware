@@ -189,7 +189,7 @@ constexpr size_t constexpr_strlen(const char *s) {
             : (constexpr_strlen(&s[1]) + 1);
 }
 
-template<typename T, size_t capacity>
+template<typename T, size_t capacity_>
 struct FixedStackVector {
     FixedStackVector() {}
 
@@ -197,10 +197,12 @@ struct FixedStackVector {
     const T &operator[](size_t pos) const {return val[pos];}
 
     T *begin() { return val; }
+    const T *cbegin() const { return val; }
     T *end() { return val + used; }
+    const T *cend() const { return val + used; }
 
     bool add(T &&elem) {
-        if (used >= capacity)
+        if (used >= capacity_)
              return false;
 
         val[used] = elem;
@@ -208,6 +210,12 @@ struct FixedStackVector {
         return true;
     }
 
+    T *data() { return val; }
+    const T *data() const { return val; }
+    size_t size() const { return used; }
+    size_t capacity() const { return capacity_; }
+
+private:
     size_t used = 0;
-    T val[capacity];
+    T val[capacity_];
 };
