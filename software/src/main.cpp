@@ -107,7 +107,7 @@ static const char *pre_reboot_message = "Pre-reboot stage lasted longer than fiv
 
 static void pre_reboot_task(void *arg)
 {
-    vTaskDelay_ms(PRE_REBOOT_MAX_DURATION.to<millis_t>().as<uint32_t>());
+    vTaskDelay_ms(static_cast<millis_t>(PRE_REBOOT_MAX_DURATION).as<uint32_t>());
     esp_system_abort(pre_reboot_message);
 }
 
