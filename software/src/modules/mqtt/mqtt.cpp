@@ -114,7 +114,7 @@ void Mqtt::pre_setup()
             }
             bool valid = true;
             int pos = topic.indexOf('#');
-            if ((pos != -1 && pos != topic.length() - 1) || (pos > 1 && topic[pos - 1] != '/')) {
+            if ((pos != -1 && pos != static_cast<int>(topic.length()) - 1) || (pos > 1 && topic[pos - 1] != '/')) {
                 valid = false;
             }
 
@@ -122,7 +122,7 @@ void Mqtt::pre_setup()
             while (pos != -1) {
                 if (pos != 0 && topic[pos - 1] != '/')
                     valid = false;
-                if (pos != topic.length() - 1 && topic[pos + 1] != '/')
+                if (pos != static_cast<int>(topic.length()) - 1 && topic[pos + 1] != '/')
                     valid = false;
                 pos = topic.indexOf('+', pos + 1);
             }
