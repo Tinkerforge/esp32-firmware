@@ -84,7 +84,7 @@ function printable_ascii(x: number) {
 }
 
 function to_value_hex(value: number) {
-    let value_hex = value.toString(16).toUpperCase();
+    let value_hex = value.toString(16);
 
     while (value_hex.length < 4) {
         value_hex = "0" + value_hex;
@@ -163,7 +163,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
 
                             ad_pad = ad_pad.substring(ad_pad.length - 5);
 
-                            let ah_pad = "   " + a.toString(16).toUpperCase();
+                            let ah_pad = "   " + a.toString(16);
 
                             ah_pad = ah_pad.substring(ah_pad.length - 4);
 
@@ -173,7 +173,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
 
                             nd_pad = nd_pad.substring(nd_pad.length - 5);
 
-                            let nh_pad = "    " + n.toString(16).toUpperCase();
+                            let nh_pad = "    " + n.toString(16);
 
                             nh_pad = nh_pad.substring(nh_pad.length - 5);
 
@@ -203,7 +203,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
 
                         ad_pad = ad_pad.substring(ad_pad.length - 5);
 
-                        let ah_pad = "   " + a.toString(16).toUpperCase();
+                        let ah_pad = "   " + a.toString(16);
 
                         ah_pad = ah_pad.substring(ah_pad.length - 4);
 
@@ -213,7 +213,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
 
                         nd_pad = nd_pad.substring(nd_pad.length - 5);
 
-                        let nh_pad = "    " + n.toString(16).toUpperCase();
+                        let nh_pad = "    " + n.toString(16);
 
                         nh_pad = nh_pad.substring(nh_pad.length - 5);
 
@@ -424,14 +424,14 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                             }
 
                             for (let mask of masks) {
-                                mask = mask.trim().toUpperCase();
+                                mask = mask.trim().toLowerCase();
 
                                 if (mask.length > 16) {
                                     this.setState({waiting: false, cookie: null, result: "Error: Bitmask is too long"});
                                     return;
                                 }
 
-                                let mask_pad = "XXXXXXXXXXXXXXX" + mask;
+                                let mask_pad = "xxxxxxxxxxxxxxx" + mask;
 
                                 mask_pad = mask_pad.substring(mask_pad.length - 16);
 
@@ -447,7 +447,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                                     else if (bit == '0') {
                                         // masks already correct
                                     }
-                                    else if (bit == 'X') {
+                                    else if (bit == 'x') {
                                         and_mask |= 1 << i;
                                     }
                                     else {
@@ -621,8 +621,8 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                 <InputTextPatterned
                     required
                     disabled={this.state.waiting}
-                    pattern={this.state.register_address_mode == ModbusRegisterAddressMode.Address ? "^([1-9A-F][0-9A-F]{1,3}|0)$" : "^(10000|[1-9A-F][0-9A-F]{1,3}|1)$"}
-                    value={util.hasValue(this.state.start_address) ? (this.state.start_address + start_address_offset).toString(16).toUpperCase() : null}
+                    pattern={this.state.register_address_mode == ModbusRegisterAddressMode.Address ? "^([1-9a-f][0-9a-f]{1,3}|0)$" : "^(10000|[1-9a-f][0-9a-f]{1,3}|1)$"}
+                    value={util.hasValue(this.state.start_address) ? (this.state.start_address + start_address_offset).toString(16) : null}
                     onValue={(v) => {
                         let start_address = parseInt(v, 16) - start_address_offset;
                         let data_count = this.state.data_count;
@@ -687,9 +687,9 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     <InputTextPatterned
                         required
                         disabled={this.state.waiting}
-                        pattern={`^ *[01Xx]{1,16} *$`}
+                        pattern={`^ *[01x]{1,16} *$`}
                         value={this.state.write_data}
-                        onValue={(v) => this.setState({write_data: v.toUpperCase()})}
+                        onValue={(v) => this.setState({write_data: v.toLowerCase()})}
                         invalidFeedback={__("modbus_tcp_debug.content.write_data_single_mask_invalid")}
                         />
                 </FormRow>
@@ -700,9 +700,9 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                     <InputTextPatterned
                         required
                         disabled={this.state.waiting}
-                        pattern={`^ *[01Xx]{1,16} *(, *[01Xx]{1,16} *){0,122}$`}
+                        pattern={`^ *[01x]{1,16} *(, *[01x]{1,16} *){0,122}$`}
                         value={this.state.write_data}
-                        onValue={(v) => this.setState({write_data: v.toUpperCase()})}
+                        onValue={(v) => this.setState({write_data: v.toLowerCase()})}
                         invalidFeedback={__("modbus_tcp_debug.content.write_data_multiple_masks_invalid")}
                         />
                 </FormRow>
