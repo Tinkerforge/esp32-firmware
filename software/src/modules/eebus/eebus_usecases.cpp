@@ -42,7 +42,7 @@ bool NodeManagementUsecase::handle_binding(HeaderType &header, SpineDataTypeHand
             std::optional<FeatureTypeType> feature_type = data->nodemanagementbindingrequestcalltype->bindingRequest->serverFeatureType;
 
             if (check_is_bound(binding_entry.clientAddress.value(), binding_entry.serverAddress.value())) {
-                logger.tracefln(eebus.trace_buffer_index, "A Binding was requested but is already bound");
+                logger.tracefln(eebus.trace_buffer_index, "Binding requested but is already bound");
             } else {
                 binding_entry.bindingId = binding_management_entry_list_.bindingManagementEntryData->size();
                 binding_management_entry_list_.bindingManagementEntryData->push_back(binding_entry);
@@ -52,7 +52,7 @@ bool NodeManagementUsecase::handle_binding(HeaderType &header, SpineDataTypeHand
                                                      "Binding request was successful");
             return true;
         }
-        logger.tracefln(eebus.trace_buffer_index, "A Binding was requested but failed");
+        logger.tracefln(eebus.trace_buffer_index, "Binding requested but failed");
         EEBUS_USECASE_HELPERS::build_result_data(response,
                                                  EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected,
                                                  "Binding request failed");
@@ -163,14 +163,15 @@ bool NodeManagementUsecase::handle_message(HeaderType &header, SpineDataTypeHand
                     static_cast<int>(header.cmdClassifier.value()),
                     data->function_to_string(data->last_cmd).c_str());
     if (header.cmdClassifier == CmdClassifierType::read && data->last_cmd == SpineDataTypeHandler::Function::nodeManagementUseCaseData) {
-        logger.printfln("NodeManagementUsecase: Reading usecase data");
+        logger.tracefln(eebus.trace_buffer_index, "NodeManagementUsecase: Command identified as NodeManagementUseCaseData");
         return read_usecase_data(header, data, response);
     }
     if (header.cmdClassifier == CmdClassifierType::read
         && data->last_cmd == SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryData) {
-        logger.printfln("NodeManagementUsecase: Reading detailed discovery data");
+        logger.tracefln(eebus.trace_buffer_index, "NodeManagementUsecase: Command identified as NodeManagementDetailedDiscoveryData");
         return read_detailed_discovery_data(header, data, response);
     }
+    // TODO: Add handling for subscription and binding functions
     return false;
 }
 

@@ -32,8 +32,6 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
     ArduinoJson::spine_go_compatibility_mode = this->compatiblity_mode;
 
     received_header = datagram["datagram"][0]["header"];
-    //logger.printfln("SPINE: Received datagram: %s", datagram.as<String>().c_str());
-    //logger.printfln("Header: %s", datagram["datagram"][0].as<String>().c_str());
 
     received_payload =
         datagram["datagram"][1]["payload"][0]["cmd"][0][0]; // The payload should not be in an array but spine-go does these strange things
@@ -48,9 +46,6 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
         }
         if (received_payload.isNull()) {
             logger.tracefln(eebus.trace_buffer_index, "SPINE: ERROR: No payload found in the received datagram");
-            //logger.printfln("SPINE: Payload section: %s", datagram["datagram"][1]["payload"][0].as<String>().c_str());
-        } else {
-            //logger.printfln("Received Payload: %s", received_payload.as<String>().c_str());
         }
         return false;
     }

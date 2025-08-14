@@ -59,15 +59,6 @@ enum Ship_Discovery_State { READY = 0, SCANNING, SCAN_DONE, ERROR };
 
 class Ship
 {
-private:
-    void setup_mdns();
-    void setup_wss();
-
-    WebSockets web_sockets;
-    unique_ptr_any<Cert> cert = nullptr;
-
-    httpd_handle_t httpd = nullptr;
-
 public:
     Ship()
     {
@@ -89,4 +80,14 @@ public:
     Ship_Discovery_State discovery_state;
     std::vector<ShipConnection> ship_connections;
     bool is_enabled;
+
+private:
+    void setup_mdns();
+    void setup_wss();
+
+    WebSockets web_sockets;
+    unique_ptr_any<Cert> cert = nullptr;
+
+    httpd_handle_t httpd = nullptr;
+
 };

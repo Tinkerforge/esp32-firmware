@@ -35,18 +35,28 @@ void Ship::pre_setup()
 
 void Ship::setup()
 {
-    is_enabled = false;
     if (eebus.is_enabled) {
 #ifdef SHIP_USE_INTERNAL_CERTS
         eebus.state.get("ski")->updateString(ship_ski);
 #endif
         setup_wss();
-        setup_mdns();
-        is_enabled = true;
+        if (eebus.initialized) {
+            setup_mdns();
+        } else {
+            // MDNS might not be set up properly if its done too early during startup
+            task_scheduler.scheduleOnce(
+                [this]() {
+                    setup_mdns();
+                },
+                1_s);
+
+            setup_mdns();
+        }
     }
 }
 void Ship::disable_ship()
 {
+    logger.tracefln(eebus.trace_buffer_index, "disable_ship start");
     for (ShipConnection &conn : ship_connections) {
         conn.schedule_close(0_ms);
     }
@@ -57,12 +67,12 @@ void Ship::disable_ship()
     httpd_ssl_stop(httpd);
     httpd = nullptr;
     // TODO: What happens to the websockets when the underlying httpd server is stopped? Just no more messages? Lets hope for the best
-    logger.tracefln(eebus.trace_buffer_index, "SHIP disabled");
+    logger.tracefln(eebus.trace_buffer_index, "disable_ship end");
 }
 
 void Ship::setup_wss()
 {
-    logger.printfln("setup_wss_server start"); // TODO Move to tracelog
+    logger.tracefln(eebus.trace_buffer_index, "setup_wss_server start"); // TODO Move to tracelog
 
     // HTTPS server configuration.
     // This HTTPS server is just used to provide the send/recv for a secure websocket.
@@ -94,7 +104,8 @@ void Ship::setup_wss()
         mbedtls_x509_crt_init(&x509_crt);
         int ret = mbedtls_x509_crt_parse(&x509_crt, buf, buflen);
         if (ret != 0) {
-            logger.printfln("mbedtls_x509_crt_parse failed: 0x%04x", ret);
+            logger.printfln(" An error occurred while setting up the SHIP Websocket");
+            logger.tracefln(eebus.trace_buffer_index, "mbedtls_x509_crt_parse failed: 0x%04x", ret);
         } else {
             char ship_ski[64] = {0};
             for (size_t i = 0; i < x509_crt.subject_key_id.len; i++) {
@@ -102,7 +113,7 @@ void Ship::setup_wss()
             }
             eebus.state.get("ski")->updateString(ship_ski);
         }
-        logger.printfln("ret: %d, SKI: %s", ret, eebus.state.get("ski")->asString().c_str());
+
         return ret;
     };
 
@@ -150,6 +161,7 @@ void Ship::setup_wss()
 
         if (parse_x509_crt(cert->crt, cert->crt_length) != 0) {
             logger.printfln("An error occured while starting EEBUS SHIP Server");
+            logger.tracefln(eebus.trace_buffer_index, "parse_x509_crt != 0");
             return;
         }
 
@@ -163,7 +175,7 @@ void Ship::setup_wss()
     esp_err_t ret = httpd_ssl_start(&httpd, &config);
 
     if (ESP_OK != ret) {
-        logger.printfln("Error starting HTTPS server: %d", ret);
+        logger.printfln("Error starting EEBUS HTTPS server: %d", ret);
     }
 
     web_sockets.onConnect_HTTPThread([this](WebSocketsClient ws_client) {
@@ -192,7 +204,7 @@ void Ship::setup_wss()
                         ntohs(addr.sin6_port),
                         peer_ski.c_str());
         ship_connections.push_back(ShipConnection{ws_client, ShipConnection::Role::Server, peer_ski});
-        logger.printfln("WebSocketClient connected");
+        logger.printfln("New SHIP Client connected");
 
         return true;
     });
@@ -208,7 +220,7 @@ void Ship::setup_wss()
             }
         }
 
-        logger.tracefln(eebus.trace_buffer_index, "No ShipConnection found for fd %d", fd);
+        logger.tracefln(eebus.trace_buffer_index, "Error while receiving Websocket packet: No ShipConnection found for fd %d", fd);
     });
 
     // Start websocket on the HTTPS server
@@ -244,6 +256,7 @@ void Ship::setup_mdns()
     mdns_service_txt_item_set("_ship", "_tcp", "type", EEBUS_DEVICE_TYPE); // Or EVSE?
 
     logger.tracefln(eebus.trace_buffer_index, "setup_mdns() done");
+
 }
 
 Ship_Discovery_State Ship::discover_ship_peers()
@@ -274,7 +287,7 @@ Ship_Discovery_State Ship::discover_ship_peers()
     }
     if (!results) {
         logger.printfln("EEBUS MDNS: No results found!");
-        logger.tracefln(eebus.trace_buffer_index, "EEBUS MDNS: No results found!");
+        logger.tracefln(eebus.trace_buffer_index, "EEBUS MDNS: 0 results found!");
         update_discovery_state(Ship_Discovery_State::SCAN_DONE);
         return discovery_state;
     }

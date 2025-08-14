@@ -43,55 +43,122 @@ template <typename T> bool Converter<std::vector<T>>::checkJson(JsonVariantConst
 }
 
 } // namespace ArduinoJson
-bool convertToJson(const MessagingTypeEnumType &src, JsonVariant &dst)
+bool convertToJson(const CmdClassifierType &src, JsonVariant &dst)
 {
     String enumName;
     switch (src) {
-        case MessagingTypeEnumType::logging:
-            enumName = "logging";
+        case CmdClassifierType::read:
+            enumName = "read";
             break;
-        case MessagingTypeEnumType::information:
-            enumName = "information";
+        case CmdClassifierType::reply:
+            enumName = "reply";
             break;
-        case MessagingTypeEnumType::warning:
-            enumName = "warning";
+        case CmdClassifierType::notify:
+            enumName = "notify";
             break;
-        case MessagingTypeEnumType::alarm:
-            enumName = "alarm";
+        case CmdClassifierType::write:
+            enumName = "write";
             break;
-        case MessagingTypeEnumType::emergency:
-            enumName = "emergency";
+        case CmdClassifierType::call:
+            enumName = "call";
             break;
-        case MessagingTypeEnumType::obsolete:
-            enumName = "obsolete";
+        case CmdClassifierType::result:
+            enumName = "result";
             break;
     }
     return dst.set(enumName);
 }
-void convertFromJson(const JsonVariantConst &src, MessagingTypeEnumType &dst)
+void convertFromJson(const JsonVariantConst &src, CmdClassifierType &dst)
 {
-    if (src == "logging") {
-        dst = MessagingTypeEnumType::logging;
+    if (src == "read") {
+        dst = CmdClassifierType::read;
         return;
     }
-    if (src == "information") {
-        dst = MessagingTypeEnumType::information;
+    if (src == "reply") {
+        dst = CmdClassifierType::reply;
         return;
     }
-    if (src == "warning") {
-        dst = MessagingTypeEnumType::warning;
+    if (src == "notify") {
+        dst = CmdClassifierType::notify;
         return;
     }
-    if (src == "alarm") {
-        dst = MessagingTypeEnumType::alarm;
+    if (src == "write") {
+        dst = CmdClassifierType::write;
         return;
     }
-    if (src == "emergency") {
-        dst = MessagingTypeEnumType::emergency;
+    if (src == "call") {
+        dst = CmdClassifierType::call;
         return;
     }
-    if (src == "obsolete") {
-        dst = MessagingTypeEnumType::obsolete;
+    if (src == "result") {
+        dst = CmdClassifierType::result;
+        return;
+    }
+    return;
+}
+bool convertToJson(const ActuatorLevelFctEnumType &src, JsonVariant &dst)
+{
+    String enumName;
+    switch (src) {
+        case ActuatorLevelFctEnumType::start:
+            enumName = "start";
+            break;
+        case ActuatorLevelFctEnumType::up:
+            enumName = "up";
+            break;
+        case ActuatorLevelFctEnumType::down:
+            enumName = "down";
+            break;
+        case ActuatorLevelFctEnumType::stop:
+            enumName = "stop";
+            break;
+        case ActuatorLevelFctEnumType::percentageAbsolute:
+            enumName = "percentageAbsolute";
+            break;
+        case ActuatorLevelFctEnumType::percentageRelative:
+            enumName = "percentageRelative";
+            break;
+        case ActuatorLevelFctEnumType::absolute:
+            enumName = "absolute";
+            break;
+        case ActuatorLevelFctEnumType::relative:
+            enumName = "relative";
+            break;
+    }
+    return dst.set(enumName);
+}
+void convertFromJson(const JsonVariantConst &src, ActuatorLevelFctEnumType &dst)
+{
+    if (src == "start") {
+        dst = ActuatorLevelFctEnumType::start;
+        return;
+    }
+    if (src == "up") {
+        dst = ActuatorLevelFctEnumType::up;
+        return;
+    }
+    if (src == "down") {
+        dst = ActuatorLevelFctEnumType::down;
+        return;
+    }
+    if (src == "stop") {
+        dst = ActuatorLevelFctEnumType::stop;
+        return;
+    }
+    if (src == "percentageAbsolute") {
+        dst = ActuatorLevelFctEnumType::percentageAbsolute;
+        return;
+    }
+    if (src == "percentageRelative") {
+        dst = ActuatorLevelFctEnumType::percentageRelative;
+        return;
+    }
+    if (src == "absolute") {
+        dst = ActuatorLevelFctEnumType::absolute;
+        return;
+    }
+    if (src == "relative") {
+        dst = ActuatorLevelFctEnumType::relative;
         return;
     }
     return;
@@ -4971,62 +5038,268 @@ void convertFromJson(const JsonVariantConst &src, FunctionEnumType &dst)
     }
     return;
 }
-bool convertToJson(const TimeSeriesTypeEnumType &src, JsonVariant &dst)
+bool convertToJson(const ActuatorSwitchFctEnumType &src, JsonVariant &dst)
 {
     String enumName;
     switch (src) {
-        case TimeSeriesTypeEnumType::plan:
-            enumName = "plan";
+        case ActuatorSwitchFctEnumType::on:
+            enumName = "on";
             break;
-        case TimeSeriesTypeEnumType::singleDemand:
-            enumName = "singleDemand";
+        case ActuatorSwitchFctEnumType::off:
+            enumName = "off";
             break;
-        case TimeSeriesTypeEnumType::constraints:
-            enumName = "constraints";
-            break;
-        case TimeSeriesTypeEnumType::energyRequest:
-            enumName = "energyRequest";
-            break;
-        case TimeSeriesTypeEnumType::dischargingEnergyRequest:
-            enumName = "dischargingEnergyRequest";
-            break;
-        case TimeSeriesTypeEnumType::consumptionLimitCurve:
-            enumName = "consumptionLimitCurve";
-            break;
-        case TimeSeriesTypeEnumType::productionLimitCurve:
-            enumName = "productionLimitCurve";
+        case ActuatorSwitchFctEnumType::toggle:
+            enumName = "toggle";
             break;
     }
     return dst.set(enumName);
 }
-void convertFromJson(const JsonVariantConst &src, TimeSeriesTypeEnumType &dst)
+void convertFromJson(const JsonVariantConst &src, ActuatorSwitchFctEnumType &dst)
 {
-    if (src == "plan") {
-        dst = TimeSeriesTypeEnumType::plan;
+    if (src == "on") {
+        dst = ActuatorSwitchFctEnumType::on;
         return;
     }
-    if (src == "singleDemand") {
-        dst = TimeSeriesTypeEnumType::singleDemand;
+    if (src == "off") {
+        dst = ActuatorSwitchFctEnumType::off;
         return;
     }
-    if (src == "constraints") {
-        dst = TimeSeriesTypeEnumType::constraints;
+    if (src == "toggle") {
+        dst = ActuatorSwitchFctEnumType::toggle;
         return;
     }
-    if (src == "energyRequest") {
-        dst = TimeSeriesTypeEnumType::energyRequest;
+    return;
+}
+bool convertToJson(const AlarmTypeEnumType &src, JsonVariant &dst)
+{
+    String enumName;
+    switch (src) {
+        case AlarmTypeEnumType::alarmCancelled:
+            enumName = "alarmCancelled";
+            break;
+        case AlarmTypeEnumType::underThreshold:
+            enumName = "underThreshold";
+            break;
+        case AlarmTypeEnumType::overThreshold:
+            enumName = "overThreshold";
+            break;
+    }
+    return dst.set(enumName);
+}
+void convertFromJson(const JsonVariantConst &src, AlarmTypeEnumType &dst)
+{
+    if (src == "alarmCancelled") {
+        dst = AlarmTypeEnumType::alarmCancelled;
         return;
     }
-    if (src == "dischargingEnergyRequest") {
-        dst = TimeSeriesTypeEnumType::dischargingEnergyRequest;
+    if (src == "underThreshold") {
+        dst = AlarmTypeEnumType::underThreshold;
         return;
     }
-    if (src == "consumptionLimitCurve") {
-        dst = TimeSeriesTypeEnumType::consumptionLimitCurve;
+    if (src == "overThreshold") {
+        dst = AlarmTypeEnumType::overThreshold;
         return;
     }
-    if (src == "productionLimitCurve") {
-        dst = TimeSeriesTypeEnumType::productionLimitCurve;
+    return;
+}
+bool convertToJson(const ThresholdTypeEnumType &src, JsonVariant &dst)
+{
+    String enumName;
+    switch (src) {
+        case ThresholdTypeEnumType::goodAbove:
+            enumName = "goodAbove";
+            break;
+        case ThresholdTypeEnumType::badAbove:
+            enumName = "badAbove";
+            break;
+        case ThresholdTypeEnumType::goodBelow:
+            enumName = "goodBelow";
+            break;
+        case ThresholdTypeEnumType::badBelow:
+            enumName = "badBelow";
+            break;
+        case ThresholdTypeEnumType::minValueThreshold:
+            enumName = "minValueThreshold";
+            break;
+        case ThresholdTypeEnumType::maxValueThreshold:
+            enumName = "maxValueThreshold";
+            break;
+        case ThresholdTypeEnumType::minValueThresholdExtreme:
+            enumName = "minValueThresholdExtreme";
+            break;
+        case ThresholdTypeEnumType::maxValueThresholdExtreme:
+            enumName = "maxValueThresholdExtreme";
+            break;
+        case ThresholdTypeEnumType::sagThreshold:
+            enumName = "sagThreshold";
+            break;
+        case ThresholdTypeEnumType::swellThreshold:
+            enumName = "swellThreshold";
+            break;
+    }
+    return dst.set(enumName);
+}
+void convertFromJson(const JsonVariantConst &src, ThresholdTypeEnumType &dst)
+{
+    if (src == "goodAbove") {
+        dst = ThresholdTypeEnumType::goodAbove;
+        return;
+    }
+    if (src == "badAbove") {
+        dst = ThresholdTypeEnumType::badAbove;
+        return;
+    }
+    if (src == "goodBelow") {
+        dst = ThresholdTypeEnumType::goodBelow;
+        return;
+    }
+    if (src == "badBelow") {
+        dst = ThresholdTypeEnumType::badBelow;
+        return;
+    }
+    if (src == "minValueThreshold") {
+        dst = ThresholdTypeEnumType::minValueThreshold;
+        return;
+    }
+    if (src == "maxValueThreshold") {
+        dst = ThresholdTypeEnumType::maxValueThreshold;
+        return;
+    }
+    if (src == "minValueThresholdExtreme") {
+        dst = ThresholdTypeEnumType::minValueThresholdExtreme;
+        return;
+    }
+    if (src == "maxValueThresholdExtreme") {
+        dst = ThresholdTypeEnumType::maxValueThresholdExtreme;
+        return;
+    }
+    if (src == "sagThreshold") {
+        dst = ThresholdTypeEnumType::sagThreshold;
+        return;
+    }
+    if (src == "swellThreshold") {
+        dst = ThresholdTypeEnumType::swellThreshold;
+        return;
+    }
+    return;
+}
+bool convertToJson(const BillTypeEnumType &src, JsonVariant &dst)
+{
+    String enumName;
+    switch (src) {
+        case BillTypeEnumType::chargingSummary:
+            enumName = "chargingSummary";
+            break;
+    }
+    return dst.set(enumName);
+}
+void convertFromJson(const JsonVariantConst &src, BillTypeEnumType &dst)
+{
+    if (src == "chargingSummary") {
+        dst = BillTypeEnumType::chargingSummary;
+        return;
+    }
+    return;
+}
+bool convertToJson(const BillPositionTypeEnumType &src, JsonVariant &dst)
+{
+    String enumName;
+    switch (src) {
+        case BillPositionTypeEnumType::gridElectricEnergy:
+            enumName = "gridElectricEnergy";
+            break;
+        case BillPositionTypeEnumType::selfProducedElectricEnergy:
+            enumName = "selfProducedElectricEnergy";
+            break;
+    }
+    return dst.set(enumName);
+}
+void convertFromJson(const JsonVariantConst &src, BillPositionTypeEnumType &dst)
+{
+    if (src == "gridElectricEnergy") {
+        dst = BillPositionTypeEnumType::gridElectricEnergy;
+        return;
+    }
+    if (src == "selfProducedElectricEnergy") {
+        dst = BillPositionTypeEnumType::selfProducedElectricEnergy;
+        return;
+    }
+    return;
+}
+bool convertToJson(const BillCostTypeEnumType &src, JsonVariant &dst)
+{
+    String enumName;
+    switch (src) {
+        case BillCostTypeEnumType::absolutePrice:
+            enumName = "absolutePrice";
+            break;
+        case BillCostTypeEnumType::relativePrice:
+            enumName = "relativePrice";
+            break;
+        case BillCostTypeEnumType::co2Emission:
+            enumName = "co2Emission";
+            break;
+        case BillCostTypeEnumType::renewableEnergy:
+            enumName = "renewableEnergy";
+            break;
+        case BillCostTypeEnumType::radioactiveWaste:
+            enumName = "radioactiveWaste";
+            break;
+    }
+    return dst.set(enumName);
+}
+void convertFromJson(const JsonVariantConst &src, BillCostTypeEnumType &dst)
+{
+    if (src == "absolutePrice") {
+        dst = BillCostTypeEnumType::absolutePrice;
+        return;
+    }
+    if (src == "relativePrice") {
+        dst = BillCostTypeEnumType::relativePrice;
+        return;
+    }
+    if (src == "co2Emission") {
+        dst = BillCostTypeEnumType::co2Emission;
+        return;
+    }
+    if (src == "renewableEnergy") {
+        dst = BillCostTypeEnumType::renewableEnergy;
+        return;
+    }
+    if (src == "radioactiveWaste") {
+        dst = BillCostTypeEnumType::radioactiveWaste;
+        return;
+    }
+    return;
+}
+bool convertToJson(const IdentificationTypeEnumType &src, JsonVariant &dst)
+{
+    String enumName;
+    switch (src) {
+        case IdentificationTypeEnumType::eui48:
+            enumName = "eui48";
+            break;
+        case IdentificationTypeEnumType::eui64:
+            enumName = "eui64";
+            break;
+        case IdentificationTypeEnumType::userRfidTag:
+            enumName = "userRfidTag";
+            break;
+    }
+    return dst.set(enumName);
+}
+void convertFromJson(const JsonVariantConst &src, IdentificationTypeEnumType &dst)
+{
+    if (src == "eui48") {
+        dst = IdentificationTypeEnumType::eui48;
+        return;
+    }
+    if (src == "eui64") {
+        dst = IdentificationTypeEnumType::eui64;
+        return;
+    }
+    if (src == "userRfidTag") {
+        dst = IdentificationTypeEnumType::userRfidTag;
         return;
     }
     return;
@@ -5474,618 +5747,6 @@ void convertFromJson(const JsonVariantConst &src, MeasurementValueStateEnumType 
     }
     if (src == "error") {
         dst = MeasurementValueStateEnumType::error;
-        return;
-    }
-    return;
-}
-bool convertToJson(const ThresholdTypeEnumType &src, JsonVariant &dst)
-{
-    String enumName;
-    switch (src) {
-        case ThresholdTypeEnumType::goodAbove:
-            enumName = "goodAbove";
-            break;
-        case ThresholdTypeEnumType::badAbove:
-            enumName = "badAbove";
-            break;
-        case ThresholdTypeEnumType::goodBelow:
-            enumName = "goodBelow";
-            break;
-        case ThresholdTypeEnumType::badBelow:
-            enumName = "badBelow";
-            break;
-        case ThresholdTypeEnumType::minValueThreshold:
-            enumName = "minValueThreshold";
-            break;
-        case ThresholdTypeEnumType::maxValueThreshold:
-            enumName = "maxValueThreshold";
-            break;
-        case ThresholdTypeEnumType::minValueThresholdExtreme:
-            enumName = "minValueThresholdExtreme";
-            break;
-        case ThresholdTypeEnumType::maxValueThresholdExtreme:
-            enumName = "maxValueThresholdExtreme";
-            break;
-        case ThresholdTypeEnumType::sagThreshold:
-            enumName = "sagThreshold";
-            break;
-        case ThresholdTypeEnumType::swellThreshold:
-            enumName = "swellThreshold";
-            break;
-    }
-    return dst.set(enumName);
-}
-void convertFromJson(const JsonVariantConst &src, ThresholdTypeEnumType &dst)
-{
-    if (src == "goodAbove") {
-        dst = ThresholdTypeEnumType::goodAbove;
-        return;
-    }
-    if (src == "badAbove") {
-        dst = ThresholdTypeEnumType::badAbove;
-        return;
-    }
-    if (src == "goodBelow") {
-        dst = ThresholdTypeEnumType::goodBelow;
-        return;
-    }
-    if (src == "badBelow") {
-        dst = ThresholdTypeEnumType::badBelow;
-        return;
-    }
-    if (src == "minValueThreshold") {
-        dst = ThresholdTypeEnumType::minValueThreshold;
-        return;
-    }
-    if (src == "maxValueThreshold") {
-        dst = ThresholdTypeEnumType::maxValueThreshold;
-        return;
-    }
-    if (src == "minValueThresholdExtreme") {
-        dst = ThresholdTypeEnumType::minValueThresholdExtreme;
-        return;
-    }
-    if (src == "maxValueThresholdExtreme") {
-        dst = ThresholdTypeEnumType::maxValueThresholdExtreme;
-        return;
-    }
-    if (src == "sagThreshold") {
-        dst = ThresholdTypeEnumType::sagThreshold;
-        return;
-    }
-    if (src == "swellThreshold") {
-        dst = ThresholdTypeEnumType::swellThreshold;
-        return;
-    }
-    return;
-}
-bool convertToJson(const DirectControlActivityStateEnumType &src, JsonVariant &dst)
-{
-    String enumName;
-    switch (src) {
-        case DirectControlActivityStateEnumType::running:
-            enumName = "running";
-            break;
-        case DirectControlActivityStateEnumType::paused:
-            enumName = "paused";
-            break;
-        case DirectControlActivityStateEnumType::inactive:
-            enumName = "inactive";
-            break;
-    }
-    return dst.set(enumName);
-}
-void convertFromJson(const JsonVariantConst &src, DirectControlActivityStateEnumType &dst)
-{
-    if (src == "running") {
-        dst = DirectControlActivityStateEnumType::running;
-        return;
-    }
-    if (src == "paused") {
-        dst = DirectControlActivityStateEnumType::paused;
-        return;
-    }
-    if (src == "inactive") {
-        dst = DirectControlActivityStateEnumType::inactive;
-        return;
-    }
-    return;
-}
-bool convertToJson(const PowerTimeSlotValueTypeEnumType &src, JsonVariant &dst)
-{
-    String enumName;
-    switch (src) {
-        case PowerTimeSlotValueTypeEnumType::power:
-            enumName = "power";
-            break;
-        case PowerTimeSlotValueTypeEnumType::powerMin:
-            enumName = "powerMin";
-            break;
-        case PowerTimeSlotValueTypeEnumType::powerMax:
-            enumName = "powerMax";
-            break;
-        case PowerTimeSlotValueTypeEnumType::powerExpectedValue:
-            enumName = "powerExpectedValue";
-            break;
-        case PowerTimeSlotValueTypeEnumType::powerStandardDeviation:
-            enumName = "powerStandardDeviation";
-            break;
-        case PowerTimeSlotValueTypeEnumType::powerSkewness:
-            enumName = "powerSkewness";
-            break;
-        case PowerTimeSlotValueTypeEnumType::energy:
-            enumName = "energy";
-            break;
-        case PowerTimeSlotValueTypeEnumType::energyMin:
-            enumName = "energyMin";
-            break;
-        case PowerTimeSlotValueTypeEnumType::energyMax:
-            enumName = "energyMax";
-            break;
-        case PowerTimeSlotValueTypeEnumType::energyExpectedValue:
-            enumName = "energyExpectedValue";
-            break;
-        case PowerTimeSlotValueTypeEnumType::energyStandardDeviation:
-            enumName = "energyStandardDeviation";
-            break;
-        case PowerTimeSlotValueTypeEnumType::energySkewness:
-            enumName = "energySkewness";
-            break;
-    }
-    return dst.set(enumName);
-}
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueTypeEnumType &dst)
-{
-    if (src == "power") {
-        dst = PowerTimeSlotValueTypeEnumType::power;
-        return;
-    }
-    if (src == "powerMin") {
-        dst = PowerTimeSlotValueTypeEnumType::powerMin;
-        return;
-    }
-    if (src == "powerMax") {
-        dst = PowerTimeSlotValueTypeEnumType::powerMax;
-        return;
-    }
-    if (src == "powerExpectedValue") {
-        dst = PowerTimeSlotValueTypeEnumType::powerExpectedValue;
-        return;
-    }
-    if (src == "powerStandardDeviation") {
-        dst = PowerTimeSlotValueTypeEnumType::powerStandardDeviation;
-        return;
-    }
-    if (src == "powerSkewness") {
-        dst = PowerTimeSlotValueTypeEnumType::powerSkewness;
-        return;
-    }
-    if (src == "energy") {
-        dst = PowerTimeSlotValueTypeEnumType::energy;
-        return;
-    }
-    if (src == "energyMin") {
-        dst = PowerTimeSlotValueTypeEnumType::energyMin;
-        return;
-    }
-    if (src == "energyMax") {
-        dst = PowerTimeSlotValueTypeEnumType::energyMax;
-        return;
-    }
-    if (src == "energyExpectedValue") {
-        dst = PowerTimeSlotValueTypeEnumType::energyExpectedValue;
-        return;
-    }
-    if (src == "energyStandardDeviation") {
-        dst = PowerTimeSlotValueTypeEnumType::energyStandardDeviation;
-        return;
-    }
-    if (src == "energySkewness") {
-        dst = PowerTimeSlotValueTypeEnumType::energySkewness;
-        return;
-    }
-    return;
-}
-bool convertToJson(const PowerSequenceScopeEnumType &src, JsonVariant &dst)
-{
-    String enumName;
-    switch (src) {
-        case PowerSequenceScopeEnumType::forecast:
-            enumName = "forecast";
-            break;
-        case PowerSequenceScopeEnumType::measurement:
-            enumName = "measurement";
-            break;
-        case PowerSequenceScopeEnumType::recommendation:
-            enumName = "recommendation";
-            break;
-    }
-    return dst.set(enumName);
-}
-void convertFromJson(const JsonVariantConst &src, PowerSequenceScopeEnumType &dst)
-{
-    if (src == "forecast") {
-        dst = PowerSequenceScopeEnumType::forecast;
-        return;
-    }
-    if (src == "measurement") {
-        dst = PowerSequenceScopeEnumType::measurement;
-        return;
-    }
-    if (src == "recommendation") {
-        dst = PowerSequenceScopeEnumType::recommendation;
-        return;
-    }
-    return;
-}
-bool convertToJson(const PowerSequenceStateEnumType &src, JsonVariant &dst)
-{
-    String enumName;
-    switch (src) {
-        case PowerSequenceStateEnumType::running:
-            enumName = "running";
-            break;
-        case PowerSequenceStateEnumType::paused:
-            enumName = "paused";
-            break;
-        case PowerSequenceStateEnumType::scheduled:
-            enumName = "scheduled";
-            break;
-        case PowerSequenceStateEnumType::scheduledPaused:
-            enumName = "scheduledPaused";
-            break;
-        case PowerSequenceStateEnumType::pending:
-            enumName = "pending";
-            break;
-        case PowerSequenceStateEnumType::inactive:
-            enumName = "inactive";
-            break;
-        case PowerSequenceStateEnumType::completed:
-            enumName = "completed";
-            break;
-        case PowerSequenceStateEnumType::invalid:
-            enumName = "invalid";
-            break;
-    }
-    return dst.set(enumName);
-}
-void convertFromJson(const JsonVariantConst &src, PowerSequenceStateEnumType &dst)
-{
-    if (src == "running") {
-        dst = PowerSequenceStateEnumType::running;
-        return;
-    }
-    if (src == "paused") {
-        dst = PowerSequenceStateEnumType::paused;
-        return;
-    }
-    if (src == "scheduled") {
-        dst = PowerSequenceStateEnumType::scheduled;
-        return;
-    }
-    if (src == "scheduledPaused") {
-        dst = PowerSequenceStateEnumType::scheduledPaused;
-        return;
-    }
-    if (src == "pending") {
-        dst = PowerSequenceStateEnumType::pending;
-        return;
-    }
-    if (src == "inactive") {
-        dst = PowerSequenceStateEnumType::inactive;
-        return;
-    }
-    if (src == "completed") {
-        dst = PowerSequenceStateEnumType::completed;
-        return;
-    }
-    if (src == "invalid") {
-        dst = PowerSequenceStateEnumType::invalid;
-        return;
-    }
-    return;
-}
-bool convertToJson(const ActuatorLevelFctEnumType &src, JsonVariant &dst)
-{
-    String enumName;
-    switch (src) {
-        case ActuatorLevelFctEnumType::start:
-            enumName = "start";
-            break;
-        case ActuatorLevelFctEnumType::up:
-            enumName = "up";
-            break;
-        case ActuatorLevelFctEnumType::down:
-            enumName = "down";
-            break;
-        case ActuatorLevelFctEnumType::stop:
-            enumName = "stop";
-            break;
-        case ActuatorLevelFctEnumType::percentageAbsolute:
-            enumName = "percentageAbsolute";
-            break;
-        case ActuatorLevelFctEnumType::percentageRelative:
-            enumName = "percentageRelative";
-            break;
-        case ActuatorLevelFctEnumType::absolute:
-            enumName = "absolute";
-            break;
-        case ActuatorLevelFctEnumType::relative:
-            enumName = "relative";
-            break;
-    }
-    return dst.set(enumName);
-}
-void convertFromJson(const JsonVariantConst &src, ActuatorLevelFctEnumType &dst)
-{
-    if (src == "start") {
-        dst = ActuatorLevelFctEnumType::start;
-        return;
-    }
-    if (src == "up") {
-        dst = ActuatorLevelFctEnumType::up;
-        return;
-    }
-    if (src == "down") {
-        dst = ActuatorLevelFctEnumType::down;
-        return;
-    }
-    if (src == "stop") {
-        dst = ActuatorLevelFctEnumType::stop;
-        return;
-    }
-    if (src == "percentageAbsolute") {
-        dst = ActuatorLevelFctEnumType::percentageAbsolute;
-        return;
-    }
-    if (src == "percentageRelative") {
-        dst = ActuatorLevelFctEnumType::percentageRelative;
-        return;
-    }
-    if (src == "absolute") {
-        dst = ActuatorLevelFctEnumType::absolute;
-        return;
-    }
-    if (src == "relative") {
-        dst = ActuatorLevelFctEnumType::relative;
-        return;
-    }
-    return;
-}
-bool convertToJson(const CmdClassifierType &src, JsonVariant &dst)
-{
-    String enumName;
-    switch (src) {
-        case CmdClassifierType::read:
-            enumName = "read";
-            break;
-        case CmdClassifierType::reply:
-            enumName = "reply";
-            break;
-        case CmdClassifierType::notify:
-            enumName = "notify";
-            break;
-        case CmdClassifierType::write:
-            enumName = "write";
-            break;
-        case CmdClassifierType::call:
-            enumName = "call";
-            break;
-        case CmdClassifierType::result:
-            enumName = "result";
-            break;
-    }
-    return dst.set(enumName);
-}
-void convertFromJson(const JsonVariantConst &src, CmdClassifierType &dst)
-{
-    if (src == "read") {
-        dst = CmdClassifierType::read;
-        return;
-    }
-    if (src == "reply") {
-        dst = CmdClassifierType::reply;
-        return;
-    }
-    if (src == "notify") {
-        dst = CmdClassifierType::notify;
-        return;
-    }
-    if (src == "write") {
-        dst = CmdClassifierType::write;
-        return;
-    }
-    if (src == "call") {
-        dst = CmdClassifierType::call;
-        return;
-    }
-    if (src == "result") {
-        dst = CmdClassifierType::result;
-        return;
-    }
-    return;
-}
-bool convertToJson(const ActuatorSwitchFctEnumType &src, JsonVariant &dst)
-{
-    String enumName;
-    switch (src) {
-        case ActuatorSwitchFctEnumType::on:
-            enumName = "on";
-            break;
-        case ActuatorSwitchFctEnumType::off:
-            enumName = "off";
-            break;
-        case ActuatorSwitchFctEnumType::toggle:
-            enumName = "toggle";
-            break;
-    }
-    return dst.set(enumName);
-}
-void convertFromJson(const JsonVariantConst &src, ActuatorSwitchFctEnumType &dst)
-{
-    if (src == "on") {
-        dst = ActuatorSwitchFctEnumType::on;
-        return;
-    }
-    if (src == "off") {
-        dst = ActuatorSwitchFctEnumType::off;
-        return;
-    }
-    if (src == "toggle") {
-        dst = ActuatorSwitchFctEnumType::toggle;
-        return;
-    }
-    return;
-}
-bool convertToJson(const AlarmTypeEnumType &src, JsonVariant &dst)
-{
-    String enumName;
-    switch (src) {
-        case AlarmTypeEnumType::alarmCancelled:
-            enumName = "alarmCancelled";
-            break;
-        case AlarmTypeEnumType::underThreshold:
-            enumName = "underThreshold";
-            break;
-        case AlarmTypeEnumType::overThreshold:
-            enumName = "overThreshold";
-            break;
-    }
-    return dst.set(enumName);
-}
-void convertFromJson(const JsonVariantConst &src, AlarmTypeEnumType &dst)
-{
-    if (src == "alarmCancelled") {
-        dst = AlarmTypeEnumType::alarmCancelled;
-        return;
-    }
-    if (src == "underThreshold") {
-        dst = AlarmTypeEnumType::underThreshold;
-        return;
-    }
-    if (src == "overThreshold") {
-        dst = AlarmTypeEnumType::overThreshold;
-        return;
-    }
-    return;
-}
-bool convertToJson(const BillTypeEnumType &src, JsonVariant &dst)
-{
-    String enumName;
-    switch (src) {
-        case BillTypeEnumType::chargingSummary:
-            enumName = "chargingSummary";
-            break;
-    }
-    return dst.set(enumName);
-}
-void convertFromJson(const JsonVariantConst &src, BillTypeEnumType &dst)
-{
-    if (src == "chargingSummary") {
-        dst = BillTypeEnumType::chargingSummary;
-        return;
-    }
-    return;
-}
-bool convertToJson(const BillPositionTypeEnumType &src, JsonVariant &dst)
-{
-    String enumName;
-    switch (src) {
-        case BillPositionTypeEnumType::gridElectricEnergy:
-            enumName = "gridElectricEnergy";
-            break;
-        case BillPositionTypeEnumType::selfProducedElectricEnergy:
-            enumName = "selfProducedElectricEnergy";
-            break;
-    }
-    return dst.set(enumName);
-}
-void convertFromJson(const JsonVariantConst &src, BillPositionTypeEnumType &dst)
-{
-    if (src == "gridElectricEnergy") {
-        dst = BillPositionTypeEnumType::gridElectricEnergy;
-        return;
-    }
-    if (src == "selfProducedElectricEnergy") {
-        dst = BillPositionTypeEnumType::selfProducedElectricEnergy;
-        return;
-    }
-    return;
-}
-bool convertToJson(const BillCostTypeEnumType &src, JsonVariant &dst)
-{
-    String enumName;
-    switch (src) {
-        case BillCostTypeEnumType::absolutePrice:
-            enumName = "absolutePrice";
-            break;
-        case BillCostTypeEnumType::relativePrice:
-            enumName = "relativePrice";
-            break;
-        case BillCostTypeEnumType::co2Emission:
-            enumName = "co2Emission";
-            break;
-        case BillCostTypeEnumType::renewableEnergy:
-            enumName = "renewableEnergy";
-            break;
-        case BillCostTypeEnumType::radioactiveWaste:
-            enumName = "radioactiveWaste";
-            break;
-    }
-    return dst.set(enumName);
-}
-void convertFromJson(const JsonVariantConst &src, BillCostTypeEnumType &dst)
-{
-    if (src == "absolutePrice") {
-        dst = BillCostTypeEnumType::absolutePrice;
-        return;
-    }
-    if (src == "relativePrice") {
-        dst = BillCostTypeEnumType::relativePrice;
-        return;
-    }
-    if (src == "co2Emission") {
-        dst = BillCostTypeEnumType::co2Emission;
-        return;
-    }
-    if (src == "renewableEnergy") {
-        dst = BillCostTypeEnumType::renewableEnergy;
-        return;
-    }
-    if (src == "radioactiveWaste") {
-        dst = BillCostTypeEnumType::radioactiveWaste;
-        return;
-    }
-    return;
-}
-bool convertToJson(const IdentificationTypeEnumType &src, JsonVariant &dst)
-{
-    String enumName;
-    switch (src) {
-        case IdentificationTypeEnumType::eui48:
-            enumName = "eui48";
-            break;
-        case IdentificationTypeEnumType::eui64:
-            enumName = "eui64";
-            break;
-        case IdentificationTypeEnumType::userRfidTag:
-            enumName = "userRfidTag";
-            break;
-    }
-    return dst.set(enumName);
-}
-void convertFromJson(const JsonVariantConst &src, IdentificationTypeEnumType &dst)
-{
-    if (src == "eui48") {
-        dst = IdentificationTypeEnumType::eui48;
-        return;
-    }
-    if (src == "eui64") {
-        dst = IdentificationTypeEnumType::eui64;
-        return;
-    }
-    if (src == "userRfidTag") {
-        dst = IdentificationTypeEnumType::userRfidTag;
         return;
     }
     return;
@@ -6596,6 +6257,232 @@ void convertFromJson(const JsonVariantConst &src, PowerSupplyConditionEnumType &
     }
     if (src == "error") {
         dst = PowerSupplyConditionEnumType::error;
+        return;
+    }
+    return;
+}
+bool convertToJson(const DirectControlActivityStateEnumType &src, JsonVariant &dst)
+{
+    String enumName;
+    switch (src) {
+        case DirectControlActivityStateEnumType::running:
+            enumName = "running";
+            break;
+        case DirectControlActivityStateEnumType::paused:
+            enumName = "paused";
+            break;
+        case DirectControlActivityStateEnumType::inactive:
+            enumName = "inactive";
+            break;
+    }
+    return dst.set(enumName);
+}
+void convertFromJson(const JsonVariantConst &src, DirectControlActivityStateEnumType &dst)
+{
+    if (src == "running") {
+        dst = DirectControlActivityStateEnumType::running;
+        return;
+    }
+    if (src == "paused") {
+        dst = DirectControlActivityStateEnumType::paused;
+        return;
+    }
+    if (src == "inactive") {
+        dst = DirectControlActivityStateEnumType::inactive;
+        return;
+    }
+    return;
+}
+bool convertToJson(const PowerTimeSlotValueTypeEnumType &src, JsonVariant &dst)
+{
+    String enumName;
+    switch (src) {
+        case PowerTimeSlotValueTypeEnumType::power:
+            enumName = "power";
+            break;
+        case PowerTimeSlotValueTypeEnumType::powerMin:
+            enumName = "powerMin";
+            break;
+        case PowerTimeSlotValueTypeEnumType::powerMax:
+            enumName = "powerMax";
+            break;
+        case PowerTimeSlotValueTypeEnumType::powerExpectedValue:
+            enumName = "powerExpectedValue";
+            break;
+        case PowerTimeSlotValueTypeEnumType::powerStandardDeviation:
+            enumName = "powerStandardDeviation";
+            break;
+        case PowerTimeSlotValueTypeEnumType::powerSkewness:
+            enumName = "powerSkewness";
+            break;
+        case PowerTimeSlotValueTypeEnumType::energy:
+            enumName = "energy";
+            break;
+        case PowerTimeSlotValueTypeEnumType::energyMin:
+            enumName = "energyMin";
+            break;
+        case PowerTimeSlotValueTypeEnumType::energyMax:
+            enumName = "energyMax";
+            break;
+        case PowerTimeSlotValueTypeEnumType::energyExpectedValue:
+            enumName = "energyExpectedValue";
+            break;
+        case PowerTimeSlotValueTypeEnumType::energyStandardDeviation:
+            enumName = "energyStandardDeviation";
+            break;
+        case PowerTimeSlotValueTypeEnumType::energySkewness:
+            enumName = "energySkewness";
+            break;
+    }
+    return dst.set(enumName);
+}
+void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueTypeEnumType &dst)
+{
+    if (src == "power") {
+        dst = PowerTimeSlotValueTypeEnumType::power;
+        return;
+    }
+    if (src == "powerMin") {
+        dst = PowerTimeSlotValueTypeEnumType::powerMin;
+        return;
+    }
+    if (src == "powerMax") {
+        dst = PowerTimeSlotValueTypeEnumType::powerMax;
+        return;
+    }
+    if (src == "powerExpectedValue") {
+        dst = PowerTimeSlotValueTypeEnumType::powerExpectedValue;
+        return;
+    }
+    if (src == "powerStandardDeviation") {
+        dst = PowerTimeSlotValueTypeEnumType::powerStandardDeviation;
+        return;
+    }
+    if (src == "powerSkewness") {
+        dst = PowerTimeSlotValueTypeEnumType::powerSkewness;
+        return;
+    }
+    if (src == "energy") {
+        dst = PowerTimeSlotValueTypeEnumType::energy;
+        return;
+    }
+    if (src == "energyMin") {
+        dst = PowerTimeSlotValueTypeEnumType::energyMin;
+        return;
+    }
+    if (src == "energyMax") {
+        dst = PowerTimeSlotValueTypeEnumType::energyMax;
+        return;
+    }
+    if (src == "energyExpectedValue") {
+        dst = PowerTimeSlotValueTypeEnumType::energyExpectedValue;
+        return;
+    }
+    if (src == "energyStandardDeviation") {
+        dst = PowerTimeSlotValueTypeEnumType::energyStandardDeviation;
+        return;
+    }
+    if (src == "energySkewness") {
+        dst = PowerTimeSlotValueTypeEnumType::energySkewness;
+        return;
+    }
+    return;
+}
+bool convertToJson(const PowerSequenceScopeEnumType &src, JsonVariant &dst)
+{
+    String enumName;
+    switch (src) {
+        case PowerSequenceScopeEnumType::forecast:
+            enumName = "forecast";
+            break;
+        case PowerSequenceScopeEnumType::measurement:
+            enumName = "measurement";
+            break;
+        case PowerSequenceScopeEnumType::recommendation:
+            enumName = "recommendation";
+            break;
+    }
+    return dst.set(enumName);
+}
+void convertFromJson(const JsonVariantConst &src, PowerSequenceScopeEnumType &dst)
+{
+    if (src == "forecast") {
+        dst = PowerSequenceScopeEnumType::forecast;
+        return;
+    }
+    if (src == "measurement") {
+        dst = PowerSequenceScopeEnumType::measurement;
+        return;
+    }
+    if (src == "recommendation") {
+        dst = PowerSequenceScopeEnumType::recommendation;
+        return;
+    }
+    return;
+}
+bool convertToJson(const PowerSequenceStateEnumType &src, JsonVariant &dst)
+{
+    String enumName;
+    switch (src) {
+        case PowerSequenceStateEnumType::running:
+            enumName = "running";
+            break;
+        case PowerSequenceStateEnumType::paused:
+            enumName = "paused";
+            break;
+        case PowerSequenceStateEnumType::scheduled:
+            enumName = "scheduled";
+            break;
+        case PowerSequenceStateEnumType::scheduledPaused:
+            enumName = "scheduledPaused";
+            break;
+        case PowerSequenceStateEnumType::pending:
+            enumName = "pending";
+            break;
+        case PowerSequenceStateEnumType::inactive:
+            enumName = "inactive";
+            break;
+        case PowerSequenceStateEnumType::completed:
+            enumName = "completed";
+            break;
+        case PowerSequenceStateEnumType::invalid:
+            enumName = "invalid";
+            break;
+    }
+    return dst.set(enumName);
+}
+void convertFromJson(const JsonVariantConst &src, PowerSequenceStateEnumType &dst)
+{
+    if (src == "running") {
+        dst = PowerSequenceStateEnumType::running;
+        return;
+    }
+    if (src == "paused") {
+        dst = PowerSequenceStateEnumType::paused;
+        return;
+    }
+    if (src == "scheduled") {
+        dst = PowerSequenceStateEnumType::scheduled;
+        return;
+    }
+    if (src == "scheduledPaused") {
+        dst = PowerSequenceStateEnumType::scheduledPaused;
+        return;
+    }
+    if (src == "pending") {
+        dst = PowerSequenceStateEnumType::pending;
+        return;
+    }
+    if (src == "inactive") {
+        dst = PowerSequenceStateEnumType::inactive;
+        return;
+    }
+    if (src == "completed") {
+        dst = PowerSequenceStateEnumType::completed;
+        return;
+    }
+    if (src == "invalid") {
+        dst = PowerSequenceStateEnumType::invalid;
         return;
     }
     return;
@@ -7545,6 +7432,59 @@ void convertFromJson(const JsonVariantConst &src, LoadControlCategoryEnumType &d
     }
     return;
 }
+bool convertToJson(const MessagingTypeEnumType &src, JsonVariant &dst)
+{
+    String enumName;
+    switch (src) {
+        case MessagingTypeEnumType::logging:
+            enumName = "logging";
+            break;
+        case MessagingTypeEnumType::information:
+            enumName = "information";
+            break;
+        case MessagingTypeEnumType::warning:
+            enumName = "warning";
+            break;
+        case MessagingTypeEnumType::alarm:
+            enumName = "alarm";
+            break;
+        case MessagingTypeEnumType::emergency:
+            enumName = "emergency";
+            break;
+        case MessagingTypeEnumType::obsolete:
+            enumName = "obsolete";
+            break;
+    }
+    return dst.set(enumName);
+}
+void convertFromJson(const JsonVariantConst &src, MessagingTypeEnumType &dst)
+{
+    if (src == "logging") {
+        dst = MessagingTypeEnumType::logging;
+        return;
+    }
+    if (src == "information") {
+        dst = MessagingTypeEnumType::information;
+        return;
+    }
+    if (src == "warning") {
+        dst = MessagingTypeEnumType::warning;
+        return;
+    }
+    if (src == "alarm") {
+        dst = MessagingTypeEnumType::alarm;
+        return;
+    }
+    if (src == "emergency") {
+        dst = MessagingTypeEnumType::emergency;
+        return;
+    }
+    if (src == "obsolete") {
+        dst = MessagingTypeEnumType::obsolete;
+        return;
+    }
+    return;
+}
 bool convertToJson(const NetworkManagementFeatureSetType &src, JsonVariant &dst)
 {
     String enumName;
@@ -8475,69 +8415,247 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobSourceEnumTyp
     }
     return;
 }
-bool convertToJson(const MessagingDataType &src, JsonVariant &dst)
+bool convertToJson(const TimeSeriesTypeEnumType &src, JsonVariant &dst)
 {
-    if (src.timestamp) {
-        dst["timestamp"] = *src.timestamp;
+    String enumName;
+    switch (src) {
+        case TimeSeriesTypeEnumType::plan:
+            enumName = "plan";
+            break;
+        case TimeSeriesTypeEnumType::singleDemand:
+            enumName = "singleDemand";
+            break;
+        case TimeSeriesTypeEnumType::constraints:
+            enumName = "constraints";
+            break;
+        case TimeSeriesTypeEnumType::energyRequest:
+            enumName = "energyRequest";
+            break;
+        case TimeSeriesTypeEnumType::dischargingEnergyRequest:
+            enumName = "dischargingEnergyRequest";
+            break;
+        case TimeSeriesTypeEnumType::consumptionLimitCurve:
+            enumName = "consumptionLimitCurve";
+            break;
+        case TimeSeriesTypeEnumType::productionLimitCurve:
+            enumName = "productionLimitCurve";
+            break;
     }
-    if (src.messagingNumber) {
-        dst["messagingNumber"] = *src.messagingNumber;
+    return dst.set(enumName);
+}
+void convertFromJson(const JsonVariantConst &src, TimeSeriesTypeEnumType &dst)
+{
+    if (src == "plan") {
+        dst = TimeSeriesTypeEnumType::plan;
+        return;
     }
-    if (src.type) {
-        dst["type"] = *src.type;
+    if (src == "singleDemand") {
+        dst = TimeSeriesTypeEnumType::singleDemand;
+        return;
     }
-    if (src.text) {
-        dst["text"] = *src.text;
+    if (src == "constraints") {
+        dst = TimeSeriesTypeEnumType::constraints;
+        return;
+    }
+    if (src == "energyRequest") {
+        dst = TimeSeriesTypeEnumType::energyRequest;
+        return;
+    }
+    if (src == "dischargingEnergyRequest") {
+        dst = TimeSeriesTypeEnumType::dischargingEnergyRequest;
+        return;
+    }
+    if (src == "consumptionLimitCurve") {
+        dst = TimeSeriesTypeEnumType::consumptionLimitCurve;
+        return;
+    }
+    if (src == "productionLimitCurve") {
+        dst = TimeSeriesTypeEnumType::productionLimitCurve;
+        return;
+    }
+    return;
+}
+bool convertToJson(const FeatureAddressType &src, JsonVariant &dst)
+{
+    if (src.device) {
+        dst["device"] = *src.device;
+    }
+    if (src.entity) {
+        dst["entity"] = *src.entity;
+    }
+    if (src.feature) {
+        dst["feature"] = *src.feature;
     }
 
     return true;
 }
-void convertFromJson(const JsonVariantConst &src, MessagingDataType &dst)
+void convertFromJson(const JsonVariantConst &src, FeatureAddressType &dst)
 {
     if (src.is<JsonArrayConst>()) {
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
+            if (item["device"]) {
+                dst.device = item["device"].as<decltype(dst.device)::value_type>();
+            } else {
+                //dst.device = std::nullopt;
+            }
+            if (item["entity"]) {
+                dst.entity = item["entity"].as<decltype(dst.entity)::value_type>();
+            } else {
+                //dst.entity = std::nullopt;
+            }
+            if (item["feature"]) {
+                dst.feature = item["feature"].as<decltype(dst.feature)::value_type>();
+            } else {
+                //dst.feature = std::nullopt;
+            }
+        }
+    } else {
+        if (src["device"]) {
+            dst.device = src["device"].as<decltype(dst.device)::value_type>();
+        } else {
+            //dst.device = std::nullopt;
+        }
+        if (src["entity"]) {
+            dst.entity = src["entity"].as<decltype(dst.entity)::value_type>();
+        } else {
+            //dst.entity = std::nullopt;
+        }
+        if (src["feature"]) {
+            dst.feature = src["feature"].as<decltype(dst.feature)::value_type>();
+        } else {
+            //dst.feature = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const HeaderType &src, JsonVariant &dst)
+{
+    if (src.specificationVersion) {
+        dst["specificationVersion"] = *src.specificationVersion;
+    }
+    if (src.addressSource) {
+        dst["addressSource"] = *src.addressSource;
+    }
+    if (src.addressDestination) {
+        dst["addressDestination"] = *src.addressDestination;
+    }
+    if (src.addressOriginator) {
+        dst["addressOriginator"] = *src.addressOriginator;
+    }
+    if (src.msgCounter) {
+        dst["msgCounter"] = *src.msgCounter;
+    }
+    if (src.msgCounterReference) {
+        dst["msgCounterReference"] = *src.msgCounterReference;
+    }
+    if (src.cmdClassifier) {
+        dst["cmdClassifier"] = *src.cmdClassifier;
+    }
+    if (src.ackRequest) {
+        dst["ackRequest"] = *src.ackRequest;
+    }
+    if (src.timestamp) {
+        dst["timestamp"] = *src.timestamp;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, HeaderType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["specificationVersion"]) {
+                dst.specificationVersion = item["specificationVersion"].as<decltype(dst.specificationVersion)::value_type>();
+            } else {
+                //dst.specificationVersion = std::nullopt;
+            }
+            if (item["addressSource"]) {
+                dst.addressSource = item["addressSource"].as<decltype(dst.addressSource)::value_type>();
+            } else {
+                //dst.addressSource = std::nullopt;
+            }
+            if (item["addressDestination"]) {
+                dst.addressDestination = item["addressDestination"].as<decltype(dst.addressDestination)::value_type>();
+            } else {
+                //dst.addressDestination = std::nullopt;
+            }
+            if (item["addressOriginator"]) {
+                dst.addressOriginator = item["addressOriginator"].as<decltype(dst.addressOriginator)::value_type>();
+            } else {
+                //dst.addressOriginator = std::nullopt;
+            }
+            if (item["msgCounter"]) {
+                dst.msgCounter = item["msgCounter"].as<decltype(dst.msgCounter)::value_type>();
+            } else {
+                //dst.msgCounter = std::nullopt;
+            }
+            if (item["msgCounterReference"]) {
+                dst.msgCounterReference = item["msgCounterReference"].as<decltype(dst.msgCounterReference)::value_type>();
+            } else {
+                //dst.msgCounterReference = std::nullopt;
+            }
+            if (item["cmdClassifier"]) {
+                dst.cmdClassifier = item["cmdClassifier"].as<decltype(dst.cmdClassifier)::value_type>();
+            } else {
+                //dst.cmdClassifier = std::nullopt;
+            }
+            if (item["ackRequest"]) {
+                dst.ackRequest = item["ackRequest"].as<decltype(dst.ackRequest)::value_type>();
+            } else {
+                //dst.ackRequest = std::nullopt;
+            }
             if (item["timestamp"]) {
                 dst.timestamp = item["timestamp"].as<decltype(dst.timestamp)::value_type>();
             } else {
                 //dst.timestamp = std::nullopt;
             }
-            if (item["messagingNumber"]) {
-                dst.messagingNumber = item["messagingNumber"].as<decltype(dst.messagingNumber)::value_type>();
-            } else {
-                //dst.messagingNumber = std::nullopt;
-            }
-            if (item["type"]) {
-                dst.type = item["type"].as<decltype(dst.type)::value_type>();
-            } else {
-                //dst.type = std::nullopt;
-            }
-            if (item["text"]) {
-                dst.text = item["text"].as<decltype(dst.text)::value_type>();
-            } else {
-                //dst.text = std::nullopt;
-            }
         }
     } else {
+        if (src["specificationVersion"]) {
+            dst.specificationVersion = src["specificationVersion"].as<decltype(dst.specificationVersion)::value_type>();
+        } else {
+            //dst.specificationVersion = std::nullopt;
+        }
+        if (src["addressSource"]) {
+            dst.addressSource = src["addressSource"].as<decltype(dst.addressSource)::value_type>();
+        } else {
+            //dst.addressSource = std::nullopt;
+        }
+        if (src["addressDestination"]) {
+            dst.addressDestination = src["addressDestination"].as<decltype(dst.addressDestination)::value_type>();
+        } else {
+            //dst.addressDestination = std::nullopt;
+        }
+        if (src["addressOriginator"]) {
+            dst.addressOriginator = src["addressOriginator"].as<decltype(dst.addressOriginator)::value_type>();
+        } else {
+            //dst.addressOriginator = std::nullopt;
+        }
+        if (src["msgCounter"]) {
+            dst.msgCounter = src["msgCounter"].as<decltype(dst.msgCounter)::value_type>();
+        } else {
+            //dst.msgCounter = std::nullopt;
+        }
+        if (src["msgCounterReference"]) {
+            dst.msgCounterReference = src["msgCounterReference"].as<decltype(dst.msgCounterReference)::value_type>();
+        } else {
+            //dst.msgCounterReference = std::nullopt;
+        }
+        if (src["cmdClassifier"]) {
+            dst.cmdClassifier = src["cmdClassifier"].as<decltype(dst.cmdClassifier)::value_type>();
+        } else {
+            //dst.cmdClassifier = std::nullopt;
+        }
+        if (src["ackRequest"]) {
+            dst.ackRequest = src["ackRequest"].as<decltype(dst.ackRequest)::value_type>();
+        } else {
+            //dst.ackRequest = std::nullopt;
+        }
         if (src["timestamp"]) {
             dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
         } else {
             //dst.timestamp = std::nullopt;
-        }
-        if (src["messagingNumber"]) {
-            dst.messagingNumber = src["messagingNumber"].as<decltype(dst.messagingNumber)::value_type>();
-        } else {
-            //dst.messagingNumber = std::nullopt;
-        }
-        if (src["type"]) {
-            dst.type = src["type"].as<decltype(dst.type)::value_type>();
-        } else {
-            //dst.type = std::nullopt;
-        }
-        if (src["text"]) {
-            dst.text = src["text"].as<decltype(dst.text)::value_type>();
-        } else {
-            //dst.text = std::nullopt;
         }
     }
 }
@@ -8549,176 +8667,309 @@ bool convertToJson(const ElementTagType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, ElementTagType &dst)
 {
 }
-bool convertToJson(const MessagingDataElementsType &src, JsonVariant &dst)
+bool convertToJson(const CmdControlType &src, JsonVariant &dst)
 {
-    if (src.timestamp) {
-        dst["timestamp"] = *src.timestamp;
+    if (src.var_delete) {
+        dst["delete"] = *src.var_delete;
     }
-    if (src.messagingNumber) {
-        dst["messagingNumber"] = *src.messagingNumber;
-    }
-    if (src.type) {
-        dst["type"] = *src.type;
-    }
-    if (src.text) {
-        dst["text"] = *src.text;
+    if (src.partial) {
+        dst["partial"] = *src.partial;
     }
 
     return true;
 }
-void convertFromJson(const JsonVariantConst &src, MessagingDataElementsType &dst)
+void convertFromJson(const JsonVariantConst &src, CmdControlType &dst)
 {
     if (src.is<JsonArrayConst>()) {
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
-            if (item["timestamp"]) {
-                dst.timestamp = item["timestamp"].as<decltype(dst.timestamp)::value_type>();
+            if (item["delete"]) {
+                dst.var_delete = item["delete"].as<decltype(dst.var_delete)::value_type>();
             } else {
-                //dst.timestamp = std::nullopt;
+                //dst.var_delete = std::nullopt;
             }
-            if (item["messagingNumber"]) {
-                dst.messagingNumber = item["messagingNumber"].as<decltype(dst.messagingNumber)::value_type>();
+            if (item["partial"]) {
+                dst.partial = item["partial"].as<decltype(dst.partial)::value_type>();
             } else {
-                //dst.messagingNumber = std::nullopt;
-            }
-            if (item["type"]) {
-                dst.type = item["type"].as<decltype(dst.type)::value_type>();
-            } else {
-                //dst.type = std::nullopt;
-            }
-            if (item["text"]) {
-                dst.text = item["text"].as<decltype(dst.text)::value_type>();
-            } else {
-                //dst.text = std::nullopt;
+                //dst.partial = std::nullopt;
             }
         }
     } else {
-        if (src["timestamp"]) {
-            dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
+        if (src["delete"]) {
+            dst.var_delete = src["delete"].as<decltype(dst.var_delete)::value_type>();
         } else {
-            //dst.timestamp = std::nullopt;
+            //dst.var_delete = std::nullopt;
         }
-        if (src["messagingNumber"]) {
-            dst.messagingNumber = src["messagingNumber"].as<decltype(dst.messagingNumber)::value_type>();
+        if (src["partial"]) {
+            dst.partial = src["partial"].as<decltype(dst.partial)::value_type>();
         } else {
-            //dst.messagingNumber = std::nullopt;
-        }
-        if (src["type"]) {
-            dst.type = src["type"].as<decltype(dst.type)::value_type>();
-        } else {
-            //dst.type = std::nullopt;
-        }
-        if (src["text"]) {
-            dst.text = src["text"].as<decltype(dst.text)::value_type>();
-        } else {
-            //dst.text = std::nullopt;
+            //dst.partial = std::nullopt;
         }
     }
 }
-bool convertToJson(const MessagingListDataType &src, JsonVariant &dst)
+bool convertToJson(const ScaledNumberType &src, JsonVariant &dst)
 {
-    if (src.messagingData) {
-        dst["messagingData"] = *src.messagingData;
+    if (src.number) {
+        dst["number"] = *src.number;
+    }
+    if (src.scale) {
+        dst["scale"] = *src.scale;
     }
 
     return true;
 }
-void convertFromJson(const JsonVariantConst &src, MessagingListDataType &dst)
+void convertFromJson(const JsonVariantConst &src, ScaledNumberType &dst)
 {
     if (src.is<JsonArrayConst>()) {
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
-            if (item["messagingData"]) {
-                dst.messagingData = item["messagingData"].as<decltype(dst.messagingData)::value_type>();
+            if (item["number"]) {
+                dst.number = item["number"].as<decltype(dst.number)::value_type>();
             } else {
-                //dst.messagingData = std::nullopt;
+                //dst.number = std::nullopt;
+            }
+            if (item["scale"]) {
+                dst.scale = item["scale"].as<decltype(dst.scale)::value_type>();
+            } else {
+                //dst.scale = std::nullopt;
             }
         }
     } else {
-        if (src["messagingData"]) {
-            dst.messagingData = src["messagingData"].as<decltype(dst.messagingData)::value_type>();
+        if (src["number"]) {
+            dst.number = src["number"].as<decltype(dst.number)::value_type>();
         } else {
-            //dst.messagingData = std::nullopt;
+            //dst.number = std::nullopt;
+        }
+        if (src["scale"]) {
+            dst.scale = src["scale"].as<decltype(dst.scale)::value_type>();
+        } else {
+            //dst.scale = std::nullopt;
         }
     }
 }
-bool convertToJson(const TimestampIntervalType &src, JsonVariant &dst)
+bool convertToJson(const ActuatorLevelDataType &src, JsonVariant &dst)
 {
-    if (src.startTime) {
-        dst["startTime"] = *src.startTime;
+    if (src.function) {
+        dst["function"] = *src.function;
     }
-    if (src.endTime) {
-        dst["endTime"] = *src.endTime;
+    if (src.value) {
+        dst["value"] = *src.value;
     }
 
     return true;
 }
-void convertFromJson(const JsonVariantConst &src, TimestampIntervalType &dst)
+void convertFromJson(const JsonVariantConst &src, ActuatorLevelDataType &dst)
 {
     if (src.is<JsonArrayConst>()) {
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
-            if (item["startTime"]) {
-                dst.startTime = item["startTime"].as<decltype(dst.startTime)::value_type>();
+            if (item["function"]) {
+                dst.function = item["function"].as<decltype(dst.function)::value_type>();
             } else {
-                //dst.startTime = std::nullopt;
+                //dst.function = std::nullopt;
             }
-            if (item["endTime"]) {
-                dst.endTime = item["endTime"].as<decltype(dst.endTime)::value_type>();
+            if (item["value"]) {
+                dst.value = item["value"].as<decltype(dst.value)::value_type>();
             } else {
-                //dst.endTime = std::nullopt;
+                //dst.value = std::nullopt;
             }
         }
     } else {
-        if (src["startTime"]) {
-            dst.startTime = src["startTime"].as<decltype(dst.startTime)::value_type>();
+        if (src["function"]) {
+            dst.function = src["function"].as<decltype(dst.function)::value_type>();
         } else {
-            //dst.startTime = std::nullopt;
+            //dst.function = std::nullopt;
         }
-        if (src["endTime"]) {
-            dst.endTime = src["endTime"].as<decltype(dst.endTime)::value_type>();
+        if (src["value"]) {
+            dst.value = src["value"].as<decltype(dst.value)::value_type>();
         } else {
-            //dst.endTime = std::nullopt;
+            //dst.value = std::nullopt;
         }
     }
 }
-bool convertToJson(const MessagingListDataSelectorsType &src, JsonVariant &dst)
+bool convertToJson(const ScaledNumberElementsType &src, JsonVariant &dst)
 {
-    if (src.timestampInterval) {
-        dst["timestampInterval"] = *src.timestampInterval;
+    if (src.number) {
+        dst["number"] = *src.number;
     }
-    if (src.messagingNumber) {
-        dst["messagingNumber"] = *src.messagingNumber;
+    if (src.scale) {
+        dst["scale"] = *src.scale;
     }
 
     return true;
 }
-void convertFromJson(const JsonVariantConst &src, MessagingListDataSelectorsType &dst)
+void convertFromJson(const JsonVariantConst &src, ScaledNumberElementsType &dst)
 {
     if (src.is<JsonArrayConst>()) {
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
-            if (item["timestampInterval"]) {
-                dst.timestampInterval = item["timestampInterval"].as<decltype(dst.timestampInterval)::value_type>();
+            if (item["number"]) {
+                dst.number = item["number"].as<decltype(dst.number)::value_type>();
             } else {
-                //dst.timestampInterval = std::nullopt;
+                //dst.number = std::nullopt;
             }
-            if (item["messagingNumber"]) {
-                dst.messagingNumber = item["messagingNumber"].as<decltype(dst.messagingNumber)::value_type>();
+            if (item["scale"]) {
+                dst.scale = item["scale"].as<decltype(dst.scale)::value_type>();
             } else {
-                //dst.messagingNumber = std::nullopt;
+                //dst.scale = std::nullopt;
             }
         }
     } else {
-        if (src["timestampInterval"]) {
-            dst.timestampInterval = src["timestampInterval"].as<decltype(dst.timestampInterval)::value_type>();
+        if (src["number"]) {
+            dst.number = src["number"].as<decltype(dst.number)::value_type>();
         } else {
-            //dst.timestampInterval = std::nullopt;
+            //dst.number = std::nullopt;
         }
-        if (src["messagingNumber"]) {
-            dst.messagingNumber = src["messagingNumber"].as<decltype(dst.messagingNumber)::value_type>();
+        if (src["scale"]) {
+            dst.scale = src["scale"].as<decltype(dst.scale)::value_type>();
         } else {
-            //dst.messagingNumber = std::nullopt;
+            //dst.scale = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const ActuatorLevelDataElementsType &src, JsonVariant &dst)
+{
+    if (src.function) {
+        dst["function"] = *src.function;
+    }
+    if (src.value) {
+        dst["value"] = *src.value;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, ActuatorLevelDataElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["function"]) {
+                dst.function = item["function"].as<decltype(dst.function)::value_type>();
+            } else {
+                //dst.function = std::nullopt;
+            }
+            if (item["value"]) {
+                dst.value = item["value"].as<decltype(dst.value)::value_type>();
+            } else {
+                //dst.value = std::nullopt;
+            }
+        }
+    } else {
+        if (src["function"]) {
+            dst.function = src["function"].as<decltype(dst.function)::value_type>();
+        } else {
+            //dst.function = std::nullopt;
+        }
+        if (src["value"]) {
+            dst.value = src["value"].as<decltype(dst.value)::value_type>();
+        } else {
+            //dst.value = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const ActuatorLevelDescriptionDataType &src, JsonVariant &dst)
+{
+    if (src.label) {
+        dst["label"] = *src.label;
+    }
+    if (src.description) {
+        dst["description"] = *src.description;
+    }
+    if (src.levelDefaultUnit) {
+        dst["levelDefaultUnit"] = *src.levelDefaultUnit;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, ActuatorLevelDescriptionDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["label"]) {
+                dst.label = item["label"].as<decltype(dst.label)::value_type>();
+            } else {
+                //dst.label = std::nullopt;
+            }
+            if (item["description"]) {
+                dst.description = item["description"].as<decltype(dst.description)::value_type>();
+            } else {
+                //dst.description = std::nullopt;
+            }
+            if (item["levelDefaultUnit"]) {
+                dst.levelDefaultUnit = item["levelDefaultUnit"].as<decltype(dst.levelDefaultUnit)::value_type>();
+            } else {
+                //dst.levelDefaultUnit = std::nullopt;
+            }
+        }
+    } else {
+        if (src["label"]) {
+            dst.label = src["label"].as<decltype(dst.label)::value_type>();
+        } else {
+            //dst.label = std::nullopt;
+        }
+        if (src["description"]) {
+            dst.description = src["description"].as<decltype(dst.description)::value_type>();
+        } else {
+            //dst.description = std::nullopt;
+        }
+        if (src["levelDefaultUnit"]) {
+            dst.levelDefaultUnit = src["levelDefaultUnit"].as<decltype(dst.levelDefaultUnit)::value_type>();
+        } else {
+            //dst.levelDefaultUnit = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const ActuatorLevelDescriptionDataElementsType &src, JsonVariant &dst)
+{
+    if (src.label) {
+        dst["label"] = *src.label;
+    }
+    if (src.description) {
+        dst["description"] = *src.description;
+    }
+    if (src.levelDefaultUnit) {
+        dst["levelDefaultUnit"] = *src.levelDefaultUnit;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, ActuatorLevelDescriptionDataElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["label"]) {
+                dst.label = item["label"].as<decltype(dst.label)::value_type>();
+            } else {
+                //dst.label = std::nullopt;
+            }
+            if (item["description"]) {
+                dst.description = item["description"].as<decltype(dst.description)::value_type>();
+            } else {
+                //dst.description = std::nullopt;
+            }
+            if (item["levelDefaultUnit"]) {
+                dst.levelDefaultUnit = item["levelDefaultUnit"].as<decltype(dst.levelDefaultUnit)::value_type>();
+            } else {
+                //dst.levelDefaultUnit = std::nullopt;
+            }
+        }
+    } else {
+        if (src["label"]) {
+            dst.label = src["label"].as<decltype(dst.label)::value_type>();
+        } else {
+            //dst.label = std::nullopt;
+        }
+        if (src["description"]) {
+            dst.description = src["description"].as<decltype(dst.description)::value_type>();
+        } else {
+            //dst.description = std::nullopt;
+        }
+        if (src["levelDefaultUnit"]) {
+            dst.levelDefaultUnit = src["levelDefaultUnit"].as<decltype(dst.levelDefaultUnit)::value_type>();
+        } else {
+            //dst.levelDefaultUnit = std::nullopt;
         }
     }
 }
@@ -8774,6 +9025,46 @@ bool convertToJson(const TimePeriodElementsType &src, JsonVariant &dst)
     return true;
 }
 void convertFromJson(const JsonVariantConst &src, TimePeriodElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["startTime"]) {
+                dst.startTime = item["startTime"].as<decltype(dst.startTime)::value_type>();
+            } else {
+                //dst.startTime = std::nullopt;
+            }
+            if (item["endTime"]) {
+                dst.endTime = item["endTime"].as<decltype(dst.endTime)::value_type>();
+            } else {
+                //dst.endTime = std::nullopt;
+            }
+        }
+    } else {
+        if (src["startTime"]) {
+            dst.startTime = src["startTime"].as<decltype(dst.startTime)::value_type>();
+        } else {
+            //dst.startTime = std::nullopt;
+        }
+        if (src["endTime"]) {
+            dst.endTime = src["endTime"].as<decltype(dst.endTime)::value_type>();
+        } else {
+            //dst.endTime = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const TimestampIntervalType &src, JsonVariant &dst)
+{
+    if (src.startTime) {
+        dst["startTime"] = *src.startTime;
+    }
+    if (src.endTime) {
+        dst["endTime"] = *src.endTime;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, TimestampIntervalType &dst)
 {
     if (src.is<JsonArrayConst>()) {
         JsonArrayConst array = src.as<JsonArrayConst>();
@@ -9301,46 +9592,6 @@ void convertFromJson(const JsonVariantConst &src, RecurrenceInformationElementsT
         }
     }
 }
-bool convertToJson(const ScaledNumberType &src, JsonVariant &dst)
-{
-    if (src.number) {
-        dst["number"] = *src.number;
-    }
-    if (src.scale) {
-        dst["scale"] = *src.scale;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, ScaledNumberType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["number"]) {
-                dst.number = item["number"].as<decltype(dst.number)::value_type>();
-            } else {
-                //dst.number = std::nullopt;
-            }
-            if (item["scale"]) {
-                dst.scale = item["scale"].as<decltype(dst.scale)::value_type>();
-            } else {
-                //dst.scale = std::nullopt;
-            }
-        }
-    } else {
-        if (src["number"]) {
-            dst.number = src["number"].as<decltype(dst.number)::value_type>();
-        } else {
-            //dst.number = std::nullopt;
-        }
-        if (src["scale"]) {
-            dst.scale = src["scale"].as<decltype(dst.scale)::value_type>();
-        } else {
-            //dst.scale = std::nullopt;
-        }
-    }
-}
 bool convertToJson(const ScaledNumberRangeType &src, JsonVariant &dst)
 {
     if (src.min) {
@@ -9378,46 +9629,6 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberRangeType &dst)
             dst.max = src["max"].as<decltype(dst.max)::value_type>();
         } else {
             //dst.max = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const ScaledNumberElementsType &src, JsonVariant &dst)
-{
-    if (src.number) {
-        dst["number"] = *src.number;
-    }
-    if (src.scale) {
-        dst["scale"] = *src.scale;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, ScaledNumberElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["number"]) {
-                dst.number = item["number"].as<decltype(dst.number)::value_type>();
-            } else {
-                //dst.number = std::nullopt;
-            }
-            if (item["scale"]) {
-                dst.scale = item["scale"].as<decltype(dst.scale)::value_type>();
-            } else {
-                //dst.scale = std::nullopt;
-            }
-        }
-    } else {
-        if (src["number"]) {
-            dst.number = src["number"].as<decltype(dst.number)::value_type>();
-        } else {
-            //dst.number = std::nullopt;
-        }
-        if (src["scale"]) {
-            dst.scale = src["scale"].as<decltype(dst.scale)::value_type>();
-        } else {
-            //dst.scale = std::nullopt;
         }
     }
 }
@@ -9672,59 +9883,6 @@ void convertFromJson(const JsonVariantConst &src, EntityAddressElementsType &dst
             dst.entity = src["entity"].as<decltype(dst.entity)::value_type>();
         } else {
             //dst.entity = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const FeatureAddressType &src, JsonVariant &dst)
-{
-    if (src.device) {
-        dst["device"] = *src.device;
-    }
-    if (src.entity) {
-        dst["entity"] = *src.entity;
-    }
-    if (src.feature) {
-        dst["feature"] = *src.feature;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, FeatureAddressType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["device"]) {
-                dst.device = item["device"].as<decltype(dst.device)::value_type>();
-            } else {
-                //dst.device = std::nullopt;
-            }
-            if (item["entity"]) {
-                dst.entity = item["entity"].as<decltype(dst.entity)::value_type>();
-            } else {
-                //dst.entity = std::nullopt;
-            }
-            if (item["feature"]) {
-                dst.feature = item["feature"].as<decltype(dst.feature)::value_type>();
-            } else {
-                //dst.feature = std::nullopt;
-            }
-        }
-    } else {
-        if (src["device"]) {
-            dst.device = src["device"].as<decltype(dst.device)::value_type>();
-        } else {
-            //dst.device = std::nullopt;
-        }
-        if (src["entity"]) {
-            dst.entity = src["entity"].as<decltype(dst.entity)::value_type>();
-        } else {
-            //dst.entity = std::nullopt;
-        }
-        if (src["feature"]) {
-            dst.feature = src["feature"].as<decltype(dst.feature)::value_type>();
-        } else {
-            //dst.feature = std::nullopt;
         }
     }
 }
@@ -10022,411 +10180,162 @@ void convertFromJson(const JsonVariantConst &src, FunctionPropertyElementsType &
         }
     }
 }
-bool convertToJson(const TimeSeriesSlotType &src, JsonVariant &dst)
+bool convertToJson(const ActuatorSwitchDataType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesSlotId) {
-        dst["timeSeriesSlotId"] = *src.timeSeriesSlotId;
-    }
-    if (src.timePeriod) {
-        dst["timePeriod"] = *src.timePeriod;
-    }
-    if (src.duration) {
-        dst["duration"] = *src.duration;
-    }
-    if (src.recurrenceInformation) {
-        dst["recurrenceInformation"] = *src.recurrenceInformation;
-    }
-    if (src.value) {
-        dst["value"] = *src.value;
-    }
-    if (src.minValue) {
-        dst["minValue"] = *src.minValue;
-    }
-    if (src.maxValue) {
-        dst["maxValue"] = *src.maxValue;
+    if (src.function) {
+        dst["function"] = *src.function;
     }
 
     return true;
 }
-void convertFromJson(const JsonVariantConst &src, TimeSeriesSlotType &dst)
+void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDataType &dst)
 {
     if (src.is<JsonArrayConst>()) {
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
-            if (item["timeSeriesSlotId"]) {
-                dst.timeSeriesSlotId = item["timeSeriesSlotId"].as<decltype(dst.timeSeriesSlotId)::value_type>();
+            if (item["function"]) {
+                dst.function = item["function"].as<decltype(dst.function)::value_type>();
             } else {
-                //dst.timeSeriesSlotId = std::nullopt;
-            }
-            if (item["timePeriod"]) {
-                dst.timePeriod = item["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
-            } else {
-                //dst.timePeriod = std::nullopt;
-            }
-            if (item["duration"]) {
-                dst.duration = item["duration"].as<decltype(dst.duration)::value_type>();
-            } else {
-                //dst.duration = std::nullopt;
-            }
-            if (item["recurrenceInformation"]) {
-                dst.recurrenceInformation = item["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
-            } else {
-                //dst.recurrenceInformation = std::nullopt;
-            }
-            if (item["value"]) {
-                dst.value = item["value"].as<decltype(dst.value)::value_type>();
-            } else {
-                //dst.value = std::nullopt;
-            }
-            if (item["minValue"]) {
-                dst.minValue = item["minValue"].as<decltype(dst.minValue)::value_type>();
-            } else {
-                //dst.minValue = std::nullopt;
-            }
-            if (item["maxValue"]) {
-                dst.maxValue = item["maxValue"].as<decltype(dst.maxValue)::value_type>();
-            } else {
-                //dst.maxValue = std::nullopt;
+                //dst.function = std::nullopt;
             }
         }
     } else {
-        if (src["timeSeriesSlotId"]) {
-            dst.timeSeriesSlotId = src["timeSeriesSlotId"].as<decltype(dst.timeSeriesSlotId)::value_type>();
+        if (src["function"]) {
+            dst.function = src["function"].as<decltype(dst.function)::value_type>();
         } else {
-            //dst.timeSeriesSlotId = std::nullopt;
-        }
-        if (src["timePeriod"]) {
-            dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
-        } else {
-            //dst.timePeriod = std::nullopt;
-        }
-        if (src["duration"]) {
-            dst.duration = src["duration"].as<decltype(dst.duration)::value_type>();
-        } else {
-            //dst.duration = std::nullopt;
-        }
-        if (src["recurrenceInformation"]) {
-            dst.recurrenceInformation = src["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
-        } else {
-            //dst.recurrenceInformation = std::nullopt;
-        }
-        if (src["value"]) {
-            dst.value = src["value"].as<decltype(dst.value)::value_type>();
-        } else {
-            //dst.value = std::nullopt;
-        }
-        if (src["minValue"]) {
-            dst.minValue = src["minValue"].as<decltype(dst.minValue)::value_type>();
-        } else {
-            //dst.minValue = std::nullopt;
-        }
-        if (src["maxValue"]) {
-            dst.maxValue = src["maxValue"].as<decltype(dst.maxValue)::value_type>();
-        } else {
-            //dst.maxValue = std::nullopt;
+            //dst.function = std::nullopt;
         }
     }
 }
-bool convertToJson(const TimeSeriesSlotElementsType &src, JsonVariant &dst)
+bool convertToJson(const ActuatorSwitchDataElementsType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesSlotId) {
-        dst["timeSeriesSlotId"] = *src.timeSeriesSlotId;
-    }
-    if (src.timePeriod) {
-        dst["timePeriod"] = *src.timePeriod;
-    }
-    if (src.duration) {
-        dst["duration"] = *src.duration;
-    }
-    if (src.recurrenceInformation) {
-        dst["recurrenceInformation"] = *src.recurrenceInformation;
-    }
-    if (src.value) {
-        dst["value"] = *src.value;
-    }
-    if (src.minValue) {
-        dst["minValue"] = *src.minValue;
-    }
-    if (src.maxValue) {
-        dst["maxValue"] = *src.maxValue;
+    if (src.function) {
+        dst["function"] = *src.function;
     }
 
     return true;
 }
-void convertFromJson(const JsonVariantConst &src, TimeSeriesSlotElementsType &dst)
+void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDataElementsType &dst)
 {
     if (src.is<JsonArrayConst>()) {
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
-            if (item["timeSeriesSlotId"]) {
-                dst.timeSeriesSlotId = item["timeSeriesSlotId"].as<decltype(dst.timeSeriesSlotId)::value_type>();
+            if (item["function"]) {
+                dst.function = item["function"].as<decltype(dst.function)::value_type>();
             } else {
-                //dst.timeSeriesSlotId = std::nullopt;
-            }
-            if (item["timePeriod"]) {
-                dst.timePeriod = item["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
-            } else {
-                //dst.timePeriod = std::nullopt;
-            }
-            if (item["duration"]) {
-                dst.duration = item["duration"].as<decltype(dst.duration)::value_type>();
-            } else {
-                //dst.duration = std::nullopt;
-            }
-            if (item["recurrenceInformation"]) {
-                dst.recurrenceInformation = item["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
-            } else {
-                //dst.recurrenceInformation = std::nullopt;
-            }
-            if (item["value"]) {
-                dst.value = item["value"].as<decltype(dst.value)::value_type>();
-            } else {
-                //dst.value = std::nullopt;
-            }
-            if (item["minValue"]) {
-                dst.minValue = item["minValue"].as<decltype(dst.minValue)::value_type>();
-            } else {
-                //dst.minValue = std::nullopt;
-            }
-            if (item["maxValue"]) {
-                dst.maxValue = item["maxValue"].as<decltype(dst.maxValue)::value_type>();
-            } else {
-                //dst.maxValue = std::nullopt;
+                //dst.function = std::nullopt;
             }
         }
     } else {
-        if (src["timeSeriesSlotId"]) {
-            dst.timeSeriesSlotId = src["timeSeriesSlotId"].as<decltype(dst.timeSeriesSlotId)::value_type>();
+        if (src["function"]) {
+            dst.function = src["function"].as<decltype(dst.function)::value_type>();
         } else {
-            //dst.timeSeriesSlotId = std::nullopt;
-        }
-        if (src["timePeriod"]) {
-            dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
-        } else {
-            //dst.timePeriod = std::nullopt;
-        }
-        if (src["duration"]) {
-            dst.duration = src["duration"].as<decltype(dst.duration)::value_type>();
-        } else {
-            //dst.duration = std::nullopt;
-        }
-        if (src["recurrenceInformation"]) {
-            dst.recurrenceInformation = src["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
-        } else {
-            //dst.recurrenceInformation = std::nullopt;
-        }
-        if (src["value"]) {
-            dst.value = src["value"].as<decltype(dst.value)::value_type>();
-        } else {
-            //dst.value = std::nullopt;
-        }
-        if (src["minValue"]) {
-            dst.minValue = src["minValue"].as<decltype(dst.minValue)::value_type>();
-        } else {
-            //dst.minValue = std::nullopt;
-        }
-        if (src["maxValue"]) {
-            dst.maxValue = src["maxValue"].as<decltype(dst.maxValue)::value_type>();
-        } else {
-            //dst.maxValue = std::nullopt;
+            //dst.function = std::nullopt;
         }
     }
 }
-bool convertToJson(const TimeSeriesDataType &src, JsonVariant &dst)
+bool convertToJson(const ActuatorSwitchDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesId) {
-        dst["timeSeriesId"] = *src.timeSeriesId;
+    if (src.label) {
+        dst["label"] = *src.label;
     }
-    if (src.timePeriod) {
-        dst["timePeriod"] = *src.timePeriod;
-    }
-    if (src.timeSeriesSlot) {
-        dst["timeSeriesSlot"] = *src.timeSeriesSlot;
+    if (src.description) {
+        dst["description"] = *src.description;
     }
 
     return true;
 }
-void convertFromJson(const JsonVariantConst &src, TimeSeriesDataType &dst)
+void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDescriptionDataType &dst)
 {
     if (src.is<JsonArrayConst>()) {
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
-            if (item["timeSeriesId"]) {
-                dst.timeSeriesId = item["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+            if (item["label"]) {
+                dst.label = item["label"].as<decltype(dst.label)::value_type>();
             } else {
-                //dst.timeSeriesId = std::nullopt;
+                //dst.label = std::nullopt;
             }
-            if (item["timePeriod"]) {
-                dst.timePeriod = item["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
+            if (item["description"]) {
+                dst.description = item["description"].as<decltype(dst.description)::value_type>();
             } else {
-                //dst.timePeriod = std::nullopt;
-            }
-            if (item["timeSeriesSlot"]) {
-                dst.timeSeriesSlot = item["timeSeriesSlot"].as<decltype(dst.timeSeriesSlot)::value_type>();
-            } else {
-                //dst.timeSeriesSlot = std::nullopt;
+                //dst.description = std::nullopt;
             }
         }
     } else {
-        if (src["timeSeriesId"]) {
-            dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+        if (src["label"]) {
+            dst.label = src["label"].as<decltype(dst.label)::value_type>();
         } else {
-            //dst.timeSeriesId = std::nullopt;
+            //dst.label = std::nullopt;
         }
-        if (src["timePeriod"]) {
-            dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
+        if (src["description"]) {
+            dst.description = src["description"].as<decltype(dst.description)::value_type>();
         } else {
-            //dst.timePeriod = std::nullopt;
-        }
-        if (src["timeSeriesSlot"]) {
-            dst.timeSeriesSlot = src["timeSeriesSlot"].as<decltype(dst.timeSeriesSlot)::value_type>();
-        } else {
-            //dst.timeSeriesSlot = std::nullopt;
+            //dst.description = std::nullopt;
         }
     }
 }
-bool convertToJson(const TimeSeriesDataElementsType &src, JsonVariant &dst)
+bool convertToJson(const ActuatorSwitchDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesId) {
-        dst["timeSeriesId"] = *src.timeSeriesId;
+    if (src.label) {
+        dst["label"] = *src.label;
     }
-    if (src.timePeriod) {
-        dst["timePeriod"] = *src.timePeriod;
-    }
-    if (src.timeSeriesSlot) {
-        dst["timeSeriesSlot"] = *src.timeSeriesSlot;
+    if (src.description) {
+        dst["description"] = *src.description;
     }
 
     return true;
 }
-void convertFromJson(const JsonVariantConst &src, TimeSeriesDataElementsType &dst)
+void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDescriptionDataElementsType &dst)
 {
     if (src.is<JsonArrayConst>()) {
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
-            if (item["timeSeriesId"]) {
-                dst.timeSeriesId = item["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+            if (item["label"]) {
+                dst.label = item["label"].as<decltype(dst.label)::value_type>();
             } else {
-                //dst.timeSeriesId = std::nullopt;
+                //dst.label = std::nullopt;
             }
-            if (item["timePeriod"]) {
-                dst.timePeriod = item["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
+            if (item["description"]) {
+                dst.description = item["description"].as<decltype(dst.description)::value_type>();
             } else {
-                //dst.timePeriod = std::nullopt;
-            }
-            if (item["timeSeriesSlot"]) {
-                dst.timeSeriesSlot = item["timeSeriesSlot"].as<decltype(dst.timeSeriesSlot)::value_type>();
-            } else {
-                //dst.timeSeriesSlot = std::nullopt;
+                //dst.description = std::nullopt;
             }
         }
     } else {
-        if (src["timeSeriesId"]) {
-            dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+        if (src["label"]) {
+            dst.label = src["label"].as<decltype(dst.label)::value_type>();
         } else {
-            //dst.timeSeriesId = std::nullopt;
+            //dst.label = std::nullopt;
         }
-        if (src["timePeriod"]) {
-            dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
+        if (src["description"]) {
+            dst.description = src["description"].as<decltype(dst.description)::value_type>();
         } else {
-            //dst.timePeriod = std::nullopt;
-        }
-        if (src["timeSeriesSlot"]) {
-            dst.timeSeriesSlot = src["timeSeriesSlot"].as<decltype(dst.timeSeriesSlot)::value_type>();
-        } else {
-            //dst.timeSeriesSlot = std::nullopt;
+            //dst.description = std::nullopt;
         }
     }
 }
-bool convertToJson(const TimeSeriesListDataType &src, JsonVariant &dst)
+bool convertToJson(const AlarmDataType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesData) {
-        dst["timeSeriesData"] = *src.timeSeriesData;
+    if (src.alarmId) {
+        dst["alarmId"] = *src.alarmId;
     }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, TimeSeriesListDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["timeSeriesData"]) {
-                dst.timeSeriesData = item["timeSeriesData"].as<decltype(dst.timeSeriesData)::value_type>();
-            } else {
-                //dst.timeSeriesData = std::nullopt;
-            }
-        }
-    } else {
-        if (src["timeSeriesData"]) {
-            dst.timeSeriesData = src["timeSeriesData"].as<decltype(dst.timeSeriesData)::value_type>();
-        } else {
-            //dst.timeSeriesData = std::nullopt;
-        }
+    if (src.thresholdId) {
+        dst["thresholdId"] = *src.thresholdId;
     }
-}
-bool convertToJson(const TimeSeriesListDataSelectorsType &src, JsonVariant &dst)
-{
-    if (src.timeSeriesId) {
-        dst["timeSeriesId"] = *src.timeSeriesId;
+    if (src.timestamp) {
+        dst["timestamp"] = *src.timestamp;
     }
-    if (src.timeSeriesSlotId) {
-        dst["timeSeriesSlotId"] = *src.timeSeriesSlotId;
+    if (src.alarmType) {
+        dst["alarmType"] = *src.alarmType;
     }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, TimeSeriesListDataSelectorsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["timeSeriesId"]) {
-                dst.timeSeriesId = item["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
-            } else {
-                //dst.timeSeriesId = std::nullopt;
-            }
-            if (item["timeSeriesSlotId"]) {
-                dst.timeSeriesSlotId = item["timeSeriesSlotId"].as<decltype(dst.timeSeriesSlotId)::value_type>();
-            } else {
-                //dst.timeSeriesSlotId = std::nullopt;
-            }
-        }
-    } else {
-        if (src["timeSeriesId"]) {
-            dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
-        } else {
-            //dst.timeSeriesId = std::nullopt;
-        }
-        if (src["timeSeriesSlotId"]) {
-            dst.timeSeriesSlotId = src["timeSeriesSlotId"].as<decltype(dst.timeSeriesSlotId)::value_type>();
-        } else {
-            //dst.timeSeriesSlotId = std::nullopt;
-        }
+    if (src.measuredValue) {
+        dst["measuredValue"] = *src.measuredValue;
     }
-}
-bool convertToJson(const TimeSeriesDescriptionDataType &src, JsonVariant &dst)
-{
-    if (src.timeSeriesId) {
-        dst["timeSeriesId"] = *src.timeSeriesId;
+    if (src.evaluationPeriod) {
+        dst["evaluationPeriod"] = *src.evaluationPeriod;
     }
-    if (src.timeSeriesType) {
-        dst["timeSeriesType"] = *src.timeSeriesType;
-    }
-    if (src.timeSeriesWriteable) {
-        dst["timeSeriesWriteable"] = *src.timeSeriesWriteable;
-    }
-    if (src.updateRequired) {
-        dst["updateRequired"] = *src.updateRequired;
-    }
-    if (src.measurementId) {
-        dst["measurementId"] = *src.measurementId;
-    }
-    if (src.currency) {
-        dst["currency"] = *src.currency;
-    }
-    if (src.unit) {
-        dst["unit"] = *src.unit;
+    if (src.scopeType) {
+        dst["scopeType"] = *src.scopeType;
     }
     if (src.label) {
         dst["label"] = *src.label;
@@ -10434,51 +10343,48 @@ bool convertToJson(const TimeSeriesDescriptionDataType &src, JsonVariant &dst)
     if (src.description) {
         dst["description"] = *src.description;
     }
-    if (src.scopeType) {
-        dst["scopeType"] = *src.scopeType;
-    }
 
     return true;
 }
-void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataType &dst)
+void convertFromJson(const JsonVariantConst &src, AlarmDataType &dst)
 {
     if (src.is<JsonArrayConst>()) {
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
-            if (item["timeSeriesId"]) {
-                dst.timeSeriesId = item["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+            if (item["alarmId"]) {
+                dst.alarmId = item["alarmId"].as<decltype(dst.alarmId)::value_type>();
             } else {
-                //dst.timeSeriesId = std::nullopt;
+                //dst.alarmId = std::nullopt;
             }
-            if (item["timeSeriesType"]) {
-                dst.timeSeriesType = item["timeSeriesType"].as<decltype(dst.timeSeriesType)::value_type>();
+            if (item["thresholdId"]) {
+                dst.thresholdId = item["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
             } else {
-                //dst.timeSeriesType = std::nullopt;
+                //dst.thresholdId = std::nullopt;
             }
-            if (item["timeSeriesWriteable"]) {
-                dst.timeSeriesWriteable = item["timeSeriesWriteable"].as<decltype(dst.timeSeriesWriteable)::value_type>();
+            if (item["timestamp"]) {
+                dst.timestamp = item["timestamp"].as<decltype(dst.timestamp)::value_type>();
             } else {
-                //dst.timeSeriesWriteable = std::nullopt;
+                //dst.timestamp = std::nullopt;
             }
-            if (item["updateRequired"]) {
-                dst.updateRequired = item["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
+            if (item["alarmType"]) {
+                dst.alarmType = item["alarmType"].as<decltype(dst.alarmType)::value_type>();
             } else {
-                //dst.updateRequired = std::nullopt;
+                //dst.alarmType = std::nullopt;
             }
-            if (item["measurementId"]) {
-                dst.measurementId = item["measurementId"].as<decltype(dst.measurementId)::value_type>();
+            if (item["measuredValue"]) {
+                dst.measuredValue = item["measuredValue"].as<decltype(dst.measuredValue)::value_type>();
             } else {
-                //dst.measurementId = std::nullopt;
+                //dst.measuredValue = std::nullopt;
             }
-            if (item["currency"]) {
-                dst.currency = item["currency"].as<decltype(dst.currency)::value_type>();
+            if (item["evaluationPeriod"]) {
+                dst.evaluationPeriod = item["evaluationPeriod"].as<decltype(dst.evaluationPeriod)::value_type>();
             } else {
-                //dst.currency = std::nullopt;
+                //dst.evaluationPeriod = std::nullopt;
             }
-            if (item["unit"]) {
-                dst.unit = item["unit"].as<decltype(dst.unit)::value_type>();
+            if (item["scopeType"]) {
+                dst.scopeType = item["scopeType"].as<decltype(dst.scopeType)::value_type>();
             } else {
-                //dst.unit = std::nullopt;
+                //dst.scopeType = std::nullopt;
             }
             if (item["label"]) {
                 dst.label = item["label"].as<decltype(dst.label)::value_type>();
@@ -10490,47 +10396,42 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataType 
             } else {
                 //dst.description = std::nullopt;
             }
-            if (item["scopeType"]) {
-                dst.scopeType = item["scopeType"].as<decltype(dst.scopeType)::value_type>();
-            } else {
-                //dst.scopeType = std::nullopt;
-            }
         }
     } else {
-        if (src["timeSeriesId"]) {
-            dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+        if (src["alarmId"]) {
+            dst.alarmId = src["alarmId"].as<decltype(dst.alarmId)::value_type>();
         } else {
-            //dst.timeSeriesId = std::nullopt;
+            //dst.alarmId = std::nullopt;
         }
-        if (src["timeSeriesType"]) {
-            dst.timeSeriesType = src["timeSeriesType"].as<decltype(dst.timeSeriesType)::value_type>();
+        if (src["thresholdId"]) {
+            dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
         } else {
-            //dst.timeSeriesType = std::nullopt;
+            //dst.thresholdId = std::nullopt;
         }
-        if (src["timeSeriesWriteable"]) {
-            dst.timeSeriesWriteable = src["timeSeriesWriteable"].as<decltype(dst.timeSeriesWriteable)::value_type>();
+        if (src["timestamp"]) {
+            dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
         } else {
-            //dst.timeSeriesWriteable = std::nullopt;
+            //dst.timestamp = std::nullopt;
         }
-        if (src["updateRequired"]) {
-            dst.updateRequired = src["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
+        if (src["alarmType"]) {
+            dst.alarmType = src["alarmType"].as<decltype(dst.alarmType)::value_type>();
         } else {
-            //dst.updateRequired = std::nullopt;
+            //dst.alarmType = std::nullopt;
         }
-        if (src["measurementId"]) {
-            dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
+        if (src["measuredValue"]) {
+            dst.measuredValue = src["measuredValue"].as<decltype(dst.measuredValue)::value_type>();
         } else {
-            //dst.measurementId = std::nullopt;
+            //dst.measuredValue = std::nullopt;
         }
-        if (src["currency"]) {
-            dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
+        if (src["evaluationPeriod"]) {
+            dst.evaluationPeriod = src["evaluationPeriod"].as<decltype(dst.evaluationPeriod)::value_type>();
         } else {
-            //dst.currency = std::nullopt;
+            //dst.evaluationPeriod = std::nullopt;
         }
-        if (src["unit"]) {
-            dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
+        if (src["scopeType"]) {
+            dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
         } else {
-            //dst.unit = std::nullopt;
+            //dst.scopeType = std::nullopt;
         }
         if (src["label"]) {
             dst.label = src["label"].as<decltype(dst.label)::value_type>();
@@ -10542,35 +10443,30 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataType 
         } else {
             //dst.description = std::nullopt;
         }
-        if (src["scopeType"]) {
-            dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
-        } else {
-            //dst.scopeType = std::nullopt;
-        }
     }
 }
-bool convertToJson(const TimeSeriesDescriptionDataElementsType &src, JsonVariant &dst)
+bool convertToJson(const AlarmDataElementsType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesId) {
-        dst["timeSeriesId"] = *src.timeSeriesId;
+    if (src.alarmId) {
+        dst["alarmId"] = *src.alarmId;
     }
-    if (src.timeSeriesType) {
-        dst["timeSeriesType"] = *src.timeSeriesType;
+    if (src.thresholdId) {
+        dst["thresholdId"] = *src.thresholdId;
     }
-    if (src.timeSeriesWriteable) {
-        dst["timeSeriesWriteable"] = *src.timeSeriesWriteable;
+    if (src.timestamp) {
+        dst["timestamp"] = *src.timestamp;
     }
-    if (src.updateRequired) {
-        dst["updateRequired"] = *src.updateRequired;
+    if (src.alarmType) {
+        dst["alarmType"] = *src.alarmType;
     }
-    if (src.measurementId) {
-        dst["measurementId"] = *src.measurementId;
+    if (src.measuredValue) {
+        dst["measuredValue"] = *src.measuredValue;
     }
-    if (src.currency) {
-        dst["currency"] = *src.currency;
+    if (src.evaluationPeriod) {
+        dst["evaluationPeriod"] = *src.evaluationPeriod;
     }
-    if (src.unit) {
-        dst["unit"] = *src.unit;
+    if (src.scopeType) {
+        dst["scopeType"] = *src.scopeType;
     }
     if (src.label) {
         dst["label"] = *src.label;
@@ -10578,51 +10474,48 @@ bool convertToJson(const TimeSeriesDescriptionDataElementsType &src, JsonVariant
     if (src.description) {
         dst["description"] = *src.description;
     }
-    if (src.scopeType) {
-        dst["scopeType"] = *src.scopeType;
-    }
 
     return true;
 }
-void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataElementsType &dst)
+void convertFromJson(const JsonVariantConst &src, AlarmDataElementsType &dst)
 {
     if (src.is<JsonArrayConst>()) {
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
-            if (item["timeSeriesId"]) {
-                dst.timeSeriesId = item["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+            if (item["alarmId"]) {
+                dst.alarmId = item["alarmId"].as<decltype(dst.alarmId)::value_type>();
             } else {
-                //dst.timeSeriesId = std::nullopt;
+                //dst.alarmId = std::nullopt;
             }
-            if (item["timeSeriesType"]) {
-                dst.timeSeriesType = item["timeSeriesType"].as<decltype(dst.timeSeriesType)::value_type>();
+            if (item["thresholdId"]) {
+                dst.thresholdId = item["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
             } else {
-                //dst.timeSeriesType = std::nullopt;
+                //dst.thresholdId = std::nullopt;
             }
-            if (item["timeSeriesWriteable"]) {
-                dst.timeSeriesWriteable = item["timeSeriesWriteable"].as<decltype(dst.timeSeriesWriteable)::value_type>();
+            if (item["timestamp"]) {
+                dst.timestamp = item["timestamp"].as<decltype(dst.timestamp)::value_type>();
             } else {
-                //dst.timeSeriesWriteable = std::nullopt;
+                //dst.timestamp = std::nullopt;
             }
-            if (item["updateRequired"]) {
-                dst.updateRequired = item["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
+            if (item["alarmType"]) {
+                dst.alarmType = item["alarmType"].as<decltype(dst.alarmType)::value_type>();
             } else {
-                //dst.updateRequired = std::nullopt;
+                //dst.alarmType = std::nullopt;
             }
-            if (item["measurementId"]) {
-                dst.measurementId = item["measurementId"].as<decltype(dst.measurementId)::value_type>();
+            if (item["measuredValue"]) {
+                dst.measuredValue = item["measuredValue"].as<decltype(dst.measuredValue)::value_type>();
             } else {
-                //dst.measurementId = std::nullopt;
+                //dst.measuredValue = std::nullopt;
             }
-            if (item["currency"]) {
-                dst.currency = item["currency"].as<decltype(dst.currency)::value_type>();
+            if (item["evaluationPeriod"]) {
+                dst.evaluationPeriod = item["evaluationPeriod"].as<decltype(dst.evaluationPeriod)::value_type>();
             } else {
-                //dst.currency = std::nullopt;
+                //dst.evaluationPeriod = std::nullopt;
             }
-            if (item["unit"]) {
-                dst.unit = item["unit"].as<decltype(dst.unit)::value_type>();
+            if (item["scopeType"]) {
+                dst.scopeType = item["scopeType"].as<decltype(dst.scopeType)::value_type>();
             } else {
-                //dst.unit = std::nullopt;
+                //dst.scopeType = std::nullopt;
             }
             if (item["label"]) {
                 dst.label = item["label"].as<decltype(dst.label)::value_type>();
@@ -10634,47 +10527,42 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataEleme
             } else {
                 //dst.description = std::nullopt;
             }
-            if (item["scopeType"]) {
-                dst.scopeType = item["scopeType"].as<decltype(dst.scopeType)::value_type>();
-            } else {
-                //dst.scopeType = std::nullopt;
-            }
         }
     } else {
-        if (src["timeSeriesId"]) {
-            dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+        if (src["alarmId"]) {
+            dst.alarmId = src["alarmId"].as<decltype(dst.alarmId)::value_type>();
         } else {
-            //dst.timeSeriesId = std::nullopt;
+            //dst.alarmId = std::nullopt;
         }
-        if (src["timeSeriesType"]) {
-            dst.timeSeriesType = src["timeSeriesType"].as<decltype(dst.timeSeriesType)::value_type>();
+        if (src["thresholdId"]) {
+            dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
         } else {
-            //dst.timeSeriesType = std::nullopt;
+            //dst.thresholdId = std::nullopt;
         }
-        if (src["timeSeriesWriteable"]) {
-            dst.timeSeriesWriteable = src["timeSeriesWriteable"].as<decltype(dst.timeSeriesWriteable)::value_type>();
+        if (src["timestamp"]) {
+            dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
         } else {
-            //dst.timeSeriesWriteable = std::nullopt;
+            //dst.timestamp = std::nullopt;
         }
-        if (src["updateRequired"]) {
-            dst.updateRequired = src["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
+        if (src["alarmType"]) {
+            dst.alarmType = src["alarmType"].as<decltype(dst.alarmType)::value_type>();
         } else {
-            //dst.updateRequired = std::nullopt;
+            //dst.alarmType = std::nullopt;
         }
-        if (src["measurementId"]) {
-            dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
+        if (src["measuredValue"]) {
+            dst.measuredValue = src["measuredValue"].as<decltype(dst.measuredValue)::value_type>();
         } else {
-            //dst.measurementId = std::nullopt;
+            //dst.measuredValue = std::nullopt;
         }
-        if (src["currency"]) {
-            dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
+        if (src["evaluationPeriod"]) {
+            dst.evaluationPeriod = src["evaluationPeriod"].as<decltype(dst.evaluationPeriod)::value_type>();
         } else {
-            //dst.currency = std::nullopt;
+            //dst.evaluationPeriod = std::nullopt;
         }
-        if (src["unit"]) {
-            dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
+        if (src["scopeType"]) {
+            dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
         } else {
-            //dst.unit = std::nullopt;
+            //dst.scopeType = std::nullopt;
         }
         if (src["label"]) {
             dst.label = src["label"].as<decltype(dst.label)::value_type>();
@@ -10686,50 +10574,39 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataEleme
         } else {
             //dst.description = std::nullopt;
         }
-        if (src["scopeType"]) {
-            dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
-        } else {
-            //dst.scopeType = std::nullopt;
-        }
     }
 }
-bool convertToJson(const TimeSeriesDescriptionListDataType &src, JsonVariant &dst)
+bool convertToJson(const AlarmListDataType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesDescriptionData) {
-        dst["timeSeriesDescriptionData"] = *src.timeSeriesDescriptionData;
+    if (src.alarmData) {
+        dst["alarmData"] = *src.alarmData;
     }
 
     return true;
 }
-void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionListDataType &dst)
+void convertFromJson(const JsonVariantConst &src, AlarmListDataType &dst)
 {
     if (src.is<JsonArrayConst>()) {
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
-            if (item["timeSeriesDescriptionData"]) {
-                dst.timeSeriesDescriptionData = item["timeSeriesDescriptionData"].as<decltype(dst.timeSeriesDescriptionData)::value_type>();
+            if (item["alarmData"]) {
+                dst.alarmData = item["alarmData"].as<decltype(dst.alarmData)::value_type>();
             } else {
-                //dst.timeSeriesDescriptionData = std::nullopt;
+                //dst.alarmData = std::nullopt;
             }
         }
     } else {
-        if (src["timeSeriesDescriptionData"]) {
-            dst.timeSeriesDescriptionData = src["timeSeriesDescriptionData"].as<decltype(dst.timeSeriesDescriptionData)::value_type>();
+        if (src["alarmData"]) {
+            dst.alarmData = src["alarmData"].as<decltype(dst.alarmData)::value_type>();
         } else {
-            //dst.timeSeriesDescriptionData = std::nullopt;
+            //dst.alarmData = std::nullopt;
         }
     }
 }
-bool convertToJson(const TimeSeriesDescriptionListDataSelectorsType &src, JsonVariant &dst)
+bool convertToJson(const AlarmListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesId) {
-        dst["timeSeriesId"] = *src.timeSeriesId;
-    }
-    if (src.timeSeriesType) {
-        dst["timeSeriesType"] = *src.timeSeriesType;
-    }
-    if (src.measurementId) {
-        dst["measurementId"] = *src.measurementId;
+    if (src.alarmId) {
+        dst["alarmId"] = *src.alarmId;
     }
     if (src.scopeType) {
         dst["scopeType"] = *src.scopeType;
@@ -10737,25 +10614,15 @@ bool convertToJson(const TimeSeriesDescriptionListDataSelectorsType &src, JsonVa
 
     return true;
 }
-void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionListDataSelectorsType &dst)
+void convertFromJson(const JsonVariantConst &src, AlarmListDataSelectorsType &dst)
 {
     if (src.is<JsonArrayConst>()) {
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
-            if (item["timeSeriesId"]) {
-                dst.timeSeriesId = item["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+            if (item["alarmId"]) {
+                dst.alarmId = item["alarmId"].as<decltype(dst.alarmId)::value_type>();
             } else {
-                //dst.timeSeriesId = std::nullopt;
-            }
-            if (item["timeSeriesType"]) {
-                dst.timeSeriesType = item["timeSeriesType"].as<decltype(dst.timeSeriesType)::value_type>();
-            } else {
-                //dst.timeSeriesType = std::nullopt;
-            }
-            if (item["measurementId"]) {
-                dst.measurementId = item["measurementId"].as<decltype(dst.measurementId)::value_type>();
-            } else {
-                //dst.measurementId = std::nullopt;
+                //dst.alarmId = std::nullopt;
             }
             if (item["scopeType"]) {
                 dst.scopeType = item["scopeType"].as<decltype(dst.scopeType)::value_type>();
@@ -10764,20 +10631,10 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionListDataS
             }
         }
     } else {
-        if (src["timeSeriesId"]) {
-            dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+        if (src["alarmId"]) {
+            dst.alarmId = src["alarmId"].as<decltype(dst.alarmId)::value_type>();
         } else {
-            //dst.timeSeriesId = std::nullopt;
-        }
-        if (src["timeSeriesType"]) {
-            dst.timeSeriesType = src["timeSeriesType"].as<decltype(dst.timeSeriesType)::value_type>();
-        } else {
-            //dst.timeSeriesType = std::nullopt;
-        }
-        if (src["measurementId"]) {
-            dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
-        } else {
-            //dst.measurementId = std::nullopt;
+            //dst.alarmId = std::nullopt;
         }
         if (src["scopeType"]) {
             dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
@@ -10786,375 +10643,2296 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionListDataS
         }
     }
 }
-bool convertToJson(const TimeSeriesConstraintsDataType &src, JsonVariant &dst)
+bool convertToJson(const ThresholdDataType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesId) {
-        dst["timeSeriesId"] = *src.timeSeriesId;
+    if (src.thresholdId) {
+        dst["thresholdId"] = *src.thresholdId;
     }
-    if (src.slotCountMin) {
-        dst["slotCountMin"] = *src.slotCountMin;
-    }
-    if (src.slotCountMax) {
-        dst["slotCountMax"] = *src.slotCountMax;
-    }
-    if (src.slotDurationMin) {
-        dst["slotDurationMin"] = *src.slotDurationMin;
-    }
-    if (src.slotDurationMax) {
-        dst["slotDurationMax"] = *src.slotDurationMax;
-    }
-    if (src.slotDurationStepSize) {
-        dst["slotDurationStepSize"] = *src.slotDurationStepSize;
-    }
-    if (src.earliestTimeSeriesStartTime) {
-        dst["earliestTimeSeriesStartTime"] = *src.earliestTimeSeriesStartTime;
-    }
-    if (src.latestTimeSeriesEndTime) {
-        dst["latestTimeSeriesEndTime"] = *src.latestTimeSeriesEndTime;
-    }
-    if (src.slotValueMin) {
-        dst["slotValueMin"] = *src.slotValueMin;
-    }
-    if (src.slotValueMax) {
-        dst["slotValueMax"] = *src.slotValueMax;
-    }
-    if (src.slotValueStepSize) {
-        dst["slotValueStepSize"] = *src.slotValueStepSize;
+    if (src.thresholdValue) {
+        dst["thresholdValue"] = *src.thresholdValue;
     }
 
     return true;
 }
-void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsDataType &dst)
+void convertFromJson(const JsonVariantConst &src, ThresholdDataType &dst)
 {
     if (src.is<JsonArrayConst>()) {
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
-            if (item["timeSeriesId"]) {
-                dst.timeSeriesId = item["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+            if (item["thresholdId"]) {
+                dst.thresholdId = item["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
             } else {
-                //dst.timeSeriesId = std::nullopt;
+                //dst.thresholdId = std::nullopt;
             }
-            if (item["slotCountMin"]) {
-                dst.slotCountMin = item["slotCountMin"].as<decltype(dst.slotCountMin)::value_type>();
+            if (item["thresholdValue"]) {
+                dst.thresholdValue = item["thresholdValue"].as<decltype(dst.thresholdValue)::value_type>();
             } else {
-                //dst.slotCountMin = std::nullopt;
-            }
-            if (item["slotCountMax"]) {
-                dst.slotCountMax = item["slotCountMax"].as<decltype(dst.slotCountMax)::value_type>();
-            } else {
-                //dst.slotCountMax = std::nullopt;
-            }
-            if (item["slotDurationMin"]) {
-                dst.slotDurationMin = item["slotDurationMin"].as<decltype(dst.slotDurationMin)::value_type>();
-            } else {
-                //dst.slotDurationMin = std::nullopt;
-            }
-            if (item["slotDurationMax"]) {
-                dst.slotDurationMax = item["slotDurationMax"].as<decltype(dst.slotDurationMax)::value_type>();
-            } else {
-                //dst.slotDurationMax = std::nullopt;
-            }
-            if (item["slotDurationStepSize"]) {
-                dst.slotDurationStepSize = item["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize)::value_type>();
-            } else {
-                //dst.slotDurationStepSize = std::nullopt;
-            }
-            if (item["earliestTimeSeriesStartTime"]) {
-                dst.earliestTimeSeriesStartTime =
-                    item["earliestTimeSeriesStartTime"].as<decltype(dst.earliestTimeSeriesStartTime)::value_type>();
-            } else {
-                //dst.earliestTimeSeriesStartTime = std::nullopt;
-            }
-            if (item["latestTimeSeriesEndTime"]) {
-                dst.latestTimeSeriesEndTime = item["latestTimeSeriesEndTime"].as<decltype(dst.latestTimeSeriesEndTime)::value_type>();
-            } else {
-                //dst.latestTimeSeriesEndTime = std::nullopt;
-            }
-            if (item["slotValueMin"]) {
-                dst.slotValueMin = item["slotValueMin"].as<decltype(dst.slotValueMin)::value_type>();
-            } else {
-                //dst.slotValueMin = std::nullopt;
-            }
-            if (item["slotValueMax"]) {
-                dst.slotValueMax = item["slotValueMax"].as<decltype(dst.slotValueMax)::value_type>();
-            } else {
-                //dst.slotValueMax = std::nullopt;
-            }
-            if (item["slotValueStepSize"]) {
-                dst.slotValueStepSize = item["slotValueStepSize"].as<decltype(dst.slotValueStepSize)::value_type>();
-            } else {
-                //dst.slotValueStepSize = std::nullopt;
+                //dst.thresholdValue = std::nullopt;
             }
         }
     } else {
-        if (src["timeSeriesId"]) {
-            dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+        if (src["thresholdId"]) {
+            dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
         } else {
-            //dst.timeSeriesId = std::nullopt;
+            //dst.thresholdId = std::nullopt;
         }
-        if (src["slotCountMin"]) {
-            dst.slotCountMin = src["slotCountMin"].as<decltype(dst.slotCountMin)::value_type>();
+        if (src["thresholdValue"]) {
+            dst.thresholdValue = src["thresholdValue"].as<decltype(dst.thresholdValue)::value_type>();
         } else {
-            //dst.slotCountMin = std::nullopt;
-        }
-        if (src["slotCountMax"]) {
-            dst.slotCountMax = src["slotCountMax"].as<decltype(dst.slotCountMax)::value_type>();
-        } else {
-            //dst.slotCountMax = std::nullopt;
-        }
-        if (src["slotDurationMin"]) {
-            dst.slotDurationMin = src["slotDurationMin"].as<decltype(dst.slotDurationMin)::value_type>();
-        } else {
-            //dst.slotDurationMin = std::nullopt;
-        }
-        if (src["slotDurationMax"]) {
-            dst.slotDurationMax = src["slotDurationMax"].as<decltype(dst.slotDurationMax)::value_type>();
-        } else {
-            //dst.slotDurationMax = std::nullopt;
-        }
-        if (src["slotDurationStepSize"]) {
-            dst.slotDurationStepSize = src["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize)::value_type>();
-        } else {
-            //dst.slotDurationStepSize = std::nullopt;
-        }
-        if (src["earliestTimeSeriesStartTime"]) {
-            dst.earliestTimeSeriesStartTime =
-                src["earliestTimeSeriesStartTime"].as<decltype(dst.earliestTimeSeriesStartTime)::value_type>();
-        } else {
-            //dst.earliestTimeSeriesStartTime = std::nullopt;
-        }
-        if (src["latestTimeSeriesEndTime"]) {
-            dst.latestTimeSeriesEndTime = src["latestTimeSeriesEndTime"].as<decltype(dst.latestTimeSeriesEndTime)::value_type>();
-        } else {
-            //dst.latestTimeSeriesEndTime = std::nullopt;
-        }
-        if (src["slotValueMin"]) {
-            dst.slotValueMin = src["slotValueMin"].as<decltype(dst.slotValueMin)::value_type>();
-        } else {
-            //dst.slotValueMin = std::nullopt;
-        }
-        if (src["slotValueMax"]) {
-            dst.slotValueMax = src["slotValueMax"].as<decltype(dst.slotValueMax)::value_type>();
-        } else {
-            //dst.slotValueMax = std::nullopt;
-        }
-        if (src["slotValueStepSize"]) {
-            dst.slotValueStepSize = src["slotValueStepSize"].as<decltype(dst.slotValueStepSize)::value_type>();
-        } else {
-            //dst.slotValueStepSize = std::nullopt;
+            //dst.thresholdValue = std::nullopt;
         }
     }
 }
-bool convertToJson(const TimeSeriesConstraintsDataElementsType &src, JsonVariant &dst)
+bool convertToJson(const ThresholdDataElementsType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesId) {
-        dst["timeSeriesId"] = *src.timeSeriesId;
+    if (src.thresholdId) {
+        dst["thresholdId"] = *src.thresholdId;
     }
-    if (src.slotCountMin) {
-        dst["slotCountMin"] = *src.slotCountMin;
-    }
-    if (src.slotCountMax) {
-        dst["slotCountMax"] = *src.slotCountMax;
-    }
-    if (src.slotDurationMin) {
-        dst["slotDurationMin"] = *src.slotDurationMin;
-    }
-    if (src.slotDurationMax) {
-        dst["slotDurationMax"] = *src.slotDurationMax;
-    }
-    if (src.slotDurationStepSize) {
-        dst["slotDurationStepSize"] = *src.slotDurationStepSize;
-    }
-    if (src.earliestTimeSeriesStartTime) {
-        dst["earliestTimeSeriesStartTime"] = *src.earliestTimeSeriesStartTime;
-    }
-    if (src.latestTimeSeriesEndTime) {
-        dst["latestTimeSeriesEndTime"] = *src.latestTimeSeriesEndTime;
-    }
-    if (src.slotValueMin) {
-        dst["slotValueMin"] = *src.slotValueMin;
-    }
-    if (src.slotValueMax) {
-        dst["slotValueMax"] = *src.slotValueMax;
-    }
-    if (src.slotValueStepSize) {
-        dst["slotValueStepSize"] = *src.slotValueStepSize;
+    if (src.thresholdValue) {
+        dst["thresholdValue"] = *src.thresholdValue;
     }
 
     return true;
 }
-void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsDataElementsType &dst)
+void convertFromJson(const JsonVariantConst &src, ThresholdDataElementsType &dst)
 {
     if (src.is<JsonArrayConst>()) {
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
-            if (item["timeSeriesId"]) {
-                dst.timeSeriesId = item["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+            if (item["thresholdId"]) {
+                dst.thresholdId = item["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
             } else {
-                //dst.timeSeriesId = std::nullopt;
+                //dst.thresholdId = std::nullopt;
             }
-            if (item["slotCountMin"]) {
-                dst.slotCountMin = item["slotCountMin"].as<decltype(dst.slotCountMin)::value_type>();
+            if (item["thresholdValue"]) {
+                dst.thresholdValue = item["thresholdValue"].as<decltype(dst.thresholdValue)::value_type>();
             } else {
-                //dst.slotCountMin = std::nullopt;
-            }
-            if (item["slotCountMax"]) {
-                dst.slotCountMax = item["slotCountMax"].as<decltype(dst.slotCountMax)::value_type>();
-            } else {
-                //dst.slotCountMax = std::nullopt;
-            }
-            if (item["slotDurationMin"]) {
-                dst.slotDurationMin = item["slotDurationMin"].as<decltype(dst.slotDurationMin)::value_type>();
-            } else {
-                //dst.slotDurationMin = std::nullopt;
-            }
-            if (item["slotDurationMax"]) {
-                dst.slotDurationMax = item["slotDurationMax"].as<decltype(dst.slotDurationMax)::value_type>();
-            } else {
-                //dst.slotDurationMax = std::nullopt;
-            }
-            if (item["slotDurationStepSize"]) {
-                dst.slotDurationStepSize = item["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize)::value_type>();
-            } else {
-                //dst.slotDurationStepSize = std::nullopt;
-            }
-            if (item["earliestTimeSeriesStartTime"]) {
-                dst.earliestTimeSeriesStartTime =
-                    item["earliestTimeSeriesStartTime"].as<decltype(dst.earliestTimeSeriesStartTime)::value_type>();
-            } else {
-                //dst.earliestTimeSeriesStartTime = std::nullopt;
-            }
-            if (item["latestTimeSeriesEndTime"]) {
-                dst.latestTimeSeriesEndTime = item["latestTimeSeriesEndTime"].as<decltype(dst.latestTimeSeriesEndTime)::value_type>();
-            } else {
-                //dst.latestTimeSeriesEndTime = std::nullopt;
-            }
-            if (item["slotValueMin"]) {
-                dst.slotValueMin = item["slotValueMin"].as<decltype(dst.slotValueMin)::value_type>();
-            } else {
-                //dst.slotValueMin = std::nullopt;
-            }
-            if (item["slotValueMax"]) {
-                dst.slotValueMax = item["slotValueMax"].as<decltype(dst.slotValueMax)::value_type>();
-            } else {
-                //dst.slotValueMax = std::nullopt;
-            }
-            if (item["slotValueStepSize"]) {
-                dst.slotValueStepSize = item["slotValueStepSize"].as<decltype(dst.slotValueStepSize)::value_type>();
-            } else {
-                //dst.slotValueStepSize = std::nullopt;
+                //dst.thresholdValue = std::nullopt;
             }
         }
     } else {
-        if (src["timeSeriesId"]) {
-            dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+        if (src["thresholdId"]) {
+            dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
         } else {
-            //dst.timeSeriesId = std::nullopt;
+            //dst.thresholdId = std::nullopt;
         }
-        if (src["slotCountMin"]) {
-            dst.slotCountMin = src["slotCountMin"].as<decltype(dst.slotCountMin)::value_type>();
+        if (src["thresholdValue"]) {
+            dst.thresholdValue = src["thresholdValue"].as<decltype(dst.thresholdValue)::value_type>();
         } else {
-            //dst.slotCountMin = std::nullopt;
-        }
-        if (src["slotCountMax"]) {
-            dst.slotCountMax = src["slotCountMax"].as<decltype(dst.slotCountMax)::value_type>();
-        } else {
-            //dst.slotCountMax = std::nullopt;
-        }
-        if (src["slotDurationMin"]) {
-            dst.slotDurationMin = src["slotDurationMin"].as<decltype(dst.slotDurationMin)::value_type>();
-        } else {
-            //dst.slotDurationMin = std::nullopt;
-        }
-        if (src["slotDurationMax"]) {
-            dst.slotDurationMax = src["slotDurationMax"].as<decltype(dst.slotDurationMax)::value_type>();
-        } else {
-            //dst.slotDurationMax = std::nullopt;
-        }
-        if (src["slotDurationStepSize"]) {
-            dst.slotDurationStepSize = src["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize)::value_type>();
-        } else {
-            //dst.slotDurationStepSize = std::nullopt;
-        }
-        if (src["earliestTimeSeriesStartTime"]) {
-            dst.earliestTimeSeriesStartTime =
-                src["earliestTimeSeriesStartTime"].as<decltype(dst.earliestTimeSeriesStartTime)::value_type>();
-        } else {
-            //dst.earliestTimeSeriesStartTime = std::nullopt;
-        }
-        if (src["latestTimeSeriesEndTime"]) {
-            dst.latestTimeSeriesEndTime = src["latestTimeSeriesEndTime"].as<decltype(dst.latestTimeSeriesEndTime)::value_type>();
-        } else {
-            //dst.latestTimeSeriesEndTime = std::nullopt;
-        }
-        if (src["slotValueMin"]) {
-            dst.slotValueMin = src["slotValueMin"].as<decltype(dst.slotValueMin)::value_type>();
-        } else {
-            //dst.slotValueMin = std::nullopt;
-        }
-        if (src["slotValueMax"]) {
-            dst.slotValueMax = src["slotValueMax"].as<decltype(dst.slotValueMax)::value_type>();
-        } else {
-            //dst.slotValueMax = std::nullopt;
-        }
-        if (src["slotValueStepSize"]) {
-            dst.slotValueStepSize = src["slotValueStepSize"].as<decltype(dst.slotValueStepSize)::value_type>();
-        } else {
-            //dst.slotValueStepSize = std::nullopt;
+            //dst.thresholdValue = std::nullopt;
         }
     }
 }
-bool convertToJson(const TimeSeriesConstraintsListDataType &src, JsonVariant &dst)
+bool convertToJson(const ThresholdListDataType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesConstraintsData) {
-        dst["timeSeriesConstraintsData"] = *src.timeSeriesConstraintsData;
+    if (src.thresholdData) {
+        dst["thresholdData"] = *src.thresholdData;
     }
 
     return true;
 }
-void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsListDataType &dst)
+void convertFromJson(const JsonVariantConst &src, ThresholdListDataType &dst)
 {
     if (src.is<JsonArrayConst>()) {
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
-            if (item["timeSeriesConstraintsData"]) {
-                dst.timeSeriesConstraintsData = item["timeSeriesConstraintsData"].as<decltype(dst.timeSeriesConstraintsData)::value_type>();
+            if (item["thresholdData"]) {
+                dst.thresholdData = item["thresholdData"].as<decltype(dst.thresholdData)::value_type>();
             } else {
-                //dst.timeSeriesConstraintsData = std::nullopt;
+                //dst.thresholdData = std::nullopt;
             }
         }
     } else {
-        if (src["timeSeriesConstraintsData"]) {
-            dst.timeSeriesConstraintsData = src["timeSeriesConstraintsData"].as<decltype(dst.timeSeriesConstraintsData)::value_type>();
+        if (src["thresholdData"]) {
+            dst.thresholdData = src["thresholdData"].as<decltype(dst.thresholdData)::value_type>();
         } else {
-            //dst.timeSeriesConstraintsData = std::nullopt;
+            //dst.thresholdData = std::nullopt;
         }
     }
 }
-bool convertToJson(const TimeSeriesConstraintsListDataSelectorsType &src, JsonVariant &dst)
+bool convertToJson(const ThresholdListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesId) {
-        dst["timeSeriesId"] = *src.timeSeriesId;
+    if (src.thresholdId) {
+        dst["thresholdId"] = *src.thresholdId;
     }
 
     return true;
 }
-void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsListDataSelectorsType &dst)
+void convertFromJson(const JsonVariantConst &src, ThresholdListDataSelectorsType &dst)
 {
     if (src.is<JsonArrayConst>()) {
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
-            if (item["timeSeriesId"]) {
-                dst.timeSeriesId = item["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+            if (item["thresholdId"]) {
+                dst.thresholdId = item["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
             } else {
-                //dst.timeSeriesId = std::nullopt;
+                //dst.thresholdId = std::nullopt;
             }
         }
     } else {
-        if (src["timeSeriesId"]) {
-            dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+        if (src["thresholdId"]) {
+            dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
         } else {
-            //dst.timeSeriesId = std::nullopt;
+            //dst.thresholdId = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const ThresholdConstraintsDataType &src, JsonVariant &dst)
+{
+    if (src.thresholdId) {
+        dst["thresholdId"] = *src.thresholdId;
+    }
+    if (src.thresholdRangeMin) {
+        dst["thresholdRangeMin"] = *src.thresholdRangeMin;
+    }
+    if (src.thresholdRangeMax) {
+        dst["thresholdRangeMax"] = *src.thresholdRangeMax;
+    }
+    if (src.thresholdStepSize) {
+        dst["thresholdStepSize"] = *src.thresholdStepSize;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["thresholdId"]) {
+                dst.thresholdId = item["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
+            } else {
+                //dst.thresholdId = std::nullopt;
+            }
+            if (item["thresholdRangeMin"]) {
+                dst.thresholdRangeMin = item["thresholdRangeMin"].as<decltype(dst.thresholdRangeMin)::value_type>();
+            } else {
+                //dst.thresholdRangeMin = std::nullopt;
+            }
+            if (item["thresholdRangeMax"]) {
+                dst.thresholdRangeMax = item["thresholdRangeMax"].as<decltype(dst.thresholdRangeMax)::value_type>();
+            } else {
+                //dst.thresholdRangeMax = std::nullopt;
+            }
+            if (item["thresholdStepSize"]) {
+                dst.thresholdStepSize = item["thresholdStepSize"].as<decltype(dst.thresholdStepSize)::value_type>();
+            } else {
+                //dst.thresholdStepSize = std::nullopt;
+            }
+        }
+    } else {
+        if (src["thresholdId"]) {
+            dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
+        } else {
+            //dst.thresholdId = std::nullopt;
+        }
+        if (src["thresholdRangeMin"]) {
+            dst.thresholdRangeMin = src["thresholdRangeMin"].as<decltype(dst.thresholdRangeMin)::value_type>();
+        } else {
+            //dst.thresholdRangeMin = std::nullopt;
+        }
+        if (src["thresholdRangeMax"]) {
+            dst.thresholdRangeMax = src["thresholdRangeMax"].as<decltype(dst.thresholdRangeMax)::value_type>();
+        } else {
+            //dst.thresholdRangeMax = std::nullopt;
+        }
+        if (src["thresholdStepSize"]) {
+            dst.thresholdStepSize = src["thresholdStepSize"].as<decltype(dst.thresholdStepSize)::value_type>();
+        } else {
+            //dst.thresholdStepSize = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const ThresholdConstraintsDataElementsType &src, JsonVariant &dst)
+{
+    if (src.thresholdId) {
+        dst["thresholdId"] = *src.thresholdId;
+    }
+    if (src.thresholdRangeMin) {
+        dst["thresholdRangeMin"] = *src.thresholdRangeMin;
+    }
+    if (src.thresholdRangeMax) {
+        dst["thresholdRangeMax"] = *src.thresholdRangeMax;
+    }
+    if (src.thresholdStepSize) {
+        dst["thresholdStepSize"] = *src.thresholdStepSize;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsDataElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["thresholdId"]) {
+                dst.thresholdId = item["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
+            } else {
+                //dst.thresholdId = std::nullopt;
+            }
+            if (item["thresholdRangeMin"]) {
+                dst.thresholdRangeMin = item["thresholdRangeMin"].as<decltype(dst.thresholdRangeMin)::value_type>();
+            } else {
+                //dst.thresholdRangeMin = std::nullopt;
+            }
+            if (item["thresholdRangeMax"]) {
+                dst.thresholdRangeMax = item["thresholdRangeMax"].as<decltype(dst.thresholdRangeMax)::value_type>();
+            } else {
+                //dst.thresholdRangeMax = std::nullopt;
+            }
+            if (item["thresholdStepSize"]) {
+                dst.thresholdStepSize = item["thresholdStepSize"].as<decltype(dst.thresholdStepSize)::value_type>();
+            } else {
+                //dst.thresholdStepSize = std::nullopt;
+            }
+        }
+    } else {
+        if (src["thresholdId"]) {
+            dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
+        } else {
+            //dst.thresholdId = std::nullopt;
+        }
+        if (src["thresholdRangeMin"]) {
+            dst.thresholdRangeMin = src["thresholdRangeMin"].as<decltype(dst.thresholdRangeMin)::value_type>();
+        } else {
+            //dst.thresholdRangeMin = std::nullopt;
+        }
+        if (src["thresholdRangeMax"]) {
+            dst.thresholdRangeMax = src["thresholdRangeMax"].as<decltype(dst.thresholdRangeMax)::value_type>();
+        } else {
+            //dst.thresholdRangeMax = std::nullopt;
+        }
+        if (src["thresholdStepSize"]) {
+            dst.thresholdStepSize = src["thresholdStepSize"].as<decltype(dst.thresholdStepSize)::value_type>();
+        } else {
+            //dst.thresholdStepSize = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const ThresholdConstraintsListDataType &src, JsonVariant &dst)
+{
+    if (src.thresholdConstraintsData) {
+        dst["thresholdConstraintsData"] = *src.thresholdConstraintsData;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsListDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["thresholdConstraintsData"]) {
+                dst.thresholdConstraintsData = item["thresholdConstraintsData"].as<decltype(dst.thresholdConstraintsData)::value_type>();
+            } else {
+                //dst.thresholdConstraintsData = std::nullopt;
+            }
+        }
+    } else {
+        if (src["thresholdConstraintsData"]) {
+            dst.thresholdConstraintsData = src["thresholdConstraintsData"].as<decltype(dst.thresholdConstraintsData)::value_type>();
+        } else {
+            //dst.thresholdConstraintsData = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const ThresholdConstraintsListDataSelectorsType &src, JsonVariant &dst)
+{
+    if (src.thresholdId) {
+        dst["thresholdId"] = *src.thresholdId;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsListDataSelectorsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["thresholdId"]) {
+                dst.thresholdId = item["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
+            } else {
+                //dst.thresholdId = std::nullopt;
+            }
+        }
+    } else {
+        if (src["thresholdId"]) {
+            dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
+        } else {
+            //dst.thresholdId = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const ThresholdDescriptionDataType &src, JsonVariant &dst)
+{
+    if (src.thresholdId) {
+        dst["thresholdId"] = *src.thresholdId;
+    }
+    if (src.thresholdType) {
+        dst["thresholdType"] = *src.thresholdType;
+    }
+    if (src.unit) {
+        dst["unit"] = *src.unit;
+    }
+    if (src.scopeType) {
+        dst["scopeType"] = *src.scopeType;
+    }
+    if (src.label) {
+        dst["label"] = *src.label;
+    }
+    if (src.description) {
+        dst["description"] = *src.description;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["thresholdId"]) {
+                dst.thresholdId = item["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
+            } else {
+                //dst.thresholdId = std::nullopt;
+            }
+            if (item["thresholdType"]) {
+                dst.thresholdType = item["thresholdType"].as<decltype(dst.thresholdType)::value_type>();
+            } else {
+                //dst.thresholdType = std::nullopt;
+            }
+            if (item["unit"]) {
+                dst.unit = item["unit"].as<decltype(dst.unit)::value_type>();
+            } else {
+                //dst.unit = std::nullopt;
+            }
+            if (item["scopeType"]) {
+                dst.scopeType = item["scopeType"].as<decltype(dst.scopeType)::value_type>();
+            } else {
+                //dst.scopeType = std::nullopt;
+            }
+            if (item["label"]) {
+                dst.label = item["label"].as<decltype(dst.label)::value_type>();
+            } else {
+                //dst.label = std::nullopt;
+            }
+            if (item["description"]) {
+                dst.description = item["description"].as<decltype(dst.description)::value_type>();
+            } else {
+                //dst.description = std::nullopt;
+            }
+        }
+    } else {
+        if (src["thresholdId"]) {
+            dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
+        } else {
+            //dst.thresholdId = std::nullopt;
+        }
+        if (src["thresholdType"]) {
+            dst.thresholdType = src["thresholdType"].as<decltype(dst.thresholdType)::value_type>();
+        } else {
+            //dst.thresholdType = std::nullopt;
+        }
+        if (src["unit"]) {
+            dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
+        } else {
+            //dst.unit = std::nullopt;
+        }
+        if (src["scopeType"]) {
+            dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
+        } else {
+            //dst.scopeType = std::nullopt;
+        }
+        if (src["label"]) {
+            dst.label = src["label"].as<decltype(dst.label)::value_type>();
+        } else {
+            //dst.label = std::nullopt;
+        }
+        if (src["description"]) {
+            dst.description = src["description"].as<decltype(dst.description)::value_type>();
+        } else {
+            //dst.description = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const ThresholdDescriptionDataElementsType &src, JsonVariant &dst)
+{
+    if (src.thresholdId) {
+        dst["thresholdId"] = *src.thresholdId;
+    }
+    if (src.thresholdType) {
+        dst["thresholdType"] = *src.thresholdType;
+    }
+    if (src.unit) {
+        dst["unit"] = *src.unit;
+    }
+    if (src.scopeType) {
+        dst["scopeType"] = *src.scopeType;
+    }
+    if (src.label) {
+        dst["label"] = *src.label;
+    }
+    if (src.description) {
+        dst["description"] = *src.description;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionDataElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["thresholdId"]) {
+                dst.thresholdId = item["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
+            } else {
+                //dst.thresholdId = std::nullopt;
+            }
+            if (item["thresholdType"]) {
+                dst.thresholdType = item["thresholdType"].as<decltype(dst.thresholdType)::value_type>();
+            } else {
+                //dst.thresholdType = std::nullopt;
+            }
+            if (item["unit"]) {
+                dst.unit = item["unit"].as<decltype(dst.unit)::value_type>();
+            } else {
+                //dst.unit = std::nullopt;
+            }
+            if (item["scopeType"]) {
+                dst.scopeType = item["scopeType"].as<decltype(dst.scopeType)::value_type>();
+            } else {
+                //dst.scopeType = std::nullopt;
+            }
+            if (item["label"]) {
+                dst.label = item["label"].as<decltype(dst.label)::value_type>();
+            } else {
+                //dst.label = std::nullopt;
+            }
+            if (item["description"]) {
+                dst.description = item["description"].as<decltype(dst.description)::value_type>();
+            } else {
+                //dst.description = std::nullopt;
+            }
+        }
+    } else {
+        if (src["thresholdId"]) {
+            dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
+        } else {
+            //dst.thresholdId = std::nullopt;
+        }
+        if (src["thresholdType"]) {
+            dst.thresholdType = src["thresholdType"].as<decltype(dst.thresholdType)::value_type>();
+        } else {
+            //dst.thresholdType = std::nullopt;
+        }
+        if (src["unit"]) {
+            dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
+        } else {
+            //dst.unit = std::nullopt;
+        }
+        if (src["scopeType"]) {
+            dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
+        } else {
+            //dst.scopeType = std::nullopt;
+        }
+        if (src["label"]) {
+            dst.label = src["label"].as<decltype(dst.label)::value_type>();
+        } else {
+            //dst.label = std::nullopt;
+        }
+        if (src["description"]) {
+            dst.description = src["description"].as<decltype(dst.description)::value_type>();
+        } else {
+            //dst.description = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const ThresholdDescriptionListDataType &src, JsonVariant &dst)
+{
+    if (src.thresholdDescriptionData) {
+        dst["thresholdDescriptionData"] = *src.thresholdDescriptionData;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionListDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["thresholdDescriptionData"]) {
+                dst.thresholdDescriptionData = item["thresholdDescriptionData"].as<decltype(dst.thresholdDescriptionData)::value_type>();
+            } else {
+                //dst.thresholdDescriptionData = std::nullopt;
+            }
+        }
+    } else {
+        if (src["thresholdDescriptionData"]) {
+            dst.thresholdDescriptionData = src["thresholdDescriptionData"].as<decltype(dst.thresholdDescriptionData)::value_type>();
+        } else {
+            //dst.thresholdDescriptionData = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const ThresholdDescriptionListDataSelectorsType &src, JsonVariant &dst)
+{
+    if (src.thresholdId) {
+        dst["thresholdId"] = *src.thresholdId;
+    }
+    if (src.scopeType) {
+        dst["scopeType"] = *src.scopeType;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionListDataSelectorsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["thresholdId"]) {
+                dst.thresholdId = item["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
+            } else {
+                //dst.thresholdId = std::nullopt;
+            }
+            if (item["scopeType"]) {
+                dst.scopeType = item["scopeType"].as<decltype(dst.scopeType)::value_type>();
+            } else {
+                //dst.scopeType = std::nullopt;
+            }
+        }
+    } else {
+        if (src["thresholdId"]) {
+            dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
+        } else {
+            //dst.thresholdId = std::nullopt;
+        }
+        if (src["scopeType"]) {
+            dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
+        } else {
+            //dst.scopeType = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const BillValueType &src, JsonVariant &dst)
+{
+    if (src.valueId) {
+        dst["valueId"] = *src.valueId;
+    }
+    if (src.unit) {
+        dst["unit"] = *src.unit;
+    }
+    if (src.value) {
+        dst["value"] = *src.value;
+    }
+    if (src.valuePercentage) {
+        dst["valuePercentage"] = *src.valuePercentage;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, BillValueType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["valueId"]) {
+                dst.valueId = item["valueId"].as<decltype(dst.valueId)::value_type>();
+            } else {
+                //dst.valueId = std::nullopt;
+            }
+            if (item["unit"]) {
+                dst.unit = item["unit"].as<decltype(dst.unit)::value_type>();
+            } else {
+                //dst.unit = std::nullopt;
+            }
+            if (item["value"]) {
+                dst.value = item["value"].as<decltype(dst.value)::value_type>();
+            } else {
+                //dst.value = std::nullopt;
+            }
+            if (item["valuePercentage"]) {
+                dst.valuePercentage = item["valuePercentage"].as<decltype(dst.valuePercentage)::value_type>();
+            } else {
+                //dst.valuePercentage = std::nullopt;
+            }
+        }
+    } else {
+        if (src["valueId"]) {
+            dst.valueId = src["valueId"].as<decltype(dst.valueId)::value_type>();
+        } else {
+            //dst.valueId = std::nullopt;
+        }
+        if (src["unit"]) {
+            dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
+        } else {
+            //dst.unit = std::nullopt;
+        }
+        if (src["value"]) {
+            dst.value = src["value"].as<decltype(dst.value)::value_type>();
+        } else {
+            //dst.value = std::nullopt;
+        }
+        if (src["valuePercentage"]) {
+            dst.valuePercentage = src["valuePercentage"].as<decltype(dst.valuePercentage)::value_type>();
+        } else {
+            //dst.valuePercentage = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const BillValueElementsType &src, JsonVariant &dst)
+{
+    if (src.valueId) {
+        dst["valueId"] = *src.valueId;
+    }
+    if (src.unit) {
+        dst["unit"] = *src.unit;
+    }
+    if (src.value) {
+        dst["value"] = *src.value;
+    }
+    if (src.valuePercentage) {
+        dst["valuePercentage"] = *src.valuePercentage;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, BillValueElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["valueId"]) {
+                dst.valueId = item["valueId"].as<decltype(dst.valueId)::value_type>();
+            } else {
+                //dst.valueId = std::nullopt;
+            }
+            if (item["unit"]) {
+                dst.unit = item["unit"].as<decltype(dst.unit)::value_type>();
+            } else {
+                //dst.unit = std::nullopt;
+            }
+            if (item["value"]) {
+                dst.value = item["value"].as<decltype(dst.value)::value_type>();
+            } else {
+                //dst.value = std::nullopt;
+            }
+            if (item["valuePercentage"]) {
+                dst.valuePercentage = item["valuePercentage"].as<decltype(dst.valuePercentage)::value_type>();
+            } else {
+                //dst.valuePercentage = std::nullopt;
+            }
+        }
+    } else {
+        if (src["valueId"]) {
+            dst.valueId = src["valueId"].as<decltype(dst.valueId)::value_type>();
+        } else {
+            //dst.valueId = std::nullopt;
+        }
+        if (src["unit"]) {
+            dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
+        } else {
+            //dst.unit = std::nullopt;
+        }
+        if (src["value"]) {
+            dst.value = src["value"].as<decltype(dst.value)::value_type>();
+        } else {
+            //dst.value = std::nullopt;
+        }
+        if (src["valuePercentage"]) {
+            dst.valuePercentage = src["valuePercentage"].as<decltype(dst.valuePercentage)::value_type>();
+        } else {
+            //dst.valuePercentage = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const BillCostType &src, JsonVariant &dst)
+{
+    if (src.costId) {
+        dst["costId"] = *src.costId;
+    }
+    if (src.costType) {
+        dst["costType"] = *src.costType;
+    }
+    if (src.valueId) {
+        dst["valueId"] = *src.valueId;
+    }
+    if (src.unit) {
+        dst["unit"] = *src.unit;
+    }
+    if (src.currency) {
+        dst["currency"] = *src.currency;
+    }
+    if (src.cost) {
+        dst["cost"] = *src.cost;
+    }
+    if (src.costPercentage) {
+        dst["costPercentage"] = *src.costPercentage;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, BillCostType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["costId"]) {
+                dst.costId = item["costId"].as<decltype(dst.costId)::value_type>();
+            } else {
+                //dst.costId = std::nullopt;
+            }
+            if (item["costType"]) {
+                dst.costType = item["costType"].as<decltype(dst.costType)::value_type>();
+            } else {
+                //dst.costType = std::nullopt;
+            }
+            if (item["valueId"]) {
+                dst.valueId = item["valueId"].as<decltype(dst.valueId)::value_type>();
+            } else {
+                //dst.valueId = std::nullopt;
+            }
+            if (item["unit"]) {
+                dst.unit = item["unit"].as<decltype(dst.unit)::value_type>();
+            } else {
+                //dst.unit = std::nullopt;
+            }
+            if (item["currency"]) {
+                dst.currency = item["currency"].as<decltype(dst.currency)::value_type>();
+            } else {
+                //dst.currency = std::nullopt;
+            }
+            if (item["cost"]) {
+                dst.cost = item["cost"].as<decltype(dst.cost)::value_type>();
+            } else {
+                //dst.cost = std::nullopt;
+            }
+            if (item["costPercentage"]) {
+                dst.costPercentage = item["costPercentage"].as<decltype(dst.costPercentage)::value_type>();
+            } else {
+                //dst.costPercentage = std::nullopt;
+            }
+        }
+    } else {
+        if (src["costId"]) {
+            dst.costId = src["costId"].as<decltype(dst.costId)::value_type>();
+        } else {
+            //dst.costId = std::nullopt;
+        }
+        if (src["costType"]) {
+            dst.costType = src["costType"].as<decltype(dst.costType)::value_type>();
+        } else {
+            //dst.costType = std::nullopt;
+        }
+        if (src["valueId"]) {
+            dst.valueId = src["valueId"].as<decltype(dst.valueId)::value_type>();
+        } else {
+            //dst.valueId = std::nullopt;
+        }
+        if (src["unit"]) {
+            dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
+        } else {
+            //dst.unit = std::nullopt;
+        }
+        if (src["currency"]) {
+            dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
+        } else {
+            //dst.currency = std::nullopt;
+        }
+        if (src["cost"]) {
+            dst.cost = src["cost"].as<decltype(dst.cost)::value_type>();
+        } else {
+            //dst.cost = std::nullopt;
+        }
+        if (src["costPercentage"]) {
+            dst.costPercentage = src["costPercentage"].as<decltype(dst.costPercentage)::value_type>();
+        } else {
+            //dst.costPercentage = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const BillCostElementsType &src, JsonVariant &dst)
+{
+    if (src.costId) {
+        dst["costId"] = *src.costId;
+    }
+    if (src.costType) {
+        dst["costType"] = *src.costType;
+    }
+    if (src.valueId) {
+        dst["valueId"] = *src.valueId;
+    }
+    if (src.unit) {
+        dst["unit"] = *src.unit;
+    }
+    if (src.currency) {
+        dst["currency"] = *src.currency;
+    }
+    if (src.cost) {
+        dst["cost"] = *src.cost;
+    }
+    if (src.costPercentage) {
+        dst["costPercentage"] = *src.costPercentage;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, BillCostElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["costId"]) {
+                dst.costId = item["costId"].as<decltype(dst.costId)::value_type>();
+            } else {
+                //dst.costId = std::nullopt;
+            }
+            if (item["costType"]) {
+                dst.costType = item["costType"].as<decltype(dst.costType)::value_type>();
+            } else {
+                //dst.costType = std::nullopt;
+            }
+            if (item["valueId"]) {
+                dst.valueId = item["valueId"].as<decltype(dst.valueId)::value_type>();
+            } else {
+                //dst.valueId = std::nullopt;
+            }
+            if (item["unit"]) {
+                dst.unit = item["unit"].as<decltype(dst.unit)::value_type>();
+            } else {
+                //dst.unit = std::nullopt;
+            }
+            if (item["currency"]) {
+                dst.currency = item["currency"].as<decltype(dst.currency)::value_type>();
+            } else {
+                //dst.currency = std::nullopt;
+            }
+            if (item["cost"]) {
+                dst.cost = item["cost"].as<decltype(dst.cost)::value_type>();
+            } else {
+                //dst.cost = std::nullopt;
+            }
+            if (item["costPercentage"]) {
+                dst.costPercentage = item["costPercentage"].as<decltype(dst.costPercentage)::value_type>();
+            } else {
+                //dst.costPercentage = std::nullopt;
+            }
+        }
+    } else {
+        if (src["costId"]) {
+            dst.costId = src["costId"].as<decltype(dst.costId)::value_type>();
+        } else {
+            //dst.costId = std::nullopt;
+        }
+        if (src["costType"]) {
+            dst.costType = src["costType"].as<decltype(dst.costType)::value_type>();
+        } else {
+            //dst.costType = std::nullopt;
+        }
+        if (src["valueId"]) {
+            dst.valueId = src["valueId"].as<decltype(dst.valueId)::value_type>();
+        } else {
+            //dst.valueId = std::nullopt;
+        }
+        if (src["unit"]) {
+            dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
+        } else {
+            //dst.unit = std::nullopt;
+        }
+        if (src["currency"]) {
+            dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
+        } else {
+            //dst.currency = std::nullopt;
+        }
+        if (src["cost"]) {
+            dst.cost = src["cost"].as<decltype(dst.cost)::value_type>();
+        } else {
+            //dst.cost = std::nullopt;
+        }
+        if (src["costPercentage"]) {
+            dst.costPercentage = src["costPercentage"].as<decltype(dst.costPercentage)::value_type>();
+        } else {
+            //dst.costPercentage = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const BillPositionType &src, JsonVariant &dst)
+{
+    if (src.positionId) {
+        dst["positionId"] = *src.positionId;
+    }
+    if (src.positionType) {
+        dst["positionType"] = *src.positionType;
+    }
+    if (src.timePeriod) {
+        dst["timePeriod"] = *src.timePeriod;
+    }
+    if (src.value) {
+        dst["value"] = *src.value;
+    }
+    if (src.cost) {
+        dst["cost"] = *src.cost;
+    }
+    if (src.label) {
+        dst["label"] = *src.label;
+    }
+    if (src.description) {
+        dst["description"] = *src.description;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, BillPositionType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["positionId"]) {
+                dst.positionId = item["positionId"].as<decltype(dst.positionId)::value_type>();
+            } else {
+                //dst.positionId = std::nullopt;
+            }
+            if (item["positionType"]) {
+                dst.positionType = item["positionType"].as<decltype(dst.positionType)::value_type>();
+            } else {
+                //dst.positionType = std::nullopt;
+            }
+            if (item["timePeriod"]) {
+                dst.timePeriod = item["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
+            } else {
+                //dst.timePeriod = std::nullopt;
+            }
+            if (item["value"]) {
+                dst.value = item["value"].as<decltype(dst.value)::value_type>();
+            } else {
+                //dst.value = std::nullopt;
+            }
+            if (item["cost"]) {
+                dst.cost = item["cost"].as<decltype(dst.cost)::value_type>();
+            } else {
+                //dst.cost = std::nullopt;
+            }
+            if (item["label"]) {
+                dst.label = item["label"].as<decltype(dst.label)::value_type>();
+            } else {
+                //dst.label = std::nullopt;
+            }
+            if (item["description"]) {
+                dst.description = item["description"].as<decltype(dst.description)::value_type>();
+            } else {
+                //dst.description = std::nullopt;
+            }
+        }
+    } else {
+        if (src["positionId"]) {
+            dst.positionId = src["positionId"].as<decltype(dst.positionId)::value_type>();
+        } else {
+            //dst.positionId = std::nullopt;
+        }
+        if (src["positionType"]) {
+            dst.positionType = src["positionType"].as<decltype(dst.positionType)::value_type>();
+        } else {
+            //dst.positionType = std::nullopt;
+        }
+        if (src["timePeriod"]) {
+            dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
+        } else {
+            //dst.timePeriod = std::nullopt;
+        }
+        if (src["value"]) {
+            dst.value = src["value"].as<decltype(dst.value)::value_type>();
+        } else {
+            //dst.value = std::nullopt;
+        }
+        if (src["cost"]) {
+            dst.cost = src["cost"].as<decltype(dst.cost)::value_type>();
+        } else {
+            //dst.cost = std::nullopt;
+        }
+        if (src["label"]) {
+            dst.label = src["label"].as<decltype(dst.label)::value_type>();
+        } else {
+            //dst.label = std::nullopt;
+        }
+        if (src["description"]) {
+            dst.description = src["description"].as<decltype(dst.description)::value_type>();
+        } else {
+            //dst.description = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const BillPositionElementsType &src, JsonVariant &dst)
+{
+    if (src.positionId) {
+        dst["positionId"] = *src.positionId;
+    }
+    if (src.positionType) {
+        dst["positionType"] = *src.positionType;
+    }
+    if (src.timePeriod) {
+        dst["timePeriod"] = *src.timePeriod;
+    }
+    if (src.value) {
+        dst["value"] = *src.value;
+    }
+    if (src.cost) {
+        dst["cost"] = *src.cost;
+    }
+    if (src.label) {
+        dst["label"] = *src.label;
+    }
+    if (src.description) {
+        dst["description"] = *src.description;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, BillPositionElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["positionId"]) {
+                dst.positionId = item["positionId"].as<decltype(dst.positionId)::value_type>();
+            } else {
+                //dst.positionId = std::nullopt;
+            }
+            if (item["positionType"]) {
+                dst.positionType = item["positionType"].as<decltype(dst.positionType)::value_type>();
+            } else {
+                //dst.positionType = std::nullopt;
+            }
+            if (item["timePeriod"]) {
+                dst.timePeriod = item["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
+            } else {
+                //dst.timePeriod = std::nullopt;
+            }
+            if (item["value"]) {
+                dst.value = item["value"].as<decltype(dst.value)::value_type>();
+            } else {
+                //dst.value = std::nullopt;
+            }
+            if (item["cost"]) {
+                dst.cost = item["cost"].as<decltype(dst.cost)::value_type>();
+            } else {
+                //dst.cost = std::nullopt;
+            }
+            if (item["label"]) {
+                dst.label = item["label"].as<decltype(dst.label)::value_type>();
+            } else {
+                //dst.label = std::nullopt;
+            }
+            if (item["description"]) {
+                dst.description = item["description"].as<decltype(dst.description)::value_type>();
+            } else {
+                //dst.description = std::nullopt;
+            }
+        }
+    } else {
+        if (src["positionId"]) {
+            dst.positionId = src["positionId"].as<decltype(dst.positionId)::value_type>();
+        } else {
+            //dst.positionId = std::nullopt;
+        }
+        if (src["positionType"]) {
+            dst.positionType = src["positionType"].as<decltype(dst.positionType)::value_type>();
+        } else {
+            //dst.positionType = std::nullopt;
+        }
+        if (src["timePeriod"]) {
+            dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
+        } else {
+            //dst.timePeriod = std::nullopt;
+        }
+        if (src["value"]) {
+            dst.value = src["value"].as<decltype(dst.value)::value_type>();
+        } else {
+            //dst.value = std::nullopt;
+        }
+        if (src["cost"]) {
+            dst.cost = src["cost"].as<decltype(dst.cost)::value_type>();
+        } else {
+            //dst.cost = std::nullopt;
+        }
+        if (src["label"]) {
+            dst.label = src["label"].as<decltype(dst.label)::value_type>();
+        } else {
+            //dst.label = std::nullopt;
+        }
+        if (src["description"]) {
+            dst.description = src["description"].as<decltype(dst.description)::value_type>();
+        } else {
+            //dst.description = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const BillDataType &src, JsonVariant &dst)
+{
+    if (src.billId) {
+        dst["billId"] = *src.billId;
+    }
+    if (src.billType) {
+        dst["billType"] = *src.billType;
+    }
+    if (src.scopeType) {
+        dst["scopeType"] = *src.scopeType;
+    }
+    if (src.total) {
+        dst["total"] = *src.total;
+    }
+    if (src.position) {
+        dst["position"] = *src.position;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, BillDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["billId"]) {
+                dst.billId = item["billId"].as<decltype(dst.billId)::value_type>();
+            } else {
+                //dst.billId = std::nullopt;
+            }
+            if (item["billType"]) {
+                dst.billType = item["billType"].as<decltype(dst.billType)::value_type>();
+            } else {
+                //dst.billType = std::nullopt;
+            }
+            if (item["scopeType"]) {
+                dst.scopeType = item["scopeType"].as<decltype(dst.scopeType)::value_type>();
+            } else {
+                //dst.scopeType = std::nullopt;
+            }
+            if (item["total"]) {
+                dst.total = item["total"].as<decltype(dst.total)::value_type>();
+            } else {
+                //dst.total = std::nullopt;
+            }
+            if (item["position"]) {
+                dst.position = item["position"].as<decltype(dst.position)::value_type>();
+            } else {
+                //dst.position = std::nullopt;
+            }
+        }
+    } else {
+        if (src["billId"]) {
+            dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
+        } else {
+            //dst.billId = std::nullopt;
+        }
+        if (src["billType"]) {
+            dst.billType = src["billType"].as<decltype(dst.billType)::value_type>();
+        } else {
+            //dst.billType = std::nullopt;
+        }
+        if (src["scopeType"]) {
+            dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
+        } else {
+            //dst.scopeType = std::nullopt;
+        }
+        if (src["total"]) {
+            dst.total = src["total"].as<decltype(dst.total)::value_type>();
+        } else {
+            //dst.total = std::nullopt;
+        }
+        if (src["position"]) {
+            dst.position = src["position"].as<decltype(dst.position)::value_type>();
+        } else {
+            //dst.position = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const BillDataElementsType &src, JsonVariant &dst)
+{
+    if (src.billId) {
+        dst["billId"] = *src.billId;
+    }
+    if (src.billType) {
+        dst["billType"] = *src.billType;
+    }
+    if (src.scopeType) {
+        dst["scopeType"] = *src.scopeType;
+    }
+    if (src.total) {
+        dst["total"] = *src.total;
+    }
+    if (src.position) {
+        dst["position"] = *src.position;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, BillDataElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["billId"]) {
+                dst.billId = item["billId"].as<decltype(dst.billId)::value_type>();
+            } else {
+                //dst.billId = std::nullopt;
+            }
+            if (item["billType"]) {
+                dst.billType = item["billType"].as<decltype(dst.billType)::value_type>();
+            } else {
+                //dst.billType = std::nullopt;
+            }
+            if (item["scopeType"]) {
+                dst.scopeType = item["scopeType"].as<decltype(dst.scopeType)::value_type>();
+            } else {
+                //dst.scopeType = std::nullopt;
+            }
+            if (item["total"]) {
+                dst.total = item["total"].as<decltype(dst.total)::value_type>();
+            } else {
+                //dst.total = std::nullopt;
+            }
+            if (item["position"]) {
+                dst.position = item["position"].as<decltype(dst.position)::value_type>();
+            } else {
+                //dst.position = std::nullopt;
+            }
+        }
+    } else {
+        if (src["billId"]) {
+            dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
+        } else {
+            //dst.billId = std::nullopt;
+        }
+        if (src["billType"]) {
+            dst.billType = src["billType"].as<decltype(dst.billType)::value_type>();
+        } else {
+            //dst.billType = std::nullopt;
+        }
+        if (src["scopeType"]) {
+            dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
+        } else {
+            //dst.scopeType = std::nullopt;
+        }
+        if (src["total"]) {
+            dst.total = src["total"].as<decltype(dst.total)::value_type>();
+        } else {
+            //dst.total = std::nullopt;
+        }
+        if (src["position"]) {
+            dst.position = src["position"].as<decltype(dst.position)::value_type>();
+        } else {
+            //dst.position = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const BillListDataType &src, JsonVariant &dst)
+{
+    if (src.billData) {
+        dst["billData"] = *src.billData;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, BillListDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["billData"]) {
+                dst.billData = item["billData"].as<decltype(dst.billData)::value_type>();
+            } else {
+                //dst.billData = std::nullopt;
+            }
+        }
+    } else {
+        if (src["billData"]) {
+            dst.billData = src["billData"].as<decltype(dst.billData)::value_type>();
+        } else {
+            //dst.billData = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const BillListDataSelectorsType &src, JsonVariant &dst)
+{
+    if (src.billId) {
+        dst["billId"] = *src.billId;
+    }
+    if (src.scopeType) {
+        dst["scopeType"] = *src.scopeType;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, BillListDataSelectorsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["billId"]) {
+                dst.billId = item["billId"].as<decltype(dst.billId)::value_type>();
+            } else {
+                //dst.billId = std::nullopt;
+            }
+            if (item["scopeType"]) {
+                dst.scopeType = item["scopeType"].as<decltype(dst.scopeType)::value_type>();
+            } else {
+                //dst.scopeType = std::nullopt;
+            }
+        }
+    } else {
+        if (src["billId"]) {
+            dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
+        } else {
+            //dst.billId = std::nullopt;
+        }
+        if (src["scopeType"]) {
+            dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
+        } else {
+            //dst.scopeType = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const BillConstraintsDataType &src, JsonVariant &dst)
+{
+    if (src.billId) {
+        dst["billId"] = *src.billId;
+    }
+    if (src.positionCountMin) {
+        dst["positionCountMin"] = *src.positionCountMin;
+    }
+    if (src.positionCountMax) {
+        dst["positionCountMax"] = *src.positionCountMax;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, BillConstraintsDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["billId"]) {
+                dst.billId = item["billId"].as<decltype(dst.billId)::value_type>();
+            } else {
+                //dst.billId = std::nullopt;
+            }
+            if (item["positionCountMin"]) {
+                dst.positionCountMin = item["positionCountMin"].as<decltype(dst.positionCountMin)::value_type>();
+            } else {
+                //dst.positionCountMin = std::nullopt;
+            }
+            if (item["positionCountMax"]) {
+                dst.positionCountMax = item["positionCountMax"].as<decltype(dst.positionCountMax)::value_type>();
+            } else {
+                //dst.positionCountMax = std::nullopt;
+            }
+        }
+    } else {
+        if (src["billId"]) {
+            dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
+        } else {
+            //dst.billId = std::nullopt;
+        }
+        if (src["positionCountMin"]) {
+            dst.positionCountMin = src["positionCountMin"].as<decltype(dst.positionCountMin)::value_type>();
+        } else {
+            //dst.positionCountMin = std::nullopt;
+        }
+        if (src["positionCountMax"]) {
+            dst.positionCountMax = src["positionCountMax"].as<decltype(dst.positionCountMax)::value_type>();
+        } else {
+            //dst.positionCountMax = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const BillConstraintsDataElementsType &src, JsonVariant &dst)
+{
+    if (src.billId) {
+        dst["billId"] = *src.billId;
+    }
+    if (src.positionCountMin) {
+        dst["positionCountMin"] = *src.positionCountMin;
+    }
+    if (src.positionCountMax) {
+        dst["positionCountMax"] = *src.positionCountMax;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, BillConstraintsDataElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["billId"]) {
+                dst.billId = item["billId"].as<decltype(dst.billId)::value_type>();
+            } else {
+                //dst.billId = std::nullopt;
+            }
+            if (item["positionCountMin"]) {
+                dst.positionCountMin = item["positionCountMin"].as<decltype(dst.positionCountMin)::value_type>();
+            } else {
+                //dst.positionCountMin = std::nullopt;
+            }
+            if (item["positionCountMax"]) {
+                dst.positionCountMax = item["positionCountMax"].as<decltype(dst.positionCountMax)::value_type>();
+            } else {
+                //dst.positionCountMax = std::nullopt;
+            }
+        }
+    } else {
+        if (src["billId"]) {
+            dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
+        } else {
+            //dst.billId = std::nullopt;
+        }
+        if (src["positionCountMin"]) {
+            dst.positionCountMin = src["positionCountMin"].as<decltype(dst.positionCountMin)::value_type>();
+        } else {
+            //dst.positionCountMin = std::nullopt;
+        }
+        if (src["positionCountMax"]) {
+            dst.positionCountMax = src["positionCountMax"].as<decltype(dst.positionCountMax)::value_type>();
+        } else {
+            //dst.positionCountMax = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const BillConstraintsListDataType &src, JsonVariant &dst)
+{
+    if (src.billConstraintsData) {
+        dst["billConstraintsData"] = *src.billConstraintsData;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, BillConstraintsListDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["billConstraintsData"]) {
+                dst.billConstraintsData = item["billConstraintsData"].as<decltype(dst.billConstraintsData)::value_type>();
+            } else {
+                //dst.billConstraintsData = std::nullopt;
+            }
+        }
+    } else {
+        if (src["billConstraintsData"]) {
+            dst.billConstraintsData = src["billConstraintsData"].as<decltype(dst.billConstraintsData)::value_type>();
+        } else {
+            //dst.billConstraintsData = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const BillConstraintsListDataSelectorsType &src, JsonVariant &dst)
+{
+    if (src.billId) {
+        dst["billId"] = *src.billId;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, BillConstraintsListDataSelectorsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["billId"]) {
+                dst.billId = item["billId"].as<decltype(dst.billId)::value_type>();
+            } else {
+                //dst.billId = std::nullopt;
+            }
+        }
+    } else {
+        if (src["billId"]) {
+            dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
+        } else {
+            //dst.billId = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const BillDescriptionDataType &src, JsonVariant &dst)
+{
+    if (src.billId) {
+        dst["billId"] = *src.billId;
+    }
+    if (src.billWriteable) {
+        dst["billWriteable"] = *src.billWriteable;
+    }
+    if (src.updateRequired) {
+        dst["updateRequired"] = *src.updateRequired;
+    }
+    if (src.supportedBillType) {
+        dst["supportedBillType"] = *src.supportedBillType;
+    }
+    if (src.sessionId) {
+        dst["sessionId"] = *src.sessionId;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, BillDescriptionDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["billId"]) {
+                dst.billId = item["billId"].as<decltype(dst.billId)::value_type>();
+            } else {
+                //dst.billId = std::nullopt;
+            }
+            if (item["billWriteable"]) {
+                dst.billWriteable = item["billWriteable"].as<decltype(dst.billWriteable)::value_type>();
+            } else {
+                //dst.billWriteable = std::nullopt;
+            }
+            if (item["updateRequired"]) {
+                dst.updateRequired = item["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
+            } else {
+                //dst.updateRequired = std::nullopt;
+            }
+            if (item["supportedBillType"]) {
+                dst.supportedBillType = item["supportedBillType"].as<decltype(dst.supportedBillType)::value_type>();
+            } else {
+                //dst.supportedBillType = std::nullopt;
+            }
+            if (item["sessionId"]) {
+                dst.sessionId = item["sessionId"].as<decltype(dst.sessionId)::value_type>();
+            } else {
+                //dst.sessionId = std::nullopt;
+            }
+        }
+    } else {
+        if (src["billId"]) {
+            dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
+        } else {
+            //dst.billId = std::nullopt;
+        }
+        if (src["billWriteable"]) {
+            dst.billWriteable = src["billWriteable"].as<decltype(dst.billWriteable)::value_type>();
+        } else {
+            //dst.billWriteable = std::nullopt;
+        }
+        if (src["updateRequired"]) {
+            dst.updateRequired = src["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
+        } else {
+            //dst.updateRequired = std::nullopt;
+        }
+        if (src["supportedBillType"]) {
+            dst.supportedBillType = src["supportedBillType"].as<decltype(dst.supportedBillType)::value_type>();
+        } else {
+            //dst.supportedBillType = std::nullopt;
+        }
+        if (src["sessionId"]) {
+            dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
+        } else {
+            //dst.sessionId = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const BillDescriptionDataElementsType &src, JsonVariant &dst)
+{
+    if (src.billId) {
+        dst["billId"] = *src.billId;
+    }
+    if (src.billWriteable) {
+        dst["billWriteable"] = *src.billWriteable;
+    }
+    if (src.updateRequired) {
+        dst["updateRequired"] = *src.updateRequired;
+    }
+    if (src.supportedBillType) {
+        dst["supportedBillType"] = *src.supportedBillType;
+    }
+    if (src.sessionId) {
+        dst["sessionId"] = *src.sessionId;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, BillDescriptionDataElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["billId"]) {
+                dst.billId = item["billId"].as<decltype(dst.billId)::value_type>();
+            } else {
+                //dst.billId = std::nullopt;
+            }
+            if (item["billWriteable"]) {
+                dst.billWriteable = item["billWriteable"].as<decltype(dst.billWriteable)::value_type>();
+            } else {
+                //dst.billWriteable = std::nullopt;
+            }
+            if (item["updateRequired"]) {
+                dst.updateRequired = item["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
+            } else {
+                //dst.updateRequired = std::nullopt;
+            }
+            if (item["supportedBillType"]) {
+                dst.supportedBillType = item["supportedBillType"].as<decltype(dst.supportedBillType)::value_type>();
+            } else {
+                //dst.supportedBillType = std::nullopt;
+            }
+            if (item["sessionId"]) {
+                dst.sessionId = item["sessionId"].as<decltype(dst.sessionId)::value_type>();
+            } else {
+                //dst.sessionId = std::nullopt;
+            }
+        }
+    } else {
+        if (src["billId"]) {
+            dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
+        } else {
+            //dst.billId = std::nullopt;
+        }
+        if (src["billWriteable"]) {
+            dst.billWriteable = src["billWriteable"].as<decltype(dst.billWriteable)::value_type>();
+        } else {
+            //dst.billWriteable = std::nullopt;
+        }
+        if (src["updateRequired"]) {
+            dst.updateRequired = src["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
+        } else {
+            //dst.updateRequired = std::nullopt;
+        }
+        if (src["supportedBillType"]) {
+            dst.supportedBillType = src["supportedBillType"].as<decltype(dst.supportedBillType)::value_type>();
+        } else {
+            //dst.supportedBillType = std::nullopt;
+        }
+        if (src["sessionId"]) {
+            dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
+        } else {
+            //dst.sessionId = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const BillDescriptionListDataType &src, JsonVariant &dst)
+{
+    if (src.billDescriptionData) {
+        dst["billDescriptionData"] = *src.billDescriptionData;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, BillDescriptionListDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["billDescriptionData"]) {
+                dst.billDescriptionData = item["billDescriptionData"].as<decltype(dst.billDescriptionData)::value_type>();
+            } else {
+                //dst.billDescriptionData = std::nullopt;
+            }
+        }
+    } else {
+        if (src["billDescriptionData"]) {
+            dst.billDescriptionData = src["billDescriptionData"].as<decltype(dst.billDescriptionData)::value_type>();
+        } else {
+            //dst.billDescriptionData = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const BillDescriptionListDataSelectorsType &src, JsonVariant &dst)
+{
+    if (src.billId) {
+        dst["billId"] = *src.billId;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, BillDescriptionListDataSelectorsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["billId"]) {
+                dst.billId = item["billId"].as<decltype(dst.billId)::value_type>();
+            } else {
+                //dst.billId = std::nullopt;
+            }
+        }
+    } else {
+        if (src["billId"]) {
+            dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
+        } else {
+            //dst.billId = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const IdentificationDataType &src, JsonVariant &dst)
+{
+    if (src.identificationId) {
+        dst["identificationId"] = *src.identificationId;
+    }
+    if (src.identificationType) {
+        dst["identificationType"] = *src.identificationType;
+    }
+    if (src.identificationValue) {
+        dst["identificationValue"] = *src.identificationValue;
+    }
+    if (src.authorized) {
+        dst["authorized"] = *src.authorized;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, IdentificationDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["identificationId"]) {
+                dst.identificationId = item["identificationId"].as<decltype(dst.identificationId)::value_type>();
+            } else {
+                //dst.identificationId = std::nullopt;
+            }
+            if (item["identificationType"]) {
+                dst.identificationType = item["identificationType"].as<decltype(dst.identificationType)::value_type>();
+            } else {
+                //dst.identificationType = std::nullopt;
+            }
+            if (item["identificationValue"]) {
+                dst.identificationValue = item["identificationValue"].as<decltype(dst.identificationValue)::value_type>();
+            } else {
+                //dst.identificationValue = std::nullopt;
+            }
+            if (item["authorized"]) {
+                dst.authorized = item["authorized"].as<decltype(dst.authorized)::value_type>();
+            } else {
+                //dst.authorized = std::nullopt;
+            }
+        }
+    } else {
+        if (src["identificationId"]) {
+            dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
+        } else {
+            //dst.identificationId = std::nullopt;
+        }
+        if (src["identificationType"]) {
+            dst.identificationType = src["identificationType"].as<decltype(dst.identificationType)::value_type>();
+        } else {
+            //dst.identificationType = std::nullopt;
+        }
+        if (src["identificationValue"]) {
+            dst.identificationValue = src["identificationValue"].as<decltype(dst.identificationValue)::value_type>();
+        } else {
+            //dst.identificationValue = std::nullopt;
+        }
+        if (src["authorized"]) {
+            dst.authorized = src["authorized"].as<decltype(dst.authorized)::value_type>();
+        } else {
+            //dst.authorized = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const IdentificationDataElementsType &src, JsonVariant &dst)
+{
+    if (src.identificationId) {
+        dst["identificationId"] = *src.identificationId;
+    }
+    if (src.identificationType) {
+        dst["identificationType"] = *src.identificationType;
+    }
+    if (src.identificationValue) {
+        dst["identificationValue"] = *src.identificationValue;
+    }
+    if (src.authorized) {
+        dst["authorized"] = *src.authorized;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, IdentificationDataElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["identificationId"]) {
+                dst.identificationId = item["identificationId"].as<decltype(dst.identificationId)::value_type>();
+            } else {
+                //dst.identificationId = std::nullopt;
+            }
+            if (item["identificationType"]) {
+                dst.identificationType = item["identificationType"].as<decltype(dst.identificationType)::value_type>();
+            } else {
+                //dst.identificationType = std::nullopt;
+            }
+            if (item["identificationValue"]) {
+                dst.identificationValue = item["identificationValue"].as<decltype(dst.identificationValue)::value_type>();
+            } else {
+                //dst.identificationValue = std::nullopt;
+            }
+            if (item["authorized"]) {
+                dst.authorized = item["authorized"].as<decltype(dst.authorized)::value_type>();
+            } else {
+                //dst.authorized = std::nullopt;
+            }
+        }
+    } else {
+        if (src["identificationId"]) {
+            dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
+        } else {
+            //dst.identificationId = std::nullopt;
+        }
+        if (src["identificationType"]) {
+            dst.identificationType = src["identificationType"].as<decltype(dst.identificationType)::value_type>();
+        } else {
+            //dst.identificationType = std::nullopt;
+        }
+        if (src["identificationValue"]) {
+            dst.identificationValue = src["identificationValue"].as<decltype(dst.identificationValue)::value_type>();
+        } else {
+            //dst.identificationValue = std::nullopt;
+        }
+        if (src["authorized"]) {
+            dst.authorized = src["authorized"].as<decltype(dst.authorized)::value_type>();
+        } else {
+            //dst.authorized = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const IdentificationListDataType &src, JsonVariant &dst)
+{
+    if (src.identificationData) {
+        dst["identificationData"] = *src.identificationData;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, IdentificationListDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["identificationData"]) {
+                dst.identificationData = item["identificationData"].as<decltype(dst.identificationData)::value_type>();
+            } else {
+                //dst.identificationData = std::nullopt;
+            }
+        }
+    } else {
+        if (src["identificationData"]) {
+            dst.identificationData = src["identificationData"].as<decltype(dst.identificationData)::value_type>();
+        } else {
+            //dst.identificationData = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const IdentificationListDataSelectorsType &src, JsonVariant &dst)
+{
+    if (src.identificationId) {
+        dst["identificationId"] = *src.identificationId;
+    }
+    if (src.identificationType) {
+        dst["identificationType"] = *src.identificationType;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, IdentificationListDataSelectorsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["identificationId"]) {
+                dst.identificationId = item["identificationId"].as<decltype(dst.identificationId)::value_type>();
+            } else {
+                //dst.identificationId = std::nullopt;
+            }
+            if (item["identificationType"]) {
+                dst.identificationType = item["identificationType"].as<decltype(dst.identificationType)::value_type>();
+            } else {
+                //dst.identificationType = std::nullopt;
+            }
+        }
+    } else {
+        if (src["identificationId"]) {
+            dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
+        } else {
+            //dst.identificationId = std::nullopt;
+        }
+        if (src["identificationType"]) {
+            dst.identificationType = src["identificationType"].as<decltype(dst.identificationType)::value_type>();
+        } else {
+            //dst.identificationType = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const SessionIdentificationDataType &src, JsonVariant &dst)
+{
+    if (src.sessionId) {
+        dst["sessionId"] = *src.sessionId;
+    }
+    if (src.identificationId) {
+        dst["identificationId"] = *src.identificationId;
+    }
+    if (src.isLatestSession) {
+        dst["isLatestSession"] = *src.isLatestSession;
+    }
+    if (src.timePeriod) {
+        dst["timePeriod"] = *src.timePeriod;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, SessionIdentificationDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["sessionId"]) {
+                dst.sessionId = item["sessionId"].as<decltype(dst.sessionId)::value_type>();
+            } else {
+                //dst.sessionId = std::nullopt;
+            }
+            if (item["identificationId"]) {
+                dst.identificationId = item["identificationId"].as<decltype(dst.identificationId)::value_type>();
+            } else {
+                //dst.identificationId = std::nullopt;
+            }
+            if (item["isLatestSession"]) {
+                dst.isLatestSession = item["isLatestSession"].as<decltype(dst.isLatestSession)::value_type>();
+            } else {
+                //dst.isLatestSession = std::nullopt;
+            }
+            if (item["timePeriod"]) {
+                dst.timePeriod = item["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
+            } else {
+                //dst.timePeriod = std::nullopt;
+            }
+        }
+    } else {
+        if (src["sessionId"]) {
+            dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
+        } else {
+            //dst.sessionId = std::nullopt;
+        }
+        if (src["identificationId"]) {
+            dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
+        } else {
+            //dst.identificationId = std::nullopt;
+        }
+        if (src["isLatestSession"]) {
+            dst.isLatestSession = src["isLatestSession"].as<decltype(dst.isLatestSession)::value_type>();
+        } else {
+            //dst.isLatestSession = std::nullopt;
+        }
+        if (src["timePeriod"]) {
+            dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
+        } else {
+            //dst.timePeriod = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const SessionIdentificationDataElementsType &src, JsonVariant &dst)
+{
+    if (src.sessionId) {
+        dst["sessionId"] = *src.sessionId;
+    }
+    if (src.identificationId) {
+        dst["identificationId"] = *src.identificationId;
+    }
+    if (src.isLatestSession) {
+        dst["isLatestSession"] = *src.isLatestSession;
+    }
+    if (src.timePeriod) {
+        dst["timePeriod"] = *src.timePeriod;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, SessionIdentificationDataElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["sessionId"]) {
+                dst.sessionId = item["sessionId"].as<decltype(dst.sessionId)::value_type>();
+            } else {
+                //dst.sessionId = std::nullopt;
+            }
+            if (item["identificationId"]) {
+                dst.identificationId = item["identificationId"].as<decltype(dst.identificationId)::value_type>();
+            } else {
+                //dst.identificationId = std::nullopt;
+            }
+            if (item["isLatestSession"]) {
+                dst.isLatestSession = item["isLatestSession"].as<decltype(dst.isLatestSession)::value_type>();
+            } else {
+                //dst.isLatestSession = std::nullopt;
+            }
+            if (item["timePeriod"]) {
+                dst.timePeriod = item["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
+            } else {
+                //dst.timePeriod = std::nullopt;
+            }
+        }
+    } else {
+        if (src["sessionId"]) {
+            dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
+        } else {
+            //dst.sessionId = std::nullopt;
+        }
+        if (src["identificationId"]) {
+            dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
+        } else {
+            //dst.identificationId = std::nullopt;
+        }
+        if (src["isLatestSession"]) {
+            dst.isLatestSession = src["isLatestSession"].as<decltype(dst.isLatestSession)::value_type>();
+        } else {
+            //dst.isLatestSession = std::nullopt;
+        }
+        if (src["timePeriod"]) {
+            dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
+        } else {
+            //dst.timePeriod = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const SessionIdentificationListDataType &src, JsonVariant &dst)
+{
+    if (src.sessionIdentificationData) {
+        dst["sessionIdentificationData"] = *src.sessionIdentificationData;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, SessionIdentificationListDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["sessionIdentificationData"]) {
+                dst.sessionIdentificationData = item["sessionIdentificationData"].as<decltype(dst.sessionIdentificationData)::value_type>();
+            } else {
+                //dst.sessionIdentificationData = std::nullopt;
+            }
+        }
+    } else {
+        if (src["sessionIdentificationData"]) {
+            dst.sessionIdentificationData = src["sessionIdentificationData"].as<decltype(dst.sessionIdentificationData)::value_type>();
+        } else {
+            //dst.sessionIdentificationData = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const SessionIdentificationListDataSelectorsType &src, JsonVariant &dst)
+{
+    if (src.sessionId) {
+        dst["sessionId"] = *src.sessionId;
+    }
+    if (src.identificationId) {
+        dst["identificationId"] = *src.identificationId;
+    }
+    if (src.isLatestSession) {
+        dst["isLatestSession"] = *src.isLatestSession;
+    }
+    if (src.timePeriod) {
+        dst["timePeriod"] = *src.timePeriod;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, SessionIdentificationListDataSelectorsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["sessionId"]) {
+                dst.sessionId = item["sessionId"].as<decltype(dst.sessionId)::value_type>();
+            } else {
+                //dst.sessionId = std::nullopt;
+            }
+            if (item["identificationId"]) {
+                dst.identificationId = item["identificationId"].as<decltype(dst.identificationId)::value_type>();
+            } else {
+                //dst.identificationId = std::nullopt;
+            }
+            if (item["isLatestSession"]) {
+                dst.isLatestSession = item["isLatestSession"].as<decltype(dst.isLatestSession)::value_type>();
+            } else {
+                //dst.isLatestSession = std::nullopt;
+            }
+            if (item["timePeriod"]) {
+                dst.timePeriod = item["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
+            } else {
+                //dst.timePeriod = std::nullopt;
+            }
+        }
+    } else {
+        if (src["sessionId"]) {
+            dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
+        } else {
+            //dst.sessionId = std::nullopt;
+        }
+        if (src["identificationId"]) {
+            dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
+        } else {
+            //dst.identificationId = std::nullopt;
+        }
+        if (src["isLatestSession"]) {
+            dst.isLatestSession = src["isLatestSession"].as<decltype(dst.isLatestSession)::value_type>();
+        } else {
+            //dst.isLatestSession = std::nullopt;
+        }
+        if (src["timePeriod"]) {
+            dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
+        } else {
+            //dst.timePeriod = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const SessionMeasurementRelationDataType &src, JsonVariant &dst)
+{
+    if (src.sessionId) {
+        dst["sessionId"] = *src.sessionId;
+    }
+    if (src.measurementId) {
+        dst["measurementId"] = *src.measurementId;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["sessionId"]) {
+                dst.sessionId = item["sessionId"].as<decltype(dst.sessionId)::value_type>();
+            } else {
+                //dst.sessionId = std::nullopt;
+            }
+            if (item["measurementId"]) {
+                dst.measurementId = item["measurementId"].as<decltype(dst.measurementId)::value_type>();
+            } else {
+                //dst.measurementId = std::nullopt;
+            }
+        }
+    } else {
+        if (src["sessionId"]) {
+            dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
+        } else {
+            //dst.sessionId = std::nullopt;
+        }
+        if (src["measurementId"]) {
+            dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
+        } else {
+            //dst.measurementId = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const SessionMeasurementRelationDataElementsType &src, JsonVariant &dst)
+{
+    if (src.sessionId) {
+        dst["sessionId"] = *src.sessionId;
+    }
+    if (src.measurementId) {
+        dst["measurementId"] = *src.measurementId;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationDataElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["sessionId"]) {
+                dst.sessionId = item["sessionId"].as<decltype(dst.sessionId)::value_type>();
+            } else {
+                //dst.sessionId = std::nullopt;
+            }
+            if (item["measurementId"]) {
+                dst.measurementId = item["measurementId"].as<decltype(dst.measurementId)::value_type>();
+            } else {
+                //dst.measurementId = std::nullopt;
+            }
+        }
+    } else {
+        if (src["sessionId"]) {
+            dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
+        } else {
+            //dst.sessionId = std::nullopt;
+        }
+        if (src["measurementId"]) {
+            dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
+        } else {
+            //dst.measurementId = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const SessionMeasurementRelationListDataType &src, JsonVariant &dst)
+{
+    if (src.sessionMeasurementRelationData) {
+        dst["sessionMeasurementRelationData"] = *src.sessionMeasurementRelationData;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationListDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["sessionMeasurementRelationData"]) {
+                dst.sessionMeasurementRelationData =
+                    item["sessionMeasurementRelationData"].as<decltype(dst.sessionMeasurementRelationData)::value_type>();
+            } else {
+                //dst.sessionMeasurementRelationData = std::nullopt;
+            }
+        }
+    } else {
+        if (src["sessionMeasurementRelationData"]) {
+            dst.sessionMeasurementRelationData =
+                src["sessionMeasurementRelationData"].as<decltype(dst.sessionMeasurementRelationData)::value_type>();
+        } else {
+            //dst.sessionMeasurementRelationData = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const SessionMeasurementRelationListDataSelectorsType &src, JsonVariant &dst)
+{
+    if (src.sessionId) {
+        dst["sessionId"] = *src.sessionId;
+    }
+    if (src.measurementId) {
+        dst["measurementId"] = *src.measurementId;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationListDataSelectorsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["sessionId"]) {
+                dst.sessionId = item["sessionId"].as<decltype(dst.sessionId)::value_type>();
+            } else {
+                //dst.sessionId = std::nullopt;
+            }
+            if (item["measurementId"]) {
+                dst.measurementId = item["measurementId"].as<decltype(dst.measurementId)::value_type>();
+            } else {
+                //dst.measurementId = std::nullopt;
+            }
+        }
+    } else {
+        if (src["sessionId"]) {
+            dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
+        } else {
+            //dst.sessionId = std::nullopt;
+        }
+        if (src["measurementId"]) {
+            dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
+        } else {
+            //dst.measurementId = std::nullopt;
         }
     }
 }
@@ -12456,339 +14234,16 @@ void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationLi
         }
     }
 }
-bool convertToJson(const ThresholdDataType &src, JsonVariant &dst)
+bool convertToJson(const BindingManagementEntryDataType &src, JsonVariant &dst)
 {
-    if (src.thresholdId) {
-        dst["thresholdId"] = *src.thresholdId;
+    if (src.bindingId) {
+        dst["bindingId"] = *src.bindingId;
     }
-    if (src.thresholdValue) {
-        dst["thresholdValue"] = *src.thresholdValue;
+    if (src.clientAddress) {
+        dst["clientAddress"] = *src.clientAddress;
     }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, ThresholdDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["thresholdId"]) {
-                dst.thresholdId = item["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
-            } else {
-                //dst.thresholdId = std::nullopt;
-            }
-            if (item["thresholdValue"]) {
-                dst.thresholdValue = item["thresholdValue"].as<decltype(dst.thresholdValue)::value_type>();
-            } else {
-                //dst.thresholdValue = std::nullopt;
-            }
-        }
-    } else {
-        if (src["thresholdId"]) {
-            dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
-        } else {
-            //dst.thresholdId = std::nullopt;
-        }
-        if (src["thresholdValue"]) {
-            dst.thresholdValue = src["thresholdValue"].as<decltype(dst.thresholdValue)::value_type>();
-        } else {
-            //dst.thresholdValue = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const ThresholdDataElementsType &src, JsonVariant &dst)
-{
-    if (src.thresholdId) {
-        dst["thresholdId"] = *src.thresholdId;
-    }
-    if (src.thresholdValue) {
-        dst["thresholdValue"] = *src.thresholdValue;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, ThresholdDataElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["thresholdId"]) {
-                dst.thresholdId = item["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
-            } else {
-                //dst.thresholdId = std::nullopt;
-            }
-            if (item["thresholdValue"]) {
-                dst.thresholdValue = item["thresholdValue"].as<decltype(dst.thresholdValue)::value_type>();
-            } else {
-                //dst.thresholdValue = std::nullopt;
-            }
-        }
-    } else {
-        if (src["thresholdId"]) {
-            dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
-        } else {
-            //dst.thresholdId = std::nullopt;
-        }
-        if (src["thresholdValue"]) {
-            dst.thresholdValue = src["thresholdValue"].as<decltype(dst.thresholdValue)::value_type>();
-        } else {
-            //dst.thresholdValue = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const ThresholdListDataType &src, JsonVariant &dst)
-{
-    if (src.thresholdData) {
-        dst["thresholdData"] = *src.thresholdData;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, ThresholdListDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["thresholdData"]) {
-                dst.thresholdData = item["thresholdData"].as<decltype(dst.thresholdData)::value_type>();
-            } else {
-                //dst.thresholdData = std::nullopt;
-            }
-        }
-    } else {
-        if (src["thresholdData"]) {
-            dst.thresholdData = src["thresholdData"].as<decltype(dst.thresholdData)::value_type>();
-        } else {
-            //dst.thresholdData = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const ThresholdListDataSelectorsType &src, JsonVariant &dst)
-{
-    if (src.thresholdId) {
-        dst["thresholdId"] = *src.thresholdId;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, ThresholdListDataSelectorsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["thresholdId"]) {
-                dst.thresholdId = item["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
-            } else {
-                //dst.thresholdId = std::nullopt;
-            }
-        }
-    } else {
-        if (src["thresholdId"]) {
-            dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
-        } else {
-            //dst.thresholdId = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const ThresholdConstraintsDataType &src, JsonVariant &dst)
-{
-    if (src.thresholdId) {
-        dst["thresholdId"] = *src.thresholdId;
-    }
-    if (src.thresholdRangeMin) {
-        dst["thresholdRangeMin"] = *src.thresholdRangeMin;
-    }
-    if (src.thresholdRangeMax) {
-        dst["thresholdRangeMax"] = *src.thresholdRangeMax;
-    }
-    if (src.thresholdStepSize) {
-        dst["thresholdStepSize"] = *src.thresholdStepSize;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["thresholdId"]) {
-                dst.thresholdId = item["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
-            } else {
-                //dst.thresholdId = std::nullopt;
-            }
-            if (item["thresholdRangeMin"]) {
-                dst.thresholdRangeMin = item["thresholdRangeMin"].as<decltype(dst.thresholdRangeMin)::value_type>();
-            } else {
-                //dst.thresholdRangeMin = std::nullopt;
-            }
-            if (item["thresholdRangeMax"]) {
-                dst.thresholdRangeMax = item["thresholdRangeMax"].as<decltype(dst.thresholdRangeMax)::value_type>();
-            } else {
-                //dst.thresholdRangeMax = std::nullopt;
-            }
-            if (item["thresholdStepSize"]) {
-                dst.thresholdStepSize = item["thresholdStepSize"].as<decltype(dst.thresholdStepSize)::value_type>();
-            } else {
-                //dst.thresholdStepSize = std::nullopt;
-            }
-        }
-    } else {
-        if (src["thresholdId"]) {
-            dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
-        } else {
-            //dst.thresholdId = std::nullopt;
-        }
-        if (src["thresholdRangeMin"]) {
-            dst.thresholdRangeMin = src["thresholdRangeMin"].as<decltype(dst.thresholdRangeMin)::value_type>();
-        } else {
-            //dst.thresholdRangeMin = std::nullopt;
-        }
-        if (src["thresholdRangeMax"]) {
-            dst.thresholdRangeMax = src["thresholdRangeMax"].as<decltype(dst.thresholdRangeMax)::value_type>();
-        } else {
-            //dst.thresholdRangeMax = std::nullopt;
-        }
-        if (src["thresholdStepSize"]) {
-            dst.thresholdStepSize = src["thresholdStepSize"].as<decltype(dst.thresholdStepSize)::value_type>();
-        } else {
-            //dst.thresholdStepSize = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const ThresholdConstraintsDataElementsType &src, JsonVariant &dst)
-{
-    if (src.thresholdId) {
-        dst["thresholdId"] = *src.thresholdId;
-    }
-    if (src.thresholdRangeMin) {
-        dst["thresholdRangeMin"] = *src.thresholdRangeMin;
-    }
-    if (src.thresholdRangeMax) {
-        dst["thresholdRangeMax"] = *src.thresholdRangeMax;
-    }
-    if (src.thresholdStepSize) {
-        dst["thresholdStepSize"] = *src.thresholdStepSize;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsDataElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["thresholdId"]) {
-                dst.thresholdId = item["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
-            } else {
-                //dst.thresholdId = std::nullopt;
-            }
-            if (item["thresholdRangeMin"]) {
-                dst.thresholdRangeMin = item["thresholdRangeMin"].as<decltype(dst.thresholdRangeMin)::value_type>();
-            } else {
-                //dst.thresholdRangeMin = std::nullopt;
-            }
-            if (item["thresholdRangeMax"]) {
-                dst.thresholdRangeMax = item["thresholdRangeMax"].as<decltype(dst.thresholdRangeMax)::value_type>();
-            } else {
-                //dst.thresholdRangeMax = std::nullopt;
-            }
-            if (item["thresholdStepSize"]) {
-                dst.thresholdStepSize = item["thresholdStepSize"].as<decltype(dst.thresholdStepSize)::value_type>();
-            } else {
-                //dst.thresholdStepSize = std::nullopt;
-            }
-        }
-    } else {
-        if (src["thresholdId"]) {
-            dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
-        } else {
-            //dst.thresholdId = std::nullopt;
-        }
-        if (src["thresholdRangeMin"]) {
-            dst.thresholdRangeMin = src["thresholdRangeMin"].as<decltype(dst.thresholdRangeMin)::value_type>();
-        } else {
-            //dst.thresholdRangeMin = std::nullopt;
-        }
-        if (src["thresholdRangeMax"]) {
-            dst.thresholdRangeMax = src["thresholdRangeMax"].as<decltype(dst.thresholdRangeMax)::value_type>();
-        } else {
-            //dst.thresholdRangeMax = std::nullopt;
-        }
-        if (src["thresholdStepSize"]) {
-            dst.thresholdStepSize = src["thresholdStepSize"].as<decltype(dst.thresholdStepSize)::value_type>();
-        } else {
-            //dst.thresholdStepSize = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const ThresholdConstraintsListDataType &src, JsonVariant &dst)
-{
-    if (src.thresholdConstraintsData) {
-        dst["thresholdConstraintsData"] = *src.thresholdConstraintsData;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsListDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["thresholdConstraintsData"]) {
-                dst.thresholdConstraintsData = item["thresholdConstraintsData"].as<decltype(dst.thresholdConstraintsData)::value_type>();
-            } else {
-                //dst.thresholdConstraintsData = std::nullopt;
-            }
-        }
-    } else {
-        if (src["thresholdConstraintsData"]) {
-            dst.thresholdConstraintsData = src["thresholdConstraintsData"].as<decltype(dst.thresholdConstraintsData)::value_type>();
-        } else {
-            //dst.thresholdConstraintsData = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const ThresholdConstraintsListDataSelectorsType &src, JsonVariant &dst)
-{
-    if (src.thresholdId) {
-        dst["thresholdId"] = *src.thresholdId;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsListDataSelectorsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["thresholdId"]) {
-                dst.thresholdId = item["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
-            } else {
-                //dst.thresholdId = std::nullopt;
-            }
-        }
-    } else {
-        if (src["thresholdId"]) {
-            dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
-        } else {
-            //dst.thresholdId = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const ThresholdDescriptionDataType &src, JsonVariant &dst)
-{
-    if (src.thresholdId) {
-        dst["thresholdId"] = *src.thresholdId;
-    }
-    if (src.thresholdType) {
-        dst["thresholdType"] = *src.thresholdType;
-    }
-    if (src.unit) {
-        dst["unit"] = *src.unit;
-    }
-    if (src.scopeType) {
-        dst["scopeType"] = *src.scopeType;
+    if (src.serverAddress) {
+        dst["serverAddress"] = *src.serverAddress;
     }
     if (src.label) {
         dst["label"] = *src.label;
@@ -12799,30 +14254,25 @@ bool convertToJson(const ThresholdDescriptionDataType &src, JsonVariant &dst)
 
     return true;
 }
-void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionDataType &dst)
+void convertFromJson(const JsonVariantConst &src, BindingManagementEntryDataType &dst)
 {
     if (src.is<JsonArrayConst>()) {
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
-            if (item["thresholdId"]) {
-                dst.thresholdId = item["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
+            if (item["bindingId"]) {
+                dst.bindingId = item["bindingId"].as<decltype(dst.bindingId)::value_type>();
             } else {
-                //dst.thresholdId = std::nullopt;
+                //dst.bindingId = std::nullopt;
             }
-            if (item["thresholdType"]) {
-                dst.thresholdType = item["thresholdType"].as<decltype(dst.thresholdType)::value_type>();
+            if (item["clientAddress"]) {
+                dst.clientAddress = item["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
             } else {
-                //dst.thresholdType = std::nullopt;
+                //dst.clientAddress = std::nullopt;
             }
-            if (item["unit"]) {
-                dst.unit = item["unit"].as<decltype(dst.unit)::value_type>();
+            if (item["serverAddress"]) {
+                dst.serverAddress = item["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
             } else {
-                //dst.unit = std::nullopt;
-            }
-            if (item["scopeType"]) {
-                dst.scopeType = item["scopeType"].as<decltype(dst.scopeType)::value_type>();
-            } else {
-                //dst.scopeType = std::nullopt;
+                //dst.serverAddress = std::nullopt;
             }
             if (item["label"]) {
                 dst.label = item["label"].as<decltype(dst.label)::value_type>();
@@ -12836,25 +14286,20 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionDataType &
             }
         }
     } else {
-        if (src["thresholdId"]) {
-            dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
+        if (src["bindingId"]) {
+            dst.bindingId = src["bindingId"].as<decltype(dst.bindingId)::value_type>();
         } else {
-            //dst.thresholdId = std::nullopt;
+            //dst.bindingId = std::nullopt;
         }
-        if (src["thresholdType"]) {
-            dst.thresholdType = src["thresholdType"].as<decltype(dst.thresholdType)::value_type>();
+        if (src["clientAddress"]) {
+            dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
         } else {
-            //dst.thresholdType = std::nullopt;
+            //dst.clientAddress = std::nullopt;
         }
-        if (src["unit"]) {
-            dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
+        if (src["serverAddress"]) {
+            dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
         } else {
-            //dst.unit = std::nullopt;
-        }
-        if (src["scopeType"]) {
-            dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
-        } else {
-            //dst.scopeType = std::nullopt;
+            //dst.serverAddress = std::nullopt;
         }
         if (src["label"]) {
             dst.label = src["label"].as<decltype(dst.label)::value_type>();
@@ -12868,19 +14313,16 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionDataType &
         }
     }
 }
-bool convertToJson(const ThresholdDescriptionDataElementsType &src, JsonVariant &dst)
+bool convertToJson(const BindingManagementEntryDataElementsType &src, JsonVariant &dst)
 {
-    if (src.thresholdId) {
-        dst["thresholdId"] = *src.thresholdId;
+    if (src.bindingId) {
+        dst["bindingId"] = *src.bindingId;
     }
-    if (src.thresholdType) {
-        dst["thresholdType"] = *src.thresholdType;
+    if (src.clientAddress) {
+        dst["clientAddress"] = *src.clientAddress;
     }
-    if (src.unit) {
-        dst["unit"] = *src.unit;
-    }
-    if (src.scopeType) {
-        dst["scopeType"] = *src.scopeType;
+    if (src.serverAddress) {
+        dst["serverAddress"] = *src.serverAddress;
     }
     if (src.label) {
         dst["label"] = *src.label;
@@ -12891,30 +14333,25 @@ bool convertToJson(const ThresholdDescriptionDataElementsType &src, JsonVariant 
 
     return true;
 }
-void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionDataElementsType &dst)
+void convertFromJson(const JsonVariantConst &src, BindingManagementEntryDataElementsType &dst)
 {
     if (src.is<JsonArrayConst>()) {
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
-            if (item["thresholdId"]) {
-                dst.thresholdId = item["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
+            if (item["bindingId"]) {
+                dst.bindingId = item["bindingId"].as<decltype(dst.bindingId)::value_type>();
             } else {
-                //dst.thresholdId = std::nullopt;
+                //dst.bindingId = std::nullopt;
             }
-            if (item["thresholdType"]) {
-                dst.thresholdType = item["thresholdType"].as<decltype(dst.thresholdType)::value_type>();
+            if (item["clientAddress"]) {
+                dst.clientAddress = item["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
             } else {
-                //dst.thresholdType = std::nullopt;
+                //dst.clientAddress = std::nullopt;
             }
-            if (item["unit"]) {
-                dst.unit = item["unit"].as<decltype(dst.unit)::value_type>();
+            if (item["serverAddress"]) {
+                dst.serverAddress = item["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
             } else {
-                //dst.unit = std::nullopt;
-            }
-            if (item["scopeType"]) {
-                dst.scopeType = item["scopeType"].as<decltype(dst.scopeType)::value_type>();
-            } else {
-                //dst.scopeType = std::nullopt;
+                //dst.serverAddress = std::nullopt;
             }
             if (item["label"]) {
                 dst.label = item["label"].as<decltype(dst.label)::value_type>();
@@ -12928,25 +14365,20 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionDataElemen
             }
         }
     } else {
-        if (src["thresholdId"]) {
-            dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
+        if (src["bindingId"]) {
+            dst.bindingId = src["bindingId"].as<decltype(dst.bindingId)::value_type>();
         } else {
-            //dst.thresholdId = std::nullopt;
+            //dst.bindingId = std::nullopt;
         }
-        if (src["thresholdType"]) {
-            dst.thresholdType = src["thresholdType"].as<decltype(dst.thresholdType)::value_type>();
+        if (src["clientAddress"]) {
+            dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
         } else {
-            //dst.thresholdType = std::nullopt;
+            //dst.clientAddress = std::nullopt;
         }
-        if (src["unit"]) {
-            dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
+        if (src["serverAddress"]) {
+            dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
         } else {
-            //dst.unit = std::nullopt;
-        }
-        if (src["scopeType"]) {
-            dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
-        } else {
-            //dst.scopeType = std::nullopt;
+            //dst.serverAddress = std::nullopt;
         }
         if (src["label"]) {
             dst.label = src["label"].as<decltype(dst.label)::value_type>();
@@ -12960,70 +14392,2210 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionDataElemen
         }
     }
 }
-bool convertToJson(const ThresholdDescriptionListDataType &src, JsonVariant &dst)
+bool convertToJson(const BindingManagementEntryListDataType &src, JsonVariant &dst)
 {
-    if (src.thresholdDescriptionData) {
-        dst["thresholdDescriptionData"] = *src.thresholdDescriptionData;
+    if (src.bindingManagementEntryData) {
+        dst["bindingManagementEntryData"] = *src.bindingManagementEntryData;
     }
 
     return true;
 }
-void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionListDataType &dst)
+void convertFromJson(const JsonVariantConst &src, BindingManagementEntryListDataType &dst)
 {
     if (src.is<JsonArrayConst>()) {
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
-            if (item["thresholdDescriptionData"]) {
-                dst.thresholdDescriptionData = item["thresholdDescriptionData"].as<decltype(dst.thresholdDescriptionData)::value_type>();
+            if (item["bindingManagementEntryData"]) {
+                dst.bindingManagementEntryData =
+                    item["bindingManagementEntryData"].as<decltype(dst.bindingManagementEntryData)::value_type>();
             } else {
-                //dst.thresholdDescriptionData = std::nullopt;
+                //dst.bindingManagementEntryData = std::nullopt;
             }
         }
     } else {
-        if (src["thresholdDescriptionData"]) {
-            dst.thresholdDescriptionData = src["thresholdDescriptionData"].as<decltype(dst.thresholdDescriptionData)::value_type>();
+        if (src["bindingManagementEntryData"]) {
+            dst.bindingManagementEntryData = src["bindingManagementEntryData"].as<decltype(dst.bindingManagementEntryData)::value_type>();
         } else {
-            //dst.thresholdDescriptionData = std::nullopt;
+            //dst.bindingManagementEntryData = std::nullopt;
         }
     }
 }
-bool convertToJson(const ThresholdDescriptionListDataSelectorsType &src, JsonVariant &dst)
+bool convertToJson(const BindingManagementEntryListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.thresholdId) {
-        dst["thresholdId"] = *src.thresholdId;
+    if (src.bindingId) {
+        dst["bindingId"] = *src.bindingId;
     }
-    if (src.scopeType) {
-        dst["scopeType"] = *src.scopeType;
+    if (src.clientAddress) {
+        dst["clientAddress"] = *src.clientAddress;
+    }
+    if (src.serverAddress) {
+        dst["serverAddress"] = *src.serverAddress;
     }
 
     return true;
 }
-void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionListDataSelectorsType &dst)
+void convertFromJson(const JsonVariantConst &src, BindingManagementEntryListDataSelectorsType &dst)
 {
     if (src.is<JsonArrayConst>()) {
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
-            if (item["thresholdId"]) {
-                dst.thresholdId = item["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
+            if (item["bindingId"]) {
+                dst.bindingId = item["bindingId"].as<decltype(dst.bindingId)::value_type>();
             } else {
-                //dst.thresholdId = std::nullopt;
+                //dst.bindingId = std::nullopt;
             }
-            if (item["scopeType"]) {
-                dst.scopeType = item["scopeType"].as<decltype(dst.scopeType)::value_type>();
+            if (item["clientAddress"]) {
+                dst.clientAddress = item["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
             } else {
-                //dst.scopeType = std::nullopt;
+                //dst.clientAddress = std::nullopt;
+            }
+            if (item["serverAddress"]) {
+                dst.serverAddress = item["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
+            } else {
+                //dst.serverAddress = std::nullopt;
             }
         }
     } else {
-        if (src["thresholdId"]) {
-            dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
+        if (src["bindingId"]) {
+            dst.bindingId = src["bindingId"].as<decltype(dst.bindingId)::value_type>();
         } else {
-            //dst.thresholdId = std::nullopt;
+            //dst.bindingId = std::nullopt;
         }
-        if (src["scopeType"]) {
-            dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
+        if (src["clientAddress"]) {
+            dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
         } else {
-            //dst.scopeType = std::nullopt;
+            //dst.clientAddress = std::nullopt;
+        }
+        if (src["serverAddress"]) {
+            dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
+        } else {
+            //dst.serverAddress = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const BindingManagementRequestCallType &src, JsonVariant &dst)
+{
+    if (src.clientAddress) {
+        dst["clientAddress"] = *src.clientAddress;
+    }
+    if (src.serverAddress) {
+        dst["serverAddress"] = *src.serverAddress;
+    }
+    if (src.serverFeatureType) {
+        dst["serverFeatureType"] = *src.serverFeatureType;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, BindingManagementRequestCallType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["clientAddress"]) {
+                dst.clientAddress = item["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
+            } else {
+                //dst.clientAddress = std::nullopt;
+            }
+            if (item["serverAddress"]) {
+                dst.serverAddress = item["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
+            } else {
+                //dst.serverAddress = std::nullopt;
+            }
+            if (item["serverFeatureType"]) {
+                dst.serverFeatureType = item["serverFeatureType"].as<decltype(dst.serverFeatureType)::value_type>();
+            } else {
+                //dst.serverFeatureType = std::nullopt;
+            }
+        }
+    } else {
+        if (src["clientAddress"]) {
+            dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
+        } else {
+            //dst.clientAddress = std::nullopt;
+        }
+        if (src["serverAddress"]) {
+            dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
+        } else {
+            //dst.serverAddress = std::nullopt;
+        }
+        if (src["serverFeatureType"]) {
+            dst.serverFeatureType = src["serverFeatureType"].as<decltype(dst.serverFeatureType)::value_type>();
+        } else {
+            //dst.serverFeatureType = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const BindingManagementRequestCallElementsType &src, JsonVariant &dst)
+{
+    if (src.clientAddress) {
+        dst["clientAddress"] = *src.clientAddress;
+    }
+    if (src.serverAddress) {
+        dst["serverAddress"] = *src.serverAddress;
+    }
+    if (src.serverFeatureType) {
+        dst["serverFeatureType"] = *src.serverFeatureType;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, BindingManagementRequestCallElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["clientAddress"]) {
+                dst.clientAddress = item["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
+            } else {
+                //dst.clientAddress = std::nullopt;
+            }
+            if (item["serverAddress"]) {
+                dst.serverAddress = item["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
+            } else {
+                //dst.serverAddress = std::nullopt;
+            }
+            if (item["serverFeatureType"]) {
+                dst.serverFeatureType = item["serverFeatureType"].as<decltype(dst.serverFeatureType)::value_type>();
+            } else {
+                //dst.serverFeatureType = std::nullopt;
+            }
+        }
+    } else {
+        if (src["clientAddress"]) {
+            dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
+        } else {
+            //dst.clientAddress = std::nullopt;
+        }
+        if (src["serverAddress"]) {
+            dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
+        } else {
+            //dst.serverAddress = std::nullopt;
+        }
+        if (src["serverFeatureType"]) {
+            dst.serverFeatureType = src["serverFeatureType"].as<decltype(dst.serverFeatureType)::value_type>();
+        } else {
+            //dst.serverFeatureType = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const BindingManagementDeleteCallType &src, JsonVariant &dst)
+{
+    if (src.bindingId) {
+        dst["bindingId"] = *src.bindingId;
+    }
+    if (src.clientAddress) {
+        dst["clientAddress"] = *src.clientAddress;
+    }
+    if (src.serverAddress) {
+        dst["serverAddress"] = *src.serverAddress;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, BindingManagementDeleteCallType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["bindingId"]) {
+                dst.bindingId = item["bindingId"].as<decltype(dst.bindingId)::value_type>();
+            } else {
+                //dst.bindingId = std::nullopt;
+            }
+            if (item["clientAddress"]) {
+                dst.clientAddress = item["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
+            } else {
+                //dst.clientAddress = std::nullopt;
+            }
+            if (item["serverAddress"]) {
+                dst.serverAddress = item["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
+            } else {
+                //dst.serverAddress = std::nullopt;
+            }
+        }
+    } else {
+        if (src["bindingId"]) {
+            dst.bindingId = src["bindingId"].as<decltype(dst.bindingId)::value_type>();
+        } else {
+            //dst.bindingId = std::nullopt;
+        }
+        if (src["clientAddress"]) {
+            dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
+        } else {
+            //dst.clientAddress = std::nullopt;
+        }
+        if (src["serverAddress"]) {
+            dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
+        } else {
+            //dst.serverAddress = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const BindingManagementDeleteCallElementsType &src, JsonVariant &dst)
+{
+    if (src.bindingId) {
+        dst["bindingId"] = *src.bindingId;
+    }
+    if (src.clientAddress) {
+        dst["clientAddress"] = *src.clientAddress;
+    }
+    if (src.serverAddress) {
+        dst["serverAddress"] = *src.serverAddress;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, BindingManagementDeleteCallElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["bindingId"]) {
+                dst.bindingId = item["bindingId"].as<decltype(dst.bindingId)::value_type>();
+            } else {
+                //dst.bindingId = std::nullopt;
+            }
+            if (item["clientAddress"]) {
+                dst.clientAddress = item["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
+            } else {
+                //dst.clientAddress = std::nullopt;
+            }
+            if (item["serverAddress"]) {
+                dst.serverAddress = item["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
+            } else {
+                //dst.serverAddress = std::nullopt;
+            }
+        }
+    } else {
+        if (src["bindingId"]) {
+            dst.bindingId = src["bindingId"].as<decltype(dst.bindingId)::value_type>();
+        } else {
+            //dst.bindingId = std::nullopt;
+        }
+        if (src["clientAddress"]) {
+            dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
+        } else {
+            //dst.clientAddress = std::nullopt;
+        }
+        if (src["serverAddress"]) {
+            dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
+        } else {
+            //dst.serverAddress = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DataTunnelingHeaderType &src, JsonVariant &dst)
+{
+    if (src.purposeId) {
+        dst["purposeId"] = *src.purposeId;
+    }
+    if (src.channelId) {
+        dst["channelId"] = *src.channelId;
+    }
+    if (src.sequenceId) {
+        dst["sequenceId"] = *src.sequenceId;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DataTunnelingHeaderType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["purposeId"]) {
+                dst.purposeId = item["purposeId"].as<decltype(dst.purposeId)::value_type>();
+            } else {
+                //dst.purposeId = std::nullopt;
+            }
+            if (item["channelId"]) {
+                dst.channelId = item["channelId"].as<decltype(dst.channelId)::value_type>();
+            } else {
+                //dst.channelId = std::nullopt;
+            }
+            if (item["sequenceId"]) {
+                dst.sequenceId = item["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
+            } else {
+                //dst.sequenceId = std::nullopt;
+            }
+        }
+    } else {
+        if (src["purposeId"]) {
+            dst.purposeId = src["purposeId"].as<decltype(dst.purposeId)::value_type>();
+        } else {
+            //dst.purposeId = std::nullopt;
+        }
+        if (src["channelId"]) {
+            dst.channelId = src["channelId"].as<decltype(dst.channelId)::value_type>();
+        } else {
+            //dst.channelId = std::nullopt;
+        }
+        if (src["sequenceId"]) {
+            dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
+        } else {
+            //dst.sequenceId = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DataTunnelingHeaderElementsType &src, JsonVariant &dst)
+{
+    if (src.purposeId) {
+        dst["purposeId"] = *src.purposeId;
+    }
+    if (src.channelId) {
+        dst["channelId"] = *src.channelId;
+    }
+    if (src.sequenceId) {
+        dst["sequenceId"] = *src.sequenceId;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DataTunnelingHeaderElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["purposeId"]) {
+                dst.purposeId = item["purposeId"].as<decltype(dst.purposeId)::value_type>();
+            } else {
+                //dst.purposeId = std::nullopt;
+            }
+            if (item["channelId"]) {
+                dst.channelId = item["channelId"].as<decltype(dst.channelId)::value_type>();
+            } else {
+                //dst.channelId = std::nullopt;
+            }
+            if (item["sequenceId"]) {
+                dst.sequenceId = item["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
+            } else {
+                //dst.sequenceId = std::nullopt;
+            }
+        }
+    } else {
+        if (src["purposeId"]) {
+            dst.purposeId = src["purposeId"].as<decltype(dst.purposeId)::value_type>();
+        } else {
+            //dst.purposeId = std::nullopt;
+        }
+        if (src["channelId"]) {
+            dst.channelId = src["channelId"].as<decltype(dst.channelId)::value_type>();
+        } else {
+            //dst.channelId = std::nullopt;
+        }
+        if (src["sequenceId"]) {
+            dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
+        } else {
+            //dst.sequenceId = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DataTunnelingCallType &src, JsonVariant &dst)
+{
+    if (src.header) {
+        dst["header"] = *src.header;
+    }
+    if (src.payload) {
+        dst["payload"] = *src.payload;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DataTunnelingCallType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["header"]) {
+                dst.header = item["header"].as<decltype(dst.header)::value_type>();
+            } else {
+                //dst.header = std::nullopt;
+            }
+            if (item["payload"]) {
+                dst.payload = item["payload"].as<decltype(dst.payload)::value_type>();
+            } else {
+                //dst.payload = std::nullopt;
+            }
+        }
+    } else {
+        if (src["header"]) {
+            dst.header = src["header"].as<decltype(dst.header)::value_type>();
+        } else {
+            //dst.header = std::nullopt;
+        }
+        if (src["payload"]) {
+            dst.payload = src["payload"].as<decltype(dst.payload)::value_type>();
+        } else {
+            //dst.payload = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DataTunnelingCallElementsType &src, JsonVariant &dst)
+{
+    if (src.header) {
+        dst["header"] = *src.header;
+    }
+    if (src.payload) {
+        dst["payload"] = *src.payload;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DataTunnelingCallElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["header"]) {
+                dst.header = item["header"].as<decltype(dst.header)::value_type>();
+            } else {
+                //dst.header = std::nullopt;
+            }
+            if (item["payload"]) {
+                dst.payload = item["payload"].as<decltype(dst.payload)::value_type>();
+            } else {
+                //dst.payload = std::nullopt;
+            }
+        }
+    } else {
+        if (src["header"]) {
+            dst.header = src["header"].as<decltype(dst.header)::value_type>();
+        } else {
+            //dst.header = std::nullopt;
+        }
+        if (src["payload"]) {
+            dst.payload = src["payload"].as<decltype(dst.payload)::value_type>();
+        } else {
+            //dst.payload = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceClassificationManufacturerDataType &src, JsonVariant &dst)
+{
+    if (src.deviceName) {
+        dst["deviceName"] = *src.deviceName;
+    }
+    if (src.deviceCode) {
+        dst["deviceCode"] = *src.deviceCode;
+    }
+    if (src.serialNumber) {
+        dst["serialNumber"] = *src.serialNumber;
+    }
+    if (src.softwareRevision) {
+        dst["softwareRevision"] = *src.softwareRevision;
+    }
+    if (src.hardwareRevision) {
+        dst["hardwareRevision"] = *src.hardwareRevision;
+    }
+    if (src.vendorName) {
+        dst["vendorName"] = *src.vendorName;
+    }
+    if (src.vendorCode) {
+        dst["vendorCode"] = *src.vendorCode;
+    }
+    if (src.brandName) {
+        dst["brandName"] = *src.brandName;
+    }
+    if (src.powerSource) {
+        dst["powerSource"] = *src.powerSource;
+    }
+    if (src.manufacturerNodeIdentification) {
+        dst["manufacturerNodeIdentification"] = *src.manufacturerNodeIdentification;
+    }
+    if (src.manufacturerLabel) {
+        dst["manufacturerLabel"] = *src.manufacturerLabel;
+    }
+    if (src.manufacturerDescription) {
+        dst["manufacturerDescription"] = *src.manufacturerDescription;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceClassificationManufacturerDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["deviceName"]) {
+                dst.deviceName = item["deviceName"].as<decltype(dst.deviceName)::value_type>();
+            } else {
+                //dst.deviceName = std::nullopt;
+            }
+            if (item["deviceCode"]) {
+                dst.deviceCode = item["deviceCode"].as<decltype(dst.deviceCode)::value_type>();
+            } else {
+                //dst.deviceCode = std::nullopt;
+            }
+            if (item["serialNumber"]) {
+                dst.serialNumber = item["serialNumber"].as<decltype(dst.serialNumber)::value_type>();
+            } else {
+                //dst.serialNumber = std::nullopt;
+            }
+            if (item["softwareRevision"]) {
+                dst.softwareRevision = item["softwareRevision"].as<decltype(dst.softwareRevision)::value_type>();
+            } else {
+                //dst.softwareRevision = std::nullopt;
+            }
+            if (item["hardwareRevision"]) {
+                dst.hardwareRevision = item["hardwareRevision"].as<decltype(dst.hardwareRevision)::value_type>();
+            } else {
+                //dst.hardwareRevision = std::nullopt;
+            }
+            if (item["vendorName"]) {
+                dst.vendorName = item["vendorName"].as<decltype(dst.vendorName)::value_type>();
+            } else {
+                //dst.vendorName = std::nullopt;
+            }
+            if (item["vendorCode"]) {
+                dst.vendorCode = item["vendorCode"].as<decltype(dst.vendorCode)::value_type>();
+            } else {
+                //dst.vendorCode = std::nullopt;
+            }
+            if (item["brandName"]) {
+                dst.brandName = item["brandName"].as<decltype(dst.brandName)::value_type>();
+            } else {
+                //dst.brandName = std::nullopt;
+            }
+            if (item["powerSource"]) {
+                dst.powerSource = item["powerSource"].as<decltype(dst.powerSource)::value_type>();
+            } else {
+                //dst.powerSource = std::nullopt;
+            }
+            if (item["manufacturerNodeIdentification"]) {
+                dst.manufacturerNodeIdentification =
+                    item["manufacturerNodeIdentification"].as<decltype(dst.manufacturerNodeIdentification)::value_type>();
+            } else {
+                //dst.manufacturerNodeIdentification = std::nullopt;
+            }
+            if (item["manufacturerLabel"]) {
+                dst.manufacturerLabel = item["manufacturerLabel"].as<decltype(dst.manufacturerLabel)::value_type>();
+            } else {
+                //dst.manufacturerLabel = std::nullopt;
+            }
+            if (item["manufacturerDescription"]) {
+                dst.manufacturerDescription = item["manufacturerDescription"].as<decltype(dst.manufacturerDescription)::value_type>();
+            } else {
+                //dst.manufacturerDescription = std::nullopt;
+            }
+        }
+    } else {
+        if (src["deviceName"]) {
+            dst.deviceName = src["deviceName"].as<decltype(dst.deviceName)::value_type>();
+        } else {
+            //dst.deviceName = std::nullopt;
+        }
+        if (src["deviceCode"]) {
+            dst.deviceCode = src["deviceCode"].as<decltype(dst.deviceCode)::value_type>();
+        } else {
+            //dst.deviceCode = std::nullopt;
+        }
+        if (src["serialNumber"]) {
+            dst.serialNumber = src["serialNumber"].as<decltype(dst.serialNumber)::value_type>();
+        } else {
+            //dst.serialNumber = std::nullopt;
+        }
+        if (src["softwareRevision"]) {
+            dst.softwareRevision = src["softwareRevision"].as<decltype(dst.softwareRevision)::value_type>();
+        } else {
+            //dst.softwareRevision = std::nullopt;
+        }
+        if (src["hardwareRevision"]) {
+            dst.hardwareRevision = src["hardwareRevision"].as<decltype(dst.hardwareRevision)::value_type>();
+        } else {
+            //dst.hardwareRevision = std::nullopt;
+        }
+        if (src["vendorName"]) {
+            dst.vendorName = src["vendorName"].as<decltype(dst.vendorName)::value_type>();
+        } else {
+            //dst.vendorName = std::nullopt;
+        }
+        if (src["vendorCode"]) {
+            dst.vendorCode = src["vendorCode"].as<decltype(dst.vendorCode)::value_type>();
+        } else {
+            //dst.vendorCode = std::nullopt;
+        }
+        if (src["brandName"]) {
+            dst.brandName = src["brandName"].as<decltype(dst.brandName)::value_type>();
+        } else {
+            //dst.brandName = std::nullopt;
+        }
+        if (src["powerSource"]) {
+            dst.powerSource = src["powerSource"].as<decltype(dst.powerSource)::value_type>();
+        } else {
+            //dst.powerSource = std::nullopt;
+        }
+        if (src["manufacturerNodeIdentification"]) {
+            dst.manufacturerNodeIdentification =
+                src["manufacturerNodeIdentification"].as<decltype(dst.manufacturerNodeIdentification)::value_type>();
+        } else {
+            //dst.manufacturerNodeIdentification = std::nullopt;
+        }
+        if (src["manufacturerLabel"]) {
+            dst.manufacturerLabel = src["manufacturerLabel"].as<decltype(dst.manufacturerLabel)::value_type>();
+        } else {
+            //dst.manufacturerLabel = std::nullopt;
+        }
+        if (src["manufacturerDescription"]) {
+            dst.manufacturerDescription = src["manufacturerDescription"].as<decltype(dst.manufacturerDescription)::value_type>();
+        } else {
+            //dst.manufacturerDescription = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceClassificationManufacturerDataElementsType &src, JsonVariant &dst)
+{
+    if (src.deviceName) {
+        dst["deviceName"] = *src.deviceName;
+    }
+    if (src.deviceCode) {
+        dst["deviceCode"] = *src.deviceCode;
+    }
+    if (src.serialNumber) {
+        dst["serialNumber"] = *src.serialNumber;
+    }
+    if (src.softwareRevision) {
+        dst["softwareRevision"] = *src.softwareRevision;
+    }
+    if (src.hardwareRevision) {
+        dst["hardwareRevision"] = *src.hardwareRevision;
+    }
+    if (src.vendorName) {
+        dst["vendorName"] = *src.vendorName;
+    }
+    if (src.vendorCode) {
+        dst["vendorCode"] = *src.vendorCode;
+    }
+    if (src.brandName) {
+        dst["brandName"] = *src.brandName;
+    }
+    if (src.powerSource) {
+        dst["powerSource"] = *src.powerSource;
+    }
+    if (src.manufacturerNodeIdentification) {
+        dst["manufacturerNodeIdentification"] = *src.manufacturerNodeIdentification;
+    }
+    if (src.manufacturerLabel) {
+        dst["manufacturerLabel"] = *src.manufacturerLabel;
+    }
+    if (src.manufacturerDescription) {
+        dst["manufacturerDescription"] = *src.manufacturerDescription;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceClassificationManufacturerDataElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["deviceName"]) {
+                dst.deviceName = item["deviceName"].as<decltype(dst.deviceName)::value_type>();
+            } else {
+                //dst.deviceName = std::nullopt;
+            }
+            if (item["deviceCode"]) {
+                dst.deviceCode = item["deviceCode"].as<decltype(dst.deviceCode)::value_type>();
+            } else {
+                //dst.deviceCode = std::nullopt;
+            }
+            if (item["serialNumber"]) {
+                dst.serialNumber = item["serialNumber"].as<decltype(dst.serialNumber)::value_type>();
+            } else {
+                //dst.serialNumber = std::nullopt;
+            }
+            if (item["softwareRevision"]) {
+                dst.softwareRevision = item["softwareRevision"].as<decltype(dst.softwareRevision)::value_type>();
+            } else {
+                //dst.softwareRevision = std::nullopt;
+            }
+            if (item["hardwareRevision"]) {
+                dst.hardwareRevision = item["hardwareRevision"].as<decltype(dst.hardwareRevision)::value_type>();
+            } else {
+                //dst.hardwareRevision = std::nullopt;
+            }
+            if (item["vendorName"]) {
+                dst.vendorName = item["vendorName"].as<decltype(dst.vendorName)::value_type>();
+            } else {
+                //dst.vendorName = std::nullopt;
+            }
+            if (item["vendorCode"]) {
+                dst.vendorCode = item["vendorCode"].as<decltype(dst.vendorCode)::value_type>();
+            } else {
+                //dst.vendorCode = std::nullopt;
+            }
+            if (item["brandName"]) {
+                dst.brandName = item["brandName"].as<decltype(dst.brandName)::value_type>();
+            } else {
+                //dst.brandName = std::nullopt;
+            }
+            if (item["powerSource"]) {
+                dst.powerSource = item["powerSource"].as<decltype(dst.powerSource)::value_type>();
+            } else {
+                //dst.powerSource = std::nullopt;
+            }
+            if (item["manufacturerNodeIdentification"]) {
+                dst.manufacturerNodeIdentification =
+                    item["manufacturerNodeIdentification"].as<decltype(dst.manufacturerNodeIdentification)::value_type>();
+            } else {
+                //dst.manufacturerNodeIdentification = std::nullopt;
+            }
+            if (item["manufacturerLabel"]) {
+                dst.manufacturerLabel = item["manufacturerLabel"].as<decltype(dst.manufacturerLabel)::value_type>();
+            } else {
+                //dst.manufacturerLabel = std::nullopt;
+            }
+            if (item["manufacturerDescription"]) {
+                dst.manufacturerDescription = item["manufacturerDescription"].as<decltype(dst.manufacturerDescription)::value_type>();
+            } else {
+                //dst.manufacturerDescription = std::nullopt;
+            }
+        }
+    } else {
+        if (src["deviceName"]) {
+            dst.deviceName = src["deviceName"].as<decltype(dst.deviceName)::value_type>();
+        } else {
+            //dst.deviceName = std::nullopt;
+        }
+        if (src["deviceCode"]) {
+            dst.deviceCode = src["deviceCode"].as<decltype(dst.deviceCode)::value_type>();
+        } else {
+            //dst.deviceCode = std::nullopt;
+        }
+        if (src["serialNumber"]) {
+            dst.serialNumber = src["serialNumber"].as<decltype(dst.serialNumber)::value_type>();
+        } else {
+            //dst.serialNumber = std::nullopt;
+        }
+        if (src["softwareRevision"]) {
+            dst.softwareRevision = src["softwareRevision"].as<decltype(dst.softwareRevision)::value_type>();
+        } else {
+            //dst.softwareRevision = std::nullopt;
+        }
+        if (src["hardwareRevision"]) {
+            dst.hardwareRevision = src["hardwareRevision"].as<decltype(dst.hardwareRevision)::value_type>();
+        } else {
+            //dst.hardwareRevision = std::nullopt;
+        }
+        if (src["vendorName"]) {
+            dst.vendorName = src["vendorName"].as<decltype(dst.vendorName)::value_type>();
+        } else {
+            //dst.vendorName = std::nullopt;
+        }
+        if (src["vendorCode"]) {
+            dst.vendorCode = src["vendorCode"].as<decltype(dst.vendorCode)::value_type>();
+        } else {
+            //dst.vendorCode = std::nullopt;
+        }
+        if (src["brandName"]) {
+            dst.brandName = src["brandName"].as<decltype(dst.brandName)::value_type>();
+        } else {
+            //dst.brandName = std::nullopt;
+        }
+        if (src["powerSource"]) {
+            dst.powerSource = src["powerSource"].as<decltype(dst.powerSource)::value_type>();
+        } else {
+            //dst.powerSource = std::nullopt;
+        }
+        if (src["manufacturerNodeIdentification"]) {
+            dst.manufacturerNodeIdentification =
+                src["manufacturerNodeIdentification"].as<decltype(dst.manufacturerNodeIdentification)::value_type>();
+        } else {
+            //dst.manufacturerNodeIdentification = std::nullopt;
+        }
+        if (src["manufacturerLabel"]) {
+            dst.manufacturerLabel = src["manufacturerLabel"].as<decltype(dst.manufacturerLabel)::value_type>();
+        } else {
+            //dst.manufacturerLabel = std::nullopt;
+        }
+        if (src["manufacturerDescription"]) {
+            dst.manufacturerDescription = src["manufacturerDescription"].as<decltype(dst.manufacturerDescription)::value_type>();
+        } else {
+            //dst.manufacturerDescription = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceClassificationUserDataType &src, JsonVariant &dst)
+{
+    if (src.userNodeIdentification) {
+        dst["userNodeIdentification"] = *src.userNodeIdentification;
+    }
+    if (src.userLabel) {
+        dst["userLabel"] = *src.userLabel;
+    }
+    if (src.userDescription) {
+        dst["userDescription"] = *src.userDescription;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceClassificationUserDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["userNodeIdentification"]) {
+                dst.userNodeIdentification = item["userNodeIdentification"].as<decltype(dst.userNodeIdentification)::value_type>();
+            } else {
+                //dst.userNodeIdentification = std::nullopt;
+            }
+            if (item["userLabel"]) {
+                dst.userLabel = item["userLabel"].as<decltype(dst.userLabel)::value_type>();
+            } else {
+                //dst.userLabel = std::nullopt;
+            }
+            if (item["userDescription"]) {
+                dst.userDescription = item["userDescription"].as<decltype(dst.userDescription)::value_type>();
+            } else {
+                //dst.userDescription = std::nullopt;
+            }
+        }
+    } else {
+        if (src["userNodeIdentification"]) {
+            dst.userNodeIdentification = src["userNodeIdentification"].as<decltype(dst.userNodeIdentification)::value_type>();
+        } else {
+            //dst.userNodeIdentification = std::nullopt;
+        }
+        if (src["userLabel"]) {
+            dst.userLabel = src["userLabel"].as<decltype(dst.userLabel)::value_type>();
+        } else {
+            //dst.userLabel = std::nullopt;
+        }
+        if (src["userDescription"]) {
+            dst.userDescription = src["userDescription"].as<decltype(dst.userDescription)::value_type>();
+        } else {
+            //dst.userDescription = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceClassificationUserDataElementsType &src, JsonVariant &dst)
+{
+    if (src.userNodeIdentification) {
+        dst["userNodeIdentification"] = *src.userNodeIdentification;
+    }
+    if (src.userLabel) {
+        dst["userLabel"] = *src.userLabel;
+    }
+    if (src.userDescription) {
+        dst["userDescription"] = *src.userDescription;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceClassificationUserDataElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["userNodeIdentification"]) {
+                dst.userNodeIdentification = item["userNodeIdentification"].as<decltype(dst.userNodeIdentification)::value_type>();
+            } else {
+                //dst.userNodeIdentification = std::nullopt;
+            }
+            if (item["userLabel"]) {
+                dst.userLabel = item["userLabel"].as<decltype(dst.userLabel)::value_type>();
+            } else {
+                //dst.userLabel = std::nullopt;
+            }
+            if (item["userDescription"]) {
+                dst.userDescription = item["userDescription"].as<decltype(dst.userDescription)::value_type>();
+            } else {
+                //dst.userDescription = std::nullopt;
+            }
+        }
+    } else {
+        if (src["userNodeIdentification"]) {
+            dst.userNodeIdentification = src["userNodeIdentification"].as<decltype(dst.userNodeIdentification)::value_type>();
+        } else {
+            //dst.userNodeIdentification = std::nullopt;
+        }
+        if (src["userLabel"]) {
+            dst.userLabel = src["userLabel"].as<decltype(dst.userLabel)::value_type>();
+        } else {
+            //dst.userLabel = std::nullopt;
+        }
+        if (src["userDescription"]) {
+            dst.userDescription = src["userDescription"].as<decltype(dst.userDescription)::value_type>();
+        } else {
+            //dst.userDescription = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceConfigurationKeyValueValueType &src, JsonVariant &dst)
+{
+    if (src.boolean) {
+        dst["boolean"] = *src.boolean;
+    }
+    if (src.date) {
+        dst["date"] = *src.date;
+    }
+    if (src.dateTime) {
+        dst["dateTime"] = *src.dateTime;
+    }
+    if (src.duration) {
+        dst["duration"] = *src.duration;
+    }
+    if (src.string) {
+        dst["string"] = *src.string;
+    }
+    if (src.time) {
+        dst["time"] = *src.time;
+    }
+    if (src.scaledNumber) {
+        dst["scaledNumber"] = *src.scaledNumber;
+    }
+    if (src.integer) {
+        dst["integer"] = *src.integer;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueValueType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["boolean"]) {
+                dst.boolean = item["boolean"].as<decltype(dst.boolean)::value_type>();
+            } else {
+                //dst.boolean = std::nullopt;
+            }
+            if (item["date"]) {
+                dst.date = item["date"].as<decltype(dst.date)::value_type>();
+            } else {
+                //dst.date = std::nullopt;
+            }
+            if (item["dateTime"]) {
+                dst.dateTime = item["dateTime"].as<decltype(dst.dateTime)::value_type>();
+            } else {
+                //dst.dateTime = std::nullopt;
+            }
+            if (item["duration"]) {
+                dst.duration = item["duration"].as<decltype(dst.duration)::value_type>();
+            } else {
+                //dst.duration = std::nullopt;
+            }
+            if (item["string"]) {
+                dst.string = item["string"].as<decltype(dst.string)::value_type>();
+            } else {
+                //dst.string = std::nullopt;
+            }
+            if (item["time"]) {
+                dst.time = item["time"].as<decltype(dst.time)::value_type>();
+            } else {
+                //dst.time = std::nullopt;
+            }
+            if (item["scaledNumber"]) {
+                dst.scaledNumber = item["scaledNumber"].as<decltype(dst.scaledNumber)::value_type>();
+            } else {
+                //dst.scaledNumber = std::nullopt;
+            }
+            if (item["integer"]) {
+                dst.integer = item["integer"].as<decltype(dst.integer)::value_type>();
+            } else {
+                //dst.integer = std::nullopt;
+            }
+        }
+    } else {
+        if (src["boolean"]) {
+            dst.boolean = src["boolean"].as<decltype(dst.boolean)::value_type>();
+        } else {
+            //dst.boolean = std::nullopt;
+        }
+        if (src["date"]) {
+            dst.date = src["date"].as<decltype(dst.date)::value_type>();
+        } else {
+            //dst.date = std::nullopt;
+        }
+        if (src["dateTime"]) {
+            dst.dateTime = src["dateTime"].as<decltype(dst.dateTime)::value_type>();
+        } else {
+            //dst.dateTime = std::nullopt;
+        }
+        if (src["duration"]) {
+            dst.duration = src["duration"].as<decltype(dst.duration)::value_type>();
+        } else {
+            //dst.duration = std::nullopt;
+        }
+        if (src["string"]) {
+            dst.string = src["string"].as<decltype(dst.string)::value_type>();
+        } else {
+            //dst.string = std::nullopt;
+        }
+        if (src["time"]) {
+            dst.time = src["time"].as<decltype(dst.time)::value_type>();
+        } else {
+            //dst.time = std::nullopt;
+        }
+        if (src["scaledNumber"]) {
+            dst.scaledNumber = src["scaledNumber"].as<decltype(dst.scaledNumber)::value_type>();
+        } else {
+            //dst.scaledNumber = std::nullopt;
+        }
+        if (src["integer"]) {
+            dst.integer = src["integer"].as<decltype(dst.integer)::value_type>();
+        } else {
+            //dst.integer = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceConfigurationKeyValueValueElementsType &src, JsonVariant &dst)
+{
+    if (src.boolean) {
+        dst["boolean"] = *src.boolean;
+    }
+    if (src.date) {
+        dst["date"] = *src.date;
+    }
+    if (src.dateTime) {
+        dst["dateTime"] = *src.dateTime;
+    }
+    if (src.duration) {
+        dst["duration"] = *src.duration;
+    }
+    if (src.string) {
+        dst["string"] = *src.string;
+    }
+    if (src.time) {
+        dst["time"] = *src.time;
+    }
+    if (src.scaledNumber) {
+        dst["scaledNumber"] = *src.scaledNumber;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueValueElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["boolean"]) {
+                dst.boolean = item["boolean"].as<decltype(dst.boolean)::value_type>();
+            } else {
+                //dst.boolean = std::nullopt;
+            }
+            if (item["date"]) {
+                dst.date = item["date"].as<decltype(dst.date)::value_type>();
+            } else {
+                //dst.date = std::nullopt;
+            }
+            if (item["dateTime"]) {
+                dst.dateTime = item["dateTime"].as<decltype(dst.dateTime)::value_type>();
+            } else {
+                //dst.dateTime = std::nullopt;
+            }
+            if (item["duration"]) {
+                dst.duration = item["duration"].as<decltype(dst.duration)::value_type>();
+            } else {
+                //dst.duration = std::nullopt;
+            }
+            if (item["string"]) {
+                dst.string = item["string"].as<decltype(dst.string)::value_type>();
+            } else {
+                //dst.string = std::nullopt;
+            }
+            if (item["time"]) {
+                dst.time = item["time"].as<decltype(dst.time)::value_type>();
+            } else {
+                //dst.time = std::nullopt;
+            }
+            if (item["scaledNumber"]) {
+                dst.scaledNumber = item["scaledNumber"].as<decltype(dst.scaledNumber)::value_type>();
+            } else {
+                //dst.scaledNumber = std::nullopt;
+            }
+        }
+    } else {
+        if (src["boolean"]) {
+            dst.boolean = src["boolean"].as<decltype(dst.boolean)::value_type>();
+        } else {
+            //dst.boolean = std::nullopt;
+        }
+        if (src["date"]) {
+            dst.date = src["date"].as<decltype(dst.date)::value_type>();
+        } else {
+            //dst.date = std::nullopt;
+        }
+        if (src["dateTime"]) {
+            dst.dateTime = src["dateTime"].as<decltype(dst.dateTime)::value_type>();
+        } else {
+            //dst.dateTime = std::nullopt;
+        }
+        if (src["duration"]) {
+            dst.duration = src["duration"].as<decltype(dst.duration)::value_type>();
+        } else {
+            //dst.duration = std::nullopt;
+        }
+        if (src["string"]) {
+            dst.string = src["string"].as<decltype(dst.string)::value_type>();
+        } else {
+            //dst.string = std::nullopt;
+        }
+        if (src["time"]) {
+            dst.time = src["time"].as<decltype(dst.time)::value_type>();
+        } else {
+            //dst.time = std::nullopt;
+        }
+        if (src["scaledNumber"]) {
+            dst.scaledNumber = src["scaledNumber"].as<decltype(dst.scaledNumber)::value_type>();
+        } else {
+            //dst.scaledNumber = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceConfigurationKeyValueDataType &src, JsonVariant &dst)
+{
+    if (src.keyId) {
+        dst["keyId"] = *src.keyId;
+    }
+    if (src.value) {
+        dst["value"] = *src.value;
+    }
+    if (src.isValueChangeable) {
+        dst["isValueChangeable"] = *src.isValueChangeable;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["keyId"]) {
+                dst.keyId = item["keyId"].as<decltype(dst.keyId)::value_type>();
+            } else {
+                //dst.keyId = std::nullopt;
+            }
+            if (item["value"]) {
+                dst.value = item["value"].as<decltype(dst.value)::value_type>();
+            } else {
+                //dst.value = std::nullopt;
+            }
+            if (item["isValueChangeable"]) {
+                dst.isValueChangeable = item["isValueChangeable"].as<decltype(dst.isValueChangeable)::value_type>();
+            } else {
+                //dst.isValueChangeable = std::nullopt;
+            }
+        }
+    } else {
+        if (src["keyId"]) {
+            dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
+        } else {
+            //dst.keyId = std::nullopt;
+        }
+        if (src["value"]) {
+            dst.value = src["value"].as<decltype(dst.value)::value_type>();
+        } else {
+            //dst.value = std::nullopt;
+        }
+        if (src["isValueChangeable"]) {
+            dst.isValueChangeable = src["isValueChangeable"].as<decltype(dst.isValueChangeable)::value_type>();
+        } else {
+            //dst.isValueChangeable = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceConfigurationKeyValueDataElementsType &src, JsonVariant &dst)
+{
+    if (src.keyId) {
+        dst["keyId"] = *src.keyId;
+    }
+    if (src.value) {
+        dst["value"] = *src.value;
+    }
+    if (src.isValueChangeable) {
+        dst["isValueChangeable"] = *src.isValueChangeable;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDataElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["keyId"]) {
+                dst.keyId = item["keyId"].as<decltype(dst.keyId)::value_type>();
+            } else {
+                //dst.keyId = std::nullopt;
+            }
+            if (item["value"]) {
+                dst.value = item["value"].as<decltype(dst.value)::value_type>();
+            } else {
+                //dst.value = std::nullopt;
+            }
+            if (item["isValueChangeable"]) {
+                dst.isValueChangeable = item["isValueChangeable"].as<decltype(dst.isValueChangeable)::value_type>();
+            } else {
+                //dst.isValueChangeable = std::nullopt;
+            }
+        }
+    } else {
+        if (src["keyId"]) {
+            dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
+        } else {
+            //dst.keyId = std::nullopt;
+        }
+        if (src["value"]) {
+            dst.value = src["value"].as<decltype(dst.value)::value_type>();
+        } else {
+            //dst.value = std::nullopt;
+        }
+        if (src["isValueChangeable"]) {
+            dst.isValueChangeable = src["isValueChangeable"].as<decltype(dst.isValueChangeable)::value_type>();
+        } else {
+            //dst.isValueChangeable = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceConfigurationKeyValueListDataType &src, JsonVariant &dst)
+{
+    if (src.deviceConfigurationKeyValueData) {
+        dst["deviceConfigurationKeyValueData"] = *src.deviceConfigurationKeyValueData;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueListDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["deviceConfigurationKeyValueData"]) {
+                dst.deviceConfigurationKeyValueData =
+                    item["deviceConfigurationKeyValueData"].as<decltype(dst.deviceConfigurationKeyValueData)::value_type>();
+            } else {
+                //dst.deviceConfigurationKeyValueData = std::nullopt;
+            }
+        }
+    } else {
+        if (src["deviceConfigurationKeyValueData"]) {
+            dst.deviceConfigurationKeyValueData =
+                src["deviceConfigurationKeyValueData"].as<decltype(dst.deviceConfigurationKeyValueData)::value_type>();
+        } else {
+            //dst.deviceConfigurationKeyValueData = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceConfigurationKeyValueListDataSelectorsType &src, JsonVariant &dst)
+{
+    if (src.keyId) {
+        dst["keyId"] = *src.keyId;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueListDataSelectorsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["keyId"]) {
+                dst.keyId = item["keyId"].as<decltype(dst.keyId)::value_type>();
+            } else {
+                //dst.keyId = std::nullopt;
+            }
+        }
+    } else {
+        if (src["keyId"]) {
+            dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
+        } else {
+            //dst.keyId = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceConfigurationKeyValueDescriptionDataType &src, JsonVariant &dst)
+{
+    if (src.keyId) {
+        dst["keyId"] = *src.keyId;
+    }
+    if (src.keyName) {
+        dst["keyName"] = *src.keyName;
+    }
+    if (src.valueType) {
+        dst["valueType"] = *src.valueType;
+    }
+    if (src.unit) {
+        dst["unit"] = *src.unit;
+    }
+    if (src.label) {
+        dst["label"] = *src.label;
+    }
+    if (src.description) {
+        dst["description"] = *src.description;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDescriptionDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["keyId"]) {
+                dst.keyId = item["keyId"].as<decltype(dst.keyId)::value_type>();
+            } else {
+                //dst.keyId = std::nullopt;
+            }
+            if (item["keyName"]) {
+                dst.keyName = item["keyName"].as<decltype(dst.keyName)::value_type>();
+            } else {
+                //dst.keyName = std::nullopt;
+            }
+            if (item["valueType"]) {
+                dst.valueType = item["valueType"].as<decltype(dst.valueType)::value_type>();
+            } else {
+                //dst.valueType = std::nullopt;
+            }
+            if (item["unit"]) {
+                dst.unit = item["unit"].as<decltype(dst.unit)::value_type>();
+            } else {
+                //dst.unit = std::nullopt;
+            }
+            if (item["label"]) {
+                dst.label = item["label"].as<decltype(dst.label)::value_type>();
+            } else {
+                //dst.label = std::nullopt;
+            }
+            if (item["description"]) {
+                dst.description = item["description"].as<decltype(dst.description)::value_type>();
+            } else {
+                //dst.description = std::nullopt;
+            }
+        }
+    } else {
+        if (src["keyId"]) {
+            dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
+        } else {
+            //dst.keyId = std::nullopt;
+        }
+        if (src["keyName"]) {
+            dst.keyName = src["keyName"].as<decltype(dst.keyName)::value_type>();
+        } else {
+            //dst.keyName = std::nullopt;
+        }
+        if (src["valueType"]) {
+            dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
+        } else {
+            //dst.valueType = std::nullopt;
+        }
+        if (src["unit"]) {
+            dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
+        } else {
+            //dst.unit = std::nullopt;
+        }
+        if (src["label"]) {
+            dst.label = src["label"].as<decltype(dst.label)::value_type>();
+        } else {
+            //dst.label = std::nullopt;
+        }
+        if (src["description"]) {
+            dst.description = src["description"].as<decltype(dst.description)::value_type>();
+        } else {
+            //dst.description = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceConfigurationKeyValueDescriptionDataElementsType &src, JsonVariant &dst)
+{
+    if (src.keyId) {
+        dst["keyId"] = *src.keyId;
+    }
+    if (src.keyName) {
+        dst["keyName"] = *src.keyName;
+    }
+    if (src.valueType) {
+        dst["valueType"] = *src.valueType;
+    }
+    if (src.unit) {
+        dst["unit"] = *src.unit;
+    }
+    if (src.label) {
+        dst["label"] = *src.label;
+    }
+    if (src.description) {
+        dst["description"] = *src.description;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDescriptionDataElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["keyId"]) {
+                dst.keyId = item["keyId"].as<decltype(dst.keyId)::value_type>();
+            } else {
+                //dst.keyId = std::nullopt;
+            }
+            if (item["keyName"]) {
+                dst.keyName = item["keyName"].as<decltype(dst.keyName)::value_type>();
+            } else {
+                //dst.keyName = std::nullopt;
+            }
+            if (item["valueType"]) {
+                dst.valueType = item["valueType"].as<decltype(dst.valueType)::value_type>();
+            } else {
+                //dst.valueType = std::nullopt;
+            }
+            if (item["unit"]) {
+                dst.unit = item["unit"].as<decltype(dst.unit)::value_type>();
+            } else {
+                //dst.unit = std::nullopt;
+            }
+            if (item["label"]) {
+                dst.label = item["label"].as<decltype(dst.label)::value_type>();
+            } else {
+                //dst.label = std::nullopt;
+            }
+            if (item["description"]) {
+                dst.description = item["description"].as<decltype(dst.description)::value_type>();
+            } else {
+                //dst.description = std::nullopt;
+            }
+        }
+    } else {
+        if (src["keyId"]) {
+            dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
+        } else {
+            //dst.keyId = std::nullopt;
+        }
+        if (src["keyName"]) {
+            dst.keyName = src["keyName"].as<decltype(dst.keyName)::value_type>();
+        } else {
+            //dst.keyName = std::nullopt;
+        }
+        if (src["valueType"]) {
+            dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
+        } else {
+            //dst.valueType = std::nullopt;
+        }
+        if (src["unit"]) {
+            dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
+        } else {
+            //dst.unit = std::nullopt;
+        }
+        if (src["label"]) {
+            dst.label = src["label"].as<decltype(dst.label)::value_type>();
+        } else {
+            //dst.label = std::nullopt;
+        }
+        if (src["description"]) {
+            dst.description = src["description"].as<decltype(dst.description)::value_type>();
+        } else {
+            //dst.description = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceConfigurationKeyValueDescriptionListDataType &src, JsonVariant &dst)
+{
+    if (src.deviceConfigurationKeyValueDescriptionData) {
+        dst["deviceConfigurationKeyValueDescriptionData"] = *src.deviceConfigurationKeyValueDescriptionData;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDescriptionListDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["deviceConfigurationKeyValueDescriptionData"]) {
+                dst.deviceConfigurationKeyValueDescriptionData =
+                    item["deviceConfigurationKeyValueDescriptionData"]
+                        .as<decltype(dst.deviceConfigurationKeyValueDescriptionData)::value_type>();
+            } else {
+                //dst.deviceConfigurationKeyValueDescriptionData = std::nullopt;
+            }
+        }
+    } else {
+        if (src["deviceConfigurationKeyValueDescriptionData"]) {
+            dst.deviceConfigurationKeyValueDescriptionData =
+                src["deviceConfigurationKeyValueDescriptionData"]
+                    .as<decltype(dst.deviceConfigurationKeyValueDescriptionData)::value_type>();
+        } else {
+            //dst.deviceConfigurationKeyValueDescriptionData = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceConfigurationKeyValueDescriptionListDataSelectorsType &src, JsonVariant &dst)
+{
+    if (src.keyId) {
+        dst["keyId"] = *src.keyId;
+    }
+    if (src.keyName) {
+        dst["keyName"] = *src.keyName;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDescriptionListDataSelectorsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["keyId"]) {
+                dst.keyId = item["keyId"].as<decltype(dst.keyId)::value_type>();
+            } else {
+                //dst.keyId = std::nullopt;
+            }
+            if (item["keyName"]) {
+                dst.keyName = item["keyName"].as<decltype(dst.keyName)::value_type>();
+            } else {
+                //dst.keyName = std::nullopt;
+            }
+        }
+    } else {
+        if (src["keyId"]) {
+            dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
+        } else {
+            //dst.keyId = std::nullopt;
+        }
+        if (src["keyName"]) {
+            dst.keyName = src["keyName"].as<decltype(dst.keyName)::value_type>();
+        } else {
+            //dst.keyName = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceConfigurationKeyValueConstraintsDataType &src, JsonVariant &dst)
+{
+    if (src.keyId) {
+        dst["keyId"] = *src.keyId;
+    }
+    if (src.valueRangeMin) {
+        dst["valueRangeMin"] = *src.valueRangeMin;
+    }
+    if (src.valueRangeMax) {
+        dst["valueRangeMax"] = *src.valueRangeMax;
+    }
+    if (src.valueStepSize) {
+        dst["valueStepSize"] = *src.valueStepSize;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueConstraintsDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["keyId"]) {
+                dst.keyId = item["keyId"].as<decltype(dst.keyId)::value_type>();
+            } else {
+                //dst.keyId = std::nullopt;
+            }
+            if (item["valueRangeMin"]) {
+                dst.valueRangeMin = item["valueRangeMin"].as<decltype(dst.valueRangeMin)::value_type>();
+            } else {
+                //dst.valueRangeMin = std::nullopt;
+            }
+            if (item["valueRangeMax"]) {
+                dst.valueRangeMax = item["valueRangeMax"].as<decltype(dst.valueRangeMax)::value_type>();
+            } else {
+                //dst.valueRangeMax = std::nullopt;
+            }
+            if (item["valueStepSize"]) {
+                dst.valueStepSize = item["valueStepSize"].as<decltype(dst.valueStepSize)::value_type>();
+            } else {
+                //dst.valueStepSize = std::nullopt;
+            }
+        }
+    } else {
+        if (src["keyId"]) {
+            dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
+        } else {
+            //dst.keyId = std::nullopt;
+        }
+        if (src["valueRangeMin"]) {
+            dst.valueRangeMin = src["valueRangeMin"].as<decltype(dst.valueRangeMin)::value_type>();
+        } else {
+            //dst.valueRangeMin = std::nullopt;
+        }
+        if (src["valueRangeMax"]) {
+            dst.valueRangeMax = src["valueRangeMax"].as<decltype(dst.valueRangeMax)::value_type>();
+        } else {
+            //dst.valueRangeMax = std::nullopt;
+        }
+        if (src["valueStepSize"]) {
+            dst.valueStepSize = src["valueStepSize"].as<decltype(dst.valueStepSize)::value_type>();
+        } else {
+            //dst.valueStepSize = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceConfigurationKeyValueConstraintsDataElementsType &src, JsonVariant &dst)
+{
+    if (src.keyId) {
+        dst["keyId"] = *src.keyId;
+    }
+    if (src.valueRangeMin) {
+        dst["valueRangeMin"] = *src.valueRangeMin;
+    }
+    if (src.valueRangeMax) {
+        dst["valueRangeMax"] = *src.valueRangeMax;
+    }
+    if (src.valueStepSize) {
+        dst["valueStepSize"] = *src.valueStepSize;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueConstraintsDataElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["keyId"]) {
+                dst.keyId = item["keyId"].as<decltype(dst.keyId)::value_type>();
+            } else {
+                //dst.keyId = std::nullopt;
+            }
+            if (item["valueRangeMin"]) {
+                dst.valueRangeMin = item["valueRangeMin"].as<decltype(dst.valueRangeMin)::value_type>();
+            } else {
+                //dst.valueRangeMin = std::nullopt;
+            }
+            if (item["valueRangeMax"]) {
+                dst.valueRangeMax = item["valueRangeMax"].as<decltype(dst.valueRangeMax)::value_type>();
+            } else {
+                //dst.valueRangeMax = std::nullopt;
+            }
+            if (item["valueStepSize"]) {
+                dst.valueStepSize = item["valueStepSize"].as<decltype(dst.valueStepSize)::value_type>();
+            } else {
+                //dst.valueStepSize = std::nullopt;
+            }
+        }
+    } else {
+        if (src["keyId"]) {
+            dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
+        } else {
+            //dst.keyId = std::nullopt;
+        }
+        if (src["valueRangeMin"]) {
+            dst.valueRangeMin = src["valueRangeMin"].as<decltype(dst.valueRangeMin)::value_type>();
+        } else {
+            //dst.valueRangeMin = std::nullopt;
+        }
+        if (src["valueRangeMax"]) {
+            dst.valueRangeMax = src["valueRangeMax"].as<decltype(dst.valueRangeMax)::value_type>();
+        } else {
+            //dst.valueRangeMax = std::nullopt;
+        }
+        if (src["valueStepSize"]) {
+            dst.valueStepSize = src["valueStepSize"].as<decltype(dst.valueStepSize)::value_type>();
+        } else {
+            //dst.valueStepSize = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceConfigurationKeyValueConstraintsListDataType &src, JsonVariant &dst)
+{
+    if (src.deviceConfigurationKeyValueConstraintsData) {
+        dst["deviceConfigurationKeyValueConstraintsData"] = *src.deviceConfigurationKeyValueConstraintsData;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueConstraintsListDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["deviceConfigurationKeyValueConstraintsData"]) {
+                dst.deviceConfigurationKeyValueConstraintsData =
+                    item["deviceConfigurationKeyValueConstraintsData"]
+                        .as<decltype(dst.deviceConfigurationKeyValueConstraintsData)::value_type>();
+            } else {
+                //dst.deviceConfigurationKeyValueConstraintsData = std::nullopt;
+            }
+        }
+    } else {
+        if (src["deviceConfigurationKeyValueConstraintsData"]) {
+            dst.deviceConfigurationKeyValueConstraintsData =
+                src["deviceConfigurationKeyValueConstraintsData"]
+                    .as<decltype(dst.deviceConfigurationKeyValueConstraintsData)::value_type>();
+        } else {
+            //dst.deviceConfigurationKeyValueConstraintsData = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceConfigurationKeyValueConstraintsListDataSelectorsType &src, JsonVariant &dst)
+{
+    if (src.keyId) {
+        dst["keyId"] = *src.keyId;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueConstraintsListDataSelectorsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["keyId"]) {
+                dst.keyId = item["keyId"].as<decltype(dst.keyId)::value_type>();
+            } else {
+                //dst.keyId = std::nullopt;
+            }
+        }
+    } else {
+        if (src["keyId"]) {
+            dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
+        } else {
+            //dst.keyId = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceDiagnosisStateDataType &src, JsonVariant &dst)
+{
+    if (src.timestamp) {
+        dst["timestamp"] = *src.timestamp;
+    }
+    if (src.operatingState) {
+        dst["operatingState"] = *src.operatingState;
+    }
+    if (src.vendorStateCode) {
+        dst["vendorStateCode"] = *src.vendorStateCode;
+    }
+    if (src.lastErrorCode) {
+        dst["lastErrorCode"] = *src.lastErrorCode;
+    }
+    if (src.upTime) {
+        dst["upTime"] = *src.upTime;
+    }
+    if (src.totalUpTime) {
+        dst["totalUpTime"] = *src.totalUpTime;
+    }
+    if (src.powerSupplyCondition) {
+        dst["powerSupplyCondition"] = *src.powerSupplyCondition;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisStateDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["timestamp"]) {
+                dst.timestamp = item["timestamp"].as<decltype(dst.timestamp)::value_type>();
+            } else {
+                //dst.timestamp = std::nullopt;
+            }
+            if (item["operatingState"]) {
+                dst.operatingState = item["operatingState"].as<decltype(dst.operatingState)::value_type>();
+            } else {
+                //dst.operatingState = std::nullopt;
+            }
+            if (item["vendorStateCode"]) {
+                dst.vendorStateCode = item["vendorStateCode"].as<decltype(dst.vendorStateCode)::value_type>();
+            } else {
+                //dst.vendorStateCode = std::nullopt;
+            }
+            if (item["lastErrorCode"]) {
+                dst.lastErrorCode = item["lastErrorCode"].as<decltype(dst.lastErrorCode)::value_type>();
+            } else {
+                //dst.lastErrorCode = std::nullopt;
+            }
+            if (item["upTime"]) {
+                dst.upTime = item["upTime"].as<decltype(dst.upTime)::value_type>();
+            } else {
+                //dst.upTime = std::nullopt;
+            }
+            if (item["totalUpTime"]) {
+                dst.totalUpTime = item["totalUpTime"].as<decltype(dst.totalUpTime)::value_type>();
+            } else {
+                //dst.totalUpTime = std::nullopt;
+            }
+            if (item["powerSupplyCondition"]) {
+                dst.powerSupplyCondition = item["powerSupplyCondition"].as<decltype(dst.powerSupplyCondition)::value_type>();
+            } else {
+                //dst.powerSupplyCondition = std::nullopt;
+            }
+        }
+    } else {
+        if (src["timestamp"]) {
+            dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
+        } else {
+            //dst.timestamp = std::nullopt;
+        }
+        if (src["operatingState"]) {
+            dst.operatingState = src["operatingState"].as<decltype(dst.operatingState)::value_type>();
+        } else {
+            //dst.operatingState = std::nullopt;
+        }
+        if (src["vendorStateCode"]) {
+            dst.vendorStateCode = src["vendorStateCode"].as<decltype(dst.vendorStateCode)::value_type>();
+        } else {
+            //dst.vendorStateCode = std::nullopt;
+        }
+        if (src["lastErrorCode"]) {
+            dst.lastErrorCode = src["lastErrorCode"].as<decltype(dst.lastErrorCode)::value_type>();
+        } else {
+            //dst.lastErrorCode = std::nullopt;
+        }
+        if (src["upTime"]) {
+            dst.upTime = src["upTime"].as<decltype(dst.upTime)::value_type>();
+        } else {
+            //dst.upTime = std::nullopt;
+        }
+        if (src["totalUpTime"]) {
+            dst.totalUpTime = src["totalUpTime"].as<decltype(dst.totalUpTime)::value_type>();
+        } else {
+            //dst.totalUpTime = std::nullopt;
+        }
+        if (src["powerSupplyCondition"]) {
+            dst.powerSupplyCondition = src["powerSupplyCondition"].as<decltype(dst.powerSupplyCondition)::value_type>();
+        } else {
+            //dst.powerSupplyCondition = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceDiagnosisStateDataElementsType &src, JsonVariant &dst)
+{
+    if (src.timestamp) {
+        dst["timestamp"] = *src.timestamp;
+    }
+    if (src.operatingState) {
+        dst["operatingState"] = *src.operatingState;
+    }
+    if (src.vendorStateCode) {
+        dst["vendorStateCode"] = *src.vendorStateCode;
+    }
+    if (src.lastErrorCode) {
+        dst["lastErrorCode"] = *src.lastErrorCode;
+    }
+    if (src.upTime) {
+        dst["upTime"] = *src.upTime;
+    }
+    if (src.totalUpTime) {
+        dst["totalUpTime"] = *src.totalUpTime;
+    }
+    if (src.powerSupplyCondition) {
+        dst["powerSupplyCondition"] = *src.powerSupplyCondition;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisStateDataElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["timestamp"]) {
+                dst.timestamp = item["timestamp"].as<decltype(dst.timestamp)::value_type>();
+            } else {
+                //dst.timestamp = std::nullopt;
+            }
+            if (item["operatingState"]) {
+                dst.operatingState = item["operatingState"].as<decltype(dst.operatingState)::value_type>();
+            } else {
+                //dst.operatingState = std::nullopt;
+            }
+            if (item["vendorStateCode"]) {
+                dst.vendorStateCode = item["vendorStateCode"].as<decltype(dst.vendorStateCode)::value_type>();
+            } else {
+                //dst.vendorStateCode = std::nullopt;
+            }
+            if (item["lastErrorCode"]) {
+                dst.lastErrorCode = item["lastErrorCode"].as<decltype(dst.lastErrorCode)::value_type>();
+            } else {
+                //dst.lastErrorCode = std::nullopt;
+            }
+            if (item["upTime"]) {
+                dst.upTime = item["upTime"].as<decltype(dst.upTime)::value_type>();
+            } else {
+                //dst.upTime = std::nullopt;
+            }
+            if (item["totalUpTime"]) {
+                dst.totalUpTime = item["totalUpTime"].as<decltype(dst.totalUpTime)::value_type>();
+            } else {
+                //dst.totalUpTime = std::nullopt;
+            }
+            if (item["powerSupplyCondition"]) {
+                dst.powerSupplyCondition = item["powerSupplyCondition"].as<decltype(dst.powerSupplyCondition)::value_type>();
+            } else {
+                //dst.powerSupplyCondition = std::nullopt;
+            }
+        }
+    } else {
+        if (src["timestamp"]) {
+            dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
+        } else {
+            //dst.timestamp = std::nullopt;
+        }
+        if (src["operatingState"]) {
+            dst.operatingState = src["operatingState"].as<decltype(dst.operatingState)::value_type>();
+        } else {
+            //dst.operatingState = std::nullopt;
+        }
+        if (src["vendorStateCode"]) {
+            dst.vendorStateCode = src["vendorStateCode"].as<decltype(dst.vendorStateCode)::value_type>();
+        } else {
+            //dst.vendorStateCode = std::nullopt;
+        }
+        if (src["lastErrorCode"]) {
+            dst.lastErrorCode = src["lastErrorCode"].as<decltype(dst.lastErrorCode)::value_type>();
+        } else {
+            //dst.lastErrorCode = std::nullopt;
+        }
+        if (src["upTime"]) {
+            dst.upTime = src["upTime"].as<decltype(dst.upTime)::value_type>();
+        } else {
+            //dst.upTime = std::nullopt;
+        }
+        if (src["totalUpTime"]) {
+            dst.totalUpTime = src["totalUpTime"].as<decltype(dst.totalUpTime)::value_type>();
+        } else {
+            //dst.totalUpTime = std::nullopt;
+        }
+        if (src["powerSupplyCondition"]) {
+            dst.powerSupplyCondition = src["powerSupplyCondition"].as<decltype(dst.powerSupplyCondition)::value_type>();
+        } else {
+            //dst.powerSupplyCondition = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceDiagnosisHeartbeatDataType &src, JsonVariant &dst)
+{
+    if (src.timestamp) {
+        dst["timestamp"] = *src.timestamp;
+    }
+    if (src.heartbeatCounter) {
+        dst["heartbeatCounter"] = *src.heartbeatCounter;
+    }
+    if (src.heartbeatTimeout) {
+        dst["heartbeatTimeout"] = *src.heartbeatTimeout;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisHeartbeatDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["timestamp"]) {
+                dst.timestamp = item["timestamp"].as<decltype(dst.timestamp)::value_type>();
+            } else {
+                //dst.timestamp = std::nullopt;
+            }
+            if (item["heartbeatCounter"]) {
+                dst.heartbeatCounter = item["heartbeatCounter"].as<decltype(dst.heartbeatCounter)::value_type>();
+            } else {
+                //dst.heartbeatCounter = std::nullopt;
+            }
+            if (item["heartbeatTimeout"]) {
+                dst.heartbeatTimeout = item["heartbeatTimeout"].as<decltype(dst.heartbeatTimeout)::value_type>();
+            } else {
+                //dst.heartbeatTimeout = std::nullopt;
+            }
+        }
+    } else {
+        if (src["timestamp"]) {
+            dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
+        } else {
+            //dst.timestamp = std::nullopt;
+        }
+        if (src["heartbeatCounter"]) {
+            dst.heartbeatCounter = src["heartbeatCounter"].as<decltype(dst.heartbeatCounter)::value_type>();
+        } else {
+            //dst.heartbeatCounter = std::nullopt;
+        }
+        if (src["heartbeatTimeout"]) {
+            dst.heartbeatTimeout = src["heartbeatTimeout"].as<decltype(dst.heartbeatTimeout)::value_type>();
+        } else {
+            //dst.heartbeatTimeout = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceDiagnosisHeartbeatDataElementsType &src, JsonVariant &dst)
+{
+    if (src.timestamp) {
+        dst["timestamp"] = *src.timestamp;
+    }
+    if (src.heartbeatCounter) {
+        dst["heartbeatCounter"] = *src.heartbeatCounter;
+    }
+    if (src.heartbeatTimeout) {
+        dst["heartbeatTimeout"] = *src.heartbeatTimeout;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisHeartbeatDataElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["timestamp"]) {
+                dst.timestamp = item["timestamp"].as<decltype(dst.timestamp)::value_type>();
+            } else {
+                //dst.timestamp = std::nullopt;
+            }
+            if (item["heartbeatCounter"]) {
+                dst.heartbeatCounter = item["heartbeatCounter"].as<decltype(dst.heartbeatCounter)::value_type>();
+            } else {
+                //dst.heartbeatCounter = std::nullopt;
+            }
+            if (item["heartbeatTimeout"]) {
+                dst.heartbeatTimeout = item["heartbeatTimeout"].as<decltype(dst.heartbeatTimeout)::value_type>();
+            } else {
+                //dst.heartbeatTimeout = std::nullopt;
+            }
+        }
+    } else {
+        if (src["timestamp"]) {
+            dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
+        } else {
+            //dst.timestamp = std::nullopt;
+        }
+        if (src["heartbeatCounter"]) {
+            dst.heartbeatCounter = src["heartbeatCounter"].as<decltype(dst.heartbeatCounter)::value_type>();
+        } else {
+            //dst.heartbeatCounter = std::nullopt;
+        }
+        if (src["heartbeatTimeout"]) {
+            dst.heartbeatTimeout = src["heartbeatTimeout"].as<decltype(dst.heartbeatTimeout)::value_type>();
+        } else {
+            //dst.heartbeatTimeout = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceDiagnosisServiceDataType &src, JsonVariant &dst)
+{
+    if (src.timestamp) {
+        dst["timestamp"] = *src.timestamp;
+    }
+    if (src.installationTime) {
+        dst["installationTime"] = *src.installationTime;
+    }
+    if (src.bootCounter) {
+        dst["bootCounter"] = *src.bootCounter;
+    }
+    if (src.nextService) {
+        dst["nextService"] = *src.nextService;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisServiceDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["timestamp"]) {
+                dst.timestamp = item["timestamp"].as<decltype(dst.timestamp)::value_type>();
+            } else {
+                //dst.timestamp = std::nullopt;
+            }
+            if (item["installationTime"]) {
+                dst.installationTime = item["installationTime"].as<decltype(dst.installationTime)::value_type>();
+            } else {
+                //dst.installationTime = std::nullopt;
+            }
+            if (item["bootCounter"]) {
+                dst.bootCounter = item["bootCounter"].as<decltype(dst.bootCounter)::value_type>();
+            } else {
+                //dst.bootCounter = std::nullopt;
+            }
+            if (item["nextService"]) {
+                dst.nextService = item["nextService"].as<decltype(dst.nextService)::value_type>();
+            } else {
+                //dst.nextService = std::nullopt;
+            }
+        }
+    } else {
+        if (src["timestamp"]) {
+            dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
+        } else {
+            //dst.timestamp = std::nullopt;
+        }
+        if (src["installationTime"]) {
+            dst.installationTime = src["installationTime"].as<decltype(dst.installationTime)::value_type>();
+        } else {
+            //dst.installationTime = std::nullopt;
+        }
+        if (src["bootCounter"]) {
+            dst.bootCounter = src["bootCounter"].as<decltype(dst.bootCounter)::value_type>();
+        } else {
+            //dst.bootCounter = std::nullopt;
+        }
+        if (src["nextService"]) {
+            dst.nextService = src["nextService"].as<decltype(dst.nextService)::value_type>();
+        } else {
+            //dst.nextService = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const DeviceDiagnosisServiceDataElementsType &src, JsonVariant &dst)
+{
+    if (src.timestamp) {
+        dst["timestamp"] = *src.timestamp;
+    }
+    if (src.installationTime) {
+        dst["installationTime"] = *src.installationTime;
+    }
+    if (src.bootCounter) {
+        dst["bootCounter"] = *src.bootCounter;
+    }
+    if (src.nextService) {
+        dst["nextService"] = *src.nextService;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisServiceDataElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["timestamp"]) {
+                dst.timestamp = item["timestamp"].as<decltype(dst.timestamp)::value_type>();
+            } else {
+                //dst.timestamp = std::nullopt;
+            }
+            if (item["installationTime"]) {
+                dst.installationTime = item["installationTime"].as<decltype(dst.installationTime)::value_type>();
+            } else {
+                //dst.installationTime = std::nullopt;
+            }
+            if (item["bootCounter"]) {
+                dst.bootCounter = item["bootCounter"].as<decltype(dst.bootCounter)::value_type>();
+            } else {
+                //dst.bootCounter = std::nullopt;
+            }
+            if (item["nextService"]) {
+                dst.nextService = item["nextService"].as<decltype(dst.nextService)::value_type>();
+            } else {
+                //dst.nextService = std::nullopt;
+            }
+        }
+    } else {
+        if (src["timestamp"]) {
+            dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
+        } else {
+            //dst.timestamp = std::nullopt;
+        }
+        if (src["installationTime"]) {
+            dst.installationTime = src["installationTime"].as<decltype(dst.installationTime)::value_type>();
+        } else {
+            //dst.installationTime = std::nullopt;
+        }
+        if (src["bootCounter"]) {
+            dst.bootCounter = src["bootCounter"].as<decltype(dst.bootCounter)::value_type>();
+        } else {
+            //dst.bootCounter = std::nullopt;
+        }
+        if (src["nextService"]) {
+            dst.nextService = src["nextService"].as<decltype(dst.nextService)::value_type>();
+        } else {
+            //dst.nextService = std::nullopt;
         }
     }
 }
@@ -16057,4822 +19629,6 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceCalculationR
             dst.potentialStartTime = src["potentialStartTime"].as<decltype(dst.potentialStartTime)::value_type>();
         } else {
             //dst.potentialStartTime = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const ResultDataType &src, JsonVariant &dst)
-{
-    if (src.errorNumber) {
-        dst["errorNumber"] = *src.errorNumber;
-    }
-    if (src.description) {
-        dst["description"] = *src.description;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, ResultDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["errorNumber"]) {
-                dst.errorNumber = item["errorNumber"].as<decltype(dst.errorNumber)::value_type>();
-            } else {
-                //dst.errorNumber = std::nullopt;
-            }
-            if (item["description"]) {
-                dst.description = item["description"].as<decltype(dst.description)::value_type>();
-            } else {
-                //dst.description = std::nullopt;
-            }
-        }
-    } else {
-        if (src["errorNumber"]) {
-            dst.errorNumber = src["errorNumber"].as<decltype(dst.errorNumber)::value_type>();
-        } else {
-            //dst.errorNumber = std::nullopt;
-        }
-        if (src["description"]) {
-            dst.description = src["description"].as<decltype(dst.description)::value_type>();
-        } else {
-            //dst.description = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BindingManagementEntryDataType &src, JsonVariant &dst)
-{
-    if (src.bindingId) {
-        dst["bindingId"] = *src.bindingId;
-    }
-    if (src.clientAddress) {
-        dst["clientAddress"] = *src.clientAddress;
-    }
-    if (src.serverAddress) {
-        dst["serverAddress"] = *src.serverAddress;
-    }
-    if (src.label) {
-        dst["label"] = *src.label;
-    }
-    if (src.description) {
-        dst["description"] = *src.description;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BindingManagementEntryDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["bindingId"]) {
-                dst.bindingId = item["bindingId"].as<decltype(dst.bindingId)::value_type>();
-            } else {
-                //dst.bindingId = std::nullopt;
-            }
-            if (item["clientAddress"]) {
-                dst.clientAddress = item["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
-            } else {
-                //dst.clientAddress = std::nullopt;
-            }
-            if (item["serverAddress"]) {
-                dst.serverAddress = item["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
-            } else {
-                //dst.serverAddress = std::nullopt;
-            }
-            if (item["label"]) {
-                dst.label = item["label"].as<decltype(dst.label)::value_type>();
-            } else {
-                //dst.label = std::nullopt;
-            }
-            if (item["description"]) {
-                dst.description = item["description"].as<decltype(dst.description)::value_type>();
-            } else {
-                //dst.description = std::nullopt;
-            }
-        }
-    } else {
-        if (src["bindingId"]) {
-            dst.bindingId = src["bindingId"].as<decltype(dst.bindingId)::value_type>();
-        } else {
-            //dst.bindingId = std::nullopt;
-        }
-        if (src["clientAddress"]) {
-            dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
-        } else {
-            //dst.clientAddress = std::nullopt;
-        }
-        if (src["serverAddress"]) {
-            dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
-        } else {
-            //dst.serverAddress = std::nullopt;
-        }
-        if (src["label"]) {
-            dst.label = src["label"].as<decltype(dst.label)::value_type>();
-        } else {
-            //dst.label = std::nullopt;
-        }
-        if (src["description"]) {
-            dst.description = src["description"].as<decltype(dst.description)::value_type>();
-        } else {
-            //dst.description = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BindingManagementEntryDataElementsType &src, JsonVariant &dst)
-{
-    if (src.bindingId) {
-        dst["bindingId"] = *src.bindingId;
-    }
-    if (src.clientAddress) {
-        dst["clientAddress"] = *src.clientAddress;
-    }
-    if (src.serverAddress) {
-        dst["serverAddress"] = *src.serverAddress;
-    }
-    if (src.label) {
-        dst["label"] = *src.label;
-    }
-    if (src.description) {
-        dst["description"] = *src.description;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BindingManagementEntryDataElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["bindingId"]) {
-                dst.bindingId = item["bindingId"].as<decltype(dst.bindingId)::value_type>();
-            } else {
-                //dst.bindingId = std::nullopt;
-            }
-            if (item["clientAddress"]) {
-                dst.clientAddress = item["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
-            } else {
-                //dst.clientAddress = std::nullopt;
-            }
-            if (item["serverAddress"]) {
-                dst.serverAddress = item["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
-            } else {
-                //dst.serverAddress = std::nullopt;
-            }
-            if (item["label"]) {
-                dst.label = item["label"].as<decltype(dst.label)::value_type>();
-            } else {
-                //dst.label = std::nullopt;
-            }
-            if (item["description"]) {
-                dst.description = item["description"].as<decltype(dst.description)::value_type>();
-            } else {
-                //dst.description = std::nullopt;
-            }
-        }
-    } else {
-        if (src["bindingId"]) {
-            dst.bindingId = src["bindingId"].as<decltype(dst.bindingId)::value_type>();
-        } else {
-            //dst.bindingId = std::nullopt;
-        }
-        if (src["clientAddress"]) {
-            dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
-        } else {
-            //dst.clientAddress = std::nullopt;
-        }
-        if (src["serverAddress"]) {
-            dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
-        } else {
-            //dst.serverAddress = std::nullopt;
-        }
-        if (src["label"]) {
-            dst.label = src["label"].as<decltype(dst.label)::value_type>();
-        } else {
-            //dst.label = std::nullopt;
-        }
-        if (src["description"]) {
-            dst.description = src["description"].as<decltype(dst.description)::value_type>();
-        } else {
-            //dst.description = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BindingManagementEntryListDataType &src, JsonVariant &dst)
-{
-    if (src.bindingManagementEntryData) {
-        dst["bindingManagementEntryData"] = *src.bindingManagementEntryData;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BindingManagementEntryListDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["bindingManagementEntryData"]) {
-                dst.bindingManagementEntryData =
-                    item["bindingManagementEntryData"].as<decltype(dst.bindingManagementEntryData)::value_type>();
-            } else {
-                //dst.bindingManagementEntryData = std::nullopt;
-            }
-        }
-    } else {
-        if (src["bindingManagementEntryData"]) {
-            dst.bindingManagementEntryData = src["bindingManagementEntryData"].as<decltype(dst.bindingManagementEntryData)::value_type>();
-        } else {
-            //dst.bindingManagementEntryData = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BindingManagementEntryListDataSelectorsType &src, JsonVariant &dst)
-{
-    if (src.bindingId) {
-        dst["bindingId"] = *src.bindingId;
-    }
-    if (src.clientAddress) {
-        dst["clientAddress"] = *src.clientAddress;
-    }
-    if (src.serverAddress) {
-        dst["serverAddress"] = *src.serverAddress;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BindingManagementEntryListDataSelectorsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["bindingId"]) {
-                dst.bindingId = item["bindingId"].as<decltype(dst.bindingId)::value_type>();
-            } else {
-                //dst.bindingId = std::nullopt;
-            }
-            if (item["clientAddress"]) {
-                dst.clientAddress = item["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
-            } else {
-                //dst.clientAddress = std::nullopt;
-            }
-            if (item["serverAddress"]) {
-                dst.serverAddress = item["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
-            } else {
-                //dst.serverAddress = std::nullopt;
-            }
-        }
-    } else {
-        if (src["bindingId"]) {
-            dst.bindingId = src["bindingId"].as<decltype(dst.bindingId)::value_type>();
-        } else {
-            //dst.bindingId = std::nullopt;
-        }
-        if (src["clientAddress"]) {
-            dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
-        } else {
-            //dst.clientAddress = std::nullopt;
-        }
-        if (src["serverAddress"]) {
-            dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
-        } else {
-            //dst.serverAddress = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BindingManagementRequestCallType &src, JsonVariant &dst)
-{
-    if (src.clientAddress) {
-        dst["clientAddress"] = *src.clientAddress;
-    }
-    if (src.serverAddress) {
-        dst["serverAddress"] = *src.serverAddress;
-    }
-    if (src.serverFeatureType) {
-        dst["serverFeatureType"] = *src.serverFeatureType;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BindingManagementRequestCallType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["clientAddress"]) {
-                dst.clientAddress = item["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
-            } else {
-                //dst.clientAddress = std::nullopt;
-            }
-            if (item["serverAddress"]) {
-                dst.serverAddress = item["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
-            } else {
-                //dst.serverAddress = std::nullopt;
-            }
-            if (item["serverFeatureType"]) {
-                dst.serverFeatureType = item["serverFeatureType"].as<decltype(dst.serverFeatureType)::value_type>();
-            } else {
-                //dst.serverFeatureType = std::nullopt;
-            }
-        }
-    } else {
-        if (src["clientAddress"]) {
-            dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
-        } else {
-            //dst.clientAddress = std::nullopt;
-        }
-        if (src["serverAddress"]) {
-            dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
-        } else {
-            //dst.serverAddress = std::nullopt;
-        }
-        if (src["serverFeatureType"]) {
-            dst.serverFeatureType = src["serverFeatureType"].as<decltype(dst.serverFeatureType)::value_type>();
-        } else {
-            //dst.serverFeatureType = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BindingManagementRequestCallElementsType &src, JsonVariant &dst)
-{
-    if (src.clientAddress) {
-        dst["clientAddress"] = *src.clientAddress;
-    }
-    if (src.serverAddress) {
-        dst["serverAddress"] = *src.serverAddress;
-    }
-    if (src.serverFeatureType) {
-        dst["serverFeatureType"] = *src.serverFeatureType;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BindingManagementRequestCallElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["clientAddress"]) {
-                dst.clientAddress = item["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
-            } else {
-                //dst.clientAddress = std::nullopt;
-            }
-            if (item["serverAddress"]) {
-                dst.serverAddress = item["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
-            } else {
-                //dst.serverAddress = std::nullopt;
-            }
-            if (item["serverFeatureType"]) {
-                dst.serverFeatureType = item["serverFeatureType"].as<decltype(dst.serverFeatureType)::value_type>();
-            } else {
-                //dst.serverFeatureType = std::nullopt;
-            }
-        }
-    } else {
-        if (src["clientAddress"]) {
-            dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
-        } else {
-            //dst.clientAddress = std::nullopt;
-        }
-        if (src["serverAddress"]) {
-            dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
-        } else {
-            //dst.serverAddress = std::nullopt;
-        }
-        if (src["serverFeatureType"]) {
-            dst.serverFeatureType = src["serverFeatureType"].as<decltype(dst.serverFeatureType)::value_type>();
-        } else {
-            //dst.serverFeatureType = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BindingManagementDeleteCallType &src, JsonVariant &dst)
-{
-    if (src.bindingId) {
-        dst["bindingId"] = *src.bindingId;
-    }
-    if (src.clientAddress) {
-        dst["clientAddress"] = *src.clientAddress;
-    }
-    if (src.serverAddress) {
-        dst["serverAddress"] = *src.serverAddress;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BindingManagementDeleteCallType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["bindingId"]) {
-                dst.bindingId = item["bindingId"].as<decltype(dst.bindingId)::value_type>();
-            } else {
-                //dst.bindingId = std::nullopt;
-            }
-            if (item["clientAddress"]) {
-                dst.clientAddress = item["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
-            } else {
-                //dst.clientAddress = std::nullopt;
-            }
-            if (item["serverAddress"]) {
-                dst.serverAddress = item["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
-            } else {
-                //dst.serverAddress = std::nullopt;
-            }
-        }
-    } else {
-        if (src["bindingId"]) {
-            dst.bindingId = src["bindingId"].as<decltype(dst.bindingId)::value_type>();
-        } else {
-            //dst.bindingId = std::nullopt;
-        }
-        if (src["clientAddress"]) {
-            dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
-        } else {
-            //dst.clientAddress = std::nullopt;
-        }
-        if (src["serverAddress"]) {
-            dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
-        } else {
-            //dst.serverAddress = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BindingManagementDeleteCallElementsType &src, JsonVariant &dst)
-{
-    if (src.bindingId) {
-        dst["bindingId"] = *src.bindingId;
-    }
-    if (src.clientAddress) {
-        dst["clientAddress"] = *src.clientAddress;
-    }
-    if (src.serverAddress) {
-        dst["serverAddress"] = *src.serverAddress;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BindingManagementDeleteCallElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["bindingId"]) {
-                dst.bindingId = item["bindingId"].as<decltype(dst.bindingId)::value_type>();
-            } else {
-                //dst.bindingId = std::nullopt;
-            }
-            if (item["clientAddress"]) {
-                dst.clientAddress = item["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
-            } else {
-                //dst.clientAddress = std::nullopt;
-            }
-            if (item["serverAddress"]) {
-                dst.serverAddress = item["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
-            } else {
-                //dst.serverAddress = std::nullopt;
-            }
-        }
-    } else {
-        if (src["bindingId"]) {
-            dst.bindingId = src["bindingId"].as<decltype(dst.bindingId)::value_type>();
-        } else {
-            //dst.bindingId = std::nullopt;
-        }
-        if (src["clientAddress"]) {
-            dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
-        } else {
-            //dst.clientAddress = std::nullopt;
-        }
-        if (src["serverAddress"]) {
-            dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
-        } else {
-            //dst.serverAddress = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const ActuatorLevelDataType &src, JsonVariant &dst)
-{
-    if (src.function) {
-        dst["function"] = *src.function;
-    }
-    if (src.value) {
-        dst["value"] = *src.value;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, ActuatorLevelDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["function"]) {
-                dst.function = item["function"].as<decltype(dst.function)::value_type>();
-            } else {
-                //dst.function = std::nullopt;
-            }
-            if (item["value"]) {
-                dst.value = item["value"].as<decltype(dst.value)::value_type>();
-            } else {
-                //dst.value = std::nullopt;
-            }
-        }
-    } else {
-        if (src["function"]) {
-            dst.function = src["function"].as<decltype(dst.function)::value_type>();
-        } else {
-            //dst.function = std::nullopt;
-        }
-        if (src["value"]) {
-            dst.value = src["value"].as<decltype(dst.value)::value_type>();
-        } else {
-            //dst.value = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const ActuatorLevelDataElementsType &src, JsonVariant &dst)
-{
-    if (src.function) {
-        dst["function"] = *src.function;
-    }
-    if (src.value) {
-        dst["value"] = *src.value;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, ActuatorLevelDataElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["function"]) {
-                dst.function = item["function"].as<decltype(dst.function)::value_type>();
-            } else {
-                //dst.function = std::nullopt;
-            }
-            if (item["value"]) {
-                dst.value = item["value"].as<decltype(dst.value)::value_type>();
-            } else {
-                //dst.value = std::nullopt;
-            }
-        }
-    } else {
-        if (src["function"]) {
-            dst.function = src["function"].as<decltype(dst.function)::value_type>();
-        } else {
-            //dst.function = std::nullopt;
-        }
-        if (src["value"]) {
-            dst.value = src["value"].as<decltype(dst.value)::value_type>();
-        } else {
-            //dst.value = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const ActuatorLevelDescriptionDataType &src, JsonVariant &dst)
-{
-    if (src.label) {
-        dst["label"] = *src.label;
-    }
-    if (src.description) {
-        dst["description"] = *src.description;
-    }
-    if (src.levelDefaultUnit) {
-        dst["levelDefaultUnit"] = *src.levelDefaultUnit;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, ActuatorLevelDescriptionDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["label"]) {
-                dst.label = item["label"].as<decltype(dst.label)::value_type>();
-            } else {
-                //dst.label = std::nullopt;
-            }
-            if (item["description"]) {
-                dst.description = item["description"].as<decltype(dst.description)::value_type>();
-            } else {
-                //dst.description = std::nullopt;
-            }
-            if (item["levelDefaultUnit"]) {
-                dst.levelDefaultUnit = item["levelDefaultUnit"].as<decltype(dst.levelDefaultUnit)::value_type>();
-            } else {
-                //dst.levelDefaultUnit = std::nullopt;
-            }
-        }
-    } else {
-        if (src["label"]) {
-            dst.label = src["label"].as<decltype(dst.label)::value_type>();
-        } else {
-            //dst.label = std::nullopt;
-        }
-        if (src["description"]) {
-            dst.description = src["description"].as<decltype(dst.description)::value_type>();
-        } else {
-            //dst.description = std::nullopt;
-        }
-        if (src["levelDefaultUnit"]) {
-            dst.levelDefaultUnit = src["levelDefaultUnit"].as<decltype(dst.levelDefaultUnit)::value_type>();
-        } else {
-            //dst.levelDefaultUnit = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const ActuatorLevelDescriptionDataElementsType &src, JsonVariant &dst)
-{
-    if (src.label) {
-        dst["label"] = *src.label;
-    }
-    if (src.description) {
-        dst["description"] = *src.description;
-    }
-    if (src.levelDefaultUnit) {
-        dst["levelDefaultUnit"] = *src.levelDefaultUnit;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, ActuatorLevelDescriptionDataElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["label"]) {
-                dst.label = item["label"].as<decltype(dst.label)::value_type>();
-            } else {
-                //dst.label = std::nullopt;
-            }
-            if (item["description"]) {
-                dst.description = item["description"].as<decltype(dst.description)::value_type>();
-            } else {
-                //dst.description = std::nullopt;
-            }
-            if (item["levelDefaultUnit"]) {
-                dst.levelDefaultUnit = item["levelDefaultUnit"].as<decltype(dst.levelDefaultUnit)::value_type>();
-            } else {
-                //dst.levelDefaultUnit = std::nullopt;
-            }
-        }
-    } else {
-        if (src["label"]) {
-            dst.label = src["label"].as<decltype(dst.label)::value_type>();
-        } else {
-            //dst.label = std::nullopt;
-        }
-        if (src["description"]) {
-            dst.description = src["description"].as<decltype(dst.description)::value_type>();
-        } else {
-            //dst.description = std::nullopt;
-        }
-        if (src["levelDefaultUnit"]) {
-            dst.levelDefaultUnit = src["levelDefaultUnit"].as<decltype(dst.levelDefaultUnit)::value_type>();
-        } else {
-            //dst.levelDefaultUnit = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const CmdControlType &src, JsonVariant &dst)
-{
-    if (src.var_delete) {
-        dst["delete"] = *src.var_delete;
-    }
-    if (src.partial) {
-        dst["partial"] = *src.partial;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, CmdControlType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["delete"]) {
-                dst.var_delete = item["delete"].as<decltype(dst.var_delete)::value_type>();
-            } else {
-                //dst.var_delete = std::nullopt;
-            }
-            if (item["partial"]) {
-                dst.partial = item["partial"].as<decltype(dst.partial)::value_type>();
-            } else {
-                //dst.partial = std::nullopt;
-            }
-        }
-    } else {
-        if (src["delete"]) {
-            dst.var_delete = src["delete"].as<decltype(dst.var_delete)::value_type>();
-        } else {
-            //dst.var_delete = std::nullopt;
-        }
-        if (src["partial"]) {
-            dst.partial = src["partial"].as<decltype(dst.partial)::value_type>();
-        } else {
-            //dst.partial = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const ActuatorSwitchDataType &src, JsonVariant &dst)
-{
-    if (src.function) {
-        dst["function"] = *src.function;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["function"]) {
-                dst.function = item["function"].as<decltype(dst.function)::value_type>();
-            } else {
-                //dst.function = std::nullopt;
-            }
-        }
-    } else {
-        if (src["function"]) {
-            dst.function = src["function"].as<decltype(dst.function)::value_type>();
-        } else {
-            //dst.function = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const ActuatorSwitchDataElementsType &src, JsonVariant &dst)
-{
-    if (src.function) {
-        dst["function"] = *src.function;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDataElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["function"]) {
-                dst.function = item["function"].as<decltype(dst.function)::value_type>();
-            } else {
-                //dst.function = std::nullopt;
-            }
-        }
-    } else {
-        if (src["function"]) {
-            dst.function = src["function"].as<decltype(dst.function)::value_type>();
-        } else {
-            //dst.function = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const ActuatorSwitchDescriptionDataType &src, JsonVariant &dst)
-{
-    if (src.label) {
-        dst["label"] = *src.label;
-    }
-    if (src.description) {
-        dst["description"] = *src.description;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDescriptionDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["label"]) {
-                dst.label = item["label"].as<decltype(dst.label)::value_type>();
-            } else {
-                //dst.label = std::nullopt;
-            }
-            if (item["description"]) {
-                dst.description = item["description"].as<decltype(dst.description)::value_type>();
-            } else {
-                //dst.description = std::nullopt;
-            }
-        }
-    } else {
-        if (src["label"]) {
-            dst.label = src["label"].as<decltype(dst.label)::value_type>();
-        } else {
-            //dst.label = std::nullopt;
-        }
-        if (src["description"]) {
-            dst.description = src["description"].as<decltype(dst.description)::value_type>();
-        } else {
-            //dst.description = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const ActuatorSwitchDescriptionDataElementsType &src, JsonVariant &dst)
-{
-    if (src.label) {
-        dst["label"] = *src.label;
-    }
-    if (src.description) {
-        dst["description"] = *src.description;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDescriptionDataElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["label"]) {
-                dst.label = item["label"].as<decltype(dst.label)::value_type>();
-            } else {
-                //dst.label = std::nullopt;
-            }
-            if (item["description"]) {
-                dst.description = item["description"].as<decltype(dst.description)::value_type>();
-            } else {
-                //dst.description = std::nullopt;
-            }
-        }
-    } else {
-        if (src["label"]) {
-            dst.label = src["label"].as<decltype(dst.label)::value_type>();
-        } else {
-            //dst.label = std::nullopt;
-        }
-        if (src["description"]) {
-            dst.description = src["description"].as<decltype(dst.description)::value_type>();
-        } else {
-            //dst.description = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const AlarmDataType &src, JsonVariant &dst)
-{
-    if (src.alarmId) {
-        dst["alarmId"] = *src.alarmId;
-    }
-    if (src.thresholdId) {
-        dst["thresholdId"] = *src.thresholdId;
-    }
-    if (src.timestamp) {
-        dst["timestamp"] = *src.timestamp;
-    }
-    if (src.alarmType) {
-        dst["alarmType"] = *src.alarmType;
-    }
-    if (src.measuredValue) {
-        dst["measuredValue"] = *src.measuredValue;
-    }
-    if (src.evaluationPeriod) {
-        dst["evaluationPeriod"] = *src.evaluationPeriod;
-    }
-    if (src.scopeType) {
-        dst["scopeType"] = *src.scopeType;
-    }
-    if (src.label) {
-        dst["label"] = *src.label;
-    }
-    if (src.description) {
-        dst["description"] = *src.description;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, AlarmDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["alarmId"]) {
-                dst.alarmId = item["alarmId"].as<decltype(dst.alarmId)::value_type>();
-            } else {
-                //dst.alarmId = std::nullopt;
-            }
-            if (item["thresholdId"]) {
-                dst.thresholdId = item["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
-            } else {
-                //dst.thresholdId = std::nullopt;
-            }
-            if (item["timestamp"]) {
-                dst.timestamp = item["timestamp"].as<decltype(dst.timestamp)::value_type>();
-            } else {
-                //dst.timestamp = std::nullopt;
-            }
-            if (item["alarmType"]) {
-                dst.alarmType = item["alarmType"].as<decltype(dst.alarmType)::value_type>();
-            } else {
-                //dst.alarmType = std::nullopt;
-            }
-            if (item["measuredValue"]) {
-                dst.measuredValue = item["measuredValue"].as<decltype(dst.measuredValue)::value_type>();
-            } else {
-                //dst.measuredValue = std::nullopt;
-            }
-            if (item["evaluationPeriod"]) {
-                dst.evaluationPeriod = item["evaluationPeriod"].as<decltype(dst.evaluationPeriod)::value_type>();
-            } else {
-                //dst.evaluationPeriod = std::nullopt;
-            }
-            if (item["scopeType"]) {
-                dst.scopeType = item["scopeType"].as<decltype(dst.scopeType)::value_type>();
-            } else {
-                //dst.scopeType = std::nullopt;
-            }
-            if (item["label"]) {
-                dst.label = item["label"].as<decltype(dst.label)::value_type>();
-            } else {
-                //dst.label = std::nullopt;
-            }
-            if (item["description"]) {
-                dst.description = item["description"].as<decltype(dst.description)::value_type>();
-            } else {
-                //dst.description = std::nullopt;
-            }
-        }
-    } else {
-        if (src["alarmId"]) {
-            dst.alarmId = src["alarmId"].as<decltype(dst.alarmId)::value_type>();
-        } else {
-            //dst.alarmId = std::nullopt;
-        }
-        if (src["thresholdId"]) {
-            dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
-        } else {
-            //dst.thresholdId = std::nullopt;
-        }
-        if (src["timestamp"]) {
-            dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
-        } else {
-            //dst.timestamp = std::nullopt;
-        }
-        if (src["alarmType"]) {
-            dst.alarmType = src["alarmType"].as<decltype(dst.alarmType)::value_type>();
-        } else {
-            //dst.alarmType = std::nullopt;
-        }
-        if (src["measuredValue"]) {
-            dst.measuredValue = src["measuredValue"].as<decltype(dst.measuredValue)::value_type>();
-        } else {
-            //dst.measuredValue = std::nullopt;
-        }
-        if (src["evaluationPeriod"]) {
-            dst.evaluationPeriod = src["evaluationPeriod"].as<decltype(dst.evaluationPeriod)::value_type>();
-        } else {
-            //dst.evaluationPeriod = std::nullopt;
-        }
-        if (src["scopeType"]) {
-            dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
-        } else {
-            //dst.scopeType = std::nullopt;
-        }
-        if (src["label"]) {
-            dst.label = src["label"].as<decltype(dst.label)::value_type>();
-        } else {
-            //dst.label = std::nullopt;
-        }
-        if (src["description"]) {
-            dst.description = src["description"].as<decltype(dst.description)::value_type>();
-        } else {
-            //dst.description = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const AlarmDataElementsType &src, JsonVariant &dst)
-{
-    if (src.alarmId) {
-        dst["alarmId"] = *src.alarmId;
-    }
-    if (src.thresholdId) {
-        dst["thresholdId"] = *src.thresholdId;
-    }
-    if (src.timestamp) {
-        dst["timestamp"] = *src.timestamp;
-    }
-    if (src.alarmType) {
-        dst["alarmType"] = *src.alarmType;
-    }
-    if (src.measuredValue) {
-        dst["measuredValue"] = *src.measuredValue;
-    }
-    if (src.evaluationPeriod) {
-        dst["evaluationPeriod"] = *src.evaluationPeriod;
-    }
-    if (src.scopeType) {
-        dst["scopeType"] = *src.scopeType;
-    }
-    if (src.label) {
-        dst["label"] = *src.label;
-    }
-    if (src.description) {
-        dst["description"] = *src.description;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, AlarmDataElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["alarmId"]) {
-                dst.alarmId = item["alarmId"].as<decltype(dst.alarmId)::value_type>();
-            } else {
-                //dst.alarmId = std::nullopt;
-            }
-            if (item["thresholdId"]) {
-                dst.thresholdId = item["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
-            } else {
-                //dst.thresholdId = std::nullopt;
-            }
-            if (item["timestamp"]) {
-                dst.timestamp = item["timestamp"].as<decltype(dst.timestamp)::value_type>();
-            } else {
-                //dst.timestamp = std::nullopt;
-            }
-            if (item["alarmType"]) {
-                dst.alarmType = item["alarmType"].as<decltype(dst.alarmType)::value_type>();
-            } else {
-                //dst.alarmType = std::nullopt;
-            }
-            if (item["measuredValue"]) {
-                dst.measuredValue = item["measuredValue"].as<decltype(dst.measuredValue)::value_type>();
-            } else {
-                //dst.measuredValue = std::nullopt;
-            }
-            if (item["evaluationPeriod"]) {
-                dst.evaluationPeriod = item["evaluationPeriod"].as<decltype(dst.evaluationPeriod)::value_type>();
-            } else {
-                //dst.evaluationPeriod = std::nullopt;
-            }
-            if (item["scopeType"]) {
-                dst.scopeType = item["scopeType"].as<decltype(dst.scopeType)::value_type>();
-            } else {
-                //dst.scopeType = std::nullopt;
-            }
-            if (item["label"]) {
-                dst.label = item["label"].as<decltype(dst.label)::value_type>();
-            } else {
-                //dst.label = std::nullopt;
-            }
-            if (item["description"]) {
-                dst.description = item["description"].as<decltype(dst.description)::value_type>();
-            } else {
-                //dst.description = std::nullopt;
-            }
-        }
-    } else {
-        if (src["alarmId"]) {
-            dst.alarmId = src["alarmId"].as<decltype(dst.alarmId)::value_type>();
-        } else {
-            //dst.alarmId = std::nullopt;
-        }
-        if (src["thresholdId"]) {
-            dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
-        } else {
-            //dst.thresholdId = std::nullopt;
-        }
-        if (src["timestamp"]) {
-            dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
-        } else {
-            //dst.timestamp = std::nullopt;
-        }
-        if (src["alarmType"]) {
-            dst.alarmType = src["alarmType"].as<decltype(dst.alarmType)::value_type>();
-        } else {
-            //dst.alarmType = std::nullopt;
-        }
-        if (src["measuredValue"]) {
-            dst.measuredValue = src["measuredValue"].as<decltype(dst.measuredValue)::value_type>();
-        } else {
-            //dst.measuredValue = std::nullopt;
-        }
-        if (src["evaluationPeriod"]) {
-            dst.evaluationPeriod = src["evaluationPeriod"].as<decltype(dst.evaluationPeriod)::value_type>();
-        } else {
-            //dst.evaluationPeriod = std::nullopt;
-        }
-        if (src["scopeType"]) {
-            dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
-        } else {
-            //dst.scopeType = std::nullopt;
-        }
-        if (src["label"]) {
-            dst.label = src["label"].as<decltype(dst.label)::value_type>();
-        } else {
-            //dst.label = std::nullopt;
-        }
-        if (src["description"]) {
-            dst.description = src["description"].as<decltype(dst.description)::value_type>();
-        } else {
-            //dst.description = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const AlarmListDataType &src, JsonVariant &dst)
-{
-    if (src.alarmData) {
-        dst["alarmData"] = *src.alarmData;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, AlarmListDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["alarmData"]) {
-                dst.alarmData = item["alarmData"].as<decltype(dst.alarmData)::value_type>();
-            } else {
-                //dst.alarmData = std::nullopt;
-            }
-        }
-    } else {
-        if (src["alarmData"]) {
-            dst.alarmData = src["alarmData"].as<decltype(dst.alarmData)::value_type>();
-        } else {
-            //dst.alarmData = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const AlarmListDataSelectorsType &src, JsonVariant &dst)
-{
-    if (src.alarmId) {
-        dst["alarmId"] = *src.alarmId;
-    }
-    if (src.scopeType) {
-        dst["scopeType"] = *src.scopeType;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, AlarmListDataSelectorsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["alarmId"]) {
-                dst.alarmId = item["alarmId"].as<decltype(dst.alarmId)::value_type>();
-            } else {
-                //dst.alarmId = std::nullopt;
-            }
-            if (item["scopeType"]) {
-                dst.scopeType = item["scopeType"].as<decltype(dst.scopeType)::value_type>();
-            } else {
-                //dst.scopeType = std::nullopt;
-            }
-        }
-    } else {
-        if (src["alarmId"]) {
-            dst.alarmId = src["alarmId"].as<decltype(dst.alarmId)::value_type>();
-        } else {
-            //dst.alarmId = std::nullopt;
-        }
-        if (src["scopeType"]) {
-            dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
-        } else {
-            //dst.scopeType = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BillValueType &src, JsonVariant &dst)
-{
-    if (src.valueId) {
-        dst["valueId"] = *src.valueId;
-    }
-    if (src.unit) {
-        dst["unit"] = *src.unit;
-    }
-    if (src.value) {
-        dst["value"] = *src.value;
-    }
-    if (src.valuePercentage) {
-        dst["valuePercentage"] = *src.valuePercentage;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BillValueType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["valueId"]) {
-                dst.valueId = item["valueId"].as<decltype(dst.valueId)::value_type>();
-            } else {
-                //dst.valueId = std::nullopt;
-            }
-            if (item["unit"]) {
-                dst.unit = item["unit"].as<decltype(dst.unit)::value_type>();
-            } else {
-                //dst.unit = std::nullopt;
-            }
-            if (item["value"]) {
-                dst.value = item["value"].as<decltype(dst.value)::value_type>();
-            } else {
-                //dst.value = std::nullopt;
-            }
-            if (item["valuePercentage"]) {
-                dst.valuePercentage = item["valuePercentage"].as<decltype(dst.valuePercentage)::value_type>();
-            } else {
-                //dst.valuePercentage = std::nullopt;
-            }
-        }
-    } else {
-        if (src["valueId"]) {
-            dst.valueId = src["valueId"].as<decltype(dst.valueId)::value_type>();
-        } else {
-            //dst.valueId = std::nullopt;
-        }
-        if (src["unit"]) {
-            dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
-        } else {
-            //dst.unit = std::nullopt;
-        }
-        if (src["value"]) {
-            dst.value = src["value"].as<decltype(dst.value)::value_type>();
-        } else {
-            //dst.value = std::nullopt;
-        }
-        if (src["valuePercentage"]) {
-            dst.valuePercentage = src["valuePercentage"].as<decltype(dst.valuePercentage)::value_type>();
-        } else {
-            //dst.valuePercentage = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BillValueElementsType &src, JsonVariant &dst)
-{
-    if (src.valueId) {
-        dst["valueId"] = *src.valueId;
-    }
-    if (src.unit) {
-        dst["unit"] = *src.unit;
-    }
-    if (src.value) {
-        dst["value"] = *src.value;
-    }
-    if (src.valuePercentage) {
-        dst["valuePercentage"] = *src.valuePercentage;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BillValueElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["valueId"]) {
-                dst.valueId = item["valueId"].as<decltype(dst.valueId)::value_type>();
-            } else {
-                //dst.valueId = std::nullopt;
-            }
-            if (item["unit"]) {
-                dst.unit = item["unit"].as<decltype(dst.unit)::value_type>();
-            } else {
-                //dst.unit = std::nullopt;
-            }
-            if (item["value"]) {
-                dst.value = item["value"].as<decltype(dst.value)::value_type>();
-            } else {
-                //dst.value = std::nullopt;
-            }
-            if (item["valuePercentage"]) {
-                dst.valuePercentage = item["valuePercentage"].as<decltype(dst.valuePercentage)::value_type>();
-            } else {
-                //dst.valuePercentage = std::nullopt;
-            }
-        }
-    } else {
-        if (src["valueId"]) {
-            dst.valueId = src["valueId"].as<decltype(dst.valueId)::value_type>();
-        } else {
-            //dst.valueId = std::nullopt;
-        }
-        if (src["unit"]) {
-            dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
-        } else {
-            //dst.unit = std::nullopt;
-        }
-        if (src["value"]) {
-            dst.value = src["value"].as<decltype(dst.value)::value_type>();
-        } else {
-            //dst.value = std::nullopt;
-        }
-        if (src["valuePercentage"]) {
-            dst.valuePercentage = src["valuePercentage"].as<decltype(dst.valuePercentage)::value_type>();
-        } else {
-            //dst.valuePercentage = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BillCostType &src, JsonVariant &dst)
-{
-    if (src.costId) {
-        dst["costId"] = *src.costId;
-    }
-    if (src.costType) {
-        dst["costType"] = *src.costType;
-    }
-    if (src.valueId) {
-        dst["valueId"] = *src.valueId;
-    }
-    if (src.unit) {
-        dst["unit"] = *src.unit;
-    }
-    if (src.currency) {
-        dst["currency"] = *src.currency;
-    }
-    if (src.cost) {
-        dst["cost"] = *src.cost;
-    }
-    if (src.costPercentage) {
-        dst["costPercentage"] = *src.costPercentage;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BillCostType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["costId"]) {
-                dst.costId = item["costId"].as<decltype(dst.costId)::value_type>();
-            } else {
-                //dst.costId = std::nullopt;
-            }
-            if (item["costType"]) {
-                dst.costType = item["costType"].as<decltype(dst.costType)::value_type>();
-            } else {
-                //dst.costType = std::nullopt;
-            }
-            if (item["valueId"]) {
-                dst.valueId = item["valueId"].as<decltype(dst.valueId)::value_type>();
-            } else {
-                //dst.valueId = std::nullopt;
-            }
-            if (item["unit"]) {
-                dst.unit = item["unit"].as<decltype(dst.unit)::value_type>();
-            } else {
-                //dst.unit = std::nullopt;
-            }
-            if (item["currency"]) {
-                dst.currency = item["currency"].as<decltype(dst.currency)::value_type>();
-            } else {
-                //dst.currency = std::nullopt;
-            }
-            if (item["cost"]) {
-                dst.cost = item["cost"].as<decltype(dst.cost)::value_type>();
-            } else {
-                //dst.cost = std::nullopt;
-            }
-            if (item["costPercentage"]) {
-                dst.costPercentage = item["costPercentage"].as<decltype(dst.costPercentage)::value_type>();
-            } else {
-                //dst.costPercentage = std::nullopt;
-            }
-        }
-    } else {
-        if (src["costId"]) {
-            dst.costId = src["costId"].as<decltype(dst.costId)::value_type>();
-        } else {
-            //dst.costId = std::nullopt;
-        }
-        if (src["costType"]) {
-            dst.costType = src["costType"].as<decltype(dst.costType)::value_type>();
-        } else {
-            //dst.costType = std::nullopt;
-        }
-        if (src["valueId"]) {
-            dst.valueId = src["valueId"].as<decltype(dst.valueId)::value_type>();
-        } else {
-            //dst.valueId = std::nullopt;
-        }
-        if (src["unit"]) {
-            dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
-        } else {
-            //dst.unit = std::nullopt;
-        }
-        if (src["currency"]) {
-            dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
-        } else {
-            //dst.currency = std::nullopt;
-        }
-        if (src["cost"]) {
-            dst.cost = src["cost"].as<decltype(dst.cost)::value_type>();
-        } else {
-            //dst.cost = std::nullopt;
-        }
-        if (src["costPercentage"]) {
-            dst.costPercentage = src["costPercentage"].as<decltype(dst.costPercentage)::value_type>();
-        } else {
-            //dst.costPercentage = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BillCostElementsType &src, JsonVariant &dst)
-{
-    if (src.costId) {
-        dst["costId"] = *src.costId;
-    }
-    if (src.costType) {
-        dst["costType"] = *src.costType;
-    }
-    if (src.valueId) {
-        dst["valueId"] = *src.valueId;
-    }
-    if (src.unit) {
-        dst["unit"] = *src.unit;
-    }
-    if (src.currency) {
-        dst["currency"] = *src.currency;
-    }
-    if (src.cost) {
-        dst["cost"] = *src.cost;
-    }
-    if (src.costPercentage) {
-        dst["costPercentage"] = *src.costPercentage;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BillCostElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["costId"]) {
-                dst.costId = item["costId"].as<decltype(dst.costId)::value_type>();
-            } else {
-                //dst.costId = std::nullopt;
-            }
-            if (item["costType"]) {
-                dst.costType = item["costType"].as<decltype(dst.costType)::value_type>();
-            } else {
-                //dst.costType = std::nullopt;
-            }
-            if (item["valueId"]) {
-                dst.valueId = item["valueId"].as<decltype(dst.valueId)::value_type>();
-            } else {
-                //dst.valueId = std::nullopt;
-            }
-            if (item["unit"]) {
-                dst.unit = item["unit"].as<decltype(dst.unit)::value_type>();
-            } else {
-                //dst.unit = std::nullopt;
-            }
-            if (item["currency"]) {
-                dst.currency = item["currency"].as<decltype(dst.currency)::value_type>();
-            } else {
-                //dst.currency = std::nullopt;
-            }
-            if (item["cost"]) {
-                dst.cost = item["cost"].as<decltype(dst.cost)::value_type>();
-            } else {
-                //dst.cost = std::nullopt;
-            }
-            if (item["costPercentage"]) {
-                dst.costPercentage = item["costPercentage"].as<decltype(dst.costPercentage)::value_type>();
-            } else {
-                //dst.costPercentage = std::nullopt;
-            }
-        }
-    } else {
-        if (src["costId"]) {
-            dst.costId = src["costId"].as<decltype(dst.costId)::value_type>();
-        } else {
-            //dst.costId = std::nullopt;
-        }
-        if (src["costType"]) {
-            dst.costType = src["costType"].as<decltype(dst.costType)::value_type>();
-        } else {
-            //dst.costType = std::nullopt;
-        }
-        if (src["valueId"]) {
-            dst.valueId = src["valueId"].as<decltype(dst.valueId)::value_type>();
-        } else {
-            //dst.valueId = std::nullopt;
-        }
-        if (src["unit"]) {
-            dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
-        } else {
-            //dst.unit = std::nullopt;
-        }
-        if (src["currency"]) {
-            dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
-        } else {
-            //dst.currency = std::nullopt;
-        }
-        if (src["cost"]) {
-            dst.cost = src["cost"].as<decltype(dst.cost)::value_type>();
-        } else {
-            //dst.cost = std::nullopt;
-        }
-        if (src["costPercentage"]) {
-            dst.costPercentage = src["costPercentage"].as<decltype(dst.costPercentage)::value_type>();
-        } else {
-            //dst.costPercentage = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BillPositionType &src, JsonVariant &dst)
-{
-    if (src.positionId) {
-        dst["positionId"] = *src.positionId;
-    }
-    if (src.positionType) {
-        dst["positionType"] = *src.positionType;
-    }
-    if (src.timePeriod) {
-        dst["timePeriod"] = *src.timePeriod;
-    }
-    if (src.value) {
-        dst["value"] = *src.value;
-    }
-    if (src.cost) {
-        dst["cost"] = *src.cost;
-    }
-    if (src.label) {
-        dst["label"] = *src.label;
-    }
-    if (src.description) {
-        dst["description"] = *src.description;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BillPositionType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["positionId"]) {
-                dst.positionId = item["positionId"].as<decltype(dst.positionId)::value_type>();
-            } else {
-                //dst.positionId = std::nullopt;
-            }
-            if (item["positionType"]) {
-                dst.positionType = item["positionType"].as<decltype(dst.positionType)::value_type>();
-            } else {
-                //dst.positionType = std::nullopt;
-            }
-            if (item["timePeriod"]) {
-                dst.timePeriod = item["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
-            } else {
-                //dst.timePeriod = std::nullopt;
-            }
-            if (item["value"]) {
-                dst.value = item["value"].as<decltype(dst.value)::value_type>();
-            } else {
-                //dst.value = std::nullopt;
-            }
-            if (item["cost"]) {
-                dst.cost = item["cost"].as<decltype(dst.cost)::value_type>();
-            } else {
-                //dst.cost = std::nullopt;
-            }
-            if (item["label"]) {
-                dst.label = item["label"].as<decltype(dst.label)::value_type>();
-            } else {
-                //dst.label = std::nullopt;
-            }
-            if (item["description"]) {
-                dst.description = item["description"].as<decltype(dst.description)::value_type>();
-            } else {
-                //dst.description = std::nullopt;
-            }
-        }
-    } else {
-        if (src["positionId"]) {
-            dst.positionId = src["positionId"].as<decltype(dst.positionId)::value_type>();
-        } else {
-            //dst.positionId = std::nullopt;
-        }
-        if (src["positionType"]) {
-            dst.positionType = src["positionType"].as<decltype(dst.positionType)::value_type>();
-        } else {
-            //dst.positionType = std::nullopt;
-        }
-        if (src["timePeriod"]) {
-            dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
-        } else {
-            //dst.timePeriod = std::nullopt;
-        }
-        if (src["value"]) {
-            dst.value = src["value"].as<decltype(dst.value)::value_type>();
-        } else {
-            //dst.value = std::nullopt;
-        }
-        if (src["cost"]) {
-            dst.cost = src["cost"].as<decltype(dst.cost)::value_type>();
-        } else {
-            //dst.cost = std::nullopt;
-        }
-        if (src["label"]) {
-            dst.label = src["label"].as<decltype(dst.label)::value_type>();
-        } else {
-            //dst.label = std::nullopt;
-        }
-        if (src["description"]) {
-            dst.description = src["description"].as<decltype(dst.description)::value_type>();
-        } else {
-            //dst.description = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BillPositionElementsType &src, JsonVariant &dst)
-{
-    if (src.positionId) {
-        dst["positionId"] = *src.positionId;
-    }
-    if (src.positionType) {
-        dst["positionType"] = *src.positionType;
-    }
-    if (src.timePeriod) {
-        dst["timePeriod"] = *src.timePeriod;
-    }
-    if (src.value) {
-        dst["value"] = *src.value;
-    }
-    if (src.cost) {
-        dst["cost"] = *src.cost;
-    }
-    if (src.label) {
-        dst["label"] = *src.label;
-    }
-    if (src.description) {
-        dst["description"] = *src.description;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BillPositionElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["positionId"]) {
-                dst.positionId = item["positionId"].as<decltype(dst.positionId)::value_type>();
-            } else {
-                //dst.positionId = std::nullopt;
-            }
-            if (item["positionType"]) {
-                dst.positionType = item["positionType"].as<decltype(dst.positionType)::value_type>();
-            } else {
-                //dst.positionType = std::nullopt;
-            }
-            if (item["timePeriod"]) {
-                dst.timePeriod = item["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
-            } else {
-                //dst.timePeriod = std::nullopt;
-            }
-            if (item["value"]) {
-                dst.value = item["value"].as<decltype(dst.value)::value_type>();
-            } else {
-                //dst.value = std::nullopt;
-            }
-            if (item["cost"]) {
-                dst.cost = item["cost"].as<decltype(dst.cost)::value_type>();
-            } else {
-                //dst.cost = std::nullopt;
-            }
-            if (item["label"]) {
-                dst.label = item["label"].as<decltype(dst.label)::value_type>();
-            } else {
-                //dst.label = std::nullopt;
-            }
-            if (item["description"]) {
-                dst.description = item["description"].as<decltype(dst.description)::value_type>();
-            } else {
-                //dst.description = std::nullopt;
-            }
-        }
-    } else {
-        if (src["positionId"]) {
-            dst.positionId = src["positionId"].as<decltype(dst.positionId)::value_type>();
-        } else {
-            //dst.positionId = std::nullopt;
-        }
-        if (src["positionType"]) {
-            dst.positionType = src["positionType"].as<decltype(dst.positionType)::value_type>();
-        } else {
-            //dst.positionType = std::nullopt;
-        }
-        if (src["timePeriod"]) {
-            dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
-        } else {
-            //dst.timePeriod = std::nullopt;
-        }
-        if (src["value"]) {
-            dst.value = src["value"].as<decltype(dst.value)::value_type>();
-        } else {
-            //dst.value = std::nullopt;
-        }
-        if (src["cost"]) {
-            dst.cost = src["cost"].as<decltype(dst.cost)::value_type>();
-        } else {
-            //dst.cost = std::nullopt;
-        }
-        if (src["label"]) {
-            dst.label = src["label"].as<decltype(dst.label)::value_type>();
-        } else {
-            //dst.label = std::nullopt;
-        }
-        if (src["description"]) {
-            dst.description = src["description"].as<decltype(dst.description)::value_type>();
-        } else {
-            //dst.description = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BillDataType &src, JsonVariant &dst)
-{
-    if (src.billId) {
-        dst["billId"] = *src.billId;
-    }
-    if (src.billType) {
-        dst["billType"] = *src.billType;
-    }
-    if (src.scopeType) {
-        dst["scopeType"] = *src.scopeType;
-    }
-    if (src.total) {
-        dst["total"] = *src.total;
-    }
-    if (src.position) {
-        dst["position"] = *src.position;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BillDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["billId"]) {
-                dst.billId = item["billId"].as<decltype(dst.billId)::value_type>();
-            } else {
-                //dst.billId = std::nullopt;
-            }
-            if (item["billType"]) {
-                dst.billType = item["billType"].as<decltype(dst.billType)::value_type>();
-            } else {
-                //dst.billType = std::nullopt;
-            }
-            if (item["scopeType"]) {
-                dst.scopeType = item["scopeType"].as<decltype(dst.scopeType)::value_type>();
-            } else {
-                //dst.scopeType = std::nullopt;
-            }
-            if (item["total"]) {
-                dst.total = item["total"].as<decltype(dst.total)::value_type>();
-            } else {
-                //dst.total = std::nullopt;
-            }
-            if (item["position"]) {
-                dst.position = item["position"].as<decltype(dst.position)::value_type>();
-            } else {
-                //dst.position = std::nullopt;
-            }
-        }
-    } else {
-        if (src["billId"]) {
-            dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
-        } else {
-            //dst.billId = std::nullopt;
-        }
-        if (src["billType"]) {
-            dst.billType = src["billType"].as<decltype(dst.billType)::value_type>();
-        } else {
-            //dst.billType = std::nullopt;
-        }
-        if (src["scopeType"]) {
-            dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
-        } else {
-            //dst.scopeType = std::nullopt;
-        }
-        if (src["total"]) {
-            dst.total = src["total"].as<decltype(dst.total)::value_type>();
-        } else {
-            //dst.total = std::nullopt;
-        }
-        if (src["position"]) {
-            dst.position = src["position"].as<decltype(dst.position)::value_type>();
-        } else {
-            //dst.position = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BillDataElementsType &src, JsonVariant &dst)
-{
-    if (src.billId) {
-        dst["billId"] = *src.billId;
-    }
-    if (src.billType) {
-        dst["billType"] = *src.billType;
-    }
-    if (src.scopeType) {
-        dst["scopeType"] = *src.scopeType;
-    }
-    if (src.total) {
-        dst["total"] = *src.total;
-    }
-    if (src.position) {
-        dst["position"] = *src.position;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BillDataElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["billId"]) {
-                dst.billId = item["billId"].as<decltype(dst.billId)::value_type>();
-            } else {
-                //dst.billId = std::nullopt;
-            }
-            if (item["billType"]) {
-                dst.billType = item["billType"].as<decltype(dst.billType)::value_type>();
-            } else {
-                //dst.billType = std::nullopt;
-            }
-            if (item["scopeType"]) {
-                dst.scopeType = item["scopeType"].as<decltype(dst.scopeType)::value_type>();
-            } else {
-                //dst.scopeType = std::nullopt;
-            }
-            if (item["total"]) {
-                dst.total = item["total"].as<decltype(dst.total)::value_type>();
-            } else {
-                //dst.total = std::nullopt;
-            }
-            if (item["position"]) {
-                dst.position = item["position"].as<decltype(dst.position)::value_type>();
-            } else {
-                //dst.position = std::nullopt;
-            }
-        }
-    } else {
-        if (src["billId"]) {
-            dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
-        } else {
-            //dst.billId = std::nullopt;
-        }
-        if (src["billType"]) {
-            dst.billType = src["billType"].as<decltype(dst.billType)::value_type>();
-        } else {
-            //dst.billType = std::nullopt;
-        }
-        if (src["scopeType"]) {
-            dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
-        } else {
-            //dst.scopeType = std::nullopt;
-        }
-        if (src["total"]) {
-            dst.total = src["total"].as<decltype(dst.total)::value_type>();
-        } else {
-            //dst.total = std::nullopt;
-        }
-        if (src["position"]) {
-            dst.position = src["position"].as<decltype(dst.position)::value_type>();
-        } else {
-            //dst.position = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BillListDataType &src, JsonVariant &dst)
-{
-    if (src.billData) {
-        dst["billData"] = *src.billData;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BillListDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["billData"]) {
-                dst.billData = item["billData"].as<decltype(dst.billData)::value_type>();
-            } else {
-                //dst.billData = std::nullopt;
-            }
-        }
-    } else {
-        if (src["billData"]) {
-            dst.billData = src["billData"].as<decltype(dst.billData)::value_type>();
-        } else {
-            //dst.billData = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BillListDataSelectorsType &src, JsonVariant &dst)
-{
-    if (src.billId) {
-        dst["billId"] = *src.billId;
-    }
-    if (src.scopeType) {
-        dst["scopeType"] = *src.scopeType;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BillListDataSelectorsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["billId"]) {
-                dst.billId = item["billId"].as<decltype(dst.billId)::value_type>();
-            } else {
-                //dst.billId = std::nullopt;
-            }
-            if (item["scopeType"]) {
-                dst.scopeType = item["scopeType"].as<decltype(dst.scopeType)::value_type>();
-            } else {
-                //dst.scopeType = std::nullopt;
-            }
-        }
-    } else {
-        if (src["billId"]) {
-            dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
-        } else {
-            //dst.billId = std::nullopt;
-        }
-        if (src["scopeType"]) {
-            dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
-        } else {
-            //dst.scopeType = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BillConstraintsDataType &src, JsonVariant &dst)
-{
-    if (src.billId) {
-        dst["billId"] = *src.billId;
-    }
-    if (src.positionCountMin) {
-        dst["positionCountMin"] = *src.positionCountMin;
-    }
-    if (src.positionCountMax) {
-        dst["positionCountMax"] = *src.positionCountMax;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BillConstraintsDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["billId"]) {
-                dst.billId = item["billId"].as<decltype(dst.billId)::value_type>();
-            } else {
-                //dst.billId = std::nullopt;
-            }
-            if (item["positionCountMin"]) {
-                dst.positionCountMin = item["positionCountMin"].as<decltype(dst.positionCountMin)::value_type>();
-            } else {
-                //dst.positionCountMin = std::nullopt;
-            }
-            if (item["positionCountMax"]) {
-                dst.positionCountMax = item["positionCountMax"].as<decltype(dst.positionCountMax)::value_type>();
-            } else {
-                //dst.positionCountMax = std::nullopt;
-            }
-        }
-    } else {
-        if (src["billId"]) {
-            dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
-        } else {
-            //dst.billId = std::nullopt;
-        }
-        if (src["positionCountMin"]) {
-            dst.positionCountMin = src["positionCountMin"].as<decltype(dst.positionCountMin)::value_type>();
-        } else {
-            //dst.positionCountMin = std::nullopt;
-        }
-        if (src["positionCountMax"]) {
-            dst.positionCountMax = src["positionCountMax"].as<decltype(dst.positionCountMax)::value_type>();
-        } else {
-            //dst.positionCountMax = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BillConstraintsDataElementsType &src, JsonVariant &dst)
-{
-    if (src.billId) {
-        dst["billId"] = *src.billId;
-    }
-    if (src.positionCountMin) {
-        dst["positionCountMin"] = *src.positionCountMin;
-    }
-    if (src.positionCountMax) {
-        dst["positionCountMax"] = *src.positionCountMax;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BillConstraintsDataElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["billId"]) {
-                dst.billId = item["billId"].as<decltype(dst.billId)::value_type>();
-            } else {
-                //dst.billId = std::nullopt;
-            }
-            if (item["positionCountMin"]) {
-                dst.positionCountMin = item["positionCountMin"].as<decltype(dst.positionCountMin)::value_type>();
-            } else {
-                //dst.positionCountMin = std::nullopt;
-            }
-            if (item["positionCountMax"]) {
-                dst.positionCountMax = item["positionCountMax"].as<decltype(dst.positionCountMax)::value_type>();
-            } else {
-                //dst.positionCountMax = std::nullopt;
-            }
-        }
-    } else {
-        if (src["billId"]) {
-            dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
-        } else {
-            //dst.billId = std::nullopt;
-        }
-        if (src["positionCountMin"]) {
-            dst.positionCountMin = src["positionCountMin"].as<decltype(dst.positionCountMin)::value_type>();
-        } else {
-            //dst.positionCountMin = std::nullopt;
-        }
-        if (src["positionCountMax"]) {
-            dst.positionCountMax = src["positionCountMax"].as<decltype(dst.positionCountMax)::value_type>();
-        } else {
-            //dst.positionCountMax = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BillConstraintsListDataType &src, JsonVariant &dst)
-{
-    if (src.billConstraintsData) {
-        dst["billConstraintsData"] = *src.billConstraintsData;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BillConstraintsListDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["billConstraintsData"]) {
-                dst.billConstraintsData = item["billConstraintsData"].as<decltype(dst.billConstraintsData)::value_type>();
-            } else {
-                //dst.billConstraintsData = std::nullopt;
-            }
-        }
-    } else {
-        if (src["billConstraintsData"]) {
-            dst.billConstraintsData = src["billConstraintsData"].as<decltype(dst.billConstraintsData)::value_type>();
-        } else {
-            //dst.billConstraintsData = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BillConstraintsListDataSelectorsType &src, JsonVariant &dst)
-{
-    if (src.billId) {
-        dst["billId"] = *src.billId;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BillConstraintsListDataSelectorsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["billId"]) {
-                dst.billId = item["billId"].as<decltype(dst.billId)::value_type>();
-            } else {
-                //dst.billId = std::nullopt;
-            }
-        }
-    } else {
-        if (src["billId"]) {
-            dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
-        } else {
-            //dst.billId = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BillDescriptionDataType &src, JsonVariant &dst)
-{
-    if (src.billId) {
-        dst["billId"] = *src.billId;
-    }
-    if (src.billWriteable) {
-        dst["billWriteable"] = *src.billWriteable;
-    }
-    if (src.updateRequired) {
-        dst["updateRequired"] = *src.updateRequired;
-    }
-    if (src.supportedBillType) {
-        dst["supportedBillType"] = *src.supportedBillType;
-    }
-    if (src.sessionId) {
-        dst["sessionId"] = *src.sessionId;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BillDescriptionDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["billId"]) {
-                dst.billId = item["billId"].as<decltype(dst.billId)::value_type>();
-            } else {
-                //dst.billId = std::nullopt;
-            }
-            if (item["billWriteable"]) {
-                dst.billWriteable = item["billWriteable"].as<decltype(dst.billWriteable)::value_type>();
-            } else {
-                //dst.billWriteable = std::nullopt;
-            }
-            if (item["updateRequired"]) {
-                dst.updateRequired = item["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
-            } else {
-                //dst.updateRequired = std::nullopt;
-            }
-            if (item["supportedBillType"]) {
-                dst.supportedBillType = item["supportedBillType"].as<decltype(dst.supportedBillType)::value_type>();
-            } else {
-                //dst.supportedBillType = std::nullopt;
-            }
-            if (item["sessionId"]) {
-                dst.sessionId = item["sessionId"].as<decltype(dst.sessionId)::value_type>();
-            } else {
-                //dst.sessionId = std::nullopt;
-            }
-        }
-    } else {
-        if (src["billId"]) {
-            dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
-        } else {
-            //dst.billId = std::nullopt;
-        }
-        if (src["billWriteable"]) {
-            dst.billWriteable = src["billWriteable"].as<decltype(dst.billWriteable)::value_type>();
-        } else {
-            //dst.billWriteable = std::nullopt;
-        }
-        if (src["updateRequired"]) {
-            dst.updateRequired = src["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
-        } else {
-            //dst.updateRequired = std::nullopt;
-        }
-        if (src["supportedBillType"]) {
-            dst.supportedBillType = src["supportedBillType"].as<decltype(dst.supportedBillType)::value_type>();
-        } else {
-            //dst.supportedBillType = std::nullopt;
-        }
-        if (src["sessionId"]) {
-            dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
-        } else {
-            //dst.sessionId = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BillDescriptionDataElementsType &src, JsonVariant &dst)
-{
-    if (src.billId) {
-        dst["billId"] = *src.billId;
-    }
-    if (src.billWriteable) {
-        dst["billWriteable"] = *src.billWriteable;
-    }
-    if (src.updateRequired) {
-        dst["updateRequired"] = *src.updateRequired;
-    }
-    if (src.supportedBillType) {
-        dst["supportedBillType"] = *src.supportedBillType;
-    }
-    if (src.sessionId) {
-        dst["sessionId"] = *src.sessionId;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BillDescriptionDataElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["billId"]) {
-                dst.billId = item["billId"].as<decltype(dst.billId)::value_type>();
-            } else {
-                //dst.billId = std::nullopt;
-            }
-            if (item["billWriteable"]) {
-                dst.billWriteable = item["billWriteable"].as<decltype(dst.billWriteable)::value_type>();
-            } else {
-                //dst.billWriteable = std::nullopt;
-            }
-            if (item["updateRequired"]) {
-                dst.updateRequired = item["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
-            } else {
-                //dst.updateRequired = std::nullopt;
-            }
-            if (item["supportedBillType"]) {
-                dst.supportedBillType = item["supportedBillType"].as<decltype(dst.supportedBillType)::value_type>();
-            } else {
-                //dst.supportedBillType = std::nullopt;
-            }
-            if (item["sessionId"]) {
-                dst.sessionId = item["sessionId"].as<decltype(dst.sessionId)::value_type>();
-            } else {
-                //dst.sessionId = std::nullopt;
-            }
-        }
-    } else {
-        if (src["billId"]) {
-            dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
-        } else {
-            //dst.billId = std::nullopt;
-        }
-        if (src["billWriteable"]) {
-            dst.billWriteable = src["billWriteable"].as<decltype(dst.billWriteable)::value_type>();
-        } else {
-            //dst.billWriteable = std::nullopt;
-        }
-        if (src["updateRequired"]) {
-            dst.updateRequired = src["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
-        } else {
-            //dst.updateRequired = std::nullopt;
-        }
-        if (src["supportedBillType"]) {
-            dst.supportedBillType = src["supportedBillType"].as<decltype(dst.supportedBillType)::value_type>();
-        } else {
-            //dst.supportedBillType = std::nullopt;
-        }
-        if (src["sessionId"]) {
-            dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
-        } else {
-            //dst.sessionId = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BillDescriptionListDataType &src, JsonVariant &dst)
-{
-    if (src.billDescriptionData) {
-        dst["billDescriptionData"] = *src.billDescriptionData;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BillDescriptionListDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["billDescriptionData"]) {
-                dst.billDescriptionData = item["billDescriptionData"].as<decltype(dst.billDescriptionData)::value_type>();
-            } else {
-                //dst.billDescriptionData = std::nullopt;
-            }
-        }
-    } else {
-        if (src["billDescriptionData"]) {
-            dst.billDescriptionData = src["billDescriptionData"].as<decltype(dst.billDescriptionData)::value_type>();
-        } else {
-            //dst.billDescriptionData = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const BillDescriptionListDataSelectorsType &src, JsonVariant &dst)
-{
-    if (src.billId) {
-        dst["billId"] = *src.billId;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, BillDescriptionListDataSelectorsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["billId"]) {
-                dst.billId = item["billId"].as<decltype(dst.billId)::value_type>();
-            } else {
-                //dst.billId = std::nullopt;
-            }
-        }
-    } else {
-        if (src["billId"]) {
-            dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
-        } else {
-            //dst.billId = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const IdentificationDataType &src, JsonVariant &dst)
-{
-    if (src.identificationId) {
-        dst["identificationId"] = *src.identificationId;
-    }
-    if (src.identificationType) {
-        dst["identificationType"] = *src.identificationType;
-    }
-    if (src.identificationValue) {
-        dst["identificationValue"] = *src.identificationValue;
-    }
-    if (src.authorized) {
-        dst["authorized"] = *src.authorized;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, IdentificationDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["identificationId"]) {
-                dst.identificationId = item["identificationId"].as<decltype(dst.identificationId)::value_type>();
-            } else {
-                //dst.identificationId = std::nullopt;
-            }
-            if (item["identificationType"]) {
-                dst.identificationType = item["identificationType"].as<decltype(dst.identificationType)::value_type>();
-            } else {
-                //dst.identificationType = std::nullopt;
-            }
-            if (item["identificationValue"]) {
-                dst.identificationValue = item["identificationValue"].as<decltype(dst.identificationValue)::value_type>();
-            } else {
-                //dst.identificationValue = std::nullopt;
-            }
-            if (item["authorized"]) {
-                dst.authorized = item["authorized"].as<decltype(dst.authorized)::value_type>();
-            } else {
-                //dst.authorized = std::nullopt;
-            }
-        }
-    } else {
-        if (src["identificationId"]) {
-            dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
-        } else {
-            //dst.identificationId = std::nullopt;
-        }
-        if (src["identificationType"]) {
-            dst.identificationType = src["identificationType"].as<decltype(dst.identificationType)::value_type>();
-        } else {
-            //dst.identificationType = std::nullopt;
-        }
-        if (src["identificationValue"]) {
-            dst.identificationValue = src["identificationValue"].as<decltype(dst.identificationValue)::value_type>();
-        } else {
-            //dst.identificationValue = std::nullopt;
-        }
-        if (src["authorized"]) {
-            dst.authorized = src["authorized"].as<decltype(dst.authorized)::value_type>();
-        } else {
-            //dst.authorized = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const IdentificationDataElementsType &src, JsonVariant &dst)
-{
-    if (src.identificationId) {
-        dst["identificationId"] = *src.identificationId;
-    }
-    if (src.identificationType) {
-        dst["identificationType"] = *src.identificationType;
-    }
-    if (src.identificationValue) {
-        dst["identificationValue"] = *src.identificationValue;
-    }
-    if (src.authorized) {
-        dst["authorized"] = *src.authorized;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, IdentificationDataElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["identificationId"]) {
-                dst.identificationId = item["identificationId"].as<decltype(dst.identificationId)::value_type>();
-            } else {
-                //dst.identificationId = std::nullopt;
-            }
-            if (item["identificationType"]) {
-                dst.identificationType = item["identificationType"].as<decltype(dst.identificationType)::value_type>();
-            } else {
-                //dst.identificationType = std::nullopt;
-            }
-            if (item["identificationValue"]) {
-                dst.identificationValue = item["identificationValue"].as<decltype(dst.identificationValue)::value_type>();
-            } else {
-                //dst.identificationValue = std::nullopt;
-            }
-            if (item["authorized"]) {
-                dst.authorized = item["authorized"].as<decltype(dst.authorized)::value_type>();
-            } else {
-                //dst.authorized = std::nullopt;
-            }
-        }
-    } else {
-        if (src["identificationId"]) {
-            dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
-        } else {
-            //dst.identificationId = std::nullopt;
-        }
-        if (src["identificationType"]) {
-            dst.identificationType = src["identificationType"].as<decltype(dst.identificationType)::value_type>();
-        } else {
-            //dst.identificationType = std::nullopt;
-        }
-        if (src["identificationValue"]) {
-            dst.identificationValue = src["identificationValue"].as<decltype(dst.identificationValue)::value_type>();
-        } else {
-            //dst.identificationValue = std::nullopt;
-        }
-        if (src["authorized"]) {
-            dst.authorized = src["authorized"].as<decltype(dst.authorized)::value_type>();
-        } else {
-            //dst.authorized = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const IdentificationListDataType &src, JsonVariant &dst)
-{
-    if (src.identificationData) {
-        dst["identificationData"] = *src.identificationData;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, IdentificationListDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["identificationData"]) {
-                dst.identificationData = item["identificationData"].as<decltype(dst.identificationData)::value_type>();
-            } else {
-                //dst.identificationData = std::nullopt;
-            }
-        }
-    } else {
-        if (src["identificationData"]) {
-            dst.identificationData = src["identificationData"].as<decltype(dst.identificationData)::value_type>();
-        } else {
-            //dst.identificationData = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const IdentificationListDataSelectorsType &src, JsonVariant &dst)
-{
-    if (src.identificationId) {
-        dst["identificationId"] = *src.identificationId;
-    }
-    if (src.identificationType) {
-        dst["identificationType"] = *src.identificationType;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, IdentificationListDataSelectorsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["identificationId"]) {
-                dst.identificationId = item["identificationId"].as<decltype(dst.identificationId)::value_type>();
-            } else {
-                //dst.identificationId = std::nullopt;
-            }
-            if (item["identificationType"]) {
-                dst.identificationType = item["identificationType"].as<decltype(dst.identificationType)::value_type>();
-            } else {
-                //dst.identificationType = std::nullopt;
-            }
-        }
-    } else {
-        if (src["identificationId"]) {
-            dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
-        } else {
-            //dst.identificationId = std::nullopt;
-        }
-        if (src["identificationType"]) {
-            dst.identificationType = src["identificationType"].as<decltype(dst.identificationType)::value_type>();
-        } else {
-            //dst.identificationType = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const SessionIdentificationDataType &src, JsonVariant &dst)
-{
-    if (src.sessionId) {
-        dst["sessionId"] = *src.sessionId;
-    }
-    if (src.identificationId) {
-        dst["identificationId"] = *src.identificationId;
-    }
-    if (src.isLatestSession) {
-        dst["isLatestSession"] = *src.isLatestSession;
-    }
-    if (src.timePeriod) {
-        dst["timePeriod"] = *src.timePeriod;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, SessionIdentificationDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["sessionId"]) {
-                dst.sessionId = item["sessionId"].as<decltype(dst.sessionId)::value_type>();
-            } else {
-                //dst.sessionId = std::nullopt;
-            }
-            if (item["identificationId"]) {
-                dst.identificationId = item["identificationId"].as<decltype(dst.identificationId)::value_type>();
-            } else {
-                //dst.identificationId = std::nullopt;
-            }
-            if (item["isLatestSession"]) {
-                dst.isLatestSession = item["isLatestSession"].as<decltype(dst.isLatestSession)::value_type>();
-            } else {
-                //dst.isLatestSession = std::nullopt;
-            }
-            if (item["timePeriod"]) {
-                dst.timePeriod = item["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
-            } else {
-                //dst.timePeriod = std::nullopt;
-            }
-        }
-    } else {
-        if (src["sessionId"]) {
-            dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
-        } else {
-            //dst.sessionId = std::nullopt;
-        }
-        if (src["identificationId"]) {
-            dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
-        } else {
-            //dst.identificationId = std::nullopt;
-        }
-        if (src["isLatestSession"]) {
-            dst.isLatestSession = src["isLatestSession"].as<decltype(dst.isLatestSession)::value_type>();
-        } else {
-            //dst.isLatestSession = std::nullopt;
-        }
-        if (src["timePeriod"]) {
-            dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
-        } else {
-            //dst.timePeriod = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const SessionIdentificationDataElementsType &src, JsonVariant &dst)
-{
-    if (src.sessionId) {
-        dst["sessionId"] = *src.sessionId;
-    }
-    if (src.identificationId) {
-        dst["identificationId"] = *src.identificationId;
-    }
-    if (src.isLatestSession) {
-        dst["isLatestSession"] = *src.isLatestSession;
-    }
-    if (src.timePeriod) {
-        dst["timePeriod"] = *src.timePeriod;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, SessionIdentificationDataElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["sessionId"]) {
-                dst.sessionId = item["sessionId"].as<decltype(dst.sessionId)::value_type>();
-            } else {
-                //dst.sessionId = std::nullopt;
-            }
-            if (item["identificationId"]) {
-                dst.identificationId = item["identificationId"].as<decltype(dst.identificationId)::value_type>();
-            } else {
-                //dst.identificationId = std::nullopt;
-            }
-            if (item["isLatestSession"]) {
-                dst.isLatestSession = item["isLatestSession"].as<decltype(dst.isLatestSession)::value_type>();
-            } else {
-                //dst.isLatestSession = std::nullopt;
-            }
-            if (item["timePeriod"]) {
-                dst.timePeriod = item["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
-            } else {
-                //dst.timePeriod = std::nullopt;
-            }
-        }
-    } else {
-        if (src["sessionId"]) {
-            dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
-        } else {
-            //dst.sessionId = std::nullopt;
-        }
-        if (src["identificationId"]) {
-            dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
-        } else {
-            //dst.identificationId = std::nullopt;
-        }
-        if (src["isLatestSession"]) {
-            dst.isLatestSession = src["isLatestSession"].as<decltype(dst.isLatestSession)::value_type>();
-        } else {
-            //dst.isLatestSession = std::nullopt;
-        }
-        if (src["timePeriod"]) {
-            dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
-        } else {
-            //dst.timePeriod = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const SessionIdentificationListDataType &src, JsonVariant &dst)
-{
-    if (src.sessionIdentificationData) {
-        dst["sessionIdentificationData"] = *src.sessionIdentificationData;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, SessionIdentificationListDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["sessionIdentificationData"]) {
-                dst.sessionIdentificationData = item["sessionIdentificationData"].as<decltype(dst.sessionIdentificationData)::value_type>();
-            } else {
-                //dst.sessionIdentificationData = std::nullopt;
-            }
-        }
-    } else {
-        if (src["sessionIdentificationData"]) {
-            dst.sessionIdentificationData = src["sessionIdentificationData"].as<decltype(dst.sessionIdentificationData)::value_type>();
-        } else {
-            //dst.sessionIdentificationData = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const SessionIdentificationListDataSelectorsType &src, JsonVariant &dst)
-{
-    if (src.sessionId) {
-        dst["sessionId"] = *src.sessionId;
-    }
-    if (src.identificationId) {
-        dst["identificationId"] = *src.identificationId;
-    }
-    if (src.isLatestSession) {
-        dst["isLatestSession"] = *src.isLatestSession;
-    }
-    if (src.timePeriod) {
-        dst["timePeriod"] = *src.timePeriod;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, SessionIdentificationListDataSelectorsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["sessionId"]) {
-                dst.sessionId = item["sessionId"].as<decltype(dst.sessionId)::value_type>();
-            } else {
-                //dst.sessionId = std::nullopt;
-            }
-            if (item["identificationId"]) {
-                dst.identificationId = item["identificationId"].as<decltype(dst.identificationId)::value_type>();
-            } else {
-                //dst.identificationId = std::nullopt;
-            }
-            if (item["isLatestSession"]) {
-                dst.isLatestSession = item["isLatestSession"].as<decltype(dst.isLatestSession)::value_type>();
-            } else {
-                //dst.isLatestSession = std::nullopt;
-            }
-            if (item["timePeriod"]) {
-                dst.timePeriod = item["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
-            } else {
-                //dst.timePeriod = std::nullopt;
-            }
-        }
-    } else {
-        if (src["sessionId"]) {
-            dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
-        } else {
-            //dst.sessionId = std::nullopt;
-        }
-        if (src["identificationId"]) {
-            dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
-        } else {
-            //dst.identificationId = std::nullopt;
-        }
-        if (src["isLatestSession"]) {
-            dst.isLatestSession = src["isLatestSession"].as<decltype(dst.isLatestSession)::value_type>();
-        } else {
-            //dst.isLatestSession = std::nullopt;
-        }
-        if (src["timePeriod"]) {
-            dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
-        } else {
-            //dst.timePeriod = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const SessionMeasurementRelationDataType &src, JsonVariant &dst)
-{
-    if (src.sessionId) {
-        dst["sessionId"] = *src.sessionId;
-    }
-    if (src.measurementId) {
-        dst["measurementId"] = *src.measurementId;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["sessionId"]) {
-                dst.sessionId = item["sessionId"].as<decltype(dst.sessionId)::value_type>();
-            } else {
-                //dst.sessionId = std::nullopt;
-            }
-            if (item["measurementId"]) {
-                dst.measurementId = item["measurementId"].as<decltype(dst.measurementId)::value_type>();
-            } else {
-                //dst.measurementId = std::nullopt;
-            }
-        }
-    } else {
-        if (src["sessionId"]) {
-            dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
-        } else {
-            //dst.sessionId = std::nullopt;
-        }
-        if (src["measurementId"]) {
-            dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
-        } else {
-            //dst.measurementId = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const SessionMeasurementRelationDataElementsType &src, JsonVariant &dst)
-{
-    if (src.sessionId) {
-        dst["sessionId"] = *src.sessionId;
-    }
-    if (src.measurementId) {
-        dst["measurementId"] = *src.measurementId;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationDataElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["sessionId"]) {
-                dst.sessionId = item["sessionId"].as<decltype(dst.sessionId)::value_type>();
-            } else {
-                //dst.sessionId = std::nullopt;
-            }
-            if (item["measurementId"]) {
-                dst.measurementId = item["measurementId"].as<decltype(dst.measurementId)::value_type>();
-            } else {
-                //dst.measurementId = std::nullopt;
-            }
-        }
-    } else {
-        if (src["sessionId"]) {
-            dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
-        } else {
-            //dst.sessionId = std::nullopt;
-        }
-        if (src["measurementId"]) {
-            dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
-        } else {
-            //dst.measurementId = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const SessionMeasurementRelationListDataType &src, JsonVariant &dst)
-{
-    if (src.sessionMeasurementRelationData) {
-        dst["sessionMeasurementRelationData"] = *src.sessionMeasurementRelationData;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationListDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["sessionMeasurementRelationData"]) {
-                dst.sessionMeasurementRelationData =
-                    item["sessionMeasurementRelationData"].as<decltype(dst.sessionMeasurementRelationData)::value_type>();
-            } else {
-                //dst.sessionMeasurementRelationData = std::nullopt;
-            }
-        }
-    } else {
-        if (src["sessionMeasurementRelationData"]) {
-            dst.sessionMeasurementRelationData =
-                src["sessionMeasurementRelationData"].as<decltype(dst.sessionMeasurementRelationData)::value_type>();
-        } else {
-            //dst.sessionMeasurementRelationData = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const SessionMeasurementRelationListDataSelectorsType &src, JsonVariant &dst)
-{
-    if (src.sessionId) {
-        dst["sessionId"] = *src.sessionId;
-    }
-    if (src.measurementId) {
-        dst["measurementId"] = *src.measurementId;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationListDataSelectorsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["sessionId"]) {
-                dst.sessionId = item["sessionId"].as<decltype(dst.sessionId)::value_type>();
-            } else {
-                //dst.sessionId = std::nullopt;
-            }
-            if (item["measurementId"]) {
-                dst.measurementId = item["measurementId"].as<decltype(dst.measurementId)::value_type>();
-            } else {
-                //dst.measurementId = std::nullopt;
-            }
-        }
-    } else {
-        if (src["sessionId"]) {
-            dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
-        } else {
-            //dst.sessionId = std::nullopt;
-        }
-        if (src["measurementId"]) {
-            dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
-        } else {
-            //dst.measurementId = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DataTunnelingHeaderType &src, JsonVariant &dst)
-{
-    if (src.purposeId) {
-        dst["purposeId"] = *src.purposeId;
-    }
-    if (src.channelId) {
-        dst["channelId"] = *src.channelId;
-    }
-    if (src.sequenceId) {
-        dst["sequenceId"] = *src.sequenceId;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DataTunnelingHeaderType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["purposeId"]) {
-                dst.purposeId = item["purposeId"].as<decltype(dst.purposeId)::value_type>();
-            } else {
-                //dst.purposeId = std::nullopt;
-            }
-            if (item["channelId"]) {
-                dst.channelId = item["channelId"].as<decltype(dst.channelId)::value_type>();
-            } else {
-                //dst.channelId = std::nullopt;
-            }
-            if (item["sequenceId"]) {
-                dst.sequenceId = item["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
-            } else {
-                //dst.sequenceId = std::nullopt;
-            }
-        }
-    } else {
-        if (src["purposeId"]) {
-            dst.purposeId = src["purposeId"].as<decltype(dst.purposeId)::value_type>();
-        } else {
-            //dst.purposeId = std::nullopt;
-        }
-        if (src["channelId"]) {
-            dst.channelId = src["channelId"].as<decltype(dst.channelId)::value_type>();
-        } else {
-            //dst.channelId = std::nullopt;
-        }
-        if (src["sequenceId"]) {
-            dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
-        } else {
-            //dst.sequenceId = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DataTunnelingHeaderElementsType &src, JsonVariant &dst)
-{
-    if (src.purposeId) {
-        dst["purposeId"] = *src.purposeId;
-    }
-    if (src.channelId) {
-        dst["channelId"] = *src.channelId;
-    }
-    if (src.sequenceId) {
-        dst["sequenceId"] = *src.sequenceId;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DataTunnelingHeaderElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["purposeId"]) {
-                dst.purposeId = item["purposeId"].as<decltype(dst.purposeId)::value_type>();
-            } else {
-                //dst.purposeId = std::nullopt;
-            }
-            if (item["channelId"]) {
-                dst.channelId = item["channelId"].as<decltype(dst.channelId)::value_type>();
-            } else {
-                //dst.channelId = std::nullopt;
-            }
-            if (item["sequenceId"]) {
-                dst.sequenceId = item["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
-            } else {
-                //dst.sequenceId = std::nullopt;
-            }
-        }
-    } else {
-        if (src["purposeId"]) {
-            dst.purposeId = src["purposeId"].as<decltype(dst.purposeId)::value_type>();
-        } else {
-            //dst.purposeId = std::nullopt;
-        }
-        if (src["channelId"]) {
-            dst.channelId = src["channelId"].as<decltype(dst.channelId)::value_type>();
-        } else {
-            //dst.channelId = std::nullopt;
-        }
-        if (src["sequenceId"]) {
-            dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
-        } else {
-            //dst.sequenceId = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DataTunnelingCallType &src, JsonVariant &dst)
-{
-    if (src.header) {
-        dst["header"] = *src.header;
-    }
-    if (src.payload) {
-        dst["payload"] = *src.payload;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DataTunnelingCallType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["header"]) {
-                dst.header = item["header"].as<decltype(dst.header)::value_type>();
-            } else {
-                //dst.header = std::nullopt;
-            }
-            if (item["payload"]) {
-                dst.payload = item["payload"].as<decltype(dst.payload)::value_type>();
-            } else {
-                //dst.payload = std::nullopt;
-            }
-        }
-    } else {
-        if (src["header"]) {
-            dst.header = src["header"].as<decltype(dst.header)::value_type>();
-        } else {
-            //dst.header = std::nullopt;
-        }
-        if (src["payload"]) {
-            dst.payload = src["payload"].as<decltype(dst.payload)::value_type>();
-        } else {
-            //dst.payload = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DataTunnelingCallElementsType &src, JsonVariant &dst)
-{
-    if (src.header) {
-        dst["header"] = *src.header;
-    }
-    if (src.payload) {
-        dst["payload"] = *src.payload;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DataTunnelingCallElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["header"]) {
-                dst.header = item["header"].as<decltype(dst.header)::value_type>();
-            } else {
-                //dst.header = std::nullopt;
-            }
-            if (item["payload"]) {
-                dst.payload = item["payload"].as<decltype(dst.payload)::value_type>();
-            } else {
-                //dst.payload = std::nullopt;
-            }
-        }
-    } else {
-        if (src["header"]) {
-            dst.header = src["header"].as<decltype(dst.header)::value_type>();
-        } else {
-            //dst.header = std::nullopt;
-        }
-        if (src["payload"]) {
-            dst.payload = src["payload"].as<decltype(dst.payload)::value_type>();
-        } else {
-            //dst.payload = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceClassificationManufacturerDataType &src, JsonVariant &dst)
-{
-    if (src.deviceName) {
-        dst["deviceName"] = *src.deviceName;
-    }
-    if (src.deviceCode) {
-        dst["deviceCode"] = *src.deviceCode;
-    }
-    if (src.serialNumber) {
-        dst["serialNumber"] = *src.serialNumber;
-    }
-    if (src.softwareRevision) {
-        dst["softwareRevision"] = *src.softwareRevision;
-    }
-    if (src.hardwareRevision) {
-        dst["hardwareRevision"] = *src.hardwareRevision;
-    }
-    if (src.vendorName) {
-        dst["vendorName"] = *src.vendorName;
-    }
-    if (src.vendorCode) {
-        dst["vendorCode"] = *src.vendorCode;
-    }
-    if (src.brandName) {
-        dst["brandName"] = *src.brandName;
-    }
-    if (src.powerSource) {
-        dst["powerSource"] = *src.powerSource;
-    }
-    if (src.manufacturerNodeIdentification) {
-        dst["manufacturerNodeIdentification"] = *src.manufacturerNodeIdentification;
-    }
-    if (src.manufacturerLabel) {
-        dst["manufacturerLabel"] = *src.manufacturerLabel;
-    }
-    if (src.manufacturerDescription) {
-        dst["manufacturerDescription"] = *src.manufacturerDescription;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceClassificationManufacturerDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["deviceName"]) {
-                dst.deviceName = item["deviceName"].as<decltype(dst.deviceName)::value_type>();
-            } else {
-                //dst.deviceName = std::nullopt;
-            }
-            if (item["deviceCode"]) {
-                dst.deviceCode = item["deviceCode"].as<decltype(dst.deviceCode)::value_type>();
-            } else {
-                //dst.deviceCode = std::nullopt;
-            }
-            if (item["serialNumber"]) {
-                dst.serialNumber = item["serialNumber"].as<decltype(dst.serialNumber)::value_type>();
-            } else {
-                //dst.serialNumber = std::nullopt;
-            }
-            if (item["softwareRevision"]) {
-                dst.softwareRevision = item["softwareRevision"].as<decltype(dst.softwareRevision)::value_type>();
-            } else {
-                //dst.softwareRevision = std::nullopt;
-            }
-            if (item["hardwareRevision"]) {
-                dst.hardwareRevision = item["hardwareRevision"].as<decltype(dst.hardwareRevision)::value_type>();
-            } else {
-                //dst.hardwareRevision = std::nullopt;
-            }
-            if (item["vendorName"]) {
-                dst.vendorName = item["vendorName"].as<decltype(dst.vendorName)::value_type>();
-            } else {
-                //dst.vendorName = std::nullopt;
-            }
-            if (item["vendorCode"]) {
-                dst.vendorCode = item["vendorCode"].as<decltype(dst.vendorCode)::value_type>();
-            } else {
-                //dst.vendorCode = std::nullopt;
-            }
-            if (item["brandName"]) {
-                dst.brandName = item["brandName"].as<decltype(dst.brandName)::value_type>();
-            } else {
-                //dst.brandName = std::nullopt;
-            }
-            if (item["powerSource"]) {
-                dst.powerSource = item["powerSource"].as<decltype(dst.powerSource)::value_type>();
-            } else {
-                //dst.powerSource = std::nullopt;
-            }
-            if (item["manufacturerNodeIdentification"]) {
-                dst.manufacturerNodeIdentification =
-                    item["manufacturerNodeIdentification"].as<decltype(dst.manufacturerNodeIdentification)::value_type>();
-            } else {
-                //dst.manufacturerNodeIdentification = std::nullopt;
-            }
-            if (item["manufacturerLabel"]) {
-                dst.manufacturerLabel = item["manufacturerLabel"].as<decltype(dst.manufacturerLabel)::value_type>();
-            } else {
-                //dst.manufacturerLabel = std::nullopt;
-            }
-            if (item["manufacturerDescription"]) {
-                dst.manufacturerDescription = item["manufacturerDescription"].as<decltype(dst.manufacturerDescription)::value_type>();
-            } else {
-                //dst.manufacturerDescription = std::nullopt;
-            }
-        }
-    } else {
-        if (src["deviceName"]) {
-            dst.deviceName = src["deviceName"].as<decltype(dst.deviceName)::value_type>();
-        } else {
-            //dst.deviceName = std::nullopt;
-        }
-        if (src["deviceCode"]) {
-            dst.deviceCode = src["deviceCode"].as<decltype(dst.deviceCode)::value_type>();
-        } else {
-            //dst.deviceCode = std::nullopt;
-        }
-        if (src["serialNumber"]) {
-            dst.serialNumber = src["serialNumber"].as<decltype(dst.serialNumber)::value_type>();
-        } else {
-            //dst.serialNumber = std::nullopt;
-        }
-        if (src["softwareRevision"]) {
-            dst.softwareRevision = src["softwareRevision"].as<decltype(dst.softwareRevision)::value_type>();
-        } else {
-            //dst.softwareRevision = std::nullopt;
-        }
-        if (src["hardwareRevision"]) {
-            dst.hardwareRevision = src["hardwareRevision"].as<decltype(dst.hardwareRevision)::value_type>();
-        } else {
-            //dst.hardwareRevision = std::nullopt;
-        }
-        if (src["vendorName"]) {
-            dst.vendorName = src["vendorName"].as<decltype(dst.vendorName)::value_type>();
-        } else {
-            //dst.vendorName = std::nullopt;
-        }
-        if (src["vendorCode"]) {
-            dst.vendorCode = src["vendorCode"].as<decltype(dst.vendorCode)::value_type>();
-        } else {
-            //dst.vendorCode = std::nullopt;
-        }
-        if (src["brandName"]) {
-            dst.brandName = src["brandName"].as<decltype(dst.brandName)::value_type>();
-        } else {
-            //dst.brandName = std::nullopt;
-        }
-        if (src["powerSource"]) {
-            dst.powerSource = src["powerSource"].as<decltype(dst.powerSource)::value_type>();
-        } else {
-            //dst.powerSource = std::nullopt;
-        }
-        if (src["manufacturerNodeIdentification"]) {
-            dst.manufacturerNodeIdentification =
-                src["manufacturerNodeIdentification"].as<decltype(dst.manufacturerNodeIdentification)::value_type>();
-        } else {
-            //dst.manufacturerNodeIdentification = std::nullopt;
-        }
-        if (src["manufacturerLabel"]) {
-            dst.manufacturerLabel = src["manufacturerLabel"].as<decltype(dst.manufacturerLabel)::value_type>();
-        } else {
-            //dst.manufacturerLabel = std::nullopt;
-        }
-        if (src["manufacturerDescription"]) {
-            dst.manufacturerDescription = src["manufacturerDescription"].as<decltype(dst.manufacturerDescription)::value_type>();
-        } else {
-            //dst.manufacturerDescription = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceClassificationManufacturerDataElementsType &src, JsonVariant &dst)
-{
-    if (src.deviceName) {
-        dst["deviceName"] = *src.deviceName;
-    }
-    if (src.deviceCode) {
-        dst["deviceCode"] = *src.deviceCode;
-    }
-    if (src.serialNumber) {
-        dst["serialNumber"] = *src.serialNumber;
-    }
-    if (src.softwareRevision) {
-        dst["softwareRevision"] = *src.softwareRevision;
-    }
-    if (src.hardwareRevision) {
-        dst["hardwareRevision"] = *src.hardwareRevision;
-    }
-    if (src.vendorName) {
-        dst["vendorName"] = *src.vendorName;
-    }
-    if (src.vendorCode) {
-        dst["vendorCode"] = *src.vendorCode;
-    }
-    if (src.brandName) {
-        dst["brandName"] = *src.brandName;
-    }
-    if (src.powerSource) {
-        dst["powerSource"] = *src.powerSource;
-    }
-    if (src.manufacturerNodeIdentification) {
-        dst["manufacturerNodeIdentification"] = *src.manufacturerNodeIdentification;
-    }
-    if (src.manufacturerLabel) {
-        dst["manufacturerLabel"] = *src.manufacturerLabel;
-    }
-    if (src.manufacturerDescription) {
-        dst["manufacturerDescription"] = *src.manufacturerDescription;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceClassificationManufacturerDataElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["deviceName"]) {
-                dst.deviceName = item["deviceName"].as<decltype(dst.deviceName)::value_type>();
-            } else {
-                //dst.deviceName = std::nullopt;
-            }
-            if (item["deviceCode"]) {
-                dst.deviceCode = item["deviceCode"].as<decltype(dst.deviceCode)::value_type>();
-            } else {
-                //dst.deviceCode = std::nullopt;
-            }
-            if (item["serialNumber"]) {
-                dst.serialNumber = item["serialNumber"].as<decltype(dst.serialNumber)::value_type>();
-            } else {
-                //dst.serialNumber = std::nullopt;
-            }
-            if (item["softwareRevision"]) {
-                dst.softwareRevision = item["softwareRevision"].as<decltype(dst.softwareRevision)::value_type>();
-            } else {
-                //dst.softwareRevision = std::nullopt;
-            }
-            if (item["hardwareRevision"]) {
-                dst.hardwareRevision = item["hardwareRevision"].as<decltype(dst.hardwareRevision)::value_type>();
-            } else {
-                //dst.hardwareRevision = std::nullopt;
-            }
-            if (item["vendorName"]) {
-                dst.vendorName = item["vendorName"].as<decltype(dst.vendorName)::value_type>();
-            } else {
-                //dst.vendorName = std::nullopt;
-            }
-            if (item["vendorCode"]) {
-                dst.vendorCode = item["vendorCode"].as<decltype(dst.vendorCode)::value_type>();
-            } else {
-                //dst.vendorCode = std::nullopt;
-            }
-            if (item["brandName"]) {
-                dst.brandName = item["brandName"].as<decltype(dst.brandName)::value_type>();
-            } else {
-                //dst.brandName = std::nullopt;
-            }
-            if (item["powerSource"]) {
-                dst.powerSource = item["powerSource"].as<decltype(dst.powerSource)::value_type>();
-            } else {
-                //dst.powerSource = std::nullopt;
-            }
-            if (item["manufacturerNodeIdentification"]) {
-                dst.manufacturerNodeIdentification =
-                    item["manufacturerNodeIdentification"].as<decltype(dst.manufacturerNodeIdentification)::value_type>();
-            } else {
-                //dst.manufacturerNodeIdentification = std::nullopt;
-            }
-            if (item["manufacturerLabel"]) {
-                dst.manufacturerLabel = item["manufacturerLabel"].as<decltype(dst.manufacturerLabel)::value_type>();
-            } else {
-                //dst.manufacturerLabel = std::nullopt;
-            }
-            if (item["manufacturerDescription"]) {
-                dst.manufacturerDescription = item["manufacturerDescription"].as<decltype(dst.manufacturerDescription)::value_type>();
-            } else {
-                //dst.manufacturerDescription = std::nullopt;
-            }
-        }
-    } else {
-        if (src["deviceName"]) {
-            dst.deviceName = src["deviceName"].as<decltype(dst.deviceName)::value_type>();
-        } else {
-            //dst.deviceName = std::nullopt;
-        }
-        if (src["deviceCode"]) {
-            dst.deviceCode = src["deviceCode"].as<decltype(dst.deviceCode)::value_type>();
-        } else {
-            //dst.deviceCode = std::nullopt;
-        }
-        if (src["serialNumber"]) {
-            dst.serialNumber = src["serialNumber"].as<decltype(dst.serialNumber)::value_type>();
-        } else {
-            //dst.serialNumber = std::nullopt;
-        }
-        if (src["softwareRevision"]) {
-            dst.softwareRevision = src["softwareRevision"].as<decltype(dst.softwareRevision)::value_type>();
-        } else {
-            //dst.softwareRevision = std::nullopt;
-        }
-        if (src["hardwareRevision"]) {
-            dst.hardwareRevision = src["hardwareRevision"].as<decltype(dst.hardwareRevision)::value_type>();
-        } else {
-            //dst.hardwareRevision = std::nullopt;
-        }
-        if (src["vendorName"]) {
-            dst.vendorName = src["vendorName"].as<decltype(dst.vendorName)::value_type>();
-        } else {
-            //dst.vendorName = std::nullopt;
-        }
-        if (src["vendorCode"]) {
-            dst.vendorCode = src["vendorCode"].as<decltype(dst.vendorCode)::value_type>();
-        } else {
-            //dst.vendorCode = std::nullopt;
-        }
-        if (src["brandName"]) {
-            dst.brandName = src["brandName"].as<decltype(dst.brandName)::value_type>();
-        } else {
-            //dst.brandName = std::nullopt;
-        }
-        if (src["powerSource"]) {
-            dst.powerSource = src["powerSource"].as<decltype(dst.powerSource)::value_type>();
-        } else {
-            //dst.powerSource = std::nullopt;
-        }
-        if (src["manufacturerNodeIdentification"]) {
-            dst.manufacturerNodeIdentification =
-                src["manufacturerNodeIdentification"].as<decltype(dst.manufacturerNodeIdentification)::value_type>();
-        } else {
-            //dst.manufacturerNodeIdentification = std::nullopt;
-        }
-        if (src["manufacturerLabel"]) {
-            dst.manufacturerLabel = src["manufacturerLabel"].as<decltype(dst.manufacturerLabel)::value_type>();
-        } else {
-            //dst.manufacturerLabel = std::nullopt;
-        }
-        if (src["manufacturerDescription"]) {
-            dst.manufacturerDescription = src["manufacturerDescription"].as<decltype(dst.manufacturerDescription)::value_type>();
-        } else {
-            //dst.manufacturerDescription = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceClassificationUserDataType &src, JsonVariant &dst)
-{
-    if (src.userNodeIdentification) {
-        dst["userNodeIdentification"] = *src.userNodeIdentification;
-    }
-    if (src.userLabel) {
-        dst["userLabel"] = *src.userLabel;
-    }
-    if (src.userDescription) {
-        dst["userDescription"] = *src.userDescription;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceClassificationUserDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["userNodeIdentification"]) {
-                dst.userNodeIdentification = item["userNodeIdentification"].as<decltype(dst.userNodeIdentification)::value_type>();
-            } else {
-                //dst.userNodeIdentification = std::nullopt;
-            }
-            if (item["userLabel"]) {
-                dst.userLabel = item["userLabel"].as<decltype(dst.userLabel)::value_type>();
-            } else {
-                //dst.userLabel = std::nullopt;
-            }
-            if (item["userDescription"]) {
-                dst.userDescription = item["userDescription"].as<decltype(dst.userDescription)::value_type>();
-            } else {
-                //dst.userDescription = std::nullopt;
-            }
-        }
-    } else {
-        if (src["userNodeIdentification"]) {
-            dst.userNodeIdentification = src["userNodeIdentification"].as<decltype(dst.userNodeIdentification)::value_type>();
-        } else {
-            //dst.userNodeIdentification = std::nullopt;
-        }
-        if (src["userLabel"]) {
-            dst.userLabel = src["userLabel"].as<decltype(dst.userLabel)::value_type>();
-        } else {
-            //dst.userLabel = std::nullopt;
-        }
-        if (src["userDescription"]) {
-            dst.userDescription = src["userDescription"].as<decltype(dst.userDescription)::value_type>();
-        } else {
-            //dst.userDescription = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceClassificationUserDataElementsType &src, JsonVariant &dst)
-{
-    if (src.userNodeIdentification) {
-        dst["userNodeIdentification"] = *src.userNodeIdentification;
-    }
-    if (src.userLabel) {
-        dst["userLabel"] = *src.userLabel;
-    }
-    if (src.userDescription) {
-        dst["userDescription"] = *src.userDescription;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceClassificationUserDataElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["userNodeIdentification"]) {
-                dst.userNodeIdentification = item["userNodeIdentification"].as<decltype(dst.userNodeIdentification)::value_type>();
-            } else {
-                //dst.userNodeIdentification = std::nullopt;
-            }
-            if (item["userLabel"]) {
-                dst.userLabel = item["userLabel"].as<decltype(dst.userLabel)::value_type>();
-            } else {
-                //dst.userLabel = std::nullopt;
-            }
-            if (item["userDescription"]) {
-                dst.userDescription = item["userDescription"].as<decltype(dst.userDescription)::value_type>();
-            } else {
-                //dst.userDescription = std::nullopt;
-            }
-        }
-    } else {
-        if (src["userNodeIdentification"]) {
-            dst.userNodeIdentification = src["userNodeIdentification"].as<decltype(dst.userNodeIdentification)::value_type>();
-        } else {
-            //dst.userNodeIdentification = std::nullopt;
-        }
-        if (src["userLabel"]) {
-            dst.userLabel = src["userLabel"].as<decltype(dst.userLabel)::value_type>();
-        } else {
-            //dst.userLabel = std::nullopt;
-        }
-        if (src["userDescription"]) {
-            dst.userDescription = src["userDescription"].as<decltype(dst.userDescription)::value_type>();
-        } else {
-            //dst.userDescription = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceConfigurationKeyValueValueType &src, JsonVariant &dst)
-{
-    if (src.boolean) {
-        dst["boolean"] = *src.boolean;
-    }
-    if (src.date) {
-        dst["date"] = *src.date;
-    }
-    if (src.dateTime) {
-        dst["dateTime"] = *src.dateTime;
-    }
-    if (src.duration) {
-        dst["duration"] = *src.duration;
-    }
-    if (src.string) {
-        dst["string"] = *src.string;
-    }
-    if (src.time) {
-        dst["time"] = *src.time;
-    }
-    if (src.scaledNumber) {
-        dst["scaledNumber"] = *src.scaledNumber;
-    }
-    if (src.integer) {
-        dst["integer"] = *src.integer;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueValueType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["boolean"]) {
-                dst.boolean = item["boolean"].as<decltype(dst.boolean)::value_type>();
-            } else {
-                //dst.boolean = std::nullopt;
-            }
-            if (item["date"]) {
-                dst.date = item["date"].as<decltype(dst.date)::value_type>();
-            } else {
-                //dst.date = std::nullopt;
-            }
-            if (item["dateTime"]) {
-                dst.dateTime = item["dateTime"].as<decltype(dst.dateTime)::value_type>();
-            } else {
-                //dst.dateTime = std::nullopt;
-            }
-            if (item["duration"]) {
-                dst.duration = item["duration"].as<decltype(dst.duration)::value_type>();
-            } else {
-                //dst.duration = std::nullopt;
-            }
-            if (item["string"]) {
-                dst.string = item["string"].as<decltype(dst.string)::value_type>();
-            } else {
-                //dst.string = std::nullopt;
-            }
-            if (item["time"]) {
-                dst.time = item["time"].as<decltype(dst.time)::value_type>();
-            } else {
-                //dst.time = std::nullopt;
-            }
-            if (item["scaledNumber"]) {
-                dst.scaledNumber = item["scaledNumber"].as<decltype(dst.scaledNumber)::value_type>();
-            } else {
-                //dst.scaledNumber = std::nullopt;
-            }
-            if (item["integer"]) {
-                dst.integer = item["integer"].as<decltype(dst.integer)::value_type>();
-            } else {
-                //dst.integer = std::nullopt;
-            }
-        }
-    } else {
-        if (src["boolean"]) {
-            dst.boolean = src["boolean"].as<decltype(dst.boolean)::value_type>();
-        } else {
-            //dst.boolean = std::nullopt;
-        }
-        if (src["date"]) {
-            dst.date = src["date"].as<decltype(dst.date)::value_type>();
-        } else {
-            //dst.date = std::nullopt;
-        }
-        if (src["dateTime"]) {
-            dst.dateTime = src["dateTime"].as<decltype(dst.dateTime)::value_type>();
-        } else {
-            //dst.dateTime = std::nullopt;
-        }
-        if (src["duration"]) {
-            dst.duration = src["duration"].as<decltype(dst.duration)::value_type>();
-        } else {
-            //dst.duration = std::nullopt;
-        }
-        if (src["string"]) {
-            dst.string = src["string"].as<decltype(dst.string)::value_type>();
-        } else {
-            //dst.string = std::nullopt;
-        }
-        if (src["time"]) {
-            dst.time = src["time"].as<decltype(dst.time)::value_type>();
-        } else {
-            //dst.time = std::nullopt;
-        }
-        if (src["scaledNumber"]) {
-            dst.scaledNumber = src["scaledNumber"].as<decltype(dst.scaledNumber)::value_type>();
-        } else {
-            //dst.scaledNumber = std::nullopt;
-        }
-        if (src["integer"]) {
-            dst.integer = src["integer"].as<decltype(dst.integer)::value_type>();
-        } else {
-            //dst.integer = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceConfigurationKeyValueValueElementsType &src, JsonVariant &dst)
-{
-    if (src.boolean) {
-        dst["boolean"] = *src.boolean;
-    }
-    if (src.date) {
-        dst["date"] = *src.date;
-    }
-    if (src.dateTime) {
-        dst["dateTime"] = *src.dateTime;
-    }
-    if (src.duration) {
-        dst["duration"] = *src.duration;
-    }
-    if (src.string) {
-        dst["string"] = *src.string;
-    }
-    if (src.time) {
-        dst["time"] = *src.time;
-    }
-    if (src.scaledNumber) {
-        dst["scaledNumber"] = *src.scaledNumber;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueValueElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["boolean"]) {
-                dst.boolean = item["boolean"].as<decltype(dst.boolean)::value_type>();
-            } else {
-                //dst.boolean = std::nullopt;
-            }
-            if (item["date"]) {
-                dst.date = item["date"].as<decltype(dst.date)::value_type>();
-            } else {
-                //dst.date = std::nullopt;
-            }
-            if (item["dateTime"]) {
-                dst.dateTime = item["dateTime"].as<decltype(dst.dateTime)::value_type>();
-            } else {
-                //dst.dateTime = std::nullopt;
-            }
-            if (item["duration"]) {
-                dst.duration = item["duration"].as<decltype(dst.duration)::value_type>();
-            } else {
-                //dst.duration = std::nullopt;
-            }
-            if (item["string"]) {
-                dst.string = item["string"].as<decltype(dst.string)::value_type>();
-            } else {
-                //dst.string = std::nullopt;
-            }
-            if (item["time"]) {
-                dst.time = item["time"].as<decltype(dst.time)::value_type>();
-            } else {
-                //dst.time = std::nullopt;
-            }
-            if (item["scaledNumber"]) {
-                dst.scaledNumber = item["scaledNumber"].as<decltype(dst.scaledNumber)::value_type>();
-            } else {
-                //dst.scaledNumber = std::nullopt;
-            }
-        }
-    } else {
-        if (src["boolean"]) {
-            dst.boolean = src["boolean"].as<decltype(dst.boolean)::value_type>();
-        } else {
-            //dst.boolean = std::nullopt;
-        }
-        if (src["date"]) {
-            dst.date = src["date"].as<decltype(dst.date)::value_type>();
-        } else {
-            //dst.date = std::nullopt;
-        }
-        if (src["dateTime"]) {
-            dst.dateTime = src["dateTime"].as<decltype(dst.dateTime)::value_type>();
-        } else {
-            //dst.dateTime = std::nullopt;
-        }
-        if (src["duration"]) {
-            dst.duration = src["duration"].as<decltype(dst.duration)::value_type>();
-        } else {
-            //dst.duration = std::nullopt;
-        }
-        if (src["string"]) {
-            dst.string = src["string"].as<decltype(dst.string)::value_type>();
-        } else {
-            //dst.string = std::nullopt;
-        }
-        if (src["time"]) {
-            dst.time = src["time"].as<decltype(dst.time)::value_type>();
-        } else {
-            //dst.time = std::nullopt;
-        }
-        if (src["scaledNumber"]) {
-            dst.scaledNumber = src["scaledNumber"].as<decltype(dst.scaledNumber)::value_type>();
-        } else {
-            //dst.scaledNumber = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceConfigurationKeyValueDataType &src, JsonVariant &dst)
-{
-    if (src.keyId) {
-        dst["keyId"] = *src.keyId;
-    }
-    if (src.value) {
-        dst["value"] = *src.value;
-    }
-    if (src.isValueChangeable) {
-        dst["isValueChangeable"] = *src.isValueChangeable;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["keyId"]) {
-                dst.keyId = item["keyId"].as<decltype(dst.keyId)::value_type>();
-            } else {
-                //dst.keyId = std::nullopt;
-            }
-            if (item["value"]) {
-                dst.value = item["value"].as<decltype(dst.value)::value_type>();
-            } else {
-                //dst.value = std::nullopt;
-            }
-            if (item["isValueChangeable"]) {
-                dst.isValueChangeable = item["isValueChangeable"].as<decltype(dst.isValueChangeable)::value_type>();
-            } else {
-                //dst.isValueChangeable = std::nullopt;
-            }
-        }
-    } else {
-        if (src["keyId"]) {
-            dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
-        } else {
-            //dst.keyId = std::nullopt;
-        }
-        if (src["value"]) {
-            dst.value = src["value"].as<decltype(dst.value)::value_type>();
-        } else {
-            //dst.value = std::nullopt;
-        }
-        if (src["isValueChangeable"]) {
-            dst.isValueChangeable = src["isValueChangeable"].as<decltype(dst.isValueChangeable)::value_type>();
-        } else {
-            //dst.isValueChangeable = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceConfigurationKeyValueDataElementsType &src, JsonVariant &dst)
-{
-    if (src.keyId) {
-        dst["keyId"] = *src.keyId;
-    }
-    if (src.value) {
-        dst["value"] = *src.value;
-    }
-    if (src.isValueChangeable) {
-        dst["isValueChangeable"] = *src.isValueChangeable;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDataElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["keyId"]) {
-                dst.keyId = item["keyId"].as<decltype(dst.keyId)::value_type>();
-            } else {
-                //dst.keyId = std::nullopt;
-            }
-            if (item["value"]) {
-                dst.value = item["value"].as<decltype(dst.value)::value_type>();
-            } else {
-                //dst.value = std::nullopt;
-            }
-            if (item["isValueChangeable"]) {
-                dst.isValueChangeable = item["isValueChangeable"].as<decltype(dst.isValueChangeable)::value_type>();
-            } else {
-                //dst.isValueChangeable = std::nullopt;
-            }
-        }
-    } else {
-        if (src["keyId"]) {
-            dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
-        } else {
-            //dst.keyId = std::nullopt;
-        }
-        if (src["value"]) {
-            dst.value = src["value"].as<decltype(dst.value)::value_type>();
-        } else {
-            //dst.value = std::nullopt;
-        }
-        if (src["isValueChangeable"]) {
-            dst.isValueChangeable = src["isValueChangeable"].as<decltype(dst.isValueChangeable)::value_type>();
-        } else {
-            //dst.isValueChangeable = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceConfigurationKeyValueListDataType &src, JsonVariant &dst)
-{
-    if (src.deviceConfigurationKeyValueData) {
-        dst["deviceConfigurationKeyValueData"] = *src.deviceConfigurationKeyValueData;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueListDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["deviceConfigurationKeyValueData"]) {
-                dst.deviceConfigurationKeyValueData =
-                    item["deviceConfigurationKeyValueData"].as<decltype(dst.deviceConfigurationKeyValueData)::value_type>();
-            } else {
-                //dst.deviceConfigurationKeyValueData = std::nullopt;
-            }
-        }
-    } else {
-        if (src["deviceConfigurationKeyValueData"]) {
-            dst.deviceConfigurationKeyValueData =
-                src["deviceConfigurationKeyValueData"].as<decltype(dst.deviceConfigurationKeyValueData)::value_type>();
-        } else {
-            //dst.deviceConfigurationKeyValueData = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceConfigurationKeyValueListDataSelectorsType &src, JsonVariant &dst)
-{
-    if (src.keyId) {
-        dst["keyId"] = *src.keyId;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueListDataSelectorsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["keyId"]) {
-                dst.keyId = item["keyId"].as<decltype(dst.keyId)::value_type>();
-            } else {
-                //dst.keyId = std::nullopt;
-            }
-        }
-    } else {
-        if (src["keyId"]) {
-            dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
-        } else {
-            //dst.keyId = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceConfigurationKeyValueDescriptionDataType &src, JsonVariant &dst)
-{
-    if (src.keyId) {
-        dst["keyId"] = *src.keyId;
-    }
-    if (src.keyName) {
-        dst["keyName"] = *src.keyName;
-    }
-    if (src.valueType) {
-        dst["valueType"] = *src.valueType;
-    }
-    if (src.unit) {
-        dst["unit"] = *src.unit;
-    }
-    if (src.label) {
-        dst["label"] = *src.label;
-    }
-    if (src.description) {
-        dst["description"] = *src.description;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDescriptionDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["keyId"]) {
-                dst.keyId = item["keyId"].as<decltype(dst.keyId)::value_type>();
-            } else {
-                //dst.keyId = std::nullopt;
-            }
-            if (item["keyName"]) {
-                dst.keyName = item["keyName"].as<decltype(dst.keyName)::value_type>();
-            } else {
-                //dst.keyName = std::nullopt;
-            }
-            if (item["valueType"]) {
-                dst.valueType = item["valueType"].as<decltype(dst.valueType)::value_type>();
-            } else {
-                //dst.valueType = std::nullopt;
-            }
-            if (item["unit"]) {
-                dst.unit = item["unit"].as<decltype(dst.unit)::value_type>();
-            } else {
-                //dst.unit = std::nullopt;
-            }
-            if (item["label"]) {
-                dst.label = item["label"].as<decltype(dst.label)::value_type>();
-            } else {
-                //dst.label = std::nullopt;
-            }
-            if (item["description"]) {
-                dst.description = item["description"].as<decltype(dst.description)::value_type>();
-            } else {
-                //dst.description = std::nullopt;
-            }
-        }
-    } else {
-        if (src["keyId"]) {
-            dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
-        } else {
-            //dst.keyId = std::nullopt;
-        }
-        if (src["keyName"]) {
-            dst.keyName = src["keyName"].as<decltype(dst.keyName)::value_type>();
-        } else {
-            //dst.keyName = std::nullopt;
-        }
-        if (src["valueType"]) {
-            dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
-        } else {
-            //dst.valueType = std::nullopt;
-        }
-        if (src["unit"]) {
-            dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
-        } else {
-            //dst.unit = std::nullopt;
-        }
-        if (src["label"]) {
-            dst.label = src["label"].as<decltype(dst.label)::value_type>();
-        } else {
-            //dst.label = std::nullopt;
-        }
-        if (src["description"]) {
-            dst.description = src["description"].as<decltype(dst.description)::value_type>();
-        } else {
-            //dst.description = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceConfigurationKeyValueDescriptionDataElementsType &src, JsonVariant &dst)
-{
-    if (src.keyId) {
-        dst["keyId"] = *src.keyId;
-    }
-    if (src.keyName) {
-        dst["keyName"] = *src.keyName;
-    }
-    if (src.valueType) {
-        dst["valueType"] = *src.valueType;
-    }
-    if (src.unit) {
-        dst["unit"] = *src.unit;
-    }
-    if (src.label) {
-        dst["label"] = *src.label;
-    }
-    if (src.description) {
-        dst["description"] = *src.description;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDescriptionDataElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["keyId"]) {
-                dst.keyId = item["keyId"].as<decltype(dst.keyId)::value_type>();
-            } else {
-                //dst.keyId = std::nullopt;
-            }
-            if (item["keyName"]) {
-                dst.keyName = item["keyName"].as<decltype(dst.keyName)::value_type>();
-            } else {
-                //dst.keyName = std::nullopt;
-            }
-            if (item["valueType"]) {
-                dst.valueType = item["valueType"].as<decltype(dst.valueType)::value_type>();
-            } else {
-                //dst.valueType = std::nullopt;
-            }
-            if (item["unit"]) {
-                dst.unit = item["unit"].as<decltype(dst.unit)::value_type>();
-            } else {
-                //dst.unit = std::nullopt;
-            }
-            if (item["label"]) {
-                dst.label = item["label"].as<decltype(dst.label)::value_type>();
-            } else {
-                //dst.label = std::nullopt;
-            }
-            if (item["description"]) {
-                dst.description = item["description"].as<decltype(dst.description)::value_type>();
-            } else {
-                //dst.description = std::nullopt;
-            }
-        }
-    } else {
-        if (src["keyId"]) {
-            dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
-        } else {
-            //dst.keyId = std::nullopt;
-        }
-        if (src["keyName"]) {
-            dst.keyName = src["keyName"].as<decltype(dst.keyName)::value_type>();
-        } else {
-            //dst.keyName = std::nullopt;
-        }
-        if (src["valueType"]) {
-            dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
-        } else {
-            //dst.valueType = std::nullopt;
-        }
-        if (src["unit"]) {
-            dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
-        } else {
-            //dst.unit = std::nullopt;
-        }
-        if (src["label"]) {
-            dst.label = src["label"].as<decltype(dst.label)::value_type>();
-        } else {
-            //dst.label = std::nullopt;
-        }
-        if (src["description"]) {
-            dst.description = src["description"].as<decltype(dst.description)::value_type>();
-        } else {
-            //dst.description = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceConfigurationKeyValueDescriptionListDataType &src, JsonVariant &dst)
-{
-    if (src.deviceConfigurationKeyValueDescriptionData) {
-        dst["deviceConfigurationKeyValueDescriptionData"] = *src.deviceConfigurationKeyValueDescriptionData;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDescriptionListDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["deviceConfigurationKeyValueDescriptionData"]) {
-                dst.deviceConfigurationKeyValueDescriptionData =
-                    item["deviceConfigurationKeyValueDescriptionData"]
-                        .as<decltype(dst.deviceConfigurationKeyValueDescriptionData)::value_type>();
-            } else {
-                //dst.deviceConfigurationKeyValueDescriptionData = std::nullopt;
-            }
-        }
-    } else {
-        if (src["deviceConfigurationKeyValueDescriptionData"]) {
-            dst.deviceConfigurationKeyValueDescriptionData =
-                src["deviceConfigurationKeyValueDescriptionData"]
-                    .as<decltype(dst.deviceConfigurationKeyValueDescriptionData)::value_type>();
-        } else {
-            //dst.deviceConfigurationKeyValueDescriptionData = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceConfigurationKeyValueDescriptionListDataSelectorsType &src, JsonVariant &dst)
-{
-    if (src.keyId) {
-        dst["keyId"] = *src.keyId;
-    }
-    if (src.keyName) {
-        dst["keyName"] = *src.keyName;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDescriptionListDataSelectorsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["keyId"]) {
-                dst.keyId = item["keyId"].as<decltype(dst.keyId)::value_type>();
-            } else {
-                //dst.keyId = std::nullopt;
-            }
-            if (item["keyName"]) {
-                dst.keyName = item["keyName"].as<decltype(dst.keyName)::value_type>();
-            } else {
-                //dst.keyName = std::nullopt;
-            }
-        }
-    } else {
-        if (src["keyId"]) {
-            dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
-        } else {
-            //dst.keyId = std::nullopt;
-        }
-        if (src["keyName"]) {
-            dst.keyName = src["keyName"].as<decltype(dst.keyName)::value_type>();
-        } else {
-            //dst.keyName = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceConfigurationKeyValueConstraintsDataType &src, JsonVariant &dst)
-{
-    if (src.keyId) {
-        dst["keyId"] = *src.keyId;
-    }
-    if (src.valueRangeMin) {
-        dst["valueRangeMin"] = *src.valueRangeMin;
-    }
-    if (src.valueRangeMax) {
-        dst["valueRangeMax"] = *src.valueRangeMax;
-    }
-    if (src.valueStepSize) {
-        dst["valueStepSize"] = *src.valueStepSize;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueConstraintsDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["keyId"]) {
-                dst.keyId = item["keyId"].as<decltype(dst.keyId)::value_type>();
-            } else {
-                //dst.keyId = std::nullopt;
-            }
-            if (item["valueRangeMin"]) {
-                dst.valueRangeMin = item["valueRangeMin"].as<decltype(dst.valueRangeMin)::value_type>();
-            } else {
-                //dst.valueRangeMin = std::nullopt;
-            }
-            if (item["valueRangeMax"]) {
-                dst.valueRangeMax = item["valueRangeMax"].as<decltype(dst.valueRangeMax)::value_type>();
-            } else {
-                //dst.valueRangeMax = std::nullopt;
-            }
-            if (item["valueStepSize"]) {
-                dst.valueStepSize = item["valueStepSize"].as<decltype(dst.valueStepSize)::value_type>();
-            } else {
-                //dst.valueStepSize = std::nullopt;
-            }
-        }
-    } else {
-        if (src["keyId"]) {
-            dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
-        } else {
-            //dst.keyId = std::nullopt;
-        }
-        if (src["valueRangeMin"]) {
-            dst.valueRangeMin = src["valueRangeMin"].as<decltype(dst.valueRangeMin)::value_type>();
-        } else {
-            //dst.valueRangeMin = std::nullopt;
-        }
-        if (src["valueRangeMax"]) {
-            dst.valueRangeMax = src["valueRangeMax"].as<decltype(dst.valueRangeMax)::value_type>();
-        } else {
-            //dst.valueRangeMax = std::nullopt;
-        }
-        if (src["valueStepSize"]) {
-            dst.valueStepSize = src["valueStepSize"].as<decltype(dst.valueStepSize)::value_type>();
-        } else {
-            //dst.valueStepSize = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceConfigurationKeyValueConstraintsDataElementsType &src, JsonVariant &dst)
-{
-    if (src.keyId) {
-        dst["keyId"] = *src.keyId;
-    }
-    if (src.valueRangeMin) {
-        dst["valueRangeMin"] = *src.valueRangeMin;
-    }
-    if (src.valueRangeMax) {
-        dst["valueRangeMax"] = *src.valueRangeMax;
-    }
-    if (src.valueStepSize) {
-        dst["valueStepSize"] = *src.valueStepSize;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueConstraintsDataElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["keyId"]) {
-                dst.keyId = item["keyId"].as<decltype(dst.keyId)::value_type>();
-            } else {
-                //dst.keyId = std::nullopt;
-            }
-            if (item["valueRangeMin"]) {
-                dst.valueRangeMin = item["valueRangeMin"].as<decltype(dst.valueRangeMin)::value_type>();
-            } else {
-                //dst.valueRangeMin = std::nullopt;
-            }
-            if (item["valueRangeMax"]) {
-                dst.valueRangeMax = item["valueRangeMax"].as<decltype(dst.valueRangeMax)::value_type>();
-            } else {
-                //dst.valueRangeMax = std::nullopt;
-            }
-            if (item["valueStepSize"]) {
-                dst.valueStepSize = item["valueStepSize"].as<decltype(dst.valueStepSize)::value_type>();
-            } else {
-                //dst.valueStepSize = std::nullopt;
-            }
-        }
-    } else {
-        if (src["keyId"]) {
-            dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
-        } else {
-            //dst.keyId = std::nullopt;
-        }
-        if (src["valueRangeMin"]) {
-            dst.valueRangeMin = src["valueRangeMin"].as<decltype(dst.valueRangeMin)::value_type>();
-        } else {
-            //dst.valueRangeMin = std::nullopt;
-        }
-        if (src["valueRangeMax"]) {
-            dst.valueRangeMax = src["valueRangeMax"].as<decltype(dst.valueRangeMax)::value_type>();
-        } else {
-            //dst.valueRangeMax = std::nullopt;
-        }
-        if (src["valueStepSize"]) {
-            dst.valueStepSize = src["valueStepSize"].as<decltype(dst.valueStepSize)::value_type>();
-        } else {
-            //dst.valueStepSize = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceConfigurationKeyValueConstraintsListDataType &src, JsonVariant &dst)
-{
-    if (src.deviceConfigurationKeyValueConstraintsData) {
-        dst["deviceConfigurationKeyValueConstraintsData"] = *src.deviceConfigurationKeyValueConstraintsData;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueConstraintsListDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["deviceConfigurationKeyValueConstraintsData"]) {
-                dst.deviceConfigurationKeyValueConstraintsData =
-                    item["deviceConfigurationKeyValueConstraintsData"]
-                        .as<decltype(dst.deviceConfigurationKeyValueConstraintsData)::value_type>();
-            } else {
-                //dst.deviceConfigurationKeyValueConstraintsData = std::nullopt;
-            }
-        }
-    } else {
-        if (src["deviceConfigurationKeyValueConstraintsData"]) {
-            dst.deviceConfigurationKeyValueConstraintsData =
-                src["deviceConfigurationKeyValueConstraintsData"]
-                    .as<decltype(dst.deviceConfigurationKeyValueConstraintsData)::value_type>();
-        } else {
-            //dst.deviceConfigurationKeyValueConstraintsData = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceConfigurationKeyValueConstraintsListDataSelectorsType &src, JsonVariant &dst)
-{
-    if (src.keyId) {
-        dst["keyId"] = *src.keyId;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueConstraintsListDataSelectorsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["keyId"]) {
-                dst.keyId = item["keyId"].as<decltype(dst.keyId)::value_type>();
-            } else {
-                //dst.keyId = std::nullopt;
-            }
-        }
-    } else {
-        if (src["keyId"]) {
-            dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
-        } else {
-            //dst.keyId = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceDiagnosisStateDataType &src, JsonVariant &dst)
-{
-    if (src.timestamp) {
-        dst["timestamp"] = *src.timestamp;
-    }
-    if (src.operatingState) {
-        dst["operatingState"] = *src.operatingState;
-    }
-    if (src.vendorStateCode) {
-        dst["vendorStateCode"] = *src.vendorStateCode;
-    }
-    if (src.lastErrorCode) {
-        dst["lastErrorCode"] = *src.lastErrorCode;
-    }
-    if (src.upTime) {
-        dst["upTime"] = *src.upTime;
-    }
-    if (src.totalUpTime) {
-        dst["totalUpTime"] = *src.totalUpTime;
-    }
-    if (src.powerSupplyCondition) {
-        dst["powerSupplyCondition"] = *src.powerSupplyCondition;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisStateDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["timestamp"]) {
-                dst.timestamp = item["timestamp"].as<decltype(dst.timestamp)::value_type>();
-            } else {
-                //dst.timestamp = std::nullopt;
-            }
-            if (item["operatingState"]) {
-                dst.operatingState = item["operatingState"].as<decltype(dst.operatingState)::value_type>();
-            } else {
-                //dst.operatingState = std::nullopt;
-            }
-            if (item["vendorStateCode"]) {
-                dst.vendorStateCode = item["vendorStateCode"].as<decltype(dst.vendorStateCode)::value_type>();
-            } else {
-                //dst.vendorStateCode = std::nullopt;
-            }
-            if (item["lastErrorCode"]) {
-                dst.lastErrorCode = item["lastErrorCode"].as<decltype(dst.lastErrorCode)::value_type>();
-            } else {
-                //dst.lastErrorCode = std::nullopt;
-            }
-            if (item["upTime"]) {
-                dst.upTime = item["upTime"].as<decltype(dst.upTime)::value_type>();
-            } else {
-                //dst.upTime = std::nullopt;
-            }
-            if (item["totalUpTime"]) {
-                dst.totalUpTime = item["totalUpTime"].as<decltype(dst.totalUpTime)::value_type>();
-            } else {
-                //dst.totalUpTime = std::nullopt;
-            }
-            if (item["powerSupplyCondition"]) {
-                dst.powerSupplyCondition = item["powerSupplyCondition"].as<decltype(dst.powerSupplyCondition)::value_type>();
-            } else {
-                //dst.powerSupplyCondition = std::nullopt;
-            }
-        }
-    } else {
-        if (src["timestamp"]) {
-            dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
-        } else {
-            //dst.timestamp = std::nullopt;
-        }
-        if (src["operatingState"]) {
-            dst.operatingState = src["operatingState"].as<decltype(dst.operatingState)::value_type>();
-        } else {
-            //dst.operatingState = std::nullopt;
-        }
-        if (src["vendorStateCode"]) {
-            dst.vendorStateCode = src["vendorStateCode"].as<decltype(dst.vendorStateCode)::value_type>();
-        } else {
-            //dst.vendorStateCode = std::nullopt;
-        }
-        if (src["lastErrorCode"]) {
-            dst.lastErrorCode = src["lastErrorCode"].as<decltype(dst.lastErrorCode)::value_type>();
-        } else {
-            //dst.lastErrorCode = std::nullopt;
-        }
-        if (src["upTime"]) {
-            dst.upTime = src["upTime"].as<decltype(dst.upTime)::value_type>();
-        } else {
-            //dst.upTime = std::nullopt;
-        }
-        if (src["totalUpTime"]) {
-            dst.totalUpTime = src["totalUpTime"].as<decltype(dst.totalUpTime)::value_type>();
-        } else {
-            //dst.totalUpTime = std::nullopt;
-        }
-        if (src["powerSupplyCondition"]) {
-            dst.powerSupplyCondition = src["powerSupplyCondition"].as<decltype(dst.powerSupplyCondition)::value_type>();
-        } else {
-            //dst.powerSupplyCondition = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceDiagnosisStateDataElementsType &src, JsonVariant &dst)
-{
-    if (src.timestamp) {
-        dst["timestamp"] = *src.timestamp;
-    }
-    if (src.operatingState) {
-        dst["operatingState"] = *src.operatingState;
-    }
-    if (src.vendorStateCode) {
-        dst["vendorStateCode"] = *src.vendorStateCode;
-    }
-    if (src.lastErrorCode) {
-        dst["lastErrorCode"] = *src.lastErrorCode;
-    }
-    if (src.upTime) {
-        dst["upTime"] = *src.upTime;
-    }
-    if (src.totalUpTime) {
-        dst["totalUpTime"] = *src.totalUpTime;
-    }
-    if (src.powerSupplyCondition) {
-        dst["powerSupplyCondition"] = *src.powerSupplyCondition;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisStateDataElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["timestamp"]) {
-                dst.timestamp = item["timestamp"].as<decltype(dst.timestamp)::value_type>();
-            } else {
-                //dst.timestamp = std::nullopt;
-            }
-            if (item["operatingState"]) {
-                dst.operatingState = item["operatingState"].as<decltype(dst.operatingState)::value_type>();
-            } else {
-                //dst.operatingState = std::nullopt;
-            }
-            if (item["vendorStateCode"]) {
-                dst.vendorStateCode = item["vendorStateCode"].as<decltype(dst.vendorStateCode)::value_type>();
-            } else {
-                //dst.vendorStateCode = std::nullopt;
-            }
-            if (item["lastErrorCode"]) {
-                dst.lastErrorCode = item["lastErrorCode"].as<decltype(dst.lastErrorCode)::value_type>();
-            } else {
-                //dst.lastErrorCode = std::nullopt;
-            }
-            if (item["upTime"]) {
-                dst.upTime = item["upTime"].as<decltype(dst.upTime)::value_type>();
-            } else {
-                //dst.upTime = std::nullopt;
-            }
-            if (item["totalUpTime"]) {
-                dst.totalUpTime = item["totalUpTime"].as<decltype(dst.totalUpTime)::value_type>();
-            } else {
-                //dst.totalUpTime = std::nullopt;
-            }
-            if (item["powerSupplyCondition"]) {
-                dst.powerSupplyCondition = item["powerSupplyCondition"].as<decltype(dst.powerSupplyCondition)::value_type>();
-            } else {
-                //dst.powerSupplyCondition = std::nullopt;
-            }
-        }
-    } else {
-        if (src["timestamp"]) {
-            dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
-        } else {
-            //dst.timestamp = std::nullopt;
-        }
-        if (src["operatingState"]) {
-            dst.operatingState = src["operatingState"].as<decltype(dst.operatingState)::value_type>();
-        } else {
-            //dst.operatingState = std::nullopt;
-        }
-        if (src["vendorStateCode"]) {
-            dst.vendorStateCode = src["vendorStateCode"].as<decltype(dst.vendorStateCode)::value_type>();
-        } else {
-            //dst.vendorStateCode = std::nullopt;
-        }
-        if (src["lastErrorCode"]) {
-            dst.lastErrorCode = src["lastErrorCode"].as<decltype(dst.lastErrorCode)::value_type>();
-        } else {
-            //dst.lastErrorCode = std::nullopt;
-        }
-        if (src["upTime"]) {
-            dst.upTime = src["upTime"].as<decltype(dst.upTime)::value_type>();
-        } else {
-            //dst.upTime = std::nullopt;
-        }
-        if (src["totalUpTime"]) {
-            dst.totalUpTime = src["totalUpTime"].as<decltype(dst.totalUpTime)::value_type>();
-        } else {
-            //dst.totalUpTime = std::nullopt;
-        }
-        if (src["powerSupplyCondition"]) {
-            dst.powerSupplyCondition = src["powerSupplyCondition"].as<decltype(dst.powerSupplyCondition)::value_type>();
-        } else {
-            //dst.powerSupplyCondition = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceDiagnosisHeartbeatDataType &src, JsonVariant &dst)
-{
-    if (src.timestamp) {
-        dst["timestamp"] = *src.timestamp;
-    }
-    if (src.heartbeatCounter) {
-        dst["heartbeatCounter"] = *src.heartbeatCounter;
-    }
-    if (src.heartbeatTimeout) {
-        dst["heartbeatTimeout"] = *src.heartbeatTimeout;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisHeartbeatDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["timestamp"]) {
-                dst.timestamp = item["timestamp"].as<decltype(dst.timestamp)::value_type>();
-            } else {
-                //dst.timestamp = std::nullopt;
-            }
-            if (item["heartbeatCounter"]) {
-                dst.heartbeatCounter = item["heartbeatCounter"].as<decltype(dst.heartbeatCounter)::value_type>();
-            } else {
-                //dst.heartbeatCounter = std::nullopt;
-            }
-            if (item["heartbeatTimeout"]) {
-                dst.heartbeatTimeout = item["heartbeatTimeout"].as<decltype(dst.heartbeatTimeout)::value_type>();
-            } else {
-                //dst.heartbeatTimeout = std::nullopt;
-            }
-        }
-    } else {
-        if (src["timestamp"]) {
-            dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
-        } else {
-            //dst.timestamp = std::nullopt;
-        }
-        if (src["heartbeatCounter"]) {
-            dst.heartbeatCounter = src["heartbeatCounter"].as<decltype(dst.heartbeatCounter)::value_type>();
-        } else {
-            //dst.heartbeatCounter = std::nullopt;
-        }
-        if (src["heartbeatTimeout"]) {
-            dst.heartbeatTimeout = src["heartbeatTimeout"].as<decltype(dst.heartbeatTimeout)::value_type>();
-        } else {
-            //dst.heartbeatTimeout = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceDiagnosisHeartbeatDataElementsType &src, JsonVariant &dst)
-{
-    if (src.timestamp) {
-        dst["timestamp"] = *src.timestamp;
-    }
-    if (src.heartbeatCounter) {
-        dst["heartbeatCounter"] = *src.heartbeatCounter;
-    }
-    if (src.heartbeatTimeout) {
-        dst["heartbeatTimeout"] = *src.heartbeatTimeout;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisHeartbeatDataElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["timestamp"]) {
-                dst.timestamp = item["timestamp"].as<decltype(dst.timestamp)::value_type>();
-            } else {
-                //dst.timestamp = std::nullopt;
-            }
-            if (item["heartbeatCounter"]) {
-                dst.heartbeatCounter = item["heartbeatCounter"].as<decltype(dst.heartbeatCounter)::value_type>();
-            } else {
-                //dst.heartbeatCounter = std::nullopt;
-            }
-            if (item["heartbeatTimeout"]) {
-                dst.heartbeatTimeout = item["heartbeatTimeout"].as<decltype(dst.heartbeatTimeout)::value_type>();
-            } else {
-                //dst.heartbeatTimeout = std::nullopt;
-            }
-        }
-    } else {
-        if (src["timestamp"]) {
-            dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
-        } else {
-            //dst.timestamp = std::nullopt;
-        }
-        if (src["heartbeatCounter"]) {
-            dst.heartbeatCounter = src["heartbeatCounter"].as<decltype(dst.heartbeatCounter)::value_type>();
-        } else {
-            //dst.heartbeatCounter = std::nullopt;
-        }
-        if (src["heartbeatTimeout"]) {
-            dst.heartbeatTimeout = src["heartbeatTimeout"].as<decltype(dst.heartbeatTimeout)::value_type>();
-        } else {
-            //dst.heartbeatTimeout = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceDiagnosisServiceDataType &src, JsonVariant &dst)
-{
-    if (src.timestamp) {
-        dst["timestamp"] = *src.timestamp;
-    }
-    if (src.installationTime) {
-        dst["installationTime"] = *src.installationTime;
-    }
-    if (src.bootCounter) {
-        dst["bootCounter"] = *src.bootCounter;
-    }
-    if (src.nextService) {
-        dst["nextService"] = *src.nextService;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisServiceDataType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["timestamp"]) {
-                dst.timestamp = item["timestamp"].as<decltype(dst.timestamp)::value_type>();
-            } else {
-                //dst.timestamp = std::nullopt;
-            }
-            if (item["installationTime"]) {
-                dst.installationTime = item["installationTime"].as<decltype(dst.installationTime)::value_type>();
-            } else {
-                //dst.installationTime = std::nullopt;
-            }
-            if (item["bootCounter"]) {
-                dst.bootCounter = item["bootCounter"].as<decltype(dst.bootCounter)::value_type>();
-            } else {
-                //dst.bootCounter = std::nullopt;
-            }
-            if (item["nextService"]) {
-                dst.nextService = item["nextService"].as<decltype(dst.nextService)::value_type>();
-            } else {
-                //dst.nextService = std::nullopt;
-            }
-        }
-    } else {
-        if (src["timestamp"]) {
-            dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
-        } else {
-            //dst.timestamp = std::nullopt;
-        }
-        if (src["installationTime"]) {
-            dst.installationTime = src["installationTime"].as<decltype(dst.installationTime)::value_type>();
-        } else {
-            //dst.installationTime = std::nullopt;
-        }
-        if (src["bootCounter"]) {
-            dst.bootCounter = src["bootCounter"].as<decltype(dst.bootCounter)::value_type>();
-        } else {
-            //dst.bootCounter = std::nullopt;
-        }
-        if (src["nextService"]) {
-            dst.nextService = src["nextService"].as<decltype(dst.nextService)::value_type>();
-        } else {
-            //dst.nextService = std::nullopt;
-        }
-    }
-}
-bool convertToJson(const DeviceDiagnosisServiceDataElementsType &src, JsonVariant &dst)
-{
-    if (src.timestamp) {
-        dst["timestamp"] = *src.timestamp;
-    }
-    if (src.installationTime) {
-        dst["installationTime"] = *src.installationTime;
-    }
-    if (src.bootCounter) {
-        dst["bootCounter"] = *src.bootCounter;
-    }
-    if (src.nextService) {
-        dst["nextService"] = *src.nextService;
-    }
-
-    return true;
-}
-void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisServiceDataElementsType &dst)
-{
-    if (src.is<JsonArrayConst>()) {
-        JsonArrayConst array = src.as<JsonArrayConst>();
-        for (JsonVariantConst item : array) {
-            if (item["timestamp"]) {
-                dst.timestamp = item["timestamp"].as<decltype(dst.timestamp)::value_type>();
-            } else {
-                //dst.timestamp = std::nullopt;
-            }
-            if (item["installationTime"]) {
-                dst.installationTime = item["installationTime"].as<decltype(dst.installationTime)::value_type>();
-            } else {
-                //dst.installationTime = std::nullopt;
-            }
-            if (item["bootCounter"]) {
-                dst.bootCounter = item["bootCounter"].as<decltype(dst.bootCounter)::value_type>();
-            } else {
-                //dst.bootCounter = std::nullopt;
-            }
-            if (item["nextService"]) {
-                dst.nextService = item["nextService"].as<decltype(dst.nextService)::value_type>();
-            } else {
-                //dst.nextService = std::nullopt;
-            }
-        }
-    } else {
-        if (src["timestamp"]) {
-            dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
-        } else {
-            //dst.timestamp = std::nullopt;
-        }
-        if (src["installationTime"]) {
-            dst.installationTime = src["installationTime"].as<decltype(dst.installationTime)::value_type>();
-        } else {
-            //dst.installationTime = std::nullopt;
-        }
-        if (src["bootCounter"]) {
-            dst.bootCounter = src["bootCounter"].as<decltype(dst.bootCounter)::value_type>();
-        } else {
-            //dst.bootCounter = std::nullopt;
-        }
-        if (src["nextService"]) {
-            dst.nextService = src["nextService"].as<decltype(dst.nextService)::value_type>();
-        } else {
-            //dst.nextService = std::nullopt;
         }
     }
 }
@@ -30405,6 +29161,205 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionLis
         }
     }
 }
+bool convertToJson(const MessagingDataType &src, JsonVariant &dst)
+{
+    if (src.timestamp) {
+        dst["timestamp"] = *src.timestamp;
+    }
+    if (src.messagingNumber) {
+        dst["messagingNumber"] = *src.messagingNumber;
+    }
+    if (src.type) {
+        dst["type"] = *src.type;
+    }
+    if (src.text) {
+        dst["text"] = *src.text;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, MessagingDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["timestamp"]) {
+                dst.timestamp = item["timestamp"].as<decltype(dst.timestamp)::value_type>();
+            } else {
+                //dst.timestamp = std::nullopt;
+            }
+            if (item["messagingNumber"]) {
+                dst.messagingNumber = item["messagingNumber"].as<decltype(dst.messagingNumber)::value_type>();
+            } else {
+                //dst.messagingNumber = std::nullopt;
+            }
+            if (item["type"]) {
+                dst.type = item["type"].as<decltype(dst.type)::value_type>();
+            } else {
+                //dst.type = std::nullopt;
+            }
+            if (item["text"]) {
+                dst.text = item["text"].as<decltype(dst.text)::value_type>();
+            } else {
+                //dst.text = std::nullopt;
+            }
+        }
+    } else {
+        if (src["timestamp"]) {
+            dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
+        } else {
+            //dst.timestamp = std::nullopt;
+        }
+        if (src["messagingNumber"]) {
+            dst.messagingNumber = src["messagingNumber"].as<decltype(dst.messagingNumber)::value_type>();
+        } else {
+            //dst.messagingNumber = std::nullopt;
+        }
+        if (src["type"]) {
+            dst.type = src["type"].as<decltype(dst.type)::value_type>();
+        } else {
+            //dst.type = std::nullopt;
+        }
+        if (src["text"]) {
+            dst.text = src["text"].as<decltype(dst.text)::value_type>();
+        } else {
+            //dst.text = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const MessagingDataElementsType &src, JsonVariant &dst)
+{
+    if (src.timestamp) {
+        dst["timestamp"] = *src.timestamp;
+    }
+    if (src.messagingNumber) {
+        dst["messagingNumber"] = *src.messagingNumber;
+    }
+    if (src.type) {
+        dst["type"] = *src.type;
+    }
+    if (src.text) {
+        dst["text"] = *src.text;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, MessagingDataElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["timestamp"]) {
+                dst.timestamp = item["timestamp"].as<decltype(dst.timestamp)::value_type>();
+            } else {
+                //dst.timestamp = std::nullopt;
+            }
+            if (item["messagingNumber"]) {
+                dst.messagingNumber = item["messagingNumber"].as<decltype(dst.messagingNumber)::value_type>();
+            } else {
+                //dst.messagingNumber = std::nullopt;
+            }
+            if (item["type"]) {
+                dst.type = item["type"].as<decltype(dst.type)::value_type>();
+            } else {
+                //dst.type = std::nullopt;
+            }
+            if (item["text"]) {
+                dst.text = item["text"].as<decltype(dst.text)::value_type>();
+            } else {
+                //dst.text = std::nullopt;
+            }
+        }
+    } else {
+        if (src["timestamp"]) {
+            dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
+        } else {
+            //dst.timestamp = std::nullopt;
+        }
+        if (src["messagingNumber"]) {
+            dst.messagingNumber = src["messagingNumber"].as<decltype(dst.messagingNumber)::value_type>();
+        } else {
+            //dst.messagingNumber = std::nullopt;
+        }
+        if (src["type"]) {
+            dst.type = src["type"].as<decltype(dst.type)::value_type>();
+        } else {
+            //dst.type = std::nullopt;
+        }
+        if (src["text"]) {
+            dst.text = src["text"].as<decltype(dst.text)::value_type>();
+        } else {
+            //dst.text = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const MessagingListDataType &src, JsonVariant &dst)
+{
+    if (src.messagingData) {
+        dst["messagingData"] = *src.messagingData;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, MessagingListDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["messagingData"]) {
+                dst.messagingData = item["messagingData"].as<decltype(dst.messagingData)::value_type>();
+            } else {
+                //dst.messagingData = std::nullopt;
+            }
+        }
+    } else {
+        if (src["messagingData"]) {
+            dst.messagingData = src["messagingData"].as<decltype(dst.messagingData)::value_type>();
+        } else {
+            //dst.messagingData = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const MessagingListDataSelectorsType &src, JsonVariant &dst)
+{
+    if (src.timestampInterval) {
+        dst["timestampInterval"] = *src.timestampInterval;
+    }
+    if (src.messagingNumber) {
+        dst["messagingNumber"] = *src.messagingNumber;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, MessagingListDataSelectorsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["timestampInterval"]) {
+                dst.timestampInterval = item["timestampInterval"].as<decltype(dst.timestampInterval)::value_type>();
+            } else {
+                //dst.timestampInterval = std::nullopt;
+            }
+            if (item["messagingNumber"]) {
+                dst.messagingNumber = item["messagingNumber"].as<decltype(dst.messagingNumber)::value_type>();
+            } else {
+                //dst.messagingNumber = std::nullopt;
+            }
+        }
+    } else {
+        if (src["timestampInterval"]) {
+            dst.timestampInterval = src["timestampInterval"].as<decltype(dst.timestampInterval)::value_type>();
+        } else {
+            //dst.timestampInterval = std::nullopt;
+        }
+        if (src["messagingNumber"]) {
+            dst.messagingNumber = src["messagingNumber"].as<decltype(dst.messagingNumber)::value_type>();
+        } else {
+            //dst.messagingNumber = std::nullopt;
+        }
+    }
+}
 bool convertToJson(const NetworkManagementAddNodeCallType &src, JsonVariant &dst)
 {
     if (src.nodeAddress) {
@@ -35372,6 +34327,46 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImpl
         }
     }
 }
+bool convertToJson(const ResultDataType &src, JsonVariant &dst)
+{
+    if (src.errorNumber) {
+        dst["errorNumber"] = *src.errorNumber;
+    }
+    if (src.description) {
+        dst["description"] = *src.description;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, ResultDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["errorNumber"]) {
+                dst.errorNumber = item["errorNumber"].as<decltype(dst.errorNumber)::value_type>();
+            } else {
+                //dst.errorNumber = std::nullopt;
+            }
+            if (item["description"]) {
+                dst.description = item["description"].as<decltype(dst.description)::value_type>();
+            } else {
+                //dst.description = std::nullopt;
+            }
+        }
+    } else {
+        if (src["errorNumber"]) {
+            dst.errorNumber = src["errorNumber"].as<decltype(dst.errorNumber)::value_type>();
+        } else {
+            //dst.errorNumber = std::nullopt;
+        }
+        if (src["description"]) {
+            dst.description = src["description"].as<decltype(dst.description)::value_type>();
+        } else {
+            //dst.description = std::nullopt;
+        }
+    }
+}
 bool convertToJson(const SensingDataType &src, JsonVariant &dst)
 {
     if (src.timestamp) {
@@ -38882,135 +37877,1139 @@ bool convertToJson(const TimeDistributorEnquiryCallElementsType &src, JsonVarian
 void convertFromJson(const JsonVariantConst &src, TimeDistributorEnquiryCallElementsType &dst)
 {
 }
-bool convertToJson(const HeaderType &src, JsonVariant &dst)
+bool convertToJson(const TimeSeriesSlotType &src, JsonVariant &dst)
 {
-    if (src.specificationVersion) {
-        dst["specificationVersion"] = *src.specificationVersion;
+    if (src.timeSeriesSlotId) {
+        dst["timeSeriesSlotId"] = *src.timeSeriesSlotId;
     }
-    if (src.addressSource) {
-        dst["addressSource"] = *src.addressSource;
+    if (src.timePeriod) {
+        dst["timePeriod"] = *src.timePeriod;
     }
-    if (src.addressDestination) {
-        dst["addressDestination"] = *src.addressDestination;
+    if (src.duration) {
+        dst["duration"] = *src.duration;
     }
-    if (src.addressOriginator) {
-        dst["addressOriginator"] = *src.addressOriginator;
+    if (src.recurrenceInformation) {
+        dst["recurrenceInformation"] = *src.recurrenceInformation;
     }
-    if (src.msgCounter) {
-        dst["msgCounter"] = *src.msgCounter;
+    if (src.value) {
+        dst["value"] = *src.value;
     }
-    if (src.msgCounterReference) {
-        dst["msgCounterReference"] = *src.msgCounterReference;
+    if (src.minValue) {
+        dst["minValue"] = *src.minValue;
     }
-    if (src.cmdClassifier) {
-        dst["cmdClassifier"] = *src.cmdClassifier;
-    }
-    if (src.ackRequest) {
-        dst["ackRequest"] = *src.ackRequest;
-    }
-    if (src.timestamp) {
-        dst["timestamp"] = *src.timestamp;
+    if (src.maxValue) {
+        dst["maxValue"] = *src.maxValue;
     }
 
     return true;
 }
-void convertFromJson(const JsonVariantConst &src, HeaderType &dst)
+void convertFromJson(const JsonVariantConst &src, TimeSeriesSlotType &dst)
 {
-    logger.printfln("Src: %s", src.as<String>().c_str());
     if (src.is<JsonArrayConst>()) {
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
-            if (item["specificationVersion"]) {
-                dst.specificationVersion = item["specificationVersion"].as<decltype(dst.specificationVersion)::value_type>();
+            if (item["timeSeriesSlotId"]) {
+                dst.timeSeriesSlotId = item["timeSeriesSlotId"].as<decltype(dst.timeSeriesSlotId)::value_type>();
             } else {
-                //dst.specificationVersion = std::nullopt;
+                //dst.timeSeriesSlotId = std::nullopt;
             }
-            if (item["addressSource"]) {
-                dst.addressSource = item["addressSource"].as<decltype(dst.addressSource)::value_type>();
+            if (item["timePeriod"]) {
+                dst.timePeriod = item["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
             } else {
-                //dst.addressSource = std::nullopt;
+                //dst.timePeriod = std::nullopt;
             }
-            if (item["addressDestination"]) {
-                dst.addressDestination = item["addressDestination"].as<decltype(dst.addressDestination)::value_type>();
+            if (item["duration"]) {
+                dst.duration = item["duration"].as<decltype(dst.duration)::value_type>();
             } else {
-                //dst.addressDestination = std::nullopt;
+                //dst.duration = std::nullopt;
             }
-            if (item["addressOriginator"]) {
-                dst.addressOriginator = item["addressOriginator"].as<decltype(dst.addressOriginator)::value_type>();
+            if (item["recurrenceInformation"]) {
+                dst.recurrenceInformation = item["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
             } else {
-                //dst.addressOriginator = std::nullopt;
+                //dst.recurrenceInformation = std::nullopt;
             }
-            if (item["msgCounter"]) {
-                dst.msgCounter = item["msgCounter"].as<decltype(dst.msgCounter)::value_type>();
+            if (item["value"]) {
+                dst.value = item["value"].as<decltype(dst.value)::value_type>();
             } else {
-                //dst.msgCounter = std::nullopt;
+                //dst.value = std::nullopt;
             }
-            if (item["msgCounterReference"]) {
-                dst.msgCounterReference = item["msgCounterReference"].as<decltype(dst.msgCounterReference)::value_type>();
+            if (item["minValue"]) {
+                dst.minValue = item["minValue"].as<decltype(dst.minValue)::value_type>();
             } else {
-                //dst.msgCounterReference = std::nullopt;
+                //dst.minValue = std::nullopt;
             }
-            if (item["cmdClassifier"]) {
-                dst.cmdClassifier = item["cmdClassifier"].as<decltype(dst.cmdClassifier)::value_type>();
+            if (item["maxValue"]) {
+                dst.maxValue = item["maxValue"].as<decltype(dst.maxValue)::value_type>();
             } else {
-                //dst.cmdClassifier = std::nullopt;
-            }
-            if (item["ackRequest"]) {
-                dst.ackRequest = item["ackRequest"].as<decltype(dst.ackRequest)::value_type>();
-            } else {
-                //dst.ackRequest = std::nullopt;
-            }
-            if (item["timestamp"]) {
-                dst.timestamp = item["timestamp"].as<decltype(dst.timestamp)::value_type>();
-            } else {
-                //dst.timestamp = std::nullopt;
+                //dst.maxValue = std::nullopt;
             }
         }
     } else {
-        if (src["specificationVersion"]) {
-            dst.specificationVersion = src["specificationVersion"].as<decltype(dst.specificationVersion)::value_type>();
+        if (src["timeSeriesSlotId"]) {
+            dst.timeSeriesSlotId = src["timeSeriesSlotId"].as<decltype(dst.timeSeriesSlotId)::value_type>();
         } else {
-            //dst.specificationVersion = std::nullopt;
+            //dst.timeSeriesSlotId = std::nullopt;
         }
-        if (src["addressSource"]) {
-            dst.addressSource = src["addressSource"].as<decltype(dst.addressSource)::value_type>();
+        if (src["timePeriod"]) {
+            dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
         } else {
-            //dst.addressSource = std::nullopt;
+            //dst.timePeriod = std::nullopt;
         }
-        if (src["addressDestination"]) {
-            dst.addressDestination = src["addressDestination"].as<decltype(dst.addressDestination)::value_type>();
+        if (src["duration"]) {
+            dst.duration = src["duration"].as<decltype(dst.duration)::value_type>();
         } else {
-            //dst.addressDestination = std::nullopt;
+            //dst.duration = std::nullopt;
         }
-        if (src["addressOriginator"]) {
-            dst.addressOriginator = src["addressOriginator"].as<decltype(dst.addressOriginator)::value_type>();
+        if (src["recurrenceInformation"]) {
+            dst.recurrenceInformation = src["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
         } else {
-            //dst.addressOriginator = std::nullopt;
+            //dst.recurrenceInformation = std::nullopt;
         }
-        if (src["msgCounter"]) {
-            dst.msgCounter = src["msgCounter"].as<decltype(dst.msgCounter)::value_type>();
+        if (src["value"]) {
+            dst.value = src["value"].as<decltype(dst.value)::value_type>();
         } else {
-            //dst.msgCounter = std::nullopt;
+            //dst.value = std::nullopt;
         }
-        if (src["msgCounterReference"]) {
-            dst.msgCounterReference = src["msgCounterReference"].as<decltype(dst.msgCounterReference)::value_type>();
+        if (src["minValue"]) {
+            dst.minValue = src["minValue"].as<decltype(dst.minValue)::value_type>();
         } else {
-            //dst.msgCounterReference = std::nullopt;
+            //dst.minValue = std::nullopt;
         }
-        if (src["cmdClassifier"]) {
-            dst.cmdClassifier = src["cmdClassifier"].as<decltype(dst.cmdClassifier)::value_type>();
+        if (src["maxValue"]) {
+            dst.maxValue = src["maxValue"].as<decltype(dst.maxValue)::value_type>();
         } else {
-            //dst.cmdClassifier = std::nullopt;
+            //dst.maxValue = std::nullopt;
         }
-        if (src["ackRequest"]) {
-            dst.ackRequest = src["ackRequest"].as<decltype(dst.ackRequest)::value_type>();
-        } else {
-            //dst.ackRequest = std::nullopt;
+    }
+}
+bool convertToJson(const TimeSeriesSlotElementsType &src, JsonVariant &dst)
+{
+    if (src.timeSeriesSlotId) {
+        dst["timeSeriesSlotId"] = *src.timeSeriesSlotId;
+    }
+    if (src.timePeriod) {
+        dst["timePeriod"] = *src.timePeriod;
+    }
+    if (src.duration) {
+        dst["duration"] = *src.duration;
+    }
+    if (src.recurrenceInformation) {
+        dst["recurrenceInformation"] = *src.recurrenceInformation;
+    }
+    if (src.value) {
+        dst["value"] = *src.value;
+    }
+    if (src.minValue) {
+        dst["minValue"] = *src.minValue;
+    }
+    if (src.maxValue) {
+        dst["maxValue"] = *src.maxValue;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, TimeSeriesSlotElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["timeSeriesSlotId"]) {
+                dst.timeSeriesSlotId = item["timeSeriesSlotId"].as<decltype(dst.timeSeriesSlotId)::value_type>();
+            } else {
+                //dst.timeSeriesSlotId = std::nullopt;
+            }
+            if (item["timePeriod"]) {
+                dst.timePeriod = item["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
+            } else {
+                //dst.timePeriod = std::nullopt;
+            }
+            if (item["duration"]) {
+                dst.duration = item["duration"].as<decltype(dst.duration)::value_type>();
+            } else {
+                //dst.duration = std::nullopt;
+            }
+            if (item["recurrenceInformation"]) {
+                dst.recurrenceInformation = item["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
+            } else {
+                //dst.recurrenceInformation = std::nullopt;
+            }
+            if (item["value"]) {
+                dst.value = item["value"].as<decltype(dst.value)::value_type>();
+            } else {
+                //dst.value = std::nullopt;
+            }
+            if (item["minValue"]) {
+                dst.minValue = item["minValue"].as<decltype(dst.minValue)::value_type>();
+            } else {
+                //dst.minValue = std::nullopt;
+            }
+            if (item["maxValue"]) {
+                dst.maxValue = item["maxValue"].as<decltype(dst.maxValue)::value_type>();
+            } else {
+                //dst.maxValue = std::nullopt;
+            }
         }
-        if (src["timestamp"]) {
-            dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
+    } else {
+        if (src["timeSeriesSlotId"]) {
+            dst.timeSeriesSlotId = src["timeSeriesSlotId"].as<decltype(dst.timeSeriesSlotId)::value_type>();
         } else {
-            //dst.timestamp = std::nullopt;
+            //dst.timeSeriesSlotId = std::nullopt;
+        }
+        if (src["timePeriod"]) {
+            dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
+        } else {
+            //dst.timePeriod = std::nullopt;
+        }
+        if (src["duration"]) {
+            dst.duration = src["duration"].as<decltype(dst.duration)::value_type>();
+        } else {
+            //dst.duration = std::nullopt;
+        }
+        if (src["recurrenceInformation"]) {
+            dst.recurrenceInformation = src["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
+        } else {
+            //dst.recurrenceInformation = std::nullopt;
+        }
+        if (src["value"]) {
+            dst.value = src["value"].as<decltype(dst.value)::value_type>();
+        } else {
+            //dst.value = std::nullopt;
+        }
+        if (src["minValue"]) {
+            dst.minValue = src["minValue"].as<decltype(dst.minValue)::value_type>();
+        } else {
+            //dst.minValue = std::nullopt;
+        }
+        if (src["maxValue"]) {
+            dst.maxValue = src["maxValue"].as<decltype(dst.maxValue)::value_type>();
+        } else {
+            //dst.maxValue = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const TimeSeriesDataType &src, JsonVariant &dst)
+{
+    if (src.timeSeriesId) {
+        dst["timeSeriesId"] = *src.timeSeriesId;
+    }
+    if (src.timePeriod) {
+        dst["timePeriod"] = *src.timePeriod;
+    }
+    if (src.timeSeriesSlot) {
+        dst["timeSeriesSlot"] = *src.timeSeriesSlot;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, TimeSeriesDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["timeSeriesId"]) {
+                dst.timeSeriesId = item["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+            } else {
+                //dst.timeSeriesId = std::nullopt;
+            }
+            if (item["timePeriod"]) {
+                dst.timePeriod = item["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
+            } else {
+                //dst.timePeriod = std::nullopt;
+            }
+            if (item["timeSeriesSlot"]) {
+                dst.timeSeriesSlot = item["timeSeriesSlot"].as<decltype(dst.timeSeriesSlot)::value_type>();
+            } else {
+                //dst.timeSeriesSlot = std::nullopt;
+            }
+        }
+    } else {
+        if (src["timeSeriesId"]) {
+            dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+        } else {
+            //dst.timeSeriesId = std::nullopt;
+        }
+        if (src["timePeriod"]) {
+            dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
+        } else {
+            //dst.timePeriod = std::nullopt;
+        }
+        if (src["timeSeriesSlot"]) {
+            dst.timeSeriesSlot = src["timeSeriesSlot"].as<decltype(dst.timeSeriesSlot)::value_type>();
+        } else {
+            //dst.timeSeriesSlot = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const TimeSeriesDataElementsType &src, JsonVariant &dst)
+{
+    if (src.timeSeriesId) {
+        dst["timeSeriesId"] = *src.timeSeriesId;
+    }
+    if (src.timePeriod) {
+        dst["timePeriod"] = *src.timePeriod;
+    }
+    if (src.timeSeriesSlot) {
+        dst["timeSeriesSlot"] = *src.timeSeriesSlot;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, TimeSeriesDataElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["timeSeriesId"]) {
+                dst.timeSeriesId = item["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+            } else {
+                //dst.timeSeriesId = std::nullopt;
+            }
+            if (item["timePeriod"]) {
+                dst.timePeriod = item["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
+            } else {
+                //dst.timePeriod = std::nullopt;
+            }
+            if (item["timeSeriesSlot"]) {
+                dst.timeSeriesSlot = item["timeSeriesSlot"].as<decltype(dst.timeSeriesSlot)::value_type>();
+            } else {
+                //dst.timeSeriesSlot = std::nullopt;
+            }
+        }
+    } else {
+        if (src["timeSeriesId"]) {
+            dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+        } else {
+            //dst.timeSeriesId = std::nullopt;
+        }
+        if (src["timePeriod"]) {
+            dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
+        } else {
+            //dst.timePeriod = std::nullopt;
+        }
+        if (src["timeSeriesSlot"]) {
+            dst.timeSeriesSlot = src["timeSeriesSlot"].as<decltype(dst.timeSeriesSlot)::value_type>();
+        } else {
+            //dst.timeSeriesSlot = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const TimeSeriesListDataType &src, JsonVariant &dst)
+{
+    if (src.timeSeriesData) {
+        dst["timeSeriesData"] = *src.timeSeriesData;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, TimeSeriesListDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["timeSeriesData"]) {
+                dst.timeSeriesData = item["timeSeriesData"].as<decltype(dst.timeSeriesData)::value_type>();
+            } else {
+                //dst.timeSeriesData = std::nullopt;
+            }
+        }
+    } else {
+        if (src["timeSeriesData"]) {
+            dst.timeSeriesData = src["timeSeriesData"].as<decltype(dst.timeSeriesData)::value_type>();
+        } else {
+            //dst.timeSeriesData = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const TimeSeriesListDataSelectorsType &src, JsonVariant &dst)
+{
+    if (src.timeSeriesId) {
+        dst["timeSeriesId"] = *src.timeSeriesId;
+    }
+    if (src.timeSeriesSlotId) {
+        dst["timeSeriesSlotId"] = *src.timeSeriesSlotId;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, TimeSeriesListDataSelectorsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["timeSeriesId"]) {
+                dst.timeSeriesId = item["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+            } else {
+                //dst.timeSeriesId = std::nullopt;
+            }
+            if (item["timeSeriesSlotId"]) {
+                dst.timeSeriesSlotId = item["timeSeriesSlotId"].as<decltype(dst.timeSeriesSlotId)::value_type>();
+            } else {
+                //dst.timeSeriesSlotId = std::nullopt;
+            }
+        }
+    } else {
+        if (src["timeSeriesId"]) {
+            dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+        } else {
+            //dst.timeSeriesId = std::nullopt;
+        }
+        if (src["timeSeriesSlotId"]) {
+            dst.timeSeriesSlotId = src["timeSeriesSlotId"].as<decltype(dst.timeSeriesSlotId)::value_type>();
+        } else {
+            //dst.timeSeriesSlotId = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const TimeSeriesDescriptionDataType &src, JsonVariant &dst)
+{
+    if (src.timeSeriesId) {
+        dst["timeSeriesId"] = *src.timeSeriesId;
+    }
+    if (src.timeSeriesType) {
+        dst["timeSeriesType"] = *src.timeSeriesType;
+    }
+    if (src.timeSeriesWriteable) {
+        dst["timeSeriesWriteable"] = *src.timeSeriesWriteable;
+    }
+    if (src.updateRequired) {
+        dst["updateRequired"] = *src.updateRequired;
+    }
+    if (src.measurementId) {
+        dst["measurementId"] = *src.measurementId;
+    }
+    if (src.currency) {
+        dst["currency"] = *src.currency;
+    }
+    if (src.unit) {
+        dst["unit"] = *src.unit;
+    }
+    if (src.label) {
+        dst["label"] = *src.label;
+    }
+    if (src.description) {
+        dst["description"] = *src.description;
+    }
+    if (src.scopeType) {
+        dst["scopeType"] = *src.scopeType;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["timeSeriesId"]) {
+                dst.timeSeriesId = item["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+            } else {
+                //dst.timeSeriesId = std::nullopt;
+            }
+            if (item["timeSeriesType"]) {
+                dst.timeSeriesType = item["timeSeriesType"].as<decltype(dst.timeSeriesType)::value_type>();
+            } else {
+                //dst.timeSeriesType = std::nullopt;
+            }
+            if (item["timeSeriesWriteable"]) {
+                dst.timeSeriesWriteable = item["timeSeriesWriteable"].as<decltype(dst.timeSeriesWriteable)::value_type>();
+            } else {
+                //dst.timeSeriesWriteable = std::nullopt;
+            }
+            if (item["updateRequired"]) {
+                dst.updateRequired = item["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
+            } else {
+                //dst.updateRequired = std::nullopt;
+            }
+            if (item["measurementId"]) {
+                dst.measurementId = item["measurementId"].as<decltype(dst.measurementId)::value_type>();
+            } else {
+                //dst.measurementId = std::nullopt;
+            }
+            if (item["currency"]) {
+                dst.currency = item["currency"].as<decltype(dst.currency)::value_type>();
+            } else {
+                //dst.currency = std::nullopt;
+            }
+            if (item["unit"]) {
+                dst.unit = item["unit"].as<decltype(dst.unit)::value_type>();
+            } else {
+                //dst.unit = std::nullopt;
+            }
+            if (item["label"]) {
+                dst.label = item["label"].as<decltype(dst.label)::value_type>();
+            } else {
+                //dst.label = std::nullopt;
+            }
+            if (item["description"]) {
+                dst.description = item["description"].as<decltype(dst.description)::value_type>();
+            } else {
+                //dst.description = std::nullopt;
+            }
+            if (item["scopeType"]) {
+                dst.scopeType = item["scopeType"].as<decltype(dst.scopeType)::value_type>();
+            } else {
+                //dst.scopeType = std::nullopt;
+            }
+        }
+    } else {
+        if (src["timeSeriesId"]) {
+            dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+        } else {
+            //dst.timeSeriesId = std::nullopt;
+        }
+        if (src["timeSeriesType"]) {
+            dst.timeSeriesType = src["timeSeriesType"].as<decltype(dst.timeSeriesType)::value_type>();
+        } else {
+            //dst.timeSeriesType = std::nullopt;
+        }
+        if (src["timeSeriesWriteable"]) {
+            dst.timeSeriesWriteable = src["timeSeriesWriteable"].as<decltype(dst.timeSeriesWriteable)::value_type>();
+        } else {
+            //dst.timeSeriesWriteable = std::nullopt;
+        }
+        if (src["updateRequired"]) {
+            dst.updateRequired = src["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
+        } else {
+            //dst.updateRequired = std::nullopt;
+        }
+        if (src["measurementId"]) {
+            dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
+        } else {
+            //dst.measurementId = std::nullopt;
+        }
+        if (src["currency"]) {
+            dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
+        } else {
+            //dst.currency = std::nullopt;
+        }
+        if (src["unit"]) {
+            dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
+        } else {
+            //dst.unit = std::nullopt;
+        }
+        if (src["label"]) {
+            dst.label = src["label"].as<decltype(dst.label)::value_type>();
+        } else {
+            //dst.label = std::nullopt;
+        }
+        if (src["description"]) {
+            dst.description = src["description"].as<decltype(dst.description)::value_type>();
+        } else {
+            //dst.description = std::nullopt;
+        }
+        if (src["scopeType"]) {
+            dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
+        } else {
+            //dst.scopeType = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const TimeSeriesDescriptionDataElementsType &src, JsonVariant &dst)
+{
+    if (src.timeSeriesId) {
+        dst["timeSeriesId"] = *src.timeSeriesId;
+    }
+    if (src.timeSeriesType) {
+        dst["timeSeriesType"] = *src.timeSeriesType;
+    }
+    if (src.timeSeriesWriteable) {
+        dst["timeSeriesWriteable"] = *src.timeSeriesWriteable;
+    }
+    if (src.updateRequired) {
+        dst["updateRequired"] = *src.updateRequired;
+    }
+    if (src.measurementId) {
+        dst["measurementId"] = *src.measurementId;
+    }
+    if (src.currency) {
+        dst["currency"] = *src.currency;
+    }
+    if (src.unit) {
+        dst["unit"] = *src.unit;
+    }
+    if (src.label) {
+        dst["label"] = *src.label;
+    }
+    if (src.description) {
+        dst["description"] = *src.description;
+    }
+    if (src.scopeType) {
+        dst["scopeType"] = *src.scopeType;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["timeSeriesId"]) {
+                dst.timeSeriesId = item["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+            } else {
+                //dst.timeSeriesId = std::nullopt;
+            }
+            if (item["timeSeriesType"]) {
+                dst.timeSeriesType = item["timeSeriesType"].as<decltype(dst.timeSeriesType)::value_type>();
+            } else {
+                //dst.timeSeriesType = std::nullopt;
+            }
+            if (item["timeSeriesWriteable"]) {
+                dst.timeSeriesWriteable = item["timeSeriesWriteable"].as<decltype(dst.timeSeriesWriteable)::value_type>();
+            } else {
+                //dst.timeSeriesWriteable = std::nullopt;
+            }
+            if (item["updateRequired"]) {
+                dst.updateRequired = item["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
+            } else {
+                //dst.updateRequired = std::nullopt;
+            }
+            if (item["measurementId"]) {
+                dst.measurementId = item["measurementId"].as<decltype(dst.measurementId)::value_type>();
+            } else {
+                //dst.measurementId = std::nullopt;
+            }
+            if (item["currency"]) {
+                dst.currency = item["currency"].as<decltype(dst.currency)::value_type>();
+            } else {
+                //dst.currency = std::nullopt;
+            }
+            if (item["unit"]) {
+                dst.unit = item["unit"].as<decltype(dst.unit)::value_type>();
+            } else {
+                //dst.unit = std::nullopt;
+            }
+            if (item["label"]) {
+                dst.label = item["label"].as<decltype(dst.label)::value_type>();
+            } else {
+                //dst.label = std::nullopt;
+            }
+            if (item["description"]) {
+                dst.description = item["description"].as<decltype(dst.description)::value_type>();
+            } else {
+                //dst.description = std::nullopt;
+            }
+            if (item["scopeType"]) {
+                dst.scopeType = item["scopeType"].as<decltype(dst.scopeType)::value_type>();
+            } else {
+                //dst.scopeType = std::nullopt;
+            }
+        }
+    } else {
+        if (src["timeSeriesId"]) {
+            dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+        } else {
+            //dst.timeSeriesId = std::nullopt;
+        }
+        if (src["timeSeriesType"]) {
+            dst.timeSeriesType = src["timeSeriesType"].as<decltype(dst.timeSeriesType)::value_type>();
+        } else {
+            //dst.timeSeriesType = std::nullopt;
+        }
+        if (src["timeSeriesWriteable"]) {
+            dst.timeSeriesWriteable = src["timeSeriesWriteable"].as<decltype(dst.timeSeriesWriteable)::value_type>();
+        } else {
+            //dst.timeSeriesWriteable = std::nullopt;
+        }
+        if (src["updateRequired"]) {
+            dst.updateRequired = src["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
+        } else {
+            //dst.updateRequired = std::nullopt;
+        }
+        if (src["measurementId"]) {
+            dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
+        } else {
+            //dst.measurementId = std::nullopt;
+        }
+        if (src["currency"]) {
+            dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
+        } else {
+            //dst.currency = std::nullopt;
+        }
+        if (src["unit"]) {
+            dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
+        } else {
+            //dst.unit = std::nullopt;
+        }
+        if (src["label"]) {
+            dst.label = src["label"].as<decltype(dst.label)::value_type>();
+        } else {
+            //dst.label = std::nullopt;
+        }
+        if (src["description"]) {
+            dst.description = src["description"].as<decltype(dst.description)::value_type>();
+        } else {
+            //dst.description = std::nullopt;
+        }
+        if (src["scopeType"]) {
+            dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
+        } else {
+            //dst.scopeType = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const TimeSeriesDescriptionListDataType &src, JsonVariant &dst)
+{
+    if (src.timeSeriesDescriptionData) {
+        dst["timeSeriesDescriptionData"] = *src.timeSeriesDescriptionData;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionListDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["timeSeriesDescriptionData"]) {
+                dst.timeSeriesDescriptionData = item["timeSeriesDescriptionData"].as<decltype(dst.timeSeriesDescriptionData)::value_type>();
+            } else {
+                //dst.timeSeriesDescriptionData = std::nullopt;
+            }
+        }
+    } else {
+        if (src["timeSeriesDescriptionData"]) {
+            dst.timeSeriesDescriptionData = src["timeSeriesDescriptionData"].as<decltype(dst.timeSeriesDescriptionData)::value_type>();
+        } else {
+            //dst.timeSeriesDescriptionData = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const TimeSeriesDescriptionListDataSelectorsType &src, JsonVariant &dst)
+{
+    if (src.timeSeriesId) {
+        dst["timeSeriesId"] = *src.timeSeriesId;
+    }
+    if (src.timeSeriesType) {
+        dst["timeSeriesType"] = *src.timeSeriesType;
+    }
+    if (src.measurementId) {
+        dst["measurementId"] = *src.measurementId;
+    }
+    if (src.scopeType) {
+        dst["scopeType"] = *src.scopeType;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionListDataSelectorsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["timeSeriesId"]) {
+                dst.timeSeriesId = item["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+            } else {
+                //dst.timeSeriesId = std::nullopt;
+            }
+            if (item["timeSeriesType"]) {
+                dst.timeSeriesType = item["timeSeriesType"].as<decltype(dst.timeSeriesType)::value_type>();
+            } else {
+                //dst.timeSeriesType = std::nullopt;
+            }
+            if (item["measurementId"]) {
+                dst.measurementId = item["measurementId"].as<decltype(dst.measurementId)::value_type>();
+            } else {
+                //dst.measurementId = std::nullopt;
+            }
+            if (item["scopeType"]) {
+                dst.scopeType = item["scopeType"].as<decltype(dst.scopeType)::value_type>();
+            } else {
+                //dst.scopeType = std::nullopt;
+            }
+        }
+    } else {
+        if (src["timeSeriesId"]) {
+            dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+        } else {
+            //dst.timeSeriesId = std::nullopt;
+        }
+        if (src["timeSeriesType"]) {
+            dst.timeSeriesType = src["timeSeriesType"].as<decltype(dst.timeSeriesType)::value_type>();
+        } else {
+            //dst.timeSeriesType = std::nullopt;
+        }
+        if (src["measurementId"]) {
+            dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
+        } else {
+            //dst.measurementId = std::nullopt;
+        }
+        if (src["scopeType"]) {
+            dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
+        } else {
+            //dst.scopeType = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const TimeSeriesConstraintsDataType &src, JsonVariant &dst)
+{
+    if (src.timeSeriesId) {
+        dst["timeSeriesId"] = *src.timeSeriesId;
+    }
+    if (src.slotCountMin) {
+        dst["slotCountMin"] = *src.slotCountMin;
+    }
+    if (src.slotCountMax) {
+        dst["slotCountMax"] = *src.slotCountMax;
+    }
+    if (src.slotDurationMin) {
+        dst["slotDurationMin"] = *src.slotDurationMin;
+    }
+    if (src.slotDurationMax) {
+        dst["slotDurationMax"] = *src.slotDurationMax;
+    }
+    if (src.slotDurationStepSize) {
+        dst["slotDurationStepSize"] = *src.slotDurationStepSize;
+    }
+    if (src.earliestTimeSeriesStartTime) {
+        dst["earliestTimeSeriesStartTime"] = *src.earliestTimeSeriesStartTime;
+    }
+    if (src.latestTimeSeriesEndTime) {
+        dst["latestTimeSeriesEndTime"] = *src.latestTimeSeriesEndTime;
+    }
+    if (src.slotValueMin) {
+        dst["slotValueMin"] = *src.slotValueMin;
+    }
+    if (src.slotValueMax) {
+        dst["slotValueMax"] = *src.slotValueMax;
+    }
+    if (src.slotValueStepSize) {
+        dst["slotValueStepSize"] = *src.slotValueStepSize;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["timeSeriesId"]) {
+                dst.timeSeriesId = item["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+            } else {
+                //dst.timeSeriesId = std::nullopt;
+            }
+            if (item["slotCountMin"]) {
+                dst.slotCountMin = item["slotCountMin"].as<decltype(dst.slotCountMin)::value_type>();
+            } else {
+                //dst.slotCountMin = std::nullopt;
+            }
+            if (item["slotCountMax"]) {
+                dst.slotCountMax = item["slotCountMax"].as<decltype(dst.slotCountMax)::value_type>();
+            } else {
+                //dst.slotCountMax = std::nullopt;
+            }
+            if (item["slotDurationMin"]) {
+                dst.slotDurationMin = item["slotDurationMin"].as<decltype(dst.slotDurationMin)::value_type>();
+            } else {
+                //dst.slotDurationMin = std::nullopt;
+            }
+            if (item["slotDurationMax"]) {
+                dst.slotDurationMax = item["slotDurationMax"].as<decltype(dst.slotDurationMax)::value_type>();
+            } else {
+                //dst.slotDurationMax = std::nullopt;
+            }
+            if (item["slotDurationStepSize"]) {
+                dst.slotDurationStepSize = item["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize)::value_type>();
+            } else {
+                //dst.slotDurationStepSize = std::nullopt;
+            }
+            if (item["earliestTimeSeriesStartTime"]) {
+                dst.earliestTimeSeriesStartTime =
+                    item["earliestTimeSeriesStartTime"].as<decltype(dst.earliestTimeSeriesStartTime)::value_type>();
+            } else {
+                //dst.earliestTimeSeriesStartTime = std::nullopt;
+            }
+            if (item["latestTimeSeriesEndTime"]) {
+                dst.latestTimeSeriesEndTime = item["latestTimeSeriesEndTime"].as<decltype(dst.latestTimeSeriesEndTime)::value_type>();
+            } else {
+                //dst.latestTimeSeriesEndTime = std::nullopt;
+            }
+            if (item["slotValueMin"]) {
+                dst.slotValueMin = item["slotValueMin"].as<decltype(dst.slotValueMin)::value_type>();
+            } else {
+                //dst.slotValueMin = std::nullopt;
+            }
+            if (item["slotValueMax"]) {
+                dst.slotValueMax = item["slotValueMax"].as<decltype(dst.slotValueMax)::value_type>();
+            } else {
+                //dst.slotValueMax = std::nullopt;
+            }
+            if (item["slotValueStepSize"]) {
+                dst.slotValueStepSize = item["slotValueStepSize"].as<decltype(dst.slotValueStepSize)::value_type>();
+            } else {
+                //dst.slotValueStepSize = std::nullopt;
+            }
+        }
+    } else {
+        if (src["timeSeriesId"]) {
+            dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+        } else {
+            //dst.timeSeriesId = std::nullopt;
+        }
+        if (src["slotCountMin"]) {
+            dst.slotCountMin = src["slotCountMin"].as<decltype(dst.slotCountMin)::value_type>();
+        } else {
+            //dst.slotCountMin = std::nullopt;
+        }
+        if (src["slotCountMax"]) {
+            dst.slotCountMax = src["slotCountMax"].as<decltype(dst.slotCountMax)::value_type>();
+        } else {
+            //dst.slotCountMax = std::nullopt;
+        }
+        if (src["slotDurationMin"]) {
+            dst.slotDurationMin = src["slotDurationMin"].as<decltype(dst.slotDurationMin)::value_type>();
+        } else {
+            //dst.slotDurationMin = std::nullopt;
+        }
+        if (src["slotDurationMax"]) {
+            dst.slotDurationMax = src["slotDurationMax"].as<decltype(dst.slotDurationMax)::value_type>();
+        } else {
+            //dst.slotDurationMax = std::nullopt;
+        }
+        if (src["slotDurationStepSize"]) {
+            dst.slotDurationStepSize = src["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize)::value_type>();
+        } else {
+            //dst.slotDurationStepSize = std::nullopt;
+        }
+        if (src["earliestTimeSeriesStartTime"]) {
+            dst.earliestTimeSeriesStartTime =
+                src["earliestTimeSeriesStartTime"].as<decltype(dst.earliestTimeSeriesStartTime)::value_type>();
+        } else {
+            //dst.earliestTimeSeriesStartTime = std::nullopt;
+        }
+        if (src["latestTimeSeriesEndTime"]) {
+            dst.latestTimeSeriesEndTime = src["latestTimeSeriesEndTime"].as<decltype(dst.latestTimeSeriesEndTime)::value_type>();
+        } else {
+            //dst.latestTimeSeriesEndTime = std::nullopt;
+        }
+        if (src["slotValueMin"]) {
+            dst.slotValueMin = src["slotValueMin"].as<decltype(dst.slotValueMin)::value_type>();
+        } else {
+            //dst.slotValueMin = std::nullopt;
+        }
+        if (src["slotValueMax"]) {
+            dst.slotValueMax = src["slotValueMax"].as<decltype(dst.slotValueMax)::value_type>();
+        } else {
+            //dst.slotValueMax = std::nullopt;
+        }
+        if (src["slotValueStepSize"]) {
+            dst.slotValueStepSize = src["slotValueStepSize"].as<decltype(dst.slotValueStepSize)::value_type>();
+        } else {
+            //dst.slotValueStepSize = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const TimeSeriesConstraintsDataElementsType &src, JsonVariant &dst)
+{
+    if (src.timeSeriesId) {
+        dst["timeSeriesId"] = *src.timeSeriesId;
+    }
+    if (src.slotCountMin) {
+        dst["slotCountMin"] = *src.slotCountMin;
+    }
+    if (src.slotCountMax) {
+        dst["slotCountMax"] = *src.slotCountMax;
+    }
+    if (src.slotDurationMin) {
+        dst["slotDurationMin"] = *src.slotDurationMin;
+    }
+    if (src.slotDurationMax) {
+        dst["slotDurationMax"] = *src.slotDurationMax;
+    }
+    if (src.slotDurationStepSize) {
+        dst["slotDurationStepSize"] = *src.slotDurationStepSize;
+    }
+    if (src.earliestTimeSeriesStartTime) {
+        dst["earliestTimeSeriesStartTime"] = *src.earliestTimeSeriesStartTime;
+    }
+    if (src.latestTimeSeriesEndTime) {
+        dst["latestTimeSeriesEndTime"] = *src.latestTimeSeriesEndTime;
+    }
+    if (src.slotValueMin) {
+        dst["slotValueMin"] = *src.slotValueMin;
+    }
+    if (src.slotValueMax) {
+        dst["slotValueMax"] = *src.slotValueMax;
+    }
+    if (src.slotValueStepSize) {
+        dst["slotValueStepSize"] = *src.slotValueStepSize;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsDataElementsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["timeSeriesId"]) {
+                dst.timeSeriesId = item["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+            } else {
+                //dst.timeSeriesId = std::nullopt;
+            }
+            if (item["slotCountMin"]) {
+                dst.slotCountMin = item["slotCountMin"].as<decltype(dst.slotCountMin)::value_type>();
+            } else {
+                //dst.slotCountMin = std::nullopt;
+            }
+            if (item["slotCountMax"]) {
+                dst.slotCountMax = item["slotCountMax"].as<decltype(dst.slotCountMax)::value_type>();
+            } else {
+                //dst.slotCountMax = std::nullopt;
+            }
+            if (item["slotDurationMin"]) {
+                dst.slotDurationMin = item["slotDurationMin"].as<decltype(dst.slotDurationMin)::value_type>();
+            } else {
+                //dst.slotDurationMin = std::nullopt;
+            }
+            if (item["slotDurationMax"]) {
+                dst.slotDurationMax = item["slotDurationMax"].as<decltype(dst.slotDurationMax)::value_type>();
+            } else {
+                //dst.slotDurationMax = std::nullopt;
+            }
+            if (item["slotDurationStepSize"]) {
+                dst.slotDurationStepSize = item["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize)::value_type>();
+            } else {
+                //dst.slotDurationStepSize = std::nullopt;
+            }
+            if (item["earliestTimeSeriesStartTime"]) {
+                dst.earliestTimeSeriesStartTime =
+                    item["earliestTimeSeriesStartTime"].as<decltype(dst.earliestTimeSeriesStartTime)::value_type>();
+            } else {
+                //dst.earliestTimeSeriesStartTime = std::nullopt;
+            }
+            if (item["latestTimeSeriesEndTime"]) {
+                dst.latestTimeSeriesEndTime = item["latestTimeSeriesEndTime"].as<decltype(dst.latestTimeSeriesEndTime)::value_type>();
+            } else {
+                //dst.latestTimeSeriesEndTime = std::nullopt;
+            }
+            if (item["slotValueMin"]) {
+                dst.slotValueMin = item["slotValueMin"].as<decltype(dst.slotValueMin)::value_type>();
+            } else {
+                //dst.slotValueMin = std::nullopt;
+            }
+            if (item["slotValueMax"]) {
+                dst.slotValueMax = item["slotValueMax"].as<decltype(dst.slotValueMax)::value_type>();
+            } else {
+                //dst.slotValueMax = std::nullopt;
+            }
+            if (item["slotValueStepSize"]) {
+                dst.slotValueStepSize = item["slotValueStepSize"].as<decltype(dst.slotValueStepSize)::value_type>();
+            } else {
+                //dst.slotValueStepSize = std::nullopt;
+            }
+        }
+    } else {
+        if (src["timeSeriesId"]) {
+            dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+        } else {
+            //dst.timeSeriesId = std::nullopt;
+        }
+        if (src["slotCountMin"]) {
+            dst.slotCountMin = src["slotCountMin"].as<decltype(dst.slotCountMin)::value_type>();
+        } else {
+            //dst.slotCountMin = std::nullopt;
+        }
+        if (src["slotCountMax"]) {
+            dst.slotCountMax = src["slotCountMax"].as<decltype(dst.slotCountMax)::value_type>();
+        } else {
+            //dst.slotCountMax = std::nullopt;
+        }
+        if (src["slotDurationMin"]) {
+            dst.slotDurationMin = src["slotDurationMin"].as<decltype(dst.slotDurationMin)::value_type>();
+        } else {
+            //dst.slotDurationMin = std::nullopt;
+        }
+        if (src["slotDurationMax"]) {
+            dst.slotDurationMax = src["slotDurationMax"].as<decltype(dst.slotDurationMax)::value_type>();
+        } else {
+            //dst.slotDurationMax = std::nullopt;
+        }
+        if (src["slotDurationStepSize"]) {
+            dst.slotDurationStepSize = src["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize)::value_type>();
+        } else {
+            //dst.slotDurationStepSize = std::nullopt;
+        }
+        if (src["earliestTimeSeriesStartTime"]) {
+            dst.earliestTimeSeriesStartTime =
+                src["earliestTimeSeriesStartTime"].as<decltype(dst.earliestTimeSeriesStartTime)::value_type>();
+        } else {
+            //dst.earliestTimeSeriesStartTime = std::nullopt;
+        }
+        if (src["latestTimeSeriesEndTime"]) {
+            dst.latestTimeSeriesEndTime = src["latestTimeSeriesEndTime"].as<decltype(dst.latestTimeSeriesEndTime)::value_type>();
+        } else {
+            //dst.latestTimeSeriesEndTime = std::nullopt;
+        }
+        if (src["slotValueMin"]) {
+            dst.slotValueMin = src["slotValueMin"].as<decltype(dst.slotValueMin)::value_type>();
+        } else {
+            //dst.slotValueMin = std::nullopt;
+        }
+        if (src["slotValueMax"]) {
+            dst.slotValueMax = src["slotValueMax"].as<decltype(dst.slotValueMax)::value_type>();
+        } else {
+            //dst.slotValueMax = std::nullopt;
+        }
+        if (src["slotValueStepSize"]) {
+            dst.slotValueStepSize = src["slotValueStepSize"].as<decltype(dst.slotValueStepSize)::value_type>();
+        } else {
+            //dst.slotValueStepSize = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const TimeSeriesConstraintsListDataType &src, JsonVariant &dst)
+{
+    if (src.timeSeriesConstraintsData) {
+        dst["timeSeriesConstraintsData"] = *src.timeSeriesConstraintsData;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsListDataType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["timeSeriesConstraintsData"]) {
+                dst.timeSeriesConstraintsData = item["timeSeriesConstraintsData"].as<decltype(dst.timeSeriesConstraintsData)::value_type>();
+            } else {
+                //dst.timeSeriesConstraintsData = std::nullopt;
+            }
+        }
+    } else {
+        if (src["timeSeriesConstraintsData"]) {
+            dst.timeSeriesConstraintsData = src["timeSeriesConstraintsData"].as<decltype(dst.timeSeriesConstraintsData)::value_type>();
+        } else {
+            //dst.timeSeriesConstraintsData = std::nullopt;
+        }
+    }
+}
+bool convertToJson(const TimeSeriesConstraintsListDataSelectorsType &src, JsonVariant &dst)
+{
+    if (src.timeSeriesId) {
+        dst["timeSeriesId"] = *src.timeSeriesId;
+    }
+
+    return true;
+}
+void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsListDataSelectorsType &dst)
+{
+    if (src.is<JsonArrayConst>()) {
+        JsonArrayConst array = src.as<JsonArrayConst>();
+        for (JsonVariantConst item : array) {
+            if (item["timeSeriesId"]) {
+                dst.timeSeriesId = item["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+            } else {
+                //dst.timeSeriesId = std::nullopt;
+            }
+        }
+    } else {
+        if (src["timeSeriesId"]) {
+            dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
+        } else {
+            //dst.timeSeriesId = std::nullopt;
         }
     }
 }
@@ -39018,38 +39017,112 @@ void convertFromJson(const JsonVariantConst &src, HeaderType &dst)
 SpineDataTypeHandler::Type SpineDataTypeHandler::type_from_function(SpineDataTypeHandler::Function function)
 {
     switch (function) {
-        case SpineDataTypeHandler::Function::messagingData:
-            return SpineDataTypeHandler::Type::MessagingDataType;
-        case SpineDataTypeHandler::Function::messagingDataElements:
-            return SpineDataTypeHandler::Type::MessagingDataElementsType;
-        case SpineDataTypeHandler::Function::messagingListData:
-            return SpineDataTypeHandler::Type::MessagingListDataType;
-        case SpineDataTypeHandler::Function::messagingListDataSelectors:
-            return SpineDataTypeHandler::Type::MessagingListDataSelectorsType;
-        case SpineDataTypeHandler::Function::timeSeriesData:
-            return SpineDataTypeHandler::Type::TimeSeriesDataType;
-        case SpineDataTypeHandler::Function::timeSeriesDataElements:
-            return SpineDataTypeHandler::Type::TimeSeriesDataElementsType;
-        case SpineDataTypeHandler::Function::timeSeriesListData:
-            return SpineDataTypeHandler::Type::TimeSeriesListDataType;
-        case SpineDataTypeHandler::Function::timeSeriesListDataSelectors:
-            return SpineDataTypeHandler::Type::TimeSeriesListDataSelectorsType;
-        case SpineDataTypeHandler::Function::timeSeriesDescriptionData:
-            return SpineDataTypeHandler::Type::TimeSeriesDescriptionDataType;
-        case SpineDataTypeHandler::Function::timeSeriesDescriptionDataElements:
-            return SpineDataTypeHandler::Type::TimeSeriesDescriptionDataElementsType;
-        case SpineDataTypeHandler::Function::timeSeriesDescriptionListData:
-            return SpineDataTypeHandler::Type::TimeSeriesDescriptionListDataType;
-        case SpineDataTypeHandler::Function::timeSeriesDescriptionListDataSelectors:
-            return SpineDataTypeHandler::Type::TimeSeriesDescriptionListDataSelectorsType;
-        case SpineDataTypeHandler::Function::timeSeriesConstraintsData:
-            return SpineDataTypeHandler::Type::TimeSeriesConstraintsDataType;
-        case SpineDataTypeHandler::Function::timeSeriesConstraintsDataElements:
-            return SpineDataTypeHandler::Type::TimeSeriesConstraintsDataElementsType;
-        case SpineDataTypeHandler::Function::timeSeriesConstraintsListData:
-            return SpineDataTypeHandler::Type::TimeSeriesConstraintsListDataType;
-        case SpineDataTypeHandler::Function::timeSeriesConstraintsListDataSelectors:
-            return SpineDataTypeHandler::Type::TimeSeriesConstraintsListDataSelectorsType;
+        case SpineDataTypeHandler::Function::header:
+            return SpineDataTypeHandler::Type::HeaderType;
+        case SpineDataTypeHandler::Function::cmdClassifier:
+            return SpineDataTypeHandler::Type::CmdClassifierType;
+        case SpineDataTypeHandler::Function::lastUpdateAt:
+            return SpineDataTypeHandler::Type::AbsoluteOrRelativeTimeType;
+        case SpineDataTypeHandler::Function::function:
+            return SpineDataTypeHandler::Type::FunctionType;
+        case SpineDataTypeHandler::Function::cmdControl:
+            return SpineDataTypeHandler::Type::CmdControlType;
+        case SpineDataTypeHandler::Function::actuatorLevelData:
+            return SpineDataTypeHandler::Type::ActuatorLevelDataType;
+        case SpineDataTypeHandler::Function::actuatorLevelDataElements:
+            return SpineDataTypeHandler::Type::ActuatorLevelDataElementsType;
+        case SpineDataTypeHandler::Function::actuatorLevelDescriptionData:
+            return SpineDataTypeHandler::Type::ActuatorLevelDescriptionDataType;
+        case SpineDataTypeHandler::Function::actuatorLevelDescriptionDataElements:
+            return SpineDataTypeHandler::Type::ActuatorLevelDescriptionDataElementsType;
+        case SpineDataTypeHandler::Function::actuatorSwitchData:
+            return SpineDataTypeHandler::Type::ActuatorSwitchDataType;
+        case SpineDataTypeHandler::Function::actuatorSwitchDataElements:
+            return SpineDataTypeHandler::Type::ActuatorSwitchDataElementsType;
+        case SpineDataTypeHandler::Function::actuatorSwitchDescriptionData:
+            return SpineDataTypeHandler::Type::ActuatorSwitchDescriptionDataType;
+        case SpineDataTypeHandler::Function::actuatorSwitchDescriptionDataElements:
+            return SpineDataTypeHandler::Type::ActuatorSwitchDescriptionDataElementsType;
+        case SpineDataTypeHandler::Function::alarmData:
+            return SpineDataTypeHandler::Type::AlarmDataType;
+        case SpineDataTypeHandler::Function::alarmDataElements:
+            return SpineDataTypeHandler::Type::AlarmDataElementsType;
+        case SpineDataTypeHandler::Function::alarmListData:
+            return SpineDataTypeHandler::Type::AlarmListDataType;
+        case SpineDataTypeHandler::Function::alarmListDataSelectors:
+            return SpineDataTypeHandler::Type::AlarmListDataSelectorsType;
+        case SpineDataTypeHandler::Function::thresholdData:
+            return SpineDataTypeHandler::Type::ThresholdDataType;
+        case SpineDataTypeHandler::Function::thresholdDataElements:
+            return SpineDataTypeHandler::Type::ThresholdDataElementsType;
+        case SpineDataTypeHandler::Function::thresholdListData:
+            return SpineDataTypeHandler::Type::ThresholdListDataType;
+        case SpineDataTypeHandler::Function::thresholdListDataSelectors:
+            return SpineDataTypeHandler::Type::ThresholdListDataSelectorsType;
+        case SpineDataTypeHandler::Function::thresholdConstraintsData:
+            return SpineDataTypeHandler::Type::ThresholdConstraintsDataType;
+        case SpineDataTypeHandler::Function::thresholdConstraintsDataElements:
+            return SpineDataTypeHandler::Type::ThresholdConstraintsDataElementsType;
+        case SpineDataTypeHandler::Function::thresholdConstraintsListData:
+            return SpineDataTypeHandler::Type::ThresholdConstraintsListDataType;
+        case SpineDataTypeHandler::Function::thresholdConstraintsListDataSelectors:
+            return SpineDataTypeHandler::Type::ThresholdConstraintsListDataSelectorsType;
+        case SpineDataTypeHandler::Function::thresholdDescriptionData:
+            return SpineDataTypeHandler::Type::ThresholdDescriptionDataType;
+        case SpineDataTypeHandler::Function::thresholdDescriptionDataElements:
+            return SpineDataTypeHandler::Type::ThresholdDescriptionDataElementsType;
+        case SpineDataTypeHandler::Function::thresholdDescriptionListData:
+            return SpineDataTypeHandler::Type::ThresholdDescriptionListDataType;
+        case SpineDataTypeHandler::Function::thresholdDescriptionListDataSelectors:
+            return SpineDataTypeHandler::Type::ThresholdDescriptionListDataSelectorsType;
+        case SpineDataTypeHandler::Function::billData:
+            return SpineDataTypeHandler::Type::BillDataType;
+        case SpineDataTypeHandler::Function::billDataElements:
+            return SpineDataTypeHandler::Type::BillDataElementsType;
+        case SpineDataTypeHandler::Function::billListData:
+            return SpineDataTypeHandler::Type::BillListDataType;
+        case SpineDataTypeHandler::Function::billListDataSelectors:
+            return SpineDataTypeHandler::Type::BillListDataSelectorsType;
+        case SpineDataTypeHandler::Function::billConstraintsData:
+            return SpineDataTypeHandler::Type::BillConstraintsDataType;
+        case SpineDataTypeHandler::Function::billConstraintsDataElements:
+            return SpineDataTypeHandler::Type::BillConstraintsDataElementsType;
+        case SpineDataTypeHandler::Function::billConstraintsListData:
+            return SpineDataTypeHandler::Type::BillConstraintsListDataType;
+        case SpineDataTypeHandler::Function::billConstraintsListDataSelectors:
+            return SpineDataTypeHandler::Type::BillConstraintsListDataSelectorsType;
+        case SpineDataTypeHandler::Function::billDescriptionData:
+            return SpineDataTypeHandler::Type::BillDescriptionDataType;
+        case SpineDataTypeHandler::Function::billDescriptionDataElements:
+            return SpineDataTypeHandler::Type::BillDescriptionDataElementsType;
+        case SpineDataTypeHandler::Function::billDescriptionListData:
+            return SpineDataTypeHandler::Type::BillDescriptionListDataType;
+        case SpineDataTypeHandler::Function::billDescriptionListDataSelectors:
+            return SpineDataTypeHandler::Type::BillDescriptionListDataSelectorsType;
+        case SpineDataTypeHandler::Function::identificationData:
+            return SpineDataTypeHandler::Type::IdentificationDataType;
+        case SpineDataTypeHandler::Function::identificationDataElements:
+            return SpineDataTypeHandler::Type::IdentificationDataElementsType;
+        case SpineDataTypeHandler::Function::identificationListData:
+            return SpineDataTypeHandler::Type::IdentificationListDataType;
+        case SpineDataTypeHandler::Function::identificationListDataSelectors:
+            return SpineDataTypeHandler::Type::IdentificationListDataSelectorsType;
+        case SpineDataTypeHandler::Function::sessionIdentificationData:
+            return SpineDataTypeHandler::Type::SessionIdentificationDataType;
+        case SpineDataTypeHandler::Function::sessionIdentificationDataElements:
+            return SpineDataTypeHandler::Type::SessionIdentificationDataElementsType;
+        case SpineDataTypeHandler::Function::sessionIdentificationListData:
+            return SpineDataTypeHandler::Type::SessionIdentificationListDataType;
+        case SpineDataTypeHandler::Function::sessionIdentificationListDataSelectors:
+            return SpineDataTypeHandler::Type::SessionIdentificationListDataSelectorsType;
+        case SpineDataTypeHandler::Function::sessionMeasurementRelationData:
+            return SpineDataTypeHandler::Type::SessionMeasurementRelationDataType;
+        case SpineDataTypeHandler::Function::sessionMeasurementRelationDataElements:
+            return SpineDataTypeHandler::Type::SessionMeasurementRelationDataElementsType;
+        case SpineDataTypeHandler::Function::sessionMeasurementRelationListData:
+            return SpineDataTypeHandler::Type::SessionMeasurementRelationListDataType;
+        case SpineDataTypeHandler::Function::sessionMeasurementRelationListDataSelectors:
+            return SpineDataTypeHandler::Type::SessionMeasurementRelationListDataSelectorsType;
         case SpineDataTypeHandler::Function::measurementData:
             return SpineDataTypeHandler::Type::MeasurementDataType;
         case SpineDataTypeHandler::Function::measurementDataElements:
@@ -39090,30 +39163,70 @@ SpineDataTypeHandler::Type SpineDataTypeHandler::type_from_function(SpineDataTyp
             return SpineDataTypeHandler::Type::MeasurementThresholdRelationListDataType;
         case SpineDataTypeHandler::Function::measurementThresholdRelationListDataSelectors:
             return SpineDataTypeHandler::Type::MeasurementThresholdRelationListDataSelectorsType;
-        case SpineDataTypeHandler::Function::thresholdData:
-            return SpineDataTypeHandler::Type::ThresholdDataType;
-        case SpineDataTypeHandler::Function::thresholdDataElements:
-            return SpineDataTypeHandler::Type::ThresholdDataElementsType;
-        case SpineDataTypeHandler::Function::thresholdListData:
-            return SpineDataTypeHandler::Type::ThresholdListDataType;
-        case SpineDataTypeHandler::Function::thresholdListDataSelectors:
-            return SpineDataTypeHandler::Type::ThresholdListDataSelectorsType;
-        case SpineDataTypeHandler::Function::thresholdConstraintsData:
-            return SpineDataTypeHandler::Type::ThresholdConstraintsDataType;
-        case SpineDataTypeHandler::Function::thresholdConstraintsDataElements:
-            return SpineDataTypeHandler::Type::ThresholdConstraintsDataElementsType;
-        case SpineDataTypeHandler::Function::thresholdConstraintsListData:
-            return SpineDataTypeHandler::Type::ThresholdConstraintsListDataType;
-        case SpineDataTypeHandler::Function::thresholdConstraintsListDataSelectors:
-            return SpineDataTypeHandler::Type::ThresholdConstraintsListDataSelectorsType;
-        case SpineDataTypeHandler::Function::thresholdDescriptionData:
-            return SpineDataTypeHandler::Type::ThresholdDescriptionDataType;
-        case SpineDataTypeHandler::Function::thresholdDescriptionDataElements:
-            return SpineDataTypeHandler::Type::ThresholdDescriptionDataElementsType;
-        case SpineDataTypeHandler::Function::thresholdDescriptionListData:
-            return SpineDataTypeHandler::Type::ThresholdDescriptionListDataType;
-        case SpineDataTypeHandler::Function::thresholdDescriptionListDataSelectors:
-            return SpineDataTypeHandler::Type::ThresholdDescriptionListDataSelectorsType;
+        case SpineDataTypeHandler::Function::bindingManagementEntryData:
+            return SpineDataTypeHandler::Type::BindingManagementEntryDataType;
+        case SpineDataTypeHandler::Function::bindingManagementEntryDataElements:
+            return SpineDataTypeHandler::Type::BindingManagementEntryDataElementsType;
+        case SpineDataTypeHandler::Function::bindingManagementEntryListData:
+            return SpineDataTypeHandler::Type::BindingManagementEntryListDataType;
+        case SpineDataTypeHandler::Function::bindingManagementEntryListDataSelectors:
+            return SpineDataTypeHandler::Type::BindingManagementEntryListDataSelectorsType;
+        case SpineDataTypeHandler::Function::bindingManagementRequestCall:
+            return SpineDataTypeHandler::Type::BindingManagementRequestCallType;
+        case SpineDataTypeHandler::Function::bindingManagementRequestCallElements:
+            return SpineDataTypeHandler::Type::BindingManagementRequestCallElementsType;
+        case SpineDataTypeHandler::Function::bindingManagementDeleteCall:
+            return SpineDataTypeHandler::Type::BindingManagementDeleteCallType;
+        case SpineDataTypeHandler::Function::bindingManagementDeleteCallElements:
+            return SpineDataTypeHandler::Type::BindingManagementDeleteCallElementsType;
+        case SpineDataTypeHandler::Function::dataTunnelingCall:
+            return SpineDataTypeHandler::Type::DataTunnelingCallType;
+        case SpineDataTypeHandler::Function::dataTunnelingCallElements:
+            return SpineDataTypeHandler::Type::DataTunnelingCallElementsType;
+        case SpineDataTypeHandler::Function::deviceClassificationManufacturerData:
+            return SpineDataTypeHandler::Type::DeviceClassificationManufacturerDataType;
+        case SpineDataTypeHandler::Function::deviceClassificationManufacturerDataElements:
+            return SpineDataTypeHandler::Type::DeviceClassificationManufacturerDataElementsType;
+        case SpineDataTypeHandler::Function::deviceClassificationUserData:
+            return SpineDataTypeHandler::Type::DeviceClassificationUserDataType;
+        case SpineDataTypeHandler::Function::deviceClassificationUserDataElements:
+            return SpineDataTypeHandler::Type::DeviceClassificationUserDataElementsType;
+        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueData:
+            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueDataType;
+        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueDataElements:
+            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueDataElementsType;
+        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData:
+            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueListDataType;
+        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueListDataSelectors:
+            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueListDataSelectorsType;
+        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionData:
+            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueDescriptionDataType;
+        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionDataElements:
+            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueDescriptionDataElementsType;
+        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListData:
+            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueDescriptionListDataType;
+        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListDataSelectors:
+            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueDescriptionListDataSelectorsType;
+        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsData:
+            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueConstraintsDataType;
+        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsDataElements:
+            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueConstraintsDataElementsType;
+        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsListData:
+            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueConstraintsListDataType;
+        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsListDataSelectors:
+            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueConstraintsListDataSelectorsType;
+        case SpineDataTypeHandler::Function::deviceDiagnosisStateData:
+            return SpineDataTypeHandler::Type::DeviceDiagnosisStateDataType;
+        case SpineDataTypeHandler::Function::deviceDiagnosisStateDataElements:
+            return SpineDataTypeHandler::Type::DeviceDiagnosisStateDataElementsType;
+        case SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData:
+            return SpineDataTypeHandler::Type::DeviceDiagnosisHeartbeatDataType;
+        case SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatDataElements:
+            return SpineDataTypeHandler::Type::DeviceDiagnosisHeartbeatDataElementsType;
+        case SpineDataTypeHandler::Function::deviceDiagnosisServiceData:
+            return SpineDataTypeHandler::Type::DeviceDiagnosisServiceDataType;
+        case SpineDataTypeHandler::Function::deviceDiagnosisServiceDataElements:
+            return SpineDataTypeHandler::Type::DeviceDiagnosisServiceDataElementsType;
         case SpineDataTypeHandler::Function::directControlActivityData:
             return SpineDataTypeHandler::Type::DirectControlActivityDataType;
         case SpineDataTypeHandler::Function::directControlActivityDataElements:
@@ -39218,152 +39331,6 @@ SpineDataTypeHandler::Type SpineDataTypeHandler::type_from_function(SpineDataTyp
             return SpineDataTypeHandler::Type::PowerSequencePriceCalculationRequestCallType;
         case SpineDataTypeHandler::Function::powerSequencePriceCalculationRequestCallElements:
             return SpineDataTypeHandler::Type::PowerSequencePriceCalculationRequestCallElementsType;
-        case SpineDataTypeHandler::Function::resultData:
-            return SpineDataTypeHandler::Type::ResultDataType;
-        case SpineDataTypeHandler::Function::bindingManagementEntryData:
-            return SpineDataTypeHandler::Type::BindingManagementEntryDataType;
-        case SpineDataTypeHandler::Function::bindingManagementEntryDataElements:
-            return SpineDataTypeHandler::Type::BindingManagementEntryDataElementsType;
-        case SpineDataTypeHandler::Function::bindingManagementEntryListData:
-            return SpineDataTypeHandler::Type::BindingManagementEntryListDataType;
-        case SpineDataTypeHandler::Function::bindingManagementEntryListDataSelectors:
-            return SpineDataTypeHandler::Type::BindingManagementEntryListDataSelectorsType;
-        case SpineDataTypeHandler::Function::bindingManagementRequestCall:
-            return SpineDataTypeHandler::Type::BindingManagementRequestCallType;
-        case SpineDataTypeHandler::Function::bindingManagementRequestCallElements:
-            return SpineDataTypeHandler::Type::BindingManagementRequestCallElementsType;
-        case SpineDataTypeHandler::Function::bindingManagementDeleteCall:
-            return SpineDataTypeHandler::Type::BindingManagementDeleteCallType;
-        case SpineDataTypeHandler::Function::bindingManagementDeleteCallElements:
-            return SpineDataTypeHandler::Type::BindingManagementDeleteCallElementsType;
-        case SpineDataTypeHandler::Function::actuatorLevelData:
-            return SpineDataTypeHandler::Type::ActuatorLevelDataType;
-        case SpineDataTypeHandler::Function::actuatorLevelDataElements:
-            return SpineDataTypeHandler::Type::ActuatorLevelDataElementsType;
-        case SpineDataTypeHandler::Function::actuatorLevelDescriptionData:
-            return SpineDataTypeHandler::Type::ActuatorLevelDescriptionDataType;
-        case SpineDataTypeHandler::Function::actuatorLevelDescriptionDataElements:
-            return SpineDataTypeHandler::Type::ActuatorLevelDescriptionDataElementsType;
-        case SpineDataTypeHandler::Function::cmdClassifier:
-            return SpineDataTypeHandler::Type::CmdClassifierType;
-        case SpineDataTypeHandler::Function::lastUpdateAt:
-            return SpineDataTypeHandler::Type::AbsoluteOrRelativeTimeType;
-        case SpineDataTypeHandler::Function::function:
-            return SpineDataTypeHandler::Type::FunctionType;
-        case SpineDataTypeHandler::Function::cmdControl:
-            return SpineDataTypeHandler::Type::CmdControlType;
-        case SpineDataTypeHandler::Function::actuatorSwitchData:
-            return SpineDataTypeHandler::Type::ActuatorSwitchDataType;
-        case SpineDataTypeHandler::Function::actuatorSwitchDataElements:
-            return SpineDataTypeHandler::Type::ActuatorSwitchDataElementsType;
-        case SpineDataTypeHandler::Function::actuatorSwitchDescriptionData:
-            return SpineDataTypeHandler::Type::ActuatorSwitchDescriptionDataType;
-        case SpineDataTypeHandler::Function::actuatorSwitchDescriptionDataElements:
-            return SpineDataTypeHandler::Type::ActuatorSwitchDescriptionDataElementsType;
-        case SpineDataTypeHandler::Function::alarmData:
-            return SpineDataTypeHandler::Type::AlarmDataType;
-        case SpineDataTypeHandler::Function::alarmDataElements:
-            return SpineDataTypeHandler::Type::AlarmDataElementsType;
-        case SpineDataTypeHandler::Function::alarmListData:
-            return SpineDataTypeHandler::Type::AlarmListDataType;
-        case SpineDataTypeHandler::Function::alarmListDataSelectors:
-            return SpineDataTypeHandler::Type::AlarmListDataSelectorsType;
-        case SpineDataTypeHandler::Function::billData:
-            return SpineDataTypeHandler::Type::BillDataType;
-        case SpineDataTypeHandler::Function::billDataElements:
-            return SpineDataTypeHandler::Type::BillDataElementsType;
-        case SpineDataTypeHandler::Function::billListData:
-            return SpineDataTypeHandler::Type::BillListDataType;
-        case SpineDataTypeHandler::Function::billListDataSelectors:
-            return SpineDataTypeHandler::Type::BillListDataSelectorsType;
-        case SpineDataTypeHandler::Function::billConstraintsData:
-            return SpineDataTypeHandler::Type::BillConstraintsDataType;
-        case SpineDataTypeHandler::Function::billConstraintsDataElements:
-            return SpineDataTypeHandler::Type::BillConstraintsDataElementsType;
-        case SpineDataTypeHandler::Function::billConstraintsListData:
-            return SpineDataTypeHandler::Type::BillConstraintsListDataType;
-        case SpineDataTypeHandler::Function::billConstraintsListDataSelectors:
-            return SpineDataTypeHandler::Type::BillConstraintsListDataSelectorsType;
-        case SpineDataTypeHandler::Function::billDescriptionData:
-            return SpineDataTypeHandler::Type::BillDescriptionDataType;
-        case SpineDataTypeHandler::Function::billDescriptionDataElements:
-            return SpineDataTypeHandler::Type::BillDescriptionDataElementsType;
-        case SpineDataTypeHandler::Function::billDescriptionListData:
-            return SpineDataTypeHandler::Type::BillDescriptionListDataType;
-        case SpineDataTypeHandler::Function::billDescriptionListDataSelectors:
-            return SpineDataTypeHandler::Type::BillDescriptionListDataSelectorsType;
-        case SpineDataTypeHandler::Function::identificationData:
-            return SpineDataTypeHandler::Type::IdentificationDataType;
-        case SpineDataTypeHandler::Function::identificationDataElements:
-            return SpineDataTypeHandler::Type::IdentificationDataElementsType;
-        case SpineDataTypeHandler::Function::identificationListData:
-            return SpineDataTypeHandler::Type::IdentificationListDataType;
-        case SpineDataTypeHandler::Function::identificationListDataSelectors:
-            return SpineDataTypeHandler::Type::IdentificationListDataSelectorsType;
-        case SpineDataTypeHandler::Function::sessionIdentificationData:
-            return SpineDataTypeHandler::Type::SessionIdentificationDataType;
-        case SpineDataTypeHandler::Function::sessionIdentificationDataElements:
-            return SpineDataTypeHandler::Type::SessionIdentificationDataElementsType;
-        case SpineDataTypeHandler::Function::sessionIdentificationListData:
-            return SpineDataTypeHandler::Type::SessionIdentificationListDataType;
-        case SpineDataTypeHandler::Function::sessionIdentificationListDataSelectors:
-            return SpineDataTypeHandler::Type::SessionIdentificationListDataSelectorsType;
-        case SpineDataTypeHandler::Function::sessionMeasurementRelationData:
-            return SpineDataTypeHandler::Type::SessionMeasurementRelationDataType;
-        case SpineDataTypeHandler::Function::sessionMeasurementRelationDataElements:
-            return SpineDataTypeHandler::Type::SessionMeasurementRelationDataElementsType;
-        case SpineDataTypeHandler::Function::sessionMeasurementRelationListData:
-            return SpineDataTypeHandler::Type::SessionMeasurementRelationListDataType;
-        case SpineDataTypeHandler::Function::sessionMeasurementRelationListDataSelectors:
-            return SpineDataTypeHandler::Type::SessionMeasurementRelationListDataSelectorsType;
-        case SpineDataTypeHandler::Function::dataTunnelingCall:
-            return SpineDataTypeHandler::Type::DataTunnelingCallType;
-        case SpineDataTypeHandler::Function::dataTunnelingCallElements:
-            return SpineDataTypeHandler::Type::DataTunnelingCallElementsType;
-        case SpineDataTypeHandler::Function::deviceClassificationManufacturerData:
-            return SpineDataTypeHandler::Type::DeviceClassificationManufacturerDataType;
-        case SpineDataTypeHandler::Function::deviceClassificationManufacturerDataElements:
-            return SpineDataTypeHandler::Type::DeviceClassificationManufacturerDataElementsType;
-        case SpineDataTypeHandler::Function::deviceClassificationUserData:
-            return SpineDataTypeHandler::Type::DeviceClassificationUserDataType;
-        case SpineDataTypeHandler::Function::deviceClassificationUserDataElements:
-            return SpineDataTypeHandler::Type::DeviceClassificationUserDataElementsType;
-        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueData:
-            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueDataType;
-        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueDataElements:
-            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueDataElementsType;
-        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData:
-            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueListDataType;
-        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueListDataSelectors:
-            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueListDataSelectorsType;
-        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionData:
-            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueDescriptionDataType;
-        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionDataElements:
-            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueDescriptionDataElementsType;
-        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListData:
-            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueDescriptionListDataType;
-        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListDataSelectors:
-            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueDescriptionListDataSelectorsType;
-        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsData:
-            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueConstraintsDataType;
-        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsDataElements:
-            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueConstraintsDataElementsType;
-        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsListData:
-            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueConstraintsListDataType;
-        case SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsListDataSelectors:
-            return SpineDataTypeHandler::Type::DeviceConfigurationKeyValueConstraintsListDataSelectorsType;
-        case SpineDataTypeHandler::Function::deviceDiagnosisStateData:
-            return SpineDataTypeHandler::Type::DeviceDiagnosisStateDataType;
-        case SpineDataTypeHandler::Function::deviceDiagnosisStateDataElements:
-            return SpineDataTypeHandler::Type::DeviceDiagnosisStateDataElementsType;
-        case SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData:
-            return SpineDataTypeHandler::Type::DeviceDiagnosisHeartbeatDataType;
-        case SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatDataElements:
-            return SpineDataTypeHandler::Type::DeviceDiagnosisHeartbeatDataElementsType;
-        case SpineDataTypeHandler::Function::deviceDiagnosisServiceData:
-            return SpineDataTypeHandler::Type::DeviceDiagnosisServiceDataType;
-        case SpineDataTypeHandler::Function::deviceDiagnosisServiceDataElements:
-            return SpineDataTypeHandler::Type::DeviceDiagnosisServiceDataElementsType;
         case SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionData:
             return SpineDataTypeHandler::Type::ElectricalConnectionParameterDescriptionDataType;
         case SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionDataElements:
@@ -39678,6 +39645,14 @@ SpineDataTypeHandler::Type SpineDataTypeHandler::type_from_function(SpineDataTyp
             return SpineDataTypeHandler::Type::LoadControlLimitDescriptionListDataType;
         case SpineDataTypeHandler::Function::loadControlLimitDescriptionListDataSelectors:
             return SpineDataTypeHandler::Type::LoadControlLimitDescriptionListDataSelectorsType;
+        case SpineDataTypeHandler::Function::messagingData:
+            return SpineDataTypeHandler::Type::MessagingDataType;
+        case SpineDataTypeHandler::Function::messagingDataElements:
+            return SpineDataTypeHandler::Type::MessagingDataElementsType;
+        case SpineDataTypeHandler::Function::messagingListData:
+            return SpineDataTypeHandler::Type::MessagingListDataType;
+        case SpineDataTypeHandler::Function::messagingListDataSelectors:
+            return SpineDataTypeHandler::Type::MessagingListDataSelectorsType;
         case SpineDataTypeHandler::Function::networkManagementAddNodeCall:
             return SpineDataTypeHandler::Type::NetworkManagementAddNodeCallType;
         case SpineDataTypeHandler::Function::networkManagementAddNodeCallElements:
@@ -39866,6 +39841,8 @@ SpineDataTypeHandler::Type SpineDataTypeHandler::type_from_function(SpineDataTyp
             return SpineDataTypeHandler::Type::OperatingConstraintsResumeImplicationListDataType;
         case SpineDataTypeHandler::Function::operatingConstraintsResumeImplicationListDataSelectors:
             return SpineDataTypeHandler::Type::OperatingConstraintsResumeImplicationListDataSelectorsType;
+        case SpineDataTypeHandler::Function::resultData:
+            return SpineDataTypeHandler::Type::ResultDataType;
         case SpineDataTypeHandler::Function::sensingData:
             return SpineDataTypeHandler::Type::SensingDataType;
         case SpineDataTypeHandler::Function::sensingDataElements:
@@ -39974,8 +39951,30 @@ SpineDataTypeHandler::Type SpineDataTypeHandler::type_from_function(SpineDataTyp
             return SpineDataTypeHandler::Type::TimeDistributorEnquiryCallType;
         case SpineDataTypeHandler::Function::timeDistributorEnquiryCallElements:
             return SpineDataTypeHandler::Type::TimeDistributorEnquiryCallElementsType;
-        case SpineDataTypeHandler::Function::header:
-            return SpineDataTypeHandler::Type::HeaderType;
+        case SpineDataTypeHandler::Function::timeSeriesData:
+            return SpineDataTypeHandler::Type::TimeSeriesDataType;
+        case SpineDataTypeHandler::Function::timeSeriesDataElements:
+            return SpineDataTypeHandler::Type::TimeSeriesDataElementsType;
+        case SpineDataTypeHandler::Function::timeSeriesListData:
+            return SpineDataTypeHandler::Type::TimeSeriesListDataType;
+        case SpineDataTypeHandler::Function::timeSeriesListDataSelectors:
+            return SpineDataTypeHandler::Type::TimeSeriesListDataSelectorsType;
+        case SpineDataTypeHandler::Function::timeSeriesDescriptionData:
+            return SpineDataTypeHandler::Type::TimeSeriesDescriptionDataType;
+        case SpineDataTypeHandler::Function::timeSeriesDescriptionDataElements:
+            return SpineDataTypeHandler::Type::TimeSeriesDescriptionDataElementsType;
+        case SpineDataTypeHandler::Function::timeSeriesDescriptionListData:
+            return SpineDataTypeHandler::Type::TimeSeriesDescriptionListDataType;
+        case SpineDataTypeHandler::Function::timeSeriesDescriptionListDataSelectors:
+            return SpineDataTypeHandler::Type::TimeSeriesDescriptionListDataSelectorsType;
+        case SpineDataTypeHandler::Function::timeSeriesConstraintsData:
+            return SpineDataTypeHandler::Type::TimeSeriesConstraintsDataType;
+        case SpineDataTypeHandler::Function::timeSeriesConstraintsDataElements:
+            return SpineDataTypeHandler::Type::TimeSeriesConstraintsDataElementsType;
+        case SpineDataTypeHandler::Function::timeSeriesConstraintsListData:
+            return SpineDataTypeHandler::Type::TimeSeriesConstraintsListDataType;
+        case SpineDataTypeHandler::Function::timeSeriesConstraintsListDataSelectors:
+            return SpineDataTypeHandler::Type::TimeSeriesConstraintsListDataSelectorsType;
         default:
             return SpineDataTypeHandler::Type::None;
     }
@@ -39985,38 +39984,112 @@ SpineDataTypeHandler::Type SpineDataTypeHandler::type_from_function(SpineDataTyp
 SpineDataTypeHandler::Function SpineDataTypeHandler::function_from_string(const String function_name)
 {
 
-    if (function_name == "messagingData")
-        return SpineDataTypeHandler::Function::messagingData;
-    if (function_name == "messagingDataElements")
-        return SpineDataTypeHandler::Function::messagingDataElements;
-    if (function_name == "messagingListData")
-        return SpineDataTypeHandler::Function::messagingListData;
-    if (function_name == "messagingListDataSelectors")
-        return SpineDataTypeHandler::Function::messagingListDataSelectors;
-    if (function_name == "timeSeriesData")
-        return SpineDataTypeHandler::Function::timeSeriesData;
-    if (function_name == "timeSeriesDataElements")
-        return SpineDataTypeHandler::Function::timeSeriesDataElements;
-    if (function_name == "timeSeriesListData")
-        return SpineDataTypeHandler::Function::timeSeriesListData;
-    if (function_name == "timeSeriesListDataSelectors")
-        return SpineDataTypeHandler::Function::timeSeriesListDataSelectors;
-    if (function_name == "timeSeriesDescriptionData")
-        return SpineDataTypeHandler::Function::timeSeriesDescriptionData;
-    if (function_name == "timeSeriesDescriptionDataElements")
-        return SpineDataTypeHandler::Function::timeSeriesDescriptionDataElements;
-    if (function_name == "timeSeriesDescriptionListData")
-        return SpineDataTypeHandler::Function::timeSeriesDescriptionListData;
-    if (function_name == "timeSeriesDescriptionListDataSelectors")
-        return SpineDataTypeHandler::Function::timeSeriesDescriptionListDataSelectors;
-    if (function_name == "timeSeriesConstraintsData")
-        return SpineDataTypeHandler::Function::timeSeriesConstraintsData;
-    if (function_name == "timeSeriesConstraintsDataElements")
-        return SpineDataTypeHandler::Function::timeSeriesConstraintsDataElements;
-    if (function_name == "timeSeriesConstraintsListData")
-        return SpineDataTypeHandler::Function::timeSeriesConstraintsListData;
-    if (function_name == "timeSeriesConstraintsListDataSelectors")
-        return SpineDataTypeHandler::Function::timeSeriesConstraintsListDataSelectors;
+    if (function_name == "header")
+        return SpineDataTypeHandler::Function::header;
+    if (function_name == "cmdClassifier")
+        return SpineDataTypeHandler::Function::cmdClassifier;
+    if (function_name == "lastUpdateAt")
+        return SpineDataTypeHandler::Function::lastUpdateAt;
+    if (function_name == "function")
+        return SpineDataTypeHandler::Function::function;
+    if (function_name == "cmdControl")
+        return SpineDataTypeHandler::Function::cmdControl;
+    if (function_name == "actuatorLevelData")
+        return SpineDataTypeHandler::Function::actuatorLevelData;
+    if (function_name == "actuatorLevelDataElements")
+        return SpineDataTypeHandler::Function::actuatorLevelDataElements;
+    if (function_name == "actuatorLevelDescriptionData")
+        return SpineDataTypeHandler::Function::actuatorLevelDescriptionData;
+    if (function_name == "actuatorLevelDescriptionDataElements")
+        return SpineDataTypeHandler::Function::actuatorLevelDescriptionDataElements;
+    if (function_name == "actuatorSwitchData")
+        return SpineDataTypeHandler::Function::actuatorSwitchData;
+    if (function_name == "actuatorSwitchDataElements")
+        return SpineDataTypeHandler::Function::actuatorSwitchDataElements;
+    if (function_name == "actuatorSwitchDescriptionData")
+        return SpineDataTypeHandler::Function::actuatorSwitchDescriptionData;
+    if (function_name == "actuatorSwitchDescriptionDataElements")
+        return SpineDataTypeHandler::Function::actuatorSwitchDescriptionDataElements;
+    if (function_name == "alarmData")
+        return SpineDataTypeHandler::Function::alarmData;
+    if (function_name == "alarmDataElements")
+        return SpineDataTypeHandler::Function::alarmDataElements;
+    if (function_name == "alarmListData")
+        return SpineDataTypeHandler::Function::alarmListData;
+    if (function_name == "alarmListDataSelectors")
+        return SpineDataTypeHandler::Function::alarmListDataSelectors;
+    if (function_name == "thresholdData")
+        return SpineDataTypeHandler::Function::thresholdData;
+    if (function_name == "thresholdDataElements")
+        return SpineDataTypeHandler::Function::thresholdDataElements;
+    if (function_name == "thresholdListData")
+        return SpineDataTypeHandler::Function::thresholdListData;
+    if (function_name == "thresholdListDataSelectors")
+        return SpineDataTypeHandler::Function::thresholdListDataSelectors;
+    if (function_name == "thresholdConstraintsData")
+        return SpineDataTypeHandler::Function::thresholdConstraintsData;
+    if (function_name == "thresholdConstraintsDataElements")
+        return SpineDataTypeHandler::Function::thresholdConstraintsDataElements;
+    if (function_name == "thresholdConstraintsListData")
+        return SpineDataTypeHandler::Function::thresholdConstraintsListData;
+    if (function_name == "thresholdConstraintsListDataSelectors")
+        return SpineDataTypeHandler::Function::thresholdConstraintsListDataSelectors;
+    if (function_name == "thresholdDescriptionData")
+        return SpineDataTypeHandler::Function::thresholdDescriptionData;
+    if (function_name == "thresholdDescriptionDataElements")
+        return SpineDataTypeHandler::Function::thresholdDescriptionDataElements;
+    if (function_name == "thresholdDescriptionListData")
+        return SpineDataTypeHandler::Function::thresholdDescriptionListData;
+    if (function_name == "thresholdDescriptionListDataSelectors")
+        return SpineDataTypeHandler::Function::thresholdDescriptionListDataSelectors;
+    if (function_name == "billData")
+        return SpineDataTypeHandler::Function::billData;
+    if (function_name == "billDataElements")
+        return SpineDataTypeHandler::Function::billDataElements;
+    if (function_name == "billListData")
+        return SpineDataTypeHandler::Function::billListData;
+    if (function_name == "billListDataSelectors")
+        return SpineDataTypeHandler::Function::billListDataSelectors;
+    if (function_name == "billConstraintsData")
+        return SpineDataTypeHandler::Function::billConstraintsData;
+    if (function_name == "billConstraintsDataElements")
+        return SpineDataTypeHandler::Function::billConstraintsDataElements;
+    if (function_name == "billConstraintsListData")
+        return SpineDataTypeHandler::Function::billConstraintsListData;
+    if (function_name == "billConstraintsListDataSelectors")
+        return SpineDataTypeHandler::Function::billConstraintsListDataSelectors;
+    if (function_name == "billDescriptionData")
+        return SpineDataTypeHandler::Function::billDescriptionData;
+    if (function_name == "billDescriptionDataElements")
+        return SpineDataTypeHandler::Function::billDescriptionDataElements;
+    if (function_name == "billDescriptionListData")
+        return SpineDataTypeHandler::Function::billDescriptionListData;
+    if (function_name == "billDescriptionListDataSelectors")
+        return SpineDataTypeHandler::Function::billDescriptionListDataSelectors;
+    if (function_name == "identificationData")
+        return SpineDataTypeHandler::Function::identificationData;
+    if (function_name == "identificationDataElements")
+        return SpineDataTypeHandler::Function::identificationDataElements;
+    if (function_name == "identificationListData")
+        return SpineDataTypeHandler::Function::identificationListData;
+    if (function_name == "identificationListDataSelectors")
+        return SpineDataTypeHandler::Function::identificationListDataSelectors;
+    if (function_name == "sessionIdentificationData")
+        return SpineDataTypeHandler::Function::sessionIdentificationData;
+    if (function_name == "sessionIdentificationDataElements")
+        return SpineDataTypeHandler::Function::sessionIdentificationDataElements;
+    if (function_name == "sessionIdentificationListData")
+        return SpineDataTypeHandler::Function::sessionIdentificationListData;
+    if (function_name == "sessionIdentificationListDataSelectors")
+        return SpineDataTypeHandler::Function::sessionIdentificationListDataSelectors;
+    if (function_name == "sessionMeasurementRelationData")
+        return SpineDataTypeHandler::Function::sessionMeasurementRelationData;
+    if (function_name == "sessionMeasurementRelationDataElements")
+        return SpineDataTypeHandler::Function::sessionMeasurementRelationDataElements;
+    if (function_name == "sessionMeasurementRelationListData")
+        return SpineDataTypeHandler::Function::sessionMeasurementRelationListData;
+    if (function_name == "sessionMeasurementRelationListDataSelectors")
+        return SpineDataTypeHandler::Function::sessionMeasurementRelationListDataSelectors;
     if (function_name == "measurementData")
         return SpineDataTypeHandler::Function::measurementData;
     if (function_name == "measurementDataElements")
@@ -40057,30 +40130,70 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::function_from_string(const 
         return SpineDataTypeHandler::Function::measurementThresholdRelationListData;
     if (function_name == "measurementThresholdRelationListDataSelectors")
         return SpineDataTypeHandler::Function::measurementThresholdRelationListDataSelectors;
-    if (function_name == "thresholdData")
-        return SpineDataTypeHandler::Function::thresholdData;
-    if (function_name == "thresholdDataElements")
-        return SpineDataTypeHandler::Function::thresholdDataElements;
-    if (function_name == "thresholdListData")
-        return SpineDataTypeHandler::Function::thresholdListData;
-    if (function_name == "thresholdListDataSelectors")
-        return SpineDataTypeHandler::Function::thresholdListDataSelectors;
-    if (function_name == "thresholdConstraintsData")
-        return SpineDataTypeHandler::Function::thresholdConstraintsData;
-    if (function_name == "thresholdConstraintsDataElements")
-        return SpineDataTypeHandler::Function::thresholdConstraintsDataElements;
-    if (function_name == "thresholdConstraintsListData")
-        return SpineDataTypeHandler::Function::thresholdConstraintsListData;
-    if (function_name == "thresholdConstraintsListDataSelectors")
-        return SpineDataTypeHandler::Function::thresholdConstraintsListDataSelectors;
-    if (function_name == "thresholdDescriptionData")
-        return SpineDataTypeHandler::Function::thresholdDescriptionData;
-    if (function_name == "thresholdDescriptionDataElements")
-        return SpineDataTypeHandler::Function::thresholdDescriptionDataElements;
-    if (function_name == "thresholdDescriptionListData")
-        return SpineDataTypeHandler::Function::thresholdDescriptionListData;
-    if (function_name == "thresholdDescriptionListDataSelectors")
-        return SpineDataTypeHandler::Function::thresholdDescriptionListDataSelectors;
+    if (function_name == "bindingManagementEntryData")
+        return SpineDataTypeHandler::Function::bindingManagementEntryData;
+    if (function_name == "bindingManagementEntryDataElements")
+        return SpineDataTypeHandler::Function::bindingManagementEntryDataElements;
+    if (function_name == "bindingManagementEntryListData")
+        return SpineDataTypeHandler::Function::bindingManagementEntryListData;
+    if (function_name == "bindingManagementEntryListDataSelectors")
+        return SpineDataTypeHandler::Function::bindingManagementEntryListDataSelectors;
+    if (function_name == "bindingManagementRequestCall")
+        return SpineDataTypeHandler::Function::bindingManagementRequestCall;
+    if (function_name == "bindingManagementRequestCallElements")
+        return SpineDataTypeHandler::Function::bindingManagementRequestCallElements;
+    if (function_name == "bindingManagementDeleteCall")
+        return SpineDataTypeHandler::Function::bindingManagementDeleteCall;
+    if (function_name == "bindingManagementDeleteCallElements")
+        return SpineDataTypeHandler::Function::bindingManagementDeleteCallElements;
+    if (function_name == "dataTunnelingCall")
+        return SpineDataTypeHandler::Function::dataTunnelingCall;
+    if (function_name == "dataTunnelingCallElements")
+        return SpineDataTypeHandler::Function::dataTunnelingCallElements;
+    if (function_name == "deviceClassificationManufacturerData")
+        return SpineDataTypeHandler::Function::deviceClassificationManufacturerData;
+    if (function_name == "deviceClassificationManufacturerDataElements")
+        return SpineDataTypeHandler::Function::deviceClassificationManufacturerDataElements;
+    if (function_name == "deviceClassificationUserData")
+        return SpineDataTypeHandler::Function::deviceClassificationUserData;
+    if (function_name == "deviceClassificationUserDataElements")
+        return SpineDataTypeHandler::Function::deviceClassificationUserDataElements;
+    if (function_name == "deviceConfigurationKeyValueData")
+        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueData;
+    if (function_name == "deviceConfigurationKeyValueDataElements")
+        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueDataElements;
+    if (function_name == "deviceConfigurationKeyValueListData")
+        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData;
+    if (function_name == "deviceConfigurationKeyValueListDataSelectors")
+        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueListDataSelectors;
+    if (function_name == "deviceConfigurationKeyValueDescriptionData")
+        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionData;
+    if (function_name == "deviceConfigurationKeyValueDescriptionDataElements")
+        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionDataElements;
+    if (function_name == "deviceConfigurationKeyValueDescriptionListData")
+        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListData;
+    if (function_name == "deviceConfigurationKeyValueDescriptionListDataSelectors")
+        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListDataSelectors;
+    if (function_name == "deviceConfigurationKeyValueConstraintsData")
+        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsData;
+    if (function_name == "deviceConfigurationKeyValueConstraintsDataElements")
+        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsDataElements;
+    if (function_name == "deviceConfigurationKeyValueConstraintsListData")
+        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsListData;
+    if (function_name == "deviceConfigurationKeyValueConstraintsListDataSelectors")
+        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsListDataSelectors;
+    if (function_name == "deviceDiagnosisStateData")
+        return SpineDataTypeHandler::Function::deviceDiagnosisStateData;
+    if (function_name == "deviceDiagnosisStateDataElements")
+        return SpineDataTypeHandler::Function::deviceDiagnosisStateDataElements;
+    if (function_name == "deviceDiagnosisHeartbeatData")
+        return SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData;
+    if (function_name == "deviceDiagnosisHeartbeatDataElements")
+        return SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatDataElements;
+    if (function_name == "deviceDiagnosisServiceData")
+        return SpineDataTypeHandler::Function::deviceDiagnosisServiceData;
+    if (function_name == "deviceDiagnosisServiceDataElements")
+        return SpineDataTypeHandler::Function::deviceDiagnosisServiceDataElements;
     if (function_name == "directControlActivityData")
         return SpineDataTypeHandler::Function::directControlActivityData;
     if (function_name == "directControlActivityDataElements")
@@ -40185,152 +40298,6 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::function_from_string(const 
         return SpineDataTypeHandler::Function::powerSequencePriceCalculationRequestCall;
     if (function_name == "powerSequencePriceCalculationRequestCallElements")
         return SpineDataTypeHandler::Function::powerSequencePriceCalculationRequestCallElements;
-    if (function_name == "resultData")
-        return SpineDataTypeHandler::Function::resultData;
-    if (function_name == "bindingManagementEntryData")
-        return SpineDataTypeHandler::Function::bindingManagementEntryData;
-    if (function_name == "bindingManagementEntryDataElements")
-        return SpineDataTypeHandler::Function::bindingManagementEntryDataElements;
-    if (function_name == "bindingManagementEntryListData")
-        return SpineDataTypeHandler::Function::bindingManagementEntryListData;
-    if (function_name == "bindingManagementEntryListDataSelectors")
-        return SpineDataTypeHandler::Function::bindingManagementEntryListDataSelectors;
-    if (function_name == "bindingManagementRequestCall")
-        return SpineDataTypeHandler::Function::bindingManagementRequestCall;
-    if (function_name == "bindingManagementRequestCallElements")
-        return SpineDataTypeHandler::Function::bindingManagementRequestCallElements;
-    if (function_name == "bindingManagementDeleteCall")
-        return SpineDataTypeHandler::Function::bindingManagementDeleteCall;
-    if (function_name == "bindingManagementDeleteCallElements")
-        return SpineDataTypeHandler::Function::bindingManagementDeleteCallElements;
-    if (function_name == "actuatorLevelData")
-        return SpineDataTypeHandler::Function::actuatorLevelData;
-    if (function_name == "actuatorLevelDataElements")
-        return SpineDataTypeHandler::Function::actuatorLevelDataElements;
-    if (function_name == "actuatorLevelDescriptionData")
-        return SpineDataTypeHandler::Function::actuatorLevelDescriptionData;
-    if (function_name == "actuatorLevelDescriptionDataElements")
-        return SpineDataTypeHandler::Function::actuatorLevelDescriptionDataElements;
-    if (function_name == "cmdClassifier")
-        return SpineDataTypeHandler::Function::cmdClassifier;
-    if (function_name == "lastUpdateAt")
-        return SpineDataTypeHandler::Function::lastUpdateAt;
-    if (function_name == "function")
-        return SpineDataTypeHandler::Function::function;
-    if (function_name == "cmdControl")
-        return SpineDataTypeHandler::Function::cmdControl;
-    if (function_name == "actuatorSwitchData")
-        return SpineDataTypeHandler::Function::actuatorSwitchData;
-    if (function_name == "actuatorSwitchDataElements")
-        return SpineDataTypeHandler::Function::actuatorSwitchDataElements;
-    if (function_name == "actuatorSwitchDescriptionData")
-        return SpineDataTypeHandler::Function::actuatorSwitchDescriptionData;
-    if (function_name == "actuatorSwitchDescriptionDataElements")
-        return SpineDataTypeHandler::Function::actuatorSwitchDescriptionDataElements;
-    if (function_name == "alarmData")
-        return SpineDataTypeHandler::Function::alarmData;
-    if (function_name == "alarmDataElements")
-        return SpineDataTypeHandler::Function::alarmDataElements;
-    if (function_name == "alarmListData")
-        return SpineDataTypeHandler::Function::alarmListData;
-    if (function_name == "alarmListDataSelectors")
-        return SpineDataTypeHandler::Function::alarmListDataSelectors;
-    if (function_name == "billData")
-        return SpineDataTypeHandler::Function::billData;
-    if (function_name == "billDataElements")
-        return SpineDataTypeHandler::Function::billDataElements;
-    if (function_name == "billListData")
-        return SpineDataTypeHandler::Function::billListData;
-    if (function_name == "billListDataSelectors")
-        return SpineDataTypeHandler::Function::billListDataSelectors;
-    if (function_name == "billConstraintsData")
-        return SpineDataTypeHandler::Function::billConstraintsData;
-    if (function_name == "billConstraintsDataElements")
-        return SpineDataTypeHandler::Function::billConstraintsDataElements;
-    if (function_name == "billConstraintsListData")
-        return SpineDataTypeHandler::Function::billConstraintsListData;
-    if (function_name == "billConstraintsListDataSelectors")
-        return SpineDataTypeHandler::Function::billConstraintsListDataSelectors;
-    if (function_name == "billDescriptionData")
-        return SpineDataTypeHandler::Function::billDescriptionData;
-    if (function_name == "billDescriptionDataElements")
-        return SpineDataTypeHandler::Function::billDescriptionDataElements;
-    if (function_name == "billDescriptionListData")
-        return SpineDataTypeHandler::Function::billDescriptionListData;
-    if (function_name == "billDescriptionListDataSelectors")
-        return SpineDataTypeHandler::Function::billDescriptionListDataSelectors;
-    if (function_name == "identificationData")
-        return SpineDataTypeHandler::Function::identificationData;
-    if (function_name == "identificationDataElements")
-        return SpineDataTypeHandler::Function::identificationDataElements;
-    if (function_name == "identificationListData")
-        return SpineDataTypeHandler::Function::identificationListData;
-    if (function_name == "identificationListDataSelectors")
-        return SpineDataTypeHandler::Function::identificationListDataSelectors;
-    if (function_name == "sessionIdentificationData")
-        return SpineDataTypeHandler::Function::sessionIdentificationData;
-    if (function_name == "sessionIdentificationDataElements")
-        return SpineDataTypeHandler::Function::sessionIdentificationDataElements;
-    if (function_name == "sessionIdentificationListData")
-        return SpineDataTypeHandler::Function::sessionIdentificationListData;
-    if (function_name == "sessionIdentificationListDataSelectors")
-        return SpineDataTypeHandler::Function::sessionIdentificationListDataSelectors;
-    if (function_name == "sessionMeasurementRelationData")
-        return SpineDataTypeHandler::Function::sessionMeasurementRelationData;
-    if (function_name == "sessionMeasurementRelationDataElements")
-        return SpineDataTypeHandler::Function::sessionMeasurementRelationDataElements;
-    if (function_name == "sessionMeasurementRelationListData")
-        return SpineDataTypeHandler::Function::sessionMeasurementRelationListData;
-    if (function_name == "sessionMeasurementRelationListDataSelectors")
-        return SpineDataTypeHandler::Function::sessionMeasurementRelationListDataSelectors;
-    if (function_name == "dataTunnelingCall")
-        return SpineDataTypeHandler::Function::dataTunnelingCall;
-    if (function_name == "dataTunnelingCallElements")
-        return SpineDataTypeHandler::Function::dataTunnelingCallElements;
-    if (function_name == "deviceClassificationManufacturerData")
-        return SpineDataTypeHandler::Function::deviceClassificationManufacturerData;
-    if (function_name == "deviceClassificationManufacturerDataElements")
-        return SpineDataTypeHandler::Function::deviceClassificationManufacturerDataElements;
-    if (function_name == "deviceClassificationUserData")
-        return SpineDataTypeHandler::Function::deviceClassificationUserData;
-    if (function_name == "deviceClassificationUserDataElements")
-        return SpineDataTypeHandler::Function::deviceClassificationUserDataElements;
-    if (function_name == "deviceConfigurationKeyValueData")
-        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueData;
-    if (function_name == "deviceConfigurationKeyValueDataElements")
-        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueDataElements;
-    if (function_name == "deviceConfigurationKeyValueListData")
-        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData;
-    if (function_name == "deviceConfigurationKeyValueListDataSelectors")
-        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueListDataSelectors;
-    if (function_name == "deviceConfigurationKeyValueDescriptionData")
-        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionData;
-    if (function_name == "deviceConfigurationKeyValueDescriptionDataElements")
-        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionDataElements;
-    if (function_name == "deviceConfigurationKeyValueDescriptionListData")
-        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListData;
-    if (function_name == "deviceConfigurationKeyValueDescriptionListDataSelectors")
-        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListDataSelectors;
-    if (function_name == "deviceConfigurationKeyValueConstraintsData")
-        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsData;
-    if (function_name == "deviceConfigurationKeyValueConstraintsDataElements")
-        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsDataElements;
-    if (function_name == "deviceConfigurationKeyValueConstraintsListData")
-        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsListData;
-    if (function_name == "deviceConfigurationKeyValueConstraintsListDataSelectors")
-        return SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsListDataSelectors;
-    if (function_name == "deviceDiagnosisStateData")
-        return SpineDataTypeHandler::Function::deviceDiagnosisStateData;
-    if (function_name == "deviceDiagnosisStateDataElements")
-        return SpineDataTypeHandler::Function::deviceDiagnosisStateDataElements;
-    if (function_name == "deviceDiagnosisHeartbeatData")
-        return SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData;
-    if (function_name == "deviceDiagnosisHeartbeatDataElements")
-        return SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatDataElements;
-    if (function_name == "deviceDiagnosisServiceData")
-        return SpineDataTypeHandler::Function::deviceDiagnosisServiceData;
-    if (function_name == "deviceDiagnosisServiceDataElements")
-        return SpineDataTypeHandler::Function::deviceDiagnosisServiceDataElements;
     if (function_name == "electricalConnectionParameterDescriptionData")
         return SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionData;
     if (function_name == "electricalConnectionParameterDescriptionDataElements")
@@ -40645,6 +40612,14 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::function_from_string(const 
         return SpineDataTypeHandler::Function::loadControlLimitDescriptionListData;
     if (function_name == "loadControlLimitDescriptionListDataSelectors")
         return SpineDataTypeHandler::Function::loadControlLimitDescriptionListDataSelectors;
+    if (function_name == "messagingData")
+        return SpineDataTypeHandler::Function::messagingData;
+    if (function_name == "messagingDataElements")
+        return SpineDataTypeHandler::Function::messagingDataElements;
+    if (function_name == "messagingListData")
+        return SpineDataTypeHandler::Function::messagingListData;
+    if (function_name == "messagingListDataSelectors")
+        return SpineDataTypeHandler::Function::messagingListDataSelectors;
     if (function_name == "networkManagementAddNodeCall")
         return SpineDataTypeHandler::Function::networkManagementAddNodeCall;
     if (function_name == "networkManagementAddNodeCallElements")
@@ -40833,6 +40808,8 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::function_from_string(const 
         return SpineDataTypeHandler::Function::operatingConstraintsResumeImplicationListData;
     if (function_name == "operatingConstraintsResumeImplicationListDataSelectors")
         return SpineDataTypeHandler::Function::operatingConstraintsResumeImplicationListDataSelectors;
+    if (function_name == "resultData")
+        return SpineDataTypeHandler::Function::resultData;
     if (function_name == "sensingData")
         return SpineDataTypeHandler::Function::sensingData;
     if (function_name == "sensingDataElements")
@@ -40941,98 +40918,316 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::function_from_string(const 
         return SpineDataTypeHandler::Function::timeDistributorEnquiryCall;
     if (function_name == "timeDistributorEnquiryCallElements")
         return SpineDataTypeHandler::Function::timeDistributorEnquiryCallElements;
-    if (function_name == "header")
-        return SpineDataTypeHandler::Function::header;
+    if (function_name == "timeSeriesData")
+        return SpineDataTypeHandler::Function::timeSeriesData;
+    if (function_name == "timeSeriesDataElements")
+        return SpineDataTypeHandler::Function::timeSeriesDataElements;
+    if (function_name == "timeSeriesListData")
+        return SpineDataTypeHandler::Function::timeSeriesListData;
+    if (function_name == "timeSeriesListDataSelectors")
+        return SpineDataTypeHandler::Function::timeSeriesListDataSelectors;
+    if (function_name == "timeSeriesDescriptionData")
+        return SpineDataTypeHandler::Function::timeSeriesDescriptionData;
+    if (function_name == "timeSeriesDescriptionDataElements")
+        return SpineDataTypeHandler::Function::timeSeriesDescriptionDataElements;
+    if (function_name == "timeSeriesDescriptionListData")
+        return SpineDataTypeHandler::Function::timeSeriesDescriptionListData;
+    if (function_name == "timeSeriesDescriptionListDataSelectors")
+        return SpineDataTypeHandler::Function::timeSeriesDescriptionListDataSelectors;
+    if (function_name == "timeSeriesConstraintsData")
+        return SpineDataTypeHandler::Function::timeSeriesConstraintsData;
+    if (function_name == "timeSeriesConstraintsDataElements")
+        return SpineDataTypeHandler::Function::timeSeriesConstraintsDataElements;
+    if (function_name == "timeSeriesConstraintsListData")
+        return SpineDataTypeHandler::Function::timeSeriesConstraintsListData;
+    if (function_name == "timeSeriesConstraintsListDataSelectors")
+        return SpineDataTypeHandler::Function::timeSeriesConstraintsListDataSelectors;
     return SpineDataTypeHandler::Function::None;
 }
 
 SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst obj)
 {
 
-    if (obj["messagingData"]) {
-        last_cmd = function_from_string("messagingData");
-        messagingdatatype = obj["messagingData"].as<decltype(messagingdatatype)::value_type>();
+    if (obj["header"]) {
+        last_cmd = function_from_string("header");
+        headertype = obj["header"].as<decltype(headertype)::value_type>();
         return last_cmd;
     }
-    if (obj["messagingDataElements"]) {
-        last_cmd = function_from_string("messagingDataElements");
-        messagingdataelementstype = obj["messagingDataElements"].as<decltype(messagingdataelementstype)::value_type>();
+    if (obj["cmdClassifier"]) {
+        last_cmd = function_from_string("cmdClassifier");
+        cmdclassifiertype = obj["cmdClassifier"].as<decltype(cmdclassifiertype)::value_type>();
         return last_cmd;
     }
-    if (obj["messagingListData"]) {
-        last_cmd = function_from_string("messagingListData");
-        messaginglistdatatype = obj["messagingListData"].as<decltype(messaginglistdatatype)::value_type>();
+    if (obj["lastUpdateAt"]) {
+        last_cmd = function_from_string("lastUpdateAt");
+        absoluteorrelativetimetype = obj["lastUpdateAt"].as<decltype(absoluteorrelativetimetype)::value_type>();
         return last_cmd;
     }
-    if (obj["messagingListDataSelectors"]) {
-        last_cmd = function_from_string("messagingListDataSelectors");
-        messaginglistdataselectorstype = obj["messagingListDataSelectors"].as<decltype(messaginglistdataselectorstype)::value_type>();
+    if (obj["function"]) {
+        last_cmd = function_from_string("function");
+        functiontype = obj["function"].as<decltype(functiontype)::value_type>();
         return last_cmd;
     }
-    if (obj["timeSeriesData"]) {
-        last_cmd = function_from_string("timeSeriesData");
-        timeseriesdatatype = obj["timeSeriesData"].as<decltype(timeseriesdatatype)::value_type>();
+    if (obj["cmdControl"]) {
+        last_cmd = function_from_string("cmdControl");
+        cmdcontroltype = obj["cmdControl"].as<decltype(cmdcontroltype)::value_type>();
         return last_cmd;
     }
-    if (obj["timeSeriesDataElements"]) {
-        last_cmd = function_from_string("timeSeriesDataElements");
-        timeseriesdataelementstype = obj["timeSeriesDataElements"].as<decltype(timeseriesdataelementstype)::value_type>();
+    if (obj["actuatorLevelData"]) {
+        last_cmd = function_from_string("actuatorLevelData");
+        actuatorleveldatatype = obj["actuatorLevelData"].as<decltype(actuatorleveldatatype)::value_type>();
         return last_cmd;
     }
-    if (obj["timeSeriesListData"]) {
-        last_cmd = function_from_string("timeSeriesListData");
-        timeserieslistdatatype = obj["timeSeriesListData"].as<decltype(timeserieslistdatatype)::value_type>();
+    if (obj["actuatorLevelDataElements"]) {
+        last_cmd = function_from_string("actuatorLevelDataElements");
+        actuatorleveldataelementstype = obj["actuatorLevelDataElements"].as<decltype(actuatorleveldataelementstype)::value_type>();
         return last_cmd;
     }
-    if (obj["timeSeriesListDataSelectors"]) {
-        last_cmd = function_from_string("timeSeriesListDataSelectors");
-        timeserieslistdataselectorstype = obj["timeSeriesListDataSelectors"].as<decltype(timeserieslistdataselectorstype)::value_type>();
+    if (obj["actuatorLevelDescriptionData"]) {
+        last_cmd = function_from_string("actuatorLevelDescriptionData");
+        actuatorleveldescriptiondatatype = obj["actuatorLevelDescriptionData"].as<decltype(actuatorleveldescriptiondatatype)::value_type>();
         return last_cmd;
     }
-    if (obj["timeSeriesDescriptionData"]) {
-        last_cmd = function_from_string("timeSeriesDescriptionData");
-        timeseriesdescriptiondatatype = obj["timeSeriesDescriptionData"].as<decltype(timeseriesdescriptiondatatype)::value_type>();
+    if (obj["actuatorLevelDescriptionDataElements"]) {
+        last_cmd = function_from_string("actuatorLevelDescriptionDataElements");
+        actuatorleveldescriptiondataelementstype =
+            obj["actuatorLevelDescriptionDataElements"].as<decltype(actuatorleveldescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
-    if (obj["timeSeriesDescriptionDataElements"]) {
-        last_cmd = function_from_string("timeSeriesDescriptionDataElements");
-        timeseriesdescriptiondataelementstype =
-            obj["timeSeriesDescriptionDataElements"].as<decltype(timeseriesdescriptiondataelementstype)::value_type>();
+    if (obj["actuatorSwitchData"]) {
+        last_cmd = function_from_string("actuatorSwitchData");
+        actuatorswitchdatatype = obj["actuatorSwitchData"].as<decltype(actuatorswitchdatatype)::value_type>();
         return last_cmd;
     }
-    if (obj["timeSeriesDescriptionListData"]) {
-        last_cmd = function_from_string("timeSeriesDescriptionListData");
-        timeseriesdescriptionlistdatatype =
-            obj["timeSeriesDescriptionListData"].as<decltype(timeseriesdescriptionlistdatatype)::value_type>();
+    if (obj["actuatorSwitchDataElements"]) {
+        last_cmd = function_from_string("actuatorSwitchDataElements");
+        actuatorswitchdataelementstype = obj["actuatorSwitchDataElements"].as<decltype(actuatorswitchdataelementstype)::value_type>();
         return last_cmd;
     }
-    if (obj["timeSeriesDescriptionListDataSelectors"]) {
-        last_cmd = function_from_string("timeSeriesDescriptionListDataSelectors");
-        timeseriesdescriptionlistdataselectorstype =
-            obj["timeSeriesDescriptionListDataSelectors"].as<decltype(timeseriesdescriptionlistdataselectorstype)::value_type>();
+    if (obj["actuatorSwitchDescriptionData"]) {
+        last_cmd = function_from_string("actuatorSwitchDescriptionData");
+        actuatorswitchdescriptiondatatype =
+            obj["actuatorSwitchDescriptionData"].as<decltype(actuatorswitchdescriptiondatatype)::value_type>();
         return last_cmd;
     }
-    if (obj["timeSeriesConstraintsData"]) {
-        last_cmd = function_from_string("timeSeriesConstraintsData");
-        timeseriesconstraintsdatatype = obj["timeSeriesConstraintsData"].as<decltype(timeseriesconstraintsdatatype)::value_type>();
+    if (obj["actuatorSwitchDescriptionDataElements"]) {
+        last_cmd = function_from_string("actuatorSwitchDescriptionDataElements");
+        actuatorswitchdescriptiondataelementstype =
+            obj["actuatorSwitchDescriptionDataElements"].as<decltype(actuatorswitchdescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
-    if (obj["timeSeriesConstraintsDataElements"]) {
-        last_cmd = function_from_string("timeSeriesConstraintsDataElements");
-        timeseriesconstraintsdataelementstype =
-            obj["timeSeriesConstraintsDataElements"].as<decltype(timeseriesconstraintsdataelementstype)::value_type>();
+    if (obj["alarmData"]) {
+        last_cmd = function_from_string("alarmData");
+        alarmdatatype = obj["alarmData"].as<decltype(alarmdatatype)::value_type>();
         return last_cmd;
     }
-    if (obj["timeSeriesConstraintsListData"]) {
-        last_cmd = function_from_string("timeSeriesConstraintsListData");
-        timeseriesconstraintslistdatatype =
-            obj["timeSeriesConstraintsListData"].as<decltype(timeseriesconstraintslistdatatype)::value_type>();
+    if (obj["alarmDataElements"]) {
+        last_cmd = function_from_string("alarmDataElements");
+        alarmdataelementstype = obj["alarmDataElements"].as<decltype(alarmdataelementstype)::value_type>();
         return last_cmd;
     }
-    if (obj["timeSeriesConstraintsListDataSelectors"]) {
-        last_cmd = function_from_string("timeSeriesConstraintsListDataSelectors");
-        timeseriesconstraintslistdataselectorstype =
-            obj["timeSeriesConstraintsListDataSelectors"].as<decltype(timeseriesconstraintslistdataselectorstype)::value_type>();
+    if (obj["alarmListData"]) {
+        last_cmd = function_from_string("alarmListData");
+        alarmlistdatatype = obj["alarmListData"].as<decltype(alarmlistdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["alarmListDataSelectors"]) {
+        last_cmd = function_from_string("alarmListDataSelectors");
+        alarmlistdataselectorstype = obj["alarmListDataSelectors"].as<decltype(alarmlistdataselectorstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["thresholdData"]) {
+        last_cmd = function_from_string("thresholdData");
+        thresholddatatype = obj["thresholdData"].as<decltype(thresholddatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["thresholdDataElements"]) {
+        last_cmd = function_from_string("thresholdDataElements");
+        thresholddataelementstype = obj["thresholdDataElements"].as<decltype(thresholddataelementstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["thresholdListData"]) {
+        last_cmd = function_from_string("thresholdListData");
+        thresholdlistdatatype = obj["thresholdListData"].as<decltype(thresholdlistdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["thresholdListDataSelectors"]) {
+        last_cmd = function_from_string("thresholdListDataSelectors");
+        thresholdlistdataselectorstype = obj["thresholdListDataSelectors"].as<decltype(thresholdlistdataselectorstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["thresholdConstraintsData"]) {
+        last_cmd = function_from_string("thresholdConstraintsData");
+        thresholdconstraintsdatatype = obj["thresholdConstraintsData"].as<decltype(thresholdconstraintsdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["thresholdConstraintsDataElements"]) {
+        last_cmd = function_from_string("thresholdConstraintsDataElements");
+        thresholdconstraintsdataelementstype =
+            obj["thresholdConstraintsDataElements"].as<decltype(thresholdconstraintsdataelementstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["thresholdConstraintsListData"]) {
+        last_cmd = function_from_string("thresholdConstraintsListData");
+        thresholdconstraintslistdatatype = obj["thresholdConstraintsListData"].as<decltype(thresholdconstraintslistdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["thresholdConstraintsListDataSelectors"]) {
+        last_cmd = function_from_string("thresholdConstraintsListDataSelectors");
+        thresholdconstraintslistdataselectorstype =
+            obj["thresholdConstraintsListDataSelectors"].as<decltype(thresholdconstraintslistdataselectorstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["thresholdDescriptionData"]) {
+        last_cmd = function_from_string("thresholdDescriptionData");
+        thresholddescriptiondatatype = obj["thresholdDescriptionData"].as<decltype(thresholddescriptiondatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["thresholdDescriptionDataElements"]) {
+        last_cmd = function_from_string("thresholdDescriptionDataElements");
+        thresholddescriptiondataelementstype =
+            obj["thresholdDescriptionDataElements"].as<decltype(thresholddescriptiondataelementstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["thresholdDescriptionListData"]) {
+        last_cmd = function_from_string("thresholdDescriptionListData");
+        thresholddescriptionlistdatatype = obj["thresholdDescriptionListData"].as<decltype(thresholddescriptionlistdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["thresholdDescriptionListDataSelectors"]) {
+        last_cmd = function_from_string("thresholdDescriptionListDataSelectors");
+        thresholddescriptionlistdataselectorstype =
+            obj["thresholdDescriptionListDataSelectors"].as<decltype(thresholddescriptionlistdataselectorstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["billData"]) {
+        last_cmd = function_from_string("billData");
+        billdatatype = obj["billData"].as<decltype(billdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["billDataElements"]) {
+        last_cmd = function_from_string("billDataElements");
+        billdataelementstype = obj["billDataElements"].as<decltype(billdataelementstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["billListData"]) {
+        last_cmd = function_from_string("billListData");
+        billlistdatatype = obj["billListData"].as<decltype(billlistdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["billListDataSelectors"]) {
+        last_cmd = function_from_string("billListDataSelectors");
+        billlistdataselectorstype = obj["billListDataSelectors"].as<decltype(billlistdataselectorstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["billConstraintsData"]) {
+        last_cmd = function_from_string("billConstraintsData");
+        billconstraintsdatatype = obj["billConstraintsData"].as<decltype(billconstraintsdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["billConstraintsDataElements"]) {
+        last_cmd = function_from_string("billConstraintsDataElements");
+        billconstraintsdataelementstype = obj["billConstraintsDataElements"].as<decltype(billconstraintsdataelementstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["billConstraintsListData"]) {
+        last_cmd = function_from_string("billConstraintsListData");
+        billconstraintslistdatatype = obj["billConstraintsListData"].as<decltype(billconstraintslistdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["billConstraintsListDataSelectors"]) {
+        last_cmd = function_from_string("billConstraintsListDataSelectors");
+        billconstraintslistdataselectorstype =
+            obj["billConstraintsListDataSelectors"].as<decltype(billconstraintslistdataselectorstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["billDescriptionData"]) {
+        last_cmd = function_from_string("billDescriptionData");
+        billdescriptiondatatype = obj["billDescriptionData"].as<decltype(billdescriptiondatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["billDescriptionDataElements"]) {
+        last_cmd = function_from_string("billDescriptionDataElements");
+        billdescriptiondataelementstype = obj["billDescriptionDataElements"].as<decltype(billdescriptiondataelementstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["billDescriptionListData"]) {
+        last_cmd = function_from_string("billDescriptionListData");
+        billdescriptionlistdatatype = obj["billDescriptionListData"].as<decltype(billdescriptionlistdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["billDescriptionListDataSelectors"]) {
+        last_cmd = function_from_string("billDescriptionListDataSelectors");
+        billdescriptionlistdataselectorstype =
+            obj["billDescriptionListDataSelectors"].as<decltype(billdescriptionlistdataselectorstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["identificationData"]) {
+        last_cmd = function_from_string("identificationData");
+        identificationdatatype = obj["identificationData"].as<decltype(identificationdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["identificationDataElements"]) {
+        last_cmd = function_from_string("identificationDataElements");
+        identificationdataelementstype = obj["identificationDataElements"].as<decltype(identificationdataelementstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["identificationListData"]) {
+        last_cmd = function_from_string("identificationListData");
+        identificationlistdatatype = obj["identificationListData"].as<decltype(identificationlistdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["identificationListDataSelectors"]) {
+        last_cmd = function_from_string("identificationListDataSelectors");
+        identificationlistdataselectorstype =
+            obj["identificationListDataSelectors"].as<decltype(identificationlistdataselectorstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["sessionIdentificationData"]) {
+        last_cmd = function_from_string("sessionIdentificationData");
+        sessionidentificationdatatype = obj["sessionIdentificationData"].as<decltype(sessionidentificationdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["sessionIdentificationDataElements"]) {
+        last_cmd = function_from_string("sessionIdentificationDataElements");
+        sessionidentificationdataelementstype =
+            obj["sessionIdentificationDataElements"].as<decltype(sessionidentificationdataelementstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["sessionIdentificationListData"]) {
+        last_cmd = function_from_string("sessionIdentificationListData");
+        sessionidentificationlistdatatype =
+            obj["sessionIdentificationListData"].as<decltype(sessionidentificationlistdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["sessionIdentificationListDataSelectors"]) {
+        last_cmd = function_from_string("sessionIdentificationListDataSelectors");
+        sessionidentificationlistdataselectorstype =
+            obj["sessionIdentificationListDataSelectors"].as<decltype(sessionidentificationlistdataselectorstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["sessionMeasurementRelationData"]) {
+        last_cmd = function_from_string("sessionMeasurementRelationData");
+        sessionmeasurementrelationdatatype =
+            obj["sessionMeasurementRelationData"].as<decltype(sessionmeasurementrelationdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["sessionMeasurementRelationDataElements"]) {
+        last_cmd = function_from_string("sessionMeasurementRelationDataElements");
+        sessionmeasurementrelationdataelementstype =
+            obj["sessionMeasurementRelationDataElements"].as<decltype(sessionmeasurementrelationdataelementstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["sessionMeasurementRelationListData"]) {
+        last_cmd = function_from_string("sessionMeasurementRelationListData");
+        sessionmeasurementrelationlistdatatype =
+            obj["sessionMeasurementRelationListData"].as<decltype(sessionmeasurementrelationlistdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["sessionMeasurementRelationListDataSelectors"]) {
+        last_cmd = function_from_string("sessionMeasurementRelationListDataSelectors");
+        sessionmeasurementrelationlistdataselectorstype =
+            obj["sessionMeasurementRelationListDataSelectors"].as<decltype(sessionmeasurementrelationlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["measurementData"]) {
@@ -41148,68 +41343,195 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
                 .as<decltype(measurementthresholdrelationlistdataselectorstype)::value_type>();
         return last_cmd;
     }
-    if (obj["thresholdData"]) {
-        last_cmd = function_from_string("thresholdData");
-        thresholddatatype = obj["thresholdData"].as<decltype(thresholddatatype)::value_type>();
+    if (obj["bindingManagementEntryData"]) {
+        last_cmd = function_from_string("bindingManagementEntryData");
+        bindingmanagemententrydatatype = obj["bindingManagementEntryData"].as<decltype(bindingmanagemententrydatatype)::value_type>();
         return last_cmd;
     }
-    if (obj["thresholdDataElements"]) {
-        last_cmd = function_from_string("thresholdDataElements");
-        thresholddataelementstype = obj["thresholdDataElements"].as<decltype(thresholddataelementstype)::value_type>();
+    if (obj["bindingManagementEntryDataElements"]) {
+        last_cmd = function_from_string("bindingManagementEntryDataElements");
+        bindingmanagemententrydataelementstype =
+            obj["bindingManagementEntryDataElements"].as<decltype(bindingmanagemententrydataelementstype)::value_type>();
         return last_cmd;
     }
-    if (obj["thresholdListData"]) {
-        last_cmd = function_from_string("thresholdListData");
-        thresholdlistdatatype = obj["thresholdListData"].as<decltype(thresholdlistdatatype)::value_type>();
+    if (obj["bindingManagementEntryListData"]) {
+        last_cmd = function_from_string("bindingManagementEntryListData");
+        bindingmanagemententrylistdatatype =
+            obj["bindingManagementEntryListData"].as<decltype(bindingmanagemententrylistdatatype)::value_type>();
         return last_cmd;
     }
-    if (obj["thresholdListDataSelectors"]) {
-        last_cmd = function_from_string("thresholdListDataSelectors");
-        thresholdlistdataselectorstype = obj["thresholdListDataSelectors"].as<decltype(thresholdlistdataselectorstype)::value_type>();
+    if (obj["bindingManagementEntryListDataSelectors"]) {
+        last_cmd = function_from_string("bindingManagementEntryListDataSelectors");
+        bindingmanagemententrylistdataselectorstype =
+            obj["bindingManagementEntryListDataSelectors"].as<decltype(bindingmanagemententrylistdataselectorstype)::value_type>();
         return last_cmd;
     }
-    if (obj["thresholdConstraintsData"]) {
-        last_cmd = function_from_string("thresholdConstraintsData");
-        thresholdconstraintsdatatype = obj["thresholdConstraintsData"].as<decltype(thresholdconstraintsdatatype)::value_type>();
+    if (obj["bindingManagementRequestCall"]) {
+        last_cmd = function_from_string("bindingManagementRequestCall");
+        bindingmanagementrequestcalltype = obj["bindingManagementRequestCall"].as<decltype(bindingmanagementrequestcalltype)::value_type>();
         return last_cmd;
     }
-    if (obj["thresholdConstraintsDataElements"]) {
-        last_cmd = function_from_string("thresholdConstraintsDataElements");
-        thresholdconstraintsdataelementstype =
-            obj["thresholdConstraintsDataElements"].as<decltype(thresholdconstraintsdataelementstype)::value_type>();
+    if (obj["bindingManagementRequestCallElements"]) {
+        last_cmd = function_from_string("bindingManagementRequestCallElements");
+        bindingmanagementrequestcallelementstype =
+            obj["bindingManagementRequestCallElements"].as<decltype(bindingmanagementrequestcallelementstype)::value_type>();
         return last_cmd;
     }
-    if (obj["thresholdConstraintsListData"]) {
-        last_cmd = function_from_string("thresholdConstraintsListData");
-        thresholdconstraintslistdatatype = obj["thresholdConstraintsListData"].as<decltype(thresholdconstraintslistdatatype)::value_type>();
+    if (obj["bindingManagementDeleteCall"]) {
+        last_cmd = function_from_string("bindingManagementDeleteCall");
+        bindingmanagementdeletecalltype = obj["bindingManagementDeleteCall"].as<decltype(bindingmanagementdeletecalltype)::value_type>();
         return last_cmd;
     }
-    if (obj["thresholdConstraintsListDataSelectors"]) {
-        last_cmd = function_from_string("thresholdConstraintsListDataSelectors");
-        thresholdconstraintslistdataselectorstype =
-            obj["thresholdConstraintsListDataSelectors"].as<decltype(thresholdconstraintslistdataselectorstype)::value_type>();
+    if (obj["bindingManagementDeleteCallElements"]) {
+        last_cmd = function_from_string("bindingManagementDeleteCallElements");
+        bindingmanagementdeletecallelementstype =
+            obj["bindingManagementDeleteCallElements"].as<decltype(bindingmanagementdeletecallelementstype)::value_type>();
         return last_cmd;
     }
-    if (obj["thresholdDescriptionData"]) {
-        last_cmd = function_from_string("thresholdDescriptionData");
-        thresholddescriptiondatatype = obj["thresholdDescriptionData"].as<decltype(thresholddescriptiondatatype)::value_type>();
+    if (obj["dataTunnelingCall"]) {
+        last_cmd = function_from_string("dataTunnelingCall");
+        datatunnelingcalltype = obj["dataTunnelingCall"].as<decltype(datatunnelingcalltype)::value_type>();
         return last_cmd;
     }
-    if (obj["thresholdDescriptionDataElements"]) {
-        last_cmd = function_from_string("thresholdDescriptionDataElements");
-        thresholddescriptiondataelementstype =
-            obj["thresholdDescriptionDataElements"].as<decltype(thresholddescriptiondataelementstype)::value_type>();
+    if (obj["dataTunnelingCallElements"]) {
+        last_cmd = function_from_string("dataTunnelingCallElements");
+        datatunnelingcallelementstype = obj["dataTunnelingCallElements"].as<decltype(datatunnelingcallelementstype)::value_type>();
         return last_cmd;
     }
-    if (obj["thresholdDescriptionListData"]) {
-        last_cmd = function_from_string("thresholdDescriptionListData");
-        thresholddescriptionlistdatatype = obj["thresholdDescriptionListData"].as<decltype(thresholddescriptionlistdatatype)::value_type>();
+    if (obj["deviceClassificationManufacturerData"]) {
+        last_cmd = function_from_string("deviceClassificationManufacturerData");
+        deviceclassificationmanufacturerdatatype =
+            obj["deviceClassificationManufacturerData"].as<decltype(deviceclassificationmanufacturerdatatype)::value_type>();
         return last_cmd;
     }
-    if (obj["thresholdDescriptionListDataSelectors"]) {
-        last_cmd = function_from_string("thresholdDescriptionListDataSelectors");
-        thresholddescriptionlistdataselectorstype =
-            obj["thresholdDescriptionListDataSelectors"].as<decltype(thresholddescriptionlistdataselectorstype)::value_type>();
+    if (obj["deviceClassificationManufacturerDataElements"]) {
+        last_cmd = function_from_string("deviceClassificationManufacturerDataElements");
+        deviceclassificationmanufacturerdataelementstype =
+            obj["deviceClassificationManufacturerDataElements"]
+                .as<decltype(deviceclassificationmanufacturerdataelementstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["deviceClassificationUserData"]) {
+        last_cmd = function_from_string("deviceClassificationUserData");
+        deviceclassificationuserdatatype = obj["deviceClassificationUserData"].as<decltype(deviceclassificationuserdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["deviceClassificationUserDataElements"]) {
+        last_cmd = function_from_string("deviceClassificationUserDataElements");
+        deviceclassificationuserdataelementstype =
+            obj["deviceClassificationUserDataElements"].as<decltype(deviceclassificationuserdataelementstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["deviceConfigurationKeyValueData"]) {
+        last_cmd = function_from_string("deviceConfigurationKeyValueData");
+        deviceconfigurationkeyvaluedatatype =
+            obj["deviceConfigurationKeyValueData"].as<decltype(deviceconfigurationkeyvaluedatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["deviceConfigurationKeyValueDataElements"]) {
+        last_cmd = function_from_string("deviceConfigurationKeyValueDataElements");
+        deviceconfigurationkeyvaluedataelementstype =
+            obj["deviceConfigurationKeyValueDataElements"].as<decltype(deviceconfigurationkeyvaluedataelementstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["deviceConfigurationKeyValueListData"]) {
+        last_cmd = function_from_string("deviceConfigurationKeyValueListData");
+        deviceconfigurationkeyvaluelistdatatype =
+            obj["deviceConfigurationKeyValueListData"].as<decltype(deviceconfigurationkeyvaluelistdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["deviceConfigurationKeyValueListDataSelectors"]) {
+        last_cmd = function_from_string("deviceConfigurationKeyValueListDataSelectors");
+        deviceconfigurationkeyvaluelistdataselectorstype =
+            obj["deviceConfigurationKeyValueListDataSelectors"]
+                .as<decltype(deviceconfigurationkeyvaluelistdataselectorstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["deviceConfigurationKeyValueDescriptionData"]) {
+        last_cmd = function_from_string("deviceConfigurationKeyValueDescriptionData");
+        deviceconfigurationkeyvaluedescriptiondatatype =
+            obj["deviceConfigurationKeyValueDescriptionData"].as<decltype(deviceconfigurationkeyvaluedescriptiondatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["deviceConfigurationKeyValueDescriptionDataElements"]) {
+        last_cmd = function_from_string("deviceConfigurationKeyValueDescriptionDataElements");
+        deviceconfigurationkeyvaluedescriptiondataelementstype =
+            obj["deviceConfigurationKeyValueDescriptionDataElements"]
+                .as<decltype(deviceconfigurationkeyvaluedescriptiondataelementstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["deviceConfigurationKeyValueDescriptionListData"]) {
+        last_cmd = function_from_string("deviceConfigurationKeyValueDescriptionListData");
+        deviceconfigurationkeyvaluedescriptionlistdatatype =
+            obj["deviceConfigurationKeyValueDescriptionListData"]
+                .as<decltype(deviceconfigurationkeyvaluedescriptionlistdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["deviceConfigurationKeyValueDescriptionListDataSelectors"]) {
+        last_cmd = function_from_string("deviceConfigurationKeyValueDescriptionListDataSelectors");
+        deviceconfigurationkeyvaluedescriptionlistdataselectorstype =
+            obj["deviceConfigurationKeyValueDescriptionListDataSelectors"]
+                .as<decltype(deviceconfigurationkeyvaluedescriptionlistdataselectorstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["deviceConfigurationKeyValueConstraintsData"]) {
+        last_cmd = function_from_string("deviceConfigurationKeyValueConstraintsData");
+        deviceconfigurationkeyvalueconstraintsdatatype =
+            obj["deviceConfigurationKeyValueConstraintsData"].as<decltype(deviceconfigurationkeyvalueconstraintsdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["deviceConfigurationKeyValueConstraintsDataElements"]) {
+        last_cmd = function_from_string("deviceConfigurationKeyValueConstraintsDataElements");
+        deviceconfigurationkeyvalueconstraintsdataelementstype =
+            obj["deviceConfigurationKeyValueConstraintsDataElements"]
+                .as<decltype(deviceconfigurationkeyvalueconstraintsdataelementstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["deviceConfigurationKeyValueConstraintsListData"]) {
+        last_cmd = function_from_string("deviceConfigurationKeyValueConstraintsListData");
+        deviceconfigurationkeyvalueconstraintslistdatatype =
+            obj["deviceConfigurationKeyValueConstraintsListData"]
+                .as<decltype(deviceconfigurationkeyvalueconstraintslistdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["deviceConfigurationKeyValueConstraintsListDataSelectors"]) {
+        last_cmd = function_from_string("deviceConfigurationKeyValueConstraintsListDataSelectors");
+        deviceconfigurationkeyvalueconstraintslistdataselectorstype =
+            obj["deviceConfigurationKeyValueConstraintsListDataSelectors"]
+                .as<decltype(deviceconfigurationkeyvalueconstraintslistdataselectorstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["deviceDiagnosisStateData"]) {
+        last_cmd = function_from_string("deviceDiagnosisStateData");
+        devicediagnosisstatedatatype = obj["deviceDiagnosisStateData"].as<decltype(devicediagnosisstatedatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["deviceDiagnosisStateDataElements"]) {
+        last_cmd = function_from_string("deviceDiagnosisStateDataElements");
+        devicediagnosisstatedataelementstype =
+            obj["deviceDiagnosisStateDataElements"].as<decltype(devicediagnosisstatedataelementstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["deviceDiagnosisHeartbeatData"]) {
+        last_cmd = function_from_string("deviceDiagnosisHeartbeatData");
+        devicediagnosisheartbeatdatatype = obj["deviceDiagnosisHeartbeatData"].as<decltype(devicediagnosisheartbeatdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["deviceDiagnosisHeartbeatDataElements"]) {
+        last_cmd = function_from_string("deviceDiagnosisHeartbeatDataElements");
+        devicediagnosisheartbeatdataelementstype =
+            obj["deviceDiagnosisHeartbeatDataElements"].as<decltype(devicediagnosisheartbeatdataelementstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["deviceDiagnosisServiceData"]) {
+        last_cmd = function_from_string("deviceDiagnosisServiceData");
+        devicediagnosisservicedatatype = obj["deviceDiagnosisServiceData"].as<decltype(devicediagnosisservicedatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["deviceDiagnosisServiceDataElements"]) {
+        last_cmd = function_from_string("deviceDiagnosisServiceDataElements");
+        devicediagnosisservicedataelementstype =
+            obj["deviceDiagnosisServiceDataElements"].as<decltype(devicediagnosisservicedataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["directControlActivityData"]) {
@@ -41522,415 +41844,6 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
         powersequencepricecalculationrequestcallelementstype =
             obj["powerSequencePriceCalculationRequestCallElements"]
                 .as<decltype(powersequencepricecalculationrequestcallelementstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["resultData"]) {
-        last_cmd = function_from_string("resultData");
-        resultdatatype = obj["resultData"].as<decltype(resultdatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["bindingManagementEntryData"]) {
-        last_cmd = function_from_string("bindingManagementEntryData");
-        bindingmanagemententrydatatype = obj["bindingManagementEntryData"].as<decltype(bindingmanagemententrydatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["bindingManagementEntryDataElements"]) {
-        last_cmd = function_from_string("bindingManagementEntryDataElements");
-        bindingmanagemententrydataelementstype =
-            obj["bindingManagementEntryDataElements"].as<decltype(bindingmanagemententrydataelementstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["bindingManagementEntryListData"]) {
-        last_cmd = function_from_string("bindingManagementEntryListData");
-        bindingmanagemententrylistdatatype =
-            obj["bindingManagementEntryListData"].as<decltype(bindingmanagemententrylistdatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["bindingManagementEntryListDataSelectors"]) {
-        last_cmd = function_from_string("bindingManagementEntryListDataSelectors");
-        bindingmanagemententrylistdataselectorstype =
-            obj["bindingManagementEntryListDataSelectors"].as<decltype(bindingmanagemententrylistdataselectorstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["bindingManagementRequestCall"]) {
-        last_cmd = function_from_string("bindingManagementRequestCall");
-        bindingmanagementrequestcalltype = obj["bindingManagementRequestCall"].as<decltype(bindingmanagementrequestcalltype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["bindingManagementRequestCallElements"]) {
-        last_cmd = function_from_string("bindingManagementRequestCallElements");
-        bindingmanagementrequestcallelementstype =
-            obj["bindingManagementRequestCallElements"].as<decltype(bindingmanagementrequestcallelementstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["bindingManagementDeleteCall"]) {
-        last_cmd = function_from_string("bindingManagementDeleteCall");
-        bindingmanagementdeletecalltype = obj["bindingManagementDeleteCall"].as<decltype(bindingmanagementdeletecalltype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["bindingManagementDeleteCallElements"]) {
-        last_cmd = function_from_string("bindingManagementDeleteCallElements");
-        bindingmanagementdeletecallelementstype =
-            obj["bindingManagementDeleteCallElements"].as<decltype(bindingmanagementdeletecallelementstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["actuatorLevelData"]) {
-        last_cmd = function_from_string("actuatorLevelData");
-        actuatorleveldatatype = obj["actuatorLevelData"].as<decltype(actuatorleveldatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["actuatorLevelDataElements"]) {
-        last_cmd = function_from_string("actuatorLevelDataElements");
-        actuatorleveldataelementstype = obj["actuatorLevelDataElements"].as<decltype(actuatorleveldataelementstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["actuatorLevelDescriptionData"]) {
-        last_cmd = function_from_string("actuatorLevelDescriptionData");
-        actuatorleveldescriptiondatatype = obj["actuatorLevelDescriptionData"].as<decltype(actuatorleveldescriptiondatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["actuatorLevelDescriptionDataElements"]) {
-        last_cmd = function_from_string("actuatorLevelDescriptionDataElements");
-        actuatorleveldescriptiondataelementstype =
-            obj["actuatorLevelDescriptionDataElements"].as<decltype(actuatorleveldescriptiondataelementstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["cmdClassifier"]) {
-        last_cmd = function_from_string("cmdClassifier");
-        cmdclassifiertype = obj["cmdClassifier"].as<decltype(cmdclassifiertype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["lastUpdateAt"]) {
-        last_cmd = function_from_string("lastUpdateAt");
-        absoluteorrelativetimetype = obj["lastUpdateAt"].as<decltype(absoluteorrelativetimetype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["function"]) {
-        last_cmd = function_from_string("function");
-        functiontype = obj["function"].as<decltype(functiontype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["cmdControl"]) {
-        last_cmd = function_from_string("cmdControl");
-        cmdcontroltype = obj["cmdControl"].as<decltype(cmdcontroltype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["actuatorSwitchData"]) {
-        last_cmd = function_from_string("actuatorSwitchData");
-        actuatorswitchdatatype = obj["actuatorSwitchData"].as<decltype(actuatorswitchdatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["actuatorSwitchDataElements"]) {
-        last_cmd = function_from_string("actuatorSwitchDataElements");
-        actuatorswitchdataelementstype = obj["actuatorSwitchDataElements"].as<decltype(actuatorswitchdataelementstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["actuatorSwitchDescriptionData"]) {
-        last_cmd = function_from_string("actuatorSwitchDescriptionData");
-        actuatorswitchdescriptiondatatype =
-            obj["actuatorSwitchDescriptionData"].as<decltype(actuatorswitchdescriptiondatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["actuatorSwitchDescriptionDataElements"]) {
-        last_cmd = function_from_string("actuatorSwitchDescriptionDataElements");
-        actuatorswitchdescriptiondataelementstype =
-            obj["actuatorSwitchDescriptionDataElements"].as<decltype(actuatorswitchdescriptiondataelementstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["alarmData"]) {
-        last_cmd = function_from_string("alarmData");
-        alarmdatatype = obj["alarmData"].as<decltype(alarmdatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["alarmDataElements"]) {
-        last_cmd = function_from_string("alarmDataElements");
-        alarmdataelementstype = obj["alarmDataElements"].as<decltype(alarmdataelementstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["alarmListData"]) {
-        last_cmd = function_from_string("alarmListData");
-        alarmlistdatatype = obj["alarmListData"].as<decltype(alarmlistdatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["alarmListDataSelectors"]) {
-        last_cmd = function_from_string("alarmListDataSelectors");
-        alarmlistdataselectorstype = obj["alarmListDataSelectors"].as<decltype(alarmlistdataselectorstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["billData"]) {
-        last_cmd = function_from_string("billData");
-        billdatatype = obj["billData"].as<decltype(billdatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["billDataElements"]) {
-        last_cmd = function_from_string("billDataElements");
-        billdataelementstype = obj["billDataElements"].as<decltype(billdataelementstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["billListData"]) {
-        last_cmd = function_from_string("billListData");
-        billlistdatatype = obj["billListData"].as<decltype(billlistdatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["billListDataSelectors"]) {
-        last_cmd = function_from_string("billListDataSelectors");
-        billlistdataselectorstype = obj["billListDataSelectors"].as<decltype(billlistdataselectorstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["billConstraintsData"]) {
-        last_cmd = function_from_string("billConstraintsData");
-        billconstraintsdatatype = obj["billConstraintsData"].as<decltype(billconstraintsdatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["billConstraintsDataElements"]) {
-        last_cmd = function_from_string("billConstraintsDataElements");
-        billconstraintsdataelementstype = obj["billConstraintsDataElements"].as<decltype(billconstraintsdataelementstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["billConstraintsListData"]) {
-        last_cmd = function_from_string("billConstraintsListData");
-        billconstraintslistdatatype = obj["billConstraintsListData"].as<decltype(billconstraintslistdatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["billConstraintsListDataSelectors"]) {
-        last_cmd = function_from_string("billConstraintsListDataSelectors");
-        billconstraintslistdataselectorstype =
-            obj["billConstraintsListDataSelectors"].as<decltype(billconstraintslistdataselectorstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["billDescriptionData"]) {
-        last_cmd = function_from_string("billDescriptionData");
-        billdescriptiondatatype = obj["billDescriptionData"].as<decltype(billdescriptiondatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["billDescriptionDataElements"]) {
-        last_cmd = function_from_string("billDescriptionDataElements");
-        billdescriptiondataelementstype = obj["billDescriptionDataElements"].as<decltype(billdescriptiondataelementstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["billDescriptionListData"]) {
-        last_cmd = function_from_string("billDescriptionListData");
-        billdescriptionlistdatatype = obj["billDescriptionListData"].as<decltype(billdescriptionlistdatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["billDescriptionListDataSelectors"]) {
-        last_cmd = function_from_string("billDescriptionListDataSelectors");
-        billdescriptionlistdataselectorstype =
-            obj["billDescriptionListDataSelectors"].as<decltype(billdescriptionlistdataselectorstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["identificationData"]) {
-        last_cmd = function_from_string("identificationData");
-        identificationdatatype = obj["identificationData"].as<decltype(identificationdatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["identificationDataElements"]) {
-        last_cmd = function_from_string("identificationDataElements");
-        identificationdataelementstype = obj["identificationDataElements"].as<decltype(identificationdataelementstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["identificationListData"]) {
-        last_cmd = function_from_string("identificationListData");
-        identificationlistdatatype = obj["identificationListData"].as<decltype(identificationlistdatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["identificationListDataSelectors"]) {
-        last_cmd = function_from_string("identificationListDataSelectors");
-        identificationlistdataselectorstype =
-            obj["identificationListDataSelectors"].as<decltype(identificationlistdataselectorstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["sessionIdentificationData"]) {
-        last_cmd = function_from_string("sessionIdentificationData");
-        sessionidentificationdatatype = obj["sessionIdentificationData"].as<decltype(sessionidentificationdatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["sessionIdentificationDataElements"]) {
-        last_cmd = function_from_string("sessionIdentificationDataElements");
-        sessionidentificationdataelementstype =
-            obj["sessionIdentificationDataElements"].as<decltype(sessionidentificationdataelementstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["sessionIdentificationListData"]) {
-        last_cmd = function_from_string("sessionIdentificationListData");
-        sessionidentificationlistdatatype =
-            obj["sessionIdentificationListData"].as<decltype(sessionidentificationlistdatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["sessionIdentificationListDataSelectors"]) {
-        last_cmd = function_from_string("sessionIdentificationListDataSelectors");
-        sessionidentificationlistdataselectorstype =
-            obj["sessionIdentificationListDataSelectors"].as<decltype(sessionidentificationlistdataselectorstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["sessionMeasurementRelationData"]) {
-        last_cmd = function_from_string("sessionMeasurementRelationData");
-        sessionmeasurementrelationdatatype =
-            obj["sessionMeasurementRelationData"].as<decltype(sessionmeasurementrelationdatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["sessionMeasurementRelationDataElements"]) {
-        last_cmd = function_from_string("sessionMeasurementRelationDataElements");
-        sessionmeasurementrelationdataelementstype =
-            obj["sessionMeasurementRelationDataElements"].as<decltype(sessionmeasurementrelationdataelementstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["sessionMeasurementRelationListData"]) {
-        last_cmd = function_from_string("sessionMeasurementRelationListData");
-        sessionmeasurementrelationlistdatatype =
-            obj["sessionMeasurementRelationListData"].as<decltype(sessionmeasurementrelationlistdatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["sessionMeasurementRelationListDataSelectors"]) {
-        last_cmd = function_from_string("sessionMeasurementRelationListDataSelectors");
-        sessionmeasurementrelationlistdataselectorstype =
-            obj["sessionMeasurementRelationListDataSelectors"].as<decltype(sessionmeasurementrelationlistdataselectorstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["dataTunnelingCall"]) {
-        last_cmd = function_from_string("dataTunnelingCall");
-        datatunnelingcalltype = obj["dataTunnelingCall"].as<decltype(datatunnelingcalltype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["dataTunnelingCallElements"]) {
-        last_cmd = function_from_string("dataTunnelingCallElements");
-        datatunnelingcallelementstype = obj["dataTunnelingCallElements"].as<decltype(datatunnelingcallelementstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["deviceClassificationManufacturerData"]) {
-        last_cmd = function_from_string("deviceClassificationManufacturerData");
-        deviceclassificationmanufacturerdatatype =
-            obj["deviceClassificationManufacturerData"].as<decltype(deviceclassificationmanufacturerdatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["deviceClassificationManufacturerDataElements"]) {
-        last_cmd = function_from_string("deviceClassificationManufacturerDataElements");
-        deviceclassificationmanufacturerdataelementstype =
-            obj["deviceClassificationManufacturerDataElements"]
-                .as<decltype(deviceclassificationmanufacturerdataelementstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["deviceClassificationUserData"]) {
-        last_cmd = function_from_string("deviceClassificationUserData");
-        deviceclassificationuserdatatype = obj["deviceClassificationUserData"].as<decltype(deviceclassificationuserdatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["deviceClassificationUserDataElements"]) {
-        last_cmd = function_from_string("deviceClassificationUserDataElements");
-        deviceclassificationuserdataelementstype =
-            obj["deviceClassificationUserDataElements"].as<decltype(deviceclassificationuserdataelementstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["deviceConfigurationKeyValueData"]) {
-        last_cmd = function_from_string("deviceConfigurationKeyValueData");
-        deviceconfigurationkeyvaluedatatype =
-            obj["deviceConfigurationKeyValueData"].as<decltype(deviceconfigurationkeyvaluedatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["deviceConfigurationKeyValueDataElements"]) {
-        last_cmd = function_from_string("deviceConfigurationKeyValueDataElements");
-        deviceconfigurationkeyvaluedataelementstype =
-            obj["deviceConfigurationKeyValueDataElements"].as<decltype(deviceconfigurationkeyvaluedataelementstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["deviceConfigurationKeyValueListData"]) {
-        last_cmd = function_from_string("deviceConfigurationKeyValueListData");
-        deviceconfigurationkeyvaluelistdatatype =
-            obj["deviceConfigurationKeyValueListData"].as<decltype(deviceconfigurationkeyvaluelistdatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["deviceConfigurationKeyValueListDataSelectors"]) {
-        last_cmd = function_from_string("deviceConfigurationKeyValueListDataSelectors");
-        deviceconfigurationkeyvaluelistdataselectorstype =
-            obj["deviceConfigurationKeyValueListDataSelectors"]
-                .as<decltype(deviceconfigurationkeyvaluelistdataselectorstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["deviceConfigurationKeyValueDescriptionData"]) {
-        last_cmd = function_from_string("deviceConfigurationKeyValueDescriptionData");
-        deviceconfigurationkeyvaluedescriptiondatatype =
-            obj["deviceConfigurationKeyValueDescriptionData"].as<decltype(deviceconfigurationkeyvaluedescriptiondatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["deviceConfigurationKeyValueDescriptionDataElements"]) {
-        last_cmd = function_from_string("deviceConfigurationKeyValueDescriptionDataElements");
-        deviceconfigurationkeyvaluedescriptiondataelementstype =
-            obj["deviceConfigurationKeyValueDescriptionDataElements"]
-                .as<decltype(deviceconfigurationkeyvaluedescriptiondataelementstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["deviceConfigurationKeyValueDescriptionListData"]) {
-        last_cmd = function_from_string("deviceConfigurationKeyValueDescriptionListData");
-        deviceconfigurationkeyvaluedescriptionlistdatatype =
-            obj["deviceConfigurationKeyValueDescriptionListData"]
-                .as<decltype(deviceconfigurationkeyvaluedescriptionlistdatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["deviceConfigurationKeyValueDescriptionListDataSelectors"]) {
-        last_cmd = function_from_string("deviceConfigurationKeyValueDescriptionListDataSelectors");
-        deviceconfigurationkeyvaluedescriptionlistdataselectorstype =
-            obj["deviceConfigurationKeyValueDescriptionListDataSelectors"]
-                .as<decltype(deviceconfigurationkeyvaluedescriptionlistdataselectorstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["deviceConfigurationKeyValueConstraintsData"]) {
-        last_cmd = function_from_string("deviceConfigurationKeyValueConstraintsData");
-        deviceconfigurationkeyvalueconstraintsdatatype =
-            obj["deviceConfigurationKeyValueConstraintsData"].as<decltype(deviceconfigurationkeyvalueconstraintsdatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["deviceConfigurationKeyValueConstraintsDataElements"]) {
-        last_cmd = function_from_string("deviceConfigurationKeyValueConstraintsDataElements");
-        deviceconfigurationkeyvalueconstraintsdataelementstype =
-            obj["deviceConfigurationKeyValueConstraintsDataElements"]
-                .as<decltype(deviceconfigurationkeyvalueconstraintsdataelementstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["deviceConfigurationKeyValueConstraintsListData"]) {
-        last_cmd = function_from_string("deviceConfigurationKeyValueConstraintsListData");
-        deviceconfigurationkeyvalueconstraintslistdatatype =
-            obj["deviceConfigurationKeyValueConstraintsListData"]
-                .as<decltype(deviceconfigurationkeyvalueconstraintslistdatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["deviceConfigurationKeyValueConstraintsListDataSelectors"]) {
-        last_cmd = function_from_string("deviceConfigurationKeyValueConstraintsListDataSelectors");
-        deviceconfigurationkeyvalueconstraintslistdataselectorstype =
-            obj["deviceConfigurationKeyValueConstraintsListDataSelectors"]
-                .as<decltype(deviceconfigurationkeyvalueconstraintslistdataselectorstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["deviceDiagnosisStateData"]) {
-        last_cmd = function_from_string("deviceDiagnosisStateData");
-        devicediagnosisstatedatatype = obj["deviceDiagnosisStateData"].as<decltype(devicediagnosisstatedatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["deviceDiagnosisStateDataElements"]) {
-        last_cmd = function_from_string("deviceDiagnosisStateDataElements");
-        devicediagnosisstatedataelementstype =
-            obj["deviceDiagnosisStateDataElements"].as<decltype(devicediagnosisstatedataelementstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["deviceDiagnosisHeartbeatData"]) {
-        last_cmd = function_from_string("deviceDiagnosisHeartbeatData");
-        devicediagnosisheartbeatdatatype = obj["deviceDiagnosisHeartbeatData"].as<decltype(devicediagnosisheartbeatdatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["deviceDiagnosisHeartbeatDataElements"]) {
-        last_cmd = function_from_string("deviceDiagnosisHeartbeatDataElements");
-        devicediagnosisheartbeatdataelementstype =
-            obj["deviceDiagnosisHeartbeatDataElements"].as<decltype(devicediagnosisheartbeatdataelementstype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["deviceDiagnosisServiceData"]) {
-        last_cmd = function_from_string("deviceDiagnosisServiceData");
-        devicediagnosisservicedatatype = obj["deviceDiagnosisServiceData"].as<decltype(devicediagnosisservicedatatype)::value_type>();
-        return last_cmd;
-    }
-    if (obj["deviceDiagnosisServiceDataElements"]) {
-        last_cmd = function_from_string("deviceDiagnosisServiceDataElements");
-        devicediagnosisservicedataelementstype =
-            obj["deviceDiagnosisServiceDataElements"].as<decltype(devicediagnosisservicedataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["electricalConnectionParameterDescriptionData"]) {
@@ -42828,6 +42741,26 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
                 .as<decltype(loadcontrollimitdescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
+    if (obj["messagingData"]) {
+        last_cmd = function_from_string("messagingData");
+        messagingdatatype = obj["messagingData"].as<decltype(messagingdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["messagingDataElements"]) {
+        last_cmd = function_from_string("messagingDataElements");
+        messagingdataelementstype = obj["messagingDataElements"].as<decltype(messagingdataelementstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["messagingListData"]) {
+        last_cmd = function_from_string("messagingListData");
+        messaginglistdatatype = obj["messagingListData"].as<decltype(messaginglistdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["messagingListDataSelectors"]) {
+        last_cmd = function_from_string("messagingListDataSelectors");
+        messaginglistdataselectorstype = obj["messagingListDataSelectors"].as<decltype(messaginglistdataselectorstype)::value_type>();
+        return last_cmd;
+    }
     if (obj["networkManagementAddNodeCall"]) {
         last_cmd = function_from_string("networkManagementAddNodeCall");
         networkmanagementaddnodecalltype = obj["networkManagementAddNodeCall"].as<decltype(networkmanagementaddnodecalltype)::value_type>();
@@ -43014,11 +42947,7 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
         return last_cmd;
     }
     if (obj["nodeManagementDetailedDiscoveryData"]) {
-        logger.printfln("Test1");
-        logger.printfln("this = %p\n", this);
-        last_cmd = Function::nodeManagementDetailedDiscoveryData;
-            //function_from_string("nodeManagementDetailedDiscoveryData");
-        logger.printfln("Test2");
+        last_cmd = function_from_string("nodeManagementDetailedDiscoveryData");
         nodemanagementdetaileddiscoverydatatype =
             obj["nodeManagementDetailedDiscoveryData"].as<decltype(nodemanagementdetaileddiscoverydatatype)::value_type>();
         return last_cmd;
@@ -43409,6 +43338,11 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
                 .as<decltype(operatingconstraintsresumeimplicationlistdataselectorstype)::value_type>();
         return last_cmd;
     }
+    if (obj["resultData"]) {
+        last_cmd = function_from_string("resultData");
+        resultdatatype = obj["resultData"].as<decltype(resultdatatype)::value_type>();
+        return last_cmd;
+    }
     if (obj["sensingData"]) {
         last_cmd = function_from_string("sensingData");
         sensingdatatype = obj["sensingData"].as<decltype(sensingdatatype)::value_type>();
@@ -43718,9 +43652,70 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
             obj["timeDistributorEnquiryCallElements"].as<decltype(timedistributorenquirycallelementstype)::value_type>();
         return last_cmd;
     }
-    if (obj["header"]) {
-        last_cmd = function_from_string("header");
-        headertype = obj["header"].as<decltype(headertype)::value_type>();
+    if (obj["timeSeriesData"]) {
+        last_cmd = function_from_string("timeSeriesData");
+        timeseriesdatatype = obj["timeSeriesData"].as<decltype(timeseriesdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["timeSeriesDataElements"]) {
+        last_cmd = function_from_string("timeSeriesDataElements");
+        timeseriesdataelementstype = obj["timeSeriesDataElements"].as<decltype(timeseriesdataelementstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["timeSeriesListData"]) {
+        last_cmd = function_from_string("timeSeriesListData");
+        timeserieslistdatatype = obj["timeSeriesListData"].as<decltype(timeserieslistdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["timeSeriesListDataSelectors"]) {
+        last_cmd = function_from_string("timeSeriesListDataSelectors");
+        timeserieslistdataselectorstype = obj["timeSeriesListDataSelectors"].as<decltype(timeserieslistdataselectorstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["timeSeriesDescriptionData"]) {
+        last_cmd = function_from_string("timeSeriesDescriptionData");
+        timeseriesdescriptiondatatype = obj["timeSeriesDescriptionData"].as<decltype(timeseriesdescriptiondatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["timeSeriesDescriptionDataElements"]) {
+        last_cmd = function_from_string("timeSeriesDescriptionDataElements");
+        timeseriesdescriptiondataelementstype =
+            obj["timeSeriesDescriptionDataElements"].as<decltype(timeseriesdescriptiondataelementstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["timeSeriesDescriptionListData"]) {
+        last_cmd = function_from_string("timeSeriesDescriptionListData");
+        timeseriesdescriptionlistdatatype =
+            obj["timeSeriesDescriptionListData"].as<decltype(timeseriesdescriptionlistdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["timeSeriesDescriptionListDataSelectors"]) {
+        last_cmd = function_from_string("timeSeriesDescriptionListDataSelectors");
+        timeseriesdescriptionlistdataselectorstype =
+            obj["timeSeriesDescriptionListDataSelectors"].as<decltype(timeseriesdescriptionlistdataselectorstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["timeSeriesConstraintsData"]) {
+        last_cmd = function_from_string("timeSeriesConstraintsData");
+        timeseriesconstraintsdatatype = obj["timeSeriesConstraintsData"].as<decltype(timeseriesconstraintsdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["timeSeriesConstraintsDataElements"]) {
+        last_cmd = function_from_string("timeSeriesConstraintsDataElements");
+        timeseriesconstraintsdataelementstype =
+            obj["timeSeriesConstraintsDataElements"].as<decltype(timeseriesconstraintsdataelementstype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["timeSeriesConstraintsListData"]) {
+        last_cmd = function_from_string("timeSeriesConstraintsListData");
+        timeseriesconstraintslistdatatype =
+            obj["timeSeriesConstraintsListData"].as<decltype(timeseriesconstraintslistdatatype)::value_type>();
+        return last_cmd;
+    }
+    if (obj["timeSeriesConstraintsListDataSelectors"]) {
+        last_cmd = function_from_string("timeSeriesConstraintsListDataSelectors");
+        timeseriesconstraintslistdataselectorstype =
+            obj["timeSeriesConstraintsListDataSelectors"].as<decltype(timeseriesconstraintslistdataselectorstype)::value_type>();
         return last_cmd;
     }
     return SpineDataTypeHandler::Function::None;
@@ -43728,38 +43723,112 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
 String SpineDataTypeHandler::function_to_string(Function function)
 {
 
-    if (function == SpineDataTypeHandler::Function::messagingData)
-        return "messagingData";
-    if (function == SpineDataTypeHandler::Function::messagingDataElements)
-        return "messagingDataElements";
-    if (function == SpineDataTypeHandler::Function::messagingListData)
-        return "messagingListData";
-    if (function == SpineDataTypeHandler::Function::messagingListDataSelectors)
-        return "messagingListDataSelectors";
-    if (function == SpineDataTypeHandler::Function::timeSeriesData)
-        return "timeSeriesData";
-    if (function == SpineDataTypeHandler::Function::timeSeriesDataElements)
-        return "timeSeriesDataElements";
-    if (function == SpineDataTypeHandler::Function::timeSeriesListData)
-        return "timeSeriesListData";
-    if (function == SpineDataTypeHandler::Function::timeSeriesListDataSelectors)
-        return "timeSeriesListDataSelectors";
-    if (function == SpineDataTypeHandler::Function::timeSeriesDescriptionData)
-        return "timeSeriesDescriptionData";
-    if (function == SpineDataTypeHandler::Function::timeSeriesDescriptionDataElements)
-        return "timeSeriesDescriptionDataElements";
-    if (function == SpineDataTypeHandler::Function::timeSeriesDescriptionListData)
-        return "timeSeriesDescriptionListData";
-    if (function == SpineDataTypeHandler::Function::timeSeriesDescriptionListDataSelectors)
-        return "timeSeriesDescriptionListDataSelectors";
-    if (function == SpineDataTypeHandler::Function::timeSeriesConstraintsData)
-        return "timeSeriesConstraintsData";
-    if (function == SpineDataTypeHandler::Function::timeSeriesConstraintsDataElements)
-        return "timeSeriesConstraintsDataElements";
-    if (function == SpineDataTypeHandler::Function::timeSeriesConstraintsListData)
-        return "timeSeriesConstraintsListData";
-    if (function == SpineDataTypeHandler::Function::timeSeriesConstraintsListDataSelectors)
-        return "timeSeriesConstraintsListDataSelectors";
+    if (function == SpineDataTypeHandler::Function::header)
+        return "header";
+    if (function == SpineDataTypeHandler::Function::cmdClassifier)
+        return "cmdClassifier";
+    if (function == SpineDataTypeHandler::Function::lastUpdateAt)
+        return "lastUpdateAt";
+    if (function == SpineDataTypeHandler::Function::function)
+        return "function";
+    if (function == SpineDataTypeHandler::Function::cmdControl)
+        return "cmdControl";
+    if (function == SpineDataTypeHandler::Function::actuatorLevelData)
+        return "actuatorLevelData";
+    if (function == SpineDataTypeHandler::Function::actuatorLevelDataElements)
+        return "actuatorLevelDataElements";
+    if (function == SpineDataTypeHandler::Function::actuatorLevelDescriptionData)
+        return "actuatorLevelDescriptionData";
+    if (function == SpineDataTypeHandler::Function::actuatorLevelDescriptionDataElements)
+        return "actuatorLevelDescriptionDataElements";
+    if (function == SpineDataTypeHandler::Function::actuatorSwitchData)
+        return "actuatorSwitchData";
+    if (function == SpineDataTypeHandler::Function::actuatorSwitchDataElements)
+        return "actuatorSwitchDataElements";
+    if (function == SpineDataTypeHandler::Function::actuatorSwitchDescriptionData)
+        return "actuatorSwitchDescriptionData";
+    if (function == SpineDataTypeHandler::Function::actuatorSwitchDescriptionDataElements)
+        return "actuatorSwitchDescriptionDataElements";
+    if (function == SpineDataTypeHandler::Function::alarmData)
+        return "alarmData";
+    if (function == SpineDataTypeHandler::Function::alarmDataElements)
+        return "alarmDataElements";
+    if (function == SpineDataTypeHandler::Function::alarmListData)
+        return "alarmListData";
+    if (function == SpineDataTypeHandler::Function::alarmListDataSelectors)
+        return "alarmListDataSelectors";
+    if (function == SpineDataTypeHandler::Function::thresholdData)
+        return "thresholdData";
+    if (function == SpineDataTypeHandler::Function::thresholdDataElements)
+        return "thresholdDataElements";
+    if (function == SpineDataTypeHandler::Function::thresholdListData)
+        return "thresholdListData";
+    if (function == SpineDataTypeHandler::Function::thresholdListDataSelectors)
+        return "thresholdListDataSelectors";
+    if (function == SpineDataTypeHandler::Function::thresholdConstraintsData)
+        return "thresholdConstraintsData";
+    if (function == SpineDataTypeHandler::Function::thresholdConstraintsDataElements)
+        return "thresholdConstraintsDataElements";
+    if (function == SpineDataTypeHandler::Function::thresholdConstraintsListData)
+        return "thresholdConstraintsListData";
+    if (function == SpineDataTypeHandler::Function::thresholdConstraintsListDataSelectors)
+        return "thresholdConstraintsListDataSelectors";
+    if (function == SpineDataTypeHandler::Function::thresholdDescriptionData)
+        return "thresholdDescriptionData";
+    if (function == SpineDataTypeHandler::Function::thresholdDescriptionDataElements)
+        return "thresholdDescriptionDataElements";
+    if (function == SpineDataTypeHandler::Function::thresholdDescriptionListData)
+        return "thresholdDescriptionListData";
+    if (function == SpineDataTypeHandler::Function::thresholdDescriptionListDataSelectors)
+        return "thresholdDescriptionListDataSelectors";
+    if (function == SpineDataTypeHandler::Function::billData)
+        return "billData";
+    if (function == SpineDataTypeHandler::Function::billDataElements)
+        return "billDataElements";
+    if (function == SpineDataTypeHandler::Function::billListData)
+        return "billListData";
+    if (function == SpineDataTypeHandler::Function::billListDataSelectors)
+        return "billListDataSelectors";
+    if (function == SpineDataTypeHandler::Function::billConstraintsData)
+        return "billConstraintsData";
+    if (function == SpineDataTypeHandler::Function::billConstraintsDataElements)
+        return "billConstraintsDataElements";
+    if (function == SpineDataTypeHandler::Function::billConstraintsListData)
+        return "billConstraintsListData";
+    if (function == SpineDataTypeHandler::Function::billConstraintsListDataSelectors)
+        return "billConstraintsListDataSelectors";
+    if (function == SpineDataTypeHandler::Function::billDescriptionData)
+        return "billDescriptionData";
+    if (function == SpineDataTypeHandler::Function::billDescriptionDataElements)
+        return "billDescriptionDataElements";
+    if (function == SpineDataTypeHandler::Function::billDescriptionListData)
+        return "billDescriptionListData";
+    if (function == SpineDataTypeHandler::Function::billDescriptionListDataSelectors)
+        return "billDescriptionListDataSelectors";
+    if (function == SpineDataTypeHandler::Function::identificationData)
+        return "identificationData";
+    if (function == SpineDataTypeHandler::Function::identificationDataElements)
+        return "identificationDataElements";
+    if (function == SpineDataTypeHandler::Function::identificationListData)
+        return "identificationListData";
+    if (function == SpineDataTypeHandler::Function::identificationListDataSelectors)
+        return "identificationListDataSelectors";
+    if (function == SpineDataTypeHandler::Function::sessionIdentificationData)
+        return "sessionIdentificationData";
+    if (function == SpineDataTypeHandler::Function::sessionIdentificationDataElements)
+        return "sessionIdentificationDataElements";
+    if (function == SpineDataTypeHandler::Function::sessionIdentificationListData)
+        return "sessionIdentificationListData";
+    if (function == SpineDataTypeHandler::Function::sessionIdentificationListDataSelectors)
+        return "sessionIdentificationListDataSelectors";
+    if (function == SpineDataTypeHandler::Function::sessionMeasurementRelationData)
+        return "sessionMeasurementRelationData";
+    if (function == SpineDataTypeHandler::Function::sessionMeasurementRelationDataElements)
+        return "sessionMeasurementRelationDataElements";
+    if (function == SpineDataTypeHandler::Function::sessionMeasurementRelationListData)
+        return "sessionMeasurementRelationListData";
+    if (function == SpineDataTypeHandler::Function::sessionMeasurementRelationListDataSelectors)
+        return "sessionMeasurementRelationListDataSelectors";
     if (function == SpineDataTypeHandler::Function::measurementData)
         return "measurementData";
     if (function == SpineDataTypeHandler::Function::measurementDataElements)
@@ -43800,30 +43869,70 @@ String SpineDataTypeHandler::function_to_string(Function function)
         return "measurementThresholdRelationListData";
     if (function == SpineDataTypeHandler::Function::measurementThresholdRelationListDataSelectors)
         return "measurementThresholdRelationListDataSelectors";
-    if (function == SpineDataTypeHandler::Function::thresholdData)
-        return "thresholdData";
-    if (function == SpineDataTypeHandler::Function::thresholdDataElements)
-        return "thresholdDataElements";
-    if (function == SpineDataTypeHandler::Function::thresholdListData)
-        return "thresholdListData";
-    if (function == SpineDataTypeHandler::Function::thresholdListDataSelectors)
-        return "thresholdListDataSelectors";
-    if (function == SpineDataTypeHandler::Function::thresholdConstraintsData)
-        return "thresholdConstraintsData";
-    if (function == SpineDataTypeHandler::Function::thresholdConstraintsDataElements)
-        return "thresholdConstraintsDataElements";
-    if (function == SpineDataTypeHandler::Function::thresholdConstraintsListData)
-        return "thresholdConstraintsListData";
-    if (function == SpineDataTypeHandler::Function::thresholdConstraintsListDataSelectors)
-        return "thresholdConstraintsListDataSelectors";
-    if (function == SpineDataTypeHandler::Function::thresholdDescriptionData)
-        return "thresholdDescriptionData";
-    if (function == SpineDataTypeHandler::Function::thresholdDescriptionDataElements)
-        return "thresholdDescriptionDataElements";
-    if (function == SpineDataTypeHandler::Function::thresholdDescriptionListData)
-        return "thresholdDescriptionListData";
-    if (function == SpineDataTypeHandler::Function::thresholdDescriptionListDataSelectors)
-        return "thresholdDescriptionListDataSelectors";
+    if (function == SpineDataTypeHandler::Function::bindingManagementEntryData)
+        return "bindingManagementEntryData";
+    if (function == SpineDataTypeHandler::Function::bindingManagementEntryDataElements)
+        return "bindingManagementEntryDataElements";
+    if (function == SpineDataTypeHandler::Function::bindingManagementEntryListData)
+        return "bindingManagementEntryListData";
+    if (function == SpineDataTypeHandler::Function::bindingManagementEntryListDataSelectors)
+        return "bindingManagementEntryListDataSelectors";
+    if (function == SpineDataTypeHandler::Function::bindingManagementRequestCall)
+        return "bindingManagementRequestCall";
+    if (function == SpineDataTypeHandler::Function::bindingManagementRequestCallElements)
+        return "bindingManagementRequestCallElements";
+    if (function == SpineDataTypeHandler::Function::bindingManagementDeleteCall)
+        return "bindingManagementDeleteCall";
+    if (function == SpineDataTypeHandler::Function::bindingManagementDeleteCallElements)
+        return "bindingManagementDeleteCallElements";
+    if (function == SpineDataTypeHandler::Function::dataTunnelingCall)
+        return "dataTunnelingCall";
+    if (function == SpineDataTypeHandler::Function::dataTunnelingCallElements)
+        return "dataTunnelingCallElements";
+    if (function == SpineDataTypeHandler::Function::deviceClassificationManufacturerData)
+        return "deviceClassificationManufacturerData";
+    if (function == SpineDataTypeHandler::Function::deviceClassificationManufacturerDataElements)
+        return "deviceClassificationManufacturerDataElements";
+    if (function == SpineDataTypeHandler::Function::deviceClassificationUserData)
+        return "deviceClassificationUserData";
+    if (function == SpineDataTypeHandler::Function::deviceClassificationUserDataElements)
+        return "deviceClassificationUserDataElements";
+    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueData)
+        return "deviceConfigurationKeyValueData";
+    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDataElements)
+        return "deviceConfigurationKeyValueDataElements";
+    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData)
+        return "deviceConfigurationKeyValueListData";
+    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueListDataSelectors)
+        return "deviceConfigurationKeyValueListDataSelectors";
+    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionData)
+        return "deviceConfigurationKeyValueDescriptionData";
+    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionDataElements)
+        return "deviceConfigurationKeyValueDescriptionDataElements";
+    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListData)
+        return "deviceConfigurationKeyValueDescriptionListData";
+    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListDataSelectors)
+        return "deviceConfigurationKeyValueDescriptionListDataSelectors";
+    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsData)
+        return "deviceConfigurationKeyValueConstraintsData";
+    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsDataElements)
+        return "deviceConfigurationKeyValueConstraintsDataElements";
+    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsListData)
+        return "deviceConfigurationKeyValueConstraintsListData";
+    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsListDataSelectors)
+        return "deviceConfigurationKeyValueConstraintsListDataSelectors";
+    if (function == SpineDataTypeHandler::Function::deviceDiagnosisStateData)
+        return "deviceDiagnosisStateData";
+    if (function == SpineDataTypeHandler::Function::deviceDiagnosisStateDataElements)
+        return "deviceDiagnosisStateDataElements";
+    if (function == SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData)
+        return "deviceDiagnosisHeartbeatData";
+    if (function == SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatDataElements)
+        return "deviceDiagnosisHeartbeatDataElements";
+    if (function == SpineDataTypeHandler::Function::deviceDiagnosisServiceData)
+        return "deviceDiagnosisServiceData";
+    if (function == SpineDataTypeHandler::Function::deviceDiagnosisServiceDataElements)
+        return "deviceDiagnosisServiceDataElements";
     if (function == SpineDataTypeHandler::Function::directControlActivityData)
         return "directControlActivityData";
     if (function == SpineDataTypeHandler::Function::directControlActivityDataElements)
@@ -43928,152 +44037,6 @@ String SpineDataTypeHandler::function_to_string(Function function)
         return "powerSequencePriceCalculationRequestCall";
     if (function == SpineDataTypeHandler::Function::powerSequencePriceCalculationRequestCallElements)
         return "powerSequencePriceCalculationRequestCallElements";
-    if (function == SpineDataTypeHandler::Function::resultData)
-        return "resultData";
-    if (function == SpineDataTypeHandler::Function::bindingManagementEntryData)
-        return "bindingManagementEntryData";
-    if (function == SpineDataTypeHandler::Function::bindingManagementEntryDataElements)
-        return "bindingManagementEntryDataElements";
-    if (function == SpineDataTypeHandler::Function::bindingManagementEntryListData)
-        return "bindingManagementEntryListData";
-    if (function == SpineDataTypeHandler::Function::bindingManagementEntryListDataSelectors)
-        return "bindingManagementEntryListDataSelectors";
-    if (function == SpineDataTypeHandler::Function::bindingManagementRequestCall)
-        return "bindingManagementRequestCall";
-    if (function == SpineDataTypeHandler::Function::bindingManagementRequestCallElements)
-        return "bindingManagementRequestCallElements";
-    if (function == SpineDataTypeHandler::Function::bindingManagementDeleteCall)
-        return "bindingManagementDeleteCall";
-    if (function == SpineDataTypeHandler::Function::bindingManagementDeleteCallElements)
-        return "bindingManagementDeleteCallElements";
-    if (function == SpineDataTypeHandler::Function::actuatorLevelData)
-        return "actuatorLevelData";
-    if (function == SpineDataTypeHandler::Function::actuatorLevelDataElements)
-        return "actuatorLevelDataElements";
-    if (function == SpineDataTypeHandler::Function::actuatorLevelDescriptionData)
-        return "actuatorLevelDescriptionData";
-    if (function == SpineDataTypeHandler::Function::actuatorLevelDescriptionDataElements)
-        return "actuatorLevelDescriptionDataElements";
-    if (function == SpineDataTypeHandler::Function::cmdClassifier)
-        return "cmdClassifier";
-    if (function == SpineDataTypeHandler::Function::lastUpdateAt)
-        return "lastUpdateAt";
-    if (function == SpineDataTypeHandler::Function::function)
-        return "function";
-    if (function == SpineDataTypeHandler::Function::cmdControl)
-        return "cmdControl";
-    if (function == SpineDataTypeHandler::Function::actuatorSwitchData)
-        return "actuatorSwitchData";
-    if (function == SpineDataTypeHandler::Function::actuatorSwitchDataElements)
-        return "actuatorSwitchDataElements";
-    if (function == SpineDataTypeHandler::Function::actuatorSwitchDescriptionData)
-        return "actuatorSwitchDescriptionData";
-    if (function == SpineDataTypeHandler::Function::actuatorSwitchDescriptionDataElements)
-        return "actuatorSwitchDescriptionDataElements";
-    if (function == SpineDataTypeHandler::Function::alarmData)
-        return "alarmData";
-    if (function == SpineDataTypeHandler::Function::alarmDataElements)
-        return "alarmDataElements";
-    if (function == SpineDataTypeHandler::Function::alarmListData)
-        return "alarmListData";
-    if (function == SpineDataTypeHandler::Function::alarmListDataSelectors)
-        return "alarmListDataSelectors";
-    if (function == SpineDataTypeHandler::Function::billData)
-        return "billData";
-    if (function == SpineDataTypeHandler::Function::billDataElements)
-        return "billDataElements";
-    if (function == SpineDataTypeHandler::Function::billListData)
-        return "billListData";
-    if (function == SpineDataTypeHandler::Function::billListDataSelectors)
-        return "billListDataSelectors";
-    if (function == SpineDataTypeHandler::Function::billConstraintsData)
-        return "billConstraintsData";
-    if (function == SpineDataTypeHandler::Function::billConstraintsDataElements)
-        return "billConstraintsDataElements";
-    if (function == SpineDataTypeHandler::Function::billConstraintsListData)
-        return "billConstraintsListData";
-    if (function == SpineDataTypeHandler::Function::billConstraintsListDataSelectors)
-        return "billConstraintsListDataSelectors";
-    if (function == SpineDataTypeHandler::Function::billDescriptionData)
-        return "billDescriptionData";
-    if (function == SpineDataTypeHandler::Function::billDescriptionDataElements)
-        return "billDescriptionDataElements";
-    if (function == SpineDataTypeHandler::Function::billDescriptionListData)
-        return "billDescriptionListData";
-    if (function == SpineDataTypeHandler::Function::billDescriptionListDataSelectors)
-        return "billDescriptionListDataSelectors";
-    if (function == SpineDataTypeHandler::Function::identificationData)
-        return "identificationData";
-    if (function == SpineDataTypeHandler::Function::identificationDataElements)
-        return "identificationDataElements";
-    if (function == SpineDataTypeHandler::Function::identificationListData)
-        return "identificationListData";
-    if (function == SpineDataTypeHandler::Function::identificationListDataSelectors)
-        return "identificationListDataSelectors";
-    if (function == SpineDataTypeHandler::Function::sessionIdentificationData)
-        return "sessionIdentificationData";
-    if (function == SpineDataTypeHandler::Function::sessionIdentificationDataElements)
-        return "sessionIdentificationDataElements";
-    if (function == SpineDataTypeHandler::Function::sessionIdentificationListData)
-        return "sessionIdentificationListData";
-    if (function == SpineDataTypeHandler::Function::sessionIdentificationListDataSelectors)
-        return "sessionIdentificationListDataSelectors";
-    if (function == SpineDataTypeHandler::Function::sessionMeasurementRelationData)
-        return "sessionMeasurementRelationData";
-    if (function == SpineDataTypeHandler::Function::sessionMeasurementRelationDataElements)
-        return "sessionMeasurementRelationDataElements";
-    if (function == SpineDataTypeHandler::Function::sessionMeasurementRelationListData)
-        return "sessionMeasurementRelationListData";
-    if (function == SpineDataTypeHandler::Function::sessionMeasurementRelationListDataSelectors)
-        return "sessionMeasurementRelationListDataSelectors";
-    if (function == SpineDataTypeHandler::Function::dataTunnelingCall)
-        return "dataTunnelingCall";
-    if (function == SpineDataTypeHandler::Function::dataTunnelingCallElements)
-        return "dataTunnelingCallElements";
-    if (function == SpineDataTypeHandler::Function::deviceClassificationManufacturerData)
-        return "deviceClassificationManufacturerData";
-    if (function == SpineDataTypeHandler::Function::deviceClassificationManufacturerDataElements)
-        return "deviceClassificationManufacturerDataElements";
-    if (function == SpineDataTypeHandler::Function::deviceClassificationUserData)
-        return "deviceClassificationUserData";
-    if (function == SpineDataTypeHandler::Function::deviceClassificationUserDataElements)
-        return "deviceClassificationUserDataElements";
-    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueData)
-        return "deviceConfigurationKeyValueData";
-    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDataElements)
-        return "deviceConfigurationKeyValueDataElements";
-    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData)
-        return "deviceConfigurationKeyValueListData";
-    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueListDataSelectors)
-        return "deviceConfigurationKeyValueListDataSelectors";
-    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionData)
-        return "deviceConfigurationKeyValueDescriptionData";
-    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionDataElements)
-        return "deviceConfigurationKeyValueDescriptionDataElements";
-    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListData)
-        return "deviceConfigurationKeyValueDescriptionListData";
-    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListDataSelectors)
-        return "deviceConfigurationKeyValueDescriptionListDataSelectors";
-    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsData)
-        return "deviceConfigurationKeyValueConstraintsData";
-    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsDataElements)
-        return "deviceConfigurationKeyValueConstraintsDataElements";
-    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsListData)
-        return "deviceConfigurationKeyValueConstraintsListData";
-    if (function == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsListDataSelectors)
-        return "deviceConfigurationKeyValueConstraintsListDataSelectors";
-    if (function == SpineDataTypeHandler::Function::deviceDiagnosisStateData)
-        return "deviceDiagnosisStateData";
-    if (function == SpineDataTypeHandler::Function::deviceDiagnosisStateDataElements)
-        return "deviceDiagnosisStateDataElements";
-    if (function == SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData)
-        return "deviceDiagnosisHeartbeatData";
-    if (function == SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatDataElements)
-        return "deviceDiagnosisHeartbeatDataElements";
-    if (function == SpineDataTypeHandler::Function::deviceDiagnosisServiceData)
-        return "deviceDiagnosisServiceData";
-    if (function == SpineDataTypeHandler::Function::deviceDiagnosisServiceDataElements)
-        return "deviceDiagnosisServiceDataElements";
     if (function == SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionData)
         return "electricalConnectionParameterDescriptionData";
     if (function == SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionDataElements)
@@ -44388,6 +44351,14 @@ String SpineDataTypeHandler::function_to_string(Function function)
         return "loadControlLimitDescriptionListData";
     if (function == SpineDataTypeHandler::Function::loadControlLimitDescriptionListDataSelectors)
         return "loadControlLimitDescriptionListDataSelectors";
+    if (function == SpineDataTypeHandler::Function::messagingData)
+        return "messagingData";
+    if (function == SpineDataTypeHandler::Function::messagingDataElements)
+        return "messagingDataElements";
+    if (function == SpineDataTypeHandler::Function::messagingListData)
+        return "messagingListData";
+    if (function == SpineDataTypeHandler::Function::messagingListDataSelectors)
+        return "messagingListDataSelectors";
     if (function == SpineDataTypeHandler::Function::networkManagementAddNodeCall)
         return "networkManagementAddNodeCall";
     if (function == SpineDataTypeHandler::Function::networkManagementAddNodeCallElements)
@@ -44576,6 +44547,8 @@ String SpineDataTypeHandler::function_to_string(Function function)
         return "operatingConstraintsResumeImplicationListData";
     if (function == SpineDataTypeHandler::Function::operatingConstraintsResumeImplicationListDataSelectors)
         return "operatingConstraintsResumeImplicationListDataSelectors";
+    if (function == SpineDataTypeHandler::Function::resultData)
+        return "resultData";
     if (function == SpineDataTypeHandler::Function::sensingData)
         return "sensingData";
     if (function == SpineDataTypeHandler::Function::sensingDataElements)
@@ -44684,76 +44657,246 @@ String SpineDataTypeHandler::function_to_string(Function function)
         return "timeDistributorEnquiryCall";
     if (function == SpineDataTypeHandler::Function::timeDistributorEnquiryCallElements)
         return "timeDistributorEnquiryCallElements";
-    if (function == SpineDataTypeHandler::Function::header)
-        return "header";
+    if (function == SpineDataTypeHandler::Function::timeSeriesData)
+        return "timeSeriesData";
+    if (function == SpineDataTypeHandler::Function::timeSeriesDataElements)
+        return "timeSeriesDataElements";
+    if (function == SpineDataTypeHandler::Function::timeSeriesListData)
+        return "timeSeriesListData";
+    if (function == SpineDataTypeHandler::Function::timeSeriesListDataSelectors)
+        return "timeSeriesListDataSelectors";
+    if (function == SpineDataTypeHandler::Function::timeSeriesDescriptionData)
+        return "timeSeriesDescriptionData";
+    if (function == SpineDataTypeHandler::Function::timeSeriesDescriptionDataElements)
+        return "timeSeriesDescriptionDataElements";
+    if (function == SpineDataTypeHandler::Function::timeSeriesDescriptionListData)
+        return "timeSeriesDescriptionListData";
+    if (function == SpineDataTypeHandler::Function::timeSeriesDescriptionListDataSelectors)
+        return "timeSeriesDescriptionListDataSelectors";
+    if (function == SpineDataTypeHandler::Function::timeSeriesConstraintsData)
+        return "timeSeriesConstraintsData";
+    if (function == SpineDataTypeHandler::Function::timeSeriesConstraintsDataElements)
+        return "timeSeriesConstraintsDataElements";
+    if (function == SpineDataTypeHandler::Function::timeSeriesConstraintsListData)
+        return "timeSeriesConstraintsListData";
+    if (function == SpineDataTypeHandler::Function::timeSeriesConstraintsListDataSelectors)
+        return "timeSeriesConstraintsListDataSelectors";
     return "Unknown function";
 }
 
 void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
 {
 
-    if (last_cmd == SpineDataTypeHandler::Function::messagingData) {
-        dst["messagingData"] = *messagingdatatype;
+    if (last_cmd == SpineDataTypeHandler::Function::header) {
+        dst["header"] = *headertype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::messagingDataElements) {
-        dst["messagingDataElements"] = *messagingdataelementstype;
+    if (last_cmd == SpineDataTypeHandler::Function::cmdClassifier) {
+        dst["cmdClassifier"] = *cmdclassifiertype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::messagingListData) {
-        dst["messagingListData"] = *messaginglistdatatype;
+    if (last_cmd == SpineDataTypeHandler::Function::lastUpdateAt) {
+        dst["lastUpdateAt"] = *absoluteorrelativetimetype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::messagingListDataSelectors) {
-        dst["messagingListDataSelectors"] = *messaginglistdataselectorstype;
+    if (last_cmd == SpineDataTypeHandler::Function::function) {
+        dst["function"] = *functiontype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesData) {
-        dst["timeSeriesData"] = *timeseriesdatatype;
+    if (last_cmd == SpineDataTypeHandler::Function::cmdControl) {
+        dst["cmdControl"] = *cmdcontroltype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesDataElements) {
-        dst["timeSeriesDataElements"] = *timeseriesdataelementstype;
+    if (last_cmd == SpineDataTypeHandler::Function::actuatorLevelData) {
+        dst["actuatorLevelData"] = *actuatorleveldatatype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesListData) {
-        dst["timeSeriesListData"] = *timeserieslistdatatype;
+    if (last_cmd == SpineDataTypeHandler::Function::actuatorLevelDataElements) {
+        dst["actuatorLevelDataElements"] = *actuatorleveldataelementstype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesListDataSelectors) {
-        dst["timeSeriesListDataSelectors"] = *timeserieslistdataselectorstype;
+    if (last_cmd == SpineDataTypeHandler::Function::actuatorLevelDescriptionData) {
+        dst["actuatorLevelDescriptionData"] = *actuatorleveldescriptiondatatype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesDescriptionData) {
-        dst["timeSeriesDescriptionData"] = *timeseriesdescriptiondatatype;
+    if (last_cmd == SpineDataTypeHandler::Function::actuatorLevelDescriptionDataElements) {
+        dst["actuatorLevelDescriptionDataElements"] = *actuatorleveldescriptiondataelementstype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesDescriptionDataElements) {
-        dst["timeSeriesDescriptionDataElements"] = *timeseriesdescriptiondataelementstype;
+    if (last_cmd == SpineDataTypeHandler::Function::actuatorSwitchData) {
+        dst["actuatorSwitchData"] = *actuatorswitchdatatype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesDescriptionListData) {
-        dst["timeSeriesDescriptionListData"] = *timeseriesdescriptionlistdatatype;
+    if (last_cmd == SpineDataTypeHandler::Function::actuatorSwitchDataElements) {
+        dst["actuatorSwitchDataElements"] = *actuatorswitchdataelementstype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesDescriptionListDataSelectors) {
-        dst["timeSeriesDescriptionListDataSelectors"] = *timeseriesdescriptionlistdataselectorstype;
+    if (last_cmd == SpineDataTypeHandler::Function::actuatorSwitchDescriptionData) {
+        dst["actuatorSwitchDescriptionData"] = *actuatorswitchdescriptiondatatype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesConstraintsData) {
-        dst["timeSeriesConstraintsData"] = *timeseriesconstraintsdatatype;
+    if (last_cmd == SpineDataTypeHandler::Function::actuatorSwitchDescriptionDataElements) {
+        dst["actuatorSwitchDescriptionDataElements"] = *actuatorswitchdescriptiondataelementstype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesConstraintsDataElements) {
-        dst["timeSeriesConstraintsDataElements"] = *timeseriesconstraintsdataelementstype;
+    if (last_cmd == SpineDataTypeHandler::Function::alarmData) {
+        dst["alarmData"] = *alarmdatatype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesConstraintsListData) {
-        dst["timeSeriesConstraintsListData"] = *timeseriesconstraintslistdatatype;
+    if (last_cmd == SpineDataTypeHandler::Function::alarmDataElements) {
+        dst["alarmDataElements"] = *alarmdataelementstype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesConstraintsListDataSelectors) {
-        dst["timeSeriesConstraintsListDataSelectors"] = *timeseriesconstraintslistdataselectorstype;
+    if (last_cmd == SpineDataTypeHandler::Function::alarmListData) {
+        dst["alarmListData"] = *alarmlistdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::alarmListDataSelectors) {
+        dst["alarmListDataSelectors"] = *alarmlistdataselectorstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdData) {
+        dst["thresholdData"] = *thresholddatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdDataElements) {
+        dst["thresholdDataElements"] = *thresholddataelementstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdListData) {
+        dst["thresholdListData"] = *thresholdlistdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdListDataSelectors) {
+        dst["thresholdListDataSelectors"] = *thresholdlistdataselectorstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdConstraintsData) {
+        dst["thresholdConstraintsData"] = *thresholdconstraintsdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdConstraintsDataElements) {
+        dst["thresholdConstraintsDataElements"] = *thresholdconstraintsdataelementstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdConstraintsListData) {
+        dst["thresholdConstraintsListData"] = *thresholdconstraintslistdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdConstraintsListDataSelectors) {
+        dst["thresholdConstraintsListDataSelectors"] = *thresholdconstraintslistdataselectorstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdDescriptionData) {
+        dst["thresholdDescriptionData"] = *thresholddescriptiondatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdDescriptionDataElements) {
+        dst["thresholdDescriptionDataElements"] = *thresholddescriptiondataelementstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdDescriptionListData) {
+        dst["thresholdDescriptionListData"] = *thresholddescriptionlistdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::thresholdDescriptionListDataSelectors) {
+        dst["thresholdDescriptionListDataSelectors"] = *thresholddescriptionlistdataselectorstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::billData) {
+        dst["billData"] = *billdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::billDataElements) {
+        dst["billDataElements"] = *billdataelementstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::billListData) {
+        dst["billListData"] = *billlistdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::billListDataSelectors) {
+        dst["billListDataSelectors"] = *billlistdataselectorstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::billConstraintsData) {
+        dst["billConstraintsData"] = *billconstraintsdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::billConstraintsDataElements) {
+        dst["billConstraintsDataElements"] = *billconstraintsdataelementstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::billConstraintsListData) {
+        dst["billConstraintsListData"] = *billconstraintslistdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::billConstraintsListDataSelectors) {
+        dst["billConstraintsListDataSelectors"] = *billconstraintslistdataselectorstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::billDescriptionData) {
+        dst["billDescriptionData"] = *billdescriptiondatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::billDescriptionDataElements) {
+        dst["billDescriptionDataElements"] = *billdescriptiondataelementstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::billDescriptionListData) {
+        dst["billDescriptionListData"] = *billdescriptionlistdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::billDescriptionListDataSelectors) {
+        dst["billDescriptionListDataSelectors"] = *billdescriptionlistdataselectorstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::identificationData) {
+        dst["identificationData"] = *identificationdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::identificationDataElements) {
+        dst["identificationDataElements"] = *identificationdataelementstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::identificationListData) {
+        dst["identificationListData"] = *identificationlistdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::identificationListDataSelectors) {
+        dst["identificationListDataSelectors"] = *identificationlistdataselectorstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::sessionIdentificationData) {
+        dst["sessionIdentificationData"] = *sessionidentificationdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::sessionIdentificationDataElements) {
+        dst["sessionIdentificationDataElements"] = *sessionidentificationdataelementstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::sessionIdentificationListData) {
+        dst["sessionIdentificationListData"] = *sessionidentificationlistdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::sessionIdentificationListDataSelectors) {
+        dst["sessionIdentificationListDataSelectors"] = *sessionidentificationlistdataselectorstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::sessionMeasurementRelationData) {
+        dst["sessionMeasurementRelationData"] = *sessionmeasurementrelationdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::sessionMeasurementRelationDataElements) {
+        dst["sessionMeasurementRelationDataElements"] = *sessionmeasurementrelationdataelementstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::sessionMeasurementRelationListData) {
+        dst["sessionMeasurementRelationListData"] = *sessionmeasurementrelationlistdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::sessionMeasurementRelationListDataSelectors) {
+        dst["sessionMeasurementRelationListDataSelectors"] = *sessionmeasurementrelationlistdataselectorstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::measurementData) {
@@ -44836,52 +44979,132 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
         dst["measurementThresholdRelationListDataSelectors"] = *measurementthresholdrelationlistdataselectorstype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::thresholdData) {
-        dst["thresholdData"] = *thresholddatatype;
+    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementEntryData) {
+        dst["bindingManagementEntryData"] = *bindingmanagemententrydatatype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::thresholdDataElements) {
-        dst["thresholdDataElements"] = *thresholddataelementstype;
+    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementEntryDataElements) {
+        dst["bindingManagementEntryDataElements"] = *bindingmanagemententrydataelementstype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::thresholdListData) {
-        dst["thresholdListData"] = *thresholdlistdatatype;
+    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementEntryListData) {
+        dst["bindingManagementEntryListData"] = *bindingmanagemententrylistdatatype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::thresholdListDataSelectors) {
-        dst["thresholdListDataSelectors"] = *thresholdlistdataselectorstype;
+    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementEntryListDataSelectors) {
+        dst["bindingManagementEntryListDataSelectors"] = *bindingmanagemententrylistdataselectorstype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::thresholdConstraintsData) {
-        dst["thresholdConstraintsData"] = *thresholdconstraintsdatatype;
+    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementRequestCall) {
+        dst["bindingManagementRequestCall"] = *bindingmanagementrequestcalltype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::thresholdConstraintsDataElements) {
-        dst["thresholdConstraintsDataElements"] = *thresholdconstraintsdataelementstype;
+    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementRequestCallElements) {
+        dst["bindingManagementRequestCallElements"] = *bindingmanagementrequestcallelementstype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::thresholdConstraintsListData) {
-        dst["thresholdConstraintsListData"] = *thresholdconstraintslistdatatype;
+    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementDeleteCall) {
+        dst["bindingManagementDeleteCall"] = *bindingmanagementdeletecalltype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::thresholdConstraintsListDataSelectors) {
-        dst["thresholdConstraintsListDataSelectors"] = *thresholdconstraintslistdataselectorstype;
+    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementDeleteCallElements) {
+        dst["bindingManagementDeleteCallElements"] = *bindingmanagementdeletecallelementstype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::thresholdDescriptionData) {
-        dst["thresholdDescriptionData"] = *thresholddescriptiondatatype;
+    if (last_cmd == SpineDataTypeHandler::Function::dataTunnelingCall) {
+        dst["dataTunnelingCall"] = *datatunnelingcalltype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::thresholdDescriptionDataElements) {
-        dst["thresholdDescriptionDataElements"] = *thresholddescriptiondataelementstype;
+    if (last_cmd == SpineDataTypeHandler::Function::dataTunnelingCallElements) {
+        dst["dataTunnelingCallElements"] = *datatunnelingcallelementstype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::thresholdDescriptionListData) {
-        dst["thresholdDescriptionListData"] = *thresholddescriptionlistdatatype;
+    if (last_cmd == SpineDataTypeHandler::Function::deviceClassificationManufacturerData) {
+        dst["deviceClassificationManufacturerData"] = *deviceclassificationmanufacturerdatatype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::thresholdDescriptionListDataSelectors) {
-        dst["thresholdDescriptionListDataSelectors"] = *thresholddescriptionlistdataselectorstype;
+    if (last_cmd == SpineDataTypeHandler::Function::deviceClassificationManufacturerDataElements) {
+        dst["deviceClassificationManufacturerDataElements"] = *deviceclassificationmanufacturerdataelementstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::deviceClassificationUserData) {
+        dst["deviceClassificationUserData"] = *deviceclassificationuserdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::deviceClassificationUserDataElements) {
+        dst["deviceClassificationUserDataElements"] = *deviceclassificationuserdataelementstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueData) {
+        dst["deviceConfigurationKeyValueData"] = *deviceconfigurationkeyvaluedatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDataElements) {
+        dst["deviceConfigurationKeyValueDataElements"] = *deviceconfigurationkeyvaluedataelementstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData) {
+        dst["deviceConfigurationKeyValueListData"] = *deviceconfigurationkeyvaluelistdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueListDataSelectors) {
+        dst["deviceConfigurationKeyValueListDataSelectors"] = *deviceconfigurationkeyvaluelistdataselectorstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionData) {
+        dst["deviceConfigurationKeyValueDescriptionData"] = *deviceconfigurationkeyvaluedescriptiondatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionDataElements) {
+        dst["deviceConfigurationKeyValueDescriptionDataElements"] = *deviceconfigurationkeyvaluedescriptiondataelementstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListData) {
+        dst["deviceConfigurationKeyValueDescriptionListData"] = *deviceconfigurationkeyvaluedescriptionlistdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListDataSelectors) {
+        dst["deviceConfigurationKeyValueDescriptionListDataSelectors"] = *deviceconfigurationkeyvaluedescriptionlistdataselectorstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsData) {
+        dst["deviceConfigurationKeyValueConstraintsData"] = *deviceconfigurationkeyvalueconstraintsdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsDataElements) {
+        dst["deviceConfigurationKeyValueConstraintsDataElements"] = *deviceconfigurationkeyvalueconstraintsdataelementstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsListData) {
+        dst["deviceConfigurationKeyValueConstraintsListData"] = *deviceconfigurationkeyvalueconstraintslistdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsListDataSelectors) {
+        dst["deviceConfigurationKeyValueConstraintsListDataSelectors"] = *deviceconfigurationkeyvalueconstraintslistdataselectorstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisStateData) {
+        dst["deviceDiagnosisStateData"] = *devicediagnosisstatedatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisStateDataElements) {
+        dst["deviceDiagnosisStateDataElements"] = *devicediagnosisstatedataelementstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData) {
+        dst["deviceDiagnosisHeartbeatData"] = *devicediagnosisheartbeatdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatDataElements) {
+        dst["deviceDiagnosisHeartbeatDataElements"] = *devicediagnosisheartbeatdataelementstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisServiceData) {
+        dst["deviceDiagnosisServiceData"] = *devicediagnosisservicedatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisServiceDataElements) {
+        dst["deviceDiagnosisServiceDataElements"] = *devicediagnosisservicedataelementstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::directControlActivityData) {
@@ -45090,298 +45313,6 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
 
     if (last_cmd == SpineDataTypeHandler::Function::powerSequencePriceCalculationRequestCallElements) {
         dst["powerSequencePriceCalculationRequestCallElements"] = *powersequencepricecalculationrequestcallelementstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::resultData) {
-        dst["resultData"] = *resultdatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementEntryData) {
-        dst["bindingManagementEntryData"] = *bindingmanagemententrydatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementEntryDataElements) {
-        dst["bindingManagementEntryDataElements"] = *bindingmanagemententrydataelementstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementEntryListData) {
-        dst["bindingManagementEntryListData"] = *bindingmanagemententrylistdatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementEntryListDataSelectors) {
-        dst["bindingManagementEntryListDataSelectors"] = *bindingmanagemententrylistdataselectorstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementRequestCall) {
-        dst["bindingManagementRequestCall"] = *bindingmanagementrequestcalltype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementRequestCallElements) {
-        dst["bindingManagementRequestCallElements"] = *bindingmanagementrequestcallelementstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementDeleteCall) {
-        dst["bindingManagementDeleteCall"] = *bindingmanagementdeletecalltype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::bindingManagementDeleteCallElements) {
-        dst["bindingManagementDeleteCallElements"] = *bindingmanagementdeletecallelementstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::actuatorLevelData) {
-        dst["actuatorLevelData"] = *actuatorleveldatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::actuatorLevelDataElements) {
-        dst["actuatorLevelDataElements"] = *actuatorleveldataelementstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::actuatorLevelDescriptionData) {
-        dst["actuatorLevelDescriptionData"] = *actuatorleveldescriptiondatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::actuatorLevelDescriptionDataElements) {
-        dst["actuatorLevelDescriptionDataElements"] = *actuatorleveldescriptiondataelementstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::cmdClassifier) {
-        dst["cmdClassifier"] = *cmdclassifiertype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::lastUpdateAt) {
-        dst["lastUpdateAt"] = *absoluteorrelativetimetype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::function) {
-        dst["function"] = *functiontype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::cmdControl) {
-        dst["cmdControl"] = *cmdcontroltype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::actuatorSwitchData) {
-        dst["actuatorSwitchData"] = *actuatorswitchdatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::actuatorSwitchDataElements) {
-        dst["actuatorSwitchDataElements"] = *actuatorswitchdataelementstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::actuatorSwitchDescriptionData) {
-        dst["actuatorSwitchDescriptionData"] = *actuatorswitchdescriptiondatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::actuatorSwitchDescriptionDataElements) {
-        dst["actuatorSwitchDescriptionDataElements"] = *actuatorswitchdescriptiondataelementstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::alarmData) {
-        dst["alarmData"] = *alarmdatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::alarmDataElements) {
-        dst["alarmDataElements"] = *alarmdataelementstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::alarmListData) {
-        dst["alarmListData"] = *alarmlistdatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::alarmListDataSelectors) {
-        dst["alarmListDataSelectors"] = *alarmlistdataselectorstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::billData) {
-        dst["billData"] = *billdatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::billDataElements) {
-        dst["billDataElements"] = *billdataelementstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::billListData) {
-        dst["billListData"] = *billlistdatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::billListDataSelectors) {
-        dst["billListDataSelectors"] = *billlistdataselectorstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::billConstraintsData) {
-        dst["billConstraintsData"] = *billconstraintsdatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::billConstraintsDataElements) {
-        dst["billConstraintsDataElements"] = *billconstraintsdataelementstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::billConstraintsListData) {
-        dst["billConstraintsListData"] = *billconstraintslistdatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::billConstraintsListDataSelectors) {
-        dst["billConstraintsListDataSelectors"] = *billconstraintslistdataselectorstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::billDescriptionData) {
-        dst["billDescriptionData"] = *billdescriptiondatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::billDescriptionDataElements) {
-        dst["billDescriptionDataElements"] = *billdescriptiondataelementstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::billDescriptionListData) {
-        dst["billDescriptionListData"] = *billdescriptionlistdatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::billDescriptionListDataSelectors) {
-        dst["billDescriptionListDataSelectors"] = *billdescriptionlistdataselectorstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::identificationData) {
-        dst["identificationData"] = *identificationdatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::identificationDataElements) {
-        dst["identificationDataElements"] = *identificationdataelementstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::identificationListData) {
-        dst["identificationListData"] = *identificationlistdatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::identificationListDataSelectors) {
-        dst["identificationListDataSelectors"] = *identificationlistdataselectorstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::sessionIdentificationData) {
-        dst["sessionIdentificationData"] = *sessionidentificationdatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::sessionIdentificationDataElements) {
-        dst["sessionIdentificationDataElements"] = *sessionidentificationdataelementstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::sessionIdentificationListData) {
-        dst["sessionIdentificationListData"] = *sessionidentificationlistdatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::sessionIdentificationListDataSelectors) {
-        dst["sessionIdentificationListDataSelectors"] = *sessionidentificationlistdataselectorstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::sessionMeasurementRelationData) {
-        dst["sessionMeasurementRelationData"] = *sessionmeasurementrelationdatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::sessionMeasurementRelationDataElements) {
-        dst["sessionMeasurementRelationDataElements"] = *sessionmeasurementrelationdataelementstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::sessionMeasurementRelationListData) {
-        dst["sessionMeasurementRelationListData"] = *sessionmeasurementrelationlistdatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::sessionMeasurementRelationListDataSelectors) {
-        dst["sessionMeasurementRelationListDataSelectors"] = *sessionmeasurementrelationlistdataselectorstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::dataTunnelingCall) {
-        dst["dataTunnelingCall"] = *datatunnelingcalltype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::dataTunnelingCallElements) {
-        dst["dataTunnelingCallElements"] = *datatunnelingcallelementstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::deviceClassificationManufacturerData) {
-        dst["deviceClassificationManufacturerData"] = *deviceclassificationmanufacturerdatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::deviceClassificationManufacturerDataElements) {
-        dst["deviceClassificationManufacturerDataElements"] = *deviceclassificationmanufacturerdataelementstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::deviceClassificationUserData) {
-        dst["deviceClassificationUserData"] = *deviceclassificationuserdatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::deviceClassificationUserDataElements) {
-        dst["deviceClassificationUserDataElements"] = *deviceclassificationuserdataelementstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueData) {
-        dst["deviceConfigurationKeyValueData"] = *deviceconfigurationkeyvaluedatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDataElements) {
-        dst["deviceConfigurationKeyValueDataElements"] = *deviceconfigurationkeyvaluedataelementstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueListData) {
-        dst["deviceConfigurationKeyValueListData"] = *deviceconfigurationkeyvaluelistdatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueListDataSelectors) {
-        dst["deviceConfigurationKeyValueListDataSelectors"] = *deviceconfigurationkeyvaluelistdataselectorstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionData) {
-        dst["deviceConfigurationKeyValueDescriptionData"] = *deviceconfigurationkeyvaluedescriptiondatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionDataElements) {
-        dst["deviceConfigurationKeyValueDescriptionDataElements"] = *deviceconfigurationkeyvaluedescriptiondataelementstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListData) {
-        dst["deviceConfigurationKeyValueDescriptionListData"] = *deviceconfigurationkeyvaluedescriptionlistdatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListDataSelectors) {
-        dst["deviceConfigurationKeyValueDescriptionListDataSelectors"] = *deviceconfigurationkeyvaluedescriptionlistdataselectorstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsData) {
-        dst["deviceConfigurationKeyValueConstraintsData"] = *deviceconfigurationkeyvalueconstraintsdatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsDataElements) {
-        dst["deviceConfigurationKeyValueConstraintsDataElements"] = *deviceconfigurationkeyvalueconstraintsdataelementstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsListData) {
-        dst["deviceConfigurationKeyValueConstraintsListData"] = *deviceconfigurationkeyvalueconstraintslistdatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsListDataSelectors) {
-        dst["deviceConfigurationKeyValueConstraintsListDataSelectors"] = *deviceconfigurationkeyvalueconstraintslistdataselectorstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisStateData) {
-        dst["deviceDiagnosisStateData"] = *devicediagnosisstatedatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisStateDataElements) {
-        dst["deviceDiagnosisStateDataElements"] = *devicediagnosisstatedataelementstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData) {
-        dst["deviceDiagnosisHeartbeatData"] = *devicediagnosisheartbeatdatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatDataElements) {
-        dst["deviceDiagnosisHeartbeatDataElements"] = *devicediagnosisheartbeatdataelementstype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisServiceData) {
-        dst["deviceDiagnosisServiceData"] = *devicediagnosisservicedatatype;
-    }
-
-    if (last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisServiceDataElements) {
-        dst["deviceDiagnosisServiceDataElements"] = *devicediagnosisservicedataelementstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionData) {
@@ -46012,6 +45943,22 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
         dst["loadControlLimitDescriptionListDataSelectors"] = *loadcontrollimitdescriptionlistdataselectorstype;
     }
 
+    if (last_cmd == SpineDataTypeHandler::Function::messagingData) {
+        dst["messagingData"] = *messagingdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::messagingDataElements) {
+        dst["messagingDataElements"] = *messagingdataelementstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::messagingListData) {
+        dst["messagingListData"] = *messaginglistdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::messagingListDataSelectors) {
+        dst["messagingListDataSelectors"] = *messaginglistdataselectorstype;
+    }
+
     if (last_cmd == SpineDataTypeHandler::Function::networkManagementAddNodeCall) {
         dst["networkManagementAddNodeCall"] = *networkmanagementaddnodecalltype;
     }
@@ -46388,6 +46335,10 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
         dst["operatingConstraintsResumeImplicationListDataSelectors"] = *operatingconstraintsresumeimplicationlistdataselectorstype;
     }
 
+    if (last_cmd == SpineDataTypeHandler::Function::resultData) {
+        dst["resultData"] = *resultdatatype;
+    }
+
     if (last_cmd == SpineDataTypeHandler::Function::sensingData) {
         dst["sensingData"] = *sensingdatatype;
     }
@@ -46604,7 +46555,51 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
         dst["timeDistributorEnquiryCallElements"] = *timedistributorenquirycallelementstype;
     }
 
-    if (last_cmd == SpineDataTypeHandler::Function::header) {
-        dst["header"] = *headertype;
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesData) {
+        dst["timeSeriesData"] = *timeseriesdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesDataElements) {
+        dst["timeSeriesDataElements"] = *timeseriesdataelementstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesListData) {
+        dst["timeSeriesListData"] = *timeserieslistdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesListDataSelectors) {
+        dst["timeSeriesListDataSelectors"] = *timeserieslistdataselectorstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesDescriptionData) {
+        dst["timeSeriesDescriptionData"] = *timeseriesdescriptiondatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesDescriptionDataElements) {
+        dst["timeSeriesDescriptionDataElements"] = *timeseriesdescriptiondataelementstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesDescriptionListData) {
+        dst["timeSeriesDescriptionListData"] = *timeseriesdescriptionlistdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesDescriptionListDataSelectors) {
+        dst["timeSeriesDescriptionListDataSelectors"] = *timeseriesdescriptionlistdataselectorstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesConstraintsData) {
+        dst["timeSeriesConstraintsData"] = *timeseriesconstraintsdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesConstraintsDataElements) {
+        dst["timeSeriesConstraintsDataElements"] = *timeseriesconstraintsdataelementstype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesConstraintsListData) {
+        dst["timeSeriesConstraintsListData"] = *timeseriesconstraintslistdatatype;
+    }
+
+    if (last_cmd == SpineDataTypeHandler::Function::timeSeriesConstraintsListDataSelectors) {
+        dst["timeSeriesConstraintsListDataSelectors"] = *timeseriesconstraintslistdataselectorstype;
     }
 }
