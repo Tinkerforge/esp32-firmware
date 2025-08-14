@@ -30,7 +30,8 @@ void EEBus::pre_setup()
 
     this->trace_buffer_index = logger.alloc_trace_buffer(
         "eebus",
-        32768); // This makes the PSRAM usage gigantic even when the module is disabled but we cant set this anywhere else. Maybe make smaller?
+        32768
+            * 4); // This makes the PSRAM usage gigantic even when the module is disabled but we cant set this anywhere else. Maybe make smaller?
     // TODO: Fix string lengths. Spec says they are shorter
 
     // TOOD: Rework API so this lot is a bit cleaner
@@ -56,7 +57,7 @@ void EEBus::pre_setup()
 
     switch_enable_config =
         ConfigRoot{Config::Object({{"enable", Config::Bool(false)}}), [this](Config &config, ConfigSource source) -> String {
-                       logger.printfln("Updating enable state");
+
                        return "";
                    }};
 
@@ -157,6 +158,7 @@ void EEBus::register_urls()
             }
             if (!errmsg.isEmpty()) {
                 // TODO: Some user feedback when this goes wrong
+                logger.printfln("An error occurred while adding peer: %s", errmsg.c_str());
                 logger.tracefln(this->trace_buffer_index, "Error adding or Updating peer: %s", errmsg.c_str());
                 return;
             }
@@ -225,7 +227,6 @@ void EEBus::register_urls()
         &switch_enable_config,
         {},
         [this](String &errmsg) {
-            logger.printfln("Received eebus/enable. Got %d", switch_enable_config.get("enable")->asBool());
             bool enabled = switch_enable_config.get("enable")->asBool();
             this->toggle_module(enabled);
         },
@@ -262,18 +263,17 @@ void EEBus::toggle_module(const bool enable)
     api.writeConfig("eebus/config", &config);
 
     if (enable) {
-
         usecases = make_unique_psram<EEBusUseCases>();
         data_handler = make_unique_psram<SpineDataTypeHandler>();
-        logger.printfln("EEBUS Module active");
-
         ship.setup();
-
-
+        logger.printfln("EEBUS Module enabled");
     } else {
         usecases = nullptr;
         data_handler = nullptr;
         ship.disable_ship();
+        if (initialized) {
+            logger.printfln("EEBUS Module disabled");
+        }
     }
 }
 String EEBus::get_eebus_name()
@@ -294,7 +294,7 @@ int EEBus::get_state_connection_id_by_ski(const String &ski)
 void EEBus::update_peers_config()
 {
     size_t currently_configured_count = config.get("peers")->count();
-    logger.printfln("Updating peers configuration.");
+
 
     for (size_t i = 0; i < config.get("peers")->count(); i++) {
         // Cleanup invalid peers
