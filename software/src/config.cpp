@@ -1003,3 +1003,24 @@ void Config::set_updated(uint8_t api_backend_flag)
     ASSERT_MAIN_THREAD();
     value.updated |= api_backend_flag;
 }
+
+Config *Config::walk(const Config::Key *path, size_t path_len) {
+    Config *ptr = this;
+
+    for (size_t i = 0; i < path_len; ++i) {
+        const auto *value = &path[i];
+
+        const char *const *obj_variant = strict_variant::get<const char *>(value);
+        const bool is_obj = obj_variant != nullptr;
+        if (is_obj)
+            ptr = (Config *)ptr->get_or_null(*obj_variant);
+        else
+            ptr = (Config *)ptr->get_or_null(*strict_variant::get<size_t>(value));
+
+        if (ptr == nullptr) {
+            return nullptr;
+        }
+    }
+
+    return ptr;
+}
