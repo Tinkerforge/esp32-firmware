@@ -169,6 +169,40 @@ public:
 
     uint8_t state_update_counter = 0;
 
+    template<typename T>
+    static bool complete_or_prefix_match(const char *in_uri, size_t in_uri_len, const T& api_reg) {
+        const char *path = api_reg.path;
+        size_t path_len = api_reg.get_path_len();
+
+        // Complete match
+        if (path_len == in_uri_len && memcmp(path, in_uri, path_len) == 0)
+            return true;
+
+        // Prefix match with / in URI. For example evse/state/charger_state matches the API evse/state (and should return the charger_state value only)
+        if (path_len < in_uri_len && in_uri[path_len] == '/' && memcmp(path, in_uri, path_len) == 0)
+            return true;
+
+        return false;
+    }
+
+    template<typename T>
+    static bool complete_match(const char *in_uri, size_t in_uri_len, const T& api_reg) {
+        const char *path = api_reg.path;
+        size_t path_len = api_reg.get_path_len();
+
+        // Complete match
+        if (path_len == in_uri_len && memcmp(path, in_uri, path_len) == 0)
+            return true;
+
+        return false;
+    }
+
+    struct SuffixPath {
+        std::unique_ptr<char[]> suffix;
+        FixedStackVector<Config::Key, Config::MAX_NESTING> path;
+    };
+    static const char *build_suffix_path(SuffixPath &suffix_path, const char *suffix, size_t suffix_len);
+
 private:
     bool already_registered(const char *path, size_t path_len, const char *api_type);
 
