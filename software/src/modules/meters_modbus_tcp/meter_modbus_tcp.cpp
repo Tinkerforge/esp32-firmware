@@ -298,6 +298,13 @@
 #define VARTA_FLEX_BATTERY_APPARENT_POWER_SF_ADDRESS                       static_cast<size_t>(VARTAFlexBatteryAddress::ApparentPowerSF)
 #define VARTA_FLEX_BATTERY_TOTAL_CHARGE_ENERGY_SF_ADDRESS                  static_cast<size_t>(VARTAFlexBatteryAddress::TotalChargeEnergySF)
 
+#define CHISAGE_ESS_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS                    static_cast<size_t>(ChisageESSHybridInverterPVAddress::PV1Voltage)
+#define CHISAGE_ESS_HYBRID_INVERTER_PV1_CURRENT_ADDRESS                    static_cast<size_t>(ChisageESSHybridInverterPVAddress::PV1Current)
+#define CHISAGE_ESS_HYBRID_INVERTER_PV2_VOLTAGE_ADDRESS                    static_cast<size_t>(ChisageESSHybridInverterPVAddress::PV2Voltage)
+#define CHISAGE_ESS_HYBRID_INVERTER_PV2_CURRENT_ADDRESS                    static_cast<size_t>(ChisageESSHybridInverterPVAddress::PV2Current)
+#define CHISAGE_ESS_HYBRID_INVERTER_PV1_POWER_ADDRESS                      static_cast<size_t>(ChisageESSHybridInverterPVAddress::PV1Power)
+#define CHISAGE_ESS_HYBRID_INVERTER_PV2_POWER_ADDRESS                      static_cast<size_t>(ChisageESSHybridInverterPVAddress::PV2Power)
+
 #define MODBUS_VALUE_TYPE_TO_REGISTER_COUNT(x) (static_cast<uint8_t>(x) & 0x07)
 #define MODBUS_VALUE_TYPE_TO_REGISTER_ORDER_LE(x) ((static_cast<uint8_t>(x) >> 5) & 1)
 
@@ -1676,6 +1683,47 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         break;
 
+    case MeterModbusTCPTableID::ChisageESSHybridInverter:
+        chisage_ess_hybrid_inverter.virtual_meter = ephemeral_config->get("table")->get()->get("virtual_meter")->asEnum<ChisageESSHybridInverterVirtualMeter>();
+        device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
+
+        switch (chisage_ess_hybrid_inverter.virtual_meter) {
+        case ChisageESSHybridInverterVirtualMeter::None:
+            logger.printfln_meter("No Chisage ESS Hybrid Inverter Virtual Meter selected");
+            return;
+
+        case ChisageESSHybridInverterVirtualMeter::Inverter:
+            table = &chisage_ess_hybrid_inverter_table;
+            default_location = MeterLocation::Inverter;
+            break;
+
+        case ChisageESSHybridInverterVirtualMeter::Grid:
+            table = &chisage_ess_hybrid_inverter_grid_table;
+            default_location = MeterLocation::Grid;
+            break;
+
+        case ChisageESSHybridInverterVirtualMeter::Battery:
+            table = &chisage_ess_hybrid_inverter_battery_table;
+            default_location = MeterLocation::Battery;
+            break;
+
+        case ChisageESSHybridInverterVirtualMeter::Load:
+            table = &chisage_ess_hybrid_inverter_load_table;
+            default_location = MeterLocation::Load;
+            break;
+
+        case ChisageESSHybridInverterVirtualMeter::PV:
+            table = &chisage_ess_hybrid_inverter_pv_table;
+            default_location = MeterLocation::PV;
+            break;
+
+        default:
+            logger.printfln_meter("Unknown Chisage ESS Hybrid Inverter Virtual Meter: %u", static_cast<uint8_t>(chisage_ess_hybrid_inverter.virtual_meter));
+            return;
+        }
+
+        break;
+
     default:
         logger.printfln_meter("Unknown table: %u", static_cast<uint8_t>(table_id));
         break;
@@ -2013,6 +2061,12 @@ bool MeterModbusTCP::is_varta_flex_battery_meter() const
 {
     return table_id == MeterModbusTCPTableID::VARTAFlex
         && varta_flex.virtual_meter == VARTAVirtualMeter::Battery;
+}
+
+bool MeterModbusTCP::is_chisage_ess_hybrid_inverter_pv_meter() const
+{
+    return table_id == MeterModbusTCPTableID::ChisageESSHybridInverter
+        && chisage_ess_hybrid_inverter.virtual_meter == ChisageESSHybridInverterVirtualMeter::PV;
 }
 
 void MeterModbusTCP::read_done_callback()
@@ -3835,6 +3889,52 @@ void MeterModbusTCP::parse_next()
             meters.update_value(slot, table->index[read_index + 1], active_power);
             meters.update_value(slot, table->index[read_index + 2], apparent_power);
             meters.update_value(slot, table->index[read_index + 3], total_charge_energy);
+        }
+    }
+    else if (is_chisage_ess_hybrid_inverter_pv_meter()) {
+        if (register_start_address == CHISAGE_ESS_HYBRID_INVERTER_PV1_VOLTAGE_ADDRESS) {
+            chisage_ess_hybrid_inverter.pv1_voltage = value;
+        }
+        else if (register_start_address == CHISAGE_ESS_HYBRID_INVERTER_PV1_CURRENT_ADDRESS) {
+            chisage_ess_hybrid_inverter.pv1_current = value;
+        }
+        else if (register_start_address == CHISAGE_ESS_HYBRID_INVERTER_PV2_VOLTAGE_ADDRESS) {
+            chisage_ess_hybrid_inverter.pv2_voltage = value;
+        }
+        else if (register_start_address == CHISAGE_ESS_HYBRID_INVERTER_PV2_CURRENT_ADDRESS) {
+            chisage_ess_hybrid_inverter.pv2_current = value;
+        }
+        else if (register_start_address == CHISAGE_ESS_HYBRID_INVERTER_PV1_POWER_ADDRESS) {
+            chisage_ess_hybrid_inverter.pv1_power = value;
+        }
+        else if (register_start_address == CHISAGE_ESS_HYBRID_INVERTER_PV2_POWER_ADDRESS) {
+            chisage_ess_hybrid_inverter.pv2_power = value;
+
+            float voltage_sum = 0.0f;
+            float voltage_count = 0.0f;
+
+            if (!is_exactly_zero(chisage_ess_hybrid_inverter.pv1_voltage)) {
+                voltage_sum += chisage_ess_hybrid_inverter.pv1_voltage;
+                ++voltage_count;
+            }
+
+            if (!is_exactly_zero(chisage_ess_hybrid_inverter.pv2_voltage)) {
+                voltage_sum += chisage_ess_hybrid_inverter.pv2_voltage;
+                ++voltage_count;
+            }
+
+            float voltage_avg = voltage_sum / voltage_count;
+
+            float current_sum = chisage_ess_hybrid_inverter.pv1_current
+                              + chisage_ess_hybrid_inverter.pv2_current;
+
+            float power_sum = chisage_ess_hybrid_inverter.pv1_power
+                            + chisage_ess_hybrid_inverter.pv2_power;
+
+            meters.update_value(slot, table->index[read_index + 1], voltage_avg);
+            meters.update_value(slot, table->index[read_index + 2], current_sum);
+            meters.update_value(slot, table->index[read_index + 3], power_sum);
+            meters.update_value(slot, table->index[read_index + 4], zero_safe_negation(power_sum));
         }
     }
 

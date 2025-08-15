@@ -60,6 +60,7 @@ import { FoxESSH3SmartHybridInverterVirtualMeter } from "./fox_ess_h3_smart_hybr
 import { FoxESSH3ProHybridInverterVirtualMeter } from "./fox_ess_h3_pro_hybrid_inverter_virtual_meter.enum";
 import { SMAHybridInverterVirtualMeter } from "./sma_hybrid_inverter_virtual_meter.enum";
 import { VARTAVirtualMeter } from "./varta_virtual_meter.enum";
+import { ChisageESSHybridInverterVirtualMeter } from "./chisage_ess_hybrid_inverter_virtual_meter.enum";
 import { InputText } from "../../ts/components/input_text";
 import { InputHost } from "../../ts/components/input_host";
 import { InputNumber } from "../../ts/components/input_number";
@@ -453,6 +454,14 @@ type TableConfigVARTAFlex = [
     },
 ];
 
+type TableConfigChisageESSHybridInverter = [
+    MeterModbusTCPTableID.ChisageESSHybridInverter,
+    {
+        virtual_meter: number;
+        device_address: number;
+    },
+];
+
 type TableConfig = TableConfigNone |
                    TableConfigCustom |
                    TableConfigSungrowHybridInverter |
@@ -501,7 +510,8 @@ type TableConfig = TableConfigNone |
                    TableConfigFoxESSH3ProHybridInverter |
                    TableConfigSMAHybridInverter |
                    TableConfigVARTAElement |
-                   TableConfigVARTAFlex;
+                   TableConfigVARTAFlex |
+                   TableConfigChisageESSHybridInverter;
 
 export type ModbusTCPMetersConfig = [
     MeterClassID.ModbusTCP,
@@ -659,6 +669,9 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
 
         case MeterModbusTCPTableID.VARTAFlex:
             return [MeterModbusTCPTableID.VARTAFlex, {virtual_meter: null, device_address: 255}];
+
+        case MeterModbusTCPTableID.ChisageESSHybridInverter:
+            return [MeterModbusTCPTableID.ChisageESSHybridInverter, {virtual_meter: null, device_address: 1}];
 
         default:
             return [MeterModbusTCPTableID.None, null];
@@ -892,6 +905,7 @@ export function init() {
                                 [MeterModbusTCPTableID.CarloGavazziEM530.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em530")],
                                 [MeterModbusTCPTableID.CarloGavazziEM540.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em540")],
                                 [MeterModbusTCPTableID.CarloGavazziEM580.toString(), __("meters_modbus_tcp.content.table_carlo_gavazzi_em580")],
+                                [MeterModbusTCPTableID.ChisageESSHybridInverter.toString(), __("meters_modbus_tcp.content.table_chisage_ess_hybrid_inverter")],
                                 [MeterModbusTCPTableID.DeyeHybridInverter.toString(), __("meters_modbus_tcp.content.table_deye_hybrid_inverter")],
                                 [MeterModbusTCPTableID.E3DC.toString(), __("meters_modbus_tcp.content.table_e3dc")],
                                 [MeterModbusTCPTableID.EastronSDM630TCP.toString(), __("meters_modbus_tcp.content.table_eastron_sdm630_tcp")],
@@ -994,7 +1008,8 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.FoxESSH3ProHybridInverter
                   || config[1].table[0] == MeterModbusTCPTableID.SMAHybridInverter
                   || config[1].table[0] == MeterModbusTCPTableID.VARTAElement
-                  || config[1].table[0] == MeterModbusTCPTableID.VARTAFlex)) {
+                  || config[1].table[0] == MeterModbusTCPTableID.VARTAFlex
+                  || config[1].table[0] == MeterModbusTCPTableID.ChisageESSHybridInverter)) {
                     let virtual_meter_items: [string, string][] = [];
                     let default_location: MeterLocation = undefined; // undefined: there is no default location, null: default location is not known yet
                     let get_default_location: (virtual_meter: number) => MeterLocation = undefined; // undefined: there is no default location
@@ -1480,6 +1495,27 @@ export function init() {
                         }
 
                         default_device_address = 255;
+                    }
+                    else if (config[1].table[0] == MeterModbusTCPTableID.ChisageESSHybridInverter) {
+                        virtual_meter_items = [
+                            [ChisageESSHybridInverterVirtualMeter.Inverter.toString(), __("meters_modbus_tcp.content.virtual_meter_inverter")],
+                            [ChisageESSHybridInverterVirtualMeter.Grid.toString(), __("meters_modbus_tcp.content.virtual_meter_grid")],
+                            [ChisageESSHybridInverterVirtualMeter.Battery.toString(), __("meters_modbus_tcp.content.virtual_meter_battery")],
+                            [ChisageESSHybridInverterVirtualMeter.Load.toString(), __("meters_modbus_tcp.content.virtual_meter_load")],
+                            [ChisageESSHybridInverterVirtualMeter.PV.toString(), __("meters_modbus_tcp.content.virtual_meter_pv")],
+                        ];
+
+                        get_default_location = (virtual_meter: number) => {
+                            switch (virtual_meter) {
+                            case ChisageESSHybridInverterVirtualMeter.Inverter: return MeterLocation.Inverter;
+                            case ChisageESSHybridInverterVirtualMeter.Grid: return MeterLocation.Grid;
+                            case ChisageESSHybridInverterVirtualMeter.Battery: return MeterLocation.Battery;
+                            case ChisageESSHybridInverterVirtualMeter.Load: return MeterLocation.Load;
+                            case ChisageESSHybridInverterVirtualMeter.PV: return MeterLocation.PV;
+                            }
+
+                            return MeterLocation.Unknown;
+                        }
                     }
 
                     if (virtual_meter_items.length > 0) {

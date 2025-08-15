@@ -58,6 +58,7 @@
 #include "fox_ess_h3_pro_hybrid_inverter_virtual_meter.enum.h"
 #include "sma_hybrid_inverter_virtual_meter.enum.h"
 #include "varta_virtual_meter.enum.h"
+#include "chisage_ess_hybrid_inverter_virtual_meter.enum.h"
 
 #if defined(__GNUC__)
     #pragma GCC diagnostic push
@@ -147,6 +148,7 @@ private:
     bool is_sma_hybrid_inverter_battery_meter() const;
     bool is_varta_flex_grid_meter() const;
     bool is_varta_flex_battery_meter() const;
+    bool is_chisage_ess_hybrid_inverter_pv_meter() const;
 
     uint32_t slot;
     Config *state;
@@ -503,6 +505,17 @@ private:
             int16_t battery_apparent_power_sf;
             int16_t battery_total_charge_energy_sf;
         } varta_flex;
+
+        // Chisage ESS hybrid inverter
+        struct {
+            ChisageESSHybridInverterVirtualMeter virtual_meter;
+            float pv1_voltage;
+            float pv1_current;
+            float pv2_voltage;
+            float pv2_current;
+            float pv1_power;
+            float pv2_power;
+        } chisage_ess_hybrid_inverter;
     };
 };
 

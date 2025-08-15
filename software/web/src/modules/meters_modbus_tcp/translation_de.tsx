@@ -62,6 +62,7 @@ let x = {
             "table_sma_hybrid_inverter": "SMA Hybrid-Wechselrichter",
             "table_varta_element": "VARTA element / one / pulse / link",
             "table_varta_flex": "VARTA pulse neo / flex storage",
+            "table_chisage_ess_hybrid_inverter": "Chisage ESS Hybrid-Wechselrichter",
             "virtual_meter": "Virtueller Zähler",
             "virtual_meter_inverter": "Wechselrichter",
             "virtual_meter_grid": "Netzanschluss",
