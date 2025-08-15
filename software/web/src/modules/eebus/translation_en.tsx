@@ -3,42 +3,42 @@ import { h } from "preact";
 let x = {
     "eebus": {
         "content": {
-            "enable_eebus": "EEBUS aktivieren",
-            "enable_eebus_desc": "Erlaubt die Kommunikation mit EEBUS Geräten",
+            "enable_eebus": "Enabled EEBUS",
+            "enable_eebus_desc": "Enables communication with EEBUS devices",
             "cert": "certificate",
             "key": "key",
             "ski": "SKI",
             "no_cert": "Not used",
             "unknown": "Unknown",
-            "search_peers": "Detektiere EEBUS Geräte",
-            "searching_peers": "Suche....",
-            "search_completed": "Suche abgeschlossen",
-            "search_failed": "Suche fehlgeschlagen",
-            "add_peers": "SKI Hinzufügen",
+            "search_peers": "Search",
+            "searching_peers": "Searching....",
+            "search_completed": "New Search",
+            "search_failed": "Search failed",
+            "add_peers": "Add SKI",
             "peer_info": {
-                "peers": "EEBUS-Partner",
-                "dns_name": "DNS Addresse",
-                "device_ip": "IP Addresse",
+                "peers": "EEBUS-Peer",
+                "dns_name": "DNS Address",
+                "device_ip": "IP Address",
                 "device_port": "Port",
-                "device_trusted": "Verbindung erlauben",
-                "model_brand": "Hersteller",
-                "model_model": "Gerät",
-                "model_type": "Gerätetype",
-                "trusted_no": "Nein",
-                "trusted_yes": "Ja",
-                "edit_peer_title": "Bearbeiten",
-                "wss_path": "WSS Pfad",
+                "device_trusted": "Allow Connection",
+                "model_brand": "Manufacturer",
+                "model_model": "Device Name",
+                "model_type": "Device Type",
+                "trusted_no": "No",
+                "trusted_yes": "Yes",
+                "edit_peer_title": "Edit",
+                "wss_path": "WSS Path",
                 "state": "Status",
-                "state_connected": "Verbunden",
-                "state_disconnected": "Unbekannt",
-                "state_discovered": "Entdeckt",
-                "autoregister": "Autoregistrierung aktiv",
-                "overwrite_notice": "Diese Einstellungen werden überschrieben wenn ein EEBUS Gerät mit der SKI gefunden wird."
+                "state_connected": "Connected",
+                "state_disconnected": "Unknown",
+                "state_discovered": "Discovered",
+                "autoregister": "Autoregistration enabled",
+                "overwrite_notice": "These settings will be overwritten when a EEBUS device with that SKI is detected."
             }
         },
         "script": {
             "save_failed": "Failed to save the EEBUS settings.",
-            "reboot_content_changed": "EEBUS settings"
+            "reboot_content_changed": "EEBUS-Settings"
         }
     }
 }
