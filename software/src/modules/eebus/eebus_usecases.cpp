@@ -513,15 +513,15 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
     // TODO: Fix the addressing of the usecases. Maybe better address them by entity?
     bool send_response = false;
     if (header.addressDestination->feature == feature_address_node_management) {
-        logger.printfln("Usecases: Received message for NodeManagementUsecase");
+        logger.tracefln(eebus.trace_buffer_index, "Usecases: Received message for NodeManagementUsecase");
         send_response = node_management.handle_message(header, data, response_doc.as<JsonObject>(), connection);
     }
     if (header.addressDestination->feature == feature_address_charging_summary) {
-        logger.printfln("Usecases: Received message for ChargingSummaryUsecase");
+        logger.tracefln(eebus.trace_buffer_index, "Usecases: Received message for ChargingSummaryUsecase");
         send_response = charging_summary.handle_message(header, data, response_doc.as<JsonObject>(), connection);
     }
     if (send_response) {
-        logger.printfln("Usecases: Sending response");
+        logger.tracefln(eebus.trace_buffer_index, "Usecases: Sending response");
         connection->send_datagram(response_doc,
                                   CmdClassifierType::reply,
                                   *header.addressSource,
