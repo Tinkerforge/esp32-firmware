@@ -838,7 +838,7 @@ String API::callCommand(CommandRegistration &reg, char *payload, size_t len, con
     return result;
 }
 
-void API::callCommandNonBlocking(CommandRegistration &reg, const char *payload, size_t len, const std::function<void(const String &errmsg)> &done_cb)
+void API::callCommandNonBlocking(CommandRegistration &reg, const char *payload, size_t len, const std::function<void(const String &errmsg)> &done_cb, API::SuffixPath &&suffix_path)
 {
     if (running_in_main_task()) {
         String err = "callCommandNonBlocking: Use ConfUpdate overload of callCommand in main thread!";
@@ -854,13 +854,19 @@ void API::callCommandNonBlocking(CommandRegistration &reg, const char *payload, 
     }
     memcpy(cpy, payload, len);
 
+    // We use C++ >= 14, so suffix_path could be moved into the lambda capture list.
+    // However std::function requires that all captured variables can be copy-constructed,
+    // so we *still* have to do this by hand.
+    char *suffix_ptr = suffix_path.suffix.release();
+
     task_scheduler.scheduleOnce(
-        [reg, cpy, len, done_cb]() mutable {
+        [reg, cpy, len, done_cb, suffix_ptr, path = suffix_path.path]() mutable {
             String result;
 
             defer {
                 done_cb(result);
                 free(cpy);
+                delete[] suffix_ptr;
             };
 
             if ((cpy == nullptr || len == 0) && !reg.config->is_null()) {
@@ -869,7 +875,7 @@ void API::callCommandNonBlocking(CommandRegistration &reg, const char *payload, 
             }
 
             if (cpy != nullptr) {
-                result = reg.config->update_from_cstr(cpy, len);
+                result = reg.config->update_from_cstr(cpy, len, path.data(), path.size());
                 if (!result.isEmpty()) {
                     return;
                 }

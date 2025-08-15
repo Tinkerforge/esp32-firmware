@@ -421,17 +421,29 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
     topic += global_topic_prefix.length() + 1;
     topic_len -= global_topic_prefix.length() + 1;
 
-    for (auto &reg : api.commands) {
-        if (topic_len != reg.get_path_len() || memcmp(topic, reg.path, topic_len) != 0)
+    const size_t command_size = api.commands.size();
+    for (size_t i = 0; i < command_size; i++) {
+        if (!API::complete_or_prefix_match(topic, topic_len, api.commands[i]))
             continue;
 
-        if (retain && reg.get_is_action()) {
+        auto &reg = api.commands[i];
+        bool is_action = reg.get_is_action();
+
+        if (retain && is_action) {
             logger.printfln("Topic %s is an action. Ignoring retained message (data_len=%u).", reg.path, data_len);
             return;
         }
 
-        if (reg.get_is_action() && data_len == 0) {
+        if (is_action && data_len == 0) {
             logger.printfln("Topic %s is an action. Ignoring empty message.", reg.path);
+            return;
+        }
+
+        API::SuffixPath suffix_path;
+
+        const char *err = API::build_suffix_path(suffix_path, topic + reg.get_path_len(), topic_len - reg.get_path_len());
+        if (err != nullptr) {
+            logger.printfln("On %s: %s", reg.path, err);
             return;
         }
 
@@ -440,7 +452,7 @@ void Mqtt::onMqttMessage(char *topic, size_t topic_len, char *data, size_t data_
             if (!error.isEmpty())
                 logger.printfln("On %s: %s", reg.path, error.c_str());
             esp_mqtt_client_enable_receive(this->client);
-        });
+        }, std::move(suffix_path));
 
         return;
     }
