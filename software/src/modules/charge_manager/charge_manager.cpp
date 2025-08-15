@@ -223,6 +223,8 @@ void ChargeManager::pre_setup()
         {"disconnect", Config::Bool(false)},
     });
 
+    charge_mode = Config::Array({}, new Config{Config::Enum<ConfigChargeMode>(ConfigChargeMode::Default)}, 0, MAX_CONTROLLED_CHARGERS);
+
     pm_charge_mode = Config::Object({
         {"mode", Config::Enum(ConfigChargeMode::Fast)},
     });
@@ -371,7 +373,7 @@ void ChargeManager::update_charger_state_from_mode(ChargerState *state, int char
     }
 }
 
-uint8_t ChargeManager::translate_charge_mode(ConfigChargeMode power_manager_charge_mode) {
+uint8_t ChargeManager::config_cm_to_cm(ConfigChargeMode power_manager_charge_mode) {
     switch (power_manager_charge_mode) {
         case ConfigChargeMode::Fast:
             return ChargeMode::Fast;
@@ -382,7 +384,7 @@ uint8_t ChargeManager::translate_charge_mode(ConfigChargeMode power_manager_char
         case ConfigChargeMode::MinPV:
             return ChargeMode::Min | ChargeMode::PV;
         case ConfigChargeMode::Default:
-            return this->translate_charge_mode(this->pm_default_charge_mode);
+            return this->config_cm_to_cm(this->pm_default_charge_mode);
         case ConfigChargeMode::Min:
             return ChargeMode::Min;
         case ConfigChargeMode::Eco:
@@ -395,6 +397,31 @@ uint8_t ChargeManager::translate_charge_mode(ConfigChargeMode power_manager_char
             return ChargeMode::Eco | ChargeMode::Min | ChargeMode::PV;
     }
     return 0;
+}
+
+ConfigChargeMode ChargeManager::cm_to_config_cm(uint8_t mode) {
+    switch (mode) {
+        case 0:
+            return ConfigChargeMode::Off;
+        case ChargeMode::PV:
+            return ConfigChargeMode::PV;
+        case ChargeMode::Min:
+            return ConfigChargeMode::Min;
+        case ChargeMode::Min | ChargeMode::PV:
+            return ConfigChargeMode::MinPV;
+        case ChargeMode::Eco:
+            return ConfigChargeMode::Eco;
+        case ChargeMode::Eco | ChargeMode::PV:
+            return ConfigChargeMode::EcoPV;
+        case ChargeMode::Eco | ChargeMode::Min:
+            return ConfigChargeMode::EcoMin;
+        case ChargeMode::Eco | ChargeMode::Min | ChargeMode::PV:
+            return ConfigChargeMode::EcoMinPV;
+        case ChargeMode::Fast:
+            return ConfigChargeMode::Fast;
+    }
+    // Fast overrides other modes.
+    return ConfigChargeMode::Fast;
 }
 
 void ChargeManager::setup()
@@ -439,6 +466,7 @@ void ChargeManager::setup()
 
     low_level_state.get("chargers")->setCount(charger_count);
     state.get("chargers")->reserve(charger_count);
+    charge_mode.setCount(charger_count);
 
     for (size_t i = 0; i < charger_count; ++i) {
         auto state_last_charger = state.get("chargers")->add();
@@ -641,9 +669,10 @@ void ChargeManager::register_urls()
 
     this->pm_charge_mode.get("mode")->updateEnum(this->pm_default_charge_mode);
 
-    auto default_mode = translate_charge_mode(this->pm_default_charge_mode);
+    auto default_mode = config_cm_to_cm(this->pm_default_charge_mode);
     for (size_t i = 0; i < charger_count; ++i) {
         charger_state[i].charge_mode = default_mode;
+        this->charge_mode.get(i)->updateEnum(this->cm_to_config_cm(default_mode));
     }
 
     bool enabled = config.get("enable_charge_manager")->asBool();
@@ -689,17 +718,27 @@ void ChargeManager::register_urls()
     }, false);
 #endif
 
+    api.addState("charge_manager/charge_mode", &charge_mode);
+    api.addCommand("charge_manager/charge_mode_update", &charge_mode, {}, [this](String &errmsg) {
+        for (size_t i = 0; i < charger_count; ++i) {
+            auto new_mode = config_cm_to_cm(this->charge_mode.get(i)->asEnum<ConfigChargeMode>());
+            charger_state[i].charge_mode = new_mode;
+            this->charge_mode.get(i)->updateEnum(this->cm_to_config_cm(new_mode));
+        }
+    }, false);
+
     // This is power_manager API that is now handled by the charge manager.
     api.addState("power_manager/charge_mode", &pm_charge_mode);
     api.addCommand("power_manager/charge_mode_update", &pm_charge_mode, {}, [this](String &errmsg) {
-        // translate_charge_mode supports passing "default", but pm_charge_mode should be updated as well.
+        // config_cm_to_cm supports passing "default", but pm_charge_mode should be updated as well.
         if (pm_charge_mode.get("mode")->asEnum<ConfigChargeMode>() == ConfigChargeMode::Default)
             pm_charge_mode.get("mode")->updateEnum(this->pm_default_charge_mode);
 
-        auto new_mode = translate_charge_mode(this->pm_charge_mode.get("mode")->asEnum<ConfigChargeMode>());
+        auto new_mode = config_cm_to_cm(this->pm_charge_mode.get("mode")->asEnum<ConfigChargeMode>());
 
         for (size_t i = 0; i < charger_count; ++i) {
             charger_state[i].charge_mode = new_mode;
+            this->charge_mode.get(i)->updateEnum(this->cm_to_config_cm(new_mode));
         }
 
         //logger.printfln("Charging mode %u requested but it was ignored", new_mode);
