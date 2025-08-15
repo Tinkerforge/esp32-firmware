@@ -109,6 +109,11 @@ public:
         Keep,
     };
 
+    struct SuffixPath {
+        std::unique_ptr<char[]> suffix;
+        FixedStackVector<Config::Key, Config::MAX_NESTING> path;
+    };
+
     API();
 
     void pre_setup() override;
@@ -119,7 +124,7 @@ public:
     String callCommand(CommandRegistration &reg, char *payload, size_t len, const Config::Key *config_path = nullptr, size_t config_path_len = 0);
 
     // Call this method only if you are a IAPIBackend and run in another FreeRTOS task!
-    void callCommandNonBlocking(CommandRegistration &reg, const char *payload, size_t len, const std::function<void(const String &errmsg)> &done_cb);
+    void callCommandNonBlocking(CommandRegistration &reg, const char *payload, size_t len, const std::function<void(const String &errmsg)> &done_cb, SuffixPath &&suffix_path=SuffixPath{});
 
     String callCommand(const char *path, const Config::ConfUpdate &payload = {});
 
@@ -197,10 +202,6 @@ public:
         return false;
     }
 
-    struct SuffixPath {
-        std::unique_ptr<char[]> suffix;
-        FixedStackVector<Config::Key, Config::MAX_NESTING> path;
-    };
     static const char *build_suffix_path(SuffixPath &suffix_path, const char *suffix, size_t suffix_len);
 
 private:
