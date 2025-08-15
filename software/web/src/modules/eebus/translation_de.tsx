@@ -10,9 +10,9 @@ let x = {
             "ski": "SKI",
             "no_cert": "Nicht verwendet",
             "unknown": "Unbekannt",
-            "search_peers": "Suche EEBUS Geräte",
-            "searching_peers": "Suche....",
-            "search_completed": "Suche abgeschlossen",
+            "search_peers": "Suche",
+            "searching_peers": "Suche im Gange...",
+            "search_completed": "Neue Suche",
             "search_failed": "Suche fehlgeschlagen",
             "add_peers": "SKI Hinzufügen",
             "peer_info": {

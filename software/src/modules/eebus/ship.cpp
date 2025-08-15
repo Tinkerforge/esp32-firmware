@@ -49,8 +49,6 @@ void Ship::setup()
                     setup_mdns();
                 },
                 1_s);
-
-            setup_mdns();
         }
     }
 }
@@ -120,11 +118,9 @@ void Ship::setup_wss()
     const int32_t cert_id = eebus.config.get("cert_id")->asInt();
     const int32_t key_id = eebus.config.get("key_id")->asInt();
 
-    bool use_external_certs = (cert_id != -1) && (key_id != -1);
-
     // If both cert and key are set externally, we use them.
     // Oterwise we generate and use a self-signed certificate.
-    if (use_external_certs) {
+    if (cert_id != -1 && key_id != -1) {
         size_t cert_crt_len = 0;
         auto cert_crt = certs.get_cert(cert_id, &cert_crt_len);
         if (cert_crt == nullptr) {

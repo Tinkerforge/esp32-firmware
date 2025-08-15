@@ -73,6 +73,7 @@ public:
     ConfigRoot config;
     ConfigRoot state;
     ConfigRoot switch_enable_config;
+    ConfigRoot scan_command;
     Ship ship;
     unique_ptr_any<EEBusUseCases> usecases;
     //EEBusUseCases usecases{};
