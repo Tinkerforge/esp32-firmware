@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+//#include "../../options.inc"
+
 import * as util from "../../ts/util";
 import * as API from "../../ts/api";
 import * as options from "../../options";
@@ -1001,12 +1003,11 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                     onEditGetChildren: () => {
                                         let slots: [string, string][] = [];
                                         let classes: [string, string][] = [];
-                                        const charger_meter_slot = API.get_unchecked("evse/meter_config")?.slot;
 
                                         for (let free_meter_slot = 0; free_meter_slot < options.METERS_MAX_SLOTS; ++free_meter_slot) {
                                             if (this.state.configs_table[free_meter_slot][0] == MeterClassID.None || free_meter_slot == meter_slot) {
                                                 let slot_name = free_meter_slot.toString();
-                                                if (free_meter_slot === charger_meter_slot) {
+                                                if (free_meter_slot === this.state.charger_meter_slot) {
                                                     slot_name += " - " + __("meters.content.add_meter_slot_reserved_charger");
                                                 }
                                                 slots.push([free_meter_slot.toString(), slot_name]);
@@ -1040,7 +1041,28 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                                             }
                                                         }
                                                     }}
-                                                    value={this.state.edit_meter_config[0].toString()} />
+                                                    value={this.state.edit_meter_config[0].toString()}
+                                                    className={
+                                                        // the charger internal meter has to be in the slot the EVSE expects it to be in
+//#if OPTIONS_PRODUCT_ID_IS_WARP
+                                                        this.state.edit_meter_slot != this.state.charger_meter_slot
+                                                     && this.state.edit_meter_config[0] == MeterClassID.RS485Bricklet ? "is-invalid" : undefined
+//#else
+//#if OPTIONS_PRODUCT_ID_IS_WARP_ANY
+                                                        this.state.edit_meter_slot != this.state.charger_meter_slot
+                                                     && this.state.edit_meter_config[0] == MeterClassID.EVSEV2 ? "is-invalid" : undefined
+//#else
+                                                        undefined
+//#endif
+//#endif
+                                                    }
+                                                    invalidFeedback={
+//#if OPTIONS_PRODUCT_ID_IS_WARP_ANY
+                                                        __("meters.content.invalid_slot_for_charger_internal_meter")(this.state.charger_meter_slot)
+//#else
+                                                        undefined
+//#endif
+                                                    } />
                                             </FormRow>
                                         </>]
 
@@ -1085,12 +1107,11 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                             onAddGetChildren={() => {
                                 let slots: [string, string][] = [];
                                 let classes: [string, string][] = [];
-                                const charger_meter_slot = API.get_unchecked("evse/meter_config")?.slot;
 
                                 for (let free_meter_slot = 0; free_meter_slot < options.METERS_MAX_SLOTS; ++free_meter_slot) {
                                     if (this.state.configs_table[free_meter_slot][0] == MeterClassID.None) {
                                         let slot_name = free_meter_slot.toString();
-                                        if (free_meter_slot === charger_meter_slot) {
+                                        if (free_meter_slot === this.state.charger_meter_slot) {
                                             slot_name += " - " + __("meters.content.add_meter_slot_reserved_charger");
                                         }
                                         slots.push([free_meter_slot.toString(), slot_name]);
@@ -1127,7 +1148,28 @@ export class Meters extends ConfigComponent<null, MetersProps, MetersState> {
                                                 }
                                             }}
                                             value={this.state.add_meter_config[0].toString()}
-                                            required />
+                                            required
+                                            className={
+                                                // the charger internal meter has to be in the slot the EVSE expects it to be in
+//#if OPTIONS_PRODUCT_ID_IS_WARP
+                                                   this.state.add_meter_slot != this.state.charger_meter_slot
+                                                && this.state.add_meter_config[0] == MeterClassID.RS485Bricklet ? "is-invalid" : undefined
+//#else
+//#if OPTIONS_PRODUCT_ID_IS_WARP_ANY
+                                                   this.state.add_meter_slot != this.state.charger_meter_slot
+                                                && this.state.add_meter_config[0] == MeterClassID.EVSEV2 ? "is-invalid" : undefined
+//#else
+                                                undefined
+//#endif
+//#endif
+                                            }
+                                            invalidFeedback={
+//#if OPTIONS_PRODUCT_ID_IS_WARP_ANY
+                                                __("meters.content.invalid_slot_for_charger_internal_meter")(this.state.charger_meter_slot)
+//#else
+                                                undefined
+//#endif
+                                            } />
                                     </FormRow>
                                 ];
 

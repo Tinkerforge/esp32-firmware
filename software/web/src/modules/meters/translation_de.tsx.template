@@ -63,6 +63,7 @@ let x = {
             "add_meter_slot": "Nummer",
             "add_meter_slot_reserved_charger": "Reserviert für Wallbox-Zähler",
             "add_meter_class": "Klasse",
+            "invalid_slot_for_charger_internal_meter": /*SFN*/(slot: number) => `Der Wallbox-interne Zähler kann nur für Stromzählernummer ${slot} konfiguriert werden.`/*NF*/,
 
             "edit_meter_title": "Stromzähler bearbeiten",
             "edit_meter_slot": "Nummer",
