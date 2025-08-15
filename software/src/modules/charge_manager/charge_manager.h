@@ -37,6 +37,28 @@ struct ChargerAllocationState;
 struct ChargerDecision;
 struct GlobalDecision;
 
+namespace ChargeMode {
+    enum Type {
+        _min = 1,
+        PV = 1,
+        Min = 2,
+        Eco = 4,
+        Fast = 8,
+        _max = 8
+    };
+    const char * const Strings[Type::_max + 1] {
+        "Off",
+        "PV",
+        "Min",
+        "Min+PV",
+        "Eco",
+        "Eco+PV",
+        "Eco+Min",
+        "Eco+Min+PV",
+        "Fast"
+    };
+}
+
 class ChargeManager final : public IModule
 #if MODULE_AUTOMATION_AVAILABLE()
                           , public IAutomationBackend
@@ -76,7 +98,8 @@ public:
 
     size_t trace_buffer_index;
 
-    uint8_t translate_charge_mode(ConfigChargeMode power_manager_charge_mode);
+    uint8_t config_cm_to_cm(ConfigChargeMode power_manager_charge_mode);
+    ConfigChargeMode cm_to_config_cm(uint8_t mode);
 
 private:
     bool seen_all_chargers();
@@ -107,6 +130,7 @@ private:
     Config state_chargers_prototype;
     Config low_level_state_chargers_prototype;
 
+    ConfigRoot charge_mode;
     ConfigRoot pm_charge_mode;
 
 #ifdef DEBUG_FS_ENABLE
