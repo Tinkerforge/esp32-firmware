@@ -59,12 +59,15 @@ void Ship::disable_ship()
         conn.schedule_close(0_ms);
     }
     mdns_service_remove("_ship", "_tcp");
-    web_sockets.stop();
+    // Delay closing the socket and httpd server so the connections can all be closed
+    task_scheduler.scheduleOnce(
+                [this]() {
+                    web_sockets.stop();
+                    httpd_ssl_stop(httpd);
+                    httpd = nullptr;
+                },
+                100_ms);
 
-    // We do not stop
-    httpd_ssl_stop(httpd);
-    httpd = nullptr;
-    // TODO: What happens to the websockets when the underlying httpd server is stopped? Just no more messages? Lets hope for the best
     logger.tracefln(eebus.trace_buffer_index, "disable_ship end");
 }
 

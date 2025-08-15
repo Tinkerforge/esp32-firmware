@@ -27,7 +27,6 @@
 
 void EEBus::pre_setup()
 {
-
     this->trace_buffer_index = logger.alloc_trace_buffer(
         "eebus",
         32768
@@ -129,10 +128,7 @@ void EEBus::setup()
     toggle_module(is_enabled);
     update_peers_config();
 
-    // All peers are unknown at startup
-    for (size_t i = 0; i < config.get("peers")->count(); i++) {
-        config.get("peers")->get(i)->get("state")->updateUint(0);
-    }
+
 
     state.get("connections")->removeAll();
 
@@ -269,6 +265,11 @@ void EEBus::toggle_module(const bool enable)
     if (enable == is_enabled && initialized) {
         return;
     }
+
+    // All peers are unknown when its either toggled or at startup
+    for (size_t i = 0; i < config.get("peers")->count(); i++) {
+        config.get("peers")->get(i)->get("state")->updateUint(0);
+    }
     is_enabled = enable;
     state.get("enabled")->updateBool(is_enabled);
     config.get("enabled")->updateBool(is_enabled);
@@ -286,6 +287,7 @@ void EEBus::toggle_module(const bool enable)
         if (initialized) {
             logger.printfln("EEBUS Module disabled");
         }
+
     }
 }
 String EEBus::get_eebus_name()
