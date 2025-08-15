@@ -26,7 +26,6 @@
 #include "modules/meters/imeter.h"
 #include "modules/meters/meter_value_id.h"
 #include "config.h"
-#include "meters_modbus_tcp.h"
 #include "modules/modbus_tcp_client/modbus_register_type.enum.h"
 #include "modules/modbus_tcp_client/modbus_value_type.enum.h"
 #include "meter_modbus_tcp_table_id.enum.h"

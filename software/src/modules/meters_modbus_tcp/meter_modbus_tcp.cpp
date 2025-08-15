@@ -28,8 +28,6 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "modules/meters/meter_location.enum.h"
-#include "modules/modbus_tcp_client/modbus_tcp_tools.h"
-#include "modules/modbus_tcp_client/modbus_register_address_mode.enum.h"
 #include "meters_modbus_tcp_defs.inc"
 #include "tools/float.h"
 #include "tools/sun_spec.h"
