@@ -108,10 +108,7 @@ void ShipConnection::send_current_outgoing_message()
         return;
     }
 
-    logger.tracefln(eebus.trace_buffer_index, "ShipConnection::send_current_outgoing_message: sending message with total length of %d and content: %s",
-                    message_outgoing->length - 1,
-                    &message_outgoing->data[1]);
-
+    log_message("send_current_outgoing", message_outgoing.get());
     ws_client.sendOwnedNoFreeBlocking_HTTPThread((char *)message_outgoing->data, message_outgoing->length, HTTPD_WS_TYPE_BINARY);
 }
 
@@ -122,7 +119,11 @@ void ShipConnection::send_string(const char *str, const int length, const int ms
             Message>(); // TODO: Check why message_outgoing becomes a nullptr somewhere as this might lead to memory leaks otherwise
         logger.tracefln(eebus.trace_buffer_index, "ShipConnection::send_string: Message Outgoing became a nullptr. Recreating...");
     }
-    logger.tracefln(eebus.trace_buffer_index, "ShipConnection::send_string: Sending Message classified as %d with length %d: %s", msg_classifier, length, str);
+    logger.tracefln(eebus.trace_buffer_index,
+                    "ShipConnection::send_string: Sending Message classified as %d with length %d: %s",
+                    msg_classifier,
+                    length,
+                    str);
 
     /*
     message_outgoing->data[0] = msg_classifier;
@@ -934,11 +935,7 @@ void ShipConnection::state_sme_access_method_request()
 
 void ShipConnection::state_done()
 {
-    logger.tracefln(eebus.trace_buffer_index,
-                    "state_done received: %d (len %d)-> %s",
-                    message_incoming->data[0],
-                    message_incoming->length,
-                    &message_incoming->data[1]);
+    log_message("state_done", message_incoming.get());
     // If we are done we can still get the PIN Request (which we currently don't support)
     // and the SME Access Method Request. In that case we jump to the corresponding state,
     // which will then come back here.
@@ -960,11 +957,7 @@ void ShipConnection::state_done()
             DynamicJsonDocument dynamic_json_document{8192}; //TESTING MEMORY STUFF
             if (data.json_to_type(&message_incoming->data[1], message_incoming->length - 1, false, dynamic_json_document)
                 == SHIP_TYPES::DeserializationResult::SUCCESS) {
-                logger.tracefln(eebus.trace_buffer_index,
-                                "DATA received: %d (len %d)-> %s",
-                                message_incoming->data[0],
-                                message_incoming->length,
-                                &message_incoming->data[1]);
+
                 spine->process_datagram(data.payload);
             } else {
                 logger.printfln("Received a Data Message but encountered an error while trying to deserialize the message");
@@ -1276,6 +1269,20 @@ void ShipConnection::to_json_access_methods_type()
     message_outgoing->length = length + 1;
 
     logger.tracefln(eebus.trace_buffer_index, "T2J AccessMethods json: %s", &message_outgoing->data[1]);
+}
+void ShipConnection::log_message(const String &state_prefix, Message *msg)
+{
+    logger.tracefln(eebus.trace_buffer_index, "SHIP: %s received %d (len %d)", state_prefix.c_str(), reinterpret_cast<uint8_t>(msg->data[0]), msg->length);
+
+    // logger.tracefln erlaubt max. 256 Zeichen. Wir loggen in 200er-Blöcken.
+    const char *msg_char = reinterpret_cast<const char *>(&msg->data[1]);
+    int total_len = msg->length - 1;
+    int printed = 0;
+    while (printed < total_len) {
+        int chunk_len = std::min(200, total_len - printed);
+        logger.tracefln(eebus.trace_buffer_index, "%.*s", chunk_len, msg_char + printed);
+        printed += chunk_len;
+    }
 }
 
 void ShipConnection::common_procedure_enable_data_exchange()

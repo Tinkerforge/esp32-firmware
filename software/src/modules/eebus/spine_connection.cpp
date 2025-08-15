@@ -87,6 +87,8 @@ void SpineConnection::send_datagram(JsonVariantConst payload,
     (*response_doc)["datagram"][1]["payload"]["cmd"][0] = payload;
 #ifdef EEBUS_DEV_ENABLE_RESPONSE
     ship_connection->send_data_message(response_doc->as<JsonVariant>());
+#else
+    logger.tracefln(eebus.trace_buffer_index, "Sending SPINE messages is disabled. No message sent");
 #endif
     // TODO: Handle acknowledge request. Some messages require acknowledgement from the other side. If we send one of those we need to handle this
 }

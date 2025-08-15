@@ -347,4 +347,6 @@ public:
     // generates a proper json for the accessMethods
     // that is returned on accessMethodsRequest
     void to_json_access_methods_type();
+
+    void log_message(const String &state_prefix, Message *msg);
 };

@@ -110,7 +110,7 @@ String ShipMessageDataType::type_to_json()
 
     String message_outgoing_data = "";
     message_outgoing_data.reserve(SHIP_TYPES_MAX_JSON_SIZE - 1); // Reserve space for the JSON data
-    const size_t bytes_written = serializeJson(doc, message_outgoing_data);
+    serializeJson(doc, message_outgoing_data);
 
 /*
     //message_outgoing_data.replace("[{", "[[{"); // spine-go expects a double array for some reason
