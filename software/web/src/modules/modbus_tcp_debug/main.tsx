@@ -60,6 +60,7 @@ interface ModbusTCPDebugToolState {
     meter_port: number;
     meter_device_address: number;
 //#endif
+    was_validated: boolean;
     custom_host: string;
     custom_port: number;
     custom_device_address: number;
@@ -105,6 +106,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
             meter_port: 502,
             meter_device_address: 1,
 //#endif
+            was_validated: false,
             custom_host: "",
             custom_port: 502,
             custom_device_address: 1,
@@ -345,17 +347,23 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
         }
 //#endif
 
-        return <form onSubmit={async (e) => {
+        return <form
+                class={"needs-validation" + (this.state.was_validated ? " was-validated" : "")}
+                noValidate
+                onSubmit={async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
 
+                    this.setState({was_validated: false});
+
                     if (!(e.target as HTMLFormElement).checkValidity() || (e.target as HTMLFormElement).querySelector(".is-invalid")) {
+                        this.setState({was_validated: true});
                         return;
                     }
 
                     let cookie: number = Math.floor(Math.random() * 0xFFFFFFFF);
 
-                    this.setState({waiting: true, cookie: cookie, result: "", transfer: ""}, async () => {
+                    this.setState({was_validated: false, waiting: true, cookie: cookie, result: "", transfer: ""}, async () => {
                         let data_count = this.state.data_count;
                         let values_hex: string[] = [];
 
