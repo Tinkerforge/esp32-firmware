@@ -27,6 +27,8 @@
 #include "tools.h"
 #include "tools/string_builder.h"
 
+#include "gcc_warnings.h"
+
 static ConfigRoot nullconf = Config{Config::ConfVariant{}};
 static ConfigRoot confirmconf;
 
@@ -51,10 +53,10 @@ void config_abort_on_type_error(const char *fn_name, const Config *config_is, co
     size_t len = snprintf_u(msg, ARRAY_SIZE(msg), "%s: Config has wrong type. This is a %s, not a %s.", fn_name, config_is->value.getVariantName(), t_name_wanted);
 
 #ifdef DEBUG_FS_ENABLE
-    len += snprintf(msg + len, ARRAY_SIZE(msg) - len, " Content is %s.", config_is->to_string().c_str());
+    len += snprintf_u(msg + len, ARRAY_SIZE(msg) - len, " Content is %s.", config_is->to_string().c_str());
 
     if (content_new) {
-        len += snprintf(msg + len, ARRAY_SIZE(msg) - len, " New value is %s.", content_new->c_str());
+        len += snprintf_u(msg + len, ARRAY_SIZE(msg) - len, " New value is %s.", content_new->c_str());
     }
 #else
     (void)len;
@@ -184,6 +186,7 @@ Config Config::Uint53(uint64_t u)
     return Config{ConfUint53{u}};
 }
 
+[[gnu::const]]
 ConfigRoot *Config::Null()
 {
     // Allow constructing null configs:
@@ -466,7 +469,7 @@ bool Config::remove(size_t i)
     if (children.size() <= i)
         return false;
 
-    children.erase(children.begin() + i);
+    children.erase(children.begin() + static_cast<int>(i));
     this->set_updated(0xFF);
     return true;
 }
@@ -485,7 +488,7 @@ bool Config::setCount(size_t new_size)
         return true; // Return early because nothing will be modified.
 
     if (new_size < old_size) {
-        children.erase(children.begin() + new_size, children.end());
+        children.erase(children.begin() + static_cast<int>(new_size), children.end());
     } else {
         const auto &arr = value.val.a;
         const auto *slot = arr.getSlot();
@@ -701,20 +704,22 @@ bool Config::clearString()
 // ConfFloat::getVal does not return a pointer to the value
 // because it is stored as uint32_t in the IRAM.
 template<>
-inline bool Config::update_value<float, Config::ConfFloat>(float value, const char *value_type) {
+inline bool Config::update_value<float, Config::ConfFloat>(float val, const char *value_type) {
     // Asserts checked in ::is.
     if (!this->is<ConfFloat>()) {
-        String value_string(value);
+        String value_string(val);
         config_abort_on_type_error("update_value", this, value_type, &value_string);
     }
     ConfFloat *conf = get<ConfFloat>();
     float old_value = conf->getVal();
-    conf->setVal(value);
+    conf->setVal(val);
 
-    if (old_value != value)
+    bool changed = !is_exactly_equal(old_value, val);
+
+    if (changed)
         this->value.updated = 0xFF;
 
-    return old_value != value;
+    return changed;
 }
 
 template<>
@@ -738,59 +743,59 @@ inline size_t Config::fillArray<float, Config::ConfFloat>(float *arr, size_t ele
     return toWrite;
 }
 
-bool Config::updateString(const String &value)
+bool Config::updateString(const String &val)
 {
     // Asserts checked in ::update_value.
-    if (!value) {
-        esp_system_abort("Can't update string, value is invalid string!");
+    if (!val) {
+        esp_system_abort("Can't update string, val is invalid string!");
     }
-    return update_value<String, ConfString>(value, "String");
+    return update_value<String, ConfString>(val, "String");
 }
 
-bool Config::updateInt(int32_t value)
+bool Config::updateInt(int32_t val)
 {
     // Asserts checked in ::update_value.
     if (this->is<ConfInt16>())
-        return update_value<int16_t, ConfInt16>(value, "int16_t");
+        return update_value<int16_t, ConfInt16>(static_cast<int16_t>(val), "int16_t");
     if (this->is<ConfInt8>())
-        return update_value<int8_t, ConfInt8>(value, "int8_t");
+        return update_value<int8_t, ConfInt8>(static_cast<int8_t>(val), "int8_t");
 
-    return update_value<int32_t, ConfInt>(value, "int32_t");
+    return update_value<int32_t, ConfInt>(val, "int32_t");
 }
 
-bool Config::updateUint(uint32_t value)
+bool Config::updateUint(uint32_t val)
 {
     // Asserts checked in ::update_value.
     if (this->is<ConfUint16>())
-        return update_value<uint16_t, ConfUint16>(value, "uint16_t");
+        return update_value<uint16_t, ConfUint16>(static_cast<uint16_t>(val), "uint16_t");
     if (this->is<ConfUint8>())
-        return update_value<uint8_t, ConfUint8>(value, "uint8_t");
+        return update_value<uint8_t, ConfUint8>(static_cast<uint8_t>(val), "uint8_t");
 
-    return update_value<uint32_t, ConfUint>(value, "uint32_t");
+    return update_value<uint32_t, ConfUint>(val, "uint32_t");
 }
 
-bool Config::updateFloat(float value)
+bool Config::updateFloat(float val)
 {
     // Asserts checked in ::update_value.
-    return update_value<float, ConfFloat>(value, "float");
+    return update_value<float, ConfFloat>(val, "float");
 }
 
-bool Config::updateBool(bool value)
+bool Config::updateBool(bool val)
 {
     // Asserts checked in ::update_value.
-    return update_value<bool, ConfBool>(value, "bool");
+    return update_value<bool, ConfBool>(val, "bool");
 }
 
-bool Config::updateInt52(int64_t value)
+bool Config::updateInt52(int64_t val)
 {
     // Asserts checked in ::update_value.
-    return update_value<int64_t, ConfInt52>(value, "int64_t");
+    return update_value<int64_t, ConfInt52>(val, "int64_t");
 }
 
-bool Config::updateUint53(uint64_t value)
+bool Config::updateUint53(uint64_t val)
 {
     // Asserts checked in ::update_value.
-    return update_value<uint64_t, ConfUint53>(value, "uint64_t");
+    return update_value<uint64_t, ConfUint53>(val, "uint64_t");
 }
 
 size_t Config::fillFloatArray(float *arr, size_t elements)
@@ -838,19 +843,19 @@ size_t Config::fillInt32Array(int32_t *arr, size_t elements)
 size_t Config::json_size(bool zero_copy) const
 {
     // Asserts checked in ::apply_visitor.
-    return Config::apply_visitor(json_length_visitor{zero_copy}, value);
+    return Config::apply_visitor(json_length_visitor{zero_copy}, this->value);
 }
 
 size_t Config::max_string_length() const
 {
     // Asserts checked in ::apply_visitor.
-    return Config::apply_visitor(max_string_length_visitor{}, value);
+    return Config::apply_visitor(max_string_length_visitor{}, this->value);
 }
 
 size_t Config::string_length() const
 {
     // Asserts checked in ::apply_visitor.
-    return Config::apply_visitor(string_length_visitor{}, value);
+    return Config::apply_visitor(string_length_visitor{}, this->value);
 }
 
 DynamicJsonDocument Config::to_json(const char *const *keys_to_censor, size_t keys_to_censor_len) const
@@ -866,7 +871,7 @@ DynamicJsonDocument Config::to_json(const char *const *keys_to_censor, size_t ke
     } else {
         var = doc.as<JsonVariant>();
     }
-    Config::apply_visitor(::to_json{var, keys_to_censor, keys_to_censor_len}, value);
+    Config::apply_visitor(::to_json{var, keys_to_censor, keys_to_censor_len}, this->value);
     return doc;
 }
 
@@ -1008,14 +1013,17 @@ Config *Config::walk(const Config::Key *path, size_t path_len) {
     Config *ptr = this;
 
     for (size_t i = 0; i < path_len; ++i) {
-        const auto *value = &path[i];
+        const auto *key = &path[i];
 
-        const char *const *obj_variant = strict_variant::get<const char *>(value);
-        const bool is_obj = obj_variant != nullptr;
-        if (is_obj)
-            ptr = (Config *)ptr->get_or_null(*obj_variant);
-        else
-            ptr = (Config *)ptr->get_or_null(*strict_variant::get<size_t>(value));
+        const char *const *obj_variant = strict_variant::get<const char *>(key);
+        const size_t *arr_variant = strict_variant::get<size_t>(key);
+        if (obj_variant != nullptr)
+            ptr = static_cast<Config *>(ptr->get_or_null(*obj_variant));
+        else if (arr_variant != nullptr)
+            ptr = static_cast<Config *>(ptr->get_or_null(*arr_variant));
+        // This triggers potential null pointer dereference [-Werror=null-dereference] static_cast<Config *>(ptr->get_or_null(*arr_variant));
+        /*else
+            __builtin_unreachable();*/
 
         if (ptr == nullptr) {
             return nullptr;
