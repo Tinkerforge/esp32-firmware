@@ -119,28 +119,6 @@ struct CurrentAllocatorState {
     Cost control_window_max = {0, 0, 0, 0};
 };
 
-namespace ChargeMode {
-    enum Type {
-        _min = 1,
-        PV = 1,
-        Min = 2,
-        Eco = 4,
-        Fast = 8,
-        _max = 8
-    };
-    const char * const Strings[Type::_max + 1] {
-        "Off",
-        "PV",
-        "Min",
-        "Min+PV",
-        "Eco",
-        "Eco+PV",
-        "Eco+Min",
-        "Eco+Min+PV",
-        "Fast"
-    };
-}
-
 // Check alignment/padding when adding stuff.
 struct ChargerState {
     micros_t last_update;
