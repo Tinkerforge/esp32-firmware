@@ -718,8 +718,8 @@ void ChargeManager::register_urls()
     }, false);
 #endif
 
-    api.addState("charge_manager/charge_mode", &charge_mode);
-    api.addCommand("charge_manager/charge_mode_update", &charge_mode, {}, [this](String &errmsg) {
+    api.addState("charge_manager/charge_modes", &charge_mode);
+    api.addCommand("charge_manager/charge_modes_update", &charge_mode, {}, [this](String &errmsg) {
         for (size_t i = 0; i < charger_count; ++i) {
             auto new_mode = config_cm_to_cm(this->charge_mode.get(i)->asEnum<ConfigChargeMode>());
             charger_state[i].charge_mode = new_mode;
