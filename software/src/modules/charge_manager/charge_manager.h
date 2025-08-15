@@ -107,7 +107,7 @@ private:
     Config state_chargers_prototype;
     Config low_level_state_chargers_prototype;
 
-    ConfigRoot charge_mode;
+    ConfigRoot pm_charge_mode;
 
 #ifdef DEBUG_FS_ENABLE
     ConfigRoot debug_limits_update;
