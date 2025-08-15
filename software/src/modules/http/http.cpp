@@ -147,7 +147,6 @@ bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
             last_matched_api_idx = i;
             last_matched_api_suffix = in_uri + api.commands[i].get_path_len();
             last_matched_api_suffix_len = len - api.commands[i].get_path_len();
-            logger.printfln("%d %d %s %zu", last_matched_api_type, last_matched_api_idx, last_matched_api_suffix, last_matched_api_suffix_len);
             return true;
         }
 
@@ -158,7 +157,6 @@ bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
             last_matched_api_idx = i;
             last_matched_api_suffix = in_uri + api.states[i].get_path_len();
             last_matched_api_suffix_len = len - api.states[i].get_path_len();
-            logger.printfln("%d %d %s %zu", last_matched_api_type, last_matched_api_idx, last_matched_api_suffix, last_matched_api_suffix_len);
             return true;
         }
 
@@ -170,7 +168,6 @@ bool custom_uri_match(const char *ref_uri, const char *in_uri, size_t len)
             last_matched_api_idx = i;
             last_matched_api_suffix = in_uri + api.responses[i].get_path_len();
             last_matched_api_suffix_len = len - api.responses[i].get_path_len();
-            logger.printfln("%d %d %s %zu", last_matched_api_type, last_matched_api_idx, last_matched_api_suffix, last_matched_api_suffix_len);
             return true;
         }
 
