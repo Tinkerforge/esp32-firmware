@@ -32,6 +32,7 @@ void EEBus::pre_setup()
         "eebus",
         32768
             * 4); // This makes the PSRAM usage gigantic even when the module is disabled but we cant set this anywhere else. Maybe make smaller?
+
     // TODO: Fix string lengths. Spec says they are shorter
 
     // TOOD: Rework API so this lot is a bit cleaner
@@ -49,7 +50,6 @@ void EEBus::pre_setup()
         {"mode_type", Config::Str("", 0, 64)},
         {"state", Config::Uint8(0)},
     });
-
     state_connections_prototype = Config::Object({
         {"ski", Config::Str("", 0, 64)},
         {"ship_state", Config::Str("", 0, 64)},
@@ -57,7 +57,6 @@ void EEBus::pre_setup()
 
     switch_enable_config =
         ConfigRoot{Config::Object({{"enable", Config::Bool(false)}}), [this](Config &config, ConfigSource source) -> String {
-
                        return "";
                    }};
 
@@ -100,6 +99,7 @@ void EEBus::pre_setup()
                                  }
                                  return "";
                              }};
+    scan_command = ConfigRoot(Config::Object({}));
 
     state = Config::Object({
         {"enabled", Config::Bool(false)},
@@ -232,25 +232,37 @@ void EEBus::register_urls()
         },
         true);
 
-    // Yes i realize this is not the best way
-    server.on("/eebus/scan", HTTP_PUT, [this](WebServerRequest request) {
-        if (!is_enabled) {
-            return request.send(200, "text/plain; charset=utf-8", "EEBUS not enabled");
-        }
-        if (ship.discovery_state == Ship_Discovery_State::SCANNING) {
-            return request.send(200, "text/plain; charset=utf-8", "scan in progress");
-        }
-        if (ship.discovery_state == Ship_Discovery_State::READY || ship.discovery_state == Ship_Discovery_State::SCAN_DONE) {
-            ship.discover_ship_peers();
-            update_peers_config();
-            return request.send(200, "text/plain; charset=utf-8", "scan started");
-        }
-        if (ship.discovery_state == Ship_Discovery_State::ERROR) {
-            ship.discovery_state = Ship_Discovery_State::READY;
-            return request.send(200, "text/plain; charset=utf-8", "scan error");
-        }
-        return request.send(200, "text/plain; charset=utf-8", "scan done");
-    });
+    api.addCommand(
+        "eebus/scan",
+        &scan_command,
+        {},
+        [this](String &errmsg) {
+            if (!is_enabled) {
+                return "EEBUS is disabled";
+            }
+            if (ship.discovery_state == Ship_Discovery_State::SCANNING) {
+                return "scan in progress";
+            }
+            if (ship.discovery_state == Ship_Discovery_State::READY || ship.discovery_state == Ship_Discovery_State::SCAN_DONE) {
+                state.get("discovery_state")->updateUint(Ship_Discovery_State::SCANNING);
+
+                task_scheduler.scheduleOnce(
+                [this]() {
+                    ship.discover_ship_peers();
+                    update_peers_config();
+                },
+                1_s);
+                // we do a bit of a wait here so the user has time to see the feedback on the frontend
+
+                return "scan started";
+            }
+            if (ship.discovery_state == Ship_Discovery_State::ERROR) {
+                ship.discovery_state = Ship_Discovery_State::READY;
+                return "scan error";
+            }
+            return "scan done";
+        },
+        true);
 }
 void EEBus::toggle_module(const bool enable)
 {
@@ -294,7 +306,6 @@ int EEBus::get_state_connection_id_by_ski(const String &ski)
 void EEBus::update_peers_config()
 {
     size_t currently_configured_count = config.get("peers")->count();
-
 
     for (size_t i = 0; i < config.get("peers")->count(); i++) {
         // Cleanup invalid peers

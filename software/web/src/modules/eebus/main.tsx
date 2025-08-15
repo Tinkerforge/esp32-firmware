@@ -80,7 +80,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
 
         return (
             <SubPage name="eebus">
-                <ConfigForm id="eebus_config_form" title="EEBUS" isModified={this.isModified()} isDirty={this.isDirty()}
+               <ConfigForm id="eebus_config_form" title="EEBUS" isModified={this.isModified()} isDirty={this.isDirty()}
                             onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormRow label={__("eebus.content.enable_eebus")}>
                         <Switch desc={__("eebus.content.enable_eebus_desc")}
@@ -337,6 +337,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                             variant="primary"
                             onClick={async () => {
                                 await API.call('eebus/scan', {});
+                                state.state.discovery_state = 1;
 
                             }}
                             disabled={!is_enabled || (state.state.discovery_state === 1)}>
@@ -345,7 +346,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                 : state.state.discovery_state === 1
                                     ? __("eebus.content.searching_peers")
                                     : state.state.discovery_state === 2
-                                        ? __("eebus.content.search_peers")
+                                        ? __("eebus.content.search_completed")
                                         : __("eebus.content.search_failed")}
                         </Button>
                     </FormRow>
