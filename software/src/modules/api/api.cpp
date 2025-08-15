@@ -999,3 +999,50 @@ bool API::already_registered(const char *path, size_t path_len, const char *api_
 
     return false;
 }
+
+const char *API::build_suffix_path(SuffixPath &suffix_path, const char *suffix, size_t suffix_len) {
+    // If len == 1 the suffix must be / or else it would not have been matched against this API. / points to the complete API -> no need to walk
+    if (suffix_len <= 1) {
+        suffix_path.suffix = nullptr;
+        return nullptr;
+    }
+
+    // Copy suffix into suffix_path, has to have the same lifetime.
+    suffix_path.suffix = heap_alloc_array<char>(suffix_len + 1);
+    memcpy(suffix_path.suffix.get(), suffix, suffix_len);
+    suffix_path.suffix[suffix_len] = '\0';
+
+    // Skip first /
+    char *ptr = suffix_path.suffix.get();
+    ++ptr;
+
+    while (true) {
+        size_t next_len = 0;
+        bool is_number = true;
+        while(ptr[next_len] != '\0' && ptr[next_len] != '/') {
+            is_number &= ptr[next_len] >= '0' && ptr[next_len] <= '9';
+            ++next_len;
+        }
+
+        if (next_len == 0) {
+            return "path may not contain // or end on a /";
+        }
+
+        if (is_number) {
+            if (!suffix_path.path.add((size_t)strtoul(ptr, nullptr, 10))) {
+                return "path too long";
+            }
+        } else {
+            if (!suffix_path.path.add(ptr)) {
+                return "path too long";
+            }
+        }
+
+        if (ptr[next_len] == '\0')
+            break;
+
+        ptr[next_len] = '\0';
+        ptr += next_len + 1;
+    }
+    return nullptr;
+}
