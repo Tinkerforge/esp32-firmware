@@ -223,7 +223,7 @@ void ChargeManager::pre_setup()
         {"disconnect", Config::Bool(false)},
     });
 
-    charge_mode = Config::Object({
+    pm_charge_mode = Config::Object({
         {"mode", Config::Enum(ConfigChargeMode::Fast)},
     });
 
@@ -639,7 +639,7 @@ void ChargeManager::register_urls()
     this->pm_default_charge_mode = ConfigChargeMode::Fast
 #endif
 
-    this->charge_mode.get("mode")->updateEnum(this->pm_default_charge_mode);
+    this->pm_charge_mode.get("mode")->updateEnum(this->pm_default_charge_mode);
 
     auto default_mode = translate_charge_mode(this->pm_default_charge_mode);
     for (size_t i = 0; i < charger_count; ++i) {
@@ -690,13 +690,13 @@ void ChargeManager::register_urls()
 #endif
 
     // This is power_manager API that is now handled by the charge manager.
-    api.addState("power_manager/charge_mode", &charge_mode);
-    api.addCommand("power_manager/charge_mode_update", &charge_mode, {}, [this](String &errmsg) {
-        // translate_charge_mode supports passing "default", but charge_mode should be updated as well.
-        if (charge_mode.get("mode")->asEnum<ConfigChargeMode>() == ConfigChargeMode::Default)
-            charge_mode.get("mode")->updateEnum(this->pm_default_charge_mode);
+    api.addState("power_manager/charge_mode", &pm_charge_mode);
+    api.addCommand("power_manager/charge_mode_update", &pm_charge_mode, {}, [this](String &errmsg) {
+        // translate_charge_mode supports passing "default", but pm_charge_mode should be updated as well.
+        if (pm_charge_mode.get("mode")->asEnum<ConfigChargeMode>() == ConfigChargeMode::Default)
+            pm_charge_mode.get("mode")->updateEnum(this->pm_default_charge_mode);
 
-        auto new_mode = translate_charge_mode(this->charge_mode.get("mode")->asEnum<ConfigChargeMode>());
+        auto new_mode = translate_charge_mode(this->pm_charge_mode.get("mode")->asEnum<ConfigChargeMode>());
 
         for (size_t i = 0; i < charger_count; ++i) {
             charger_state[i].charge_mode = new_mode;
