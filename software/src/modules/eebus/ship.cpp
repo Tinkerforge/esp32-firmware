@@ -250,7 +250,7 @@ void Ship::setup_mdns()
 
     mdns_service_txt_item_set("_ship", "_tcp", "register", "false");
     // Optional Fields
-    mdns_service_txt_item_set("_ship", "_tcp", "brand", BUILD_MANUFACTURER_USER_AGENT);
+    mdns_service_txt_item_set("_ship", "_tcp", "brand", OPTIONS_MANUFACTURER_USER_AGENT());
     mdns_service_txt_item_set("_ship", "_tcp", "model", api.getState("info/name")->get("type")->asEphemeralCStr());
     mdns_service_txt_item_set("_ship", "_tcp", "type", EEBUS_DEVICE_TYPE); // Or EVSE?
 

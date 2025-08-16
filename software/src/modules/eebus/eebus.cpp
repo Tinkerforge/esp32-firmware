@@ -274,7 +274,7 @@ void EEBus::toggle_module()
 // ManufacturerName-Model-UniqueID
 String EEBus::get_eebus_name()
 {
-    const char* manufacturer = BUILD_MANUFACTURER_USER_AGENT;
+    const char* manufacturer = OPTIONS_MANUFACTURER_USER_AGENT();
     const char* model        = api.getState("info/name")->get("type")->asEphemeralCStr();
     const char* uid          = api.getState("info/name")->get("uid")->asEphemeralCStr();
 
