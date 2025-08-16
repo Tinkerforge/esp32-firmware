@@ -141,7 +141,7 @@ void EEBus::register_urls()
     api.addState("eebus/state", &state, {}, {}, true);
 
     api.addCommand(
-        "eebus/addPeer",
+        "eebus/add",
         &add_peer,
         {"ip", "port", "trusted", "dns_name", "wss_path", "ski"},
         [this](String &errmsg) {
@@ -187,7 +187,7 @@ void EEBus::register_urls()
         true);
 
     api.addCommand(
-        "eebus/removePeer",
+        "eebus/remove",
         &remove_peer,
         {"ski"},
         [this](String &errmsg) {

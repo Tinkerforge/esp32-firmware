@@ -40,12 +40,12 @@ export function EEBusNavbar() {
 
 type EEBusConfig = API.getType["eebus/config"];
 type EEBusScan = API.getType["eebus/scan"];
-type EEBusAddPeer = API.getType["eebus/addPeer"];
-type EEBusRemovePeer = API.getType["eebus/removePeer"];
+type EEBusAdd = API.getType["eebus/add"];
+type EEBusRemove = API.getType["eebus/remove"];
 type EEBusStateType = API.getType["eebus/state"];
 
 interface EEBusState {
-    addPeer: EEBusAddPeer;
+    add: EEBusAdd;
     state: EEBusStateType;
     config: EEBusConfig;
 }
@@ -104,7 +104,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                         ],
                                         editTitle: __("eebus.content.peer_info.edit_peer_title"),
                                         onEditShow: async () => this.setState({
-                                            addPeer: {
+                                            add: {
                                                 ski: peer.ski,
                                                 trusted: peer.trusted,
                                                 ip: peer.ip,
@@ -117,10 +117,10 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             <>
                                                 <FormRow label={__("eebus.content.ski")}>
                                                     <InputText
-                                                        value={state.addPeer.ski}
+                                                        value={state.add.ski}
                                                         onValue={(v) => this.setState({
-                                                            addPeer: {
-                                                                ...state.addPeer,
+                                                            add: {
+                                                                ...state.add,
                                                                 ski: v
                                                             }
                                                         })}
@@ -132,20 +132,20 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                         ["0", __("eebus.content.peer_info.trusted_no")],
                                                         ["1", __("eebus.content.peer_info.trusted_yes")]
                                                     ]}
-                                                                 value={state.addPeer.trusted ? "1" : "0"}
+                                                                 value={state.add.trusted ? "1" : "0"}
                                                                  onValue={(v) => this.setState({
-                                                                     addPeer: {
-                                                                         ...state.addPeer,
+                                                                     add: {
+                                                                         ...state.add,
                                                                          trusted: v == "1"
                                                                      }
                                                                  })}/>
                                                 </FormRow>
                                                 <FormRow label={__("eebus.content.peer_info.device_ip") + "*"}>
                                                     <InputText
-                                                        value={state.addPeer.ip}
+                                                        value={state.add.ip}
                                                         onValue={(v) => this.setState({
-                                                            addPeer: {
-                                                                ...state.addPeer,
+                                                            add: {
+                                                                ...state.add,
                                                                 ip: v
                                                             }
                                                         })}
@@ -153,10 +153,10 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                 </FormRow>
                                                 <FormRow label={__("eebus.content.peer_info.device_port") + "*"}>
                                                     <InputText
-                                                        value={state.addPeer.port}
+                                                        value={state.add.port}
                                                         onValue={(v) => this.setState({
-                                                            addPeer: {
-                                                                ...state.addPeer,
+                                                            add: {
+                                                                ...state.add,
                                                                 port: parseInt(v)
                                                             }
                                                         })}
@@ -164,10 +164,10 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                 </FormRow>
                                                 <FormRow label={__("eebus.content.peer_info.dns_name") + "*"}>
                                                     <InputText
-                                                        value={state.addPeer.dns_name}
+                                                        value={state.add.dns_name}
                                                         onValue={(v) => this.setState({
-                                                            addPeer: {
-                                                                ...state.addPeer,
+                                                            add: {
+                                                                ...state.add,
                                                                 dns_name: v
                                                             }
                                                         })}
@@ -175,10 +175,10 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                                 </FormRow>
                                                 <FormRow label={__("eebus.content.peer_info.wss_path") + "*"}>
                                                     <InputText
-                                                        value={state.addPeer.wss_path}
+                                                        value={state.add.wss_path}
                                                         onValue={(v) => this.setState({
-                                                            addPeer: {
-                                                                ...state.addPeer,
+                                                            add: {
+                                                                ...state.add,
                                                                 wss_path: v
                                                             }
                                                         })}
@@ -225,10 +225,10 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             </>
                                         ],
                                         onEditSubmit: async () => {
-                                            let peer = state.addPeer;
-                                            await API.call('eebus/addPeer', peer);
+                                            let peer = state.add;
+                                            await API.call('eebus/add', peer);
                                             this.setState({
-                                                addPeer: {
+                                                add: {
                                                     ski: "",
                                                     trusted: true,
                                                     ip: "",
@@ -239,7 +239,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             });
                                         },
                                         onRemoveClick: async () => {
-                                            await API.call('eebus/removePeer', {ski: peer.ski});
+                                            await API.call('eebus/remove', {ski: peer.ski});
                                             return true;
                                         }
 
@@ -251,7 +251,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                             addMessage={__("eebus.content.add_peers")}
                             onAddShow={async () => {
                                 this.setState({
-                                    addPeer: {
+                                    add: {
                                         ski: "",
                                         trusted: true,
                                         ip: "",
@@ -264,8 +264,8 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                             onAddGetChildren={() => [<>
                                 <FormRow label={__("eebus.content.ski")}>
                                     <InputText
-                                        value={state.addPeer.ski}
-                                        onValue={(v) => this.setState({addPeer: {...state.addPeer, ski: v}})}
+                                        value={state.add.ski}
+                                        onValue={(v) => this.setState({add: {...state.add, ski: v}})}
                                         required
                                     />
                                 </FormRow>
@@ -274,44 +274,44 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                         ["0", __("eebus.content.peer_info.trusted_no")],
                                         ["1", __("eebus.content.peer_info.trusted_yes")]
                                     ]}
-                                                 value={state.addPeer.trusted ? "1" : "0"}
+                                                 value={state.add.trusted ? "1" : "0"}
                                                  required
                                     />
                                 </FormRow>
                                 <FormRow label={__("eebus.content.peer_info.device_ip")}>
                                     <InputText
-                                        value={state.addPeer.ip}
-                                        onValue={(v) => this.setState({addPeer: {...state.addPeer, ip: v}})}
+                                        value={state.add.ip}
+                                        onValue={(v) => this.setState({add: {...state.add, ip: v}})}
 
                                     />
                                 </FormRow>
                                 <FormRow label={__("eebus.content.peer_info.device_port")}>
                                     <InputText
-                                        value={state.addPeer.port}
-                                        onValue={(v) => this.setState({addPeer: {...state.addPeer, port: parseInt(v)}})}
+                                        value={state.add.port}
+                                        onValue={(v) => this.setState({add: {...state.add, port: parseInt(v)}})}
 
                                     />
                                 </FormRow>
                                 <FormRow label={__("eebus.content.peer_info.dns_name")}>
                                     <InputText
-                                        value={state.addPeer.dns_name}
-                                        onValue={(v) => this.setState({addPeer: {...state.addPeer, dns_name: v}})}
+                                        value={state.add.dns_name}
+                                        onValue={(v) => this.setState({add: {...state.add, dns_name: v}})}
 
                                     />
                                 </FormRow>
                                 <FormRow label={__("eebus.content.peer_info.wss_path")}>
                                     <InputText
-                                        value={state.addPeer.wss_path}
-                                        onValue={(v) => this.setState({addPeer: {...state.addPeer, wss_path: v}})}
+                                        value={state.add.wss_path}
+                                        onValue={(v) => this.setState({add: {...state.add, wss_path: v}})}
 
                                     />
                                 </FormRow>
                             </>]}
                             onAddSubmit={async () => {
-                                let peer = state.addPeer;
-                                await API.call('eebus/addPeer', peer);
+                                let peer = state.add;
+                                await API.call('eebus/add', peer);
                                 this.setState({
-                                    addPeer: {
+                                    add: {
                                         ski: "",
                                         trusted: true,
                                         ip: "",
