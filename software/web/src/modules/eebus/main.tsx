@@ -240,6 +240,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                         },
                                         onRemoveClick: async () => {
                                             await API.call('eebus/removePeer', {ski: peer.ski});
+                                            return true;
                                         }
 
                                     }
