@@ -43,7 +43,6 @@ type EEBusScan = API.getType["eebus/scan"];
 type EEBusAddPeer = API.getType["eebus/addPeer"];
 type EEBusRemovePeer = API.getType["eebus/removePeer"];
 type EEBusStateType = API.getType["eebus/state"];
-type EEBusEnable = API.getType["eebus/enable"];
 
 interface EEBusState {
     addPeer: EEBusAddPeer;
@@ -53,10 +52,7 @@ interface EEBusState {
 
 export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
     constructor() {
-        super('eebus/config',
-
-            () => __("eebus.script.save_failed"),
-            () => __("eebus.script.reboot_content_changed"));
+        super('eebus/config', () => __("eebus.script.save_failed"));
         util.addApiEventListener('eebus/state', () => {
             this.setState({state: API.get('eebus/state')});
         });
@@ -70,9 +66,6 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
         if (!util.render_allowed())
             return <SubPage name="eebus"/>;
 
-        // Is EEBUS enabled on ESP32
-        let is_enabled = state.state.enabled;
-
         let ski = state.state.ski;
         if (ski == "") {
             ski = __("eebus.content.unknown");
@@ -84,13 +77,9 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                             onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
                     <FormRow label={__("eebus.content.enable_eebus")}>
                         <Switch desc={__("eebus.content.enable_eebus_desc")}
-                                checked={is_enabled}
-                                onClick={async (event) => {
-                                    const enablePayload: EEBusEnable = { enable: !is_enabled };
-                                    await API.call('eebus/enable', enablePayload);
-
-
-                                }}/>
+                                checked={state.enable}
+                                onClick={this.toggle('enable')}
+                                />
                     </FormRow>
                     <FormRow label={__("eebus.content.peer_info.peers")}>
                         <Table
@@ -256,7 +245,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                     }
                                 })
                             }
-                            addEnabled={is_enabled}
+                            addEnabled={state.enable}
                             addTitle={__("eebus.content.add_peers")}
                             addMessage={__("eebus.content.add_peers")}
                             onAddShow={async () => {
@@ -340,7 +329,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                 state.state.discovery_state = 1;
 
                             }}
-                            disabled={!is_enabled || (state.state.discovery_state === 1)}>
+                            disabled={!state.enable || (state.state.discovery_state === 1)}>
                             {state.state.discovery_state === 0
                                 ? __("eebus.content.search_peers")
                                 : state.state.discovery_state === 1

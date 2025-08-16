@@ -54,13 +54,8 @@ void EEBus::pre_setup()
         {"ship_state", Config::Str("", 0, 64)},
     });
 
-    switch_enable_config =
-        ConfigRoot{Config::Object({{"enable", Config::Bool(false)}}), [this](Config &config, ConfigSource source) -> String {
-                       return "";
-                   }};
-
     config = ConfigRoot{Config::Object({
-                            {"enabled", Config::Bool(false)},
+                            {"enable", Config::Bool(false)},
                             {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
                             {"key_id", Config::Int(-1, -1, MAX_CERT_ID)},
                             {"peers",
@@ -70,8 +65,16 @@ void EEBus::pre_setup()
                                            MAX_PEER_REMEMBERED,
                                            Config::type_id<Config::ConfObject>())},
                         }),
-                        [this](Config &config, ConfigSource source) -> String {
+                        [this](Config &update, ConfigSource source) -> String {
                             logger.printfln("Updating config");
+                            if (update.get("enable")->asBool() != config.get("enable")->asBool()) {
+                                if (boot_stage == BootStage::LOOP) {
+                                    task_scheduler.scheduleOnce([this]() {
+                                        this->toggle_module();
+                                    });
+                                }
+                            }
+
                             return "";
                         }};
     add_peer = ConfigRoot{Config::Object({{"ip", Config::Str("", 0, 64)},
@@ -101,7 +104,6 @@ void EEBus::pre_setup()
     scan_command = ConfigRoot(Config::Object({}));
 
     state = Config::Object({
-        {"enabled", Config::Bool(false)},
         {"ski", Config::Str("", 0, 64)},
         {"discovery_state", Config::Uint8(0)},
         {"connections",
@@ -123,9 +125,7 @@ void EEBus::setup()
 {
     api.restorePersistentConfig("eebus/config", &config);
 
-    is_enabled = config.get("enabled")->asBool();
-
-    toggle_module(is_enabled);
+    toggle_module();
     update_peers_config();
 
 
@@ -194,7 +194,7 @@ void EEBus::register_urls()
         &remove_peer,
         {"ski"},
         [this](String &errmsg) {
-            if (!is_enabled) {
+            if (!config.get("enable")->asBool()) {
                 logger.tracefln(this->trace_buffer_index, "Tried removing peer while EEBUS is disabled");
                 return;
             }
@@ -219,21 +219,11 @@ void EEBus::register_urls()
         true);
 
     api.addCommand(
-        "eebus/enable",
-        &switch_enable_config,
-        {},
-        [this](String &errmsg) {
-            bool enabled = switch_enable_config.get("enable")->asBool();
-            this->toggle_module(enabled);
-        },
-        true);
-
-    api.addCommand(
         "eebus/scan",
         &scan_command,
         {},
         [this](String &errmsg) {
-            if (!is_enabled) {
+            if (!config.get("enable")->asBool()) {
                 return "EEBUS is disabled";
             }
             if (ship.discovery_state == Ship_Discovery_State::SCANNING) {
@@ -260,22 +250,16 @@ void EEBus::register_urls()
         },
         true);
 }
-void EEBus::toggle_module(const bool enable)
+void EEBus::toggle_module()
 {
-    if (enable == is_enabled && initialized) {
-        return;
-    }
 
     // All peers are unknown when its either toggled or at startup
     for (size_t i = 0; i < config.get("peers")->count(); i++) {
         config.get("peers")->get(i)->get("state")->updateUint(0);
     }
-    is_enabled = enable;
-    state.get("enabled")->updateBool(is_enabled);
-    config.get("enabled")->updateBool(is_enabled);
     api.writeConfig("eebus/config", &config);
 
-    if (enable) {
+    if (config.get("enable")->asBool()) {
         usecases = make_unique_psram<EEBusUseCases>();
         data_handler = make_unique_psram<SpineDataTypeHandler>();
         ship.setup();
@@ -287,7 +271,6 @@ void EEBus::toggle_module(const bool enable)
         if (initialized) {
             logger.printfln("EEBUS Module disabled");
         }
-
     }
 }
 String EEBus::get_eebus_name()

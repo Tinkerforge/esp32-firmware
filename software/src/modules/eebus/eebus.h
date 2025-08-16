@@ -54,17 +54,16 @@ public:
     void register_urls() override;
 
     /**
-     * Toggle the eebus module
-     * @param enable true, enables the eebus module if its not enabled, false disables the module and removes all elements
+     * Toggle the eebus module according to config/enable
      */
-    void toggle_module (bool enable);
+    void toggle_module();
 
     /**
      * Returns the Unique Name of the device. Used for mDns, SPINE and the usecases.
      * @return The unique name of the device.
      */
     String get_eebus_name();
-    
+
 
     Config config_peers_prototype;
     Config state_connections_prototype;
@@ -72,12 +71,10 @@ public:
     ConfigRoot remove_peer;
     ConfigRoot config;
     ConfigRoot state;
-    ConfigRoot switch_enable_config;
     ConfigRoot scan_command;
     Ship ship;
     unique_ptr_any<EEBusUseCases> usecases;
     //EEBusUseCases usecases{};
-    bool is_enabled = false;;
 
     // To save memory the SpineDataTypeHandler is allocated to PSRAM if its available
     unique_ptr_any<SpineDataTypeHandler> data_handler;
