@@ -28,18 +28,13 @@
 #include <TFJson.h>
 #include "tools/malloc.h"
 
-#define DNS_SD_UUID "Tinkerforge-WARP3-12345"
 #define EEBUS_PEER_FILE "/eebus/peers"
 #define MAX_PEER_REMEMBERED 64          // How man ship peers configured to be remembered
 #define SHIP_AUTODISCOVER_INTERVAL 30_s // How often to autodiscover ship peers
 
 // EEBUS Device definitions
 // These can be freely defined and are not limited by the spec
-#define EEBUS_DEVICE_MANUFACTURER "Tinkerforge"
-#define EEBUS_DEVICE_MODEL "WARP3"
-#define EEBUS_DEVICE_LABEL "Wallbox"
-
-#define EEBUS_DEVICE_TYPE "ChargingStation" // The device type as defined in EEBUS SPINE TS ResourceSpecification. Can be freely defined i
+#define EEBUS_DEVICE_TYPE  "ChargingStation" // The device type as defined in EEBUS SPINE TS ResourceSpecification. Can be freely defined i
 
 #define SUPPORTED_SPINE_VERSION "1.3.0" // The supported SPINE version for EEBus
 
@@ -93,6 +88,4 @@ private:
      * Update the peers configuration based on the current mDNS results, clean up invalid peers and add trusted peers to the persistent configuration.
      */
     void update_peers_config();
-
-    String device_name{};
 };

@@ -117,7 +117,6 @@ void EEBus::pre_setup()
                        Config::type_id<Config::ConfObject>())},
     });
 
-    device_name = DNS_SD_UUID;
     ship.pre_setup();
 }
 
@@ -127,8 +126,6 @@ void EEBus::setup()
 
     toggle_module();
     update_peers_config();
-
-
 
     state.get("connections")->removeAll();
 
@@ -273,9 +270,24 @@ void EEBus::toggle_module()
         }
     }
 }
+
+// ManufacturerName-Model-UniqueID
 String EEBus::get_eebus_name()
 {
-    return device_name;
+    const char* manufacturer = BUILD_MANUFACTURER_USER_AGENT;
+    const char* model        = api.getState("info/name")->get("type")->asEphemeralCStr();
+    const char* uid          = api.getState("info/name")->get("uid")->asEphemeralCStr();
+
+    char buffer[64];
+    StringWriter sw(buffer, ARRAY_SIZE(buffer));
+
+    sw.puts(manufacturer);
+    sw.putc('-');
+    sw.puts(model);
+    sw.putc('-');
+    sw.puts(uid);
+
+    return String(buffer, sw.getLength());
 }
 
 int EEBus::get_state_connection_id_by_ski(const String &ski)

@@ -199,10 +199,8 @@ bool NodeManagementUsecase::read_detailed_discovery_data(HeaderType &header, Spi
     NodeManagementDetailedDiscoveryDataType node_management_detailed_data;
     node_management_detailed_data.specificationVersionList->specificationVersion->push_back(SUPPORTED_SPINE_VERSION);
 
-    node_management_detailed_data.deviceInformation->description->description =
-        "Tinkerforge WARP Charger"; // Optional. Shall not be longer than 4096 characters.
-    node_management_detailed_data.deviceInformation->description->label =
-        EEBUS_DEVICE_LABEL; // Optional. Shall not be longer than 256 characters.
+    node_management_detailed_data.deviceInformation->description->description = api.getState("info/display_name")->get("display_name")->asEphemeralCStr(); // Optional. Shall not be longer than 4096 characters.
+    node_management_detailed_data.deviceInformation->description->label = api.getState("info/name")->get("display_type")->asEphemeralCStr(); // Optional. Shall not be longer than 256 characters.
     node_management_detailed_data.deviceInformation->description->networkFeatureSet =
         NetworkManagementFeatureSetType::simple; // Only simple operation is supported. We dont act as a SPINE router or anything like that.
     node_management_detailed_data.deviceInformation->description->deviceAddress->device = EEBUS_USECASE_HELPERS::get_spine_device_name();
