@@ -35,7 +35,7 @@ void Ship::pre_setup()
 
 void Ship::setup()
 {
-    if (eebus.is_enabled) {
+    if (eebus.config.get("enable")->asBool()) {
 #ifdef SHIP_USE_INTERNAL_CERTS
         eebus.state.get("ski")->updateString(ship_ski);
 #endif
@@ -186,7 +186,7 @@ void Ship::setup_wss()
     }
 
     web_sockets.onConnect_HTTPThread([this](WebSocketsClient ws_client) {
-        if (!eebus.is_enabled) {
+        if (!eebus.config.get("enable")->asBool()) {
             return;
         }
         sockaddr_in6 addr;
@@ -215,7 +215,7 @@ void Ship::setup_wss()
     });
 
     web_sockets.onBinaryDataReceived_HTTPThread([this](const int fd, httpd_ws_frame_t *ws_pkt) {
-        if (!eebus.is_enabled) {
+        if (!eebus.config.get("enable")->asBool()) {
             return;
         }
         for (auto &ship_connection : ship_connections) {
