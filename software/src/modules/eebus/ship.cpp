@@ -182,8 +182,6 @@ void Ship::setup_wss()
     logger.printfln("setup_wss_server done");
 }
 
-
-
 void Ship::setup_mdns()
 {
     logger.printfln("setup_mdns start");
@@ -212,39 +210,116 @@ void Ship::setup_mdns()
     logger.printfln("setup_mdns done");
 }
 
-void Ship::scan_skis()
-{
-    logger.printfln("discover_mdns start");
-    const char * service = "_ship";
-    const char * proto = "_tcp";
-    mdns_result_t * results = NULL;
-    esp_err_t err = mdns_query_ptr(service, proto, 3000, 20,  &results);
-    if(err){
-        logger.printfln("EEBUS MDNS Query Failed");
-        return;
+Ship_Discovery_State Ship::scan_skis()
+{   
+    if (discovery_state == Ship_Discovery_State::SCANNING) {
+        return Ship_Discovery_State::SCANNING;
     }
-    if(!results){
+    discovery_state = Ship_Discovery_State::SCANNING;
+    logger.printfln("discover_mdns start");
+    const char *service = "_ship";
+    const char *proto = "_tcp";
+    mdns_result_t *results = NULL;
+    esp_err_t err = mdns_query_ptr(service, proto, 3000, 20, &results);
+    if (err) {
+        logger.printfln("EEBUS MDNS Query Failed");
+        discovery_state = Ship_Discovery_State::ERROR;
+        return discovery_state;
+    }
+    if (!results) {
         logger.printfln("EEBUS MDNS: No results found!");
-        return;
+        discovery_state = Ship_Discovery_State::SCAN_DONE;
+        return discovery_state;
     }
 
     while (results) {
-        mdns_results.push_back(*results);
+        ShipNode ship_node;
+        ship_node.dns_name = results->hostname;
+        ship_node.port = results->port;
+
+        // TODO: Maybe make some security checks? So no harmful data is ingested. Or does mdns library sanizite the data?
+        for (int i = 0; i < results->txt_count; i++) {
+            mdns_txt_item_t *txt = &results->txt[i];
+            if (txt->key == NULL || txt->value == NULL) {
+                continue;
+            }
+            // mandatory fields
+            if (strcmp(txt->key, "txtvers") == 0) {
+                ship_node.txt_vers = txt->value;
+            } else if (strcmp(txt->key, "id") == 0) {
+                ship_node.txt_id = txt->value;
+            } else if (strcmp(txt->key, "path") == 0) {
+                ship_node.txt_wss_path = txt->value;
+            } else if (strcmp(txt->key, "ski") == 0) {
+                ship_node.txt_ski = txt->value;
+            } else if (strcmp(txt->key, "register") == 0) {
+                ship_node.txt_autoregister = strcmp(txt->value, "true") == 0;
+                // Optional Fields
+            } else if (strcmp(txt->key, "brand") == 0) {
+                ship_node.txt_brand = txt->value;
+            } else if (strcmp(txt->key, "model") == 0) {
+                ship_node.txt_model = txt->value;
+            } else if (strcmp(txt->key, "type") == 0) {
+                ship_node.txt_type = txt->value;
+            }
+        }
+        // Add IP adress to ship_node. Can be multiple IPv4 and IPv6 addresses
+        while (results->addr) {
+            esp_ip_addr_t ip = results->addr->addr;
+            if (ip.type == IPADDR_TYPE_V4) {
+                ship_node.ip_addresses.push_back(IPAddress(ip.u_addr.ip4.addr));
+            } else {
+                //ship_node.ip_addresses.push_back(IPAddress(ip.u_addr.ip6.addr));
+                // TODO: Add IPv6 support. Convert the IP type from esp_ip6_addr to IPAddress
+            }
+            results->addr = results->addr->next;
+        }
+        mdns_results.push_back(ship_node);
         results = results->next;
     }
 
-    mdns_query_results_free(results);
+    logger.printfln("EEBUS MDNS: Found %d results", mdns_results.size());
 
+    mdns_query_results_free(results);
+    discovery_state = Ship_Discovery_State::SCAN_DONE;
+    return discovery_state;
 }
 
 void Ship::print_skis(StringBuilder *sb)
 {
-    for (uint16_t i=0; i<mdns_results.size(); i++) {
-        sb->printf("SKI: %s\n", mdns_results[i].hostname); // TODO: Add more information
+    for (uint16_t i = 0; i < mdns_results.size(); i++) {
+        mdns_results[i].as_json(sb);
+        sb->putc(',');
     }
 }
 
 void Ship::remove(const ShipConnection &ship_connection)
 {
     ship_connections.erase(std::remove(ship_connections.begin(), ship_connections.end(), ship_connection), ship_connections.end());
+}
+
+void ShipNode::as_json(StringBuilder *sb)
+{
+    char json_buf[1024]; //TODO: Use 1024 for now, change later to dynamic size depending on struct size
+    TFJsonSerializer json(json_buf, sizeof(json_buf));
+    json.addMemberString("dns_name", dns_name.c_str());
+    json.addMemberString("txt_vers", txt_vers.c_str());
+    json.addMemberString("txt_id", txt_id.c_str());
+    json.addMemberString("txt_wss_path", txt_wss_path.c_str());
+    json.addMemberString("txt_ski", txt_ski.c_str());
+    json.addMemberBoolean("txt_autoregister", txt_autoregister);
+    json.addMemberString("txt_brand", txt_brand.c_str());
+    json.addMemberString("txt_model", txt_model.c_str());
+    json.addMemberString("txt_type", txt_type.c_str());
+
+    StringBuilder ip_sb;
+    ip_sb.putc('[');
+    for (IPAddress ip : ip_addresses) {
+        ip_sb.puts(ip.toString().c_str());
+        ip_sb.putc(',');
+    }
+    ip_sb.putc(']');
+    json.addMemberString("ip_addresses", ip_sb.getPtr());
+    json.end();
+    sb->puts(json_buf);
 }
