@@ -27,15 +27,38 @@
 void EEBus::pre_setup()
 {
     config = ConfigRoot{Config::Object({
-        {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
-        {"key_id", Config::Int(-1, -1, MAX_CERT_ID)},
-    }), [this](Config &update, ConfigSource source) -> String {
-        return "";
-    }};
+                            {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
+                            {"key_id", Config::Int(-1, -1, MAX_CERT_ID)}
+                        }),
+                        [this](Config &update, ConfigSource source) -> String {
+                            return "";
+                        }};
 
     state = Config::Object({
         {"ski", Config::Str("", 0, 64)},
     });
+
+    ship_peer = Config::Object({
+        {"ip", Config::Str("",0,20)},
+        {"port", Config::Uint(0, 0, 65535)},
+        {"registered", Config::Bool(false)},
+        {"connected", Config::Bool(false)},
+        {"dns_name", Config::Str("", 0, 64)},
+        {"txt_vers", Config::Str("", 0, 64)},
+        {"txt_id", Config::Str("", 0, 64)},
+        {"txt_wss_path", Config::Str("", 0, 64)},
+        {"txt_ski", Config::Str("", 0, 64)},
+        {"txt_autoregister", Config::Bool(false)},
+        {"txt_brand", Config::Str("", 0, 64)},
+        {"txt_model", Config::Str("", 0, 64)},
+        {"txt_type", Config::Str("", 0, 64)},
+    });
+
+    peers = Config::Array({},
+        &ship_peer, 
+        0,MAX_SHIP_PEER_REMEMBERED, 
+        Config::type_id<Config::ConfObject>()
+    );
 
     ship.pre_setup();
 }
@@ -43,6 +66,7 @@ void EEBus::pre_setup()
 void EEBus::setup()
 {
     api.restorePersistentConfig("eebus/config", &config);
+    api.restorePersistentConfig("eebus/peers", &peers);
 
     initialized = true;
 }
@@ -50,18 +74,34 @@ void EEBus::setup()
 void EEBus::register_urls()
 {
     api.addPersistentConfig("eebus/config", &config);
-    api.addState("eebus/state",             &state);
+    api.addState("eebus/state", &state);
 
-api.addCommand("eebus/discover_devices", Config::Null(), {}, [this](String &/*errmsg*/) {
-        ship.scan_skis();
-    }, true);
+    api.addPersistentConfig("eebus/peers", &peers);
+
+    api.addCommand(
+        "eebus/discover_devices",
+        Config::Null(),
+        {},
+        [this](String & /*errmsg*/) {
+            ship.scan_skis();
+        },
+        true);
     server.on("/eebus/discovered_devices", HTTP_GET, [this](WebServerRequest request) {
+
+        if(ship.discovery_state != Ship_Discovery_State::SCANNING) {
+            return request.send(200, "text/plain; charset=utf-8", "scan in progress");
+        }
+        if(ship.discovery_state != Ship_Discovery_State::READY) {
+            return request.send(200, "text/plain; charset=utf-8", "no scan done yet");
+        }
+
         StringBuilder sb;
-        
+        sb.setCapacity(2048); // TODO: Calculate size of this
         ship.print_skis(&sb);
-        
+
         return request.send(200, "application/json", sb.getPtr());
     });
+
 
     ship.setup();
 }
