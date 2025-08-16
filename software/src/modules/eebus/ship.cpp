@@ -159,11 +159,20 @@ void Ship::setup_wss()
     }
 
     web_sockets.onConnect_HTTPThread([this](WebSocketsClient ws_client) {
+        struct sockaddr_in6 addr;
+        socklen_t addr_len = sizeof(addr);
+        getpeername(ws_client.fd, (struct sockaddr *)&addr, &addr_len);
+        char client_ip[INET6_ADDRSTRLEN];
+        inet_ntop(AF_INET6, &addr.sin6_addr, client_ip, sizeof(client_ip));
+
+        logger.printfln("WebSocketsClient connected from %s:%d", client_ip, ntohs(addr.sin6_port));
+
         ship_connections.push_back(ShipConnection{ws_client, ShipConnection::Role::Server});        
         logger.printfln("WebSocketsClient connected");
     });
 
     web_sockets.onBinaryDataReceived_HTTPThread([this](const int fd, httpd_ws_frame_t *ws_pkt) {
+        
         for (auto &ship_connection : ship_connections) {
             if (ship_connection.ws_client.fd == fd) {
                 ship_connection.frame_received(ws_pkt);

@@ -534,10 +534,10 @@ void ShipConnection::state_sme_hello_pending_listen()
                 if (peer_hello_phase.waiting >= static_cast<millis_t>(SHIP_CONNECTION_SME_T_hello_prolong_thr_inc).as<uint64_t>()) {
                     hello_send_prolongation_request_timer = task_scheduler.scheduleOnce(
                         [this]() {
-                        set_and_schedule_state(State::SmeHelloPendingTimeout);
-                        hello_timer_expiry = 2;
+                            set_and_schedule_state(State::SmeHelloPendingTimeout);
+                            hello_timer_expiry = 2;
                         },
-                        millis_t(peer_hello_phase.waiting)-SHIP_CONNECTION_SME_T_hello_prolong_waiting_gap));
+                        millis_t(peer_hello_phase.waiting) - SHIP_CONNECTION_SME_T_hello_prolong_waiting_gap);
                 }
                 break;
             }
@@ -584,7 +584,7 @@ void ShipConnection::state_sme_hello_pending_timeout()
                 hello_timer_expiry = 3;
                 set_and_schedule_state(State::SmeHelloPendingTimeout);
             },
-            waiting_time);
+            millis_t(waiting_time));
         set_state(this->previous_state);
 
     } else {
