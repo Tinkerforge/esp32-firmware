@@ -58,7 +58,7 @@ static void watchdog_task(void *arg)
     for (;;) {
         {
             std::lock_guard<std::mutex> l{regs_mutex};
-            for (int i = 0; i < ARRAY_SIZE(regs); ++i) {
+            for (size_t i = 0; i < ARRAY_SIZE(regs); ++i) {
                 if (regs[i].is_empty())
                     continue;
 
@@ -127,16 +127,15 @@ int Watchdog::add(const char *name, const char *message, millis_t timeout, milli
     }
 
     std::lock_guard<std::mutex> l{regs_mutex};
-    for (int i = 0; i < ARRAY_SIZE(regs); ++i) {
+    for (size_t i = 0; i < ARRAY_SIZE(regs); ++i) {
         if (!regs[i].is_empty())
             continue;
 
-        regs[i].name = name;
         regs[i].message = message;
         regs[i].timeout = timeout;
         regs[i].initial_deadline = initial_deadline;
         regs[i].last_reset = now_us();
-        return i;
+        return static_cast<int>(i);
     }
 
     logger.printfln("Can't register %s to watchdog: All registrations used.", name);
@@ -146,7 +145,7 @@ int Watchdog::add(const char *name, const char *message, millis_t timeout, milli
 bool Watchdog::remove(int &handle) {
     std::lock_guard<std::mutex> l{regs_mutex};
 
-    if (handle >= ARRAY_SIZE(regs) || handle < 0) {
+    if (handle >= static_cast<int>(ARRAY_SIZE(regs)) || handle < 0) {
         logger.printfln("Can't remove watchdog handle %d: out of bounds", handle);
         return false;
     }
@@ -166,7 +165,7 @@ bool Watchdog::remove(int &handle) {
 void Watchdog::reset(int handle)
 {
     std::lock_guard<std::mutex> l{regs_mutex};
-    if (handle >= ARRAY_SIZE(regs) || handle < 0) {
+    if (handle >= static_cast<int>(ARRAY_SIZE(regs)) || handle < 0) {
         logger.printfln("Can't reset watchdog handle %d: out of bounds", handle);
         return;
     }
