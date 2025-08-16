@@ -747,7 +747,7 @@ void WebSockets::stop() {
     this->httpd = nullptr;
 
     if (!address_is_in_rodata(this->handler_uri)) {
-        free((void *)this->handler_uri);
+        free(const_cast<char *>(this->handler_uri));
         this->handler_uri = nullptr;
     }
 }
