@@ -26,6 +26,40 @@
 #include "modules/ws/web_sockets.h"
 #include "ship_connection.h"
 #include "mdns.h"
+#include <TFJson.h>
+#include "string_builder.h"
+
+
+struct ShipNode {
+
+    // Basic information about the node
+    std::vector<IPAddress> ip_addresses;
+    uint16_t port = 0;
+    bool registered = false;
+    bool connected = false;
+    // Stuff that is Mandatory in the TXT record
+    String dns_name = "";
+    String txt_vers = ""; //Maybe change to number?
+    String txt_id = "";
+    String txt_wss_path = "";
+    String txt_ski = ""; 
+    bool txt_autoregister = false;
+    // Stuff that is Optional in the TXT record
+    String txt_brand = "";
+    String txt_model = "";
+    String txt_type = "";
+
+    // TODO Add more stuff that might be relevant like last seen, features, etc.
+
+    void as_json(StringBuilder *sb);/* */  
+};
+
+enum Ship_Discovery_State {
+    READY,
+    SCANNING,
+    SCAN_DONE,
+    ERROR
+};
 
 class Ship
 {
@@ -36,6 +70,7 @@ private:
     WebSockets web_sockets;
     std::vector<ShipConnection> ship_connections;
 
+    
 
 
 public:
@@ -44,11 +79,12 @@ public:
     void pre_setup();
     void setup();
     void remove(const ShipConnection &ship_connection);
-    void scan_skis();
+    Ship_Discovery_State scan_skis();
     void print_skis(StringBuilder *sb);
 
     ConfigRoot config;
     ConfigRoot state;
 
-    std::vector<mdns_result_t> mdns_results;
+    std::vector<ShipNode> mdns_results;
+    Ship_Discovery_State discovery_state;
 };
