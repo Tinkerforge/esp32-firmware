@@ -25,6 +25,7 @@
 #include "config.h"
 #include "modules/ws/web_sockets.h"
 #include "ship_connection.h"
+#include "mdns.h"
 
 class Ship
 {
@@ -35,13 +36,19 @@ private:
     WebSockets web_sockets;
     std::vector<ShipConnection> ship_connections;
 
+
+
 public:
     Ship(){}
     
     void pre_setup();
     void setup();
     void remove(const ShipConnection &ship_connection);
+    void scan_skis();
+    void print_skis(StringBuilder *sb);
 
     ConfigRoot config;
     ConfigRoot state;
+
+    std::vector<mdns_result_t> mdns_results;
 };

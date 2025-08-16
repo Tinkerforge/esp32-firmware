@@ -22,6 +22,7 @@
 #include "module_dependencies.h"
 #include "build.h"
 #include "ship.h"
+#include <TFJson.h>
 
 void EEBus::pre_setup()
 {
@@ -50,6 +51,17 @@ void EEBus::register_urls()
 {
     api.addPersistentConfig("eebus/config", &config);
     api.addState("eebus/state",             &state);
+
+api.addCommand("eebus/discover_devices", Config::Null(), {}, [this](String &/*errmsg*/) {
+        ship.scan_skis();
+    }, true);
+    server.on("/eebus/discovered_devices", HTTP_GET, [this](WebServerRequest request) {
+        StringBuilder sb;
+        
+        ship.print_skis(&sb);
+        
+        return request.send(200, "application/json", sb.getPtr());
+    });
 
     ship.setup();
 }
