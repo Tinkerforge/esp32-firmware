@@ -20,10 +20,10 @@
 
 #include <esp_https_server.h>
 
-#include "mdns.h"
-#include "event_log_prefix.h"
-#include "module_dependencies.h"
 #include "build.h"
+#include "event_log_prefix.h"
+
+#include "module_dependencies.h"
 #include "tools.h"
 
 #define SHIP_USE_INTERNAL_CERTS
@@ -115,40 +115,40 @@ void Ship::setup_wss()
     eebus.state.get("ski")->updateString(ship_ski);
 #endif
 
-     // HTTPS server configuration.
-     // This HTTPS server is just used to provide the send/recv for a secure websocket.
+    // HTTPS server configuration.
+    // This HTTPS server is just used to provide the send/recv for a secure websocket.
     httpd_ssl_config_t config = HTTPD_SSL_CONFIG_DEFAULT();
 
     // HTTPD config
     // config.httpd.stack_size           = TODO;
     // config.httpd.max_uri_handlers     = TODO;
-    config.httpd.lru_purge_enable        = true;
-    config.httpd.global_user_ctx         = this;
+    config.httpd.lru_purge_enable = true;
+    config.httpd.global_user_ctx = this;
     // httpd_stop calls free on the pointer passed as global_user_ctx if we don't override the free_fn.
-    config.httpd.global_user_ctx_free_fn = [](void *foo){};
-    config.httpd.max_open_sockets        = 3;
-    config.httpd.enable_so_linger        = true;
-    config.httpd.linger_timeout          = 100;
+    config.httpd.global_user_ctx_free_fn = [](void *foo) {};
+    config.httpd.max_open_sockets = 3;
+    config.httpd.enable_so_linger = true;
+    config.httpd.linger_timeout = 100;
     // TODO: We could implement a mechanism that makes sure the ctrl ports are unique.
     //       By default, the ctrl port is 32768. If we have multiple instances of the
     //       httpd server running, we need to increment the ctrl port each time.
-    config.httpd.ctrl_port               = 32769;
+    config.httpd.ctrl_port = 32769;
 
     // SSL config
     config.transport_mode = HTTPD_SSL_TRANSPORT_SECURE;
-    config.port_secure    = 4712;
-    config.port_insecure  = 0;
+    config.port_secure = 4712;
+    config.port_insecure = 0;
 
 #ifdef SHIP_USE_INTERNAL_CERTS
-    config.servercert     = (uint8_t*)ship_crt;
+    config.servercert = (uint8_t *)ship_crt;
     config.servercert_len = strlen(ship_crt) + 1; // +1 since the length must include the null terminator
-    config.prvtkey_pem    = (uint8_t*)ship_key;
-    config.prvtkey_len    = strlen(ship_key) + 1; // +1 since the length must include the null terminator
+    config.prvtkey_pem = (uint8_t *)ship_key;
+    config.prvtkey_len = strlen(ship_key) + 1; // +1 since the length must include the null terminator
 #else
-    config.servercert     = cert_crt.release();
+    config.servercert = cert_crt.release();
     config.servercert_len = cert_crt_len + 1; // +1 since the length must include the null terminator
-    config.prvtkey_pem    = cert_key.release();
-    config.prvtkey_len    = cert_key_len + 1; // +1 since the length must include the null terminator
+    config.prvtkey_pem = cert_key.release();
+    config.prvtkey_len = cert_key_len + 1; // +1 since the length must include the null terminator
 #endif
 
     // Start HTTPS server
@@ -180,6 +180,8 @@ void Ship::setup_wss()
     logger.printfln("setup_wss_server done");
 }
 
+
+
 void Ship::setup_mdns()
 {
     logger.printfln("setup_mdns start");
@@ -195,7 +197,10 @@ void Ship::setup_mdns()
     // TODO: Use UID instead of 12345
     mdns_service_txt_item_set("_ship", "_tcp", "id", "Tinkerforge-WARP3-12345"); // ManufaturerName-Model-UniqueID (max 63 bytes)
     mdns_service_txt_item_set("_ship", "_tcp", "path", "/ship/");
-    mdns_service_txt_item_set("_ship", "_tcp", "ski", eebus.state.get("ski")->asEphemeralCStr()); // 40 byte hexadecimal digits representing the 160 bit SKI value
+    mdns_service_txt_item_set("_ship",
+                              "_tcp",
+                              "ski",
+                              eebus.state.get("ski")->asEphemeralCStr()); // 40 byte hexadecimal digits representing the 160 bit SKI value
     mdns_service_txt_item_set("_ship", "_tcp", "register", "false");
     // Optional Fields
     mdns_service_txt_item_set("_ship", "_tcp", "brand", "Tinkerforge");
@@ -203,6 +208,38 @@ void Ship::setup_mdns()
     mdns_service_txt_item_set("_ship", "_tcp", "type", "Wallbox"); // Or EVSE?
 
     logger.printfln("setup_mdns done");
+}
+
+void Ship::scan_skis()
+{
+    logger.printfln("discover_mdns start");
+    const char * service = "_ship";
+    const char * proto = "_tcp";
+    mdns_result_t * results = NULL;
+    esp_err_t err = mdns_query_ptr(service, proto, 3000, 20,  &results);
+    if(err){
+        logger.printfln("EEBUS MDNS Query Failed");
+        return;
+    }
+    if(!results){
+        logger.printfln("EEBUS MDNS: No results found!");
+        return;
+    }
+
+    while (results) {
+        mdns_results.push_back(*results);
+        results = results->next;
+    }
+
+    mdns_query_results_free(results);
+
+}
+
+void Ship::print_skis(StringBuilder *sb)
+{
+    for (uint16_t i=0; i<mdns_results.size(); i++) {
+        sb->printf("SKI: %s\n", mdns_results[i].hostname); // TODO: Add more information
+    }
 }
 
 void Ship::remove(const ShipConnection &ship_connection)
