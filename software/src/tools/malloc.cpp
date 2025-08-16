@@ -125,6 +125,11 @@ void *malloc_psram(size_t size)
     return heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
 }
 
+void *realloc_psram(void *ptr, size_t size)
+{
+    return heap_caps_realloc(ptr, size, MALLOC_CAP_SPIRAM);
+}
+
 void *malloc_psram_or_dram(size_t size)
 {
     return heap_caps_malloc_prefer(size, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);

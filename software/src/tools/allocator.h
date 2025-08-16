@@ -103,7 +103,6 @@ bool operator==(const IRAMAlloc<T>&, const IRAMAlloc<U>&) { return true; }
 template <class T, class U>
 bool operator!=(const IRAMAlloc<T>&, const IRAMAlloc<U>&) { return false; }
 
-
 struct ArduinoJsonPsramAllocator
 {
     void *allocate(size_t n)
@@ -116,6 +115,6 @@ struct ArduinoJsonPsramAllocator
     }
     void *reallocate(void *p, size_t n)
     {
-        return heap_caps_realloc(p, n, MALLOC_CAP_SPIRAM);
+        return realloc_psram(p, n);
     }
 };
