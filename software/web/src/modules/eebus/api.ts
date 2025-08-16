@@ -32,6 +32,7 @@ export interface removePeer {
 }
 
 export interface config {
+    enable: boolean;
     cert_id: number;
     key_id: number;
     peers: Peer[];
@@ -41,15 +42,10 @@ export interface config {
 
 export interface state {
     ski: string;
-    enabled: boolean;
     discovery_state: number;
     connections: Connection[];
 
 }
 
 export interface scan {
-}
-
-export interface enable {
-    enable: boolean;
 }
