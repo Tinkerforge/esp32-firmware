@@ -133,6 +133,8 @@ void *malloc_32bit_addressed(size_t size);
 
 void *malloc_psram(size_t size);
 
+void *realloc_psram(void *ptr, size_t size);
+
 void *malloc_psram_or_dram(size_t size);
 
 void *malloc_iram_or_psram_or_dram(size_t size);
