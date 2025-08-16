@@ -18,7 +18,7 @@ interface Connection {
     ship_state: string;
 }
 
-export interface addPeer {
+export interface add {
     ski: string;
     trusted: boolean;
     ip: string;
@@ -27,7 +27,7 @@ export interface addPeer {
     wss_path: string;
 }
 
-export interface removePeer {
+export interface remove {
     ski: string;
 }
 
