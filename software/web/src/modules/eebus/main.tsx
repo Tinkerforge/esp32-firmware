@@ -34,6 +34,8 @@ import {Button} from "react-bootstrap";
 import {Share2} from "react-feather";
 import {Switch} from "../../ts/components/switch";
 import {ShipDiscoveryState} from "./ship_discovery_state.enum";
+import {ShipConnectionState} from "./ship_connection_state.enum";
+import {NodeState} from "./node_state.enum";
 
 export function EEBusNavbar() {
     return <NavbarItem name="eebus" module="eebus" title="EEBUS" symbol={<Share2/>}/>;
@@ -96,7 +98,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                             peer.model_model,
                                             peer.model_brand,
                                             peer.dns_name,
-                                            peer.state == 0 ? __("eebus.content.peer_info.state_disconnected") : peer.state == 1 ? __("eebus.content.peer_info.state_discovered") : __("eebus.content.peer_info.state_connected")],
+                                            peer.state == NodeState.Unknown ? __("eebus.content.peer_info.state_disconnected") : peer.state == NodeState.Discovered ? __("eebus.content.peer_info.state_discovered") : __("eebus.content.peer_info.state_connected")],
                                         fieldValues: [
                                             peer.model_model,
                                             peer.model_brand,
