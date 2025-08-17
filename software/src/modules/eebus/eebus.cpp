@@ -27,12 +27,8 @@
 
 void EEBus::pre_setup()
 {
-    this->trace_buffer_index = logger.alloc_trace_buffer(
-        "eebus",
-        32768
-            * 4); // This makes the PSRAM usage gigantic even when the module is disabled but we cant set this anywhere else. Maybe make smaller?
-
-    // TODO: Fix string lengths. Spec says they are shorter
+    // Use PSRAM 128kB for trace buffer for now. We can reduce it if necessary.
+    this->trace_buffer_index = logger.alloc_trace_buffer("eebus", 32768 * 4);
 
     // TOOD: Rework API so this lot is a bit cleaner
     config_peers_prototype = Config::Object({
