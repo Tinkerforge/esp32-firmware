@@ -26,6 +26,7 @@
 #include "cert.h"
 #include "modules/ws/web_sockets.h"
 #include "ship_connection.h"
+#include "ship_discovery_state.enum.h"
 #include <TFJson.h>
 //#include "string_builder.h"
 
@@ -55,8 +56,6 @@ struct ShipNode {
     void as_json(StringBuilder *sb); /* */
 };
 
-enum Ship_Discovery_State { READY = 0, SCANNING, SCAN_DONE, ERROR };
-
 class Ship
 {
 public:
@@ -70,14 +69,14 @@ public:
     void disable_ship();
 
     void remove(const ShipConnection &ship_connection);
-    Ship_Discovery_State discover_ship_peers();
+    ShipDiscoveryState discover_ship_peers();
     void print_skis(StringBuilder *sb);
 
     //ConfigRoot config;
     //ConfigRoot state;
 
     std::vector<ShipNode> mdns_results;
-    Ship_Discovery_State discovery_state;
+    ShipDiscoveryState discovery_state;
     std::vector<ShipConnection> ship_connections;
     bool is_enabled;
 

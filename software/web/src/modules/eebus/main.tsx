@@ -33,6 +33,7 @@ import {Table} from "../../ts/components/table";
 import {Button} from "react-bootstrap";
 import {Share2} from "react-feather";
 import {Switch} from "../../ts/components/switch";
+import {ShipDiscoveryState} from "./ship_discovery_state.enum";
 
 export function EEBusNavbar() {
     return <NavbarItem name="eebus" module="eebus" title="EEBUS" symbol={<Share2/>}/>;
@@ -327,15 +328,15 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                             variant="primary"
                             onClick={async () => {
                                 await API.call('eebus/scan', {});
-                                state.state.discovery_state = 1;
+                                state.state.discovery_state = ShipDiscoveryState.Scanning;
 
                             }}
-                            disabled={!state.enable || (state.state.discovery_state === 1)}>
-                            {state.state.discovery_state === 0
+                            disabled={!state.enable || (state.state.discovery_state === ShipDiscoveryState.Scanning)}>
+                            {state.state.discovery_state === ShipDiscoveryState.Ready
                                 ? __("eebus.content.search_peers")
-                                : state.state.discovery_state === 1
+                                : state.state.discovery_state === ShipDiscoveryState.Scanning
                                     ? __("eebus.content.searching_peers")
-                                    : state.state.discovery_state === 2
+                                    : state.state.discovery_state === ShipDiscoveryState.ScanDone
                                         ? __("eebus.content.search_completed")
                                         : __("eebus.content.search_failed")}
                         </Button>

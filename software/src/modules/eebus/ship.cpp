@@ -255,18 +255,18 @@ void Ship::setup_mdns()
 
 }
 
-Ship_Discovery_State Ship::discover_ship_peers()
+ShipDiscoveryState Ship::discover_ship_peers()
 {
-    if (discovery_state == Ship_Discovery_State::SCANNING) {
+    if (discovery_state == ShipDiscoveryState::Scanning) {
         return discovery_state;
     }
 
-    auto update_discovery_state = [this](Ship_Discovery_State state) {
+    auto update_discovery_state = [this](ShipDiscoveryState state) {
         this->discovery_state = state;
         eebus.state.get("discovery_state")->updateUint(static_cast<uint8_t>(state));
     };
 
-    update_discovery_state(Ship_Discovery_State::SCANNING);
+    update_discovery_state(ShipDiscoveryState::Scanning);
 
     logger.tracefln(eebus.trace_buffer_index, "discover_ship_peers start");
     logger.printfln("EEBUS MDNS Discovery started");
@@ -278,13 +278,13 @@ Ship_Discovery_State Ship::discover_ship_peers()
     if (err) {
         logger.printfln("EEBUS MDNS Query Failed.");
         logger.tracefln(eebus.trace_buffer_index, "EEBUS MDNS Query Failed. Error %d", err);
-        update_discovery_state(Ship_Discovery_State::ERROR);
+        update_discovery_state(ShipDiscoveryState::Error);
         return discovery_state;
     }
     if (!results) {
         logger.printfln("EEBUS MDNS: No results found!");
         logger.tracefln(eebus.trace_buffer_index, "EEBUS MDNS: 0 results found!");
-        update_discovery_state(Ship_Discovery_State::SCAN_DONE);
+        update_discovery_state(ShipDiscoveryState::ScanDone);
         return discovery_state;
     }
     mdns_results.clear();
@@ -339,7 +339,7 @@ Ship_Discovery_State Ship::discover_ship_peers()
     logger.printfln("EEBUS MDNS Discovery: Found %d results", mdns_results.size());
 
     mdns_query_results_free(results);
-    update_discovery_state(Ship_Discovery_State::SCAN_DONE);
+    update_discovery_state(ShipDiscoveryState::ScanDone);
     return discovery_state;
 }
 
