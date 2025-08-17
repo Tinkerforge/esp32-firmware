@@ -366,7 +366,8 @@ void EEBus::trace_strln(const char *str, const size_t length)
 void EEBus::trace_jsonln(JsonVariantConst data)
 {
 #if defined(BOARD_HAS_PSRAM)
-    const char   *str   = data.as<String>().c_str();
+    String string = data.as<String>();
+    const char *str = string.c_str();
     const size_t length = strlen(str);
     trace_strln(str, length);
 #endif
