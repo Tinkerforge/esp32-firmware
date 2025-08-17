@@ -39,7 +39,7 @@ class SpineConnection
 public:
     ShipConnection *ship_connection = nullptr;
     explicit SpineConnection(ShipConnection *ship_connection) : ship_connection(ship_connection) {
-        response_doc = &ship_connection->outgoing_json_doc;
+        //response_doc = &ship_connection->outgoing_json_doc;
     };
 
     /**
@@ -94,7 +94,7 @@ public:
     /**
     * The JSON Document used for holding the response
     */
-    JsonDocument *response_doc;
+    BasicJsonDocument<ArduinoJsonPsramAllocator> response_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
     //DynamicJsonDocument response_doc{SPINE_CONNECTION_MAX_JSON_SIZE}; // TODO: Maybe allocate this in PSRAM
     /**
     * The response datagram to be retrieved by the SPINE Connection and sent back to the peer.
