@@ -263,7 +263,7 @@ ShipDiscoveryState Ship::discover_ship_peers()
 
     auto update_discovery_state = [this](ShipDiscoveryState state) {
         this->discovery_state = state;
-        eebus.state.get("discovery_state")->updateUint(static_cast<uint8_t>(state));
+        eebus.state.get("discovery_state")->updateEnum(state);
     };
 
     update_discovery_state(ShipDiscoveryState::Scanning);

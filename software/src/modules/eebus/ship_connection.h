@@ -27,6 +27,7 @@
 #include "config.h"
 #include "module.h"
 #include "modules/ws/web_sockets.h"
+#include "ship_connection_state.enum.h"
 //#include "ship_types.h"
 #include "TFJson.h"
 //#include "spine_connection.h"
@@ -50,61 +51,6 @@ class ShipConnection
 public:
     // SHIP 13.4.1
     enum class Role : uint8_t { Client, Server };
-
-    enum class State : uint8_t {
-        // CMI = Connection Mode Initialisation
-        // SHIP 13.4.3
-        CmiInitStart,
-        CmiClientSend,
-        CmiClientWait,
-        CmiClientEvaluate,
-        CmiServerWait,
-        CmiServerEvaluate,
-
-        // SME = Ship Message Exchange
-        // SHIP 13.4.4.1
-        SmeConnectionDataPreparation,
-        SmeHello,
-        SmeHelloReadyInit,
-        SmeHelloReadyListen,
-        SmeHelloReadyTimeout,
-        SmeHelloPendingInit,
-        SmeHelloPendingListen,
-        SmeHelloPendingTimeout,
-        SmeHelloOk,
-        SmeHelloAbort,
-        SmeHelloAbortDone,
-        SmeHelloRemoteAbortDone,
-        SmeHelloRejected,
-
-        // SHIP 13.4.4.2
-        SmeProtocolHandshakeServerInit,
-        SmeProtocolHandshakeClientInit,
-        SmeProtocolHandshakeServerListenProposal,
-        SmeProtocolHandshakeServerListenConfirm,
-        SmeProtocolHandshakeClientListenChoice,
-        SmeProtocolHandshakeTimeout,
-        SmeProtocolHandshakeClientOk,
-        SmeProtocolHandshakeServerOk,
-
-        // SHIP 13.4.4.3
-        SmePinCheckInit,
-        SmePinCheckListen,
-        SmePinCheckError,
-        SmePinCheckBusyInit,
-        SmePinCheckBusyWait,
-        SmePinCheckOk,
-        SmePinAskInit,
-        SmePinAskProcess,
-        SmePinAskRestricted,
-        SmePinAskOk,
-
-        // SHIP 13.4.6
-        SmeAccessMethodRequest,
-
-        // Marker for end of SHIP handshake state machine
-        Done
-    };
 
     // SHIP 13.4.4.1.3
     enum class SubState : uint8_t { Init, Listen, Timeout };
@@ -151,8 +97,8 @@ public:
     // Set the ws_client, role and start the state machine that will branch into ClientWait or ServerWait depending on the role
     ShipConnection(WebSocketsClient ws_client, const Role role, CoolString ski);
 
-    State state = State::CmiInitStart;
-    State previous_state = State::CmiInitStart;
+    ShipConnectionState state = ShipConnectionState::CmiInitStart;
+    ShipConnectionState previous_state = ShipConnectionState::CmiInitStart;
     SubState sub_state = SubState::Init;
     uint64_t timeout_task = 0;
 
@@ -173,9 +119,9 @@ public:
     ProtocolState get_protocol_state();
 
     // State machine functions
-    void set_state(State state);
-    void set_and_schedule_state(State state);
-    void set_and_schedule_state(State state, millis_t delay_ms);
+    void set_state(ShipConnectionState state);
+    void set_and_schedule_state(ShipConnectionState state);
+    void set_and_schedule_state(ShipConnectionState state, millis_t delay_ms);
     void state_machine_next_step();
     void schedule_state_machine_next_step();
 
@@ -220,7 +166,6 @@ public:
     void state_done();
 
     void state_is_not_implemented();
-    const char *get_state_name(State state);
 
     //--------------------------------------------------------------------------------
     // Hello Phase Specific stuff
@@ -284,7 +229,7 @@ public:
     ConnectionHelloType this_hello_phase = {};
 
     void hello_send_sme_update();
-    void hello_set_wait_for_ready_timer(State target);
+    void hello_set_wait_for_ready_timer(ShipConnectionState target);
     void hello_decide_prolongation();
 
     //--------------------------------------------------------------------------------
