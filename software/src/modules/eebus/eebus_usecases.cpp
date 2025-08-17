@@ -25,7 +25,7 @@
 #include "module_dependencies.h"
 #include "tools.h"
 
-bool NodeManagementUsecase::handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
+bool NodeManagementUsecase::handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject &response)
 {
 
     // Binding Request as defined in EEBus SPINE TS ProtocolSpecification 7.3.2
@@ -156,7 +156,7 @@ UseCaseInformationDataType NodeManagementUsecase::get_usecase_information()
 {
     return UseCaseInformationDataType(); // This should never be used as the NodeManagementUsecase has no usecase information
 }
-bool NodeManagementUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+bool NodeManagementUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject &response, SpineConnection *connection)
 {
     logger.tracefln(eebus.trace_buffer_index,
                     "NodeManagementUsecase: Handling message with cmdClassifier %d and command %s",
@@ -175,7 +175,7 @@ bool NodeManagementUsecase::handle_message(HeaderType &header, SpineDataTypeHand
     return false;
 }
 
-bool NodeManagementUsecase::read_usecase_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) const
+bool NodeManagementUsecase::read_usecase_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject &response) const
 {
     NodeManagementUseCaseDataType node_management_usecase_data;
     for (UseCase *uc : usecase_interface->usecase_list) {
@@ -193,7 +193,7 @@ bool NodeManagementUsecase::read_usecase_data(HeaderType &header, SpineDataTypeH
     logger.tracefln(eebus.trace_buffer_index, "An error occurred while trying to read the NodeManagementUseCaseData");
     return false;
 }
-bool NodeManagementUsecase::read_detailed_discovery_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) const
+bool NodeManagementUsecase::read_detailed_discovery_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject &response) const
 {
     // Detailed discovery as defined in EEBus SPINE TS ProtocolSpecification 7.1.2
     NodeManagementDetailedDiscoveryDataType node_management_detailed_data;
@@ -217,7 +217,7 @@ bool NodeManagementUsecase::read_detailed_discovery_data(HeaderType &header, Spi
 
 bool NodeManagementUsecase::handle_subscription(HeaderType &header,
                                                 SpineDataTypeHandler *data,
-                                                JsonObject response,
+                                                JsonObject &response,
                                                 SpineConnection *connection)
 {
 
@@ -436,7 +436,7 @@ UseCaseInformationDataType ChargingSummaryUsecase::get_usecase_information()
 }
 bool ChargingSummaryUsecase::handle_message(HeaderType &header,
                                             SpineDataTypeHandler *data,
-                                            JsonObject response,
+                                            JsonObject &response,
                                             SpineConnection *connection)
 {
     // TODO: implement messagehandling for the ChargingSummary usecase
@@ -508,15 +508,16 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
     //response.clear();
     //connection->ship_connection->outgoing_json_doc.clear();
     BasicJsonDocument<ArduinoJsonPsramAllocator> response_doc{8182};
+    JsonObject response = response_doc.to<JsonObject>();
     // TODO: Fix the addressing of the usecases. Maybe better address them by entity?
     bool send_response = false;
     if (header.addressDestination->feature == feature_address_node_management) {
         logger.tracefln(eebus.trace_buffer_index, "Usecases: Received message for NodeManagementUsecase");
-        send_response = node_management.handle_message(header, data, response_doc.as<JsonObject>(), connection);
+        send_response = node_management.handle_message(header, data, response, connection);
     }
     if (header.addressDestination->feature == feature_address_charging_summary) {
         logger.tracefln(eebus.trace_buffer_index, "Usecases: Received message for ChargingSummaryUsecase");
-        send_response = charging_summary.handle_message(header, data, response_doc.as<JsonObject>(), connection);
+        send_response = charging_summary.handle_message(header, data, response, connection);
     }
     if (send_response) {
         logger.tracefln(eebus.trace_buffer_index, "Usecases: Sending response");
