@@ -36,9 +36,6 @@ void Ship::pre_setup()
 void Ship::setup()
 {
     if (eebus.config.get("enable")->asBool()) {
-#ifdef SHIP_USE_INTERNAL_CERTS
-        eebus.state.get("ski")->updateString(ship_ski);
-#endif
         setup_wss();
         if (eebus.initialized) {
             setup_mdns();
