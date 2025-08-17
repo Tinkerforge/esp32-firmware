@@ -32,22 +32,22 @@ void EEBus::pre_setup()
 
     // TOOD: Rework API so this lot is a bit cleaner
     config_peers_prototype = Config::Object({
-        {"ip", Config::Str("", 0, 64)},
+        {"ip", Config::Str("0.0.0.0", 7, 15)},
         {"port", Config::Uint16(0)},
         {"trusted", Config::Bool(false)},
-        {"dns_name", Config::Str("", 0, 64)},
-        {"id", Config::Str("", 0, 64)},
-        {"wss_path", Config::Str("", 0, 64)},
-        {"ski", Config::Str("", 0, 64)},
+        {"dns_name", Config::Str("", 0, 63)}, // [SHIP 7.3] A local SHIP node SHALL assign a unique multicast DNS host name of up to 63 bytes
+        {"id", Config::Str("", 0, 63)}, // [SHIP 7.3.2] The value of the id key contains a globally unique ID of the SHIP node and has a maximum length of 63 bytes
+        {"wss_path", Config::Str("", 0, 32)}, // [SHIP 7.3.2] The maximum length of the path value will be 32 bytes
+        {"ski", Config::Str("", 0, 40)}, // [RFC 5280, §4.2.1.2] Subject Key Identifier uses 40 hex characters
         {"autoregister", Config::Bool(false)},
-        {"model_brand", Config::Str("", 0, 64)},
-        {"model_model", Config::Str("", 0, 64)},
-        {"mode_type", Config::Str("", 0, 64)},
+        {"model_brand", Config::Str("", 0, 32)}, // [SHIP 7.3.2] The maximum length of the brand, type and model values will be 32 byte
+        {"model_model", Config::Str("", 0, 32)},
+        {"mode_type", Config::Str("", 0, 32)},
         {"state", Config::Uint8(0)},
     });
     state_connections_prototype = Config::Object({
-        {"ski", Config::Str("", 0, 64)},
-        {"ship_state", Config::Str("", 0, 64)},
+        {"ski", Config::Str("", 0, 40)},
+        {"ship_state", Config::Uint8(0)},
     });
 
     config = ConfigRoot{Config::Object({
@@ -73,12 +73,12 @@ void EEBus::pre_setup()
 
                             return "";
                         }};
-    add_peer = ConfigRoot{Config::Object({{"ip", Config::Str("", 0, 64)},
+    add_peer = ConfigRoot{Config::Object({{"ip", Config::Str("0.0.0.0", 7, 15)},
                                           {"port", Config::Uint16(0)},
                                           {"trusted", Config::Bool(false)},
-                                          {"dns_name", Config::Str("", 0, 64)},
-                                          {"wss_path", Config::Str("", 0, 64)},
-                                          {"ski", Config::Str("", 0, 64)}}),
+                                          {"dns_name", Config::Str("", 0, 63)},
+                                          {"wss_path", Config::Str("", 0, 32)},
+                                          {"ski", Config::Str("", 0, 40)}}),
                           [this](Config &add_peer, ConfigSource source) -> String {
                               if (add_peer.get("ski")->asString().isEmpty()) {
                                   return "Can't add peer. Ski is missing.";
@@ -91,7 +91,7 @@ void EEBus::pre_setup()
 
     add_peer.set_permit_null_updates(false);
 
-    remove_peer = ConfigRoot{Config::Object({{"ski", Config::Str("", 0, 64)}}), [this](Config &remove_peer, ConfigSource source) -> String {
+    remove_peer = ConfigRoot{Config::Object({{"ski", Config::Str("", 0, 40)}}), [this](Config &remove_peer, ConfigSource source) -> String {
                                  if (remove_peer.get("ski")->asString().isEmpty()) {
                                      return "Can't remove peer. Ski is missing.";
                                  }
@@ -100,12 +100,12 @@ void EEBus::pre_setup()
     scan_command = ConfigRoot(Config::Object({}));
 
     state = Config::Object({
-        {"ski", Config::Str("", 0, 64)},
+        {"ski", Config::Str("", 0, 40)},
         {"discovery_state", Config::Uint8(0)},
         {"connections",
          Config::Array({Config::Object({
-                           {"ski", Config::Str("", 0, 64)},
-                           {"ship_state", Config::Str("", 0, 64)},
+                           {"ski", Config::Str("", 0, 40)},
+                           {"ship_state", Config::Uint8(0)},
                        })},
                        &state_connections_prototype,
                        0,

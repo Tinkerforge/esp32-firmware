@@ -15,7 +15,7 @@ interface Peer {
 
 interface Connection {
     ski: string;
-    ship_state: string;
+    ship_state: number;
 }
 
 export interface add {

@@ -29,7 +29,7 @@
 #include "tools/malloc.h"
 
 #define EEBUS_PEER_FILE "/eebus/peers"
-#define MAX_PEER_REMEMBERED 64          // How man ship peers configured to be remembered
+#define MAX_PEER_REMEMBERED 4           // How man ship peers configured to be remembered
 #define SHIP_AUTODISCOVER_INTERVAL 30_s // How often to autodiscover ship peers
 
 // EEBUS Device definitions
