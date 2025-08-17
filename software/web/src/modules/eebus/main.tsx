@@ -78,7 +78,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
             <SubPage name="eebus">
                <ConfigForm id="eebus_config_form" title="EEBUS" isModified={this.isModified()} isDirty={this.isDirty()}
                             onSave={this.save} onReset={this.reset} onDirtyChange={this.setDirty}>
-                    <FormRow label={__("eebus.content.enable_eebus")}>
+                    <FormRow label={__("eebus.content.enable_eebus")} help={__("eebus.content.enable_eebus_help")}>
                         <Switch desc={__("eebus.content.enable_eebus_desc")}
                                 checked={state.enable}
                                 onClick={this.toggle('enable')}
@@ -343,7 +343,7 @@ export class EEBus extends ConfigComponent<'eebus/config', {}, EEBusState> {
                                         : __("eebus.content.search_failed")}
                         </Button>
                     </FormRow>
-                    <FormRow label={__("eebus.content.ski")}>
+                    <FormRow label={__("eebus.content.ski")} label_muted={__("eebus.content.ski_muted")} help={__("eebus.content.ski_help")}>
                         <InputText value={ski}/>
                     </FormRow>
                 </ConfigForm>
