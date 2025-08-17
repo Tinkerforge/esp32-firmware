@@ -83,6 +83,10 @@ public:
 
     size_t trace_buffer_index;
 
+    void trace_strln(const char *str, const size_t length);
+    void trace_jsonln(JsonVariantConst data);
+    void trace_fmtln(const char *fmt, ...);
+
 private:
     /**
      * Update the peers configuration based on the current mDNS results, clean up invalid peers and add trusted peers to the persistent configuration.
