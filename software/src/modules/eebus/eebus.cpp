@@ -21,6 +21,9 @@
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
 #include "build.h"
+#include "ship_connection_state.enum.h"
+#include "ship_discovery_state.enum.h"
+#include "node_state.enum.h"
 #include "ship.h"
 #include <LittleFS.h>
 #include <TFJson.h>
@@ -43,11 +46,11 @@ void EEBus::pre_setup()
         {"model_brand", Config::Str("", 0, 32)}, // [SHIP 7.3.2] The maximum length of the brand, type and model values will be 32 byte
         {"model_model", Config::Str("", 0, 32)},
         {"mode_type", Config::Str("", 0, 32)},
-        {"state", Config::Uint8(0)},
+        {"state", Config::Enum(NodeState::Unknown)},
     });
     state_connections_prototype = Config::Object({
         {"ski", Config::Str("", 0, 40)},
-        {"ship_state", Config::Uint8(0)},
+        {"ship_state", Config::Enum(ShipConnectionState::CmiInitStart)},
     });
 
     config = ConfigRoot{Config::Object({
@@ -248,7 +251,7 @@ void EEBus::toggle_module()
 
     // All peers are unknown when its either toggled or at startup
     for (size_t i = 0; i < config.get("peers")->count(); i++) {
-        config.get("peers")->get(i)->get("state")->updateUint(0);
+        config.get("peers")->get(i)->get("state")->updateEnum(NodeState::Unknown);
     }
     api.writeConfig("eebus/config", &config);
 
@@ -324,8 +327,8 @@ void EEBus::update_peers_config()
                 peer->get("model_brand")->updateString(node.txt_brand);
                 peer->get("model_model")->updateString(node.txt_model);
                 peer->get("mode_type")->updateString(node.txt_type);
-                if (peer->get("state")->asUint() != (uint32_t)NodeState::Connected) {
-                    peer->get("state")->updateUint((uint32_t)NodeState::Discovered);
+                if (peer->get("state")->asEnum<NodeState>() != NodeState::Connected) {
+                    peer->get("state")->updateEnum(NodeState::Discovered);
                 }
                 found = true;
                 break;
@@ -345,7 +348,7 @@ void EEBus::update_peers_config()
             peer->get("model_brand")->updateString(node.txt_brand);
             peer->get("model_model")->updateString(node.txt_model);
             peer->get("mode_type")->updateString(node.txt_type);
-            peer->get("state")->updateUint((uint32_t)NodeState::Discovered);
+            peer->get("state")->updateEnum(NodeState::Discovered);
         }
     }
 }

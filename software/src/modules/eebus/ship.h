@@ -27,10 +27,9 @@
 #include "modules/ws/web_sockets.h"
 #include "ship_connection.h"
 #include "ship_discovery_state.enum.h"
+#include "node_state.enum.h"
 #include <TFJson.h>
 //#include "string_builder.h"
-
-enum class NodeState { Unknown = 0, Discovered, Connected };
 
 struct ShipNode {
 

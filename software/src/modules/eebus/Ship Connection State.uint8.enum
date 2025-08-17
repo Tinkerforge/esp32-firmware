@@ -1,0 +1,52 @@
+// CMI = Connection Mode Initialisation
+// SHIP 13.4.3
+Cmi Init Start
+Cmi Client Send
+Cmi Client Wait
+Cmi Client Evaluate
+Cmi Server Wait
+Cmi Server Evaluate
+
+// SME = Ship Message Exchange
+// SHIP 13.4.4.1
+Sme Connection Data Preparation
+Sme Hello
+Sme Hello Ready Init
+Sme Hello Ready Listen
+Sme Hello Ready Timeout
+Sme Hello Pending Init
+Sme Hello Pending Listen
+Sme Hello Pending Timeout
+Sme Hello Ok
+Sme Hello Abort
+Sme Hello Abort Done
+Sme Hello Remote Abort Done
+Sme Hello Rejected
+
+// SHIP 13.4.4.2
+Sme Protocol Handshake Server Init
+Sme Protocol Handshake Client Init
+Sme Protocol Handshake Server Listen Proposal
+Sme Protocol Handshake Server Listen Confirm
+Sme Protocol Handshake Client Listen Choice
+Sme Protocol Handshake Timeout
+Sme Protocol Handshake Client Ok
+Sme Protocol Handshake Server Ok
+
+// SHIP 13.4.4.3
+Sme Pin Check Init
+Sme Pin Check Listen
+Sme Pin Check Error
+Sme Pin Check Busy Init
+Sme Pin Check Busy Wait
+Sme Pin Check Ok
+Sme Pin Ask Init
+Sme Pin Ask Process
+Sme Pin Ask Restricted
+Sme Pin Ask Ok
+
+// SHIP 13.4.6
+Sme Access Method Request
+
+// Marker for end of SHIP handshake state machine
+Done
