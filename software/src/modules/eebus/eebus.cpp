@@ -101,7 +101,7 @@ void EEBus::pre_setup()
 
     state = Config::Object({
         {"ski", Config::Str("", 0, 40)},
-        {"discovery_state", Config::Uint8(0)},
+        {"discovery_state", Config::Enum(ShipDiscoveryState::Ready)},
         {"connections",
          Config::Array({Config::Object({
                            {"ski", Config::Str("", 0, 40)},
@@ -219,11 +219,11 @@ void EEBus::register_urls()
             if (!config.get("enable")->asBool()) {
                 return "EEBUS is disabled";
             }
-            if (ship.discovery_state == Ship_Discovery_State::SCANNING) {
+            if (ship.discovery_state == ShipDiscoveryState::Scanning) {
                 return "scan in progress";
             }
-            if (ship.discovery_state == Ship_Discovery_State::READY || ship.discovery_state == Ship_Discovery_State::SCAN_DONE) {
-                state.get("discovery_state")->updateUint(Ship_Discovery_State::SCANNING);
+            if (ship.discovery_state == ShipDiscoveryState::Ready || ship.discovery_state == ShipDiscoveryState::ScanDone) {
+                state.get("discovery_state")->updateEnum(ShipDiscoveryState::Scanning);
 
                 task_scheduler.scheduleOnce(
                 [this]() {
@@ -235,8 +235,8 @@ void EEBus::register_urls()
 
                 return "scan started";
             }
-            if (ship.discovery_state == Ship_Discovery_State::ERROR) {
-                ship.discovery_state = Ship_Discovery_State::READY;
+            if (ship.discovery_state == ShipDiscoveryState::Error) {
+                ship.discovery_state = ShipDiscoveryState::Ready;
                 return "scan error";
             }
             return "scan done";
