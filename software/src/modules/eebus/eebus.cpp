@@ -130,7 +130,7 @@ void EEBus::setup()
 
     initialized = true;
     logger.printfln("EEBUS initialized");
-    logger.tracefln(this->trace_buffer_index, "EEBUS initialized");
+    eebus.trace_fmtln("EEBUS initialized");
 }
 
 void EEBus::register_urls()
@@ -145,13 +145,13 @@ void EEBus::register_urls()
         {"ip", "port", "trusted", "dns_name", "wss_path", "ski"},
         [this](String &errmsg) {
             if (!initialized) {
-                logger.tracefln(this->trace_buffer_index, "Tried adding or editing peer while EEBUS is disabled");
+                eebus.trace_fmtln("Tried adding or editing peer while EEBUS is disabled");
                 return;
             }
             if (!errmsg.isEmpty()) {
                 // TODO: Some user feedback when this goes wrong
                 logger.printfln("An error occurred while adding peer: %s", errmsg.c_str());
-                logger.tracefln(this->trace_buffer_index, "Error adding or Updating peer: %s", errmsg.c_str());
+                eebus.trace_fmtln("Error adding or Updating peer: %s", errmsg.c_str());
                 return;
             }
             Config::Wrap peer = nullptr;
@@ -161,8 +161,7 @@ void EEBus::register_urls()
                 if (p->get("ski")->asString() == add_peer.get("ski")->asString()) {
                     peer = p;
                     found = true;
-                    logger.tracefln(this->trace_buffer_index,
-                                    "Updating ship peer %s with ip %s",
+                    eebus.trace_fmtln("Updating ship peer %s with ip %s",
                                     peer->get("ski")->asString().c_str(),
                                     peer->get("ip")->asString().c_str());
                     break;
@@ -170,8 +169,7 @@ void EEBus::register_urls()
             }
             if (!found) {
                 peer = config.get("peers")->add();
-                logger.tracefln(this->trace_buffer_index,
-                                "Adding ship peer %s with ip %s",
+                eebus.trace_fmtln("Adding ship peer %s with ip %s",
                                 peer->get("ski")->asString().c_str(),
                                 peer->get("ip")->asString().c_str());
             }
@@ -191,19 +189,18 @@ void EEBus::register_urls()
         {"ski"},
         [this](String &errmsg) {
             if (!config.get("enable")->asBool()) {
-                logger.tracefln(this->trace_buffer_index, "Tried removing peer while EEBUS is disabled");
+                eebus.trace_fmtln("Tried removing peer while EEBUS is disabled");
                 return;
             }
 
             if (!errmsg.isEmpty()) {
-                logger.tracefln(this->trace_buffer_index, "Error removing peer: %s", errmsg.c_str());
+                eebus.trace_fmtln("Error removing peer: %s", errmsg.c_str());
                 return;
             }
             for (size_t i = 0; i < config.get("peers")->count(); i++) {
                 auto peer = config.get("peers")->get(i);
                 if (peer->get("ski")->asString() == remove_peer.get("ski")->asString()) {
-                    logger.tracefln(this->trace_buffer_index,
-                                    "Removing ship peer %s with ip %s",
+                    eebus.trace_fmtln("Removing ship peer %s with ip %s",
                                     peer->get("ski")->asString().c_str(),
                                     peer->get("ip")->asString().c_str());
                     config.get("peers")->remove(i);
@@ -351,4 +348,41 @@ void EEBus::update_peers_config()
             peer->get("state")->updateEnum(NodeState::Discovered);
         }
     }
+}
+
+void EEBus::trace_strln(const char *str, const size_t length)
+{
+#if defined(BOARD_HAS_PSRAM)
+    uint32_t secs = now_us().to<millis_t>().as<uint32_t>();
+    char buffer[32] = {0};
+    sprintf(buffer, "%04lu ", secs % 10000);
+    logger.trace_plain(trace_buffer_index, buffer, strlen(buffer));
+
+    logger.trace_plain(trace_buffer_index, str, length);
+    logger.trace_plain(trace_buffer_index, "\n", 1);
+#endif
+}
+
+void EEBus::trace_jsonln(JsonVariantConst data)
+{
+#if defined(BOARD_HAS_PSRAM)
+    const char   *str   = data.as<String>().c_str();
+    const size_t length = strlen(str);
+    trace_strln(str, length);
+#endif
+}
+
+void EEBus::trace_fmtln(const char *fmt, ...)
+{
+#if defined(BOARD_HAS_PSRAM)
+    uint32_t secs = now_us().to<millis_t>().as<uint32_t>();
+    char buffer[32] = {0};
+    sprintf(buffer, "%04lu ", secs % 10000);
+    logger.trace_plain(trace_buffer_index, buffer, strlen(buffer));
+
+    va_list args;
+    va_start(args, fmt);
+    logger.vtracefln_plain(trace_buffer_index, fmt, args);
+    va_end(args);
+#endif
 }

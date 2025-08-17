@@ -51,7 +51,7 @@ void Ship::setup()
 }
 void Ship::disable_ship()
 {
-    logger.tracefln(eebus.trace_buffer_index, "disable_ship start");
+    eebus.trace_fmtln("disable_ship start");
     for (ShipConnection &conn : ship_connections) {
         conn.schedule_close(0_ms);
     }
@@ -65,12 +65,12 @@ void Ship::disable_ship()
                 },
                 100_ms);
 
-    logger.tracefln(eebus.trace_buffer_index, "disable_ship end");
+    eebus.trace_fmtln("disable_ship end");
 }
 
 void Ship::setup_wss()
 {
-    logger.tracefln(eebus.trace_buffer_index, "setup_wss_server start"); // TODO Move to tracelog
+    eebus.trace_fmtln("setup_wss_server start"); // TODO Move to tracelog
 
     // HTTPS server configuration.
     // This HTTPS server is just used to provide the send/recv for a secure websocket.
@@ -103,7 +103,7 @@ void Ship::setup_wss()
         int ret = mbedtls_x509_crt_parse(&x509_crt, buf, buflen);
         if (ret != 0) {
             logger.printfln(" An error occurred while setting up the SHIP Websocket");
-            logger.tracefln(eebus.trace_buffer_index, "mbedtls_x509_crt_parse failed: 0x%04x", ret);
+            eebus.trace_fmtln("mbedtls_x509_crt_parse failed: 0x%04x", ret);
         } else {
             char ship_ski[64] = {0};
             for (size_t i = 0; i < x509_crt.subject_key_id.len; i++) {
@@ -157,7 +157,7 @@ void Ship::setup_wss()
 
         if (parse_x509_crt(cert->crt, cert->crt_length) != 0) {
             logger.printfln("An error occured while starting EEBUS SHIP Server");
-            logger.tracefln(eebus.trace_buffer_index, "parse_x509_crt != 0");
+            eebus.trace_fmtln("parse_x509_crt != 0");
             return;
         }
 
@@ -194,8 +194,7 @@ void Ship::setup_wss()
                 break;
             }
         }
-        logger.tracefln(eebus.trace_buffer_index,
-                        "WebSocketsClient connected from %s:%d with SKI %s",
+        eebus.trace_fmtln("WebSocketsClient connected from %s:%d with SKI %s",
                         client_ip,
                         ntohs(addr.sin6_port),
                         peer_ski.c_str());
@@ -216,7 +215,7 @@ void Ship::setup_wss()
             }
         }
 
-        logger.tracefln(eebus.trace_buffer_index, "Error while receiving Websocket packet: No ShipConnection found for fd %d", fd);
+        eebus.trace_fmtln("Error while receiving Websocket packet: No ShipConnection found for fd %d", fd);
     });
 
     // Start websocket on the HTTPS server
@@ -228,7 +227,7 @@ void Ship::setup_wss()
 
 void Ship::setup_mdns()
 {
-    logger.tracefln(eebus.trace_buffer_index, "setup_mdns() start");
+    eebus.trace_fmtln("setup_mdns() start");
 
     // SHIP 7.2 Service Name
     mdns_service_add(NULL, "_ship", "_tcp", 4712, NULL, 0);
@@ -251,7 +250,7 @@ void Ship::setup_mdns()
     mdns_service_txt_item_set("_ship", "_tcp", "model", api.getState("info/name")->get("type")->asEphemeralCStr());
     mdns_service_txt_item_set("_ship", "_tcp", "type", EEBUS_DEVICE_TYPE); // Or EVSE?
 
-    logger.tracefln(eebus.trace_buffer_index, "setup_mdns() done");
+    eebus.trace_fmtln("setup_mdns() done");
 
 }
 
@@ -268,7 +267,7 @@ ShipDiscoveryState Ship::discover_ship_peers()
 
     update_discovery_state(ShipDiscoveryState::Scanning);
 
-    logger.tracefln(eebus.trace_buffer_index, "discover_ship_peers start");
+    eebus.trace_fmtln("discover_ship_peers start");
     logger.printfln("EEBUS MDNS Discovery started");
 
     const char *service = "_ship";
@@ -277,13 +276,13 @@ ShipDiscoveryState Ship::discover_ship_peers()
     esp_err_t err = mdns_query_ptr(service, proto, 3000, 20, &results);
     if (err) {
         logger.printfln("EEBUS MDNS Query Failed.");
-        logger.tracefln(eebus.trace_buffer_index, "EEBUS MDNS Query Failed. Error %d", err);
+        eebus.trace_fmtln("EEBUS MDNS Query Failed. Error %d", err);
         update_discovery_state(ShipDiscoveryState::Error);
         return discovery_state;
     }
     if (!results) {
         logger.printfln("EEBUS MDNS: No results found!");
-        logger.tracefln(eebus.trace_buffer_index, "EEBUS MDNS: 0 results found!");
+        eebus.trace_fmtln("EEBUS MDNS: 0 results found!");
         update_discovery_state(ShipDiscoveryState::ScanDone);
         return discovery_state;
     }
