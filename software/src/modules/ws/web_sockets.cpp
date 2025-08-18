@@ -395,7 +395,9 @@ void WebSockets::fakeReceivedPongAll()
 {
     std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
     for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
-        keep_alive_last_pong[i] = now_us();
+        if (keep_alive_fds[i] != -1) {
+            keep_alive_last_pong[i] = now_us();
+        }
     }
 }
 
@@ -506,12 +508,6 @@ bool WebSockets::sendToAllOwnedNoFreeBlocking_HTTPThread(char *payload, size_t p
     {
         std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
         memcpy(fds, keep_alive_fds, sizeof(fds));
-    }
-
-    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
-        if (keep_alive_fds[i] != -1) {
-            keep_alive_last_pong[i] = now_us();
-        }
     }
 
     ws_work_item wi{{}, payload, payload_len, ws_type};
