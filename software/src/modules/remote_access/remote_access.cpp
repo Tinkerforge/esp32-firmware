@@ -1556,8 +1556,8 @@ void RemoteAccess::resolve_management()
         this->management_request_done = true;
         this->last_mgmt_alive = now_us();
         this->request_cleanup();
-        // Don't reconnect if authentication failed
-        if (!this->management_auth_failed) {
+        // Don't reconnect if authentication failed or we already setup the connection
+        if (!this->management_auth_failed && !done) {
             this->connect_management();
         }
         this->connection_state.get(0)->get("state")->updateUint(1);
@@ -1653,7 +1653,6 @@ void RemoteAccess::request_cleanup()
 
 void RemoteAccess::connect_management()
 {
-    static bool done = false;
     if (done) {
         logger.printfln("Attempted connect_management again despite being done");
         return;
