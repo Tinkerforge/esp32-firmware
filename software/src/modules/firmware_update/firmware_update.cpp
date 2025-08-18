@@ -600,7 +600,7 @@ void FirmwareUpdate::register_urls()
         api.addState("firmware_update/config", &config);
     }
 
-    api.addState("firmware_update/state", &state);
+    api.addState("firmware_update/state", &state, {}, {}, true);
 
     api.addCommand("firmware_update/check_for_update", Config::Null(), {}, [this](String &/*errmsg*/) {
         check_for_update();
@@ -1296,6 +1296,7 @@ void FirmwareUpdate::install_firmware(const char *url)
 
     https_client.download_async(url, cert_id, [this](AsyncHTTPSClientEvent *event) {
         InstallState result;
+        size_t progress;
 
         switch (event->type) {
         case AsyncHTTPSClientEventType::Error:
@@ -1377,8 +1378,18 @@ void FirmwareUpdate::install_firmware(const char *url)
                 https_client.abort_async();
             }
 
+            progress = (event->data_chunk_offset + event->data_chunk_len) * 100 / event->data_complete_len;
+
             state.get("install_state")->updateEnum(result);
-            state.get("install_progress")->updateUint(event->data_chunk_offset * 100 / event->data_complete_len);
+            state.get("install_progress")->updateUint(progress);
+
+#if MODULE_WS_AVAILABLE()
+            if (progress == 100) {
+                // manually push state update to ensure web interface shows 100% progress
+                ws.pushRawStateUpdate(state.to_string(), "firmware_update/state");
+            }
+#endif
+
             break;
 
         case AsyncHTTPSClientEventType::Aborted:
