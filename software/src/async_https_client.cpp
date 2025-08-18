@@ -330,7 +330,6 @@ int AsyncHTTPSClient::start_chunked_request(const char *url, int cert_id, esp_ht
     http_config.url = url;
     http_config.user_data = this;
     http_config.is_async = false;
-    http_config.timeout_ms = 50;
     http_config.buffer_size = 1024;
     http_config.buffer_size_tx = 1024;
 
@@ -387,6 +386,7 @@ int AsyncHTTPSClient::start_chunked_request(const char *url, int cert_id, esp_ht
     esp_err_t err = esp_http_client_open(http_client, -1);
     if (err != ESP_OK) {
         clear();
+        logger.printfln("Failed to open HTTP client for chunked request: %s", esp_err_to_name(err));
         return -1;
     }
 
