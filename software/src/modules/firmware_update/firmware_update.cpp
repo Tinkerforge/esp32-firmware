@@ -591,6 +591,35 @@ static void boot_other_partition(const char *other_partition_label, String &errm
     errmsg = String("Other partition not found: ") + other_partition_label;
 }
 
+#if MODULE_WS_AVAILABLE()
+
+static void report_flash_firmware_progress(int32_t progress /* [0..100] */)
+{
+    char json_buf[64];
+    TFJsonSerializer json{json_buf, sizeof(json_buf)};
+
+    json.addObject();
+    json.addMemberString("topic", "flash_firmware_state");
+    json.addMemberObject("payload");
+    json.addMemberNumber("progress", progress);
+    json.endObject();
+    json.endObject();
+    json.end();
+
+    ws.web_sockets.sendToAllOwnedNoFreeBlocking_HTTPThread(json_buf, json.buf_strlen);
+
+    // the web server is in the middle of receiving the firmware file
+    // and does not handle other requests right now. this also means
+    // that web socket pongs are not received. fake the receiving of
+    // pongs while the firmware file is being received to avoid the
+    // web socket keep alive mechanism from assuming all web socket
+    // connections have died and closing the very connection that is
+    // used to send the flash firmware progress information
+    ws.web_sockets.fakeReceivedPongAll();
+}
+
+#endif
+
 void FirmwareUpdate::register_urls()
 {
     if (strlen(OPTIONS_FIRMWARE_UPDATE_UPDATE_URL()) > 0) {
@@ -812,12 +841,18 @@ void FirmwareUpdate::register_urls()
             }
 
             logger.printfln("Installing firmware from file upload");
+
+#if MODULE_WS_AVAILABLE()
+            report_flash_firmware_progress(0);
+            flash_firmware_last_progress = 0;
+#endif
         }
 
         char json_buf[256] = "";
+        size_t complete_len = request.contentLength();
         TFJsonSerializer json{json_buf, sizeof(json_buf)};
 
-        InstallState result = handle_firmware_chunk(offset, data, data_len, request.contentLength(), remaining == 0, &json);
+        InstallState result = handle_firmware_chunk(offset, data, data_len, complete_len, remaining == 0, &json);
 
         if (result != InstallState::InProgress) {
             if (json_buf[0] == '\0') {
@@ -829,6 +864,14 @@ void FirmwareUpdate::register_urls()
             return false;
         }
 
+#if MODULE_WS_AVAILABLE()
+        int32_t progress = (offset + data_len) * 100 / complete_len;
+
+        if (progress != flash_firmware_last_progress) {
+            report_flash_firmware_progress(progress);
+            flash_firmware_last_progress = progress;
+        }
+#endif
         return true;
     },
     [this](WebServerRequest request, int error_code) {

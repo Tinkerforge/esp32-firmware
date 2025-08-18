@@ -391,6 +391,14 @@ void WebSockets::receivedPong(int fd)
     }
 }
 
+void WebSockets::fakeReceivedPongAll()
+{
+    std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
+    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+        keep_alive_last_pong[i] = now_us();
+    }
+}
+
 bool WebSocketsClient::sendOwnedNoFreeBlocking_HTTPThread(char *payload, size_t payload_len, httpd_ws_type_t ws_type)
 {
     ws_work_item wi{{this->fd, -1, -1, -1, -1}, payload, payload_len, ws_type};
@@ -485,6 +493,30 @@ bool WebSockets::sendToAllOwned(char *payload, size_t payload_len, httpd_ws_type
     work_queue.push_back({{}, payload, payload_len, ws_type});
     memcpy(work_queue.back().fds, fds, sizeof(fds));
     return true;
+}
+
+bool WebSockets::sendToAllOwnedNoFreeBlocking_HTTPThread(char *payload, size_t payload_len, httpd_ws_type_t ws_type)
+{
+    if (!this->haveActiveClient()) {
+        return true;
+    }
+
+    // Copy over to not hold both mutexes at the same time.
+    int fds[MAX_WEB_SOCKET_CLIENTS];
+    {
+        std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
+        memcpy(fds, keep_alive_fds, sizeof(fds));
+    }
+
+    for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
+        if (keep_alive_fds[i] != -1) {
+            keep_alive_last_pong[i] = now_us();
+        }
+    }
+
+    ws_work_item wi{{}, payload, payload_len, ws_type};
+    memcpy(wi.fds, fds, sizeof(fds));
+    return send_ws_work_item(this, wi);
 }
 
 bool WebSockets::sendToAll(const char *payload, size_t payload_len, httpd_ws_type_t ws_type)

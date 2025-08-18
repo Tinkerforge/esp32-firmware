@@ -27,6 +27,7 @@
 #include <sodium.h>
 
 #include "module.h"
+#include "module_available.h"
 #include "config.h"
 #include "tools/semantic_version.h"
 #include "async_https_client.h"
@@ -92,6 +93,9 @@ private:
 
     bool check_firmware_in_progress = false;
     bool flash_firmware_in_progress = false;
+#if MODULE_WS_AVAILABLE()
+    int32_t flash_firmware_last_progress = -1;
+#endif
 
     struct firmware_info_t {
         uint8_t magic[BLOCK_READER_MAGIC_LENGTH] = {};
@@ -129,3 +133,5 @@ private:
     bool check_for_update_in_progress = false;
     bool install_firmware_in_progress = false;
 };
+
+#include "module_available_end.h"

@@ -66,6 +66,7 @@ public:
     bool sendToClientOwned(char *payload, size_t payload_len, int sock, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
     bool sendToAll(const char *payload, size_t payload_len, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
     bool sendToAllOwned(char *payload, size_t payload_len, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
+    bool sendToAllOwnedNoFreeBlocking_HTTPThread(char *payload, size_t payload_len, httpd_ws_type_t ws_type = HTTPD_WS_TYPE_TEXT);
 
     bool haveFreeSlot();
     bool haveActiveClient();
@@ -73,6 +74,7 @@ public:
     void checkActiveClients();
     void closeLRUClient();
     void receivedPong(int fd);
+    void fakeReceivedPongAll();
 
     void cleanUpQueue();
     bool queueFull();

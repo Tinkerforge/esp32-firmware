@@ -40,6 +40,7 @@ interface InputFileProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>,
     contentType?: string
     timeout_ms?: number
     accept?: string
+    progress_override?: number // [0..1]
 }
 
 export function InputFile(props: InputFileProps) {
@@ -84,7 +85,7 @@ export function InputFile(props: InputFileProps) {
             </div>
         </div>
         <div hidden={!uploading}>
-            <Progress class="mb-1" progress={progress} />
+            <Progress class="mb-1" progress={util.hasValue(props.progress_override) ? props.progress_override : progress} />
             <div class="mb-0">{props.uploading ? props.uploading : __("component.input_file.uploading")}</div>
         </div>
         </>
