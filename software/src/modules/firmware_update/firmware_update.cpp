@@ -817,7 +817,7 @@ void FirmwareUpdate::register_urls()
         char json_buf[256] = "";
         TFJsonSerializer json{json_buf, sizeof(json_buf)};
 
-        InstallState result = handle_firmware_chunk(offset, data, data_len, request.contentLength(), remaining == 0, &json_response);
+        InstallState result = handle_firmware_chunk(offset, data, data_len, request.contentLength(), remaining == 0, &json);
 
         if (result != InstallState::InProgress) {
             if (json_buf[0] == '\0') {
