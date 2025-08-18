@@ -731,7 +731,7 @@ void FirmwareUpdate::register_urls()
 
         return request.send(200, "text/plain", "Check OK");
     },
-    [this](WebServerRequest request, String filename, size_t offset, uint8_t *data, size_t len, size_t remaining) {
+    [this](WebServerRequest request, String filename, size_t offset, uint8_t *data, size_t data_len, size_t remaining) {
         if (is_vehicle_blocking_update()) {
             char json_buf[64] = "";
             TFJsonSerializer json{json_buf, sizeof(json_buf)};
@@ -765,7 +765,7 @@ void FirmwareUpdate::register_urls()
             firmware_info.reset();
         }
 
-        if (offset + len > FIRMWARE_INFO_LENGTH) {
+        if (offset + data_len > FIRMWARE_INFO_LENGTH) {
             char json_buf[64] = "";
             TFJsonSerializer json{json_buf, sizeof(json_buf)};
 
@@ -775,7 +775,7 @@ void FirmwareUpdate::register_urls()
             return false;
         }
 
-        firmware_info.handle_chunk(FIRMWARE_INFO_OFFSET + offset, data, len);
+        firmware_info.handle_chunk(FIRMWARE_INFO_OFFSET + offset, data, data_len);
         return true;
     },
     [this](WebServerRequest request, int error_code) {
@@ -789,7 +789,7 @@ void FirmwareUpdate::register_urls()
         trigger_reboot("firmware update", 1_s);
         return request.send(200, "text/plain", "Update OK");
     },
-    [this](WebServerRequest request, String filename, size_t offset, uint8_t *data, size_t len, size_t remaining) {
+    [this](WebServerRequest request, String filename, size_t offset, uint8_t *data, size_t data_len, size_t remaining) {
         if (offset == 0) {
             bool ready = false;
 
@@ -817,7 +817,7 @@ void FirmwareUpdate::register_urls()
         char json_buf[256] = "";
         TFJsonSerializer json{json_buf, sizeof(json_buf)};
 
-        InstallState result = handle_firmware_chunk(offset, data, len, request.contentLength(), remaining == 0, &json);
+        InstallState result = handle_firmware_chunk(offset, data, data_len, request.contentLength(), remaining == 0, &json_response);
 
         if (result != InstallState::InProgress) {
             if (json_buf[0] == '\0') {

@@ -193,7 +193,7 @@ void FrontPanel::register_urls()
 
         return request.send(200, "text/plain", "File upload OK\n");
     },
-    [this](WebServerRequest request, String filename, size_t offset, uint8_t *data, size_t len, size_t remaining) {
+    [this](WebServerRequest request, String filename, size_t offset, uint8_t *data, size_t data_len, size_t remaining) {
         if (this->flash_update_in_progress) {
             logger.printfln("Flash update already in progress");
 
@@ -208,7 +208,7 @@ void FrontPanel::register_urls()
                 return false;
             }
 
-            size_t upload_size = len + remaining;
+            size_t upload_size = data_len + remaining;
 
             uint8_t *file_buf = static_cast<decltype(file_buf)>(malloc_psram(upload_size));
             if (!file_buf) {
@@ -230,7 +230,7 @@ void FrontPanel::register_urls()
         // Casting the const away is safe in this case.
         uint8_t *fbuf = const_cast<uint8_t *>(this->flash_writer->xzbuf.in);
 
-        memcpy(fbuf + offset, data, len);
+        memcpy(fbuf + offset, data, data_len);
         return true;
     },
     [this](WebServerRequest request, int error_code) {
