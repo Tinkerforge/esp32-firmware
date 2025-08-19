@@ -503,15 +503,8 @@ bool WebSockets::sendToAllOwnedNoFreeBlocking_HTTPThread(char *payload, size_t p
         return true;
     }
 
-    // Copy over to not hold both mutexes at the same time.
-    int fds[MAX_WEB_SOCKET_CLIENTS];
-    {
-        std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
-        memcpy(fds, keep_alive_fds, sizeof(fds));
-    }
-
-    ws_work_item wi{{}, payload, payload_len, ws_type};
-    memcpy(wi.fds, fds, sizeof(fds));
+    std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
+    ws_work_item wi{keep_alive_fds, payload, payload_len, ws_type};
     return send_ws_work_item(this, wi);
 }
 
