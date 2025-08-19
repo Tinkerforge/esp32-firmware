@@ -53,8 +53,8 @@ void Ship::setup()
 void Ship::disable_ship()
 {
     eebus.trace_fmtln("disable_ship start");
-    for (ShipConnection &conn : ship_connections) {
-        conn.schedule_close(0_ms);
+    for (auto &ship_connection : eebus.ship.ship_connections) {
+        ship_connection->schedule_close(0_ms);
     }
     mdns_service_remove("_ship", "_tcp");
     // Delay closing the socket and httpd server so the connections can all be closed
@@ -200,7 +200,8 @@ void Ship::setup_wss()
                           client_ip,
                           ntohs(addr.sin6_port),
                           peer_ski.c_str());
-        ship_connections.push_back(ShipConnection{ws_client, ShipConnection::Role::Server, peer_ski});
+
+        ship_connections.push_back(std::move(make_unique_psram<ShipConnection>(ws_client, ShipConnection::Role::Server, peer_ski)));
         logger.printfln("New SHIP Client connected");
 
         return true;
@@ -211,8 +212,8 @@ void Ship::setup_wss()
             return;
         }
         for (auto &ship_connection : ship_connections) {
-            if (ship_connection.ws_client.fd == fd) {
-                ship_connection.frame_received(ws_pkt);
+            if (ship_connection->ws_client.fd == fd) {
+                ship_connection->frame_received(ws_pkt);
                 return;
             }
         }
@@ -374,7 +375,18 @@ void Ship::print_skis(StringBuilder *sb)
 
 void Ship::remove(const ShipConnection &ship_connection)
 {
-    ship_connections.erase(std::remove(ship_connections.begin(), ship_connections.end(), ship_connection), ship_connections.end());
+    // ship_connections is a vector of unique_ptr, so comparing with a reference won't work directly.
+    ship_connections.erase(
+        std::remove_if(
+            ship_connections.begin(),
+            ship_connections.end(),
+            [&ship_connection](const unique_ptr_any<ShipConnection>& ptr) {
+                return ptr.get() == &ship_connection;
+            }
+        ),
+        ship_connections.end()
+    );
+    // The unique_ptr will be destroyed here and the memory will be freed.
 }
 
 void ShipNode::as_json(StringBuilder *sb)
