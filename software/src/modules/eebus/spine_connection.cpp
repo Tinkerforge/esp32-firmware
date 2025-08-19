@@ -26,6 +26,8 @@
 
 bool SpineConnection::process_datagram(JsonVariant datagram)
 {
+    eebus.trace_fmtln("SPINE: Processing datagram:");
+    eebus.trace_jsonln(datagram);
     // TODO: Handle json formatting weirdness sent by e.g. spine-go
     last_received_time = millis();
     compatiblity_mode = true;
