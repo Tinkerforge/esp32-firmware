@@ -42,6 +42,10 @@ public:
         //response_doc = &ship_connection->outgoing_json_doc;
     };
 
+    // Disallow copying of SpineConnection
+    SpineConnection(const SpineConnection &other) = delete;
+    const SpineConnection &operator=(const SpineConnection &other) = delete;
+
     /**
     * Process a received SPINE datagram and passes the data to the EEBUS Usecase.
     * @param datagram JsonVariant containing the datagram process
