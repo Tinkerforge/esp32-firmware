@@ -1183,7 +1183,7 @@ void ShipConnection::to_json_access_methods_type()
     JsonArray json_am = outgoing_json_doc.createNestedArray("accessMethods");
 
     JsonObject access_methods = json_am.createNestedObject();
-    access_methods["id"] = "Tinkerforge-WARP3-12345"; // TODO
+    access_methods["id"] = eebus.get_eebus_name();
 
     json_am.createNestedObject().createNestedArray("dnsSd_mDns");
 
