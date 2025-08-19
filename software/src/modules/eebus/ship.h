@@ -82,7 +82,7 @@ public:
 
     std::vector<ShipNode> mdns_results;
     ShipDiscoveryState discovery_state;
-    std::vector<ShipConnection> ship_connections;
+    std::vector<unique_ptr_any<ShipConnection>> ship_connections;
     bool is_enabled;
 
 private:
