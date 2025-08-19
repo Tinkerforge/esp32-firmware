@@ -27,7 +27,9 @@ private:
     bool generate();
 
 public:
-    Cert() {};
+    Cert()
+    {
+    };
 
     bool read();
     void log();
