@@ -71,6 +71,11 @@ public:
     ShipDiscoveryState discover_ship_peers();
     void print_skis(StringBuilder *sb);
 
+    /**
+     * Attempts to connect to all unconnected peers that are marked as trusted.
+     */
+    void connect_trusted_peers();
+
     //ConfigRoot config;
     //ConfigRoot state;
 
