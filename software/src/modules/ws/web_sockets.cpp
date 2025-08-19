@@ -510,7 +510,8 @@ bool WebSockets::sendToAllOwnedNoFreeBlocking_HTTPThread(char *payload, size_t p
     }
 
     std::lock_guard<std::recursive_mutex> lock{keep_alive_mutex};
-    ws_work_item wi{keep_alive_fds, payload, payload_len, ws_type};
+    ws_work_item wi{{}, payload, payload_len, ws_type};
+    memcpy(wi.fds, keep_alive_fds, sizeof(keep_alive_fds));
     return send_ws_work_item(this, wi);
 }
 
