@@ -924,17 +924,45 @@ void ShipConnection::state_sme_access_method_request()
     }
 }
 
+bool ShipConnection::update_config_state(NodeState state)
+{
+    for (int i = 0; i < eebus.config.get("peers")->count(); i++) {
+        if (eebus.config.get("peers")->get(i)->get("ski")->asString() == peer_ski) {
+            eebus.config.get("peers")->get(i)->get("state")->updateEnum(state);
+            return true;
+        }
+    }
+    return false;
+}
+
 void ShipConnection::state_done()
 {
     log_message("state_done", message_incoming.get());
     // If we are done we can still get the PIN Request (which we currently don't support)
     // and the SME Access Method Request. In that case we jump to the corresponding state,
     // which will then come back here.
+
+    // Update frontend and config to inform it of the new connection state. Add it if its unknown
     if (!connection_established) {
-        for (int i = 0; i < eebus.config.get("peers")->count(); i++) {
-            if (eebus.config.get("peers")->get(i)->get("ski")->asString() == peer_ski) {
-                eebus.config.get("peers")->get(i)->get("state")->updateEnum(NodeState::Connected);
-            }
+
+        if (!update_config_state(NodeState::Connected)) {
+
+            task_scheduler.scheduleOnce(
+                [this]() {
+                    eebus.ship.discover_ship_peers();
+                    eebus.update_peers_config();
+                    task_scheduler.scheduleOnce(
+                        [this]() {
+                            if (!update_config_state(NodeState::Connected)) {
+                                auto peer = eebus.config.get("peers")->add();
+                                peer->get("ski")->updateString(peer_ski); // Peer SKI might be unknown at this point
+                                peer->get("state")->updateEnum(NodeState::Connected);
+                                peer->get("model_model")->updateString("Unknown Device");
+                            }
+                        },
+                        100_ms);
+                },
+                0_ms);
         }
     }
     connection_established = true;
@@ -970,7 +998,7 @@ void ShipConnection::state_done()
             SHIP_TYPES::ShipMessageAccessMethods access_methods = SHIP_TYPES::ShipMessageAccessMethods();
             access_methods.id = eebus.get_eebus_name();
             String json = access_methods.type_to_json();
-            // TOD: optimize this so it doesnt need to copy the string
+            // TODO: optimize this so it doesnt need to copy the string
             send_string(json.c_str(), json.length());
             break;
         }

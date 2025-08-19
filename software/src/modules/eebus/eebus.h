@@ -87,7 +87,7 @@ public:
     void trace_jsonln(JsonVariantConst data);
     void trace_fmtln(const char *fmt, ...);
 
-private:
+
     /**
      * Update the peers configuration based on the current mDNS results, clean up invalid peers and add trusted peers to the persistent configuration.
      */
