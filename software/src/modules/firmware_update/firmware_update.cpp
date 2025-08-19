@@ -1392,7 +1392,7 @@ void FirmwareUpdate::install_firmware(const char *url)
             // use default to prevent warnings since we dont use a body, cookies or headers here
             default:
                 logger.printfln("Uncovered error, this should never happen!");
-                state.get("check_state")->updateEnum(CheckState::InternalError);
+                state.get("install_state")->updateEnum(InstallState::InternalError);
                 break;
             }
 
