@@ -30,28 +30,30 @@
 #define SHIP_TYPES_MAX_JSON_SIZE 8192 // TODO: What is a sane value here?
 
 
-namespace SHIP_TYPES {
+namespace SHIP_TYPES
+{
+    // SHIP Datatypes as defined in SHIP .xsd
 
-
-// SHIP Datatypes as defined in SHIP .xsd
-
-    enum DeserializationResult {
+    enum DeserializationResult
+    {
         SUCCESS,
         ERROR,
         NOT_IMPLEMENTED
     };
 
-    void DeserializeOptionalField(JsonObject *data, const char *field_name, bool *field_valid, String *field_value);
-    
-    template <typename T>
-    void DeserializeOptionalField(JsonObject *data, const char *field_name, bool *field_valid, std::vector<T> *field_value);
+    void DeserializeOptionalField(JsonObject* data, const char* field_name, bool* field_valid, String* field_value);
 
-    struct ShipMessageDataType {
+    template <typename T>
+    void DeserializeOptionalField(JsonObject* data, const char* field_name, bool* field_valid,
+                                  std::vector<T>* field_value);
+
+    struct ShipMessageDataType
+    {
         // SHIP 13.4.5.2.1
         // Mandatory
         bool valid = false;
         String protocol_id{};
-        JsonVariant payload{}; 
+        JsonVariant payload{};
 
         // Optional
         // This is used by Manufacturers to add their own data to the message
@@ -64,21 +66,22 @@ namespace SHIP_TYPES {
         String extension_string{};
 
 
-        DeserializationResult json_to_type(uint8_t *data, size_t length, bool compatiblity_mode, JsonDocument &doc); // Needs a jsondoc otherwise the payload cant be stored
+        DeserializationResult json_to_type(uint8_t* data, size_t length, bool compatiblity_mode, JsonDocument& doc);
+        // Needs a jsondoc otherwise the payload cant be stored
         String type_to_json();
-
     };
 
-    struct ShipMessageAccessMethodsRequest {
+    struct ShipMessageAccessMethodsRequest
+    {
         String request; // There is no datatype defined for this yet
 
-        DeserializationResult json_to_type(uint8_t *data, size_t length);
+        DeserializationResult json_to_type(uint8_t* data, size_t length);
         String type_to_json();
-
     };
 
-    struct ShipMessageAccessMethods {
-        String id; 
+    struct ShipMessageAccessMethods
+    {
+        String id;
 
         std::vector<String> dns_sd_mdns;
         bool dns_sd_mdns_valid = false;
@@ -88,9 +91,7 @@ namespace SHIP_TYPES {
         bool dns_uri_valid = false;
 
 
-        DeserializationResult json_to_type(uint8_t *data, size_t length);
+        DeserializationResult json_to_type(uint8_t* data, size_t length);
         String type_to_json();
-
     };
-
-    } // namespace SHIP_TYPES
+} // namespace SHIP_TYPES

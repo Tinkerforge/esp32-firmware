@@ -10,15 +10,16 @@
 
 namespace ArduinoJson
 {
-inline bool spine_go_compatibility_mode = false;
+    inline bool spine_go_compatibility_mode = false;
 
-// If true, the JSON will be formatted and parsed in a way that it is compatible with SPINE-GO
-template <typename T> struct Converter<std::vector<T>>
-{
-    static void toJson(const std::vector<T> &src, JsonVariant dst);
-    static std::vector<T> fromJson(JsonVariantConst src);
-    static bool checkJson(JsonVariantConst src);
-};
+    // If true, the JSON will be formatted and parsed in a way that it is compatible with SPINE-GO
+    template <typename T>
+    struct Converter<std::vector<T>>
+    {
+        static void toJson(const std::vector<T>& src, JsonVariant dst);
+        static std::vector<T> fromJson(JsonVariantConst src);
+        static bool checkJson(JsonVariantConst src);
+    };
 } // namespace ArduinoJson
 
 
@@ -202,13 +203,13 @@ enum class DirectControlActivityStateEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DirectControlActivityStateEnumType &src, JsonVariant &dst);
+bool convertToJson(const DirectControlActivityStateEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a DirectControlActivityStateEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination DirectControlActivityStateEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, DirectControlActivityStateEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, DirectControlActivityStateEnumType& dst);
 
 /**
 * Datatype RecurringIntervalEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -230,13 +231,13 @@ enum class RecurringIntervalEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const RecurringIntervalEnumType &src, JsonVariant &dst);
+bool convertToJson(const RecurringIntervalEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a RecurringIntervalEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination RecurringIntervalEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, RecurringIntervalEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, RecurringIntervalEnumType& dst);
 
 /**
 * Datatype MonthType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -263,13 +264,13 @@ enum class MonthType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MonthType &src, JsonVariant &dst);
+bool convertToJson(const MonthType& src, JsonVariant& dst);
 /**
  * Convert a string to a MonthType 
  * @param src The JSON variant containing the string.
  * @param dst The destination MonthType.
  */
-void convertFromJson(const JsonVariantConst &src, MonthType &dst);
+void convertFromJson(const JsonVariantConst& src, MonthType& dst);
 
 /**
 * Datatype DayOfWeekType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -291,13 +292,13 @@ enum class DayOfWeekType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DayOfWeekType &src, JsonVariant &dst);
+bool convertToJson(const DayOfWeekType& src, JsonVariant& dst);
 /**
  * Convert a string to a DayOfWeekType 
  * @param src The JSON variant containing the string.
  * @param dst The destination DayOfWeekType.
  */
-void convertFromJson(const JsonVariantConst &src, DayOfWeekType &dst);
+void convertFromJson(const JsonVariantConst& src, DayOfWeekType& dst);
 
 /**
 * Datatype OccurrenceEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -317,13 +318,13 @@ enum class OccurrenceEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OccurrenceEnumType &src, JsonVariant &dst);
+bool convertToJson(const OccurrenceEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a OccurrenceEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination OccurrenceEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, OccurrenceEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, OccurrenceEnumType& dst);
 
 /**
 * Datatype CommodityTypeEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -349,13 +350,13 @@ enum class CommodityTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const CommodityTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const CommodityTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a CommodityTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination CommodityTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, CommodityTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, CommodityTypeEnumType& dst);
 
 /**
 * Datatype EnergyDirectionEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -372,13 +373,13 @@ enum class EnergyDirectionEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const EnergyDirectionEnumType &src, JsonVariant &dst);
+bool convertToJson(const EnergyDirectionEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a EnergyDirectionEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination EnergyDirectionEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, EnergyDirectionEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, EnergyDirectionEnumType& dst);
 
 /**
 * Datatype EnergyModeEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -397,13 +398,13 @@ enum class EnergyModeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const EnergyModeEnumType &src, JsonVariant &dst);
+bool convertToJson(const EnergyModeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a EnergyModeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination EnergyModeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, EnergyModeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, EnergyModeEnumType& dst);
 
 /**
 * Datatype UnitOfMeasurementEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -512,13 +513,13 @@ enum class UnitOfMeasurementEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const UnitOfMeasurementEnumType &src, JsonVariant &dst);
+bool convertToJson(const UnitOfMeasurementEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a UnitOfMeasurementEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination UnitOfMeasurementEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, UnitOfMeasurementEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, UnitOfMeasurementEnumType& dst);
 
 /**
 * Datatype CurrencyEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -711,13 +712,13 @@ enum class CurrencyEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const CurrencyEnumType &src, JsonVariant &dst);
+bool convertToJson(const CurrencyEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a CurrencyEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination CurrencyEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, CurrencyEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, CurrencyEnumType& dst);
 
 /**
 * Datatype ScopeTypeEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -818,13 +819,13 @@ enum class ScopeTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ScopeTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const ScopeTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a ScopeTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ScopeTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, ScopeTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, ScopeTypeEnumType& dst);
 
 /**
 * Datatype RoleType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -842,13 +843,13 @@ enum class RoleType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const RoleType &src, JsonVariant &dst);
+bool convertToJson(const RoleType& src, JsonVariant& dst);
 /**
  * Convert a string to a RoleType 
  * @param src The JSON variant containing the string.
  * @param dst The destination RoleType.
  */
-void convertFromJson(const JsonVariantConst &src, RoleType &dst);
+void convertFromJson(const JsonVariantConst& src, RoleType& dst);
 
 /**
 * Datatype DeviceTypeEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -877,13 +878,13 @@ enum class DeviceTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const DeviceTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a DeviceTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination DeviceTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceTypeEnumType& dst);
 
 /**
 * Datatype EntityTypeEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -946,13 +947,13 @@ enum class EntityTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const EntityTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const EntityTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a EntityTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination EntityTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, EntityTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, EntityTypeEnumType& dst);
 
 /**
 * Datatype FeatureTypeEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -999,13 +1000,13 @@ enum class FeatureTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const FeatureTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const FeatureTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a FeatureTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination FeatureTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, FeatureTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, FeatureTypeEnumType& dst);
 
 /**
 * Datatype FeatureDirectControlSpecificUsageEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -1022,13 +1023,13 @@ enum class FeatureDirectControlSpecificUsageEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const FeatureDirectControlSpecificUsageEnumType &src, JsonVariant &dst);
+bool convertToJson(const FeatureDirectControlSpecificUsageEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a FeatureDirectControlSpecificUsageEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination FeatureDirectControlSpecificUsageEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, FeatureDirectControlSpecificUsageEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, FeatureDirectControlSpecificUsageEnumType& dst);
 
 /**
 * Datatype FeatureHvacSpecificUsageEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -1045,13 +1046,13 @@ enum class FeatureHvacSpecificUsageEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const FeatureHvacSpecificUsageEnumType &src, JsonVariant &dst);
+bool convertToJson(const FeatureHvacSpecificUsageEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a FeatureHvacSpecificUsageEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination FeatureHvacSpecificUsageEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, FeatureHvacSpecificUsageEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, FeatureHvacSpecificUsageEnumType& dst);
 
 /**
 * Datatype FeatureMeasurementSpecificUsageEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -1072,13 +1073,13 @@ enum class FeatureMeasurementSpecificUsageEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const FeatureMeasurementSpecificUsageEnumType &src, JsonVariant &dst);
+bool convertToJson(const FeatureMeasurementSpecificUsageEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a FeatureMeasurementSpecificUsageEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination FeatureMeasurementSpecificUsageEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, FeatureMeasurementSpecificUsageEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, FeatureMeasurementSpecificUsageEnumType& dst);
 
 /**
 * Datatype FeatureSetpointSpecificUsageEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -1099,13 +1100,13 @@ enum class FeatureSetpointSpecificUsageEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const FeatureSetpointSpecificUsageEnumType &src, JsonVariant &dst);
+bool convertToJson(const FeatureSetpointSpecificUsageEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a FeatureSetpointSpecificUsageEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination FeatureSetpointSpecificUsageEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, FeatureSetpointSpecificUsageEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, FeatureSetpointSpecificUsageEnumType& dst);
 
 /**
 * Datatype FeatureSmartEnergyManagementPsSpecificUsageEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -1124,13 +1125,13 @@ enum class FeatureSmartEnergyManagementPsSpecificUsageEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const FeatureSmartEnergyManagementPsSpecificUsageEnumType &src, JsonVariant &dst);
+bool convertToJson(const FeatureSmartEnergyManagementPsSpecificUsageEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a FeatureSmartEnergyManagementPsSpecificUsageEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination FeatureSmartEnergyManagementPsSpecificUsageEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, FeatureSmartEnergyManagementPsSpecificUsageEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, FeatureSmartEnergyManagementPsSpecificUsageEnumType& dst);
 
 /**
 * Datatype FunctionEnumType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -1287,13 +1288,13 @@ enum class FunctionEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const FunctionEnumType &src, JsonVariant &dst);
+bool convertToJson(const FunctionEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a FunctionEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination FunctionEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, FunctionEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, FunctionEnumType& dst);
 
 /**
 * Datatype PowerTimeSlotValueTypeEnumType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -1320,13 +1321,13 @@ enum class PowerTimeSlotValueTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerTimeSlotValueTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const PowerTimeSlotValueTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a PowerTimeSlotValueTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination PowerTimeSlotValueTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotValueTypeEnumType& dst);
 
 /**
 * Datatype PowerSequenceScopeEnumType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -1344,13 +1345,13 @@ enum class PowerSequenceScopeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceScopeEnumType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceScopeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a PowerSequenceScopeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination PowerSequenceScopeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceScopeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceScopeEnumType& dst);
 
 /**
 * Datatype PowerSequenceStateEnumType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -1373,13 +1374,13 @@ enum class PowerSequenceStateEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceStateEnumType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceStateEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a PowerSequenceStateEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination PowerSequenceStateEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceStateEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceStateEnumType& dst);
 
 /**
 * Datatype MeasurementTypeEnumType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -1436,13 +1437,13 @@ enum class MeasurementTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a MeasurementTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination MeasurementTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementTypeEnumType& dst);
 
 /**
 * Datatype MeasurementValueTypeEnumType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -1462,13 +1463,13 @@ enum class MeasurementValueTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementValueTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementValueTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a MeasurementValueTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination MeasurementValueTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementValueTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementValueTypeEnumType& dst);
 
 /**
 * Datatype MeasurementValueSourceEnumType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -1486,13 +1487,13 @@ enum class MeasurementValueSourceEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementValueSourceEnumType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementValueSourceEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a MeasurementValueSourceEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination MeasurementValueSourceEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementValueSourceEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementValueSourceEnumType& dst);
 
 /**
 * Datatype MeasurementValueTendencyEnumType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -1510,13 +1511,13 @@ enum class MeasurementValueTendencyEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementValueTendencyEnumType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementValueTendencyEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a MeasurementValueTendencyEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination MeasurementValueTendencyEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementValueTendencyEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementValueTendencyEnumType& dst);
 
 /**
 * Datatype MeasurementValueStateEnumType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -1534,13 +1535,13 @@ enum class MeasurementValueStateEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementValueStateEnumType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementValueStateEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a MeasurementValueStateEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination MeasurementValueStateEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementValueStateEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementValueStateEnumType& dst);
 
 /**
 * Datatype ThresholdTypeEnumType as defined in EEBus_SPINE_TS_Threshold.xsd
@@ -1565,13 +1566,13 @@ enum class ThresholdTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ThresholdTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const ThresholdTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a ThresholdTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ThresholdTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, ThresholdTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdTypeEnumType& dst);
 
 /**
 * Datatype BillTypeEnumType as defined in EEBus_SPINE_TS_Bill.xsd
@@ -1587,13 +1588,13 @@ enum class BillTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BillTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const BillTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a BillTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination BillTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, BillTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, BillTypeEnumType& dst);
 
 /**
 * Datatype BillPositionTypeEnumType as defined in EEBus_SPINE_TS_Bill.xsd
@@ -1610,13 +1611,13 @@ enum class BillPositionTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BillPositionTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const BillPositionTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a BillPositionTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination BillPositionTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, BillPositionTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, BillPositionTypeEnumType& dst);
 
 /**
 * Datatype BillCostTypeEnumType as defined in EEBus_SPINE_TS_Bill.xsd
@@ -1636,13 +1637,13 @@ enum class BillCostTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BillCostTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const BillCostTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a BillCostTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination BillCostTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, BillCostTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, BillCostTypeEnumType& dst);
 
 /**
 * Datatype IdentificationTypeEnumType as defined in EEBus_SPINE_TS_Identification.xsd
@@ -1660,13 +1661,13 @@ enum class IdentificationTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IdentificationTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const IdentificationTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a IdentificationTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination IdentificationTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, IdentificationTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, IdentificationTypeEnumType& dst);
 
 /**
 * Datatype SetpointTypeEnumType as defined in EEBus_SPINE_TS_Setpoint.xsd
@@ -1683,13 +1684,13 @@ enum class SetpointTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SetpointTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const SetpointTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a SetpointTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination SetpointTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, SetpointTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, SetpointTypeEnumType& dst);
 
 /**
 * Datatype TimeSlotTimeModeEnumType as defined in EEBus_SPINE_TS_TimeTable.xsd
@@ -1707,13 +1708,13 @@ enum class TimeSlotTimeModeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeSlotTimeModeEnumType &src, JsonVariant &dst);
+bool convertToJson(const TimeSlotTimeModeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a TimeSlotTimeModeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination TimeSlotTimeModeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, TimeSlotTimeModeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeSlotTimeModeEnumType& dst);
 
 /**
 * Datatype SensingStateEnumType as defined in EEBus_SPINE_TS_Sensing.xsd
@@ -1764,13 +1765,13 @@ enum class SensingStateEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SensingStateEnumType &src, JsonVariant &dst);
+bool convertToJson(const SensingStateEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a SensingStateEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination SensingStateEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, SensingStateEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, SensingStateEnumType& dst);
 
 /**
 * Datatype SensingTypeEnumType as defined in EEBus_SPINE_TS_Sensing.xsd
@@ -1801,13 +1802,13 @@ enum class SensingTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SensingTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const SensingTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a SensingTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination SensingTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, SensingTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, SensingTypeEnumType& dst);
 
 /**
 * Datatype ActuatorSwitchFctEnumType as defined in EEBus_SPINE_TS_ActuatorSwitch.xsd
@@ -1825,13 +1826,13 @@ enum class ActuatorSwitchFctEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ActuatorSwitchFctEnumType &src, JsonVariant &dst);
+bool convertToJson(const ActuatorSwitchFctEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a ActuatorSwitchFctEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ActuatorSwitchFctEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, ActuatorSwitchFctEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, ActuatorSwitchFctEnumType& dst);
 
 /**
 * Datatype NetworkManagementFeatureSetType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -1850,13 +1851,13 @@ enum class NetworkManagementFeatureSetType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementFeatureSetType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementFeatureSetType& src, JsonVariant& dst);
 /**
  * Convert a string to a NetworkManagementFeatureSetType 
  * @param src The JSON variant containing the string.
  * @param dst The destination NetworkManagementFeatureSetType.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureSetType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementFeatureSetType& dst);
 
 /**
 * Datatype NetworkManagementProcessStateStateType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -1874,13 +1875,13 @@ enum class NetworkManagementProcessStateStateType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementProcessStateStateType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementProcessStateStateType& src, JsonVariant& dst);
 /**
  * Convert a string to a NetworkManagementProcessStateStateType 
  * @param src The JSON variant containing the string.
  * @param dst The destination NetworkManagementProcessStateStateType.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementProcessStateStateType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementProcessStateStateType& dst);
 
 /**
 * Datatype NetworkManagementStateChangeType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -1898,13 +1899,13 @@ enum class NetworkManagementStateChangeType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementStateChangeType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementStateChangeType& src, JsonVariant& dst);
 /**
  * Convert a string to a NetworkManagementStateChangeType 
  * @param src The JSON variant containing the string.
  * @param dst The destination NetworkManagementStateChangeType.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementStateChangeType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementStateChangeType& dst);
 
 /**
 * Datatype SupplyConditionEventTypeEnumType as defined in EEBus_SPINE_TS_SupplyCondition.xsd
@@ -1925,13 +1926,13 @@ enum class SupplyConditionEventTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SupplyConditionEventTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const SupplyConditionEventTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a SupplyConditionEventTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination SupplyConditionEventTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, SupplyConditionEventTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionEventTypeEnumType& dst);
 
 /**
 * Datatype SupplyConditionOriginatorEnumType as defined in EEBus_SPINE_TS_SupplyCondition.xsd
@@ -1951,13 +1952,13 @@ enum class SupplyConditionOriginatorEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SupplyConditionOriginatorEnumType &src, JsonVariant &dst);
+bool convertToJson(const SupplyConditionOriginatorEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a SupplyConditionOriginatorEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination SupplyConditionOriginatorEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, SupplyConditionOriginatorEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionOriginatorEnumType& dst);
 
 /**
 * Datatype GridConditionEnumType as defined in EEBus_SPINE_TS_SupplyCondition.xsd
@@ -1977,13 +1978,13 @@ enum class GridConditionEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const GridConditionEnumType &src, JsonVariant &dst);
+bool convertToJson(const GridConditionEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a GridConditionEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination GridConditionEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, GridConditionEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, GridConditionEnumType& dst);
 
 /**
 * Datatype AlarmTypeEnumType as defined in EEBus_SPINE_TS_Alarm.xsd
@@ -2001,13 +2002,13 @@ enum class AlarmTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const AlarmTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const AlarmTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a AlarmTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination AlarmTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, AlarmTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, AlarmTypeEnumType& dst);
 
 /**
 * Datatype TaskManagementJobSourceEnumType as defined in EEBus_SPINE_TS_TaskManagement.xsd
@@ -2025,13 +2026,13 @@ enum class TaskManagementJobSourceEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementJobSourceEnumType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementJobSourceEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a TaskManagementJobSourceEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination TaskManagementJobSourceEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobSourceEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobSourceEnumType& dst);
 
 /**
 * Datatype HvacSystemFunctionTypeEnumType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -2050,13 +2051,13 @@ enum class HvacSystemFunctionTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacSystemFunctionTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const HvacSystemFunctionTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a HvacSystemFunctionTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination HvacSystemFunctionTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionTypeEnumType& dst);
 
 /**
 * Datatype HvacOperationModeTypeEnumType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -2075,13 +2076,13 @@ enum class HvacOperationModeTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacOperationModeTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const HvacOperationModeTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a HvacOperationModeTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination HvacOperationModeTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, HvacOperationModeTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacOperationModeTypeEnumType& dst);
 
 /**
 * Datatype HvacOverrunTypeEnumType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -2106,13 +2107,13 @@ enum class HvacOverrunTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacOverrunTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const HvacOverrunTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a HvacOverrunTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination HvacOverrunTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, HvacOverrunTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacOverrunTypeEnumType& dst);
 
 /**
 * Datatype HvacOverrunStatusEnumType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -2131,13 +2132,13 @@ enum class HvacOverrunStatusEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacOverrunStatusEnumType &src, JsonVariant &dst);
+bool convertToJson(const HvacOverrunStatusEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a HvacOverrunStatusEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination HvacOverrunStatusEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, HvacOverrunStatusEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacOverrunStatusEnumType& dst);
 
 /**
 * Datatype LoadControlEventActionEnumType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -2158,13 +2159,13 @@ enum class LoadControlEventActionEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlEventActionEnumType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlEventActionEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a LoadControlEventActionEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination LoadControlEventActionEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlEventActionEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlEventActionEnumType& dst);
 
 /**
 * Datatype LoadControlEventStateEnumType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -2185,13 +2186,13 @@ enum class LoadControlEventStateEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlEventStateEnumType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlEventStateEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a LoadControlEventStateEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination LoadControlEventStateEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlEventStateEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlEventStateEnumType& dst);
 
 /**
 * Datatype LoadControlLimitTypeEnumType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -2209,13 +2210,13 @@ enum class LoadControlLimitTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlLimitTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlLimitTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a LoadControlLimitTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination LoadControlLimitTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitTypeEnumType& dst);
 
 /**
 * Datatype LoadControlCategoryEnumType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -2233,13 +2234,13 @@ enum class LoadControlCategoryEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlCategoryEnumType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlCategoryEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a LoadControlCategoryEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination LoadControlCategoryEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlCategoryEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlCategoryEnumType& dst);
 
 /**
 * Datatype PowerSourceEnumType as defined in EEBus_SPINE_TS_DeviceClassification.xsd
@@ -2259,13 +2260,13 @@ enum class PowerSourceEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSourceEnumType &src, JsonVariant &dst);
+bool convertToJson(const PowerSourceEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a PowerSourceEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination PowerSourceEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSourceEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSourceEnumType& dst);
 
 /**
 * Datatype ActuatorLevelFctEnumType as defined in EEBus_SPINE_TS_ActuatorLevel.xsd
@@ -2288,13 +2289,13 @@ enum class ActuatorLevelFctEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ActuatorLevelFctEnumType &src, JsonVariant &dst);
+bool convertToJson(const ActuatorLevelFctEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a ActuatorLevelFctEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ActuatorLevelFctEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, ActuatorLevelFctEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, ActuatorLevelFctEnumType& dst);
 
 /**
 * Datatype TimeSeriesTypeEnumType as defined in EEBus_SPINE_TS_TimeSeries.xsd
@@ -2316,13 +2317,13 @@ enum class TimeSeriesTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeSeriesTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const TimeSeriesTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a TimeSeriesTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination TimeSeriesTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, TimeSeriesTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesTypeEnumType& dst);
 
 /**
 * Datatype MessagingTypeEnumType as defined in EEBus_SPINE_TS_Messaging.xsd
@@ -2343,13 +2344,13 @@ enum class MessagingTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MessagingTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const MessagingTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a MessagingTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination MessagingTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, MessagingTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, MessagingTypeEnumType& dst);
 
 /**
 * Datatype TierBoundaryTypeEnumType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -2367,13 +2368,13 @@ enum class TierBoundaryTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TierBoundaryTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const TierBoundaryTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a TierBoundaryTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination TierBoundaryTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, TierBoundaryTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, TierBoundaryTypeEnumType& dst);
 
 /**
 * Datatype TierTypeEnumType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -2390,13 +2391,13 @@ enum class TierTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TierTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const TierTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a TierTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination TierTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, TierTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, TierTypeEnumType& dst);
 
 /**
 * Datatype IncentiveTypeEnumType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -2415,13 +2416,13 @@ enum class IncentiveTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a IncentiveTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination IncentiveTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTypeEnumType& dst);
 
 /**
 * Datatype IncentiveValueTypeEnumType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -2440,13 +2441,13 @@ enum class IncentiveValueTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveValueTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveValueTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a IncentiveValueTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination IncentiveValueTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveValueTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveValueTypeEnumType& dst);
 
 /**
 * Datatype StateInformationFunctionalityEnumType as defined in EEBus_SPINE_TS_StateInformation.xsd
@@ -2474,13 +2475,13 @@ enum class StateInformationFunctionalityEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const StateInformationFunctionalityEnumType &src, JsonVariant &dst);
+bool convertToJson(const StateInformationFunctionalityEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a StateInformationFunctionalityEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination StateInformationFunctionalityEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, StateInformationFunctionalityEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, StateInformationFunctionalityEnumType& dst);
 
 /**
 * Datatype StateInformationFailureEnumType as defined in EEBus_SPINE_TS_StateInformation.xsd
@@ -2513,13 +2514,13 @@ enum class StateInformationFailureEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const StateInformationFailureEnumType &src, JsonVariant &dst);
+bool convertToJson(const StateInformationFailureEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a StateInformationFailureEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination StateInformationFailureEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, StateInformationFailureEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, StateInformationFailureEnumType& dst);
 
 /**
 * Datatype StateInformationCategoryEnumType as defined in EEBus_SPINE_TS_StateInformation.xsd
@@ -2536,13 +2537,13 @@ enum class StateInformationCategoryEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const StateInformationCategoryEnumType &src, JsonVariant &dst);
+bool convertToJson(const StateInformationCategoryEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a StateInformationCategoryEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination StateInformationCategoryEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, StateInformationCategoryEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, StateInformationCategoryEnumType& dst);
 
 /**
 * Datatype ElectricalConnectionMeasurandVariantEnumType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -2562,13 +2563,13 @@ enum class ElectricalConnectionMeasurandVariantEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionMeasurandVariantEnumType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionMeasurandVariantEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a ElectricalConnectionMeasurandVariantEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ElectricalConnectionMeasurandVariantEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionMeasurandVariantEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionMeasurandVariantEnumType& dst);
 
 /**
 * Datatype ElectricalConnectionVoltageTypeEnumType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -2585,13 +2586,13 @@ enum class ElectricalConnectionVoltageTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionVoltageTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionVoltageTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a ElectricalConnectionVoltageTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ElectricalConnectionVoltageTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionVoltageTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionVoltageTypeEnumType& dst);
 
 /**
 * Datatype ElectricalConnectionAcMeasurementTypeEnumType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -2610,13 +2611,13 @@ enum class ElectricalConnectionAcMeasurementTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionAcMeasurementTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionAcMeasurementTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a ElectricalConnectionAcMeasurementTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ElectricalConnectionAcMeasurementTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionAcMeasurementTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionAcMeasurementTypeEnumType& dst);
 
 /**
 * Datatype ElectricalConnectionPhaseNameEnumType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -2641,13 +2642,13 @@ enum class ElectricalConnectionPhaseNameEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionPhaseNameEnumType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionPhaseNameEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a ElectricalConnectionPhaseNameEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ElectricalConnectionPhaseNameEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPhaseNameEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionPhaseNameEnumType& dst);
 
 /**
 * Datatype ElectricalConnectionConnectionPointType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -2667,13 +2668,13 @@ enum class ElectricalConnectionConnectionPointType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionConnectionPointType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionConnectionPointType& src, JsonVariant& dst);
 /**
  * Convert a string to a ElectricalConnectionConnectionPointType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ElectricalConnectionConnectionPointType.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionConnectionPointType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionConnectionPointType& dst);
 
 /**
 * Datatype ElectricalConnectionCharacteristicContextEnumType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -2693,13 +2694,13 @@ enum class ElectricalConnectionCharacteristicContextEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionCharacteristicContextEnumType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionCharacteristicContextEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a ElectricalConnectionCharacteristicContextEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ElectricalConnectionCharacteristicContextEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicContextEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionCharacteristicContextEnumType& dst);
 
 /**
 * Datatype ElectricalConnectionCharacteristicTypeEnumType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -2727,13 +2728,13 @@ enum class ElectricalConnectionCharacteristicTypeEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionCharacteristicTypeEnumType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionCharacteristicTypeEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a ElectricalConnectionCharacteristicTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ElectricalConnectionCharacteristicTypeEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicTypeEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionCharacteristicTypeEnumType& dst);
 
 /**
 * Datatype DeviceDiagnosisOperatingStateEnumType as defined in EEBus_SPINE_TS_DeviceDiagnosis.xsd
@@ -2758,13 +2759,13 @@ enum class DeviceDiagnosisOperatingStateEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceDiagnosisOperatingStateEnumType &src, JsonVariant &dst);
+bool convertToJson(const DeviceDiagnosisOperatingStateEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a DeviceDiagnosisOperatingStateEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination DeviceDiagnosisOperatingStateEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisOperatingStateEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceDiagnosisOperatingStateEnumType& dst);
 
 /**
 * Datatype PowerSupplyConditionEnumType as defined in EEBus_SPINE_TS_DeviceDiagnosis.xsd
@@ -2784,13 +2785,13 @@ enum class PowerSupplyConditionEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSupplyConditionEnumType &src, JsonVariant &dst);
+bool convertToJson(const PowerSupplyConditionEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a PowerSupplyConditionEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination PowerSupplyConditionEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSupplyConditionEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSupplyConditionEnumType& dst);
 
 /**
 * Datatype DeviceConfigurationKeyNameEnumType as defined in EEBus_SPINE_TS_DeviceConfiguration.xsd
@@ -2842,13 +2843,13 @@ enum class DeviceConfigurationKeyNameEnumType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceConfigurationKeyNameEnumType &src, JsonVariant &dst);
+bool convertToJson(const DeviceConfigurationKeyNameEnumType& src, JsonVariant& dst);
 /**
  * Convert a string to a DeviceConfigurationKeyNameEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination DeviceConfigurationKeyNameEnumType.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyNameEnumType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyNameEnumType& dst);
 
 /**
 * Datatype DeviceConfigurationKeyValueTypeType as defined in EEBus_SPINE_TS_DeviceConfiguration.xsd
@@ -2871,13 +2872,13 @@ enum class DeviceConfigurationKeyValueTypeType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceConfigurationKeyValueTypeType &src, JsonVariant &dst);
+bool convertToJson(const DeviceConfigurationKeyValueTypeType& src, JsonVariant& dst);
 /**
  * Convert a string to a DeviceConfigurationKeyValueTypeType 
  * @param src The JSON variant containing the string.
  * @param dst The destination DeviceConfigurationKeyValueTypeType.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueTypeType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueTypeType& dst);
 
 /**
 * Datatype CmdClassifierType as defined in EEBus_SPINE_TS_CommandFrame.xsd
@@ -2898,13 +2899,13 @@ enum class CmdClassifierType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const CmdClassifierType &src, JsonVariant &dst);
+bool convertToJson(const CmdClassifierType& src, JsonVariant& dst);
 /**
  * Convert a string to a CmdClassifierType 
  * @param src The JSON variant containing the string.
  * @param dst The destination CmdClassifierType.
  */
-void convertFromJson(const JsonVariantConst &src, CmdClassifierType &dst);
+void convertFromJson(const JsonVariantConst& src, CmdClassifierType& dst);
 
 /**
  * Datatype ScaledNumberType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -2923,13 +2924,13 @@ struct ScaledNumberType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ScaledNumberType &src, JsonVariant &dst);
+bool convertToJson(const ScaledNumberType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ScaledNumberType
  * @param src The JSON variant to convert
  * @param dst The ScaledNumberType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ScaledNumberType &dst);
+void convertFromJson(const JsonVariantConst& src, ScaledNumberType& dst);
 
 /**
  * Datatype DirectControlActivityDataType as defined in EEBus_SPINE_TS_DirectControl.xsd
@@ -2956,20 +2957,19 @@ struct DirectControlActivityDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DirectControlActivityDataType &src, JsonVariant &dst);
+bool convertToJson(const DirectControlActivityDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DirectControlActivityDataType
  * @param src The JSON variant to convert
  * @param dst The DirectControlActivityDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataType &dst);
+void convertFromJson(const JsonVariantConst& src, DirectControlActivityDataType& dst);
 
 /**
  * Datatype ElementTagType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
 */
 struct ElementTagType
 {
-
     ElementTagType() = default;
 };
 
@@ -2979,13 +2979,13 @@ struct ElementTagType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElementTagType &src, JsonVariant &dst);
+bool convertToJson(const ElementTagType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ElementTagType
  * @param src The JSON variant to convert
  * @param dst The ElementTagType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ElementTagType &dst);
+void convertFromJson(const JsonVariantConst& src, ElementTagType& dst);
 
 /**
  * Datatype ScaledNumberElementsType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3004,13 +3004,13 @@ struct ScaledNumberElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ScaledNumberElementsType &src, JsonVariant &dst);
+bool convertToJson(const ScaledNumberElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ScaledNumberElementsType
  * @param src The JSON variant to convert
  * @param dst The ScaledNumberElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ScaledNumberElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, ScaledNumberElementsType& dst);
 
 /**
  * Datatype DirectControlActivityDataElementsType as defined in EEBus_SPINE_TS_DirectControl.xsd
@@ -3037,13 +3037,13 @@ struct DirectControlActivityDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DirectControlActivityDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const DirectControlActivityDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DirectControlActivityDataElementsType
  * @param src The JSON variant to convert
  * @param dst The DirectControlActivityDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, DirectControlActivityDataElementsType& dst);
 
 /**
  * Datatype DirectControlActivityListDataType as defined in EEBus_SPINE_TS_DirectControl.xsd
@@ -3061,13 +3061,13 @@ struct DirectControlActivityListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DirectControlActivityListDataType &src, JsonVariant &dst);
+bool convertToJson(const DirectControlActivityListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DirectControlActivityListDataType
  * @param src The JSON variant to convert
  * @param dst The DirectControlActivityListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DirectControlActivityListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, DirectControlActivityListDataType& dst);
 
 /**
  * Datatype TimestampIntervalType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3086,13 +3086,13 @@ struct TimestampIntervalType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimestampIntervalType &src, JsonVariant &dst);
+bool convertToJson(const TimestampIntervalType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimestampIntervalType
  * @param src The JSON variant to convert
  * @param dst The TimestampIntervalType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimestampIntervalType &dst);
+void convertFromJson(const JsonVariantConst& src, TimestampIntervalType& dst);
 
 /**
  * Datatype DirectControlActivityListDataSelectorsType as defined in EEBus_SPINE_TS_DirectControl.xsd
@@ -3110,13 +3110,13 @@ struct DirectControlActivityListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DirectControlActivityListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const DirectControlActivityListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DirectControlActivityListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The DirectControlActivityListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DirectControlActivityListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, DirectControlActivityListDataSelectorsType& dst);
 
 /**
  * Datatype DirectControlDescriptionDataType as defined in EEBus_SPINE_TS_DirectControl.xsd
@@ -3136,13 +3136,13 @@ struct DirectControlDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DirectControlDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const DirectControlDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DirectControlDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The DirectControlDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DirectControlDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, DirectControlDescriptionDataType& dst);
 
 /**
  * Datatype DirectControlDescriptionDataElementsType as defined in EEBus_SPINE_TS_DirectControl.xsd
@@ -3162,13 +3162,13 @@ struct DirectControlDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DirectControlDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const DirectControlDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DirectControlDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The DirectControlDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DirectControlDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, DirectControlDescriptionDataElementsType& dst);
 
 /**
  * Datatype TimePeriodType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3187,13 +3187,13 @@ struct TimePeriodType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimePeriodType &src, JsonVariant &dst);
+bool convertToJson(const TimePeriodType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimePeriodType
  * @param src The JSON variant to convert
  * @param dst The TimePeriodType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimePeriodType &dst);
+void convertFromJson(const JsonVariantConst& src, TimePeriodType& dst);
 
 /**
  * Datatype TimePeriodElementsType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3212,13 +3212,13 @@ struct TimePeriodElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimePeriodElementsType &src, JsonVariant &dst);
+bool convertToJson(const TimePeriodElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimePeriodElementsType
  * @param src The JSON variant to convert
  * @param dst The TimePeriodElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimePeriodElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TimePeriodElementsType& dst);
 
 /**
  * Datatype DaysOfWeekType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3242,13 +3242,13 @@ struct DaysOfWeekType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DaysOfWeekType &src, JsonVariant &dst);
+bool convertToJson(const DaysOfWeekType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DaysOfWeekType
  * @param src The JSON variant to convert
  * @param dst The DaysOfWeekType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DaysOfWeekType &dst);
+void convertFromJson(const JsonVariantConst& src, DaysOfWeekType& dst);
 
 /**
  * Datatype AbsoluteOrRecurringTimeType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3273,13 +3273,13 @@ struct AbsoluteOrRecurringTimeType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const AbsoluteOrRecurringTimeType &src, JsonVariant &dst);
+bool convertToJson(const AbsoluteOrRecurringTimeType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a AbsoluteOrRecurringTimeType
  * @param src The JSON variant to convert
  * @param dst The AbsoluteOrRecurringTimeType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, AbsoluteOrRecurringTimeType &dst);
+void convertFromJson(const JsonVariantConst& src, AbsoluteOrRecurringTimeType& dst);
 
 /**
  * Datatype AbsoluteOrRecurringTimeElementsType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3304,13 +3304,13 @@ struct AbsoluteOrRecurringTimeElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const AbsoluteOrRecurringTimeElementsType &src, JsonVariant &dst);
+bool convertToJson(const AbsoluteOrRecurringTimeElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a AbsoluteOrRecurringTimeElementsType
  * @param src The JSON variant to convert
  * @param dst The AbsoluteOrRecurringTimeElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, AbsoluteOrRecurringTimeElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, AbsoluteOrRecurringTimeElementsType& dst);
 
 /**
  * Datatype RecurrenceInformationType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3332,13 +3332,13 @@ struct RecurrenceInformationType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const RecurrenceInformationType &src, JsonVariant &dst);
+bool convertToJson(const RecurrenceInformationType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a RecurrenceInformationType
  * @param src The JSON variant to convert
  * @param dst The RecurrenceInformationType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, RecurrenceInformationType &dst);
+void convertFromJson(const JsonVariantConst& src, RecurrenceInformationType& dst);
 
 /**
  * Datatype RecurrenceInformationElementsType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3360,13 +3360,13 @@ struct RecurrenceInformationElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const RecurrenceInformationElementsType &src, JsonVariant &dst);
+bool convertToJson(const RecurrenceInformationElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a RecurrenceInformationElementsType
  * @param src The JSON variant to convert
  * @param dst The RecurrenceInformationElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, RecurrenceInformationElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, RecurrenceInformationElementsType& dst);
 
 /**
  * Datatype ScaledNumberRangeType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3385,13 +3385,13 @@ struct ScaledNumberRangeType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ScaledNumberRangeType &src, JsonVariant &dst);
+bool convertToJson(const ScaledNumberRangeType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ScaledNumberRangeType
  * @param src The JSON variant to convert
  * @param dst The ScaledNumberRangeType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ScaledNumberRangeType &dst);
+void convertFromJson(const JsonVariantConst& src, ScaledNumberRangeType& dst);
 
 /**
  * Datatype ScaledNumberRangeElementsType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3410,13 +3410,13 @@ struct ScaledNumberRangeElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ScaledNumberRangeElementsType &src, JsonVariant &dst);
+bool convertToJson(const ScaledNumberRangeElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ScaledNumberRangeElementsType
  * @param src The JSON variant to convert
  * @param dst The ScaledNumberRangeElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ScaledNumberRangeElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, ScaledNumberRangeElementsType& dst);
 
 /**
  * Datatype ScaledNumberSetType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3435,13 +3435,13 @@ struct ScaledNumberSetType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ScaledNumberSetType &src, JsonVariant &dst);
+bool convertToJson(const ScaledNumberSetType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ScaledNumberSetType
  * @param src The JSON variant to convert
  * @param dst The ScaledNumberSetType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ScaledNumberSetType &dst);
+void convertFromJson(const JsonVariantConst& src, ScaledNumberSetType& dst);
 
 /**
  * Datatype ScaledNumberSetElementsType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3460,13 +3460,13 @@ struct ScaledNumberSetElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ScaledNumberSetElementsType &src, JsonVariant &dst);
+bool convertToJson(const ScaledNumberSetElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ScaledNumberSetElementsType
  * @param src The JSON variant to convert
  * @param dst The ScaledNumberSetElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ScaledNumberSetElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, ScaledNumberSetElementsType& dst);
 
 /**
  * Datatype DeviceAddressType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3484,13 +3484,13 @@ struct DeviceAddressType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceAddressType &src, JsonVariant &dst);
+bool convertToJson(const DeviceAddressType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceAddressType
  * @param src The JSON variant to convert
  * @param dst The DeviceAddressType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceAddressType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceAddressType& dst);
 
 /**
  * Datatype DeviceAddressElementsType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3508,13 +3508,13 @@ struct DeviceAddressElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceAddressElementsType &src, JsonVariant &dst);
+bool convertToJson(const DeviceAddressElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceAddressElementsType
  * @param src The JSON variant to convert
  * @param dst The DeviceAddressElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceAddressElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceAddressElementsType& dst);
 
 /**
  * Datatype EntityAddressType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3533,13 +3533,13 @@ struct EntityAddressType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const EntityAddressType &src, JsonVariant &dst);
+bool convertToJson(const EntityAddressType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a EntityAddressType
  * @param src The JSON variant to convert
  * @param dst The EntityAddressType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, EntityAddressType &dst);
+void convertFromJson(const JsonVariantConst& src, EntityAddressType& dst);
 
 /**
  * Datatype EntityAddressElementsType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3558,13 +3558,13 @@ struct EntityAddressElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const EntityAddressElementsType &src, JsonVariant &dst);
+bool convertToJson(const EntityAddressElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a EntityAddressElementsType
  * @param src The JSON variant to convert
  * @param dst The EntityAddressElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, EntityAddressElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, EntityAddressElementsType& dst);
 
 /**
  * Datatype FeatureAddressType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3584,13 +3584,13 @@ struct FeatureAddressType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const FeatureAddressType &src, JsonVariant &dst);
+bool convertToJson(const FeatureAddressType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a FeatureAddressType
  * @param src The JSON variant to convert
  * @param dst The FeatureAddressType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, FeatureAddressType &dst);
+void convertFromJson(const JsonVariantConst& src, FeatureAddressType& dst);
 
 /**
  * Datatype FeatureAddressElementsType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3610,13 +3610,13 @@ struct FeatureAddressElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const FeatureAddressElementsType &src, JsonVariant &dst);
+bool convertToJson(const FeatureAddressElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a FeatureAddressElementsType
  * @param src The JSON variant to convert
  * @param dst The FeatureAddressElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, FeatureAddressElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, FeatureAddressElementsType& dst);
 
 /**
  * Datatype PossibleOperationsClassifierType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3634,13 +3634,13 @@ struct PossibleOperationsClassifierType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PossibleOperationsClassifierType &src, JsonVariant &dst);
+bool convertToJson(const PossibleOperationsClassifierType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PossibleOperationsClassifierType
  * @param src The JSON variant to convert
  * @param dst The PossibleOperationsClassifierType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PossibleOperationsClassifierType &dst);
+void convertFromJson(const JsonVariantConst& src, PossibleOperationsClassifierType& dst);
 
 /**
  * Datatype PossibleOperationsReadType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3658,13 +3658,13 @@ struct PossibleOperationsReadType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PossibleOperationsReadType &src, JsonVariant &dst);
+bool convertToJson(const PossibleOperationsReadType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PossibleOperationsReadType
  * @param src The JSON variant to convert
  * @param dst The PossibleOperationsReadType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PossibleOperationsReadType &dst);
+void convertFromJson(const JsonVariantConst& src, PossibleOperationsReadType& dst);
 
 /**
  * Datatype PossibleOperationsWriteType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3682,13 +3682,13 @@ struct PossibleOperationsWriteType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PossibleOperationsWriteType &src, JsonVariant &dst);
+bool convertToJson(const PossibleOperationsWriteType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PossibleOperationsWriteType
  * @param src The JSON variant to convert
  * @param dst The PossibleOperationsWriteType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PossibleOperationsWriteType &dst);
+void convertFromJson(const JsonVariantConst& src, PossibleOperationsWriteType& dst);
 
 /**
  * Datatype PossibleOperationsType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3707,13 +3707,13 @@ struct PossibleOperationsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PossibleOperationsType &src, JsonVariant &dst);
+bool convertToJson(const PossibleOperationsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PossibleOperationsType
  * @param src The JSON variant to convert
  * @param dst The PossibleOperationsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PossibleOperationsType &dst);
+void convertFromJson(const JsonVariantConst& src, PossibleOperationsType& dst);
 
 /**
  * Datatype PossibleOperationsElementsType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3732,13 +3732,13 @@ struct PossibleOperationsElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PossibleOperationsElementsType &src, JsonVariant &dst);
+bool convertToJson(const PossibleOperationsElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PossibleOperationsElementsType
  * @param src The JSON variant to convert
  * @param dst The PossibleOperationsElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PossibleOperationsElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, PossibleOperationsElementsType& dst);
 
 /**
  * Datatype FunctionPropertyType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3757,13 +3757,13 @@ struct FunctionPropertyType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const FunctionPropertyType &src, JsonVariant &dst);
+bool convertToJson(const FunctionPropertyType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a FunctionPropertyType
  * @param src The JSON variant to convert
  * @param dst The FunctionPropertyType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, FunctionPropertyType &dst);
+void convertFromJson(const JsonVariantConst& src, FunctionPropertyType& dst);
 
 /**
  * Datatype FunctionPropertyElementsType as defined in EEBus_SPINE_TS_CommonDataTypes.xsd
@@ -3782,13 +3782,13 @@ struct FunctionPropertyElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const FunctionPropertyElementsType &src, JsonVariant &dst);
+bool convertToJson(const FunctionPropertyElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a FunctionPropertyElementsType
  * @param src The JSON variant to convert
  * @param dst The FunctionPropertyElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, FunctionPropertyElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, FunctionPropertyElementsType& dst);
 
 /**
  * Datatype PowerTimeSlotScheduleDataType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -3812,13 +3812,13 @@ struct PowerTimeSlotScheduleDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerTimeSlotScheduleDataType &src, JsonVariant &dst);
+bool convertToJson(const PowerTimeSlotScheduleDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerTimeSlotScheduleDataType
  * @param src The JSON variant to convert
  * @param dst The PowerTimeSlotScheduleDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleDataType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotScheduleDataType& dst);
 
 /**
  * Datatype PowerTimeSlotScheduleDataElementsType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -3842,13 +3842,13 @@ struct PowerTimeSlotScheduleDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerTimeSlotScheduleDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const PowerTimeSlotScheduleDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerTimeSlotScheduleDataElementsType
  * @param src The JSON variant to convert
  * @param dst The PowerTimeSlotScheduleDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotScheduleDataElementsType& dst);
 
 /**
  * Datatype PowerTimeSlotScheduleListDataType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -3866,13 +3866,13 @@ struct PowerTimeSlotScheduleListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerTimeSlotScheduleListDataType &src, JsonVariant &dst);
+bool convertToJson(const PowerTimeSlotScheduleListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerTimeSlotScheduleListDataType
  * @param src The JSON variant to convert
  * @param dst The PowerTimeSlotScheduleListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotScheduleListDataType& dst);
 
 /**
  * Datatype PowerTimeSlotScheduleListDataSelectorsType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -3891,13 +3891,13 @@ struct PowerTimeSlotScheduleListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerTimeSlotScheduleListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const PowerTimeSlotScheduleListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerTimeSlotScheduleListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The PowerTimeSlotScheduleListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotScheduleListDataSelectorsType& dst);
 
 /**
  * Datatype PowerTimeSlotValueDataType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -3918,13 +3918,13 @@ struct PowerTimeSlotValueDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerTimeSlotValueDataType &src, JsonVariant &dst);
+bool convertToJson(const PowerTimeSlotValueDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerTimeSlotValueDataType
  * @param src The JSON variant to convert
  * @param dst The PowerTimeSlotValueDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueDataType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotValueDataType& dst);
 
 /**
  * Datatype PowerTimeSlotValueDataElementsType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -3945,13 +3945,13 @@ struct PowerTimeSlotValueDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerTimeSlotValueDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const PowerTimeSlotValueDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerTimeSlotValueDataElementsType
  * @param src The JSON variant to convert
  * @param dst The PowerTimeSlotValueDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotValueDataElementsType& dst);
 
 /**
  * Datatype PowerTimeSlotValueListDataType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -3969,13 +3969,13 @@ struct PowerTimeSlotValueListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerTimeSlotValueListDataType &src, JsonVariant &dst);
+bool convertToJson(const PowerTimeSlotValueListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerTimeSlotValueListDataType
  * @param src The JSON variant to convert
  * @param dst The PowerTimeSlotValueListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotValueListDataType& dst);
 
 /**
  * Datatype PowerTimeSlotValueListDataSelectorsType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -3995,13 +3995,13 @@ struct PowerTimeSlotValueListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerTimeSlotValueListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const PowerTimeSlotValueListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerTimeSlotValueListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The PowerTimeSlotValueListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotValueListDataSelectorsType& dst);
 
 /**
  * Datatype PowerTimeSlotScheduleConstraintsDataType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4025,13 +4025,13 @@ struct PowerTimeSlotScheduleConstraintsDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerTimeSlotScheduleConstraintsDataType &src, JsonVariant &dst);
+bool convertToJson(const PowerTimeSlotScheduleConstraintsDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerTimeSlotScheduleConstraintsDataType
  * @param src The JSON variant to convert
  * @param dst The PowerTimeSlotScheduleConstraintsDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstraintsDataType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotScheduleConstraintsDataType& dst);
 
 /**
  * Datatype PowerTimeSlotScheduleConstraintsDataElementsType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4055,13 +4055,13 @@ struct PowerTimeSlotScheduleConstraintsDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerTimeSlotScheduleConstraintsDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const PowerTimeSlotScheduleConstraintsDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerTimeSlotScheduleConstraintsDataElementsType
  * @param src The JSON variant to convert
  * @param dst The PowerTimeSlotScheduleConstraintsDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstraintsDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotScheduleConstraintsDataElementsType& dst);
 
 /**
  * Datatype PowerTimeSlotScheduleConstraintsListDataType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4079,13 +4079,13 @@ struct PowerTimeSlotScheduleConstraintsListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerTimeSlotScheduleConstraintsListDataType &src, JsonVariant &dst);
+bool convertToJson(const PowerTimeSlotScheduleConstraintsListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerTimeSlotScheduleConstraintsListDataType
  * @param src The JSON variant to convert
  * @param dst The PowerTimeSlotScheduleConstraintsListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstraintsListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotScheduleConstraintsListDataType& dst);
 
 /**
  * Datatype PowerTimeSlotScheduleConstraintsListDataSelectorsType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4104,13 +4104,13 @@ struct PowerTimeSlotScheduleConstraintsListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerTimeSlotScheduleConstraintsListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const PowerTimeSlotScheduleConstraintsListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerTimeSlotScheduleConstraintsListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The PowerTimeSlotScheduleConstraintsListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstraintsListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerTimeSlotScheduleConstraintsListDataSelectorsType& dst);
 
 /**
  * Datatype PowerSequenceAlternativesRelationDataType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4129,13 +4129,13 @@ struct PowerSequenceAlternativesRelationDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceAlternativesRelationDataType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceAlternativesRelationDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceAlternativesRelationDataType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceAlternativesRelationDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelationDataType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceAlternativesRelationDataType& dst);
 
 /**
  * Datatype PowerSequenceAlternativesRelationDataElementsType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4154,13 +4154,13 @@ struct PowerSequenceAlternativesRelationDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceAlternativesRelationDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceAlternativesRelationDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceAlternativesRelationDataElementsType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceAlternativesRelationDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelationDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceAlternativesRelationDataElementsType& dst);
 
 /**
  * Datatype PowerSequenceAlternativesRelationListDataType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4178,13 +4178,13 @@ struct PowerSequenceAlternativesRelationListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceAlternativesRelationListDataType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceAlternativesRelationListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceAlternativesRelationListDataType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceAlternativesRelationListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelationListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceAlternativesRelationListDataType& dst);
 
 /**
  * Datatype PowerSequenceAlternativesRelationListDataSelectorsType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4203,13 +4203,13 @@ struct PowerSequenceAlternativesRelationListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceAlternativesRelationListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceAlternativesRelationListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceAlternativesRelationListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceAlternativesRelationListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelationListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceAlternativesRelationListDataSelectorsType& dst);
 
 /**
  * Datatype PowerSequenceDescriptionDataType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4235,13 +4235,13 @@ struct PowerSequenceDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceDescriptionDataType& dst);
 
 /**
  * Datatype PowerSequenceDescriptionDataElementsType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4267,13 +4267,13 @@ struct PowerSequenceDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceDescriptionDataElementsType& dst);
 
 /**
  * Datatype PowerSequenceDescriptionListDataType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4291,13 +4291,13 @@ struct PowerSequenceDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceDescriptionListDataType& dst);
 
 /**
  * Datatype PowerSequenceDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4315,13 +4315,13 @@ struct PowerSequenceDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype PowerSequenceStateDataType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4346,13 +4346,13 @@ struct PowerSequenceStateDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceStateDataType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceStateDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceStateDataType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceStateDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceStateDataType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceStateDataType& dst);
 
 /**
  * Datatype PowerSequenceStateDataElementsType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4377,13 +4377,13 @@ struct PowerSequenceStateDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceStateDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceStateDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceStateDataElementsType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceStateDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceStateDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceStateDataElementsType& dst);
 
 /**
  * Datatype PowerSequenceStateListDataType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4401,13 +4401,13 @@ struct PowerSequenceStateListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceStateListDataType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceStateListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceStateListDataType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceStateListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceStateListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceStateListDataType& dst);
 
 /**
  * Datatype PowerSequenceStateListDataSelectorsType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4425,13 +4425,13 @@ struct PowerSequenceStateListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceStateListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceStateListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceStateListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceStateListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceStateListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceStateListDataSelectorsType& dst);
 
 /**
  * Datatype PowerSequenceScheduleDataType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4451,13 +4451,13 @@ struct PowerSequenceScheduleDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceScheduleDataType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceScheduleDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceScheduleDataType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceScheduleDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleDataType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceScheduleDataType& dst);
 
 /**
  * Datatype PowerSequenceScheduleDataElementsType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4477,13 +4477,13 @@ struct PowerSequenceScheduleDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceScheduleDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceScheduleDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceScheduleDataElementsType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceScheduleDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceScheduleDataElementsType& dst);
 
 /**
  * Datatype PowerSequenceScheduleListDataType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4501,13 +4501,13 @@ struct PowerSequenceScheduleListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceScheduleListDataType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceScheduleListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceScheduleListDataType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceScheduleListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceScheduleListDataType& dst);
 
 /**
  * Datatype PowerSequenceScheduleListDataSelectorsType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4525,13 +4525,13 @@ struct PowerSequenceScheduleListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceScheduleListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceScheduleListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceScheduleListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceScheduleListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceScheduleListDataSelectorsType& dst);
 
 /**
  * Datatype PowerSequenceScheduleConstraintsDataType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4554,13 +4554,13 @@ struct PowerSequenceScheduleConstraintsDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceScheduleConstraintsDataType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceScheduleConstraintsDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceScheduleConstraintsDataType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceScheduleConstraintsDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstraintsDataType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceScheduleConstraintsDataType& dst);
 
 /**
  * Datatype PowerSequenceScheduleConstraintsDataElementsType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4583,13 +4583,13 @@ struct PowerSequenceScheduleConstraintsDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceScheduleConstraintsDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceScheduleConstraintsDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceScheduleConstraintsDataElementsType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceScheduleConstraintsDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstraintsDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceScheduleConstraintsDataElementsType& dst);
 
 /**
  * Datatype PowerSequenceScheduleConstraintsListDataType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4607,13 +4607,13 @@ struct PowerSequenceScheduleConstraintsListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceScheduleConstraintsListDataType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceScheduleConstraintsListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceScheduleConstraintsListDataType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceScheduleConstraintsListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstraintsListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceScheduleConstraintsListDataType& dst);
 
 /**
  * Datatype PowerSequenceScheduleConstraintsListDataSelectorsType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4631,13 +4631,13 @@ struct PowerSequenceScheduleConstraintsListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceScheduleConstraintsListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceScheduleConstraintsListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceScheduleConstraintsListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceScheduleConstraintsListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstraintsListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceScheduleConstraintsListDataSelectorsType& dst);
 
 /**
  * Datatype PowerSequencePriceDataType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4658,13 +4658,13 @@ struct PowerSequencePriceDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequencePriceDataType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequencePriceDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequencePriceDataType
  * @param src The JSON variant to convert
  * @param dst The PowerSequencePriceDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequencePriceDataType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequencePriceDataType& dst);
 
 /**
  * Datatype PowerSequencePriceDataElementsType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4685,13 +4685,13 @@ struct PowerSequencePriceDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequencePriceDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequencePriceDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequencePriceDataElementsType
  * @param src The JSON variant to convert
  * @param dst The PowerSequencePriceDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequencePriceDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequencePriceDataElementsType& dst);
 
 /**
  * Datatype PowerSequencePriceListDataType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4709,13 +4709,13 @@ struct PowerSequencePriceListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequencePriceListDataType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequencePriceListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequencePriceListDataType
  * @param src The JSON variant to convert
  * @param dst The PowerSequencePriceListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequencePriceListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequencePriceListDataType& dst);
 
 /**
  * Datatype PowerSequencePriceListDataSelectorsType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4734,13 +4734,13 @@ struct PowerSequencePriceListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequencePriceListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequencePriceListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequencePriceListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The PowerSequencePriceListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequencePriceListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequencePriceListDataSelectorsType& dst);
 
 /**
  * Datatype PowerSequenceSchedulePreferenceDataType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4760,13 +4760,13 @@ struct PowerSequenceSchedulePreferenceDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceSchedulePreferenceDataType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceSchedulePreferenceDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceSchedulePreferenceDataType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceSchedulePreferenceDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenceDataType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceSchedulePreferenceDataType& dst);
 
 /**
  * Datatype PowerSequenceSchedulePreferenceDataElementsType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4786,13 +4786,13 @@ struct PowerSequenceSchedulePreferenceDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceSchedulePreferenceDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceSchedulePreferenceDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceSchedulePreferenceDataElementsType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceSchedulePreferenceDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenceDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceSchedulePreferenceDataElementsType& dst);
 
 /**
  * Datatype PowerSequenceSchedulePreferenceListDataType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4810,13 +4810,13 @@ struct PowerSequenceSchedulePreferenceListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceSchedulePreferenceListDataType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceSchedulePreferenceListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceSchedulePreferenceListDataType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceSchedulePreferenceListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenceListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceSchedulePreferenceListDataType& dst);
 
 /**
  * Datatype PowerSequenceSchedulePreferenceListDataSelectorsType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4834,13 +4834,13 @@ struct PowerSequenceSchedulePreferenceListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceSchedulePreferenceListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceSchedulePreferenceListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceSchedulePreferenceListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceSchedulePreferenceListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenceListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceSchedulePreferenceListDataSelectorsType& dst);
 
 /**
  * Datatype PowerSequenceNodeScheduleInformationDataType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4862,13 +4862,13 @@ struct PowerSequenceNodeScheduleInformationDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceNodeScheduleInformationDataType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceNodeScheduleInformationDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceNodeScheduleInformationDataType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceNodeScheduleInformationDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceNodeScheduleInformationDataType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceNodeScheduleInformationDataType& dst);
 
 /**
  * Datatype PowerSequenceNodeScheduleInformationDataElementsType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4890,13 +4890,13 @@ struct PowerSequenceNodeScheduleInformationDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceNodeScheduleInformationDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceNodeScheduleInformationDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceNodeScheduleInformationDataElementsType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceNodeScheduleInformationDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceNodeScheduleInformationDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceNodeScheduleInformationDataElementsType& dst);
 
 /**
  * Datatype PowerSequenceScheduleConfigurationRequestCallType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4914,13 +4914,13 @@ struct PowerSequenceScheduleConfigurationRequestCallType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceScheduleConfigurationRequestCallType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceScheduleConfigurationRequestCallType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceScheduleConfigurationRequestCallType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceScheduleConfigurationRequestCallType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConfigurationRequestCallType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceScheduleConfigurationRequestCallType& dst);
 
 /**
  * Datatype PowerSequenceScheduleConfigurationRequestCallElementsType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4938,13 +4938,13 @@ struct PowerSequenceScheduleConfigurationRequestCallElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequenceScheduleConfigurationRequestCallElementsType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequenceScheduleConfigurationRequestCallElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequenceScheduleConfigurationRequestCallElementsType
  * @param src The JSON variant to convert
  * @param dst The PowerSequenceScheduleConfigurationRequestCallElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConfigurationRequestCallElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequenceScheduleConfigurationRequestCallElementsType& dst);
 
 /**
  * Datatype PowerSequencePriceCalculationRequestCallType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4963,13 +4963,13 @@ struct PowerSequencePriceCalculationRequestCallType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequencePriceCalculationRequestCallType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequencePriceCalculationRequestCallType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequencePriceCalculationRequestCallType
  * @param src The JSON variant to convert
  * @param dst The PowerSequencePriceCalculationRequestCallType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequencePriceCalculationRequestCallType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequencePriceCalculationRequestCallType& dst);
 
 /**
  * Datatype PowerSequencePriceCalculationRequestCallElementsType as defined in EEBus_SPINE_TS_PowerSequences.xsd
@@ -4988,13 +4988,13 @@ struct PowerSequencePriceCalculationRequestCallElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PowerSequencePriceCalculationRequestCallElementsType &src, JsonVariant &dst);
+bool convertToJson(const PowerSequencePriceCalculationRequestCallElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a PowerSequencePriceCalculationRequestCallElementsType
  * @param src The JSON variant to convert
  * @param dst The PowerSequencePriceCalculationRequestCallElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, PowerSequencePriceCalculationRequestCallElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, PowerSequencePriceCalculationRequestCallElementsType& dst);
 
 /**
  * Datatype MeasurementDataType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -5019,13 +5019,13 @@ struct MeasurementDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementDataType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MeasurementDataType
  * @param src The JSON variant to convert
  * @param dst The MeasurementDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementDataType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementDataType& dst);
 
 /**
  * Datatype MeasurementDataElementsType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -5050,13 +5050,13 @@ struct MeasurementDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MeasurementDataElementsType
  * @param src The JSON variant to convert
  * @param dst The MeasurementDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementDataElementsType& dst);
 
 /**
  * Datatype MeasurementListDataType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -5074,13 +5074,13 @@ struct MeasurementListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementListDataType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MeasurementListDataType
  * @param src The JSON variant to convert
  * @param dst The MeasurementListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementListDataType& dst);
 
 /**
  * Datatype MeasurementListDataSelectorsType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -5100,13 +5100,13 @@ struct MeasurementListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MeasurementListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The MeasurementListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementListDataSelectorsType& dst);
 
 /**
  * Datatype MeasurementSeriesDataType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -5131,13 +5131,13 @@ struct MeasurementSeriesDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementSeriesDataType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementSeriesDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MeasurementSeriesDataType
  * @param src The JSON variant to convert
  * @param dst The MeasurementSeriesDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementSeriesDataType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementSeriesDataType& dst);
 
 /**
  * Datatype MeasurementSeriesDataElementsType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -5162,13 +5162,13 @@ struct MeasurementSeriesDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementSeriesDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementSeriesDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MeasurementSeriesDataElementsType
  * @param src The JSON variant to convert
  * @param dst The MeasurementSeriesDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementSeriesDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementSeriesDataElementsType& dst);
 
 /**
  * Datatype MeasurementSeriesListDataType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -5186,13 +5186,13 @@ struct MeasurementSeriesListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementSeriesListDataType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementSeriesListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MeasurementSeriesListDataType
  * @param src The JSON variant to convert
  * @param dst The MeasurementSeriesListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementSeriesListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementSeriesListDataType& dst);
 
 /**
  * Datatype MeasurementSeriesListDataSelectorsType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -5212,13 +5212,13 @@ struct MeasurementSeriesListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementSeriesListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementSeriesListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MeasurementSeriesListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The MeasurementSeriesListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementSeriesListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementSeriesListDataSelectorsType& dst);
 
 /**
  * Datatype MeasurementConstraintsDataType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -5239,13 +5239,13 @@ struct MeasurementConstraintsDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementConstraintsDataType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementConstraintsDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MeasurementConstraintsDataType
  * @param src The JSON variant to convert
  * @param dst The MeasurementConstraintsDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsDataType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementConstraintsDataType& dst);
 
 /**
  * Datatype MeasurementConstraintsDataElementsType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -5266,13 +5266,13 @@ struct MeasurementConstraintsDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementConstraintsDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementConstraintsDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MeasurementConstraintsDataElementsType
  * @param src The JSON variant to convert
  * @param dst The MeasurementConstraintsDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementConstraintsDataElementsType& dst);
 
 /**
  * Datatype MeasurementConstraintsListDataType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -5290,13 +5290,13 @@ struct MeasurementConstraintsListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementConstraintsListDataType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementConstraintsListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MeasurementConstraintsListDataType
  * @param src The JSON variant to convert
  * @param dst The MeasurementConstraintsListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementConstraintsListDataType& dst);
 
 /**
  * Datatype MeasurementConstraintsListDataSelectorsType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -5314,13 +5314,13 @@ struct MeasurementConstraintsListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementConstraintsListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementConstraintsListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MeasurementConstraintsListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The MeasurementConstraintsListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementConstraintsListDataSelectorsType& dst);
 
 /**
  * Datatype MeasurementDescriptionDataType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -5345,13 +5345,13 @@ struct MeasurementDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MeasurementDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The MeasurementDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementDescriptionDataType& dst);
 
 /**
  * Datatype MeasurementDescriptionDataElementsType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -5376,13 +5376,13 @@ struct MeasurementDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MeasurementDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The MeasurementDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementDescriptionDataElementsType& dst);
 
 /**
  * Datatype MeasurementDescriptionListDataType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -5400,13 +5400,13 @@ struct MeasurementDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MeasurementDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The MeasurementDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementDescriptionListDataType& dst);
 
 /**
  * Datatype MeasurementDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -5427,13 +5427,13 @@ struct MeasurementDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MeasurementDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The MeasurementDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype MeasurementThresholdRelationDataType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -5452,13 +5452,13 @@ struct MeasurementThresholdRelationDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementThresholdRelationDataType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementThresholdRelationDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MeasurementThresholdRelationDataType
  * @param src The JSON variant to convert
  * @param dst The MeasurementThresholdRelationDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationDataType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementThresholdRelationDataType& dst);
 
 /**
  * Datatype MeasurementThresholdRelationDataElementsType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -5477,13 +5477,13 @@ struct MeasurementThresholdRelationDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementThresholdRelationDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementThresholdRelationDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MeasurementThresholdRelationDataElementsType
  * @param src The JSON variant to convert
  * @param dst The MeasurementThresholdRelationDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementThresholdRelationDataElementsType& dst);
 
 /**
  * Datatype MeasurementThresholdRelationListDataType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -5501,13 +5501,13 @@ struct MeasurementThresholdRelationListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementThresholdRelationListDataType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementThresholdRelationListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MeasurementThresholdRelationListDataType
  * @param src The JSON variant to convert
  * @param dst The MeasurementThresholdRelationListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementThresholdRelationListDataType& dst);
 
 /**
  * Datatype MeasurementThresholdRelationListDataSelectorsType as defined in EEBus_SPINE_TS_Measurement.xsd
@@ -5526,13 +5526,13 @@ struct MeasurementThresholdRelationListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MeasurementThresholdRelationListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const MeasurementThresholdRelationListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MeasurementThresholdRelationListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The MeasurementThresholdRelationListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, MeasurementThresholdRelationListDataSelectorsType& dst);
 
 /**
  * Datatype ThresholdDataType as defined in EEBus_SPINE_TS_Threshold.xsd
@@ -5551,13 +5551,13 @@ struct ThresholdDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ThresholdDataType &src, JsonVariant &dst);
+bool convertToJson(const ThresholdDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ThresholdDataType
  * @param src The JSON variant to convert
  * @param dst The ThresholdDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ThresholdDataType &dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdDataType& dst);
 
 /**
  * Datatype ThresholdDataElementsType as defined in EEBus_SPINE_TS_Threshold.xsd
@@ -5576,13 +5576,13 @@ struct ThresholdDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ThresholdDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const ThresholdDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ThresholdDataElementsType
  * @param src The JSON variant to convert
  * @param dst The ThresholdDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ThresholdDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdDataElementsType& dst);
 
 /**
  * Datatype ThresholdListDataType as defined in EEBus_SPINE_TS_Threshold.xsd
@@ -5600,13 +5600,13 @@ struct ThresholdListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ThresholdListDataType &src, JsonVariant &dst);
+bool convertToJson(const ThresholdListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ThresholdListDataType
  * @param src The JSON variant to convert
  * @param dst The ThresholdListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ThresholdListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdListDataType& dst);
 
 /**
  * Datatype ThresholdListDataSelectorsType as defined in EEBus_SPINE_TS_Threshold.xsd
@@ -5624,13 +5624,13 @@ struct ThresholdListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ThresholdListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const ThresholdListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ThresholdListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The ThresholdListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ThresholdListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdListDataSelectorsType& dst);
 
 /**
  * Datatype ThresholdConstraintsDataType as defined in EEBus_SPINE_TS_Threshold.xsd
@@ -5651,13 +5651,13 @@ struct ThresholdConstraintsDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ThresholdConstraintsDataType &src, JsonVariant &dst);
+bool convertToJson(const ThresholdConstraintsDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ThresholdConstraintsDataType
  * @param src The JSON variant to convert
  * @param dst The ThresholdConstraintsDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsDataType &dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdConstraintsDataType& dst);
 
 /**
  * Datatype ThresholdConstraintsDataElementsType as defined in EEBus_SPINE_TS_Threshold.xsd
@@ -5678,13 +5678,13 @@ struct ThresholdConstraintsDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ThresholdConstraintsDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const ThresholdConstraintsDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ThresholdConstraintsDataElementsType
  * @param src The JSON variant to convert
  * @param dst The ThresholdConstraintsDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdConstraintsDataElementsType& dst);
 
 /**
  * Datatype ThresholdConstraintsListDataType as defined in EEBus_SPINE_TS_Threshold.xsd
@@ -5702,13 +5702,13 @@ struct ThresholdConstraintsListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ThresholdConstraintsListDataType &src, JsonVariant &dst);
+bool convertToJson(const ThresholdConstraintsListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ThresholdConstraintsListDataType
  * @param src The JSON variant to convert
  * @param dst The ThresholdConstraintsListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdConstraintsListDataType& dst);
 
 /**
  * Datatype ThresholdConstraintsListDataSelectorsType as defined in EEBus_SPINE_TS_Threshold.xsd
@@ -5726,13 +5726,13 @@ struct ThresholdConstraintsListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ThresholdConstraintsListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const ThresholdConstraintsListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ThresholdConstraintsListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The ThresholdConstraintsListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdConstraintsListDataSelectorsType& dst);
 
 /**
  * Datatype ThresholdDescriptionDataType as defined in EEBus_SPINE_TS_Threshold.xsd
@@ -5755,13 +5755,13 @@ struct ThresholdDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ThresholdDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const ThresholdDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ThresholdDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The ThresholdDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdDescriptionDataType& dst);
 
 /**
  * Datatype ThresholdDescriptionDataElementsType as defined in EEBus_SPINE_TS_Threshold.xsd
@@ -5784,13 +5784,13 @@ struct ThresholdDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ThresholdDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const ThresholdDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ThresholdDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The ThresholdDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdDescriptionDataElementsType& dst);
 
 /**
  * Datatype ThresholdDescriptionListDataType as defined in EEBus_SPINE_TS_Threshold.xsd
@@ -5808,13 +5808,13 @@ struct ThresholdDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ThresholdDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const ThresholdDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ThresholdDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The ThresholdDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdDescriptionListDataType& dst);
 
 /**
  * Datatype ThresholdDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_Threshold.xsd
@@ -5833,13 +5833,13 @@ struct ThresholdDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ThresholdDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const ThresholdDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ThresholdDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The ThresholdDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, ThresholdDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype OperatingConstraintsInterruptDataType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -5861,13 +5861,13 @@ struct OperatingConstraintsInterruptDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsInterruptDataType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsInterruptDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsInterruptDataType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsInterruptDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptDataType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsInterruptDataType& dst);
 
 /**
  * Datatype OperatingConstraintsInterruptDataElementsType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -5889,13 +5889,13 @@ struct OperatingConstraintsInterruptDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsInterruptDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsInterruptDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsInterruptDataElementsType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsInterruptDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsInterruptDataElementsType& dst);
 
 /**
  * Datatype OperatingConstraintsInterruptListDataType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -5913,13 +5913,13 @@ struct OperatingConstraintsInterruptListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsInterruptListDataType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsInterruptListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsInterruptListDataType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsInterruptListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsInterruptListDataType& dst);
 
 /**
  * Datatype OperatingConstraintsInterruptListDataSelectorsType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -5937,13 +5937,13 @@ struct OperatingConstraintsInterruptListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsInterruptListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsInterruptListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsInterruptListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsInterruptListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsInterruptListDataSelectorsType& dst);
 
 /**
  * Datatype OperatingConstraintsDurationDataType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -5967,13 +5967,13 @@ struct OperatingConstraintsDurationDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsDurationDataType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsDurationDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsDurationDataType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsDurationDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationDataType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsDurationDataType& dst);
 
 /**
  * Datatype OperatingConstraintsDurationDataElementsType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -5997,13 +5997,13 @@ struct OperatingConstraintsDurationDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsDurationDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsDurationDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsDurationDataElementsType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsDurationDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsDurationDataElementsType& dst);
 
 /**
  * Datatype OperatingConstraintsDurationListDataType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -6021,13 +6021,13 @@ struct OperatingConstraintsDurationListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsDurationListDataType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsDurationListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsDurationListDataType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsDurationListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsDurationListDataType& dst);
 
 /**
  * Datatype OperatingConstraintsDurationListDataSelectorsType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -6045,13 +6045,13 @@ struct OperatingConstraintsDurationListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsDurationListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsDurationListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsDurationListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsDurationListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsDurationListDataSelectorsType& dst);
 
 /**
  * Datatype OperatingConstraintsPowerDescriptionDataType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -6073,13 +6073,13 @@ struct OperatingConstraintsPowerDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsPowerDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsPowerDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsPowerDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsPowerDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerDescriptionDataType& dst);
 
 /**
  * Datatype OperatingConstraintsPowerDescriptionDataElementsType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -6101,13 +6101,13 @@ struct OperatingConstraintsPowerDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsPowerDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsPowerDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsPowerDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsPowerDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerDescriptionDataElementsType& dst);
 
 /**
  * Datatype OperatingConstraintsPowerDescriptionListDataType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -6125,13 +6125,13 @@ struct OperatingConstraintsPowerDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsPowerDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsPowerDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsPowerDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsPowerDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerDescriptionListDataType& dst);
 
 /**
  * Datatype OperatingConstraintsPowerDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -6149,13 +6149,13 @@ struct OperatingConstraintsPowerDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsPowerDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsPowerDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsPowerDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsPowerDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype OperatingConstraintsPowerRangeDataType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -6177,13 +6177,13 @@ struct OperatingConstraintsPowerRangeDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsPowerRangeDataType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsPowerRangeDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsPowerRangeDataType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsPowerRangeDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRangeDataType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerRangeDataType& dst);
 
 /**
  * Datatype OperatingConstraintsPowerRangeDataElementsType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -6205,13 +6205,13 @@ struct OperatingConstraintsPowerRangeDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsPowerRangeDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsPowerRangeDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsPowerRangeDataElementsType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsPowerRangeDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRangeDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerRangeDataElementsType& dst);
 
 /**
  * Datatype OperatingConstraintsPowerRangeListDataType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -6229,13 +6229,13 @@ struct OperatingConstraintsPowerRangeListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsPowerRangeListDataType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsPowerRangeListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsPowerRangeListDataType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsPowerRangeListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRangeListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerRangeListDataType& dst);
 
 /**
  * Datatype OperatingConstraintsPowerRangeListDataSelectorsType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -6253,13 +6253,13 @@ struct OperatingConstraintsPowerRangeListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsPowerRangeListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsPowerRangeListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsPowerRangeListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsPowerRangeListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRangeListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerRangeListDataSelectorsType& dst);
 
 /**
  * Datatype OperatingConstraintsPowerLevelDataType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -6278,13 +6278,13 @@ struct OperatingConstraintsPowerLevelDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsPowerLevelDataType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsPowerLevelDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsPowerLevelDataType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsPowerLevelDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevelDataType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerLevelDataType& dst);
 
 /**
  * Datatype OperatingConstraintsPowerLevelDataElementsType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -6303,13 +6303,13 @@ struct OperatingConstraintsPowerLevelDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsPowerLevelDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsPowerLevelDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsPowerLevelDataElementsType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsPowerLevelDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevelDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerLevelDataElementsType& dst);
 
 /**
  * Datatype OperatingConstraintsPowerLevelListDataType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -6327,13 +6327,13 @@ struct OperatingConstraintsPowerLevelListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsPowerLevelListDataType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsPowerLevelListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsPowerLevelListDataType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsPowerLevelListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevelListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerLevelListDataType& dst);
 
 /**
  * Datatype OperatingConstraintsPowerLevelListDataSelectorsType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -6351,13 +6351,13 @@ struct OperatingConstraintsPowerLevelListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsPowerLevelListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsPowerLevelListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsPowerLevelListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsPowerLevelListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevelListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsPowerLevelListDataSelectorsType& dst);
 
 /**
  * Datatype OperatingConstraintsResumeImplicationDataType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -6379,13 +6379,13 @@ struct OperatingConstraintsResumeImplicationDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsResumeImplicationDataType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsResumeImplicationDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsResumeImplicationDataType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsResumeImplicationDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImplicationDataType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsResumeImplicationDataType& dst);
 
 /**
  * Datatype OperatingConstraintsResumeImplicationDataElementsType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -6407,13 +6407,13 @@ struct OperatingConstraintsResumeImplicationDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsResumeImplicationDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsResumeImplicationDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsResumeImplicationDataElementsType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsResumeImplicationDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImplicationDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsResumeImplicationDataElementsType& dst);
 
 /**
  * Datatype OperatingConstraintsResumeImplicationListDataType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -6431,13 +6431,13 @@ struct OperatingConstraintsResumeImplicationListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsResumeImplicationListDataType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsResumeImplicationListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsResumeImplicationListDataType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsResumeImplicationListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImplicationListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsResumeImplicationListDataType& dst);
 
 /**
  * Datatype OperatingConstraintsResumeImplicationListDataSelectorsType as defined in EEBus_SPINE_TS_OperatingConstraints.xsd
@@ -6455,13 +6455,13 @@ struct OperatingConstraintsResumeImplicationListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const OperatingConstraintsResumeImplicationListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const OperatingConstraintsResumeImplicationListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a OperatingConstraintsResumeImplicationListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The OperatingConstraintsResumeImplicationListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImplicationListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, OperatingConstraintsResumeImplicationListDataSelectorsType& dst);
 
 /**
  * Datatype BillValueType as defined in EEBus_SPINE_TS_Bill.xsd
@@ -6482,13 +6482,13 @@ struct BillValueType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BillValueType &src, JsonVariant &dst);
+bool convertToJson(const BillValueType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BillValueType
  * @param src The JSON variant to convert
  * @param dst The BillValueType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BillValueType &dst);
+void convertFromJson(const JsonVariantConst& src, BillValueType& dst);
 
 /**
  * Datatype BillValueElementsType as defined in EEBus_SPINE_TS_Bill.xsd
@@ -6509,13 +6509,13 @@ struct BillValueElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BillValueElementsType &src, JsonVariant &dst);
+bool convertToJson(const BillValueElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BillValueElementsType
  * @param src The JSON variant to convert
  * @param dst The BillValueElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BillValueElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, BillValueElementsType& dst);
 
 /**
  * Datatype BillCostType as defined in EEBus_SPINE_TS_Bill.xsd
@@ -6539,13 +6539,13 @@ struct BillCostType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BillCostType &src, JsonVariant &dst);
+bool convertToJson(const BillCostType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BillCostType
  * @param src The JSON variant to convert
  * @param dst The BillCostType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BillCostType &dst);
+void convertFromJson(const JsonVariantConst& src, BillCostType& dst);
 
 /**
  * Datatype BillCostElementsType as defined in EEBus_SPINE_TS_Bill.xsd
@@ -6569,13 +6569,13 @@ struct BillCostElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BillCostElementsType &src, JsonVariant &dst);
+bool convertToJson(const BillCostElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BillCostElementsType
  * @param src The JSON variant to convert
  * @param dst The BillCostElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BillCostElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, BillCostElementsType& dst);
 
 /**
  * Datatype BillPositionType as defined in EEBus_SPINE_TS_Bill.xsd
@@ -6599,13 +6599,13 @@ struct BillPositionType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BillPositionType &src, JsonVariant &dst);
+bool convertToJson(const BillPositionType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BillPositionType
  * @param src The JSON variant to convert
  * @param dst The BillPositionType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BillPositionType &dst);
+void convertFromJson(const JsonVariantConst& src, BillPositionType& dst);
 
 /**
  * Datatype BillPositionElementsType as defined in EEBus_SPINE_TS_Bill.xsd
@@ -6629,13 +6629,13 @@ struct BillPositionElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BillPositionElementsType &src, JsonVariant &dst);
+bool convertToJson(const BillPositionElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BillPositionElementsType
  * @param src The JSON variant to convert
  * @param dst The BillPositionElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BillPositionElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, BillPositionElementsType& dst);
 
 /**
  * Datatype BillDataType as defined in EEBus_SPINE_TS_Bill.xsd
@@ -6657,13 +6657,13 @@ struct BillDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BillDataType &src, JsonVariant &dst);
+bool convertToJson(const BillDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BillDataType
  * @param src The JSON variant to convert
  * @param dst The BillDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BillDataType &dst);
+void convertFromJson(const JsonVariantConst& src, BillDataType& dst);
 
 /**
  * Datatype BillDataElementsType as defined in EEBus_SPINE_TS_Bill.xsd
@@ -6685,13 +6685,13 @@ struct BillDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BillDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const BillDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BillDataElementsType
  * @param src The JSON variant to convert
  * @param dst The BillDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BillDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, BillDataElementsType& dst);
 
 /**
  * Datatype BillListDataType as defined in EEBus_SPINE_TS_Bill.xsd
@@ -6709,13 +6709,13 @@ struct BillListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BillListDataType &src, JsonVariant &dst);
+bool convertToJson(const BillListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BillListDataType
  * @param src The JSON variant to convert
  * @param dst The BillListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BillListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, BillListDataType& dst);
 
 /**
  * Datatype BillListDataSelectorsType as defined in EEBus_SPINE_TS_Bill.xsd
@@ -6734,13 +6734,13 @@ struct BillListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BillListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const BillListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BillListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The BillListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BillListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, BillListDataSelectorsType& dst);
 
 /**
  * Datatype BillConstraintsDataType as defined in EEBus_SPINE_TS_Bill.xsd
@@ -6760,13 +6760,13 @@ struct BillConstraintsDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BillConstraintsDataType &src, JsonVariant &dst);
+bool convertToJson(const BillConstraintsDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BillConstraintsDataType
  * @param src The JSON variant to convert
  * @param dst The BillConstraintsDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BillConstraintsDataType &dst);
+void convertFromJson(const JsonVariantConst& src, BillConstraintsDataType& dst);
 
 /**
  * Datatype BillConstraintsDataElementsType as defined in EEBus_SPINE_TS_Bill.xsd
@@ -6786,13 +6786,13 @@ struct BillConstraintsDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BillConstraintsDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const BillConstraintsDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BillConstraintsDataElementsType
  * @param src The JSON variant to convert
  * @param dst The BillConstraintsDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BillConstraintsDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, BillConstraintsDataElementsType& dst);
 
 /**
  * Datatype BillConstraintsListDataType as defined in EEBus_SPINE_TS_Bill.xsd
@@ -6810,13 +6810,13 @@ struct BillConstraintsListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BillConstraintsListDataType &src, JsonVariant &dst);
+bool convertToJson(const BillConstraintsListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BillConstraintsListDataType
  * @param src The JSON variant to convert
  * @param dst The BillConstraintsListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BillConstraintsListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, BillConstraintsListDataType& dst);
 
 /**
  * Datatype BillConstraintsListDataSelectorsType as defined in EEBus_SPINE_TS_Bill.xsd
@@ -6834,13 +6834,13 @@ struct BillConstraintsListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BillConstraintsListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const BillConstraintsListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BillConstraintsListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The BillConstraintsListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BillConstraintsListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, BillConstraintsListDataSelectorsType& dst);
 
 /**
  * Datatype BillDescriptionDataType as defined in EEBus_SPINE_TS_Bill.xsd
@@ -6862,13 +6862,13 @@ struct BillDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BillDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const BillDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BillDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The BillDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BillDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, BillDescriptionDataType& dst);
 
 /**
  * Datatype BillDescriptionDataElementsType as defined in EEBus_SPINE_TS_Bill.xsd
@@ -6890,13 +6890,13 @@ struct BillDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BillDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const BillDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BillDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The BillDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BillDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, BillDescriptionDataElementsType& dst);
 
 /**
  * Datatype BillDescriptionListDataType as defined in EEBus_SPINE_TS_Bill.xsd
@@ -6914,13 +6914,13 @@ struct BillDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BillDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const BillDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BillDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The BillDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BillDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, BillDescriptionListDataType& dst);
 
 /**
  * Datatype BillDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_Bill.xsd
@@ -6938,13 +6938,13 @@ struct BillDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BillDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const BillDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BillDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The BillDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BillDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, BillDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype IdentificationDataType as defined in EEBus_SPINE_TS_Identification.xsd
@@ -6965,13 +6965,13 @@ struct IdentificationDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IdentificationDataType &src, JsonVariant &dst);
+bool convertToJson(const IdentificationDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IdentificationDataType
  * @param src The JSON variant to convert
  * @param dst The IdentificationDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IdentificationDataType &dst);
+void convertFromJson(const JsonVariantConst& src, IdentificationDataType& dst);
 
 /**
  * Datatype IdentificationDataElementsType as defined in EEBus_SPINE_TS_Identification.xsd
@@ -6992,13 +6992,13 @@ struct IdentificationDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IdentificationDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const IdentificationDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IdentificationDataElementsType
  * @param src The JSON variant to convert
  * @param dst The IdentificationDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IdentificationDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, IdentificationDataElementsType& dst);
 
 /**
  * Datatype IdentificationListDataType as defined in EEBus_SPINE_TS_Identification.xsd
@@ -7016,13 +7016,13 @@ struct IdentificationListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IdentificationListDataType &src, JsonVariant &dst);
+bool convertToJson(const IdentificationListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IdentificationListDataType
  * @param src The JSON variant to convert
  * @param dst The IdentificationListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IdentificationListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, IdentificationListDataType& dst);
 
 /**
  * Datatype IdentificationListDataSelectorsType as defined in EEBus_SPINE_TS_Identification.xsd
@@ -7041,13 +7041,13 @@ struct IdentificationListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IdentificationListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const IdentificationListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IdentificationListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The IdentificationListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IdentificationListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, IdentificationListDataSelectorsType& dst);
 
 /**
  * Datatype SessionIdentificationDataType as defined in EEBus_SPINE_TS_Identification.xsd
@@ -7068,13 +7068,13 @@ struct SessionIdentificationDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SessionIdentificationDataType &src, JsonVariant &dst);
+bool convertToJson(const SessionIdentificationDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SessionIdentificationDataType
  * @param src The JSON variant to convert
  * @param dst The SessionIdentificationDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SessionIdentificationDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SessionIdentificationDataType& dst);
 
 /**
  * Datatype SessionIdentificationDataElementsType as defined in EEBus_SPINE_TS_Identification.xsd
@@ -7095,13 +7095,13 @@ struct SessionIdentificationDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SessionIdentificationDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const SessionIdentificationDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SessionIdentificationDataElementsType
  * @param src The JSON variant to convert
  * @param dst The SessionIdentificationDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SessionIdentificationDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, SessionIdentificationDataElementsType& dst);
 
 /**
  * Datatype SessionIdentificationListDataType as defined in EEBus_SPINE_TS_Identification.xsd
@@ -7119,13 +7119,13 @@ struct SessionIdentificationListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SessionIdentificationListDataType &src, JsonVariant &dst);
+bool convertToJson(const SessionIdentificationListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SessionIdentificationListDataType
  * @param src The JSON variant to convert
  * @param dst The SessionIdentificationListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SessionIdentificationListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SessionIdentificationListDataType& dst);
 
 /**
  * Datatype SessionIdentificationListDataSelectorsType as defined in EEBus_SPINE_TS_Identification.xsd
@@ -7146,13 +7146,13 @@ struct SessionIdentificationListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SessionIdentificationListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const SessionIdentificationListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SessionIdentificationListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The SessionIdentificationListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SessionIdentificationListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, SessionIdentificationListDataSelectorsType& dst);
 
 /**
  * Datatype SessionMeasurementRelationDataType as defined in EEBus_SPINE_TS_Identification.xsd
@@ -7171,13 +7171,13 @@ struct SessionMeasurementRelationDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SessionMeasurementRelationDataType &src, JsonVariant &dst);
+bool convertToJson(const SessionMeasurementRelationDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SessionMeasurementRelationDataType
  * @param src The JSON variant to convert
  * @param dst The SessionMeasurementRelationDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SessionMeasurementRelationDataType& dst);
 
 /**
  * Datatype SessionMeasurementRelationDataElementsType as defined in EEBus_SPINE_TS_Identification.xsd
@@ -7196,13 +7196,13 @@ struct SessionMeasurementRelationDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SessionMeasurementRelationDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const SessionMeasurementRelationDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SessionMeasurementRelationDataElementsType
  * @param src The JSON variant to convert
  * @param dst The SessionMeasurementRelationDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, SessionMeasurementRelationDataElementsType& dst);
 
 /**
  * Datatype SessionMeasurementRelationListDataType as defined in EEBus_SPINE_TS_Identification.xsd
@@ -7220,13 +7220,13 @@ struct SessionMeasurementRelationListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SessionMeasurementRelationListDataType &src, JsonVariant &dst);
+bool convertToJson(const SessionMeasurementRelationListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SessionMeasurementRelationListDataType
  * @param src The JSON variant to convert
  * @param dst The SessionMeasurementRelationListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SessionMeasurementRelationListDataType& dst);
 
 /**
  * Datatype SessionMeasurementRelationListDataSelectorsType as defined in EEBus_SPINE_TS_Identification.xsd
@@ -7245,13 +7245,13 @@ struct SessionMeasurementRelationListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SessionMeasurementRelationListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const SessionMeasurementRelationListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SessionMeasurementRelationListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The SessionMeasurementRelationListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, SessionMeasurementRelationListDataSelectorsType& dst);
 
 /**
  * Datatype SetpointDataType as defined in EEBus_SPINE_TS_Setpoint.xsd
@@ -7277,13 +7277,13 @@ struct SetpointDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SetpointDataType &src, JsonVariant &dst);
+bool convertToJson(const SetpointDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SetpointDataType
  * @param src The JSON variant to convert
  * @param dst The SetpointDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SetpointDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SetpointDataType& dst);
 
 /**
  * Datatype SetpointDataElementsType as defined in EEBus_SPINE_TS_Setpoint.xsd
@@ -7309,13 +7309,13 @@ struct SetpointDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SetpointDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const SetpointDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SetpointDataElementsType
  * @param src The JSON variant to convert
  * @param dst The SetpointDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SetpointDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, SetpointDataElementsType& dst);
 
 /**
  * Datatype SetpointListDataType as defined in EEBus_SPINE_TS_Setpoint.xsd
@@ -7333,13 +7333,13 @@ struct SetpointListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SetpointListDataType &src, JsonVariant &dst);
+bool convertToJson(const SetpointListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SetpointListDataType
  * @param src The JSON variant to convert
  * @param dst The SetpointListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SetpointListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SetpointListDataType& dst);
 
 /**
  * Datatype SetpointListDataSelectorsType as defined in EEBus_SPINE_TS_Setpoint.xsd
@@ -7357,13 +7357,13 @@ struct SetpointListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SetpointListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const SetpointListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SetpointListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The SetpointListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SetpointListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, SetpointListDataSelectorsType& dst);
 
 /**
  * Datatype SetpointConstraintsDataType as defined in EEBus_SPINE_TS_Setpoint.xsd
@@ -7384,13 +7384,13 @@ struct SetpointConstraintsDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SetpointConstraintsDataType &src, JsonVariant &dst);
+bool convertToJson(const SetpointConstraintsDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SetpointConstraintsDataType
  * @param src The JSON variant to convert
  * @param dst The SetpointConstraintsDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SetpointConstraintsDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SetpointConstraintsDataType& dst);
 
 /**
  * Datatype SetpointConstraintsDataElementsType as defined in EEBus_SPINE_TS_Setpoint.xsd
@@ -7411,13 +7411,13 @@ struct SetpointConstraintsDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SetpointConstraintsDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const SetpointConstraintsDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SetpointConstraintsDataElementsType
  * @param src The JSON variant to convert
  * @param dst The SetpointConstraintsDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SetpointConstraintsDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, SetpointConstraintsDataElementsType& dst);
 
 /**
  * Datatype SetpointConstraintsListDataType as defined in EEBus_SPINE_TS_Setpoint.xsd
@@ -7435,13 +7435,13 @@ struct SetpointConstraintsListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SetpointConstraintsListDataType &src, JsonVariant &dst);
+bool convertToJson(const SetpointConstraintsListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SetpointConstraintsListDataType
  * @param src The JSON variant to convert
  * @param dst The SetpointConstraintsListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SetpointConstraintsListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SetpointConstraintsListDataType& dst);
 
 /**
  * Datatype SetpointConstraintsListDataSelectorsType as defined in EEBus_SPINE_TS_Setpoint.xsd
@@ -7459,13 +7459,13 @@ struct SetpointConstraintsListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SetpointConstraintsListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const SetpointConstraintsListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SetpointConstraintsListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The SetpointConstraintsListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SetpointConstraintsListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, SetpointConstraintsListDataSelectorsType& dst);
 
 /**
  * Datatype SetpointDescriptionDataType as defined in EEBus_SPINE_TS_Setpoint.xsd
@@ -7490,13 +7490,13 @@ struct SetpointDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SetpointDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const SetpointDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SetpointDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The SetpointDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SetpointDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SetpointDescriptionDataType& dst);
 
 /**
  * Datatype SetpointDescriptionDataElementsType as defined in EEBus_SPINE_TS_Setpoint.xsd
@@ -7521,13 +7521,13 @@ struct SetpointDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SetpointDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const SetpointDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SetpointDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The SetpointDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SetpointDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, SetpointDescriptionDataElementsType& dst);
 
 /**
  * Datatype SetpointDescriptionListDataType as defined in EEBus_SPINE_TS_Setpoint.xsd
@@ -7545,13 +7545,13 @@ struct SetpointDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SetpointDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const SetpointDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SetpointDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The SetpointDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SetpointDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SetpointDescriptionListDataType& dst);
 
 /**
  * Datatype SetpointDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_Setpoint.xsd
@@ -7573,13 +7573,13 @@ struct SetpointDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SetpointDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const SetpointDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SetpointDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The SetpointDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SetpointDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, SetpointDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype TimeTableDataType as defined in EEBus_SPINE_TS_TimeTable.xsd
@@ -7601,13 +7601,13 @@ struct TimeTableDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeTableDataType &src, JsonVariant &dst);
+bool convertToJson(const TimeTableDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeTableDataType
  * @param src The JSON variant to convert
  * @param dst The TimeTableDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeTableDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableDataType& dst);
 
 /**
  * Datatype TimeTableDataElementsType as defined in EEBus_SPINE_TS_TimeTable.xsd
@@ -7629,13 +7629,13 @@ struct TimeTableDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeTableDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const TimeTableDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeTableDataElementsType
  * @param src The JSON variant to convert
  * @param dst The TimeTableDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeTableDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableDataElementsType& dst);
 
 /**
  * Datatype TimeTableListDataType as defined in EEBus_SPINE_TS_TimeTable.xsd
@@ -7653,13 +7653,13 @@ struct TimeTableListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeTableListDataType &src, JsonVariant &dst);
+bool convertToJson(const TimeTableListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeTableListDataType
  * @param src The JSON variant to convert
  * @param dst The TimeTableListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeTableListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableListDataType& dst);
 
 /**
  * Datatype TimeTableListDataSelectorsType as defined in EEBus_SPINE_TS_TimeTable.xsd
@@ -7678,13 +7678,13 @@ struct TimeTableListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeTableListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const TimeTableListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeTableListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The TimeTableListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeTableListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableListDataSelectorsType& dst);
 
 /**
  * Datatype TimeTableConstraintsDataType as defined in EEBus_SPINE_TS_TimeTable.xsd
@@ -7709,13 +7709,13 @@ struct TimeTableConstraintsDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeTableConstraintsDataType &src, JsonVariant &dst);
+bool convertToJson(const TimeTableConstraintsDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeTableConstraintsDataType
  * @param src The JSON variant to convert
  * @param dst The TimeTableConstraintsDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableConstraintsDataType& dst);
 
 /**
  * Datatype TimeTableConstraintsDataElementsType as defined in EEBus_SPINE_TS_TimeTable.xsd
@@ -7740,13 +7740,13 @@ struct TimeTableConstraintsDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeTableConstraintsDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const TimeTableConstraintsDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeTableConstraintsDataElementsType
  * @param src The JSON variant to convert
  * @param dst The TimeTableConstraintsDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableConstraintsDataElementsType& dst);
 
 /**
  * Datatype TimeTableConstraintsListDataType as defined in EEBus_SPINE_TS_TimeTable.xsd
@@ -7764,13 +7764,13 @@ struct TimeTableConstraintsListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeTableConstraintsListDataType &src, JsonVariant &dst);
+bool convertToJson(const TimeTableConstraintsListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeTableConstraintsListDataType
  * @param src The JSON variant to convert
  * @param dst The TimeTableConstraintsListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableConstraintsListDataType& dst);
 
 /**
  * Datatype TimeTableConstraintsListDataSelectorsType as defined in EEBus_SPINE_TS_TimeTable.xsd
@@ -7788,13 +7788,13 @@ struct TimeTableConstraintsListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeTableConstraintsListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const TimeTableConstraintsListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeTableConstraintsListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The TimeTableConstraintsListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableConstraintsListDataSelectorsType& dst);
 
 /**
  * Datatype TimeTableDescriptionDataType as defined in EEBus_SPINE_TS_TimeTable.xsd
@@ -7817,13 +7817,13 @@ struct TimeTableDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeTableDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const TimeTableDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeTableDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The TimeTableDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableDescriptionDataType& dst);
 
 /**
  * Datatype TimeTableDescriptionDataElementsType as defined in EEBus_SPINE_TS_TimeTable.xsd
@@ -7846,13 +7846,13 @@ struct TimeTableDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeTableDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const TimeTableDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeTableDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The TimeTableDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableDescriptionDataElementsType& dst);
 
 /**
  * Datatype TimeTableDescriptionListDataType as defined in EEBus_SPINE_TS_TimeTable.xsd
@@ -7870,13 +7870,13 @@ struct TimeTableDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeTableDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const TimeTableDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeTableDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The TimeTableDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableDescriptionListDataType& dst);
 
 /**
  * Datatype TimeTableDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_TimeTable.xsd
@@ -7894,13 +7894,13 @@ struct TimeTableDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeTableDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const TimeTableDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeTableDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The TimeTableDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeTableDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype SensingDataType as defined in EEBus_SPINE_TS_Sensing.xsd
@@ -7920,13 +7920,13 @@ struct SensingDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SensingDataType &src, JsonVariant &dst);
+bool convertToJson(const SensingDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SensingDataType
  * @param src The JSON variant to convert
  * @param dst The SensingDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SensingDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SensingDataType& dst);
 
 /**
  * Datatype SensingDataElementsType as defined in EEBus_SPINE_TS_Sensing.xsd
@@ -7946,13 +7946,13 @@ struct SensingDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SensingDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const SensingDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SensingDataElementsType
  * @param src The JSON variant to convert
  * @param dst The SensingDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SensingDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, SensingDataElementsType& dst);
 
 /**
  * Datatype SensingListDataType as defined in EEBus_SPINE_TS_Sensing.xsd
@@ -7970,13 +7970,13 @@ struct SensingListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SensingListDataType &src, JsonVariant &dst);
+bool convertToJson(const SensingListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SensingListDataType
  * @param src The JSON variant to convert
  * @param dst The SensingListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SensingListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SensingListDataType& dst);
 
 /**
  * Datatype SensingListDataSelectorsType as defined in EEBus_SPINE_TS_Sensing.xsd
@@ -7994,13 +7994,13 @@ struct SensingListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SensingListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const SensingListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SensingListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The SensingListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SensingListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, SensingListDataSelectorsType& dst);
 
 /**
  * Datatype SensingDescriptionDataType as defined in EEBus_SPINE_TS_Sensing.xsd
@@ -8022,13 +8022,13 @@ struct SensingDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SensingDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const SensingDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SensingDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The SensingDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SensingDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SensingDescriptionDataType& dst);
 
 /**
  * Datatype SensingDescriptionDataElementsType as defined in EEBus_SPINE_TS_Sensing.xsd
@@ -8050,13 +8050,13 @@ struct SensingDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SensingDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const SensingDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SensingDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The SensingDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SensingDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, SensingDescriptionDataElementsType& dst);
 
 /**
  * Datatype ResultDataType as defined in EEBus_SPINE_TS_Result.xsd
@@ -8075,13 +8075,13 @@ struct ResultDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ResultDataType &src, JsonVariant &dst);
+bool convertToJson(const ResultDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ResultDataType
  * @param src The JSON variant to convert
  * @param dst The ResultDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ResultDataType &dst);
+void convertFromJson(const JsonVariantConst& src, ResultDataType& dst);
 
 /**
  * Datatype ActuatorSwitchDataType as defined in EEBus_SPINE_TS_ActuatorSwitch.xsd
@@ -8099,13 +8099,13 @@ struct ActuatorSwitchDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ActuatorSwitchDataType &src, JsonVariant &dst);
+bool convertToJson(const ActuatorSwitchDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ActuatorSwitchDataType
  * @param src The JSON variant to convert
  * @param dst The ActuatorSwitchDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDataType &dst);
+void convertFromJson(const JsonVariantConst& src, ActuatorSwitchDataType& dst);
 
 /**
  * Datatype ActuatorSwitchDataElementsType as defined in EEBus_SPINE_TS_ActuatorSwitch.xsd
@@ -8123,13 +8123,13 @@ struct ActuatorSwitchDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ActuatorSwitchDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const ActuatorSwitchDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ActuatorSwitchDataElementsType
  * @param src The JSON variant to convert
  * @param dst The ActuatorSwitchDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, ActuatorSwitchDataElementsType& dst);
 
 /**
  * Datatype ActuatorSwitchDescriptionDataType as defined in EEBus_SPINE_TS_ActuatorSwitch.xsd
@@ -8148,13 +8148,13 @@ struct ActuatorSwitchDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ActuatorSwitchDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const ActuatorSwitchDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ActuatorSwitchDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The ActuatorSwitchDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, ActuatorSwitchDescriptionDataType& dst);
 
 /**
  * Datatype ActuatorSwitchDescriptionDataElementsType as defined in EEBus_SPINE_TS_ActuatorSwitch.xsd
@@ -8173,13 +8173,13 @@ struct ActuatorSwitchDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ActuatorSwitchDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const ActuatorSwitchDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ActuatorSwitchDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The ActuatorSwitchDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, ActuatorSwitchDescriptionDataElementsType& dst);
 
 /**
  * Datatype NetworkManagementAddNodeCallType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8201,13 +8201,13 @@ struct NetworkManagementAddNodeCallType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementAddNodeCallType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementAddNodeCallType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementAddNodeCallType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementAddNodeCallType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementAddNodeCallType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementAddNodeCallType& dst);
 
 /**
  * Datatype NetworkManagementAddNodeCallElementsType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8229,13 +8229,13 @@ struct NetworkManagementAddNodeCallElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementAddNodeCallElementsType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementAddNodeCallElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementAddNodeCallElementsType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementAddNodeCallElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementAddNodeCallElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementAddNodeCallElementsType& dst);
 
 /**
  * Datatype NetworkManagementRemoveNodeCallType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8254,13 +8254,13 @@ struct NetworkManagementRemoveNodeCallType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementRemoveNodeCallType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementRemoveNodeCallType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementRemoveNodeCallType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementRemoveNodeCallType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementRemoveNodeCallType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementRemoveNodeCallType& dst);
 
 /**
  * Datatype NetworkManagementRemoveNodeCallElementsType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8279,13 +8279,13 @@ struct NetworkManagementRemoveNodeCallElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementRemoveNodeCallElementsType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementRemoveNodeCallElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementRemoveNodeCallElementsType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementRemoveNodeCallElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementRemoveNodeCallElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementRemoveNodeCallElementsType& dst);
 
 /**
  * Datatype NetworkManagementModifyNodeCallType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8307,13 +8307,13 @@ struct NetworkManagementModifyNodeCallType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementModifyNodeCallType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementModifyNodeCallType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementModifyNodeCallType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementModifyNodeCallType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementModifyNodeCallType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementModifyNodeCallType& dst);
 
 /**
  * Datatype NetworkManagementModifyNodeCallElementsType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8335,13 +8335,13 @@ struct NetworkManagementModifyNodeCallElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementModifyNodeCallElementsType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementModifyNodeCallElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementModifyNodeCallElementsType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementModifyNodeCallElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementModifyNodeCallElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementModifyNodeCallElementsType& dst);
 
 /**
  * Datatype NetworkManagementScanNetworkCallType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8360,13 +8360,13 @@ struct NetworkManagementScanNetworkCallType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementScanNetworkCallType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementScanNetworkCallType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementScanNetworkCallType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementScanNetworkCallType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementScanNetworkCallType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementScanNetworkCallType& dst);
 
 /**
  * Datatype NetworkManagementScanNetworkCallElementsType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8385,13 +8385,13 @@ struct NetworkManagementScanNetworkCallElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementScanNetworkCallElementsType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementScanNetworkCallElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementScanNetworkCallElementsType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementScanNetworkCallElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementScanNetworkCallElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementScanNetworkCallElementsType& dst);
 
 /**
  * Datatype NetworkManagementDiscoverCallType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8409,13 +8409,13 @@ struct NetworkManagementDiscoverCallType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementDiscoverCallType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementDiscoverCallType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementDiscoverCallType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementDiscoverCallType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementDiscoverCallType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementDiscoverCallType& dst);
 
 /**
  * Datatype NetworkManagementDiscoverCallElementsType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8433,20 +8433,19 @@ struct NetworkManagementDiscoverCallElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementDiscoverCallElementsType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementDiscoverCallElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementDiscoverCallElementsType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementDiscoverCallElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementDiscoverCallElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementDiscoverCallElementsType& dst);
 
 /**
  * Datatype NetworkManagementAbortCallType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
 */
 struct NetworkManagementAbortCallType
 {
-
     NetworkManagementAbortCallType() = default;
 };
 
@@ -8456,20 +8455,19 @@ struct NetworkManagementAbortCallType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementAbortCallType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementAbortCallType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementAbortCallType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementAbortCallType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementAbortCallType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementAbortCallType& dst);
 
 /**
  * Datatype NetworkManagementAbortCallElementsType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
 */
 struct NetworkManagementAbortCallElementsType
 {
-
     NetworkManagementAbortCallElementsType() = default;
 };
 
@@ -8479,13 +8477,13 @@ struct NetworkManagementAbortCallElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementAbortCallElementsType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementAbortCallElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementAbortCallElementsType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementAbortCallElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementAbortCallElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementAbortCallElementsType& dst);
 
 /**
  * Datatype NetworkManagementProcessStateDataType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8504,13 +8502,13 @@ struct NetworkManagementProcessStateDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementProcessStateDataType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementProcessStateDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementProcessStateDataType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementProcessStateDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementProcessStateDataType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementProcessStateDataType& dst);
 
 /**
  * Datatype NetworkManagementProcessStateDataElementsType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8529,13 +8527,13 @@ struct NetworkManagementProcessStateDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementProcessStateDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementProcessStateDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementProcessStateDataElementsType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementProcessStateDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementProcessStateDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementProcessStateDataElementsType& dst);
 
 /**
  * Datatype NetworkManagementJoiningModeDataType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8553,13 +8551,13 @@ struct NetworkManagementJoiningModeDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementJoiningModeDataType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementJoiningModeDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementJoiningModeDataType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementJoiningModeDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementJoiningModeDataType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementJoiningModeDataType& dst);
 
 /**
  * Datatype NetworkManagementJoiningModeDataElementsType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8577,13 +8575,13 @@ struct NetworkManagementJoiningModeDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementJoiningModeDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementJoiningModeDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementJoiningModeDataElementsType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementJoiningModeDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementJoiningModeDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementJoiningModeDataElementsType& dst);
 
 /**
  * Datatype NetworkManagementReportCandidateDataType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8604,13 +8602,13 @@ struct NetworkManagementReportCandidateDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementReportCandidateDataType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementReportCandidateDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementReportCandidateDataType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementReportCandidateDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementReportCandidateDataType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementReportCandidateDataType& dst);
 
 /**
  * Datatype NetworkManagementReportCandidateDataElementsType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8631,13 +8629,13 @@ struct NetworkManagementReportCandidateDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementReportCandidateDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementReportCandidateDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementReportCandidateDataElementsType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementReportCandidateDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementReportCandidateDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementReportCandidateDataElementsType& dst);
 
 /**
  * Datatype NetworkManagementDeviceDescriptionDataType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8665,13 +8663,13 @@ struct NetworkManagementDeviceDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementDeviceDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementDeviceDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementDeviceDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementDeviceDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementDeviceDescriptionDataType& dst);
 
 /**
  * Datatype NetworkManagementDeviceDescriptionDataElementsType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8699,13 +8697,13 @@ struct NetworkManagementDeviceDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementDeviceDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementDeviceDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementDeviceDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementDeviceDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementDeviceDescriptionDataElementsType& dst);
 
 /**
  * Datatype NetworkManagementDeviceDescriptionListDataType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8723,13 +8721,13 @@ struct NetworkManagementDeviceDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementDeviceDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementDeviceDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementDeviceDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementDeviceDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementDeviceDescriptionListDataType& dst);
 
 /**
  * Datatype NetworkManagementDeviceDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8748,13 +8746,13 @@ struct NetworkManagementDeviceDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementDeviceDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementDeviceDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementDeviceDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementDeviceDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementDeviceDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype NetworkManagementEntityDescriptionDataType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8777,13 +8775,13 @@ struct NetworkManagementEntityDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementEntityDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementEntityDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementEntityDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementEntityDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementEntityDescriptionDataType& dst);
 
 /**
  * Datatype NetworkManagementEntityDescriptionDataElementsType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8806,13 +8804,13 @@ struct NetworkManagementEntityDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementEntityDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementEntityDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementEntityDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementEntityDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementEntityDescriptionDataElementsType& dst);
 
 /**
  * Datatype NetworkManagementEntityDescriptionListDataType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8830,13 +8828,13 @@ struct NetworkManagementEntityDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementEntityDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementEntityDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementEntityDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementEntityDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementEntityDescriptionListDataType& dst);
 
 /**
  * Datatype NetworkManagementEntityDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8855,13 +8853,13 @@ struct NetworkManagementEntityDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementEntityDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementEntityDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementEntityDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementEntityDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementEntityDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype NetworkManagementFeatureDescriptionDataType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8889,13 +8887,13 @@ struct NetworkManagementFeatureDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementFeatureDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementFeatureDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementFeatureDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementFeatureDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementFeatureDescriptionDataType& dst);
 
 /**
  * Datatype NetworkManagementFeatureDescriptionDataElementsType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8923,13 +8921,13 @@ struct NetworkManagementFeatureDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementFeatureDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementFeatureDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementFeatureDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementFeatureDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementFeatureDescriptionDataElementsType& dst);
 
 /**
  * Datatype NetworkManagementFeatureDescriptionListDataType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8947,13 +8945,13 @@ struct NetworkManagementFeatureDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementFeatureDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementFeatureDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementFeatureDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementFeatureDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementFeatureDescriptionListDataType& dst);
 
 /**
  * Datatype NetworkManagementFeatureDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_NetworkManagement.xsd
@@ -8972,13 +8970,13 @@ struct NetworkManagementFeatureDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NetworkManagementFeatureDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const NetworkManagementFeatureDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NetworkManagementFeatureDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The NetworkManagementFeatureDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, NetworkManagementFeatureDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype SupplyConditionDataType as defined in EEBus_SPINE_TS_SupplyCondition.xsd
@@ -9004,13 +9002,13 @@ struct SupplyConditionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SupplyConditionDataType &src, JsonVariant &dst);
+bool convertToJson(const SupplyConditionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SupplyConditionDataType
  * @param src The JSON variant to convert
  * @param dst The SupplyConditionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SupplyConditionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionDataType& dst);
 
 /**
  * Datatype SupplyConditionDataElementsType as defined in EEBus_SPINE_TS_SupplyCondition.xsd
@@ -9036,13 +9034,13 @@ struct SupplyConditionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SupplyConditionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const SupplyConditionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SupplyConditionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The SupplyConditionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SupplyConditionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionDataElementsType& dst);
 
 /**
  * Datatype SupplyConditionListDataType as defined in EEBus_SPINE_TS_SupplyCondition.xsd
@@ -9060,13 +9058,13 @@ struct SupplyConditionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SupplyConditionListDataType &src, JsonVariant &dst);
+bool convertToJson(const SupplyConditionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SupplyConditionListDataType
  * @param src The JSON variant to convert
  * @param dst The SupplyConditionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SupplyConditionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionListDataType& dst);
 
 /**
  * Datatype SupplyConditionListDataSelectorsType as defined in EEBus_SPINE_TS_SupplyCondition.xsd
@@ -9087,13 +9085,13 @@ struct SupplyConditionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SupplyConditionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const SupplyConditionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SupplyConditionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The SupplyConditionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SupplyConditionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionListDataSelectorsType& dst);
 
 /**
  * Datatype SupplyConditionDescriptionDataType as defined in EEBus_SPINE_TS_SupplyCondition.xsd
@@ -9115,13 +9113,13 @@ struct SupplyConditionDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SupplyConditionDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const SupplyConditionDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SupplyConditionDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The SupplyConditionDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionDescriptionDataType& dst);
 
 /**
  * Datatype SupplyConditionDescriptionDataElementsType as defined in EEBus_SPINE_TS_SupplyCondition.xsd
@@ -9143,13 +9141,13 @@ struct SupplyConditionDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SupplyConditionDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const SupplyConditionDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SupplyConditionDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The SupplyConditionDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionDescriptionDataElementsType& dst);
 
 /**
  * Datatype SupplyConditionDescriptionListDataType as defined in EEBus_SPINE_TS_SupplyCondition.xsd
@@ -9167,13 +9165,13 @@ struct SupplyConditionDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SupplyConditionDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const SupplyConditionDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SupplyConditionDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The SupplyConditionDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionDescriptionListDataType& dst);
 
 /**
  * Datatype SupplyConditionDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_SupplyCondition.xsd
@@ -9191,13 +9189,13 @@ struct SupplyConditionDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SupplyConditionDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const SupplyConditionDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SupplyConditionDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The SupplyConditionDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype SupplyConditionThresholdRelationDataType as defined in EEBus_SPINE_TS_SupplyCondition.xsd
@@ -9216,13 +9214,13 @@ struct SupplyConditionThresholdRelationDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SupplyConditionThresholdRelationDataType &src, JsonVariant &dst);
+bool convertToJson(const SupplyConditionThresholdRelationDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SupplyConditionThresholdRelationDataType
  * @param src The JSON variant to convert
  * @param dst The SupplyConditionThresholdRelationDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelationDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionThresholdRelationDataType& dst);
 
 /**
  * Datatype SupplyConditionThresholdRelationDataElementsType as defined in EEBus_SPINE_TS_SupplyCondition.xsd
@@ -9241,13 +9239,13 @@ struct SupplyConditionThresholdRelationDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SupplyConditionThresholdRelationDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const SupplyConditionThresholdRelationDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SupplyConditionThresholdRelationDataElementsType
  * @param src The JSON variant to convert
  * @param dst The SupplyConditionThresholdRelationDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelationDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionThresholdRelationDataElementsType& dst);
 
 /**
  * Datatype SupplyConditionThresholdRelationListDataType as defined in EEBus_SPINE_TS_SupplyCondition.xsd
@@ -9265,13 +9263,13 @@ struct SupplyConditionThresholdRelationListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SupplyConditionThresholdRelationListDataType &src, JsonVariant &dst);
+bool convertToJson(const SupplyConditionThresholdRelationListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SupplyConditionThresholdRelationListDataType
  * @param src The JSON variant to convert
  * @param dst The SupplyConditionThresholdRelationListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelationListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionThresholdRelationListDataType& dst);
 
 /**
  * Datatype SupplyConditionThresholdRelationListDataSelectorsType as defined in EEBus_SPINE_TS_SupplyCondition.xsd
@@ -9290,13 +9288,13 @@ struct SupplyConditionThresholdRelationListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SupplyConditionThresholdRelationListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const SupplyConditionThresholdRelationListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SupplyConditionThresholdRelationListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The SupplyConditionThresholdRelationListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelationListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, SupplyConditionThresholdRelationListDataSelectorsType& dst);
 
 /**
  * Datatype AlarmDataType as defined in EEBus_SPINE_TS_Alarm.xsd
@@ -9322,13 +9320,13 @@ struct AlarmDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const AlarmDataType &src, JsonVariant &dst);
+bool convertToJson(const AlarmDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a AlarmDataType
  * @param src The JSON variant to convert
  * @param dst The AlarmDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, AlarmDataType &dst);
+void convertFromJson(const JsonVariantConst& src, AlarmDataType& dst);
 
 /**
  * Datatype AlarmDataElementsType as defined in EEBus_SPINE_TS_Alarm.xsd
@@ -9354,13 +9352,13 @@ struct AlarmDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const AlarmDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const AlarmDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a AlarmDataElementsType
  * @param src The JSON variant to convert
  * @param dst The AlarmDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, AlarmDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, AlarmDataElementsType& dst);
 
 /**
  * Datatype AlarmListDataType as defined in EEBus_SPINE_TS_Alarm.xsd
@@ -9378,13 +9376,13 @@ struct AlarmListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const AlarmListDataType &src, JsonVariant &dst);
+bool convertToJson(const AlarmListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a AlarmListDataType
  * @param src The JSON variant to convert
  * @param dst The AlarmListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, AlarmListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, AlarmListDataType& dst);
 
 /**
  * Datatype AlarmListDataSelectorsType as defined in EEBus_SPINE_TS_Alarm.xsd
@@ -9403,13 +9401,13 @@ struct AlarmListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const AlarmListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const AlarmListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a AlarmListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The AlarmListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, AlarmListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, AlarmListDataSelectorsType& dst);
 
 /**
  * Datatype NodeManagementSpecificationVersionListType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -9427,13 +9425,13 @@ struct NodeManagementSpecificationVersionListType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementSpecificationVersionListType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementSpecificationVersionListType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementSpecificationVersionListType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementSpecificationVersionListType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementSpecificationVersionListType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementSpecificationVersionListType& dst);
 
 /**
  * Datatype NodeManagementDetailedDiscoveryDeviceInformationType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -9451,13 +9449,13 @@ struct NodeManagementDetailedDiscoveryDeviceInformationType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementDetailedDiscoveryDeviceInformationType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementDetailedDiscoveryDeviceInformationType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementDetailedDiscoveryDeviceInformationType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementDetailedDiscoveryDeviceInformationType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryDeviceInformationType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDetailedDiscoveryDeviceInformationType& dst);
 
 /**
  * Datatype NodeManagementDetailedDiscoveryEntityInformationType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -9475,13 +9473,13 @@ struct NodeManagementDetailedDiscoveryEntityInformationType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementDetailedDiscoveryEntityInformationType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementDetailedDiscoveryEntityInformationType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementDetailedDiscoveryEntityInformationType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementDetailedDiscoveryEntityInformationType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryEntityInformationType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDetailedDiscoveryEntityInformationType& dst);
 
 /**
  * Datatype NodeManagementDetailedDiscoveryFeatureInformationType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -9499,13 +9497,13 @@ struct NodeManagementDetailedDiscoveryFeatureInformationType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementDetailedDiscoveryFeatureInformationType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementDetailedDiscoveryFeatureInformationType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementDetailedDiscoveryFeatureInformationType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementDetailedDiscoveryFeatureInformationType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryFeatureInformationType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDetailedDiscoveryFeatureInformationType& dst);
 
 /**
  * Datatype NodeManagementDetailedDiscoveryDataType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -9526,20 +9524,19 @@ struct NodeManagementDetailedDiscoveryDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementDetailedDiscoveryDataType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementDetailedDiscoveryDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementDetailedDiscoveryDataType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementDetailedDiscoveryDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryDataType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDetailedDiscoveryDataType& dst);
 
 /**
  * Datatype SpecificationVersionDataElementsType as defined in EEBus_SPINE_TS_Version.xsd
 */
 struct SpecificationVersionDataElementsType
 {
-
     SpecificationVersionDataElementsType() = default;
 };
 
@@ -9549,13 +9546,13 @@ struct SpecificationVersionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SpecificationVersionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const SpecificationVersionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SpecificationVersionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The SpecificationVersionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SpecificationVersionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, SpecificationVersionDataElementsType& dst);
 
 /**
  * Datatype NodeManagementSpecificationVersionListElementsType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -9573,13 +9570,13 @@ struct NodeManagementSpecificationVersionListElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementSpecificationVersionListElementsType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementSpecificationVersionListElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementSpecificationVersionListElementsType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementSpecificationVersionListElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementSpecificationVersionListElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementSpecificationVersionListElementsType& dst);
 
 /**
  * Datatype NodeManagementDetailedDiscoveryDeviceInformationElementsType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -9597,13 +9594,13 @@ struct NodeManagementDetailedDiscoveryDeviceInformationElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementDetailedDiscoveryDeviceInformationElementsType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementDetailedDiscoveryDeviceInformationElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementDetailedDiscoveryDeviceInformationElementsType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementDetailedDiscoveryDeviceInformationElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryDeviceInformationElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDetailedDiscoveryDeviceInformationElementsType& dst);
 
 /**
  * Datatype NodeManagementDetailedDiscoveryEntityInformationElementsType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -9621,13 +9618,13 @@ struct NodeManagementDetailedDiscoveryEntityInformationElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementDetailedDiscoveryEntityInformationElementsType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementDetailedDiscoveryEntityInformationElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementDetailedDiscoveryEntityInformationElementsType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementDetailedDiscoveryEntityInformationElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryEntityInformationElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDetailedDiscoveryEntityInformationElementsType& dst);
 
 /**
  * Datatype NodeManagementDetailedDiscoveryFeatureInformationElementsType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -9645,13 +9642,13 @@ struct NodeManagementDetailedDiscoveryFeatureInformationElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementDetailedDiscoveryFeatureInformationElementsType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementDetailedDiscoveryFeatureInformationElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementDetailedDiscoveryFeatureInformationElementsType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementDetailedDiscoveryFeatureInformationElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryFeatureInformationElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDetailedDiscoveryFeatureInformationElementsType& dst);
 
 /**
  * Datatype NodeManagementDetailedDiscoveryDataElementsType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -9672,13 +9669,13 @@ struct NodeManagementDetailedDiscoveryDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementDetailedDiscoveryDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementDetailedDiscoveryDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementDetailedDiscoveryDataElementsType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementDetailedDiscoveryDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDetailedDiscoveryDataElementsType& dst);
 
 /**
  * Datatype NodeManagementDetailedDiscoveryDataSelectorsType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -9698,13 +9695,13 @@ struct NodeManagementDetailedDiscoveryDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementDetailedDiscoveryDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementDetailedDiscoveryDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementDetailedDiscoveryDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementDetailedDiscoveryDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDetailedDiscoveryDataSelectorsType& dst);
 
 /**
  * Datatype BindingManagementEntryDataType as defined in EEBus_SPINE_TS_BindingManagement.xsd
@@ -9726,13 +9723,13 @@ struct BindingManagementEntryDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BindingManagementEntryDataType &src, JsonVariant &dst);
+bool convertToJson(const BindingManagementEntryDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BindingManagementEntryDataType
  * @param src The JSON variant to convert
  * @param dst The BindingManagementEntryDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BindingManagementEntryDataType &dst);
+void convertFromJson(const JsonVariantConst& src, BindingManagementEntryDataType& dst);
 
 /**
  * Datatype NodeManagementBindingDataType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -9750,13 +9747,13 @@ struct NodeManagementBindingDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementBindingDataType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementBindingDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementBindingDataType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementBindingDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDataType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementBindingDataType& dst);
 
 /**
  * Datatype BindingManagementEntryDataElementsType as defined in EEBus_SPINE_TS_BindingManagement.xsd
@@ -9778,13 +9775,13 @@ struct BindingManagementEntryDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BindingManagementEntryDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const BindingManagementEntryDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BindingManagementEntryDataElementsType
  * @param src The JSON variant to convert
  * @param dst The BindingManagementEntryDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BindingManagementEntryDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, BindingManagementEntryDataElementsType& dst);
 
 /**
  * Datatype NodeManagementBindingDataElementsType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -9802,13 +9799,13 @@ struct NodeManagementBindingDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementBindingDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementBindingDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementBindingDataElementsType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementBindingDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementBindingDataElementsType& dst);
 
 /**
  * Datatype BindingManagementEntryListDataSelectorsType as defined in EEBus_SPINE_TS_BindingManagement.xsd
@@ -9828,13 +9825,13 @@ struct BindingManagementEntryListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BindingManagementEntryListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const BindingManagementEntryListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BindingManagementEntryListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The BindingManagementEntryListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BindingManagementEntryListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, BindingManagementEntryListDataSelectorsType& dst);
 
 /**
  * Datatype NodeManagementBindingDataSelectorsType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -9852,13 +9849,13 @@ struct NodeManagementBindingDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementBindingDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementBindingDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementBindingDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementBindingDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementBindingDataSelectorsType& dst);
 
 /**
  * Datatype BindingManagementRequestCallType as defined in EEBus_SPINE_TS_BindingManagement.xsd
@@ -9878,13 +9875,13 @@ struct BindingManagementRequestCallType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BindingManagementRequestCallType &src, JsonVariant &dst);
+bool convertToJson(const BindingManagementRequestCallType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BindingManagementRequestCallType
  * @param src The JSON variant to convert
  * @param dst The BindingManagementRequestCallType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BindingManagementRequestCallType &dst);
+void convertFromJson(const JsonVariantConst& src, BindingManagementRequestCallType& dst);
 
 /**
  * Datatype NodeManagementBindingRequestCallType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -9902,13 +9899,13 @@ struct NodeManagementBindingRequestCallType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementBindingRequestCallType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementBindingRequestCallType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementBindingRequestCallType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementBindingRequestCallType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementBindingRequestCallType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementBindingRequestCallType& dst);
 
 /**
  * Datatype BindingManagementRequestCallElementsType as defined in EEBus_SPINE_TS_BindingManagement.xsd
@@ -9928,13 +9925,13 @@ struct BindingManagementRequestCallElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BindingManagementRequestCallElementsType &src, JsonVariant &dst);
+bool convertToJson(const BindingManagementRequestCallElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BindingManagementRequestCallElementsType
  * @param src The JSON variant to convert
  * @param dst The BindingManagementRequestCallElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BindingManagementRequestCallElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, BindingManagementRequestCallElementsType& dst);
 
 /**
  * Datatype NodeManagementBindingRequestCallElementsType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -9952,13 +9949,13 @@ struct NodeManagementBindingRequestCallElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementBindingRequestCallElementsType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementBindingRequestCallElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementBindingRequestCallElementsType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementBindingRequestCallElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementBindingRequestCallElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementBindingRequestCallElementsType& dst);
 
 /**
  * Datatype BindingManagementDeleteCallType as defined in EEBus_SPINE_TS_BindingManagement.xsd
@@ -9978,13 +9975,13 @@ struct BindingManagementDeleteCallType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BindingManagementDeleteCallType &src, JsonVariant &dst);
+bool convertToJson(const BindingManagementDeleteCallType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BindingManagementDeleteCallType
  * @param src The JSON variant to convert
  * @param dst The BindingManagementDeleteCallType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BindingManagementDeleteCallType &dst);
+void convertFromJson(const JsonVariantConst& src, BindingManagementDeleteCallType& dst);
 
 /**
  * Datatype NodeManagementBindingDeleteCallType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -10002,13 +9999,13 @@ struct NodeManagementBindingDeleteCallType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementBindingDeleteCallType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementBindingDeleteCallType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementBindingDeleteCallType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementBindingDeleteCallType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDeleteCallType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementBindingDeleteCallType& dst);
 
 /**
  * Datatype BindingManagementDeleteCallElementsType as defined in EEBus_SPINE_TS_BindingManagement.xsd
@@ -10028,13 +10025,13 @@ struct BindingManagementDeleteCallElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BindingManagementDeleteCallElementsType &src, JsonVariant &dst);
+bool convertToJson(const BindingManagementDeleteCallElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BindingManagementDeleteCallElementsType
  * @param src The JSON variant to convert
  * @param dst The BindingManagementDeleteCallElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BindingManagementDeleteCallElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, BindingManagementDeleteCallElementsType& dst);
 
 /**
  * Datatype NodeManagementBindingDeleteCallElementsType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -10052,13 +10049,13 @@ struct NodeManagementBindingDeleteCallElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementBindingDeleteCallElementsType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementBindingDeleteCallElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementBindingDeleteCallElementsType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementBindingDeleteCallElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDeleteCallElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementBindingDeleteCallElementsType& dst);
 
 /**
  * Datatype SubscriptionManagementEntryDataType as defined in EEBus_SPINE_TS_SubscriptionManagement.xsd
@@ -10080,13 +10077,13 @@ struct SubscriptionManagementEntryDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SubscriptionManagementEntryDataType &src, JsonVariant &dst);
+bool convertToJson(const SubscriptionManagementEntryDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SubscriptionManagementEntryDataType
  * @param src The JSON variant to convert
  * @param dst The SubscriptionManagementEntryDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SubscriptionManagementEntryDataType& dst);
 
 /**
  * Datatype NodeManagementSubscriptionDataType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -10104,13 +10101,13 @@ struct NodeManagementSubscriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementSubscriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementSubscriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementSubscriptionDataType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementSubscriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementSubscriptionDataType& dst);
 
 /**
  * Datatype SubscriptionManagementEntryDataElementsType as defined in EEBus_SPINE_TS_SubscriptionManagement.xsd
@@ -10132,13 +10129,13 @@ struct SubscriptionManagementEntryDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SubscriptionManagementEntryDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const SubscriptionManagementEntryDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SubscriptionManagementEntryDataElementsType
  * @param src The JSON variant to convert
  * @param dst The SubscriptionManagementEntryDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, SubscriptionManagementEntryDataElementsType& dst);
 
 /**
  * Datatype NodeManagementSubscriptionDataElementsType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -10156,13 +10153,13 @@ struct NodeManagementSubscriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementSubscriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementSubscriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementSubscriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementSubscriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementSubscriptionDataElementsType& dst);
 
 /**
  * Datatype SubscriptionManagementEntryListDataSelectorsType as defined in EEBus_SPINE_TS_SubscriptionManagement.xsd
@@ -10182,13 +10179,13 @@ struct SubscriptionManagementEntryListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SubscriptionManagementEntryListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const SubscriptionManagementEntryListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SubscriptionManagementEntryListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The SubscriptionManagementEntryListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, SubscriptionManagementEntryListDataSelectorsType& dst);
 
 /**
  * Datatype NodeManagementSubscriptionDataSelectorsType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -10206,13 +10203,13 @@ struct NodeManagementSubscriptionDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementSubscriptionDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementSubscriptionDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementSubscriptionDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementSubscriptionDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementSubscriptionDataSelectorsType& dst);
 
 /**
  * Datatype SubscriptionManagementRequestCallType as defined in EEBus_SPINE_TS_SubscriptionManagement.xsd
@@ -10232,13 +10229,13 @@ struct SubscriptionManagementRequestCallType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SubscriptionManagementRequestCallType &src, JsonVariant &dst);
+bool convertToJson(const SubscriptionManagementRequestCallType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SubscriptionManagementRequestCallType
  * @param src The JSON variant to convert
  * @param dst The SubscriptionManagementRequestCallType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SubscriptionManagementRequestCallType &dst);
+void convertFromJson(const JsonVariantConst& src, SubscriptionManagementRequestCallType& dst);
 
 /**
  * Datatype NodeManagementSubscriptionRequestCallType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -10256,13 +10253,13 @@ struct NodeManagementSubscriptionRequestCallType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementSubscriptionRequestCallType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementSubscriptionRequestCallType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementSubscriptionRequestCallType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementSubscriptionRequestCallType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionRequestCallType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementSubscriptionRequestCallType& dst);
 
 /**
  * Datatype SubscriptionManagementRequestCallElementsType as defined in EEBus_SPINE_TS_SubscriptionManagement.xsd
@@ -10282,13 +10279,13 @@ struct SubscriptionManagementRequestCallElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SubscriptionManagementRequestCallElementsType &src, JsonVariant &dst);
+bool convertToJson(const SubscriptionManagementRequestCallElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SubscriptionManagementRequestCallElementsType
  * @param src The JSON variant to convert
  * @param dst The SubscriptionManagementRequestCallElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SubscriptionManagementRequestCallElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, SubscriptionManagementRequestCallElementsType& dst);
 
 /**
  * Datatype NodeManagementSubscriptionRequestCallElementsType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -10306,13 +10303,13 @@ struct NodeManagementSubscriptionRequestCallElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementSubscriptionRequestCallElementsType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementSubscriptionRequestCallElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementSubscriptionRequestCallElementsType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementSubscriptionRequestCallElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionRequestCallElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementSubscriptionRequestCallElementsType& dst);
 
 /**
  * Datatype SubscriptionManagementDeleteCallType as defined in EEBus_SPINE_TS_SubscriptionManagement.xsd
@@ -10332,13 +10329,13 @@ struct SubscriptionManagementDeleteCallType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SubscriptionManagementDeleteCallType &src, JsonVariant &dst);
+bool convertToJson(const SubscriptionManagementDeleteCallType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SubscriptionManagementDeleteCallType
  * @param src The JSON variant to convert
  * @param dst The SubscriptionManagementDeleteCallType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SubscriptionManagementDeleteCallType &dst);
+void convertFromJson(const JsonVariantConst& src, SubscriptionManagementDeleteCallType& dst);
 
 /**
  * Datatype NodeManagementSubscriptionDeleteCallType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -10356,13 +10353,13 @@ struct NodeManagementSubscriptionDeleteCallType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementSubscriptionDeleteCallType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementSubscriptionDeleteCallType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementSubscriptionDeleteCallType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementSubscriptionDeleteCallType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDeleteCallType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementSubscriptionDeleteCallType& dst);
 
 /**
  * Datatype SubscriptionManagementDeleteCallElementsType as defined in EEBus_SPINE_TS_SubscriptionManagement.xsd
@@ -10382,13 +10379,13 @@ struct SubscriptionManagementDeleteCallElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SubscriptionManagementDeleteCallElementsType &src, JsonVariant &dst);
+bool convertToJson(const SubscriptionManagementDeleteCallElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SubscriptionManagementDeleteCallElementsType
  * @param src The JSON variant to convert
  * @param dst The SubscriptionManagementDeleteCallElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SubscriptionManagementDeleteCallElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, SubscriptionManagementDeleteCallElementsType& dst);
 
 /**
  * Datatype NodeManagementSubscriptionDeleteCallElementsType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -10406,13 +10403,13 @@ struct NodeManagementSubscriptionDeleteCallElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementSubscriptionDeleteCallElementsType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementSubscriptionDeleteCallElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementSubscriptionDeleteCallElementsType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementSubscriptionDeleteCallElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDeleteCallElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementSubscriptionDeleteCallElementsType& dst);
 
 /**
  * Datatype NodeManagementDestinationDataType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -10430,13 +10427,13 @@ struct NodeManagementDestinationDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementDestinationDataType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementDestinationDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementDestinationDataType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementDestinationDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationDataType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDestinationDataType& dst);
 
 /**
  * Datatype NodeManagementDestinationDataElementsType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -10454,13 +10451,13 @@ struct NodeManagementDestinationDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementDestinationDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementDestinationDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementDestinationDataElementsType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementDestinationDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDestinationDataElementsType& dst);
 
 /**
  * Datatype NodeManagementDestinationListDataType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -10478,13 +10475,13 @@ struct NodeManagementDestinationListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementDestinationListDataType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementDestinationListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementDestinationListDataType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementDestinationListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDestinationListDataType& dst);
 
 /**
  * Datatype NodeManagementDestinationListDataSelectorsType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -10502,13 +10499,13 @@ struct NodeManagementDestinationListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementDestinationListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementDestinationListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementDestinationListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementDestinationListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementDestinationListDataSelectorsType& dst);
 
 /**
  * Datatype UseCaseSupportType as defined in EEBus_SPINE_TS_UseCaseInformation.xsd
@@ -10530,13 +10527,13 @@ struct UseCaseSupportType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const UseCaseSupportType &src, JsonVariant &dst);
+bool convertToJson(const UseCaseSupportType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a UseCaseSupportType
  * @param src The JSON variant to convert
  * @param dst The UseCaseSupportType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, UseCaseSupportType &dst);
+void convertFromJson(const JsonVariantConst& src, UseCaseSupportType& dst);
 
 /**
  * Datatype UseCaseInformationDataType as defined in EEBus_SPINE_TS_UseCaseInformation.xsd
@@ -10556,13 +10553,13 @@ struct UseCaseInformationDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const UseCaseInformationDataType &src, JsonVariant &dst);
+bool convertToJson(const UseCaseInformationDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a UseCaseInformationDataType
  * @param src The JSON variant to convert
  * @param dst The UseCaseInformationDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, UseCaseInformationDataType &dst);
+void convertFromJson(const JsonVariantConst& src, UseCaseInformationDataType& dst);
 
 /**
  * Datatype NodeManagementUseCaseDataType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -10580,13 +10577,13 @@ struct NodeManagementUseCaseDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementUseCaseDataType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementUseCaseDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementUseCaseDataType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementUseCaseDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementUseCaseDataType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementUseCaseDataType& dst);
 
 /**
  * Datatype UseCaseSupportElementsType as defined in EEBus_SPINE_TS_UseCaseInformation.xsd
@@ -10608,13 +10605,13 @@ struct UseCaseSupportElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const UseCaseSupportElementsType &src, JsonVariant &dst);
+bool convertToJson(const UseCaseSupportElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a UseCaseSupportElementsType
  * @param src The JSON variant to convert
  * @param dst The UseCaseSupportElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, UseCaseSupportElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, UseCaseSupportElementsType& dst);
 
 /**
  * Datatype UseCaseInformationDataElementsType as defined in EEBus_SPINE_TS_UseCaseInformation.xsd
@@ -10634,13 +10631,13 @@ struct UseCaseInformationDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const UseCaseInformationDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const UseCaseInformationDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a UseCaseInformationDataElementsType
  * @param src The JSON variant to convert
  * @param dst The UseCaseInformationDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, UseCaseInformationDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, UseCaseInformationDataElementsType& dst);
 
 /**
  * Datatype NodeManagementUseCaseDataElementsType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -10658,13 +10655,13 @@ struct NodeManagementUseCaseDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementUseCaseDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementUseCaseDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementUseCaseDataElementsType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementUseCaseDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementUseCaseDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementUseCaseDataElementsType& dst);
 
 /**
  * Datatype UseCaseSupportSelectorsType as defined in EEBus_SPINE_TS_UseCaseInformation.xsd
@@ -10684,13 +10681,13 @@ struct UseCaseSupportSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const UseCaseSupportSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const UseCaseSupportSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a UseCaseSupportSelectorsType
  * @param src The JSON variant to convert
  * @param dst The UseCaseSupportSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, UseCaseSupportSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, UseCaseSupportSelectorsType& dst);
 
 /**
  * Datatype UseCaseInformationListDataSelectorsType as defined in EEBus_SPINE_TS_UseCaseInformation.xsd
@@ -10710,13 +10707,13 @@ struct UseCaseInformationListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const UseCaseInformationListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const UseCaseInformationListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a UseCaseInformationListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The UseCaseInformationListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, UseCaseInformationListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, UseCaseInformationListDataSelectorsType& dst);
 
 /**
  * Datatype NodeManagementUseCaseDataSelectorsType as defined in EEBus_SPINE_TS_NodeManagement.xsd
@@ -10734,13 +10731,13 @@ struct NodeManagementUseCaseDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const NodeManagementUseCaseDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const NodeManagementUseCaseDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a NodeManagementUseCaseDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The NodeManagementUseCaseDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, NodeManagementUseCaseDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, NodeManagementUseCaseDataSelectorsType& dst);
 
 /**
  * Datatype BindingManagementEntryListDataType as defined in EEBus_SPINE_TS_BindingManagement.xsd
@@ -10758,13 +10755,13 @@ struct BindingManagementEntryListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const BindingManagementEntryListDataType &src, JsonVariant &dst);
+bool convertToJson(const BindingManagementEntryListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a BindingManagementEntryListDataType
  * @param src The JSON variant to convert
  * @param dst The BindingManagementEntryListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, BindingManagementEntryListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, BindingManagementEntryListDataType& dst);
 
 /**
  * Datatype SubscriptionManagementEntryListDataType as defined in EEBus_SPINE_TS_SubscriptionManagement.xsd
@@ -10782,13 +10779,13 @@ struct SubscriptionManagementEntryListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SubscriptionManagementEntryListDataType &src, JsonVariant &dst);
+bool convertToJson(const SubscriptionManagementEntryListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SubscriptionManagementEntryListDataType
  * @param src The JSON variant to convert
  * @param dst The SubscriptionManagementEntryListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SubscriptionManagementEntryListDataType& dst);
 
 /**
  * Datatype UseCaseInformationListDataType as defined in EEBus_SPINE_TS_UseCaseInformation.xsd
@@ -10806,13 +10803,13 @@ struct UseCaseInformationListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const UseCaseInformationListDataType &src, JsonVariant &dst);
+bool convertToJson(const UseCaseInformationListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a UseCaseInformationListDataType
  * @param src The JSON variant to convert
  * @param dst The UseCaseInformationListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, UseCaseInformationListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, UseCaseInformationListDataType& dst);
 
 /**
  * Datatype SpecificationVersionListDataType as defined in EEBus_SPINE_TS_Version.xsd
@@ -10830,20 +10827,19 @@ struct SpecificationVersionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SpecificationVersionListDataType &src, JsonVariant &dst);
+bool convertToJson(const SpecificationVersionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SpecificationVersionListDataType
  * @param src The JSON variant to convert
  * @param dst The SpecificationVersionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SpecificationVersionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SpecificationVersionListDataType& dst);
 
 /**
  * Datatype SpecificationVersionListDataSelectorsType as defined in EEBus_SPINE_TS_Version.xsd
 */
 struct SpecificationVersionListDataSelectorsType
 {
-
     SpecificationVersionListDataSelectorsType() = default;
 };
 
@@ -10853,20 +10849,19 @@ struct SpecificationVersionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SpecificationVersionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const SpecificationVersionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SpecificationVersionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The SpecificationVersionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SpecificationVersionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, SpecificationVersionListDataSelectorsType& dst);
 
 /**
  * Datatype TaskManagementDirectControlRelatedType as defined in EEBus_SPINE_TS_TaskManagement.xsd
 */
 struct TaskManagementDirectControlRelatedType
 {
-
     TaskManagementDirectControlRelatedType() = default;
 };
 
@@ -10876,20 +10871,19 @@ struct TaskManagementDirectControlRelatedType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementDirectControlRelatedType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementDirectControlRelatedType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementDirectControlRelatedType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementDirectControlRelatedType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementDirectControlRelatedType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementDirectControlRelatedType& dst);
 
 /**
  * Datatype TaskManagementDirectControlRelatedElementsType as defined in EEBus_SPINE_TS_TaskManagement.xsd
 */
 struct TaskManagementDirectControlRelatedElementsType
 {
-
     TaskManagementDirectControlRelatedElementsType() = default;
 };
 
@@ -10899,13 +10893,13 @@ struct TaskManagementDirectControlRelatedElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementDirectControlRelatedElementsType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementDirectControlRelatedElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementDirectControlRelatedElementsType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementDirectControlRelatedElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementDirectControlRelatedElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementDirectControlRelatedElementsType& dst);
 
 /**
  * Datatype TaskManagementHvacRelatedType as defined in EEBus_SPINE_TS_TaskManagement.xsd
@@ -10923,13 +10917,13 @@ struct TaskManagementHvacRelatedType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementHvacRelatedType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementHvacRelatedType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementHvacRelatedType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementHvacRelatedType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementHvacRelatedType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementHvacRelatedType& dst);
 
 /**
  * Datatype TaskManagementHvacRelatedElementsType as defined in EEBus_SPINE_TS_TaskManagement.xsd
@@ -10947,13 +10941,13 @@ struct TaskManagementHvacRelatedElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementHvacRelatedElementsType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementHvacRelatedElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementHvacRelatedElementsType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementHvacRelatedElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementHvacRelatedElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementHvacRelatedElementsType& dst);
 
 /**
  * Datatype TaskManagementLoadControlReleatedType as defined in EEBus_SPINE_TS_TaskManagement.xsd
@@ -10971,13 +10965,13 @@ struct TaskManagementLoadControlReleatedType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementLoadControlReleatedType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementLoadControlReleatedType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementLoadControlReleatedType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementLoadControlReleatedType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementLoadControlReleatedType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementLoadControlReleatedType& dst);
 
 /**
  * Datatype TaskManagementLoadControlReleatedElementsType as defined in EEBus_SPINE_TS_TaskManagement.xsd
@@ -10995,13 +10989,13 @@ struct TaskManagementLoadControlReleatedElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementLoadControlReleatedElementsType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementLoadControlReleatedElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementLoadControlReleatedElementsType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementLoadControlReleatedElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementLoadControlReleatedElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementLoadControlReleatedElementsType& dst);
 
 /**
  * Datatype TaskManagementPowerSequencesRelatedType as defined in EEBus_SPINE_TS_TaskManagement.xsd
@@ -11019,13 +11013,13 @@ struct TaskManagementPowerSequencesRelatedType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementPowerSequencesRelatedType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementPowerSequencesRelatedType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementPowerSequencesRelatedType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementPowerSequencesRelatedType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementPowerSequencesRelatedType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementPowerSequencesRelatedType& dst);
 
 /**
  * Datatype TaskManagementPowerSequencesRelatedElementsType as defined in EEBus_SPINE_TS_TaskManagement.xsd
@@ -11043,13 +11037,13 @@ struct TaskManagementPowerSequencesRelatedElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementPowerSequencesRelatedElementsType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementPowerSequencesRelatedElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementPowerSequencesRelatedElementsType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementPowerSequencesRelatedElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementPowerSequencesRelatedElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementPowerSequencesRelatedElementsType& dst);
 
 /**
  * Datatype TaskManagementSmartEnergyManagementPsRelatedType as defined in EEBus_SPINE_TS_TaskManagement.xsd
@@ -11067,13 +11061,13 @@ struct TaskManagementSmartEnergyManagementPsRelatedType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementSmartEnergyManagementPsRelatedType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementSmartEnergyManagementPsRelatedType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementSmartEnergyManagementPsRelatedType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementSmartEnergyManagementPsRelatedType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementSmartEnergyManagementPsRelatedType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementSmartEnergyManagementPsRelatedType& dst);
 
 /**
  * Datatype TaskManagementSmartEnergyManagementPsRelatedElementsType as defined in EEBus_SPINE_TS_TaskManagement.xsd
@@ -11091,13 +11085,13 @@ struct TaskManagementSmartEnergyManagementPsRelatedElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementSmartEnergyManagementPsRelatedElementsType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementSmartEnergyManagementPsRelatedElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementSmartEnergyManagementPsRelatedElementsType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementSmartEnergyManagementPsRelatedElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementSmartEnergyManagementPsRelatedElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementSmartEnergyManagementPsRelatedElementsType& dst);
 
 /**
  * Datatype TaskManagementJobDataType as defined in EEBus_SPINE_TS_TaskManagement.xsd
@@ -11119,13 +11113,13 @@ struct TaskManagementJobDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementJobDataType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementJobDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementJobDataType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementJobDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobDataType& dst);
 
 /**
  * Datatype TaskManagementJobDataElementsType as defined in EEBus_SPINE_TS_TaskManagement.xsd
@@ -11147,13 +11141,13 @@ struct TaskManagementJobDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementJobDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementJobDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementJobDataElementsType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementJobDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobDataElementsType& dst);
 
 /**
  * Datatype TaskManagementJobListDataType as defined in EEBus_SPINE_TS_TaskManagement.xsd
@@ -11171,13 +11165,13 @@ struct TaskManagementJobListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementJobListDataType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementJobListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementJobListDataType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementJobListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobListDataType& dst);
 
 /**
  * Datatype TaskManagementJobListDataSelectorsType as defined in EEBus_SPINE_TS_TaskManagement.xsd
@@ -11196,13 +11190,13 @@ struct TaskManagementJobListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementJobListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementJobListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementJobListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementJobListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobListDataSelectorsType& dst);
 
 /**
  * Datatype TaskManagementJobRelationDataType as defined in EEBus_SPINE_TS_TaskManagement.xsd
@@ -11225,13 +11219,13 @@ struct TaskManagementJobRelationDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementJobRelationDataType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementJobRelationDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementJobRelationDataType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementJobRelationDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobRelationDataType& dst);
 
 /**
  * Datatype TaskManagementJobRelationDataElementsType as defined in EEBus_SPINE_TS_TaskManagement.xsd
@@ -11254,13 +11248,13 @@ struct TaskManagementJobRelationDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementJobRelationDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementJobRelationDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementJobRelationDataElementsType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementJobRelationDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobRelationDataElementsType& dst);
 
 /**
  * Datatype TaskManagementJobRelationListDataType as defined in EEBus_SPINE_TS_TaskManagement.xsd
@@ -11278,13 +11272,13 @@ struct TaskManagementJobRelationListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementJobRelationListDataType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementJobRelationListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementJobRelationListDataType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementJobRelationListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobRelationListDataType& dst);
 
 /**
  * Datatype TaskManagementJobRelationListDataSelectorsType as defined in EEBus_SPINE_TS_TaskManagement.xsd
@@ -11302,13 +11296,13 @@ struct TaskManagementJobRelationListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementJobRelationListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementJobRelationListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementJobRelationListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementJobRelationListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobRelationListDataSelectorsType& dst);
 
 /**
  * Datatype TaskManagementJobDescriptionDataType as defined in EEBus_SPINE_TS_TaskManagement.xsd
@@ -11329,13 +11323,13 @@ struct TaskManagementJobDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementJobDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementJobDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementJobDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementJobDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobDescriptionDataType& dst);
 
 /**
  * Datatype TaskManagementJobDescriptionDataElementsType as defined in EEBus_SPINE_TS_TaskManagement.xsd
@@ -11356,13 +11350,13 @@ struct TaskManagementJobDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementJobDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementJobDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementJobDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementJobDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobDescriptionDataElementsType& dst);
 
 /**
  * Datatype TaskManagementJobDescriptionListDataType as defined in EEBus_SPINE_TS_TaskManagement.xsd
@@ -11380,13 +11374,13 @@ struct TaskManagementJobDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementJobDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementJobDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementJobDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementJobDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobDescriptionListDataType& dst);
 
 /**
  * Datatype TaskManagementJobDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_TaskManagement.xsd
@@ -11405,13 +11399,13 @@ struct TaskManagementJobDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementJobDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementJobDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementJobDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementJobDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementJobDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype TaskManagementOverviewDataType as defined in EEBus_SPINE_TS_TaskManagement.xsd
@@ -11430,13 +11424,13 @@ struct TaskManagementOverviewDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementOverviewDataType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementOverviewDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementOverviewDataType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementOverviewDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementOverviewDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementOverviewDataType& dst);
 
 /**
  * Datatype TaskManagementOverviewDataElementsType as defined in EEBus_SPINE_TS_TaskManagement.xsd
@@ -11455,13 +11449,13 @@ struct TaskManagementOverviewDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TaskManagementOverviewDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const TaskManagementOverviewDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TaskManagementOverviewDataElementsType
  * @param src The JSON variant to convert
  * @param dst The TaskManagementOverviewDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TaskManagementOverviewDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TaskManagementOverviewDataElementsType& dst);
 
 /**
  * Datatype HvacSystemFunctionDataType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -11484,13 +11478,13 @@ struct HvacSystemFunctionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacSystemFunctionDataType &src, JsonVariant &dst);
+bool convertToJson(const HvacSystemFunctionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacSystemFunctionDataType
  * @param src The JSON variant to convert
  * @param dst The HvacSystemFunctionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionDataType& dst);
 
 /**
  * Datatype HvacSystemFunctionDataElementsType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -11513,13 +11507,13 @@ struct HvacSystemFunctionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacSystemFunctionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const HvacSystemFunctionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacSystemFunctionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The HvacSystemFunctionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionDataElementsType& dst);
 
 /**
  * Datatype HvacSystemFunctionListDataType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -11537,13 +11531,13 @@ struct HvacSystemFunctionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacSystemFunctionListDataType &src, JsonVariant &dst);
+bool convertToJson(const HvacSystemFunctionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacSystemFunctionListDataType
  * @param src The JSON variant to convert
  * @param dst The HvacSystemFunctionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionListDataType& dst);
 
 /**
  * Datatype HvacSystemFunctionListDataSelectorsType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -11561,13 +11555,13 @@ struct HvacSystemFunctionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacSystemFunctionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const HvacSystemFunctionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacSystemFunctionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The HvacSystemFunctionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionListDataSelectorsType& dst);
 
 /**
  * Datatype HvacSystemFunctionOperationModeRelationDataType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -11586,13 +11580,13 @@ struct HvacSystemFunctionOperationModeRelationDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacSystemFunctionOperationModeRelationDataType &src, JsonVariant &dst);
+bool convertToJson(const HvacSystemFunctionOperationModeRelationDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacSystemFunctionOperationModeRelationDataType
  * @param src The JSON variant to convert
  * @param dst The HvacSystemFunctionOperationModeRelationDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationModeRelationDataType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionOperationModeRelationDataType& dst);
 
 /**
  * Datatype HvacSystemFunctionOperationModeRelationDataElementsType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -11611,20 +11605,21 @@ struct HvacSystemFunctionOperationModeRelationDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacSystemFunctionOperationModeRelationDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const HvacSystemFunctionOperationModeRelationDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacSystemFunctionOperationModeRelationDataElementsType
  * @param src The JSON variant to convert
  * @param dst The HvacSystemFunctionOperationModeRelationDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationModeRelationDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionOperationModeRelationDataElementsType& dst);
 
 /**
  * Datatype HvacSystemFunctionOperationModeRelationListDataType as defined in EEBus_SPINE_TS_HVAC.xsd
 */
 struct HvacSystemFunctionOperationModeRelationListDataType
 {
-    std::optional<std::vector<HvacSystemFunctionOperationModeRelationDataType>> hvacSystemFunctionOperationModeRelationData;
+    std::optional<std::vector<HvacSystemFunctionOperationModeRelationDataType>>
+    hvacSystemFunctionOperationModeRelationData;
 
     HvacSystemFunctionOperationModeRelationListDataType() = default;
 };
@@ -11635,13 +11630,13 @@ struct HvacSystemFunctionOperationModeRelationListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacSystemFunctionOperationModeRelationListDataType &src, JsonVariant &dst);
+bool convertToJson(const HvacSystemFunctionOperationModeRelationListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacSystemFunctionOperationModeRelationListDataType
  * @param src The JSON variant to convert
  * @param dst The HvacSystemFunctionOperationModeRelationListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationModeRelationListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionOperationModeRelationListDataType& dst);
 
 /**
  * Datatype HvacSystemFunctionOperationModeRelationListDataSelectorsType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -11659,13 +11654,13 @@ struct HvacSystemFunctionOperationModeRelationListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacSystemFunctionOperationModeRelationListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const HvacSystemFunctionOperationModeRelationListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacSystemFunctionOperationModeRelationListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The HvacSystemFunctionOperationModeRelationListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationModeRelationListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionOperationModeRelationListDataSelectorsType& dst);
 
 /**
  * Datatype HvacSystemFunctionSetpointRelationDataType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -11685,13 +11680,13 @@ struct HvacSystemFunctionSetpointRelationDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacSystemFunctionSetpointRelationDataType &src, JsonVariant &dst);
+bool convertToJson(const HvacSystemFunctionSetpointRelationDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacSystemFunctionSetpointRelationDataType
  * @param src The JSON variant to convert
  * @param dst The HvacSystemFunctionSetpointRelationDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRelationDataType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionSetpointRelationDataType& dst);
 
 /**
  * Datatype HvacSystemFunctionSetpointRelationDataElementsType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -11711,13 +11706,13 @@ struct HvacSystemFunctionSetpointRelationDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacSystemFunctionSetpointRelationDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const HvacSystemFunctionSetpointRelationDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacSystemFunctionSetpointRelationDataElementsType
  * @param src The JSON variant to convert
  * @param dst The HvacSystemFunctionSetpointRelationDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRelationDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionSetpointRelationDataElementsType& dst);
 
 /**
  * Datatype HvacSystemFunctionSetpointRelationListDataType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -11735,13 +11730,13 @@ struct HvacSystemFunctionSetpointRelationListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacSystemFunctionSetpointRelationListDataType &src, JsonVariant &dst);
+bool convertToJson(const HvacSystemFunctionSetpointRelationListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacSystemFunctionSetpointRelationListDataType
  * @param src The JSON variant to convert
  * @param dst The HvacSystemFunctionSetpointRelationListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRelationListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionSetpointRelationListDataType& dst);
 
 /**
  * Datatype HvacSystemFunctionSetpointRelationListDataSelectorsType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -11760,13 +11755,13 @@ struct HvacSystemFunctionSetpointRelationListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacSystemFunctionSetpointRelationListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const HvacSystemFunctionSetpointRelationListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacSystemFunctionSetpointRelationListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The HvacSystemFunctionSetpointRelationListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRelationListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionSetpointRelationListDataSelectorsType& dst);
 
 /**
  * Datatype HvacSystemFunctionPowerSequenceRelationDataType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -11785,13 +11780,13 @@ struct HvacSystemFunctionPowerSequenceRelationDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacSystemFunctionPowerSequenceRelationDataType &src, JsonVariant &dst);
+bool convertToJson(const HvacSystemFunctionPowerSequenceRelationDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacSystemFunctionPowerSequenceRelationDataType
  * @param src The JSON variant to convert
  * @param dst The HvacSystemFunctionPowerSequenceRelationDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenceRelationDataType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionPowerSequenceRelationDataType& dst);
 
 /**
  * Datatype HvacSystemFunctionPowerSequenceRelationDataElementsType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -11810,20 +11805,21 @@ struct HvacSystemFunctionPowerSequenceRelationDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacSystemFunctionPowerSequenceRelationDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const HvacSystemFunctionPowerSequenceRelationDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacSystemFunctionPowerSequenceRelationDataElementsType
  * @param src The JSON variant to convert
  * @param dst The HvacSystemFunctionPowerSequenceRelationDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenceRelationDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionPowerSequenceRelationDataElementsType& dst);
 
 /**
  * Datatype HvacSystemFunctionPowerSequenceRelationListDataType as defined in EEBus_SPINE_TS_HVAC.xsd
 */
 struct HvacSystemFunctionPowerSequenceRelationListDataType
 {
-    std::optional<std::vector<HvacSystemFunctionPowerSequenceRelationDataType>> hvacSystemFunctionPowerSequenceRelationData;
+    std::optional<std::vector<HvacSystemFunctionPowerSequenceRelationDataType>>
+    hvacSystemFunctionPowerSequenceRelationData;
 
     HvacSystemFunctionPowerSequenceRelationListDataType() = default;
 };
@@ -11834,13 +11830,13 @@ struct HvacSystemFunctionPowerSequenceRelationListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacSystemFunctionPowerSequenceRelationListDataType &src, JsonVariant &dst);
+bool convertToJson(const HvacSystemFunctionPowerSequenceRelationListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacSystemFunctionPowerSequenceRelationListDataType
  * @param src The JSON variant to convert
  * @param dst The HvacSystemFunctionPowerSequenceRelationListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenceRelationListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionPowerSequenceRelationListDataType& dst);
 
 /**
  * Datatype HvacSystemFunctionPowerSequenceRelationListDataSelectorsType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -11858,13 +11854,13 @@ struct HvacSystemFunctionPowerSequenceRelationListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacSystemFunctionPowerSequenceRelationListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const HvacSystemFunctionPowerSequenceRelationListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacSystemFunctionPowerSequenceRelationListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The HvacSystemFunctionPowerSequenceRelationListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenceRelationListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionPowerSequenceRelationListDataSelectorsType& dst);
 
 /**
  * Datatype HvacSystemFunctionDescriptionDataType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -11885,13 +11881,13 @@ struct HvacSystemFunctionDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacSystemFunctionDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const HvacSystemFunctionDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacSystemFunctionDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The HvacSystemFunctionDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionDescriptionDataType& dst);
 
 /**
  * Datatype HvacSystemFunctionDescriptionDataElementsType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -11912,13 +11908,13 @@ struct HvacSystemFunctionDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacSystemFunctionDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const HvacSystemFunctionDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacSystemFunctionDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The HvacSystemFunctionDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionDescriptionDataElementsType& dst);
 
 /**
  * Datatype HvacSystemFunctionDescriptionListDataType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -11936,13 +11932,13 @@ struct HvacSystemFunctionDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacSystemFunctionDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const HvacSystemFunctionDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacSystemFunctionDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The HvacSystemFunctionDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionDescriptionListDataType& dst);
 
 /**
  * Datatype HvacSystemFunctionDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -11960,13 +11956,13 @@ struct HvacSystemFunctionDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacSystemFunctionDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const HvacSystemFunctionDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacSystemFunctionDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The HvacSystemFunctionDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacSystemFunctionDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype HvacOperationModeDescriptionDataType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -11987,13 +11983,13 @@ struct HvacOperationModeDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacOperationModeDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const HvacOperationModeDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacOperationModeDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The HvacOperationModeDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacOperationModeDescriptionDataType& dst);
 
 /**
  * Datatype HvacOperationModeDescriptionDataElementsType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -12014,13 +12010,13 @@ struct HvacOperationModeDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacOperationModeDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const HvacOperationModeDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacOperationModeDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The HvacOperationModeDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacOperationModeDescriptionDataElementsType& dst);
 
 /**
  * Datatype HvacOperationModeDescriptionListDataType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -12038,13 +12034,13 @@ struct HvacOperationModeDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacOperationModeDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const HvacOperationModeDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacOperationModeDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The HvacOperationModeDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacOperationModeDescriptionListDataType& dst);
 
 /**
  * Datatype HvacOperationModeDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -12062,13 +12058,13 @@ struct HvacOperationModeDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacOperationModeDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const HvacOperationModeDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacOperationModeDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The HvacOperationModeDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacOperationModeDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype HvacOverrunDataType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -12089,13 +12085,13 @@ struct HvacOverrunDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacOverrunDataType &src, JsonVariant &dst);
+bool convertToJson(const HvacOverrunDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacOverrunDataType
  * @param src The JSON variant to convert
  * @param dst The HvacOverrunDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacOverrunDataType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacOverrunDataType& dst);
 
 /**
  * Datatype HvacOverrunDataElementsType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -12116,13 +12112,13 @@ struct HvacOverrunDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacOverrunDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const HvacOverrunDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacOverrunDataElementsType
  * @param src The JSON variant to convert
  * @param dst The HvacOverrunDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacOverrunDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacOverrunDataElementsType& dst);
 
 /**
  * Datatype HvacOverrunListDataType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -12140,13 +12136,13 @@ struct HvacOverrunListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacOverrunListDataType &src, JsonVariant &dst);
+bool convertToJson(const HvacOverrunListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacOverrunListDataType
  * @param src The JSON variant to convert
  * @param dst The HvacOverrunListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacOverrunListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacOverrunListDataType& dst);
 
 /**
  * Datatype HvacOverrunListDataSelectorsType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -12164,13 +12160,13 @@ struct HvacOverrunListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacOverrunListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const HvacOverrunListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacOverrunListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The HvacOverrunListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacOverrunListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacOverrunListDataSelectorsType& dst);
 
 /**
  * Datatype HvacOverrunDescriptionDataType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -12192,13 +12188,13 @@ struct HvacOverrunDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacOverrunDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const HvacOverrunDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacOverrunDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The HvacOverrunDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacOverrunDescriptionDataType& dst);
 
 /**
  * Datatype HvacOverrunDescriptionDataElementsType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -12220,13 +12216,13 @@ struct HvacOverrunDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacOverrunDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const HvacOverrunDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacOverrunDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The HvacOverrunDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacOverrunDescriptionDataElementsType& dst);
 
 /**
  * Datatype HvacOverrunDescriptionListDataType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -12244,13 +12240,13 @@ struct HvacOverrunDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacOverrunDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const HvacOverrunDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacOverrunDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The HvacOverrunDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacOverrunDescriptionListDataType& dst);
 
 /**
  * Datatype HvacOverrunDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_HVAC.xsd
@@ -12268,13 +12264,13 @@ struct HvacOverrunDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HvacOverrunDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const HvacOverrunDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HvacOverrunDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The HvacOverrunDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, HvacOverrunDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype LoadControlNodeDataType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -12292,13 +12288,13 @@ struct LoadControlNodeDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlNodeDataType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlNodeDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a LoadControlNodeDataType
  * @param src The JSON variant to convert
  * @param dst The LoadControlNodeDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlNodeDataType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlNodeDataType& dst);
 
 /**
  * Datatype LoadControlNodeDataElementsType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -12316,13 +12312,13 @@ struct LoadControlNodeDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlNodeDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlNodeDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a LoadControlNodeDataElementsType
  * @param src The JSON variant to convert
  * @param dst The LoadControlNodeDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlNodeDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlNodeDataElementsType& dst);
 
 /**
  * Datatype LoadControlEventDataType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -12344,13 +12340,13 @@ struct LoadControlEventDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlEventDataType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlEventDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a LoadControlEventDataType
  * @param src The JSON variant to convert
  * @param dst The LoadControlEventDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlEventDataType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlEventDataType& dst);
 
 /**
  * Datatype LoadControlEventDataElementsType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -12372,13 +12368,13 @@ struct LoadControlEventDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlEventDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlEventDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a LoadControlEventDataElementsType
  * @param src The JSON variant to convert
  * @param dst The LoadControlEventDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlEventDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlEventDataElementsType& dst);
 
 /**
  * Datatype LoadControlEventListDataType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -12396,13 +12392,13 @@ struct LoadControlEventListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlEventListDataType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlEventListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a LoadControlEventListDataType
  * @param src The JSON variant to convert
  * @param dst The LoadControlEventListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlEventListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlEventListDataType& dst);
 
 /**
  * Datatype LoadControlEventListDataSelectorsType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -12421,13 +12417,13 @@ struct LoadControlEventListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlEventListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlEventListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a LoadControlEventListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The LoadControlEventListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlEventListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlEventListDataSelectorsType& dst);
 
 /**
  * Datatype LoadControlStateDataType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -12450,13 +12446,13 @@ struct LoadControlStateDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlStateDataType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlStateDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a LoadControlStateDataType
  * @param src The JSON variant to convert
  * @param dst The LoadControlStateDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlStateDataType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlStateDataType& dst);
 
 /**
  * Datatype LoadControlStateDataElementsType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -12479,13 +12475,13 @@ struct LoadControlStateDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlStateDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlStateDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a LoadControlStateDataElementsType
  * @param src The JSON variant to convert
  * @param dst The LoadControlStateDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlStateDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlStateDataElementsType& dst);
 
 /**
  * Datatype LoadControlStateListDataType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -12503,13 +12499,13 @@ struct LoadControlStateListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlStateListDataType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlStateListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a LoadControlStateListDataType
  * @param src The JSON variant to convert
  * @param dst The LoadControlStateListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlStateListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlStateListDataType& dst);
 
 /**
  * Datatype LoadControlStateListDataSelectorsType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -12528,13 +12524,13 @@ struct LoadControlStateListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlStateListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlStateListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a LoadControlStateListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The LoadControlStateListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlStateListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlStateListDataSelectorsType& dst);
 
 /**
  * Datatype LoadControlLimitDataType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -12556,13 +12552,13 @@ struct LoadControlLimitDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlLimitDataType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlLimitDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a LoadControlLimitDataType
  * @param src The JSON variant to convert
  * @param dst The LoadControlLimitDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitDataType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitDataType& dst);
 
 /**
  * Datatype LoadControlLimitDataElementsType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -12584,13 +12580,13 @@ struct LoadControlLimitDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlLimitDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlLimitDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a LoadControlLimitDataElementsType
  * @param src The JSON variant to convert
  * @param dst The LoadControlLimitDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitDataElementsType& dst);
 
 /**
  * Datatype LoadControlLimitListDataType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -12608,13 +12604,13 @@ struct LoadControlLimitListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlLimitListDataType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlLimitListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a LoadControlLimitListDataType
  * @param src The JSON variant to convert
  * @param dst The LoadControlLimitListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitListDataType& dst);
 
 /**
  * Datatype LoadControlLimitListDataSelectorsType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -12632,13 +12628,13 @@ struct LoadControlLimitListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlLimitListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlLimitListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a LoadControlLimitListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The LoadControlLimitListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitListDataSelectorsType& dst);
 
 /**
  * Datatype LoadControlLimitConstraintsDataType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -12659,13 +12655,13 @@ struct LoadControlLimitConstraintsDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlLimitConstraintsDataType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlLimitConstraintsDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a LoadControlLimitConstraintsDataType
  * @param src The JSON variant to convert
  * @param dst The LoadControlLimitConstraintsDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsDataType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitConstraintsDataType& dst);
 
 /**
  * Datatype LoadControlLimitConstraintsDataElementsType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -12686,13 +12682,13 @@ struct LoadControlLimitConstraintsDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlLimitConstraintsDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlLimitConstraintsDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a LoadControlLimitConstraintsDataElementsType
  * @param src The JSON variant to convert
  * @param dst The LoadControlLimitConstraintsDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitConstraintsDataElementsType& dst);
 
 /**
  * Datatype LoadControlLimitConstraintsListDataType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -12710,13 +12706,13 @@ struct LoadControlLimitConstraintsListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlLimitConstraintsListDataType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlLimitConstraintsListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a LoadControlLimitConstraintsListDataType
  * @param src The JSON variant to convert
  * @param dst The LoadControlLimitConstraintsListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitConstraintsListDataType& dst);
 
 /**
  * Datatype LoadControlLimitConstraintsListDataSelectorsType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -12734,13 +12730,13 @@ struct LoadControlLimitConstraintsListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlLimitConstraintsListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlLimitConstraintsListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a LoadControlLimitConstraintsListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The LoadControlLimitConstraintsListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitConstraintsListDataSelectorsType& dst);
 
 /**
  * Datatype LoadControlLimitDescriptionDataType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -12766,13 +12762,13 @@ struct LoadControlLimitDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlLimitDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlLimitDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a LoadControlLimitDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The LoadControlLimitDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitDescriptionDataType& dst);
 
 /**
  * Datatype LoadControlLimitDescriptionDataElementsType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -12798,13 +12794,13 @@ struct LoadControlLimitDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlLimitDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlLimitDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a LoadControlLimitDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The LoadControlLimitDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitDescriptionDataElementsType& dst);
 
 /**
  * Datatype LoadControlLimitDescriptionListDataType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -12822,13 +12818,13 @@ struct LoadControlLimitDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlLimitDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlLimitDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a LoadControlLimitDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The LoadControlLimitDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitDescriptionListDataType& dst);
 
 /**
  * Datatype LoadControlLimitDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -12850,13 +12846,13 @@ struct LoadControlLimitDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const LoadControlLimitDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const LoadControlLimitDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a LoadControlLimitDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The LoadControlLimitDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, LoadControlLimitDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype DeviceClassificationManufacturerDataType as defined in EEBus_SPINE_TS_DeviceClassification.xsd
@@ -12885,13 +12881,13 @@ struct DeviceClassificationManufacturerDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceClassificationManufacturerDataType &src, JsonVariant &dst);
+bool convertToJson(const DeviceClassificationManufacturerDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceClassificationManufacturerDataType
  * @param src The JSON variant to convert
  * @param dst The DeviceClassificationManufacturerDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceClassificationManufacturerDataType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceClassificationManufacturerDataType& dst);
 
 /**
  * Datatype DeviceClassificationManufacturerDataElementsType as defined in EEBus_SPINE_TS_DeviceClassification.xsd
@@ -12920,13 +12916,13 @@ struct DeviceClassificationManufacturerDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceClassificationManufacturerDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const DeviceClassificationManufacturerDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceClassificationManufacturerDataElementsType
  * @param src The JSON variant to convert
  * @param dst The DeviceClassificationManufacturerDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceClassificationManufacturerDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceClassificationManufacturerDataElementsType& dst);
 
 /**
  * Datatype DeviceClassificationUserDataType as defined in EEBus_SPINE_TS_DeviceClassification.xsd
@@ -12946,13 +12942,13 @@ struct DeviceClassificationUserDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceClassificationUserDataType &src, JsonVariant &dst);
+bool convertToJson(const DeviceClassificationUserDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceClassificationUserDataType
  * @param src The JSON variant to convert
  * @param dst The DeviceClassificationUserDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceClassificationUserDataType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceClassificationUserDataType& dst);
 
 /**
  * Datatype DeviceClassificationUserDataElementsType as defined in EEBus_SPINE_TS_DeviceClassification.xsd
@@ -12972,13 +12968,13 @@ struct DeviceClassificationUserDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceClassificationUserDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const DeviceClassificationUserDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceClassificationUserDataElementsType
  * @param src The JSON variant to convert
  * @param dst The DeviceClassificationUserDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceClassificationUserDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceClassificationUserDataElementsType& dst);
 
 /**
  * Datatype ActuatorLevelDataType as defined in EEBus_SPINE_TS_ActuatorLevel.xsd
@@ -12997,13 +12993,13 @@ struct ActuatorLevelDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ActuatorLevelDataType &src, JsonVariant &dst);
+bool convertToJson(const ActuatorLevelDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ActuatorLevelDataType
  * @param src The JSON variant to convert
  * @param dst The ActuatorLevelDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ActuatorLevelDataType &dst);
+void convertFromJson(const JsonVariantConst& src, ActuatorLevelDataType& dst);
 
 /**
  * Datatype ActuatorLevelDataElementsType as defined in EEBus_SPINE_TS_ActuatorLevel.xsd
@@ -13022,13 +13018,13 @@ struct ActuatorLevelDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ActuatorLevelDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const ActuatorLevelDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ActuatorLevelDataElementsType
  * @param src The JSON variant to convert
  * @param dst The ActuatorLevelDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ActuatorLevelDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, ActuatorLevelDataElementsType& dst);
 
 /**
  * Datatype ActuatorLevelDescriptionDataType as defined in EEBus_SPINE_TS_ActuatorLevel.xsd
@@ -13048,13 +13044,13 @@ struct ActuatorLevelDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ActuatorLevelDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const ActuatorLevelDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ActuatorLevelDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The ActuatorLevelDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ActuatorLevelDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, ActuatorLevelDescriptionDataType& dst);
 
 /**
  * Datatype ActuatorLevelDescriptionDataElementsType as defined in EEBus_SPINE_TS_ActuatorLevel.xsd
@@ -13074,13 +13070,13 @@ struct ActuatorLevelDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ActuatorLevelDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const ActuatorLevelDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ActuatorLevelDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The ActuatorLevelDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ActuatorLevelDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, ActuatorLevelDescriptionDataElementsType& dst);
 
 /**
  * Datatype TimeSeriesSlotType as defined in EEBus_SPINE_TS_TimeSeries.xsd
@@ -13104,13 +13100,13 @@ struct TimeSeriesSlotType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeSeriesSlotType &src, JsonVariant &dst);
+bool convertToJson(const TimeSeriesSlotType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeSeriesSlotType
  * @param src The JSON variant to convert
  * @param dst The TimeSeriesSlotType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeSeriesSlotType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesSlotType& dst);
 
 /**
  * Datatype TimeSeriesSlotElementsType as defined in EEBus_SPINE_TS_TimeSeries.xsd
@@ -13134,13 +13130,13 @@ struct TimeSeriesSlotElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeSeriesSlotElementsType &src, JsonVariant &dst);
+bool convertToJson(const TimeSeriesSlotElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeSeriesSlotElementsType
  * @param src The JSON variant to convert
  * @param dst The TimeSeriesSlotElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeSeriesSlotElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesSlotElementsType& dst);
 
 /**
  * Datatype TimeSeriesDataType as defined in EEBus_SPINE_TS_TimeSeries.xsd
@@ -13160,13 +13156,13 @@ struct TimeSeriesDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeSeriesDataType &src, JsonVariant &dst);
+bool convertToJson(const TimeSeriesDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeSeriesDataType
  * @param src The JSON variant to convert
  * @param dst The TimeSeriesDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeSeriesDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesDataType& dst);
 
 /**
  * Datatype TimeSeriesDataElementsType as defined in EEBus_SPINE_TS_TimeSeries.xsd
@@ -13186,13 +13182,13 @@ struct TimeSeriesDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeSeriesDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const TimeSeriesDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeSeriesDataElementsType
  * @param src The JSON variant to convert
  * @param dst The TimeSeriesDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeSeriesDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesDataElementsType& dst);
 
 /**
  * Datatype TimeSeriesListDataType as defined in EEBus_SPINE_TS_TimeSeries.xsd
@@ -13210,13 +13206,13 @@ struct TimeSeriesListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeSeriesListDataType &src, JsonVariant &dst);
+bool convertToJson(const TimeSeriesListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeSeriesListDataType
  * @param src The JSON variant to convert
  * @param dst The TimeSeriesListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeSeriesListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesListDataType& dst);
 
 /**
  * Datatype TimeSeriesListDataSelectorsType as defined in EEBus_SPINE_TS_TimeSeries.xsd
@@ -13235,13 +13231,13 @@ struct TimeSeriesListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeSeriesListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const TimeSeriesListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeSeriesListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The TimeSeriesListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeSeriesListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesListDataSelectorsType& dst);
 
 /**
  * Datatype TimeSeriesDescriptionDataType as defined in EEBus_SPINE_TS_TimeSeries.xsd
@@ -13268,13 +13264,13 @@ struct TimeSeriesDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeSeriesDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const TimeSeriesDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeSeriesDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The TimeSeriesDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesDescriptionDataType& dst);
 
 /**
  * Datatype TimeSeriesDescriptionDataElementsType as defined in EEBus_SPINE_TS_TimeSeries.xsd
@@ -13301,13 +13297,13 @@ struct TimeSeriesDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeSeriesDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const TimeSeriesDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeSeriesDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The TimeSeriesDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesDescriptionDataElementsType& dst);
 
 /**
  * Datatype TimeSeriesDescriptionListDataType as defined in EEBus_SPINE_TS_TimeSeries.xsd
@@ -13325,13 +13321,13 @@ struct TimeSeriesDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeSeriesDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const TimeSeriesDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeSeriesDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The TimeSeriesDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesDescriptionListDataType& dst);
 
 /**
  * Datatype TimeSeriesDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_TimeSeries.xsd
@@ -13352,13 +13348,13 @@ struct TimeSeriesDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeSeriesDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const TimeSeriesDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeSeriesDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The TimeSeriesDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype TimeSeriesConstraintsDataType as defined in EEBus_SPINE_TS_TimeSeries.xsd
@@ -13386,13 +13382,13 @@ struct TimeSeriesConstraintsDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeSeriesConstraintsDataType &src, JsonVariant &dst);
+bool convertToJson(const TimeSeriesConstraintsDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeSeriesConstraintsDataType
  * @param src The JSON variant to convert
  * @param dst The TimeSeriesConstraintsDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesConstraintsDataType& dst);
 
 /**
  * Datatype TimeSeriesConstraintsDataElementsType as defined in EEBus_SPINE_TS_TimeSeries.xsd
@@ -13420,13 +13416,13 @@ struct TimeSeriesConstraintsDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeSeriesConstraintsDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const TimeSeriesConstraintsDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeSeriesConstraintsDataElementsType
  * @param src The JSON variant to convert
  * @param dst The TimeSeriesConstraintsDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesConstraintsDataElementsType& dst);
 
 /**
  * Datatype TimeSeriesConstraintsListDataType as defined in EEBus_SPINE_TS_TimeSeries.xsd
@@ -13444,13 +13440,13 @@ struct TimeSeriesConstraintsListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeSeriesConstraintsListDataType &src, JsonVariant &dst);
+bool convertToJson(const TimeSeriesConstraintsListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeSeriesConstraintsListDataType
  * @param src The JSON variant to convert
  * @param dst The TimeSeriesConstraintsListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesConstraintsListDataType& dst);
 
 /**
  * Datatype TimeSeriesConstraintsListDataSelectorsType as defined in EEBus_SPINE_TS_TimeSeries.xsd
@@ -13468,13 +13464,13 @@ struct TimeSeriesConstraintsListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeSeriesConstraintsListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const TimeSeriesConstraintsListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeSeriesConstraintsListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The TimeSeriesConstraintsListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeSeriesConstraintsListDataSelectorsType& dst);
 
 /**
  * Datatype SmartEnergyManagementPsAlternativesRelationType as defined in EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
@@ -13492,13 +13488,13 @@ struct SmartEnergyManagementPsAlternativesRelationType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SmartEnergyManagementPsAlternativesRelationType &src, JsonVariant &dst);
+bool convertToJson(const SmartEnergyManagementPsAlternativesRelationType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SmartEnergyManagementPsAlternativesRelationType
  * @param src The JSON variant to convert
  * @param dst The SmartEnergyManagementPsAlternativesRelationType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlternativesRelationType &dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsAlternativesRelationType& dst);
 
 /**
  * Datatype SmartEnergyManagementPsPowerTimeSlotValueListType as defined in EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
@@ -13516,13 +13512,13 @@ struct SmartEnergyManagementPsPowerTimeSlotValueListType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotValueListType &src, JsonVariant &dst);
+bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotValueListType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SmartEnergyManagementPsPowerTimeSlotValueListType
  * @param src The JSON variant to convert
  * @param dst The SmartEnergyManagementPsPowerTimeSlotValueListType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTimeSlotValueListType &dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsPowerTimeSlotValueListType& dst);
 
 /**
  * Datatype SmartEnergyManagementPsPowerTimeSlotType as defined in EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
@@ -13542,13 +13538,13 @@ struct SmartEnergyManagementPsPowerTimeSlotType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotType &src, JsonVariant &dst);
+bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SmartEnergyManagementPsPowerTimeSlotType
  * @param src The JSON variant to convert
  * @param dst The SmartEnergyManagementPsPowerTimeSlotType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTimeSlotType &dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsPowerTimeSlotType& dst);
 
 /**
  * Datatype SmartEnergyManagementPsPowerSequenceType as defined in EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
@@ -13574,13 +13570,13 @@ struct SmartEnergyManagementPsPowerSequenceType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SmartEnergyManagementPsPowerSequenceType &src, JsonVariant &dst);
+bool convertToJson(const SmartEnergyManagementPsPowerSequenceType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SmartEnergyManagementPsPowerSequenceType
  * @param src The JSON variant to convert
  * @param dst The SmartEnergyManagementPsPowerSequenceType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerSequenceType &dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsPowerSequenceType& dst);
 
 /**
  * Datatype SmartEnergyManagementPsAlternativesType as defined in EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
@@ -13599,13 +13595,13 @@ struct SmartEnergyManagementPsAlternativesType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SmartEnergyManagementPsAlternativesType &src, JsonVariant &dst);
+bool convertToJson(const SmartEnergyManagementPsAlternativesType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SmartEnergyManagementPsAlternativesType
  * @param src The JSON variant to convert
  * @param dst The SmartEnergyManagementPsAlternativesType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlternativesType &dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsAlternativesType& dst);
 
 /**
  * Datatype SmartEnergyManagementPsDataType as defined in EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
@@ -13624,13 +13620,13 @@ struct SmartEnergyManagementPsDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SmartEnergyManagementPsDataType &src, JsonVariant &dst);
+bool convertToJson(const SmartEnergyManagementPsDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SmartEnergyManagementPsDataType
  * @param src The JSON variant to convert
  * @param dst The SmartEnergyManagementPsDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsDataType& dst);
 
 /**
  * Datatype SmartEnergyManagementPsAlternativesRelationElementsType as defined in EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
@@ -13648,13 +13644,13 @@ struct SmartEnergyManagementPsAlternativesRelationElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SmartEnergyManagementPsAlternativesRelationElementsType &src, JsonVariant &dst);
+bool convertToJson(const SmartEnergyManagementPsAlternativesRelationElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SmartEnergyManagementPsAlternativesRelationElementsType
  * @param src The JSON variant to convert
  * @param dst The SmartEnergyManagementPsAlternativesRelationElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlternativesRelationElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsAlternativesRelationElementsType& dst);
 
 /**
  * Datatype SmartEnergyManagementPsPowerTimeSlotValueListElementsType as defined in EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
@@ -13672,13 +13668,13 @@ struct SmartEnergyManagementPsPowerTimeSlotValueListElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotValueListElementsType &src, JsonVariant &dst);
+bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotValueListElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SmartEnergyManagementPsPowerTimeSlotValueListElementsType
  * @param src The JSON variant to convert
  * @param dst The SmartEnergyManagementPsPowerTimeSlotValueListElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTimeSlotValueListElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsPowerTimeSlotValueListElementsType& dst);
 
 /**
  * Datatype SmartEnergyManagementPsPowerTimeSlotElementsType as defined in EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
@@ -13698,13 +13694,13 @@ struct SmartEnergyManagementPsPowerTimeSlotElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotElementsType &src, JsonVariant &dst);
+bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SmartEnergyManagementPsPowerTimeSlotElementsType
  * @param src The JSON variant to convert
  * @param dst The SmartEnergyManagementPsPowerTimeSlotElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTimeSlotElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsPowerTimeSlotElementsType& dst);
 
 /**
  * Datatype SmartEnergyManagementPsPowerSequenceElementsType as defined in EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
@@ -13730,13 +13726,13 @@ struct SmartEnergyManagementPsPowerSequenceElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SmartEnergyManagementPsPowerSequenceElementsType &src, JsonVariant &dst);
+bool convertToJson(const SmartEnergyManagementPsPowerSequenceElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SmartEnergyManagementPsPowerSequenceElementsType
  * @param src The JSON variant to convert
  * @param dst The SmartEnergyManagementPsPowerSequenceElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerSequenceElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsPowerSequenceElementsType& dst);
 
 /**
  * Datatype SmartEnergyManagementPsAlternativesElementsType as defined in EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
@@ -13755,13 +13751,13 @@ struct SmartEnergyManagementPsAlternativesElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SmartEnergyManagementPsAlternativesElementsType &src, JsonVariant &dst);
+bool convertToJson(const SmartEnergyManagementPsAlternativesElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SmartEnergyManagementPsAlternativesElementsType
  * @param src The JSON variant to convert
  * @param dst The SmartEnergyManagementPsAlternativesElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlternativesElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsAlternativesElementsType& dst);
 
 /**
  * Datatype SmartEnergyManagementPsDataElementsType as defined in EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
@@ -13780,13 +13776,13 @@ struct SmartEnergyManagementPsDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SmartEnergyManagementPsDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const SmartEnergyManagementPsDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SmartEnergyManagementPsDataElementsType
  * @param src The JSON variant to convert
  * @param dst The SmartEnergyManagementPsDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsDataElementsType& dst);
 
 /**
  * Datatype SmartEnergyManagementPsDataSelectorsType as defined in EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
@@ -13807,13 +13803,13 @@ struct SmartEnergyManagementPsDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SmartEnergyManagementPsDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const SmartEnergyManagementPsDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SmartEnergyManagementPsDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The SmartEnergyManagementPsDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsDataSelectorsType& dst);
 
 /**
  * Datatype SmartEnergyManagementPsPriceDataType as defined in EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
@@ -13831,13 +13827,13 @@ struct SmartEnergyManagementPsPriceDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SmartEnergyManagementPsPriceDataType &src, JsonVariant &dst);
+bool convertToJson(const SmartEnergyManagementPsPriceDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SmartEnergyManagementPsPriceDataType
  * @param src The JSON variant to convert
  * @param dst The SmartEnergyManagementPsPriceDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceDataType &dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsPriceDataType& dst);
 
 /**
  * Datatype SmartEnergyManagementPsPriceDataElementsType as defined in EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
@@ -13855,13 +13851,13 @@ struct SmartEnergyManagementPsPriceDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SmartEnergyManagementPsPriceDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const SmartEnergyManagementPsPriceDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SmartEnergyManagementPsPriceDataElementsType
  * @param src The JSON variant to convert
  * @param dst The SmartEnergyManagementPsPriceDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsPriceDataElementsType& dst);
 
 /**
  * Datatype SmartEnergyManagementPsPriceDataSelectorsType as defined in EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
@@ -13879,13 +13875,13 @@ struct SmartEnergyManagementPsPriceDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SmartEnergyManagementPsPriceDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const SmartEnergyManagementPsPriceDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SmartEnergyManagementPsPriceDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The SmartEnergyManagementPsPriceDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsPriceDataSelectorsType& dst);
 
 /**
  * Datatype SmartEnergyManagementPsConfigurationRequestCallType as defined in EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
@@ -13903,13 +13899,13 @@ struct SmartEnergyManagementPsConfigurationRequestCallType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SmartEnergyManagementPsConfigurationRequestCallType &src, JsonVariant &dst);
+bool convertToJson(const SmartEnergyManagementPsConfigurationRequestCallType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SmartEnergyManagementPsConfigurationRequestCallType
  * @param src The JSON variant to convert
  * @param dst The SmartEnergyManagementPsConfigurationRequestCallType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsConfigurationRequestCallType &dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsConfigurationRequestCallType& dst);
 
 /**
  * Datatype SmartEnergyManagementPsConfigurationRequestCallElementsType as defined in EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
@@ -13927,13 +13923,13 @@ struct SmartEnergyManagementPsConfigurationRequestCallElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SmartEnergyManagementPsConfigurationRequestCallElementsType &src, JsonVariant &dst);
+bool convertToJson(const SmartEnergyManagementPsConfigurationRequestCallElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SmartEnergyManagementPsConfigurationRequestCallElementsType
  * @param src The JSON variant to convert
  * @param dst The SmartEnergyManagementPsConfigurationRequestCallElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsConfigurationRequestCallElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsConfigurationRequestCallElementsType& dst);
 
 /**
  * Datatype SmartEnergyManagementPsPriceCalculationRequestCallType as defined in EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
@@ -13951,13 +13947,13 @@ struct SmartEnergyManagementPsPriceCalculationRequestCallType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SmartEnergyManagementPsPriceCalculationRequestCallType &src, JsonVariant &dst);
+bool convertToJson(const SmartEnergyManagementPsPriceCalculationRequestCallType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SmartEnergyManagementPsPriceCalculationRequestCallType
  * @param src The JSON variant to convert
  * @param dst The SmartEnergyManagementPsPriceCalculationRequestCallType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceCalculationRequestCallType &dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsPriceCalculationRequestCallType& dst);
 
 /**
  * Datatype SmartEnergyManagementPsPriceCalculationRequestCallElementsType as defined in EEBus_SPINE_TS_SmartEnergyManagementPs.xsd
@@ -13975,13 +13971,13 @@ struct SmartEnergyManagementPsPriceCalculationRequestCallElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SmartEnergyManagementPsPriceCalculationRequestCallElementsType &src, JsonVariant &dst);
+bool convertToJson(const SmartEnergyManagementPsPriceCalculationRequestCallElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a SmartEnergyManagementPsPriceCalculationRequestCallElementsType
  * @param src The JSON variant to convert
  * @param dst The SmartEnergyManagementPsPriceCalculationRequestCallElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceCalculationRequestCallElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, SmartEnergyManagementPsPriceCalculationRequestCallElementsType& dst);
 
 /**
  * Datatype MessagingDataType as defined in EEBus_SPINE_TS_Messaging.xsd
@@ -14002,13 +13998,13 @@ struct MessagingDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MessagingDataType &src, JsonVariant &dst);
+bool convertToJson(const MessagingDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MessagingDataType
  * @param src The JSON variant to convert
  * @param dst The MessagingDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MessagingDataType &dst);
+void convertFromJson(const JsonVariantConst& src, MessagingDataType& dst);
 
 /**
  * Datatype MessagingDataElementsType as defined in EEBus_SPINE_TS_Messaging.xsd
@@ -14029,13 +14025,13 @@ struct MessagingDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MessagingDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const MessagingDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MessagingDataElementsType
  * @param src The JSON variant to convert
  * @param dst The MessagingDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MessagingDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, MessagingDataElementsType& dst);
 
 /**
  * Datatype MessagingListDataType as defined in EEBus_SPINE_TS_Messaging.xsd
@@ -14053,13 +14049,13 @@ struct MessagingListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MessagingListDataType &src, JsonVariant &dst);
+bool convertToJson(const MessagingListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MessagingListDataType
  * @param src The JSON variant to convert
  * @param dst The MessagingListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MessagingListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, MessagingListDataType& dst);
 
 /**
  * Datatype MessagingListDataSelectorsType as defined in EEBus_SPINE_TS_Messaging.xsd
@@ -14078,13 +14074,13 @@ struct MessagingListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MessagingListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const MessagingListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a MessagingListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The MessagingListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, MessagingListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, MessagingListDataSelectorsType& dst);
 
 /**
  * Datatype TariffOverallConstraintsDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14109,13 +14105,13 @@ struct TariffOverallConstraintsDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TariffOverallConstraintsDataType &src, JsonVariant &dst);
+bool convertToJson(const TariffOverallConstraintsDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TariffOverallConstraintsDataType
  * @param src The JSON variant to convert
  * @param dst The TariffOverallConstraintsDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TariffOverallConstraintsDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TariffOverallConstraintsDataType& dst);
 
 /**
  * Datatype TariffOverallConstraintsDataElementsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14140,13 +14136,13 @@ struct TariffOverallConstraintsDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TariffOverallConstraintsDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const TariffOverallConstraintsDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TariffOverallConstraintsDataElementsType
  * @param src The JSON variant to convert
  * @param dst The TariffOverallConstraintsDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TariffOverallConstraintsDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TariffOverallConstraintsDataElementsType& dst);
 
 /**
  * Datatype TariffDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14165,13 +14161,13 @@ struct TariffDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TariffDataType &src, JsonVariant &dst);
+bool convertToJson(const TariffDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TariffDataType
  * @param src The JSON variant to convert
  * @param dst The TariffDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TariffDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TariffDataType& dst);
 
 /**
  * Datatype TariffDataElementsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14190,13 +14186,13 @@ struct TariffDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TariffDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const TariffDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TariffDataElementsType
  * @param src The JSON variant to convert
  * @param dst The TariffDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TariffDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TariffDataElementsType& dst);
 
 /**
  * Datatype TariffListDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14214,13 +14210,13 @@ struct TariffListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TariffListDataType &src, JsonVariant &dst);
+bool convertToJson(const TariffListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TariffListDataType
  * @param src The JSON variant to convert
  * @param dst The TariffListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TariffListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TariffListDataType& dst);
 
 /**
  * Datatype TariffListDataSelectorsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14239,13 +14235,13 @@ struct TariffListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TariffListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const TariffListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TariffListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The TariffListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TariffListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, TariffListDataSelectorsType& dst);
 
 /**
  * Datatype TariffTierRelationDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14264,13 +14260,13 @@ struct TariffTierRelationDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TariffTierRelationDataType &src, JsonVariant &dst);
+bool convertToJson(const TariffTierRelationDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TariffTierRelationDataType
  * @param src The JSON variant to convert
  * @param dst The TariffTierRelationDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TariffTierRelationDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TariffTierRelationDataType& dst);
 
 /**
  * Datatype TariffTierRelationDataElementsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14289,13 +14285,13 @@ struct TariffTierRelationDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TariffTierRelationDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const TariffTierRelationDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TariffTierRelationDataElementsType
  * @param src The JSON variant to convert
  * @param dst The TariffTierRelationDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TariffTierRelationDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TariffTierRelationDataElementsType& dst);
 
 /**
  * Datatype TariffTierRelationListDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14313,13 +14309,13 @@ struct TariffTierRelationListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TariffTierRelationListDataType &src, JsonVariant &dst);
+bool convertToJson(const TariffTierRelationListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TariffTierRelationListDataType
  * @param src The JSON variant to convert
  * @param dst The TariffTierRelationListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TariffTierRelationListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TariffTierRelationListDataType& dst);
 
 /**
  * Datatype TariffTierRelationListDataSelectorsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14338,13 +14334,13 @@ struct TariffTierRelationListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TariffTierRelationListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const TariffTierRelationListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TariffTierRelationListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The TariffTierRelationListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TariffTierRelationListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, TariffTierRelationListDataSelectorsType& dst);
 
 /**
  * Datatype TariffBoundaryRelationDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14363,13 +14359,13 @@ struct TariffBoundaryRelationDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TariffBoundaryRelationDataType &src, JsonVariant &dst);
+bool convertToJson(const TariffBoundaryRelationDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TariffBoundaryRelationDataType
  * @param src The JSON variant to convert
  * @param dst The TariffBoundaryRelationDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TariffBoundaryRelationDataType& dst);
 
 /**
  * Datatype TariffBoundaryRelationDataElementsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14388,13 +14384,13 @@ struct TariffBoundaryRelationDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TariffBoundaryRelationDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const TariffBoundaryRelationDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TariffBoundaryRelationDataElementsType
  * @param src The JSON variant to convert
  * @param dst The TariffBoundaryRelationDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TariffBoundaryRelationDataElementsType& dst);
 
 /**
  * Datatype TariffBoundaryRelationListDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14412,13 +14408,13 @@ struct TariffBoundaryRelationListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TariffBoundaryRelationListDataType &src, JsonVariant &dst);
+bool convertToJson(const TariffBoundaryRelationListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TariffBoundaryRelationListDataType
  * @param src The JSON variant to convert
  * @param dst The TariffBoundaryRelationListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TariffBoundaryRelationListDataType& dst);
 
 /**
  * Datatype TariffBoundaryRelationListDataSelectorsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14437,13 +14433,13 @@ struct TariffBoundaryRelationListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TariffBoundaryRelationListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const TariffBoundaryRelationListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TariffBoundaryRelationListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The TariffBoundaryRelationListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, TariffBoundaryRelationListDataSelectorsType& dst);
 
 /**
  * Datatype TariffDescriptionDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14469,13 +14465,13 @@ struct TariffDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TariffDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const TariffDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TariffDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The TariffDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TariffDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TariffDescriptionDataType& dst);
 
 /**
  * Datatype TariffDescriptionDataElementsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14501,13 +14497,13 @@ struct TariffDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TariffDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const TariffDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TariffDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The TariffDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TariffDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TariffDescriptionDataElementsType& dst);
 
 /**
  * Datatype TariffDescriptionListDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14525,13 +14521,13 @@ struct TariffDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TariffDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const TariffDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TariffDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The TariffDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TariffDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TariffDescriptionListDataType& dst);
 
 /**
  * Datatype TariffDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14552,13 +14548,13 @@ struct TariffDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TariffDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const TariffDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TariffDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The TariffDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TariffDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, TariffDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype TierBoundaryDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14580,13 +14576,13 @@ struct TierBoundaryDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TierBoundaryDataType &src, JsonVariant &dst);
+bool convertToJson(const TierBoundaryDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TierBoundaryDataType
  * @param src The JSON variant to convert
  * @param dst The TierBoundaryDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TierBoundaryDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TierBoundaryDataType& dst);
 
 /**
  * Datatype TierBoundaryDataElementsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14608,13 +14604,13 @@ struct TierBoundaryDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TierBoundaryDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const TierBoundaryDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TierBoundaryDataElementsType
  * @param src The JSON variant to convert
  * @param dst The TierBoundaryDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TierBoundaryDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TierBoundaryDataElementsType& dst);
 
 /**
  * Datatype TierBoundaryListDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14632,13 +14628,13 @@ struct TierBoundaryListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TierBoundaryListDataType &src, JsonVariant &dst);
+bool convertToJson(const TierBoundaryListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TierBoundaryListDataType
  * @param src The JSON variant to convert
  * @param dst The TierBoundaryListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TierBoundaryListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TierBoundaryListDataType& dst);
 
 /**
  * Datatype TierBoundaryListDataSelectorsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14656,13 +14652,13 @@ struct TierBoundaryListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TierBoundaryListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const TierBoundaryListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TierBoundaryListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The TierBoundaryListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TierBoundaryListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, TierBoundaryListDataSelectorsType& dst);
 
 /**
  * Datatype TierBoundaryDescriptionDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14687,13 +14683,13 @@ struct TierBoundaryDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TierBoundaryDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const TierBoundaryDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TierBoundaryDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The TierBoundaryDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TierBoundaryDescriptionDataType& dst);
 
 /**
  * Datatype TierBoundaryDescriptionDataElementsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14718,13 +14714,13 @@ struct TierBoundaryDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TierBoundaryDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const TierBoundaryDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TierBoundaryDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The TierBoundaryDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TierBoundaryDescriptionDataElementsType& dst);
 
 /**
  * Datatype TierBoundaryDescriptionListDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14742,13 +14738,13 @@ struct TierBoundaryDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TierBoundaryDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const TierBoundaryDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TierBoundaryDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The TierBoundaryDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TierBoundaryDescriptionListDataType& dst);
 
 /**
  * Datatype TierBoundaryDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14767,13 +14763,13 @@ struct TierBoundaryDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TierBoundaryDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const TierBoundaryDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TierBoundaryDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The TierBoundaryDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, TierBoundaryDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype CommodityDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14795,13 +14791,13 @@ struct CommodityDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const CommodityDataType &src, JsonVariant &dst);
+bool convertToJson(const CommodityDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a CommodityDataType
  * @param src The JSON variant to convert
  * @param dst The CommodityDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, CommodityDataType &dst);
+void convertFromJson(const JsonVariantConst& src, CommodityDataType& dst);
 
 /**
  * Datatype CommodityDataElementsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14823,13 +14819,13 @@ struct CommodityDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const CommodityDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const CommodityDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a CommodityDataElementsType
  * @param src The JSON variant to convert
  * @param dst The CommodityDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, CommodityDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, CommodityDataElementsType& dst);
 
 /**
  * Datatype CommodityListDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14847,13 +14843,13 @@ struct CommodityListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const CommodityListDataType &src, JsonVariant &dst);
+bool convertToJson(const CommodityListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a CommodityListDataType
  * @param src The JSON variant to convert
  * @param dst The CommodityListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, CommodityListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, CommodityListDataType& dst);
 
 /**
  * Datatype CommodityListDataSelectorsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14872,13 +14868,13 @@ struct CommodityListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const CommodityListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const CommodityListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a CommodityListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The CommodityListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, CommodityListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, CommodityListDataSelectorsType& dst);
 
 /**
  * Datatype TierDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14899,13 +14895,13 @@ struct TierDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TierDataType &src, JsonVariant &dst);
+bool convertToJson(const TierDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TierDataType
  * @param src The JSON variant to convert
  * @param dst The TierDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TierDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TierDataType& dst);
 
 /**
  * Datatype TierDataElementsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14926,13 +14922,13 @@ struct TierDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TierDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const TierDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TierDataElementsType
  * @param src The JSON variant to convert
  * @param dst The TierDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TierDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TierDataElementsType& dst);
 
 /**
  * Datatype TierListDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14950,13 +14946,13 @@ struct TierListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TierListDataType &src, JsonVariant &dst);
+bool convertToJson(const TierListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TierListDataType
  * @param src The JSON variant to convert
  * @param dst The TierListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TierListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TierListDataType& dst);
 
 /**
  * Datatype TierListDataSelectorsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -14975,13 +14971,13 @@ struct TierListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TierListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const TierListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TierListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The TierListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TierListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, TierListDataSelectorsType& dst);
 
 /**
  * Datatype TierIncentiveRelationDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -15000,13 +14996,13 @@ struct TierIncentiveRelationDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TierIncentiveRelationDataType &src, JsonVariant &dst);
+bool convertToJson(const TierIncentiveRelationDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TierIncentiveRelationDataType
  * @param src The JSON variant to convert
  * @param dst The TierIncentiveRelationDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TierIncentiveRelationDataType& dst);
 
 /**
  * Datatype TierIncentiveRelationDataElementsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -15025,13 +15021,13 @@ struct TierIncentiveRelationDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TierIncentiveRelationDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const TierIncentiveRelationDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TierIncentiveRelationDataElementsType
  * @param src The JSON variant to convert
  * @param dst The TierIncentiveRelationDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TierIncentiveRelationDataElementsType& dst);
 
 /**
  * Datatype TierIncentiveRelationListDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -15049,13 +15045,13 @@ struct TierIncentiveRelationListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TierIncentiveRelationListDataType &src, JsonVariant &dst);
+bool convertToJson(const TierIncentiveRelationListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TierIncentiveRelationListDataType
  * @param src The JSON variant to convert
  * @param dst The TierIncentiveRelationListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TierIncentiveRelationListDataType& dst);
 
 /**
  * Datatype TierIncentiveRelationListDataSelectorsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -15074,13 +15070,13 @@ struct TierIncentiveRelationListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TierIncentiveRelationListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const TierIncentiveRelationListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TierIncentiveRelationListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The TierIncentiveRelationListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, TierIncentiveRelationListDataSelectorsType& dst);
 
 /**
  * Datatype TierDescriptionDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -15101,13 +15097,13 @@ struct TierDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TierDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const TierDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TierDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The TierDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TierDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TierDescriptionDataType& dst);
 
 /**
  * Datatype TierDescriptionDataElementsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -15128,13 +15124,13 @@ struct TierDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TierDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const TierDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TierDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The TierDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TierDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TierDescriptionDataElementsType& dst);
 
 /**
  * Datatype TierDescriptionListDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -15152,13 +15148,13 @@ struct TierDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TierDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const TierDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TierDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The TierDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TierDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TierDescriptionListDataType& dst);
 
 /**
  * Datatype TierDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -15177,13 +15173,13 @@ struct TierDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TierDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const TierDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TierDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The TierDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TierDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, TierDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype IncentiveDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -15206,13 +15202,13 @@ struct IncentiveDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveDataType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveDataType
  * @param src The JSON variant to convert
  * @param dst The IncentiveDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveDataType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveDataType& dst);
 
 /**
  * Datatype IncentiveDataElementsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -15235,13 +15231,13 @@ struct IncentiveDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveDataElementsType
  * @param src The JSON variant to convert
  * @param dst The IncentiveDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveDataElementsType& dst);
 
 /**
  * Datatype IncentiveListDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -15259,13 +15255,13 @@ struct IncentiveListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveListDataType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveListDataType
  * @param src The JSON variant to convert
  * @param dst The IncentiveListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveListDataType& dst);
 
 /**
  * Datatype IncentiveListDataSelectorsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -15285,13 +15281,13 @@ struct IncentiveListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The IncentiveListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveListDataSelectorsType& dst);
 
 /**
  * Datatype IncentiveDescriptionDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -15315,13 +15311,13 @@ struct IncentiveDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The IncentiveDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveDescriptionDataType& dst);
 
 /**
  * Datatype IncentiveDescriptionDataElementsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -15345,13 +15341,13 @@ struct IncentiveDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The IncentiveDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveDescriptionDataElementsType& dst);
 
 /**
  * Datatype IncentiveDescriptionListDataType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -15369,13 +15365,13 @@ struct IncentiveDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The IncentiveDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveDescriptionListDataType& dst);
 
 /**
  * Datatype IncentiveDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_TariffInformation.xsd
@@ -15394,13 +15390,13 @@ struct IncentiveDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The IncentiveDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype StateInformationDataType as defined in EEBus_SPINE_TS_StateInformation.xsd
@@ -15422,13 +15418,13 @@ struct StateInformationDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const StateInformationDataType &src, JsonVariant &dst);
+bool convertToJson(const StateInformationDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a StateInformationDataType
  * @param src The JSON variant to convert
  * @param dst The StateInformationDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, StateInformationDataType &dst);
+void convertFromJson(const JsonVariantConst& src, StateInformationDataType& dst);
 
 /**
  * Datatype StateInformationDataElementsType as defined in EEBus_SPINE_TS_StateInformation.xsd
@@ -15450,13 +15446,13 @@ struct StateInformationDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const StateInformationDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const StateInformationDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a StateInformationDataElementsType
  * @param src The JSON variant to convert
  * @param dst The StateInformationDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, StateInformationDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, StateInformationDataElementsType& dst);
 
 /**
  * Datatype StateInformationListDataType as defined in EEBus_SPINE_TS_StateInformation.xsd
@@ -15474,13 +15470,13 @@ struct StateInformationListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const StateInformationListDataType &src, JsonVariant &dst);
+bool convertToJson(const StateInformationListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a StateInformationListDataType
  * @param src The JSON variant to convert
  * @param dst The StateInformationListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, StateInformationListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, StateInformationListDataType& dst);
 
 /**
  * Datatype StateInformationListDataSelectorsType as defined in EEBus_SPINE_TS_StateInformation.xsd
@@ -15501,13 +15497,13 @@ struct StateInformationListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const StateInformationListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const StateInformationListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a StateInformationListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The StateInformationListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, StateInformationListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, StateInformationListDataSelectorsType& dst);
 
 /**
  * Datatype ElectricalConnectionParameterDescriptionDataType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -15536,13 +15532,13 @@ struct ElectricalConnectionParameterDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionParameterDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionParameterDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ElectricalConnectionParameterDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The ElectricalConnectionParameterDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionParameterDescriptionDataType& dst);
 
 /**
  * Datatype ElectricalConnectionParameterDescriptionDataElementsType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -15571,20 +15567,21 @@ struct ElectricalConnectionParameterDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionParameterDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionParameterDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ElectricalConnectionParameterDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The ElectricalConnectionParameterDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionParameterDescriptionDataElementsType& dst);
 
 /**
  * Datatype ElectricalConnectionParameterDescriptionListDataType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
 */
 struct ElectricalConnectionParameterDescriptionListDataType
 {
-    std::optional<std::vector<ElectricalConnectionParameterDescriptionDataType>> electricalConnectionParameterDescriptionData;
+    std::optional<std::vector<ElectricalConnectionParameterDescriptionDataType>>
+    electricalConnectionParameterDescriptionData;
 
     ElectricalConnectionParameterDescriptionListDataType() = default;
 };
@@ -15595,13 +15592,13 @@ struct ElectricalConnectionParameterDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionParameterDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionParameterDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ElectricalConnectionParameterDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The ElectricalConnectionParameterDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionParameterDescriptionListDataType& dst);
 
 /**
  * Datatype ElectricalConnectionParameterDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -15622,13 +15619,13 @@ struct ElectricalConnectionParameterDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionParameterDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionParameterDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ElectricalConnectionParameterDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The ElectricalConnectionParameterDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionParameterDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype ElectricalConnectionPermittedValueSetDataType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -15648,13 +15645,13 @@ struct ElectricalConnectionPermittedValueSetDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionPermittedValueSetDataType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionPermittedValueSetDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ElectricalConnectionPermittedValueSetDataType
  * @param src The JSON variant to convert
  * @param dst The ElectricalConnectionPermittedValueSetDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedValueSetDataType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionPermittedValueSetDataType& dst);
 
 /**
  * Datatype ElectricalConnectionPermittedValueSetDataElementsType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -15674,13 +15671,13 @@ struct ElectricalConnectionPermittedValueSetDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionPermittedValueSetDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionPermittedValueSetDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ElectricalConnectionPermittedValueSetDataElementsType
  * @param src The JSON variant to convert
  * @param dst The ElectricalConnectionPermittedValueSetDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedValueSetDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionPermittedValueSetDataElementsType& dst);
 
 /**
  * Datatype ElectricalConnectionPermittedValueSetListDataType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -15698,13 +15695,13 @@ struct ElectricalConnectionPermittedValueSetListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionPermittedValueSetListDataType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionPermittedValueSetListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ElectricalConnectionPermittedValueSetListDataType
  * @param src The JSON variant to convert
  * @param dst The ElectricalConnectionPermittedValueSetListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedValueSetListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionPermittedValueSetListDataType& dst);
 
 /**
  * Datatype ElectricalConnectionPermittedValueSetListDataSelectorsType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -15723,13 +15720,13 @@ struct ElectricalConnectionPermittedValueSetListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionPermittedValueSetListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionPermittedValueSetListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ElectricalConnectionPermittedValueSetListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The ElectricalConnectionPermittedValueSetListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedValueSetListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionPermittedValueSetListDataSelectorsType& dst);
 
 /**
  * Datatype ElectricalConnectionCharacteristicDataType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -15753,13 +15750,13 @@ struct ElectricalConnectionCharacteristicDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionCharacteristicDataType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionCharacteristicDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ElectricalConnectionCharacteristicDataType
  * @param src The JSON variant to convert
  * @param dst The ElectricalConnectionCharacteristicDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicDataType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionCharacteristicDataType& dst);
 
 /**
  * Datatype ElectricalConnectionCharacteristicDataElementsType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -15783,13 +15780,13 @@ struct ElectricalConnectionCharacteristicDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionCharacteristicDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionCharacteristicDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ElectricalConnectionCharacteristicDataElementsType
  * @param src The JSON variant to convert
  * @param dst The ElectricalConnectionCharacteristicDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionCharacteristicDataElementsType& dst);
 
 /**
  * Datatype ElectricalConnectionCharacteristicListDataType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -15807,13 +15804,13 @@ struct ElectricalConnectionCharacteristicListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionCharacteristicListDataType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionCharacteristicListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ElectricalConnectionCharacteristicListDataType
  * @param src The JSON variant to convert
  * @param dst The ElectricalConnectionCharacteristicListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionCharacteristicListDataType& dst);
 
 /**
  * Datatype ElectricalConnectionCharacteristicListDataSelectorsType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -15835,13 +15832,13 @@ struct ElectricalConnectionCharacteristicListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionCharacteristicListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionCharacteristicListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ElectricalConnectionCharacteristicListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The ElectricalConnectionCharacteristicListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionCharacteristicListDataSelectorsType& dst);
 
 /**
  * Datatype ElectricalConnectionStateDataType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -15865,13 +15862,13 @@ struct ElectricalConnectionStateDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionStateDataType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionStateDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ElectricalConnectionStateDataType
  * @param src The JSON variant to convert
  * @param dst The ElectricalConnectionStateDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateDataType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionStateDataType& dst);
 
 /**
  * Datatype ElectricalConnectionStateDataElementsType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -15895,13 +15892,13 @@ struct ElectricalConnectionStateDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionStateDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionStateDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ElectricalConnectionStateDataElementsType
  * @param src The JSON variant to convert
  * @param dst The ElectricalConnectionStateDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionStateDataElementsType& dst);
 
 /**
  * Datatype ElectricalConnectionStateListDataType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -15919,13 +15916,13 @@ struct ElectricalConnectionStateListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionStateListDataType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionStateListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ElectricalConnectionStateListDataType
  * @param src The JSON variant to convert
  * @param dst The ElectricalConnectionStateListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionStateListDataType& dst);
 
 /**
  * Datatype ElectricalConnectionStateListDataSelectorsType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -15943,13 +15940,13 @@ struct ElectricalConnectionStateListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionStateListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionStateListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ElectricalConnectionStateListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The ElectricalConnectionStateListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionStateListDataSelectorsType& dst);
 
 /**
  * Datatype ElectricalConnectionDescriptionDataType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -15974,13 +15971,13 @@ struct ElectricalConnectionDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ElectricalConnectionDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The ElectricalConnectionDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionDescriptionDataType& dst);
 
 /**
  * Datatype ElectricalConnectionDescriptionDataElementsType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -16005,13 +16002,13 @@ struct ElectricalConnectionDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ElectricalConnectionDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The ElectricalConnectionDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionDescriptionDataElementsType& dst);
 
 /**
  * Datatype ElectricalConnectionDescriptionListDataType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -16029,13 +16026,13 @@ struct ElectricalConnectionDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ElectricalConnectionDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The ElectricalConnectionDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionDescriptionListDataType& dst);
 
 /**
  * Datatype ElectricalConnectionDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_ElectricalConnection.xsd
@@ -16054,13 +16051,13 @@ struct ElectricalConnectionDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ElectricalConnectionDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const ElectricalConnectionDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a ElectricalConnectionDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The ElectricalConnectionDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, ElectricalConnectionDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype TimeInformationDataType as defined in EEBus_SPINE_TS_TimeInformation.xsd
@@ -16081,13 +16078,13 @@ struct TimeInformationDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeInformationDataType &src, JsonVariant &dst);
+bool convertToJson(const TimeInformationDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeInformationDataType
  * @param src The JSON variant to convert
  * @param dst The TimeInformationDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeInformationDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeInformationDataType& dst);
 
 /**
  * Datatype TimeInformationDataElementsType as defined in EEBus_SPINE_TS_TimeInformation.xsd
@@ -16108,13 +16105,13 @@ struct TimeInformationDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeInformationDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const TimeInformationDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeInformationDataElementsType
  * @param src The JSON variant to convert
  * @param dst The TimeInformationDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeInformationDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeInformationDataElementsType& dst);
 
 /**
  * Datatype TimeDistributorDataType as defined in EEBus_SPINE_TS_TimeInformation.xsd
@@ -16133,13 +16130,13 @@ struct TimeDistributorDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeDistributorDataType &src, JsonVariant &dst);
+bool convertToJson(const TimeDistributorDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeDistributorDataType
  * @param src The JSON variant to convert
  * @param dst The TimeDistributorDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeDistributorDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeDistributorDataType& dst);
 
 /**
  * Datatype TimeDistributorDataElementsType as defined in EEBus_SPINE_TS_TimeInformation.xsd
@@ -16158,13 +16155,13 @@ struct TimeDistributorDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeDistributorDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const TimeDistributorDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeDistributorDataElementsType
  * @param src The JSON variant to convert
  * @param dst The TimeDistributorDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeDistributorDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeDistributorDataElementsType& dst);
 
 /**
  * Datatype TimePrecisionDataType as defined in EEBus_SPINE_TS_TimeInformation.xsd
@@ -16184,13 +16181,13 @@ struct TimePrecisionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimePrecisionDataType &src, JsonVariant &dst);
+bool convertToJson(const TimePrecisionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimePrecisionDataType
  * @param src The JSON variant to convert
  * @param dst The TimePrecisionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimePrecisionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, TimePrecisionDataType& dst);
 
 /**
  * Datatype TimePrecisionDataElementsType as defined in EEBus_SPINE_TS_TimeInformation.xsd
@@ -16210,20 +16207,19 @@ struct TimePrecisionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimePrecisionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const TimePrecisionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimePrecisionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The TimePrecisionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimePrecisionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TimePrecisionDataElementsType& dst);
 
 /**
  * Datatype TimeDistributorEnquiryCallType as defined in EEBus_SPINE_TS_TimeInformation.xsd
 */
 struct TimeDistributorEnquiryCallType
 {
-
     TimeDistributorEnquiryCallType() = default;
 };
 
@@ -16233,20 +16229,19 @@ struct TimeDistributorEnquiryCallType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeDistributorEnquiryCallType &src, JsonVariant &dst);
+bool convertToJson(const TimeDistributorEnquiryCallType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeDistributorEnquiryCallType
  * @param src The JSON variant to convert
  * @param dst The TimeDistributorEnquiryCallType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeDistributorEnquiryCallType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeDistributorEnquiryCallType& dst);
 
 /**
  * Datatype TimeDistributorEnquiryCallElementsType as defined in EEBus_SPINE_TS_TimeInformation.xsd
 */
 struct TimeDistributorEnquiryCallElementsType
 {
-
     TimeDistributorEnquiryCallElementsType() = default;
 };
 
@@ -16256,13 +16251,13 @@ struct TimeDistributorEnquiryCallElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const TimeDistributorEnquiryCallElementsType &src, JsonVariant &dst);
+bool convertToJson(const TimeDistributorEnquiryCallElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a TimeDistributorEnquiryCallElementsType
  * @param src The JSON variant to convert
  * @param dst The TimeDistributorEnquiryCallElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, TimeDistributorEnquiryCallElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, TimeDistributorEnquiryCallElementsType& dst);
 
 /**
  * Datatype DeviceDiagnosisStateDataType as defined in EEBus_SPINE_TS_DeviceDiagnosis.xsd
@@ -16286,13 +16281,13 @@ struct DeviceDiagnosisStateDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceDiagnosisStateDataType &src, JsonVariant &dst);
+bool convertToJson(const DeviceDiagnosisStateDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceDiagnosisStateDataType
  * @param src The JSON variant to convert
  * @param dst The DeviceDiagnosisStateDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisStateDataType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceDiagnosisStateDataType& dst);
 
 /**
  * Datatype DeviceDiagnosisStateDataElementsType as defined in EEBus_SPINE_TS_DeviceDiagnosis.xsd
@@ -16316,13 +16311,13 @@ struct DeviceDiagnosisStateDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceDiagnosisStateDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const DeviceDiagnosisStateDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceDiagnosisStateDataElementsType
  * @param src The JSON variant to convert
  * @param dst The DeviceDiagnosisStateDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisStateDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceDiagnosisStateDataElementsType& dst);
 
 /**
  * Datatype DeviceDiagnosisHeartbeatDataType as defined in EEBus_SPINE_TS_DeviceDiagnosis.xsd
@@ -16342,13 +16337,13 @@ struct DeviceDiagnosisHeartbeatDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceDiagnosisHeartbeatDataType &src, JsonVariant &dst);
+bool convertToJson(const DeviceDiagnosisHeartbeatDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceDiagnosisHeartbeatDataType
  * @param src The JSON variant to convert
  * @param dst The DeviceDiagnosisHeartbeatDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisHeartbeatDataType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceDiagnosisHeartbeatDataType& dst);
 
 /**
  * Datatype DeviceDiagnosisHeartbeatDataElementsType as defined in EEBus_SPINE_TS_DeviceDiagnosis.xsd
@@ -16368,13 +16363,13 @@ struct DeviceDiagnosisHeartbeatDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceDiagnosisHeartbeatDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const DeviceDiagnosisHeartbeatDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceDiagnosisHeartbeatDataElementsType
  * @param src The JSON variant to convert
  * @param dst The DeviceDiagnosisHeartbeatDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisHeartbeatDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceDiagnosisHeartbeatDataElementsType& dst);
 
 /**
  * Datatype DeviceDiagnosisServiceDataType as defined in EEBus_SPINE_TS_DeviceDiagnosis.xsd
@@ -16395,13 +16390,13 @@ struct DeviceDiagnosisServiceDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceDiagnosisServiceDataType &src, JsonVariant &dst);
+bool convertToJson(const DeviceDiagnosisServiceDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceDiagnosisServiceDataType
  * @param src The JSON variant to convert
  * @param dst The DeviceDiagnosisServiceDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisServiceDataType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceDiagnosisServiceDataType& dst);
 
 /**
  * Datatype DeviceDiagnosisServiceDataElementsType as defined in EEBus_SPINE_TS_DeviceDiagnosis.xsd
@@ -16422,13 +16417,13 @@ struct DeviceDiagnosisServiceDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceDiagnosisServiceDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const DeviceDiagnosisServiceDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceDiagnosisServiceDataElementsType
  * @param src The JSON variant to convert
  * @param dst The DeviceDiagnosisServiceDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisServiceDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceDiagnosisServiceDataElementsType& dst);
 
 /**
  * Datatype DeviceConfigurationKeyValueValueType as defined in EEBus_SPINE_TS_DeviceConfiguration.xsd
@@ -16453,13 +16448,13 @@ struct DeviceConfigurationKeyValueValueType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceConfigurationKeyValueValueType &src, JsonVariant &dst);
+bool convertToJson(const DeviceConfigurationKeyValueValueType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceConfigurationKeyValueValueType
  * @param src The JSON variant to convert
  * @param dst The DeviceConfigurationKeyValueValueType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueValueType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueValueType& dst);
 
 /**
  * Datatype DeviceConfigurationKeyValueValueElementsType as defined in EEBus_SPINE_TS_DeviceConfiguration.xsd
@@ -16483,13 +16478,13 @@ struct DeviceConfigurationKeyValueValueElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceConfigurationKeyValueValueElementsType &src, JsonVariant &dst);
+bool convertToJson(const DeviceConfigurationKeyValueValueElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceConfigurationKeyValueValueElementsType
  * @param src The JSON variant to convert
  * @param dst The DeviceConfigurationKeyValueValueElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueValueElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueValueElementsType& dst);
 
 /**
  * Datatype DeviceConfigurationKeyValueDataType as defined in EEBus_SPINE_TS_DeviceConfiguration.xsd
@@ -16509,13 +16504,13 @@ struct DeviceConfigurationKeyValueDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceConfigurationKeyValueDataType &src, JsonVariant &dst);
+bool convertToJson(const DeviceConfigurationKeyValueDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceConfigurationKeyValueDataType
  * @param src The JSON variant to convert
  * @param dst The DeviceConfigurationKeyValueDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDataType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueDataType& dst);
 
 /**
  * Datatype DeviceConfigurationKeyValueDataElementsType as defined in EEBus_SPINE_TS_DeviceConfiguration.xsd
@@ -16535,13 +16530,13 @@ struct DeviceConfigurationKeyValueDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceConfigurationKeyValueDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const DeviceConfigurationKeyValueDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceConfigurationKeyValueDataElementsType
  * @param src The JSON variant to convert
  * @param dst The DeviceConfigurationKeyValueDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueDataElementsType& dst);
 
 /**
  * Datatype DeviceConfigurationKeyValueListDataType as defined in EEBus_SPINE_TS_DeviceConfiguration.xsd
@@ -16559,13 +16554,13 @@ struct DeviceConfigurationKeyValueListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceConfigurationKeyValueListDataType &src, JsonVariant &dst);
+bool convertToJson(const DeviceConfigurationKeyValueListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceConfigurationKeyValueListDataType
  * @param src The JSON variant to convert
  * @param dst The DeviceConfigurationKeyValueListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueListDataType& dst);
 
 /**
  * Datatype DeviceConfigurationKeyValueListDataSelectorsType as defined in EEBus_SPINE_TS_DeviceConfiguration.xsd
@@ -16583,13 +16578,13 @@ struct DeviceConfigurationKeyValueListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceConfigurationKeyValueListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const DeviceConfigurationKeyValueListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceConfigurationKeyValueListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The DeviceConfigurationKeyValueListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueListDataSelectorsType& dst);
 
 /**
  * Datatype DeviceConfigurationKeyValueDescriptionDataType as defined in EEBus_SPINE_TS_DeviceConfiguration.xsd
@@ -16612,13 +16607,13 @@ struct DeviceConfigurationKeyValueDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceConfigurationKeyValueDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const DeviceConfigurationKeyValueDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceConfigurationKeyValueDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The DeviceConfigurationKeyValueDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueDescriptionDataType& dst);
 
 /**
  * Datatype DeviceConfigurationKeyValueDescriptionDataElementsType as defined in EEBus_SPINE_TS_DeviceConfiguration.xsd
@@ -16641,20 +16636,21 @@ struct DeviceConfigurationKeyValueDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceConfigurationKeyValueDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const DeviceConfigurationKeyValueDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceConfigurationKeyValueDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The DeviceConfigurationKeyValueDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueDescriptionDataElementsType& dst);
 
 /**
  * Datatype DeviceConfigurationKeyValueDescriptionListDataType as defined in EEBus_SPINE_TS_DeviceConfiguration.xsd
 */
 struct DeviceConfigurationKeyValueDescriptionListDataType
 {
-    std::optional<std::vector<DeviceConfigurationKeyValueDescriptionDataType>> deviceConfigurationKeyValueDescriptionData;
+    std::optional<std::vector<DeviceConfigurationKeyValueDescriptionDataType>>
+    deviceConfigurationKeyValueDescriptionData;
 
     DeviceConfigurationKeyValueDescriptionListDataType() = default;
 };
@@ -16665,13 +16661,13 @@ struct DeviceConfigurationKeyValueDescriptionListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceConfigurationKeyValueDescriptionListDataType &src, JsonVariant &dst);
+bool convertToJson(const DeviceConfigurationKeyValueDescriptionListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceConfigurationKeyValueDescriptionListDataType
  * @param src The JSON variant to convert
  * @param dst The DeviceConfigurationKeyValueDescriptionListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDescriptionListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueDescriptionListDataType& dst);
 
 /**
  * Datatype DeviceConfigurationKeyValueDescriptionListDataSelectorsType as defined in EEBus_SPINE_TS_DeviceConfiguration.xsd
@@ -16690,13 +16686,13 @@ struct DeviceConfigurationKeyValueDescriptionListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceConfigurationKeyValueDescriptionListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const DeviceConfigurationKeyValueDescriptionListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceConfigurationKeyValueDescriptionListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The DeviceConfigurationKeyValueDescriptionListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDescriptionListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueDescriptionListDataSelectorsType& dst);
 
 /**
  * Datatype DeviceConfigurationKeyValueConstraintsDataType as defined in EEBus_SPINE_TS_DeviceConfiguration.xsd
@@ -16717,13 +16713,13 @@ struct DeviceConfigurationKeyValueConstraintsDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceConfigurationKeyValueConstraintsDataType &src, JsonVariant &dst);
+bool convertToJson(const DeviceConfigurationKeyValueConstraintsDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceConfigurationKeyValueConstraintsDataType
  * @param src The JSON variant to convert
  * @param dst The DeviceConfigurationKeyValueConstraintsDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueConstraintsDataType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueConstraintsDataType& dst);
 
 /**
  * Datatype DeviceConfigurationKeyValueConstraintsDataElementsType as defined in EEBus_SPINE_TS_DeviceConfiguration.xsd
@@ -16744,20 +16740,21 @@ struct DeviceConfigurationKeyValueConstraintsDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceConfigurationKeyValueConstraintsDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const DeviceConfigurationKeyValueConstraintsDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceConfigurationKeyValueConstraintsDataElementsType
  * @param src The JSON variant to convert
  * @param dst The DeviceConfigurationKeyValueConstraintsDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueConstraintsDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueConstraintsDataElementsType& dst);
 
 /**
  * Datatype DeviceConfigurationKeyValueConstraintsListDataType as defined in EEBus_SPINE_TS_DeviceConfiguration.xsd
 */
 struct DeviceConfigurationKeyValueConstraintsListDataType
 {
-    std::optional<std::vector<DeviceConfigurationKeyValueConstraintsDataType>> deviceConfigurationKeyValueConstraintsData;
+    std::optional<std::vector<DeviceConfigurationKeyValueConstraintsDataType>>
+    deviceConfigurationKeyValueConstraintsData;
 
     DeviceConfigurationKeyValueConstraintsListDataType() = default;
 };
@@ -16768,13 +16765,13 @@ struct DeviceConfigurationKeyValueConstraintsListDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceConfigurationKeyValueConstraintsListDataType &src, JsonVariant &dst);
+bool convertToJson(const DeviceConfigurationKeyValueConstraintsListDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceConfigurationKeyValueConstraintsListDataType
  * @param src The JSON variant to convert
  * @param dst The DeviceConfigurationKeyValueConstraintsListDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueConstraintsListDataType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueConstraintsListDataType& dst);
 
 /**
  * Datatype DeviceConfigurationKeyValueConstraintsListDataSelectorsType as defined in EEBus_SPINE_TS_DeviceConfiguration.xsd
@@ -16792,13 +16789,13 @@ struct DeviceConfigurationKeyValueConstraintsListDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DeviceConfigurationKeyValueConstraintsListDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const DeviceConfigurationKeyValueConstraintsListDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DeviceConfigurationKeyValueConstraintsListDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The DeviceConfigurationKeyValueConstraintsListDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueConstraintsListDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, DeviceConfigurationKeyValueConstraintsListDataSelectorsType& dst);
 
 /**
  * Datatype HeaderType as defined in EEBus_SPINE_TS_Datagram.xsd
@@ -16824,13 +16821,13 @@ struct HeaderType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const HeaderType &src, JsonVariant &dst);
+bool convertToJson(const HeaderType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a HeaderType
  * @param src The JSON variant to convert
  * @param dst The HeaderType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, HeaderType &dst);
+void convertFromJson(const JsonVariantConst& src, HeaderType& dst);
 
 /**
  * Datatype CmdControlType as defined in EEBus_SPINE_TS_CommandFrame.xsd
@@ -16849,13 +16846,13 @@ struct CmdControlType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const CmdControlType &src, JsonVariant &dst);
+bool convertToJson(const CmdControlType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a CmdControlType
  * @param src The JSON variant to convert
  * @param dst The CmdControlType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, CmdControlType &dst);
+void convertFromJson(const JsonVariantConst& src, CmdControlType& dst);
 
 /**
  * Datatype DataTunnelingHeaderType as defined in EEBus_SPINE_TS_DataTunneling.xsd
@@ -16875,13 +16872,13 @@ struct DataTunnelingHeaderType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DataTunnelingHeaderType &src, JsonVariant &dst);
+bool convertToJson(const DataTunnelingHeaderType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DataTunnelingHeaderType
  * @param src The JSON variant to convert
  * @param dst The DataTunnelingHeaderType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DataTunnelingHeaderType &dst);
+void convertFromJson(const JsonVariantConst& src, DataTunnelingHeaderType& dst);
 
 /**
  * Datatype DataTunnelingHeaderElementsType as defined in EEBus_SPINE_TS_DataTunneling.xsd
@@ -16901,13 +16898,13 @@ struct DataTunnelingHeaderElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DataTunnelingHeaderElementsType &src, JsonVariant &dst);
+bool convertToJson(const DataTunnelingHeaderElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DataTunnelingHeaderElementsType
  * @param src The JSON variant to convert
  * @param dst The DataTunnelingHeaderElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DataTunnelingHeaderElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, DataTunnelingHeaderElementsType& dst);
 
 /**
  * Datatype DataTunnelingCallType as defined in EEBus_SPINE_TS_DataTunneling.xsd
@@ -16926,13 +16923,13 @@ struct DataTunnelingCallType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DataTunnelingCallType &src, JsonVariant &dst);
+bool convertToJson(const DataTunnelingCallType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DataTunnelingCallType
  * @param src The JSON variant to convert
  * @param dst The DataTunnelingCallType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DataTunnelingCallType &dst);
+void convertFromJson(const JsonVariantConst& src, DataTunnelingCallType& dst);
 
 /**
  * Datatype DataTunnelingCallElementsType as defined in EEBus_SPINE_TS_DataTunneling.xsd
@@ -16951,13 +16948,13 @@ struct DataTunnelingCallElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DataTunnelingCallElementsType &src, JsonVariant &dst);
+bool convertToJson(const DataTunnelingCallElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a DataTunnelingCallElementsType
  * @param src The JSON variant to convert
  * @param dst The DataTunnelingCallElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, DataTunnelingCallElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, DataTunnelingCallElementsType& dst);
 
 /**
  * Datatype IncentiveTableTierType as defined in EEBus_SPINE_TS_IncentiveTable.xsd
@@ -16977,13 +16974,13 @@ struct IncentiveTableTierType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveTableTierType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveTableTierType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveTableTierType
  * @param src The JSON variant to convert
  * @param dst The IncentiveTableTierType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveTableTierType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableTierType& dst);
 
 /**
  * Datatype IncentiveTableIncentiveSlotType as defined in EEBus_SPINE_TS_IncentiveTable.xsd
@@ -17002,13 +16999,13 @@ struct IncentiveTableIncentiveSlotType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveTableIncentiveSlotType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveTableIncentiveSlotType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveTableIncentiveSlotType
  * @param src The JSON variant to convert
  * @param dst The IncentiveTableIncentiveSlotType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveTableIncentiveSlotType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableIncentiveSlotType& dst);
 
 /**
  * Datatype IncentiveTableType as defined in EEBus_SPINE_TS_IncentiveTable.xsd
@@ -17027,13 +17024,13 @@ struct IncentiveTableType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveTableType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveTableType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveTableType
  * @param src The JSON variant to convert
  * @param dst The IncentiveTableType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveTableType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableType& dst);
 
 /**
  * Datatype IncentiveTableDataType as defined in EEBus_SPINE_TS_IncentiveTable.xsd
@@ -17051,13 +17048,13 @@ struct IncentiveTableDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveTableDataType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveTableDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveTableDataType
  * @param src The JSON variant to convert
  * @param dst The IncentiveTableDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveTableDataType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableDataType& dst);
 
 /**
  * Datatype IncentiveTableTierElementsType as defined in EEBus_SPINE_TS_IncentiveTable.xsd
@@ -17077,13 +17074,13 @@ struct IncentiveTableTierElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveTableTierElementsType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveTableTierElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveTableTierElementsType
  * @param src The JSON variant to convert
  * @param dst The IncentiveTableTierElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveTableTierElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableTierElementsType& dst);
 
 /**
  * Datatype IncentiveTableIncentiveSlotElementsType as defined in EEBus_SPINE_TS_IncentiveTable.xsd
@@ -17102,13 +17099,13 @@ struct IncentiveTableIncentiveSlotElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveTableIncentiveSlotElementsType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveTableIncentiveSlotElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveTableIncentiveSlotElementsType
  * @param src The JSON variant to convert
  * @param dst The IncentiveTableIncentiveSlotElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveTableIncentiveSlotElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableIncentiveSlotElementsType& dst);
 
 /**
  * Datatype IncentiveTableElementsType as defined in EEBus_SPINE_TS_IncentiveTable.xsd
@@ -17127,13 +17124,13 @@ struct IncentiveTableElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveTableElementsType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveTableElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveTableElementsType
  * @param src The JSON variant to convert
  * @param dst The IncentiveTableElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveTableElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableElementsType& dst);
 
 /**
  * Datatype IncentiveTableDataElementsType as defined in EEBus_SPINE_TS_IncentiveTable.xsd
@@ -17151,13 +17148,13 @@ struct IncentiveTableDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveTableDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveTableDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveTableDataElementsType
  * @param src The JSON variant to convert
  * @param dst The IncentiveTableDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveTableDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableDataElementsType& dst);
 
 /**
  * Datatype IncentiveTableDataSelectorsType as defined in EEBus_SPINE_TS_IncentiveTable.xsd
@@ -17175,13 +17172,13 @@ struct IncentiveTableDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveTableDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveTableDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveTableDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The IncentiveTableDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveTableDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableDataSelectorsType& dst);
 
 /**
  * Datatype IncentiveTableDescriptionTierType as defined in EEBus_SPINE_TS_IncentiveTable.xsd
@@ -17201,13 +17198,13 @@ struct IncentiveTableDescriptionTierType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveTableDescriptionTierType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveTableDescriptionTierType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveTableDescriptionTierType
  * @param src The JSON variant to convert
  * @param dst The IncentiveTableDescriptionTierType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionTierType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableDescriptionTierType& dst);
 
 /**
  * Datatype IncentiveTableDescriptionType as defined in EEBus_SPINE_TS_IncentiveTable.xsd
@@ -17226,13 +17223,13 @@ struct IncentiveTableDescriptionType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveTableDescriptionType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveTableDescriptionType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveTableDescriptionType
  * @param src The JSON variant to convert
  * @param dst The IncentiveTableDescriptionType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableDescriptionType& dst);
 
 /**
  * Datatype IncentiveTableDescriptionDataType as defined in EEBus_SPINE_TS_IncentiveTable.xsd
@@ -17250,13 +17247,13 @@ struct IncentiveTableDescriptionDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveTableDescriptionDataType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveTableDescriptionDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveTableDescriptionDataType
  * @param src The JSON variant to convert
  * @param dst The IncentiveTableDescriptionDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionDataType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableDescriptionDataType& dst);
 
 /**
  * Datatype IncentiveTableDescriptionTierElementsType as defined in EEBus_SPINE_TS_IncentiveTable.xsd
@@ -17276,13 +17273,13 @@ struct IncentiveTableDescriptionTierElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveTableDescriptionTierElementsType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveTableDescriptionTierElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveTableDescriptionTierElementsType
  * @param src The JSON variant to convert
  * @param dst The IncentiveTableDescriptionTierElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionTierElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableDescriptionTierElementsType& dst);
 
 /**
  * Datatype IncentiveTableDescriptionElementsType as defined in EEBus_SPINE_TS_IncentiveTable.xsd
@@ -17301,13 +17298,13 @@ struct IncentiveTableDescriptionElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveTableDescriptionElementsType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveTableDescriptionElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveTableDescriptionElementsType
  * @param src The JSON variant to convert
  * @param dst The IncentiveTableDescriptionElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableDescriptionElementsType& dst);
 
 /**
  * Datatype IncentiveTableDescriptionDataElementsType as defined in EEBus_SPINE_TS_IncentiveTable.xsd
@@ -17325,13 +17322,13 @@ struct IncentiveTableDescriptionDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveTableDescriptionDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveTableDescriptionDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveTableDescriptionDataElementsType
  * @param src The JSON variant to convert
  * @param dst The IncentiveTableDescriptionDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableDescriptionDataElementsType& dst);
 
 /**
  * Datatype IncentiveTableDescriptionDataSelectorsType as defined in EEBus_SPINE_TS_IncentiveTable.xsd
@@ -17349,13 +17346,13 @@ struct IncentiveTableDescriptionDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveTableDescriptionDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveTableDescriptionDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveTableDescriptionDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The IncentiveTableDescriptionDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableDescriptionDataSelectorsType& dst);
 
 /**
  * Datatype IncentiveTableConstraintsType as defined in EEBus_SPINE_TS_IncentiveTable.xsd
@@ -17375,13 +17372,13 @@ struct IncentiveTableConstraintsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveTableConstraintsType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveTableConstraintsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveTableConstraintsType
  * @param src The JSON variant to convert
  * @param dst The IncentiveTableConstraintsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableConstraintsType& dst);
 
 /**
  * Datatype IncentiveTableConstraintsDataType as defined in EEBus_SPINE_TS_IncentiveTable.xsd
@@ -17399,13 +17396,13 @@ struct IncentiveTableConstraintsDataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveTableConstraintsDataType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveTableConstraintsDataType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveTableConstraintsDataType
  * @param src The JSON variant to convert
  * @param dst The IncentiveTableConstraintsDataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsDataType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableConstraintsDataType& dst);
 
 /**
  * Datatype IncentiveTableConstraintsElementsType as defined in EEBus_SPINE_TS_IncentiveTable.xsd
@@ -17425,13 +17422,13 @@ struct IncentiveTableConstraintsElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveTableConstraintsElementsType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveTableConstraintsElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveTableConstraintsElementsType
  * @param src The JSON variant to convert
  * @param dst The IncentiveTableConstraintsElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableConstraintsElementsType& dst);
 
 /**
  * Datatype IncentiveTableConstraintsDataElementsType as defined in EEBus_SPINE_TS_IncentiveTable.xsd
@@ -17449,13 +17446,13 @@ struct IncentiveTableConstraintsDataElementsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveTableConstraintsDataElementsType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveTableConstraintsDataElementsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveTableConstraintsDataElementsType
  * @param src The JSON variant to convert
  * @param dst The IncentiveTableConstraintsDataElementsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsDataElementsType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableConstraintsDataElementsType& dst);
 
 /**
  * Datatype IncentiveTableConstraintsDataSelectorsType as defined in EEBus_SPINE_TS_IncentiveTable.xsd
@@ -17473,13 +17470,13 @@ struct IncentiveTableConstraintsDataSelectorsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const IncentiveTableConstraintsDataSelectorsType &src, JsonVariant &dst);
+bool convertToJson(const IncentiveTableConstraintsDataSelectorsType& src, JsonVariant& dst);
 /**
  * Convert a JSON representation to a IncentiveTableConstraintsDataSelectorsType
  * @param src The JSON variant to convert
  * @param dst The IncentiveTableConstraintsDataSelectorsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsDataSelectorsType &dst);
+void convertFromJson(const JsonVariantConst& src, IncentiveTableConstraintsDataSelectorsType& dst);
 
 
 class SpineDataTypeHandler
@@ -17555,7 +17552,8 @@ public:
     std::optional<NetworkManagementSetupType> networkmanagementsetuptype;
     std::optional<NetworkManagementCandidateSetupType> networkmanagementcandidatesetuptype;
     std::optional<NetworkManagementTechnologyAddressType> networkmanagementtechnologyaddresstype;
-    std::optional<NetworkManagementCommunicationsTechnologyInformationType> networkmanagementcommunicationstechnologyinformationtype;
+    std::optional<NetworkManagementCommunicationsTechnologyInformationType>
+    networkmanagementcommunicationstechnologyinformationtype;
     std::optional<NetworkManagementMinimumTrustLevelType> networkmanagementminimumtrustleveltype;
     std::optional<NetworkManagementProcessTimeoutType> networkmanagementprocesstimeouttype;
     std::optional<ConditionIdType> conditionidtype;
@@ -17654,7 +17652,8 @@ public:
     std::optional<FeatureHvacSpecificUsageEnumType> featurehvacspecificusageenumtype;
     std::optional<FeatureMeasurementSpecificUsageEnumType> featuremeasurementspecificusageenumtype;
     std::optional<FeatureSetpointSpecificUsageEnumType> featuresetpointspecificusageenumtype;
-    std::optional<FeatureSmartEnergyManagementPsSpecificUsageEnumType> featuresmartenergymanagementpsspecificusageenumtype;
+    std::optional<FeatureSmartEnergyManagementPsSpecificUsageEnumType>
+    featuresmartenergymanagementpsspecificusageenumtype;
     std::optional<FunctionEnumType> functionenumtype;
     std::optional<PowerTimeSlotValueTypeEnumType> powertimeslotvaluetypeenumtype;
     std::optional<PowerSequenceScopeEnumType> powersequencescopeenumtype;
@@ -17758,11 +17757,13 @@ public:
     std::optional<PowerTimeSlotScheduleConstraintsDataType> powertimeslotscheduleconstraintsdatatype;
     std::optional<PowerTimeSlotScheduleConstraintsDataElementsType> powertimeslotscheduleconstraintsdataelementstype;
     std::optional<PowerTimeSlotScheduleConstraintsListDataType> powertimeslotscheduleconstraintslistdatatype;
-    std::optional<PowerTimeSlotScheduleConstraintsListDataSelectorsType> powertimeslotscheduleconstraintslistdataselectorstype;
+    std::optional<PowerTimeSlotScheduleConstraintsListDataSelectorsType>
+    powertimeslotscheduleconstraintslistdataselectorstype;
     std::optional<PowerSequenceAlternativesRelationDataType> powersequencealternativesrelationdatatype;
     std::optional<PowerSequenceAlternativesRelationDataElementsType> powersequencealternativesrelationdataelementstype;
     std::optional<PowerSequenceAlternativesRelationListDataType> powersequencealternativesrelationlistdatatype;
-    std::optional<PowerSequenceAlternativesRelationListDataSelectorsType> powersequencealternativesrelationlistdataselectorstype;
+    std::optional<PowerSequenceAlternativesRelationListDataSelectorsType>
+    powersequencealternativesrelationlistdataselectorstype;
     std::optional<PowerSequenceDescriptionDataType> powersequencedescriptiondatatype;
     std::optional<PowerSequenceDescriptionDataElementsType> powersequencedescriptiondataelementstype;
     std::optional<PowerSequenceDescriptionListDataType> powersequencedescriptionlistdatatype;
@@ -17778,7 +17779,8 @@ public:
     std::optional<PowerSequenceScheduleConstraintsDataType> powersequencescheduleconstraintsdatatype;
     std::optional<PowerSequenceScheduleConstraintsDataElementsType> powersequencescheduleconstraintsdataelementstype;
     std::optional<PowerSequenceScheduleConstraintsListDataType> powersequencescheduleconstraintslistdatatype;
-    std::optional<PowerSequenceScheduleConstraintsListDataSelectorsType> powersequencescheduleconstraintslistdataselectorstype;
+    std::optional<PowerSequenceScheduleConstraintsListDataSelectorsType>
+    powersequencescheduleconstraintslistdataselectorstype;
     std::optional<PowerSequencePriceDataType> powersequencepricedatatype;
     std::optional<PowerSequencePriceDataElementsType> powersequencepricedataelementstype;
     std::optional<PowerSequencePriceListDataType> powersequencepricelistdatatype;
@@ -17786,13 +17788,17 @@ public:
     std::optional<PowerSequenceSchedulePreferenceDataType> powersequenceschedulepreferencedatatype;
     std::optional<PowerSequenceSchedulePreferenceDataElementsType> powersequenceschedulepreferencedataelementstype;
     std::optional<PowerSequenceSchedulePreferenceListDataType> powersequenceschedulepreferencelistdatatype;
-    std::optional<PowerSequenceSchedulePreferenceListDataSelectorsType> powersequenceschedulepreferencelistdataselectorstype;
+    std::optional<PowerSequenceSchedulePreferenceListDataSelectorsType>
+    powersequenceschedulepreferencelistdataselectorstype;
     std::optional<PowerSequenceNodeScheduleInformationDataType> powersequencenodescheduleinformationdatatype;
-    std::optional<PowerSequenceNodeScheduleInformationDataElementsType> powersequencenodescheduleinformationdataelementstype;
+    std::optional<PowerSequenceNodeScheduleInformationDataElementsType>
+    powersequencenodescheduleinformationdataelementstype;
     std::optional<PowerSequenceScheduleConfigurationRequestCallType> powersequencescheduleconfigurationrequestcalltype;
-    std::optional<PowerSequenceScheduleConfigurationRequestCallElementsType> powersequencescheduleconfigurationrequestcallelementstype;
+    std::optional<PowerSequenceScheduleConfigurationRequestCallElementsType>
+    powersequencescheduleconfigurationrequestcallelementstype;
     std::optional<PowerSequencePriceCalculationRequestCallType> powersequencepricecalculationrequestcalltype;
-    std::optional<PowerSequencePriceCalculationRequestCallElementsType> powersequencepricecalculationrequestcallelementstype;
+    std::optional<PowerSequencePriceCalculationRequestCallElementsType>
+    powersequencepricecalculationrequestcallelementstype;
     std::optional<MeasurementDataType> measurementdatatype;
     std::optional<MeasurementDataElementsType> measurementdataelementstype;
     std::optional<MeasurementListDataType> measurementlistdatatype;
@@ -17828,27 +17834,34 @@ public:
     std::optional<OperatingConstraintsInterruptDataType> operatingconstraintsinterruptdatatype;
     std::optional<OperatingConstraintsInterruptDataElementsType> operatingconstraintsinterruptdataelementstype;
     std::optional<OperatingConstraintsInterruptListDataType> operatingconstraintsinterruptlistdatatype;
-    std::optional<OperatingConstraintsInterruptListDataSelectorsType> operatingconstraintsinterruptlistdataselectorstype;
+    std::optional<OperatingConstraintsInterruptListDataSelectorsType>
+    operatingconstraintsinterruptlistdataselectorstype;
     std::optional<OperatingConstraintsDurationDataType> operatingconstraintsdurationdatatype;
     std::optional<OperatingConstraintsDurationDataElementsType> operatingconstraintsdurationdataelementstype;
     std::optional<OperatingConstraintsDurationListDataType> operatingconstraintsdurationlistdatatype;
     std::optional<OperatingConstraintsDurationListDataSelectorsType> operatingconstraintsdurationlistdataselectorstype;
     std::optional<OperatingConstraintsPowerDescriptionDataType> operatingconstraintspowerdescriptiondatatype;
-    std::optional<OperatingConstraintsPowerDescriptionDataElementsType> operatingconstraintspowerdescriptiondataelementstype;
+    std::optional<OperatingConstraintsPowerDescriptionDataElementsType>
+    operatingconstraintspowerdescriptiondataelementstype;
     std::optional<OperatingConstraintsPowerDescriptionListDataType> operatingconstraintspowerdescriptionlistdatatype;
-    std::optional<OperatingConstraintsPowerDescriptionListDataSelectorsType> operatingconstraintspowerdescriptionlistdataselectorstype;
+    std::optional<OperatingConstraintsPowerDescriptionListDataSelectorsType>
+    operatingconstraintspowerdescriptionlistdataselectorstype;
     std::optional<OperatingConstraintsPowerRangeDataType> operatingconstraintspowerrangedatatype;
     std::optional<OperatingConstraintsPowerRangeDataElementsType> operatingconstraintspowerrangedataelementstype;
     std::optional<OperatingConstraintsPowerRangeListDataType> operatingconstraintspowerrangelistdatatype;
-    std::optional<OperatingConstraintsPowerRangeListDataSelectorsType> operatingconstraintspowerrangelistdataselectorstype;
+    std::optional<OperatingConstraintsPowerRangeListDataSelectorsType>
+    operatingconstraintspowerrangelistdataselectorstype;
     std::optional<OperatingConstraintsPowerLevelDataType> operatingconstraintspowerleveldatatype;
     std::optional<OperatingConstraintsPowerLevelDataElementsType> operatingconstraintspowerleveldataelementstype;
     std::optional<OperatingConstraintsPowerLevelListDataType> operatingconstraintspowerlevellistdatatype;
-    std::optional<OperatingConstraintsPowerLevelListDataSelectorsType> operatingconstraintspowerlevellistdataselectorstype;
+    std::optional<OperatingConstraintsPowerLevelListDataSelectorsType>
+    operatingconstraintspowerlevellistdataselectorstype;
     std::optional<OperatingConstraintsResumeImplicationDataType> operatingconstraintsresumeimplicationdatatype;
-    std::optional<OperatingConstraintsResumeImplicationDataElementsType> operatingconstraintsresumeimplicationdataelementstype;
+    std::optional<OperatingConstraintsResumeImplicationDataElementsType>
+    operatingconstraintsresumeimplicationdataelementstype;
     std::optional<OperatingConstraintsResumeImplicationListDataType> operatingconstraintsresumeimplicationlistdatatype;
-    std::optional<OperatingConstraintsResumeImplicationListDataSelectorsType> operatingconstraintsresumeimplicationlistdataselectorstype;
+    std::optional<OperatingConstraintsResumeImplicationListDataSelectorsType>
+    operatingconstraintsresumeimplicationlistdataselectorstype;
     std::optional<BillValueType> billvaluetype;
     std::optional<BillValueElementsType> billvalueelementstype;
     std::optional<BillCostType> billcosttype;
@@ -17933,17 +17946,23 @@ public:
     std::optional<NetworkManagementReportCandidateDataType> networkmanagementreportcandidatedatatype;
     std::optional<NetworkManagementReportCandidateDataElementsType> networkmanagementreportcandidatedataelementstype;
     std::optional<NetworkManagementDeviceDescriptionDataType> networkmanagementdevicedescriptiondatatype;
-    std::optional<NetworkManagementDeviceDescriptionDataElementsType> networkmanagementdevicedescriptiondataelementstype;
+    std::optional<NetworkManagementDeviceDescriptionDataElementsType>
+    networkmanagementdevicedescriptiondataelementstype;
     std::optional<NetworkManagementDeviceDescriptionListDataType> networkmanagementdevicedescriptionlistdatatype;
-    std::optional<NetworkManagementDeviceDescriptionListDataSelectorsType> networkmanagementdevicedescriptionlistdataselectorstype;
+    std::optional<NetworkManagementDeviceDescriptionListDataSelectorsType>
+    networkmanagementdevicedescriptionlistdataselectorstype;
     std::optional<NetworkManagementEntityDescriptionDataType> networkmanagemententitydescriptiondatatype;
-    std::optional<NetworkManagementEntityDescriptionDataElementsType> networkmanagemententitydescriptiondataelementstype;
+    std::optional<NetworkManagementEntityDescriptionDataElementsType>
+    networkmanagemententitydescriptiondataelementstype;
     std::optional<NetworkManagementEntityDescriptionListDataType> networkmanagemententitydescriptionlistdatatype;
-    std::optional<NetworkManagementEntityDescriptionListDataSelectorsType> networkmanagemententitydescriptionlistdataselectorstype;
+    std::optional<NetworkManagementEntityDescriptionListDataSelectorsType>
+    networkmanagemententitydescriptionlistdataselectorstype;
     std::optional<NetworkManagementFeatureDescriptionDataType> networkmanagementfeaturedescriptiondatatype;
-    std::optional<NetworkManagementFeatureDescriptionDataElementsType> networkmanagementfeaturedescriptiondataelementstype;
+    std::optional<NetworkManagementFeatureDescriptionDataElementsType>
+    networkmanagementfeaturedescriptiondataelementstype;
     std::optional<NetworkManagementFeatureDescriptionListDataType> networkmanagementfeaturedescriptionlistdatatype;
-    std::optional<NetworkManagementFeatureDescriptionListDataSelectorsType> networkmanagementfeaturedescriptionlistdataselectorstype;
+    std::optional<NetworkManagementFeatureDescriptionListDataSelectorsType>
+    networkmanagementfeaturedescriptionlistdataselectorstype;
     std::optional<SupplyConditionDataType> supplyconditiondatatype;
     std::optional<SupplyConditionDataElementsType> supplyconditiondataelementstype;
     std::optional<SupplyConditionListDataType> supplyconditionlistdatatype;
@@ -17955,18 +17974,23 @@ public:
     std::optional<SupplyConditionThresholdRelationDataType> supplyconditionthresholdrelationdatatype;
     std::optional<SupplyConditionThresholdRelationDataElementsType> supplyconditionthresholdrelationdataelementstype;
     std::optional<SupplyConditionThresholdRelationListDataType> supplyconditionthresholdrelationlistdatatype;
-    std::optional<SupplyConditionThresholdRelationListDataSelectorsType> supplyconditionthresholdrelationlistdataselectorstype;
+    std::optional<SupplyConditionThresholdRelationListDataSelectorsType>
+    supplyconditionthresholdrelationlistdataselectorstype;
     std::optional<AlarmDataType> alarmdatatype;
     std::optional<AlarmDataElementsType> alarmdataelementstype;
     std::optional<AlarmListDataType> alarmlistdatatype;
     std::optional<AlarmListDataSelectorsType> alarmlistdataselectorstype;
     std::optional<NodeManagementSpecificationVersionListType> nodemanagementspecificationversionlisttype;
-    std::optional<NodeManagementDetailedDiscoveryDeviceInformationType> nodemanagementdetaileddiscoverydeviceinformationtype;
-    std::optional<NodeManagementDetailedDiscoveryEntityInformationType> nodemanagementdetaileddiscoveryentityinformationtype;
-    std::optional<NodeManagementDetailedDiscoveryFeatureInformationType> nodemanagementdetaileddiscoveryfeatureinformationtype;
+    std::optional<NodeManagementDetailedDiscoveryDeviceInformationType>
+    nodemanagementdetaileddiscoverydeviceinformationtype;
+    std::optional<NodeManagementDetailedDiscoveryEntityInformationType>
+    nodemanagementdetaileddiscoveryentityinformationtype;
+    std::optional<NodeManagementDetailedDiscoveryFeatureInformationType>
+    nodemanagementdetaileddiscoveryfeatureinformationtype;
     std::optional<NodeManagementDetailedDiscoveryDataType> nodemanagementdetaileddiscoverydatatype;
     std::optional<SpecificationVersionDataElementsType> specificationversiondataelementstype;
-    std::optional<NodeManagementSpecificationVersionListElementsType> nodemanagementspecificationversionlistelementstype;
+    std::optional<NodeManagementSpecificationVersionListElementsType>
+    nodemanagementspecificationversionlistelementstype;
     std::optional<NodeManagementDetailedDiscoveryDeviceInformationElementsType>
     nodemanagementdetaileddiscoverydeviceinformationelementstype;
     std::optional<NodeManagementDetailedDiscoveryEntityInformationElementsType>
@@ -18030,7 +18054,8 @@ public:
     std::optional<TaskManagementPowerSequencesRelatedType> taskmanagementpowersequencesrelatedtype;
     std::optional<TaskManagementPowerSequencesRelatedElementsType> taskmanagementpowersequencesrelatedelementstype;
     std::optional<TaskManagementSmartEnergyManagementPsRelatedType> taskmanagementsmartenergymanagementpsrelatedtype;
-    std::optional<TaskManagementSmartEnergyManagementPsRelatedElementsType> taskmanagementsmartenergymanagementpsrelatedelementstype;
+    std::optional<TaskManagementSmartEnergyManagementPsRelatedElementsType>
+    taskmanagementsmartenergymanagementpsrelatedelementstype;
     std::optional<TaskManagementJobDataType> taskmanagementjobdatatype;
     std::optional<TaskManagementJobDataElementsType> taskmanagementjobdataelementstype;
     std::optional<TaskManagementJobListDataType> taskmanagementjoblistdatatype;
@@ -18050,23 +18075,30 @@ public:
     std::optional<HvacSystemFunctionListDataType> hvacsystemfunctionlistdatatype;
     std::optional<HvacSystemFunctionListDataSelectorsType> hvacsystemfunctionlistdataselectorstype;
     std::optional<HvacSystemFunctionOperationModeRelationDataType> hvacsystemfunctionoperationmoderelationdatatype;
-    std::optional<HvacSystemFunctionOperationModeRelationDataElementsType> hvacsystemfunctionoperationmoderelationdataelementstype;
-    std::optional<HvacSystemFunctionOperationModeRelationListDataType> hvacsystemfunctionoperationmoderelationlistdatatype;
+    std::optional<HvacSystemFunctionOperationModeRelationDataElementsType>
+    hvacsystemfunctionoperationmoderelationdataelementstype;
+    std::optional<HvacSystemFunctionOperationModeRelationListDataType>
+    hvacsystemfunctionoperationmoderelationlistdatatype;
     std::optional<HvacSystemFunctionOperationModeRelationListDataSelectorsType>
     hvacsystemfunctionoperationmoderelationlistdataselectorstype;
     std::optional<HvacSystemFunctionSetpointRelationDataType> hvacsystemfunctionsetpointrelationdatatype;
-    std::optional<HvacSystemFunctionSetpointRelationDataElementsType> hvacsystemfunctionsetpointrelationdataelementstype;
+    std::optional<HvacSystemFunctionSetpointRelationDataElementsType>
+    hvacsystemfunctionsetpointrelationdataelementstype;
     std::optional<HvacSystemFunctionSetpointRelationListDataType> hvacsystemfunctionsetpointrelationlistdatatype;
-    std::optional<HvacSystemFunctionSetpointRelationListDataSelectorsType> hvacsystemfunctionsetpointrelationlistdataselectorstype;
+    std::optional<HvacSystemFunctionSetpointRelationListDataSelectorsType>
+    hvacsystemfunctionsetpointrelationlistdataselectorstype;
     std::optional<HvacSystemFunctionPowerSequenceRelationDataType> hvacsystemfunctionpowersequencerelationdatatype;
-    std::optional<HvacSystemFunctionPowerSequenceRelationDataElementsType> hvacsystemfunctionpowersequencerelationdataelementstype;
-    std::optional<HvacSystemFunctionPowerSequenceRelationListDataType> hvacsystemfunctionpowersequencerelationlistdatatype;
+    std::optional<HvacSystemFunctionPowerSequenceRelationDataElementsType>
+    hvacsystemfunctionpowersequencerelationdataelementstype;
+    std::optional<HvacSystemFunctionPowerSequenceRelationListDataType>
+    hvacsystemfunctionpowersequencerelationlistdatatype;
     std::optional<HvacSystemFunctionPowerSequenceRelationListDataSelectorsType>
     hvacsystemfunctionpowersequencerelationlistdataselectorstype;
     std::optional<HvacSystemFunctionDescriptionDataType> hvacsystemfunctiondescriptiondatatype;
     std::optional<HvacSystemFunctionDescriptionDataElementsType> hvacsystemfunctiondescriptiondataelementstype;
     std::optional<HvacSystemFunctionDescriptionListDataType> hvacsystemfunctiondescriptionlistdatatype;
-    std::optional<HvacSystemFunctionDescriptionListDataSelectorsType> hvacsystemfunctiondescriptionlistdataselectorstype;
+    std::optional<HvacSystemFunctionDescriptionListDataSelectorsType>
+    hvacsystemfunctiondescriptionlistdataselectorstype;
     std::optional<HvacOperationModeDescriptionDataType> hvacoperationmodedescriptiondatatype;
     std::optional<HvacOperationModeDescriptionDataElementsType> hvacoperationmodedescriptiondataelementstype;
     std::optional<HvacOperationModeDescriptionListDataType> hvacoperationmodedescriptionlistdatatype;
@@ -18129,8 +18161,10 @@ public:
     std::optional<SmartEnergyManagementPsPowerSequenceType> smartenergymanagementpspowersequencetype;
     std::optional<SmartEnergyManagementPsAlternativesType> smartenergymanagementpsalternativestype;
     std::optional<SmartEnergyManagementPsDataType> smartenergymanagementpsdatatype;
-    std::optional<SmartEnergyManagementPsAlternativesRelationElementsType> smartenergymanagementpsalternativesrelationelementstype;
-    std::optional<SmartEnergyManagementPsPowerTimeSlotValueListElementsType> smartenergymanagementpspowertimeslotvaluelistelementstype;
+    std::optional<SmartEnergyManagementPsAlternativesRelationElementsType>
+    smartenergymanagementpsalternativesrelationelementstype;
+    std::optional<SmartEnergyManagementPsPowerTimeSlotValueListElementsType>
+    smartenergymanagementpspowertimeslotvaluelistelementstype;
     std::optional<SmartEnergyManagementPsPowerTimeSlotElementsType> smartenergymanagementpspowertimeslotelementstype;
     std::optional<SmartEnergyManagementPsPowerSequenceElementsType> smartenergymanagementpspowersequenceelementstype;
     std::optional<SmartEnergyManagementPsAlternativesElementsType> smartenergymanagementpsalternativeselementstype;
@@ -18139,9 +18173,12 @@ public:
     std::optional<SmartEnergyManagementPsPriceDataType> smartenergymanagementpspricedatatype;
     std::optional<SmartEnergyManagementPsPriceDataElementsType> smartenergymanagementpspricedataelementstype;
     std::optional<SmartEnergyManagementPsPriceDataSelectorsType> smartenergymanagementpspricedataselectorstype;
-    std::optional<SmartEnergyManagementPsConfigurationRequestCallType> smartenergymanagementpsconfigurationrequestcalltype;
-    std::optional<SmartEnergyManagementPsConfigurationRequestCallElementsType> smartenergymanagementpsconfigurationrequestcallelementstype;
-    std::optional<SmartEnergyManagementPsPriceCalculationRequestCallType> smartenergymanagementpspricecalculationrequestcalltype;
+    std::optional<SmartEnergyManagementPsConfigurationRequestCallType>
+    smartenergymanagementpsconfigurationrequestcalltype;
+    std::optional<SmartEnergyManagementPsConfigurationRequestCallElementsType>
+    smartenergymanagementpsconfigurationrequestcallelementstype;
+    std::optional<SmartEnergyManagementPsPriceCalculationRequestCallType>
+    smartenergymanagementpspricecalculationrequestcalltype;
     std::optional<SmartEnergyManagementPsPriceCalculationRequestCallElementsType>
     smartenergymanagementpspricecalculationrequestcallelementstype;
     std::optional<MessagingDataType> messagingdatatype;
@@ -18203,18 +18240,24 @@ public:
     std::optional<StateInformationListDataType> stateinformationlistdatatype;
     std::optional<StateInformationListDataSelectorsType> stateinformationlistdataselectorstype;
     std::optional<ElectricalConnectionParameterDescriptionDataType> electricalconnectionparameterdescriptiondatatype;
-    std::optional<ElectricalConnectionParameterDescriptionDataElementsType> electricalconnectionparameterdescriptiondataelementstype;
-    std::optional<ElectricalConnectionParameterDescriptionListDataType> electricalconnectionparameterdescriptionlistdatatype;
+    std::optional<ElectricalConnectionParameterDescriptionDataElementsType>
+    electricalconnectionparameterdescriptiondataelementstype;
+    std::optional<ElectricalConnectionParameterDescriptionListDataType>
+    electricalconnectionparameterdescriptionlistdatatype;
     std::optional<ElectricalConnectionParameterDescriptionListDataSelectorsType>
     electricalconnectionparameterdescriptionlistdataselectorstype;
     std::optional<ElectricalConnectionPermittedValueSetDataType> electricalconnectionpermittedvaluesetdatatype;
-    std::optional<ElectricalConnectionPermittedValueSetDataElementsType> electricalconnectionpermittedvaluesetdataelementstype;
+    std::optional<ElectricalConnectionPermittedValueSetDataElementsType>
+    electricalconnectionpermittedvaluesetdataelementstype;
     std::optional<ElectricalConnectionPermittedValueSetListDataType> electricalconnectionpermittedvaluesetlistdatatype;
-    std::optional<ElectricalConnectionPermittedValueSetListDataSelectorsType> electricalconnectionpermittedvaluesetlistdataselectorstype;
+    std::optional<ElectricalConnectionPermittedValueSetListDataSelectorsType>
+    electricalconnectionpermittedvaluesetlistdataselectorstype;
     std::optional<ElectricalConnectionCharacteristicDataType> electricalconnectioncharacteristicdatatype;
-    std::optional<ElectricalConnectionCharacteristicDataElementsType> electricalconnectioncharacteristicdataelementstype;
+    std::optional<ElectricalConnectionCharacteristicDataElementsType>
+    electricalconnectioncharacteristicdataelementstype;
     std::optional<ElectricalConnectionCharacteristicListDataType> electricalconnectioncharacteristiclistdatatype;
-    std::optional<ElectricalConnectionCharacteristicListDataSelectorsType> electricalconnectioncharacteristiclistdataselectorstype;
+    std::optional<ElectricalConnectionCharacteristicListDataSelectorsType>
+    electricalconnectioncharacteristiclistdataselectorstype;
     std::optional<ElectricalConnectionStateDataType> electricalconnectionstatedatatype;
     std::optional<ElectricalConnectionStateDataElementsType> electricalconnectionstatedataelementstype;
     std::optional<ElectricalConnectionStateListDataType> electricalconnectionstatelistdatatype;
@@ -18222,7 +18265,8 @@ public:
     std::optional<ElectricalConnectionDescriptionDataType> electricalconnectiondescriptiondatatype;
     std::optional<ElectricalConnectionDescriptionDataElementsType> electricalconnectiondescriptiondataelementstype;
     std::optional<ElectricalConnectionDescriptionListDataType> electricalconnectiondescriptionlistdatatype;
-    std::optional<ElectricalConnectionDescriptionListDataSelectorsType> electricalconnectiondescriptionlistdataselectorstype;
+    std::optional<ElectricalConnectionDescriptionListDataSelectorsType>
+    electricalconnectiondescriptionlistdataselectorstype;
     std::optional<TimeInformationDataType> timeinformationdatatype;
     std::optional<TimeInformationDataElementsType> timeinformationdataelementstype;
     std::optional<TimeDistributorDataType> timedistributordatatype;
@@ -18244,13 +18288,19 @@ public:
     std::optional<DeviceConfigurationKeyValueListDataType> deviceconfigurationkeyvaluelistdatatype;
     std::optional<DeviceConfigurationKeyValueListDataSelectorsType> deviceconfigurationkeyvaluelistdataselectorstype;
     std::optional<DeviceConfigurationKeyValueDescriptionDataType> deviceconfigurationkeyvaluedescriptiondatatype;
-    std::optional<DeviceConfigurationKeyValueDescriptionDataElementsType> deviceconfigurationkeyvaluedescriptiondataelementstype;
-    std::optional<DeviceConfigurationKeyValueDescriptionListDataType> deviceconfigurationkeyvaluedescriptionlistdatatype;
-    std::optional<DeviceConfigurationKeyValueDescriptionListDataSelectorsType> deviceconfigurationkeyvaluedescriptionlistdataselectorstype;
+    std::optional<DeviceConfigurationKeyValueDescriptionDataElementsType>
+    deviceconfigurationkeyvaluedescriptiondataelementstype;
+    std::optional<DeviceConfigurationKeyValueDescriptionListDataType>
+    deviceconfigurationkeyvaluedescriptionlistdatatype;
+    std::optional<DeviceConfigurationKeyValueDescriptionListDataSelectorsType>
+    deviceconfigurationkeyvaluedescriptionlistdataselectorstype;
     std::optional<DeviceConfigurationKeyValueConstraintsDataType> deviceconfigurationkeyvalueconstraintsdatatype;
-    std::optional<DeviceConfigurationKeyValueConstraintsDataElementsType> deviceconfigurationkeyvalueconstraintsdataelementstype;
-    std::optional<DeviceConfigurationKeyValueConstraintsListDataType> deviceconfigurationkeyvalueconstraintslistdatatype;
-    std::optional<DeviceConfigurationKeyValueConstraintsListDataSelectorsType> deviceconfigurationkeyvalueconstraintslistdataselectorstype;
+    std::optional<DeviceConfigurationKeyValueConstraintsDataElementsType>
+    deviceconfigurationkeyvalueconstraintsdataelementstype;
+    std::optional<DeviceConfigurationKeyValueConstraintsListDataType>
+    deviceconfigurationkeyvalueconstraintslistdatatype;
+    std::optional<DeviceConfigurationKeyValueConstraintsListDataSelectorsType>
+    deviceconfigurationkeyvalueconstraintslistdataselectorstype;
     std::optional<HeaderType> headertype;
     std::optional<CmdControlType> cmdcontroltype;
     std::optional<DataTunnelingHeaderType> datatunnelingheadertype;
@@ -19254,5 +19304,5 @@ public:
     Function function_from_string(const String function_name);
     Function handle_cmd(JsonObjectConst obj);
     String function_to_string(Function function);
-    void last_cmd_to_json(JsonVariant &dst);
+    void last_cmd_to_json(JsonVariant& dst);
 };

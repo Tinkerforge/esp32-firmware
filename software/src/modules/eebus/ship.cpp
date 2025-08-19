@@ -49,6 +49,7 @@ void Ship::setup()
         }
     }
 }
+
 void Ship::disable_ship()
 {
     eebus.trace_fmtln("disable_ship start");
@@ -58,12 +59,12 @@ void Ship::disable_ship()
     mdns_service_remove("_ship", "_tcp");
     // Delay closing the socket and httpd server so the connections can all be closed
     task_scheduler.scheduleOnce(
-                [this]() {
-                    web_sockets.stop();
-                    httpd_ssl_stop(httpd);
-                    httpd = nullptr;
-                },
-                100_ms);
+        [this]() {
+            web_sockets.stop();
+            httpd_ssl_stop(httpd);
+            httpd = nullptr;
+        },
+        100_ms);
 
     eebus.trace_fmtln("disable_ship end");
 }
@@ -82,7 +83,8 @@ void Ship::setup_wss()
     config.httpd.lru_purge_enable = true;
     config.httpd.global_user_ctx = this;
     // httpd_stop calls free on the pointer passed as global_user_ctx if we don't override the free_fn.
-    config.httpd.global_user_ctx_free_fn = [](void *foo) {};
+    config.httpd.global_user_ctx_free_fn = [](void *foo) {
+    };
     config.httpd.max_open_sockets = 3;
     config.httpd.enable_so_linger = true;
     config.httpd.linger_timeout = 100;
@@ -195,9 +197,9 @@ void Ship::setup_wss()
             }
         }
         eebus.trace_fmtln("WebSocketsClient connected from %s:%d with SKI %s",
-                        client_ip,
-                        ntohs(addr.sin6_port),
-                        peer_ski.c_str());
+                          client_ip,
+                          ntohs(addr.sin6_port),
+                          peer_ski.c_str());
         ship_connections.push_back(ShipConnection{ws_client, ShipConnection::Role::Server, peer_ski});
         logger.printfln("New SHIP Client connected");
 
@@ -224,6 +226,7 @@ void Ship::setup_wss()
 
     logger.printfln("EEBUS SHIP started up and accepting connections");
 }
+
 void Ship::connect_trusted_peers()
 {
     size_t peer_count = eebus.config.get("peers")->count();

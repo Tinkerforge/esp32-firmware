@@ -36,6 +36,7 @@
 // These can be freely defined and are not limited by the spec
 #define EEBUS_DEVICE_TYPE  "ChargingStation" // The device type as defined in EEBUS SPINE TS ResourceSpecification. Can be freely defined i
 
+
 #define SUPPORTED_SPINE_VERSION "1.3.0" // The supported SPINE version for EEBus
 
 //#define EEBUS_DEV_ENABLE_RESPONSE // If defined, the EEBus device will respond to SPINE requests. Currently this is used for testing purposes only.
@@ -43,7 +44,10 @@
 class EEBus final : public IModule
 {
 public:
-    EEBus(){}
+    EEBus()
+    {
+    }
+
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
@@ -79,13 +83,13 @@ public:
      * @param ski The ski of the connection to find.
      * @return The index of the connection in state.get("connections") or -1 if not found.
      */
-    int get_state_connection_id_by_ski(const String &ski);
+    int get_state_connection_id_by_ski(const String& ski);
 
     size_t trace_buffer_index;
 
-    void trace_strln(const char *str, const size_t length);
+    void trace_strln(const char* str, const size_t length);
     void trace_jsonln(JsonVariantConst data);
-    void trace_fmtln(const char *fmt, ...);
+    void trace_fmtln(const char* fmt, ...);
 
 
     /**

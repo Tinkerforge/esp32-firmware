@@ -28,91 +28,103 @@
 
 namespace SHIP_TYPES
 {
-
-DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, size_t length, bool compatiblity_mode, JsonDocument &doc)
-{
-    doc.clear();
-    String incoming_data_str(reinterpret_cast<const char *>(incoming_data), length);
-    if (compatiblity_mode) {
-        incoming_data_str.replace("{}", "[]");
-        incoming_data_str.replace("}", "}]");
-        incoming_data_str.replace(",", "},{");
-        incoming_data_str.replace("{", "[{");
-    }
-    int nesting_limit = 20;
-    DeserializationError error = deserializeJson(doc, incoming_data_str, DeserializationOption::NestingLimit(nesting_limit));
-
-    //doc.shrinkToFit(); // Make this a bit smaller
-    if (error) {
-        eebus.trace_fmtln("J2T ShipMessageData Error during JSON deserialization : %s", error.c_str());
-        return DeserializationResult::ERROR;
-    }
-
-    JsonObject data = doc["data"][0];
-
-    if (data.isNull()) {
-        eebus.trace_fmtln("J2T ShipMessageData Error: No data object found");
-
-        return DeserializationResult::ERROR;
-    }
-    if (doc["data"][0]["header"][0]["protocolId"] == nullptr || doc["data"][1]["payload"] == nullptr) {
-        eebus.trace_fmtln("J2T ShipMessageData Error: Data invalid");
-        valid = false;
-        return DeserializationResult::ERROR;
-    }
-    protocol_id = String(doc["data"][0]["header"][0]["protocolId"]);
-    payload = doc["data"][1]["payload"];
-    valid = true;
-
-    JsonObject data_extension = data["extension"];
-    // Optional fields
-
-    DeserializeOptionalField(&data_extension, "extensionId", &extension_id_valid, &extension_id);
-    DeserializeOptionalField(&data_extension, "binary", &extension_binary_valid, &extension_binary);
-    DeserializeOptionalField(&data_extension, "string", &extension_string_valid, &extension_string);
-
-    return DeserializationResult::SUCCESS;
-}
-
-String ShipMessageDataType::type_to_json()
-{
-    DynamicJsonDocument doc(SHIP_TYPES_MAX_JSON_SIZE); // This exists just in this function
-
-    //JsonObject data = doc["data"];
-    doc["data"]["header"]["protocolId"] = protocol_id;
-    bool payload_loaded = doc["data"]["payload"].set(payload);
-    if (!payload_loaded) {
-        eebus.trace_fmtln("J2T ShipMessageData Error: Payload invalid");
-        return "";
-    }
-
-    if (extension_id_valid || extension_binary_valid || extension_string_valid) {
-        JsonObject data_extension = doc["data"].createNestedObject("extension");
-        logger.printfln("Valid: %d, Binary: %d, String: %d", extension_id_valid, extension_binary_valid, extension_string_valid);
-        if (extension_id_valid) {
-            data_extension["extensionId"] = extension_id;
+    DeserializationResult ShipMessageDataType::json_to_type(uint8_t* incoming_data, size_t length,
+                                                            bool compatiblity_mode, JsonDocument& doc)
+    {
+        doc.clear();
+        String incoming_data_str(reinterpret_cast<const char*>(incoming_data), length);
+        if (compatiblity_mode)
+        {
+            incoming_data_str.replace("{}", "[]");
+            incoming_data_str.replace("}", "}]");
+            incoming_data_str.replace(",", "},{");
+            incoming_data_str.replace("{", "[{");
         }
-        if (extension_binary_valid) {
-            JsonArray data_extension_binary = data_extension.createNestedArray("binary");
-            for (const auto &value : extension_binary) {
-                data_extension_binary.add(String(value));
+        int nesting_limit = 20;
+        DeserializationError error = deserializeJson(doc, incoming_data_str,
+                                                     DeserializationOption::NestingLimit(nesting_limit));
+
+        //doc.shrinkToFit(); // Make this a bit smaller
+        if (error)
+        {
+            eebus.trace_fmtln("J2T ShipMessageData Error during JSON deserialization : %s", error.c_str());
+            return DeserializationResult::ERROR;
+        }
+
+        JsonObject data = doc["data"][0];
+
+        if (data.isNull())
+        {
+            eebus.trace_fmtln("J2T ShipMessageData Error: No data object found");
+
+            return DeserializationResult::ERROR;
+        }
+        if (doc["data"][0]["header"][0]["protocolId"] == nullptr || doc["data"][1]["payload"] == nullptr)
+        {
+            eebus.trace_fmtln("J2T ShipMessageData Error: Data invalid");
+            valid = false;
+            return DeserializationResult::ERROR;
+        }
+        protocol_id = String(doc["data"][0]["header"][0]["protocolId"]);
+        payload = doc["data"][1]["payload"];
+        valid = true;
+
+        JsonObject data_extension = data["extension"];
+        // Optional fields
+
+        DeserializeOptionalField(&data_extension, "extensionId", &extension_id_valid, &extension_id);
+        DeserializeOptionalField(&data_extension, "binary", &extension_binary_valid, &extension_binary);
+        DeserializeOptionalField(&data_extension, "string", &extension_string_valid, &extension_string);
+
+        return DeserializationResult::SUCCESS;
+    }
+
+    String ShipMessageDataType::type_to_json()
+    {
+        DynamicJsonDocument doc(SHIP_TYPES_MAX_JSON_SIZE); // This exists just in this function
+
+        //JsonObject data = doc["data"];
+        doc["data"]["header"]["protocolId"] = protocol_id;
+        bool payload_loaded = doc["data"]["payload"].set(payload);
+        if (!payload_loaded)
+        {
+            eebus.trace_fmtln("J2T ShipMessageData Error: Payload invalid");
+            return "";
+        }
+
+        if (extension_id_valid || extension_binary_valid || extension_string_valid)
+        {
+            JsonObject data_extension = doc["data"].createNestedObject("extension");
+            logger.printfln("Valid: %d, Binary: %d, String: %d", extension_id_valid, extension_binary_valid,
+                            extension_string_valid);
+            if (extension_id_valid)
+            {
+                data_extension["extensionId"] = extension_id;
+            }
+            if (extension_binary_valid)
+            {
+                JsonArray data_extension_binary = data_extension.createNestedArray("binary");
+                for (const auto& value : extension_binary)
+                {
+                    data_extension_binary.add(String(value));
+                }
+            }
+            if (extension_string_valid)
+            {
+                data_extension["string"] = extension_string;
             }
         }
-        if (extension_string_valid) {
-            data_extension["string"] = extension_string;
-        }
-    }
-    /*
+        /*
     message_outgoing->data[0] = 2;
     size_t length = serializeJson(doc, &message_outgoing->data[1], SHIP_TYPES_MAX_JSON_SIZE - 1);
     message_outgoing->length = length + 1;
     */
 
-    String message_outgoing_data = "";
-    message_outgoing_data.reserve(SHIP_TYPES_MAX_JSON_SIZE - 1); // Reserve space for the JSON data
-    serializeJson(doc, message_outgoing_data);
+        String message_outgoing_data = "";
+        message_outgoing_data.reserve(SHIP_TYPES_MAX_JSON_SIZE - 1); // Reserve space for the JSON data
+        serializeJson(doc, message_outgoing_data);
 
-/*
+        /*
     //message_outgoing_data.replace("[{", "[[{"); // spine-go expects a double array for some reason
     //message_outgoing_data.replace("}]", "}]]");
 
@@ -120,97 +132,114 @@ String ShipMessageDataType::type_to_json()
     memcpy(&message_outgoing->data[1], message_outgoing_data.c_str(), message_outgoing_data.length());
     message_outgoing->length = message_outgoing_data.length() + 1;
 */
-    return message_outgoing_data;
-}
-
-void DeserializeOptionalField(JsonObject *data, const char *field_name, bool *field_valid, String *field_value)
-{
-    if (data->containsKey(field_name)) {
-        *field_value = (*data)[field_name].as<String>();
-        *field_valid = true;
-    } else {
-        *field_valid = false;
+        return message_outgoing_data;
     }
-}
 
-template <typename T>
-void DeserializeOptionalField(JsonObject *data, const char *field_name, bool *field_valid, std::vector<T> *field_value)
-{
-    if (data->containsKey(field_name)) {
-        for (JsonVariant value : (*data)[field_name].as<JsonArray>()) {
-            field_value->push_back(value.as<T>());
+    void DeserializeOptionalField(JsonObject* data, const char* field_name, bool* field_valid, String* field_value)
+    {
+        if (data->containsKey(field_name))
+        {
+            *field_value = (*data)[field_name].as<String>();
+            *field_valid = true;
         }
-        *field_valid = true;
-    } else {
-        *field_valid = false;
+        else
+        {
+            *field_valid = false;
+        }
     }
-}
-DeserializationResult ShipMessageAccessMethodsRequest::json_to_type(uint8_t *data, size_t length)
 
-{
-    DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE}; // TODO: Use a global json Doc
-    eebus.trace_fmtln("J2T ShipMessageAccessMethodsRequest json: %s", data);
-    DeserializationError error = deserializeJson(doc, data, length);
-    //doc.shrinkToFit(); // Make this a bit smaller
-    if (error) {
-        eebus.trace_fmtln("J2T ShipMessageAccessMethodsRequest Error during JSON deserialization : %s",
-                        error.c_str());
-        return DeserializationResult::ERROR;
+    template <typename T>
+    void DeserializeOptionalField(JsonObject* data, const char* field_name, bool* field_valid,
+                                  std::vector<T>* field_value)
+    {
+        if (data->containsKey(field_name))
+        {
+            for (JsonVariant value : (*data)[field_name].as<JsonArray>())
+            {
+                field_value->push_back(value.as<T>());
+            }
+            *field_valid = true;
+        }
+        else
+        {
+            *field_valid = false;
+        }
     }
-    JsonObject accessMethodsRequest = doc["accessMethodsRequest"];
-    if (accessMethodsRequest.isNull()) {
-        eebus.trace_fmtln("J2T ShipMessageAccessMethodsShipMessageAccessMethodsRequest Error: Invalid accessMethodsRequest");
-        return DeserializationResult::ERROR;
-    }
-    request = accessMethodsRequest["request"].as<String>();
-    return DeserializationResult::SUCCESS;
-}
-String ShipMessageAccessMethodsRequest::type_to_json()
-{
-    DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE}; // TODO: Use a global json Doc
-    JsonObject accessMethodsRequest = doc["accessMethodsRequest"].to<JsonObject>();
-    accessMethodsRequest["request"] = request;
-    String output;
-    //doc.shrinkToFit();
-    serializeJson(doc, output);
-    eebus.trace_fmtln("T2J ShipMessageAccessMethods json: %s", output.c_str());
-    return output;
-}
 
-DeserializationResult ShipMessageAccessMethods::json_to_type(uint8_t *data, size_t length)
-{
-    DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE}; // TODO: Use a global json Doc
-    DeserializationError error = deserializeJson(doc, data, length);
-    //doc.shrinkToFit(); // Make this a bit smaller
-    if (error) {
-        eebus.trace_fmtln("J2T ShipMessageAccessMethods Error during JSON deserialization : %s. Data: %s",
-                        error.c_str(),
-                        data);
-        return DeserializationResult::ERROR;
-    }
-    JsonObject accessMethods = doc["accessMethods"];
-    if (accessMethods.isNull() || accessMethods["id"] == nullptr) {
-        eebus.trace_fmtln("J2T ShipMessageAccessMethods Error: Invalid accessMethods");
-        return DeserializationResult::ERROR;
-    }
-    id = accessMethods["id"].as<String>();
-    DeserializeOptionalField(&accessMethods, "dns_sd_mdns", &dns_sd_mdns_valid, &dns_sd_mdns);
-    DeserializeOptionalField(&accessMethods, "dns", &dns_valid, &dns);
-    DeserializeOptionalField(&accessMethods, "dns_uri", &dns_uri_valid, &dns_uri);
-    return DeserializationResult::SUCCESS;
-}
-String ShipMessageAccessMethods::type_to_json()
-{
-    DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE}; // TODO: Use a global json Doc
-    JsonArray json_am = doc.createNestedArray("accessMethods");
-    JsonObject access_methods = json_am.createNestedObject();
-    access_methods["id"] = id;
+    DeserializationResult ShipMessageAccessMethodsRequest::json_to_type(uint8_t* data, size_t length)
 
-    json_am.createNestedObject().createNestedArray("dnsSd_mDns");
-    for (auto &value : dns_sd_mdns) {
-        access_methods["dns_sd_mdns"].add(value);
+    {
+        DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE}; // TODO: Use a global json Doc
+        eebus.trace_fmtln("J2T ShipMessageAccessMethodsRequest json: %s", data);
+        DeserializationError error = deserializeJson(doc, data, length);
+        //doc.shrinkToFit(); // Make this a bit smaller
+        if (error)
+        {
+            eebus.trace_fmtln("J2T ShipMessageAccessMethodsRequest Error during JSON deserialization : %s",
+                              error.c_str());
+            return DeserializationResult::ERROR;
+        }
+        JsonObject accessMethodsRequest = doc["accessMethodsRequest"];
+        if (accessMethodsRequest.isNull())
+        {
+            eebus.trace_fmtln(
+                "J2T ShipMessageAccessMethodsShipMessageAccessMethodsRequest Error: Invalid accessMethodsRequest");
+            return DeserializationResult::ERROR;
+        }
+        request = accessMethodsRequest["request"].as<String>();
+        return DeserializationResult::SUCCESS;
     }
-    /* This is standard conform, but ship-go throws a fit if its in the message. remove it for now..
+
+    String ShipMessageAccessMethodsRequest::type_to_json()
+    {
+        DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE}; // TODO: Use a global json Doc
+        JsonObject accessMethodsRequest = doc["accessMethodsRequest"].to<JsonObject>();
+        accessMethodsRequest["request"] = request;
+        String output;
+        //doc.shrinkToFit();
+        serializeJson(doc, output);
+        eebus.trace_fmtln("T2J ShipMessageAccessMethods json: %s", output.c_str());
+        return output;
+    }
+
+    DeserializationResult ShipMessageAccessMethods::json_to_type(uint8_t* data, size_t length)
+    {
+        DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE}; // TODO: Use a global json Doc
+        DeserializationError error = deserializeJson(doc, data, length);
+        //doc.shrinkToFit(); // Make this a bit smaller
+        if (error)
+        {
+            eebus.trace_fmtln("J2T ShipMessageAccessMethods Error during JSON deserialization : %s. Data: %s",
+                              error.c_str(),
+                              data);
+            return DeserializationResult::ERROR;
+        }
+        JsonObject accessMethods = doc["accessMethods"];
+        if (accessMethods.isNull() || accessMethods["id"] == nullptr)
+        {
+            eebus.trace_fmtln("J2T ShipMessageAccessMethods Error: Invalid accessMethods");
+            return DeserializationResult::ERROR;
+        }
+        id = accessMethods["id"].as<String>();
+        DeserializeOptionalField(&accessMethods, "dns_sd_mdns", &dns_sd_mdns_valid, &dns_sd_mdns);
+        DeserializeOptionalField(&accessMethods, "dns", &dns_valid, &dns);
+        DeserializeOptionalField(&accessMethods, "dns_uri", &dns_uri_valid, &dns_uri);
+        return DeserializationResult::SUCCESS;
+    }
+
+    String ShipMessageAccessMethods::type_to_json()
+    {
+        DynamicJsonDocument doc{SHIP_TYPES_MAX_JSON_SIZE}; // TODO: Use a global json Doc
+        JsonArray json_am = doc.createNestedArray("accessMethods");
+        JsonObject access_methods = json_am.createNestedObject();
+        access_methods["id"] = id;
+
+        json_am.createNestedObject().createNestedArray("dnsSd_mDns");
+        for (auto& value : dns_sd_mdns)
+        {
+            access_methods["dns_sd_mdns"].add(value);
+        }
+        /* This is standard conform, but ship-go throws a fit if its in the message. remove it for now..
     JsonArray dns = json_am.createNestedObject().createNestedArray("dns");
     for (const auto &value : dns) {
         access_methods["dns"].add(value);
@@ -218,10 +247,10 @@ String ShipMessageAccessMethods::type_to_json()
     JsonObject uri = dns.createNestedObject();
     uri["uri"] =  dns_uri; //"wss://192.168.0.33:4712/ship/"; // TODO
     */
-    String output;
-    //doc.shrinkToFit();
-    serializeJson(doc, output);
-    eebus.trace_fmtln("T2J ShipMessageAccessMethods json: %s", output.c_str());
-    return output;
-}
+        String output;
+        //doc.shrinkToFit();
+        serializeJson(doc, output);
+        eebus.trace_fmtln("T2J ShipMessageAccessMethods json: %s", output.c_str());
+        return output;
+    }
 } // namespace SHIP_TYPES

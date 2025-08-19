@@ -13,7 +13,7 @@ BreakBeforeBinaryOperators:                NonAssignment
 BreakBeforeBraces:                         Linux
 BreakBeforeTernaryOperators:               false
 BreakConstructorInitializers:              AfterColon
-ColumnLimit:                               140
+ColumnLimit:                               520
 DeriveLineEnding:                          false
 IndentCaseLabels:                          true
 IndentWidth:                               4

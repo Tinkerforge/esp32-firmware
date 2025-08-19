@@ -44,6 +44,7 @@
 #define SHIP_CONNECTION_MAX_JSON_SIZE 8192          // TODO: What is a sane value here? Not that important since it now lives in PSRAM
 #define SHIP_CONNECTION_MAX_BUFFER_SIZE (1024 * 10) // TODO: What is a sane value here? Not that important since it now lives in PSRAM
 
+enum class NodeState : uint8_t;
 class SpineConnection; // Forward declaration to avoid circular dependency
 
 class ShipConnection
@@ -55,7 +56,8 @@ public:
     // SHIP 13.4.4.1.3
     enum class SubState : uint8_t { Init, Listen, Timeout };
 
-    enum class ProtocolState : uint16_t {
+    enum class ProtocolState : uint16_t
+    {
         ConnectionHello,
         MessageProtocolHandshake,
         ConnectionPinState,
@@ -67,7 +69,8 @@ public:
         Unknown
     };
 
-    struct CMIMessage {
+    struct CMIMessage
+    {
         bool valid;
         uint8_t type;
         uint8_t value;
@@ -78,10 +81,12 @@ public:
     // This could probably be done more dynamic, but with the heap_caps_calloc_prefer we put it
     // in PSRAM (which we have plenty of) and with the uinque_ptr we make sure that it is automatically
     // freed as soon as it is removed from the ShipConnection list in Ship.
-    struct Message {
+    struct Message
+    {
         uint8_t data[SHIP_CONNECTION_MAX_BUFFER_SIZE];
         size_t length;
     };
+
     unique_ptr_any<Message> message_incoming;
     unique_ptr_any<Message> message_outgoing;
 
@@ -163,6 +168,7 @@ public:
     void state_sme_pin_ask_restricted();
     void state_sme_pin_ask_ok();
     void state_sme_access_method_request();
+    bool update_config_state(NodeState state);
     void state_done();
 
     void state_is_not_implemented();
@@ -205,13 +211,16 @@ public:
             }
         }
     };
-    struct ConnectionHelloType {
+
+    struct ConnectionHelloType
+    {
         ConnectionHelloPhase::Type phase;
         uint32_t waiting;
         bool waiting_valid;
         bool prolongation_request;
         bool prolongation_request_valid;
     };
+
     void json_to_type_connection_hello(ConnectionHelloType *connection_hello);
     void type_to_json_connection_hello(ConnectionHelloType *connection_hello);
 
@@ -272,17 +281,20 @@ public:
         }
     };
 
-    struct ProtocolHandshakeType {
+    struct ProtocolHandshakeType
+    {
         ProtocolHandshake::Type handshakeType;
         uint32_t version_major;
         uint32_t version_minor;
         // Hint: We ignore "formats" parameter completly since we only support UTF-8 and UTF-8 ist mandatory to support for the receiver
         //       Changing the character enconding in the middle of the communication also seems like a bad idea...
     };
+
     void json_to_type_handshake_type(ProtocolHandshakeType *handshake_type);
     void type_to_json_handshake_type(ProtocolHandshakeType *handshake_type);
 
     enum ProtocolAbortReason : uint8_t { Timeout = 1, UnexpectedMessage = 2, SelectionMismatch = 3, RFU };
+
     void sme_protocol_abort_procedure(ProtocolAbortReason reason);
 
     void common_procedure_enable_data_exchange();

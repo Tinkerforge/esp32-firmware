@@ -133,6 +133,7 @@ void ShipConnection::send_string(const char *str, const int length, const int ms
 
     //send_current_outgoing_message();
 }
+
 void ShipConnection::send_data_message(JsonVariant payload)
 {
     // Technically we should only send data messages if the state is done but for some reason the done state is not set correctly
@@ -197,10 +198,10 @@ void ShipConnection::set_state(ShipConnectionState state)
     }
     ShipConnectionState old_state = this->state;
     eebus.trace_fmtln(" SHIP State Change %s(%d) -> %s(%d)",
-                    get_ship_connection_state_name(old_state),
-                    static_cast<std::underlying_type<ShipConnectionState>::type>(old_state),
-                    get_ship_connection_state_name(state),
-                    static_cast<std::underlying_type<ShipConnectionState>::type>(state));
+                      get_ship_connection_state_name(old_state),
+                      static_cast<std::underlying_type<ShipConnectionState>::type>(old_state),
+                      get_ship_connection_state_name(state),
+                      static_cast<std::underlying_type<ShipConnectionState>::type>(state));
 
     this->previous_state = old_state;
     this->state = state;
@@ -492,6 +493,7 @@ void ShipConnection::hello_send_sme_update()
     type_to_json_connection_hello(&this_hello_phase);
     send_current_outgoing_message();
 }
+
 void ShipConnection::hello_set_wait_for_ready_timer(ShipConnectionState target)
 {
     task_scheduler.cancel(hello_wait_for_ready_timer);
@@ -660,7 +662,8 @@ void ShipConnection::state_sme_hello_pending_timeout()
             peer_hello_phase.waiting_valid ?
                 peer_hello_phase.waiting :
                 SHIP_CONNECTION_SME_INIT_TIMEOUT.as<
-                    uint64_t>(); // Using SHIP_CONNECTION_SME_INIT_TIMEOUT here is not 100% to the spec but its close enough and saves a bit of calculation time
+                    uint64_t>();
+        // Using SHIP_CONNECTION_SME_INIT_TIMEOUT here is not 100% to the spec but its close enough and saves a bit of calculation time
 
         hello_send_prolongation_reply_timer = task_scheduler.scheduleOnce(
             [this]() {
@@ -753,9 +756,9 @@ void ShipConnection::state_sme_protocol_handshake_client_init()
 void ShipConnection::state_sme_protocol_handshake_server_listen_proposal()
 {
     eebus.trace_fmtln("state_sme_protocol_handshake_server_listen_proposal: %d (len %d)-> %s",
-                    message_incoming->data[0],
-                    message_incoming->length,
-                    &message_incoming->data[1]);
+                      message_incoming->data[0],
+                      message_incoming->length,
+                      &message_incoming->data[1]);
 
     // 13.4.4.2.3 "State SME_PROT_H_STATE_SERVER_LISTEN_PROPOSAL"
     auto handshake = ProtocolHandshakeType();
@@ -910,9 +913,9 @@ void ShipConnection::state_sme_pin_ask_ok()
 void ShipConnection::state_sme_access_method_request()
 {
     eebus.trace_fmtln("state_sme_access_method_request: %d (len %d)-> %s",
-                    message_incoming->data[0],
-                    message_incoming->length,
-                    &message_incoming->data[1]);
+                      message_incoming->data[0],
+                      message_incoming->length,
+                      &message_incoming->data[1]);
     auto protocol_state = get_protocol_state();
     if (protocol_state == ProtocolState::AccessMethodsRequest) {
         to_json_access_methods_type();
@@ -974,8 +977,7 @@ void ShipConnection::state_done()
         case ProtocolState::Data: {
             SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
             DynamicJsonDocument dynamic_json_document{8192}; //TESTING MEMORY STUFF
-            if (data.json_to_type(&message_incoming->data[1], message_incoming->length - 1, false, dynamic_json_document)
-                == SHIP_TYPES::DeserializationResult::SUCCESS) {
+            if (data.json_to_type(&message_incoming->data[1], message_incoming->length - 1, false, dynamic_json_document) == SHIP_TYPES::DeserializationResult::SUCCESS) {
                 if (spine == nullptr) {
                     spine = make_unique_psram<SpineConnection>(this);
                 }
@@ -1032,8 +1034,8 @@ void ShipConnection::state_done()
 void ShipConnection::state_is_not_implemented()
 {
     eebus.trace_fmtln("State %s(%d) was triggered, but is not implemented yet",
-                    get_ship_connection_state_name(state),
-                    static_cast<std::underlying_type<ShipConnectionState>::type>(state));
+                      get_ship_connection_state_name(state),
+                      static_cast<std::underlying_type<ShipConnectionState>::type>(state));
 
     schedule_close(0_ms);
 }
@@ -1057,8 +1059,7 @@ void ShipConnection::json_to_type_connection_hello(ConnectionHelloType *connecti
         // This will overwrite the optional fields if they are present
         for (JsonObject obj : incoming_json_doc["connectionHello"].as<JsonArray>()) {
             if (obj.containsKey("phase")) {
-                connection_hello->phase =
-                    static_cast<ConnectionHelloPhase::Type>(ConnectionHelloPhase::from_str(obj["phase"].as<String>().c_str()));
+                connection_hello->phase = static_cast<ConnectionHelloPhase::Type>(ConnectionHelloPhase::from_str(obj["phase"].as<String>().c_str()));
             } else if (obj.containsKey("waiting")) {
                 connection_hello->waiting = obj["waiting"].as<uint32_t>();
                 connection_hello->waiting_valid = true;
@@ -1069,11 +1070,11 @@ void ShipConnection::json_to_type_connection_hello(ConnectionHelloType *connecti
         }
 
         eebus.trace_fmtln("J2T ConnectionHello Type: phase %d, waiting %ld(%d), prolongation_request %d(%d)'",
-                        static_cast<std::underlying_type<ConnectionHelloPhase::Type>::type>(connection_hello->phase),
-                        connection_hello->waiting,
-                        connection_hello->waiting_valid,
-                        connection_hello->prolongation_request,
-                        connection_hello->prolongation_request_valid);
+                          static_cast<std::underlying_type<ConnectionHelloPhase::Type>::type>(connection_hello->phase),
+                          connection_hello->waiting,
+                          connection_hello->waiting_valid,
+                          connection_hello->prolongation_request,
+                          connection_hello->prolongation_request_valid);
     }
 }
 
@@ -1126,9 +1127,9 @@ void ShipConnection::json_to_type_handshake_type(ProtocolHandshakeType *handshak
             }
         }
         eebus.trace_fmtln("J2T ProtocolHandshakeType Type: handshakeType %d, version %ld.%ld",
-                        static_cast<std::underlying_type<ProtocolHandshake::Type>::type>(handshake_type->handshakeType),
-                        handshake_type->version_major,
-                        handshake_type->version_minor);
+                          static_cast<std::underlying_type<ProtocolHandshake::Type>::type>(handshake_type->handshakeType),
+                          handshake_type->version_major,
+                          handshake_type->version_minor);
     }
 }
 
@@ -1202,6 +1203,7 @@ void ShipConnection::to_json_access_methods_type()
 
     eebus.trace_fmtln("T2J AccessMethods json: %s", &message_outgoing->data[1]);
 }
+
 void ShipConnection::log_message(const String &state_prefix, Message *msg)
 {
     eebus.trace_fmtln("SHIP: %s received %d (len %d)", state_prefix.c_str(), reinterpret_cast<uint8_t>(msg->data[0]), msg->length);

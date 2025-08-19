@@ -1,4 +1,3 @@
-
 /* esp32-firmware
  * Copyright (C) 2025 Julius Dill <julius@tinkerforge.com>
  *
@@ -35,10 +34,11 @@ class ShipConnection; // Need to forward declare this here so it can be included
 
 class SpineConnection
 {
-
 public:
-    ShipConnection *ship_connection = nullptr;
-    explicit SpineConnection(ShipConnection *ship_connection) : ship_connection(ship_connection) {
+    ShipConnection* ship_connection = nullptr;
+
+    explicit SpineConnection(ShipConnection* ship_connection) : ship_connection(ship_connection)
+    {
         //response_doc = &ship_connection->outgoing_json_doc;
     };
 
@@ -59,8 +59,8 @@ public:
      */
     void send_datagram(JsonVariantConst payload,
                        CmdClassifierType cmd_classifier,
-                       const FeatureAddressType &sender,
-                       const FeatureAddressType &receiver,
+                       const FeatureAddressType& sender,
+                       const FeatureAddressType& receiver,
                        bool require_ack = false);
 
     /**
@@ -73,12 +73,12 @@ public:
      * @param address The address to check if it is known.
      * @return True if the address is known, false if it is not known.
      */
-    bool check_known_address(const FeatureAddressType &address);
+    bool check_known_address(const FeatureAddressType& address);
 
     // SPINE TS 5.2.3.1
     // Specification recommends these be stored in non-volatile memory
     // But for now we dont do that as it is not needed
-    uint64_t msg_counter = 0;          // Our message counter
+    uint64_t msg_counter = 0; // Our message counter
     uint64_t msg_counter_received = 0; // The message counter of the last received datagram
 
     /**
@@ -101,7 +101,8 @@ public:
     */
     JsonVariant response_datagram;
 
-    time_t last_received_time = 0; // The last time a message was received from the peer. This is used to detect if the peer is still alive.
+    time_t last_received_time = 0;
+    // The last time a message was received from the peer. This is used to detect if the peer is still alive.
 private:
     /**
      * SPINE-GO produces JSON arrays for objects that are not arrays. This function converts those arrays to objects in place.

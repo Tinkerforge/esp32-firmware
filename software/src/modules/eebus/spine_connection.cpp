@@ -106,6 +106,7 @@ void SpineConnection::check_message_counter()
 
     // We ignore the message counter received for now as we are not sending messages that warrant a response.
 }
+
 bool SpineConnection::check_known_address(const FeatureAddressType &address)
 {
     for (FeatureAddressType &known_address : known_addresses) {
