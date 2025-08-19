@@ -370,7 +370,10 @@ void EEBus::update_peers_config()
             if (peer->get("ski")->asString() == node.txt_ski)
             {
                 peer->get("port")->updateUint(node.port);
-                peer->get("ip")->updateString(node.ip_addresses[0].toString());
+                if (node.ip_addresses.size() > 0)
+                {
+                    peer->get("ip")->updateString(node.ip_addresses[0].toString());
+                }
                 peer->get("dns_name")->updateString(node.dns_name);
                 peer->get("id")->updateString(node.txt_id);
                 peer->get("wss_path")->updateString(node.txt_wss_path);
