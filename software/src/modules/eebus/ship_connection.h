@@ -101,17 +101,14 @@ public:
 
     // Set the ws_client, role and start the state machine that will branch into ClientWait or ServerWait depending on the role
     ShipConnection(WebSocketsClient ws_client, const Role role, CoolString ski);
+    // Disallow copying of ShipConnection
+    ShipConnection(const ShipConnection &other) = delete;
+    const ShipConnection &operator=(const ShipConnection &other) = delete;
 
     ShipConnectionState state = ShipConnectionState::CmiInitStart;
     ShipConnectionState previous_state = ShipConnectionState::CmiInitStart;
     SubState sub_state = SubState::Init;
     uint64_t timeout_task = 0;
-
-    // Implement operator== so that we can easily remove ShipConnections from the vector in Ship
-    bool operator==(const ShipConnection &rhs) const
-    {
-        return this == &rhs;
-    }
 
     void frame_received(httpd_ws_frame_t *ws_pkt);
     void schedule_close(millis_t delay_ms);
