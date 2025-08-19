@@ -31,7 +31,8 @@
 #include <TFJson.h>
 //#include "string_builder.h"
 
-struct ShipNode {
+struct ShipNode
+{
 
     // Basic information about the node
     std::vector<IPAddress> ip_addresses;
@@ -90,7 +91,6 @@ private:
 
     WebSockets web_sockets;
     unique_ptr_any<Cert> cert = nullptr;
-
     httpd_handle_t httpd = nullptr;
 
 };
