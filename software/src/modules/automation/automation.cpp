@@ -53,8 +53,8 @@ void Automation::pre_setup()
         })
     );
 
-    state_actions_prototype  = Config::Enum<AutomationActionID>(AutomationActionID::None);
-    state_triggers_prototype = Config::Enum<AutomationTriggerID>(AutomationTriggerID::None);
+    state_actions_prototype  = Config::Enum(AutomationActionID::None);
+    state_triggers_prototype = Config::Enum(AutomationTriggerID::None);
 
     state = Config::Object({
         {"registered_triggers", Config::Array({}, &state_triggers_prototype, 0, AUTOMATION_TRIGGER_ID_COUNT, Config::type_id<Config::ConfUint>())},

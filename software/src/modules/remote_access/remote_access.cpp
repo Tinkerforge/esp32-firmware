@@ -206,7 +206,7 @@ void RemoteAccess::pre_setup()
         connection_state.add()->get("state")->updateUint(1); // Set the default here so that the generic prototype can be used.
     }
 
-    registration_state = Config::Object({{"state", Config::Enum<RegistrationState>(RegistrationState::None)}, {"message", Config::Str("", 0, 64)}});
+    registration_state = Config::Object({{"state", Config::Enum(RegistrationState::None)}, {"message", Config::Str("", 0, 64)}});
 }
 
 void RemoteAccess::setup()
