@@ -472,11 +472,11 @@ void NodeManagementUsecase::inform_subscribers(int entity, int feature, SpineDat
     {
         if (subscription.serverAddress->entity == entities && subscription.serverAddress->feature == feature)
         {
-            for (ShipConnection& ship_connection : eebus.ship.ship_connections)
+            for (auto &ship_connection : eebus.ship.ship_connections)
             {
-                if (ship_connection.spine->check_known_address(subscription.clientAddress.value()))
+                if (ship_connection && ship_connection->spine->check_known_address(subscription.clientAddress.value()))
                 {
-                    ship_connection.spine->send_datagram(response.as<JsonObject>(),
+                    ship_connection->spine->send_datagram(response.as<JsonObject>(),
                                                          CmdClassifierType::notify,
                                                          subscription.serverAddress.value(),
                                                          subscription.clientAddress.value(),
