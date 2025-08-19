@@ -88,6 +88,7 @@ let x = {
             "install_state_25": "Download short read occurred",
             "install_state_26": "Installation is not supported",
             "install_state_27": "Firmware file size is unknown",
+            "install_state_28": "Error occurred while receiving data",
             "build_time": /*SFN*/(build_time: string) => `created ${build_time}`/*NF*/,
             "publisher": /*SFN*/(publisher: string) => `by ${publisher}`/*NF*/,
             "install_failed": "Install failed"

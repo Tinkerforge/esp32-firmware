@@ -32,6 +32,7 @@ import { Progress } from "../../ts/components/progress";
 import { StatusSection } from "../../ts/components/status_section";
 import { Upload } from "react-feather";
 import { CheckState } from "./check_state.enum";
+import { InstallOrigin } from "./install_origin.enum";
 import { InstallState } from "./install_state.enum";
 
 export function FirmwareUpdateNavbar() {
@@ -42,19 +43,13 @@ interface FirmwareUpdateProps {
     status_ref?: RefObject<FirmwareUpdateStatus>;
 }
 
-const enum FlashFirmwareState {
-    Idle = 0,
-    InProgress = 1,
-}
-
 interface FirmwareUpdateState {
     current_firmware: string,
-    flash_firmware_state: number,
-    flash_firmware_progress: number,
     publisher: string,
     check_timestamp: number,
     check_state: number,
     update_version: string,
+    install_origin: number,
     install_state: number,
     install_progress: number,
     rolled_back_version: string,
@@ -66,12 +61,11 @@ export class FirmwareUpdate extends Component<FirmwareUpdateProps, FirmwareUpdat
 
         this.state = {
             current_firmware: null,
-            flash_firmware_state: FlashFirmwareState.Idle,
-            flash_firmware_progress: null,
             publisher: null,
             check_timestamp: 0,
             check_state: null,
             update_version: null,
+            install_origin: null,
             install_state: null,
             install_progress: 0,
             rolled_back_version: "",
@@ -90,26 +84,26 @@ export class FirmwareUpdate extends Component<FirmwareUpdateProps, FirmwareUpdat
         util.addApiEventListener('firmware_update/state', () => {
             let state = API.get('firmware_update/state');
 
-            if (state.install_state == InstallState.Rebooting) {
-                util.postReboot(__("firmware_update.script.update_success"), __("util.reboot_text"));
-            }
-
             this.setState({
                 publisher: state.publisher,
                 check_timestamp: state.check_timestamp,
                 check_state: state.check_state,
                 update_version: state.update_version,
-                install_state: state.install_state,
-                install_progress: state.install_progress,
                 rolled_back_version: state.rolled_back_version,
             });
         });
 
-        util.addApiEventListener('flash_firmware_state', () => {
-            let state = API.get('flash_firmware_state');
+        util.addApiEventListener('firmware_update/install_state', () => {
+            let install_state = API.get('firmware_update/install_state');
+
+            if (install_state.state == InstallState.Rebooting) {
+                util.postReboot(__("firmware_update.script.update_success"), __("util.reboot_text"));
+            }
 
             this.setState({
-                flash_firmware_progress: state.progress,
+                install_origin: install_state.origin,
+                install_state: install_state.state,
+                install_progress: install_state.progress,
             });
         });
     }
@@ -217,16 +211,12 @@ export class FirmwareUpdate extends Component<FirmwareUpdateProps, FirmwareUpdat
                         accept=".bin"
                         timeout_ms={120 * 1000}
                         onUploadStart={async (f) => {
-                            this.setState({flash_firmware_state: FlashFirmwareState.InProgress, flash_firmware_progress: 0});
+                            this.setState({install_origin: InstallOrigin.FlashFirmware, install_state: InstallState.InProgress, install_progress: 0});
                             util.remove_alert("firmware_update_failed");
 
                             if (!await this.checkFirmware(f)) {
-                                this.setState({flash_firmware_state: FlashFirmwareState.Idle});
+                                this.setState({install_origin: InstallOrigin.None, install_state: InstallState.Idle, install_progress: 0});
                                 return false;
-                            }
-
-                            if (this.state.install_state == InstallState.InProgress) {
-                                this.setState({install_state: InstallState.Aborted, install_progress: 0});
                             }
 
                             return true;
@@ -275,10 +265,8 @@ export class FirmwareUpdate extends Component<FirmwareUpdateProps, FirmwareUpdat
                             if (message != "") {
                                 util.add_alert("firmware_update_failed", "danger", () => __("firmware_update.script.update_fail"), () => message);
                             }
-
-                            this.setState({flash_firmware_state: FlashFirmwareState.Idle});
                         }}
-                        progress_override={this.state.flash_firmware_state == FlashFirmwareState.InProgress ? this.state.flash_firmware_progress / 100 : undefined}
+                        progress_override={this.state.install_origin == InstallOrigin.FlashFirmware ? this.state.install_progress / 100 : undefined}
                     />
                 </FormRow>
 
@@ -288,7 +276,7 @@ export class FirmwareUpdate extends Component<FirmwareUpdateProps, FirmwareUpdat
                             <Button variant="primary"
                                     className="form-control"
                                     onClick={() => this.setState({check_state: CheckState.InProgress, install_state: InstallState.Idle, install_progress: 0}, () => API.call("firmware_update/check_for_update", null, () => ""))}
-                                    disabled={this.state.check_state == CheckState.InProgress || this.state.install_state == InstallState.InProgress || this.state.flash_firmware_state == FlashFirmwareState.InProgress}>
+                                    disabled={this.state.check_state == CheckState.InProgress || this.state.install_state == InstallState.InProgress}>
                                 {__("firmware_update.content.check_for_update")}
                                 <span class="ml-2 spinner-border spinner-border-sm" role="status" style="vertical-align: middle;" hidden={this.state.check_state != CheckState.InProgress}></span>
                             </Button>
@@ -313,8 +301,8 @@ export class FirmwareUpdate extends Component<FirmwareUpdateProps, FirmwareUpdat
                                             ? <div class="input-group-append">
                                                 <Button variant="primary"
                                                         type="button"
-                                                        onClick={() => this.setState({install_state: InstallState.InProgress, install_progress: 0}, () => API.call("firmware_update/install_firmware", {version: this.state.update_version}, () => __("firmware_update.script.install_failed")))}
-                                                        disabled={this.state.install_state == InstallState.InProgress || this.state.flash_firmware_state == FlashFirmwareState.InProgress}>{__("firmware_update.content.install_update")}</Button>
+                                                        onClick={() => this.setState({install_origin: InstallOrigin.InstallFirmware, install_state: InstallState.InProgress, install_progress: 0}, () => API.call("firmware_update/install_firmware", {version: this.state.update_version}, () => __("firmware_update.script.install_failed")))}
+                                                        disabled={this.state.install_state == InstallState.InProgress}>{__("firmware_update.content.install_update")}</Button>
                                             </div>
                                             : undefined
                                         }
@@ -323,7 +311,7 @@ export class FirmwareUpdate extends Component<FirmwareUpdateProps, FirmwareUpdat
                             </>}
                         </> : undefined}
 
-                        {this.state.install_state != InstallState.Idle ? <>
+                        {this.state.install_origin == InstallOrigin.InstallFirmware && this.state.install_state != InstallState.Idle ? <>
                             {this.state.install_state == InstallState.InProgress
                                 ? <FormRow label={__("firmware_update.content.install_progress")}>
                                       <Progress class="mb-1" progress={this.state.install_progress / 100} />

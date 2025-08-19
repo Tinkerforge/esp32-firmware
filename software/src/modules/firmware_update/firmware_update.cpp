@@ -33,6 +33,9 @@
 #include "tools/string_builder.h"
 #include "tools/semantic_version.h"
 #include "check_state.enum.h"
+#include "install_origin.enum.h"
+
+//#include "gcc_warnings.h"
 
 static const size_t options_product_id_length = constexpr_strlen(OPTIONS_PRODUCT_ID());
 
@@ -215,6 +218,43 @@ FirmwareUpdate::FirmwareUpdate() :
 {
 }
 
+void FirmwareUpdate::report_flash_firmware_progress_http_thread(bool force)
+{
+#if MODULE_WS_AVAILABLE()
+    if (!force && flash_firmware_state == flash_firmware_state_last_reported && flash_firmware_progress == flash_firmware_progress_last_reported) {
+        return;
+    }
+
+    char json_buf[128];
+    TFJsonSerializer json{json_buf, sizeof(json_buf)};
+
+    // keep in sync with install_state config
+    json.addObject();
+    json.addMemberString("topic", "firmware_update/install_state");
+    json.addMemberObject("payload");
+    json.addMemberNumber("origin", static_cast<uint8_t>(InstallOrigin::FlashFirmware));
+    json.addMemberNumber("state", static_cast<uint8_t>(flash_firmware_state));
+    json.addMemberNumber("progress", flash_firmware_progress);
+    json.endObject();
+    json.endObject();
+    json.end();
+
+    ws.web_sockets.sendToAllOwnedNoFreeBlocking_HTTPThread(json_buf, json.buf_strlen);
+
+    flash_firmware_state_last_reported = flash_firmware_state;
+    flash_firmware_progress_last_reported = flash_firmware_progress;
+
+    // the web server is in the middle of receiving the firmware file
+    // and does not handle other requests right now. this also means
+    // that web socket pongs are not received. fake the receiving of
+    // pongs while the firmware file is being received to avoid the
+    // web socket keep alive mechanism from assuming all web socket
+    // connections have died and closing the very connection that is
+    // used to send the flash firmware progress information
+    ws.web_sockets.fakeReceivedPongAll();
+#endif
+}
+
 void FirmwareUpdate::pre_setup()
 {
     config = ConfigRoot{Config::Object({
@@ -232,16 +272,21 @@ void FirmwareUpdate::pre_setup()
     state = Config::Object({
         {"publisher", Config::Str(signature_publisher, 0, strlen(signature_publisher))},
         {"check_timestamp", Config::Uint32(0)},
-        {"check_state", Config::Enum<CheckState>(CheckState::Idle)},
+        {"check_state", Config::Enum(CheckState::Idle)},
         {"update_version", Config::Str("", 0, SEMANTIC_VERSION_MAX_STRING_LENGTH)},
-        {"install_progress", Config::Uint(0, 0, 100)},
-        {"install_state", Config::Enum<InstallState>(InstallState::Idle)},
         {"running_partition", Config::Str("", 0, 16)},
         {"app0_state", Config::Uint32(ESP_OTA_IMG_INVALID)},
         {"app0_version", Config::Str("", 0, SEMANTIC_VERSION_MAX_STRING_LENGTH)},
         {"app1_state", Config::Uint32(ESP_OTA_IMG_INVALID)},
         {"app1_version", Config::Str("", 0, SEMANTIC_VERSION_MAX_STRING_LENGTH)},
         {"rolled_back_version", Config::Str("", 0, SEMANTIC_VERSION_MAX_STRING_LENGTH)},
+    });
+
+    // keep in sync with report_flash_firmware_progress_http_thread
+    install_state = Config::Object({
+        {"origin", Config::Enum(InstallOrigin::None)},
+        {"state", Config::Enum(InstallState::Idle)},
+        {"progress", Config::Uint(0, 0, 100)},
     });
 
     install_firmware_config = ConfigRoot{Config::Object({
@@ -591,35 +636,6 @@ static void boot_other_partition(const char *other_partition_label, String &errm
     errmsg = String("Other partition not found: ") + other_partition_label;
 }
 
-#if MODULE_WS_AVAILABLE()
-
-static void report_flash_firmware_progress(int32_t progress /* [0..100] */)
-{
-    char json_buf[64];
-    TFJsonSerializer json{json_buf, sizeof(json_buf)};
-
-    json.addObject();
-    json.addMemberString("topic", "flash_firmware_state");
-    json.addMemberObject("payload");
-    json.addMemberNumber("progress", progress);
-    json.endObject();
-    json.endObject();
-    json.end();
-
-    ws.web_sockets.sendToAllOwnedNoFreeBlocking_HTTPThread(json_buf, json.buf_strlen);
-
-    // the web server is in the middle of receiving the firmware file
-    // and does not handle other requests right now. this also means
-    // that web socket pongs are not received. fake the receiving of
-    // pongs while the firmware file is being received to avoid the
-    // web socket keep alive mechanism from assuming all web socket
-    // connections have died and closing the very connection that is
-    // used to send the flash firmware progress information
-    ws.web_sockets.fakeReceivedPongAll();
-}
-
-#endif
-
 void FirmwareUpdate::register_urls()
 {
     if (strlen(OPTIONS_FIRMWARE_UPDATE_UPDATE_URL()) > 0) {
@@ -629,33 +645,34 @@ void FirmwareUpdate::register_urls()
         api.addState("firmware_update/config", &config);
     }
 
-    api.addState("firmware_update/state", &state, {}, {}, true);
+    api.addState("firmware_update/state", &state);
+    api.addState("firmware_update/install_state", &install_state, {}, {}, true);
 
     api.addCommand("firmware_update/check_for_update", Config::Null(), {}, [this](String &/*errmsg*/) {
         check_for_update();
     }, true);
 
     api.addCommand("firmware_update/install_firmware", &install_firmware_config, {}, [this](String &/*errmsg*/) {
+        install_state.get("origin")->updateEnum(InstallOrigin::InstallFirmware);
+        install_state.get("progress")->updateUint(0);
+
 #if signature_sodium_public_key_length == 0
         logger.printfln("Installing firmware from URL is not supported (running firmware is unsigned)");
 
-        state.get("install_state")->updateEnum(InstallState::NotSupported);
-        state.get("install_progress")->updateUint(0);
+        install_state.get("state")->updateEnum(InstallState::NotSupported);
 #else
         const String &version_str = install_firmware_config.get("version")->asString();
         SemanticVersion version;
 
         if (!version.from_string(version_str.c_str())) {
             logger.printfln("Version is malformed: %s", version_str.c_str());
-            state.get("install_state")->updateEnum(InstallState::VersionMalformed);
-            state.get("install_progress")->updateUint(0);
+            install_state.get("state")->updateEnum(InstallState::VersionMalformed);
             return;
         }
 
         if (update_url.length() == 0) {
             logger.printfln("No update URL configured");
-            state.get("install_state")->updateEnum(InstallState::NoUpdateURL);
-            state.get("install_progress")->updateUint(0);
+            install_state.get("state")->updateEnum(InstallState::NoUpdateURL);
             return;
         }
 
@@ -663,8 +680,7 @@ void FirmwareUpdate::register_urls()
 
         if (firmware_url.setCapacity(update_url.length() + options_product_id_length + firmware_url_infix_len + firmware_url_version_len + firmware_url_suffix_len) == 0) {
             logger.printfln("Could not build firmware URL");
-            state.get("install_state")->updateEnum(InstallState::InternalError);
-            state.get("install_progress")->updateUint(0);
+            install_state.get("state")->updateEnum(InstallState::InternalError);
             return;
         }
 
@@ -814,7 +830,17 @@ void FirmwareUpdate::register_urls()
     });
 
     server.on_HTTPThread("/flash_firmware", HTTP_POST, [this](WebServerRequest request) {
-        task_scheduler.await([this](){flash_firmware_in_progress = false;});
+        logger.printfln("Firmware successfully installed");
+
+        flash_firmware_state = InstallState::Rebooting;
+
+        report_flash_firmware_progress_http_thread();
+
+        task_scheduler.await([this]() {
+            flash_firmware_in_progress = false;
+            update_install_state();
+        });
+
         trigger_reboot("firmware update", 1_s);
         return request.send(200, "text/plain", "Update OK");
     },
@@ -823,7 +849,7 @@ void FirmwareUpdate::register_urls()
             bool ready = false;
 
             while (!ready) {
-                auto result = task_scheduler.await([this, &ready](){
+                auto result = task_scheduler.await([this, &ready]() {
                     flash_firmware_in_progress = true;
                     ready = true;
 
@@ -842,42 +868,52 @@ void FirmwareUpdate::register_urls()
 
             logger.printfln("Installing firmware from file upload");
 
-#if MODULE_WS_AVAILABLE()
-            report_flash_firmware_progress(0);
-            flash_firmware_last_progress = 0;
-#endif
+            flash_firmware_state = InstallState::InProgress;
+            flash_firmware_progress = 0;
+
+            report_flash_firmware_progress_http_thread(true);
         }
 
-        char json_buf[256] = "";
         size_t complete_len = request.contentLength();
+        char json_buf[256] = "";
         TFJsonSerializer json{json_buf, sizeof(json_buf)};
 
-        InstallState result = handle_firmware_chunk(offset, data, data_len, complete_len, remaining == 0, &json);
+        flash_firmware_state = handle_firmware_chunk(offset, data, data_len, complete_len, remaining == 0, &json);
 
-        if (result != InstallState::InProgress) {
+        if (flash_firmware_state != InstallState::InProgress) {
+            report_flash_firmware_progress_http_thread();
+
             if (json_buf[0] == '\0') {
-                install_state_to_json_error(result, &json);
+                install_state_to_json_error(flash_firmware_state, &json);
             }
 
+            task_scheduler.await([this]() {
+                flash_firmware_in_progress = false;
+                update_install_state();
+            });
+
             request.send(400, "application/json", json_buf, json.buf_strlen);
-            task_scheduler.await([this](){flash_firmware_in_progress = false;});
             return false;
         }
 
-#if MODULE_WS_AVAILABLE()
-        int32_t progress = (offset + data_len) * 100 / complete_len;
+        flash_firmware_progress = (offset + data_len) * 100 / complete_len;
 
-        if (progress != flash_firmware_last_progress) {
-            report_flash_firmware_progress(progress);
-            flash_firmware_last_progress = progress;
-        }
-#endif
+        report_flash_firmware_progress_http_thread();
         return true;
     },
     [this](WebServerRequest request, int error_code) {
         logger.printfln("File reception failed: %s (%d)", strerror(error_code), error_code);
         Update.abort();
-        task_scheduler.await([this](){flash_firmware_in_progress = false;});
+
+        flash_firmware_state = InstallState::ReceiveError;
+
+        report_flash_firmware_progress_http_thread();
+
+        task_scheduler.await([this](){
+            flash_firmware_in_progress = false;
+            update_install_state();
+        });
+
         return request.send(500, "Failed to receive file");
     });
 }
@@ -1088,8 +1124,9 @@ void FirmwareUpdate::check_for_update()
         return;
     }
 
-    state.get("install_state")->updateEnum(InstallState::Idle);
-    state.get("install_progress")->updateUint(0);
+    install_state.get("origin")->updateEnum(InstallOrigin::None);
+    install_state.get("state")->updateEnum(InstallState::Idle);
+    install_state.get("progress")->updateUint(0);
 
     if (https_client.is_busy()) {
         logger.printfln("HTTP client is already in use");
@@ -1306,36 +1343,37 @@ void FirmwareUpdate::handle_index_data(const void *data, size_t data_len)
 
 void FirmwareUpdate::install_firmware(const char *url)
 {
+    install_state.get("origin")->updateEnum(InstallOrigin::InstallFirmware);
+    install_state.get("progress")->updateUint(0);
+
 #if signature_sodium_public_key_length == 0
     logger.printfln("Installing firmware from URL is not supported (running firmware is unsigned)");
 
-    state.get("install_state")->updateEnum(InstallState::NotSupported);
-    state.get("install_progress")->updateUint(0);
+    install_state.get("state")->updateEnum(InstallState::NotSupported);
 #else
     logger.printfln("Installing firmware from URL: %s", url);
 
-    state.get("install_state")->updateEnum(InstallState::InProgress);
-    state.get("install_progress")->updateUint(0);
-
     if (check_firmware_in_progress || flash_firmware_in_progress || check_for_update_in_progress) {
         logger.printfln("Firmware install or check for update in progress");
-        state.get("install_state")->updateEnum(InstallState::Busy);
+        install_state.get("state")->updateEnum(InstallState::Busy);
         return;
     }
 
     if (is_vehicle_blocking_update()) {
         logger.printfln("Cannot install firmware while a vehicle is connected");
-        state.get("install_state")->updateEnum(InstallState::VehicleConnected);
+        install_state.get("state")->updateEnum(InstallState::VehicleConnected);
         return;
     }
 
     if (https_client.is_busy()) {
         logger.printfln("HTTP client is busy");
-        state.get("install_state")->updateEnum(InstallState::Busy);
+        install_state.get("state")->updateEnum(InstallState::Busy);
         return;
     }
 
     install_firmware_in_progress = true;
+
+    install_state.get("state")->updateEnum(InstallState::InProgress);
 
     https_client.download_async(url, cert_id, [this](AsyncHTTPSClientEvent *event) {
         InstallState result;
@@ -1346,53 +1384,53 @@ void FirmwareUpdate::install_firmware(const char *url)
             switch (event->error) {
             case AsyncHTTPSClientError::NoHTTPSURL:
                 logger.printfln("No HTTPS update URL");
-                state.get("install_state")->updateEnum(InstallState::InternalError);
+                install_state.get("state")->updateEnum(InstallState::InternalError);
                 break;
 
             case AsyncHTTPSClientError::Busy:
                 logger.printfln("HTTP client is busy");
-                state.get("install_state")->updateEnum(InstallState::Busy);
+                install_state.get("state")->updateEnum(InstallState::Busy);
                 break;
 
             case AsyncHTTPSClientError::NoCert:
                 logger.printfln("Certificate with ID %d is not available", cert_id);
-                state.get("install_state")->updateEnum(InstallState::NoCert);
+                install_state.get("state")->updateEnum(InstallState::NoCert);
                 break;
 
             case AsyncHTTPSClientError::Timeout:
                 logger.printfln("Update server %s did not respond", update_url.c_str());
-                state.get("install_state")->updateEnum(InstallState::NoResponse);
+                install_state.get("state")->updateEnum(InstallState::NoResponse);
                 break;
 
             case AsyncHTTPSClientError::ShortRead:
                 logger.printfln("Firmware download ended prematurely");
-                state.get("install_state")->updateEnum(InstallState::DownloadShortRead);
+                install_state.get("state")->updateEnum(InstallState::DownloadShortRead);
                 break;
 
             case AsyncHTTPSClientError::HTTPError:
                 logger.printfln("HTTP error while downloading firmware");
-                state.get("install_state")->updateEnum(InstallState::DownloadError);
+                install_state.get("state")->updateEnum(InstallState::DownloadError);
                 break;
 
             case AsyncHTTPSClientError::HTTPClientInitFailed:
                 logger.printfln("Error while creating HTTP client");
-                state.get("install_state")->updateEnum(InstallState::HTTPClientInitFailed);
+                install_state.get("state")->updateEnum(InstallState::HTTPClientInitFailed);
                 break;
 
             case AsyncHTTPSClientError::HTTPClientError:
                 logger.printfln("Error while downloading firmware: %s", esp_err_to_name(event->error_http_client));
-                state.get("install_state")->updateEnum(InstallState::DownloadError);
+                install_state.get("state")->updateEnum(InstallState::DownloadError);
                 break;
 
             case AsyncHTTPSClientError::HTTPStatusError:
                 logger.printfln("HTTP error while downloading firmware: %d", event->error_http_status);
-                state.get("install_state")->updateEnum(InstallState::DownloadError);
+                install_state.get("state")->updateEnum(InstallState::DownloadError);
                 break;
 
             // use default to prevent warnings since we dont use a body, cookies or headers here
             default:
                 logger.printfln("Uncovered error, this should never happen!");
-                state.get("install_state")->updateEnum(InstallState::InternalError);
+                install_state.get("state")->updateEnum(InstallState::InternalError);
                 break;
             }
 
@@ -1403,14 +1441,14 @@ void FirmwareUpdate::install_firmware(const char *url)
         case AsyncHTTPSClientEventType::Data:
             if (event->data_complete_len < 0) {
                 logger.printfln("Firmware file size is unknown");
-                state.get("install_state")->updateEnum(InstallState::FirmwareSizeUnknown);
+                install_state.get("state")->updateEnum(InstallState::FirmwareSizeUnknown);
                 https_client.abort_async();
                 return;
             }
 
             if (event->data_complete_len <= FIRMWARE_OFFSET) {
                 logger.printfln("Firmware file is too small: %u", event->data_complete_len);
-                state.get("install_state")->updateEnum(InstallState::FirmwareTooSmall);
+                install_state.get("state")->updateEnum(InstallState::FirmwareTooSmall);
                 https_client.abort_async();
                 return;
             }
@@ -1421,25 +1459,27 @@ void FirmwareUpdate::install_firmware(const char *url)
                 https_client.abort_async();
             }
 
-            progress = (event->data_chunk_offset + event->data_chunk_len) * 100 / event->data_complete_len;
+            install_state.get("state")->updateEnum(result);
 
-            state.get("install_state")->updateEnum(result);
-            state.get("install_progress")->updateUint(progress);
+            if (result == InstallState::InProgress) {
+                progress = (event->data_chunk_offset + event->data_chunk_len) * 100 / event->data_complete_len;
+
+                install_state.get("progress")->updateUint(progress);
 
 #if MODULE_WS_AVAILABLE()
-            if (progress == 100) {
-                // manually push state update to ensure web interface shows 100% progress
-                ws.pushRawStateUpdate(state.to_string(), "firmware_update/state");
-            }
+                if (progress == 100) {
+                    // manually push state update to ensure web interface shows 100% progress
+                    ws.pushRawStateUpdate(state.to_string(), "firmware_update/install_state");
+                }
 #endif
+            }
 
             break;
 
         case AsyncHTTPSClientEventType::Aborted:
-            if (state.get("install_state")->asEnum<InstallState>() == InstallState::InProgress) {
+            if (install_state.get("state")->asEnum<InstallState>() == InstallState::InProgress) {
                 logger.printfln("Firmware install aborted");
-                state.get("install_state")->updateEnum(InstallState::Aborted);
-                state.get("install_progress")->updateUint(0);
+                install_state.get("state")->updateEnum(InstallState::Aborted);
                 Update.abort();
             }
 
@@ -1448,8 +1488,7 @@ void FirmwareUpdate::install_firmware(const char *url)
 
         case AsyncHTTPSClientEventType::Finished:
             logger.printfln("Firmware successfully installed");
-            state.get("install_state")->updateEnum(InstallState::Rebooting);
-            state.get("install_progress")->updateUint(0);
+            install_state.get("state")->updateEnum(InstallState::Rebooting);
             trigger_reboot("firmware update", 1_s);
             install_firmware_in_progress = false;
             break;
@@ -1596,4 +1635,24 @@ void FirmwareUpdate::read_app_partition_state()
             change_partition_ota_state_from_to(running_partition, ESP_OTA_IMG_NEW, ESP_OTA_IMG_PENDING_VERIFY, false);
         }
     }
+}
+
+// ensure the state is marked as updated to make the API push
+// the latest values even if they didn't change from the view
+// point of the API because the intermediate changes were only
+// pushed by report_flash_firmware_progress_http_thread
+void FirmwareUpdate::update_install_state()
+{
+    auto origin = install_state.get("origin");
+    auto state = install_state.get("state");
+    auto progress = install_state.get("progress");
+
+    origin->updateEnum(InstallOrigin::FlashFirmware);
+    origin->set_updated(0xFF);
+
+    state->updateEnum(flash_firmware_state);
+    state->set_updated(0xFF);
+
+    progress->updateEnum(flash_firmware_progress);
+    progress->set_updated(0xFF);
 }

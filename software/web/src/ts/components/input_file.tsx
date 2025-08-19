@@ -72,7 +72,7 @@ export function InputFile(props: InputFileProps) {
     }
 
     return (<>
-        <div class="input-group" hidden={uploading}>
+        <div class="input-group" hidden={uploading || util.hasValue(props.progress_override)}>
             <div class="custom-file">
                 <input type="file" class="custom-file-input form-control" accept={props.accept}
                     onChange={(ev) => setFile((ev.target as HTMLInputElement).files[0])}
@@ -84,7 +84,7 @@ export function InputFile(props: InputFileProps) {
                 <Button className="form-control" variant="primary" onClick={upload} disabled={file == null}>{props.upload}</Button>
             </div>
         </div>
-        <div hidden={!uploading}>
+        <div hidden={!uploading && !util.hasValue(props.progress_override)}>
             <Progress class="mb-1" progress={util.hasValue(props.progress_override) ? props.progress_override : progress} />
             <div class="mb-0">{props.uploading ? props.uploading : __("component.input_file.uploading")}</div>
         </div>

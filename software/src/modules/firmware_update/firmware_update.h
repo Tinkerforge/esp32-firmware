@@ -27,7 +27,6 @@
 #include <sodium.h>
 
 #include "module.h"
-#include "module_available.h"
 #include "config.h"
 #include "tools/semantic_version.h"
 #include "async_https_client.h"
@@ -85,17 +84,21 @@ private:
     void check_for_update();
     void install_firmware(const char *url);
     void read_app_partition_state();
+    void report_flash_firmware_progress_http_thread(bool force = false);
+    void update_install_state();
 
     ConfigRoot config;
     ConfigRoot state;
+    ConfigRoot install_state;
     ConfigRoot install_firmware_config;
     ConfigRoot override_signature;
 
     bool check_firmware_in_progress = false;
     bool flash_firmware_in_progress = false;
-#if MODULE_WS_AVAILABLE()
-    int32_t flash_firmware_last_progress = -1;
-#endif
+    InstallState flash_firmware_state = InstallState::Idle;
+    InstallState flash_firmware_state_last_reported = InstallState::Idle;
+    uint32_t flash_firmware_progress = 0;
+    uint32_t flash_firmware_progress_last_reported = 0;
 
     struct firmware_info_t {
         uint8_t magic[BLOCK_READER_MAGIC_LENGTH] = {};
@@ -133,5 +136,3 @@ private:
     bool check_for_update_in_progress = false;
     bool install_firmware_in_progress = false;
 };
-
-#include "module_available_end.h"
