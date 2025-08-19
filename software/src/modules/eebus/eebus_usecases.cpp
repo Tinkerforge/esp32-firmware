@@ -509,13 +509,20 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
     JsonObject response = response_doc.to<JsonObject>();
     // TODO: Fix the addressing of the usecases. Maybe better address them by entity?
     bool send_response = false;
-    if (header.addressDestination->feature == feature_address_node_management) {
+    if (header.addressDestination->feature.value_or(-1) == feature_address_node_management) {
         eebus.trace_fmtln("Usecases: Received message for NodeManagementUsecase");
         send_response = node_management.handle_message(header, data, response, connection);
     }
-    if (header.addressDestination->feature == feature_address_charging_summary) {
+    else if (header.addressDestination->feature.value_or(-1) == feature_address_charging_summary) {
         eebus.trace_fmtln("Usecases: Received message for ChargingSummaryUsecase");
         send_response = charging_summary.handle_message(header, data, response, connection);
+    }
+    else {
+        eebus.trace_fmtln("Usecases: Received message for unknown feature %d", header.addressDestination->feature.value_or(-1));
+        EEBUS_USECASE_HELPERS::build_result_data(response,
+                                                 EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected,
+                                                 "Unknown feature requested");
+        send_response = true; // We always send a response if we do not know the feature
     }
     if (send_response) {
         eebus.trace_fmtln("Usecases: Sending response");
@@ -524,6 +531,8 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
                                   *header.addressSource,
                                   *header.addressDestination,
                                   false);
+    } else {
+        eebus.trace_fmtln("Usecases: No response needed. Not sending anything");
     }
 }
 void EEBusUseCases::inform_subscribers(int entity, int feature, SpineDataTypeHandler *data)
