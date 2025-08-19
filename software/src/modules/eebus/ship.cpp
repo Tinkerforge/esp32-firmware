@@ -224,6 +224,24 @@ void Ship::setup_wss()
 
     logger.printfln("EEBUS SHIP started up and accepting connections");
 }
+void Ship::connect_trusted_peers()
+{
+    size_t peer_count = eebus.config.get("peers")->count();
+    eebus.trace_fmtln("connect_trusted_peers start, %d peers configured", peer_count);
+    logger.printfln("EEBUS SHIP: Attempting connection to trusted peers");
+    for (size_t i = 0; i < peer_count; i++) {
+        auto peer = eebus.config.get("peers")->get(i);
+        if (peer->get("trusted")->asBool()) {
+            /*
+            // TODO: get a filedescriptor somehow
+            CoolString peer_ski = peer->get("ski")->asString();
+            eebus.trace_fmtln("Connecting to trusted peer with SKI %s", peer_ski.c_str());
+            WebSocketsClient ws_client = WebSocketsClient(web_sockets);
+            ship_connections.push_back(ShipConnection{ws_client, ShipConnection::Role::Client, peer_ski});
+            */
+        }
+    }
+}
 
 void Ship::setup_mdns()
 {
@@ -349,6 +367,7 @@ void Ship::print_skis(StringBuilder *sb)
         sb->putc(',');
     }
 }
+
 
 void Ship::remove(const ShipConnection &ship_connection)
 {
