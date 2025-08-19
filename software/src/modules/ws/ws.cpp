@@ -60,7 +60,7 @@ void WS::register_urls()
             heap_caps_get_info(&dram_info, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
             logger.printfln("Not enough memory to send initial state. %u > %u (%u)", buf_size, dram_info.largest_free_block, dram_info.total_free_bytes);
             client.close_HTTPThread();
-            return;
+            return false;
         }
 
         sb.printf("{\"topic\":\"info/keep_alive\",\"payload\":{\"uptime\":%llu}}\n", now_us().to<millis_t>().as<uint64_t>());
@@ -100,12 +100,12 @@ void WS::register_urls()
             });
 
             if (result != TaskScheduler::AwaitResult::Done) {
-                return;
+                return false;
             }
 
             if (sb.getLength() == 0) {
                 client.close_HTTPThread();
-                return;
+                return false;
             }
 
             if (done) {
@@ -113,11 +113,13 @@ void WS::register_urls()
             }
 
             if (!client.sendOwnedNoFreeBlocking_HTTPThread(sb.getPtr(), sb.getLength())) {
-                return;
+                return false;
             }
 
             sb.clear();
         }
+
+        return true;
     });
 
     web_sockets.start("/ws", "/info/ws", server.httpd);

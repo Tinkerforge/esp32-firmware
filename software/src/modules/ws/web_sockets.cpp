@@ -169,15 +169,21 @@ static esp_err_t ws_handler(httpd_req_t *req)
 
             int sock = httpd_req_to_sockfd(req);
 
+            bool success = true;
+
             if (ws->on_client_connect_fn) {
                 // call the client connect callback before adding the client to
                 // the keep alive list to ensure that the full state is send by the
                 // callback before any other message with a partial state might
                 // be send to all clients known by the keep alive list
-                ws->on_client_connect_fn(WebSocketsClient{sock, ws});
+                success = ws->on_client_connect_fn(WebSocketsClient{sock, ws});
             }
 
-            ws->keepAliveAdd(sock);
+            if (success) {
+                ws->keepAliveAdd(sock);
+            } else {
+                return ESP_FAIL;
+            }
         } else {
             request.send(200);
         }
@@ -714,7 +720,7 @@ void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t h
     }
 }
 
-void WebSockets::onConnect_HTTPThread(std::function<void(WebSocketsClient)> &&fn)
+void WebSockets::onConnect_HTTPThread(std::function<bool(WebSocketsClient)> &&fn)
 {
     on_client_connect_fn = std::move(fn);
 }
