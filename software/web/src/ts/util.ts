@@ -391,20 +391,36 @@ export function pauseWebSockets() {
 }
 
 export function resumeWebSockets() {
+    if (wsReconnectTimeout != null) {
+        clearTimeout(wsReconnectTimeout);
+    }
+
     wsReconnectTimeout = window.setTimeout(wsReconnectCallback, RECONNECT_TIME);
     wsReconnectCallback();
 }
+
+let reload_timeout: number = null;
 
 export function postReboot(alert_title: string, alert_text: string) {
     if (ws !== null) {
         ws.close();
         ws = null;
     }
-    clearTimeout(wsReconnectTimeout);
+
+    if (wsReconnectTimeout != null) {
+        clearTimeout(wsReconnectTimeout);
+        wsReconnectTimeout = null;
+    }
+
     add_alert("reboot", "success", () => alert_title, () => alert_text);
+
+    if (reload_timeout != null) {
+        clearTimeout(reload_timeout);
+    }
+
     // Wait 5 seconds before starting the reload/reconnect logic, to make sure the reboot has actually started yet.
     // Else it sometimes happens, that we reconnect _before_ the reboot starts.
-    window.setTimeout(() => whenLoggedInElseReload(() =>
+    reload_timeout = window.setTimeout(() => whenLoggedInElseReload(() =>
         setupEventSource(true, true, (ws, eventSource) => {
                 // It is a bit of a hack to use version here, but
                 // as opposed to keep-alive, version was already there in the first version.
