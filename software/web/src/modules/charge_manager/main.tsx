@@ -38,6 +38,7 @@ import { ConfigChargeMode } from "./config_charge_mode.enum";
 import { AllocatorDecision } from "./allocator_decision.enum";
 import { GlobalAllocatorDecision } from "./global_allocator_decision.enum";
 import { InputText } from "ts/components/input_text";
+import { InputSelect } from "ts/components/input_select";
 
 export { ChargeManagerChargers } from "./chargers";
 export { ChargeManagerSettings } from "./settings";
@@ -206,6 +207,8 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
         let cm_eco = API.get("power_manager/charge_mode").mode >= ConfigChargeMode.Eco && API.get("power_manager/charge_mode").mode <= ConfigChargeMode.EcoMinPV;
         let show_eco_chart = cm_eco && API.get("eco/config").enable && API.get("eco/charge_plan").enable;
 //#endif
+        const default_mode = API.get("power_manager/config").default_mode;
+        const charge_modes = API.get("charge_manager/charge_modes")
 
         let cards = state.state.chargers.map((c, i) => {
             let c_state = "";
@@ -249,6 +252,13 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
             return  <div class={"card " + (i + 1 == state.config.chargers.length ? "mb-0" : "")}>
                         <h5 class="card-header">
                             {name_link}
+                            <InputSelect
+                                items={get_allowed_charge_modes({with_default: false, add_pv_if_disabled: true})
+                                       .map(x => [x.toString(), __("charge_manager.status.mode_by_index")(x, default_mode)])
+                                }
+                                value={charge_modes[i].toString()}
+                                onValue={x => API.call_with_path("charge_manager/charge_modes", i, parseInt(x))}
+                                />
                         </h5>
                         <div class={"card-body " + c_body_classes}>
                             <h5 class="card-title">{c_state}</h5>
