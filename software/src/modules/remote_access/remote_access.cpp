@@ -685,7 +685,7 @@ void RemoteAccess::register_urls()
         for (uint32_t i = 1; i < OPTIONS_REMOTE_ACCESS_MAX_USERS() + 1; i++) {
             next_user_id = i;
             bool found = false;
-            for (auto &user : config.get("users")) {
+            for (const auto &user : config.get("users")) {
                 if (user.get("id")->asUint() == i) {
                     found = true;
                 }
@@ -1443,7 +1443,7 @@ void RemoteAccess::resolve_management()
         serializer.addMemberNumber("port", network.get_web_server_port());
         serializer.addMemberString("firmware_version", build_version_full_str());
         serializer.addMemberArray("configured_connections");
-        for (auto &user : config.get("users")) {
+        for (const auto &user : config.get("users")) {
             uint32_t user_id = user.get("id")->asUint() - 1;
             for (int i = 0; i < OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER(); i++) {
                 serializer.addNumber((user_id * OPTIONS_REMOTE_ACCESS_MAX_KEYS_PER_USER()) + i);
@@ -1461,7 +1461,7 @@ void RemoteAccess::resolve_management()
         serializer.addMemberNumber("port", network.get_web_server_port());
         serializer.addMemberString("firmware_version", build_version_full_str());
         serializer.addMemberArray("configured_users");
-        for (auto &user : config.get("users")) {
+        for (const auto &user : config.get("users")) {
             serializer.addObject();
 
             // Check if we already have the user_id and use it

@@ -483,7 +483,7 @@ void Users::search_next_free_user()
 
 size_t Users::get_display_name(uint8_t user_id, char *ret_buf)
 {
-    for (auto &cfg : config.get("users")) {
+    for (const auto &cfg : config.get("users")) {
         if (cfg.get("id")->asUint() == user_id) {
             const String &s = cfg.get("display_name")->asString();
             strncpy(ret_buf, s.c_str(), 32);
@@ -498,7 +498,7 @@ size_t Users::get_display_name(uint8_t user_id, char *ret_buf)
 
 bool Users::is_user_configured(uint8_t user_id)
 {
-    for (auto &cfg : config.get("users"))
+    for (const auto &cfg : config.get("users"))
         if (cfg.get("id")->asUint() == user_id)
             return true;
 
