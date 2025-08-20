@@ -95,11 +95,11 @@ void HiddenProxy::register_urls()
 {
     server.on("/hidden_proxy/enable", HTTP_GET, [this](WebServerRequest request) {
         start_proxy();
-        return request.send(200);
+        return request.send_plain(200);
     });
 
     server.on("/hidden_proxy/disable", HTTP_GET, [this](WebServerRequest request) {
         stop_proxy();
-        return request.send(200);
+        return request.send_plain(200);
     });
 }

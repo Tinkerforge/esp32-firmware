@@ -62,39 +62,35 @@ void ValueHistory::register_urls(String base_url)
         StringBuilder sb;
 
         if (!sb.setCapacity(HISTORY_RING_BUF_SIZE * chars_per_value + 100)) {
-            return request.send(500, "text/plain", "Failed to allocate buffer");
+            return request.send_plain(500, "Failed to allocate buffer");
         }
 
         format_history(now_us(), &sb);
 
-        return request.send(200, "application/json; charset=utf-8", sb.getPtr(), static_cast<ssize_t>(sb.getLength()));
+        return request.send_json(200, sb);
     });
 
     server.on(("/" + base_url + "live").c_str(), HTTP_GET, [this](WebServerRequest request) {
         StringBuilder sb;
 
         if (!sb.setCapacity(HISTORY_RING_BUF_SIZE * chars_per_value + 100)) {
-            return request.send(500, "text/plain", "Failed to allocate buffer");
+            return request.send_plain(500, "Failed to allocate buffer");
         }
 
         format_live(now_us(), &sb);
 
-        return request.send(200, "application/json; charset=utf-8", sb.getPtr(), static_cast<ssize_t>(sb.getLength()));
+        return request.send_json(200, sb);
     });
 }
 
 void ValueHistory::register_urls_empty(String base_url)
 {
-    const char *empty_history = "{\"offset\":0,\"samples\":[]}";
-    ssize_t empty_history_len = static_cast<ssize_t>(strlen(empty_history));
-    server.on(("/" + base_url + "history").c_str(), HTTP_GET, [this, empty_history, empty_history_len](WebServerRequest request) {
-        return request.send(200, "application/json; charset=utf-8", empty_history, empty_history_len);
+    server.on(("/" + base_url + "history").c_str(), HTTP_GET, [](WebServerRequest request) {
+        return request.send_json(200, "{\"offset\":0,\"samples\":[]}");
     });
 
-    const char *empty_live = "{\"offset\":0,\"samples_per_second\":0.0,\"samples\":[]}";
-    ssize_t empty_live_len = static_cast<ssize_t>(strlen(empty_live));
-    server.on(("/" + base_url + "live").c_str(), HTTP_GET, [this, empty_live, empty_live_len](WebServerRequest request) {
-        return request.send(200, "application/json; charset=utf-8", empty_live, empty_live_len);
+    server.on(("/" + base_url + "live").c_str(), HTTP_GET, [](WebServerRequest request) {
+        return request.send_json(200, "{\"offset\":0,\"samples_per_second\":0.0,\"samples\":[]}");
     });
 }
 

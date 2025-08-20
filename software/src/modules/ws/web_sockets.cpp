@@ -185,7 +185,7 @@ static esp_err_t ws_handler(httpd_req_t *req)
                 return ESP_FAIL;
             }
         } else {
-            request.send(200);
+            request.send_plain(200);
         }
         return ESP_OK;
     }
@@ -716,7 +716,7 @@ void WebSockets::start(const char *uri, const char *state_path, httpd_handle_t h
         // TODO Add pull only states to API
         server.on(state_path, HTTP_GET, [this](WebServerRequest request) {
             String s = this->state.to_string();
-            return request.send(200, "application/json; charset=utf-8", s.c_str(), static_cast<ssize_t>(s.length()));
+            return request.send_json(200, s);
         });
     }
 }

@@ -126,17 +126,17 @@ void Eco::register_urls()
     server.on("/eco/chart", HTTP_PUT, [this](WebServerRequest request) {
         timeval tv;
         if (!rtc.clock_synced(&tv)) {
-            return request.send(503, "text/plain", "Clock not yet synced");
+            return request.send_plain(503, "Clock not yet synced");
         }
 
         if (request.contentLength() > 1024) {
-            return request.send(413);
+            return request.send_plain(413);
         }
         auto buf = heap_alloc_array<char>(1024);
 
         auto received = request.receive(buf.get(), 1024);
         if (received < 0) {
-            return request.send(500, "text/plain", "Failed to receive request payload");
+            return request.send_plain(500, "Failed to receive request payload");
         }
 
         StaticJsonDocument<1024> doc;
@@ -146,27 +146,27 @@ void Eco::register_urls()
             StringWriter sw(error_string, ARRAY_SIZE(error_string));
             sw.puts("Failed to deserialize string: ");
             sw.puts(error.c_str());
-            return request.send(400, "text/plain", error_string, static_cast<ssize_t>(sw.getLength()));
+            return request.send_plain(400, sw);
         }
 
         if (!doc.containsKey("time")) {
-            return request.send(400, "text/plain", "Missing 'time' field");
+            return request.send_plain(400, "Missing 'time' field");
         }
 
         if (!doc.containsKey("amount")) {
-            return request.send(400, "text/plain", "Missing 'amount' field");
+            return request.send_plain(400, "Missing 'amount' field");
         }
 
         if (!doc.containsKey("departure")) {
-            return request.send(400, "text/plain", "Missing 'departure' field");
+            return request.send_plain(400, "Missing 'departure' field");
         }
 
         if (!doc.containsKey("current_time")) {
-            return request.send(400, "text/plain", "Missing 'current_time' field");
+            return request.send_plain(400, "Missing 'current_time' field");
         }
 
         if (doc["departure"].as<uint32_t>() > static_cast<std::underlying_type<Departure>::type>(Departure::Daily)) {
-            return request.send(400, "text/plain", "Invalid 'departure' field");
+            return request.send_plain(400, "Invalid 'departure' field");
         }
 
         uint32_t current_time_1m = doc["current_time"].as<uint32_t>();
@@ -179,7 +179,7 @@ void Eco::register_urls()
         );
 
         if (end_time_1m.first != 0) {
-            return request.send(200, "application/octet-stream", "", 0);
+            return request.send_bytes(200);
         }
 
         uint32_t duration_remaining_1m = end_time_1m.second - current_time_1m;
@@ -211,7 +211,7 @@ void Eco::register_urls()
         for (size_t i = 0; i < duration_15m; i++) {
             cheap_prices_bin[i/8] |= (cheap_prices[i] ? 1 : 0) << (i % 8);
         }
-        return request.send(200, "application/octet-stream", cheap_prices_bin, duration_uint8);
+        return request.send_bytes(200, cheap_prices_bin, duration_uint8);
     });
 
     task_scheduler.scheduleWallClock([this]() {

@@ -44,7 +44,7 @@ void DebugProtocol::register_urls()
         }
 
         if (!ws.pushRawStateUpdateBegin(&sb, payload_len, "debug_protocol/header")) {
-            return request.send(500);
+            return request.send_plain(500);
         }
 
         sb.puts("\"millis");
@@ -60,21 +60,21 @@ void DebugProtocol::register_urls()
         debug_keep_alive_until = now_us() + debug_keep_alive_interval;
 
         if (debug_task_id != 0) {
-            return request.send(200);
+            return request.send_plain(200);
         }
 
         debug_task_id = task_scheduler.scheduleWithFixedDelay([this]() {
             this->debug_task();
         }, 0_ms, debug_log_interval);
 
-        return request.send(200);
+        return request.send_plain(200);
     });
 
     // TODO: Make this an API command?
     server.on("/debug_protocol/continue", HTTP_GET, [this](WebServerRequest request) {
         debug_keep_alive_until = now_us() + debug_keep_alive_interval;
 
-        return request.send(200);
+        return request.send_plain(200);
     });
 
     // TODO: Make this an API command?
@@ -82,7 +82,7 @@ void DebugProtocol::register_urls()
         task_scheduler.cancel(this->debug_task_id);
         this->debug_task_id = 0;
 
-        return request.send(200);
+        return request.send_plain(200);
     });
 }
 

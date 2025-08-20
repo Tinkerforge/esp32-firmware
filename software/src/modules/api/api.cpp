@@ -522,7 +522,7 @@ void API::register_urls()
 #ifdef DEBUG_FS_ENABLE
     server.on_HTTPThread("/api_info", HTTP_GET, [this](WebServerRequest request) {
 
-        request.beginChunkedResponse(200, "application/json; charset=utf-8");
+        request.beginChunkedResponse_json(200);
 
         // meter/X/config can be > 16k because of the Modbus register table unions.
         constexpr size_t BUF_SIZE = 32768;
@@ -571,7 +571,7 @@ void API::register_urls()
             if (sw.getRemainingLength() == 0)
                 esp_system_abort("API info buffer was too small!");
             else if (sw.getLength() != 0)
-                request.sendChunk(sw.getPtr(), sw.getLength());
+                request.sendChunk(sw);
             sw.clear();
         }
 
@@ -619,7 +619,7 @@ void API::register_urls()
             if (sw.getRemainingLength() == 0)
                 esp_system_abort("API info buffer was too small!");
             else if (sw.getLength() != 0)
-                request.sendChunk(sw.getPtr(), sw.getLength());
+                request.sendChunk(sw);
             sw.clear();
         }
 
@@ -666,7 +666,7 @@ void API::register_urls()
             if (sw.getRemainingLength() == 0)
                 esp_system_abort("API info buffer was too small!");
             else if (sw.getLength() != 0)
-                request.sendChunk(sw.getPtr(), sw.getLength());
+                request.sendChunk(sw);
             sw.clear();
         }
 
@@ -709,14 +709,14 @@ void API::register_urls()
             if (sw.getRemainingLength() == 0)
                 esp_system_abort("API info buffer was too small!");
             else if (sw.getLength() != 0)
-                request.sendChunk(sw.getPtr(), sw.getLength());
+                request.sendChunk(sw);
             sw.clear();
         }
         sw.clear();
 
         // Be nice and end the file with a \n.
         sw.printf("]\n");
-        request.sendChunk(sw.getPtr(), sw.getLength());
+        request.sendChunk(sw);
 
         return request.endChunkedResponse();
     });
@@ -786,7 +786,7 @@ void API::register_urls()
 
         result += "}";
 
-        return request.send(200, "application/json; charset=utf-8", result.c_str(), static_cast<ssize_t>(result.length()));
+        return request.send_json(200, result);
     });
 
     this->addState("info/features", &features);

@@ -181,14 +181,14 @@ void Coredump::register_urls()
         esp_core_dump_image_erase();
 
         if (esp_core_dump_image_check() == ESP_OK) {
-            return request.send(503, "text/plain", "Error while erasing core dump");
+            return request.send_plain(503, "Error while erasing core dump");
         }
 
         task_scheduler.scheduleOnce([this]() {
             this->state.get("coredump_available")->updateBool(false);
         });
 
-        return request.send(200);
+        return request.send_plain(200);
     });
 
     server.on_HTTPThread("/coredump/coredump.elf", HTTP_GET, [this](WebServerRequest request) {
@@ -200,7 +200,7 @@ void Coredump::register_urls()
         if (ret != ESP_OK) {
             StringWriter sw(buffer, BUFFER_SIZE);
             sw.printf("No core dump image available: %s (0x%lX)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
-            return request.send(404, "text/plain", buffer, static_cast<ssize_t>(sw.getLength()));
+            return request.send_plain(404, sw);
         }
 
         size_t addr;
@@ -209,18 +209,18 @@ void Coredump::register_urls()
         if (ret != ESP_OK) {
             StringWriter sw(buffer, BUFFER_SIZE);
             sw.printf("Failed to get core dump image: %s (0x%lX)", esp_err_to_name(ret), static_cast<uint32_t>(ret));
-            return request.send(503, "text/plain", buffer, static_cast<ssize_t>(sw.getLength()));
+            return request.send_plain(503, sw);
         }
 
-        request.beginChunkedResponse(200, "application/octet-stream");
+        request.beginChunkedResponse_bytes(200);
 
         for (size_t i = 0; i < size; i += BUFFER_SIZE) {
             size_t to_send = std::min(BUFFER_SIZE, size - i);
             if (esp_flash_read(NULL, buffer, addr + i, to_send) != ESP_OK) {
-                request.sendChunk("\n\nESP_FLASH_READ failed. Core dump truncated", HTTPD_RESP_USE_STRLEN);
+                request.sendChunk("\n\nESP_FLASH_READ failed. Core dump truncated");
                 break;
             }
-            request.sendChunk(buffer + (i == 0 ? OFFSET_BEFORE_ELF_HEADER : 0), static_cast<ssize_t>(to_send - (i == 0 ? OFFSET_BEFORE_ELF_HEADER : 0)));
+            request.sendChunk(buffer + (i == 0 ? OFFSET_BEFORE_ELF_HEADER : 0), to_send - (i == 0 ? OFFSET_BEFORE_ELF_HEADER : 0));
         }
 
         return request.endChunkedResponse();

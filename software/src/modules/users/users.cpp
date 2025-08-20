@@ -649,7 +649,7 @@ void Users::register_urls()
         size_t len = MAX_PASSIVE_USERS * USERNAME_ENTRY_LENGTH;
         auto buf = heap_alloc_array<char>(len);
         if (buf == nullptr) {
-            return request.send(507);
+            return request.send_plain(507);
         }
 
         size_t read = 0;
@@ -659,7 +659,7 @@ void Users::register_urls()
             read = f.read((uint8_t *)buf.get(), len);
         }
 
-        return request.send(200, "application/octet-stream", buf.get(), read);
+        return request.send_bytes(200, buf.get(), read);
     });
 
 #if MODULE_EVSE_LED_AVAILABLE()

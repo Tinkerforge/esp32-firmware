@@ -191,7 +191,7 @@ void FrontPanel::register_urls()
             this->start_reflash_map();
         });
 
-        return request.send(200, "text/plain", "File upload OK\n");
+        return request.send_plain(200, "File upload OK");
     },
     [this](WebServerRequest request, String filename, size_t offset, uint8_t *data, size_t data_len, size_t remaining) {
         if (this->flash_update_in_progress) {
@@ -243,7 +243,7 @@ void FrontPanel::register_urls()
 
         logger.printfln("File reception failed: %s (%d)", strerror(error_code), error_code);
 
-        return request.send(500, "Failed to receive file");
+        return request.send_plain(500, "Failed to receive file");
     });
 
     api.addCommand("front_panel/erase", Config::Null(), {}, [this](String &errmsg) {

@@ -161,9 +161,9 @@ void CMNetworking::register_urls()
         CoolString result;
 
         if (!cm_networking.get_scan_results(result))
-            return request.send(200, "text/plain; charset=utf-8", "In progress or not started");
+            return request.send_plain(200, "In progress or not started");
 
-        return request.send(200, "application/json; charset=utf-8", result.c_str(), static_cast<ssize_t>(result.length()));
+        return request.send_json(200, result);
     });
 }
 

@@ -455,11 +455,11 @@ void Meters::register_urls()
         StringBuilder sb;
 
         if (!sb.setCapacity(HISTORY_RING_BUF_SIZE * history_chars_per_value + 100)) {
-            return request.send(500, "text/plain", "Failed to allocate buffer");
+            return request.send_plain(500, "Failed to allocate buffer");
         }
 
         sb.printf("{\"offset\":%lu,\"samples\":[", (now_us() - last_history_update).to<millis_t>().as<uint32_t>());
-        request.beginChunkedResponse(200, "application/json; charset=utf-8");
+        request.beginChunkedResponse_json(200);
 
         for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
             MeterSlot &meter_slot = meter_slots[slot];
@@ -472,7 +472,7 @@ void Meters::register_urls()
                 sb.puts(slot == 0 ? "null" : ",null");
             }
 
-            request.sendChunk(sb.getPtr(), static_cast<ssize_t>(sb.getLength()));
+            request.sendChunk(sb);
             sb.clear();
         }
 
@@ -485,11 +485,11 @@ void Meters::register_urls()
         StringBuilder sb;
 
         if (!sb.setCapacity(HISTORY_RING_BUF_SIZE * history_chars_per_value + 100)) {
-            return request.send(500, "text/plain", "Failed to allocate buffer");
+            return request.send_plain(500, "Failed to allocate buffer");
         }
 
         sb.printf("{\"offset\":%lu,\"samples_per_second\":%f,\"samples\":[", (now_us() - last_live_update).to<millis_t>().as<uint32_t>(), static_cast<double>(live_samples_per_second()));
-        request.beginChunkedResponse(200, "application/json; charset=utf-8");
+        request.beginChunkedResponse_json(200);
 
         for (uint32_t slot = 0; slot < OPTIONS_METERS_MAX_SLOTS(); slot++) {
             MeterSlot &meter_slot = meter_slots[slot];
@@ -502,7 +502,7 @@ void Meters::register_urls()
                 sb.puts(slot == 0 ? "null" : ",null");
             }
 
-            request.sendChunk(sb.getPtr(), static_cast<ssize_t>(sb.getLength()));
+            request.sendChunk(sb);
             sb.clear();
         }
 

@@ -113,7 +113,7 @@ void EventLog::register_urls()
         char chunk_buf[CHUNK_SIZE]; // The HTTP task's stack is large enough.
         const size_t used = event_buf.used();
 
-        request.beginChunkedResponse(200);
+        request.beginChunkedResponse_plain(200);
 
         for (size_t index = 0; index < used; index += CHUNK_SIZE) {
             size_t to_write = std::min(CHUNK_SIZE, used - index);
@@ -137,7 +137,7 @@ void EventLog::register_urls()
 
     server.on_HTTPThread("/trace_log", HTTP_GET, [this](WebServerRequest request) {
 #if defined(BOARD_HAS_PSRAM)
-        request.beginChunkedResponse(200);
+        request.beginChunkedResponse_plain(200);
 
         for (size_t i = 0; i < trace_buffers_in_use; ++i) {
             auto &trace_buffer = trace_buffers[i];
@@ -162,7 +162,7 @@ void EventLog::register_urls()
 
         return request.endChunkedResponse();
 #else
-        return request.send(200);
+        return request.send_plain(200);
 #endif
     });
 
@@ -182,7 +182,7 @@ void EventLog::register_urls()
         }
 
         if (static_cast<uint32_t>(dictionary_probes) > 4095u) {
-            return request.send(400, "text/plain", "Compression level out of range [0,4095] and [10000,14095]");
+            return request.send_plain(400, "Compression level out of range [0,4095] and [10000,14095]");
         }
 
         tdefl_flags |= dictionary_probes;
@@ -200,22 +200,22 @@ void EventLog::register_urls()
 
         deflator = static_cast<tdefl_compressor *>(malloc(sizeof(tdefl_compressor)));
         if (!deflator) {
-            return request.send(500, "text/plain", "Failed to allocate compressor");
+            return request.send_plain(500, "Failed to allocate compressor");
         }
 
         buf = static_cast<decltype(buf)>(malloc(sizeof(*buf)));
         if (!buf) {
-            return request.send(500, "text/plain", "Failed to allocate output buffer");
+            return request.send_plain(500, "Failed to allocate output buffer");
         }
 
         // Initialize the low-level compressor
         tdefl_status t_status = tdefl_init(deflator, nullptr, nullptr, tdefl_flags);
         if (t_status != TDEFL_STATUS_OKAY) {
-            return request.send(500, "text/plain", "Failed to initialize compressor");
+            return request.send_plain(500, "Failed to initialize compressor");
         }
 
         request.addResponseHeader("Content-Encoding", "gzip");
-        request.beginChunkedResponse(200);
+        request.beginChunkedResponse_plain(200);
 
         // Copy gzip header to output buffer
         static_assert(ARRAY_SIZE(buf->outbuf) >= sizeof(gzip_header));
@@ -321,7 +321,7 @@ void EventLog::register_urls()
 
             avail_out -= out_bytes;
 
-            int result = request.sendChunk(buf->outbuf, static_cast<ssize_t>(ARRAY_SIZE(buf->outbuf) - avail_out));
+            int result = request.sendChunk(buf->outbuf, ARRAY_SIZE(buf->outbuf) - avail_out);
 
             next_out = buf->outbuf;
             avail_out = ARRAY_SIZE(buf->outbuf);
@@ -345,7 +345,7 @@ void EventLog::register_urls()
 
         return request.endChunkedResponse();
 #else
-        return request.send(200);
+        return request.send_plain(200);
 #endif
     });
 

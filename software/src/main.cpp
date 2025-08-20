@@ -93,10 +93,10 @@ static WebServerRequestReturnProtect send_index_html(WebServerRequest &request) 
     request.addResponseHeader("X-Clacks-Overhead", "GNU Terry Pratchett");
 
     if (request.header("If-None-Match") == build_timestamp_hex_str()) {
-        return request.send(304);
+        return request.send_plain(304);
     }
 
-    return request.send(200, "text/html; charset=utf-8", index_html_data, index_html_length);
+    return request.send_html(200, index_html_data, index_html_length);
 }
 
 static constexpr minutes_t PRE_REBOOT_MAX_DURATION = 5_min;
@@ -190,7 +190,7 @@ static void register_default_urls() {
         firmware_update.change_running_partition_from_pending_verify_to_new(true);
 #endif
         esp_restart();
-        return request.send(200, "text/plain", "Forced reboot.");
+        return request.send_plain(200, "Forced reboot.");
     });
 
     server.onNotAuthorized_HTTPThread([](WebServerRequest request) {
@@ -206,18 +206,18 @@ static void register_default_urls() {
                 return request.requestAuthentication();
             }
 
-            return request.send(200, "text/plain", "Not logged in");
+            return request.send_plain(200, "Not logged in");
         } else {
             return request.requestAuthentication();
         }
     });
 
     server.on_HTTPThread("/credential_check", HTTP_GET, [](WebServerRequest request) {
-        return request.send(200, "text/plain", "Credentials okay");
+        return request.send_plain(200, "Credentials okay");
     });
 
     server.on_HTTPThread("/login_state", HTTP_GET, [](WebServerRequest request) {
-        return request.send(200, "text/plain", "Logged in");
+        return request.send_plain(200, "Logged in");
     });
 }
 

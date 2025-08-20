@@ -1057,22 +1057,22 @@ void Wifi::register_urls()
         int16_t network_count = WiFi.scanComplete();
 
         if (network_count == WIFI_SCAN_RUNNING) {
-            return request.send(200, "text/plain; charset=utf-8", "scan in progress");
+            return request.send_plain(200, "scan in progress");
         }
 
         if (network_count < 0) {
-            return request.send(200, "text/plain; charset=utf-8", "scan failed");
+            return request.send_plain(200, "scan failed");
         }
 
         StringBuilder sb;
 
         if (!sb.setCapacity(MAX_SCAN_RESULT_LENGTH * static_cast<size_t>(network_count) + 2)) {
-            return request.send(200, "text/plain; charset=utf-8", "scan out of memory");
+            return request.send_plain(200, "scan out of memory");
         }
 
         get_scan_results(&sb, static_cast<size_t>(network_count));
 
-        return request.send(200, "application/json; charset=utf-8", sb.getPtr(), static_cast<ssize_t>(sb.getLength()));
+        return request.send_json(200, sb);
     });
 
     api.addPersistentConfig("wifi/sta_config", &sta_config, {"passphrase", "password"});

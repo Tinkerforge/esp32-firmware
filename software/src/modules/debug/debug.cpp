@@ -404,37 +404,37 @@ static WebServerRequestReturnProtect browse_get(WebServerRequest request, String
         path = path.substring(0, path.length() - 1);
 
     if (!LittleFS.exists(path))
-        return request.send(404, "text/plain", ("File " + path + " not found").c_str());
+        return request.send_plain(404, "File " + path + " not found");
 
     File f = LittleFS.open(path);
     if (!f.isDirectory()) {
         char buf[256];
-        request.beginChunkedResponse(200);
+        request.beginChunkedResponse_plain(200);
         while (f.available()) {
             size_t read = f.read(reinterpret_cast<uint8_t *>(buf), ARRAY_SIZE(buf));
-            request.sendChunk(buf, static_cast<ssize_t>(read));
+            request.sendChunk(buf, read);
         }
         return request.endChunkedResponse();
     } else {
-        request.beginChunkedResponse(200, "text/html; charset=utf-8");
-        request.sendChunk(fs_browser_header, strlen(fs_browser_header));
+        request.beginChunkedResponse_html(200);
+        request.sendChunk(fs_browser_header);
         String header = "<h1>" + String(f.path()) + "</h1><br>\n";
-        request.sendChunk(header.c_str(), static_cast<ssize_t>(header.length()));
+        request.sendChunk(header);
 
         if (path.length() > 1) {
             String up = "<button type=button onclick=\"\" style=\"visibility: hidden;\">Delete</button>&nbsp;&nbsp;&nbsp;<a href='..'>..</a><br>\n";
 
-            request.sendChunk(up.c_str(), static_cast<ssize_t>(up.length()));
+            request.sendChunk(up);
         }
 
         File file = f.openNextFile();
         while(file) {
             String s = "<button type=button onclick=\"deleteFile('/" + String(file.name()) + "')\">Delete</button>&nbsp;&nbsp;&nbsp;<a href=" + String(file.name()) + (file.isDirectory() ? "/" : "") + ">"+ file.name() + (file.isDirectory() ? "/" : "") +"</a><br>\n";
-            request.sendChunk(s.c_str(), static_cast<ssize_t>(s.length()));
+            request.sendChunk(s);
             file = f.openNextFile();
         }
 
-        request.sendChunk(fs_browser_footer, strlen(fs_browser_footer));
+        request.sendChunk(fs_browser_footer);
 
         return request.endChunkedResponse();
     }
@@ -445,17 +445,17 @@ static WebServerRequestReturnProtect browse_delete(WebServerRequest request, Str
         path = path.substring(0, path.length() - 1);
 
     if (!LittleFS.exists(path))
-        return request.send(404, "text/plain", ("File " + path + " not found").c_str());
+        return request.send_plain(404, "File " + path + " not found");
 
     File f = LittleFS.open(path);
     if (!f.isDirectory()) {
         f.close();
         LittleFS.remove(path);
-        return request.send(200, "text/plain", ("File " + path + " deleted").c_str());
+        return request.send_plain(200, "File " + path + " deleted");
     } else {
         f.close();
         remove_directory(path.c_str());
-        return request.send(200, "text/plain", ("Directory " + path + " and all contents deleted").c_str());
+        return request.send_plain(200, "Directory " + path + " and all contents deleted");
     }
 }
 
@@ -467,11 +467,11 @@ static WebServerRequestReturnProtect browse_put(WebServerRequest request, String
     if (LittleFS.exists(path)) {
         File f = LittleFS.open(path);
         if (!f.isDirectory() && create_directory)
-            return request.send(400, "text/plain", ("File " + path + " already exists and is not a directory").c_str());
+            return request.send_plain(400, "File " + path + " already exists and is not a directory");
         if (f.isDirectory() && !create_directory)
-            return request.send(400, "text/plain", ("Directory " + path + " already exists").c_str());
+            return request.send_plain(400, "Directory " + path + " already exists");
         if (f.isDirectory())
-            return request.send(200, "text/plain", ("Directory " + path + " already exists").c_str());
+            return request.send_plain(200, "Directory " + path + " already exists");
         else {
             f.close();
             LittleFS.remove(path);
@@ -480,7 +480,7 @@ static WebServerRequestReturnProtect browse_put(WebServerRequest request, String
 
     if (create_directory) {
         LittleFS.mkdir(path);
-        return request.send(200, "text/plain", ("Directory " + path + " created").c_str());
+        return request.send_plain(200, "Directory " + path + " created");
     }
 
     File f = LittleFS.open(path, "w");
@@ -488,10 +488,10 @@ static WebServerRequestReturnProtect browse_put(WebServerRequest request, String
     auto size = request.contentLength();
     auto payload = heap_alloc_array<char>(size);
     if (request.receive(payload.get(), size) < 0)
-        return request.send(500, "text/plain", "failed to receive");
+        return request.send_plain(500, "failed to receive");
 
     f.write(reinterpret_cast<uint8_t *>(payload.get()), size);
-    return request.send(200, "text/plain", ("File " + path + " created.").c_str());
+    return request.send_plain(200, "File " + path + " created.");
 }
 #endif
 
@@ -506,7 +506,7 @@ void Debug::register_urls()
 #ifdef DEBUG_FS_ENABLE
     server.on_HTTPThread("/debug/crash", HTTP_GET, [](WebServerRequest req) {
         esp_system_abort("Crash requested");
-        return req.send(200);
+        return req.send_plain(200);
     });
 #endif
 
@@ -518,14 +518,14 @@ void Debug::register_urls()
                 sw.printf("%4u %s\n", reg.config->string_length(), reg.path);
             }
         });
-        return req.send(200, "text/plain", sw.getPtr(), static_cast<ssize_t>(sw.getLength()));
+        return req.send_plain(200, sw);
     });
 
 #ifdef DEBUG_FS_ENABLE
     server.on_HTTPThread("/debug/rtos_tasks", HTTP_GET, [](WebServerRequest req) {
         char buf[2048]; // "This buffer is assumed to be large enough to contain the generated report. Approximately 40 bytes per task should be sufficient." - vTaskGetRunTimeStats@FreeRTOS
         vTaskGetRunTimeStats(buf);
-        return req.send(200, "text/plain", buf, HTTPD_RESP_USE_STRLEN);
+        return req.send_plain(200, buf);
     });
 
     server.on_HTTPThread("/debug/fs/*", HTTP_GET, [this](WebServerRequest request) {

@@ -27,9 +27,9 @@ void Pwa::register_urls()
     server.on("/manifest.json", HTTP_GET, [](WebServerRequest request) {
         String response = device_name.display_name.get("display_name")->asString();
         response += "\"}";
-        request.beginChunkedResponse(200, "application/json");
+        request.beginChunkedResponse_json(200);
         request.sendChunk(manifest_data, manifest_length);
-        request.sendChunk(response.c_str(), response.length());
+        request.sendChunk(response);
         return request.endChunkedResponse();
     });
 }

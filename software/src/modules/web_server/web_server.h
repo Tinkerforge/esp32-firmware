@@ -23,8 +23,10 @@
 #include <functional>
 #include <WString.h>
 #include <esp_http_server.h>
+#include <TFJson.h>
 
 #include "module.h"
+#include "tools/string_builder.h"
 
 // This struct is used to make sure a registered handler always calls
 // one of the WebServerRequest methods that send a reponse.
@@ -37,11 +39,36 @@ class WebServerRequest
 public:
     WebServerRequest(httpd_req_t *req, bool keep_alive = false);
 
-    WebServerRequestReturnProtect send(uint16_t code, const char *content_type = "text/plain; charset=utf-8", const char *content = "", ssize_t content_len = HTTPD_RESP_USE_STRLEN);
+    WebServerRequestReturnProtect send(uint16_t code, const char *content_type, const char *content, size_t content_len);
 
-    void beginChunkedResponse(uint16_t code, const char *content_type = "text/plain; charset=utf-8");
+    inline WebServerRequestReturnProtect send_plain(uint16_t code, const char *content, size_t content_len) { return send(code, "text/plain; charset=utf-8", content, content_len); }
+    inline WebServerRequestReturnProtect send_plain(uint16_t code, const char *content = "") { return send(code, "text/plain; charset=utf-8", content, strlen(content)); }
+    inline WebServerRequestReturnProtect send_plain(uint16_t code, const String &content) { return send(code, "text/plain; charset=utf-8", content.c_str(), content.length()); }
+    inline WebServerRequestReturnProtect send_plain(uint16_t code, const StringWriter &content) { return send(code, "text/plain; charset=utf-8", content.getPtr(), content.getLength()); }
 
-    int sendChunk(const char *chunk, ssize_t chunk_len);
+    inline WebServerRequestReturnProtect send_json(uint16_t code, const char *content, size_t content_len) { return send(code, "application/json; charset=utf-8", content, content_len); }
+    inline WebServerRequestReturnProtect send_json(uint16_t code, const char *content = "") { return send(code, "application/json; charset=utf-8", content, strlen(content)); }
+    inline WebServerRequestReturnProtect send_json(uint16_t code, const String &content) { return send(code, "application/json; charset=utf-8", content.c_str(), content.length()); }
+    inline WebServerRequestReturnProtect send_json(uint16_t code, const StringWriter &content) { return send(code, "application/json; charset=utf-8", content.getPtr(), content.getLength()); }
+    inline WebServerRequestReturnProtect send_json(uint16_t code, const TFJsonSerializer &json) { return send(code, "application/json; charset=utf-8", json.buf, json.buf_strlen); }
+
+    inline WebServerRequestReturnProtect send_bytes(uint16_t code, const char *content, size_t content_len) { return send(code, "application/octet-stream", content, content_len); }
+    inline WebServerRequestReturnProtect send_bytes(uint16_t code, const char *content = "") { return send(code, "application/octet-stream", content, strlen(content)); }
+
+    inline WebServerRequestReturnProtect send_html(uint16_t code, const char *content, size_t content_len) { return send(code, "text/html; charset=utf-8", content, content_len); }
+    inline WebServerRequestReturnProtect send_html(uint16_t code, const char *content = "") { return send(code, "text/html; charset=utf-8", content, strlen(content)); }
+
+    void beginChunkedResponse(uint16_t code, const char *content_type);
+    inline void beginChunkedResponse_plain(uint16_t code) { return beginChunkedResponse(code, "text/plain; charset=utf-8"); }
+    inline void beginChunkedResponse_json(uint16_t code) { return beginChunkedResponse(code, "application/json; charset=utf-8"); }
+    inline void beginChunkedResponse_bytes(uint16_t code) { return beginChunkedResponse(code, "application/octet-stream; charset=utf-8"); }
+    inline void beginChunkedResponse_html(uint16_t code) { return beginChunkedResponse(code, "text/html; charset=utf-8"); }
+    inline void beginChunkedResponse_pdf(uint16_t code) { return beginChunkedResponse(code, "application/pdf"); }
+
+    int sendChunk(const char *chunk, size_t chunk_len);
+    inline int sendChunk(const char *chunk) { return sendChunk(chunk, strlen(chunk)); }
+    inline int sendChunk(const String &chunk) { return sendChunk(chunk.c_str(), chunk.length()); }
+    inline int sendChunk(const StringWriter &chunk) { return sendChunk(chunk.getPtr(), chunk.getLength()); }
 
     WebServerRequestReturnProtect endChunkedResponse();
 

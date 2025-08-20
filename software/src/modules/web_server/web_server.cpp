@@ -449,7 +449,7 @@ const char *httpStatusCodeToString(int code)
     }
 }
 
-WebServerRequestReturnProtect WebServerRequest::send(uint16_t code, const char *content_type, const char *content, ssize_t content_len)
+WebServerRequestReturnProtect WebServerRequest::send(uint16_t code, const char *content_type, const char *content, size_t content_len)
 {
     auto result = httpd_resp_set_type(req, content_type);
     if (result != ESP_OK) {
@@ -479,7 +479,7 @@ WebServerRequestReturnProtect WebServerRequest::send(uint16_t code, const char *
         }
     }
 
-    result = httpd_resp_send(req, content, content_len);
+    result = httpd_resp_send(req, content, static_cast<ssize_t>(content_len));
 
     if (code >= 400) {
         // Copied over from esp-idf/components/esp_http_server/src/httpd_txrx.c
@@ -526,7 +526,7 @@ void WebServerRequest::beginChunkedResponse(uint16_t code, const char *content_t
     chunkedResponseState = ChunkedResponseState::Started;
 }
 
-int WebServerRequest::sendChunk(const char *chunk, ssize_t chunk_len)
+int WebServerRequest::sendChunk(const char *chunk, size_t chunk_len)
 {
     switch (chunkedResponseState) {
         case ChunkedResponseState::Failed:
@@ -542,7 +542,7 @@ int WebServerRequest::sendChunk(const char *chunk, ssize_t chunk_len)
     if (chunk_len == 0)
         logger.printfln("BUG: sendChunk was called with chunk_len == 0! Use endChunkedResponse!");
 
-    auto result = httpd_resp_send_chunk(req, chunk, chunk_len);
+    auto result = httpd_resp_send_chunk(req, chunk, static_cast<ssize_t>(chunk_len));
     if (result != ESP_OK) {
         chunkedResponseState = ChunkedResponseState::Failed;
         printf("Failed to send response chunk: %s (0x%X)\n", esp_err_to_name(result), result);
@@ -590,7 +590,7 @@ WebServerRequestReturnProtect WebServerRequest::requestAuthentication()
     String payload = "Digest ";
     payload.concat(requestDigestAuthentication(nullptr));
     addResponseHeader("WWW-Authenticate", payload.c_str());
-    return send(401);
+    return send_plain(401);
 }
 
 String WebServerRequest::header(const char *header_name)

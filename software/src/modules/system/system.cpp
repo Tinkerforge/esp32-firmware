@@ -105,7 +105,7 @@ void System::register_urls()
         req.addResponseHeader("ETag", "dontcachemeplease");
         // Intentionally don't handle the If-None-Match header:
         // This makes sure that a cached version is never used.
-        return req.send(200, "text/html; charset=utf-8", recovery_html_data, recovery_html_length);
+        return req.send_html(200, recovery_html_data, recovery_html_length);
     });
 
     api.addCommand("factory_reset", Config::Confirm(), {Config::confirm_key}, [this](String &errmsg) {

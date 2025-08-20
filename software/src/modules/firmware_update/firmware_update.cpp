@@ -771,10 +771,10 @@ void FirmwareUpdate::register_urls()
                 install_state_to_json_error(result, &json);
             }
 
-            return request.send(400, "application/json", json_buf, json.buf_strlen);
+            return request.send_json(400, json);
         }
 
-        return request.send(200, "text/plain", "Check OK");
+        return request.send_plain(200, "Check OK");
     },
     [this](WebServerRequest request, String filename, size_t offset, uint8_t *data, size_t data_len, size_t remaining) {
         if (is_vehicle_blocking_update()) {
@@ -782,7 +782,7 @@ void FirmwareUpdate::register_urls()
             TFJsonSerializer json{json_buf, sizeof(json_buf)};
 
             install_state_to_json_error(InstallState::VehicleConnected, &json);
-            request.send(400, "application/json", json_buf, json.buf_strlen);
+            request.send_json(400, json);
             return false;
         }
 
@@ -815,7 +815,7 @@ void FirmwareUpdate::register_urls()
             TFJsonSerializer json{json_buf, sizeof(json_buf)};
 
             install_state_to_json_error(InstallState::InfoPageTooBig, &json);
-            request.send(400, "application/json", json_buf, json.buf_strlen);
+            request.send_json(400, json);
             task_scheduler.await([this](){check_firmware_in_progress = false;});
             return false;
         }
@@ -826,7 +826,7 @@ void FirmwareUpdate::register_urls()
     [this](WebServerRequest request, int error_code) {
         logger.printfln("File reception failed: %s (%d)", strerror(error_code), error_code);
         task_scheduler.await([this](){check_firmware_in_progress = false;});
-        return request.send(500, "Failed to receive file");
+        return request.send_plain(500, "Failed to receive file");
     });
 
     server.on_HTTPThread("/flash_firmware", HTTP_POST, [this](WebServerRequest request) {
@@ -842,7 +842,7 @@ void FirmwareUpdate::register_urls()
         });
 
         trigger_reboot("firmware update", 1_s);
-        return request.send(200, "text/plain", "Update OK");
+        return request.send_plain(200, "Update OK");
     },
     [this](WebServerRequest request, String filename, size_t offset, uint8_t *data, size_t data_len, size_t remaining) {
         if (offset == 0) {
@@ -892,7 +892,7 @@ void FirmwareUpdate::register_urls()
                 update_install_state();
             });
 
-            request.send(400, "application/json", json_buf, json.buf_strlen);
+            request.send_json(400, json);
             return false;
         }
 
@@ -914,7 +914,7 @@ void FirmwareUpdate::register_urls()
             update_install_state();
         });
 
-        return request.send(500, "Failed to receive file");
+        return request.send_plain(500, "Failed to receive file");
     });
 }
 

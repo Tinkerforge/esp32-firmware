@@ -772,7 +772,7 @@ void ChargeTracker::register_urls()
 
         auto url_buf = heap_alloc_array<char>(CHARGE_RECORD_MAX_FILE_SIZE);
         if (url_buf == nullptr) {
-            return request.send(507);
+            return request.send_plain(507);
         }
 
         const size_t fsize = file_size(LittleFS, chargeRecordFilename(this->last_charge_record));
@@ -780,10 +780,10 @@ void ChargeTracker::register_urls()
 
         // Don't do a chunked response without any chunk. The webserver does strange things in this case
         if (file_size == 0) {
-            return request.send(200, "application/octet-stream", "", 0);
+            return request.send_bytes(200);
         }
 
-        request.beginChunkedResponse(200, "application/octet-stream");
+        request.beginChunkedResponse_bytes(200);
         for (int i = this->first_charge_record; i <= this->last_charge_record; ++i) {
             File f = LittleFS.open(chargeRecordFilename(i));
             int read = f.read((uint8_t *)url_buf.get(), CHARGE_RECORD_MAX_FILE_SIZE);
@@ -828,13 +828,13 @@ void ChargeTracker::register_urls()
             auto buf = heap_alloc_array<char>(1024);
 
             if (request.contentLength() > 1024) {
-                return request.send(413);
+                return request.send_plain(413);
             }
 
             auto received = request.receive(buf.get(), 1024);
 
             if (received < 0) {
-                return request.send(500, "text/plain", "Failed to receive request payload");
+                return request.send_plain(500, "Failed to receive request payload");
             }
 
             DeserializationError error = deserializeJson(doc, buf.get(), received);
@@ -844,11 +844,11 @@ void ChargeTracker::register_urls()
                 StringWriter sw(error_string, ARRAY_SIZE(error_string));
                 sw.puts("Failed to deserialize string: ");
                 sw.puts(error.c_str());
-                return request.send(400, "text/plain", error_string, static_cast<ssize_t>(sw.getLength()));
+                return request.send_plain(400, sw);
             }
 
             if (!bool(doc["api_not_final_acked"])) {
-                return request.send(400, "text/plain", "Please acknowledge that this API is subject to change!");
+                return request.send_plain(400, "Please acknowledge that this API is subject to change!");
             }
 
             user_filter = doc["user_filter"] | USER_FILTER_ALL_USERS;
@@ -864,7 +864,7 @@ void ChargeTracker::register_urls()
 
             if (letterhead_passed) {
                 if (strlen(doc["letterhead"]) > PDF_LETTERHEAD_MAX_SIZE) {
-                    return request.send(400, "text/plain", "Letterhead is too long!");
+                    return request.send_plain(400, "Letterhead is too long!");
                 }
 
                 strncpy(letterhead, doc["letterhead"], PDF_LETTERHEAD_MAX_SIZE + 1);
@@ -938,7 +938,7 @@ void ChargeTracker::register_urls()
         });
 
         if (await_result == TaskScheduler::AwaitResult::Timeout) {
-            return request.send(500, "text/plain", "Failed to generate PDF: Task timed out");
+            return request.send_plain(500, "Failed to generate PDF: Task timed out");
         }
 
         {
@@ -1004,7 +1004,7 @@ search_done:
 
         display_name_entry *display_name_cache = static_cast<decltype(display_name_cache)>(malloc_iram_or_psram_or_dram(MAX_PASSIVE_USERS * sizeof(display_name_cache[0])));
         if (!display_name_cache) {
-            return request.send(500, "text/plain", "Failed to generate PDF: No memory");
+            return request.send_plain(500, "Failed to generate PDF: No memory");
         }
 
         for (size_t i = 0; i < MAX_PASSIVE_USERS; i++) {
@@ -1085,7 +1085,7 @@ search_done:
         char table_lines_buffer[8 * TABLE_LINE_LEN];
         File f;
 
-        request.beginChunkedResponse(200, "application/pdf");
+        request.beginChunkedResponse_pdf(200);
 
         const char * table_header_de = "Startzeit\0"
                                        "Benutzer\0"

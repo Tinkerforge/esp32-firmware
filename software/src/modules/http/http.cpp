@@ -30,7 +30,7 @@ public:
 
     void begin(bool success)
     {
-        request->beginChunkedResponse(success ? 200 : 400);
+        request->beginChunkedResponse_plain(success ? 200 : 400);
     }
 
     void alive()
@@ -195,12 +195,12 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
         recv_buf  = stack_recv_buf;
         recv_size = ARRAY_SIZE(stack_recv_buf);
     } else if (content_length > OPTIONS_API_JSON_MAX_LENGTH()) {
-        return req.send(413);
+        return req.send_plain(413);
     } else {
         heap_recv_buf = std::unique_ptr<char[]>{new(std::nothrow) char[content_length]};
 
         if (heap_recv_buf == nullptr) {
-            return req.send(413);
+            return req.send_plain(413);
         }
 
         recv_buf  = heap_recv_buf.get();
@@ -211,12 +211,12 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
     int bytes_written = req.receive(recv_buf, recv_size);
     if (bytes_written == -1) {
         // buffer was not large enough
-        return req.send(413);
+        return req.send_plain(413);
     }
 
     if (bytes_written < 0) {
         logger.printfln("Failed to receive command payload: error code %d", bytes_written);
-        return req.send(400);
+        return req.send_plain(400);
     }
 
     String message;
@@ -227,9 +227,9 @@ static WebServerRequestReturnProtect run_command(WebServerRequest req, size_t cm
     }
 
     if (message.isEmpty()) {
-        return req.send(200);
+        return req.send_plain(200);
     }
-    return req.send(400, "text/plain; charset=utf-8", message.c_str(), message.length());
+    return req.send_plain(400, message);
 }
 
 WebServerRequestReturnProtect Http::run_response(WebServerRequest req, size_t respidx)
@@ -241,10 +241,10 @@ WebServerRequestReturnProtect Http::run_response(WebServerRequest req, size_t re
     int bytes_written = req.receive(recv_buf, ARRAY_SIZE(recv_buf));
     if (bytes_written == -1) {
         // buffer was not large enough
-        return req.send(413);
+        return req.send_plain(413);
     } else if (bytes_written < 0) {
         logger.printfln("Failed to receive response payload: error code %d", bytes_written);
-        return req.send(400);
+        return req.send_plain(400);
     }
 
     uint32_t response_owner_id = response_ownership.current();
@@ -271,13 +271,13 @@ WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest req)
 {
     switch (last_matched_api_type) {
         case NONE:
-            return req.send(500, "text/plain", "URI matcher did not match API but api_handler_get was called. This should never happen");
+            return req.send_plain(500, "URI matcher did not match API but api_handler_get was called. This should never happen");
         case STATE: {
             API::SuffixPath suffix_path;
 
             const char *error = API::build_suffix_path(suffix_path, last_matched_api_suffix, last_matched_api_suffix_len);
             if (error != nullptr)
-                return req.send(404, "text/plain", error);
+                return req.send_plain(404, error);
 
             String response;
             uint16_t status_code = 200;
@@ -286,24 +286,30 @@ WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest req)
                 cfg = cfg->walk(suffix_path.path.data(), suffix_path.path.size());
                 if (cfg == nullptr) {
                     status_code = 404;
-                    response = "path not found";
+                    response = "Path not found";
                     return;
                 }
 
                 response = cfg->to_string_except(api.states[i].keys_to_censor, api.states[i].get_keys_to_censor_len());
             });
-            if (result == TaskScheduler::AwaitResult::Timeout)
-                return req.send(500, "text/plain", "Failed to get config. Task timed out.");
 
-            return req.send(status_code, status_code == 200 ? "application/json; charset=utf-8" : "text/plain", response.c_str(), response.length());
+            if (result == TaskScheduler::AwaitResult::Timeout) {
+                status_code = 500;
+                response = "Failed to get config. Task timed out.";
+            }
 
+            if (status_code == 200) {
+                return req.send_json(status_code, response);
+            }
+
+            return req.send_plain(status_code, response);
         }
         case COMMAND: {
             API::SuffixPath suffix_path;
 
             const char *error = API::build_suffix_path(suffix_path, last_matched_api_suffix, last_matched_api_suffix_len);
             if (error != nullptr)
-                return req.send(404, "text/plain", error);
+                return req.send_plain(404, error);
 
             return run_command(req, last_matched_api_idx, suffix_path);
         }
@@ -313,14 +319,14 @@ WebServerRequestReturnProtect Http::api_handler_get(WebServerRequest req)
 
     // If we reach this point, the url matcher found an API with the req.uri() as path, but we did not.
     // This was probably a raw command or a command that requires a payload. Return 405 - Method not allowed
-    return req.send(405, "text/plain", "Request method for this URI is not handled by server");
+    return req.send_plain(405, "Request method for this URI is not handled by server");
 }
 
 WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
 {
     switch (last_matched_api_type) {
         case NONE:
-            return req.send(500, "text/plain", "URI matcher did not match API but api_handler_get was called. This should never happen");
+            return req.send_plain(500, "URI matcher did not match API but api_handler_get was called. This should never happen");
         case RESPONSE:
             return run_response(req, last_matched_api_idx);
         case STATE: {
@@ -338,7 +344,7 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
 
             // foo/bar exists as a state (as it was matched by the uri matcher), but we could not find foo/bar_update
             if (command_idx == 0xFFFFFFFF)
-                return req.send(405, "text/plain", "Request method for this URI is not handled by server");
+                return req.send_plain(405, "Request method for this URI is not handled by server");
 
             // We've found the command that was meant to be called. Update the api index and fall through to normal command handling
             last_matched_api_idx = command_idx;
@@ -349,7 +355,7 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
 
             const char *error = API::build_suffix_path(suffix_path, last_matched_api_suffix, last_matched_api_suffix_len);
             if (error != nullptr)
-                return req.send(404, "text/plain", error);
+                return req.send_plain(404, error);
 
             return run_command(req, last_matched_api_idx, suffix_path);
         }
@@ -357,7 +363,7 @@ WebServerRequestReturnProtect Http::api_handler_put(WebServerRequest req)
 
     // If we reach this point, the url matcher found an API with the req.uri() as path, but we did not.
     // This was probably a raw command or a command that requires a payload. Return 405 - Method not allowed
-    return req.send(405, "text/plain", "Request method for this URI is not handled by server");
+    return req.send_plain(405, "Request method for this URI is not handled by server");
 }
 
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -458,7 +464,7 @@ WebServerRequestReturnProtect Http::automation_trigger_handler(WebServerRequest 
     String uri = req.uri();
     int idx = uri.indexOf("automation_trigger/");
     if (idx < 0) {
-        return req.send(405, "text/plain", "Request method for this URI is not handled by server");
+        return req.send_plain(405, "Request method for this URI is not handled by server");
     }
     uri = uri.substring(idx + strlen("automation_trigger/"));
 
@@ -467,22 +473,22 @@ WebServerRequestReturnProtect Http::automation_trigger_handler(WebServerRequest 
 
     switch (trigger.most_specific_error) {
         case HttpTriggerActionResult::WrongUrl:
-            return req.send(404, "text/plain", "No automation rule matches this URL");
+            return req.send_plain(404, "No automation rule matches this URL");
         case HttpTriggerActionResult::WrongMethod:
-            return req.send(405, "text/plain", "No automation rule for this URL matches this method");
+            return req.send_plain(405, "No automation rule for this URL matches this method");
         case HttpTriggerActionResult::WrongPayloadLength:
-            return req.send(400, "text/plain", "No automation rule for this URL and method matches this payload length");
+            return req.send_plain(400, "No automation rule for this URL and method matches this payload length");
         case HttpTriggerActionResult::FailedToReceivePayload:
-            return req.send(500, "text/plain", "Failed to receive payload");
+            return req.send_plain(500, "Failed to receive payload");
         case HttpTriggerActionResult::WrongPayload:
-            return req.send(400, "text/plain", "No automation rule for this URL and method matches this payload");
+            return req.send_plain(400, "No automation rule for this URL and method matches this payload");
         case HttpTriggerActionResult::OK:
-            return req.send(200);
+            return req.send_plain(200);
     }
 
     // The switch above should be exhaustive. Return "normal" 405 if it is not.
 #endif
-    return req.send(405, "text/plain", "Request method for this URI is not handled by server");
+    return req.send_plain(405, "Request method for this URI is not handled by server");
 }
 
 void Http::register_urls()
