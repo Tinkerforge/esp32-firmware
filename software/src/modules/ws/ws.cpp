@@ -26,6 +26,8 @@
 #include "cool_string.h"
 #include "options.h"
 
+#include "gcc_warnings.h"
+
 static const char *prefix = "{\"topic\":\"";
 static const char *infix = "\",\"payload\":";
 static const char *suffix = "}\n";
@@ -126,9 +128,9 @@ void WS::register_urls()
 
     task_scheduler.scheduleWithFixedDelay([this](){
         char *payload;
-        int len = asprintf(&payload, "{\"topic\":\"info/keep_alive\",\"payload\":{\"uptime\":%llu}}\n", now_us().to<millis_t>().as<uint64_t>());
-        if (len > 0)
-            web_sockets.sendToAllOwned(payload, len);
+        int payload_len = asprintf(&payload, "{\"topic\":\"info/keep_alive\",\"payload\":{\"uptime\":%llu}}\n", now_us().to<millis_t>().as<uint64_t>());
+        if (payload_len > 0)
+            web_sockets.sendToAllOwned(payload, static_cast<size_t>(payload_len));
     }, 1_s, 1_s);
 }
 
