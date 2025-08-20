@@ -35,7 +35,7 @@
 #include "module_dependencies.h"
 #include "build.h"
 #include "options.h"
-#include "tf_websocket_client.h"
+#include "tools/tf_websocket_client.h"
 #include "ocpp.h"
 #include "modules/meters/meter_defs.h"
 
