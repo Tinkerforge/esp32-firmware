@@ -33,6 +33,7 @@
 //#include "spine_connection.h"
 #include "tools/allocator.h"
 #include "tools/malloc.h"
+#include "tools/tf_websocket_client.h"
 
 // Values and Timeouts as defined by SHIP specification
 #define SHIP_CONNECTION_CMI_TIMEOUT 30_s // SHIP 13.4.3 Timneout procedure
@@ -41,11 +42,22 @@
 #define SHIP_CONNECTION_SME_T_hello_prolong_waiting_gap 15_s
 #define SHIP_CONNECTION_PROTOCOL_HANDSHAKE_TIMEOUT 10_s
 
+// Buffers
 #define SHIP_CONNECTION_MAX_JSON_SIZE 8192          // TODO: What is a sane value here? Not that important since it now lives in PSRAM
 #define SHIP_CONNECTION_MAX_BUFFER_SIZE (1024 * 10) // TODO: What is a sane value here? Not that important since it now lives in PSRAM
 
+// Client Timeouts. These are only needed for when we are and using websockets as a client
+#define SHIP_CONNECTION_WS_LOCK_TIMEOUT_MS 100
+#define SHIP_CONNECTION_WS_WRITE_TIMEOUT_MS 1000
+
+
+
 enum class NodeState : uint8_t;
 class SpineConnection; // Forward declaration to avoid circular dependency
+
+
+static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data);
+
 
 class ShipConnection
 {
@@ -94,13 +106,25 @@ public:
     BasicJsonDocument<ArduinoJsonPsramAllocator> outgoing_json_doc{SHIP_CONNECTION_MAX_JSON_SIZE};
 
     WebSocketsClient ws_client;
+    tf_websocket_client_handle_t ws_server;
     Role role;
     CoolString peer_ski = "";
     unique_ptr_any<SpineConnection> spine;
     bool connection_established = false;
 
     // Set the ws_client, role and start the state machine that will branch into ClientWait or ServerWait depending on the role
-    ShipConnection(WebSocketsClient ws_client, const Role role, CoolString ski);
+    /**
+     * New ShipConnection where we act as a Server
+     * @param ws_client The incoming connection from the WebSocketsClient
+     * @param ski the SKI
+     */
+    ShipConnection(WebSocketsClient ws_client, CoolString ski);
+    /**
+     * New ShipConnection where we act as a Client
+     * @param ws_config The WebSocket server handle to connect to
+     * @param ski
+     */
+    ShipConnection(const tf_websocket_client_config_t ws_config, CoolString ski);
     // Disallow copying of ShipConnection
     ShipConnection(const ShipConnection &other) = delete;
     const ShipConnection &operator=(const ShipConnection &other) = delete;
@@ -111,6 +135,7 @@ public:
     uint64_t timeout_task = 0;
 
     void frame_received(httpd_ws_frame_t *ws_pkt);
+
     void schedule_close(millis_t delay_ms);
     void send_cmi_message(uint8_t type, uint8_t value);
     void send_current_outgoing_message();

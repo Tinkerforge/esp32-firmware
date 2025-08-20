@@ -28,6 +28,8 @@
 
 extern "C" esp_err_t esp_crt_bundle_attach(void *conf);
 
+
+
 void Ship::pre_setup()
 {
     web_sockets.pre_setup(); // Moved to setup_wss(), is this needed this early?
@@ -201,7 +203,7 @@ void Ship::setup_wss()
                           ntohs(addr.sin6_port),
                           peer_ski.c_str());
 
-        ship_connections.push_back(std::move(make_unique_psram<ShipConnection>(ws_client, ShipConnection::Role::Server, peer_ski)));
+        ship_connections.push_back(std::move(make_unique_psram<ShipConnection>(ws_client, peer_ski)));
         logger.printfln("New SHIP Client connected");
 
         return true;
@@ -235,14 +237,30 @@ void Ship::connect_trusted_peers()
     logger.printfln("EEBUS SHIP: Attempting connection to trusted peers");
     for (size_t i = 0; i < peer_count; i++) {
         auto peer = eebus.config.get("peers")->get(i);
-        if (peer->get("trusted")->asBool()) {
+        if (peer->get("trusted")->asBool() && peer->get("state")->asEnum<NodeState>() == NodeState::Discovered) {
+            tf_websocket_client_config_t websocket_cfg = {};
+            CoolString peer_ski = peer->get("ski")->asString();
+            CoolString ip = peer->get("ip")->asString();
+            websocket_cfg.host = ip.c_str();
+            websocket_cfg.port = peer->get("port")->asUint();
+            websocket_cfg.path = peer->get("wss_path")->asString().c_str();
+            // The pointer is stored and not the data so the data needs to be valid for the duration of the connection.
+            websocket_cfg.client_cert = reinterpret_cast<const char *>(cert->crt);
+            websocket_cfg.client_cert_len = cert->crt_length;
+            websocket_cfg.client_key = reinterpret_cast<const char *>(cert->key);
+            websocket_cfg.client_key_len = cert->key_length;
+            websocket_cfg.disable_auto_reconnect = true;
+
+            websocket_cfg.subprotocol = "ee1.0";
+
+
             /*
-            // TODO: get a filedescriptor somehow
+            // TODO: Make a tf_websocket_client_config_t from the peer config
             CoolString peer_ski = peer->get("ski")->asString();
             eebus.trace_fmtln("Connecting to trusted peer with SKI %s", peer_ski.c_str());
-            WebSocketsClient ws_client = WebSocketsClient(web_sockets);
-            ship_connections.push_back(ShipConnection{ws_client, ShipConnection::Role::Client, peer_ski});
-            */
+            WebSocketsClient ws_client = WebSocketsClient(web_sockets);*/
+            ship_connections.push_back(std::move(make_unique_psram<ShipConnection>(websocket_cfg, peer_ski)));
+
         }
     }
 }
@@ -380,12 +398,12 @@ void Ship::remove(const ShipConnection &ship_connection)
         std::remove_if(
             ship_connections.begin(),
             ship_connections.end(),
-            [&ship_connection](const unique_ptr_any<ShipConnection>& ptr) {
+            [&ship_connection](const unique_ptr_any<ShipConnection> &ptr) {
                 return ptr.get() == &ship_connection;
             }
-        ),
+            ),
         ship_connections.end()
-    );
+        );
     // The unique_ptr will be destroyed here and the memory will be freed.
 }
 
