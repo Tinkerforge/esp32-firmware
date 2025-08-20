@@ -44,9 +44,11 @@ public:
     bool pushRawStateUpdate(const String &payload, const String &path) override;
     WantsStateUpdate wantsStateUpdate(size_t stateIdx) override;
 
-    bool pushStateUpdateBegin(StringBuilder *sb, size_t stateIdx, size_t payload_len, const char *path, ssize_t path_len = -1);
+    bool pushStateUpdateBegin(StringBuilder *sb, size_t stateIdx, size_t payload_len, const char *path, size_t path_len);
+    inline bool pushStateUpdateBegin(StringBuilder *sb, size_t stateIdx, size_t payload_len, const char *path) { return pushStateUpdateBegin(sb, stateIdx, payload_len, path, strlen(path)); }
     bool pushStateUpdateEnd(StringBuilder *sb);
-    bool pushRawStateUpdateBegin(StringBuilder *sb, size_t payload_len, const char *path, ssize_t path_len = -1);
+    bool pushRawStateUpdateBegin(StringBuilder *sb, size_t payload_len, const char *path, size_t path_len);
+    inline bool pushRawStateUpdateBegin(StringBuilder *sb, size_t payload_len, const char *path) { return pushRawStateUpdateBegin(sb, payload_len, path, strlen(path)); }
     bool pushRawStateUpdateEnd(StringBuilder *sb);
 
     bool haveActiveClient();
