@@ -32,13 +32,70 @@
 
 extern EEBus eebus;
 
-ShipConnection::ShipConnection(WebSocketsClient ws_client, const Role role, CoolString ski) :
-    ws_client(ws_client), role(role), peer_ski(std::move(ski))
+
+static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
+    const tf_websocket_event_data_t *data = static_cast<tf_websocket_event_data_t *>(event_data);
+    ShipConnection *conn = nullptr;
+    for (int i = 0; i < eebus.ship.ship_connections.size(); i++) {
+        if (eebus.ship.ship_connections[i]->ws_server == data->client) {
+            conn = eebus.ship.ship_connections[i].get();
+            break;
+        }
+    }
+    if (conn == nullptr) {
+        eebus.trace_fmtln("ShipConnection: No ShipConnection found for WebSocket client");
+        return;
+    }
+    switch (event_id) {
+        case WEBSOCKET_EVENT_DATA: {
+            if (data->payload_len == 0) {
+                return;
+            }
+            if (data->op_code != WS_TRANSPORT_OPCODES_BINARY) {
+                eebus.trace_fmtln("ShipConnection: Received non-binary data from peer");
+                return;
+            }
+            httpd_ws_frame frame = {};
+            frame.payload = (uint8_t *)data->data_ptr;
+            frame.len = data->payload_len;
+            frame.fragmented = false;
+
+            conn->frame_received(&frame);
+
+            break;
+        }
+        default:
+            //TODO: Handle the other events cleanly
+            eebus.trace_fmtln("Received WebSocket event %d from %s", event_id, conn->peer_ski.c_str());
+            return; // Ignore other events for now
+    }
+}
+
+ShipConnection::ShipConnection(WebSocketsClient ws_client, CoolString ski) :
+    ws_client(ws_client), peer_ski(std::move(ski))
+{
+    role = Role::Server;
     spine = make_unique_psram<SpineConnection>(this);
     message_incoming = make_unique_psram<Message>();
     message_outgoing = make_unique_psram<Message>();
 
+    state_machine_next_step();
+}
+
+ShipConnection::ShipConnection(const tf_websocket_client_config_t ws_config, CoolString ski)
+{
+
+    peer_ski = std::move(ski);
+    role = Role::Client;
+    spine = make_unique_psram<SpineConnection>(this);
+    message_incoming = make_unique_psram<Message>();
+    message_outgoing = make_unique_psram<Message>();
+
+    ws_server = tf_websocket_client_init(&ws_config);
+
+    tf_websocket_register_events(ws_server, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)ws_server);
+    tf_websocket_client_start(ws_server);
     state_machine_next_step();
 }
 
@@ -74,7 +131,12 @@ void ShipConnection::schedule_close(const millis_t delay_ms)
         [this]() {
             logger.printfln("Closing connections to %s", peer_ski.c_str());
             // Close socket and
-            ws_client.close_HTTPThread();
+            if (role == Role::Server) {
+                ws_client.close_HTTPThread();
+            } else if (role == Role::Client) {
+                tf_websocket_client_close(ws_server, pdMS_TO_TICKS(SHIP_CONNECTION_WS_LOCK_TIMEOUT_MS));
+                tf_websocket_client_destroy(ws_server);
+            }
             // remove this ShipConnection from vector of ShipConnections in Ship
             eebus.ship.remove(*this);
         },
@@ -84,7 +146,15 @@ void ShipConnection::schedule_close(const millis_t delay_ms)
 void ShipConnection::send_cmi_message(uint8_t type, uint8_t value)
 {
     char payload[2] = {static_cast<char>(type), static_cast<char>(value)};
-    ws_client.sendOwnedNoFreeBlocking_HTTPThread(payload, 2, HTTPD_WS_TYPE_BINARY);
+    if (role == Role::Server) {
+        ws_client.sendOwnedNoFreeBlocking_HTTPThread(payload, 2, HTTPD_WS_TYPE_BINARY);
+    } else if (role == Role::Client) {
+        tf_websocket_client_send_bin(ws_server,
+                                     payload,
+                                     2,
+                                     pdMS_TO_TICKS(SHIP_CONNECTION_WS_LOCK_TIMEOUT_MS),
+                                     pdMS_TO_TICKS(SHIP_CONNECTION_WS_WRITE_TIMEOUT_MS));
+    }
 }
 
 void ShipConnection::send_current_outgoing_message()
@@ -106,7 +176,16 @@ void ShipConnection::send_current_outgoing_message()
     }
 
     log_message("send_current_outgoing", message_outgoing.get());
-    ws_client.sendOwnedNoFreeBlocking_HTTPThread((char *)message_outgoing->data, message_outgoing->length, HTTPD_WS_TYPE_BINARY);
+    if (role == Role::Server) {
+        ws_client.sendOwnedNoFreeBlocking_HTTPThread((char *)message_outgoing->data, message_outgoing->length, HTTPD_WS_TYPE_BINARY);
+    } else if (role == Role::Client) {
+        tf_websocket_client_send_bin(ws_server,
+                                     reinterpret_cast<const char *>(message_outgoing->data),
+                                     message_outgoing->length,
+                                     pdMS_TO_TICKS(SHIP_CONNECTION_WS_LOCK_TIMEOUT_MS),
+                                     pdMS_TO_TICKS(SHIP_CONNECTION_WS_WRITE_TIMEOUT_MS));
+        //TODO: What are good timeouts here?
+    }
 }
 
 void ShipConnection::send_string(const char *str, const int length, const int msg_classifier)
@@ -128,7 +207,15 @@ void ShipConnection::send_string(const char *str, const int length, const int ms
     auto buffer = new char[length + 1];
     buffer[0] = static_cast<char>(msg_classifier);
     memcpy(buffer + 1, str, length);
-    ws_client.sendOwnedNoFreeBlocking_HTTPThread(buffer, length + 1, HTTPD_WS_TYPE_BINARY);
+    if (role == Role::Server) {
+        ws_client.sendOwnedNoFreeBlocking_HTTPThread(buffer, length + 1, HTTPD_WS_TYPE_BINARY);
+    } else if (role == Role::Client) {
+        tf_websocket_client_send_bin(ws_server,
+                                     buffer,
+                                     length + 1,
+                                     pdMS_TO_TICKS(SHIP_CONNECTION_WS_LOCK_TIMEOUT_MS),
+                                     pdMS_TO_TICKS(SHIP_CONNECTION_WS_WRITE_TIMEOUT_MS));
+    }
     delete[] buffer;
 
     //send_current_outgoing_message();
