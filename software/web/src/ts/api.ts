@@ -176,6 +176,65 @@ export async function call<T extends keyof ConfigMap>(topic: T, payload: ConfigM
     return call_unchecked(topic, payload, error_string, reboot_string, timeout_ms);
 }
 
+/* TODO: This only supports addressing one level deep into an API.
+   We need something like the DeepKeys type used in translations,
+   but the typing is complicated because an array is assumed to
+   have length 0 when indexing into the type, and I've failed to
+   generically replace array types with tuple types of a useful length.
+   Here's the last version I've failed to get to work:
+type GetDictValue<T extends string, O> =
+    O extends any[] ? GetDictValueArray<T, O>
+    : O extends object ? GetDictValueObject<T, O>
+    : never
+
+type GetDictValueArray<T extends string, O> =
+    O extends any[]
+    ? T extends `${infer A extends number}.${infer B}`
+      ? GetDictValue<B, O[A]>
+      : T extends `${infer N extends number}`
+          ? O[N]
+          : never
+    : never
+
+
+type GetDictValueObject<T extends string, O> =
+    T extends `${infer A}.${infer B}`
+    ? A extends keyof O
+        ? GetDictValue<B, O[A]>
+        : never
+    : T extends keyof O
+        ? O[T]
+        : never
+
+type DeepKeys<T, S extends string> =
+    T extends any[] ? DeepKeysArray<T, S>
+    : T extends object ? DeepKeysObject<T, S>
+    : ""
+
+type DeepKeysArray<T, S extends string> =
+  T extends any[]
+  ? S extends `${infer I1 extends number}.${infer I2}`
+    ? `${I1}.${DeepKeys<T[I1], I2>}`
+    : S extends `${infer N extends number}`
+      ? `${N}`
+      : number & string
+  : ""
+
+type DeepKeysObject<T, S extends string> =
+    T extends object
+    ? S extends `${infer I1}.${infer I2}`
+        ? I1 extends keyof T
+            ? `${I1}.${DeepKeys<T[I1], I2>}`
+            : keyof T & string
+        : S extends keyof T
+            ? `${S}`
+            : keyof T & string
+    : ""
+*/
+export async function call_with_path<T extends keyof ConfigMap, U extends keyof ConfigMap[T]>(topic: T, path: U, payload: ConfigMap[T][U], error_string?: () => string, reboot_string?: () => string, timeout_ms: number = 10*1000) {
+    return call_unchecked(topic + "/" + path.toString(), payload, error_string, reboot_string, timeout_ms);
+}
+
 export async function call_unchecked(topic: string, payload: any, error_string?: () => string, reboot_string?: () => string, timeout_ms: number = 10*1000) {
     try {
         let blob = await util.put('/' + topic, payload, timeout_ms);
