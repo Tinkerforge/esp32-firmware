@@ -715,8 +715,8 @@ public:
             // Allowing to call begin and end directly on
             // the wrapper makes it easier to use
             // range-based for loops.
-            inline std::vector<Config>::iterator begin() {return conf->begin();}
-            inline std::vector<Config>::iterator end()   {return conf->end();  }
+            inline Config *begin() {return &*conf->begin();}
+            inline Config *end()   {return &*conf->end();  }
 
         private:
             Config *conf;
@@ -732,8 +732,8 @@ public:
 
             inline explicit operator const Config*() const {return conf;}
 
-            inline std::vector<Config>::const_iterator begin() const {return conf->begin();}
-            inline std::vector<Config>::const_iterator end()   const {return conf->end();  }
+            inline const Config *begin() const {return &*conf->begin();}
+            inline const Config *end()   const {return &*conf->end();  }
 
         private:
             const Config *conf;
@@ -781,10 +781,10 @@ public:
     bool setCount(size_t count);
     bool reserve(size_t count);
     size_t count() const;
-    std::vector<Config>::iterator begin();
-    std::vector<Config>::iterator end();
-    std::vector<Config>::const_iterator begin() const;
-    std::vector<Config>::const_iterator end() const;
+    Config *begin();
+    Config *end();
+    const Config *begin() const;
+    const Config *end() const;
 
     template<typename T>
     T getTag() const {

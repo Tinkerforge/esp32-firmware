@@ -551,40 +551,40 @@ size_t Config::count() const
     return children.size();
 }
 
-std::vector<Config>::iterator Config::begin()
+Config *Config::begin()
 {
     // Asserts checked in ::is.
     if (!this->is<Config::ConfArray>()) {
         esp_system_abort("Tried to get begin iterator of a node that is not an array!");
     }
-    return this->asArray().begin();
+    return &*this->asArray().begin();
 }
 
-std::vector<Config>::iterator Config::end()
+Config *Config::end()
 {
     // Asserts checked in ::is.
     if (!this->is<Config::ConfArray>()) {
         esp_system_abort("Tried to get end iterator of a node that is not an array!");
     }
-    return this->asArray().end();
+    return &*this->asArray().end();
 }
 
-std::vector<Config>::const_iterator Config::begin() const
+const Config *Config::begin() const
 {
     // Asserts checked in ::is.
     if (!this->is<Config::ConfArray>()) {
         esp_system_abort("Tried to get begin iterator of a node that is not an array!");
     }
-    return this->asArray().cbegin();
+    return &*this->asArray().cbegin();
 }
 
-std::vector<Config>::const_iterator Config::end() const
+const Config *Config::end() const
 {
     // Asserts checked in ::is.
     if (!this->is<Config::ConfArray>()) {
         esp_system_abort("Tried to get end iterator of a node that is not an array!");
     }
-    return this->asArray().cend();
+    return &*this->asArray().cend();
 }
 
 const CoolString &Config::asString() const
