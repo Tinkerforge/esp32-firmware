@@ -93,7 +93,7 @@ with open(h_path + '.tmp', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated\n\n')
     f.write('extern const char *signature_publisher;\n\n')
     f.write('extern const unsigned char signature_sodium_public_key_data[];\n\n')
-    f.write(f'#define signature_sodium_public_key_length {len(sodium_public_key)}\n\n')
+    f.write(f'#define signature_sodium_public_key_length {len(sodium_public_key)}\n')
 
 os.replace(h_path + '.tmp', h_path)
 
