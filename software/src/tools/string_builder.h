@@ -21,6 +21,7 @@
 
 #include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
 #include <sys/types.h>
 #include <memory>
 
@@ -40,7 +41,8 @@ public:
     size_t getRemainingLength() const { return capacity - length; }
     char *getPtr() const { return buffer; }
     char *getRemainingPtr() const { return buffer + length; }
-    size_t puts(const char *string, ssize_t string_len_opt = -1);
+    size_t puts(const char *string, size_t string_len);
+    inline size_t puts(const char *string) { return puts(string, strlen(string)); }
     size_t putc(char c);
     size_t putcn(char c, size_t n);
     [[gnu::format(__printf__, 2, 0)]] size_t vprintf(const char *fmt, va_list args);

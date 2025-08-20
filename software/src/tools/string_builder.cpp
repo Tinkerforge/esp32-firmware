@@ -49,21 +49,12 @@ void StringWriter::setLength(size_t new_length)
     buffer[length] = '\0';
 }
 
-size_t StringWriter::puts(const char *string, ssize_t string_len_opt)
+size_t StringWriter::puts(const char *string, size_t string_len)
 {
     size_t remaining = getRemainingLength();
 
     if (remaining == 0) {
         return 0;
-    }
-
-    size_t string_len;
-
-    if (string_len_opt < 0) {
-        string_len = strlen(string);
-    }
-    else {
-        string_len = static_cast<size_t>(string_len_opt);
     }
 
     if (string_len > remaining) {

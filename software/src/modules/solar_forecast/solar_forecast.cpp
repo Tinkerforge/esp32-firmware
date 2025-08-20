@@ -577,7 +577,7 @@ String SolarForecast::get_api_url_with_path(const SolarForecastPlane &plane)
     StringWriter sw(buf, ARRAY_SIZE(buf));
 
     const String &api_url = config.get("api_url")->asString();
-    sw.puts(api_url.c_str(), static_cast<ssize_t>(api_url.length()));
+    sw.puts(api_url.c_str(), api_url.length());
 
     if (*(sw.getRemainingPtr() - 1) != '/') {
         sw.putc('/');

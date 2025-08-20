@@ -60,7 +60,7 @@ size_t EMV1::get_debug_header_length() const
 
 void EMV1::get_debug_header(StringBuilder *sb)
 {
-    sb->puts(debug_header, static_cast<ssize_t>(debug_header_len));
+    sb->puts(debug_header, debug_header_len);
 }
 
 [[gnu::const]]
