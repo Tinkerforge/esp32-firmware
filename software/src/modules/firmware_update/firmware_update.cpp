@@ -35,7 +35,7 @@
 #include "check_state.enum.h"
 #include "install_origin.enum.h"
 
-//#include "gcc_warnings.h"
+#include "gcc_warnings.h"
 
 static const size_t options_product_id_length = constexpr_strlen(OPTIONS_PRODUCT_ID());
 
@@ -79,7 +79,8 @@ static const bool enable_rollback = false;
 
 // override weakly linked arduino-esp32 function to stop arduino-esp32
 // initArduino() from calling esp_ota_mark_app_valid_cancel_rollback()
-extern "C" bool verifyRollbackLater()
+extern "C" bool verifyRollbackLater();
+extern "C" [[gnu::const]] bool verifyRollbackLater()
 {
     return enable_rollback;
 }
@@ -139,9 +140,9 @@ static bool read_custom_app_desc(const esp_partition_t *partition, build_custom_
 }
 
 template <typename T>
-BlockReader<T>::BlockReader(size_t block_offset, size_t block_len, const uint8_t expected_magic[BLOCK_READER_MAGIC_LENGTH]) : block_offset(block_offset), block_len(block_len)
+BlockReader<T>::BlockReader(size_t block_offset_, size_t block_len_, const uint8_t expected_magic_[BLOCK_READER_MAGIC_LENGTH]) : block_offset(block_offset_), block_len(block_len_)
 {
-    memcpy(this->expected_magic, expected_magic, BLOCK_READER_MAGIC_LENGTH);
+    memcpy(expected_magic, expected_magic_, BLOCK_READER_MAGIC_LENGTH);
 
     reset();
 }
@@ -176,7 +177,7 @@ bool BlockReader<T>::handle_chunk(size_t chunk_offset, uint8_t *chunk_data, size
 
         if (read_block_len < sizeof(block)) {
             size_t to_read = std::min(len, sizeof(block) - read_block_len);
-            memcpy(((uint8_t *)&block) + read_block_len, start, to_read);
+            memcpy(block_bytes + read_block_len, start, to_read);
             read_block_len += to_read;
         }
 
@@ -200,7 +201,7 @@ bool BlockReader<T>::handle_chunk(size_t chunk_offset, uint8_t *chunk_data, size
 
         if (read_expected_checksum_len < sizeof(expected_checksum)) {
             size_t to_read = std::min(len, sizeof(expected_checksum) - read_expected_checksum_len);
-            memcpy((uint8_t *)&expected_checksum + read_expected_checksum_len, start, to_read);
+            memcpy(expected_checksum_bytes + read_expected_checksum_len, start, to_read);
             read_expected_checksum_len += to_read;
         }
 
@@ -210,6 +211,11 @@ bool BlockReader<T>::handle_chunk(size_t chunk_offset, uint8_t *chunk_data, size
     return chunk_offset + chunk_len >= block_offset + block_len;
 }
 
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Weffc++"
+#endif
+
 FirmwareUpdate::FirmwareUpdate() :
     firmware_info(FIRMWARE_INFO_OFFSET, FIRMWARE_INFO_LENGTH, firmware_info_magic)
 #if signature_sodium_public_key_length != 0
@@ -217,6 +223,10 @@ FirmwareUpdate::FirmwareUpdate() :
 #endif
 {
 }
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
 
 void FirmwareUpdate::report_flash_firmware_progress_http_thread(bool force)
 {
@@ -261,17 +271,17 @@ void FirmwareUpdate::pre_setup()
         {"update_url", Config::Str(OPTIONS_FIRMWARE_UPDATE_UPDATE_URL(), 0, 128)},
         {"cert_id", Config::Int(-1, -1, MAX_CERT_ID)},
     }), [this](Config &update, ConfigSource source) -> String {
-        const String &update_url = update.get("update_url")->asString();
+        const String &update_url_ = update.get("update_url")->asString();
 
-        if (update_url.length() > 0 && !update_url.startsWith("https://"))
+        if (update_url_.length() > 0 && !update_url_.startsWith("https://"))
             return "HTTPS required for update URL";
 
         return "";
     }};
 
     state = Config::Object({
-        {"publisher", Config::Str(signature_publisher, 0, strlen(signature_publisher))},
-        {"check_timestamp", Config::Uint32(0)},
+        {"publisher", Config::Str(signature_publisher, 0, static_cast<uint16_t>(strlen(signature_publisher)))},
+        {"check_timestamp", Config::Uint53(0)},
         {"check_state", Config::Enum(CheckState::Idle)},
         {"update_version", Config::Str("", 0, SEMANTIC_VERSION_MAX_STRING_LENGTH)},
         {"running_partition", Config::Str("", 0, 16)},
@@ -939,7 +949,7 @@ static bool read_ota_data(size_t ota_index, esp_ota_select_entry_t *ota_data, bo
 
     if (err != ESP_OK) {
         if (!silent) {
-            logger.printfln("Could not read OTA partition page %d: %d", ota_index, err);
+            logger.printfln("Could not read OTA partition page %zu: %d", ota_index, err);
         }
 
         return false;
@@ -964,7 +974,7 @@ static bool write_ota_data(size_t ota_index, esp_ota_select_entry_t *ota_data, b
 
     if (err != ESP_OK) {
         if (!silent) {
-            logger.printfln("Could not erase OTA partition page %d: %d", ota_index, err);
+            logger.printfln("Could not erase OTA partition page %zu: %d", ota_index, err);
         }
 
         return false;
@@ -974,7 +984,7 @@ static bool write_ota_data(size_t ota_index, esp_ota_select_entry_t *ota_data, b
 
     if (err != ESP_OK) {
         if (!silent) {
-            logger.printfln("Could not write OTA partition page %d: %d", ota_index, err);
+            logger.printfln("Could not write OTA partition page %zu: %d", ota_index, err);
         }
 
         return false;
@@ -1105,18 +1115,22 @@ static size_t index_url_suffix_len = strlen(index_url_suffix);
 // index files are not signed to allow customer fleet update managment, firmwares are signed
 void FirmwareUpdate::check_for_update()
 {
+    struct timeval now;
+
+    if (!rtc.clock_synced(&now)) {
+        now.tv_sec = 0;
+    }
+
+    state.get("check_timestamp")->updateUint53(static_cast<uint64_t>(now.tv_sec));
+    state.get("update_version")->updateString("");
+
 #if signature_sodium_public_key_length == 0
     logger.printfln("Checking for firmware update is not supported (installed firmware is unsigned)");
 
-    state.get("check_timestamp")->updateUint(time(nullptr));
     state.get("check_state")->updateEnum(CheckState::NotSupported);
-    state.get("update_version")->updateString("");
 #else
     logger.printfln("Checking for firmware update");
-
-    state.get("check_timestamp")->updateUint(time(nullptr));
     state.get("check_state")->updateEnum(CheckState::InProgress);
-    state.get("update_version")->updateString("");
 
     if (check_firmware_in_progress || flash_firmware_in_progress || install_firmware_in_progress) {
         logger.printfln("Firmware install in progress");
@@ -1199,6 +1213,21 @@ void FirmwareUpdate::check_for_update()
                 state.get("check_state")->updateEnum(CheckState::HTTPClientInitFailed);
                 break;
 
+            case AsyncHTTPSClientError::HTTPClientSetCookieFailed:
+                logger.printfln("Error while setting request-cookie");
+                state.get("check_state")->updateEnum(CheckState::InternalError);
+                break;
+
+            case AsyncHTTPSClientError::HTTPClientSetHeaderFailed:
+                logger.printfln("Error while setting request-header");
+                state.get("check_state")->updateEnum(CheckState::InternalError);
+                break;
+
+            case AsyncHTTPSClientError::HTTPClientSetBodyFailed:
+                logger.printfln("Error while setting request-body");
+                state.get("check_state")->updateEnum(CheckState::InternalError);
+                break;
+
             case AsyncHTTPSClientError::HTTPClientError:
                 logger.printfln("Error while downloading firmware index: %s (0x%lX)", esp_err_to_name(event->error_http_client), static_cast<uint32_t>(event->error_http_client));
                 state.get("check_state")->updateEnum(CheckState::DownloadError);
@@ -1209,9 +1238,8 @@ void FirmwareUpdate::check_for_update()
                 state.get("check_state")->updateEnum(CheckState::DownloadError);
                 break;
 
-            // use default to prevent warnings since we dont use a body, cookies or headers here
             default:
-                logger.printfln("Uncovered error, this should never happen!");
+                logger.printfln("Unknown HTTPS client error while downloading firmware index: %d", static_cast<int>(event->error));
                 state.get("check_state")->updateEnum(CheckState::InternalError);
                 break;
             }
@@ -1246,6 +1274,10 @@ void FirmwareUpdate::check_for_update()
 
         case AsyncHTTPSClientEventType::Redirect:
             break;
+
+        default:
+            logger.printfln("Unknown HTTPS client event while downloading firmware index: %d", static_cast<int>(event->type));
+            break;
         }
     });
 
@@ -1279,7 +1311,7 @@ void FirmwareUpdate::handle_index_data(const void *data, size_t data_len)
         }
 
         *index_buf_free_start = '\0';
-        index_buf_used = index_buf_free_start - index_buf;
+        index_buf_used = static_cast<size_t>(index_buf_free_start - index_buf);
 
         // parse version
         char *p = strchr(index_buf, '\n');
@@ -1329,7 +1361,7 @@ void FirmwareUpdate::handle_index_data(const void *data, size_t data_len)
                 }
             }
 
-            size_t index_buf_consumed = p + 1 - index_buf;
+            size_t index_buf_consumed = static_cast<size_t>(p + 1 - index_buf);
 
             memmove(index_buf, p + 1, index_buf_used - index_buf_consumed);
 
@@ -1417,6 +1449,21 @@ void FirmwareUpdate::install_firmware(const char *url)
                 install_state.get("state")->updateEnum(InstallState::HTTPClientInitFailed);
                 break;
 
+            case AsyncHTTPSClientError::HTTPClientSetCookieFailed:
+                logger.printfln("Error while setting request-cookie");
+                install_state.get("state")->updateEnum(InstallState::InternalError);
+                break;
+
+            case AsyncHTTPSClientError::HTTPClientSetHeaderFailed:
+                logger.printfln("Error while setting request-header");
+                install_state.get("state")->updateEnum(InstallState::InternalError);
+                break;
+
+            case AsyncHTTPSClientError::HTTPClientSetBodyFailed:
+                logger.printfln("Error while setting request-body");
+                install_state.get("state")->updateEnum(InstallState::InternalError);
+                break;
+
             case AsyncHTTPSClientError::HTTPClientError:
                 logger.printfln("Error while downloading firmware: %s", esp_err_to_name(event->error_http_client));
                 install_state.get("state")->updateEnum(InstallState::DownloadError);
@@ -1427,9 +1474,8 @@ void FirmwareUpdate::install_firmware(const char *url)
                 install_state.get("state")->updateEnum(InstallState::DownloadError);
                 break;
 
-            // use default to prevent warnings since we dont use a body, cookies or headers here
             default:
-                logger.printfln("Uncovered error, this should never happen!");
+                logger.printfln("Unknown HTTPS client error while downloading firmware: %d", static_cast<int>(event->error));
                 install_state.get("state")->updateEnum(InstallState::InternalError);
                 break;
             }
@@ -1447,13 +1493,13 @@ void FirmwareUpdate::install_firmware(const char *url)
             }
 
             if (event->data_complete_len <= FIRMWARE_OFFSET) {
-                logger.printfln("Firmware file is too small: %u", event->data_complete_len);
+                logger.printfln("Firmware file is too small: %zd", event->data_complete_len);
                 install_state.get("state")->updateEnum(InstallState::FirmwareTooSmall);
                 https_client.abort_async();
                 return;
             }
 
-            result = handle_firmware_chunk(event->data_chunk_offset, (uint8_t *)event->data_chunk, event->data_chunk_len, (size_t)event->data_complete_len, event->data_is_complete, nullptr);
+            result = handle_firmware_chunk(event->data_chunk_offset, const_cast<uint8_t *>(static_cast<const uint8_t *>(event->data_chunk)), event->data_chunk_len, static_cast<size_t>(event->data_complete_len), event->data_is_complete, nullptr);
 
             if (result != InstallState::InProgress) {
                 https_client.abort_async();
@@ -1462,7 +1508,7 @@ void FirmwareUpdate::install_firmware(const char *url)
             install_state.get("state")->updateEnum(result);
 
             if (result == InstallState::InProgress) {
-                progress = (event->data_chunk_offset + event->data_chunk_len) * 100 / event->data_complete_len;
+                progress = (event->data_chunk_offset + event->data_chunk_len) * 100 / static_cast<size_t>(event->data_complete_len);
 
                 install_state.get("progress")->updateUint(progress);
 
@@ -1494,6 +1540,10 @@ void FirmwareUpdate::install_firmware(const char *url)
             break;
 
         case AsyncHTTPSClientEventType::Redirect:
+            break;
+
+        default:
+            logger.printfln("Unknown HTTPS client event while downloading firmware: %d", static_cast<int>(event->type));
             break;
         }
     });
@@ -1644,14 +1694,14 @@ void FirmwareUpdate::read_app_partition_state()
 void FirmwareUpdate::update_install_state()
 {
     auto origin = install_state.get("origin");
-    auto state = install_state.get("state");
+    auto state_ = install_state.get("state");
     auto progress = install_state.get("progress");
 
     origin->updateEnum(InstallOrigin::FlashFirmware);
     origin->set_updated(0xFF);
 
-    state->updateEnum(flash_firmware_state);
-    state->set_updated(0xFF);
+    state_->updateEnum(flash_firmware_state);
+    state_->set_updated(0xFF);
 
     progress->updateEnum(flash_firmware_progress);
     progress->set_updated(0xFF);

@@ -50,13 +50,19 @@ public:
     size_t block_len;
     uint8_t expected_magic[BLOCK_READER_MAGIC_LENGTH];
 
-    T block;
-    size_t read_block_len;
-    bool block_found;
+    union {
+        T block;
+        uint8_t block_bytes[sizeof(T)];
+    };
+    size_t read_block_len = 0;
+    bool block_found = false;
 
-    uint32_t actual_checksum;
-    uint32_t expected_checksum;
-    size_t read_expected_checksum_len;
+    uint32_t actual_checksum = 0;
+    union {
+        uint32_t expected_checksum = 0;
+        uint8_t expected_checksum_bytes[4];
+    };
+    size_t read_expected_checksum_len = 0;
 };
 
 class FirmwareUpdate final : public IModule
