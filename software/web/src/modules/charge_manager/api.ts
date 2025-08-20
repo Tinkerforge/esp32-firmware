@@ -113,6 +113,8 @@ export interface low_level_config {
     allocation_interval: number
 }
 
+export type charge_modes = ConfigChargeMode[];
+
 //APIPath:power_manager/
 export interface charge_mode {
     mode: ConfigChargeMode;
