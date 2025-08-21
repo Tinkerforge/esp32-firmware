@@ -629,7 +629,7 @@ export class ModbusTCPDebugTool extends Component<{}, ModbusTCPDebugToolState> {
                 <InputTextPatterned
                     required
                     disabled={this.state.waiting}
-                    pattern={this.state.register_address_mode == ModbusRegisterAddressMode.Address ? "^([1-9a-f][0-9a-f]{1,3}|0)$" : "^(10000|[1-9a-f][0-9a-f]{1,3}|1)$"}
+                    pattern={this.state.register_address_mode == ModbusRegisterAddressMode.Address ? "^([1-9a-f][0-9a-f]{0,3}|0)$" : "^(10000|[1-9a-f][0-9a-f]{0,3}|1)$"}
                     value={util.hasValue(this.state.start_address) ? (this.state.start_address + start_address_offset).toString(16) : null}
                     onValue={(v) => {
                         let start_address = parseInt(v, 16) - start_address_offset;
