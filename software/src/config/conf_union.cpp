@@ -27,6 +27,10 @@ bool Config::ConfUnion::slotEmpty(const Slot *slot)
     return slot->prototypes == nullptr;
 }
 
+void Config::ConfUnion::slotDebugHook(const Slot *slot) {
+
+}
+
 Config::ConfUnion::Slot *Config::ConfUnion::allocSlotBuf(size_t elements)
 {
     return new(std::nothrow) Config::ConfUnion::Slot[elements];

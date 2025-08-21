@@ -76,6 +76,8 @@ enum class ConfigSource {
     Code // The new config was created from a ConfUpdate
 };
 
+void slotDebugHookDone();
+
 struct Config {
     // This is the assumed maximum nesting of configs. Increase if longer paths etc. are required.
     static constexpr size_t MAX_NESTING = 8;
@@ -90,6 +92,7 @@ struct Config {
 
     public:
         static bool slotEmpty(const Slot *slot);
+        static void slotDebugHook(const Slot *slot);
         static constexpr const char *variantName = "ConfString";
         static Slot *allocSlotBuf(size_t elements);
 
@@ -120,6 +123,7 @@ struct Config {
 
     public:
         static bool slotEmpty(const Slot *slot);
+        static void slotDebugHook(const Slot *slot);
         static constexpr const char *variantName = "ConfFloat";
         static Slot *allocSlotBuf(size_t elements);
 
@@ -146,6 +150,7 @@ struct Config {
 
     public:
         static bool slotEmpty(const Slot *slot);
+        static void slotDebugHook(const Slot *slot);
         static constexpr const char *variantName = "ConfInt";
         static Slot *allocSlotBuf(size_t elements);
 
@@ -173,6 +178,7 @@ struct Config {
 
     public:
         static bool slotEmpty(const Slot *slot);
+        static void slotDebugHook(const Slot *slot);
         static constexpr const char *variantName = "ConfUint";
         static Slot *allocSlotBuf(size_t elements);
 
@@ -200,6 +206,7 @@ struct Config {
 
     public:
         static bool slotEmpty(const Slot *slot);
+        static void slotDebugHook(const Slot *slot);
         static constexpr const char *variantName = "ConfInt52";
         static Slot *allocSlotBuf(size_t elements);
 
@@ -227,6 +234,7 @@ struct Config {
 
     public:
         static bool slotEmpty(const Slot *slot);
+        static void slotDebugHook(const Slot *slot);
         static constexpr const char *variantName = "ConfUint53";
         static Slot *allocSlotBuf(size_t elements);
 
@@ -291,6 +299,7 @@ struct Config {
 
     public:
         static bool slotEmpty(const Slot *slot);
+        static void slotDebugHook(const Slot *slot);
         static constexpr const char *variantName = "ConfArray";
         static Slot *allocSlotBuf(size_t elements);
 
@@ -321,6 +330,7 @@ struct Config {
 
     public:
         static bool slotEmpty(const Slot *slot);
+        static void slotDebugHook(const Slot *slot);
         static constexpr const char *variantName = "ConfObject";
         static Slot *allocSlotBuf(size_t elements);
 
@@ -350,6 +360,7 @@ struct Config {
 
     public:
         static bool slotEmpty(const Slot *slot);
+        static void slotDebugHook(const Slot *slot);
         static constexpr const char *variantName = "ConfUnion";
         static Slot *allocSlotBuf(size_t elements);
 
@@ -379,6 +390,7 @@ struct Config {
 
     public:
         static bool slotEmpty(const Slot *slot);
+        static void slotDebugHook(const Slot *slot);
         static constexpr const char *variantName = "ConfTuple";
         static Slot *allocSlotBuf(size_t elements);
 

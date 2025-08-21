@@ -31,6 +31,10 @@ bool Config::ConfObject::slotEmpty(const Slot *slot)
     return slot->schema == nullptr;
 }
 
+void Config::ConfObject::slotDebugHook(const Slot *slot) {
+
+}
+
 Config::ConfObject::Slot *Config::ConfObject::allocSlotBuf(size_t elements)
 {
     return static_cast<Config::ConfObject::Slot *>(calloc_32bit_addressed(elements, sizeof(Config::ConfObject::Slot)));

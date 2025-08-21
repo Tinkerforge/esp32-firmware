@@ -30,6 +30,10 @@ bool Config::ConfArray::slotEmpty(const Slot *slot)
     return slot->minElements > slot->maxElements;
 }
 
+void Config::ConfArray::slotDebugHook(const Slot *slot) {
+
+}
+
 Config::ConfArray::Slot *Config::ConfArray::allocSlotBuf(size_t elements)
 {
     return new(std::nothrow) Config::ConfArray::Slot[elements]();

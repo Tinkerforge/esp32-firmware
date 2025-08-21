@@ -30,6 +30,10 @@ bool Config::ConfUint53::slotEmpty(const Slot *slot) {
     return slot->val == std::numeric_limits<uint64_t>::max();
 }
 
+void Config::ConfUint53::slotDebugHook(const Slot *slot) {
+
+}
+
 Config::ConfUint53::Slot *Config::ConfUint53::allocSlotBuf(size_t elements)
 {
     Config::ConfUint53::Slot *block = static_cast<decltype(block)>(malloc_iram_or_psram_or_dram(elements * sizeof(*block)));

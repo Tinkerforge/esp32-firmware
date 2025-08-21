@@ -1076,3 +1076,7 @@ Config *Config::walk(const Config::Key *path, size_t path_len) {
 
     return ptr;
 }
+
+void slotDebugHookDone() {
+
+}

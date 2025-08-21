@@ -37,6 +37,10 @@ bool Config::ConfFloat::slotEmpty(const Slot *slot) {
     return slot->val == v.u;
 }
 
+void Config::ConfFloat::slotDebugHook(const Slot *slot) {
+
+}
+
 Config::ConfFloat::Slot *Config::ConfFloat::allocSlotBuf(size_t elements)
 {
     Config::ConfFloat::Slot *block = static_cast<decltype(block)>(malloc_iram_or_psram_or_dram(elements * sizeof(*block)));

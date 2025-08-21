@@ -31,6 +31,10 @@ bool Config::ConfUint::slotEmpty(const Slot *slot) {
         && slot->max == 0;
 }
 
+void Config::ConfUint::slotDebugHook(const Slot *slot) {
+
+}
+
 Config::ConfUint::Slot *Config::ConfUint::allocSlotBuf(size_t elements)
 {
     Config::ConfUint::Slot *block = static_cast<decltype(block)>(malloc_iram_or_psram_or_dram(elements * sizeof(*block)));

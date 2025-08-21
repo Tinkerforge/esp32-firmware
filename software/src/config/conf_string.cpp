@@ -27,6 +27,10 @@ bool Config::ConfString::slotEmpty(const Slot *slot)
     return !slot->val;
 }
 
+void Config::ConfString::slotDebugHook(const Slot *slot) {
+
+}
+
 Config::ConfString::Slot *Config::ConfString::allocSlotBuf(size_t elements)
 {
     auto *result = new(std::nothrow) Config::ConfString::Slot[elements];

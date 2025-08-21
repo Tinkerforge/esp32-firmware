@@ -30,6 +30,10 @@ bool Config::ConfTuple::slotEmpty(const Slot *slot)
     return slot->values == nullptr;
 }
 
+void Config::ConfTuple::slotDebugHook(const Slot *slot) {
+
+}
+
 Config::ConfTuple::Slot *Config::ConfTuple::allocSlotBuf(size_t elements)
 {
     return new(std::nothrow) Config::ConfTuple::Slot[elements]();

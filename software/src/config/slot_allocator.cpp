@@ -192,6 +192,7 @@ static void check_slot_accounting()
 
             for (size_t slot_i = 0; slot_i < SlotConfig<ConfigT>::slots_per_block; slot_i++) {
                 if (!ConfigT::slotEmpty(block + slot_i)) {
+                    ConfigT::slotDebugHook(block + slot_i);
                     used_slots++;
                 }
             }
@@ -204,6 +205,7 @@ static void check_slot_accounting()
         logger.printfln("used_slots mismatch for %s. Counted %zu, expected %hu. allocs %zu  frees %zu  diff %zu",
             ConfigT::variantName, used_slots, RootBlock<ConfigT>::used_slots, RootBlock<ConfigT>::allocs, RootBlock<ConfigT>::frees, RootBlock<ConfigT>::allocs - RootBlock<ConfigT>::frees);
     }
+
 #endif
 
     superblock = RootBlock<ConfigT>::first_superblock;
@@ -268,6 +270,7 @@ void config_post_setup()
         check_slot_accounting<Config::ConfUint53>();
         check_slot_accounting<Config::ConfInt52>();
         check_slot_accounting<Config::ConfTuple>();
+        slotDebugHookDone();
     }, 1_min, 1_min);
 #endif
 }
