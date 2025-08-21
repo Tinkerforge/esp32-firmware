@@ -25,6 +25,8 @@ struct StageContext {
     int *idx_array;
     int *current_allocation;
     uint8_t *phase_allocation;
+    ChargerDecision *charger_decisions;
+    GlobalDecision *global_decision;
     CurrentLimits *limits;
     const ChargerState *charger_state;
     size_t charger_count;
