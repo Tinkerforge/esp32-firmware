@@ -52,8 +52,6 @@ void EMV2::pre_setup()
 {
     this->DeviceModule::pre_setup();
 
-    const Config *prototype_bool_false = Config::get_prototype_bool_false();
-
     // States
     em_common.state = Config::Object({
         // Common
