@@ -25,8 +25,8 @@ const ConfUnionPrototype<AllocatorDecision> *ChargerDecision::getUnionPrototypes
         {AllocatorDecision::ShuttingDownRotatedForHigherPrio0, *Config::Null()},
         {AllocatorDecision::ShuttingDownOffOrError0, *Config::Null()},
         {AllocatorDecision::WelcomeChargeUntil2, Config::Int52(0)}, // timestamp
-        {AllocatorDecision::ShuttingDownPhaseOverload2, Config::Array({Config::Uint32(0), Config::Uint32(0)}, Config::get_prototype_uint32_0(), 2, 2, Config::type_id<Config::ConfUint>())}, // phase, overload_mA
-        {AllocatorDecision::CantActivatePhaseMinimum3, Config::Array({Config::Uint32(0), Config::Uint32(0), Config::Uint32(0)}, Config::get_prototype_uint32_0(), 3, 3, Config::type_id<Config::ConfUint>())}, //phase, required_mA, min_mA
+        {AllocatorDecision::ShuttingDownPhaseOverload2, Config::Tuple({Config::Uint8(0), Config::Uint32(0)})}, // phase, overload_mA
+        {AllocatorDecision::CantActivatePhaseMinimum3, Config::Tuple({Config::Uint8(0), Config::Uint32(0), Config::Uint32(0)})}, //phase, required_mA, min_mA
         {AllocatorDecision::Activating1, Config::Uint8(0)}, // phase_alloc; // TODO add limit. requires config changes currently not merged to master
         {AllocatorDecision::PhaseSwitching0, *Config::Null()},
         {AllocatorDecision::PhaseSwitchingBlockedUntil2, Config::Int52(0)}, // timestamp
@@ -83,7 +83,7 @@ const ConfUnionPrototype<GlobalAllocatorDecision> *GlobalDecision::getUnionProto
     static const ConfUnionPrototype<GlobalAllocatorDecision> global_alloc_desc_union[GLOBAL_ALLOCATOR_DECISION_COUNT] = {
         {GlobalAllocatorDecision::None0, *Config::Null()},
         {GlobalAllocatorDecision::NextRotationAt2, Config::Int52(0)}, // timestamp
-        {GlobalAllocatorDecision::PVExcessOverloadedHysteresisBlocksUntil3, Config::Array({Config::Int52(0), Config::Int52(0)}, Config::get_prototype_int52_0(), 2, 2, Config::type_id<Config::ConfInt52>())}, // overload_ma, timestamp
+        {GlobalAllocatorDecision::PVExcessOverloadedHysteresisBlocksUntil3, Config::Tuple({Config::Int32(0), Config::Int52(0)})}, // overload_ma, timestamp
         {GlobalAllocatorDecision::HysteresisElapsesAt2, Config::Int52(0)}, // timestamp
     };
     return global_alloc_desc_union;
