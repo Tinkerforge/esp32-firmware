@@ -45,6 +45,8 @@ let x = {
             "register_blocks_function_code_write_multiple_coils": "15 – Write multiple coils",
             "register_blocks_function_code_write_multiple_registers": "16 – Write multiple registers",
             "register_blocks_function_code_mask_write_register": "22 – Mask write register",
+            "register_blocks_function_code_read_mask_write_single_register": "3 + 6 – Read, mask and write single register",
+            "register_blocks_function_code_read_mask_write_multiple_registers": "3 + 16 – Read, mask and write multiple registers",
             "register_blocks_start_address": "Start address",
             "register_blocks_start_address_muted": "begins at 0",
             "register_blocks_start_number": "Start number",
@@ -57,7 +59,10 @@ let x = {
             "register_blocks_values_invalid": "The values must be a comma-separated list of decimal numbers.",
             "register_blocks_mask": "Bitmask",
             "register_blocks_mask_muted": "",
-            "register_blocks_mask_invalid": "The bitmask must be a sequence of 0, 1 or X.",
+            "register_blocks_mask_invalid": "The bitmask must be a sequence of 0, 1 or x.",
+            "register_blocks_masks": "Bitmasks",
+            "register_blocks_masks_muted": "comma-separated",
+            "register_blocks_masks_invalid": "The bitmasks must be a comma-separated list of sequences of 0, 1 or x.",
             "register_blocks_values_desc": /*SFN*/(func: number, addr: number, values: string) => {
                 let rtyp = "unknown";
 
@@ -70,6 +75,8 @@ let x = {
                 case 6:
                 case 16:
                 case 22:
+                case 9:
+                case 19:
                     rtyp = values.indexOf(",") >= 0 ? "registers" : "register";
                     break;
                 }

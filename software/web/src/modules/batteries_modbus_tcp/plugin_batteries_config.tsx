@@ -171,11 +171,20 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
             break;
 
         case ModbusFunctionCode.MaskWriteRegister:
-            values_pattern = "^ *[01Xx]{1,16} *$";
+        case ModbusFunctionCode.ReadMaskWriteSingleRegister:
+            values_pattern = "^ *[01x]{1,16} *$";
             values_label = __("batteries_modbus_tcp.content.register_blocks_mask");
             values_label_muted = __("batteries_modbus_tcp.content.register_blocks_mask_muted");
             values_invalid = __("batteries_modbus_tcp.content.register_blocks_mask_invalid");
-            values_filter = (v: string) => v.toUpperCase();
+            values_filter = (v: string) => v.toLowerCase();
+            break;
+
+        case ModbusFunctionCode.ReadMaskWriteMultipleRegisters:
+            values_pattern = `^ *[01x]{1,16} *(?:, *[01x]{1,16} *){0,${options.BATTERIES_MODBUS_TCP_MAX_CUSTOM_VALUES_PER_REGISTER_BLOCK / 2 - 1}}$`;
+            values_label = __("batteries_modbus_tcp.content.register_blocks_masks");
+            values_label_muted = __("batteries_modbus_tcp.content.register_blocks_masks_muted");
+            values_invalid = __("batteries_modbus_tcp.content.register_blocks_masks_invalid");
+            values_filter = (v: string) => v.toLowerCase();
             break;
         }
 
@@ -197,6 +206,8 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
                         [ModbusFunctionCode.WriteMultipleCoils.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_write_multiple_coils")],
                         [ModbusFunctionCode.WriteMultipleRegisters.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_write_multiple_registers")],
                         [ModbusFunctionCode.MaskWriteRegister.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_mask_write_register")],
+                        [ModbusFunctionCode.ReadMaskWriteSingleRegister.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_read_mask_write_single_register")],
+                        [ModbusFunctionCode.ReadMaskWriteMultipleRegisters.toString(), __("batteries_modbus_tcp.content.register_blocks_function_code_read_mask_write_multiple_registers")],
                     ]}
                     placeholder={__("select")}
                     value={util.hasValue(this.state.register_block.func) ? this.state.register_block.func.toString() : undefined}
@@ -238,6 +249,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
     }
 
     format_vals(function_code: number, vals: number[]) {
+        console.log("format_vals", function_code, vals);
         let values = "";
 
         if (function_code == ModbusFunctionCode.WriteSingleCoil
@@ -246,13 +258,15 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
          || function_code == ModbusFunctionCode.WriteMultipleRegisters) {
             values = vals.join(", ");
         }
-        else if (function_code == ModbusFunctionCode.MaskWriteRegister) {
+        else if (function_code == ModbusFunctionCode.MaskWriteRegister
+              || function_code == ModbusFunctionCode.ReadMaskWriteSingleRegister
+              || function_code == ModbusFunctionCode.ReadMaskWriteMultipleRegisters) {
             let and_mask = vals[0];
             let or_mask = vals[1];
 
             for (let i = 15; i >= 0; --i) {
                 if ((and_mask & (1 << i)) != 0) {
-                    values += "X";
+                    values += "x";
                 }
                 else if ((or_mask & (1 << i)) != 0) {
                     values += "1";
@@ -262,7 +276,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
                 }
             }
 
-            while (values.length > 1 && values[0] == "X") {
+            while (values.length > 1 && values[0] == "x") {
                 values = values.substring(1);
             }
         }
@@ -323,21 +337,33 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
                 vals.push(value);
             }
         }
-        else if (function_code == ModbusFunctionCode.MaskWriteRegister) {
+        else if (function_code == ModbusFunctionCode.MaskWriteRegister
+              || function_code == ModbusFunctionCode.ReadMaskWriteSingleRegister
+              || function_code == ModbusFunctionCode.ReadMaskWriteMultipleRegisters) {
+            let max_masks = 0;
+
+            if (function_code == ModbusFunctionCode.MaskWriteRegister
+             || function_code == ModbusFunctionCode.ReadMaskWriteSingleRegister) {
+                max_masks = 1;
+            }
+            else if (function_code == ModbusFunctionCode.ReadMaskWriteMultipleRegisters) {
+                max_masks = 123;
+            }
+
             let masks = values_str.split(",");
 
-            if (masks.length > 1) {
+            if (masks.length > max_masks) {
                 return [];
             }
 
             for (let mask of masks) {
-                mask = mask.trim().toUpperCase();
+                mask = mask.trim().toLowerCase();
 
                 if (mask.length > 16) {
                     return [];
                 }
 
-                mask = "XXXXXXXXXXXXXXX" + mask;
+                mask = "xxxxxxxxxxxxxxx" + mask;
                 mask = mask.substring(mask.length - 16);
 
                 let and_mask = 0x0000;
@@ -352,7 +378,7 @@ class RegisterEditor extends Component<RegisterEditorProps, RegisterEditorState>
                     else if (bit == '0') {
                         // masks already correct
                     }
-                    else if (bit == 'X') {
+                    else if (bit == 'x') {
                         and_mask |= 1 << i;
                     }
                     else {

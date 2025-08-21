@@ -166,30 +166,56 @@ static void write_next(Execution *execution)
 
     BatteriesModbusTCP::RegisterBlockSpec *register_block = &execution->table->register_blocks[execution->index];
     TFModbusTCPFunctionCode function_code;
+    uint16_t data_count;
+    void *buffer;
+    void *buffer_to_free = nullptr;
 
     switch (register_block->function_code) {
     case ModbusFunctionCode::WriteSingleCoil:
         function_code = TFModbusTCPFunctionCode::WriteSingleCoil;
+        data_count = register_block->values_count;
+        buffer = register_block->values_buffer;
         break;
 
     case ModbusFunctionCode::WriteSingleRegister:
         function_code = TFModbusTCPFunctionCode::WriteSingleRegister;
+        data_count = register_block->values_count;
+        buffer = register_block->values_buffer;
         break;
 
     case ModbusFunctionCode::WriteMultipleCoils:
         function_code = TFModbusTCPFunctionCode::WriteMultipleCoils;
+        data_count = register_block->values_count;
+        buffer = register_block->values_buffer;
         break;
 
     case ModbusFunctionCode::WriteMultipleRegisters:
         function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
+        data_count = register_block->values_count;
+        buffer = register_block->values_buffer;
         break;
 
     case ModbusFunctionCode::MaskWriteRegister:
         function_code = TFModbusTCPFunctionCode::MaskWriteRegister;
+        data_count = register_block->values_count;
+        buffer = register_block->values_buffer;
         break;
 
     case ModbusFunctionCode::ReadMaskWriteSingleRegister:
     case ModbusFunctionCode::ReadMaskWriteMultipleRegisters:
+        function_code = TFModbusTCPFunctionCode::ReadHoldingRegisters;
+        data_count = register_block->values_count / 2;
+        buffer = malloc(sizeof(uint16_t) * data_count);
+        buffer_to_free = buffer;
+
+        if (buffer == nullptr) {
+            report_errorf(execution->cookie, "Could not allocate read buffer");
+            release_client(execution);
+            return;
+        }
+
+        break;
+
     case ModbusFunctionCode::ReadCoils:
     case ModbusFunctionCode::ReadDiscreteInputs:
     case ModbusFunctionCode::ReadHoldingRegisters:
@@ -203,10 +229,10 @@ static void write_next(Execution *execution)
     static_cast<TFModbusTCPSharedClient *>(execution->client)->transact(execution->table->device_address,
                                                                         function_code,
                                                                         register_block->start_address,
-                                                                        register_block->values_count,
-                                                                        register_block->values_buffer,
+                                                                        data_count,
+                                                                        buffer,
                                                                         2_s,
-    [execution](TFModbusTCPClientTransactionResult result, const char *error_message) {
+    [execution, register_block, data_count, buffer, buffer_to_free](TFModbusTCPClientTransactionResult result, const char *error_message) {
         if (result != TFModbusTCPClientTransactionResult::Success) {
             report_errorf(execution->cookie, "Action execution failed at %zu of %zu: %s (%d)%s%s",
                           execution->index + 1, execution->table->register_blocks_count,
@@ -215,13 +241,56 @@ static void write_next(Execution *execution)
                           error_message != nullptr ? " / " : "",
                           error_message != nullptr ? error_message : "");
 
+            free(buffer_to_free);
             release_client(execution);
             return;
         }
 
-        ++execution->index;
+        if (register_block->function_code == ModbusFunctionCode::ReadMaskWriteSingleRegister
+         || register_block->function_code == ModbusFunctionCode::ReadMaskWriteMultipleRegisters) {
+            uint16_t *masks = static_cast<uint16_t *>(register_block->values_buffer);
+            uint16_t *values = static_cast<uint16_t *>(buffer);
 
-        write_next(execution); // FIXME: maybe add a little delay between writes to avoid bursts?
+            for (uint16_t i = 0; i < data_count; ++i) {
+                values[i] = (values[i] & masks[i * 2]) | (masks[i * 2 + 1] & ~masks[i * 2]);
+            }
+
+            TFModbusTCPFunctionCode step2_function_code;
+
+            if (register_block->function_code == ModbusFunctionCode::ReadMaskWriteSingleRegister) {
+                step2_function_code = TFModbusTCPFunctionCode::WriteSingleRegister;
+            }
+            else {
+                step2_function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
+            }
+
+            static_cast<TFModbusTCPSharedClient *>(execution->client)->transact(execution->table->device_address, step2_function_code, register_block->start_address, data_count, buffer, 2_s,
+            [execution, buffer_to_free](TFModbusTCPClientTransactionResult step2_result, const char *step2_error_message) {
+                if (step2_result != TFModbusTCPClientTransactionResult::Success) {
+                    report_errorf(execution->cookie, "Action execution (step 2) failed at %zu of %zu: %s (%d)%s%s",
+                                  execution->index + 1, execution->table->register_blocks_count,
+                                  get_tf_modbus_tcp_client_transaction_result_name(step2_result),
+                                  static_cast<int>(step2_result),
+                                  step2_error_message != nullptr ? " / " : "",
+                                  step2_error_message != nullptr ? step2_error_message : "");
+
+                    free(buffer_to_free);
+                    release_client(execution);
+                    return;
+                }
+
+                ++execution->index;
+
+                free(buffer_to_free);
+                write_next(execution); // FIXME: maybe add a little delay between writes to avoid bursts?
+            });
+        }
+        else {
+            ++execution->index;
+
+            free(buffer_to_free);
+            write_next(execution); // FIXME: maybe add a little delay between writes to avoid bursts?
+        }
     });
 }
 
