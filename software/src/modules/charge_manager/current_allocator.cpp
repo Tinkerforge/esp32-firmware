@@ -289,6 +289,52 @@ static int get_highest_charge_mode_bit(const ChargerState *state) {
     return 0;
 }
 
+static void set_charger_decision(StageContext &sc, int charger_idx, AllocatorDecision decision, int param_1 = 0, int param_2 = 0, int param_3 = 0) {
+    if (sc.charger_decisions[charger_idx].decision == AllocatorDecision::WelcomeChargeUntil2 && decision == AllocatorDecision::PhaseSwitching0)
+        return;
+
+    sc.charger_decisions[charger_idx].decision = decision;
+    sc.charger_decisions[charger_idx].param_1 = param_1;
+    sc.charger_decisions[charger_idx].param_2 = param_2;
+    sc.charger_decisions[charger_idx].param_3 = param_3;
+}
+
+static void clear_charger_decision(StageContext &sc, int charger_idx, AllocatorDecision decision) {
+    if (sc.charger_decisions[charger_idx].decision != decision)
+        return;
+    sc.charger_decisions[charger_idx].decision = AllocatorDecision::None0;
+    sc.charger_decisions[charger_idx].param_1 = 0;
+    sc.charger_decisions[charger_idx].param_2 = 0;
+    sc.charger_decisions[charger_idx].param_3 = 0;
+}
+
+static void clear_charger_decision_all(StageContext &sc, AllocatorDecision decision) {
+    for (int i = 0; i < sc.charger_count; ++i) {
+        if (sc.charger_decisions[i].decision != decision)
+            continue;
+        sc.charger_decisions[i].decision = AllocatorDecision::None0;
+        sc.charger_decisions[i].param_1 = 0;
+        sc.charger_decisions[i].param_2 = 0;
+        sc.charger_decisions[i].param_3 = 0;
+    }
+}
+
+static void set_global_decision(StageContext &sc, GlobalAllocatorDecision decision, int param_1 = 0, int param_2 = 0, int param_3 = 0) {
+    sc.global_decision->decision = decision;
+    sc.global_decision->param_1 = param_1;
+    sc.global_decision->param_2 = param_2;
+    sc.global_decision->param_3 = param_3;
+}
+
+static void clear_global_decision(StageContext &sc, GlobalAllocatorDecision decision) {
+    if (sc.global_decision->decision != decision)
+        return;
+    sc.global_decision->decision = GlobalAllocatorDecision::None0;
+    sc.global_decision->param_1 = 0;
+    sc.global_decision->param_2 = 0;
+    sc.global_decision->param_3 = 0;
+}
+
 // Stage 1: Rotate chargers
 // If there is any charger that wants to charge but doesn't have current allocated,
 // temporarily disable chargers that are currently active (see is_active) but have been allocated
@@ -309,6 +355,14 @@ static void stage_1(StageContext &sc) {
     Cost b1_on_phase= {0, 0, 0, 0};
     int highest_charge_mode_bit_seen = 0;
 
+    bool have_active_chargers = false;
+    for (int i = 0; i < sc.charger_count; ++i) {
+        if (sc.phase_allocation[i] > 0) {
+            have_active_chargers = true;
+            break;
+        }
+    }
+
     for (int i = 0; i < sc.charger_count; ++i) {
         const auto *state = &sc.charger_state[i];
         if (state->off)
@@ -326,8 +380,14 @@ static void stage_1(StageContext &sc) {
         // Using last_plug_in is fine here, we don't need the more complicated logic of just_plugged_in.
         bool is_b1 = state->wants_to_charge && sc.phase_allocation[i] == 0 && deadline_elapsed(state->last_plug_in + sc.cfg->allocation_interval);
 
+        if (is_b1 && have_active_chargers)
+            set_charger_decision(sc, i, AllocatorDecision::WaitingForRotation0);
+        else
+            clear_charger_decision(sc, i, AllocatorDecision::WaitingForRotation0);
+
         if (is_b1) {
             have_b1 = true;
+
             if (state->phases == 3 || state->phase_rotation == PhaseRotation::Unknown) {
                 // We only care about the phases that are blocked, not about how many chargers are waiting.
                 b1_on_phase += Cost{0, 1, 1, 1};
@@ -363,12 +423,19 @@ static void stage_1(StageContext &sc) {
         }
     }
 
+    if (have_b1 && have_active_chargers) {
+        auto rot_sec = sc.ca_state->next_rotation.to<seconds_t>();
+        set_global_decision(sc, GlobalAllocatorDecision::NextRotationAt2, (int)((int64_t)rot_sec >> 32), (int)((int64_t)rot_sec & 0xFFFFFFFF));
+    }
+
     // Shut down a charger if it should be rotated or if it reports that it is not active anymore.
     // Note that a charger that was activated in stage 9 (to wake up a full vehicle)
     // it will always be deactivated here to make sure we only wake up vehicles if there is current left over.
     for (int i = 0; i < sc.charger_count; ++i) {
-        if (sc.phase_allocation[i] == 0)
+        if (sc.phase_allocation[i] == 0) {
+            set_charger_decision(sc, i, AllocatorDecision::None0);
             continue;
+        }
 
         const auto *state = &sc.charger_state[i];
 
@@ -397,6 +464,18 @@ static void stage_1(StageContext &sc) {
                         state->phase_switch_supported ? '1' : '0');
 
         if (!keep_active) {
+            auto s = AllocatorDecision::ShuttingDownUnknown0;
+            if (!is_active(sc.phase_allocation[i], state))
+                s = AllocatorDecision::ShuttingDownNotActive0;
+            else if (rotate_for_waiting_b1)
+                s = AllocatorDecision::ShuttingDownRotatedForB10;
+            else if (rotate_for_higher_prio)
+                s = AllocatorDecision::ShuttingDownRotatedForHigherPrio0;
+            else if (state->off)
+                s = AllocatorDecision::ShuttingDownOffOrError0;
+
+            set_charger_decision(sc, i, s);
+
             sc.phase_allocation[i] = 0;
             continue;
         }
@@ -428,6 +507,8 @@ static bool was_just_plugged_in(const ChargerState *state) {
 // we won't toggle the contactors too fast.
 // This feature is completely deactivated if cfg->plug_in_time is set to 0.
 static void stage_2(StageContext &sc) {
+    clear_charger_decision_all(sc, AllocatorDecision::WelcomeChargeUntil2);
+
     int matched = filter_chargers(was_just_plugged_in(ctx.state) && (ctx.state->charge_mode & ctx.charge_mode_filter) != 0 && !ctx.state->off);
 
     // Charger that is plugged in for the longest time first.
@@ -447,6 +528,8 @@ static void stage_2(StageContext &sc) {
         // This charger could be switched to 3p.
         if (sc.phase_allocation[sc.idx_array[i]] == 0)
             sc.phase_allocation[sc.idx_array[i]] = activate_3p ? 3 : 1;
+        auto wc_end = (state->just_plugged_in_timestamp + sc.cfg->plug_in_time).to<seconds_t>();
+        set_charger_decision(sc, sc.idx_array[i], AllocatorDecision::WelcomeChargeUntil2, (int)((int64_t)wc_end >> 32), (int)((int64_t)wc_end & 0xFFFFFFFF));
 
         trace("2: %d: plugged in. alloc %dp", sc.idx_array[i], sc.phase_allocation[sc.idx_array[i]]);
     }
@@ -659,6 +742,8 @@ static void stage_3(StageContext &sc) {
 
             trace("3: wnd_min %d > p%d raw %d", wnd_min[p], p, sc.limits->raw[p]);
 
+            set_charger_decision(sc, sc.idx_array[i], AllocatorDecision::ShuttingDownPhaseOverload2, p, wnd_min[p] - sc.limits->raw[p]);
+
             // We don't have to recalculate the window but instead can just change the minimum.
             // The window minimum does not have dependencies between chargers.
             wnd_min -= get_minimum_cost(alloc_phases, state->phase_rotation, sc.cfg);
@@ -673,15 +758,13 @@ static void stage_3(StageContext &sc) {
     // Also check the hysteresis to make sure the last switch on/off decisions
     // did propagate to the calculated limits.
     for (int i = 0; i < matched; ++i) {
-        if (wnd_min.pv <= sc.limits->max_pv || !sc.ca_state->global_hysteresis_elapsed) {
-            // Window minimum less than max pv limit -> PV not permanently overloaded
-            // or hysteresis is not elapsed yet.
-            if (wnd_min.pv <= sc.limits->max_pv) {
-                trace("3: wnd_min %d <= max_pv %d", wnd_min.pv, sc.limits->max_pv);
-            } else {
-                trace("3: wnd_min %d > max_pv %d hyst not elapsed", wnd_min.pv, sc.limits->max_pv);
-            }
+        // TODO: run this without breaking if the hysteresis is not elapsed yet
+        // to create a better status message. We would like to know which chargers
+        // are going to be shut down first.
 
+        if (wnd_min.pv <= sc.limits->max_pv)  {
+            // Window minimum less than max pv limit -> PV not permanently overloaded
+            trace("3: wnd_min %d <= max_pv %d", wnd_min.pv, sc.limits->max_pv);
             break;
         }
 
@@ -700,7 +783,18 @@ static void stage_3(StageContext &sc) {
         if (state->observe_pv_limit && min_cost.pv <= state->guaranteed_pv_current)
             continue;
 
+        // This check looks to be too late, but at this point we've found a charger that
+        // would be shut down if the hysteresis was elapsed. Don't log that we will start
+        // to shut down chargers if we don't find one that will be shut down soon.
+        if (!sc.ca_state->global_hysteresis_elapsed) {
+            auto hyst_elapsed_at = (sc.ca_state->last_hysteresis_reset + sc.cfg->global_hysteresis).to<seconds_t>();;
+            set_global_decision(sc, GlobalAllocatorDecision::PVExcessOverloadedHysteresisElapsesAt3, (int)((int64_t)hyst_elapsed_at >> 32), (int)((int64_t)hyst_elapsed_at & 0xFFFFFFFF),  wnd_min.pv - sc.limits->max_pv);
+            break;
+        }
+
         trace("3: wnd_min %d > max_pv %d", wnd_min.pv, sc.limits->max_pv);
+
+        set_charger_decision(sc, sc.idx_array[i], AllocatorDecision::ShuttingDownPhaseOverload2, 0, wnd_min.pv - sc.limits->max_pv);
 
         // We don't have to recalculate the window but instead can just change the minimum.
         // The window minimum does not have dependencies between chargers.
@@ -754,6 +848,7 @@ static bool can_activate(StringWriter &sw, const Cost &check_phase, const Cost &
         bool improves_pv = (check_phase.pv & (CHECK_IMPROVEMENT | CHECK_IMPROVEMENT_ALL_PHASE)) == 0 || (new_cost.pv > 0 && (wnd_max.pv < limits->min.pv || new_cost.pv <= guaranteed_pv_current));
         if (!improves_pv) {
             sw.printf(" No: !impr_pv");
+            // Don't set charger status line here: This charger probably has the status line "waiting for other chargers to be rotated", which is fine.
             return false;
         }
 
@@ -773,16 +868,15 @@ static bool can_activate(StringWriter &sw, const Cost &check_phase, const Cost &
             }
         }
         if ((check_all_phases && !improves_all_phases) || (!check_all_phases && !improves_any_phase)) {
-            sw.printf(" No: %d %d %d %d",
+            // PV is already checked above.
+            if (!is_unknown_rotated_1p_3p_switch) {
+                sw.printf(" No: %d %d %d",
                             check_all_phases,
                             improves_all_phases,
-                            improves_any_phase,
-                            is_unknown_rotated_1p_3p_switch);
-
-            // PV is already checked above.
-            bool enable = is_unknown_rotated_1p_3p_switch;
-            if (!enable)
+                            improves_any_phase);
+                // Don't set charger status line here: This charger probably has the status line "waiting for other chargers to be rotated", which is fine.
                 return false;
+            }
         }
     } else if (check_improvement) {
         sw.printf(" impr_spread ");
@@ -808,6 +902,8 @@ static bool can_activate(StringWriter &sw, const Cost &check_phase, const Cost &
 
         if (limits->min[p] < required) {
             sw.printf(" No: p%zu min %d < req %d ", p, limits->min[p], required);
+            // FIXME: Pass stage context, etc. to here to be able to call this.
+            //set_charger_decision(sc, charger_idx, AllocatorDecision::CantActivatePhaseMinimum3, p, required, limits->min[p]);
             return false;
         }
     }
@@ -896,9 +992,27 @@ static void stage_4(StageContext &sc) {
     // Recalculate window here so that stages 4 - 8 can be called multiple times with different priority groups.
     calculate_window(true, sc);
 
-    if (!sc.ca_state->global_hysteresis_elapsed)
-        return;
 
+    // A charger that was rotated has 0 allocated phases but is still charging.
+    int matched = filter_chargers(ctx.allocated_phases == 0 && (ctx.state->wants_to_charge || ctx.state->is_charging) && (ctx.state->charge_mode & ctx.charge_mode_filter) != 0 && !ctx.state->off);
+
+    // TODO: run this stage without returning if the hysteresis is not elapsed yet
+    // to create a better status message. We would like to know which chargers
+    // are going to be enabled when.
+    if (!sc.ca_state->global_hysteresis_elapsed) {
+        if (matched > 0) {
+            auto hyst = (sc.ca_state->last_hysteresis_reset + sc.cfg->global_hysteresis).to<seconds_t>();
+            set_global_decision(sc, GlobalAllocatorDecision::HysteresisElapsesAt2, (int)((int64_t)hyst >> 32), (int)((int64_t)hyst & 0xFFFFFFFF));
+        }
+        return;
+    }
+
+    sort_chargers(
+        -get_highest_charge_mode_bit(ctx.state),
+        ctx.left.state->allocated_average_power < ctx.right.state->allocated_average_power
+    );
+
+    trace_sort(4);
 
     // If there is no charger active right now, only require the minimum current
     // instead of the enable current. This is especially relevant for a setup
@@ -912,16 +1026,6 @@ static void stage_4(StageContext &sc) {
     }
 
     trace(have_active_chargers ? "4: have active chargers." : "4: don't have active chargers.");
-
-    // A charger that was rotated has 0 allocated phases but is still charging.
-    int matched = filter_chargers(ctx.allocated_phases == 0 && (ctx.state->wants_to_charge || ctx.state->is_charging) && (ctx.state->charge_mode & ctx.charge_mode_filter) != 0 && !ctx.state->off);
-
-    sort_chargers(
-        -get_highest_charge_mode_bit(ctx.state),
-        ctx.left.state->allocated_average_power < ctx.right.state->allocated_average_power
-    );
-
-    trace_sort(4);
 
     for (int i = 0; i < matched; ++i) {
         // If we can allocate all available current to the currently active set of chargers
@@ -967,11 +1071,13 @@ static void stage_4(StageContext &sc) {
         uint8_t phase_alloc = 0;
 
         if (try_3p && try_activate(sw, state, true, have_active_chargers, nullptr, sc.limits, sc.cfg, sc.ca_state)) {
+            set_charger_decision(sc, sc.idx_array[i], AllocatorDecision::Activating1, 3);
             try_1p = false;
             phase_alloc = 3;
         }
 
         if (try_1p && try_activate(sw, state, false, have_active_chargers, nullptr, sc.limits, sc.cfg, sc.ca_state)) {
+            set_charger_decision(sc, sc.idx_array[i], AllocatorDecision::Activating1, 1);
             phase_alloc = 1;
         }
 
@@ -1020,7 +1126,14 @@ static void stage_5(StageContext &sc) {
 
     trace(check_pv_min ? "5: <2 active. pv reqs min" : "5: >1 active. pv reqs ena");
 
-    int matched = filter_chargers(ctx.allocated_phases == 1 && ctx.state->phase_switch_supported && deadline_elapsed(ctx.state->last_phase_switch + ctx.cfg->global_hysteresis) && (ctx.state->charge_mode & ctx.charge_mode_filter) != 0);
+    int matched = filter_chargers(ctx.allocated_phases == 1 && ctx.state->phase_switch_supported && (ctx.state->charge_mode & ctx.charge_mode_filter) != 0);
+
+    if (!sc.ca_state->global_hysteresis_elapsed) {
+        if (matched > 0) {
+            auto hyst = (sc.ca_state->last_hysteresis_reset + sc.cfg->global_hysteresis).to<seconds_t>();
+            set_global_decision(sc, GlobalAllocatorDecision::HysteresisElapsesAt2, (int)((int64_t)hyst >> 32), (int)((int64_t)hyst & 0xFFFFFFFF));
+        }
+    }
 
     sort_chargers(
         -get_highest_charge_mode_bit(ctx.state),
@@ -1038,6 +1151,14 @@ static void stage_5(StageContext &sc) {
         // Note that this is **not** the same check as the one in stage 9 (waking up chargers)
         if (!sc.ca_state->global_hysteresis_elapsed && sc.charger_allocation_state[sc.idx_array[i]].allocated_current != 0)
             continue;
+
+        // The global hysteresis is not elapsed yet, but this charger was switched less than one hysteresis ago.
+        // This could have been a phase switch, so don't switch again immediately.
+        if (!deadline_elapsed(state->last_phase_switch + sc.cfg->global_hysteresis)) {
+            auto hyst = (state->last_phase_switch + sc.cfg->global_hysteresis).to<seconds_t>();
+            set_charger_decision(sc, sc.idx_array[i], AllocatorDecision::PhaseSwitchingUnblockedAt2, (int)((int64_t)hyst >> 32), (int)((int64_t)hyst & 0xFFFFFFFF));
+            continue;
+        }
 
         Cost new_cost = min_3p * Cost{3, 1, 1, 1};
         Cost new_enable_cost = min_3p * sc.cfg->enable_current_factor * Cost{3, 1, 1, 1};
@@ -1074,6 +1195,11 @@ static void stage_5(StageContext &sc) {
             trace("%s", buf);
             continue;
         }
+
+        if (sc.phase_allocation[sc.idx_array[i]] == 0)
+            set_charger_decision(sc, sc.idx_array[i], AllocatorDecision::Activating1, 3);
+        else
+            set_charger_decision(sc, sc.idx_array[i], AllocatorDecision::PhaseSwitching0);
 
         trace("%s", buf);
 
@@ -1386,6 +1512,7 @@ static void stage_9(StageContext &sc) {
             if (!cost_exceeds_limits(enable_cost, sc.limits, 9, state->observe_pv_limit, state->guaranteed_pv_current)) {
                 try_1p = false;
                 phase_alloc = 3;
+                set_charger_decision(sc, sc.idx_array[i], AllocatorDecision::WakingUp0);
             }
         }
 
@@ -1393,6 +1520,7 @@ static void stage_9(StageContext &sc) {
             enable_current = get_enable_cost(state, false, have_active_chargers, nullptr, &enable_cost, sc.cfg);
             if (!cost_exceeds_limits(enable_cost, sc.limits, 9, state->observe_pv_limit, state->guaranteed_pv_current)) {
                 phase_alloc = 1;
+                set_charger_decision(sc, sc.idx_array[i], AllocatorDecision::WakingUp0);
             }
         }
 
@@ -1420,7 +1548,9 @@ int allocate_current(
 
     CurrentAllocatorState *ca_state,
     ChargerAllocationState *charger_allocation_state,
-    uint32_t *allocated_current
+    uint32_t *allocated_current,
+    ChargerDecision *charger_decisions,
+    GlobalDecision *global_decision
     )
 {
     logger.trace_timestamp(charge_manager.trace_buffer_index);
@@ -1438,6 +1568,7 @@ int allocate_current(
     int current_array[MAX_CONTROLLED_CHARGERS] = {0};
     uint8_t phases_array[MAX_CONTROLLED_CHARGERS] = {0};
     int idx_array[MAX_CONTROLLED_CHARGERS] = {0};
+
     for(int i = 0; i < cfg->charger_count; ++i) {
         idx_array[i] = i;
         phases_array[i] = charger_allocation_state[i].allocated_phases;
@@ -1563,6 +1694,8 @@ int allocate_current(
         idx_array,
         current_array,
         phases_array,
+        charger_decisions,
+        global_decision,
         limits,
         charger_state,
         cfg->charger_count,
@@ -1571,6 +1704,9 @@ int allocate_current(
         charger_allocation_state,
         0xFFFFFFFF
     };
+
+    if (ca_state->global_hysteresis_elapsed)
+        clear_global_decision(sc, GlobalAllocatorDecision::HysteresisElapsesAt2);
 
     trace_alloc(0, sc);
     trace("__all__");
