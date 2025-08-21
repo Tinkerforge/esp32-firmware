@@ -71,39 +71,10 @@ void EVSEV2::pre_setup()
     evse_common.low_level_state = Config::Object ({
         {"led_state", Config::Uint8(0)},
         {"cp_pwm_duty_cycle", Config::Uint16(0)},
-        {"adc_values", Config::Array({
-                Config::Uint16(0),
-                Config::Uint16(0),
-                Config::Uint16(0),
-                Config::Uint16(0),
-                Config::Uint16(0),
-                Config::Uint16(0),
-                Config::Uint16(0),
-            }, Config::get_prototype_uint16_0(), 7, 7, Config::type_id<Config::ConfUint>())
-        },
-        {"voltages", Config::Array({
-                Config::Int16(0),
-                Config::Int16(0),
-                Config::Int16(0),
-                Config::Int16(0),
-                Config::Int16(0),
-                Config::Int16(0),
-                Config::Int16(0),
-            }, Config::get_prototype_int16_0(), 7, 7, Config::type_id<Config::ConfInt>())
-        },
-        {"resistances", Config::Array({
-                Config::Uint32(0),
-                Config::Uint32(0),
-            }, Config::get_prototype_uint32_0(), 2, 2, Config::type_id<Config::ConfUint>())
-        },
-        {"gpio", Config::Array({
-            Config::Bool(false), Config::Bool(false),  Config::Bool(false),Config::Bool(false),
-            Config::Bool(false), Config::Bool(false),  Config::Bool(false),Config::Bool(false),
-            Config::Bool(false), Config::Bool(false),  Config::Bool(false),Config::Bool(false),
-            Config::Bool(false), Config::Bool(false),  Config::Bool(false),Config::Bool(false),
-            Config::Bool(false), Config::Bool(false),  Config::Bool(false),Config::Bool(false),
-            Config::Bool(false), Config::Bool(false),  Config::Bool(false),Config::Bool(false),
-            }, Config::get_prototype_bool_false(), 24, 24, Config::type_id<Config::ConfBool>())},
+        {"adc_values", Config::Tuple(7, Config::Uint16(0))},
+        {"voltages", Config::Tuple(7, Config::Int16(0))},
+        {"resistances", Config::Tuple(2, Config::Uint32(0))},
+        {"gpio", Config::Tuple(24, Config::Bool(false))},
         {"charging_time", Config::Uint32(0)},
         {"time_since_state_change", Config::Uint32(0)},
         {"uptime", Config::Uint32(0)},

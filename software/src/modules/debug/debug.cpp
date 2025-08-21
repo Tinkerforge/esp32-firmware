@@ -119,12 +119,6 @@ void Debug::pre_setup()
     psram_speed = benchmark_area(reinterpret_cast<uint32_t *>(0x3FB00000), 32*1024); // 32KiB inside the fourth MiB
 #endif
 
-    state_spi_bus_prototype = Config::Object({
-        {"clk",          Config::Uint32(0)},
-        {"dummy_cycles", Config::Uint8(0)},
-        {"spi_mode",     Config::Str("", 0, 14)}
-    });
-
     state_static = Config::Object({
         {"heap_dram",  Config::Uint32(dram_heap_size)},
         {"heap_iram",  Config::Uint32(iram_heap_size)},
@@ -133,18 +127,17 @@ void Debug::pre_setup()
         {"ipsock_max", Config::Uint8(CONFIG_LWIP_MAX_SOCKETS)},
         {"cpu_clk",    Config::Uint32(cpu_freq_conf.freq_mhz * 1000000)},
         {"apb_clk",    Config::Uint32(rtc_clk_apb_freq_get())},
-        {"spi_buses",  Config::Array({},
-            &state_spi_bus_prototype,
-            4, 4
-        )},
+        {"spi_buses",  Config::Tuple(4, Config::Object({
+            {"clk",          Config::Uint32(0)},
+            {"dummy_cycles", Config::Uint8(0)},
+            {"spi_mode",     Config::Str("", 0, 14)}
+        }))},
         {"dram_benchmark",   Config::Float(dram_speed)},
         {"iram_benchmark",   Config::Float(iram_speed)},
         {"psram_benchmark",  Config::Float(psram_speed)},
         {"rodata_benchmark", Config::Float(rodata_speed)},
         {"text_benchmark",   Config::Float(text_speed)},
     });
-
-    state_static.get("spi_buses")->setCount(4);
 
     state_fast = Config::Object({
         {"uptime",     Config::Uint32(0)},
@@ -181,21 +174,7 @@ void Debug::pre_setup()
         {"ipsock_hwm", Config::Uint8(0)},
     });
 
-    state_slots_prototype = Config::Array({},
-        Config::get_prototype_uint16_0(),
-        5, 5
-    );
-
-    state_slots = Config::Array({},
-        &state_slots_prototype,
-        CONFIG_TYPES, CONFIG_TYPES
-    );
-
-    state_slots.setCount(CONFIG_TYPES);
-
-    for (size_t i = 0; i < CONFIG_TYPES; i++) {
-        state_slots.get(i)->setCount(5);
-    }
+    state_slots = Config::Tuple(CONFIG_TYPES, Config::Tuple(5, Config::Uint16(0)));
 
     state_hwm_prototype = Config::Object({
         {"task_name",  Config::Str("", 0, CONFIG_FREERTOS_MAX_TASK_NAME_LEN)},
@@ -226,6 +205,8 @@ void Debug::pre_setup()
     register_task("ipc0", IPC_STACK_SIZE);
     register_task("ipc1", IPC_STACK_SIZE);
 }
+
+extern size_t alloc_overhead;
 
 void Debug::setup()
 {

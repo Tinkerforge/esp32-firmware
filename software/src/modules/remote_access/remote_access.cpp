@@ -180,31 +180,19 @@ void RemoteAccess::pre_setup()
         {"cert_id", Config::Int8(-1)},
     });
 
-    connection_state_prototype = Config::Object({
-        {"state", Config::Uint8(1)},
-        {"user", Config::Uint8(255)},
-        {"connection", Config::Uint8(255)},
-        // unix timestamp
-        {"last_state_change", Config::Uint53(0)},
-    });
-
     ping_state = Config::Object({
         {"packets_sent", Config::Uint32(0)},
         {"packets_received", Config::Uint32(0)},
         {"time_elapsed_ms", Config::Uint32(0)},
     });
 
-    connection_state = Config::Array({},
-        &connection_state_prototype,
-        MAX_USER_CONNECTIONS + 1,
-        MAX_USER_CONNECTIONS + 1,
-        Config::type_id<Config::ConfUint>());
-
-    connection_state.reserve(MAX_USER_CONNECTIONS + 1);
-
-    for (int i = 0; i < MAX_USER_CONNECTIONS + 1; ++i) {
-        connection_state.add()->get("state")->updateUint(1); // Set the default here so that the generic prototype can be used.
-    }
+    connection_state = Config::Tuple(MAX_USER_CONNECTIONS + 1, Config::Object({
+        {"state", Config::Uint8(1)},
+        {"user", Config::Uint8(255)},
+        {"connection", Config::Uint8(255)},
+        // unix timestamp
+        {"last_state_change", Config::Uint53(0)},
+    }));
 
     registration_state = Config::Object({{"state", Config::Enum(RegistrationState::None)}, {"message", Config::Str("", 0, 64)}});
 }

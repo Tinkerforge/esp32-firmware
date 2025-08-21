@@ -61,21 +61,9 @@ void EMV2::pre_setup()
         {"config_error_flags", Config::Uint32(0)},
         {"em_version", Config::Uint(2, 2, 2)},
         // EMv2
-        {"inputs", Config::Array(
-            {Config::Bool(false), Config::Bool(false), Config::Bool(false), Config::Bool(false)},
-            prototype_bool_false,
-            4, 4, Config::type_id<Config::ConfBool>())
-        },
-        {"sg_ready_outputs", Config::Array(
-            {Config::Bool(false), Config::Bool(false)},
-            prototype_bool_false,
-            2, 2, Config::type_id<Config::ConfBool>())
-        },
-        {"relays", Config::Array(
-            {Config::Bool(false), Config::Bool(false)},
-            prototype_bool_false,
-            2, 2, Config::type_id<Config::ConfBool>())
-        },
+        {"inputs", Config::Tuple(4, Config::Bool(false))},
+        {"sg_ready_outputs", Config::Tuple(2, Config::Bool(false))},
+        {"relays", Config::Tuple(2, Config::Bool(false))},
     });
 
     em_common.low_level_state = Config::Object({
@@ -90,11 +78,7 @@ void EMV2::pre_setup()
     //em_common.config = Config::Object({
     //});
 
-    outputs_update = Config::Array(
-        {Config::Uint8(255), Config::Uint8(255), Config::Uint8(255), Config::Uint8(255)}, // 2x SG Ready, 2x Relay
-        Config::get_prototype_uint8_0(), // The prototype's default value can be 0 because the array cannot be extended.
-        4, 4, Config::type_id<Config::ConfUint>()
-    );
+    outputs_update = Config::Tuple(4, Config::Uint8(255));
 
 #if MODULE_AUTOMATION_AVAILABLE()
     automation.register_trigger(

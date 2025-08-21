@@ -115,20 +115,7 @@ void Wifi::pre_setup()
     sta_config = ConfigRoot{Config::Object({
         {"enable_sta", Config::Bool(false)},
         {"ssid", Config::Str("", 0, 32)},
-        {"bssid", Config::Array({
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0),
-                Config::Uint8(0)
-                },
-                Config::get_prototype_uint8_0(),
-                6,
-                6,
-                Config::type_id<Config::ConfUint>()
-            )
-        },
+        {"bssid", Config::Tuple(6, Config::Uint8(0))},
         {"bssid_lock", Config::Bool(false)},
         {"enable_11b", Config::Bool(false)},
         {"passphrase", Config::Str("", 0, 64)},

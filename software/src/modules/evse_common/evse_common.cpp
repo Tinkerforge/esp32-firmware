@@ -46,18 +46,11 @@ void EvseCommon::pre_setup()
         {"button_pressed", Config::Bool(false)},
     });
 
-    slots_prototype = Config::Object({
+    slots = Config::Tuple(CHARGING_SLOT_COUNT, Config::Object({
         {"max_current", Config::Uint16(0)},
         {"active", Config::Bool(false)},
         {"clear_on_disconnect", Config::Bool(false)}
-    });
-
-    slots = Config::Array({},
-        &slots_prototype,
-        CHARGING_SLOT_COUNT, CHARGING_SLOT_COUNT,
-        Config::type_id<Config::ConfObject>());
-
-    slots.setCount(CHARGING_SLOT_COUNT);
+    }));
 
     indicator_led = Config::Object({
         {"indication", Config::Int16(0)},

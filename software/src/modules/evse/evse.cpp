@@ -95,29 +95,10 @@ void EVSE::pre_setup()
     evse_common.low_level_state = Config::Object ({
         {"led_state", Config::Uint8(0)},
         {"cp_pwm_duty_cycle", Config::Uint16(0)},
-        {"adc_values", Config::Array({
-                Config::Uint16(0),
-                Config::Uint16(0)
-            }, Config::get_prototype_uint16_0(), 2, 2, Config::type_id<Config::ConfUint>())
-        },
-        {"voltages", Config::Array({
-                Config::Int16(0),
-                Config::Int16(0),
-                Config::Int16(0),
-            }, Config::get_prototype_int16_0(), 3, 3, Config::type_id<Config::ConfInt>())
-        },
-        {"resistances", Config::Array({
-                Config::Uint32(0),
-                Config::Uint32(0),
-            }, Config::get_prototype_uint32_0(), 2, 2, Config::type_id<Config::ConfUint>())
-        },
-        {"gpio", Config::Array({
-            Config::Bool(false),
-            Config::Bool(false),
-            Config::Bool(false),
-            Config::Bool(false),
-            Config::Bool(false),
-            }, Config::get_prototype_bool_false(), 5, 5, Config::type_id<Config::ConfBool>())},
+        {"adc_values", Config::Tuple(2, Config::Uint16(0))},
+        {"voltages", Config::Tuple(3, Config::Int16(0))},
+        {"resistances", Config::Tuple(2, Config::Uint32(0))},
+        {"gpio", Config::Tuple(5, Config::Bool(false))},
         {"charging_time", Config::Uint32(0)},
         {"time_since_state_change", Config::Uint32(0)},
         {"uptime", Config::Uint32(0)},
@@ -133,22 +114,7 @@ void EVSE::pre_setup()
         {"voltage_mul", Config::Int16(0)},
         {"voltage_div", Config::Int16(0)},
         {"resistance_2700", Config::Int16(0)},
-        {"resistance_880", Config::Array({
-                Config::Int16(0),
-                Config::Int16(0),
-                Config::Int16(0),
-                Config::Int16(0),
-                Config::Int16(0),
-                Config::Int16(0),
-                Config::Int16(0),
-                Config::Int16(0),
-                Config::Int16(0),
-                Config::Int16(0),
-                Config::Int16(0),
-                Config::Int16(0),
-                Config::Int16(0),
-                Config::Int16(0),
-            }, Config::get_prototype_int16_0(), 14, 14, Config::type_id<Config::ConfInt>())}
+        {"resistance_880", Config::Tuple(14, Config::Int16(0))}
     });
 }
 

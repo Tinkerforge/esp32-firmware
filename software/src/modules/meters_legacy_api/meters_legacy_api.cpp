@@ -80,7 +80,6 @@ void MetersLegacyAPI::setup()
     legacy_api_enabled = true;
 
     const Config *config_prototype_float_nan  = Config::get_prototype_float_nan();
-    const Config *config_prototype_bool_false = Config::get_prototype_bool_false();
 
     // BEGIN from old meter.cpp pre_setup()
     legacy_state = Config::Object({
@@ -95,12 +94,8 @@ void MetersLegacyAPI::setup()
     });
 
     legacy_phases = Config::Object({
-        {"phases_connected", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
-            config_prototype_bool_false,
-            3, 3, Config::type_id<Config::ConfBool>())},
-        {"phases_active", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
-            config_prototype_bool_false,
-            3, 3, Config::type_id<Config::ConfBool>())}
+        {"phases_connected", Config::Tuple(3, Config::Bool(false))},
+        {"phases_active", Config::Tuple(3, Config::Bool(false))}
     });
 
     legacy_all_values = Config::Array({},
@@ -126,17 +121,11 @@ void MetersLegacyAPI::setup()
     });
 
     legacy_phases_update = Config::Object({
-        {"phases_connected", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
-            config_prototype_bool_false,
-            3, 3, Config::type_id<Config::ConfBool>())},
-        {"phases_active", Config::Array({Config::Bool(false),Config::Bool(false),Config::Bool(false)},
-            config_prototype_bool_false,
-            3, 3, Config::type_id<Config::ConfBool>())}
+        {"phases_connected", Config::Tuple(3, Config::Bool(false))},
+        {"phases_active", Config::Tuple(3, Config::Bool(false))}
     });
 
-    legacy_all_values_update = Config::Array({},
-        config_prototype_float_nan,
-        METER_ALL_VALUES_LEGACY_COUNT, METER_ALL_VALUES_LEGACY_COUNT, Config::type_id<Config::ConfFloat>());
+    legacy_all_values_update = Config::Tuple(METER_ALL_VALUES_LEGACY_COUNT, Config::Float(NAN));
     // END from old api_meter.cpp pre_setup()
 
     task_scheduler.scheduleOnce([this]() {

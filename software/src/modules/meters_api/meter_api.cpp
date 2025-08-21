@@ -61,11 +61,7 @@ void MeterAPI::setup(Config *ephemeral_config)
     meters.declare_value_ids(slot, ids, value_count);
     free(ids);
 
-    uint16_t value_count_u16 = static_cast<uint16_t>(value_count);
-    push_values = Config::Array({},
-        Config::get_prototype_float_nan(),
-        value_count_u16, value_count_u16, Config::type_id<Config::ConfFloat>()
-    );
+    push_values = Config::Tuple(value_count, Config::Float(NAN));
 }
 
 void MeterAPI::register_urls(const String &base_url)

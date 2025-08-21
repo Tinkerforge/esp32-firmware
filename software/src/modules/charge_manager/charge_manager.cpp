@@ -147,8 +147,6 @@ void ChargeManager::pre_setup()
         {"rotation_interval", Config::Uint(15 * 60, 0, 24 * 60 * 60)},
     });
 
-    const Config *config_prototype_int32_0 = Config::get_prototype_int32_0();
-
     state_chargers_prototype = Config::Object({
         {"s",  Config::Uint(0, 0, 6)},  // "state" - 0 - no vehicle, 1 - user blocked, 2 - manager blocked, 3 - car blocked, 4 - charging, 5 - error, 6 - charged
         {"e",  Config::Uint8(0)},       // "error" - 0 - okay, 1 - unreachable, 2 - FW mismatch, 3 - not managed, >= 192 client errors
@@ -166,43 +164,11 @@ void ChargeManager::pre_setup()
     // This API only exists to communicate with the web interface and is not documented.
     state = Config::Object({
         {"state", Config::Uint8(0)}, // 0 - not configured, 1 - active, 2 - shutdown
-        {"l_raw", Config::Array({
-                Config::Int32(0),
-                Config::Int32(0),
-                Config::Int32(0),
-                Config::Int32(0)
-            },
-            config_prototype_int32_0,
-            4, 4, Config::type_id<Config::ConfInt>())
-        },
-        {"l_min", Config::Array({
-                Config::Int32(0),
-                Config::Int32(0),
-                Config::Int32(0),
-                Config::Int32(0)
-            },
-            config_prototype_int32_0,
-            4, 4, Config::type_id<Config::ConfInt>())
-        },
-        {"l_spread", Config::Array({
-                Config::Int32(0),
-                Config::Int32(0),
-                Config::Int32(0),
-                Config::Int32(0)
-            },
-            config_prototype_int32_0,
-            4, 4, Config::type_id<Config::ConfInt>())
-        },
+        {"l_raw", Config::Tuple(4, Config::Int32(0))},
+        {"l_min", Config::Tuple(4, Config::Int32(0))},
+        {"l_spread", Config::Tuple(4, Config::Int32(0))},
         {"l_max_pv", Config::Int32(0)},
-        {"alloc", Config::Array({
-                Config::Int32(0),
-                Config::Int32(0),
-                Config::Int32(0),
-                Config::Int32(0)
-            },
-            config_prototype_int32_0,
-            4, 4, Config::type_id<Config::ConfInt>())
-        },
+        {"alloc", Config::Tuple(4, Config::Int32(0))},
         {"chargers", Config::Array(
             {},
             &state_chargers_prototype,
@@ -226,24 +192,8 @@ void ChargeManager::pre_setup()
 
     low_level_state = Config::Object({
         {"last_hyst_reset", Config::Uint32(0)},
-        {"wnd_min", Config::Array({
-                Config::Int32(0),
-                Config::Int32(0),
-                Config::Int32(0),
-                Config::Int32(0)
-            },
-            config_prototype_int32_0,
-            4, 4, Config::type_id<Config::ConfInt>())
-        },
-        {"wnd_max", Config::Array({
-                Config::Int32(0),
-                Config::Int32(0),
-                Config::Int32(0),
-                Config::Int32(0)
-            },
-            config_prototype_int32_0,
-            4, 4, Config::type_id<Config::ConfInt>())
-        },
+        {"wnd_min", Config::Tuple(4, Config::Int32(0))},
+        {"wnd_max", Config::Tuple(4, Config::Int32(0))},
         {"chargers", Config::Array(
             {},
             &low_level_state_chargers_prototype,
@@ -277,33 +227,9 @@ void ChargeManager::pre_setup()
 
 #ifdef DEBUG_FS_ENABLE
     debug_limits_update = Config::Object({
-        {"raw", Config::Array({
-                Config::Int32(0),
-                Config::Int32(0),
-                Config::Int32(0),
-                Config::Int32(0)
-            },
-            config_prototype_int32_0,
-            4, 4, Config::type_id<Config::ConfInt>())
-        },
-        {"min", Config::Array({
-                Config::Int32(0),
-                Config::Int32(0),
-                Config::Int32(0),
-                Config::Int32(0)
-            },
-            config_prototype_int32_0,
-            4, 4, Config::type_id<Config::ConfInt>())
-        },
-        {"spread", Config::Array({
-                Config::Int32(0),
-                Config::Int32(0),
-                Config::Int32(0),
-                Config::Int32(0)
-            },
-            config_prototype_int32_0,
-            4, 4, Config::type_id<Config::ConfInt>())
-        },
+        {"raw", Config::Tuple(4, Config::Int32(0))},
+        {"min", Config::Tuple(4, Config::Int32(0))},
+        {"spread", Config::Tuple(4, Config::Int32(0))},
         {"max_pv", Config::Int32(0)},
     });
 #endif

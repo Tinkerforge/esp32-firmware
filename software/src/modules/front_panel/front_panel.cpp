@@ -85,14 +85,12 @@ void FrontPanel::pre_setup()
 
     config = ConfigRoot{Config::Object({
             {"enable", Config::Bool(true)},
-            {"tiles", Config::Array({
-                    config_tiles_prototype,
-                    config_tiles_prototype,
-                    config_tiles_prototype,
-                    config_tiles_prototype,
-                    config_tiles_prototype,
-                    config_tiles_prototype,
-                }, &config_tiles_prototype, FRONT_PANEL_TILES, FRONT_PANEL_TILES, Config::type_id<Config::ConfUnion>())}
+            {"tiles", Config::Tuple(FRONT_PANEL_TILES, Config::Union<TileType>(
+                *Config::Null(),
+                TileType::EmptyTile,
+                tile_prototypes,
+                TILE_TYPES
+            ))}
         }), [this](Config &cfg, ConfigSource source) -> String {
             // Schedule check_bricklet_state() here, since this checks
             // if the display needs to be turned on/off.

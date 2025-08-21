@@ -35,9 +35,7 @@ void SDP::pre_setup()
 {
     api_state = Config::Object({
         {"state", Config::Uint8(0)},
-        {"evse_ip_address", Config::Array({
-            Config::Uint32(0), Config::Uint32(0), Config::Uint32(0), Config::Uint32(0)
-        }, Config::get_prototype_uint32_0(), 4, 4, Config::type_id<Config::ConfUint>())},
+        {"evse_ip_address", Config::Tuple(4, Config::Uint32(0))},// TODO: why is this not a Config::String("", 7, 15)?
         {"evse_port", Config::Uint16(0)},
         {"evse_security", Config::Int16(-1)},
         {"evse_tranport_protocol", Config::Int16(-1)},

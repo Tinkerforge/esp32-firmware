@@ -43,45 +43,15 @@ void PowerManager::pre_setup()
         {"external_control", Config::Uint32(EXTERNAL_CONTROL_STATE_DISABLED)},
     });
 
-    const Config *config_prototype_int32_0 = Config::get_prototype_int32_0();
-
     low_level_state = Config::Object({
         {"power_at_meter", Config::Float(NAN)},
         {"power_at_battery", Config::Float(NAN)},
         {"battery_soc", Config::Float(NAN)},
         {"power_available", Config::Int32(0)},
-        {"i_meter", Config::Array({
-                Config::Int32(0),
-                Config::Int32(0),
-                Config::Int32(0),
-            },
-            config_prototype_int32_0,
-            3, 3, Config::type_id<Config::ConfInt>())
-        },
-        {"i_pp_max", Config::Array({
-                Config::Int32(0),
-                Config::Int32(0),
-                Config::Int32(0),
-            },
-            config_prototype_int32_0,
-            3, 3, Config::type_id<Config::ConfInt>())
-        },
-        {"i_pp_mavg", Config::Array({
-                Config::Int32(0),
-                Config::Int32(0),
-                Config::Int32(0),
-            },
-            config_prototype_int32_0,
-            3, 3, Config::type_id<Config::ConfInt>())
-        },
-        {"i_pp", Config::Array({
-                Config::Int32(0),
-                Config::Int32(0),
-                Config::Int32(0),
-            },
-            config_prototype_int32_0,
-            3, 3, Config::type_id<Config::ConfInt>())
-        },
+        {"i_meter", Config::Tuple(3, Config::Int32(0))},
+        {"i_pp_max", Config::Tuple(3, Config::Int32(0))},
+        {"i_pp_mavg", Config::Tuple(3, Config::Int32(0))},
+        {"i_pp", Config::Tuple(3, Config::Int32(0))},
         {"max_current_limited", Config::Int32(0)},
         {"is_3phase", Config::Bool(false)}, // obsolete / phase switcher?
         {"charging_blocked", Config::Uint32(0)},

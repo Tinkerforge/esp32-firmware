@@ -109,7 +109,6 @@ private:
 
     ConfigRoot config;
     ConfigRoot connection_state;
-    Config     connection_state_prototype;
     ConfigRoot registration_state;
     Config     users_config_prototype;
     ConfigRoot registration_config;

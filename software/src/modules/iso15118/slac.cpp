@@ -44,48 +44,16 @@ void SLAC::pre_setup()
         // < 20: not valid
         // 20-35: reasonable range for robust link
         // > 40: poor signal quality
-        {"attenuation_profile", Config::Array({
-                Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0),
-                Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0),
-                Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0),
-                Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0),
-                Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0),
-                Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0),
-                Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0),
-                Config::Uint8(0), Config::Uint8(0)
-            }, Config::get_prototype_uint8_0(), SLAC_AAG_LIST_LENGTH, SLAC_AAG_LIST_LENGTH, Config::type_id<Config::ConfUint>())
-        },
+        {"attenuation_profile", Config::Tuple(SLAC_AAG_LIST_LENGTH, Config::Uint8(0))},
         {"received_aag_lists", Config::Uint8(0)},
         {"received_sounds", Config::Uint8(0)},
-        {"nmk", Config::Array({
-                Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0),
-                Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0)
-            }, Config::get_prototype_uint8_0(), SLAC_NMK_LENGTH, SLAC_NMK_LENGTH, Config::type_id<Config::ConfUint>())
-        },
-        {"nid", Config::Array({
-                Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0),
-            }, Config::get_prototype_uint8_0(), SLAC_NID_LENGTH, SLAC_NID_LENGTH, Config::type_id<Config::ConfUint>())
-        },
-        {"evse_mac", Config::Array({
-                Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0)
-            }, Config::get_prototype_uint8_0(), SLAC_MAC_ADDRESS_LENGTH, SLAC_MAC_ADDRESS_LENGTH, Config::type_id<Config::ConfUint>())
-        },
-        {"evse_mac_modem", Config::Array({
-                Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0)
-            }, Config::get_prototype_uint8_0(), SLAC_MAC_ADDRESS_LENGTH, SLAC_MAC_ADDRESS_LENGTH, Config::type_id<Config::ConfUint>())
-        },
-        {"pev_mac", Config::Array({
-                Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0)
-            }, Config::get_prototype_uint8_0(), SLAC_MAC_ADDRESS_LENGTH, SLAC_MAC_ADDRESS_LENGTH, Config::type_id<Config::ConfUint>())
-        },
-        {"pev_mac_modem", Config::Array({
-                Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0)
-            }, Config::get_prototype_uint8_0(), SLAC_MAC_ADDRESS_LENGTH, SLAC_MAC_ADDRESS_LENGTH, Config::type_id<Config::ConfUint>())
-        },
-        {"pev_run_id", Config::Array({
-                Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0), Config::Uint8(0)
-            }, Config::get_prototype_uint8_0(), SLAC_RUN_ID_LENGTH, SLAC_RUN_ID_LENGTH, Config::type_id<Config::ConfUint>())
-        }
+        {"nmk", Config::Tuple(SLAC_NMK_LENGTH, Config::Uint8(0))},
+        {"nid", Config::Tuple(SLAC_NID_LENGTH, Config::Uint8(0))},
+        {"evse_mac", Config::Tuple(SLAC_MAC_ADDRESS_LENGTH, Config::Uint8(0))},
+        {"evse_mac_modem", Config::Tuple(SLAC_MAC_ADDRESS_LENGTH, Config::Uint8(0))},
+        {"pev_mac", Config::Tuple(SLAC_MAC_ADDRESS_LENGTH, Config::Uint8(0))},
+        {"pev_mac_modem", Config::Tuple(SLAC_MAC_ADDRESS_LENGTH, Config::Uint8(0))},
+        {"pev_run_id", Config::Tuple(SLAC_RUN_ID_LENGTH, Config::Uint8(0))}
     });
 }
 

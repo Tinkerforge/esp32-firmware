@@ -58,8 +58,6 @@ private:
     ConfigRoot state_slots;
     ConfigRoot state_hwm;
 
-    Config state_spi_bus_prototype;
-    Config state_slots_prototype;
     Config state_hwm_prototype;
 
     std::vector<TaskHandle_t> task_handles;
