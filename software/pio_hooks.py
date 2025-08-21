@@ -1755,23 +1755,12 @@ def main():
                     print('Error: Invalid enum file "{}" in backend {}'.format(filename, mod_path))
                     sys.exit(1)
 
-                try:
-                    with open(os.path.join(mod_path, filename + '.previous'), 'r', encoding='utf-8') as f:
-                        enum_previous_raw_values = json.loads(f.read())
-                except FileNotFoundError:
-                    enum_previous_raw_values = None
+                value_number = -1
 
                 enum_comments = []
                 enum_name = util.FlavoredName(filename_parts[0]).get()
-                enum_raw_values = {}
-                enum_values = []
-                enum_cases = []
-                value_number = -1
-                value_number_min = None
-                value_number_min_name = None
-                value_number_max = None
-                value_number_max_name = None
-                value_count = 0
+
+                enum_values: list[util.EnumValue] = []
 
                 with open(os.path.join(mod_path, filename), 'r', encoding='utf-8') as f:
                     for line in f.readlines():
@@ -1811,68 +1800,13 @@ def main():
                         else:
                             value_comment = ' // ' + value_comment
 
-                        if value_number_min == None or value_number < value_number_min:
-                            value_number_min = value_number
-                            value_number_min_name = value_name
-
-                        if value_number_max == None or value_number > value_number_max:
-                            value_number_max = value_number
-                            value_number_max_name = value_name
-
-                        value_count += 1
-
-                        if value_name.space in enum_raw_values:
+                        if any(e.name.space == value_name.space for e in enum_values):
                             print(f'Error: Duplicate value "{value_name.space}" in enum file "{filename}" in backend {mod_path}')
                             sys.exit(1)
 
-                        enum_raw_values[value_name.space] = value_number
-                        enum_values.append(f'    {value_name.camel} = {value_number},{value_comment}\n')
-                        enum_cases.append(f'    case {enum_name.camel}::{value_name.camel}: return "{value_name.space}";\n')
+                        enum_values.append(util.EnumValue(value_name, value_number, value_comment))
 
-                if enum_previous_raw_values != None:
-                    for value_name, value_number in enum_raw_values.items():
-                        if value_name in enum_previous_raw_values and enum_previous_raw_values[value_name] != value_number:
-                            print(f'Error: Invalid change to value "{value_name}" in enum file "{filename}" in backend {mod_path}')
-                            sys.exit(1)
-
-                tfutil.write_file_if_different(os.path.join(mod_path, filename + '.previous'), json.dumps(enum_raw_values))
-
-                with open(os.path.join(mod_path, enum_name.under + '.enum.h'), 'w', encoding='utf-8') as f:
-                    f.write(f'// WARNING: This file is generated from "{filename}" by pio_hooks.py\n\n')
-                    f.write('#include <stdint.h>\n\n')
-                    f.write('#pragma once\n\n')
-                    f.write(''.join(enum_comments))
-                    f.write(f'enum class {enum_name.camel} : {filename_parts[1]}_t {{\n')
-                    f.write(''.join(enum_values))
-                    f.write('\n')
-                    f.write(f'    _min = {value_number_min_name.camel},\n')
-                    f.write(f'    _max = {value_number_max_name.camel},\n')
-                    f.write('};\n\n')
-                    f.write(f'#define {enum_name.upper}_COUNT {value_count}\n\n')
-                    f.write(f'const char *get_{enum_name.under}_name({enum_name.camel} value);\n')
-
-                with open(os.path.join(mod_path, enum_name.under + '.enum.cpp'), 'w', encoding='utf-8') as f:
-                    f.write(f'// WARNING: This file is generated from "{filename}" by pio_hooks.py\n\n')
-                    f.write(f'#include "{enum_name.under}.enum.h"\n\n')
-                    f.write(f'const char *get_{enum_name.under}_name({enum_name.camel} value)\n')
-                    f.write('{\n')
-                    f.write('    switch (value) {\n')
-                    f.write(''.join(enum_cases))
-                    f.write('    default: return "Unknown";\n')
-                    f.write('    }\n')
-                    f.write('}\n')
-
-                frontend_mod_path = os.path.join('web', 'src', 'modules', backend_module.under)
-
-                if os.path.exists(frontend_mod_path) and os.path.isdir(frontend_mod_path):
-                    with open(os.path.join(frontend_mod_path, enum_name.under + '.enum.ts'), 'w', encoding='utf-8') as f:
-                        f.write(f'// WARNING: This file is generated from "{filename}" by pio_hooks.py\n\n')
-                        f.write(f'export const enum {enum_name.camel} {{\n')
-                        f.write(''.join(enum_values))
-                        f.write('\n')
-                        f.write(f'    _min = {value_number_min_name.camel},\n')
-                        f.write(f'    _max = {value_number_max_name.camel},\n')
-                        f.write('}\n')
+                util.generate_enum(filename, backend_module, enum_name, filename_parts[1] + "_t", enum_values, ''.join(enum_comments))
 
     # Preprocessing web interface
     util.log('Preprocessing web interface')
