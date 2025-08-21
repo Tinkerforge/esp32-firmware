@@ -295,13 +295,14 @@ void ModbusTCPDebug::register_urls()
             }
 
             static_cast<TFModbusTCPSharedClient *>(client)->transact(device_address, protocol_function_code, start_address, data_count, buffer, timeout,
-            [this, cookie, device_address, config_function_code, start_address, data_count, write_data, timeout, hexdump_coils, hexdump_registers](TFModbusTCPClientTransactionResult transact_result, const char *error_message) {
-                if (transact_result != TFModbusTCPClientTransactionResult::Success) {
+            [this, cookie, device_address, config_function_code, start_address, data_count, write_data, timeout, hexdump_coils, hexdump_registers](TFModbusTCPClientTransactionResult result, const char *error_message) {
+                if (result != TFModbusTCPClientTransactionResult::Success) {
                     report_errorf(cookie, "Transaction failed: %s (%d)%s%s",
-                                  get_tf_modbus_tcp_client_transaction_result_name(transact_result),
-                                  static_cast<int>(transact_result),
+                                  get_tf_modbus_tcp_client_transaction_result_name(result),
+                                  static_cast<int>(result),
                                   error_message != nullptr ? " / " : "",
                                   error_message != nullptr ? error_message : "");
+
                     release_client();
                     return;
                 }
@@ -329,23 +330,24 @@ void ModbusTCPDebug::register_urls()
                         values[i] = (values[i] & masks[0]) | (masks[1] & ~masks[0]);
                     }
 
-                    TFModbusTCPFunctionCode second_function_code;
+                    TFModbusTCPFunctionCode step2_function_code;
 
                     if (config_function_code == ModbusFunctionCode::ReadMaskWriteSingleRegister) {
-                        second_function_code = TFModbusTCPFunctionCode::WriteSingleRegister;
+                        step2_function_code = TFModbusTCPFunctionCode::WriteSingleRegister;
                     }
                     else {
-                        second_function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
+                        step2_function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
                     }
 
-                    static_cast<TFModbusTCPSharedClient *>(client)->transact(device_address, second_function_code, start_address, data_count, buffer, timeout,
-                    [this, cookie](TFModbusTCPClientTransactionResult second_transact_result, const char *second_error_message) {
-                        if (second_transact_result != TFModbusTCPClientTransactionResult::Success) {
-                            report_errorf(cookie, "Second transaction failed: %s (%d)%s%s",
-                                          get_tf_modbus_tcp_client_transaction_result_name(second_transact_result),
-                                          static_cast<int>(second_transact_result),
-                                          second_error_message != nullptr ? " / " : "",
-                                          second_error_message != nullptr ? second_error_message : "");
+                    static_cast<TFModbusTCPSharedClient *>(client)->transact(device_address, step2_function_code, start_address, data_count, buffer, timeout,
+                    [this, cookie](TFModbusTCPClientTransactionResult step2_result, const char *step2_error_message) {
+                        if (step2_result != TFModbusTCPClientTransactionResult::Success) {
+                            report_errorf(cookie, "Transaction (step 2) failed: %s (%d)%s%s",
+                                          get_tf_modbus_tcp_client_transaction_result_name(step2_result),
+                                          static_cast<int>(step2_result),
+                                          step2_error_message != nullptr ? " / " : "",
+                                          step2_error_message != nullptr ? step2_error_message : "");
+
                             release_client();
                             return;
                         }
