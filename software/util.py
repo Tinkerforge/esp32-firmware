@@ -12,6 +12,10 @@ from collections import namedtuple
 import functools
 import json
 import collections
+from dataclasses import dataclass
+from pathlib import Path
+
+import tinkerforge_util as tfutil
 
 NameFlavors = namedtuple('NameFlavors', 'space lower camel headless under upper dash camel_abbrv lower_no_space camel_constant_safe')
 
@@ -411,3 +415,81 @@ def find_frontend_plugins(host_module_name, plugin_name):
             plugins.append(FrontendPlugin(module_name, plugin_file_base, interface_names))
 
     return plugins
+
+@dataclass
+class EnumValue:
+    name: NameFlavors
+    number: int
+    comment: str
+
+def generate_enum(source_file_name: str,
+                  backend_module: NameFlavors,
+                  enum_name: NameFlavors,
+                  underlying_type: str,
+                  values: list[EnumValue],
+                  comment: str | None):
+    mod_path = os.path.join('src', 'modules', backend_module.under)
+
+    enum_values = [f'    {v.name.camel} = {v.number},{v.comment}\n' for v in values]
+    enum_cases= [f'    case {enum_name.camel}::{v.name.camel}: return "{v.name.space}";\n' for v in values]
+    value_number_min_name = min(values, key=lambda v: v.number).name
+    value_number_max_name = max(values, key=lambda v: v.number).name
+
+    enum_raw_values = {e.name.space: e.number for e in values}
+
+    try:
+        with open(os.path.join(mod_path, source_file_name + '.previous'), 'r', encoding='utf-8') as f:
+            enum_previous_raw_values = json.loads(f.read())
+    except FileNotFoundError:
+        enum_previous_raw_values = None
+
+    if enum_previous_raw_values != None:
+        for value_name, value_number in enum_raw_values.items():
+            if value_name in enum_previous_raw_values and enum_previous_raw_values[value_name] != value_number:
+                print(f'Error: Invalid change to value "{value_name}" in enum file "{source_file_name}" in backend {mod_path}')
+                sys.exit(1)
+
+    tfutil.write_file_if_different(os.path.join(mod_path, source_file_name + '.previous'), json.dumps(enum_raw_values))
+
+    enum_header = ""
+    enum_header += f'// WARNING: This file is generated from "{source_file_name}" by pio_hooks.py\n\n'
+    enum_header += '#include <stdint.h>\n\n'
+    enum_header += '#pragma once\n\n'
+    if comment:
+        enum_header += comment
+    enum_header += f'enum class {enum_name.camel} : {underlying_type} {{\n'
+    enum_header += ''.join(enum_values)
+    enum_header += '\n'
+    enum_header += f'    _min = {value_number_min_name.camel},\n'
+    enum_header += f'    _max = {value_number_max_name.camel},\n'
+    enum_header += '};\n\n'
+    enum_header += f'#define {enum_name.upper}_COUNT {len(values)}\n\n'
+    enum_header += f'const char *get_{enum_name.under}_name({enum_name.camel} value);\n'
+
+    tfutil.write_file_if_different(os.path.join(mod_path, enum_name.under + '.enum.h'), enum_header)
+
+    enum_source = ""
+    enum_source += f'// WARNING: This file is generated from "{source_file_name}" by pio_hooks.py\n\n'
+    enum_source += f'#include "{enum_name.under}.enum.h"\n\n'
+    enum_source += f'const char *get_{enum_name.under}_name({enum_name.camel} value)\n'
+    enum_source += '{\n'
+    enum_source += '    switch (value) {\n'
+    enum_source += ''.join(enum_cases)
+    enum_source += '    default: return "Unknown";\n'
+    enum_source += '    }\n'
+    enum_source += '}\n'
+
+    tfutil.write_file_if_different(os.path.join(mod_path, enum_name.under + '.enum.cpp'), enum_source)
+
+    frontend_source = ""
+    frontend_source += f'// WARNING: This file is generated from "{source_file_name}" by pio_hooks.py\n\n'
+    frontend_source += f'export const enum {enum_name.camel} {{\n'
+    frontend_source += ''.join(enum_values)
+    frontend_source += '\n'
+    frontend_source += f'    _min = {value_number_min_name.camel},\n'
+    frontend_source += f'    _max = {value_number_max_name.camel},\n'
+    frontend_source += '}\n'
+
+    frontend_mod_path = os.path.join('web', 'src', 'modules', backend_module.under)
+    if os.path.exists(frontend_mod_path) and os.path.isdir(frontend_mod_path):
+        tfutil.write_file_if_different(os.path.join(frontend_mod_path, enum_name.under + '.enum.ts'), frontend_source)
