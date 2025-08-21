@@ -95,8 +95,13 @@ ShipConnection::ShipConnection(const tf_websocket_client_config_t ws_config, Coo
     ws_server = tf_websocket_client_init(&ws_config);
 
     tf_websocket_register_events(ws_server, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)ws_server);
-    tf_websocket_client_start(ws_server);
-    state_machine_next_step();
+    esp_err_t err = tf_websocket_client_start(ws_server);
+    if (err == ESP_OK ) {
+        state_machine_next_step();
+    }else {
+        logger.printfln("Error connectiing to peer");
+        schedule_close(0_ms);
+    }
 }
 
 void ShipConnection::frame_received(httpd_ws_frame_t *ws_pkt)

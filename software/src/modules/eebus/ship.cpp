@@ -250,9 +250,10 @@ void Ship::connect_trusted_peers()
             websocket_cfg.client_key = reinterpret_cast<const char *>(cert->key);
             websocket_cfg.client_key_len = cert->key_length;
             websocket_cfg.disable_auto_reconnect = true;
-
+            websocket_cfg.transport = WEBSOCKET_TRANSPORT_OVER_SSL;
             websocket_cfg.subprotocol = "ee1.0";
-
+            websocket_cfg.skip_cert_common_name_check = true;
+            websocket_cfg.cert_pem = NULL;
 
             /*
             // TODO: Make a tf_websocket_client_config_t from the peer config

@@ -56,7 +56,7 @@ enum class NodeState : uint8_t;
 class SpineConnection; // Forward declaration to avoid circular dependency
 
 
-static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data);
+//static void websocket_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data);
 
 
 class ShipConnection
