@@ -45,6 +45,8 @@ let x = {
             "register_blocks_function_code_write_multiple_coils": "15 – Mehrere Coils schreiben",
             "register_blocks_function_code_write_multiple_registers": "16 – Mehrere Register schreiben",
             "register_blocks_function_code_mask_write_register": "22 – Register maskiert schreiben",
+            "register_blocks_function_code_read_mask_write_single_register": "3 + 6 – Einzelnes Register lesen und maskiert schreiben",
+            "register_blocks_function_code_read_mask_write_multiple_registers": "3 + 16 – Mehrere Register lesen und maskiert schreiben",
             "register_blocks_start_address": "Startadresse",
             "register_blocks_start_address_muted": "beginnt bei 0",
             "register_blocks_start_number": "Startnummer",
@@ -57,7 +59,10 @@ let x = {
             "register_blocks_values_invalid": "Die Werte müssen eine kommagetrennte Liste von Dezimalzahlen sein.",
             "register_blocks_mask": "Bitmaske",
             "register_blocks_mask_muted": "",
-            "register_blocks_mask_invalid": "Die Bitmaske muss eine Folge von 0, 1 oder X sein.",
+            "register_blocks_mask_invalid": "Die Bitmaske muss eine Folge von 0, 1 oder x sein.",
+            "register_blocks_masks": "Bitmasken",
+            "register_blocks_masks_muted": "kommagetrennt",
+            "register_blocks_masks_invalid": "Die Bitmasken müssen eine kommagetrennte Liste von Folgen von 0, 1 oder x sein.",
             "register_blocks_values_desc": /*SFN*/(func: number, addr: number, values: string) => {
                 let rtyp = "Unbekannt";
 
@@ -70,6 +75,8 @@ let x = {
                 case 6:
                 case 16:
                 case 22:
+                case 9:
+                case 19:
                     rtyp = "Register";
                     break;
                 }
