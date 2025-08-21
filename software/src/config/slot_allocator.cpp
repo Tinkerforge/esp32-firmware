@@ -34,6 +34,7 @@
 [[gnu::section(".iram.data")]] static Superblock<Config::ConfUnion>  first_superblock_ConfUnion;
 [[gnu::section(".iram.data")]] static Superblock<Config::ConfUint53> first_superblock_ConfUint53;
 [[gnu::section(".iram.data")]] static Superblock<Config::ConfInt52>  first_superblock_ConfInt52;
+[[gnu::section(".iram.data")]] static Superblock<Config::ConfTuple>  first_superblock_ConfTuple;
 
 template<> Superblock<Config::ConfUint>   *RootBlock<Config::ConfUint>::first_superblock   = &first_superblock_ConfUint;
 template<> Superblock<Config::ConfInt>    *RootBlock<Config::ConfInt>::first_superblock    = &first_superblock_ConfInt;
@@ -44,6 +45,7 @@ template<> Superblock<Config::ConfObject> *RootBlock<Config::ConfObject>::first_
 template<> Superblock<Config::ConfUnion>  *RootBlock<Config::ConfUnion>::first_superblock  = &first_superblock_ConfUnion;
 template<> Superblock<Config::ConfUint53> *RootBlock<Config::ConfUint53>::first_superblock = &first_superblock_ConfUint53;
 template<> Superblock<Config::ConfInt52>  *RootBlock<Config::ConfInt52>::first_superblock  = &first_superblock_ConfInt52;
+template<> Superblock<Config::ConfTuple>  *RootBlock<Config::ConfTuple>::first_superblock  = &first_superblock_ConfTuple;
 
 template<typename ConfT> uint16_t RootBlock<ConfT>::first_free_slot  = 0;
 template<typename ConfT> uint16_t RootBlock<ConfT>::allocated_blocks = 0;
@@ -141,6 +143,7 @@ template uint16_t nextSlot<Config::ConfObject>();
 template uint16_t nextSlot<Config::ConfUnion>();
 template uint16_t nextSlot<Config::ConfUint53>();
 template uint16_t nextSlot<Config::ConfInt52>();
+template uint16_t nextSlot<Config::ConfTuple>();
 
 template<typename ConfigT>
 typename ConfigT::Slot *get_slot(uint16_t idx)
@@ -167,6 +170,7 @@ template Config::ConfObject::Slot *get_slot<Config::ConfObject>(uint16_t idx);
 template Config::ConfUnion::Slot  *get_slot<Config::ConfUnion>(uint16_t idx);
 template Config::ConfUint53::Slot *get_slot<Config::ConfUint53>(uint16_t idx);
 template Config::ConfInt52::Slot  *get_slot<Config::ConfInt52>(uint16_t idx);
+template Config::ConfTuple::Slot  *get_slot<Config::ConfTuple>(uint16_t idx);
 
 #ifdef DEBUG_FS_ENABLE
 template<typename ConfigT>
@@ -263,6 +267,7 @@ void config_post_setup()
         check_slot_accounting<Config::ConfUnion>();
         check_slot_accounting<Config::ConfUint53>();
         check_slot_accounting<Config::ConfInt52>();
+        check_slot_accounting<Config::ConfTuple>();
     }, 1_min, 1_min);
 #endif
 }

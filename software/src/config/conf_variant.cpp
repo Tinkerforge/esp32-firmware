@@ -38,6 +38,7 @@ Config::ConfVariant::ConfVariant(ConfUint16 u) : tag(Tag::UINT16), updated(0xFF)
 Config::ConfVariant::ConfVariant(ConfInt16 u)  : tag(Tag::INT16),  updated(0xFF), val() {new(&val.i16) ConfInt16{u};}
 Config::ConfVariant::ConfVariant(ConfUint8 u)  : tag(Tag::UINT8),  updated(0xFF), val() {new(&val.u8)  ConfUint8{u};}
 Config::ConfVariant::ConfVariant(ConfInt8 u)   : tag(Tag::INT8),   updated(0xFF), val() {new(&val.i8)  ConfInt8{u};}
+Config::ConfVariant::ConfVariant(ConfTuple t)  : tag(Tag::TUPLE),  updated(0xFF), val() {new(&val.t)   ConfTuple{t};}
 
 Config::ConfVariant::ConfVariant() : tag(Tag::EMPTY), updated(0xFF), val() {}
 
@@ -88,6 +89,9 @@ Config::ConfVariant::ConfVariant(const ConfVariant &cpy) : tag(cpy.tag), updated
             break;
         case ConfVariant::Tag::INT8:
             new(&val.i8) ConfInt8(cpy.val.i8);
+            break;
+        case ConfVariant::Tag::TUPLE:
+            new(&val.t) ConfTuple(cpy.val.t);
             break;
         default:
             esp_system_abort("ConfVariant::ConfVariant: Unknown tag!");
@@ -152,6 +156,9 @@ Config::ConfVariant &Config::ConfVariant::operator=(const ConfVariant &cpy)
         case ConfVariant::Tag::INT8:
             new(&val.i8) ConfInt8(cpy.val.i8);
             break;
+        case ConfVariant::Tag::TUPLE:
+            new(&val.t) ConfTuple(cpy.val.t);
+            break;
         default:
             esp_system_abort("ConfVariant::operator=: Unknown tag!");
     }
@@ -207,6 +214,9 @@ void Config::ConfVariant::destroyUnionMember()
         case ConfVariant::Tag::INT8:
             val.i8.~ConfInt8();
             break;
+        case ConfVariant::Tag::TUPLE:
+            val.t.~ConfTuple();
+            break;
         default:
             esp_system_abort("ConfVariant::destroyUnionMember: Unknown tag!");
     }
@@ -250,6 +260,8 @@ const char *Config::ConfVariant::getVariantName() const
             return val.u8.variantName;
         case ConfVariant::Tag::INT8:
             return val.i8.variantName;
+        case ConfVariant::Tag::TUPLE:
+            return val.t.variantName;
         default:
             esp_system_abort("ConfVariant::getVariantName: Unknown tag!");
     }
@@ -302,6 +314,9 @@ Config::ConfVariant::ConfVariant(ConfVariant &&cpy) : tag(cpy.tag), updated(cpy.
             break;
         case ConfVariant::Tag::INT8:
             new(&val.i8) ConfInt8(std::move(cpy.val.i8));
+            break;
+        case ConfVariant::Tag::TUPLE:
+            new(&val.t) ConfTuple(std::move(cpy.val.t));
             break;
         default:
             esp_system_abort("ConfVariant::ConfVariant(&&): Unknown tag!");
@@ -363,6 +378,9 @@ Config::ConfVariant &Config::ConfVariant::operator=(ConfVariant &&cpy)
             break;
         case ConfVariant::Tag::INT8:
             new(&val.i8) ConfInt8(std::move(cpy.val.i8));
+            break;
+        case ConfVariant::Tag::TUPLE:
+            new(&val.t) ConfTuple(std::move(cpy.val.t));
             break;
         default:
             esp_system_abort("ConfVariant::operator=(&&): Unknown tag!");

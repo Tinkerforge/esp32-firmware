@@ -186,6 +186,20 @@ Config Config::Uint53(uint64_t u)
     return Config{ConfUint53{u}};
 }
 
+Config Config::Tuple(std::initializer_list<Config> tup) {
+    if (boot_stage < BootStage::PRE_SETUP)
+        esp_system_abort("constructing configs before the pre_setup is not allowed!");
+
+    return Config{ConfTuple{tup}};
+}
+
+Config Config::Tuple(size_t length, Config &&tup) {
+    if (boot_stage < BootStage::PRE_SETUP)
+        esp_system_abort("constructing configs before the pre_setup is not allowed!");
+
+    return Config{ConfTuple{length, std::move(tup)}};
+}
+
 [[gnu::const]]
 ConfigRoot *Config::Null()
 {
@@ -353,6 +367,9 @@ Config::Wrap Config::get(size_t i)
             return Wrap{value.val.un.getVal()};
         abort_on_union_out_of_range(i);
     }
+    if (this->is<Config::ConfTuple>()) {
+        return Wrap{value.val.t.get(i)};
+    }
 
     abort_on_array_get_failure(this, i);
 }
@@ -370,6 +387,9 @@ Config::Wrap Config::get_or_null(size_t i)
             return Wrap{value.val.un.getVal()};
         return Wrap{nullptr};
     }
+    if (this->is<Config::ConfTuple>()) {
+        return Wrap{value.val.t.get_or_null(i)};
+    }
 
     return Wrap{nullptr};
 }
@@ -386,6 +406,9 @@ const Config::ConstWrap Config::get(size_t i) const
         if (i == 1)
             return ConstWrap{value.val.un.getVal()};
         abort_on_union_out_of_range(i);
+    }
+    if (this->is<Config::ConfTuple>()) {
+        return ConstWrap{value.val.t.get(i)};
     }
 
     abort_on_array_get_failure(this, i);
@@ -544,47 +567,68 @@ bool Config::reserve(size_t new_size)
 size_t Config::count() const
 {
     // Asserts checked in ::is.
-    if (!this->is<Config::ConfArray>()) {
-        esp_system_abort("Tried to get count of a node that is not an array!");
+    if (this->is<Config::ConfArray>()) {
+        return this->asArray().size();
     }
-    const std::vector<Config> &children = this->asArray();
-    return children.size();
+    if (this->is<Config::ConfTuple>()) {
+        return this->value.val.t.getSize();
+    }
+
+    esp_system_abort("Tried to get count of a node that is not an array or tuple!");
 }
 
 Config *Config::begin()
 {
     // Asserts checked in ::is.
-    if (!this->is<Config::ConfArray>()) {
-        esp_system_abort("Tried to get begin iterator of a node that is not an array!");
+    if (this->is<Config::ConfArray>()) {
+        return &*this->asArray().begin();
     }
-    return &*this->asArray().begin();
+    if (this->is<Config::ConfTuple>()) {
+        return this->value.val.t.getSlot()->values.get();
+    }
+
+    esp_system_abort("Tried to get begin iterator of a node that is not an array or tuple!");
 }
 
 Config *Config::end()
 {
     // Asserts checked in ::is.
-    if (!this->is<Config::ConfArray>()) {
-        esp_system_abort("Tried to get end iterator of a node that is not an array!");
+    if (this->is<Config::ConfArray>()) {
+        return &*this->asArray().end();
     }
-    return &*this->asArray().end();
+    if (this->is<Config::ConfTuple>()) {
+        const auto *slot = this->value.val.t.getSlot();
+        return slot->values.get() + slot->length;
+    }
+
+    esp_system_abort("Tried to get end iterator of a node that is not an array or tuple!");
 }
 
 const Config *Config::begin() const
 {
     // Asserts checked in ::is.
-    if (!this->is<Config::ConfArray>()) {
-        esp_system_abort("Tried to get begin iterator of a node that is not an array!");
+    if (this->is<Config::ConfArray>()) {
+        return &*this->asArray().cbegin();
     }
-    return &*this->asArray().cbegin();
+    if (this->is<Config::ConfTuple>()) {
+        return this->value.val.t.getSlot()->values.get();
+    }
+
+    esp_system_abort("Tried to get begin iterator of a node that is not an array or tuple!");
 }
 
 const Config *Config::end() const
 {
     // Asserts checked in ::is.
-    if (!this->is<Config::ConfArray>()) {
-        esp_system_abort("Tried to get end iterator of a node that is not an array!");
+    if (this->is<Config::ConfArray>()) {
+        return &*this->asArray().cend();
     }
-    return &*this->asArray().cend();
+    if (this->is<Config::ConfTuple>()) {
+        const auto *slot = this->value.val.t.getSlot();
+        return slot->values.get() + slot->length;
+    }
+
+    esp_system_abort("Tried to get end iterator of a node that is not an array or tuple!");
 }
 
 const CoolString &Config::asString() const
@@ -866,7 +910,7 @@ DynamicJsonDocument Config::to_json(const char *const *keys_to_censor, size_t ke
     JsonVariant var;
     if (is<Config::ConfObject>()) {
         var = doc.to<JsonObject>();
-    } else if (is<Config::ConfArray>() || is<Config::ConfUnion>()) {
+    } else if (is<Config::ConfArray>() || is<Config::ConfUnion>() || is<Config::ConfTuple>()) {
         var = doc.to<JsonArray>();
     } else {
         var = doc.as<JsonVariant>();

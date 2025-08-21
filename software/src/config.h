@@ -63,6 +63,7 @@ struct ConfObjectSlot;
 struct ConfUnionSlot;
 struct ConfInt52Slot;
 struct ConfUint53Slot;
+struct ConfTupleSlot;
 
 struct ConfUnionPrototypeInternal;
 
@@ -369,6 +370,38 @@ struct Config {
         ConfUnion &operator=(ConfUnion &&cpy);
     };
 
+    struct ConfTuple {
+        friend struct api_info;
+        using Slot = ConfTupleSlot;
+
+    private:
+        uint16_t idx;
+
+    public:
+        static bool slotEmpty(const Slot *slot);
+        static constexpr const char *variantName = "ConfTuple";
+        static Slot *allocSlotBuf(size_t elements);
+
+        Config *get(size_t i);
+        Config *get_or_null(size_t i);
+        const Config *get(size_t i) const;
+
+        size_t getSize() const;
+
+        Slot *getSlot();
+        const Slot *getSlot() const;
+
+        ConfTuple(std::initializer_list<Config> val);
+        ConfTuple(size_t length, Config &&cfg);
+        ConfTuple(const ConfTuple &cpy);
+        ~ConfTuple();
+
+        ConfTuple &operator=(const ConfTuple &cpy);
+
+        ConfTuple(ConfTuple &&cpy);
+        ConfTuple &operator=(ConfTuple &&cpy);
+    };
+
     struct ConfUpdateArray;
     struct ConfUpdateObject;
     struct ConfUpdateUnion;
@@ -389,6 +422,7 @@ struct Config {
         int16_t,
         uint8_t,
         int8_t
+        // TODO ConfUpdateTuple? or reuse array?
     > ConfUpdate;
     // This is necessary as we can't use get to distinguish between
     // a get<std::nullptr_t>() that returned nullptr because the variant
@@ -427,6 +461,7 @@ struct Config {
             INT16,
             UINT8,
             INT8,
+            TUPLE
         };
         Tag tag;
         uint8_t updated;
@@ -447,6 +482,7 @@ struct Config {
             ConfInt16 i16;
             ConfUint8 u8;
             ConfInt8 i8;
+            ConfTuple t;
             ~Val();
         } val;
 
@@ -464,6 +500,7 @@ struct Config {
         ConfVariant(ConfInt16 i16);
         ConfVariant(ConfUint8 u8);
         ConfVariant(ConfInt8 i8);
+        ConfVariant(ConfTuple t);
 
         ConfVariant();
 
@@ -515,6 +552,8 @@ struct Config {
                 return visitor(v.val.u8);
             case ConfVariant::Tag::INT8:
                 return visitor(v.val.i8);
+            case ConfVariant::Tag::TUPLE:
+                return visitor(v.val.t);
         }
         esp_system_abort("apply_visitor: ConfVariant has unknown type!");
     }
@@ -553,6 +592,8 @@ struct Config {
                 return visitor(v.val.u8);
             case ConfVariant::Tag::INT8:
                 return visitor(v.val.i8);
+            case ConfVariant::Tag::TUPLE:
+                return visitor(v.val.t);
         }
         esp_system_abort("apply_visitor: const ConfVariant has unknown type!");
     }
@@ -596,6 +637,8 @@ struct Config {
             return (int)ConfVariant::Tag::UINT8;
         if (std::is_same<T, ConfInt8>())
             return (int)ConfVariant::Tag::INT8;
+        if (std::is_same<T, ConfTuple>())
+            return (int)ConfVariant::Tag::TUPLE;
         return -1;
     }
 
@@ -643,6 +686,9 @@ struct Config {
     static Config Int52(int64_t i);
 
     static Config Uint53(uint64_t u);
+
+    static Config Tuple(std::initializer_list<Config> tup);
+    static Config Tuple(size_t length, Config &&cfg);
 
     template<typename T>
     static Config Enum(T i, T min, T max) {
@@ -750,7 +796,7 @@ public:
     Wrap get(const String &s);
     const ConstWrap get(const String &s) const;
 
-    // for ConfArray and ConfUnion (0 returns union tag, 1 returns union value)
+    // for ConfArray, ConfTuple and ConfUnion (0 returns union tag, 1 returns union value)
                Wrap get(int8_t )       = delete;
     const ConstWrap get(int8_t ) const = delete;
                Wrap get(int16_t)       = delete;

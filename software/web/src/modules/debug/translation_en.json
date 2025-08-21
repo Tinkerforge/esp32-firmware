@@ -36,6 +36,7 @@
             "conf_union_buf": "ConfUnion",
             "conf_uint53_buf": "ConfUint53",
             "conf_int52_buf": "ConfInt52",
+            "conf_tuple_buf": "ConfTuple",
 
             "config_slots": "Config slots",
             "slots_used": "Used",

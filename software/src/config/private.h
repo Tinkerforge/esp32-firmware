@@ -92,3 +92,8 @@ struct ConfUint53Slot {
     static constexpr const uint64_t min = 0;
     static constexpr const uint64_t max = (1ll << 53ll) - 1;
 };
+
+struct ConfTupleSlot {
+    std::unique_ptr<Config[]> values;
+    size_t length;
+};

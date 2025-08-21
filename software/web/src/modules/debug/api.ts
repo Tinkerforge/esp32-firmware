@@ -50,6 +50,7 @@ export interface state_slow {
     conf_union_buf_size: number;
     conf_uint53_buf_size: number;
     conf_int52_buf_size: number;
+    conf_tuple_buf_size: number;
     ipsock_cur: number;
     ipsock_hwm: number;
 }

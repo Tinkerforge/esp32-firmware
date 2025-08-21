@@ -179,6 +179,19 @@ struct default_validator {
 
         return Config::apply_visitor(default_validator{}, x.getVal()->value);
     }
+
+    String operator()(const Config::ConfTuple &x) const
+    {
+        const auto *slot = x.getSlot();
+
+        for (size_t i = 0; i < slot->length; ++i) {
+            String err = Config::apply_visitor(default_validator{}, slot->values[i].value);
+            if (!err.isEmpty())
+                return String("[") + i + "] " + err;
+        }
+
+        return "";
+    }
 };
 
 struct to_json {
@@ -241,7 +254,7 @@ struct to_json {
 
             if (child->is<Config::ConfObject>()) {
                 arr.createNestedObject();
-            } else if (child->is<Config::ConfArray>() || child->is<Config::ConfUnion>()) {
+            } else if (child->is<Config::ConfArray>() || child->is<Config::ConfUnion>() || child->is<Config::ConfTuple>() ) {
                 arr.createNestedArray();
             } else {
                 arr.add(0);
@@ -279,7 +292,7 @@ struct to_json {
 
             if (child.is<Config::ConfObject>()) {
                 obj.createNestedObject(key);
-            } else if (child.is<Config::ConfArray>() || child.is<Config::ConfUnion>()) {
+            } else if (child.is<Config::ConfArray>() || child.is<Config::ConfUnion>() || child.is<Config::ConfTuple>() ) {
                 obj.createNestedArray(key);
             } else {
                 obj[key] = nullptr;
@@ -297,13 +310,34 @@ struct to_json {
         arr.add(x.getSlot()->tag.asUint8());
         if (val->is<Config::ConfObject>()) {
             arr.createNestedObject();
-        } else if (val->is<Config::ConfArray>() || val->is<Config::ConfUnion>()) {
+        } else if (val->is<Config::ConfArray>() || val->is<Config::ConfUnion>() || val->is<Config::ConfTuple>() ) {
             arr.createNestedArray();
         } else {
             arr.add();
         }
 
         Config::apply_visitor(to_json{insertHere[1], keys_to_censor, keys_to_censor_len}, val->value);
+    }
+
+    void operator()(const Config::ConfTuple &x)
+    {
+        const auto *val = x.getSlot()->values.get();
+        const auto size = x.getSlot()->length;
+
+        JsonArray arr = insertHere.as<JsonArray>();
+        for (size_t i = 0; i < size; ++i) {
+            const Config *child = &val[i];
+
+            if (child->is<Config::ConfObject>()) {
+                arr.createNestedObject();
+            } else if (child->is<Config::ConfArray>() || child->is<Config::ConfUnion>() || child->is<Config::ConfTuple>() ) {
+                arr.createNestedArray();
+            } else {
+                arr.add(0);
+            }
+
+            Config::apply_visitor(to_json{arr[i], keys_to_censor, keys_to_censor_len}, child->value);
+        }
     }
 
     JsonVariant insertHere;
@@ -403,7 +437,7 @@ struct max_string_length_visitor {
         const auto *slot = x.getSlot();
 
         return Config::apply_visitor(max_string_length_visitor{}, slot->prototype->value) * slot->maxElements +
-               (slot->maxElements + 1); // [,] and n-1 ,
+               (slot->maxElements + 1); // '[', ']' and (n - 1) * ','
     }
     size_t operator()(const Config::ConfObject &x)
     {
@@ -432,6 +466,19 @@ struct max_string_length_visitor {
         }
         max_len += estimate_chars_per_uint(max_tag); // tag
         return max_len + 3; // [,]
+    }
+
+    size_t operator()(const Config::ConfTuple &x)
+    {
+        const auto *slot = x.getSlot();
+        const auto size = slot->length;
+
+        size_t sum = size + 1; // '[', ']' and (n - 1) * ','
+        for (size_t i = 0; i < size; ++i) {
+            sum += Config::apply_visitor(max_string_length_visitor{}, slot->values[i].value);
+        }
+
+        return sum;
     }
 };
 
@@ -518,6 +565,19 @@ struct string_length_visitor {
     {
         return Config::apply_visitor(string_length_visitor{}, x.getVal()->value) + estimate_chars_per_uint(x.getTag()->asUint8()) + 3; // [,]
     }
+
+    size_t operator()(const Config::ConfTuple &x)
+    {
+        const auto *slot = x.getSlot();
+        const auto size = slot->length;
+
+        size_t sum = size + 1; // '[', ']' and (n - 1) * ','
+        for (size_t i = 0; i < size; ++i) {
+            sum += Config::apply_visitor(string_length_visitor{}, slot->values[i].value);
+        }
+
+        return sum;
+    }
 };
 
 struct json_length_visitor {
@@ -600,6 +660,18 @@ struct json_length_visitor {
             max_len = std::max(max_len, Config::apply_visitor(json_length_visitor{zero_copy}, slot->prototypes[i].config.value));
         }
         return max_len + JSON_ARRAY_SIZE(2);
+    }
+
+    size_t operator()(const Config::ConfTuple &x)
+    {
+        const auto *slot = x.getSlot();
+        const auto size = slot->length;
+
+        size_t sum = 0;
+        for (size_t i = 0; i < size; ++i) {
+            sum += Config::apply_visitor(json_length_visitor{zero_copy}, slot->values[i].value);
+        }
+        return sum + JSON_ARRAY_SIZE(size);
     }
 
     bool zero_copy;
@@ -928,6 +1000,37 @@ struct from_json {
         return {res.message, changed || res.changed};
     }
 
+    UpdateResult operator()(Config::ConfTuple &x)
+    {
+        if (json_node.isNull())
+            return {permit_null_updates ? "" : "Null updates not permitted.", false};
+
+        if (!json_node.is<JsonArray>())
+            return {"JSON node was not an array.", false};
+
+        JsonArray arr = json_node.as<JsonArray>();
+        auto arr_size = arr.size();
+
+        const auto old_size = x.getSize();
+
+        bool changed = false;
+
+        if (arr_size != old_size) {
+            return {StringSumHelper("Length mismatch: expected ") + old_size + " but got " + arr_size, false};
+        }
+
+        for (size_t i = 0; i < arr_size; ++i) {
+            // Must always call getSlot() because a nested array might grow and trigger a slot array move that would invalidate any kept reference on the outer array.
+            auto res = Config::apply_visitor(from_json{arr[i], force_same_keys, permit_null_updates, false}, x.getSlot()->values[i].value);
+            if (!res.message.isEmpty())
+                return {String("[") + i + "] " + res.message, false};
+            x.getSlot()->values[i].set_updated(res.changed ? 0xFF : 0);
+            changed |= res.changed;
+        }
+
+        return {"", changed};
+    }
+
     const JsonVariant json_node;
     bool force_same_keys;
     bool permit_null_updates;
@@ -1251,6 +1354,37 @@ struct from_update {
         return {res.message, changed || res.changed};
     }
 
+    UpdateResult operator()(Config::ConfTuple &x)
+    {
+        if (Config::containsNull(update))
+            return {"", false};
+
+        const Config::ConfUpdateArray *arr = update->get<Config::ConfUpdateArray>();
+        if (arr == nullptr)
+            return {"ConfUpdate node was not an array.", false};
+
+        const auto arr_size = arr->elements.size();
+        const auto old_size = x.getSlot()->length;
+
+        bool changed = false;
+
+        if (arr_size != old_size) {
+            return {StringSumHelper("Length mismatch: expected ") + old_size + " but got " + arr_size, false};
+        }
+
+        for (size_t i = 0; i < arr_size; ++i) {
+            // Must always call getVal() because a nested array might grow and trigger a slot array move that would invalidate any kept reference on the outer array.
+            auto res = Config::apply_visitor(from_update{&arr->elements[i]}, x.getSlot()->values[i].value);
+            if (!res.message.isEmpty())
+                return {String("[") + i + "] " + res.message, false};
+
+            x.getSlot()->values[i].set_updated(res.changed ? 0xFF : 0);
+            changed |= res.changed;
+        }
+
+        return {"", changed};
+    }
+
     const Config::ConfUpdate *update;
 };
 
@@ -1329,6 +1463,18 @@ struct is_updated {
         const auto &value = x.getVal()->value;
         return (value.updated & api_backend_flag) | Config::apply_visitor(is_updated{api_backend_flag}, value);
     }
+    uint8_t operator()(const Config::ConfTuple &x) const
+    {
+        const auto *slot = x.getSlot();
+        const auto size = slot->length;
+
+        uint8_t result = 0;
+        for (size_t i = 0; i < size; ++i) {
+            result |= static_cast<uint8_t>(slot->values[i].value.updated & api_backend_flag); //TODO: why is this cast necessary? Works above for ConfArray, Object and Union
+            result |= Config::apply_visitor(is_updated{api_backend_flag}, slot->values[i].value);
+        }
+        return result;
+    }
 
     uint8_t api_backend_flag;
 };
@@ -1392,6 +1538,16 @@ struct set_updated_false {
         auto &value = x.getVal()->value;
         value.updated &= ~api_backend_flag;
         Config::apply_visitor(set_updated_false{api_backend_flag}, value);
+    }
+    void operator()(Config::ConfTuple &x)
+    {
+        const auto *slot = x.getSlot();
+        const auto size = slot->length;
+
+        for (size_t i = 0; i < size; ++i) {
+            slot->values[i].value.updated &= ~api_backend_flag;
+            Config::apply_visitor(set_updated_false{api_backend_flag}, slot->values[i].value);
+        }
     }
     uint8_t api_backend_flag;
 };
@@ -1499,6 +1655,23 @@ struct api_info {
         auto &value = x.getVal()->value;
         Config::apply_visitor(api_info{sw}, value);
         sw.printf("}");
+    }
+    void operator()(const Config::ConfTuple &x)
+    {
+        const auto *slot = x.getSlot();
+        const auto size = slot->length;
+
+        sw.printf("{\"type\":\"tuple\",\"length\":%u,\"entries\":[", size);
+
+        bool first = true;
+        for (size_t i = 0; i < size; ++i) {
+            if (!first) {
+                sw.printf(",");
+            }
+            first = false;
+            Config::apply_visitor(api_info{sw}, slot->values[i].value);
+        }
+        sw.printf("]}");
     }
 
     StringWriter &sw;
