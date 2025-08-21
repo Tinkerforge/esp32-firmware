@@ -308,6 +308,8 @@ void ModbusTCPDebug::register_urls()
 
                 if (config_function_code == ModbusFunctionCode::ReadMaskWriteSingleRegister
                  || config_function_code == ModbusFunctionCode::ReadMaskWriteMultipleRegisters) {
+                    uint16_t *values = static_cast<uint16_t *>(buffer);
+
                     for (uint16_t i = 0; i < data_count; ++i) {
                         uint16_t masks[2];
                         ssize_t data_hexload_len = hexload<uint16_t>(write_data.c_str() + i * 4 * 2, 4 * 2, masks, 2);
@@ -324,11 +326,7 @@ void ModbusTCPDebug::register_urls()
                             return;
                         }
 
-                        uint16_t value = static_cast<uint16_t *>(buffer)[i];
-
-                        value = (value & masks[0]) | (masks[1] & ~masks[0]);
-
-                        static_cast<uint16_t *>(buffer)[i] = value;
+                        values[i] = (values[i] & masks[0]) | (masks[1] & ~masks[0]);
                     }
 
                     TFModbusTCPFunctionCode second_function_code;
