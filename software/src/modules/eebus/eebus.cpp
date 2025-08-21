@@ -271,6 +271,7 @@ void EEBus::register_urls()
                     {
                         ship.discover_ship_peers();
                         update_peers_config();
+                        ship.connect_trusted_peers();
                     },
                     1_s);
                 // we do a bit of a wait here so the user has time to see the feedback on the frontend
