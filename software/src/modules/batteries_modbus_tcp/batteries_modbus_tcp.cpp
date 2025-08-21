@@ -31,6 +31,13 @@
 
 #include "gcc_warnings.h"
 
+struct Execution {
+    TFGenericTCPSharedClient *client;
+    uint32_t cookie;
+    BatteriesModbusTCP::TableSpec *table;
+    size_t index;
+};
+
 BatteriesModbusTCP::TableSpec *BatteriesModbusTCP::init_table(const Config *config)
 {
     const Config *register_blocks_config = static_cast<const Config *>(config->get("register_blocks"));
@@ -108,6 +115,114 @@ void BatteriesModbusTCP::free_table(BatteriesModbusTCP::TableSpec *table)
 
     free(table->register_blocks);
     free(table);
+}
+
+[[gnu::format(__printf__, 2, 3)]] static void report_errorf(uint32_t cookie, const char *fmt, ...);
+static void report_errorf(uint32_t cookie, const char *fmt, ...)
+{
+    va_list args;
+    char buf[256];
+    TFJsonSerializer json{buf, sizeof(buf)};
+
+    json.addObject();
+    json.addMemberNumber("cookie", cookie);
+    va_start(args, fmt);
+    json.addMemberStringVF("error", fmt, args);
+    va_end(args);
+    json.endObject();
+    json.end();
+
+    ws.pushRawStateUpdate(buf, "batteries_modbus_tcp/execute_result");
+}
+
+static void report_success(uint32_t cookie)
+{
+    char buf[256];
+    TFJsonSerializer json{buf, sizeof(buf)};
+
+    json.addObject();
+    json.addMemberNumber("cookie", cookie);
+    json.addMemberNull("error");
+    json.endObject();
+    json.end();
+
+    ws.pushRawStateUpdate(buf, "batteries_modbus_tcp/execute_result");
+}
+
+static void release_client(Execution *execution)
+{
+    task_scheduler.scheduleOnce([execution]() {
+        modbus_tcp_client.get_pool()->release(execution->client);
+    });
+}
+
+static void write_next(Execution *execution)
+{
+    if (execution->index >= execution->table->register_blocks_count) {
+        report_success(execution->cookie);
+        release_client(execution); // execution is done
+        return;
+    }
+
+    BatteriesModbusTCP::RegisterBlockSpec *register_block = &execution->table->register_blocks[execution->index];
+    TFModbusTCPFunctionCode function_code;
+
+    switch (register_block->function_code) {
+    case ModbusFunctionCode::WriteSingleCoil:
+        function_code = TFModbusTCPFunctionCode::WriteSingleCoil;
+        break;
+
+    case ModbusFunctionCode::WriteSingleRegister:
+        function_code = TFModbusTCPFunctionCode::WriteSingleRegister;
+        break;
+
+    case ModbusFunctionCode::WriteMultipleCoils:
+        function_code = TFModbusTCPFunctionCode::WriteMultipleCoils;
+        break;
+
+    case ModbusFunctionCode::WriteMultipleRegisters:
+        function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
+        break;
+
+    case ModbusFunctionCode::MaskWriteRegister:
+        function_code = TFModbusTCPFunctionCode::MaskWriteRegister;
+        break;
+
+    case ModbusFunctionCode::ReadMaskWriteSingleRegister:
+    case ModbusFunctionCode::ReadMaskWriteMultipleRegisters:
+    case ModbusFunctionCode::ReadCoils:
+    case ModbusFunctionCode::ReadDiscreteInputs:
+    case ModbusFunctionCode::ReadHoldingRegisters:
+    case ModbusFunctionCode::ReadInputRegisters:
+    default:
+        report_errorf(execution->cookie, "Unsupported function code: %u", static_cast<uint8_t>(register_block->function_code));
+        release_client(execution);
+        return;
+    }
+
+    static_cast<TFModbusTCPSharedClient *>(execution->client)->transact(execution->table->device_address,
+                                                                        function_code,
+                                                                        register_block->start_address,
+                                                                        register_block->values_count,
+                                                                        register_block->values_buffer,
+                                                                        2_s,
+    [execution](TFModbusTCPClientTransactionResult result, const char *error_message) {
+        if (result != TFModbusTCPClientTransactionResult::Success) {
+            report_errorf(execution->cookie, "Action execution failed at %zu of %zu: %s (%d)%s%s",
+                          execution->index + 1, execution->table->register_blocks_count,
+                          get_tf_modbus_tcp_client_transaction_result_name(result),
+                          static_cast<int>(result),
+                          error_message != nullptr ? " / " : "",
+                          error_message != nullptr ? error_message : "");
+
+            release_client(execution);
+            return;
+        }
+
+        ++execution->index;
+
+        write_next(execution); // FIXME: maybe add a little delay between writes to avoid bursts?
+    });
 }
 
 void BatteriesModbusTCP::pre_setup()
@@ -223,48 +338,10 @@ void BatteriesModbusTCP::pre_setup()
     batteries.register_battery_generator(get_class(), this);
 }
 
-[[gnu::format(__printf__, 2, 3)]] static void report_errorf(uint32_t cookie, const char *fmt, ...);
-static void report_errorf(uint32_t cookie, const char *fmt, ...)
-{
-    va_list args;
-    char buf[256];
-    TFJsonSerializer json{buf, sizeof(buf)};
-
-    json.addObject();
-    json.addMemberNumber("cookie", cookie);
-    va_start(args, fmt);
-    json.addMemberStringVF("error", fmt, args);
-    va_end(args);
-    json.endObject();
-    json.end();
-
-    ws.pushRawStateUpdate(buf, "batteries_modbus_tcp/execute_result");
-}
-
-static void report_success(uint32_t cookie)
-{
-    char buf[256];
-    TFJsonSerializer json{buf, sizeof(buf)};
-
-    json.addObject();
-    json.addMemberNumber("cookie", cookie);
-    json.addMemberNull("error");
-    json.endObject();
-    json.end();
-
-    ws.pushRawStateUpdate(buf, "batteries_modbus_tcp/execute_result");
-}
-
 void BatteriesModbusTCP::register_urls()
 {
     api.addCommand("batteries_modbus_tcp/execute", &execute_config, {}, [this](String &/*errmsg*/) {
         uint32_t cookie = execute_config.get("cookie")->asUint();
-
-        if (execute_client != nullptr) {
-            report_errorf(cookie, "Another action is already in progress");
-            return;
-        }
-
         BatteryModbusTCPTableID table_id = execute_config.get("table")->getTag<BatteryModbusTCPTableID>();
 
         switch (table_id) {
@@ -282,7 +359,7 @@ void BatteriesModbusTCP::register_urls()
 
         const String &host = execute_config.get("host")->asString();
         uint16_t port = static_cast<uint16_t>(execute_config.get("port")->asUint());
-        const Config *table = static_cast<const Config *>(execute_config.get("table")->get());
+        const Config *table_config = static_cast<const Config *>(execute_config.get("table")->get());
 
         defer {
             // When done parsing the execute command, drop Strings and Array items from config
@@ -292,42 +369,44 @@ void BatteriesModbusTCP::register_urls()
             execute_config.get("table")->get()->get("register_blocks")->removeAll();
         };
 
-        execute_cookie = cookie;
-        execute_table = init_table(table);
+        TableSpec *table = init_table(table_config);
 
-        if (execute_table == nullptr) {
+        if (table == nullptr) {
             report_errorf(cookie, "Table has no registers");
             return;
         }
 
+        Execution *execution = new Execution;
+
+        execution->client = nullptr;
+        execution->cookie = cookie;
+        execution->table = table;
+        execution->index = 0;
+
         modbus_tcp_client.get_pool()->acquire(host.c_str(), port,
-        [this, cookie, host, port](TFGenericTCPClientConnectResult connect_result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
+        [execution, host, port](TFGenericTCPClientConnectResult connect_result, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
             if (connect_result != TFGenericTCPClientConnectResult::Connected) {
                 char connect_error[256] = "";
 
                 GenericTCPClientConnectorBase::format_connect_error(connect_result, error_number, share_level, host.c_str(), port, connect_error, sizeof(connect_error));
-                report_errorf(cookie, "%s", connect_error);
+                report_errorf(execution->cookie, "%s", connect_error);
 
-                free_table(execute_table);
-                execute_table = nullptr;
-
+                free_table(execution->table);
+                delete execution;
                 return;
             }
 
-            execute_client = shared_client;
-            execute_index = 0;
+            execution->client = shared_client;
 
-            write_next();
+            write_next(execution);
         },
-        [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
-            if (execute_client != shared_client) {
+        [execution](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
+            if (execution->client != shared_client) {
                 return;
             }
 
-            execute_client = nullptr;
-
-            free_table(execute_table);
-            execute_table = nullptr;
+            free_table(execution->table);
+            delete execution;
         });
     }, true);
 }
@@ -396,88 +475,4 @@ String BatteriesModbusTCP::validate_config(Config &update, ConfigSource source)
     }
 
     return String();
-}
-
-void BatteriesModbusTCP::write_next()
-{
-    if (execute_table == nullptr) {
-        return;
-    }
-
-    if (execute_client == nullptr) {
-        return;
-    }
-
-    if (execute_index >= execute_table->register_blocks_count) {
-        report_success(execute_cookie);
-        release_client(); // execution is done
-        return;
-    }
-
-    RegisterBlockSpec *register_block = &execute_table->register_blocks[execute_index];
-    TFModbusTCPFunctionCode function_code;
-
-    switch (register_block->function_code) {
-    case ModbusFunctionCode::WriteSingleCoil:
-        function_code = TFModbusTCPFunctionCode::WriteSingleCoil;
-        break;
-
-    case ModbusFunctionCode::WriteSingleRegister:
-        function_code = TFModbusTCPFunctionCode::WriteSingleRegister;
-        break;
-
-    case ModbusFunctionCode::WriteMultipleCoils:
-        function_code = TFModbusTCPFunctionCode::WriteMultipleCoils;
-        break;
-
-    case ModbusFunctionCode::WriteMultipleRegisters:
-        function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
-        break;
-
-    case ModbusFunctionCode::MaskWriteRegister:
-        function_code = TFModbusTCPFunctionCode::MaskWriteRegister;
-        break;
-
-    case ModbusFunctionCode::ReadCoils:
-    case ModbusFunctionCode::ReadDiscreteInputs:
-    case ModbusFunctionCode::ReadHoldingRegisters:
-    case ModbusFunctionCode::ReadInputRegisters:
-    default:
-        report_errorf(execute_cookie, "Unsupported function code: %u", static_cast<uint8_t>(register_block->function_code));
-        release_client();
-        return;
-    }
-
-    static_cast<TFModbusTCPSharedClient *>(execute_client)->transact(execute_table->device_address,
-                                                                     function_code,
-                                                                     register_block->start_address,
-                                                                     register_block->values_count,
-                                                                     register_block->values_buffer,
-                                                                     2_s,
-    [this](TFModbusTCPClientTransactionResult result, const char *error_message) {
-        if (result != TFModbusTCPClientTransactionResult::Success) {
-            report_errorf(execute_cookie, "Action execution failed at %zu of %zu: %s (%d)%s%s",
-                          execute_index + 1, execute_table->register_blocks_count,
-                          get_tf_modbus_tcp_client_transaction_result_name(result),
-                          static_cast<int>(result),
-                          error_message != nullptr ? " / " : "",
-                          error_message != nullptr ? error_message : "");
-
-            release_client();
-            return;
-        }
-
-        ++execute_index;
-
-        write_next(); // FIXME: maybe add a little delay between writes to avoid bursts?
-    });
-}
-
-void BatteriesModbusTCP::release_client()
-{
-    task_scheduler.scheduleOnce([this]() {
-        if (execute_client != nullptr) {
-            modbus_tcp_client.get_pool()->release(execute_client);
-        }
-    });
 }

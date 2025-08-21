@@ -66,9 +66,6 @@ public:
     virtual String validate_config(Config &update, ConfigSource source) override;
 
 private:
-    void write_next();
-    void release_client();
-
     Config config_prototype;
     Config table_custom_register_block_prototype;
     std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> table_prototypes;
@@ -76,10 +73,6 @@ private:
 
     ConfigRoot execute_config;
     std::vector<ConfUnionPrototype<BatteryModbusTCPTableID>> execute_table_prototypes;
-    TFGenericTCPSharedClient *execute_client = nullptr;
-    uint32_t execute_cookie;
-    TableSpec *execute_table = nullptr;
-    size_t execute_index;
 };
 
 #if defined(__GNUC__)
