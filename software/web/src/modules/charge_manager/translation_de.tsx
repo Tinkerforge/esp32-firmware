@@ -2,6 +2,7 @@
 import { h } from "preact";
 import * as options from "../../options";
 import { __, removeUnicodeHacks } from "../../ts/translation";
+import { toLocaleFixed } from "../../ts/util";
 let x = {
     "charge_manager": {
         "status": {
@@ -249,7 +250,27 @@ let x = {
             "mode_explainer_1_em_with_ps": <>{__("This_device")} wird von einem anderen WARP Energy Manager oder WARP Charger gesteuert und führt Phasenumschaltungen für eine einzige mit seinem Schütz verbundene Wallbox durch.</>,
             "mode_explainer_2_em_with_ps": <>{__("This_device")} steuert einen oder mehrere WARP Charger und kann Phasenumschaltungen für eine einzige mit seinem Schütz verbundene Wallbox durchführen.</>,
 
-            "mode_change_failed": "Wechsel des Lademodus fehlgeschlagen."
+            "mode_change_failed": "Wechsel des Lademodus fehlgeschlagen.",
+
+            "waiting_for_rotation": "Warte auf Rotation",
+            "shutting_down_unknown": "Aus unbekannten Gründen deaktiviert",
+            "shutting_down_not_active": "Deaktiviert: Wallbox nicht mehr aktiv",
+            "shutting_down_rotated_for_b1": "Deaktiviert um andere wartende Wallbox zu aktivieren",
+            "shutting_down_rotated_for_higher_prio": "Deaktiviert um höher priorisierte Wallbox zu beschleunigen",
+            "shutting_down_off_or_error": "Deaktiviert wegen Fehler oder Lademodus \"Aus\"",
+            "welcome_charge_for": /*SFN*/ (timespan: string) => "TODOTRANSLATE welcome charge for " + timespan /*NF*/,
+            "shutting_down_phase_overload": /*SFN*/ (phase: number, overload_mA: number) => "Deaktiviert: " + ["PV-Überschuss", "Phase L1", "Phase L2", "Phase L3"][phase] + " um " + toLocaleFixed(overload_mA / 1000, 3) + " A überlastet" /*NF*/,
+            "cant_activate_phase_minimum": /*SFN*/ (phase: number, required: number, min: number) => "Kann nicht aktiviert werden: " + toLocaleFixed((min - required) / 1000, 3) + ["PV-Überschuss fehlen", "fehlen auf Phase L1", "fehlen auf Phase L2", "fehlen auf Phase L3"][phase] /*NF*/,
+            "activating": /*SFN*/ (phase_count: number) => ["", "Ein", "Zwei", "Drei"][phase_count] + "phasig aktiviert"/*NF*/,
+            "phase_switching": "Schalte um auf dreiphasig",
+            "phase_switching_unblocked_at": /*SFN*/ (timespan: string) => "Phasenumschaltung blockiert für " + timespan /*NF*/,
+            "waking_up": "Versuche Fahrzeug aufzuwecken",
+
+            "next_rotation_at": /*SFN*/ (timespan: string) => "Nächste Rotation in " + timespan /*NF*/,
+            "pv_excess_overloaded_hysteresis_not_elapsed": /*SFN*/ (overload_mA: number, timespan: string) => "PV-Überschuss um " + toLocaleFixed(overload_mA / 1000, 3) + " A überlastet. Werde in " + timespan + " beginnen, Wallboxen abzuschalten." /*NF*/,
+            "hysteresis_elapses_at": /*SFN*/ (timespan: string) => "Hysterese läuft ab in " + timespan /*NF*/
+
+
         }
     }
 }

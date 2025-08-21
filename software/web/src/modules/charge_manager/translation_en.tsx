@@ -2,6 +2,7 @@
 import { h } from "preact";
 import * as options from "../../options";
 import { __, removeUnicodeHacks } from "../../ts/translation";
+import { toLocaleFixed } from "../../ts/util";
 let x = {
     "charge_manager": {
         "status": {
@@ -273,7 +274,25 @@ let x = {
             "mode_explainer_1_em_with_ps": <>{__("This_device")} is controlled by another WARP Energy Manager or WARP Charger and performs phase switching for a single controlled charger that is connected to its contactor.</>,
             "mode_explainer_2_em_with_ps": <>{__("This_device")} controls one or more WARP Chargers and can perform phase switching for a single controlled charger that is connected to its contactor.</>,
 
-            "mode_change_failed": "Failed to change charging mode."
+            "mode_change_failed": "Failed to change charging mode.",
+
+            "waiting_for_rotation": "TODOTRANSLATE Warte auf Rotation",
+            "shutting_down_unknown": "TODOTRANSLATE Aus unbekannten Gründen deaktiviert",
+            "shutting_down_not_active": "TODOTRANSLATE Deaktiviert: Wallbox nicht mehr aktiv",
+            "shutting_down_rotated_for_b1": "TODOTRANSLATE Deaktiviert um andere wartende Wallbox zu aktivieren",
+            "shutting_down_rotated_for_higher_prio": "TODOTRANSLATE Deaktiviert um höher priorisierte Wallbox zu beschleunigen",
+            "shutting_down_off_or_error": "TODOTRANSLATE Deaktiviert wegen Fehler oder Lademodus \"Aus\"",
+            "welcome_charge_for": /*SFN*/ (timespan: string) => "TODOTRANSLATE welcome charge for " + timespan /*NF*/,
+            "shutting_down_phase_overload": /*SFN*/ (phase: number, overload_mA: number) => "TODOTRANSLATE Deaktiviert: " + ["PV-Überschuss", "Phase L1", "Phase L2", "Phase L3"][phase] + " um " + toLocaleFixed(overload_mA / 1000, 3) + " A überlastet" /*NF*/,
+            "cant_activate_phase_minimum": /*SFN*/ (phase: number, required: number, min: number) => "TODOTRANSLATE Kann nicht aktiviert werden: " + toLocaleFixed((min - required) / 1000, 3) + ["PV-Überschuss fehlen", "fehlen auf Phase L1", "fehlen auf Phase L2", "fehlen auf Phase L3"][phase] /*NF*/,
+            "activating": /*SFN*/ (phase_count: number) => "TODOTRANSLATE " + ["", "Ein", "Zwei", "Drei"][phase_count] + "phasig aktiviert"/*NF*/,
+            "phase_switching": "TODOTRANSLATE Schalte um auf dreiphasig",
+            "phase_switching_unblocked_at": /*SFN*/ (timespan: string) => "TODOTRANSLATE Phasenumschaltung blockiert für " + timespan /*NF*/,
+            "waking_up": "TODOTRANSLATE Versuche Fahrzeug aufzuwecken",
+
+            "next_rotation_at": /*SFN*/ (timespan: string) => "TODOTRANSLATE Nächste Rotation in " + timespan /*NF*/,
+            "pv_excess_overloaded_hysteresis_not_elapsed": /*SFN*/ (overload_mA: number, timespan: string) => "TODOTRANSLATE PV-Überschuss um " + toLocaleFixed(overload_mA / 1000, 3) + " A überlastet. Werde in " + timespan + " beginnen, Wallboxen abzuschalten." /*NF*/,
+            "hysteresis_elapses_at": /*SFN*/ (timespan: string) => "TODOTRANSLATE Hysterese läuft ab in " + timespan /*NF*/
         }
     }
 }

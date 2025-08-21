@@ -34,6 +34,8 @@ struct CurrentAllocatorConfig;
 struct CurrentAllocatorState;
 struct ChargerState;
 struct ChargerAllocationState;
+struct ChargerDecision;
+struct GlobalDecision;
 
 class ChargeManager final : public IModule
 #if MODULE_AUTOMATION_AVAILABLE()
@@ -131,6 +133,9 @@ private:
     ChargerAllocationState *charger_allocation_state = nullptr;
     CurrentAllocatorConfig *ca_config = nullptr;
     CurrentAllocatorState *ca_state = nullptr;
+
+    ChargerDecision *charger_decisions = nullptr;
+    GlobalDecision *global_decision = nullptr;
 };
 
 #include "module_available_end.h"
