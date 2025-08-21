@@ -694,7 +694,7 @@ void FirmwareUpdate::register_urls()
             return;
         }
 
-        firmware_url.puts(update_url.c_str(), update_url.length());
+        firmware_url.puts(update_url);
         firmware_url.puts(OPTIONS_PRODUCT_ID(), options_product_id_length);
         firmware_url.puts(firmware_url_infix, firmware_url_infix_len);
         firmware_url.printf("%u_%u_%u", version.major, version.minor, version.patch);
@@ -1162,7 +1162,7 @@ void FirmwareUpdate::check_for_update()
         return;
     }
 
-    index_url.puts(update_url.c_str(), update_url.length());
+    index_url.puts(update_url);
     index_url.puts(OPTIONS_PRODUCT_ID(), options_product_id_length);
     index_url.puts(index_url_suffix, index_url_suffix_len);
 

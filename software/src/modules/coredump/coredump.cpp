@@ -78,9 +78,9 @@ bool Coredump::build_coredump_info(JsonDocument &tf_coredump_json)
 
     StringWriter sw(tf_coredump_info, sizeof(tf_coredump_info));
 
-    sw.puts(prefix,                          prefix_len);
-    sw.puts(tf_coredump_json_string.c_str(), tf_coredump_json_string.length());
-    sw.puts(suffix,                          suffix_len);
+    sw.puts(prefix, prefix_len);
+    sw.puts(tf_coredump_json_string);
+    sw.puts(suffix, suffix_len);
 
     return true;
 }

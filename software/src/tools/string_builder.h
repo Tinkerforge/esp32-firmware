@@ -24,6 +24,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <memory>
+#include <WString.h>
 
 class StringWriter
 {
@@ -43,6 +44,7 @@ public:
     char *getRemainingPtr() const { return buffer + length; }
     size_t puts(const char *string, size_t string_len);
     inline size_t puts(const char *string) { return puts(string, strlen(string)); }
+    inline size_t puts(const String &string) { return puts(string.c_str(), string.length()); }
     size_t putc(char c);
     size_t putcn(char c, size_t n);
     [[gnu::format(__printf__, 2, 0)]] size_t vprintf(const char *fmt, va_list args);

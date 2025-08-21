@@ -154,13 +154,12 @@ bool WS::pushStateUpdate(size_t stateIdx, const String &payload, const String &p
     }
 
     StringBuilder sb;
-    size_t payload_len = payload.length();
 
-    if (!pushStateUpdateBegin(&sb, stateIdx, payload_len, path.c_str(), path.length())) {
+    if (!pushStateUpdateBegin(&sb, stateIdx, payload.length(), path.c_str(), path.length())) {
         return false;
     }
 
-    sb.puts(payload.c_str(), payload_len);
+    sb.puts(payload);
 
     return pushStateUpdateEnd(&sb);
 }

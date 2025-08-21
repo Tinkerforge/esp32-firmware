@@ -450,8 +450,7 @@ String DayAheadPrices::get_api_url_with_path()
     char buf[256];
     StringWriter sw(buf, ARRAY_SIZE(buf));
 
-    const String &api_url = config.get("api_url")->asString();
-    sw.puts(api_url.c_str(), api_url.length());
+    sw.puts(config.get("api_url")->asString());
 
     if (*(sw.getRemainingPtr() - 1) != '/') {
         sw.putc('/');
