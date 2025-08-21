@@ -156,10 +156,14 @@ void ChargeManager::pre_setup()
         {"sp", Config::Uint(0, 0, 3)},  // "supported_phases" - maximum phases supported by the charger. Is 1 or 3 for a not phase-switchable charger. Bit 2 is set if it can be switched.
         {"lu", Config::Uptime()},       // "last_update" - The last time we received a CM packet from this charger
         {"n",  Config::Str("", 0, 32)}, // "name" - Configured display name. Has to be duplicated in case the config was written but we didn't reboot.
-        {"u",  Config::Uint32(0)}       // "uid" - The ESP's UID
+        {"u",  Config::Uint32(0)},      // "uid" - The ESP's UID
+        {"d",  Config::Int32(0)},       // "decision" - The last decision the current allocator made about this charger
+        {"d1", Config::Int32(0)},       // "param1" - First parameter of the decision
+        {"d2", Config::Int32(0)},       // "param2" - Second parameter of the decision
+        {"d3", Config::Int32(0)},       // "param3" - Third parameter of the decision
     });
 
-    // This has to fit in the 6k WebSocket send buffer with 32 chargers with long names. (Currently 4076 bytes)
+    // This has to fit in the 10k WebSocket send buffer with 64 chargers with long names.
     // -> Be stingy with the key names. If we need more space we could switch to an array for all numbers.
     // This API only exists to communicate with the web interface and is not documented.
     state = Config::Object({
@@ -169,6 +173,10 @@ void ChargeManager::pre_setup()
         {"l_spread", Config::Tuple(4, Config::Int32(0))},
         {"l_max_pv", Config::Int32(0)},
         {"alloc", Config::Tuple(4, Config::Int32(0))},
+        {"d",  Config::Int32(0)},       // "decision" - The last decision the current allocator made globally
+        {"d1", Config::Int32(0)},       // "param1" - First parameter of the decision
+        {"d2", Config::Int32(0)},       // "param2" - Second parameter of the decision
+        {"d3", Config::Int32(0)},       // "param3" - Third parameter of the decision
         {"chargers", Config::Array(
             {},
             &state_chargers_prototype,
@@ -463,6 +471,8 @@ void ChargeManager::setup()
     ca_config->charger_count = this->charger_count;
     this->charger_state = (ChargerState *)calloc_psram_or_dram(this->charger_count, sizeof(ChargerState));
     this->charger_allocation_state = (ChargerAllocationState *)calloc_psram_or_dram(this->charger_count, sizeof(ChargerAllocationState));
+    this->charger_decisions = (ChargerDecision *)calloc_32bit_addressed(this->charger_count, sizeof(ChargerDecision));
+    this->global_decision = (GlobalDecision *)calloc_32bit_addressed(1, sizeof(GlobalDecision));
 
     for (size_t i = 0; i < charger_count; ++i) {
         charger_state[i].phase_rotation = convert_phase_rotation(config.get("chargers")->get(i)->get("rot")->asEnum<CMPhaseRotation>());
@@ -528,7 +538,9 @@ void ChargeManager::setup()
 
                 this->ca_state,
                 this->charger_allocation_state,
-                &allocated_current
+                &allocated_current,
+                this->charger_decisions,
+                this->global_decision
             );
 
             for (size_t i = 0; i < 4; i++) {
@@ -545,7 +557,15 @@ void ChargeManager::setup()
 
             for (int i = 0; i < this->charger_count; ++i) {
                 update_charger_state_config(i);
+                this->state.get("chargers")->get(i)->get("d")->updateInt((int)(this->charger_decisions[i].decision));
+                this->state.get("chargers")->get(i)->get("d1")->updateInt(this->charger_decisions[i].param_1);
+                this->state.get("chargers")->get(i)->get("d2")->updateInt(this->charger_decisions[i].param_2);
+                this->state.get("chargers")->get(i)->get("d3")->updateInt(this->charger_decisions[i].param_3);
             }
+            this->state.get("d")->updateInt((int)(this->global_decision->decision));
+            this->state.get("d1")->updateInt(this->global_decision->param_1);
+            this->state.get("d2")->updateInt(this->global_decision->param_2);
+            this->state.get("d3")->updateInt(this->global_decision->param_3);
 
             this->state.get("state")->updateUint(result);
         }, 1_s);

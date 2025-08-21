@@ -35,6 +35,9 @@ import { EcoChart } from "modules/eco/main";
 import { ButtonGroup, Button, Collapse } from "react-bootstrap";
 
 import { ConfigChargeMode } from "./config_charge_mode.enum";
+import { AllocatorDecision } from "./allocator_decision.enum";
+import { GlobalAllocatorDecision } from "./global_allocator_decision.enum";
+import { InputText } from "ts/components/input_text";
 
 export { ChargeManagerChargers } from "./chargers";
 export { ChargeManagerSettings } from "./settings";
@@ -135,6 +138,42 @@ interface ChargeManagerStatusState {
     uptime: number
 }
 
+function with_timespan(fn: (timespan: string) => string, x: {d1: number, d2: number}) {
+    const ts = x.d1 * Math.pow(2, 32) + x.d2;
+    const now = API.get('info/keep_alive').uptime / 1000;
+    if (ts < now)
+        return ""
+    return fn(util.format_timespan(ts - now));
+}
+
+function alloc_decision_to_text(x: API.getType['charge_manager/state']['chargers'][0]): string {
+    switch (x.d) {
+        case AllocatorDecision.WaitingForRotation0: return __("charge_manager.script.waiting_for_rotation");
+        case AllocatorDecision.ShuttingDownUnknown0: return __("charge_manager.script.shutting_down_unknown");
+        case AllocatorDecision.ShuttingDownNotActive0: return __("charge_manager.script.shutting_down_not_active");
+        case AllocatorDecision.ShuttingDownRotatedForB10: return __("charge_manager.script.shutting_down_rotated_for_b1");
+        case AllocatorDecision.ShuttingDownRotatedForHigherPrio0: return __("charge_manager.script.shutting_down_rotated_for_higher_prio");
+        case AllocatorDecision.ShuttingDownOffOrError0: return __("charge_manager.script.shutting_down_off_or_error");
+        case AllocatorDecision.WelcomeChargeUntil2: return with_timespan(__("charge_manager.script.welcome_charge_for"), x);
+        case AllocatorDecision.ShuttingDownPhaseOverload2: return __("charge_manager.script.shutting_down_phase_overload")(x.d1, x.d2);
+        case AllocatorDecision.CantActivatePhaseMinimum3: return __("charge_manager.script.cant_activate_phase_minimum")(x.d1, x.d2, x.d3);
+        case AllocatorDecision.Activating1: return __("charge_manager.script.activating")(x.d1);
+        case AllocatorDecision.PhaseSwitching0: return __("charge_manager.script.phase_switching");
+        case AllocatorDecision.PhaseSwitchingUnblockedAt2: return with_timespan(__("charge_manager.script.phase_switching_unblocked_at"), x);
+        case AllocatorDecision.WakingUp0: return __("charge_manager.script.waking_up");
+        case AllocatorDecision.None0: return "";
+    }
+}
+
+function global_alloc_decision_to_text(x: API.getType['charge_manager/state']): string {
+    switch (x.d) {
+        case GlobalAllocatorDecision.None0: return "";
+        case GlobalAllocatorDecision.NextRotationAt2: return with_timespan(__("charge_manager.script.next_rotation_at"), x);
+        case GlobalAllocatorDecision.PVExcessOverloadedHysteresisElapsesAt3: return with_timespan((ts) => __("charge_manager.script.pv_excess_overloaded_hysteresis_not_elapsed")(x.d3, ts), x);
+        case GlobalAllocatorDecision.HysteresisElapsesAt2: return with_timespan(__("charge_manager.script.hysteresis_elapses_at"), x);
+    }
+}
+
 export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState> {
     constructor() {
         super();
@@ -213,6 +252,9 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                         <div class={"card-body " + c_body_classes}>
                             <h5 class="card-title">{c_state}</h5>
                             <span class="card-text">{c_info}</span>
+                            <div class="card-text">
+                                {alloc_decision_to_text(c)}
+                            </div>
 {/*#if MODULE_ECO_AVAILABLE*/}
                             <Collapse in={show_eco_chart}>
                                 <div><div class="mt-3">
@@ -227,11 +269,12 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                     </div>
         });
 
-        let controls_only_self = (state.config.chargers.length == 1
+        let controls_only_self = false && (state.config.chargers.length == 1
                        && (state.config.chargers[0].host == '127.0.0.1' || state.config.chargers[0].host == 'localhost'));
         let row_count = Math.ceil(cards.length / 2);
 
         return <StatusSection name="charge_manager">
+            <FormRow label="charge_manager_info"><InputText value={global_alloc_decision_to_text(state.state)}/></FormRow>
 
             {controls_only_self && API.get_unchecked("power_manager/config")?.enabled ? null :
                 <FormRow label={__("charge_manager.status.charge_manager")}>
