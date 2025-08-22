@@ -4,8 +4,6 @@
 #include <memory>
 
 #include "current_limits.h"
-#include "allocator_decision.enum.h"
-#include "global_allocator_decision.enum.h"
 
 #include "config.h"
 #include "tools.h"
@@ -17,65 +15,23 @@
 #define CHARGE_MANAGER_ERROR_EVSE_NONREACTIVE 130
 #define CHARGE_MANAGER_CLIENT_ERROR_START 192
 
+#include "zero_phase_decision.union.h"
+#include "one_phase_decision.union.h"
+#include "three_phase_decision.union.h"
+#include "current_decision.union.h"
+#include "global_decision.union.h"
+
 struct ChargerDecision {
-    union {
-        [[gnu::packed]] int _empty;
-        struct {[[gnu::packed]] micros_t timestamp;} welcome_charge_until;
-        struct {[[gnu::packed]] uint32_t overload_ma; uint8_t phase;} shutting_down_phase_overload;
-        struct {[[gnu::packed]] uint32_t required_ma; [[gnu::packed]] uint32_t min_ma; uint8_t phase;} cant_activate_phase_minimum;
-        struct {uint8_t phase_alloc;} activating;
-        struct {[[gnu::packed]] micros_t timestamp;} phase_switching_blocked_until;
-    };
-    AllocatorDecision tag;
-    uint16_t _pad = 0;
-
-    static ChargerDecision None0();
-    static ChargerDecision WaitingForRotation0();
-    static ChargerDecision ShuttingDownUnknown0();
-    static ChargerDecision ShuttingDownNotActive0();
-    static ChargerDecision ShuttingDownRotatedForB10();
-    static ChargerDecision ShuttingDownRotatedForHigherPrio0();
-    static ChargerDecision ShuttingDownOffOrError0();
-    static ChargerDecision WelcomeChargeUntil2(micros_t timestamp);
-    static ChargerDecision ShuttingDownPhaseOverload2(uint32_t overload_ma, uint8_t phase);
-    static ChargerDecision CantActivatePhaseMinimum3(uint32_t required_ma, uint32_t min_ma, uint8_t phase);
-    static ChargerDecision Activating1(uint8_t phase_alloc);
-    static ChargerDecision PhaseSwitching0();
-    static ChargerDecision PhaseSwitchingBlockedUntil2(micros_t timestamp);
-    static ChargerDecision WakingUp0();
-
-    static const ConfUnionPrototype<AllocatorDecision> *getUnionPrototypes();
-    static size_t getUnionPrototypeCount();
-
-    void writeToConfig(Config *target);
+    ZeroPhaseDecision zero;
+    OnePhaseDecision one;
+    ThreePhaseDecision three;
+    CurrentDecision current;
 };
 
-static_assert(sizeof(ChargerDecision) == 12, "");
-
-struct GlobalDecision {
-    union {
-        [[gnu::packed]] int _empty;
-        struct {[[gnu::packed]] micros_t timestamp;} next_rotation_at;
-        struct {[[gnu::packed]] micros_t timestamp; [[gnu::packed]] uint32_t overload_ma;} pv_excess_overloaded_hysteresis_blocks_until;
-        struct {[[gnu::packed]] micros_t timestamp;} hysteresis_elapses_at;
-    };
-    GlobalAllocatorDecision tag;
-    uint8_t _pad = 0;
-    uint16_t _pad2 = 0;
-
-    static GlobalDecision None0();
-    static GlobalDecision NextRotationAt2(micros_t timestamp);
-    static GlobalDecision PVExcessOverloadedHysteresisBlocksUntil3(uint32_t overload_ma, micros_t timestamp);
-    static GlobalDecision HysteresisElapsesAt2(micros_t timestamp);
-
-    static const ConfUnionPrototype<GlobalAllocatorDecision> *getUnionPrototypes();
-    static size_t getUnionPrototypeCount();
-
-    void writeToConfig(Config *target);
-};
-
-static_assert(sizeof(GlobalDecision) == 16, "");
-
+static_assert(sizeof(ChargerDecision) == (sizeof(ZeroPhaseDecision)
+                                        + sizeof(OnePhaseDecision)
+                                        + sizeof(ThreePhaseDecision)
+                                        + sizeof(CurrentDecision)), "ChargerDecision should have no padding (costs x64!)");
 
 // Initialized by charge_manager.cpp; never changed
 struct CurrentAllocatorConfig {
