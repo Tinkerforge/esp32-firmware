@@ -29,13 +29,13 @@ enum class ConnectionHelloPhaseType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ConnectionHelloPhaseType& src, JsonVariant& dst);
+bool convertToJson(const ConnectionHelloPhaseType &src, JsonVariant &dst);
 /**
  * Convert a string to a ConnectionHelloPhaseType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ConnectionHelloPhaseType.
  */
-void convertFromJson(const JsonVariantConst& src, ConnectionHelloPhaseType& dst);
+void convertFromJson(const JsonVariantConst &src, ConnectionHelloPhaseType &dst);
 
 /**
 * Datatype ProtocolHandshakeTypeType as defined in EEBus_SHIP_TS_TransferProtocol.xsd
@@ -52,13 +52,13 @@ enum class ProtocolHandshakeTypeType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ProtocolHandshakeTypeType& src, JsonVariant& dst);
+bool convertToJson(const ProtocolHandshakeTypeType &src, JsonVariant &dst);
 /**
  * Convert a string to a ProtocolHandshakeTypeType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ProtocolHandshakeTypeType.
  */
-void convertFromJson(const JsonVariantConst& src, ProtocolHandshakeTypeType& dst);
+void convertFromJson(const JsonVariantConst &src, ProtocolHandshakeTypeType &dst);
 
 /**
 * Datatype PinStateType as defined in EEBus_SHIP_TS_TransferProtocol.xsd
@@ -77,13 +77,13 @@ enum class PinStateType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PinStateType& src, JsonVariant& dst);
+bool convertToJson(const PinStateType &src, JsonVariant &dst);
 /**
  * Convert a string to a PinStateType 
  * @param src The JSON variant containing the string.
  * @param dst The destination PinStateType.
  */
-void convertFromJson(const JsonVariantConst& src, PinStateType& dst);
+void convertFromJson(const JsonVariantConst &src, PinStateType &dst);
 
 /**
 * Datatype PinInputPermissionType as defined in EEBus_SHIP_TS_TransferProtocol.xsd
@@ -100,13 +100,13 @@ enum class PinInputPermissionType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const PinInputPermissionType& src, JsonVariant& dst);
+bool convertToJson(const PinInputPermissionType &src, JsonVariant &dst);
 /**
  * Convert a string to a PinInputPermissionType 
  * @param src The JSON variant containing the string.
  * @param dst The destination PinInputPermissionType.
  */
-void convertFromJson(const JsonVariantConst& src, PinInputPermissionType& dst);
+void convertFromJson(const JsonVariantConst &src, PinInputPermissionType &dst);
 
 /**
 * Datatype ConnectionClosePhaseType as defined in EEBus_SHIP_TS_TransferProtocol.xsd
@@ -123,13 +123,13 @@ enum class ConnectionClosePhaseType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ConnectionClosePhaseType& src, JsonVariant& dst);
+bool convertToJson(const ConnectionClosePhaseType &src, JsonVariant &dst);
 /**
  * Convert a string to a ConnectionClosePhaseType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ConnectionClosePhaseType.
  */
-void convertFromJson(const JsonVariantConst& src, ConnectionClosePhaseType& dst);
+void convertFromJson(const JsonVariantConst &src, ConnectionClosePhaseType &dst);
 
 /**
 * Datatype ConnectionCloseReasonType as defined in EEBus_SHIP_TS_TransferProtocol.xsd
@@ -146,13 +146,13 @@ enum class ConnectionCloseReasonType
  * @param dst The destination JsonVariant where the string will be stored.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ConnectionCloseReasonType& src, JsonVariant& dst);
+bool convertToJson(const ConnectionCloseReasonType &src, JsonVariant &dst);
 /**
  * Convert a string to a ConnectionCloseReasonType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ConnectionCloseReasonType.
  */
-void convertFromJson(const JsonVariantConst& src, ConnectionCloseReasonType& dst);
+void convertFromJson(const JsonVariantConst &src, ConnectionCloseReasonType &dst);
 
 /**
  * Datatype ConnectionHelloType as defined in EEBus_SHIP_TS_TransferProtocol.xsd
@@ -178,13 +178,13 @@ struct ConnectionHelloType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ConnectionHelloType& src, JsonVariant& dst);
+bool convertToJson(const ConnectionHelloType &src, JsonVariant &dst);
 /**
  * Convert a JSON representation to a ConnectionHelloType
  * @param src The JSON variant to convert
  * @param dst The ConnectionHelloType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst& src, ConnectionHelloType& dst);
+void convertFromJson(const JsonVariantConst &src, ConnectionHelloType &dst);
 
 /**
  * Datatype MessageProtocolFormatsType as defined in EEBus_SHIP_TS_TransferProtocol.xsd
@@ -206,13 +206,13 @@ struct MessageProtocolFormatsType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MessageProtocolFormatsType& src, JsonVariant& dst);
+bool convertToJson(const MessageProtocolFormatsType &src, JsonVariant &dst);
 /**
  * Convert a JSON representation to a MessageProtocolFormatsType
  * @param src The JSON variant to convert
  * @param dst The MessageProtocolFormatsType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst& src, MessageProtocolFormatsType& dst);
+void convertFromJson(const JsonVariantConst &src, MessageProtocolFormatsType &dst);
 
 /**
  * Datatype MessageProtocolHandshakeType as defined in EEBus_SHIP_TS_TransferProtocol.xsd
@@ -240,13 +240,13 @@ struct MessageProtocolHandshakeType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MessageProtocolHandshakeType& src, JsonVariant& dst);
+bool convertToJson(const MessageProtocolHandshakeType &src, JsonVariant &dst);
 /**
  * Convert a JSON representation to a MessageProtocolHandshakeType
  * @param src The JSON variant to convert
  * @param dst The MessageProtocolHandshakeType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst& src, MessageProtocolHandshakeType& dst);
+void convertFromJson(const JsonVariantConst &src, MessageProtocolHandshakeType &dst);
 
 /**
  * Datatype MessageProtocolHandshakeErrorType as defined in EEBus_SHIP_TS_TransferProtocol.xsd
@@ -268,13 +268,13 @@ struct MessageProtocolHandshakeErrorType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const MessageProtocolHandshakeErrorType& src, JsonVariant& dst);
+bool convertToJson(const MessageProtocolHandshakeErrorType &src, JsonVariant &dst);
 /**
  * Convert a JSON representation to a MessageProtocolHandshakeErrorType
  * @param src The JSON variant to convert
  * @param dst The MessageProtocolHandshakeErrorType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst& src, MessageProtocolHandshakeErrorType& dst);
+void convertFromJson(const JsonVariantConst &src, MessageProtocolHandshakeErrorType &dst);
 
 /**
  * Datatype ConnectionPinStateType as defined in EEBus_SHIP_TS_TransferProtocol.xsd
@@ -298,13 +298,13 @@ struct ConnectionPinStateType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ConnectionPinStateType& src, JsonVariant& dst);
+bool convertToJson(const ConnectionPinStateType &src, JsonVariant &dst);
 /**
  * Convert a JSON representation to a ConnectionPinStateType
  * @param src The JSON variant to convert
  * @param dst The ConnectionPinStateType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst& src, ConnectionPinStateType& dst);
+void convertFromJson(const JsonVariantConst &src, ConnectionPinStateType &dst);
 
 /**
  * Datatype ConnectionPinInputType as defined in EEBus_SHIP_TS_TransferProtocol.xsd
@@ -326,13 +326,13 @@ struct ConnectionPinInputType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ConnectionPinInputType& src, JsonVariant& dst);
+bool convertToJson(const ConnectionPinInputType &src, JsonVariant &dst);
 /**
  * Convert a JSON representation to a ConnectionPinInputType
  * @param src The JSON variant to convert
  * @param dst The ConnectionPinInputType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst& src, ConnectionPinInputType& dst);
+void convertFromJson(const JsonVariantConst &src, ConnectionPinInputType &dst);
 
 /**
  * Datatype ConnectionPinErrorType as defined in EEBus_SHIP_TS_TransferProtocol.xsd
@@ -354,13 +354,13 @@ struct ConnectionPinErrorType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ConnectionPinErrorType& src, JsonVariant& dst);
+bool convertToJson(const ConnectionPinErrorType &src, JsonVariant &dst);
 /**
  * Convert a JSON representation to a ConnectionPinErrorType
  * @param src The JSON variant to convert
  * @param dst The ConnectionPinErrorType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst& src, ConnectionPinErrorType& dst);
+void convertFromJson(const JsonVariantConst &src, ConnectionPinErrorType &dst);
 
 /**
  * Datatype SpineHeaderType as defined in EEBus_SHIP_TS_TransferProtocol.xsd
@@ -382,13 +382,13 @@ struct SpineHeaderType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const SpineHeaderType& src, JsonVariant& dst);
+bool convertToJson(const SpineHeaderType &src, JsonVariant &dst);
 /**
  * Convert a JSON representation to a SpineHeaderType
  * @param src The JSON variant to convert
  * @param dst The SpineHeaderType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst& src, SpineHeaderType& dst);
+void convertFromJson(const JsonVariantConst &src, SpineHeaderType &dst);
 
 /**
  * Datatype ExtensionType as defined in EEBus_SHIP_TS_TransferProtocol.xsd
@@ -414,13 +414,13 @@ struct ExtensionType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ExtensionType& src, JsonVariant& dst);
+bool convertToJson(const ExtensionType &src, JsonVariant &dst);
 /**
  * Convert a JSON representation to a ExtensionType
  * @param src The JSON variant to convert
  * @param dst The ExtensionType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst& src, ExtensionType& dst);
+void convertFromJson(const JsonVariantConst &src, ExtensionType &dst);
 
 /**
  * Datatype DataType as defined in EEBus_SHIP_TS_TransferProtocol.xsd
@@ -446,13 +446,13 @@ struct DataType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const DataType& src, JsonVariant& dst);
+bool convertToJson(const DataType &src, JsonVariant &dst);
 /**
  * Convert a JSON representation to a DataType
  * @param src The JSON variant to convert
  * @param dst The DataType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst& src, DataType& dst);
+void convertFromJson(const JsonVariantConst &src, DataType &dst);
 
 /**
  * Datatype ConnectionCloseType as defined in EEBus_SHIP_TS_TransferProtocol.xsd
@@ -478,13 +478,13 @@ struct ConnectionCloseType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const ConnectionCloseType& src, JsonVariant& dst);
+bool convertToJson(const ConnectionCloseType &src, JsonVariant &dst);
 /**
  * Convert a JSON representation to a ConnectionCloseType
  * @param src The JSON variant to convert
  * @param dst The ConnectionCloseType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst& src, ConnectionCloseType& dst);
+void convertFromJson(const JsonVariantConst &src, ConnectionCloseType &dst);
 
 /**
  * Datatype AccessMethodsRequestType as defined in EEBus_SHIP_TS_TransferProtocol.xsd
@@ -503,10 +503,10 @@ struct AccessMethodsRequestType
  * @param dst The JSON variant to fill with the converted data.
  * @return true if the conversion was successful, false otherwise.
  */
-bool convertToJson(const AccessMethodsRequestType& src, JsonVariant& dst);
+bool convertToJson(const AccessMethodsRequestType &src, JsonVariant &dst);
 /**
  * Convert a JSON representation to a AccessMethodsRequestType
  * @param src The JSON variant to convert
  * @param dst The AccessMethodsRequestType to fill with the converted data.
  */
-void convertFromJson(const JsonVariantConst& src, AccessMethodsRequestType& dst);
+void convertFromJson(const JsonVariantConst &src, AccessMethodsRequestType &dst);

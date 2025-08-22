@@ -51,7 +51,6 @@
 #define SHIP_CONNECTION_WS_WRITE_TIMEOUT_MS 1000
 
 
-
 enum class NodeState : uint8_t;
 class SpineConnection; // Forward declaration to avoid circular dependency
 

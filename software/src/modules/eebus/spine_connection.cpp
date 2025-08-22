@@ -35,8 +35,7 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
 
     received_header = datagram["datagram"][0]["header"];
 
-    received_payload =
-        datagram["datagram"][1]["payload"][0]["cmd"][0][0]; // The payload should not be in an array but spine-go does these strange things
+    received_payload = datagram["datagram"][1]["payload"][0]["cmd"][0][0]; // The payload should not be in an array but spine-go does these strange things
 
     if (!received_header.cmdClassifier || !received_header.addressSource || received_payload.isNull()) {
         eebus.trace_fmtln("SPINE: ERROR: No datagram header or payload found");
@@ -64,11 +63,7 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
     return true;
 }
 
-void SpineConnection::send_datagram(JsonVariantConst payload,
-                                    CmdClassifierType cmd_classifier,
-                                    const FeatureAddressType &sender,
-                                    const FeatureAddressType &receiver,
-                                    bool require_ack)
+void SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType cmd_classifier, const FeatureAddressType &sender, const FeatureAddressType &receiver, bool require_ack)
 {
     eebus.trace_fmtln("SPINE: Sending datagram. cmdClassifier: %d, Content:", static_cast<int>(cmd_classifier));
     eebus.trace_jsonln(payload);

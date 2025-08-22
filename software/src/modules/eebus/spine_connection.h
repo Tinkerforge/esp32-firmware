@@ -35,12 +35,12 @@ class ShipConnection; // Need to forward declare this here so it can be included
 class SpineConnection
 {
 public:
-    ShipConnection* ship_connection = nullptr;
+    ShipConnection *ship_connection = nullptr;
 
-    explicit SpineConnection(ShipConnection* ship_connection) : ship_connection(ship_connection)
+    explicit SpineConnection(ShipConnection *ship_connection) : ship_connection(ship_connection)
     {
-        //response_doc = &ship_connection->outgoing_json_doc;
     };
+
 
     // Disallow copying of SpineConnection
     SpineConnection(const SpineConnection &other) = delete;
@@ -63,8 +63,8 @@ public:
      */
     void send_datagram(JsonVariantConst payload,
                        CmdClassifierType cmd_classifier,
-                       const FeatureAddressType& sender,
-                       const FeatureAddressType& receiver,
+                       const FeatureAddressType &sender,
+                       const FeatureAddressType &receiver,
                        bool require_ack = false);
 
     /**
@@ -77,7 +77,7 @@ public:
      * @param address The address to check if it is known.
      * @return True if the address is known, false if it is not known.
      */
-    bool check_known_address(const FeatureAddressType& address);
+    bool check_known_address(const FeatureAddressType &address);
 
     // SPINE TS 5.2.3.1
     // Specification recommends these be stored in non-volatile memory

@@ -198,10 +198,7 @@ void Ship::setup_wss()
                 break;
             }
         }
-        eebus.trace_fmtln("WebSocketsClient connected from %s:%d with SKI %s",
-                          client_ip,
-                          ntohs(addr.sin6_port),
-                          peer_ski.c_str());
+        eebus.trace_fmtln("WebSocketsClient connected from %s:%d with SKI %s", client_ip, ntohs(addr.sin6_port), peer_ski.c_str());
 
         ship_connections.push_back(std::move(make_unique_psram<ShipConnection>(ws_client, peer_ski)));
         logger.printfln("New SHIP Client connected");
@@ -219,14 +216,11 @@ void Ship::setup_wss()
                 return;
             }
         }
-
         eebus.trace_fmtln("Error while receiving Websocket packet: No ShipConnection found for fd %d", fd);
     });
 
     // Start websocket on the HTTPS server
-
     web_sockets.start("/ship/", nullptr, httpd, "ship");
-
     logger.printfln("EEBUS SHIP started up and accepting connections");
 }
 
@@ -283,14 +277,10 @@ void Ship::setup_mdns()
     // SHIP 7.3.2 TXT Record
     // Mandatory Fields
     mdns_service_txt_item_set("_ship", "_tcp", "txtvers", "1");
-    // TODO: Use UID instead of 12345
 
     mdns_service_txt_item_set("_ship", "_tcp", "id", eebus.get_eebus_name().c_str()); // ManufaturerName-Model-UniqueID (max 63 bytes)
     mdns_service_txt_item_set("_ship", "_tcp", "path", "/ship/");
-    mdns_service_txt_item_set("_ship",
-                              "_tcp",
-                              "ski",
-                              eebus.state.get("ski")->asEphemeralCStr()); // 40 byte hexadecimal digits representing the 160 bit SKI value
+    mdns_service_txt_item_set("_ship", "_tcp", "ski", eebus.state.get("ski")->asEphemeralCStr()); // 40 byte hexadecimal digits representing the 160 bit SKI value
 
     mdns_service_txt_item_set("_ship", "_tcp", "register", "false");
     // Optional Fields
@@ -377,9 +367,7 @@ ShipDiscoveryState Ship::discover_ship_peers()
             }
             results->addr = results->addr->next;
         }
-
         mdns_results.push_back(ship_node);
-
         results = results->next;
     }
 

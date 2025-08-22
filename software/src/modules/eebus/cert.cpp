@@ -39,20 +39,15 @@ void Cert::log()
 
     std::fill_n(base64, sizeof(base64), 0);
     int ret = mbedtls_base64_encode(base64, sizeof(base64), &base64_len, crt, crt_length);
-    if (ret != 0)
-    {
+    if (ret != 0) {
         logger.printfln("Base64 encode failed: 0x%04x", ret);
-    }
-    else
-    {
+    } else {
         logger.printfln("Cert:");
         logger.printfln_plain("-----BEGIN CERTIFICATE-----");
 
-        for (size_t i = 0; i < base64_len; i += 64)
-        {
+        for (size_t i = 0; i < base64_len; i += 64) {
             size_t chunk_size = base64_len - i;
-            if (chunk_size > 64)
-            {
+            if (chunk_size > 64) {
                 chunk_size = 64;
             }
 
@@ -63,20 +58,15 @@ void Cert::log()
 
     std::fill_n(base64, sizeof(base64), 0);
     ret = mbedtls_base64_encode(base64, sizeof(base64), &base64_len, key, key_length);
-    if (ret != 0)
-    {
+    if (ret != 0) {
         logger.printfln("Base64 encode failed: 0x%04x", ret);
-    }
-    else
-    {
+    } else {
         logger.printfln("Key:");
         logger.printfln_plain("-----BEGIN PRIVATE KEY-----");
 
-        for (size_t i = 0; i < base64_len; i += 64)
-        {
+        for (size_t i = 0; i < base64_len; i += 64) {
             size_t chunk_size = base64_len - i;
-            if (chunk_size > 64)
-            {
+            if (chunk_size > 64) {
                 chunk_size = 64;
             }
 
@@ -88,31 +78,28 @@ void Cert::log()
 
 bool Cert::read()
 {
-    if (!LittleFS.exists(KEY_FILE) || !LittleFS.exists(CERT_FILE))
-    {
+    if (!LittleFS.exists(KEY_FILE) || !LittleFS.exists(CERT_FILE)) {
         logger.printfln("Cert or key file does not exist, generating new self signed certificates");
         // Generate will create new self-signed certs and also fill the cert and key buffers
         return generate();
     }
 
     File file_key = LittleFS.open(KEY_FILE, "r");
-    if (!file_key)
-    {
+    if (!file_key) {
         logger.printfln("Failed to open key file");
         return false;
     }
 
     File file_cert = LittleFS.open(CERT_FILE, "r");
-    if (!file_cert)
-    {
+    if (!file_cert) {
         logger.printfln("Failed to open cert file");
         return false;
     }
 
-    key_length = file_key.readBytes(reinterpret_cast<char*>(key), sizeof(key));
+    key_length = file_key.readBytes(reinterpret_cast<char *>(key), sizeof(key));
     file_key.close();
 
-    crt_length = file_cert.readBytes(reinterpret_cast<char*>(crt), sizeof(crt));
+    crt_length = file_cert.readBytes(reinterpret_cast<char *>(crt), sizeof(crt));
     file_cert.close();
 
     return true;
@@ -120,13 +107,11 @@ bool Cert::read()
 
 bool Cert::generate()
 {
-    if (LittleFS.exists(KEY_FILE))
-    {
+    if (LittleFS.exists(KEY_FILE)) {
         LittleFS.remove(KEY_FILE);
     }
 
-    if (LittleFS.exists(CERT_FILE))
-    {
+    if (LittleFS.exists(CERT_FILE)) {
         LittleFS.remove(CERT_FILE);
     }
 
@@ -141,11 +126,13 @@ bool Cert::generate()
     mbedtls_entropy_init(&entropy);
     mbedtls_ctr_drbg_init(&ctr_drbg);
 
-    const char* pers = "eebus_cert";
-    int ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy,
-                                    reinterpret_cast<const unsigned char*>(pers), strlen(pers));
-    if (ret != 0)
-    {
+    const char *pers = "eebus_cert";
+    int ret = mbedtls_ctr_drbg_seed(&ctr_drbg,
+                                    mbedtls_entropy_func,
+                                    &entropy,
+                                    reinterpret_cast<const unsigned char *>(pers),
+                                    strlen(pers));
+    if (ret != 0) {
         logger.printfln("mbedtls_ctr_drbg_seed failed: 0x%04x", ret);
         return false;
     }
@@ -155,17 +142,16 @@ bool Cert::generate()
     mbedtls_pk_init(&mbed_key);
 
     ret = mbedtls_pk_setup(&mbed_key, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY));
-    if (ret != 0)
-    {
+    if (ret != 0) {
         logger.printfln("mbedtls_pk_setup failed: 0x%04x", ret);
         return false;
     }
 
     ret = mbedtls_ecp_gen_key(MBEDTLS_ECP_DP_SECP256R1,
                               mbedtls_pk_ec(mbed_key),
-                              mbedtls_ctr_drbg_random, &ctr_drbg);
-    if (ret != 0)
-    {
+                              mbedtls_ctr_drbg_random,
+                              &ctr_drbg);
+    if (ret != 0) {
         logger.printfln("mbedtls_ecp_gen_key failed: 0x%04x", ret);
         return false;
     }
@@ -180,40 +166,34 @@ bool Cert::generate()
     // Set serial number, version, issuer name, validity, basic constraints, and subject key identifier
     unsigned char serial[1] = {0x01}; // Any non-zero value
     ret = mbedtls_x509write_crt_set_serial_raw(&mbed_cert, serial, sizeof(serial));
-    if (ret != 0)
-    {
+    if (ret != 0) {
         logger.printfln("mbedtls_x509write_crt_set_serial_raw failed: 0x%04x", ret);
         return false;
     }
 
     mbedtls_x509write_crt_set_version(&mbed_cert, 2);
     ret = mbedtls_x509write_crt_set_subject_name(&mbed_cert, "C=DE,O=Tinkerforge GmBH,CN=WARP_EEBUS");
-    if (ret != 0)
-    {
+    if (ret != 0) {
         logger.printfln("mbedtls_x509write_crt_set_subject_name failed: 0x%04x", ret);
         return false;
     }
     ret = mbedtls_x509write_crt_set_issuer_name(&mbed_cert, "C=DE,O=Tinkerforge GmBH,CN=WARP_EEBUS");
-    if (ret != 0)
-    {
+    if (ret != 0) {
         logger.printfln("mbedtls_x509write_crt_set_issuer_name failed: 0x%04x", ret);
         return false;
     }
     ret = mbedtls_x509write_crt_set_validity(&mbed_cert, "20240803120000", "21230803120000");
-    if (ret != 0)
-    {
+    if (ret != 0) {
         logger.printfln("mbedtls_x509write_crt_set_validity failed: 0x%04x", ret);
         return false;
     }
     ret = mbedtls_x509write_crt_set_basic_constraints(&mbed_cert, 1, -1);
-    if (ret != 0)
-    {
+    if (ret != 0) {
         logger.printfln("mbedtls_x509write_crt_set_basic_constraints failed: 0x%04x", ret);
         return false;
     }
     ret = mbedtls_x509write_crt_set_subject_key_identifier(&mbed_cert);
-    if (ret != 0)
-    {
+    if (ret != 0) {
         logger.printfln("mbedtls_x509write_crt_set_subject_key_identifier failed: 0x%04x", ret);
         return false;
     }
@@ -230,24 +210,21 @@ bool Cert::generate()
     mbedtls_x509write_crt_free(&mbed_cert);
 
     File file_key = LittleFS.open(KEY_FILE, "w", true);
-    if (!file_key)
-    {
+    if (!file_key) {
         logger.printfln("Failed to open key file for writing");
         return false;
     }
 
     File file_cert = LittleFS.open(CERT_FILE, "w", true);
-    if (!file_cert)
-    {
+    if (!file_cert) {
         logger.printfln("Failed to open cert file for writing");
         return false;
     }
 
-    file_key.write(reinterpret_cast<const uint8_t*>(key), key_length);
+    file_key.write(reinterpret_cast<const uint8_t *>(key), key_length);
     file_key.close();
 
-
-    file_cert.write(reinterpret_cast<const uint8_t*>(crt), crt_length);
+    file_cert.write(reinterpret_cast<const uint8_t *>(crt), crt_length);
     file_cert.close();
 
     return true;
