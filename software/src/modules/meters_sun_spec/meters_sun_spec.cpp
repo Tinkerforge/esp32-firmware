@@ -193,10 +193,6 @@ void MetersSunSpec::loop()
             scan->state = ScanState::ReadSunSpecID;
         },
         [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
-            if (scan->client != shared_client) {
-                return;
-            }
-
             char buf[256] = "";
 
             GenericTCPClientConnectorBase::format_disconnect_reason(reason, error_number, share_level, scan->host.c_str(), scan->port, buf, sizeof(buf));

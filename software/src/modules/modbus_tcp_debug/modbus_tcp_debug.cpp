@@ -363,14 +363,8 @@ void ModbusTCPDebug::register_urls()
             });
         },
         [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
-            if (client != shared_client) {
-                return;
-            }
-
-            if (transfer_hook != nullptr) {
-                client->remove_transfer_hook(transfer_hook);
-                transfer_hook = nullptr;
-            }
+            client->remove_transfer_hook(transfer_hook);
+            transfer_hook = nullptr;
 
             client = nullptr;
 
