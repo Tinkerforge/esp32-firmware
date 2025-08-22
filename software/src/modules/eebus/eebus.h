@@ -84,13 +84,13 @@ public:
      * @param ski The ski of the connection to find.
      * @return The index of the connection in state.get("connections") or -1 if not found.
      */
-    int get_state_connection_id_by_ski(const String& ski);
+    int get_state_connection_id_by_ski(const String &ski);
 
     size_t trace_buffer_index;
 
-    void trace_strln(const char* str, const size_t length);
+    void trace_strln(const char *str, const size_t length);
     void trace_jsonln(JsonVariantConst data);
-    void trace_fmtln(const char* fmt, ...);
+    void trace_fmtln(const char *fmt, ...);
 
 
     /**

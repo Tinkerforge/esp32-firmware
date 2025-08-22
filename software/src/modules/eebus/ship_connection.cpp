@@ -96,9 +96,9 @@ ShipConnection::ShipConnection(const tf_websocket_client_config_t ws_config, Coo
 
     tf_websocket_register_events(ws_server, WEBSOCKET_EVENT_ANY, websocket_event_handler, (void *)ws_server);
     esp_err_t err = tf_websocket_client_start(ws_server);
-    if (err == ESP_OK ) {
+    if (err == ESP_OK) {
         state_machine_next_step();
-    }else {
+    } else {
         logger.printfln("Error connectiing to peer");
         schedule_close(0_ms);
     }
@@ -750,11 +750,7 @@ void ShipConnection::state_sme_hello_pending_timeout()
         this_hello_phase.prolongation_request_valid = true;
         hello_send_sme_update();
 
-        uint64_t waiting_time =
-            peer_hello_phase.waiting_valid ?
-                peer_hello_phase.waiting :
-                SHIP_CONNECTION_SME_INIT_TIMEOUT.as<
-                    uint64_t>();
+        uint64_t waiting_time = peer_hello_phase.waiting_valid ? peer_hello_phase.waiting : SHIP_CONNECTION_SME_INIT_TIMEOUT.as<uint64_t>();
         // Using SHIP_CONNECTION_SME_INIT_TIMEOUT here is not 100% to the spec but its close enough and saves a bit of calculation time
 
         hello_send_prolongation_reply_timer = task_scheduler.scheduleOnce(
@@ -892,8 +888,7 @@ void ShipConnection::state_sme_protocol_handshake_server_listen_confirm()
     json_to_type_handshake_type(&handshake);
 
     // Maybe verify format aswell?
-    if ((handshake.handshakeType == ProtocolHandshake::Type::Select) && (handshake.version_major == protocol_handshake_version_selected[0])
-        && (handshake.version_minor == protocol_handshake_version_selected[1])) {
+    if ((handshake.handshakeType == ProtocolHandshake::Type::Select) && (handshake.version_major == protocol_handshake_version_selected[0]) && (handshake.version_minor == protocol_handshake_version_selected[1])) {
         set_state(ShipConnectionState::SmeProtocolHandshakeServerOk);
     } else if ((handshake.version_major == 1) || (handshake.version_minor == 0)) {
         sme_protocol_abort_procedure(ProtocolAbortReason::SelectionMismatch);
@@ -909,8 +904,7 @@ void ShipConnection::state_sme_protocol_handshake_client_listen_choice()
     switch (handshake.handshakeType) {
         case ProtocolHandshake::Type::Select: {
             task_scheduler.cancel(protocol_handshake_timer);
-            if ((handshake.version_major <= protocol_handshake_version_major)
-                && (handshake.version_minor <= protocol_handshake_version_minor)) {
+            if ((handshake.version_major <= protocol_handshake_version_major) && (handshake.version_minor <= protocol_handshake_version_minor)) {
                 // TODO: Check format. This is not done yet because the format is not parsed by the json parser
                 type_to_json_handshake_type(&handshake);
                 send_current_outgoing_message();
@@ -1089,7 +1083,6 @@ void ShipConnection::state_done()
             SHIP_TYPES::ShipMessageAccessMethods access_methods = SHIP_TYPES::ShipMessageAccessMethods();
             access_methods.id = eebus.get_eebus_name();
             String json = access_methods.type_to_json();
-            // TODO: optimize this so it doesnt need to copy the string
             send_string(json.c_str(), json.length());
             break;
         }
@@ -1203,8 +1196,7 @@ void ShipConnection::json_to_type_handshake_type(ProtocolHandshakeType *handshak
     } else {
         for (JsonObject obj : incoming_json_doc["messageProtocolHandshake"].as<JsonArray>()) {
             if (obj.containsKey("handshakeType")) {
-                handshake_type->handshakeType =
-                    static_cast<ProtocolHandshake::Type>(ProtocolHandshake::from_str(obj["handshakeType"].as<String>().c_str()));
+                handshake_type->handshakeType = static_cast<ProtocolHandshake::Type>(ProtocolHandshake::from_str(obj["handshakeType"].as<String>().c_str()));
             } else if (obj.containsKey("version")) {
                 for (JsonObject version : obj["version"].as<JsonArray>()) {
                     if (version.containsKey("major")) {
