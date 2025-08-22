@@ -33,7 +33,6 @@
 namespace SHIP_TYPES
 {
     // SHIP Datatypes as defined in SHIP .xsd
-
     enum DeserializationResult
     {
         SUCCESS,
@@ -74,7 +73,6 @@ namespace SHIP_TYPES
     struct ShipMessageAccessMethodsRequest
     {
         String request; // There is no datatype defined for this yet
-
         DeserializationResult json_to_type(uint8_t* data, size_t length);
         String type_to_json();
     };
@@ -82,7 +80,6 @@ namespace SHIP_TYPES
     struct ShipMessageAccessMethods
     {
         String id;
-
         std::vector<String> dns_sd_mdns;
         bool dns_sd_mdns_valid = false;
         std::vector<String> dns{};
