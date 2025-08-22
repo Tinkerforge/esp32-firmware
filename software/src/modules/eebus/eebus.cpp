@@ -211,6 +211,7 @@ void EEBus::register_urls()
             peer->get("wss_path")->updateString(add_peer.get("wss_path")->asString());
             peer->get("ski")->updateString(add_peer.get("ski")->asString());
             api.writeConfig("eebus/config", &config);
+            ship.connect_trusted_peers();
         },
         true);
 
