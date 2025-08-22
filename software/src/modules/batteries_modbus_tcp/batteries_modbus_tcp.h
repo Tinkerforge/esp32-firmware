@@ -65,6 +65,10 @@ public:
     [[gnu::const]] virtual const Config *get_errors_prototype() override;
     virtual String validate_config(Config &update, ConfigSource source) override;
 
+    typedef std::function<void(const char *error)> ExecuteCallback;
+
+    static void execute(TFModbusTCPSharedClient *client, const TableSpec *table, ExecuteCallback &&callback);
+
 private:
     Config config_prototype;
     Config table_custom_register_block_prototype;
