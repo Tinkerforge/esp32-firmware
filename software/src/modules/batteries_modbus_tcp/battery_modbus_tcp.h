@@ -43,15 +43,8 @@ public:
     void start_action(Action action, std::function<void(bool)> &&callback = nullptr) override;
 
 private:
-    struct Execution {
-        const BatteriesModbusTCP::TableSpec *table;
-        std::function<void(bool)> callback;
-        size_t index;
-    };
-
     void connect_callback() override;
     void disconnect_callback() override;
-    void write_next(Execution *execution);
 
     uint32_t slot;
     Config *state;
