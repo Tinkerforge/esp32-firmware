@@ -27,6 +27,8 @@
 #include "module_dependencies.h"
 #include "modules/modbus_tcp_client/modbus_tcp_tools.h"
 
+#include "gcc_warnings.h"
+
 BatteryClassID BatteryModbusTCP::get_class() const
 {
     return BatteryClassID::ModbusTCP;
@@ -82,6 +84,7 @@ void BatteryModbusTCP::pre_reboot()
     stop_connection();
 }
 
+[[gnu::const]]
 bool BatteryModbusTCP::supports_action(Action /*action*/)
 {
     return true;
@@ -109,13 +112,15 @@ void BatteryModbusTCP::start_action(Action action, std::function<void(bool)> &&c
         return;
     }
 
-    Execution *execution = new Execution;
+    BatteriesModbusTCP::execute(static_cast<TFModbusTCPSharedClient *>(connected_client), table, [this, callback](const char *error) {
+        if (error != nullptr) {
+            logger.printfln_battery("%s", error);
+        }
 
-    execution->table = tables[static_cast<uint32_t>(action)];
-    execution->callback = std::move(callback);
-    execution->index = 0;
-
-    write_next(execution);
+        if (callback) {
+            callback(error == nullptr);
+        }
+    });
 }
 
 void BatteryModbusTCP::connect_callback()
@@ -124,88 +129,4 @@ void BatteryModbusTCP::connect_callback()
 
 void BatteryModbusTCP::disconnect_callback()
 {
-}
-
-void BatteryModbusTCP::write_next(Execution *execution)
-{
-    if (execution->index >= execution->table->register_blocks_count) {
-        if (execution->callback) {
-            execution->callback(true);
-        }
-
-        delete execution;
-        return; // action is done
-    }
-
-    if (connected_client == nullptr) {
-        if (execution->callback) {
-            execution->callback(false);
-        }
-
-        delete execution;
-        return;
-    }
-
-    BatteriesModbusTCP::RegisterBlockSpec *register_block = &execution->table->register_blocks[execution->index];
-    TFModbusTCPFunctionCode function_code;
-
-    switch (register_block->function_code) {
-    case ModbusFunctionCode::WriteSingleCoil:
-        function_code = TFModbusTCPFunctionCode::WriteSingleCoil;
-        break;
-
-    case ModbusFunctionCode::WriteSingleRegister:
-        function_code = TFModbusTCPFunctionCode::WriteSingleRegister;
-        break;
-
-    case ModbusFunctionCode::WriteMultipleCoils:
-        function_code = TFModbusTCPFunctionCode::WriteMultipleCoils;
-        break;
-
-    case ModbusFunctionCode::WriteMultipleRegisters:
-        function_code = TFModbusTCPFunctionCode::WriteMultipleRegisters;
-        break;
-
-    case ModbusFunctionCode::MaskWriteRegister:
-        function_code = TFModbusTCPFunctionCode::MaskWriteRegister;
-        break;
-
-    default:
-        logger.printfln_battery("Unsupported function code: %u", static_cast<uint8_t>(register_block->function_code));
-
-        if (execution->callback) {
-            execution->callback(false);
-        }
-
-        delete execution;
-        return;
-    }
-
-    static_cast<TFModbusTCPSharedClient *>(connected_client)->transact(execution->table->device_address,
-                                                                       function_code,
-                                                                       register_block->start_address,
-                                                                       register_block->values_count,
-                                                                       register_block->values_buffer,
-                                                                       2_s,
-    [this, execution](TFModbusTCPClientTransactionResult result, const char *error_message) {
-        if (result != TFModbusTCPClientTransactionResult::Success) {
-            logger.printfln_battery("Action execution failed at %zu of %zu: %s (%d)%s%s",
-                                    execution->index + 1, execution->table->register_blocks_count,
-                                    get_tf_modbus_tcp_client_transaction_result_name(result),
-                                    static_cast<int>(result),
-                                    error_message != nullptr ? " / " : "",
-                                    error_message != nullptr ? error_message : "");
-
-            if (execution->callback) {
-                execution->callback(false);
-            }
-
-            delete execution;
-            return;
-        }
-
-        ++execution->index;
-
-        write_next(execution); // FIXME: maybe add a little delay between writes to avoid bursts?
-    });
 }
