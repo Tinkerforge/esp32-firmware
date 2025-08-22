@@ -1808,6 +1808,28 @@ def main():
 
                 util.generate_enum(filename, backend_module, enum_name, filename_parts[1] + "_t", enum_values, ''.join(enum_comments))
 
+    # Generate unions
+    for backend_module in backend_modules:
+        mod_path = os.path.join('src', 'modules', backend_module.under)
+
+        if not os.path.exists(mod_path) or not os.path.isdir(mod_path):
+            print("Backend module {} not found.".format(backend_module.space))
+        else:
+            for filename in os.listdir(mod_path):
+                if not filename.endswith(".union.py"):
+                    continue
+
+                filename_parts = filename.split('.')
+
+                if len(filename_parts) != 3:
+                    print('Error: Invalid union file "{}" in backend {}'.format(filename, mod_path))
+                    sys.exit(1)
+
+                union_name = util.FlavoredName(filename_parts[0]).get()
+
+                spec: util.Union = util.import_from_path(f"{backend_module.under}_{union_name.under}", os.path.join(mod_path, filename)).spec
+                spec.generate(backend_module)
+
     # Preprocessing web interface
     util.log('Preprocessing web interface')
 
