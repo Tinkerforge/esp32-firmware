@@ -31,6 +31,11 @@
 #include "build.h"
 #include "tools.h"
 #include "cm_phase_rotation.enum.h"
+#include "zero_phase_decision.union.h"
+#include "one_phase_decision.union.h"
+#include "three_phase_decision.union.h"
+#include "current_decision.union.h"
+#include "global_decision.union.h"
 
 static constexpr micros_t WATCHDOG_TIMEOUT = 30_s;
 
@@ -157,7 +162,10 @@ void ChargeManager::pre_setup()
         {"lu", Config::Uptime()},       // "last_update" - The last time we received a CM packet from this charger
         {"n",  Config::Str("", 0, 32)}, // "name" - Configured display name. Has to be duplicated in case the config was written but we didn't reboot.
         {"u",  Config::Uint32(0)},      // "uid" - The ESP's UID
-        {"d",  Config::Union<AllocatorDecision>(*Config::Null(), AllocatorDecision::None0, ChargerDecision::getUnionPrototypes(), ChargerDecision::getUnionPrototypeCount())}
+        {"d0", ZeroPhaseDecision::getUnion()},
+        {"d1", OnePhaseDecision::getUnion()},
+        {"d3", ThreePhaseDecision::getUnion()},
+        {"dc", CurrentDecision::getUnion()}
     });
 
     // This has to fit in the 10k WebSocket send buffer with 64 chargers with long names.
@@ -170,7 +178,7 @@ void ChargeManager::pre_setup()
         {"l_spread", Config::Tuple(4, Config::Int32(0))},
         {"l_max_pv", Config::Int32(0)},
         {"alloc", Config::Tuple(4, Config::Int32(0))},
-        {"d",  Config::Union<GlobalAllocatorDecision>(*Config::Null(), GlobalAllocatorDecision::None0, GlobalDecision::getUnionPrototypes(), GlobalDecision::getUnionPrototypeCount())},
+        {"d", GlobalDecision::getUnion()},
         {"chargers", Config::Array(
             {},
             &state_chargers_prototype,
@@ -579,7 +587,10 @@ void ChargeManager::setup()
 
             for (int i = 0; i < this->charger_count; ++i) {
                 update_charger_state_config(i);
-                this->charger_decisions[i].writeToConfig((Config *)this->state.get("chargers")->get(i)->get("d"));
+                this->charger_decisions[i].zero.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("d0"));
+                this->charger_decisions[i].one.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("d1"));
+                this->charger_decisions[i].three.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("d3"));
+                this->charger_decisions[i].current.writeToConfig((Config *)this->state.get("chargers")->get(i)->get("dc"));
             }
             this->global_decision->writeToConfig((Config *)this->state.get("d"));
 

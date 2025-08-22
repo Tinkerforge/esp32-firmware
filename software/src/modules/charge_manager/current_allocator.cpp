@@ -32,6 +32,8 @@
 #include "current_allocator_private.h"
 #include "tools/string_builder.h"
 
+#include "global_decision.union.h"
+
 //#include "gcc_warnings.h"
 
 #define LOCAL_LOG_FULL(indent, fmt, ...) \
@@ -290,26 +292,63 @@ static int get_highest_charge_mode_bit(const ChargerState *state) {
     return 0;
 }
 
-static void set_charger_decision(StageContext &sc, int charger_idx, ChargerDecision &&desc) {
-    if (sc.charger_decisions[charger_idx].tag == AllocatorDecision::WelcomeChargeUntil2 && desc.tag == AllocatorDecision::PhaseSwitching0)
+/*
+    if (sc.charger_decisions[charger_idx].tag == ChargerDecisionTag::WelcomeChargeUntil2 && desc.tag == ChargerDecisionTag::PhaseSwitching0)
         return;
+*/
 
-    sc.charger_decisions[charger_idx] = desc;
+static void set_charger_decision(StageContext &sc, int charger_idx, ZeroPhaseDecision &&desc) {
+    sc.charger_decisions[charger_idx].zero = desc;
 }
 
-static void clear_charger_decision(StageContext &sc, int charger_idx, AllocatorDecision tag) {
-    if (sc.charger_decisions[charger_idx].tag != tag)
-        return;
-
-    sc.charger_decisions[charger_idx] = ChargerDecision::None0();
+static void set_charger_decision(StageContext &sc, int charger_idx, OnePhaseDecision &&desc) {
+    sc.charger_decisions[charger_idx].one = desc;
 }
 
-static void clear_charger_decision_all(StageContext &sc, AllocatorDecision tag) {
+static void set_charger_decision(StageContext &sc, int charger_idx, ThreePhaseDecision &&desc) {
+    sc.charger_decisions[charger_idx].three = desc;
+}
+
+static void set_charger_decision(StageContext &sc, int charger_idx, CurrentDecision &&desc) {
+    sc.charger_decisions[charger_idx].current = desc;
+}
+
+static void clear_charger_decision(StageContext &sc, int charger_idx, ZeroPhaseDecisionTag tag) {
+    auto &d = sc.charger_decisions[charger_idx].zero;
+    if (d.tag != tag)
+        return;
+
+    d = ZeroPhaseDecision::None();
+}
+
+static void clear_charger_decision(StageContext &sc, int charger_idx, OnePhaseDecisionTag tag) {
+    auto &d = sc.charger_decisions[charger_idx].one;
+    if (d.tag != tag)
+        return;
+
+    d = OnePhaseDecision::None();
+}
+
+static void clear_charger_decision(StageContext &sc, int charger_idx, ThreePhaseDecisionTag tag) {
+    auto &d = sc.charger_decisions[charger_idx].three;
+    if (d.tag != tag)
+        return;
+
+    d = ThreePhaseDecision::None();
+}
+
+static void clear_charger_decision(StageContext &sc, int charger_idx, CurrentDecisionTag tag) {
+    auto &d = sc.charger_decisions[charger_idx].current;
+    if (d.tag != tag)
+        return;
+
+    d = CurrentDecision::None();
+}
+
+template<typename T>
+static void clear_charger_decision_all(StageContext &sc, T tag) {
     for (int i = 0; i < sc.charger_count; ++i) {
-        if (sc.charger_decisions[i].tag != tag)
-            continue;
-
-        sc.charger_decisions[i] = ChargerDecision::None0();
+        clear_charger_decision(sc, i, tag);
     }
 }
 
@@ -317,11 +356,11 @@ static void set_global_decision(StageContext &sc, GlobalDecision &&desc) {
     *sc.global_decision = desc;
 }
 
-static void clear_global_decision(StageContext &sc, GlobalAllocatorDecision tag) {
+static void clear_global_decision(StageContext &sc, GlobalDecisionTag tag) {
     if (sc.global_decision->tag != tag)
         return;
 
-    *sc.global_decision = GlobalDecision::None0();
+    *sc.global_decision = GlobalDecision::None();
 }
 
 // Stage 1: Deactivate non-active chargers and handle rotation.
@@ -379,9 +418,9 @@ static void stage_1(StageContext &sc) {
         bool is_b1 = state->wants_to_charge && sc.phase_allocation[i] == 0 && deadline_elapsed(state->last_plug_in + sc.cfg->allocation_interval);
 
         if (is_b1 && have_active_chargers)
-            set_charger_decision(sc, i, ChargerDecision::WaitingForRotation0());
+            set_charger_decision(sc, i, ZeroPhaseDecision::YesWaitingForRotation());
         else
-            clear_charger_decision(sc, i, AllocatorDecision::WaitingForRotation0);
+            clear_charger_decision(sc, i, ZeroPhaseDecisionTag::YesWaitingForRotation);
 
         if (is_b1) {
             have_b1 = true;
@@ -423,7 +462,7 @@ static void stage_1(StageContext &sc) {
 
     if (have_b1 && have_active_chargers) {
         auto rot_sec = sc.ca_state->next_rotation.to<seconds_t>();
-        set_global_decision(sc, GlobalDecision::NextRotationAt2(rot_sec));
+        set_global_decision(sc, GlobalDecision::NextRotationAt(rot_sec));
     }
 
     // Shut down a charger if it should be rotated or if it reports that it is not active anymore.
@@ -431,7 +470,9 @@ static void stage_1(StageContext &sc) {
     // it will always be deactivated here to make sure we only wake up vehicles if there is current left over.
     for (int i = 0; i < sc.charger_count; ++i) {
         if (sc.phase_allocation[i] == 0) {
-            set_charger_decision(sc, i, ChargerDecision::None0());
+            // If the phase alloc was already 0 we did not decide to allocate 0 phases
+            // TODO: reenable this? Disabled for now to not override old decisions
+            // set_charger_decision(sc, i, ZeroPhaseDecision::None());
             continue;
         }
 
@@ -463,15 +504,15 @@ static void stage_1(StageContext &sc) {
 
         if (!keep_active) {
             if (!is_active(sc.phase_allocation[i], state))
-                set_charger_decision(sc, i, ChargerDecision::ShuttingDownNotActive0());
+                set_charger_decision(sc, i, ZeroPhaseDecision::YesNotActive());
             else if (rotate_for_waiting_b1)
-                set_charger_decision(sc, i, ChargerDecision::ShuttingDownRotatedForB10());
+                set_charger_decision(sc, i, ZeroPhaseDecision::YesRotatedForB1());
             else if (rotate_for_higher_prio)
-                set_charger_decision(sc, i, ChargerDecision::ShuttingDownRotatedForHigherPrio0());
+                set_charger_decision(sc, i, ZeroPhaseDecision::YesRotatedForHigherPrio());
             else if (state->off)
-                set_charger_decision(sc, i, ChargerDecision::ShuttingDownOffOrError0());
+                set_charger_decision(sc, i, ZeroPhaseDecision::YesChargeModeOff());
             else
-                set_charger_decision(sc, i, ChargerDecision::ShuttingDownUnknown0());
+                set_charger_decision(sc, i, ZeroPhaseDecision::YesUnknown());
 
             sc.phase_allocation[i] = 0;
             continue;
@@ -480,6 +521,11 @@ static void stage_1(StageContext &sc) {
         // If a charger does not support phase switching (anymore),
         // the connected number of phases wins against the allocated number of phases.
         if (!state->phase_switch_supported) {
+            if (sc.phase_allocation[i] == 3 && state->phases == 1)
+                set_charger_decision(sc, i, ThreePhaseDecision::NoFixed1p());
+            else if (sc.phase_allocation[i] == 1 && state->phases == 3)
+                set_charger_decision(sc, i, OnePhaseDecision::NoFixed3p());
+
             sc.phase_allocation[i] = state->phases;
             continue;
         }
@@ -504,7 +550,8 @@ static bool was_just_plugged_in(const ChargerState *state) {
 // we won't toggle the contactors too fast.
 // This feature is completely deactivated if cfg->plug_in_time is set to 0.
 static void stage_2(StageContext &sc) {
-    clear_charger_decision_all(sc, AllocatorDecision::WelcomeChargeUntil2);
+    clear_charger_decision_all(sc, OnePhaseDecisionTag::YesWelcomeChargeUntil);
+    clear_charger_decision_all(sc, ThreePhaseDecisionTag::YesWelcomeChargeUntil);
 
     int matched = filter_chargers(was_just_plugged_in(ctx.state) && (ctx.state->charge_mode & ctx.charge_mode_filter) != 0 && !ctx.state->off);
 
@@ -526,7 +573,11 @@ static void stage_2(StageContext &sc) {
         if (sc.phase_allocation[sc.idx_array[i]] == 0)
             sc.phase_allocation[sc.idx_array[i]] = activate_3p ? 3 : 1;
         auto wc_end = (state->just_plugged_in_timestamp + sc.cfg->plug_in_time).to<seconds_t>();
-        set_charger_decision(sc, sc.idx_array[i], ChargerDecision::WelcomeChargeUntil2(wc_end));
+
+        if (activate_3p)
+            set_charger_decision(sc, sc.idx_array[i], ThreePhaseDecision::YesWelcomeChargeUntil(wc_end));
+        else
+            set_charger_decision(sc, sc.idx_array[i], OnePhaseDecision::YesWelcomeChargeUntil(wc_end));
 
         trace("2: %d: plugged in. alloc %dp", sc.idx_array[i], sc.phase_allocation[sc.idx_array[i]]);
     }
@@ -739,7 +790,7 @@ static void stage_3(StageContext &sc) {
 
             trace("3: wnd_min %d > p%d raw %d", wnd_min[p], p, sc.limits->raw[p]);
 
-            set_charger_decision(sc, sc.idx_array[i], ChargerDecision::ShuttingDownPhaseOverload2(wnd_min[p] - sc.limits->raw[p], p));
+            set_charger_decision(sc, sc.idx_array[i], ZeroPhaseDecision::YesPhaseOverload(wnd_min[p] - sc.limits->raw[p], p));
 
             // We don't have to recalculate the window but instead can just change the minimum.
             // The window minimum does not have dependencies between chargers.
@@ -785,13 +836,13 @@ static void stage_3(StageContext &sc) {
         // to shut down chargers if we don't find one that will be shut down soon.
         if (!sc.ca_state->global_hysteresis_elapsed) {
             auto hyst_elapsed_at = (sc.ca_state->last_hysteresis_reset + sc.cfg->global_hysteresis).to<seconds_t>();
-            set_global_decision(sc, GlobalDecision::PVExcessOverloadedHysteresisBlocksUntil3(wnd_min.pv - sc.limits->max_pv, hyst_elapsed_at));
+            set_global_decision(sc, GlobalDecision::PVExcessOverloadedHysteresisBlocksUntil(hyst_elapsed_at, wnd_min.pv - sc.limits->max_pv));
             break;
         }
 
         trace("3: wnd_min %d > max_pv %d", wnd_min.pv, sc.limits->max_pv);
 
-        set_charger_decision(sc, sc.idx_array[i], ChargerDecision::ShuttingDownPhaseOverload2(wnd_min.pv - sc.limits->max_pv, 0));
+        set_charger_decision(sc, sc.idx_array[i], ZeroPhaseDecision::YesPhaseOverload(wnd_min.pv - sc.limits->max_pv, 0));
 
         // We don't have to recalculate the window but instead can just change the minimum.
         // The window minimum does not have dependencies between chargers.
@@ -824,7 +875,7 @@ static constexpr int CHECK_IMPROVEMENT = 4;
 static constexpr int CHECK_IMPROVEMENT_ALL_PHASE = 8;
 static constexpr int CHECK_SPREAD = 16;
 
-static bool can_activate(StageContext &sc, int charger_idx, StringWriter &sw, const Cost &check_phase, const Cost &new_cost, const Cost &new_enable_cost, const Cost &wnd_min, const Cost &wnd_max, bool is_unknown_rotated_1p_3p_switch, int guaranteed_pv_current) {
+static bool can_activate(StageContext &sc, int charger_idx, StringWriter &sw, const Cost &check_phase, const Cost &new_cost, const Cost &new_enable_cost, const Cost &wnd_min, const Cost &wnd_max, bool is_unknown_rotated_1p_3p_switch, int guaranteed_pv_current, bool is_3p_activation) {
     const CurrentLimits *limits = sc.limits;
     float enable_current_factor = sc.cfg->enable_current_factor;
 
@@ -847,6 +898,11 @@ static bool can_activate(StageContext &sc, int charger_idx, StringWriter &sw, co
     if (check_improvement && (!check_spread || !improves_all_spread)) {
         bool improves_pv = (check_phase.pv & (CHECK_IMPROVEMENT | CHECK_IMPROVEMENT_ALL_PHASE)) == 0 || (new_cost.pv > 0 && (wnd_max.pv < limits->min.pv || new_cost.pv <= guaranteed_pv_current));
         if (!improves_pv) {
+            if (is_3p_activation)
+                set_charger_decision(sc, charger_idx, ThreePhaseDecision::NoPVImprovement());
+            else
+                set_charger_decision(sc, charger_idx, OnePhaseDecision::NoPVImprovement());
+
             sw.printf(" No: !impr_pv");
             // Don't set charger status line here: This charger probably has the status line "waiting for other chargers to be rotated", which is fine.
             return false;
@@ -870,6 +926,11 @@ static bool can_activate(StageContext &sc, int charger_idx, StringWriter &sw, co
         if ((check_all_phases && !improves_all_phases) || (!check_all_phases && !improves_any_phase)) {
             // PV is already checked above.
             if (!is_unknown_rotated_1p_3p_switch) {
+                if (is_3p_activation)
+                    set_charger_decision(sc, charger_idx, ThreePhaseDecision::NoPhaseImprovement());
+                else
+                    set_charger_decision(sc, charger_idx, OnePhaseDecision::NoPhaseImprovement());
+
                 sw.printf(" No: %d %d %d",
                             check_all_phases,
                             improves_all_phases,
@@ -879,6 +940,10 @@ static bool can_activate(StageContext &sc, int charger_idx, StringWriter &sw, co
             }
         }
     } else if (check_improvement) {
+        if (is_3p_activation)
+            set_charger_decision(sc, charger_idx, ThreePhaseDecision::YesImprovesSpread());
+        else
+            set_charger_decision(sc, charger_idx, OnePhaseDecision::YesImprovesSpread());
         sw.printf(" impr_spread ");
     }
 
@@ -902,8 +967,11 @@ static bool can_activate(StageContext &sc, int charger_idx, StringWriter &sw, co
 
         if (limits->min[p] < required) {
             sw.printf(" No: p%zu min %d < req %d ", p, limits->min[p], required);
-            // FIXME: Pass stage context, etc. to here to be able to call this.
-            set_charger_decision(sc, charger_idx, ChargerDecision::CantActivatePhaseMinimum3(required, limits->min[p], p));
+            if (is_3p_activation)
+                set_charger_decision(sc, charger_idx, ThreePhaseDecision::NoPhaseMinimum(required, limits->min[p], p));
+            else
+                set_charger_decision(sc, charger_idx, OnePhaseDecision::NoPhaseMinimum(required, limits->min[p], p));
+
             return false;
         }
     }
@@ -971,7 +1039,7 @@ static bool try_activate(StageContext &sc, int charger_idx, StringWriter &sw, co
         improve_check | CHECK_MIN_WINDOW_ENABLE
     };
 
-    bool result = can_activate(sc, charger_idx, sw, check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, false, state->guaranteed_pv_current);
+    bool result = can_activate(sc, charger_idx, sw, check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, false, state->guaranteed_pv_current, activate_3p);
     if (result && spent != nullptr)
         *spent = new_enable_cost;
     return result;
@@ -1002,7 +1070,7 @@ static void stage_4(StageContext &sc) {
     if (!sc.ca_state->global_hysteresis_elapsed) {
         if (matched > 0) {
             auto hyst = (sc.ca_state->last_hysteresis_reset + sc.cfg->global_hysteresis).to<seconds_t>();
-            set_global_decision(sc, GlobalDecision::HysteresisElapsesAt2(hyst));
+            set_global_decision(sc, GlobalDecision::HysteresisElapsesAt(hyst));
         }
         return;
     }
@@ -1052,9 +1120,22 @@ static void stage_4(StageContext &sc) {
         const auto *state = &sc.charger_state[sc.idx_array[i]];
 
         bool force_3p = !deadline_elapsed(state->last_phase_switch + sc.cfg->global_hysteresis) && state->phases == 3;
+        if (force_3p)
+            set_charger_decision(sc, sc.idx_array[i], OnePhaseDecision::NoForced3pUntil(state->last_phase_switch + sc.cfg->global_hysteresis));
+
         bool force_1p = !deadline_elapsed(state->last_phase_switch + sc.cfg->global_hysteresis) && state->phases == 1;
+        if (force_1p)
+            set_charger_decision(sc, sc.idx_array[i], ThreePhaseDecision::NoForced1pUntil(state->last_phase_switch + sc.cfg->global_hysteresis));
 
         bool is_fixed_3p = state->phases == 3 && !state->phase_switch_supported;
+        if (is_fixed_3p)
+            set_charger_decision(sc, sc.idx_array[i], OnePhaseDecision::NoFixed3p());
+
+        // This is not relevant for the decision here,
+        // but stage 5 filters out all chargers that are fixed 1p.
+        // Somewhere we have to set this.
+        if (state->phases == 1 && !state->phase_switch_supported)
+            set_charger_decision(sc, sc.idx_array[i], ThreePhaseDecision::NoFixed1p());
 
         // Prefer unknown rotated switchable chargers to be active on all three phases.
         // In that case we know what the charger is doing.
@@ -1071,13 +1152,14 @@ static void stage_4(StageContext &sc) {
         uint8_t phase_alloc = 0;
 
         if (try_3p && try_activate(sc, sc.idx_array[i], sw, state, true, have_active_chargers, nullptr)) {
-            set_charger_decision(sc, sc.idx_array[i], ChargerDecision::Activating1(3));
+            if (is_unknown_rot_switchable)
+                set_charger_decision(sc, sc.idx_array[i], ThreePhaseDecision::YesUnknownRotSwitchable());
+
             try_1p = false;
             phase_alloc = 3;
         }
 
         if (try_1p && try_activate(sc, sc.idx_array[i], sw, state, false, have_active_chargers, nullptr)) {
-            set_charger_decision(sc, sc.idx_array[i], ChargerDecision::Activating1(1));
             phase_alloc = 1;
         }
 
@@ -1131,7 +1213,7 @@ static void stage_5(StageContext &sc) {
     if (!sc.ca_state->global_hysteresis_elapsed) {
         if (matched > 0) {
             auto hyst = (sc.ca_state->last_hysteresis_reset + sc.cfg->global_hysteresis).to<seconds_t>();
-            set_global_decision(sc, GlobalDecision::HysteresisElapsesAt2(hyst));
+            set_global_decision(sc, GlobalDecision::HysteresisElapsesAt(hyst));
         }
     }
 
@@ -1155,8 +1237,7 @@ static void stage_5(StageContext &sc) {
         // The global hysteresis is not elapsed yet, but this charger was switched less than one hysteresis ago.
         // This could have been a phase switch, so don't switch again immediately.
         if (!deadline_elapsed(state->last_phase_switch + sc.cfg->global_hysteresis)) {
-            auto hyst = (state->last_phase_switch + sc.cfg->global_hysteresis).to<seconds_t>();
-            set_charger_decision(sc, sc.idx_array[i], ChargerDecision::PhaseSwitchingBlockedUntil2(hyst));
+            set_charger_decision(sc, sc.idx_array[i], ThreePhaseDecision::NoPhaseSwitchBlockedUntil(state->last_phase_switch + sc.cfg->global_hysteresis));
             continue;
         }
 
@@ -1191,15 +1272,15 @@ static void stage_5(StageContext &sc) {
         StringWriter sw{buf, ARRAY_SIZE(buf)};
 
         sw.printf("5: %d:", sc.idx_array[i]);
-        if (!can_activate(sc, sc.idx_array[i], sw, check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, state->phase_rotation == PhaseRotation::Unknown, state->guaranteed_pv_current - already_allocated.pv)) {
+        if (!can_activate(sc, sc.idx_array[i], sw, check_phase, new_cost, new_enable_cost, wnd_min, wnd_max, state->phase_rotation == PhaseRotation::Unknown, state->guaranteed_pv_current - already_allocated.pv, true)) {
             trace("%s", buf);
             continue;
         }
 
-        if (sc.phase_allocation[sc.idx_array[i]] == 0)
+        /*if (sc.phase_allocation[sc.idx_array[i]] == 0)
             set_charger_decision(sc, sc.idx_array[i], ChargerDecision::Activating1(3));
         else
-            set_charger_decision(sc, sc.idx_array[i], ChargerDecision::PhaseSwitching0());
+            set_charger_decision(sc, sc.idx_array[i], ChargerDecision::PhaseSwitching0());*/
 
         trace("%s", buf);
 
@@ -1298,6 +1379,20 @@ static Cost get_fair_current(int matched, int start, int *idx_array, uint8_t *ph
     return fair;
 }
 
+struct MinDesc {
+    void operator()(int new_current, CurrentDecision &&desc) {
+        if (std::min(current, new_current) == current)
+            return;
+
+        set_charger_decision(sc, charger_idx, std::move(desc));
+        current = new_current;
+    }
+
+    int current;
+    StageContext &sc;
+    int charger_idx;
+};
+
 // Stage 7: Allocate fair current to chargers with at least one allocated phase
 // - All those chargers already have their minimum current allocated
 // - The fair current is the current left divided by the number of chargers active on that phase.
@@ -1324,14 +1419,26 @@ static void stage_7(StageContext &sc) {
         auto allocated_current = sc.current_allocation[sc.idx_array[i]];
         auto allocated_phases = sc.phase_allocation[sc.idx_array[i]];
 
-        auto current = state->observe_pv_limit ? std::max(state->guaranteed_pv_current / allocated_phases - allocated_current, fair.pv / allocated_phases) : 32000;
+        auto min_desc = MinDesc{32000, sc, sc.idx_array[i]};
 
+        // Limit to fair PV current (or guaranteed PV current if this is more)
+        if (state->observe_pv_limit) {
+            auto fair_pv = fair.pv / allocated_phases;
+            auto guaranteed_pv = state->guaranteed_pv_current / allocated_phases - allocated_current;
+            // Guaranteed PV current is allowed to exceed the fair current.
+            if (guaranteed_pv > fair_pv)
+                min_desc(guaranteed_pv, CurrentDecision::GuaranteedPV());
+            else
+                min_desc(fair_pv, CurrentDecision::Fair(false));
+        }
+
+        // Limit to minimum fair phase current
         if (state->phase_rotation == PhaseRotation::Unknown) {
-            current = std::min(current, fair.min_phase());
+            min_desc(fair.min_phase(), CurrentDecision::Fair(true));
         } else {
             for (size_t p = 0; p < allocated_phases; ++p) {
                 auto phase = get_phase(state->phase_rotation, (ChargerPhase)((size_t)ChargerPhase::P1 + p));
-                current = std::min(current, fair[phase]);
+                min_desc(fair[phase], CurrentDecision::Fair(false));
             }
         }
 
@@ -1339,12 +1446,16 @@ static void stage_7(StageContext &sc) {
         if (!state->is_charging) {
             Cost enable_cost;
             auto enable_current = get_enable_cost(state, allocated_phases == 3, true, nullptr, &enable_cost, sc.cfg);
-            current = std::min(current, std::max(0, enable_current - allocated_current));
+            // Don't steal from allocation if enable current is less than minimum current
+            enable_current = std::max(0, enable_current - allocated_current);
+            min_desc(enable_current, CurrentDecision::EnableNotCharging());
         }
 
-        current = std::min(current, current_capacity(sc.limits, state, allocated_current, allocated_phases, sc.cfg));
-        current += allocated_current;
+        // TODO disambiguate between Requested and PhaseLimit here
+        min_desc(current_capacity(sc.limits, state, allocated_current, allocated_phases, sc.cfg), CurrentDecision::Requested());
 
+
+        auto current = allocated_current + min_desc.current;
         auto cost = get_cost(current, (ChargerPhase)allocated_phases, state->phase_rotation, allocated_current, (ChargerPhase)allocated_phases);
 
         // This should never happen:
@@ -1403,6 +1514,9 @@ static void stage_8(StageContext &sc) {
                 current = std::min(current, sc.limits->raw[get_phase(state->phase_rotation, (ChargerPhase)p)]);
             }
         }
+
+        if (current > 0)
+            set_charger_decision(sc, sc.idx_array[i], CurrentDecision::LeftOver(allocated_phases == 3 && state->phase_rotation == PhaseRotation::Unknown));
 
         current += allocated_current;
 
@@ -1507,12 +1621,14 @@ static void stage_9(StageContext &sc) {
         int enable_current;
         uint8_t phase_alloc = 0;
 
+        // Should we also set the negative phase decisions here? (As is done in stage 4 and 5)
+
         if (try_3p) {
             enable_current = get_enable_cost(state, true, have_active_chargers, nullptr, &enable_cost, sc.cfg);
             if (!cost_exceeds_limits(enable_cost, sc.limits, 9, state->observe_pv_limit, state->guaranteed_pv_current)) {
                 try_1p = false;
                 phase_alloc = 3;
-                set_charger_decision(sc, sc.idx_array[i], ChargerDecision::WakingUp0());
+                set_charger_decision(sc, sc.idx_array[i], ThreePhaseDecision::YesWakingUp());
             }
         }
 
@@ -1520,7 +1636,7 @@ static void stage_9(StageContext &sc) {
             enable_current = get_enable_cost(state, false, have_active_chargers, nullptr, &enable_cost, sc.cfg);
             if (!cost_exceeds_limits(enable_cost, sc.limits, 9, state->observe_pv_limit, state->guaranteed_pv_current)) {
                 phase_alloc = 1;
-                set_charger_decision(sc, sc.idx_array[i], ChargerDecision::WakingUp0());
+                set_charger_decision(sc, sc.idx_array[i], OnePhaseDecision::YesWakingUp());
             }
         }
 
@@ -1706,7 +1822,7 @@ int allocate_current(
     };
 
     if (ca_state->global_hysteresis_elapsed)
-        clear_global_decision(sc, GlobalAllocatorDecision::HysteresisElapsesAt2);
+        clear_global_decision(sc, GlobalDecisionTag::HysteresisElapsesAt);
 
     trace_alloc(0, sc);
     trace("__all__");
