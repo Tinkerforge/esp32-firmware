@@ -36,10 +36,6 @@ void GenericTCPClientPoolConnector::connect_internal()
         connect_callback_common(result, error_number, share_level);
     },
     [this](TFGenericTCPClientDisconnectReason reason, int error_number, TFGenericTCPSharedClient *shared_client, TFGenericTCPClientPoolShareLevel share_level) {
-        if (connected_client != shared_client) {
-            return;
-        }
-
         connected_client = nullptr;
 
         disconnect_callback_common(reason, error_number, share_level);
