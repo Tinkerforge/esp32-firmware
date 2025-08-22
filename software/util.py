@@ -643,6 +643,7 @@ struct {self.name.camel} {{
 
     static const ConfUnionPrototype<{self.name.camel}Tag> *getUnionPrototypes();
     static size_t getUnionPrototypeCount();
+    static Config getUnion();
 
     void writeToConfig(Config *target);
 }};
@@ -664,6 +665,8 @@ const ConfUnionPrototype<{self.name.camel}Tag> *{self.name.camel}::getUnionProto
 }}
 
 size_t {self.name.camel}::getUnionPrototypeCount() {{ return {self.name.upper}_TAG_COUNT; }}
+
+Config {self.name.camel}::getUnion() {{ return Config::Union<{self.name.camel}Tag>(*Config::Null(), {self.name.camel}Tag::None, {self.name.camel}::getUnionPrototypes(), {self.name.camel}::getUnionPrototypeCount()); }}
 
 void {self.name.camel}::writeToConfig(Config *target) {{
     if (target->getTag<{self.name.camel}Tag>() != this->tag)
