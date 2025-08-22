@@ -17,6 +17,8 @@ src/modules/*/module.cpp
 src/modules/*/*.enum.h
 src/modules/*/*.enum.cpp
 src/modules/*/*.enum.previous
+src/modules/*/*.union.h
+src/modules/*/*.union.cpp
 src/modules.cpp
 src/build.h
 src/build.cpp
@@ -40,6 +42,7 @@ web/src/ts/branding.ts
 web/src/ts/translation.tsx
 web/src/ts/translation.json
 web/src/modules/*/*.enum.ts
+web/src/modules/*/*.union.ts
 web/src/modules/*/module_available.inc
 web/src_tfpp/
 web/**/*.embedded.ts

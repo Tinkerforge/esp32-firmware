@@ -12,8 +12,8 @@ from collections import namedtuple
 import functools
 import json
 import collections
-from dataclasses import dataclass
-from pathlib import Path
+from dataclasses import dataclass, InitVar, field
+from collections.abc import Callable
 
 import tinkerforge_util as tfutil
 
@@ -416,6 +416,7 @@ def find_frontend_plugins(host_module_name, plugin_name):
 
     return plugins
 
+#region enum generator
 @dataclass
 class EnumValue:
     name: NameFlavors
@@ -493,3 +494,225 @@ def generate_enum(source_file_name: str,
     frontend_mod_path = os.path.join('web', 'src', 'modules', backend_module.under)
     if os.path.exists(frontend_mod_path) and os.path.isdir(frontend_mod_path):
         tfutil.write_file_if_different(os.path.join(frontend_mod_path, enum_name.under + '.enum.ts'), frontend_source)
+#endregion
+
+#region union generator
+
+@dataclass
+class Type:
+    name: str
+    size: int
+    config: str
+    config_update: Callable[[str], str]
+    ts_type: str
+
+class Types:
+    Bool  = Type('bool',  1, "Config::Bool(false)",  lambda x: f"updateBool({x})", "boolean")
+
+    U8  = Type('uint8_t',  1, "Config::Uint8(0)",  lambda x: f"updateUint({x})", "number")
+    U16 = Type('uint16_t', 2, "Config::Uint16(0)", lambda x: f"updateUint({x})", "number")
+    U32 = Type('uint32_t', 4, "Config::Uint32(0)", lambda x: f"updateUint({x})", "number")
+    U64 = Type('uint64_t', 8, "Config::Uint53(0)", lambda x: f"updateUint53({x})", "number")
+
+    S8  = Type('int8_t',  1, "Config::Int8(0)",  lambda x: f"updateInt({x})", "number")
+    S16 = Type('int16_t', 2, "Config::Int16(0)", lambda x: f"updateInt({x})", "number")
+    S32 = Type('int32_t', 4, "Config::Int32(0)", lambda x: f"updateInt({x})", "number")
+    S64 = Type('int64_t', 8, "Config::Int52(0)", lambda x: f"updateInt52({x})", "number")
+
+    Micros  = Type('micros_t',  8, "Config::Int52(0)", lambda x: f"updateInt52({x}.as<int64_t>())", "number")
+    Millis  = Type('millis_t',  8, "Config::Int52(0)", lambda x: f"updateInt52({x}.as<int64_t>())", "number")
+    Seconds = Type('seconds_t', 8, "Config::Int52(0)", lambda x: f"updateInt52({x}.as<int64_t>())", "number")
+
+@dataclass
+class Member:
+    name: NameFlavors = field(init=False)
+    _name_str: InitVar[str]
+    type: Type
+
+    def __post_init__(self, _name_str):
+        self.name = FlavoredName(_name_str).get()
+
+    def get_decl(self):
+        return f"{self.type.name} {self.name.under}"
+
+    def get_config(self):
+        return f'{self.type.config}'
+
+    def get_conf_write(self, variant_name, member_index, member_count):
+        src = f'this->{variant_name.under}.{self.name.under}'
+
+        if member_count == 1 and member_index == 0:
+            return f"target->get()->{self.type.config_update(src)};"
+        return f"target->get()->get({member_index})->{self.type.config_update(src)};"
+
+    def get_ts_type(self):
+        return f'{self.name.under}: {self.type.ts_type}'
+
+@dataclass
+class Variant:
+    name: NameFlavors = field(init=False)
+    _name_str: InitVar[str]
+
+    members: list[Member] = field(default_factory=list)
+
+    def __post_init__(self, _name_str):
+        self.name = FlavoredName(_name_str).get()
+
+    def get_union_member(self):
+        if len(self.members) == 0:
+            return ""
+        return f"struct {{{" ".join(("[[gnu::packed]] " if m.type.size > 1 else "") + m.get_decl() + ";" for m in self.members)} }} {self.name.under};"
+
+    def get_factory_fn_signature(self, union_name):
+        return f"static {union_name.camel} {self.name.camel}({", ".join(m.get_decl() for m in self.members)});"
+
+    def get_factory_fn_impl(self, union_name):
+        if len(self.members) == 0:
+            init = "._empty = 0"
+        else:
+            init = f".{self.name.under} = {{" + \
+                 ", ".join(f".{m.name.under} = {m.name.under}" for m in self.members) + \
+                 "}"
+
+        return f"{union_name.camel} {union_name.camel}::{self.name.camel}({", ".join(m.get_decl() for m in self.members)}) {{ return {union_name.camel}{{{init}, .tag = {union_name.camel}Tag::{self.name.camel}}}; }}"
+
+    def get_conf_union_prototype(self, union_name):
+        if len(self.members) == 0:
+            m = "*Config::Null()"
+        else:
+            m = ", ".join(m.get_config() for m in self.members)
+
+        if len(self.members) > 1:
+            m = f"Config::Tuple({{{m}}})"
+
+        return f"{{{union_name.camel}Tag::{self.name.camel}, {m}}}"
+
+    def get_conf_write(self, union_name):
+        return f"""case {union_name.camel}Tag::{self.name.camel}:
+            {"\n            ".join(m.get_conf_write(self.name, i, len(self.members)) for i, m in enumerate(self.members))}
+            break;"""
+
+    def size(self):
+        return sum(m.type.size for m in self.members)
+
+    def get_ts_type(self, union_name):
+        m = ", ".join(m.get_ts_type() for m in self.members)
+        if len(self.members) > 1:
+            m = f"[{m}]"
+        if len(self.members) > 0:
+            m = f", {m}"
+
+        return f"[ {union_name.camel}Tag.{self.name.camel}{m} ]"
+
+@dataclass
+class Union:
+    name: NameFlavors = field(init=False)
+    _name_str: InitVar[str]
+
+    expected_size: int
+    variants: list[Variant]
+
+    def __post_init__(self, _name_str):
+        self.name = FlavoredName(_name_str).get()
+
+    def get_struct(self):
+        max_variant_size = max(v.size() for v in self.variants)
+        padding_size = self.expected_size - max_variant_size - 1 # tag takes one byte
+        if padding_size < 0:
+            print(f"{self.name.space}: {max_variant_size=} >= {self.expected_size=} (tag requires one byte extra)")
+            sys.exit(1)
+        padding = f'uint8_t _pad[{padding_size}]{{}};'
+
+        return f"""#pragma once
+
+#include <stdint.h>
+#include <TFTools/Micros.h>
+
+#include "{self.name.under}_tag.enum.h"
+#include "config.h"
+
+struct {self.name.camel} {{
+    union {{
+        {"uint8_t _empty;" if any(len(v.members) == 0 for v in self.variants) else ""}
+        {"\n        ".join(x for x in [v.get_union_member() for v in self.variants] if len(x) > 0)}
+    }};
+    {self.name.camel}Tag tag;
+    {padding}
+
+    {"\n    ".join(v.get_factory_fn_signature(self.name) for v in self.variants)}
+
+    static const ConfUnionPrototype<{self.name.camel}Tag> *getUnionPrototypes();
+    static size_t getUnionPrototypeCount();
+
+    void writeToConfig(Config *target);
+}};
+
+static_assert(sizeof({self.name.camel}) == {self.expected_size});
+"""
+
+    def get_impl(self):
+        return f"""
+#include "{self.name.under}.union.h"
+
+{"\n".join(v.get_factory_fn_impl(self.name) for v in self.variants)}
+
+const ConfUnionPrototype<{self.name.camel}Tag> *{self.name.camel}::getUnionPrototypes() {{
+    static const ConfUnionPrototype<{self.name.camel}Tag> result[{self.name.upper}_TAG_COUNT] = {{
+        {",\n        ".join(v.get_conf_union_prototype(self.name) for v in self.variants)}
+    }};
+    return result;
+}}
+
+size_t {self.name.camel}::getUnionPrototypeCount() {{ return {self.name.upper}_TAG_COUNT; }}
+
+void {self.name.camel}::writeToConfig(Config *target) {{
+    if (target->getTag<{self.name.camel}Tag>() != this->tag)
+        target->changeUnionVariant(this->tag);
+
+    switch (this->tag) {{
+        {"\n        ".join(v.get_conf_write(self.name) for v in self.variants)}
+    }}
+}}
+"""
+
+    def get_ts_type(self):
+        return f"""import {{ {self.name.camel}Tag }} from "./{self.name.under}_tag.enum";
+
+export type {self.name.camel} =
+    {" |\n    ".join(v.get_ts_type(self.name) for v in self.variants)};
+"""
+
+    def generate(self, module_name: NameFlavors):
+        # Generate union tag enum
+        generate_enum(
+            f'{self.name.space} Tag.uint8.enum',
+            module_name,
+            FlavoredName(self.name.space + " Tag").get(),
+            'uint8_t',
+            [EnumValue(v.name, i, '') for i, v in enumerate(self.variants)],
+            None)
+
+        # Generate backend union definition and implementation
+        with tfutil.ChangedDirectory(os.path.join('src', 'modules', module_name.under)):
+            tfutil.write_file_if_different(self.name.under + ".union.h", self.get_struct())
+            tfutil.write_file_if_different(self.name.under + ".union.cpp", self.get_impl())
+
+        # Generate frontend API type for union
+        frontend_mod_path = os.path.join('web', 'src', 'modules', module_name.under)
+        if os.path.exists(frontend_mod_path) and os.path.isdir(frontend_mod_path):
+            tfutil.write_file_if_different(os.path.join(frontend_mod_path, self.name.under + '.union.ts'), self.get_ts_type())
+
+#endregion
+
+import importlib.util
+import sys
+
+def import_from_path(module_name, file_path):
+    spec = importlib.util.spec_from_file_location(module_name, file_path)
+    if spec is None or spec.loader is None:
+        raise Exception(f"Failed to import spec from file locaton {module_name=} {file_path=}")
+
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
