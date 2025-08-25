@@ -1063,7 +1063,7 @@ void ShipConnection::state_done()
         case ProtocolState::Data: {
             SHIP_TYPES::ShipMessageDataType data = SHIP_TYPES::ShipMessageDataType();
             DynamicJsonDocument dynamic_json_document{8192}; //TESTING MEMORY STUFF
-            if (data.json_to_type(&message_incoming->data[1], message_incoming->length - 1, false, dynamic_json_document) == SHIP_TYPES::DeserializationResult::SUCCESS) {
+            if (data.json_to_type(&message_incoming->data[1], message_incoming->length - 1, dynamic_json_document) == SHIP_TYPES::DeserializationResult::SUCCESS) {
                 spine->process_datagram(data.payload);
             } else {
                 logger.printfln("Received a Data Message but encountered an error while trying to deserialize the message");

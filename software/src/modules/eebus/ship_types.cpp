@@ -28,41 +28,38 @@
 
 namespace SHIP_TYPES
 {
-DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, size_t length, bool compatiblity_mode, JsonDocument &doc)
+DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, size_t length, JsonDocument &doc)
 {
     doc.clear();
     String incoming_data_str(reinterpret_cast<const char *>(incoming_data), length);
-    if (compatiblity_mode) {
-        incoming_data_str.replace("{}", "[]");
-        incoming_data_str.replace("}", "}]");
-        incoming_data_str.replace(",", "},{");
-        incoming_data_str.replace("{", "[{");
+    if (eebus_json_compatibility_mode) {
+        incoming_data_str = EEBUSJsonToJson(incoming_data_str);
     }
     int nesting_limit = 20;
     DeserializationError error = deserializeJson(doc,
                                                  incoming_data_str,
                                                  DeserializationOption::NestingLimit(nesting_limit));
-
-    //doc.shrinkToFit(); // Make this a bit smaller
+    eebus.trace_fmtln("Tried to deserialize: %s", incoming_data_str.c_str());
     if (error) {
         eebus.trace_fmtln("J2T ShipMessageData Error during JSON deserialization : %s", error.c_str());
+
         return DeserializationResult::ERROR;
     }
 
-    JsonObject data = doc["data"][0];
+    JsonObject data = doc["data"];
 
     if (data.isNull()) {
         eebus.trace_fmtln("J2T ShipMessageData Error: No data object found");
 
         return DeserializationResult::ERROR;
     }
-    if (doc["data"][0]["header"][0]["protocolId"] == nullptr || doc["data"][1]["payload"] == nullptr) {
+    if (doc["data"]["header"]["protocolId"] == nullptr || doc["data"]["payload"] == nullptr) {
         eebus.trace_fmtln("J2T ShipMessageData Error: Data invalid");
         valid = false;
         return DeserializationResult::ERROR;
     }
-    protocol_id = String(doc["data"][0]["header"][0]["protocolId"]);
-    payload = doc["data"][1]["payload"];
+    protocol_id = String(doc["data"]["header"]["protocolId"]);
+    payload = doc["data"]["payload"];
     valid = true;
 
     JsonObject data_extension = data["extension"];
@@ -106,24 +103,17 @@ String ShipMessageDataType::type_to_json()
             data_extension["string"] = extension_string;
         }
     }
-    /*
-message_outgoing->data[0] = 2;
-size_t length = serializeJson(doc, &message_outgoing->data[1], SHIP_TYPES_MAX_JSON_SIZE - 1);
-message_outgoing->length = length + 1;
-*/
+    if (eebus_json_compatibility_mode) {
+        DynamicJsonDocument destination_doc{SHIP_TYPES_MAX_JSON_SIZE};
+        JsonToEEBusJson(doc, destination_doc.as<JsonVariant>());
+        doc.clear();
+        doc.set(destination_doc);
+    }
 
     String message_outgoing_data = "";
     message_outgoing_data.reserve(SHIP_TYPES_MAX_JSON_SIZE - 1); // Reserve space for the JSON data
     serializeJson(doc, message_outgoing_data);
 
-    /*
-//message_outgoing_data.replace("[{", "[[{"); // spine-go expects a double array for some reason
-//message_outgoing_data.replace("}]", "}]]");
-
-//size_t size = serializeJson(doc, &message_outgoing.data[1], SHIP_TYPES_MAX_JSON_SIZE - 1);
-memcpy(&message_outgoing->data[1], message_outgoing_data.c_str(), message_outgoing_data.length());
-message_outgoing->length = message_outgoing_data.length() + 1;
-*/
     return message_outgoing_data;
 }
 
@@ -135,6 +125,56 @@ void DeserializeOptionalField(JsonObject *data, const char *field_name, bool *fi
     } else {
         *field_valid = false;
     }
+}
+
+void JsonToEEBusJson(JsonVariant src, JsonVariant dst)
+{
+    logger.printfln("Converting json to eebusjson: %s ", src.as<String>().c_str());
+    if (src.is<JsonObject>()) {
+        logger.printfln("Object found");
+
+        logger.printfln("dst.is<JsonArray>: %d ", dst.is<JsonArray>());
+        logger.printfln("dst.is<JsonObject>: %d ", dst.is<JsonObject>());
+        logger.printfln("dst: %s ", dst.as<String>().c_str());
+        JsonArray arr = dst.as<JsonArray>();
+
+        for (JsonPair kv : src.as<JsonObject>()) {
+            JsonObject singleKeyObject = arr.createNestedObject();
+            if (singleKeyObject.isNull()) {
+                logger.printfln("Allocating object failed. No point continuing here");
+                return;
+            }
+            JsonToEEBusJson(kv.value(), singleKeyObject[kv.key()]);
+        }
+    } else if (src.is<JsonArray>()) {
+        logger.printfln("Array found");
+        for (JsonVariant v : src.as<JsonArray>()) {
+            JsonToEEBusJson(v, dst.createNestedArray());
+        }
+    } else {
+        logger.printfln("Probably primitive");
+        bool set_res = false;
+        if (src.is<String>()) {
+            set_res = dst.set(src.as<String>());
+        }else {
+            set_res = dst.set(src);
+        }
+        if (!set_res) {
+            logger.printfln("Failed to set primitive");
+        }
+    }
+    logger.printfln("eebusjson: %s ", dst.as<String>().c_str());
+
+}
+
+String EEBUSJsonToJson(String json_in)
+{
+    json_in.replace("[]", "{}");
+    json_in.replace("}]", "}");
+    json_in.replace("},{", ",");
+    json_in.replace("[{", "{");
+    json_in.trim();
+    return json_in;
 }
 
 template <typename T>

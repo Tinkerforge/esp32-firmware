@@ -10,11 +10,7 @@
 
 namespace ArduinoJson
 {
-inline bool spine_go_compatibility_mode = false;
-
-// If true, the JSON will be formatted and parsed in a way that it is compatible with SPINE-GO
-template <typename T>
-struct Converter<std::vector<T>>
+template <typename T> struct Converter<std::vector<T>>
 {
     static void toJson(const std::vector<T> &src, JsonVariant dst);
     static std::vector<T> fromJson(JsonVariantConst src);
@@ -205,7 +201,7 @@ enum class DirectControlActivityStateEnumType
  */
 bool convertToJson(const DirectControlActivityStateEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a DirectControlActivityStateEnumType
+ * Convert a string to a DirectControlActivityStateEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination DirectControlActivityStateEnumType.
  */
@@ -233,7 +229,7 @@ enum class RecurringIntervalEnumType
  */
 bool convertToJson(const RecurringIntervalEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a RecurringIntervalEnumType
+ * Convert a string to a RecurringIntervalEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination RecurringIntervalEnumType.
  */
@@ -266,7 +262,7 @@ enum class MonthType
  */
 bool convertToJson(const MonthType &src, JsonVariant &dst);
 /**
- * Convert a string to a MonthType
+ * Convert a string to a MonthType 
  * @param src The JSON variant containing the string.
  * @param dst The destination MonthType.
  */
@@ -294,7 +290,7 @@ enum class DayOfWeekType
  */
 bool convertToJson(const DayOfWeekType &src, JsonVariant &dst);
 /**
- * Convert a string to a DayOfWeekType
+ * Convert a string to a DayOfWeekType 
  * @param src The JSON variant containing the string.
  * @param dst The destination DayOfWeekType.
  */
@@ -320,7 +316,7 @@ enum class OccurrenceEnumType
  */
 bool convertToJson(const OccurrenceEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a OccurrenceEnumType
+ * Convert a string to a OccurrenceEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination OccurrenceEnumType.
  */
@@ -352,7 +348,7 @@ enum class CommodityTypeEnumType
  */
 bool convertToJson(const CommodityTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a CommodityTypeEnumType
+ * Convert a string to a CommodityTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination CommodityTypeEnumType.
  */
@@ -375,7 +371,7 @@ enum class EnergyDirectionEnumType
  */
 bool convertToJson(const EnergyDirectionEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a EnergyDirectionEnumType
+ * Convert a string to a EnergyDirectionEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination EnergyDirectionEnumType.
  */
@@ -400,7 +396,7 @@ enum class EnergyModeEnumType
  */
 bool convertToJson(const EnergyModeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a EnergyModeEnumType
+ * Convert a string to a EnergyModeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination EnergyModeEnumType.
  */
@@ -515,7 +511,7 @@ enum class UnitOfMeasurementEnumType
  */
 bool convertToJson(const UnitOfMeasurementEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a UnitOfMeasurementEnumType
+ * Convert a string to a UnitOfMeasurementEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination UnitOfMeasurementEnumType.
  */
@@ -714,7 +710,7 @@ enum class CurrencyEnumType
  */
 bool convertToJson(const CurrencyEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a CurrencyEnumType
+ * Convert a string to a CurrencyEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination CurrencyEnumType.
  */
@@ -821,7 +817,7 @@ enum class ScopeTypeEnumType
  */
 bool convertToJson(const ScopeTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a ScopeTypeEnumType
+ * Convert a string to a ScopeTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ScopeTypeEnumType.
  */
@@ -845,7 +841,7 @@ enum class RoleType
  */
 bool convertToJson(const RoleType &src, JsonVariant &dst);
 /**
- * Convert a string to a RoleType
+ * Convert a string to a RoleType 
  * @param src The JSON variant containing the string.
  * @param dst The destination RoleType.
  */
@@ -880,7 +876,7 @@ enum class DeviceTypeEnumType
  */
 bool convertToJson(const DeviceTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a DeviceTypeEnumType
+ * Convert a string to a DeviceTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination DeviceTypeEnumType.
  */
@@ -949,7 +945,7 @@ enum class EntityTypeEnumType
  */
 bool convertToJson(const EntityTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a EntityTypeEnumType
+ * Convert a string to a EntityTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination EntityTypeEnumType.
  */
@@ -1002,7 +998,7 @@ enum class FeatureTypeEnumType
  */
 bool convertToJson(const FeatureTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a FeatureTypeEnumType
+ * Convert a string to a FeatureTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination FeatureTypeEnumType.
  */
@@ -1025,7 +1021,7 @@ enum class FeatureDirectControlSpecificUsageEnumType
  */
 bool convertToJson(const FeatureDirectControlSpecificUsageEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a FeatureDirectControlSpecificUsageEnumType
+ * Convert a string to a FeatureDirectControlSpecificUsageEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination FeatureDirectControlSpecificUsageEnumType.
  */
@@ -1048,7 +1044,7 @@ enum class FeatureHvacSpecificUsageEnumType
  */
 bool convertToJson(const FeatureHvacSpecificUsageEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a FeatureHvacSpecificUsageEnumType
+ * Convert a string to a FeatureHvacSpecificUsageEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination FeatureHvacSpecificUsageEnumType.
  */
@@ -1075,7 +1071,7 @@ enum class FeatureMeasurementSpecificUsageEnumType
  */
 bool convertToJson(const FeatureMeasurementSpecificUsageEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a FeatureMeasurementSpecificUsageEnumType
+ * Convert a string to a FeatureMeasurementSpecificUsageEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination FeatureMeasurementSpecificUsageEnumType.
  */
@@ -1102,7 +1098,7 @@ enum class FeatureSetpointSpecificUsageEnumType
  */
 bool convertToJson(const FeatureSetpointSpecificUsageEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a FeatureSetpointSpecificUsageEnumType
+ * Convert a string to a FeatureSetpointSpecificUsageEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination FeatureSetpointSpecificUsageEnumType.
  */
@@ -1127,7 +1123,7 @@ enum class FeatureSmartEnergyManagementPsSpecificUsageEnumType
  */
 bool convertToJson(const FeatureSmartEnergyManagementPsSpecificUsageEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a FeatureSmartEnergyManagementPsSpecificUsageEnumType
+ * Convert a string to a FeatureSmartEnergyManagementPsSpecificUsageEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination FeatureSmartEnergyManagementPsSpecificUsageEnumType.
  */
@@ -1290,7 +1286,7 @@ enum class FunctionEnumType
  */
 bool convertToJson(const FunctionEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a FunctionEnumType
+ * Convert a string to a FunctionEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination FunctionEnumType.
  */
@@ -1323,7 +1319,7 @@ enum class PowerTimeSlotValueTypeEnumType
  */
 bool convertToJson(const PowerTimeSlotValueTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a PowerTimeSlotValueTypeEnumType
+ * Convert a string to a PowerTimeSlotValueTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination PowerTimeSlotValueTypeEnumType.
  */
@@ -1347,7 +1343,7 @@ enum class PowerSequenceScopeEnumType
  */
 bool convertToJson(const PowerSequenceScopeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a PowerSequenceScopeEnumType
+ * Convert a string to a PowerSequenceScopeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination PowerSequenceScopeEnumType.
  */
@@ -1376,7 +1372,7 @@ enum class PowerSequenceStateEnumType
  */
 bool convertToJson(const PowerSequenceStateEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a PowerSequenceStateEnumType
+ * Convert a string to a PowerSequenceStateEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination PowerSequenceStateEnumType.
  */
@@ -1439,7 +1435,7 @@ enum class MeasurementTypeEnumType
  */
 bool convertToJson(const MeasurementTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a MeasurementTypeEnumType
+ * Convert a string to a MeasurementTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination MeasurementTypeEnumType.
  */
@@ -1465,7 +1461,7 @@ enum class MeasurementValueTypeEnumType
  */
 bool convertToJson(const MeasurementValueTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a MeasurementValueTypeEnumType
+ * Convert a string to a MeasurementValueTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination MeasurementValueTypeEnumType.
  */
@@ -1489,7 +1485,7 @@ enum class MeasurementValueSourceEnumType
  */
 bool convertToJson(const MeasurementValueSourceEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a MeasurementValueSourceEnumType
+ * Convert a string to a MeasurementValueSourceEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination MeasurementValueSourceEnumType.
  */
@@ -1513,7 +1509,7 @@ enum class MeasurementValueTendencyEnumType
  */
 bool convertToJson(const MeasurementValueTendencyEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a MeasurementValueTendencyEnumType
+ * Convert a string to a MeasurementValueTendencyEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination MeasurementValueTendencyEnumType.
  */
@@ -1537,7 +1533,7 @@ enum class MeasurementValueStateEnumType
  */
 bool convertToJson(const MeasurementValueStateEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a MeasurementValueStateEnumType
+ * Convert a string to a MeasurementValueStateEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination MeasurementValueStateEnumType.
  */
@@ -1568,7 +1564,7 @@ enum class ThresholdTypeEnumType
  */
 bool convertToJson(const ThresholdTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a ThresholdTypeEnumType
+ * Convert a string to a ThresholdTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ThresholdTypeEnumType.
  */
@@ -1590,7 +1586,7 @@ enum class BillTypeEnumType
  */
 bool convertToJson(const BillTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a BillTypeEnumType
+ * Convert a string to a BillTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination BillTypeEnumType.
  */
@@ -1613,7 +1609,7 @@ enum class BillPositionTypeEnumType
  */
 bool convertToJson(const BillPositionTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a BillPositionTypeEnumType
+ * Convert a string to a BillPositionTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination BillPositionTypeEnumType.
  */
@@ -1639,7 +1635,7 @@ enum class BillCostTypeEnumType
  */
 bool convertToJson(const BillCostTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a BillCostTypeEnumType
+ * Convert a string to a BillCostTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination BillCostTypeEnumType.
  */
@@ -1663,7 +1659,7 @@ enum class IdentificationTypeEnumType
  */
 bool convertToJson(const IdentificationTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a IdentificationTypeEnumType
+ * Convert a string to a IdentificationTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination IdentificationTypeEnumType.
  */
@@ -1686,7 +1682,7 @@ enum class SetpointTypeEnumType
  */
 bool convertToJson(const SetpointTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a SetpointTypeEnumType
+ * Convert a string to a SetpointTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination SetpointTypeEnumType.
  */
@@ -1710,7 +1706,7 @@ enum class TimeSlotTimeModeEnumType
  */
 bool convertToJson(const TimeSlotTimeModeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a TimeSlotTimeModeEnumType
+ * Convert a string to a TimeSlotTimeModeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination TimeSlotTimeModeEnumType.
  */
@@ -1767,7 +1763,7 @@ enum class SensingStateEnumType
  */
 bool convertToJson(const SensingStateEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a SensingStateEnumType
+ * Convert a string to a SensingStateEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination SensingStateEnumType.
  */
@@ -1804,7 +1800,7 @@ enum class SensingTypeEnumType
  */
 bool convertToJson(const SensingTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a SensingTypeEnumType
+ * Convert a string to a SensingTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination SensingTypeEnumType.
  */
@@ -1828,7 +1824,7 @@ enum class ActuatorSwitchFctEnumType
  */
 bool convertToJson(const ActuatorSwitchFctEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a ActuatorSwitchFctEnumType
+ * Convert a string to a ActuatorSwitchFctEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ActuatorSwitchFctEnumType.
  */
@@ -1853,7 +1849,7 @@ enum class NetworkManagementFeatureSetType
  */
 bool convertToJson(const NetworkManagementFeatureSetType &src, JsonVariant &dst);
 /**
- * Convert a string to a NetworkManagementFeatureSetType
+ * Convert a string to a NetworkManagementFeatureSetType 
  * @param src The JSON variant containing the string.
  * @param dst The destination NetworkManagementFeatureSetType.
  */
@@ -1877,7 +1873,7 @@ enum class NetworkManagementProcessStateStateType
  */
 bool convertToJson(const NetworkManagementProcessStateStateType &src, JsonVariant &dst);
 /**
- * Convert a string to a NetworkManagementProcessStateStateType
+ * Convert a string to a NetworkManagementProcessStateStateType 
  * @param src The JSON variant containing the string.
  * @param dst The destination NetworkManagementProcessStateStateType.
  */
@@ -1901,7 +1897,7 @@ enum class NetworkManagementStateChangeType
  */
 bool convertToJson(const NetworkManagementStateChangeType &src, JsonVariant &dst);
 /**
- * Convert a string to a NetworkManagementStateChangeType
+ * Convert a string to a NetworkManagementStateChangeType 
  * @param src The JSON variant containing the string.
  * @param dst The destination NetworkManagementStateChangeType.
  */
@@ -1928,7 +1924,7 @@ enum class SupplyConditionEventTypeEnumType
  */
 bool convertToJson(const SupplyConditionEventTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a SupplyConditionEventTypeEnumType
+ * Convert a string to a SupplyConditionEventTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination SupplyConditionEventTypeEnumType.
  */
@@ -1954,7 +1950,7 @@ enum class SupplyConditionOriginatorEnumType
  */
 bool convertToJson(const SupplyConditionOriginatorEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a SupplyConditionOriginatorEnumType
+ * Convert a string to a SupplyConditionOriginatorEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination SupplyConditionOriginatorEnumType.
  */
@@ -1980,7 +1976,7 @@ enum class GridConditionEnumType
  */
 bool convertToJson(const GridConditionEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a GridConditionEnumType
+ * Convert a string to a GridConditionEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination GridConditionEnumType.
  */
@@ -2004,7 +2000,7 @@ enum class AlarmTypeEnumType
  */
 bool convertToJson(const AlarmTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a AlarmTypeEnumType
+ * Convert a string to a AlarmTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination AlarmTypeEnumType.
  */
@@ -2028,7 +2024,7 @@ enum class TaskManagementJobSourceEnumType
  */
 bool convertToJson(const TaskManagementJobSourceEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a TaskManagementJobSourceEnumType
+ * Convert a string to a TaskManagementJobSourceEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination TaskManagementJobSourceEnumType.
  */
@@ -2053,7 +2049,7 @@ enum class HvacSystemFunctionTypeEnumType
  */
 bool convertToJson(const HvacSystemFunctionTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a HvacSystemFunctionTypeEnumType
+ * Convert a string to a HvacSystemFunctionTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination HvacSystemFunctionTypeEnumType.
  */
@@ -2078,7 +2074,7 @@ enum class HvacOperationModeTypeEnumType
  */
 bool convertToJson(const HvacOperationModeTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a HvacOperationModeTypeEnumType
+ * Convert a string to a HvacOperationModeTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination HvacOperationModeTypeEnumType.
  */
@@ -2109,7 +2105,7 @@ enum class HvacOverrunTypeEnumType
  */
 bool convertToJson(const HvacOverrunTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a HvacOverrunTypeEnumType
+ * Convert a string to a HvacOverrunTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination HvacOverrunTypeEnumType.
  */
@@ -2134,7 +2130,7 @@ enum class HvacOverrunStatusEnumType
  */
 bool convertToJson(const HvacOverrunStatusEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a HvacOverrunStatusEnumType
+ * Convert a string to a HvacOverrunStatusEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination HvacOverrunStatusEnumType.
  */
@@ -2161,7 +2157,7 @@ enum class LoadControlEventActionEnumType
  */
 bool convertToJson(const LoadControlEventActionEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a LoadControlEventActionEnumType
+ * Convert a string to a LoadControlEventActionEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination LoadControlEventActionEnumType.
  */
@@ -2188,7 +2184,7 @@ enum class LoadControlEventStateEnumType
  */
 bool convertToJson(const LoadControlEventStateEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a LoadControlEventStateEnumType
+ * Convert a string to a LoadControlEventStateEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination LoadControlEventStateEnumType.
  */
@@ -2212,7 +2208,7 @@ enum class LoadControlLimitTypeEnumType
  */
 bool convertToJson(const LoadControlLimitTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a LoadControlLimitTypeEnumType
+ * Convert a string to a LoadControlLimitTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination LoadControlLimitTypeEnumType.
  */
@@ -2236,7 +2232,7 @@ enum class LoadControlCategoryEnumType
  */
 bool convertToJson(const LoadControlCategoryEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a LoadControlCategoryEnumType
+ * Convert a string to a LoadControlCategoryEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination LoadControlCategoryEnumType.
  */
@@ -2262,7 +2258,7 @@ enum class PowerSourceEnumType
  */
 bool convertToJson(const PowerSourceEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a PowerSourceEnumType
+ * Convert a string to a PowerSourceEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination PowerSourceEnumType.
  */
@@ -2291,7 +2287,7 @@ enum class ActuatorLevelFctEnumType
  */
 bool convertToJson(const ActuatorLevelFctEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a ActuatorLevelFctEnumType
+ * Convert a string to a ActuatorLevelFctEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ActuatorLevelFctEnumType.
  */
@@ -2319,7 +2315,7 @@ enum class TimeSeriesTypeEnumType
  */
 bool convertToJson(const TimeSeriesTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a TimeSeriesTypeEnumType
+ * Convert a string to a TimeSeriesTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination TimeSeriesTypeEnumType.
  */
@@ -2346,7 +2342,7 @@ enum class MessagingTypeEnumType
  */
 bool convertToJson(const MessagingTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a MessagingTypeEnumType
+ * Convert a string to a MessagingTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination MessagingTypeEnumType.
  */
@@ -2370,7 +2366,7 @@ enum class TierBoundaryTypeEnumType
  */
 bool convertToJson(const TierBoundaryTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a TierBoundaryTypeEnumType
+ * Convert a string to a TierBoundaryTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination TierBoundaryTypeEnumType.
  */
@@ -2393,7 +2389,7 @@ enum class TierTypeEnumType
  */
 bool convertToJson(const TierTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a TierTypeEnumType
+ * Convert a string to a TierTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination TierTypeEnumType.
  */
@@ -2418,7 +2414,7 @@ enum class IncentiveTypeEnumType
  */
 bool convertToJson(const IncentiveTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a IncentiveTypeEnumType
+ * Convert a string to a IncentiveTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination IncentiveTypeEnumType.
  */
@@ -2443,7 +2439,7 @@ enum class IncentiveValueTypeEnumType
  */
 bool convertToJson(const IncentiveValueTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a IncentiveValueTypeEnumType
+ * Convert a string to a IncentiveValueTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination IncentiveValueTypeEnumType.
  */
@@ -2477,7 +2473,7 @@ enum class StateInformationFunctionalityEnumType
  */
 bool convertToJson(const StateInformationFunctionalityEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a StateInformationFunctionalityEnumType
+ * Convert a string to a StateInformationFunctionalityEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination StateInformationFunctionalityEnumType.
  */
@@ -2516,7 +2512,7 @@ enum class StateInformationFailureEnumType
  */
 bool convertToJson(const StateInformationFailureEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a StateInformationFailureEnumType
+ * Convert a string to a StateInformationFailureEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination StateInformationFailureEnumType.
  */
@@ -2539,7 +2535,7 @@ enum class StateInformationCategoryEnumType
  */
 bool convertToJson(const StateInformationCategoryEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a StateInformationCategoryEnumType
+ * Convert a string to a StateInformationCategoryEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination StateInformationCategoryEnumType.
  */
@@ -2565,7 +2561,7 @@ enum class ElectricalConnectionMeasurandVariantEnumType
  */
 bool convertToJson(const ElectricalConnectionMeasurandVariantEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a ElectricalConnectionMeasurandVariantEnumType
+ * Convert a string to a ElectricalConnectionMeasurandVariantEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ElectricalConnectionMeasurandVariantEnumType.
  */
@@ -2588,7 +2584,7 @@ enum class ElectricalConnectionVoltageTypeEnumType
  */
 bool convertToJson(const ElectricalConnectionVoltageTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a ElectricalConnectionVoltageTypeEnumType
+ * Convert a string to a ElectricalConnectionVoltageTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ElectricalConnectionVoltageTypeEnumType.
  */
@@ -2613,7 +2609,7 @@ enum class ElectricalConnectionAcMeasurementTypeEnumType
  */
 bool convertToJson(const ElectricalConnectionAcMeasurementTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a ElectricalConnectionAcMeasurementTypeEnumType
+ * Convert a string to a ElectricalConnectionAcMeasurementTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ElectricalConnectionAcMeasurementTypeEnumType.
  */
@@ -2644,7 +2640,7 @@ enum class ElectricalConnectionPhaseNameEnumType
  */
 bool convertToJson(const ElectricalConnectionPhaseNameEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a ElectricalConnectionPhaseNameEnumType
+ * Convert a string to a ElectricalConnectionPhaseNameEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ElectricalConnectionPhaseNameEnumType.
  */
@@ -2670,7 +2666,7 @@ enum class ElectricalConnectionConnectionPointType
  */
 bool convertToJson(const ElectricalConnectionConnectionPointType &src, JsonVariant &dst);
 /**
- * Convert a string to a ElectricalConnectionConnectionPointType
+ * Convert a string to a ElectricalConnectionConnectionPointType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ElectricalConnectionConnectionPointType.
  */
@@ -2696,7 +2692,7 @@ enum class ElectricalConnectionCharacteristicContextEnumType
  */
 bool convertToJson(const ElectricalConnectionCharacteristicContextEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a ElectricalConnectionCharacteristicContextEnumType
+ * Convert a string to a ElectricalConnectionCharacteristicContextEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ElectricalConnectionCharacteristicContextEnumType.
  */
@@ -2730,7 +2726,7 @@ enum class ElectricalConnectionCharacteristicTypeEnumType
  */
 bool convertToJson(const ElectricalConnectionCharacteristicTypeEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a ElectricalConnectionCharacteristicTypeEnumType
+ * Convert a string to a ElectricalConnectionCharacteristicTypeEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination ElectricalConnectionCharacteristicTypeEnumType.
  */
@@ -2761,7 +2757,7 @@ enum class DeviceDiagnosisOperatingStateEnumType
  */
 bool convertToJson(const DeviceDiagnosisOperatingStateEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a DeviceDiagnosisOperatingStateEnumType
+ * Convert a string to a DeviceDiagnosisOperatingStateEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination DeviceDiagnosisOperatingStateEnumType.
  */
@@ -2787,7 +2783,7 @@ enum class PowerSupplyConditionEnumType
  */
 bool convertToJson(const PowerSupplyConditionEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a PowerSupplyConditionEnumType
+ * Convert a string to a PowerSupplyConditionEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination PowerSupplyConditionEnumType.
  */
@@ -2845,7 +2841,7 @@ enum class DeviceConfigurationKeyNameEnumType
  */
 bool convertToJson(const DeviceConfigurationKeyNameEnumType &src, JsonVariant &dst);
 /**
- * Convert a string to a DeviceConfigurationKeyNameEnumType
+ * Convert a string to a DeviceConfigurationKeyNameEnumType 
  * @param src The JSON variant containing the string.
  * @param dst The destination DeviceConfigurationKeyNameEnumType.
  */
@@ -2874,7 +2870,7 @@ enum class DeviceConfigurationKeyValueTypeType
  */
 bool convertToJson(const DeviceConfigurationKeyValueTypeType &src, JsonVariant &dst);
 /**
- * Convert a string to a DeviceConfigurationKeyValueTypeType
+ * Convert a string to a DeviceConfigurationKeyValueTypeType 
  * @param src The JSON variant containing the string.
  * @param dst The destination DeviceConfigurationKeyValueTypeType.
  */
@@ -2901,7 +2897,7 @@ enum class CmdClassifierType
  */
 bool convertToJson(const CmdClassifierType &src, JsonVariant &dst);
 /**
- * Convert a string to a CmdClassifierType
+ * Convert a string to a CmdClassifierType 
  * @param src The JSON variant containing the string.
  * @param dst The destination CmdClassifierType.
  */
@@ -2970,6 +2966,7 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataType 
 */
 struct ElementTagType
 {
+
     ElementTagType() = default;
 };
 
@@ -8446,6 +8443,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDiscoverCallE
 */
 struct NetworkManagementAbortCallType
 {
+
     NetworkManagementAbortCallType() = default;
 };
 
@@ -8468,6 +8466,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementAbortCallType
 */
 struct NetworkManagementAbortCallElementsType
 {
+
     NetworkManagementAbortCallElementsType() = default;
 };
 
@@ -9537,6 +9536,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
 */
 struct SpecificationVersionDataElementsType
 {
+
     SpecificationVersionDataElementsType() = default;
 };
 
@@ -10840,6 +10840,7 @@ void convertFromJson(const JsonVariantConst &src, SpecificationVersionListDataTy
 */
 struct SpecificationVersionListDataSelectorsType
 {
+
     SpecificationVersionListDataSelectorsType() = default;
 };
 
@@ -10862,6 +10863,7 @@ void convertFromJson(const JsonVariantConst &src, SpecificationVersionListDataSe
 */
 struct TaskManagementDirectControlRelatedType
 {
+
     TaskManagementDirectControlRelatedType() = default;
 };
 
@@ -10884,6 +10886,7 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementDirectControlRel
 */
 struct TaskManagementDirectControlRelatedElementsType
 {
+
     TaskManagementDirectControlRelatedElementsType() = default;
 };
 
@@ -11618,8 +11621,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationMod
 */
 struct HvacSystemFunctionOperationModeRelationListDataType
 {
-    std::optional<std::vector<HvacSystemFunctionOperationModeRelationDataType>>
-    hvacSystemFunctionOperationModeRelationData;
+    std::optional<std::vector<HvacSystemFunctionOperationModeRelationDataType>> hvacSystemFunctionOperationModeRelationData;
 
     HvacSystemFunctionOperationModeRelationListDataType() = default;
 };
@@ -11818,8 +11820,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenc
 */
 struct HvacSystemFunctionPowerSequenceRelationListDataType
 {
-    std::optional<std::vector<HvacSystemFunctionPowerSequenceRelationDataType>>
-    hvacSystemFunctionPowerSequenceRelationData;
+    std::optional<std::vector<HvacSystemFunctionPowerSequenceRelationDataType>> hvacSystemFunctionPowerSequenceRelationData;
 
     HvacSystemFunctionPowerSequenceRelationListDataType() = default;
 };
@@ -15580,8 +15581,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
 */
 struct ElectricalConnectionParameterDescriptionListDataType
 {
-    std::optional<std::vector<ElectricalConnectionParameterDescriptionDataType>>
-    electricalConnectionParameterDescriptionData;
+    std::optional<std::vector<ElectricalConnectionParameterDescriptionDataType>> electricalConnectionParameterDescriptionData;
 
     ElectricalConnectionParameterDescriptionListDataType() = default;
 };
@@ -16220,6 +16220,7 @@ void convertFromJson(const JsonVariantConst &src, TimePrecisionDataElementsType 
 */
 struct TimeDistributorEnquiryCallType
 {
+
     TimeDistributorEnquiryCallType() = default;
 };
 
@@ -16242,6 +16243,7 @@ void convertFromJson(const JsonVariantConst &src, TimeDistributorEnquiryCallType
 */
 struct TimeDistributorEnquiryCallElementsType
 {
+
     TimeDistributorEnquiryCallElementsType() = default;
 };
 
@@ -16649,8 +16651,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDes
 */
 struct DeviceConfigurationKeyValueDescriptionListDataType
 {
-    std::optional<std::vector<DeviceConfigurationKeyValueDescriptionDataType>>
-    deviceConfigurationKeyValueDescriptionData;
+    std::optional<std::vector<DeviceConfigurationKeyValueDescriptionDataType>> deviceConfigurationKeyValueDescriptionData;
 
     DeviceConfigurationKeyValueDescriptionListDataType() = default;
 };
@@ -16753,8 +16754,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueCon
 */
 struct DeviceConfigurationKeyValueConstraintsListDataType
 {
-    std::optional<std::vector<DeviceConfigurationKeyValueConstraintsDataType>>
-    deviceConfigurationKeyValueConstraintsData;
+    std::optional<std::vector<DeviceConfigurationKeyValueConstraintsDataType>> deviceConfigurationKeyValueConstraintsData;
 
     DeviceConfigurationKeyValueConstraintsListDataType() = default;
 };
@@ -17552,8 +17552,7 @@ public:
     std::optional<NetworkManagementSetupType> networkmanagementsetuptype;
     std::optional<NetworkManagementCandidateSetupType> networkmanagementcandidatesetuptype;
     std::optional<NetworkManagementTechnologyAddressType> networkmanagementtechnologyaddresstype;
-    std::optional<NetworkManagementCommunicationsTechnologyInformationType>
-    networkmanagementcommunicationstechnologyinformationtype;
+    std::optional<NetworkManagementCommunicationsTechnologyInformationType> networkmanagementcommunicationstechnologyinformationtype;
     std::optional<NetworkManagementMinimumTrustLevelType> networkmanagementminimumtrustleveltype;
     std::optional<NetworkManagementProcessTimeoutType> networkmanagementprocesstimeouttype;
     std::optional<ConditionIdType> conditionidtype;
@@ -17652,8 +17651,7 @@ public:
     std::optional<FeatureHvacSpecificUsageEnumType> featurehvacspecificusageenumtype;
     std::optional<FeatureMeasurementSpecificUsageEnumType> featuremeasurementspecificusageenumtype;
     std::optional<FeatureSetpointSpecificUsageEnumType> featuresetpointspecificusageenumtype;
-    std::optional<FeatureSmartEnergyManagementPsSpecificUsageEnumType>
-    featuresmartenergymanagementpsspecificusageenumtype;
+    std::optional<FeatureSmartEnergyManagementPsSpecificUsageEnumType> featuresmartenergymanagementpsspecificusageenumtype;
     std::optional<FunctionEnumType> functionenumtype;
     std::optional<PowerTimeSlotValueTypeEnumType> powertimeslotvaluetypeenumtype;
     std::optional<PowerSequenceScopeEnumType> powersequencescopeenumtype;
@@ -17757,13 +17755,11 @@ public:
     std::optional<PowerTimeSlotScheduleConstraintsDataType> powertimeslotscheduleconstraintsdatatype;
     std::optional<PowerTimeSlotScheduleConstraintsDataElementsType> powertimeslotscheduleconstraintsdataelementstype;
     std::optional<PowerTimeSlotScheduleConstraintsListDataType> powertimeslotscheduleconstraintslistdatatype;
-    std::optional<PowerTimeSlotScheduleConstraintsListDataSelectorsType>
-    powertimeslotscheduleconstraintslistdataselectorstype;
+    std::optional<PowerTimeSlotScheduleConstraintsListDataSelectorsType> powertimeslotscheduleconstraintslistdataselectorstype;
     std::optional<PowerSequenceAlternativesRelationDataType> powersequencealternativesrelationdatatype;
     std::optional<PowerSequenceAlternativesRelationDataElementsType> powersequencealternativesrelationdataelementstype;
     std::optional<PowerSequenceAlternativesRelationListDataType> powersequencealternativesrelationlistdatatype;
-    std::optional<PowerSequenceAlternativesRelationListDataSelectorsType>
-    powersequencealternativesrelationlistdataselectorstype;
+    std::optional<PowerSequenceAlternativesRelationListDataSelectorsType> powersequencealternativesrelationlistdataselectorstype;
     std::optional<PowerSequenceDescriptionDataType> powersequencedescriptiondatatype;
     std::optional<PowerSequenceDescriptionDataElementsType> powersequencedescriptiondataelementstype;
     std::optional<PowerSequenceDescriptionListDataType> powersequencedescriptionlistdatatype;
@@ -17779,8 +17775,7 @@ public:
     std::optional<PowerSequenceScheduleConstraintsDataType> powersequencescheduleconstraintsdatatype;
     std::optional<PowerSequenceScheduleConstraintsDataElementsType> powersequencescheduleconstraintsdataelementstype;
     std::optional<PowerSequenceScheduleConstraintsListDataType> powersequencescheduleconstraintslistdatatype;
-    std::optional<PowerSequenceScheduleConstraintsListDataSelectorsType>
-    powersequencescheduleconstraintslistdataselectorstype;
+    std::optional<PowerSequenceScheduleConstraintsListDataSelectorsType> powersequencescheduleconstraintslistdataselectorstype;
     std::optional<PowerSequencePriceDataType> powersequencepricedatatype;
     std::optional<PowerSequencePriceDataElementsType> powersequencepricedataelementstype;
     std::optional<PowerSequencePriceListDataType> powersequencepricelistdatatype;
@@ -17788,17 +17783,13 @@ public:
     std::optional<PowerSequenceSchedulePreferenceDataType> powersequenceschedulepreferencedatatype;
     std::optional<PowerSequenceSchedulePreferenceDataElementsType> powersequenceschedulepreferencedataelementstype;
     std::optional<PowerSequenceSchedulePreferenceListDataType> powersequenceschedulepreferencelistdatatype;
-    std::optional<PowerSequenceSchedulePreferenceListDataSelectorsType>
-    powersequenceschedulepreferencelistdataselectorstype;
+    std::optional<PowerSequenceSchedulePreferenceListDataSelectorsType> powersequenceschedulepreferencelistdataselectorstype;
     std::optional<PowerSequenceNodeScheduleInformationDataType> powersequencenodescheduleinformationdatatype;
-    std::optional<PowerSequenceNodeScheduleInformationDataElementsType>
-    powersequencenodescheduleinformationdataelementstype;
+    std::optional<PowerSequenceNodeScheduleInformationDataElementsType> powersequencenodescheduleinformationdataelementstype;
     std::optional<PowerSequenceScheduleConfigurationRequestCallType> powersequencescheduleconfigurationrequestcalltype;
-    std::optional<PowerSequenceScheduleConfigurationRequestCallElementsType>
-    powersequencescheduleconfigurationrequestcallelementstype;
+    std::optional<PowerSequenceScheduleConfigurationRequestCallElementsType> powersequencescheduleconfigurationrequestcallelementstype;
     std::optional<PowerSequencePriceCalculationRequestCallType> powersequencepricecalculationrequestcalltype;
-    std::optional<PowerSequencePriceCalculationRequestCallElementsType>
-    powersequencepricecalculationrequestcallelementstype;
+    std::optional<PowerSequencePriceCalculationRequestCallElementsType> powersequencepricecalculationrequestcallelementstype;
     std::optional<MeasurementDataType> measurementdatatype;
     std::optional<MeasurementDataElementsType> measurementdataelementstype;
     std::optional<MeasurementListDataType> measurementlistdatatype;
@@ -17834,34 +17825,27 @@ public:
     std::optional<OperatingConstraintsInterruptDataType> operatingconstraintsinterruptdatatype;
     std::optional<OperatingConstraintsInterruptDataElementsType> operatingconstraintsinterruptdataelementstype;
     std::optional<OperatingConstraintsInterruptListDataType> operatingconstraintsinterruptlistdatatype;
-    std::optional<OperatingConstraintsInterruptListDataSelectorsType>
-    operatingconstraintsinterruptlistdataselectorstype;
+    std::optional<OperatingConstraintsInterruptListDataSelectorsType> operatingconstraintsinterruptlistdataselectorstype;
     std::optional<OperatingConstraintsDurationDataType> operatingconstraintsdurationdatatype;
     std::optional<OperatingConstraintsDurationDataElementsType> operatingconstraintsdurationdataelementstype;
     std::optional<OperatingConstraintsDurationListDataType> operatingconstraintsdurationlistdatatype;
     std::optional<OperatingConstraintsDurationListDataSelectorsType> operatingconstraintsdurationlistdataselectorstype;
     std::optional<OperatingConstraintsPowerDescriptionDataType> operatingconstraintspowerdescriptiondatatype;
-    std::optional<OperatingConstraintsPowerDescriptionDataElementsType>
-    operatingconstraintspowerdescriptiondataelementstype;
+    std::optional<OperatingConstraintsPowerDescriptionDataElementsType> operatingconstraintspowerdescriptiondataelementstype;
     std::optional<OperatingConstraintsPowerDescriptionListDataType> operatingconstraintspowerdescriptionlistdatatype;
-    std::optional<OperatingConstraintsPowerDescriptionListDataSelectorsType>
-    operatingconstraintspowerdescriptionlistdataselectorstype;
+    std::optional<OperatingConstraintsPowerDescriptionListDataSelectorsType> operatingconstraintspowerdescriptionlistdataselectorstype;
     std::optional<OperatingConstraintsPowerRangeDataType> operatingconstraintspowerrangedatatype;
     std::optional<OperatingConstraintsPowerRangeDataElementsType> operatingconstraintspowerrangedataelementstype;
     std::optional<OperatingConstraintsPowerRangeListDataType> operatingconstraintspowerrangelistdatatype;
-    std::optional<OperatingConstraintsPowerRangeListDataSelectorsType>
-    operatingconstraintspowerrangelistdataselectorstype;
+    std::optional<OperatingConstraintsPowerRangeListDataSelectorsType> operatingconstraintspowerrangelistdataselectorstype;
     std::optional<OperatingConstraintsPowerLevelDataType> operatingconstraintspowerleveldatatype;
     std::optional<OperatingConstraintsPowerLevelDataElementsType> operatingconstraintspowerleveldataelementstype;
     std::optional<OperatingConstraintsPowerLevelListDataType> operatingconstraintspowerlevellistdatatype;
-    std::optional<OperatingConstraintsPowerLevelListDataSelectorsType>
-    operatingconstraintspowerlevellistdataselectorstype;
+    std::optional<OperatingConstraintsPowerLevelListDataSelectorsType> operatingconstraintspowerlevellistdataselectorstype;
     std::optional<OperatingConstraintsResumeImplicationDataType> operatingconstraintsresumeimplicationdatatype;
-    std::optional<OperatingConstraintsResumeImplicationDataElementsType>
-    operatingconstraintsresumeimplicationdataelementstype;
+    std::optional<OperatingConstraintsResumeImplicationDataElementsType> operatingconstraintsresumeimplicationdataelementstype;
     std::optional<OperatingConstraintsResumeImplicationListDataType> operatingconstraintsresumeimplicationlistdatatype;
-    std::optional<OperatingConstraintsResumeImplicationListDataSelectorsType>
-    operatingconstraintsresumeimplicationlistdataselectorstype;
+    std::optional<OperatingConstraintsResumeImplicationListDataSelectorsType> operatingconstraintsresumeimplicationlistdataselectorstype;
     std::optional<BillValueType> billvaluetype;
     std::optional<BillValueElementsType> billvalueelementstype;
     std::optional<BillCostType> billcosttype;
@@ -17946,23 +17930,17 @@ public:
     std::optional<NetworkManagementReportCandidateDataType> networkmanagementreportcandidatedatatype;
     std::optional<NetworkManagementReportCandidateDataElementsType> networkmanagementreportcandidatedataelementstype;
     std::optional<NetworkManagementDeviceDescriptionDataType> networkmanagementdevicedescriptiondatatype;
-    std::optional<NetworkManagementDeviceDescriptionDataElementsType>
-    networkmanagementdevicedescriptiondataelementstype;
+    std::optional<NetworkManagementDeviceDescriptionDataElementsType> networkmanagementdevicedescriptiondataelementstype;
     std::optional<NetworkManagementDeviceDescriptionListDataType> networkmanagementdevicedescriptionlistdatatype;
-    std::optional<NetworkManagementDeviceDescriptionListDataSelectorsType>
-    networkmanagementdevicedescriptionlistdataselectorstype;
+    std::optional<NetworkManagementDeviceDescriptionListDataSelectorsType> networkmanagementdevicedescriptionlistdataselectorstype;
     std::optional<NetworkManagementEntityDescriptionDataType> networkmanagemententitydescriptiondatatype;
-    std::optional<NetworkManagementEntityDescriptionDataElementsType>
-    networkmanagemententitydescriptiondataelementstype;
+    std::optional<NetworkManagementEntityDescriptionDataElementsType> networkmanagemententitydescriptiondataelementstype;
     std::optional<NetworkManagementEntityDescriptionListDataType> networkmanagemententitydescriptionlistdatatype;
-    std::optional<NetworkManagementEntityDescriptionListDataSelectorsType>
-    networkmanagemententitydescriptionlistdataselectorstype;
+    std::optional<NetworkManagementEntityDescriptionListDataSelectorsType> networkmanagemententitydescriptionlistdataselectorstype;
     std::optional<NetworkManagementFeatureDescriptionDataType> networkmanagementfeaturedescriptiondatatype;
-    std::optional<NetworkManagementFeatureDescriptionDataElementsType>
-    networkmanagementfeaturedescriptiondataelementstype;
+    std::optional<NetworkManagementFeatureDescriptionDataElementsType> networkmanagementfeaturedescriptiondataelementstype;
     std::optional<NetworkManagementFeatureDescriptionListDataType> networkmanagementfeaturedescriptionlistdatatype;
-    std::optional<NetworkManagementFeatureDescriptionListDataSelectorsType>
-    networkmanagementfeaturedescriptionlistdataselectorstype;
+    std::optional<NetworkManagementFeatureDescriptionListDataSelectorsType> networkmanagementfeaturedescriptionlistdataselectorstype;
     std::optional<SupplyConditionDataType> supplyconditiondatatype;
     std::optional<SupplyConditionDataElementsType> supplyconditiondataelementstype;
     std::optional<SupplyConditionListDataType> supplyconditionlistdatatype;
@@ -17974,29 +17952,21 @@ public:
     std::optional<SupplyConditionThresholdRelationDataType> supplyconditionthresholdrelationdatatype;
     std::optional<SupplyConditionThresholdRelationDataElementsType> supplyconditionthresholdrelationdataelementstype;
     std::optional<SupplyConditionThresholdRelationListDataType> supplyconditionthresholdrelationlistdatatype;
-    std::optional<SupplyConditionThresholdRelationListDataSelectorsType>
-    supplyconditionthresholdrelationlistdataselectorstype;
+    std::optional<SupplyConditionThresholdRelationListDataSelectorsType> supplyconditionthresholdrelationlistdataselectorstype;
     std::optional<AlarmDataType> alarmdatatype;
     std::optional<AlarmDataElementsType> alarmdataelementstype;
     std::optional<AlarmListDataType> alarmlistdatatype;
     std::optional<AlarmListDataSelectorsType> alarmlistdataselectorstype;
     std::optional<NodeManagementSpecificationVersionListType> nodemanagementspecificationversionlisttype;
-    std::optional<NodeManagementDetailedDiscoveryDeviceInformationType>
-    nodemanagementdetaileddiscoverydeviceinformationtype;
-    std::optional<NodeManagementDetailedDiscoveryEntityInformationType>
-    nodemanagementdetaileddiscoveryentityinformationtype;
-    std::optional<NodeManagementDetailedDiscoveryFeatureInformationType>
-    nodemanagementdetaileddiscoveryfeatureinformationtype;
+    std::optional<NodeManagementDetailedDiscoveryDeviceInformationType> nodemanagementdetaileddiscoverydeviceinformationtype;
+    std::optional<NodeManagementDetailedDiscoveryEntityInformationType> nodemanagementdetaileddiscoveryentityinformationtype;
+    std::optional<NodeManagementDetailedDiscoveryFeatureInformationType> nodemanagementdetaileddiscoveryfeatureinformationtype;
     std::optional<NodeManagementDetailedDiscoveryDataType> nodemanagementdetaileddiscoverydatatype;
     std::optional<SpecificationVersionDataElementsType> specificationversiondataelementstype;
-    std::optional<NodeManagementSpecificationVersionListElementsType>
-    nodemanagementspecificationversionlistelementstype;
-    std::optional<NodeManagementDetailedDiscoveryDeviceInformationElementsType>
-    nodemanagementdetaileddiscoverydeviceinformationelementstype;
-    std::optional<NodeManagementDetailedDiscoveryEntityInformationElementsType>
-    nodemanagementdetaileddiscoveryentityinformationelementstype;
-    std::optional<NodeManagementDetailedDiscoveryFeatureInformationElementsType>
-    nodemanagementdetaileddiscoveryfeatureinformationelementstype;
+    std::optional<NodeManagementSpecificationVersionListElementsType> nodemanagementspecificationversionlistelementstype;
+    std::optional<NodeManagementDetailedDiscoveryDeviceInformationElementsType> nodemanagementdetaileddiscoverydeviceinformationelementstype;
+    std::optional<NodeManagementDetailedDiscoveryEntityInformationElementsType> nodemanagementdetaileddiscoveryentityinformationelementstype;
+    std::optional<NodeManagementDetailedDiscoveryFeatureInformationElementsType> nodemanagementdetaileddiscoveryfeatureinformationelementstype;
     std::optional<NodeManagementDetailedDiscoveryDataElementsType> nodemanagementdetaileddiscoverydataelementstype;
     std::optional<NodeManagementDetailedDiscoveryDataSelectorsType> nodemanagementdetaileddiscoverydataselectorstype;
     std::optional<BindingManagementEntryDataType> bindingmanagemententrydatatype;
@@ -18054,8 +18024,7 @@ public:
     std::optional<TaskManagementPowerSequencesRelatedType> taskmanagementpowersequencesrelatedtype;
     std::optional<TaskManagementPowerSequencesRelatedElementsType> taskmanagementpowersequencesrelatedelementstype;
     std::optional<TaskManagementSmartEnergyManagementPsRelatedType> taskmanagementsmartenergymanagementpsrelatedtype;
-    std::optional<TaskManagementSmartEnergyManagementPsRelatedElementsType>
-    taskmanagementsmartenergymanagementpsrelatedelementstype;
+    std::optional<TaskManagementSmartEnergyManagementPsRelatedElementsType> taskmanagementsmartenergymanagementpsrelatedelementstype;
     std::optional<TaskManagementJobDataType> taskmanagementjobdatatype;
     std::optional<TaskManagementJobDataElementsType> taskmanagementjobdataelementstype;
     std::optional<TaskManagementJobListDataType> taskmanagementjoblistdatatype;
@@ -18075,30 +18044,21 @@ public:
     std::optional<HvacSystemFunctionListDataType> hvacsystemfunctionlistdatatype;
     std::optional<HvacSystemFunctionListDataSelectorsType> hvacsystemfunctionlistdataselectorstype;
     std::optional<HvacSystemFunctionOperationModeRelationDataType> hvacsystemfunctionoperationmoderelationdatatype;
-    std::optional<HvacSystemFunctionOperationModeRelationDataElementsType>
-    hvacsystemfunctionoperationmoderelationdataelementstype;
-    std::optional<HvacSystemFunctionOperationModeRelationListDataType>
-    hvacsystemfunctionoperationmoderelationlistdatatype;
-    std::optional<HvacSystemFunctionOperationModeRelationListDataSelectorsType>
-    hvacsystemfunctionoperationmoderelationlistdataselectorstype;
+    std::optional<HvacSystemFunctionOperationModeRelationDataElementsType> hvacsystemfunctionoperationmoderelationdataelementstype;
+    std::optional<HvacSystemFunctionOperationModeRelationListDataType> hvacsystemfunctionoperationmoderelationlistdatatype;
+    std::optional<HvacSystemFunctionOperationModeRelationListDataSelectorsType> hvacsystemfunctionoperationmoderelationlistdataselectorstype;
     std::optional<HvacSystemFunctionSetpointRelationDataType> hvacsystemfunctionsetpointrelationdatatype;
-    std::optional<HvacSystemFunctionSetpointRelationDataElementsType>
-    hvacsystemfunctionsetpointrelationdataelementstype;
+    std::optional<HvacSystemFunctionSetpointRelationDataElementsType> hvacsystemfunctionsetpointrelationdataelementstype;
     std::optional<HvacSystemFunctionSetpointRelationListDataType> hvacsystemfunctionsetpointrelationlistdatatype;
-    std::optional<HvacSystemFunctionSetpointRelationListDataSelectorsType>
-    hvacsystemfunctionsetpointrelationlistdataselectorstype;
+    std::optional<HvacSystemFunctionSetpointRelationListDataSelectorsType> hvacsystemfunctionsetpointrelationlistdataselectorstype;
     std::optional<HvacSystemFunctionPowerSequenceRelationDataType> hvacsystemfunctionpowersequencerelationdatatype;
-    std::optional<HvacSystemFunctionPowerSequenceRelationDataElementsType>
-    hvacsystemfunctionpowersequencerelationdataelementstype;
-    std::optional<HvacSystemFunctionPowerSequenceRelationListDataType>
-    hvacsystemfunctionpowersequencerelationlistdatatype;
-    std::optional<HvacSystemFunctionPowerSequenceRelationListDataSelectorsType>
-    hvacsystemfunctionpowersequencerelationlistdataselectorstype;
+    std::optional<HvacSystemFunctionPowerSequenceRelationDataElementsType> hvacsystemfunctionpowersequencerelationdataelementstype;
+    std::optional<HvacSystemFunctionPowerSequenceRelationListDataType> hvacsystemfunctionpowersequencerelationlistdatatype;
+    std::optional<HvacSystemFunctionPowerSequenceRelationListDataSelectorsType> hvacsystemfunctionpowersequencerelationlistdataselectorstype;
     std::optional<HvacSystemFunctionDescriptionDataType> hvacsystemfunctiondescriptiondatatype;
     std::optional<HvacSystemFunctionDescriptionDataElementsType> hvacsystemfunctiondescriptiondataelementstype;
     std::optional<HvacSystemFunctionDescriptionListDataType> hvacsystemfunctiondescriptionlistdatatype;
-    std::optional<HvacSystemFunctionDescriptionListDataSelectorsType>
-    hvacsystemfunctiondescriptionlistdataselectorstype;
+    std::optional<HvacSystemFunctionDescriptionListDataSelectorsType> hvacsystemfunctiondescriptionlistdataselectorstype;
     std::optional<HvacOperationModeDescriptionDataType> hvacoperationmodedescriptiondatatype;
     std::optional<HvacOperationModeDescriptionDataElementsType> hvacoperationmodedescriptiondataelementstype;
     std::optional<HvacOperationModeDescriptionListDataType> hvacoperationmodedescriptionlistdatatype;
@@ -18161,10 +18121,8 @@ public:
     std::optional<SmartEnergyManagementPsPowerSequenceType> smartenergymanagementpspowersequencetype;
     std::optional<SmartEnergyManagementPsAlternativesType> smartenergymanagementpsalternativestype;
     std::optional<SmartEnergyManagementPsDataType> smartenergymanagementpsdatatype;
-    std::optional<SmartEnergyManagementPsAlternativesRelationElementsType>
-    smartenergymanagementpsalternativesrelationelementstype;
-    std::optional<SmartEnergyManagementPsPowerTimeSlotValueListElementsType>
-    smartenergymanagementpspowertimeslotvaluelistelementstype;
+    std::optional<SmartEnergyManagementPsAlternativesRelationElementsType> smartenergymanagementpsalternativesrelationelementstype;
+    std::optional<SmartEnergyManagementPsPowerTimeSlotValueListElementsType> smartenergymanagementpspowertimeslotvaluelistelementstype;
     std::optional<SmartEnergyManagementPsPowerTimeSlotElementsType> smartenergymanagementpspowertimeslotelementstype;
     std::optional<SmartEnergyManagementPsPowerSequenceElementsType> smartenergymanagementpspowersequenceelementstype;
     std::optional<SmartEnergyManagementPsAlternativesElementsType> smartenergymanagementpsalternativeselementstype;
@@ -18173,14 +18131,10 @@ public:
     std::optional<SmartEnergyManagementPsPriceDataType> smartenergymanagementpspricedatatype;
     std::optional<SmartEnergyManagementPsPriceDataElementsType> smartenergymanagementpspricedataelementstype;
     std::optional<SmartEnergyManagementPsPriceDataSelectorsType> smartenergymanagementpspricedataselectorstype;
-    std::optional<SmartEnergyManagementPsConfigurationRequestCallType>
-    smartenergymanagementpsconfigurationrequestcalltype;
-    std::optional<SmartEnergyManagementPsConfigurationRequestCallElementsType>
-    smartenergymanagementpsconfigurationrequestcallelementstype;
-    std::optional<SmartEnergyManagementPsPriceCalculationRequestCallType>
-    smartenergymanagementpspricecalculationrequestcalltype;
-    std::optional<SmartEnergyManagementPsPriceCalculationRequestCallElementsType>
-    smartenergymanagementpspricecalculationrequestcallelementstype;
+    std::optional<SmartEnergyManagementPsConfigurationRequestCallType> smartenergymanagementpsconfigurationrequestcalltype;
+    std::optional<SmartEnergyManagementPsConfigurationRequestCallElementsType> smartenergymanagementpsconfigurationrequestcallelementstype;
+    std::optional<SmartEnergyManagementPsPriceCalculationRequestCallType> smartenergymanagementpspricecalculationrequestcalltype;
+    std::optional<SmartEnergyManagementPsPriceCalculationRequestCallElementsType> smartenergymanagementpspricecalculationrequestcallelementstype;
     std::optional<MessagingDataType> messagingdatatype;
     std::optional<MessagingDataElementsType> messagingdataelementstype;
     std::optional<MessagingListDataType> messaginglistdatatype;
@@ -18240,24 +18194,17 @@ public:
     std::optional<StateInformationListDataType> stateinformationlistdatatype;
     std::optional<StateInformationListDataSelectorsType> stateinformationlistdataselectorstype;
     std::optional<ElectricalConnectionParameterDescriptionDataType> electricalconnectionparameterdescriptiondatatype;
-    std::optional<ElectricalConnectionParameterDescriptionDataElementsType>
-    electricalconnectionparameterdescriptiondataelementstype;
-    std::optional<ElectricalConnectionParameterDescriptionListDataType>
-    electricalconnectionparameterdescriptionlistdatatype;
-    std::optional<ElectricalConnectionParameterDescriptionListDataSelectorsType>
-    electricalconnectionparameterdescriptionlistdataselectorstype;
+    std::optional<ElectricalConnectionParameterDescriptionDataElementsType> electricalconnectionparameterdescriptiondataelementstype;
+    std::optional<ElectricalConnectionParameterDescriptionListDataType> electricalconnectionparameterdescriptionlistdatatype;
+    std::optional<ElectricalConnectionParameterDescriptionListDataSelectorsType> electricalconnectionparameterdescriptionlistdataselectorstype;
     std::optional<ElectricalConnectionPermittedValueSetDataType> electricalconnectionpermittedvaluesetdatatype;
-    std::optional<ElectricalConnectionPermittedValueSetDataElementsType>
-    electricalconnectionpermittedvaluesetdataelementstype;
+    std::optional<ElectricalConnectionPermittedValueSetDataElementsType> electricalconnectionpermittedvaluesetdataelementstype;
     std::optional<ElectricalConnectionPermittedValueSetListDataType> electricalconnectionpermittedvaluesetlistdatatype;
-    std::optional<ElectricalConnectionPermittedValueSetListDataSelectorsType>
-    electricalconnectionpermittedvaluesetlistdataselectorstype;
+    std::optional<ElectricalConnectionPermittedValueSetListDataSelectorsType> electricalconnectionpermittedvaluesetlistdataselectorstype;
     std::optional<ElectricalConnectionCharacteristicDataType> electricalconnectioncharacteristicdatatype;
-    std::optional<ElectricalConnectionCharacteristicDataElementsType>
-    electricalconnectioncharacteristicdataelementstype;
+    std::optional<ElectricalConnectionCharacteristicDataElementsType> electricalconnectioncharacteristicdataelementstype;
     std::optional<ElectricalConnectionCharacteristicListDataType> electricalconnectioncharacteristiclistdatatype;
-    std::optional<ElectricalConnectionCharacteristicListDataSelectorsType>
-    electricalconnectioncharacteristiclistdataselectorstype;
+    std::optional<ElectricalConnectionCharacteristicListDataSelectorsType> electricalconnectioncharacteristiclistdataselectorstype;
     std::optional<ElectricalConnectionStateDataType> electricalconnectionstatedatatype;
     std::optional<ElectricalConnectionStateDataElementsType> electricalconnectionstatedataelementstype;
     std::optional<ElectricalConnectionStateListDataType> electricalconnectionstatelistdatatype;
@@ -18265,8 +18212,7 @@ public:
     std::optional<ElectricalConnectionDescriptionDataType> electricalconnectiondescriptiondatatype;
     std::optional<ElectricalConnectionDescriptionDataElementsType> electricalconnectiondescriptiondataelementstype;
     std::optional<ElectricalConnectionDescriptionListDataType> electricalconnectiondescriptionlistdatatype;
-    std::optional<ElectricalConnectionDescriptionListDataSelectorsType>
-    electricalconnectiondescriptionlistdataselectorstype;
+    std::optional<ElectricalConnectionDescriptionListDataSelectorsType> electricalconnectiondescriptionlistdataselectorstype;
     std::optional<TimeInformationDataType> timeinformationdatatype;
     std::optional<TimeInformationDataElementsType> timeinformationdataelementstype;
     std::optional<TimeDistributorDataType> timedistributordatatype;
@@ -18288,19 +18234,13 @@ public:
     std::optional<DeviceConfigurationKeyValueListDataType> deviceconfigurationkeyvaluelistdatatype;
     std::optional<DeviceConfigurationKeyValueListDataSelectorsType> deviceconfigurationkeyvaluelistdataselectorstype;
     std::optional<DeviceConfigurationKeyValueDescriptionDataType> deviceconfigurationkeyvaluedescriptiondatatype;
-    std::optional<DeviceConfigurationKeyValueDescriptionDataElementsType>
-    deviceconfigurationkeyvaluedescriptiondataelementstype;
-    std::optional<DeviceConfigurationKeyValueDescriptionListDataType>
-    deviceconfigurationkeyvaluedescriptionlistdatatype;
-    std::optional<DeviceConfigurationKeyValueDescriptionListDataSelectorsType>
-    deviceconfigurationkeyvaluedescriptionlistdataselectorstype;
+    std::optional<DeviceConfigurationKeyValueDescriptionDataElementsType> deviceconfigurationkeyvaluedescriptiondataelementstype;
+    std::optional<DeviceConfigurationKeyValueDescriptionListDataType> deviceconfigurationkeyvaluedescriptionlistdatatype;
+    std::optional<DeviceConfigurationKeyValueDescriptionListDataSelectorsType> deviceconfigurationkeyvaluedescriptionlistdataselectorstype;
     std::optional<DeviceConfigurationKeyValueConstraintsDataType> deviceconfigurationkeyvalueconstraintsdatatype;
-    std::optional<DeviceConfigurationKeyValueConstraintsDataElementsType>
-    deviceconfigurationkeyvalueconstraintsdataelementstype;
-    std::optional<DeviceConfigurationKeyValueConstraintsListDataType>
-    deviceconfigurationkeyvalueconstraintslistdatatype;
-    std::optional<DeviceConfigurationKeyValueConstraintsListDataSelectorsType>
-    deviceconfigurationkeyvalueconstraintslistdataselectorstype;
+    std::optional<DeviceConfigurationKeyValueConstraintsDataElementsType> deviceconfigurationkeyvalueconstraintsdataelementstype;
+    std::optional<DeviceConfigurationKeyValueConstraintsListDataType> deviceconfigurationkeyvalueconstraintslistdatatype;
+    std::optional<DeviceConfigurationKeyValueConstraintsListDataSelectorsType> deviceconfigurationkeyvalueconstraintslistdataselectorstype;
     std::optional<HeaderType> headertype;
     std::optional<CmdControlType> cmdcontroltype;
     std::optional<DataTunnelingHeaderType> datatunnelingheadertype;

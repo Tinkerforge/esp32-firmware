@@ -156,9 +156,6 @@ void Ship::setup_wss()
             return;
         }
 
-        // TODO: This is only for debugging, remove later
-        //cert->log();
-
         if (parse_x509_crt(cert->crt, cert->crt_length) != 0) {
             logger.printfln("An error occured while starting EEBUS SHIP Server");
             eebus.trace_fmtln("parse_x509_crt != 0");
@@ -250,9 +247,9 @@ void Ship::connect_trusted_peers()
 
             // The pointer is stored and not the data so the data needs to be valid for the duration of the connection.
             websocket_cfg.client_cert = reinterpret_cast<const char *>(cert->crt);
-            websocket_cfg.client_cert_len = cert->crt_length + 1;
+            websocket_cfg.client_cert_len = cert->crt_length;
             websocket_cfg.client_key = reinterpret_cast<const char *>(cert->key);
-            websocket_cfg.client_key_len = cert->key_length + 1;
+            websocket_cfg.client_key_len = cert->key_length;
             websocket_cfg.disable_auto_reconnect = true;
 
             websocket_cfg.subprotocol = "ship"; // SHIP 10.2

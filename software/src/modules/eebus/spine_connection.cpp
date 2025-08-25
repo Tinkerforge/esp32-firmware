@@ -30,12 +30,10 @@ bool SpineConnection::process_datagram(JsonVariant datagram)
     eebus.trace_jsonln(datagram);
     // TODO: Handle json formatting weirdness sent by e.g. spine-go
     last_received_time = millis();
-    compatiblity_mode = true;
-    ArduinoJson::spine_go_compatibility_mode = this->compatiblity_mode;
 
-    received_header = datagram["datagram"][0]["header"];
+    received_header = datagram["datagram"]["header"];
 
-    received_payload = datagram["datagram"][1]["payload"][0]["cmd"][0][0]; // The payload should not be in an array but spine-go does these strange things
+    received_payload = datagram["datagram"]["payload"]["cmd"][0]; // The payload should not be in an array but spine-go does these strange things
 
     if (!received_header.cmdClassifier || !received_header.addressSource || received_payload.isNull()) {
         eebus.trace_fmtln("SPINE: ERROR: No datagram header or payload found");
