@@ -9,13 +9,7 @@ namespace ArduinoJson
 template <typename T>
 void Converter<std::vector<T>>::toJson(const std::vector<T> &src, JsonVariant dst)
 {
-    JsonArray array;
-    // SPINE-GO wants a double wrapped array for objects (but not for fundamental types) or else it breaks the JSON.
-    if (std::is_fundamental<T>::value || !spine_go_compatibility_mode) {
-        array = dst.to<JsonArray>();
-    } else {
-        array = dst.to<JsonArray>().createNestedArray();
-    }
+    JsonArray array = dst.to<JsonArray>();
     for (T item : src)
         array.add(item);
 }
@@ -24,14 +18,8 @@ template <typename T>
 std::vector<T> Converter<std::vector<T>>::fromJson(JsonVariantConst src)
 {
     std::vector<T> dst;
-    if (std::is_fundamental<T>::value || !spine_go_compatibility_mode) {
-        for (T item : src.as<JsonArrayConst>())
-            dst.push_back(item);
-    } else {
-        src = src.as<JsonArrayConst>()[0];
-        for (T item : src.as<JsonArrayConst>())
-            dst.push_back(item);
-    }
+    for (T item : src.as<JsonArrayConst>())
+        dst.push_back(item);
     return dst;
 }
 
@@ -44,6 +32,8 @@ bool Converter<std::vector<T>>::checkJson(JsonVariantConst src)
         result &= item.is<T>();
     return result;
 }
+
+
 } // namespace ArduinoJson
 bool convertToJson(const DirectControlActivityStateEnumType &src, JsonVariant &dst)
 {
@@ -8660,6 +8650,7 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberType &dst)
             } else {
                 //dst.scale = std::nullopt;
             }
+
         }
     } else {
         if (src["number"]) {
@@ -8672,7 +8663,9 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberType &dst)
         } else {
             //dst.scale = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DirectControlActivityDataType &src, JsonVariant &dst)
@@ -8727,8 +8720,7 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataType 
                 //dst.activityState = std::nullopt;
             }
             if (item["isActivityStateChangeable"]) {
-                dst.isActivityStateChangeable = item["isActivityStateChangeable"].as<decltype(dst.
-                    isActivityStateChangeable)::value_type>();
+                dst.isActivityStateChangeable = item["isActivityStateChangeable"].as<decltype(dst.isActivityStateChangeable)::value_type>();
             } else {
                 //dst.isActivityStateChangeable = std::nullopt;
             }
@@ -8738,8 +8730,7 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataType 
                 //dst.energyMode = std::nullopt;
             }
             if (item["isEnergyModeChangeable"]) {
-                dst.isEnergyModeChangeable = item["isEnergyModeChangeable"].as<decltype(dst.isEnergyModeChangeable
-                )::value_type>();
+                dst.isEnergyModeChangeable = item["isEnergyModeChangeable"].as<decltype(dst.isEnergyModeChangeable)::value_type>();
             } else {
                 //dst.isEnergyModeChangeable = std::nullopt;
             }
@@ -8768,6 +8759,7 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataType 
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["timestamp"]) {
@@ -8781,8 +8773,7 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataType 
             //dst.activityState = std::nullopt;
         }
         if (src["isActivityStateChangeable"]) {
-            dst.isActivityStateChangeable = src["isActivityStateChangeable"].as<decltype(dst.isActivityStateChangeable
-            )::value_type>();
+            dst.isActivityStateChangeable = src["isActivityStateChangeable"].as<decltype(dst.isActivityStateChangeable)::value_type>();
         } else {
             //dst.isActivityStateChangeable = std::nullopt;
         }
@@ -8792,8 +8783,7 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataType 
             //dst.energyMode = std::nullopt;
         }
         if (src["isEnergyModeChangeable"]) {
-            dst.isEnergyModeChangeable = src["isEnergyModeChangeable"].as<decltype(dst.isEnergyModeChangeable
-            )::value_type>();
+            dst.isEnergyModeChangeable = src["isEnergyModeChangeable"].as<decltype(dst.isEnergyModeChangeable)::value_type>();
         } else {
             //dst.isEnergyModeChangeable = std::nullopt;
         }
@@ -8822,16 +8812,20 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataType 
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ElementTagType &src, JsonVariant &dst)
 {
+
     return true;
 }
 
 void convertFromJson(const JsonVariantConst &src, ElementTagType &dst)
 {
+
 }
 
 bool convertToJson(const ScaledNumberElementsType &src, JsonVariant &dst)
@@ -8861,6 +8855,7 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberElementsType &dst)
             } else {
                 //dst.scale = std::nullopt;
             }
+
         }
     } else {
         if (src["number"]) {
@@ -8873,7 +8868,9 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberElementsType &dst)
         } else {
             //dst.scale = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DirectControlActivityDataElementsType &src, JsonVariant &dst)
@@ -8928,8 +8925,7 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataEleme
                 //dst.activityState = std::nullopt;
             }
             if (item["isActivityStateChangeable"]) {
-                dst.isActivityStateChangeable = item["isActivityStateChangeable"].as<decltype(dst.
-                    isActivityStateChangeable)::value_type>();
+                dst.isActivityStateChangeable = item["isActivityStateChangeable"].as<decltype(dst.isActivityStateChangeable)::value_type>();
             } else {
                 //dst.isActivityStateChangeable = std::nullopt;
             }
@@ -8939,8 +8935,7 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataEleme
                 //dst.energyMode = std::nullopt;
             }
             if (item["isEnergyModeChangeable"]) {
-                dst.isEnergyModeChangeable = item["isEnergyModeChangeable"].as<decltype(dst.isEnergyModeChangeable
-                )::value_type>();
+                dst.isEnergyModeChangeable = item["isEnergyModeChangeable"].as<decltype(dst.isEnergyModeChangeable)::value_type>();
             } else {
                 //dst.isEnergyModeChangeable = std::nullopt;
             }
@@ -8969,6 +8964,7 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataEleme
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["timestamp"]) {
@@ -8982,8 +8978,7 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataEleme
             //dst.activityState = std::nullopt;
         }
         if (src["isActivityStateChangeable"]) {
-            dst.isActivityStateChangeable = src["isActivityStateChangeable"].as<decltype(dst.isActivityStateChangeable
-            )::value_type>();
+            dst.isActivityStateChangeable = src["isActivityStateChangeable"].as<decltype(dst.isActivityStateChangeable)::value_type>();
         } else {
             //dst.isActivityStateChangeable = std::nullopt;
         }
@@ -8993,8 +8988,7 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataEleme
             //dst.energyMode = std::nullopt;
         }
         if (src["isEnergyModeChangeable"]) {
-            dst.isEnergyModeChangeable = src["isEnergyModeChangeable"].as<decltype(dst.isEnergyModeChangeable
-            )::value_type>();
+            dst.isEnergyModeChangeable = src["isEnergyModeChangeable"].as<decltype(dst.isEnergyModeChangeable)::value_type>();
         } else {
             //dst.isEnergyModeChangeable = std::nullopt;
         }
@@ -9023,7 +9017,9 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataEleme
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DirectControlActivityListDataType &src, JsonVariant &dst)
@@ -9041,20 +9037,21 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityListDataT
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["directControlActivityData"]) {
-                dst.directControlActivityData = item["directControlActivityData"].as<decltype(dst.
-                    directControlActivityData)::value_type>();
+                dst.directControlActivityData = item["directControlActivityData"].as<decltype(dst.directControlActivityData)::value_type>();
             } else {
                 //dst.directControlActivityData = std::nullopt;
             }
+
         }
     } else {
         if (src["directControlActivityData"]) {
-            dst.directControlActivityData = src["directControlActivityData"].as<decltype(dst.directControlActivityData
-            )::value_type>();
+            dst.directControlActivityData = src["directControlActivityData"].as<decltype(dst.directControlActivityData)::value_type>();
         } else {
             //dst.directControlActivityData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimestampIntervalType &src, JsonVariant &dst)
@@ -9084,6 +9081,7 @@ void convertFromJson(const JsonVariantConst &src, TimestampIntervalType &dst)
             } else {
                 //dst.endTime = std::nullopt;
             }
+
         }
     } else {
         if (src["startTime"]) {
@@ -9096,7 +9094,9 @@ void convertFromJson(const JsonVariantConst &src, TimestampIntervalType &dst)
         } else {
             //dst.endTime = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DirectControlActivityListDataSelectorsType &src, JsonVariant &dst)
@@ -9118,6 +9118,7 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityListDataS
             } else {
                 //dst.timestampInterval = std::nullopt;
             }
+
         }
     } else {
         if (src["timestampInterval"]) {
@@ -9125,7 +9126,9 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityListDataS
         } else {
             //dst.timestampInterval = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DirectControlDescriptionDataType &src, JsonVariant &dst)
@@ -9149,8 +9152,7 @@ void convertFromJson(const JsonVariantConst &src, DirectControlDescriptionDataTy
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["positiveEnergyDirection"]) {
-                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-                )::value_type>();
+                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
             } else {
                 //dst.positiveEnergyDirection = std::nullopt;
             }
@@ -9164,11 +9166,11 @@ void convertFromJson(const JsonVariantConst &src, DirectControlDescriptionDataTy
             } else {
                 //dst.energyUnit = std::nullopt;
             }
+
         }
     } else {
         if (src["positiveEnergyDirection"]) {
-            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-            )::value_type>();
+            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
         } else {
             //dst.positiveEnergyDirection = std::nullopt;
         }
@@ -9182,7 +9184,9 @@ void convertFromJson(const JsonVariantConst &src, DirectControlDescriptionDataTy
         } else {
             //dst.energyUnit = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DirectControlDescriptionDataElementsType &src, JsonVariant &dst)
@@ -9206,8 +9210,7 @@ void convertFromJson(const JsonVariantConst &src, DirectControlDescriptionDataEl
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["positiveEnergyDirection"]) {
-                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-                )::value_type>();
+                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
             } else {
                 //dst.positiveEnergyDirection = std::nullopt;
             }
@@ -9221,11 +9224,11 @@ void convertFromJson(const JsonVariantConst &src, DirectControlDescriptionDataEl
             } else {
                 //dst.energyUnit = std::nullopt;
             }
+
         }
     } else {
         if (src["positiveEnergyDirection"]) {
-            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-            )::value_type>();
+            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
         } else {
             //dst.positiveEnergyDirection = std::nullopt;
         }
@@ -9239,7 +9242,9 @@ void convertFromJson(const JsonVariantConst &src, DirectControlDescriptionDataEl
         } else {
             //dst.energyUnit = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimePeriodType &src, JsonVariant &dst)
@@ -9269,6 +9274,7 @@ void convertFromJson(const JsonVariantConst &src, TimePeriodType &dst)
             } else {
                 //dst.endTime = std::nullopt;
             }
+
         }
     } else {
         if (src["startTime"]) {
@@ -9281,7 +9287,9 @@ void convertFromJson(const JsonVariantConst &src, TimePeriodType &dst)
         } else {
             //dst.endTime = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimePeriodElementsType &src, JsonVariant &dst)
@@ -9311,6 +9319,7 @@ void convertFromJson(const JsonVariantConst &src, TimePeriodElementsType &dst)
             } else {
                 //dst.endTime = std::nullopt;
             }
+
         }
     } else {
         if (src["startTime"]) {
@@ -9323,7 +9332,9 @@ void convertFromJson(const JsonVariantConst &src, TimePeriodElementsType &dst)
         } else {
             //dst.endTime = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DaysOfWeekType &src, JsonVariant &dst)
@@ -9393,6 +9404,7 @@ void convertFromJson(const JsonVariantConst &src, DaysOfWeekType &dst)
             } else {
                 //dst.sunday = std::nullopt;
             }
+
         }
     } else {
         if (src["monday"]) {
@@ -9430,7 +9442,9 @@ void convertFromJson(const JsonVariantConst &src, DaysOfWeekType &dst)
         } else {
             //dst.sunday = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const AbsoluteOrRecurringTimeType &src, JsonVariant &dst)
@@ -9489,8 +9503,7 @@ void convertFromJson(const JsonVariantConst &src, AbsoluteOrRecurringTimeType &d
                 //dst.calendarWeek = std::nullopt;
             }
             if (item["dayOfWeekOccurrence"]) {
-                dst.dayOfWeekOccurrence = item["dayOfWeekOccurrence"].as<decltype(dst.dayOfWeekOccurrence
-                )::value_type>();
+                dst.dayOfWeekOccurrence = item["dayOfWeekOccurrence"].as<decltype(dst.dayOfWeekOccurrence)::value_type>();
             } else {
                 //dst.dayOfWeekOccurrence = std::nullopt;
             }
@@ -9509,6 +9522,7 @@ void convertFromJson(const JsonVariantConst &src, AbsoluteOrRecurringTimeType &d
             } else {
                 //dst.relative = std::nullopt;
             }
+
         }
     } else {
         if (src["dateTime"]) {
@@ -9551,7 +9565,9 @@ void convertFromJson(const JsonVariantConst &src, AbsoluteOrRecurringTimeType &d
         } else {
             //dst.relative = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const AbsoluteOrRecurringTimeElementsType &src, JsonVariant &dst)
@@ -9610,8 +9626,7 @@ void convertFromJson(const JsonVariantConst &src, AbsoluteOrRecurringTimeElement
                 //dst.calendarWeek = std::nullopt;
             }
             if (item["dayOfWeekOccurrence"]) {
-                dst.dayOfWeekOccurrence = item["dayOfWeekOccurrence"].as<decltype(dst.dayOfWeekOccurrence
-                )::value_type>();
+                dst.dayOfWeekOccurrence = item["dayOfWeekOccurrence"].as<decltype(dst.dayOfWeekOccurrence)::value_type>();
             } else {
                 //dst.dayOfWeekOccurrence = std::nullopt;
             }
@@ -9630,6 +9645,7 @@ void convertFromJson(const JsonVariantConst &src, AbsoluteOrRecurringTimeElement
             } else {
                 //dst.relative = std::nullopt;
             }
+
         }
     } else {
         if (src["dateTime"]) {
@@ -9672,7 +9688,9 @@ void convertFromJson(const JsonVariantConst &src, AbsoluteOrRecurringTimeElement
         } else {
             //dst.relative = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const RecurrenceInformationType &src, JsonVariant &dst)
@@ -9707,8 +9725,7 @@ void convertFromJson(const JsonVariantConst &src, RecurrenceInformationType &dst
                 //dst.recurringInterval = std::nullopt;
             }
             if (item["recurringIntervalStep"]) {
-                dst.recurringIntervalStep = item["recurringIntervalStep"].as<decltype(dst.recurringIntervalStep
-                )::value_type>();
+                dst.recurringIntervalStep = item["recurringIntervalStep"].as<decltype(dst.recurringIntervalStep)::value_type>();
             } else {
                 //dst.recurringIntervalStep = std::nullopt;
             }
@@ -9727,6 +9744,7 @@ void convertFromJson(const JsonVariantConst &src, RecurrenceInformationType &dst
             } else {
                 //dst.lastExecution = std::nullopt;
             }
+
         }
     } else {
         if (src["recurringInterval"]) {
@@ -9735,8 +9753,7 @@ void convertFromJson(const JsonVariantConst &src, RecurrenceInformationType &dst
             //dst.recurringInterval = std::nullopt;
         }
         if (src["recurringIntervalStep"]) {
-            dst.recurringIntervalStep = src["recurringIntervalStep"].as<decltype(dst.recurringIntervalStep
-            )::value_type>();
+            dst.recurringIntervalStep = src["recurringIntervalStep"].as<decltype(dst.recurringIntervalStep)::value_type>();
         } else {
             //dst.recurringIntervalStep = std::nullopt;
         }
@@ -9755,7 +9772,9 @@ void convertFromJson(const JsonVariantConst &src, RecurrenceInformationType &dst
         } else {
             //dst.lastExecution = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const RecurrenceInformationElementsType &src, JsonVariant &dst)
@@ -9790,8 +9809,7 @@ void convertFromJson(const JsonVariantConst &src, RecurrenceInformationElementsT
                 //dst.recurringInterval = std::nullopt;
             }
             if (item["recurringIntervalStep"]) {
-                dst.recurringIntervalStep = item["recurringIntervalStep"].as<decltype(dst.recurringIntervalStep
-                )::value_type>();
+                dst.recurringIntervalStep = item["recurringIntervalStep"].as<decltype(dst.recurringIntervalStep)::value_type>();
             } else {
                 //dst.recurringIntervalStep = std::nullopt;
             }
@@ -9810,6 +9828,7 @@ void convertFromJson(const JsonVariantConst &src, RecurrenceInformationElementsT
             } else {
                 //dst.lastExecution = std::nullopt;
             }
+
         }
     } else {
         if (src["recurringInterval"]) {
@@ -9818,8 +9837,7 @@ void convertFromJson(const JsonVariantConst &src, RecurrenceInformationElementsT
             //dst.recurringInterval = std::nullopt;
         }
         if (src["recurringIntervalStep"]) {
-            dst.recurringIntervalStep = src["recurringIntervalStep"].as<decltype(dst.recurringIntervalStep
-            )::value_type>();
+            dst.recurringIntervalStep = src["recurringIntervalStep"].as<decltype(dst.recurringIntervalStep)::value_type>();
         } else {
             //dst.recurringIntervalStep = std::nullopt;
         }
@@ -9838,7 +9856,9 @@ void convertFromJson(const JsonVariantConst &src, RecurrenceInformationElementsT
         } else {
             //dst.lastExecution = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ScaledNumberRangeType &src, JsonVariant &dst)
@@ -9868,6 +9888,7 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberRangeType &dst)
             } else {
                 //dst.max = std::nullopt;
             }
+
         }
     } else {
         if (src["min"]) {
@@ -9880,7 +9901,9 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberRangeType &dst)
         } else {
             //dst.max = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ScaledNumberRangeElementsType &src, JsonVariant &dst)
@@ -9910,6 +9933,7 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberRangeElementsType 
             } else {
                 //dst.max = std::nullopt;
             }
+
         }
     } else {
         if (src["min"]) {
@@ -9922,7 +9946,9 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberRangeElementsType 
         } else {
             //dst.max = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ScaledNumberSetType &src, JsonVariant &dst)
@@ -9952,6 +9978,7 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberSetType &dst)
             } else {
                 //dst.range = std::nullopt;
             }
+
         }
     } else {
         if (src["value"]) {
@@ -9964,7 +9991,9 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberSetType &dst)
         } else {
             //dst.range = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ScaledNumberSetElementsType &src, JsonVariant &dst)
@@ -9994,6 +10023,7 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberSetElementsType &d
             } else {
                 //dst.range = std::nullopt;
             }
+
         }
     } else {
         if (src["value"]) {
@@ -10006,7 +10036,9 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberSetElementsType &d
         } else {
             //dst.range = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceAddressType &src, JsonVariant &dst)
@@ -10028,6 +10060,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceAddressType &dst)
             } else {
                 //dst.device = std::nullopt;
             }
+
         }
     } else {
         if (src["device"]) {
@@ -10035,7 +10068,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceAddressType &dst)
         } else {
             //dst.device = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceAddressElementsType &src, JsonVariant &dst)
@@ -10057,6 +10092,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceAddressElementsType &dst
             } else {
                 //dst.device = std::nullopt;
             }
+
         }
     } else {
         if (src["device"]) {
@@ -10064,7 +10100,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceAddressElementsType &dst
         } else {
             //dst.device = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const EntityAddressType &src, JsonVariant &dst)
@@ -10094,6 +10132,7 @@ void convertFromJson(const JsonVariantConst &src, EntityAddressType &dst)
             } else {
                 //dst.entity = std::nullopt;
             }
+
         }
     } else {
         if (src["device"]) {
@@ -10106,7 +10145,9 @@ void convertFromJson(const JsonVariantConst &src, EntityAddressType &dst)
         } else {
             //dst.entity = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const EntityAddressElementsType &src, JsonVariant &dst)
@@ -10136,6 +10177,7 @@ void convertFromJson(const JsonVariantConst &src, EntityAddressElementsType &dst
             } else {
                 //dst.entity = std::nullopt;
             }
+
         }
     } else {
         if (src["device"]) {
@@ -10148,7 +10190,9 @@ void convertFromJson(const JsonVariantConst &src, EntityAddressElementsType &dst
         } else {
             //dst.entity = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const FeatureAddressType &src, JsonVariant &dst)
@@ -10186,6 +10230,7 @@ void convertFromJson(const JsonVariantConst &src, FeatureAddressType &dst)
             } else {
                 //dst.feature = std::nullopt;
             }
+
         }
     } else {
         if (src["device"]) {
@@ -10203,7 +10248,9 @@ void convertFromJson(const JsonVariantConst &src, FeatureAddressType &dst)
         } else {
             //dst.feature = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const FeatureAddressElementsType &src, JsonVariant &dst)
@@ -10241,6 +10288,7 @@ void convertFromJson(const JsonVariantConst &src, FeatureAddressElementsType &ds
             } else {
                 //dst.feature = std::nullopt;
             }
+
         }
     } else {
         if (src["device"]) {
@@ -10258,7 +10306,9 @@ void convertFromJson(const JsonVariantConst &src, FeatureAddressElementsType &ds
         } else {
             //dst.feature = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PossibleOperationsClassifierType &src, JsonVariant &dst)
@@ -10280,6 +10330,7 @@ void convertFromJson(const JsonVariantConst &src, PossibleOperationsClassifierTy
             } else {
                 //dst.partial = std::nullopt;
             }
+
         }
     } else {
         if (src["partial"]) {
@@ -10287,7 +10338,9 @@ void convertFromJson(const JsonVariantConst &src, PossibleOperationsClassifierTy
         } else {
             //dst.partial = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PossibleOperationsReadType &src, JsonVariant &dst)
@@ -10309,6 +10362,7 @@ void convertFromJson(const JsonVariantConst &src, PossibleOperationsReadType &ds
             } else {
                 //dst.partial = std::nullopt;
             }
+
         }
     } else {
         if (src["partial"]) {
@@ -10316,7 +10370,9 @@ void convertFromJson(const JsonVariantConst &src, PossibleOperationsReadType &ds
         } else {
             //dst.partial = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PossibleOperationsWriteType &src, JsonVariant &dst)
@@ -10338,6 +10394,7 @@ void convertFromJson(const JsonVariantConst &src, PossibleOperationsWriteType &d
             } else {
                 //dst.partial = std::nullopt;
             }
+
         }
     } else {
         if (src["partial"]) {
@@ -10345,7 +10402,9 @@ void convertFromJson(const JsonVariantConst &src, PossibleOperationsWriteType &d
         } else {
             //dst.partial = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PossibleOperationsType &src, JsonVariant &dst)
@@ -10375,6 +10434,7 @@ void convertFromJson(const JsonVariantConst &src, PossibleOperationsType &dst)
             } else {
                 //dst.write = std::nullopt;
             }
+
         }
     } else {
         if (src["read"]) {
@@ -10387,7 +10447,9 @@ void convertFromJson(const JsonVariantConst &src, PossibleOperationsType &dst)
         } else {
             //dst.write = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PossibleOperationsElementsType &src, JsonVariant &dst)
@@ -10417,6 +10479,7 @@ void convertFromJson(const JsonVariantConst &src, PossibleOperationsElementsType
             } else {
                 //dst.write = std::nullopt;
             }
+
         }
     } else {
         if (src["read"]) {
@@ -10429,7 +10492,9 @@ void convertFromJson(const JsonVariantConst &src, PossibleOperationsElementsType
         } else {
             //dst.write = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const FunctionPropertyType &src, JsonVariant &dst)
@@ -10459,6 +10524,7 @@ void convertFromJson(const JsonVariantConst &src, FunctionPropertyType &dst)
             } else {
                 //dst.possibleOperations = std::nullopt;
             }
+
         }
     } else {
         if (src["function"]) {
@@ -10471,7 +10537,9 @@ void convertFromJson(const JsonVariantConst &src, FunctionPropertyType &dst)
         } else {
             //dst.possibleOperations = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const FunctionPropertyElementsType &src, JsonVariant &dst)
@@ -10501,6 +10569,7 @@ void convertFromJson(const JsonVariantConst &src, FunctionPropertyElementsType &
             } else {
                 //dst.possibleOperations = std::nullopt;
             }
+
         }
     } else {
         if (src["function"]) {
@@ -10513,7 +10582,9 @@ void convertFromJson(const JsonVariantConst &src, FunctionPropertyElementsType &
         } else {
             //dst.possibleOperations = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerTimeSlotScheduleDataType &src, JsonVariant &dst)
@@ -10569,8 +10640,7 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleDataType 
                 //dst.defaultDuration = std::nullopt;
             }
             if (item["durationUncertainty"]) {
-                dst.durationUncertainty = item["durationUncertainty"].as<decltype(dst.durationUncertainty
-                )::value_type>();
+                dst.durationUncertainty = item["durationUncertainty"].as<decltype(dst.durationUncertainty)::value_type>();
             } else {
                 //dst.durationUncertainty = std::nullopt;
             }
@@ -10584,6 +10654,7 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleDataType 
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -10621,7 +10692,9 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleDataType 
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerTimeSlotScheduleDataElementsType &src, JsonVariant &dst)
@@ -10677,8 +10750,7 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleDataEleme
                 //dst.defaultDuration = std::nullopt;
             }
             if (item["durationUncertainty"]) {
-                dst.durationUncertainty = item["durationUncertainty"].as<decltype(dst.durationUncertainty
-                )::value_type>();
+                dst.durationUncertainty = item["durationUncertainty"].as<decltype(dst.durationUncertainty)::value_type>();
             } else {
                 //dst.durationUncertainty = std::nullopt;
             }
@@ -10692,6 +10764,7 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleDataEleme
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -10729,7 +10802,9 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleDataEleme
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerTimeSlotScheduleListDataType &src, JsonVariant &dst)
@@ -10747,20 +10822,21 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleListDataT
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["powerTimeSlotScheduleData"]) {
-                dst.powerTimeSlotScheduleData = item["powerTimeSlotScheduleData"].as<decltype(dst.
-                    powerTimeSlotScheduleData)::value_type>();
+                dst.powerTimeSlotScheduleData = item["powerTimeSlotScheduleData"].as<decltype(dst.powerTimeSlotScheduleData)::value_type>();
             } else {
                 //dst.powerTimeSlotScheduleData = std::nullopt;
             }
+
         }
     } else {
         if (src["powerTimeSlotScheduleData"]) {
-            dst.powerTimeSlotScheduleData = src["powerTimeSlotScheduleData"].as<decltype(dst.powerTimeSlotScheduleData
-            )::value_type>();
+            dst.powerTimeSlotScheduleData = src["powerTimeSlotScheduleData"].as<decltype(dst.powerTimeSlotScheduleData)::value_type>();
         } else {
             //dst.powerTimeSlotScheduleData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerTimeSlotScheduleListDataSelectorsType &src, JsonVariant &dst)
@@ -10790,6 +10866,7 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleListDataS
             } else {
                 //dst.slotNumber = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -10802,7 +10879,9 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleListDataS
         } else {
             //dst.slotNumber = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerTimeSlotValueDataType &src, JsonVariant &dst)
@@ -10848,6 +10927,7 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueDataType &ds
             } else {
                 //dst.value = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -10870,7 +10950,9 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueDataType &ds
         } else {
             //dst.value = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerTimeSlotValueDataElementsType &src, JsonVariant &dst)
@@ -10916,6 +10998,7 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueDataElements
             } else {
                 //dst.value = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -10938,7 +11021,9 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueDataElements
         } else {
             //dst.value = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerTimeSlotValueListDataType &src, JsonVariant &dst)
@@ -10956,20 +11041,21 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueListDataType
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["powerTimeSlotValueData"]) {
-                dst.powerTimeSlotValueData = item["powerTimeSlotValueData"].as<decltype(dst.powerTimeSlotValueData
-                )::value_type>();
+                dst.powerTimeSlotValueData = item["powerTimeSlotValueData"].as<decltype(dst.powerTimeSlotValueData)::value_type>();
             } else {
                 //dst.powerTimeSlotValueData = std::nullopt;
             }
+
         }
     } else {
         if (src["powerTimeSlotValueData"]) {
-            dst.powerTimeSlotValueData = src["powerTimeSlotValueData"].as<decltype(dst.powerTimeSlotValueData
-            )::value_type>();
+            dst.powerTimeSlotValueData = src["powerTimeSlotValueData"].as<decltype(dst.powerTimeSlotValueData)::value_type>();
         } else {
             //dst.powerTimeSlotValueData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerTimeSlotValueListDataSelectorsType &src, JsonVariant &dst)
@@ -11007,6 +11093,7 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueListDataSele
             } else {
                 //dst.valueType = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -11024,7 +11111,9 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueListDataSele
         } else {
             //dst.valueType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerTimeSlotScheduleConstraintsDataType &src, JsonVariant &dst)
@@ -11094,6 +11183,7 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstrain
             } else {
                 //dst.optionalSlot = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -11131,7 +11221,9 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstrain
         } else {
             //dst.optionalSlot = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerTimeSlotScheduleConstraintsDataElementsType &src, JsonVariant &dst)
@@ -11201,6 +11293,7 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstrain
             } else {
                 //dst.optionalSlot = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -11238,7 +11331,9 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstrain
         } else {
             //dst.optionalSlot = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerTimeSlotScheduleConstraintsListDataType &src, JsonVariant &dst)
@@ -11256,20 +11351,21 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstrain
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["powerTimeSlotScheduleConstraintsData"]) {
-                dst.powerTimeSlotScheduleConstraintsData = item["powerTimeSlotScheduleConstraintsData"].as<decltype(dst.
-                    powerTimeSlotScheduleConstraintsData)::value_type>();
+                dst.powerTimeSlotScheduleConstraintsData = item["powerTimeSlotScheduleConstraintsData"].as<decltype(dst.powerTimeSlotScheduleConstraintsData)::value_type>();
             } else {
                 //dst.powerTimeSlotScheduleConstraintsData = std::nullopt;
             }
+
         }
     } else {
         if (src["powerTimeSlotScheduleConstraintsData"]) {
-            dst.powerTimeSlotScheduleConstraintsData = src["powerTimeSlotScheduleConstraintsData"].as<decltype(dst.
-                powerTimeSlotScheduleConstraintsData)::value_type>();
+            dst.powerTimeSlotScheduleConstraintsData = src["powerTimeSlotScheduleConstraintsData"].as<decltype(dst.powerTimeSlotScheduleConstraintsData)::value_type>();
         } else {
             //dst.powerTimeSlotScheduleConstraintsData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerTimeSlotScheduleConstraintsListDataSelectorsType &src, JsonVariant &dst)
@@ -11299,6 +11395,7 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstrain
             } else {
                 //dst.slotNumber = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -11311,7 +11408,9 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstrain
         } else {
             //dst.slotNumber = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceAlternativesRelationDataType &src, JsonVariant &dst)
@@ -11341,6 +11440,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelat
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["alternativesId"]) {
@@ -11353,7 +11453,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelat
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceAlternativesRelationDataElementsType &src, JsonVariant &dst)
@@ -11383,6 +11485,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelat
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["alternativesId"]) {
@@ -11395,7 +11498,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelat
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceAlternativesRelationListDataType &src, JsonVariant &dst)
@@ -11413,21 +11518,21 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelat
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["powerSequenceAlternativesRelationData"]) {
-                dst.powerSequenceAlternativesRelationData = item["powerSequenceAlternativesRelationData"].as<decltype(
-                    dst.
-                    powerSequenceAlternativesRelationData)::value_type>();
+                dst.powerSequenceAlternativesRelationData = item["powerSequenceAlternativesRelationData"].as<decltype(dst.powerSequenceAlternativesRelationData)::value_type>();
             } else {
                 //dst.powerSequenceAlternativesRelationData = std::nullopt;
             }
+
         }
     } else {
         if (src["powerSequenceAlternativesRelationData"]) {
-            dst.powerSequenceAlternativesRelationData = src["powerSequenceAlternativesRelationData"].as<decltype(dst.
-                powerSequenceAlternativesRelationData)::value_type>();
+            dst.powerSequenceAlternativesRelationData = src["powerSequenceAlternativesRelationData"].as<decltype(dst.powerSequenceAlternativesRelationData)::value_type>();
         } else {
             //dst.powerSequenceAlternativesRelationData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceAlternativesRelationListDataSelectorsType &src, JsonVariant &dst)
@@ -11457,6 +11562,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelat
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["alternativesId"]) {
@@ -11469,7 +11575,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelat
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceDescriptionDataType &src, JsonVariant &dst)
@@ -11521,8 +11629,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionDataTy
                 //dst.description = std::nullopt;
             }
             if (item["positiveEnergyDirection"]) {
-                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-                )::value_type>();
+                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
             } else {
                 //dst.positiveEnergyDirection = std::nullopt;
             }
@@ -11556,6 +11663,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionDataTy
             } else {
                 //dst.repetitionsTotal = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -11569,8 +11677,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionDataTy
             //dst.description = std::nullopt;
         }
         if (src["positiveEnergyDirection"]) {
-            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-            )::value_type>();
+            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
         } else {
             //dst.positiveEnergyDirection = std::nullopt;
         }
@@ -11604,7 +11711,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionDataTy
         } else {
             //dst.repetitionsTotal = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceDescriptionDataElementsType &src, JsonVariant &dst)
@@ -11656,8 +11765,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionDataEl
                 //dst.description = std::nullopt;
             }
             if (item["positiveEnergyDirection"]) {
-                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-                )::value_type>();
+                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
             } else {
                 //dst.positiveEnergyDirection = std::nullopt;
             }
@@ -11691,6 +11799,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionDataEl
             } else {
                 //dst.repetitionsTotal = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -11704,8 +11813,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionDataEl
             //dst.description = std::nullopt;
         }
         if (src["positiveEnergyDirection"]) {
-            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-            )::value_type>();
+            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
         } else {
             //dst.positiveEnergyDirection = std::nullopt;
         }
@@ -11739,7 +11847,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionDataEl
         } else {
             //dst.repetitionsTotal = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceDescriptionListDataType &src, JsonVariant &dst)
@@ -11757,22 +11867,21 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionListDa
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["powerSequenceDescriptionData"]) {
-                dst.powerSequenceDescriptionData = item["powerSequenceDescriptionData"].as<decltype(dst.
-                    powerSequenceDescriptionData
-                )::value_type>();
+                dst.powerSequenceDescriptionData = item["powerSequenceDescriptionData"].as<decltype(dst.powerSequenceDescriptionData)::value_type>();
             } else {
                 //dst.powerSequenceDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["powerSequenceDescriptionData"]) {
-            dst.powerSequenceDescriptionData = src["powerSequenceDescriptionData"].as<decltype(dst.
-                powerSequenceDescriptionData
-            )::value_type>();
+            dst.powerSequenceDescriptionData = src["powerSequenceDescriptionData"].as<decltype(dst.powerSequenceDescriptionData)::value_type>();
         } else {
             //dst.powerSequenceDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -11794,6 +11903,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionListDa
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -11801,7 +11911,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionListDa
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceStateDataType &src, JsonVariant &dst)
@@ -11865,15 +11977,12 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceStateDataType &ds
                 //dst.remainingSlotTime = std::nullopt;
             }
             if (item["sequenceRemoteControllable"]) {
-                dst.sequenceRemoteControllable = item["sequenceRemoteControllable"].as<decltype(dst.
-                    sequenceRemoteControllable
-                )::value_type>();
+                dst.sequenceRemoteControllable = item["sequenceRemoteControllable"].as<decltype(dst.sequenceRemoteControllable)::value_type>();
             } else {
                 //dst.sequenceRemoteControllable = std::nullopt;
             }
             if (item["activeRepetitionNumber"]) {
-                dst.activeRepetitionNumber = item["activeRepetitionNumber"].as<decltype(dst.activeRepetitionNumber
-                )::value_type>();
+                dst.activeRepetitionNumber = item["activeRepetitionNumber"].as<decltype(dst.activeRepetitionNumber)::value_type>();
             } else {
                 //dst.activeRepetitionNumber = std::nullopt;
             }
@@ -11882,6 +11991,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceStateDataType &ds
             } else {
                 //dst.remainingPauseTime = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -11910,14 +12020,12 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceStateDataType &ds
             //dst.remainingSlotTime = std::nullopt;
         }
         if (src["sequenceRemoteControllable"]) {
-            dst.sequenceRemoteControllable = src["sequenceRemoteControllable"].as<decltype(dst.
-                sequenceRemoteControllable)::value_type>();
+            dst.sequenceRemoteControllable = src["sequenceRemoteControllable"].as<decltype(dst.sequenceRemoteControllable)::value_type>();
         } else {
             //dst.sequenceRemoteControllable = std::nullopt;
         }
         if (src["activeRepetitionNumber"]) {
-            dst.activeRepetitionNumber = src["activeRepetitionNumber"].as<decltype(dst.activeRepetitionNumber
-            )::value_type>();
+            dst.activeRepetitionNumber = src["activeRepetitionNumber"].as<decltype(dst.activeRepetitionNumber)::value_type>();
         } else {
             //dst.activeRepetitionNumber = std::nullopt;
         }
@@ -11926,7 +12034,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceStateDataType &ds
         } else {
             //dst.remainingPauseTime = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceStateDataElementsType &src, JsonVariant &dst)
@@ -11990,15 +12100,12 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceStateDataElements
                 //dst.remainingSlotTime = std::nullopt;
             }
             if (item["sequenceRemoteControllable"]) {
-                dst.sequenceRemoteControllable = item["sequenceRemoteControllable"].as<decltype(dst.
-                    sequenceRemoteControllable
-                )::value_type>();
+                dst.sequenceRemoteControllable = item["sequenceRemoteControllable"].as<decltype(dst.sequenceRemoteControllable)::value_type>();
             } else {
                 //dst.sequenceRemoteControllable = std::nullopt;
             }
             if (item["activeRepetitionNumber"]) {
-                dst.activeRepetitionNumber = item["activeRepetitionNumber"].as<decltype(dst.activeRepetitionNumber
-                )::value_type>();
+                dst.activeRepetitionNumber = item["activeRepetitionNumber"].as<decltype(dst.activeRepetitionNumber)::value_type>();
             } else {
                 //dst.activeRepetitionNumber = std::nullopt;
             }
@@ -12007,6 +12114,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceStateDataElements
             } else {
                 //dst.remainingPauseTime = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -12035,14 +12143,12 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceStateDataElements
             //dst.remainingSlotTime = std::nullopt;
         }
         if (src["sequenceRemoteControllable"]) {
-            dst.sequenceRemoteControllable = src["sequenceRemoteControllable"].as<decltype(dst.
-                sequenceRemoteControllable)::value_type>();
+            dst.sequenceRemoteControllable = src["sequenceRemoteControllable"].as<decltype(dst.sequenceRemoteControllable)::value_type>();
         } else {
             //dst.sequenceRemoteControllable = std::nullopt;
         }
         if (src["activeRepetitionNumber"]) {
-            dst.activeRepetitionNumber = src["activeRepetitionNumber"].as<decltype(dst.activeRepetitionNumber
-            )::value_type>();
+            dst.activeRepetitionNumber = src["activeRepetitionNumber"].as<decltype(dst.activeRepetitionNumber)::value_type>();
         } else {
             //dst.activeRepetitionNumber = std::nullopt;
         }
@@ -12051,7 +12157,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceStateDataElements
         } else {
             //dst.remainingPauseTime = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceStateListDataType &src, JsonVariant &dst)
@@ -12069,20 +12177,21 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceStateListDataType
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["powerSequenceStateData"]) {
-                dst.powerSequenceStateData = item["powerSequenceStateData"].as<decltype(dst.powerSequenceStateData
-                )::value_type>();
+                dst.powerSequenceStateData = item["powerSequenceStateData"].as<decltype(dst.powerSequenceStateData)::value_type>();
             } else {
                 //dst.powerSequenceStateData = std::nullopt;
             }
+
         }
     } else {
         if (src["powerSequenceStateData"]) {
-            dst.powerSequenceStateData = src["powerSequenceStateData"].as<decltype(dst.powerSequenceStateData
-            )::value_type>();
+            dst.powerSequenceStateData = src["powerSequenceStateData"].as<decltype(dst.powerSequenceStateData)::value_type>();
         } else {
             //dst.powerSequenceStateData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceStateListDataSelectorsType &src, JsonVariant &dst)
@@ -12104,6 +12213,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceStateListDataSele
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -12111,7 +12221,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceStateListDataSele
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceScheduleDataType &src, JsonVariant &dst)
@@ -12149,6 +12261,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleDataType 
             } else {
                 //dst.endTime = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -12166,7 +12279,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleDataType 
         } else {
             //dst.endTime = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceScheduleDataElementsType &src, JsonVariant &dst)
@@ -12204,6 +12319,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleDataEleme
             } else {
                 //dst.endTime = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -12221,7 +12337,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleDataEleme
         } else {
             //dst.endTime = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceScheduleListDataType &src, JsonVariant &dst)
@@ -12239,20 +12357,21 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleListDataT
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["powerSequenceScheduleData"]) {
-                dst.powerSequenceScheduleData = item["powerSequenceScheduleData"].as<decltype(dst.
-                    powerSequenceScheduleData)::value_type>();
+                dst.powerSequenceScheduleData = item["powerSequenceScheduleData"].as<decltype(dst.powerSequenceScheduleData)::value_type>();
             } else {
                 //dst.powerSequenceScheduleData = std::nullopt;
             }
+
         }
     } else {
         if (src["powerSequenceScheduleData"]) {
-            dst.powerSequenceScheduleData = src["powerSequenceScheduleData"].as<decltype(dst.powerSequenceScheduleData
-            )::value_type>();
+            dst.powerSequenceScheduleData = src["powerSequenceScheduleData"].as<decltype(dst.powerSequenceScheduleData)::value_type>();
         } else {
             //dst.powerSequenceScheduleData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceScheduleListDataSelectorsType &src, JsonVariant &dst)
@@ -12274,6 +12393,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleListDataS
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -12281,7 +12401,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleListDataS
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceScheduleConstraintsDataType &src, JsonVariant &dst)
@@ -12343,6 +12465,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstrain
             } else {
                 //dst.optionalSequence = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -12375,7 +12498,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstrain
         } else {
             //dst.optionalSequence = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceScheduleConstraintsDataElementsType &src, JsonVariant &dst)
@@ -12437,6 +12562,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstrain
             } else {
                 //dst.optionalSequence = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -12469,7 +12595,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstrain
         } else {
             //dst.optionalSequence = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceScheduleConstraintsListDataType &src, JsonVariant &dst)
@@ -12487,20 +12615,21 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstrain
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["powerSequenceScheduleConstraintsData"]) {
-                dst.powerSequenceScheduleConstraintsData = item["powerSequenceScheduleConstraintsData"].as<decltype(dst.
-                    powerSequenceScheduleConstraintsData)::value_type>();
+                dst.powerSequenceScheduleConstraintsData = item["powerSequenceScheduleConstraintsData"].as<decltype(dst.powerSequenceScheduleConstraintsData)::value_type>();
             } else {
                 //dst.powerSequenceScheduleConstraintsData = std::nullopt;
             }
+
         }
     } else {
         if (src["powerSequenceScheduleConstraintsData"]) {
-            dst.powerSequenceScheduleConstraintsData = src["powerSequenceScheduleConstraintsData"].as<decltype(dst.
-                powerSequenceScheduleConstraintsData)::value_type>();
+            dst.powerSequenceScheduleConstraintsData = src["powerSequenceScheduleConstraintsData"].as<decltype(dst.powerSequenceScheduleConstraintsData)::value_type>();
         } else {
             //dst.powerSequenceScheduleConstraintsData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceScheduleConstraintsListDataSelectorsType &src, JsonVariant &dst)
@@ -12522,6 +12651,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstrain
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -12529,7 +12659,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstrain
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequencePriceDataType &src, JsonVariant &dst)
@@ -12575,6 +12707,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceDataType &ds
             } else {
                 //dst.currency = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -12597,7 +12730,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceDataType &ds
         } else {
             //dst.currency = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequencePriceDataElementsType &src, JsonVariant &dst)
@@ -12643,6 +12778,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceDataElements
             } else {
                 //dst.currency = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -12665,7 +12801,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceDataElements
         } else {
             //dst.currency = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequencePriceListDataType &src, JsonVariant &dst)
@@ -12683,20 +12821,21 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceListDataType
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["powerSequencePriceData"]) {
-                dst.powerSequencePriceData = item["powerSequencePriceData"].as<decltype(dst.powerSequencePriceData
-                )::value_type>();
+                dst.powerSequencePriceData = item["powerSequencePriceData"].as<decltype(dst.powerSequencePriceData)::value_type>();
             } else {
                 //dst.powerSequencePriceData = std::nullopt;
             }
+
         }
     } else {
         if (src["powerSequencePriceData"]) {
-            dst.powerSequencePriceData = src["powerSequencePriceData"].as<decltype(dst.powerSequencePriceData
-            )::value_type>();
+            dst.powerSequencePriceData = src["powerSequencePriceData"].as<decltype(dst.powerSequencePriceData)::value_type>();
         } else {
             //dst.powerSequencePriceData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequencePriceListDataSelectorsType &src, JsonVariant &dst)
@@ -12722,12 +12861,11 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceListDataSele
                 //dst.sequenceId = std::nullopt;
             }
             if (item["potentialStartTimeInterval"]) {
-                dst.potentialStartTimeInterval = item["potentialStartTimeInterval"].as<decltype(dst.
-                    potentialStartTimeInterval
-                )::value_type>();
+                dst.potentialStartTimeInterval = item["potentialStartTimeInterval"].as<decltype(dst.potentialStartTimeInterval)::value_type>();
             } else {
                 //dst.potentialStartTimeInterval = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -12736,12 +12874,13 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceListDataSele
             //dst.sequenceId = std::nullopt;
         }
         if (src["potentialStartTimeInterval"]) {
-            dst.potentialStartTimeInterval = src["potentialStartTimeInterval"].as<decltype(dst.
-                potentialStartTimeInterval)::value_type>();
+            dst.potentialStartTimeInterval = src["potentialStartTimeInterval"].as<decltype(dst.potentialStartTimeInterval)::value_type>();
         } else {
             //dst.potentialStartTimeInterval = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceSchedulePreferenceDataType &src, JsonVariant &dst)
@@ -12779,6 +12918,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenc
             } else {
                 //dst.cheapest = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -12796,7 +12936,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenc
         } else {
             //dst.cheapest = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceSchedulePreferenceDataElementsType &src, JsonVariant &dst)
@@ -12834,6 +12976,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenc
             } else {
                 //dst.cheapest = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -12851,7 +12994,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenc
         } else {
             //dst.cheapest = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceSchedulePreferenceListDataType &src, JsonVariant &dst)
@@ -12869,20 +13014,21 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenc
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["powerSequenceSchedulePreferenceData"]) {
-                dst.powerSequenceSchedulePreferenceData = item["powerSequenceSchedulePreferenceData"].as<decltype(dst.
-                    powerSequenceSchedulePreferenceData)::value_type>();
+                dst.powerSequenceSchedulePreferenceData = item["powerSequenceSchedulePreferenceData"].as<decltype(dst.powerSequenceSchedulePreferenceData)::value_type>();
             } else {
                 //dst.powerSequenceSchedulePreferenceData = std::nullopt;
             }
+
         }
     } else {
         if (src["powerSequenceSchedulePreferenceData"]) {
-            dst.powerSequenceSchedulePreferenceData = src["powerSequenceSchedulePreferenceData"].as<decltype(dst.
-                powerSequenceSchedulePreferenceData)::value_type>();
+            dst.powerSequenceSchedulePreferenceData = src["powerSequenceSchedulePreferenceData"].as<decltype(dst.powerSequenceSchedulePreferenceData)::value_type>();
         } else {
             //dst.powerSequenceSchedulePreferenceData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceSchedulePreferenceListDataSelectorsType &src, JsonVariant &dst)
@@ -12904,6 +13050,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenc
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -12911,7 +13058,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenc
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceNodeScheduleInformationDataType &src, JsonVariant &dst)
@@ -12941,14 +13090,12 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceNodeScheduleInfor
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["nodeRemoteControllable"]) {
-                dst.nodeRemoteControllable = item["nodeRemoteControllable"].as<decltype(dst.nodeRemoteControllable
-                )::value_type>();
+                dst.nodeRemoteControllable = item["nodeRemoteControllable"].as<decltype(dst.nodeRemoteControllable)::value_type>();
             } else {
                 //dst.nodeRemoteControllable = std::nullopt;
             }
             if (item["supportsSingleSlotSchedulingOnly"]) {
-                dst.supportsSingleSlotSchedulingOnly = item["supportsSingleSlotSchedulingOnly"].as<decltype(dst.
-                    supportsSingleSlotSchedulingOnly)::value_type>();
+                dst.supportsSingleSlotSchedulingOnly = item["supportsSingleSlotSchedulingOnly"].as<decltype(dst.supportsSingleSlotSchedulingOnly)::value_type>();
             } else {
                 //dst.supportsSingleSlotSchedulingOnly = std::nullopt;
             }
@@ -12958,29 +13105,25 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceNodeScheduleInfor
                 //dst.alternativesCount = std::nullopt;
             }
             if (item["totalSequencesCountMax"]) {
-                dst.totalSequencesCountMax = item["totalSequencesCountMax"].as<decltype(dst.totalSequencesCountMax
-                )::value_type>();
+                dst.totalSequencesCountMax = item["totalSequencesCountMax"].as<decltype(dst.totalSequencesCountMax)::value_type>();
             } else {
                 //dst.totalSequencesCountMax = std::nullopt;
             }
             if (item["supportsReselection"]) {
-                dst.supportsReselection = item["supportsReselection"].as<decltype(dst.supportsReselection
-                )::value_type>();
+                dst.supportsReselection = item["supportsReselection"].as<decltype(dst.supportsReselection)::value_type>();
             } else {
                 //dst.supportsReselection = std::nullopt;
             }
+
         }
     } else {
         if (src["nodeRemoteControllable"]) {
-            dst.nodeRemoteControllable = src["nodeRemoteControllable"].as<decltype(dst.nodeRemoteControllable
-            )::value_type>();
+            dst.nodeRemoteControllable = src["nodeRemoteControllable"].as<decltype(dst.nodeRemoteControllable)::value_type>();
         } else {
             //dst.nodeRemoteControllable = std::nullopt;
         }
         if (src["supportsSingleSlotSchedulingOnly"]) {
-            dst.supportsSingleSlotSchedulingOnly = src["supportsSingleSlotSchedulingOnly"].as<decltype(dst.
-                supportsSingleSlotSchedulingOnly
-            )::value_type>();
+            dst.supportsSingleSlotSchedulingOnly = src["supportsSingleSlotSchedulingOnly"].as<decltype(dst.supportsSingleSlotSchedulingOnly)::value_type>();
         } else {
             //dst.supportsSingleSlotSchedulingOnly = std::nullopt;
         }
@@ -12990,8 +13133,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceNodeScheduleInfor
             //dst.alternativesCount = std::nullopt;
         }
         if (src["totalSequencesCountMax"]) {
-            dst.totalSequencesCountMax = src["totalSequencesCountMax"].as<decltype(dst.totalSequencesCountMax
-            )::value_type>();
+            dst.totalSequencesCountMax = src["totalSequencesCountMax"].as<decltype(dst.totalSequencesCountMax)::value_type>();
         } else {
             //dst.totalSequencesCountMax = std::nullopt;
         }
@@ -13000,7 +13142,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceNodeScheduleInfor
         } else {
             //dst.supportsReselection = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceNodeScheduleInformationDataElementsType &src, JsonVariant &dst)
@@ -13030,14 +13174,12 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceNodeScheduleInfor
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["nodeRemoteControllable"]) {
-                dst.nodeRemoteControllable = item["nodeRemoteControllable"].as<decltype(dst.nodeRemoteControllable
-                )::value_type>();
+                dst.nodeRemoteControllable = item["nodeRemoteControllable"].as<decltype(dst.nodeRemoteControllable)::value_type>();
             } else {
                 //dst.nodeRemoteControllable = std::nullopt;
             }
             if (item["supportsSingleSlotSchedulingOnly"]) {
-                dst.supportsSingleSlotSchedulingOnly = item["supportsSingleSlotSchedulingOnly"].as<decltype(dst.
-                    supportsSingleSlotSchedulingOnly)::value_type>();
+                dst.supportsSingleSlotSchedulingOnly = item["supportsSingleSlotSchedulingOnly"].as<decltype(dst.supportsSingleSlotSchedulingOnly)::value_type>();
             } else {
                 //dst.supportsSingleSlotSchedulingOnly = std::nullopt;
             }
@@ -13047,29 +13189,25 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceNodeScheduleInfor
                 //dst.alternativesCount = std::nullopt;
             }
             if (item["totalSequencesCountMax"]) {
-                dst.totalSequencesCountMax = item["totalSequencesCountMax"].as<decltype(dst.totalSequencesCountMax
-                )::value_type>();
+                dst.totalSequencesCountMax = item["totalSequencesCountMax"].as<decltype(dst.totalSequencesCountMax)::value_type>();
             } else {
                 //dst.totalSequencesCountMax = std::nullopt;
             }
             if (item["supportsReselection"]) {
-                dst.supportsReselection = item["supportsReselection"].as<decltype(dst.supportsReselection
-                )::value_type>();
+                dst.supportsReselection = item["supportsReselection"].as<decltype(dst.supportsReselection)::value_type>();
             } else {
                 //dst.supportsReselection = std::nullopt;
             }
+
         }
     } else {
         if (src["nodeRemoteControllable"]) {
-            dst.nodeRemoteControllable = src["nodeRemoteControllable"].as<decltype(dst.nodeRemoteControllable
-            )::value_type>();
+            dst.nodeRemoteControllable = src["nodeRemoteControllable"].as<decltype(dst.nodeRemoteControllable)::value_type>();
         } else {
             //dst.nodeRemoteControllable = std::nullopt;
         }
         if (src["supportsSingleSlotSchedulingOnly"]) {
-            dst.supportsSingleSlotSchedulingOnly = src["supportsSingleSlotSchedulingOnly"].as<decltype(dst.
-                supportsSingleSlotSchedulingOnly
-            )::value_type>();
+            dst.supportsSingleSlotSchedulingOnly = src["supportsSingleSlotSchedulingOnly"].as<decltype(dst.supportsSingleSlotSchedulingOnly)::value_type>();
         } else {
             //dst.supportsSingleSlotSchedulingOnly = std::nullopt;
         }
@@ -13079,8 +13217,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceNodeScheduleInfor
             //dst.alternativesCount = std::nullopt;
         }
         if (src["totalSequencesCountMax"]) {
-            dst.totalSequencesCountMax = src["totalSequencesCountMax"].as<decltype(dst.totalSequencesCountMax
-            )::value_type>();
+            dst.totalSequencesCountMax = src["totalSequencesCountMax"].as<decltype(dst.totalSequencesCountMax)::value_type>();
         } else {
             //dst.totalSequencesCountMax = std::nullopt;
         }
@@ -13089,7 +13226,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceNodeScheduleInfor
         } else {
             //dst.supportsReselection = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceScheduleConfigurationRequestCallType &src, JsonVariant &dst)
@@ -13111,6 +13250,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConfigura
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -13118,7 +13258,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConfigura
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequenceScheduleConfigurationRequestCallElementsType &src, JsonVariant &dst)
@@ -13140,6 +13282,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConfigura
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -13147,7 +13290,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConfigura
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequencePriceCalculationRequestCallType &src, JsonVariant &dst)
@@ -13177,6 +13322,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceCalculationR
             } else {
                 //dst.potentialStartTime = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -13189,7 +13335,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceCalculationR
         } else {
             //dst.potentialStartTime = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const PowerSequencePriceCalculationRequestCallElementsType &src, JsonVariant &dst)
@@ -13219,6 +13367,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceCalculationR
             } else {
                 //dst.potentialStartTime = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -13231,7 +13380,9 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceCalculationR
         } else {
             //dst.potentialStartTime = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MeasurementDataType &src, JsonVariant &dst)
@@ -13309,6 +13460,7 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDataType &dst)
             } else {
                 //dst.valueState = std::nullopt;
             }
+
         }
     } else {
         if (src["measurementId"]) {
@@ -13351,7 +13503,9 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDataType &dst)
         } else {
             //dst.valueState = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MeasurementDataElementsType &src, JsonVariant &dst)
@@ -13429,6 +13583,7 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDataElementsType &d
             } else {
                 //dst.valueState = std::nullopt;
             }
+
         }
     } else {
         if (src["measurementId"]) {
@@ -13471,7 +13626,9 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDataElementsType &d
         } else {
             //dst.valueState = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MeasurementListDataType &src, JsonVariant &dst)
@@ -13493,6 +13650,7 @@ void convertFromJson(const JsonVariantConst &src, MeasurementListDataType &dst)
             } else {
                 //dst.measurementData = std::nullopt;
             }
+
         }
     } else {
         if (src["measurementData"]) {
@@ -13500,7 +13658,9 @@ void convertFromJson(const JsonVariantConst &src, MeasurementListDataType &dst)
         } else {
             //dst.measurementData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MeasurementListDataSelectorsType &src, JsonVariant &dst)
@@ -13538,6 +13698,7 @@ void convertFromJson(const JsonVariantConst &src, MeasurementListDataSelectorsTy
             } else {
                 //dst.timestampInterval = std::nullopt;
             }
+
         }
     } else {
         if (src["measurementId"]) {
@@ -13555,7 +13716,9 @@ void convertFromJson(const JsonVariantConst &src, MeasurementListDataSelectorsTy
         } else {
             //dst.timestampInterval = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MeasurementSeriesDataType &src, JsonVariant &dst)
@@ -13633,6 +13796,7 @@ void convertFromJson(const JsonVariantConst &src, MeasurementSeriesDataType &dst
             } else {
                 //dst.valueState = std::nullopt;
             }
+
         }
     } else {
         if (src["measurementId"]) {
@@ -13675,7 +13839,9 @@ void convertFromJson(const JsonVariantConst &src, MeasurementSeriesDataType &dst
         } else {
             //dst.valueState = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MeasurementSeriesDataElementsType &src, JsonVariant &dst)
@@ -13753,6 +13919,7 @@ void convertFromJson(const JsonVariantConst &src, MeasurementSeriesDataElementsT
             } else {
                 //dst.valueState = std::nullopt;
             }
+
         }
     } else {
         if (src["measurementId"]) {
@@ -13795,7 +13962,9 @@ void convertFromJson(const JsonVariantConst &src, MeasurementSeriesDataElementsT
         } else {
             //dst.valueState = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MeasurementSeriesListDataType &src, JsonVariant &dst)
@@ -13813,20 +13982,21 @@ void convertFromJson(const JsonVariantConst &src, MeasurementSeriesListDataType 
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["measurementSeriesData"]) {
-                dst.measurementSeriesData = item["measurementSeriesData"].as<decltype(dst.measurementSeriesData
-                )::value_type>();
+                dst.measurementSeriesData = item["measurementSeriesData"].as<decltype(dst.measurementSeriesData)::value_type>();
             } else {
                 //dst.measurementSeriesData = std::nullopt;
             }
+
         }
     } else {
         if (src["measurementSeriesData"]) {
-            dst.measurementSeriesData = src["measurementSeriesData"].as<decltype(dst.measurementSeriesData
-            )::value_type>();
+            dst.measurementSeriesData = src["measurementSeriesData"].as<decltype(dst.measurementSeriesData)::value_type>();
         } else {
             //dst.measurementSeriesData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MeasurementSeriesListDataSelectorsType &src, JsonVariant &dst)
@@ -13864,6 +14034,7 @@ void convertFromJson(const JsonVariantConst &src, MeasurementSeriesListDataSelec
             } else {
                 //dst.timestampInterval = std::nullopt;
             }
+
         }
     } else {
         if (src["measurementId"]) {
@@ -13881,7 +14052,9 @@ void convertFromJson(const JsonVariantConst &src, MeasurementSeriesListDataSelec
         } else {
             //dst.timestampInterval = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MeasurementConstraintsDataType &src, JsonVariant &dst)
@@ -13927,6 +14100,7 @@ void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsDataType
             } else {
                 //dst.valueStepSize = std::nullopt;
             }
+
         }
     } else {
         if (src["measurementId"]) {
@@ -13949,7 +14123,9 @@ void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsDataType
         } else {
             //dst.valueStepSize = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MeasurementConstraintsDataElementsType &src, JsonVariant &dst)
@@ -13995,6 +14171,7 @@ void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsDataElem
             } else {
                 //dst.valueStepSize = std::nullopt;
             }
+
         }
     } else {
         if (src["measurementId"]) {
@@ -14017,7 +14194,9 @@ void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsDataElem
         } else {
             //dst.valueStepSize = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MeasurementConstraintsListDataType &src, JsonVariant &dst)
@@ -14035,21 +14214,21 @@ void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsListData
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["measurementConstraintsData"]) {
-                dst.measurementConstraintsData = item["measurementConstraintsData"].as<decltype(dst.
-                    measurementConstraintsData
-                )::value_type>();
+                dst.measurementConstraintsData = item["measurementConstraintsData"].as<decltype(dst.measurementConstraintsData)::value_type>();
             } else {
                 //dst.measurementConstraintsData = std::nullopt;
             }
+
         }
     } else {
         if (src["measurementConstraintsData"]) {
-            dst.measurementConstraintsData = src["measurementConstraintsData"].as<decltype(dst.
-                measurementConstraintsData)::value_type>();
+            dst.measurementConstraintsData = src["measurementConstraintsData"].as<decltype(dst.measurementConstraintsData)::value_type>();
         } else {
             //dst.measurementConstraintsData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MeasurementConstraintsListDataSelectorsType &src, JsonVariant &dst)
@@ -14071,6 +14250,7 @@ void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsListData
             } else {
                 //dst.measurementId = std::nullopt;
             }
+
         }
     } else {
         if (src["measurementId"]) {
@@ -14078,7 +14258,9 @@ void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsListData
         } else {
             //dst.measurementId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MeasurementDescriptionDataType &src, JsonVariant &dst)
@@ -14156,6 +14338,7 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionDataType
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["measurementId"]) {
@@ -14198,7 +14381,9 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionDataType
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MeasurementDescriptionDataElementsType &src, JsonVariant &dst)
@@ -14276,6 +14461,7 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionDataElem
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["measurementId"]) {
@@ -14318,7 +14504,9 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionDataElem
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MeasurementDescriptionListDataType &src, JsonVariant &dst)
@@ -14336,21 +14524,21 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionListData
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["measurementDescriptionData"]) {
-                dst.measurementDescriptionData = item["measurementDescriptionData"].as<decltype(dst.
-                    measurementDescriptionData
-                )::value_type>();
+                dst.measurementDescriptionData = item["measurementDescriptionData"].as<decltype(dst.measurementDescriptionData)::value_type>();
             } else {
                 //dst.measurementDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["measurementDescriptionData"]) {
-            dst.measurementDescriptionData = src["measurementDescriptionData"].as<decltype(dst.
-                measurementDescriptionData)::value_type>();
+            dst.measurementDescriptionData = src["measurementDescriptionData"].as<decltype(dst.measurementDescriptionData)::value_type>();
         } else {
             //dst.measurementDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MeasurementDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -14396,6 +14584,7 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionListData
             } else {
                 //dst.scopeType = std::nullopt;
             }
+
         }
     } else {
         if (src["measurementId"]) {
@@ -14418,7 +14607,9 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionListData
         } else {
             //dst.scopeType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MeasurementThresholdRelationDataType &src, JsonVariant &dst)
@@ -14448,6 +14639,7 @@ void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationDa
             } else {
                 //dst.thresholdId = std::nullopt;
             }
+
         }
     } else {
         if (src["measurementId"]) {
@@ -14460,7 +14652,9 @@ void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationDa
         } else {
             //dst.thresholdId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MeasurementThresholdRelationDataElementsType &src, JsonVariant &dst)
@@ -14490,6 +14684,7 @@ void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationDa
             } else {
                 //dst.thresholdId = std::nullopt;
             }
+
         }
     } else {
         if (src["measurementId"]) {
@@ -14502,7 +14697,9 @@ void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationDa
         } else {
             //dst.thresholdId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MeasurementThresholdRelationListDataType &src, JsonVariant &dst)
@@ -14520,21 +14717,21 @@ void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationLi
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["measurementThresholdRelationData"]) {
-                dst.measurementThresholdRelationData = item["measurementThresholdRelationData"].as<decltype(dst.
-                    measurementThresholdRelationData)::value_type>();
+                dst.measurementThresholdRelationData = item["measurementThresholdRelationData"].as<decltype(dst.measurementThresholdRelationData)::value_type>();
             } else {
                 //dst.measurementThresholdRelationData = std::nullopt;
             }
+
         }
     } else {
         if (src["measurementThresholdRelationData"]) {
-            dst.measurementThresholdRelationData = src["measurementThresholdRelationData"].as<decltype(dst.
-                measurementThresholdRelationData
-            )::value_type>();
+            dst.measurementThresholdRelationData = src["measurementThresholdRelationData"].as<decltype(dst.measurementThresholdRelationData)::value_type>();
         } else {
             //dst.measurementThresholdRelationData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MeasurementThresholdRelationListDataSelectorsType &src, JsonVariant &dst)
@@ -14564,6 +14761,7 @@ void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationLi
             } else {
                 //dst.thresholdId = std::nullopt;
             }
+
         }
     } else {
         if (src["measurementId"]) {
@@ -14576,7 +14774,9 @@ void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationLi
         } else {
             //dst.thresholdId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ThresholdDataType &src, JsonVariant &dst)
@@ -14606,6 +14806,7 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDataType &dst)
             } else {
                 //dst.thresholdValue = std::nullopt;
             }
+
         }
     } else {
         if (src["thresholdId"]) {
@@ -14618,7 +14819,9 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDataType &dst)
         } else {
             //dst.thresholdValue = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ThresholdDataElementsType &src, JsonVariant &dst)
@@ -14648,6 +14851,7 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDataElementsType &dst
             } else {
                 //dst.thresholdValue = std::nullopt;
             }
+
         }
     } else {
         if (src["thresholdId"]) {
@@ -14660,7 +14864,9 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDataElementsType &dst
         } else {
             //dst.thresholdValue = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ThresholdListDataType &src, JsonVariant &dst)
@@ -14682,6 +14888,7 @@ void convertFromJson(const JsonVariantConst &src, ThresholdListDataType &dst)
             } else {
                 //dst.thresholdData = std::nullopt;
             }
+
         }
     } else {
         if (src["thresholdData"]) {
@@ -14689,7 +14896,9 @@ void convertFromJson(const JsonVariantConst &src, ThresholdListDataType &dst)
         } else {
             //dst.thresholdData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ThresholdListDataSelectorsType &src, JsonVariant &dst)
@@ -14711,6 +14920,7 @@ void convertFromJson(const JsonVariantConst &src, ThresholdListDataSelectorsType
             } else {
                 //dst.thresholdId = std::nullopt;
             }
+
         }
     } else {
         if (src["thresholdId"]) {
@@ -14718,7 +14928,9 @@ void convertFromJson(const JsonVariantConst &src, ThresholdListDataSelectorsType
         } else {
             //dst.thresholdId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ThresholdConstraintsDataType &src, JsonVariant &dst)
@@ -14764,6 +14976,7 @@ void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsDataType &
             } else {
                 //dst.thresholdStepSize = std::nullopt;
             }
+
         }
     } else {
         if (src["thresholdId"]) {
@@ -14786,7 +14999,9 @@ void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsDataType &
         } else {
             //dst.thresholdStepSize = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ThresholdConstraintsDataElementsType &src, JsonVariant &dst)
@@ -14832,6 +15047,7 @@ void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsDataElemen
             } else {
                 //dst.thresholdStepSize = std::nullopt;
             }
+
         }
     } else {
         if (src["thresholdId"]) {
@@ -14854,7 +15070,9 @@ void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsDataElemen
         } else {
             //dst.thresholdStepSize = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ThresholdConstraintsListDataType &src, JsonVariant &dst)
@@ -14872,20 +15090,21 @@ void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsListDataTy
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["thresholdConstraintsData"]) {
-                dst.thresholdConstraintsData = item["thresholdConstraintsData"].as<decltype(dst.thresholdConstraintsData
-                )::value_type>();
+                dst.thresholdConstraintsData = item["thresholdConstraintsData"].as<decltype(dst.thresholdConstraintsData)::value_type>();
             } else {
                 //dst.thresholdConstraintsData = std::nullopt;
             }
+
         }
     } else {
         if (src["thresholdConstraintsData"]) {
-            dst.thresholdConstraintsData = src["thresholdConstraintsData"].as<decltype(dst.thresholdConstraintsData
-            )::value_type>();
+            dst.thresholdConstraintsData = src["thresholdConstraintsData"].as<decltype(dst.thresholdConstraintsData)::value_type>();
         } else {
             //dst.thresholdConstraintsData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ThresholdConstraintsListDataSelectorsType &src, JsonVariant &dst)
@@ -14907,6 +15126,7 @@ void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsListDataSe
             } else {
                 //dst.thresholdId = std::nullopt;
             }
+
         }
     } else {
         if (src["thresholdId"]) {
@@ -14914,7 +15134,9 @@ void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsListDataSe
         } else {
             //dst.thresholdId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ThresholdDescriptionDataType &src, JsonVariant &dst)
@@ -14976,6 +15198,7 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionDataType &
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["thresholdId"]) {
@@ -15008,7 +15231,9 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionDataType &
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ThresholdDescriptionDataElementsType &src, JsonVariant &dst)
@@ -15070,6 +15295,7 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionDataElemen
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["thresholdId"]) {
@@ -15102,7 +15328,9 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionDataElemen
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ThresholdDescriptionListDataType &src, JsonVariant &dst)
@@ -15120,20 +15348,21 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionListDataTy
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["thresholdDescriptionData"]) {
-                dst.thresholdDescriptionData = item["thresholdDescriptionData"].as<decltype(dst.thresholdDescriptionData
-                )::value_type>();
+                dst.thresholdDescriptionData = item["thresholdDescriptionData"].as<decltype(dst.thresholdDescriptionData)::value_type>();
             } else {
                 //dst.thresholdDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["thresholdDescriptionData"]) {
-            dst.thresholdDescriptionData = src["thresholdDescriptionData"].as<decltype(dst.thresholdDescriptionData
-            )::value_type>();
+            dst.thresholdDescriptionData = src["thresholdDescriptionData"].as<decltype(dst.thresholdDescriptionData)::value_type>();
         } else {
             //dst.thresholdDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ThresholdDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -15163,6 +15392,7 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionListDataSe
             } else {
                 //dst.scopeType = std::nullopt;
             }
+
         }
     } else {
         if (src["thresholdId"]) {
@@ -15175,7 +15405,9 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionListDataSe
         } else {
             //dst.scopeType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsInterruptDataType &src, JsonVariant &dst)
@@ -15220,9 +15452,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptD
                 //dst.isStoppable = std::nullopt;
             }
             if (item["notInterruptibleAtHighPower"]) {
-                dst.notInterruptibleAtHighPower = item["notInterruptibleAtHighPower"].as<decltype(dst.
-                    notInterruptibleAtHighPower
-                )::value_type>();
+                dst.notInterruptibleAtHighPower = item["notInterruptibleAtHighPower"].as<decltype(dst.notInterruptibleAtHighPower)::value_type>();
             } else {
                 //dst.notInterruptibleAtHighPower = std::nullopt;
             }
@@ -15231,6 +15461,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptD
             } else {
                 //dst.maxCyclesPerDay = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -15249,9 +15480,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptD
             //dst.isStoppable = std::nullopt;
         }
         if (src["notInterruptibleAtHighPower"]) {
-            dst.notInterruptibleAtHighPower = src["notInterruptibleAtHighPower"].as<decltype(dst.
-                notInterruptibleAtHighPower
-            )::value_type>();
+            dst.notInterruptibleAtHighPower = src["notInterruptibleAtHighPower"].as<decltype(dst.notInterruptibleAtHighPower)::value_type>();
         } else {
             //dst.notInterruptibleAtHighPower = std::nullopt;
         }
@@ -15260,7 +15489,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptD
         } else {
             //dst.maxCyclesPerDay = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsInterruptDataElementsType &src, JsonVariant &dst)
@@ -15305,9 +15536,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptD
                 //dst.isStoppable = std::nullopt;
             }
             if (item["notInterruptibleAtHighPower"]) {
-                dst.notInterruptibleAtHighPower = item["notInterruptibleAtHighPower"].as<decltype(dst.
-                    notInterruptibleAtHighPower
-                )::value_type>();
+                dst.notInterruptibleAtHighPower = item["notInterruptibleAtHighPower"].as<decltype(dst.notInterruptibleAtHighPower)::value_type>();
             } else {
                 //dst.notInterruptibleAtHighPower = std::nullopt;
             }
@@ -15316,6 +15545,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptD
             } else {
                 //dst.maxCyclesPerDay = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -15334,9 +15564,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptD
             //dst.isStoppable = std::nullopt;
         }
         if (src["notInterruptibleAtHighPower"]) {
-            dst.notInterruptibleAtHighPower = src["notInterruptibleAtHighPower"].as<decltype(dst.
-                notInterruptibleAtHighPower
-            )::value_type>();
+            dst.notInterruptibleAtHighPower = src["notInterruptibleAtHighPower"].as<decltype(dst.notInterruptibleAtHighPower)::value_type>();
         } else {
             //dst.notInterruptibleAtHighPower = std::nullopt;
         }
@@ -15345,7 +15573,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptD
         } else {
             //dst.maxCyclesPerDay = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsInterruptListDataType &src, JsonVariant &dst)
@@ -15363,20 +15593,21 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptL
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["operatingConstraintsInterruptData"]) {
-                dst.operatingConstraintsInterruptData = item["operatingConstraintsInterruptData"].as<decltype(dst.
-                    operatingConstraintsInterruptData)::value_type>();
+                dst.operatingConstraintsInterruptData = item["operatingConstraintsInterruptData"].as<decltype(dst.operatingConstraintsInterruptData)::value_type>();
             } else {
                 //dst.operatingConstraintsInterruptData = std::nullopt;
             }
+
         }
     } else {
         if (src["operatingConstraintsInterruptData"]) {
-            dst.operatingConstraintsInterruptData = src["operatingConstraintsInterruptData"].as<decltype(dst.
-                operatingConstraintsInterruptData)::value_type>();
+            dst.operatingConstraintsInterruptData = src["operatingConstraintsInterruptData"].as<decltype(dst.operatingConstraintsInterruptData)::value_type>();
         } else {
             //dst.operatingConstraintsInterruptData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsInterruptListDataSelectorsType &src, JsonVariant &dst)
@@ -15398,6 +15629,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptL
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -15405,7 +15637,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptL
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsDurationDataType &src, JsonVariant &dst)
@@ -15466,17 +15700,16 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationDa
                 //dst.pauseDurationMax = std::nullopt;
             }
             if (item["activeDurationSumMin"]) {
-                dst.activeDurationSumMin = item["activeDurationSumMin"].as<decltype(dst.activeDurationSumMin
-                )::value_type>();
+                dst.activeDurationSumMin = item["activeDurationSumMin"].as<decltype(dst.activeDurationSumMin)::value_type>();
             } else {
                 //dst.activeDurationSumMin = std::nullopt;
             }
             if (item["activeDurationSumMax"]) {
-                dst.activeDurationSumMax = item["activeDurationSumMax"].as<decltype(dst.activeDurationSumMax
-                )::value_type>();
+                dst.activeDurationSumMax = item["activeDurationSumMax"].as<decltype(dst.activeDurationSumMax)::value_type>();
             } else {
                 //dst.activeDurationSumMax = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -15514,7 +15747,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationDa
         } else {
             //dst.activeDurationSumMax = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsDurationDataElementsType &src, JsonVariant &dst)
@@ -15575,17 +15810,16 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationDa
                 //dst.pauseDurationMax = std::nullopt;
             }
             if (item["activeDurationSumMin"]) {
-                dst.activeDurationSumMin = item["activeDurationSumMin"].as<decltype(dst.activeDurationSumMin
-                )::value_type>();
+                dst.activeDurationSumMin = item["activeDurationSumMin"].as<decltype(dst.activeDurationSumMin)::value_type>();
             } else {
                 //dst.activeDurationSumMin = std::nullopt;
             }
             if (item["activeDurationSumMax"]) {
-                dst.activeDurationSumMax = item["activeDurationSumMax"].as<decltype(dst.activeDurationSumMax
-                )::value_type>();
+                dst.activeDurationSumMax = item["activeDurationSumMax"].as<decltype(dst.activeDurationSumMax)::value_type>();
             } else {
                 //dst.activeDurationSumMax = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -15623,7 +15857,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationDa
         } else {
             //dst.activeDurationSumMax = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsDurationListDataType &src, JsonVariant &dst)
@@ -15641,21 +15877,21 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationLi
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["operatingConstraintsDurationData"]) {
-                dst.operatingConstraintsDurationData = item["operatingConstraintsDurationData"].as<decltype(dst.
-                    operatingConstraintsDurationData)::value_type>();
+                dst.operatingConstraintsDurationData = item["operatingConstraintsDurationData"].as<decltype(dst.operatingConstraintsDurationData)::value_type>();
             } else {
                 //dst.operatingConstraintsDurationData = std::nullopt;
             }
+
         }
     } else {
         if (src["operatingConstraintsDurationData"]) {
-            dst.operatingConstraintsDurationData = src["operatingConstraintsDurationData"].as<decltype(dst.
-                operatingConstraintsDurationData
-            )::value_type>();
+            dst.operatingConstraintsDurationData = src["operatingConstraintsDurationData"].as<decltype(dst.operatingConstraintsDurationData)::value_type>();
         } else {
             //dst.operatingConstraintsDurationData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsDurationListDataSelectorsType &src, JsonVariant &dst)
@@ -15677,6 +15913,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationLi
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -15684,7 +15921,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationLi
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsPowerDescriptionDataType &src, JsonVariant &dst)
@@ -15719,8 +15958,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescr
                 //dst.sequenceId = std::nullopt;
             }
             if (item["positiveEnergyDirection"]) {
-                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-                )::value_type>();
+                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
             } else {
                 //dst.positiveEnergyDirection = std::nullopt;
             }
@@ -15739,6 +15977,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescr
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -15747,8 +15986,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescr
             //dst.sequenceId = std::nullopt;
         }
         if (src["positiveEnergyDirection"]) {
-            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-            )::value_type>();
+            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
         } else {
             //dst.positiveEnergyDirection = std::nullopt;
         }
@@ -15767,7 +16005,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescr
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsPowerDescriptionDataElementsType &src, JsonVariant &dst)
@@ -15802,8 +16042,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescr
                 //dst.sequenceId = std::nullopt;
             }
             if (item["positiveEnergyDirection"]) {
-                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-                )::value_type>();
+                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
             } else {
                 //dst.positiveEnergyDirection = std::nullopt;
             }
@@ -15822,6 +16061,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescr
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -15830,8 +16070,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescr
             //dst.sequenceId = std::nullopt;
         }
         if (src["positiveEnergyDirection"]) {
-            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-            )::value_type>();
+            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
         } else {
             //dst.positiveEnergyDirection = std::nullopt;
         }
@@ -15850,7 +16089,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescr
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsPowerDescriptionListDataType &src, JsonVariant &dst)
@@ -15868,22 +16109,21 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescr
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["operatingConstraintsPowerDescriptionData"]) {
-                dst.operatingConstraintsPowerDescriptionData = item["operatingConstraintsPowerDescriptionData"].as<
-                    decltype(dst.
-                        operatingConstraintsPowerDescriptionData)::value_type>();
+                dst.operatingConstraintsPowerDescriptionData = item["operatingConstraintsPowerDescriptionData"].as<decltype(dst.operatingConstraintsPowerDescriptionData)::value_type>();
             } else {
                 //dst.operatingConstraintsPowerDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["operatingConstraintsPowerDescriptionData"]) {
-            dst.operatingConstraintsPowerDescriptionData = src["operatingConstraintsPowerDescriptionData"].as<decltype(
-                dst.
-                operatingConstraintsPowerDescriptionData)::value_type>();
+            dst.operatingConstraintsPowerDescriptionData = src["operatingConstraintsPowerDescriptionData"].as<decltype(dst.operatingConstraintsPowerDescriptionData)::value_type>();
         } else {
             //dst.operatingConstraintsPowerDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsPowerDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -15905,6 +16145,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescr
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -15912,7 +16153,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescr
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsPowerRangeDataType &src, JsonVariant &dst)
@@ -15966,6 +16209,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRange
             } else {
                 //dst.energyMax = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -15993,7 +16237,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRange
         } else {
             //dst.energyMax = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsPowerRangeDataElementsType &src, JsonVariant &dst)
@@ -16047,6 +16293,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRange
             } else {
                 //dst.energyMax = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -16074,7 +16321,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRange
         } else {
             //dst.energyMax = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsPowerRangeListDataType &src, JsonVariant &dst)
@@ -16092,20 +16341,21 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRange
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["operatingConstraintsPowerRangeData"]) {
-                dst.operatingConstraintsPowerRangeData = item["operatingConstraintsPowerRangeData"].as<decltype(dst.
-                    operatingConstraintsPowerRangeData)::value_type>();
+                dst.operatingConstraintsPowerRangeData = item["operatingConstraintsPowerRangeData"].as<decltype(dst.operatingConstraintsPowerRangeData)::value_type>();
             } else {
                 //dst.operatingConstraintsPowerRangeData = std::nullopt;
             }
+
         }
     } else {
         if (src["operatingConstraintsPowerRangeData"]) {
-            dst.operatingConstraintsPowerRangeData = src["operatingConstraintsPowerRangeData"].as<decltype(dst.
-                operatingConstraintsPowerRangeData)::value_type>();
+            dst.operatingConstraintsPowerRangeData = src["operatingConstraintsPowerRangeData"].as<decltype(dst.operatingConstraintsPowerRangeData)::value_type>();
         } else {
             //dst.operatingConstraintsPowerRangeData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsPowerRangeListDataSelectorsType &src, JsonVariant &dst)
@@ -16127,6 +16377,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRange
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -16134,7 +16385,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRange
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsPowerLevelDataType &src, JsonVariant &dst)
@@ -16164,6 +16417,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevel
             } else {
                 //dst.power = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -16176,7 +16430,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevel
         } else {
             //dst.power = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsPowerLevelDataElementsType &src, JsonVariant &dst)
@@ -16206,6 +16462,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevel
             } else {
                 //dst.power = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -16218,7 +16475,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevel
         } else {
             //dst.power = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsPowerLevelListDataType &src, JsonVariant &dst)
@@ -16236,20 +16495,21 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevel
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["operatingConstraintsPowerLevelData"]) {
-                dst.operatingConstraintsPowerLevelData = item["operatingConstraintsPowerLevelData"].as<decltype(dst.
-                    operatingConstraintsPowerLevelData)::value_type>();
+                dst.operatingConstraintsPowerLevelData = item["operatingConstraintsPowerLevelData"].as<decltype(dst.operatingConstraintsPowerLevelData)::value_type>();
             } else {
                 //dst.operatingConstraintsPowerLevelData = std::nullopt;
             }
+
         }
     } else {
         if (src["operatingConstraintsPowerLevelData"]) {
-            dst.operatingConstraintsPowerLevelData = src["operatingConstraintsPowerLevelData"].as<decltype(dst.
-                operatingConstraintsPowerLevelData)::value_type>();
+            dst.operatingConstraintsPowerLevelData = src["operatingConstraintsPowerLevelData"].as<decltype(dst.operatingConstraintsPowerLevelData)::value_type>();
         } else {
             //dst.operatingConstraintsPowerLevelData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsPowerLevelListDataSelectorsType &src, JsonVariant &dst)
@@ -16271,6 +16531,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevel
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -16278,7 +16539,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevel
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsResumeImplicationDataType &src, JsonVariant &dst)
@@ -16313,8 +16576,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImpl
                 //dst.sequenceId = std::nullopt;
             }
             if (item["resumeEnergyEstimated"]) {
-                dst.resumeEnergyEstimated = item["resumeEnergyEstimated"].as<decltype(dst.resumeEnergyEstimated
-                )::value_type>();
+                dst.resumeEnergyEstimated = item["resumeEnergyEstimated"].as<decltype(dst.resumeEnergyEstimated)::value_type>();
             } else {
                 //dst.resumeEnergyEstimated = std::nullopt;
             }
@@ -16324,8 +16586,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImpl
                 //dst.energyUnit = std::nullopt;
             }
             if (item["resumeCostEstimated"]) {
-                dst.resumeCostEstimated = item["resumeCostEstimated"].as<decltype(dst.resumeCostEstimated
-                )::value_type>();
+                dst.resumeCostEstimated = item["resumeCostEstimated"].as<decltype(dst.resumeCostEstimated)::value_type>();
             } else {
                 //dst.resumeCostEstimated = std::nullopt;
             }
@@ -16334,6 +16595,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImpl
             } else {
                 //dst.currency = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -16342,8 +16604,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImpl
             //dst.sequenceId = std::nullopt;
         }
         if (src["resumeEnergyEstimated"]) {
-            dst.resumeEnergyEstimated = src["resumeEnergyEstimated"].as<decltype(dst.resumeEnergyEstimated
-            )::value_type>();
+            dst.resumeEnergyEstimated = src["resumeEnergyEstimated"].as<decltype(dst.resumeEnergyEstimated)::value_type>();
         } else {
             //dst.resumeEnergyEstimated = std::nullopt;
         }
@@ -16362,7 +16623,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImpl
         } else {
             //dst.currency = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsResumeImplicationDataElementsType &src, JsonVariant &dst)
@@ -16397,8 +16660,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImpl
                 //dst.sequenceId = std::nullopt;
             }
             if (item["resumeEnergyEstimated"]) {
-                dst.resumeEnergyEstimated = item["resumeEnergyEstimated"].as<decltype(dst.resumeEnergyEstimated
-                )::value_type>();
+                dst.resumeEnergyEstimated = item["resumeEnergyEstimated"].as<decltype(dst.resumeEnergyEstimated)::value_type>();
             } else {
                 //dst.resumeEnergyEstimated = std::nullopt;
             }
@@ -16408,8 +16670,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImpl
                 //dst.energyUnit = std::nullopt;
             }
             if (item["resumeCostEstimated"]) {
-                dst.resumeCostEstimated = item["resumeCostEstimated"].as<decltype(dst.resumeCostEstimated
-                )::value_type>();
+                dst.resumeCostEstimated = item["resumeCostEstimated"].as<decltype(dst.resumeCostEstimated)::value_type>();
             } else {
                 //dst.resumeCostEstimated = std::nullopt;
             }
@@ -16418,6 +16679,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImpl
             } else {
                 //dst.currency = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -16426,8 +16688,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImpl
             //dst.sequenceId = std::nullopt;
         }
         if (src["resumeEnergyEstimated"]) {
-            dst.resumeEnergyEstimated = src["resumeEnergyEstimated"].as<decltype(dst.resumeEnergyEstimated
-            )::value_type>();
+            dst.resumeEnergyEstimated = src["resumeEnergyEstimated"].as<decltype(dst.resumeEnergyEstimated)::value_type>();
         } else {
             //dst.resumeEnergyEstimated = std::nullopt;
         }
@@ -16446,7 +16707,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImpl
         } else {
             //dst.currency = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsResumeImplicationListDataType &src, JsonVariant &dst)
@@ -16464,22 +16727,21 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImpl
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["operatingConstraintsResumeImplicationData"]) {
-                dst.operatingConstraintsResumeImplicationData = item["operatingConstraintsResumeImplicationData"].as<
-                    decltype(dst.
-                        operatingConstraintsResumeImplicationData)::value_type>();
+                dst.operatingConstraintsResumeImplicationData = item["operatingConstraintsResumeImplicationData"].as<decltype(dst.operatingConstraintsResumeImplicationData)::value_type>();
             } else {
                 //dst.operatingConstraintsResumeImplicationData = std::nullopt;
             }
+
         }
     } else {
         if (src["operatingConstraintsResumeImplicationData"]) {
-            dst.operatingConstraintsResumeImplicationData = src["operatingConstraintsResumeImplicationData"].as<decltype
-                (dst.
-                    operatingConstraintsResumeImplicationData)::value_type>();
+            dst.operatingConstraintsResumeImplicationData = src["operatingConstraintsResumeImplicationData"].as<decltype(dst.operatingConstraintsResumeImplicationData)::value_type>();
         } else {
             //dst.operatingConstraintsResumeImplicationData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const OperatingConstraintsResumeImplicationListDataSelectorsType &src, JsonVariant &dst)
@@ -16501,6 +16763,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImpl
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -16508,7 +16771,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImpl
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BillValueType &src, JsonVariant &dst)
@@ -16554,6 +16819,7 @@ void convertFromJson(const JsonVariantConst &src, BillValueType &dst)
             } else {
                 //dst.valuePercentage = std::nullopt;
             }
+
         }
     } else {
         if (src["valueId"]) {
@@ -16576,7 +16842,9 @@ void convertFromJson(const JsonVariantConst &src, BillValueType &dst)
         } else {
             //dst.valuePercentage = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BillValueElementsType &src, JsonVariant &dst)
@@ -16622,6 +16890,7 @@ void convertFromJson(const JsonVariantConst &src, BillValueElementsType &dst)
             } else {
                 //dst.valuePercentage = std::nullopt;
             }
+
         }
     } else {
         if (src["valueId"]) {
@@ -16644,7 +16913,9 @@ void convertFromJson(const JsonVariantConst &src, BillValueElementsType &dst)
         } else {
             //dst.valuePercentage = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BillCostType &src, JsonVariant &dst)
@@ -16714,6 +16985,7 @@ void convertFromJson(const JsonVariantConst &src, BillCostType &dst)
             } else {
                 //dst.costPercentage = std::nullopt;
             }
+
         }
     } else {
         if (src["costId"]) {
@@ -16751,7 +17023,9 @@ void convertFromJson(const JsonVariantConst &src, BillCostType &dst)
         } else {
             //dst.costPercentage = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BillCostElementsType &src, JsonVariant &dst)
@@ -16821,6 +17095,7 @@ void convertFromJson(const JsonVariantConst &src, BillCostElementsType &dst)
             } else {
                 //dst.costPercentage = std::nullopt;
             }
+
         }
     } else {
         if (src["costId"]) {
@@ -16858,7 +17133,9 @@ void convertFromJson(const JsonVariantConst &src, BillCostElementsType &dst)
         } else {
             //dst.costPercentage = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BillPositionType &src, JsonVariant &dst)
@@ -16928,6 +17205,7 @@ void convertFromJson(const JsonVariantConst &src, BillPositionType &dst)
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["positionId"]) {
@@ -16965,7 +17243,9 @@ void convertFromJson(const JsonVariantConst &src, BillPositionType &dst)
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BillPositionElementsType &src, JsonVariant &dst)
@@ -17035,6 +17315,7 @@ void convertFromJson(const JsonVariantConst &src, BillPositionElementsType &dst)
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["positionId"]) {
@@ -17072,7 +17353,9 @@ void convertFromJson(const JsonVariantConst &src, BillPositionElementsType &dst)
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BillDataType &src, JsonVariant &dst)
@@ -17126,6 +17409,7 @@ void convertFromJson(const JsonVariantConst &src, BillDataType &dst)
             } else {
                 //dst.position = std::nullopt;
             }
+
         }
     } else {
         if (src["billId"]) {
@@ -17153,7 +17437,9 @@ void convertFromJson(const JsonVariantConst &src, BillDataType &dst)
         } else {
             //dst.position = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BillDataElementsType &src, JsonVariant &dst)
@@ -17207,6 +17493,7 @@ void convertFromJson(const JsonVariantConst &src, BillDataElementsType &dst)
             } else {
                 //dst.position = std::nullopt;
             }
+
         }
     } else {
         if (src["billId"]) {
@@ -17234,7 +17521,9 @@ void convertFromJson(const JsonVariantConst &src, BillDataElementsType &dst)
         } else {
             //dst.position = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BillListDataType &src, JsonVariant &dst)
@@ -17256,6 +17545,7 @@ void convertFromJson(const JsonVariantConst &src, BillListDataType &dst)
             } else {
                 //dst.billData = std::nullopt;
             }
+
         }
     } else {
         if (src["billData"]) {
@@ -17263,7 +17553,9 @@ void convertFromJson(const JsonVariantConst &src, BillListDataType &dst)
         } else {
             //dst.billData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BillListDataSelectorsType &src, JsonVariant &dst)
@@ -17293,6 +17585,7 @@ void convertFromJson(const JsonVariantConst &src, BillListDataSelectorsType &dst
             } else {
                 //dst.scopeType = std::nullopt;
             }
+
         }
     } else {
         if (src["billId"]) {
@@ -17305,7 +17598,9 @@ void convertFromJson(const JsonVariantConst &src, BillListDataSelectorsType &dst
         } else {
             //dst.scopeType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BillConstraintsDataType &src, JsonVariant &dst)
@@ -17343,6 +17638,7 @@ void convertFromJson(const JsonVariantConst &src, BillConstraintsDataType &dst)
             } else {
                 //dst.positionCountMax = std::nullopt;
             }
+
         }
     } else {
         if (src["billId"]) {
@@ -17360,7 +17656,9 @@ void convertFromJson(const JsonVariantConst &src, BillConstraintsDataType &dst)
         } else {
             //dst.positionCountMax = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BillConstraintsDataElementsType &src, JsonVariant &dst)
@@ -17398,6 +17696,7 @@ void convertFromJson(const JsonVariantConst &src, BillConstraintsDataElementsTyp
             } else {
                 //dst.positionCountMax = std::nullopt;
             }
+
         }
     } else {
         if (src["billId"]) {
@@ -17415,7 +17714,9 @@ void convertFromJson(const JsonVariantConst &src, BillConstraintsDataElementsTyp
         } else {
             //dst.positionCountMax = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BillConstraintsListDataType &src, JsonVariant &dst)
@@ -17433,11 +17734,11 @@ void convertFromJson(const JsonVariantConst &src, BillConstraintsListDataType &d
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["billConstraintsData"]) {
-                dst.billConstraintsData = item["billConstraintsData"].as<decltype(dst.billConstraintsData
-                )::value_type>();
+                dst.billConstraintsData = item["billConstraintsData"].as<decltype(dst.billConstraintsData)::value_type>();
             } else {
                 //dst.billConstraintsData = std::nullopt;
             }
+
         }
     } else {
         if (src["billConstraintsData"]) {
@@ -17445,7 +17746,9 @@ void convertFromJson(const JsonVariantConst &src, BillConstraintsListDataType &d
         } else {
             //dst.billConstraintsData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BillConstraintsListDataSelectorsType &src, JsonVariant &dst)
@@ -17467,6 +17770,7 @@ void convertFromJson(const JsonVariantConst &src, BillConstraintsListDataSelecto
             } else {
                 //dst.billId = std::nullopt;
             }
+
         }
     } else {
         if (src["billId"]) {
@@ -17474,7 +17778,9 @@ void convertFromJson(const JsonVariantConst &src, BillConstraintsListDataSelecto
         } else {
             //dst.billId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BillDescriptionDataType &src, JsonVariant &dst)
@@ -17528,6 +17834,7 @@ void convertFromJson(const JsonVariantConst &src, BillDescriptionDataType &dst)
             } else {
                 //dst.sessionId = std::nullopt;
             }
+
         }
     } else {
         if (src["billId"]) {
@@ -17555,7 +17862,9 @@ void convertFromJson(const JsonVariantConst &src, BillDescriptionDataType &dst)
         } else {
             //dst.sessionId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BillDescriptionDataElementsType &src, JsonVariant &dst)
@@ -17609,6 +17918,7 @@ void convertFromJson(const JsonVariantConst &src, BillDescriptionDataElementsTyp
             } else {
                 //dst.sessionId = std::nullopt;
             }
+
         }
     } else {
         if (src["billId"]) {
@@ -17636,7 +17946,9 @@ void convertFromJson(const JsonVariantConst &src, BillDescriptionDataElementsTyp
         } else {
             //dst.sessionId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BillDescriptionListDataType &src, JsonVariant &dst)
@@ -17654,11 +17966,11 @@ void convertFromJson(const JsonVariantConst &src, BillDescriptionListDataType &d
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["billDescriptionData"]) {
-                dst.billDescriptionData = item["billDescriptionData"].as<decltype(dst.billDescriptionData
-                )::value_type>();
+                dst.billDescriptionData = item["billDescriptionData"].as<decltype(dst.billDescriptionData)::value_type>();
             } else {
                 //dst.billDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["billDescriptionData"]) {
@@ -17666,7 +17978,9 @@ void convertFromJson(const JsonVariantConst &src, BillDescriptionListDataType &d
         } else {
             //dst.billDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BillDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -17688,6 +18002,7 @@ void convertFromJson(const JsonVariantConst &src, BillDescriptionListDataSelecto
             } else {
                 //dst.billId = std::nullopt;
             }
+
         }
     } else {
         if (src["billId"]) {
@@ -17695,7 +18010,9 @@ void convertFromJson(const JsonVariantConst &src, BillDescriptionListDataSelecto
         } else {
             //dst.billId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IdentificationDataType &src, JsonVariant &dst)
@@ -17732,8 +18049,7 @@ void convertFromJson(const JsonVariantConst &src, IdentificationDataType &dst)
                 //dst.identificationType = std::nullopt;
             }
             if (item["identificationValue"]) {
-                dst.identificationValue = item["identificationValue"].as<decltype(dst.identificationValue
-                )::value_type>();
+                dst.identificationValue = item["identificationValue"].as<decltype(dst.identificationValue)::value_type>();
             } else {
                 //dst.identificationValue = std::nullopt;
             }
@@ -17742,6 +18058,7 @@ void convertFromJson(const JsonVariantConst &src, IdentificationDataType &dst)
             } else {
                 //dst.authorized = std::nullopt;
             }
+
         }
     } else {
         if (src["identificationId"]) {
@@ -17764,7 +18081,9 @@ void convertFromJson(const JsonVariantConst &src, IdentificationDataType &dst)
         } else {
             //dst.authorized = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IdentificationDataElementsType &src, JsonVariant &dst)
@@ -17801,8 +18120,7 @@ void convertFromJson(const JsonVariantConst &src, IdentificationDataElementsType
                 //dst.identificationType = std::nullopt;
             }
             if (item["identificationValue"]) {
-                dst.identificationValue = item["identificationValue"].as<decltype(dst.identificationValue
-                )::value_type>();
+                dst.identificationValue = item["identificationValue"].as<decltype(dst.identificationValue)::value_type>();
             } else {
                 //dst.identificationValue = std::nullopt;
             }
@@ -17811,6 +18129,7 @@ void convertFromJson(const JsonVariantConst &src, IdentificationDataElementsType
             } else {
                 //dst.authorized = std::nullopt;
             }
+
         }
     } else {
         if (src["identificationId"]) {
@@ -17833,7 +18152,9 @@ void convertFromJson(const JsonVariantConst &src, IdentificationDataElementsType
         } else {
             //dst.authorized = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IdentificationListDataType &src, JsonVariant &dst)
@@ -17855,6 +18176,7 @@ void convertFromJson(const JsonVariantConst &src, IdentificationListDataType &ds
             } else {
                 //dst.identificationData = std::nullopt;
             }
+
         }
     } else {
         if (src["identificationData"]) {
@@ -17862,7 +18184,9 @@ void convertFromJson(const JsonVariantConst &src, IdentificationListDataType &ds
         } else {
             //dst.identificationData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IdentificationListDataSelectorsType &src, JsonVariant &dst)
@@ -17892,6 +18216,7 @@ void convertFromJson(const JsonVariantConst &src, IdentificationListDataSelector
             } else {
                 //dst.identificationType = std::nullopt;
             }
+
         }
     } else {
         if (src["identificationId"]) {
@@ -17904,7 +18229,9 @@ void convertFromJson(const JsonVariantConst &src, IdentificationListDataSelector
         } else {
             //dst.identificationType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SessionIdentificationDataType &src, JsonVariant &dst)
@@ -17950,6 +18277,7 @@ void convertFromJson(const JsonVariantConst &src, SessionIdentificationDataType 
             } else {
                 //dst.timePeriod = std::nullopt;
             }
+
         }
     } else {
         if (src["sessionId"]) {
@@ -17972,7 +18300,9 @@ void convertFromJson(const JsonVariantConst &src, SessionIdentificationDataType 
         } else {
             //dst.timePeriod = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SessionIdentificationDataElementsType &src, JsonVariant &dst)
@@ -18018,6 +18348,7 @@ void convertFromJson(const JsonVariantConst &src, SessionIdentificationDataEleme
             } else {
                 //dst.timePeriod = std::nullopt;
             }
+
         }
     } else {
         if (src["sessionId"]) {
@@ -18040,7 +18371,9 @@ void convertFromJson(const JsonVariantConst &src, SessionIdentificationDataEleme
         } else {
             //dst.timePeriod = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SessionIdentificationListDataType &src, JsonVariant &dst)
@@ -18058,20 +18391,21 @@ void convertFromJson(const JsonVariantConst &src, SessionIdentificationListDataT
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["sessionIdentificationData"]) {
-                dst.sessionIdentificationData = item["sessionIdentificationData"].as<decltype(dst.
-                    sessionIdentificationData)::value_type>();
+                dst.sessionIdentificationData = item["sessionIdentificationData"].as<decltype(dst.sessionIdentificationData)::value_type>();
             } else {
                 //dst.sessionIdentificationData = std::nullopt;
             }
+
         }
     } else {
         if (src["sessionIdentificationData"]) {
-            dst.sessionIdentificationData = src["sessionIdentificationData"].as<decltype(dst.sessionIdentificationData
-            )::value_type>();
+            dst.sessionIdentificationData = src["sessionIdentificationData"].as<decltype(dst.sessionIdentificationData)::value_type>();
         } else {
             //dst.sessionIdentificationData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SessionIdentificationListDataSelectorsType &src, JsonVariant &dst)
@@ -18117,6 +18451,7 @@ void convertFromJson(const JsonVariantConst &src, SessionIdentificationListDataS
             } else {
                 //dst.timePeriod = std::nullopt;
             }
+
         }
     } else {
         if (src["sessionId"]) {
@@ -18139,7 +18474,9 @@ void convertFromJson(const JsonVariantConst &src, SessionIdentificationListDataS
         } else {
             //dst.timePeriod = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SessionMeasurementRelationDataType &src, JsonVariant &dst)
@@ -18169,6 +18506,7 @@ void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationData
             } else {
                 //dst.measurementId = std::nullopt;
             }
+
         }
     } else {
         if (src["sessionId"]) {
@@ -18181,7 +18519,9 @@ void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationData
         } else {
             //dst.measurementId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SessionMeasurementRelationDataElementsType &src, JsonVariant &dst)
@@ -18211,6 +18551,7 @@ void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationData
             } else {
                 //dst.measurementId = std::nullopt;
             }
+
         }
     } else {
         if (src["sessionId"]) {
@@ -18223,7 +18564,9 @@ void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationData
         } else {
             //dst.measurementId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SessionMeasurementRelationListDataType &src, JsonVariant &dst)
@@ -18241,22 +18584,21 @@ void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationList
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["sessionMeasurementRelationData"]) {
-                dst.sessionMeasurementRelationData = item["sessionMeasurementRelationData"].as<decltype(dst.
-                    sessionMeasurementRelationData
-                )::value_type>();
+                dst.sessionMeasurementRelationData = item["sessionMeasurementRelationData"].as<decltype(dst.sessionMeasurementRelationData)::value_type>();
             } else {
                 //dst.sessionMeasurementRelationData = std::nullopt;
             }
+
         }
     } else {
         if (src["sessionMeasurementRelationData"]) {
-            dst.sessionMeasurementRelationData = src["sessionMeasurementRelationData"].as<decltype(dst.
-                sessionMeasurementRelationData
-            )::value_type>();
+            dst.sessionMeasurementRelationData = src["sessionMeasurementRelationData"].as<decltype(dst.sessionMeasurementRelationData)::value_type>();
         } else {
             //dst.sessionMeasurementRelationData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SessionMeasurementRelationListDataSelectorsType &src, JsonVariant &dst)
@@ -18286,6 +18628,7 @@ void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationList
             } else {
                 //dst.measurementId = std::nullopt;
             }
+
         }
     } else {
         if (src["sessionId"]) {
@@ -18298,7 +18641,9 @@ void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationList
         } else {
             //dst.measurementId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SetpointDataType &src, JsonVariant &dst)
@@ -18360,20 +18705,17 @@ void convertFromJson(const JsonVariantConst &src, SetpointDataType &dst)
                 //dst.valueMax = std::nullopt;
             }
             if (item["valueToleranceAbsolute"]) {
-                dst.valueToleranceAbsolute = item["valueToleranceAbsolute"].as<decltype(dst.valueToleranceAbsolute
-                )::value_type>();
+                dst.valueToleranceAbsolute = item["valueToleranceAbsolute"].as<decltype(dst.valueToleranceAbsolute)::value_type>();
             } else {
                 //dst.valueToleranceAbsolute = std::nullopt;
             }
             if (item["valueTolerancePercentage"]) {
-                dst.valueTolerancePercentage = item["valueTolerancePercentage"].as<decltype(dst.valueTolerancePercentage
-                )::value_type>();
+                dst.valueTolerancePercentage = item["valueTolerancePercentage"].as<decltype(dst.valueTolerancePercentage)::value_type>();
             } else {
                 //dst.valueTolerancePercentage = std::nullopt;
             }
             if (item["isSetpointChangeable"]) {
-                dst.isSetpointChangeable = item["isSetpointChangeable"].as<decltype(dst.isSetpointChangeable
-                )::value_type>();
+                dst.isSetpointChangeable = item["isSetpointChangeable"].as<decltype(dst.isSetpointChangeable)::value_type>();
             } else {
                 //dst.isSetpointChangeable = std::nullopt;
             }
@@ -18387,6 +18729,7 @@ void convertFromJson(const JsonVariantConst &src, SetpointDataType &dst)
             } else {
                 //dst.timePeriod = std::nullopt;
             }
+
         }
     } else {
         if (src["setpointId"]) {
@@ -18410,14 +18753,12 @@ void convertFromJson(const JsonVariantConst &src, SetpointDataType &dst)
             //dst.valueMax = std::nullopt;
         }
         if (src["valueToleranceAbsolute"]) {
-            dst.valueToleranceAbsolute = src["valueToleranceAbsolute"].as<decltype(dst.valueToleranceAbsolute
-            )::value_type>();
+            dst.valueToleranceAbsolute = src["valueToleranceAbsolute"].as<decltype(dst.valueToleranceAbsolute)::value_type>();
         } else {
             //dst.valueToleranceAbsolute = std::nullopt;
         }
         if (src["valueTolerancePercentage"]) {
-            dst.valueTolerancePercentage = src["valueTolerancePercentage"].as<decltype(dst.valueTolerancePercentage
-            )::value_type>();
+            dst.valueTolerancePercentage = src["valueTolerancePercentage"].as<decltype(dst.valueTolerancePercentage)::value_type>();
         } else {
             //dst.valueTolerancePercentage = std::nullopt;
         }
@@ -18436,7 +18777,9 @@ void convertFromJson(const JsonVariantConst &src, SetpointDataType &dst)
         } else {
             //dst.timePeriod = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SetpointDataElementsType &src, JsonVariant &dst)
@@ -18498,20 +18841,17 @@ void convertFromJson(const JsonVariantConst &src, SetpointDataElementsType &dst)
                 //dst.valueMax = std::nullopt;
             }
             if (item["valueToleranceAbsolute"]) {
-                dst.valueToleranceAbsolute = item["valueToleranceAbsolute"].as<decltype(dst.valueToleranceAbsolute
-                )::value_type>();
+                dst.valueToleranceAbsolute = item["valueToleranceAbsolute"].as<decltype(dst.valueToleranceAbsolute)::value_type>();
             } else {
                 //dst.valueToleranceAbsolute = std::nullopt;
             }
             if (item["valueTolerancePercentage"]) {
-                dst.valueTolerancePercentage = item["valueTolerancePercentage"].as<decltype(dst.valueTolerancePercentage
-                )::value_type>();
+                dst.valueTolerancePercentage = item["valueTolerancePercentage"].as<decltype(dst.valueTolerancePercentage)::value_type>();
             } else {
                 //dst.valueTolerancePercentage = std::nullopt;
             }
             if (item["isSetpointChangeable"]) {
-                dst.isSetpointChangeable = item["isSetpointChangeable"].as<decltype(dst.isSetpointChangeable
-                )::value_type>();
+                dst.isSetpointChangeable = item["isSetpointChangeable"].as<decltype(dst.isSetpointChangeable)::value_type>();
             } else {
                 //dst.isSetpointChangeable = std::nullopt;
             }
@@ -18525,6 +18865,7 @@ void convertFromJson(const JsonVariantConst &src, SetpointDataElementsType &dst)
             } else {
                 //dst.timePeriod = std::nullopt;
             }
+
         }
     } else {
         if (src["setpointId"]) {
@@ -18548,14 +18889,12 @@ void convertFromJson(const JsonVariantConst &src, SetpointDataElementsType &dst)
             //dst.valueMax = std::nullopt;
         }
         if (src["valueToleranceAbsolute"]) {
-            dst.valueToleranceAbsolute = src["valueToleranceAbsolute"].as<decltype(dst.valueToleranceAbsolute
-            )::value_type>();
+            dst.valueToleranceAbsolute = src["valueToleranceAbsolute"].as<decltype(dst.valueToleranceAbsolute)::value_type>();
         } else {
             //dst.valueToleranceAbsolute = std::nullopt;
         }
         if (src["valueTolerancePercentage"]) {
-            dst.valueTolerancePercentage = src["valueTolerancePercentage"].as<decltype(dst.valueTolerancePercentage
-            )::value_type>();
+            dst.valueTolerancePercentage = src["valueTolerancePercentage"].as<decltype(dst.valueTolerancePercentage)::value_type>();
         } else {
             //dst.valueTolerancePercentage = std::nullopt;
         }
@@ -18574,7 +18913,9 @@ void convertFromJson(const JsonVariantConst &src, SetpointDataElementsType &dst)
         } else {
             //dst.timePeriod = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SetpointListDataType &src, JsonVariant &dst)
@@ -18596,6 +18937,7 @@ void convertFromJson(const JsonVariantConst &src, SetpointListDataType &dst)
             } else {
                 //dst.setpointData = std::nullopt;
             }
+
         }
     } else {
         if (src["setpointData"]) {
@@ -18603,7 +18945,9 @@ void convertFromJson(const JsonVariantConst &src, SetpointListDataType &dst)
         } else {
             //dst.setpointData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SetpointListDataSelectorsType &src, JsonVariant &dst)
@@ -18625,6 +18969,7 @@ void convertFromJson(const JsonVariantConst &src, SetpointListDataSelectorsType 
             } else {
                 //dst.setpointId = std::nullopt;
             }
+
         }
     } else {
         if (src["setpointId"]) {
@@ -18632,7 +18977,9 @@ void convertFromJson(const JsonVariantConst &src, SetpointListDataSelectorsType 
         } else {
             //dst.setpointId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SetpointConstraintsDataType &src, JsonVariant &dst)
@@ -18678,6 +19025,7 @@ void convertFromJson(const JsonVariantConst &src, SetpointConstraintsDataType &d
             } else {
                 //dst.setpointStepSize = std::nullopt;
             }
+
         }
     } else {
         if (src["setpointId"]) {
@@ -18700,7 +19048,9 @@ void convertFromJson(const JsonVariantConst &src, SetpointConstraintsDataType &d
         } else {
             //dst.setpointStepSize = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SetpointConstraintsDataElementsType &src, JsonVariant &dst)
@@ -18746,6 +19096,7 @@ void convertFromJson(const JsonVariantConst &src, SetpointConstraintsDataElement
             } else {
                 //dst.setpointStepSize = std::nullopt;
             }
+
         }
     } else {
         if (src["setpointId"]) {
@@ -18768,7 +19119,9 @@ void convertFromJson(const JsonVariantConst &src, SetpointConstraintsDataElement
         } else {
             //dst.setpointStepSize = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SetpointConstraintsListDataType &src, JsonVariant &dst)
@@ -18786,20 +19139,21 @@ void convertFromJson(const JsonVariantConst &src, SetpointConstraintsListDataTyp
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["setpointConstraintsData"]) {
-                dst.setpointConstraintsData = item["setpointConstraintsData"].as<decltype(dst.setpointConstraintsData
-                )::value_type>();
+                dst.setpointConstraintsData = item["setpointConstraintsData"].as<decltype(dst.setpointConstraintsData)::value_type>();
             } else {
                 //dst.setpointConstraintsData = std::nullopt;
             }
+
         }
     } else {
         if (src["setpointConstraintsData"]) {
-            dst.setpointConstraintsData = src["setpointConstraintsData"].as<decltype(dst.setpointConstraintsData
-            )::value_type>();
+            dst.setpointConstraintsData = src["setpointConstraintsData"].as<decltype(dst.setpointConstraintsData)::value_type>();
         } else {
             //dst.setpointConstraintsData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SetpointConstraintsListDataSelectorsType &src, JsonVariant &dst)
@@ -18821,6 +19175,7 @@ void convertFromJson(const JsonVariantConst &src, SetpointConstraintsListDataSel
             } else {
                 //dst.setpointId = std::nullopt;
             }
+
         }
     } else {
         if (src["setpointId"]) {
@@ -18828,7 +19183,9 @@ void convertFromJson(const JsonVariantConst &src, SetpointConstraintsListDataSel
         } else {
             //dst.setpointId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SetpointDescriptionDataType &src, JsonVariant &dst)
@@ -18906,6 +19263,7 @@ void convertFromJson(const JsonVariantConst &src, SetpointDescriptionDataType &d
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["setpointId"]) {
@@ -18948,7 +19306,9 @@ void convertFromJson(const JsonVariantConst &src, SetpointDescriptionDataType &d
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SetpointDescriptionDataElementsType &src, JsonVariant &dst)
@@ -19026,6 +19386,7 @@ void convertFromJson(const JsonVariantConst &src, SetpointDescriptionDataElement
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["setpointId"]) {
@@ -19068,7 +19429,9 @@ void convertFromJson(const JsonVariantConst &src, SetpointDescriptionDataElement
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SetpointDescriptionListDataType &src, JsonVariant &dst)
@@ -19086,20 +19449,21 @@ void convertFromJson(const JsonVariantConst &src, SetpointDescriptionListDataTyp
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["setpointDescriptionData"]) {
-                dst.setpointDescriptionData = item["setpointDescriptionData"].as<decltype(dst.setpointDescriptionData
-                )::value_type>();
+                dst.setpointDescriptionData = item["setpointDescriptionData"].as<decltype(dst.setpointDescriptionData)::value_type>();
             } else {
                 //dst.setpointDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["setpointDescriptionData"]) {
-            dst.setpointDescriptionData = src["setpointDescriptionData"].as<decltype(dst.setpointDescriptionData
-            )::value_type>();
+            dst.setpointDescriptionData = src["setpointDescriptionData"].as<decltype(dst.setpointDescriptionData)::value_type>();
         } else {
             //dst.setpointDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SetpointDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -19153,6 +19517,7 @@ void convertFromJson(const JsonVariantConst &src, SetpointDescriptionListDataSel
             } else {
                 //dst.scopeType = std::nullopt;
             }
+
         }
     } else {
         if (src["setpointId"]) {
@@ -19180,7 +19545,9 @@ void convertFromJson(const JsonVariantConst &src, SetpointDescriptionListDataSel
         } else {
             //dst.scopeType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeTableDataType &src, JsonVariant &dst)
@@ -19220,8 +19587,7 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDataType &dst)
                 //dst.timeSlotId = std::nullopt;
             }
             if (item["recurrenceInformation"]) {
-                dst.recurrenceInformation = item["recurrenceInformation"].as<decltype(dst.recurrenceInformation
-                )::value_type>();
+                dst.recurrenceInformation = item["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
             } else {
                 //dst.recurrenceInformation = std::nullopt;
             }
@@ -19235,6 +19601,7 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDataType &dst)
             } else {
                 //dst.endTime = std::nullopt;
             }
+
         }
     } else {
         if (src["timeTableId"]) {
@@ -19248,8 +19615,7 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDataType &dst)
             //dst.timeSlotId = std::nullopt;
         }
         if (src["recurrenceInformation"]) {
-            dst.recurrenceInformation = src["recurrenceInformation"].as<decltype(dst.recurrenceInformation
-            )::value_type>();
+            dst.recurrenceInformation = src["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
         } else {
             //dst.recurrenceInformation = std::nullopt;
         }
@@ -19263,7 +19629,9 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDataType &dst)
         } else {
             //dst.endTime = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeTableDataElementsType &src, JsonVariant &dst)
@@ -19303,8 +19671,7 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDataElementsType &dst
                 //dst.timeSlotId = std::nullopt;
             }
             if (item["recurrenceInformation"]) {
-                dst.recurrenceInformation = item["recurrenceInformation"].as<decltype(dst.recurrenceInformation
-                )::value_type>();
+                dst.recurrenceInformation = item["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
             } else {
                 //dst.recurrenceInformation = std::nullopt;
             }
@@ -19318,6 +19685,7 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDataElementsType &dst
             } else {
                 //dst.endTime = std::nullopt;
             }
+
         }
     } else {
         if (src["timeTableId"]) {
@@ -19331,8 +19699,7 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDataElementsType &dst
             //dst.timeSlotId = std::nullopt;
         }
         if (src["recurrenceInformation"]) {
-            dst.recurrenceInformation = src["recurrenceInformation"].as<decltype(dst.recurrenceInformation
-            )::value_type>();
+            dst.recurrenceInformation = src["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
         } else {
             //dst.recurrenceInformation = std::nullopt;
         }
@@ -19346,7 +19713,9 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDataElementsType &dst
         } else {
             //dst.endTime = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeTableListDataType &src, JsonVariant &dst)
@@ -19368,6 +19737,7 @@ void convertFromJson(const JsonVariantConst &src, TimeTableListDataType &dst)
             } else {
                 //dst.timeTableData = std::nullopt;
             }
+
         }
     } else {
         if (src["timeTableData"]) {
@@ -19375,7 +19745,9 @@ void convertFromJson(const JsonVariantConst &src, TimeTableListDataType &dst)
         } else {
             //dst.timeTableData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeTableListDataSelectorsType &src, JsonVariant &dst)
@@ -19405,6 +19777,7 @@ void convertFromJson(const JsonVariantConst &src, TimeTableListDataSelectorsType
             } else {
                 //dst.timeSlotId = std::nullopt;
             }
+
         }
     } else {
         if (src["timeTableId"]) {
@@ -19417,7 +19790,9 @@ void convertFromJson(const JsonVariantConst &src, TimeTableListDataSelectorsType
         } else {
             //dst.timeSlotId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeTableConstraintsDataType &src, JsonVariant &dst)
@@ -19481,8 +19856,7 @@ void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsDataType &
                 //dst.slotDurationMax = std::nullopt;
             }
             if (item["slotDurationStepSize"]) {
-                dst.slotDurationStepSize = item["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize
-                )::value_type>();
+                dst.slotDurationStepSize = item["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize)::value_type>();
             } else {
                 //dst.slotDurationStepSize = std::nullopt;
             }
@@ -19496,6 +19870,7 @@ void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsDataType &
             } else {
                 //dst.firstSlotBeginsAt = std::nullopt;
             }
+
         }
     } else {
         if (src["timeTableId"]) {
@@ -19538,7 +19913,9 @@ void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsDataType &
         } else {
             //dst.firstSlotBeginsAt = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeTableConstraintsDataElementsType &src, JsonVariant &dst)
@@ -19602,8 +19979,7 @@ void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsDataElemen
                 //dst.slotDurationMax = std::nullopt;
             }
             if (item["slotDurationStepSize"]) {
-                dst.slotDurationStepSize = item["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize
-                )::value_type>();
+                dst.slotDurationStepSize = item["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize)::value_type>();
             } else {
                 //dst.slotDurationStepSize = std::nullopt;
             }
@@ -19617,6 +19993,7 @@ void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsDataElemen
             } else {
                 //dst.firstSlotBeginsAt = std::nullopt;
             }
+
         }
     } else {
         if (src["timeTableId"]) {
@@ -19659,7 +20036,9 @@ void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsDataElemen
         } else {
             //dst.firstSlotBeginsAt = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeTableConstraintsListDataType &src, JsonVariant &dst)
@@ -19677,20 +20056,21 @@ void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsListDataTy
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["timeTableConstraintsData"]) {
-                dst.timeTableConstraintsData = item["timeTableConstraintsData"].as<decltype(dst.timeTableConstraintsData
-                )::value_type>();
+                dst.timeTableConstraintsData = item["timeTableConstraintsData"].as<decltype(dst.timeTableConstraintsData)::value_type>();
             } else {
                 //dst.timeTableConstraintsData = std::nullopt;
             }
+
         }
     } else {
         if (src["timeTableConstraintsData"]) {
-            dst.timeTableConstraintsData = src["timeTableConstraintsData"].as<decltype(dst.timeTableConstraintsData
-            )::value_type>();
+            dst.timeTableConstraintsData = src["timeTableConstraintsData"].as<decltype(dst.timeTableConstraintsData)::value_type>();
         } else {
             //dst.timeTableConstraintsData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeTableConstraintsListDataSelectorsType &src, JsonVariant &dst)
@@ -19712,6 +20092,7 @@ void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsListDataSe
             } else {
                 //dst.timeTableId = std::nullopt;
             }
+
         }
     } else {
         if (src["timeTableId"]) {
@@ -19719,7 +20100,9 @@ void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsListDataSe
         } else {
             //dst.timeTableId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeTableDescriptionDataType &src, JsonVariant &dst)
@@ -19757,14 +20140,12 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionDataType &
                 //dst.timeTableId = std::nullopt;
             }
             if (item["timeSlotCountChangeable"]) {
-                dst.timeSlotCountChangeable = item["timeSlotCountChangeable"].as<decltype(dst.timeSlotCountChangeable
-                )::value_type>();
+                dst.timeSlotCountChangeable = item["timeSlotCountChangeable"].as<decltype(dst.timeSlotCountChangeable)::value_type>();
             } else {
                 //dst.timeSlotCountChangeable = std::nullopt;
             }
             if (item["timeSlotTimesChangeable"]) {
-                dst.timeSlotTimesChangeable = item["timeSlotTimesChangeable"].as<decltype(dst.timeSlotTimesChangeable
-                )::value_type>();
+                dst.timeSlotTimesChangeable = item["timeSlotTimesChangeable"].as<decltype(dst.timeSlotTimesChangeable)::value_type>();
             } else {
                 //dst.timeSlotTimesChangeable = std::nullopt;
             }
@@ -19783,6 +20164,7 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionDataType &
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["timeTableId"]) {
@@ -19791,14 +20173,12 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionDataType &
             //dst.timeTableId = std::nullopt;
         }
         if (src["timeSlotCountChangeable"]) {
-            dst.timeSlotCountChangeable = src["timeSlotCountChangeable"].as<decltype(dst.timeSlotCountChangeable
-            )::value_type>();
+            dst.timeSlotCountChangeable = src["timeSlotCountChangeable"].as<decltype(dst.timeSlotCountChangeable)::value_type>();
         } else {
             //dst.timeSlotCountChangeable = std::nullopt;
         }
         if (src["timeSlotTimesChangeable"]) {
-            dst.timeSlotTimesChangeable = src["timeSlotTimesChangeable"].as<decltype(dst.timeSlotTimesChangeable
-            )::value_type>();
+            dst.timeSlotTimesChangeable = src["timeSlotTimesChangeable"].as<decltype(dst.timeSlotTimesChangeable)::value_type>();
         } else {
             //dst.timeSlotTimesChangeable = std::nullopt;
         }
@@ -19817,7 +20197,9 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionDataType &
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeTableDescriptionDataElementsType &src, JsonVariant &dst)
@@ -19855,14 +20237,12 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionDataElemen
                 //dst.timeTableId = std::nullopt;
             }
             if (item["timeSlotCountChangeable"]) {
-                dst.timeSlotCountChangeable = item["timeSlotCountChangeable"].as<decltype(dst.timeSlotCountChangeable
-                )::value_type>();
+                dst.timeSlotCountChangeable = item["timeSlotCountChangeable"].as<decltype(dst.timeSlotCountChangeable)::value_type>();
             } else {
                 //dst.timeSlotCountChangeable = std::nullopt;
             }
             if (item["timeSlotTimesChangeable"]) {
-                dst.timeSlotTimesChangeable = item["timeSlotTimesChangeable"].as<decltype(dst.timeSlotTimesChangeable
-                )::value_type>();
+                dst.timeSlotTimesChangeable = item["timeSlotTimesChangeable"].as<decltype(dst.timeSlotTimesChangeable)::value_type>();
             } else {
                 //dst.timeSlotTimesChangeable = std::nullopt;
             }
@@ -19881,6 +20261,7 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionDataElemen
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["timeTableId"]) {
@@ -19889,14 +20270,12 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionDataElemen
             //dst.timeTableId = std::nullopt;
         }
         if (src["timeSlotCountChangeable"]) {
-            dst.timeSlotCountChangeable = src["timeSlotCountChangeable"].as<decltype(dst.timeSlotCountChangeable
-            )::value_type>();
+            dst.timeSlotCountChangeable = src["timeSlotCountChangeable"].as<decltype(dst.timeSlotCountChangeable)::value_type>();
         } else {
             //dst.timeSlotCountChangeable = std::nullopt;
         }
         if (src["timeSlotTimesChangeable"]) {
-            dst.timeSlotTimesChangeable = src["timeSlotTimesChangeable"].as<decltype(dst.timeSlotTimesChangeable
-            )::value_type>();
+            dst.timeSlotTimesChangeable = src["timeSlotTimesChangeable"].as<decltype(dst.timeSlotTimesChangeable)::value_type>();
         } else {
             //dst.timeSlotTimesChangeable = std::nullopt;
         }
@@ -19915,7 +20294,9 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionDataElemen
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeTableDescriptionListDataType &src, JsonVariant &dst)
@@ -19933,20 +20314,21 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionListDataTy
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["timeTableDescriptionData"]) {
-                dst.timeTableDescriptionData = item["timeTableDescriptionData"].as<decltype(dst.timeTableDescriptionData
-                )::value_type>();
+                dst.timeTableDescriptionData = item["timeTableDescriptionData"].as<decltype(dst.timeTableDescriptionData)::value_type>();
             } else {
                 //dst.timeTableDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["timeTableDescriptionData"]) {
-            dst.timeTableDescriptionData = src["timeTableDescriptionData"].as<decltype(dst.timeTableDescriptionData
-            )::value_type>();
+            dst.timeTableDescriptionData = src["timeTableDescriptionData"].as<decltype(dst.timeTableDescriptionData)::value_type>();
         } else {
             //dst.timeTableDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeTableDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -19968,6 +20350,7 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionListDataSe
             } else {
                 //dst.timeTableId = std::nullopt;
             }
+
         }
     } else {
         if (src["timeTableId"]) {
@@ -19975,7 +20358,9 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionListDataSe
         } else {
             //dst.timeTableId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SensingDataType &src, JsonVariant &dst)
@@ -20013,6 +20398,7 @@ void convertFromJson(const JsonVariantConst &src, SensingDataType &dst)
             } else {
                 //dst.value = std::nullopt;
             }
+
         }
     } else {
         if (src["timestamp"]) {
@@ -20030,7 +20416,9 @@ void convertFromJson(const JsonVariantConst &src, SensingDataType &dst)
         } else {
             //dst.value = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SensingDataElementsType &src, JsonVariant &dst)
@@ -20068,6 +20456,7 @@ void convertFromJson(const JsonVariantConst &src, SensingDataElementsType &dst)
             } else {
                 //dst.value = std::nullopt;
             }
+
         }
     } else {
         if (src["timestamp"]) {
@@ -20085,7 +20474,9 @@ void convertFromJson(const JsonVariantConst &src, SensingDataElementsType &dst)
         } else {
             //dst.value = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SensingListDataType &src, JsonVariant &dst)
@@ -20107,6 +20498,7 @@ void convertFromJson(const JsonVariantConst &src, SensingListDataType &dst)
             } else {
                 //dst.sensingData = std::nullopt;
             }
+
         }
     } else {
         if (src["sensingData"]) {
@@ -20114,7 +20506,9 @@ void convertFromJson(const JsonVariantConst &src, SensingListDataType &dst)
         } else {
             //dst.sensingData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SensingListDataSelectorsType &src, JsonVariant &dst)
@@ -20136,6 +20530,7 @@ void convertFromJson(const JsonVariantConst &src, SensingListDataSelectorsType &
             } else {
                 //dst.timestampInterval = std::nullopt;
             }
+
         }
     } else {
         if (src["timestampInterval"]) {
@@ -20143,7 +20538,9 @@ void convertFromJson(const JsonVariantConst &src, SensingListDataSelectorsType &
         } else {
             //dst.timestampInterval = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SensingDescriptionDataType &src, JsonVariant &dst)
@@ -20197,6 +20594,7 @@ void convertFromJson(const JsonVariantConst &src, SensingDescriptionDataType &ds
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["sensingType"]) {
@@ -20224,7 +20622,9 @@ void convertFromJson(const JsonVariantConst &src, SensingDescriptionDataType &ds
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SensingDescriptionDataElementsType &src, JsonVariant &dst)
@@ -20278,6 +20678,7 @@ void convertFromJson(const JsonVariantConst &src, SensingDescriptionDataElements
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["sensingType"]) {
@@ -20305,7 +20706,9 @@ void convertFromJson(const JsonVariantConst &src, SensingDescriptionDataElements
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ResultDataType &src, JsonVariant &dst)
@@ -20335,6 +20738,7 @@ void convertFromJson(const JsonVariantConst &src, ResultDataType &dst)
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["errorNumber"]) {
@@ -20347,7 +20751,9 @@ void convertFromJson(const JsonVariantConst &src, ResultDataType &dst)
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ActuatorSwitchDataType &src, JsonVariant &dst)
@@ -20369,6 +20775,7 @@ void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDataType &dst)
             } else {
                 //dst.function = std::nullopt;
             }
+
         }
     } else {
         if (src["function"]) {
@@ -20376,7 +20783,9 @@ void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDataType &dst)
         } else {
             //dst.function = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ActuatorSwitchDataElementsType &src, JsonVariant &dst)
@@ -20398,6 +20807,7 @@ void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDataElementsType
             } else {
                 //dst.function = std::nullopt;
             }
+
         }
     } else {
         if (src["function"]) {
@@ -20405,7 +20815,9 @@ void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDataElementsType
         } else {
             //dst.function = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ActuatorSwitchDescriptionDataType &src, JsonVariant &dst)
@@ -20435,6 +20847,7 @@ void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDescriptionDataT
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["label"]) {
@@ -20447,7 +20860,9 @@ void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDescriptionDataT
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ActuatorSwitchDescriptionDataElementsType &src, JsonVariant &dst)
@@ -20477,6 +20892,7 @@ void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDescriptionDataE
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["label"]) {
@@ -20489,7 +20905,9 @@ void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDescriptionDataE
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementAddNodeCallType &src, JsonVariant &dst)
@@ -20543,6 +20961,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementAddNodeCallTy
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["nodeAddress"]) {
@@ -20570,7 +20989,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementAddNodeCallTy
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementAddNodeCallElementsType &src, JsonVariant &dst)
@@ -20624,6 +21045,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementAddNodeCallEl
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["nodeAddress"]) {
@@ -20651,7 +21073,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementAddNodeCallEl
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementRemoveNodeCallType &src, JsonVariant &dst)
@@ -20681,6 +21105,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementRemoveNodeCal
             } else {
                 //dst.timeout = std::nullopt;
             }
+
         }
     } else {
         if (src["nodeAddress"]) {
@@ -20693,7 +21118,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementRemoveNodeCal
         } else {
             //dst.timeout = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementRemoveNodeCallElementsType &src, JsonVariant &dst)
@@ -20723,6 +21150,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementRemoveNodeCal
             } else {
                 //dst.timeout = std::nullopt;
             }
+
         }
     } else {
         if (src["nodeAddress"]) {
@@ -20735,7 +21163,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementRemoveNodeCal
         } else {
             //dst.timeout = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementModifyNodeCallType &src, JsonVariant &dst)
@@ -20789,6 +21219,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementModifyNodeCal
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["nodeAddress"]) {
@@ -20816,7 +21247,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementModifyNodeCal
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementModifyNodeCallElementsType &src, JsonVariant &dst)
@@ -20870,6 +21303,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementModifyNodeCal
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["nodeAddress"]) {
@@ -20897,7 +21331,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementModifyNodeCal
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementScanNetworkCallType &src, JsonVariant &dst)
@@ -20927,6 +21363,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementScanNetworkCa
             } else {
                 //dst.timeout = std::nullopt;
             }
+
         }
     } else {
         if (src["scanSetup"]) {
@@ -20939,7 +21376,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementScanNetworkCa
         } else {
             //dst.timeout = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementScanNetworkCallElementsType &src, JsonVariant &dst)
@@ -20969,6 +21408,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementScanNetworkCa
             } else {
                 //dst.timeout = std::nullopt;
             }
+
         }
     } else {
         if (src["scanSetup"]) {
@@ -20981,7 +21421,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementScanNetworkCa
         } else {
             //dst.timeout = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementDiscoverCallType &src, JsonVariant &dst)
@@ -21003,6 +21445,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDiscoverCallT
             } else {
                 //dst.discoverAddress = std::nullopt;
             }
+
         }
     } else {
         if (src["discoverAddress"]) {
@@ -21010,7 +21453,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDiscoverCallT
         } else {
             //dst.discoverAddress = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementDiscoverCallElementsType &src, JsonVariant &dst)
@@ -21032,6 +21477,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDiscoverCallE
             } else {
                 //dst.discoverAddress = std::nullopt;
             }
+
         }
     } else {
         if (src["discoverAddress"]) {
@@ -21039,25 +21485,31 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDiscoverCallE
         } else {
             //dst.discoverAddress = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementAbortCallType &src, JsonVariant &dst)
 {
+
     return true;
 }
 
 void convertFromJson(const JsonVariantConst &src, NetworkManagementAbortCallType &dst)
 {
+
 }
 
 bool convertToJson(const NetworkManagementAbortCallElementsType &src, JsonVariant &dst)
 {
+
     return true;
 }
 
 void convertFromJson(const JsonVariantConst &src, NetworkManagementAbortCallElementsType &dst)
 {
+
 }
 
 bool convertToJson(const NetworkManagementProcessStateDataType &src, JsonVariant &dst)
@@ -21087,6 +21539,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementProcessStateD
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["state"]) {
@@ -21099,7 +21552,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementProcessStateD
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementProcessStateDataElementsType &src, JsonVariant &dst)
@@ -21129,6 +21584,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementProcessStateD
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["state"]) {
@@ -21141,7 +21597,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementProcessStateD
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementJoiningModeDataType &src, JsonVariant &dst)
@@ -21163,6 +21621,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementJoiningModeDa
             } else {
                 //dst.setup = std::nullopt;
             }
+
         }
     } else {
         if (src["setup"]) {
@@ -21170,7 +21629,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementJoiningModeDa
         } else {
             //dst.setup = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementJoiningModeDataElementsType &src, JsonVariant &dst)
@@ -21192,6 +21653,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementJoiningModeDa
             } else {
                 //dst.setup = std::nullopt;
             }
+
         }
     } else {
         if (src["setup"]) {
@@ -21199,7 +21661,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementJoiningModeDa
         } else {
             //dst.setup = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementReportCandidateDataType &src, JsonVariant &dst)
@@ -21245,6 +21709,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementReportCandida
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["candidateSetup"]) {
@@ -21267,7 +21732,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementReportCandida
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementReportCandidateDataElementsType &src, JsonVariant &dst)
@@ -21313,6 +21780,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementReportCandida
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["candidateSetup"]) {
@@ -21335,7 +21803,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementReportCandida
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementDeviceDescriptionDataType &src, JsonVariant &dst)
@@ -21393,8 +21863,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
                 //dst.deviceType = std::nullopt;
             }
             if (item["networkManagementResponsibleAddress"]) {
-                dst.networkManagementResponsibleAddress = item["networkManagementResponsibleAddress"].as<decltype(dst.
-                    networkManagementResponsibleAddress)::value_type>();
+                dst.networkManagementResponsibleAddress = item["networkManagementResponsibleAddress"].as<decltype(dst.networkManagementResponsibleAddress)::value_type>();
             } else {
                 //dst.networkManagementResponsibleAddress = std::nullopt;
             }
@@ -21409,8 +21878,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
                 //dst.technologyAddress = std::nullopt;
             }
             if (item["communicationsTechnologyInformation"]) {
-                dst.communicationsTechnologyInformation = item["communicationsTechnologyInformation"].as<decltype(dst.
-                    communicationsTechnologyInformation)::value_type>();
+                dst.communicationsTechnologyInformation = item["communicationsTechnologyInformation"].as<decltype(dst.communicationsTechnologyInformation)::value_type>();
             } else {
                 //dst.communicationsTechnologyInformation = std::nullopt;
             }
@@ -21439,6 +21907,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["deviceAddress"]) {
@@ -21452,8 +21921,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
             //dst.deviceType = std::nullopt;
         }
         if (src["networkManagementResponsibleAddress"]) {
-            dst.networkManagementResponsibleAddress = src["networkManagementResponsibleAddress"].as<decltype(dst.
-                networkManagementResponsibleAddress)::value_type>();
+            dst.networkManagementResponsibleAddress = src["networkManagementResponsibleAddress"].as<decltype(dst.networkManagementResponsibleAddress)::value_type>();
         } else {
             //dst.networkManagementResponsibleAddress = std::nullopt;
         }
@@ -21468,8 +21936,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
             //dst.technologyAddress = std::nullopt;
         }
         if (src["communicationsTechnologyInformation"]) {
-            dst.communicationsTechnologyInformation = src["communicationsTechnologyInformation"].as<decltype(dst.
-                communicationsTechnologyInformation)::value_type>();
+            dst.communicationsTechnologyInformation = src["communicationsTechnologyInformation"].as<decltype(dst.communicationsTechnologyInformation)::value_type>();
         } else {
             //dst.communicationsTechnologyInformation = std::nullopt;
         }
@@ -21498,7 +21965,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementDeviceDescriptionDataElementsType &src, JsonVariant &dst)
@@ -21556,8 +22025,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
                 //dst.deviceType = std::nullopt;
             }
             if (item["networkManagementResponsibleAddress"]) {
-                dst.networkManagementResponsibleAddress = item["networkManagementResponsibleAddress"].as<decltype(dst.
-                    networkManagementResponsibleAddress)::value_type>();
+                dst.networkManagementResponsibleAddress = item["networkManagementResponsibleAddress"].as<decltype(dst.networkManagementResponsibleAddress)::value_type>();
             } else {
                 //dst.networkManagementResponsibleAddress = std::nullopt;
             }
@@ -21572,8 +22040,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
                 //dst.technologyAddress = std::nullopt;
             }
             if (item["communicationsTechnologyInformation"]) {
-                dst.communicationsTechnologyInformation = item["communicationsTechnologyInformation"].as<decltype(dst.
-                    communicationsTechnologyInformation)::value_type>();
+                dst.communicationsTechnologyInformation = item["communicationsTechnologyInformation"].as<decltype(dst.communicationsTechnologyInformation)::value_type>();
             } else {
                 //dst.communicationsTechnologyInformation = std::nullopt;
             }
@@ -21602,6 +22069,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["deviceAddress"]) {
@@ -21615,8 +22083,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
             //dst.deviceType = std::nullopt;
         }
         if (src["networkManagementResponsibleAddress"]) {
-            dst.networkManagementResponsibleAddress = src["networkManagementResponsibleAddress"].as<decltype(dst.
-                networkManagementResponsibleAddress)::value_type>();
+            dst.networkManagementResponsibleAddress = src["networkManagementResponsibleAddress"].as<decltype(dst.networkManagementResponsibleAddress)::value_type>();
         } else {
             //dst.networkManagementResponsibleAddress = std::nullopt;
         }
@@ -21631,8 +22098,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
             //dst.technologyAddress = std::nullopt;
         }
         if (src["communicationsTechnologyInformation"]) {
-            dst.communicationsTechnologyInformation = src["communicationsTechnologyInformation"].as<decltype(dst.
-                communicationsTechnologyInformation)::value_type>();
+            dst.communicationsTechnologyInformation = src["communicationsTechnologyInformation"].as<decltype(dst.communicationsTechnologyInformation)::value_type>();
         } else {
             //dst.communicationsTechnologyInformation = std::nullopt;
         }
@@ -21661,7 +22127,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementDeviceDescriptionListDataType &src, JsonVariant &dst)
@@ -21679,21 +22147,21 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["networkManagementDeviceDescriptionData"]) {
-                dst.networkManagementDeviceDescriptionData = item["networkManagementDeviceDescriptionData"].as<decltype(
-                    dst.
-                    networkManagementDeviceDescriptionData)::value_type>();
+                dst.networkManagementDeviceDescriptionData = item["networkManagementDeviceDescriptionData"].as<decltype(dst.networkManagementDeviceDescriptionData)::value_type>();
             } else {
                 //dst.networkManagementDeviceDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["networkManagementDeviceDescriptionData"]) {
-            dst.networkManagementDeviceDescriptionData = src["networkManagementDeviceDescriptionData"].as<decltype(dst.
-                networkManagementDeviceDescriptionData)::value_type>();
+            dst.networkManagementDeviceDescriptionData = src["networkManagementDeviceDescriptionData"].as<decltype(dst.networkManagementDeviceDescriptionData)::value_type>();
         } else {
             //dst.networkManagementDeviceDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementDeviceDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -21723,6 +22191,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
             } else {
                 //dst.deviceType = std::nullopt;
             }
+
         }
     } else {
         if (src["deviceAddress"]) {
@@ -21735,7 +22204,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
         } else {
             //dst.deviceType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementEntityDescriptionDataType &src, JsonVariant &dst)
@@ -21797,6 +22268,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescrip
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["entityAddress"]) {
@@ -21829,7 +22301,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescrip
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementEntityDescriptionDataElementsType &src, JsonVariant &dst)
@@ -21891,6 +22365,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescrip
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["entityAddress"]) {
@@ -21923,7 +22398,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescrip
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementEntityDescriptionListDataType &src, JsonVariant &dst)
@@ -21941,21 +22418,21 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescrip
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["networkManagementEntityDescriptionData"]) {
-                dst.networkManagementEntityDescriptionData = item["networkManagementEntityDescriptionData"].as<decltype(
-                    dst.
-                    networkManagementEntityDescriptionData)::value_type>();
+                dst.networkManagementEntityDescriptionData = item["networkManagementEntityDescriptionData"].as<decltype(dst.networkManagementEntityDescriptionData)::value_type>();
             } else {
                 //dst.networkManagementEntityDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["networkManagementEntityDescriptionData"]) {
-            dst.networkManagementEntityDescriptionData = src["networkManagementEntityDescriptionData"].as<decltype(dst.
-                networkManagementEntityDescriptionData)::value_type>();
+            dst.networkManagementEntityDescriptionData = src["networkManagementEntityDescriptionData"].as<decltype(dst.networkManagementEntityDescriptionData)::value_type>();
         } else {
             //dst.networkManagementEntityDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementEntityDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -21985,6 +22462,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescrip
             } else {
                 //dst.entityType = std::nullopt;
             }
+
         }
     } else {
         if (src["entityAddress"]) {
@@ -21997,7 +22475,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescrip
         } else {
             //dst.entityType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementFeatureDescriptionDataType &src, JsonVariant &dst)
@@ -22099,6 +22579,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescri
             } else {
                 //dst.maxResponseDelay = std::nullopt;
             }
+
         }
     } else {
         if (src["featureAddress"]) {
@@ -22156,7 +22637,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescri
         } else {
             //dst.maxResponseDelay = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementFeatureDescriptionDataElementsType &src, JsonVariant &dst)
@@ -22258,6 +22741,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescri
             } else {
                 //dst.maxResponseDelay = std::nullopt;
             }
+
         }
     } else {
         if (src["featureAddress"]) {
@@ -22315,7 +22799,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescri
         } else {
             //dst.maxResponseDelay = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementFeatureDescriptionListDataType &src, JsonVariant &dst)
@@ -22333,22 +22819,21 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescri
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["networkManagementFeatureDescriptionData"]) {
-                dst.networkManagementFeatureDescriptionData = item["networkManagementFeatureDescriptionData"].as<
-                    decltype(dst.
-                        networkManagementFeatureDescriptionData)::value_type>();
+                dst.networkManagementFeatureDescriptionData = item["networkManagementFeatureDescriptionData"].as<decltype(dst.networkManagementFeatureDescriptionData)::value_type>();
             } else {
                 //dst.networkManagementFeatureDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["networkManagementFeatureDescriptionData"]) {
-            dst.networkManagementFeatureDescriptionData = src["networkManagementFeatureDescriptionData"].as<decltype(dst
-                .
-                networkManagementFeatureDescriptionData)::value_type>();
+            dst.networkManagementFeatureDescriptionData = src["networkManagementFeatureDescriptionData"].as<decltype(dst.networkManagementFeatureDescriptionData)::value_type>();
         } else {
             //dst.networkManagementFeatureDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NetworkManagementFeatureDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -22378,6 +22863,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescri
             } else {
                 //dst.featureType = std::nullopt;
             }
+
         }
     } else {
         if (src["featureAddress"]) {
@@ -22390,7 +22876,9 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescri
         } else {
             //dst.featureType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SupplyConditionDataType &src, JsonVariant &dst)
@@ -22457,8 +22945,7 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDataType &dst)
                 //dst.thresholdId = std::nullopt;
             }
             if (item["thresholdPercentage"]) {
-                dst.thresholdPercentage = item["thresholdPercentage"].as<decltype(dst.thresholdPercentage
-                )::value_type>();
+                dst.thresholdPercentage = item["thresholdPercentage"].as<decltype(dst.thresholdPercentage)::value_type>();
             } else {
                 //dst.thresholdPercentage = std::nullopt;
             }
@@ -22477,6 +22964,7 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDataType &dst)
             } else {
                 //dst.gridCondition = std::nullopt;
             }
+
         }
     } else {
         if (src["conditionId"]) {
@@ -22524,7 +23012,9 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDataType &dst)
         } else {
             //dst.gridCondition = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SupplyConditionDataElementsType &src, JsonVariant &dst)
@@ -22591,8 +23081,7 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDataElementsTyp
                 //dst.thresholdId = std::nullopt;
             }
             if (item["thresholdPercentage"]) {
-                dst.thresholdPercentage = item["thresholdPercentage"].as<decltype(dst.thresholdPercentage
-                )::value_type>();
+                dst.thresholdPercentage = item["thresholdPercentage"].as<decltype(dst.thresholdPercentage)::value_type>();
             } else {
                 //dst.thresholdPercentage = std::nullopt;
             }
@@ -22611,6 +23100,7 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDataElementsTyp
             } else {
                 //dst.gridCondition = std::nullopt;
             }
+
         }
     } else {
         if (src["conditionId"]) {
@@ -22658,7 +23148,9 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDataElementsTyp
         } else {
             //dst.gridCondition = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SupplyConditionListDataType &src, JsonVariant &dst)
@@ -22676,11 +23168,11 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionListDataType &d
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["supplyConditionData"]) {
-                dst.supplyConditionData = item["supplyConditionData"].as<decltype(dst.supplyConditionData
-                )::value_type>();
+                dst.supplyConditionData = item["supplyConditionData"].as<decltype(dst.supplyConditionData)::value_type>();
             } else {
                 //dst.supplyConditionData = std::nullopt;
             }
+
         }
     } else {
         if (src["supplyConditionData"]) {
@@ -22688,7 +23180,9 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionListDataType &d
         } else {
             //dst.supplyConditionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SupplyConditionListDataSelectorsType &src, JsonVariant &dst)
@@ -22734,6 +23228,7 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionListDataSelecto
             } else {
                 //dst.originator = std::nullopt;
             }
+
         }
     } else {
         if (src["conditionId"]) {
@@ -22756,7 +23251,9 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionListDataSelecto
         } else {
             //dst.originator = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SupplyConditionDescriptionDataType &src, JsonVariant &dst)
@@ -22796,8 +23293,7 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionData
                 //dst.commodityType = std::nullopt;
             }
             if (item["positiveEnergyDirection"]) {
-                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-                )::value_type>();
+                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
             } else {
                 //dst.positiveEnergyDirection = std::nullopt;
             }
@@ -22811,6 +23307,7 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionData
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["conditionId"]) {
@@ -22824,8 +23321,7 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionData
             //dst.commodityType = std::nullopt;
         }
         if (src["positiveEnergyDirection"]) {
-            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-            )::value_type>();
+            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
         } else {
             //dst.positiveEnergyDirection = std::nullopt;
         }
@@ -22839,7 +23335,9 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionData
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SupplyConditionDescriptionDataElementsType &src, JsonVariant &dst)
@@ -22879,8 +23377,7 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionData
                 //dst.commodityType = std::nullopt;
             }
             if (item["positiveEnergyDirection"]) {
-                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-                )::value_type>();
+                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
             } else {
                 //dst.positiveEnergyDirection = std::nullopt;
             }
@@ -22894,6 +23391,7 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionData
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["conditionId"]) {
@@ -22907,8 +23405,7 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionData
             //dst.commodityType = std::nullopt;
         }
         if (src["positiveEnergyDirection"]) {
-            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-            )::value_type>();
+            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
         } else {
             //dst.positiveEnergyDirection = std::nullopt;
         }
@@ -22922,7 +23419,9 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionData
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SupplyConditionDescriptionListDataType &src, JsonVariant &dst)
@@ -22940,22 +23439,21 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionList
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["supplyConditionDescriptionData"]) {
-                dst.supplyConditionDescriptionData = item["supplyConditionDescriptionData"].as<decltype(dst.
-                    supplyConditionDescriptionData
-                )::value_type>();
+                dst.supplyConditionDescriptionData = item["supplyConditionDescriptionData"].as<decltype(dst.supplyConditionDescriptionData)::value_type>();
             } else {
                 //dst.supplyConditionDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["supplyConditionDescriptionData"]) {
-            dst.supplyConditionDescriptionData = src["supplyConditionDescriptionData"].as<decltype(dst.
-                supplyConditionDescriptionData
-            )::value_type>();
+            dst.supplyConditionDescriptionData = src["supplyConditionDescriptionData"].as<decltype(dst.supplyConditionDescriptionData)::value_type>();
         } else {
             //dst.supplyConditionDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SupplyConditionDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -22977,6 +23475,7 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionList
             } else {
                 //dst.conditionId = std::nullopt;
             }
+
         }
     } else {
         if (src["conditionId"]) {
@@ -22984,7 +23483,9 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionList
         } else {
             //dst.conditionId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SupplyConditionThresholdRelationDataType &src, JsonVariant &dst)
@@ -23014,6 +23515,7 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelati
             } else {
                 //dst.thresholdId = std::nullopt;
             }
+
         }
     } else {
         if (src["conditionId"]) {
@@ -23026,7 +23528,9 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelati
         } else {
             //dst.thresholdId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SupplyConditionThresholdRelationDataElementsType &src, JsonVariant &dst)
@@ -23056,6 +23560,7 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelati
             } else {
                 //dst.thresholdId = std::nullopt;
             }
+
         }
     } else {
         if (src["conditionId"]) {
@@ -23068,7 +23573,9 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelati
         } else {
             //dst.thresholdId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SupplyConditionThresholdRelationListDataType &src, JsonVariant &dst)
@@ -23086,20 +23593,21 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelati
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["supplyConditionThresholdRelationData"]) {
-                dst.supplyConditionThresholdRelationData = item["supplyConditionThresholdRelationData"].as<decltype(dst.
-                    supplyConditionThresholdRelationData)::value_type>();
+                dst.supplyConditionThresholdRelationData = item["supplyConditionThresholdRelationData"].as<decltype(dst.supplyConditionThresholdRelationData)::value_type>();
             } else {
                 //dst.supplyConditionThresholdRelationData = std::nullopt;
             }
+
         }
     } else {
         if (src["supplyConditionThresholdRelationData"]) {
-            dst.supplyConditionThresholdRelationData = src["supplyConditionThresholdRelationData"].as<decltype(dst.
-                supplyConditionThresholdRelationData)::value_type>();
+            dst.supplyConditionThresholdRelationData = src["supplyConditionThresholdRelationData"].as<decltype(dst.supplyConditionThresholdRelationData)::value_type>();
         } else {
             //dst.supplyConditionThresholdRelationData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SupplyConditionThresholdRelationListDataSelectorsType &src, JsonVariant &dst)
@@ -23129,6 +23637,7 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelati
             } else {
                 //dst.thresholdId = std::nullopt;
             }
+
         }
     } else {
         if (src["conditionId"]) {
@@ -23141,7 +23650,9 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelati
         } else {
             //dst.thresholdId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const AlarmDataType &src, JsonVariant &dst)
@@ -23227,6 +23738,7 @@ void convertFromJson(const JsonVariantConst &src, AlarmDataType &dst)
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["alarmId"]) {
@@ -23274,7 +23786,9 @@ void convertFromJson(const JsonVariantConst &src, AlarmDataType &dst)
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const AlarmDataElementsType &src, JsonVariant &dst)
@@ -23360,6 +23874,7 @@ void convertFromJson(const JsonVariantConst &src, AlarmDataElementsType &dst)
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["alarmId"]) {
@@ -23407,7 +23922,9 @@ void convertFromJson(const JsonVariantConst &src, AlarmDataElementsType &dst)
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const AlarmListDataType &src, JsonVariant &dst)
@@ -23429,6 +23946,7 @@ void convertFromJson(const JsonVariantConst &src, AlarmListDataType &dst)
             } else {
                 //dst.alarmData = std::nullopt;
             }
+
         }
     } else {
         if (src["alarmData"]) {
@@ -23436,7 +23954,9 @@ void convertFromJson(const JsonVariantConst &src, AlarmListDataType &dst)
         } else {
             //dst.alarmData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const AlarmListDataSelectorsType &src, JsonVariant &dst)
@@ -23466,6 +23986,7 @@ void convertFromJson(const JsonVariantConst &src, AlarmListDataSelectorsType &ds
             } else {
                 //dst.scopeType = std::nullopt;
             }
+
         }
     } else {
         if (src["alarmId"]) {
@@ -23478,7 +23999,9 @@ void convertFromJson(const JsonVariantConst &src, AlarmListDataSelectorsType &ds
         } else {
             //dst.scopeType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementSpecificationVersionListType &src, JsonVariant &dst)
@@ -23496,11 +24019,11 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSpecificationVer
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["specificationVersion"]) {
-                dst.specificationVersion = item["specificationVersion"].as<decltype(dst.specificationVersion
-                )::value_type>();
+                dst.specificationVersion = item["specificationVersion"].as<decltype(dst.specificationVersion)::value_type>();
             } else {
                 //dst.specificationVersion = std::nullopt;
             }
+
         }
     } else {
         if (src["specificationVersion"]) {
@@ -23508,7 +24031,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSpecificationVer
         } else {
             //dst.specificationVersion = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementDetailedDiscoveryDeviceInformationType &src, JsonVariant &dst)
@@ -23530,6 +24055,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["description"]) {
@@ -23537,7 +24063,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementDetailedDiscoveryEntityInformationType &src, JsonVariant &dst)
@@ -23559,6 +24087,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["description"]) {
@@ -23566,7 +24095,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementDetailedDiscoveryFeatureInformationType &src, JsonVariant &dst)
@@ -23588,6 +24119,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["description"]) {
@@ -23595,7 +24127,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementDetailedDiscoveryDataType &src, JsonVariant &dst)
@@ -23622,8 +24156,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["specificationVersionList"]) {
-                dst.specificationVersionList = item["specificationVersionList"].as<decltype(dst.specificationVersionList
-                )::value_type>();
+                dst.specificationVersionList = item["specificationVersionList"].as<decltype(dst.specificationVersionList)::value_type>();
             } else {
                 //dst.specificationVersionList = std::nullopt;
             }
@@ -23642,11 +24175,11 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
             } else {
                 //dst.featureInformation = std::nullopt;
             }
+
         }
     } else {
         if (src["specificationVersionList"]) {
-            dst.specificationVersionList = src["specificationVersionList"].as<decltype(dst.specificationVersionList
-            )::value_type>();
+            dst.specificationVersionList = src["specificationVersionList"].as<decltype(dst.specificationVersionList)::value_type>();
         } else {
             //dst.specificationVersionList = std::nullopt;
         }
@@ -23665,16 +24198,20 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
         } else {
             //dst.featureInformation = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SpecificationVersionDataElementsType &src, JsonVariant &dst)
 {
+
     return true;
 }
 
 void convertFromJson(const JsonVariantConst &src, SpecificationVersionDataElementsType &dst)
 {
+
 }
 
 bool convertToJson(const NodeManagementSpecificationVersionListElementsType &src, JsonVariant &dst)
@@ -23692,11 +24229,11 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSpecificationVer
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["specificationVersion"]) {
-                dst.specificationVersion = item["specificationVersion"].as<decltype(dst.specificationVersion
-                )::value_type>();
+                dst.specificationVersion = item["specificationVersion"].as<decltype(dst.specificationVersion)::value_type>();
             } else {
                 //dst.specificationVersion = std::nullopt;
             }
+
         }
     } else {
         if (src["specificationVersion"]) {
@@ -23704,7 +24241,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSpecificationVer
         } else {
             //dst.specificationVersion = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementDetailedDiscoveryDeviceInformationElementsType &src, JsonVariant &dst)
@@ -23726,6 +24265,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["description"]) {
@@ -23733,7 +24273,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementDetailedDiscoveryEntityInformationElementsType &src, JsonVariant &dst)
@@ -23755,6 +24297,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["description"]) {
@@ -23762,7 +24305,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementDetailedDiscoveryFeatureInformationElementsType &src, JsonVariant &dst)
@@ -23784,6 +24329,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["description"]) {
@@ -23791,7 +24337,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementDetailedDiscoveryDataElementsType &src, JsonVariant &dst)
@@ -23818,8 +24366,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["specificationVersionList"]) {
-                dst.specificationVersionList = item["specificationVersionList"].as<decltype(dst.specificationVersionList
-                )::value_type>();
+                dst.specificationVersionList = item["specificationVersionList"].as<decltype(dst.specificationVersionList)::value_type>();
             } else {
                 //dst.specificationVersionList = std::nullopt;
             }
@@ -23838,11 +24385,11 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
             } else {
                 //dst.featureInformation = std::nullopt;
             }
+
         }
     } else {
         if (src["specificationVersionList"]) {
-            dst.specificationVersionList = src["specificationVersionList"].as<decltype(dst.specificationVersionList
-            )::value_type>();
+            dst.specificationVersionList = src["specificationVersionList"].as<decltype(dst.specificationVersionList)::value_type>();
         } else {
             //dst.specificationVersionList = std::nullopt;
         }
@@ -23861,7 +24408,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
         } else {
             //dst.featureInformation = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementDetailedDiscoveryDataSelectorsType &src, JsonVariant &dst)
@@ -23899,6 +24448,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
             } else {
                 //dst.featureInformation = std::nullopt;
             }
+
         }
     } else {
         if (src["deviceInformation"]) {
@@ -23916,7 +24466,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
         } else {
             //dst.featureInformation = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BindingManagementEntryDataType &src, JsonVariant &dst)
@@ -23970,6 +24522,7 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementEntryDataType
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["bindingId"]) {
@@ -23997,7 +24550,9 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementEntryDataType
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementBindingDataType &src, JsonVariant &dst)
@@ -24019,6 +24574,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDataType 
             } else {
                 //dst.bindingEntry = std::nullopt;
             }
+
         }
     } else {
         if (src["bindingEntry"]) {
@@ -24026,7 +24582,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDataType 
         } else {
             //dst.bindingEntry = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BindingManagementEntryDataElementsType &src, JsonVariant &dst)
@@ -24080,6 +24638,7 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementEntryDataElem
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["bindingId"]) {
@@ -24107,7 +24666,9 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementEntryDataElem
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementBindingDataElementsType &src, JsonVariant &dst)
@@ -24129,6 +24690,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDataEleme
             } else {
                 //dst.bindingEntry = std::nullopt;
             }
+
         }
     } else {
         if (src["bindingEntry"]) {
@@ -24136,7 +24698,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDataEleme
         } else {
             //dst.bindingEntry = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BindingManagementEntryListDataSelectorsType &src, JsonVariant &dst)
@@ -24174,6 +24738,7 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementEntryListData
             } else {
                 //dst.serverAddress = std::nullopt;
             }
+
         }
     } else {
         if (src["bindingId"]) {
@@ -24191,7 +24756,9 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementEntryListData
         } else {
             //dst.serverAddress = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementBindingDataSelectorsType &src, JsonVariant &dst)
@@ -24213,6 +24780,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDataSelec
             } else {
                 //dst.bindingEntry = std::nullopt;
             }
+
         }
     } else {
         if (src["bindingEntry"]) {
@@ -24220,7 +24788,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDataSelec
         } else {
             //dst.bindingEntry = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BindingManagementRequestCallType &src, JsonVariant &dst)
@@ -24258,6 +24828,7 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementRequestCallTy
             } else {
                 //dst.serverFeatureType = std::nullopt;
             }
+
         }
     } else {
         if (src["clientAddress"]) {
@@ -24275,7 +24846,9 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementRequestCallTy
         } else {
             //dst.serverFeatureType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementBindingRequestCallType &src, JsonVariant &dst)
@@ -24297,6 +24870,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingRequestCa
             } else {
                 //dst.bindingRequest = std::nullopt;
             }
+
         }
     } else {
         if (src["bindingRequest"]) {
@@ -24304,7 +24878,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingRequestCa
         } else {
             //dst.bindingRequest = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BindingManagementRequestCallElementsType &src, JsonVariant &dst)
@@ -24342,6 +24918,7 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementRequestCallEl
             } else {
                 //dst.serverFeatureType = std::nullopt;
             }
+
         }
     } else {
         if (src["clientAddress"]) {
@@ -24359,7 +24936,9 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementRequestCallEl
         } else {
             //dst.serverFeatureType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementBindingRequestCallElementsType &src, JsonVariant &dst)
@@ -24381,6 +24960,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingRequestCa
             } else {
                 //dst.bindingRequest = std::nullopt;
             }
+
         }
     } else {
         if (src["bindingRequest"]) {
@@ -24388,7 +24968,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingRequestCa
         } else {
             //dst.bindingRequest = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BindingManagementDeleteCallType &src, JsonVariant &dst)
@@ -24426,6 +25008,7 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementDeleteCallTyp
             } else {
                 //dst.serverAddress = std::nullopt;
             }
+
         }
     } else {
         if (src["bindingId"]) {
@@ -24443,7 +25026,9 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementDeleteCallTyp
         } else {
             //dst.serverAddress = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementBindingDeleteCallType &src, JsonVariant &dst)
@@ -24465,6 +25050,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDeleteCal
             } else {
                 //dst.bindingDelete = std::nullopt;
             }
+
         }
     } else {
         if (src["bindingDelete"]) {
@@ -24472,7 +25058,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDeleteCal
         } else {
             //dst.bindingDelete = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BindingManagementDeleteCallElementsType &src, JsonVariant &dst)
@@ -24510,6 +25098,7 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementDeleteCallEle
             } else {
                 //dst.serverAddress = std::nullopt;
             }
+
         }
     } else {
         if (src["bindingId"]) {
@@ -24527,7 +25116,9 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementDeleteCallEle
         } else {
             //dst.serverAddress = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementBindingDeleteCallElementsType &src, JsonVariant &dst)
@@ -24549,6 +25140,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDeleteCal
             } else {
                 //dst.bindingDelete = std::nullopt;
             }
+
         }
     } else {
         if (src["bindingDelete"]) {
@@ -24556,7 +25148,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDeleteCal
         } else {
             //dst.bindingDelete = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SubscriptionManagementEntryDataType &src, JsonVariant &dst)
@@ -24610,6 +25204,7 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryDat
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["subscriptionId"]) {
@@ -24637,7 +25232,9 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryDat
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementSubscriptionDataType &src, JsonVariant &dst)
@@ -24659,6 +25256,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionData
             } else {
                 //dst.subscriptionEntry = std::nullopt;
             }
+
         }
     } else {
         if (src["subscriptionEntry"]) {
@@ -24666,7 +25264,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionData
         } else {
             //dst.subscriptionEntry = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SubscriptionManagementEntryDataElementsType &src, JsonVariant &dst)
@@ -24720,6 +25320,7 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryDat
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["subscriptionId"]) {
@@ -24747,7 +25348,9 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryDat
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementSubscriptionDataElementsType &src, JsonVariant &dst)
@@ -24769,6 +25372,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionData
             } else {
                 //dst.subscriptionEntry = std::nullopt;
             }
+
         }
     } else {
         if (src["subscriptionEntry"]) {
@@ -24776,7 +25380,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionData
         } else {
             //dst.subscriptionEntry = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SubscriptionManagementEntryListDataSelectorsType &src, JsonVariant &dst)
@@ -24814,6 +25420,7 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryLis
             } else {
                 //dst.serverAddress = std::nullopt;
             }
+
         }
     } else {
         if (src["subscriptionId"]) {
@@ -24831,7 +25438,9 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryLis
         } else {
             //dst.serverAddress = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementSubscriptionDataSelectorsType &src, JsonVariant &dst)
@@ -24853,6 +25462,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionData
             } else {
                 //dst.subscriptionEntry = std::nullopt;
             }
+
         }
     } else {
         if (src["subscriptionEntry"]) {
@@ -24860,7 +25470,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionData
         } else {
             //dst.subscriptionEntry = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SubscriptionManagementRequestCallType &src, JsonVariant &dst)
@@ -24898,6 +25510,7 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementRequestC
             } else {
                 //dst.serverFeatureType = std::nullopt;
             }
+
         }
     } else {
         if (src["clientAddress"]) {
@@ -24915,7 +25528,9 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementRequestC
         } else {
             //dst.serverFeatureType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementSubscriptionRequestCallType &src, JsonVariant &dst)
@@ -24933,11 +25548,11 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionRequ
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["subscriptionRequest"]) {
-                dst.subscriptionRequest = item["subscriptionRequest"].as<decltype(dst.subscriptionRequest
-                )::value_type>();
+                dst.subscriptionRequest = item["subscriptionRequest"].as<decltype(dst.subscriptionRequest)::value_type>();
             } else {
                 //dst.subscriptionRequest = std::nullopt;
             }
+
         }
     } else {
         if (src["subscriptionRequest"]) {
@@ -24945,7 +25560,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionRequ
         } else {
             //dst.subscriptionRequest = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SubscriptionManagementRequestCallElementsType &src, JsonVariant &dst)
@@ -24983,6 +25600,7 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementRequestC
             } else {
                 //dst.serverFeatureType = std::nullopt;
             }
+
         }
     } else {
         if (src["clientAddress"]) {
@@ -25000,7 +25618,9 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementRequestC
         } else {
             //dst.serverFeatureType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementSubscriptionRequestCallElementsType &src, JsonVariant &dst)
@@ -25018,11 +25638,11 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionRequ
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["subscriptionRequest"]) {
-                dst.subscriptionRequest = item["subscriptionRequest"].as<decltype(dst.subscriptionRequest
-                )::value_type>();
+                dst.subscriptionRequest = item["subscriptionRequest"].as<decltype(dst.subscriptionRequest)::value_type>();
             } else {
                 //dst.subscriptionRequest = std::nullopt;
             }
+
         }
     } else {
         if (src["subscriptionRequest"]) {
@@ -25030,7 +25650,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionRequ
         } else {
             //dst.subscriptionRequest = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SubscriptionManagementDeleteCallType &src, JsonVariant &dst)
@@ -25068,6 +25690,7 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementDeleteCa
             } else {
                 //dst.serverAddress = std::nullopt;
             }
+
         }
     } else {
         if (src["subscriptionId"]) {
@@ -25085,7 +25708,9 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementDeleteCa
         } else {
             //dst.serverAddress = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementSubscriptionDeleteCallType &src, JsonVariant &dst)
@@ -25107,6 +25732,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDele
             } else {
                 //dst.subscriptionDelete = std::nullopt;
             }
+
         }
     } else {
         if (src["subscriptionDelete"]) {
@@ -25114,7 +25740,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDele
         } else {
             //dst.subscriptionDelete = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SubscriptionManagementDeleteCallElementsType &src, JsonVariant &dst)
@@ -25152,6 +25780,7 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementDeleteCa
             } else {
                 //dst.serverAddress = std::nullopt;
             }
+
         }
     } else {
         if (src["subscriptionId"]) {
@@ -25169,7 +25798,9 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementDeleteCa
         } else {
             //dst.serverAddress = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementSubscriptionDeleteCallElementsType &src, JsonVariant &dst)
@@ -25191,6 +25822,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDele
             } else {
                 //dst.subscriptionDelete = std::nullopt;
             }
+
         }
     } else {
         if (src["subscriptionDelete"]) {
@@ -25198,7 +25830,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDele
         } else {
             //dst.subscriptionDelete = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementDestinationDataType &src, JsonVariant &dst)
@@ -25220,6 +25854,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationDataT
             } else {
                 //dst.deviceDescription = std::nullopt;
             }
+
         }
     } else {
         if (src["deviceDescription"]) {
@@ -25227,7 +25862,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationDataT
         } else {
             //dst.deviceDescription = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementDestinationDataElementsType &src, JsonVariant &dst)
@@ -25249,6 +25886,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationDataE
             } else {
                 //dst.deviceDescription = std::nullopt;
             }
+
         }
     } else {
         if (src["deviceDescription"]) {
@@ -25256,7 +25894,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationDataE
         } else {
             //dst.deviceDescription = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementDestinationListDataType &src, JsonVariant &dst)
@@ -25274,22 +25914,21 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationListD
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["nodeManagementDestinationData"]) {
-                dst.nodeManagementDestinationData = item["nodeManagementDestinationData"].as<decltype(dst.
-                    nodeManagementDestinationData
-                )::value_type>();
+                dst.nodeManagementDestinationData = item["nodeManagementDestinationData"].as<decltype(dst.nodeManagementDestinationData)::value_type>();
             } else {
                 //dst.nodeManagementDestinationData = std::nullopt;
             }
+
         }
     } else {
         if (src["nodeManagementDestinationData"]) {
-            dst.nodeManagementDestinationData = src["nodeManagementDestinationData"].as<decltype(dst.
-                nodeManagementDestinationData
-            )::value_type>();
+            dst.nodeManagementDestinationData = src["nodeManagementDestinationData"].as<decltype(dst.nodeManagementDestinationData)::value_type>();
         } else {
             //dst.nodeManagementDestinationData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementDestinationListDataSelectorsType &src, JsonVariant &dst)
@@ -25311,6 +25950,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationListD
             } else {
                 //dst.deviceDescription = std::nullopt;
             }
+
         }
     } else {
         if (src["deviceDescription"]) {
@@ -25318,7 +25958,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationListD
         } else {
             //dst.deviceDescription = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const UseCaseSupportType &src, JsonVariant &dst)
@@ -25368,12 +26010,11 @@ void convertFromJson(const JsonVariantConst &src, UseCaseSupportType &dst)
                 //dst.scenarioSupport = std::nullopt;
             }
             if (item["useCaseDocumentSubRevision"]) {
-                dst.useCaseDocumentSubRevision = item["useCaseDocumentSubRevision"].as<decltype(dst.
-                    useCaseDocumentSubRevision
-                )::value_type>();
+                dst.useCaseDocumentSubRevision = item["useCaseDocumentSubRevision"].as<decltype(dst.useCaseDocumentSubRevision)::value_type>();
             } else {
                 //dst.useCaseDocumentSubRevision = std::nullopt;
             }
+
         }
     } else {
         if (src["useCaseName"]) {
@@ -25397,12 +26038,13 @@ void convertFromJson(const JsonVariantConst &src, UseCaseSupportType &dst)
             //dst.scenarioSupport = std::nullopt;
         }
         if (src["useCaseDocumentSubRevision"]) {
-            dst.useCaseDocumentSubRevision = src["useCaseDocumentSubRevision"].as<decltype(dst.
-                useCaseDocumentSubRevision)::value_type>();
+            dst.useCaseDocumentSubRevision = src["useCaseDocumentSubRevision"].as<decltype(dst.useCaseDocumentSubRevision)::value_type>();
         } else {
             //dst.useCaseDocumentSubRevision = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const UseCaseInformationDataType &src, JsonVariant &dst)
@@ -25440,6 +26082,7 @@ void convertFromJson(const JsonVariantConst &src, UseCaseInformationDataType &ds
             } else {
                 //dst.useCaseSupport = std::nullopt;
             }
+
         }
     } else {
         if (src["address"]) {
@@ -25457,7 +26100,9 @@ void convertFromJson(const JsonVariantConst &src, UseCaseInformationDataType &ds
         } else {
             //dst.useCaseSupport = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementUseCaseDataType &src, JsonVariant &dst)
@@ -25479,6 +26124,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementUseCaseDataType 
             } else {
                 //dst.useCaseInformation = std::nullopt;
             }
+
         }
     } else {
         if (src["useCaseInformation"]) {
@@ -25486,7 +26132,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementUseCaseDataType 
         } else {
             //dst.useCaseInformation = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const UseCaseSupportElementsType &src, JsonVariant &dst)
@@ -25536,12 +26184,11 @@ void convertFromJson(const JsonVariantConst &src, UseCaseSupportElementsType &ds
                 //dst.scenarioSupport = std::nullopt;
             }
             if (item["useCaseDocumentSubRevision"]) {
-                dst.useCaseDocumentSubRevision = item["useCaseDocumentSubRevision"].as<decltype(dst.
-                    useCaseDocumentSubRevision
-                )::value_type>();
+                dst.useCaseDocumentSubRevision = item["useCaseDocumentSubRevision"].as<decltype(dst.useCaseDocumentSubRevision)::value_type>();
             } else {
                 //dst.useCaseDocumentSubRevision = std::nullopt;
             }
+
         }
     } else {
         if (src["useCaseName"]) {
@@ -25565,12 +26212,13 @@ void convertFromJson(const JsonVariantConst &src, UseCaseSupportElementsType &ds
             //dst.scenarioSupport = std::nullopt;
         }
         if (src["useCaseDocumentSubRevision"]) {
-            dst.useCaseDocumentSubRevision = src["useCaseDocumentSubRevision"].as<decltype(dst.
-                useCaseDocumentSubRevision)::value_type>();
+            dst.useCaseDocumentSubRevision = src["useCaseDocumentSubRevision"].as<decltype(dst.useCaseDocumentSubRevision)::value_type>();
         } else {
             //dst.useCaseDocumentSubRevision = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const UseCaseInformationDataElementsType &src, JsonVariant &dst)
@@ -25608,6 +26256,7 @@ void convertFromJson(const JsonVariantConst &src, UseCaseInformationDataElements
             } else {
                 //dst.useCaseSupport = std::nullopt;
             }
+
         }
     } else {
         if (src["address"]) {
@@ -25625,7 +26274,9 @@ void convertFromJson(const JsonVariantConst &src, UseCaseInformationDataElements
         } else {
             //dst.useCaseSupport = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementUseCaseDataElementsType &src, JsonVariant &dst)
@@ -25647,6 +26298,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementUseCaseDataEleme
             } else {
                 //dst.useCaseInformation = std::nullopt;
             }
+
         }
     } else {
         if (src["useCaseInformation"]) {
@@ -25654,7 +26306,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementUseCaseDataEleme
         } else {
             //dst.useCaseInformation = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const UseCaseSupportSelectorsType &src, JsonVariant &dst)
@@ -25692,6 +26346,7 @@ void convertFromJson(const JsonVariantConst &src, UseCaseSupportSelectorsType &d
             } else {
                 //dst.scenarioSupport = std::nullopt;
             }
+
         }
     } else {
         if (src["useCaseName"]) {
@@ -25709,7 +26364,9 @@ void convertFromJson(const JsonVariantConst &src, UseCaseSupportSelectorsType &d
         } else {
             //dst.scenarioSupport = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const UseCaseInformationListDataSelectorsType &src, JsonVariant &dst)
@@ -25747,6 +26404,7 @@ void convertFromJson(const JsonVariantConst &src, UseCaseInformationListDataSele
             } else {
                 //dst.useCaseSupport = std::nullopt;
             }
+
         }
     } else {
         if (src["address"]) {
@@ -25764,7 +26422,9 @@ void convertFromJson(const JsonVariantConst &src, UseCaseInformationListDataSele
         } else {
             //dst.useCaseSupport = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const NodeManagementUseCaseDataSelectorsType &src, JsonVariant &dst)
@@ -25786,6 +26446,7 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementUseCaseDataSelec
             } else {
                 //dst.useCaseInformation = std::nullopt;
             }
+
         }
     } else {
         if (src["useCaseInformation"]) {
@@ -25793,7 +26454,9 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementUseCaseDataSelec
         } else {
             //dst.useCaseInformation = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const BindingManagementEntryListDataType &src, JsonVariant &dst)
@@ -25811,21 +26474,21 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementEntryListData
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["bindingManagementEntryData"]) {
-                dst.bindingManagementEntryData = item["bindingManagementEntryData"].as<decltype(dst.
-                    bindingManagementEntryData
-                )::value_type>();
+                dst.bindingManagementEntryData = item["bindingManagementEntryData"].as<decltype(dst.bindingManagementEntryData)::value_type>();
             } else {
                 //dst.bindingManagementEntryData = std::nullopt;
             }
+
         }
     } else {
         if (src["bindingManagementEntryData"]) {
-            dst.bindingManagementEntryData = src["bindingManagementEntryData"].as<decltype(dst.
-                bindingManagementEntryData)::value_type>();
+            dst.bindingManagementEntryData = src["bindingManagementEntryData"].as<decltype(dst.bindingManagementEntryData)::value_type>();
         } else {
             //dst.bindingManagementEntryData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SubscriptionManagementEntryListDataType &src, JsonVariant &dst)
@@ -25843,21 +26506,21 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryLis
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["subscriptionManagementEntryData"]) {
-                dst.subscriptionManagementEntryData = item["subscriptionManagementEntryData"].as<decltype(dst.
-                    subscriptionManagementEntryData)::value_type>();
+                dst.subscriptionManagementEntryData = item["subscriptionManagementEntryData"].as<decltype(dst.subscriptionManagementEntryData)::value_type>();
             } else {
                 //dst.subscriptionManagementEntryData = std::nullopt;
             }
+
         }
     } else {
         if (src["subscriptionManagementEntryData"]) {
-            dst.subscriptionManagementEntryData = src["subscriptionManagementEntryData"].as<decltype(dst.
-                subscriptionManagementEntryData
-            )::value_type>();
+            dst.subscriptionManagementEntryData = src["subscriptionManagementEntryData"].as<decltype(dst.subscriptionManagementEntryData)::value_type>();
         } else {
             //dst.subscriptionManagementEntryData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const UseCaseInformationListDataType &src, JsonVariant &dst)
@@ -25875,20 +26538,21 @@ void convertFromJson(const JsonVariantConst &src, UseCaseInformationListDataType
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["useCaseInformationData"]) {
-                dst.useCaseInformationData = item["useCaseInformationData"].as<decltype(dst.useCaseInformationData
-                )::value_type>();
+                dst.useCaseInformationData = item["useCaseInformationData"].as<decltype(dst.useCaseInformationData)::value_type>();
             } else {
                 //dst.useCaseInformationData = std::nullopt;
             }
+
         }
     } else {
         if (src["useCaseInformationData"]) {
-            dst.useCaseInformationData = src["useCaseInformationData"].as<decltype(dst.useCaseInformationData
-            )::value_type>();
+            dst.useCaseInformationData = src["useCaseInformationData"].as<decltype(dst.useCaseInformationData)::value_type>();
         } else {
             //dst.useCaseInformationData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SpecificationVersionListDataType &src, JsonVariant &dst)
@@ -25906,47 +26570,54 @@ void convertFromJson(const JsonVariantConst &src, SpecificationVersionListDataTy
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["specificationVersionData"]) {
-                dst.specificationVersionData = item["specificationVersionData"].as<decltype(dst.specificationVersionData
-                )::value_type>();
+                dst.specificationVersionData = item["specificationVersionData"].as<decltype(dst.specificationVersionData)::value_type>();
             } else {
                 //dst.specificationVersionData = std::nullopt;
             }
+
         }
     } else {
         if (src["specificationVersionData"]) {
-            dst.specificationVersionData = src["specificationVersionData"].as<decltype(dst.specificationVersionData
-            )::value_type>();
+            dst.specificationVersionData = src["specificationVersionData"].as<decltype(dst.specificationVersionData)::value_type>();
         } else {
             //dst.specificationVersionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SpecificationVersionListDataSelectorsType &src, JsonVariant &dst)
 {
+
     return true;
 }
 
 void convertFromJson(const JsonVariantConst &src, SpecificationVersionListDataSelectorsType &dst)
 {
+
 }
 
 bool convertToJson(const TaskManagementDirectControlRelatedType &src, JsonVariant &dst)
 {
+
     return true;
 }
 
 void convertFromJson(const JsonVariantConst &src, TaskManagementDirectControlRelatedType &dst)
 {
+
 }
 
 bool convertToJson(const TaskManagementDirectControlRelatedElementsType &src, JsonVariant &dst)
 {
+
     return true;
 }
 
 void convertFromJson(const JsonVariantConst &src, TaskManagementDirectControlRelatedElementsType &dst)
 {
+
 }
 
 bool convertToJson(const TaskManagementHvacRelatedType &src, JsonVariant &dst)
@@ -25968,6 +26639,7 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementHvacRelatedType 
             } else {
                 //dst.overrunId = std::nullopt;
             }
+
         }
     } else {
         if (src["overrunId"]) {
@@ -25975,7 +26647,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementHvacRelatedType 
         } else {
             //dst.overrunId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TaskManagementHvacRelatedElementsType &src, JsonVariant &dst)
@@ -25997,6 +26671,7 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementHvacRelatedEleme
             } else {
                 //dst.overrunId = std::nullopt;
             }
+
         }
     } else {
         if (src["overrunId"]) {
@@ -26004,7 +26679,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementHvacRelatedEleme
         } else {
             //dst.overrunId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TaskManagementLoadControlReleatedType &src, JsonVariant &dst)
@@ -26026,6 +26703,7 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementLoadControlRelea
             } else {
                 //dst.eventId = std::nullopt;
             }
+
         }
     } else {
         if (src["eventId"]) {
@@ -26033,7 +26711,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementLoadControlRelea
         } else {
             //dst.eventId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TaskManagementLoadControlReleatedElementsType &src, JsonVariant &dst)
@@ -26055,6 +26735,7 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementLoadControlRelea
             } else {
                 //dst.eventId = std::nullopt;
             }
+
         }
     } else {
         if (src["eventId"]) {
@@ -26062,7 +26743,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementLoadControlRelea
         } else {
             //dst.eventId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TaskManagementPowerSequencesRelatedType &src, JsonVariant &dst)
@@ -26084,6 +26767,7 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementPowerSequencesRe
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -26091,7 +26775,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementPowerSequencesRe
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TaskManagementPowerSequencesRelatedElementsType &src, JsonVariant &dst)
@@ -26113,6 +26799,7 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementPowerSequencesRe
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -26120,7 +26807,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementPowerSequencesRe
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TaskManagementSmartEnergyManagementPsRelatedType &src, JsonVariant &dst)
@@ -26142,6 +26831,7 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementSmartEnergyManag
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -26149,7 +26839,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementSmartEnergyManag
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TaskManagementSmartEnergyManagementPsRelatedElementsType &src, JsonVariant &dst)
@@ -26171,6 +26863,7 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementSmartEnergyManag
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["sequenceId"]) {
@@ -26178,7 +26871,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementSmartEnergyManag
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TaskManagementJobDataType &src, JsonVariant &dst)
@@ -26232,6 +26927,7 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDataType &dst
             } else {
                 //dst.remainingTime = std::nullopt;
             }
+
         }
     } else {
         if (src["jobId"]) {
@@ -26259,7 +26955,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDataType &dst
         } else {
             //dst.remainingTime = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TaskManagementJobDataElementsType &src, JsonVariant &dst)
@@ -26313,6 +27011,7 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDataElementsT
             } else {
                 //dst.remainingTime = std::nullopt;
             }
+
         }
     } else {
         if (src["jobId"]) {
@@ -26340,7 +27039,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDataElementsT
         } else {
             //dst.remainingTime = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TaskManagementJobListDataType &src, JsonVariant &dst)
@@ -26358,20 +27059,21 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobListDataType 
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["taskManagementJobData"]) {
-                dst.taskManagementJobData = item["taskManagementJobData"].as<decltype(dst.taskManagementJobData
-                )::value_type>();
+                dst.taskManagementJobData = item["taskManagementJobData"].as<decltype(dst.taskManagementJobData)::value_type>();
             } else {
                 //dst.taskManagementJobData = std::nullopt;
             }
+
         }
     } else {
         if (src["taskManagementJobData"]) {
-            dst.taskManagementJobData = src["taskManagementJobData"].as<decltype(dst.taskManagementJobData
-            )::value_type>();
+            dst.taskManagementJobData = src["taskManagementJobData"].as<decltype(dst.taskManagementJobData)::value_type>();
         } else {
             //dst.taskManagementJobData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TaskManagementJobListDataSelectorsType &src, JsonVariant &dst)
@@ -26401,6 +27103,7 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobListDataSelec
             } else {
                 //dst.jobState = std::nullopt;
             }
+
         }
     } else {
         if (src["jobId"]) {
@@ -26413,7 +27116,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobListDataSelec
         } else {
             //dst.jobState = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TaskManagementJobRelationDataType &src, JsonVariant &dst)
@@ -26451,8 +27156,7 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationDataT
                 //dst.jobId = std::nullopt;
             }
             if (item["directControlRelated"]) {
-                dst.directControlRelated = item["directControlRelated"].as<decltype(dst.directControlRelated
-                )::value_type>();
+                dst.directControlRelated = item["directControlRelated"].as<decltype(dst.directControlRelated)::value_type>();
             } else {
                 //dst.directControlRelated = std::nullopt;
             }
@@ -26462,24 +27166,21 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationDataT
                 //dst.hvacRelated = std::nullopt;
             }
             if (item["loadControlReleated"]) {
-                dst.loadControlReleated = item["loadControlReleated"].as<decltype(dst.loadControlReleated
-                )::value_type>();
+                dst.loadControlReleated = item["loadControlReleated"].as<decltype(dst.loadControlReleated)::value_type>();
             } else {
                 //dst.loadControlReleated = std::nullopt;
             }
             if (item["powerSequencesRelated"]) {
-                dst.powerSequencesRelated = item["powerSequencesRelated"].as<decltype(dst.powerSequencesRelated
-                )::value_type>();
+                dst.powerSequencesRelated = item["powerSequencesRelated"].as<decltype(dst.powerSequencesRelated)::value_type>();
             } else {
                 //dst.powerSequencesRelated = std::nullopt;
             }
             if (item["smartEnergyManagementPsRelated"]) {
-                dst.smartEnergyManagementPsRelated = item["smartEnergyManagementPsRelated"].as<decltype(dst.
-                    smartEnergyManagementPsRelated
-                )::value_type>();
+                dst.smartEnergyManagementPsRelated = item["smartEnergyManagementPsRelated"].as<decltype(dst.smartEnergyManagementPsRelated)::value_type>();
             } else {
                 //dst.smartEnergyManagementPsRelated = std::nullopt;
             }
+
         }
     } else {
         if (src["jobId"]) {
@@ -26503,19 +27204,18 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationDataT
             //dst.loadControlReleated = std::nullopt;
         }
         if (src["powerSequencesRelated"]) {
-            dst.powerSequencesRelated = src["powerSequencesRelated"].as<decltype(dst.powerSequencesRelated
-            )::value_type>();
+            dst.powerSequencesRelated = src["powerSequencesRelated"].as<decltype(dst.powerSequencesRelated)::value_type>();
         } else {
             //dst.powerSequencesRelated = std::nullopt;
         }
         if (src["smartEnergyManagementPsRelated"]) {
-            dst.smartEnergyManagementPsRelated = src["smartEnergyManagementPsRelated"].as<decltype(dst.
-                smartEnergyManagementPsRelated
-            )::value_type>();
+            dst.smartEnergyManagementPsRelated = src["smartEnergyManagementPsRelated"].as<decltype(dst.smartEnergyManagementPsRelated)::value_type>();
         } else {
             //dst.smartEnergyManagementPsRelated = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TaskManagementJobRelationDataElementsType &src, JsonVariant &dst)
@@ -26553,8 +27253,7 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationDataE
                 //dst.jobId = std::nullopt;
             }
             if (item["directControlRelated"]) {
-                dst.directControlRelated = item["directControlRelated"].as<decltype(dst.directControlRelated
-                )::value_type>();
+                dst.directControlRelated = item["directControlRelated"].as<decltype(dst.directControlRelated)::value_type>();
             } else {
                 //dst.directControlRelated = std::nullopt;
             }
@@ -26564,24 +27263,21 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationDataE
                 //dst.hvacRelated = std::nullopt;
             }
             if (item["loadControlReleated"]) {
-                dst.loadControlReleated = item["loadControlReleated"].as<decltype(dst.loadControlReleated
-                )::value_type>();
+                dst.loadControlReleated = item["loadControlReleated"].as<decltype(dst.loadControlReleated)::value_type>();
             } else {
                 //dst.loadControlReleated = std::nullopt;
             }
             if (item["powerSequencesRelated"]) {
-                dst.powerSequencesRelated = item["powerSequencesRelated"].as<decltype(dst.powerSequencesRelated
-                )::value_type>();
+                dst.powerSequencesRelated = item["powerSequencesRelated"].as<decltype(dst.powerSequencesRelated)::value_type>();
             } else {
                 //dst.powerSequencesRelated = std::nullopt;
             }
             if (item["smartEnergyManagementPsRelated"]) {
-                dst.smartEnergyManagementPsRelated = item["smartEnergyManagementPsRelated"].as<decltype(dst.
-                    smartEnergyManagementPsRelated
-                )::value_type>();
+                dst.smartEnergyManagementPsRelated = item["smartEnergyManagementPsRelated"].as<decltype(dst.smartEnergyManagementPsRelated)::value_type>();
             } else {
                 //dst.smartEnergyManagementPsRelated = std::nullopt;
             }
+
         }
     } else {
         if (src["jobId"]) {
@@ -26605,19 +27301,18 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationDataE
             //dst.loadControlReleated = std::nullopt;
         }
         if (src["powerSequencesRelated"]) {
-            dst.powerSequencesRelated = src["powerSequencesRelated"].as<decltype(dst.powerSequencesRelated
-            )::value_type>();
+            dst.powerSequencesRelated = src["powerSequencesRelated"].as<decltype(dst.powerSequencesRelated)::value_type>();
         } else {
             //dst.powerSequencesRelated = std::nullopt;
         }
         if (src["smartEnergyManagementPsRelated"]) {
-            dst.smartEnergyManagementPsRelated = src["smartEnergyManagementPsRelated"].as<decltype(dst.
-                smartEnergyManagementPsRelated
-            )::value_type>();
+            dst.smartEnergyManagementPsRelated = src["smartEnergyManagementPsRelated"].as<decltype(dst.smartEnergyManagementPsRelated)::value_type>();
         } else {
             //dst.smartEnergyManagementPsRelated = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TaskManagementJobRelationListDataType &src, JsonVariant &dst)
@@ -26635,22 +27330,21 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationListD
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["taskManagementJobRelationData"]) {
-                dst.taskManagementJobRelationData = item["taskManagementJobRelationData"].as<decltype(dst.
-                    taskManagementJobRelationData
-                )::value_type>();
+                dst.taskManagementJobRelationData = item["taskManagementJobRelationData"].as<decltype(dst.taskManagementJobRelationData)::value_type>();
             } else {
                 //dst.taskManagementJobRelationData = std::nullopt;
             }
+
         }
     } else {
         if (src["taskManagementJobRelationData"]) {
-            dst.taskManagementJobRelationData = src["taskManagementJobRelationData"].as<decltype(dst.
-                taskManagementJobRelationData
-            )::value_type>();
+            dst.taskManagementJobRelationData = src["taskManagementJobRelationData"].as<decltype(dst.taskManagementJobRelationData)::value_type>();
         } else {
             //dst.taskManagementJobRelationData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TaskManagementJobRelationListDataSelectorsType &src, JsonVariant &dst)
@@ -26672,6 +27366,7 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationListD
             } else {
                 //dst.jobId = std::nullopt;
             }
+
         }
     } else {
         if (src["jobId"]) {
@@ -26679,7 +27374,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationListD
         } else {
             //dst.jobId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TaskManagementJobDescriptionDataType &src, JsonVariant &dst)
@@ -26725,6 +27422,7 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionDa
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["jobId"]) {
@@ -26747,7 +27445,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionDa
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TaskManagementJobDescriptionDataElementsType &src, JsonVariant &dst)
@@ -26793,6 +27493,7 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionDa
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["jobId"]) {
@@ -26815,7 +27516,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionDa
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TaskManagementJobDescriptionListDataType &src, JsonVariant &dst)
@@ -26833,21 +27536,21 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionLi
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["taskManagementJobDescriptionData"]) {
-                dst.taskManagementJobDescriptionData = item["taskManagementJobDescriptionData"].as<decltype(dst.
-                    taskManagementJobDescriptionData)::value_type>();
+                dst.taskManagementJobDescriptionData = item["taskManagementJobDescriptionData"].as<decltype(dst.taskManagementJobDescriptionData)::value_type>();
             } else {
                 //dst.taskManagementJobDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["taskManagementJobDescriptionData"]) {
-            dst.taskManagementJobDescriptionData = src["taskManagementJobDescriptionData"].as<decltype(dst.
-                taskManagementJobDescriptionData
-            )::value_type>();
+            dst.taskManagementJobDescriptionData = src["taskManagementJobDescriptionData"].as<decltype(dst.taskManagementJobDescriptionData)::value_type>();
         } else {
             //dst.taskManagementJobDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TaskManagementJobDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -26877,6 +27580,7 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionLi
             } else {
                 //dst.jobSource = std::nullopt;
             }
+
         }
     } else {
         if (src["jobId"]) {
@@ -26889,7 +27593,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionLi
         } else {
             //dst.jobSource = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TaskManagementOverviewDataType &src, JsonVariant &dst)
@@ -26919,6 +27625,7 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementOverviewDataType
             } else {
                 //dst.jobsActive = std::nullopt;
             }
+
         }
     } else {
         if (src["remoteControllable"]) {
@@ -26931,7 +27638,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementOverviewDataType
         } else {
             //dst.jobsActive = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TaskManagementOverviewDataElementsType &src, JsonVariant &dst)
@@ -26961,6 +27670,7 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementOverviewDataElem
             } else {
                 //dst.jobsActive = std::nullopt;
             }
+
         }
     } else {
         if (src["remoteControllable"]) {
@@ -26973,7 +27683,9 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementOverviewDataElem
         } else {
             //dst.jobsActive = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacSystemFunctionDataType &src, JsonVariant &dst)
@@ -27011,15 +27723,12 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDataType &ds
                 //dst.systemFunctionId = std::nullopt;
             }
             if (item["currentOperationModeId"]) {
-                dst.currentOperationModeId = item["currentOperationModeId"].as<decltype(dst.currentOperationModeId
-                )::value_type>();
+                dst.currentOperationModeId = item["currentOperationModeId"].as<decltype(dst.currentOperationModeId)::value_type>();
             } else {
                 //dst.currentOperationModeId = std::nullopt;
             }
             if (item["isOperationModeIdChangeable"]) {
-                dst.isOperationModeIdChangeable = item["isOperationModeIdChangeable"].as<decltype(dst.
-                    isOperationModeIdChangeable
-                )::value_type>();
+                dst.isOperationModeIdChangeable = item["isOperationModeIdChangeable"].as<decltype(dst.isOperationModeIdChangeable)::value_type>();
             } else {
                 //dst.isOperationModeIdChangeable = std::nullopt;
             }
@@ -27029,8 +27738,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDataType &ds
                 //dst.currentSetpointId = std::nullopt;
             }
             if (item["isSetpointIdChangeable"]) {
-                dst.isSetpointIdChangeable = item["isSetpointIdChangeable"].as<decltype(dst.isSetpointIdChangeable
-                )::value_type>();
+                dst.isSetpointIdChangeable = item["isSetpointIdChangeable"].as<decltype(dst.isSetpointIdChangeable)::value_type>();
             } else {
                 //dst.isSetpointIdChangeable = std::nullopt;
             }
@@ -27039,6 +27747,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDataType &ds
             } else {
                 //dst.isOverrunActive = std::nullopt;
             }
+
         }
     } else {
         if (src["systemFunctionId"]) {
@@ -27047,15 +27756,12 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDataType &ds
             //dst.systemFunctionId = std::nullopt;
         }
         if (src["currentOperationModeId"]) {
-            dst.currentOperationModeId = src["currentOperationModeId"].as<decltype(dst.currentOperationModeId
-            )::value_type>();
+            dst.currentOperationModeId = src["currentOperationModeId"].as<decltype(dst.currentOperationModeId)::value_type>();
         } else {
             //dst.currentOperationModeId = std::nullopt;
         }
         if (src["isOperationModeIdChangeable"]) {
-            dst.isOperationModeIdChangeable = src["isOperationModeIdChangeable"].as<decltype(dst.
-                isOperationModeIdChangeable
-            )::value_type>();
+            dst.isOperationModeIdChangeable = src["isOperationModeIdChangeable"].as<decltype(dst.isOperationModeIdChangeable)::value_type>();
         } else {
             //dst.isOperationModeIdChangeable = std::nullopt;
         }
@@ -27065,8 +27771,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDataType &ds
             //dst.currentSetpointId = std::nullopt;
         }
         if (src["isSetpointIdChangeable"]) {
-            dst.isSetpointIdChangeable = src["isSetpointIdChangeable"].as<decltype(dst.isSetpointIdChangeable
-            )::value_type>();
+            dst.isSetpointIdChangeable = src["isSetpointIdChangeable"].as<decltype(dst.isSetpointIdChangeable)::value_type>();
         } else {
             //dst.isSetpointIdChangeable = std::nullopt;
         }
@@ -27075,7 +27780,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDataType &ds
         } else {
             //dst.isOverrunActive = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacSystemFunctionDataElementsType &src, JsonVariant &dst)
@@ -27113,15 +27820,12 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDataElements
                 //dst.systemFunctionId = std::nullopt;
             }
             if (item["currentOperationModeId"]) {
-                dst.currentOperationModeId = item["currentOperationModeId"].as<decltype(dst.currentOperationModeId
-                )::value_type>();
+                dst.currentOperationModeId = item["currentOperationModeId"].as<decltype(dst.currentOperationModeId)::value_type>();
             } else {
                 //dst.currentOperationModeId = std::nullopt;
             }
             if (item["isOperationModeIdChangeable"]) {
-                dst.isOperationModeIdChangeable = item["isOperationModeIdChangeable"].as<decltype(dst.
-                    isOperationModeIdChangeable
-                )::value_type>();
+                dst.isOperationModeIdChangeable = item["isOperationModeIdChangeable"].as<decltype(dst.isOperationModeIdChangeable)::value_type>();
             } else {
                 //dst.isOperationModeIdChangeable = std::nullopt;
             }
@@ -27131,8 +27835,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDataElements
                 //dst.currentSetpointId = std::nullopt;
             }
             if (item["isSetpointIdChangeable"]) {
-                dst.isSetpointIdChangeable = item["isSetpointIdChangeable"].as<decltype(dst.isSetpointIdChangeable
-                )::value_type>();
+                dst.isSetpointIdChangeable = item["isSetpointIdChangeable"].as<decltype(dst.isSetpointIdChangeable)::value_type>();
             } else {
                 //dst.isSetpointIdChangeable = std::nullopt;
             }
@@ -27141,6 +27844,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDataElements
             } else {
                 //dst.isOverrunActive = std::nullopt;
             }
+
         }
     } else {
         if (src["systemFunctionId"]) {
@@ -27149,15 +27853,12 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDataElements
             //dst.systemFunctionId = std::nullopt;
         }
         if (src["currentOperationModeId"]) {
-            dst.currentOperationModeId = src["currentOperationModeId"].as<decltype(dst.currentOperationModeId
-            )::value_type>();
+            dst.currentOperationModeId = src["currentOperationModeId"].as<decltype(dst.currentOperationModeId)::value_type>();
         } else {
             //dst.currentOperationModeId = std::nullopt;
         }
         if (src["isOperationModeIdChangeable"]) {
-            dst.isOperationModeIdChangeable = src["isOperationModeIdChangeable"].as<decltype(dst.
-                isOperationModeIdChangeable
-            )::value_type>();
+            dst.isOperationModeIdChangeable = src["isOperationModeIdChangeable"].as<decltype(dst.isOperationModeIdChangeable)::value_type>();
         } else {
             //dst.isOperationModeIdChangeable = std::nullopt;
         }
@@ -27167,8 +27868,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDataElements
             //dst.currentSetpointId = std::nullopt;
         }
         if (src["isSetpointIdChangeable"]) {
-            dst.isSetpointIdChangeable = src["isSetpointIdChangeable"].as<decltype(dst.isSetpointIdChangeable
-            )::value_type>();
+            dst.isSetpointIdChangeable = src["isSetpointIdChangeable"].as<decltype(dst.isSetpointIdChangeable)::value_type>();
         } else {
             //dst.isSetpointIdChangeable = std::nullopt;
         }
@@ -27177,7 +27877,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDataElements
         } else {
             //dst.isOverrunActive = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacSystemFunctionListDataType &src, JsonVariant &dst)
@@ -27195,20 +27897,21 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionListDataType
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["hvacSystemFunctionData"]) {
-                dst.hvacSystemFunctionData = item["hvacSystemFunctionData"].as<decltype(dst.hvacSystemFunctionData
-                )::value_type>();
+                dst.hvacSystemFunctionData = item["hvacSystemFunctionData"].as<decltype(dst.hvacSystemFunctionData)::value_type>();
             } else {
                 //dst.hvacSystemFunctionData = std::nullopt;
             }
+
         }
     } else {
         if (src["hvacSystemFunctionData"]) {
-            dst.hvacSystemFunctionData = src["hvacSystemFunctionData"].as<decltype(dst.hvacSystemFunctionData
-            )::value_type>();
+            dst.hvacSystemFunctionData = src["hvacSystemFunctionData"].as<decltype(dst.hvacSystemFunctionData)::value_type>();
         } else {
             //dst.hvacSystemFunctionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacSystemFunctionListDataSelectorsType &src, JsonVariant &dst)
@@ -27230,6 +27933,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionListDataSele
             } else {
                 //dst.systemFunctionId = std::nullopt;
             }
+
         }
     } else {
         if (src["systemFunctionId"]) {
@@ -27237,7 +27941,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionListDataSele
         } else {
             //dst.systemFunctionId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacSystemFunctionOperationModeRelationDataType &src, JsonVariant &dst)
@@ -27267,6 +27973,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationMod
             } else {
                 //dst.operationModeId = std::nullopt;
             }
+
         }
     } else {
         if (src["systemFunctionId"]) {
@@ -27279,7 +27986,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationMod
         } else {
             //dst.operationModeId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacSystemFunctionOperationModeRelationDataElementsType &src, JsonVariant &dst)
@@ -27309,6 +28018,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationMod
             } else {
                 //dst.operationModeId = std::nullopt;
             }
+
         }
     } else {
         if (src["systemFunctionId"]) {
@@ -27321,7 +28031,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationMod
         } else {
             //dst.operationModeId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacSystemFunctionOperationModeRelationListDataType &src, JsonVariant &dst)
@@ -27339,22 +28051,21 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationMod
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["hvacSystemFunctionOperationModeRelationData"]) {
-                dst.hvacSystemFunctionOperationModeRelationData = item["hvacSystemFunctionOperationModeRelationData"].as
-                <decltype(dst.
-                    hvacSystemFunctionOperationModeRelationData)::value_type>();
+                dst.hvacSystemFunctionOperationModeRelationData = item["hvacSystemFunctionOperationModeRelationData"].as<decltype(dst.hvacSystemFunctionOperationModeRelationData)::value_type>();
             } else {
                 //dst.hvacSystemFunctionOperationModeRelationData = std::nullopt;
             }
+
         }
     } else {
         if (src["hvacSystemFunctionOperationModeRelationData"]) {
-            dst.hvacSystemFunctionOperationModeRelationData = src["hvacSystemFunctionOperationModeRelationData"].as<
-                decltype(dst.
-                    hvacSystemFunctionOperationModeRelationData)::value_type>();
+            dst.hvacSystemFunctionOperationModeRelationData = src["hvacSystemFunctionOperationModeRelationData"].as<decltype(dst.hvacSystemFunctionOperationModeRelationData)::value_type>();
         } else {
             //dst.hvacSystemFunctionOperationModeRelationData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacSystemFunctionOperationModeRelationListDataSelectorsType &src, JsonVariant &dst)
@@ -27376,6 +28087,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationMod
             } else {
                 //dst.systemFunctionId = std::nullopt;
             }
+
         }
     } else {
         if (src["systemFunctionId"]) {
@@ -27383,7 +28095,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationMod
         } else {
             //dst.systemFunctionId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacSystemFunctionSetpointRelationDataType &src, JsonVariant &dst)
@@ -27421,6 +28135,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRela
             } else {
                 //dst.setpointId = std::nullopt;
             }
+
         }
     } else {
         if (src["systemFunctionId"]) {
@@ -27438,7 +28153,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRela
         } else {
             //dst.setpointId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacSystemFunctionSetpointRelationDataElementsType &src, JsonVariant &dst)
@@ -27476,6 +28193,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRela
             } else {
                 //dst.setpointId = std::nullopt;
             }
+
         }
     } else {
         if (src["systemFunctionId"]) {
@@ -27493,7 +28211,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRela
         } else {
             //dst.setpointId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacSystemFunctionSetpointRelationListDataType &src, JsonVariant &dst)
@@ -27511,21 +28231,21 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRela
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["hvacSystemFunctionSetpointRelationData"]) {
-                dst.hvacSystemFunctionSetpointRelationData = item["hvacSystemFunctionSetpointRelationData"].as<decltype(
-                    dst.
-                    hvacSystemFunctionSetpointRelationData)::value_type>();
+                dst.hvacSystemFunctionSetpointRelationData = item["hvacSystemFunctionSetpointRelationData"].as<decltype(dst.hvacSystemFunctionSetpointRelationData)::value_type>();
             } else {
                 //dst.hvacSystemFunctionSetpointRelationData = std::nullopt;
             }
+
         }
     } else {
         if (src["hvacSystemFunctionSetpointRelationData"]) {
-            dst.hvacSystemFunctionSetpointRelationData = src["hvacSystemFunctionSetpointRelationData"].as<decltype(dst.
-                hvacSystemFunctionSetpointRelationData)::value_type>();
+            dst.hvacSystemFunctionSetpointRelationData = src["hvacSystemFunctionSetpointRelationData"].as<decltype(dst.hvacSystemFunctionSetpointRelationData)::value_type>();
         } else {
             //dst.hvacSystemFunctionSetpointRelationData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacSystemFunctionSetpointRelationListDataSelectorsType &src, JsonVariant &dst)
@@ -27555,6 +28275,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRela
             } else {
                 //dst.operationModeId = std::nullopt;
             }
+
         }
     } else {
         if (src["systemFunctionId"]) {
@@ -27567,7 +28288,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRela
         } else {
             //dst.operationModeId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacSystemFunctionPowerSequenceRelationDataType &src, JsonVariant &dst)
@@ -27597,6 +28320,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenc
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["systemFunctionId"]) {
@@ -27609,7 +28333,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenc
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacSystemFunctionPowerSequenceRelationDataElementsType &src, JsonVariant &dst)
@@ -27639,6 +28365,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenc
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["systemFunctionId"]) {
@@ -27651,7 +28378,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenc
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacSystemFunctionPowerSequenceRelationListDataType &src, JsonVariant &dst)
@@ -27669,22 +28398,21 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenc
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["hvacSystemFunctionPowerSequenceRelationData"]) {
-                dst.hvacSystemFunctionPowerSequenceRelationData = item["hvacSystemFunctionPowerSequenceRelationData"].as
-                <decltype(dst.
-                    hvacSystemFunctionPowerSequenceRelationData)::value_type>();
+                dst.hvacSystemFunctionPowerSequenceRelationData = item["hvacSystemFunctionPowerSequenceRelationData"].as<decltype(dst.hvacSystemFunctionPowerSequenceRelationData)::value_type>();
             } else {
                 //dst.hvacSystemFunctionPowerSequenceRelationData = std::nullopt;
             }
+
         }
     } else {
         if (src["hvacSystemFunctionPowerSequenceRelationData"]) {
-            dst.hvacSystemFunctionPowerSequenceRelationData = src["hvacSystemFunctionPowerSequenceRelationData"].as<
-                decltype(dst.
-                    hvacSystemFunctionPowerSequenceRelationData)::value_type>();
+            dst.hvacSystemFunctionPowerSequenceRelationData = src["hvacSystemFunctionPowerSequenceRelationData"].as<decltype(dst.hvacSystemFunctionPowerSequenceRelationData)::value_type>();
         } else {
             //dst.hvacSystemFunctionPowerSequenceRelationData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacSystemFunctionPowerSequenceRelationListDataSelectorsType &src, JsonVariant &dst)
@@ -27706,6 +28434,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenc
             } else {
                 //dst.systemFunctionId = std::nullopt;
             }
+
         }
     } else {
         if (src["systemFunctionId"]) {
@@ -27713,7 +28442,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenc
         } else {
             //dst.systemFunctionId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacSystemFunctionDescriptionDataType &src, JsonVariant &dst)
@@ -27759,6 +28490,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionD
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["systemFunctionId"]) {
@@ -27781,7 +28513,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionD
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacSystemFunctionDescriptionDataElementsType &src, JsonVariant &dst)
@@ -27827,6 +28561,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionD
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["systemFunctionId"]) {
@@ -27849,7 +28584,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionD
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacSystemFunctionDescriptionListDataType &src, JsonVariant &dst)
@@ -27867,20 +28604,21 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionL
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["hvacSystemFunctionDescriptionData"]) {
-                dst.hvacSystemFunctionDescriptionData = item["hvacSystemFunctionDescriptionData"].as<decltype(dst.
-                    hvacSystemFunctionDescriptionData)::value_type>();
+                dst.hvacSystemFunctionDescriptionData = item["hvacSystemFunctionDescriptionData"].as<decltype(dst.hvacSystemFunctionDescriptionData)::value_type>();
             } else {
                 //dst.hvacSystemFunctionDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["hvacSystemFunctionDescriptionData"]) {
-            dst.hvacSystemFunctionDescriptionData = src["hvacSystemFunctionDescriptionData"].as<decltype(dst.
-                hvacSystemFunctionDescriptionData)::value_type>();
+            dst.hvacSystemFunctionDescriptionData = src["hvacSystemFunctionDescriptionData"].as<decltype(dst.hvacSystemFunctionDescriptionData)::value_type>();
         } else {
             //dst.hvacSystemFunctionDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacSystemFunctionDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -27902,6 +28640,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionL
             } else {
                 //dst.systemFunctionId = std::nullopt;
             }
+
         }
     } else {
         if (src["systemFunctionId"]) {
@@ -27909,7 +28648,9 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionL
         } else {
             //dst.systemFunctionId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacOperationModeDescriptionDataType &src, JsonVariant &dst)
@@ -27955,6 +28696,7 @@ void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionDa
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["operationModeId"]) {
@@ -27977,7 +28719,9 @@ void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionDa
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacOperationModeDescriptionDataElementsType &src, JsonVariant &dst)
@@ -28023,6 +28767,7 @@ void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionDa
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["operationModeId"]) {
@@ -28045,7 +28790,9 @@ void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionDa
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacOperationModeDescriptionListDataType &src, JsonVariant &dst)
@@ -28063,21 +28810,21 @@ void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionLi
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["hvacOperationModeDescriptionData"]) {
-                dst.hvacOperationModeDescriptionData = item["hvacOperationModeDescriptionData"].as<decltype(dst.
-                    hvacOperationModeDescriptionData)::value_type>();
+                dst.hvacOperationModeDescriptionData = item["hvacOperationModeDescriptionData"].as<decltype(dst.hvacOperationModeDescriptionData)::value_type>();
             } else {
                 //dst.hvacOperationModeDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["hvacOperationModeDescriptionData"]) {
-            dst.hvacOperationModeDescriptionData = src["hvacOperationModeDescriptionData"].as<decltype(dst.
-                hvacOperationModeDescriptionData
-            )::value_type>();
+            dst.hvacOperationModeDescriptionData = src["hvacOperationModeDescriptionData"].as<decltype(dst.hvacOperationModeDescriptionData)::value_type>();
         } else {
             //dst.hvacOperationModeDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacOperationModeDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -28099,6 +28846,7 @@ void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionLi
             } else {
                 //dst.operationModeId = std::nullopt;
             }
+
         }
     } else {
         if (src["operationModeId"]) {
@@ -28106,7 +28854,9 @@ void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionLi
         } else {
             //dst.operationModeId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacOverrunDataType &src, JsonVariant &dst)
@@ -28148,11 +28898,11 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDataType &dst)
                 //dst.timeTableId = std::nullopt;
             }
             if (item["isOverrunStatusChangeable"]) {
-                dst.isOverrunStatusChangeable = item["isOverrunStatusChangeable"].as<decltype(dst.
-                    isOverrunStatusChangeable)::value_type>();
+                dst.isOverrunStatusChangeable = item["isOverrunStatusChangeable"].as<decltype(dst.isOverrunStatusChangeable)::value_type>();
             } else {
                 //dst.isOverrunStatusChangeable = std::nullopt;
             }
+
         }
     } else {
         if (src["overrunId"]) {
@@ -28171,12 +28921,13 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDataType &dst)
             //dst.timeTableId = std::nullopt;
         }
         if (src["isOverrunStatusChangeable"]) {
-            dst.isOverrunStatusChangeable = src["isOverrunStatusChangeable"].as<decltype(dst.isOverrunStatusChangeable
-            )::value_type>();
+            dst.isOverrunStatusChangeable = src["isOverrunStatusChangeable"].as<decltype(dst.isOverrunStatusChangeable)::value_type>();
         } else {
             //dst.isOverrunStatusChangeable = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacOverrunDataElementsType &src, JsonVariant &dst)
@@ -28218,11 +28969,11 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDataElementsType &d
                 //dst.timeTableId = std::nullopt;
             }
             if (item["isOverrunStatusChangeable"]) {
-                dst.isOverrunStatusChangeable = item["isOverrunStatusChangeable"].as<decltype(dst.
-                    isOverrunStatusChangeable)::value_type>();
+                dst.isOverrunStatusChangeable = item["isOverrunStatusChangeable"].as<decltype(dst.isOverrunStatusChangeable)::value_type>();
             } else {
                 //dst.isOverrunStatusChangeable = std::nullopt;
             }
+
         }
     } else {
         if (src["overrunId"]) {
@@ -28241,12 +28992,13 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDataElementsType &d
             //dst.timeTableId = std::nullopt;
         }
         if (src["isOverrunStatusChangeable"]) {
-            dst.isOverrunStatusChangeable = src["isOverrunStatusChangeable"].as<decltype(dst.isOverrunStatusChangeable
-            )::value_type>();
+            dst.isOverrunStatusChangeable = src["isOverrunStatusChangeable"].as<decltype(dst.isOverrunStatusChangeable)::value_type>();
         } else {
             //dst.isOverrunStatusChangeable = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacOverrunListDataType &src, JsonVariant &dst)
@@ -28268,6 +29020,7 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunListDataType &dst)
             } else {
                 //dst.hvacOverrunData = std::nullopt;
             }
+
         }
     } else {
         if (src["hvacOverrunData"]) {
@@ -28275,7 +29028,9 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunListDataType &dst)
         } else {
             //dst.hvacOverrunData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacOverrunListDataSelectorsType &src, JsonVariant &dst)
@@ -28297,6 +29052,7 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunListDataSelectorsTy
             } else {
                 //dst.overrunId = std::nullopt;
             }
+
         }
     } else {
         if (src["overrunId"]) {
@@ -28304,7 +29060,9 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunListDataSelectorsTy
         } else {
             //dst.overrunId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacOverrunDescriptionDataType &src, JsonVariant &dst)
@@ -28344,8 +29102,7 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionDataType
                 //dst.overrunType = std::nullopt;
             }
             if (item["affectedSystemFunctionId"]) {
-                dst.affectedSystemFunctionId = item["affectedSystemFunctionId"].as<decltype(dst.affectedSystemFunctionId
-                )::value_type>();
+                dst.affectedSystemFunctionId = item["affectedSystemFunctionId"].as<decltype(dst.affectedSystemFunctionId)::value_type>();
             } else {
                 //dst.affectedSystemFunctionId = std::nullopt;
             }
@@ -28359,6 +29116,7 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionDataType
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["overrunId"]) {
@@ -28372,8 +29130,7 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionDataType
             //dst.overrunType = std::nullopt;
         }
         if (src["affectedSystemFunctionId"]) {
-            dst.affectedSystemFunctionId = src["affectedSystemFunctionId"].as<decltype(dst.affectedSystemFunctionId
-            )::value_type>();
+            dst.affectedSystemFunctionId = src["affectedSystemFunctionId"].as<decltype(dst.affectedSystemFunctionId)::value_type>();
         } else {
             //dst.affectedSystemFunctionId = std::nullopt;
         }
@@ -28387,7 +29144,9 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionDataType
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacOverrunDescriptionDataElementsType &src, JsonVariant &dst)
@@ -28427,8 +29186,7 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionDataElem
                 //dst.overrunType = std::nullopt;
             }
             if (item["affectedSystemFunctionId"]) {
-                dst.affectedSystemFunctionId = item["affectedSystemFunctionId"].as<decltype(dst.affectedSystemFunctionId
-                )::value_type>();
+                dst.affectedSystemFunctionId = item["affectedSystemFunctionId"].as<decltype(dst.affectedSystemFunctionId)::value_type>();
             } else {
                 //dst.affectedSystemFunctionId = std::nullopt;
             }
@@ -28442,6 +29200,7 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionDataElem
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["overrunId"]) {
@@ -28455,8 +29214,7 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionDataElem
             //dst.overrunType = std::nullopt;
         }
         if (src["affectedSystemFunctionId"]) {
-            dst.affectedSystemFunctionId = src["affectedSystemFunctionId"].as<decltype(dst.affectedSystemFunctionId
-            )::value_type>();
+            dst.affectedSystemFunctionId = src["affectedSystemFunctionId"].as<decltype(dst.affectedSystemFunctionId)::value_type>();
         } else {
             //dst.affectedSystemFunctionId = std::nullopt;
         }
@@ -28470,7 +29228,9 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionDataElem
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacOverrunDescriptionListDataType &src, JsonVariant &dst)
@@ -28488,21 +29248,21 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionListData
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["hvacOverrunDescriptionData"]) {
-                dst.hvacOverrunDescriptionData = item["hvacOverrunDescriptionData"].as<decltype(dst.
-                    hvacOverrunDescriptionData
-                )::value_type>();
+                dst.hvacOverrunDescriptionData = item["hvacOverrunDescriptionData"].as<decltype(dst.hvacOverrunDescriptionData)::value_type>();
             } else {
                 //dst.hvacOverrunDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["hvacOverrunDescriptionData"]) {
-            dst.hvacOverrunDescriptionData = src["hvacOverrunDescriptionData"].as<decltype(dst.
-                hvacOverrunDescriptionData)::value_type>();
+            dst.hvacOverrunDescriptionData = src["hvacOverrunDescriptionData"].as<decltype(dst.hvacOverrunDescriptionData)::value_type>();
         } else {
             //dst.hvacOverrunDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HvacOverrunDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -28524,6 +29284,7 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionListData
             } else {
                 //dst.overrunId = std::nullopt;
             }
+
         }
     } else {
         if (src["overrunId"]) {
@@ -28531,7 +29292,9 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionListData
         } else {
             //dst.overrunId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const LoadControlNodeDataType &src, JsonVariant &dst)
@@ -28549,20 +29312,21 @@ void convertFromJson(const JsonVariantConst &src, LoadControlNodeDataType &dst)
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["isNodeRemoteControllable"]) {
-                dst.isNodeRemoteControllable = item["isNodeRemoteControllable"].as<decltype(dst.isNodeRemoteControllable
-                )::value_type>();
+                dst.isNodeRemoteControllable = item["isNodeRemoteControllable"].as<decltype(dst.isNodeRemoteControllable)::value_type>();
             } else {
                 //dst.isNodeRemoteControllable = std::nullopt;
             }
+
         }
     } else {
         if (src["isNodeRemoteControllable"]) {
-            dst.isNodeRemoteControllable = src["isNodeRemoteControllable"].as<decltype(dst.isNodeRemoteControllable
-            )::value_type>();
+            dst.isNodeRemoteControllable = src["isNodeRemoteControllable"].as<decltype(dst.isNodeRemoteControllable)::value_type>();
         } else {
             //dst.isNodeRemoteControllable = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const LoadControlNodeDataElementsType &src, JsonVariant &dst)
@@ -28580,20 +29344,21 @@ void convertFromJson(const JsonVariantConst &src, LoadControlNodeDataElementsTyp
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["isNodeRemoteControllable"]) {
-                dst.isNodeRemoteControllable = item["isNodeRemoteControllable"].as<decltype(dst.isNodeRemoteControllable
-                )::value_type>();
+                dst.isNodeRemoteControllable = item["isNodeRemoteControllable"].as<decltype(dst.isNodeRemoteControllable)::value_type>();
             } else {
                 //dst.isNodeRemoteControllable = std::nullopt;
             }
+
         }
     } else {
         if (src["isNodeRemoteControllable"]) {
-            dst.isNodeRemoteControllable = src["isNodeRemoteControllable"].as<decltype(dst.isNodeRemoteControllable
-            )::value_type>();
+            dst.isNodeRemoteControllable = src["isNodeRemoteControllable"].as<decltype(dst.isNodeRemoteControllable)::value_type>();
         } else {
             //dst.isNodeRemoteControllable = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const LoadControlEventDataType &src, JsonVariant &dst)
@@ -28647,6 +29412,7 @@ void convertFromJson(const JsonVariantConst &src, LoadControlEventDataType &dst)
             } else {
                 //dst.timePeriod = std::nullopt;
             }
+
         }
     } else {
         if (src["timestamp"]) {
@@ -28674,7 +29440,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlEventDataType &dst)
         } else {
             //dst.timePeriod = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const LoadControlEventDataElementsType &src, JsonVariant &dst)
@@ -28728,6 +29496,7 @@ void convertFromJson(const JsonVariantConst &src, LoadControlEventDataElementsTy
             } else {
                 //dst.timePeriod = std::nullopt;
             }
+
         }
     } else {
         if (src["timestamp"]) {
@@ -28755,7 +29524,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlEventDataElementsTy
         } else {
             //dst.timePeriod = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const LoadControlEventListDataType &src, JsonVariant &dst)
@@ -28773,11 +29544,11 @@ void convertFromJson(const JsonVariantConst &src, LoadControlEventListDataType &
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["loadControlEventData"]) {
-                dst.loadControlEventData = item["loadControlEventData"].as<decltype(dst.loadControlEventData
-                )::value_type>();
+                dst.loadControlEventData = item["loadControlEventData"].as<decltype(dst.loadControlEventData)::value_type>();
             } else {
                 //dst.loadControlEventData = std::nullopt;
             }
+
         }
     } else {
         if (src["loadControlEventData"]) {
@@ -28785,7 +29556,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlEventListDataType &
         } else {
             //dst.loadControlEventData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const LoadControlEventListDataSelectorsType &src, JsonVariant &dst)
@@ -28815,6 +29588,7 @@ void convertFromJson(const JsonVariantConst &src, LoadControlEventListDataSelect
             } else {
                 //dst.eventId = std::nullopt;
             }
+
         }
     } else {
         if (src["timestampInterval"]) {
@@ -28827,7 +29601,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlEventListDataSelect
         } else {
             //dst.eventId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const LoadControlStateDataType &src, JsonVariant &dst)
@@ -28875,8 +29651,7 @@ void convertFromJson(const JsonVariantConst &src, LoadControlStateDataType &dst)
                 //dst.eventStateConsume = std::nullopt;
             }
             if (item["appliedEventActionConsume"]) {
-                dst.appliedEventActionConsume = item["appliedEventActionConsume"].as<decltype(dst.
-                    appliedEventActionConsume)::value_type>();
+                dst.appliedEventActionConsume = item["appliedEventActionConsume"].as<decltype(dst.appliedEventActionConsume)::value_type>();
             } else {
                 //dst.appliedEventActionConsume = std::nullopt;
             }
@@ -28886,11 +29661,11 @@ void convertFromJson(const JsonVariantConst &src, LoadControlStateDataType &dst)
                 //dst.eventStateProduce = std::nullopt;
             }
             if (item["appliedEventActionProduce"]) {
-                dst.appliedEventActionProduce = item["appliedEventActionProduce"].as<decltype(dst.
-                    appliedEventActionProduce)::value_type>();
+                dst.appliedEventActionProduce = item["appliedEventActionProduce"].as<decltype(dst.appliedEventActionProduce)::value_type>();
             } else {
                 //dst.appliedEventActionProduce = std::nullopt;
             }
+
         }
     } else {
         if (src["timestamp"]) {
@@ -28909,8 +29684,7 @@ void convertFromJson(const JsonVariantConst &src, LoadControlStateDataType &dst)
             //dst.eventStateConsume = std::nullopt;
         }
         if (src["appliedEventActionConsume"]) {
-            dst.appliedEventActionConsume = src["appliedEventActionConsume"].as<decltype(dst.appliedEventActionConsume
-            )::value_type>();
+            dst.appliedEventActionConsume = src["appliedEventActionConsume"].as<decltype(dst.appliedEventActionConsume)::value_type>();
         } else {
             //dst.appliedEventActionConsume = std::nullopt;
         }
@@ -28920,12 +29694,13 @@ void convertFromJson(const JsonVariantConst &src, LoadControlStateDataType &dst)
             //dst.eventStateProduce = std::nullopt;
         }
         if (src["appliedEventActionProduce"]) {
-            dst.appliedEventActionProduce = src["appliedEventActionProduce"].as<decltype(dst.appliedEventActionProduce
-            )::value_type>();
+            dst.appliedEventActionProduce = src["appliedEventActionProduce"].as<decltype(dst.appliedEventActionProduce)::value_type>();
         } else {
             //dst.appliedEventActionProduce = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const LoadControlStateDataElementsType &src, JsonVariant &dst)
@@ -28973,8 +29748,7 @@ void convertFromJson(const JsonVariantConst &src, LoadControlStateDataElementsTy
                 //dst.eventStateConsume = std::nullopt;
             }
             if (item["appliedEventActionConsume"]) {
-                dst.appliedEventActionConsume = item["appliedEventActionConsume"].as<decltype(dst.
-                    appliedEventActionConsume)::value_type>();
+                dst.appliedEventActionConsume = item["appliedEventActionConsume"].as<decltype(dst.appliedEventActionConsume)::value_type>();
             } else {
                 //dst.appliedEventActionConsume = std::nullopt;
             }
@@ -28984,11 +29758,11 @@ void convertFromJson(const JsonVariantConst &src, LoadControlStateDataElementsTy
                 //dst.eventStateProduce = std::nullopt;
             }
             if (item["appliedEventActionProduce"]) {
-                dst.appliedEventActionProduce = item["appliedEventActionProduce"].as<decltype(dst.
-                    appliedEventActionProduce)::value_type>();
+                dst.appliedEventActionProduce = item["appliedEventActionProduce"].as<decltype(dst.appliedEventActionProduce)::value_type>();
             } else {
                 //dst.appliedEventActionProduce = std::nullopt;
             }
+
         }
     } else {
         if (src["timestamp"]) {
@@ -29007,8 +29781,7 @@ void convertFromJson(const JsonVariantConst &src, LoadControlStateDataElementsTy
             //dst.eventStateConsume = std::nullopt;
         }
         if (src["appliedEventActionConsume"]) {
-            dst.appliedEventActionConsume = src["appliedEventActionConsume"].as<decltype(dst.appliedEventActionConsume
-            )::value_type>();
+            dst.appliedEventActionConsume = src["appliedEventActionConsume"].as<decltype(dst.appliedEventActionConsume)::value_type>();
         } else {
             //dst.appliedEventActionConsume = std::nullopt;
         }
@@ -29018,12 +29791,13 @@ void convertFromJson(const JsonVariantConst &src, LoadControlStateDataElementsTy
             //dst.eventStateProduce = std::nullopt;
         }
         if (src["appliedEventActionProduce"]) {
-            dst.appliedEventActionProduce = src["appliedEventActionProduce"].as<decltype(dst.appliedEventActionProduce
-            )::value_type>();
+            dst.appliedEventActionProduce = src["appliedEventActionProduce"].as<decltype(dst.appliedEventActionProduce)::value_type>();
         } else {
             //dst.appliedEventActionProduce = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const LoadControlStateListDataType &src, JsonVariant &dst)
@@ -29041,11 +29815,11 @@ void convertFromJson(const JsonVariantConst &src, LoadControlStateListDataType &
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["loadControlStateData"]) {
-                dst.loadControlStateData = item["loadControlStateData"].as<decltype(dst.loadControlStateData
-                )::value_type>();
+                dst.loadControlStateData = item["loadControlStateData"].as<decltype(dst.loadControlStateData)::value_type>();
             } else {
                 //dst.loadControlStateData = std::nullopt;
             }
+
         }
     } else {
         if (src["loadControlStateData"]) {
@@ -29053,7 +29827,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlStateListDataType &
         } else {
             //dst.loadControlStateData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const LoadControlStateListDataSelectorsType &src, JsonVariant &dst)
@@ -29083,6 +29859,7 @@ void convertFromJson(const JsonVariantConst &src, LoadControlStateListDataSelect
             } else {
                 //dst.eventId = std::nullopt;
             }
+
         }
     } else {
         if (src["timestampInterval"]) {
@@ -29095,7 +29872,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlStateListDataSelect
         } else {
             //dst.eventId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const LoadControlLimitDataType &src, JsonVariant &dst)
@@ -29149,6 +29928,7 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDataType &dst)
             } else {
                 //dst.value = std::nullopt;
             }
+
         }
     } else {
         if (src["limitId"]) {
@@ -29176,7 +29956,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDataType &dst)
         } else {
             //dst.value = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const LoadControlLimitDataElementsType &src, JsonVariant &dst)
@@ -29230,6 +30012,7 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDataElementsTy
             } else {
                 //dst.value = std::nullopt;
             }
+
         }
     } else {
         if (src["limitId"]) {
@@ -29257,7 +30040,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDataElementsTy
         } else {
             //dst.value = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const LoadControlLimitListDataType &src, JsonVariant &dst)
@@ -29275,11 +30060,11 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitListDataType &
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["loadControlLimitData"]) {
-                dst.loadControlLimitData = item["loadControlLimitData"].as<decltype(dst.loadControlLimitData
-                )::value_type>();
+                dst.loadControlLimitData = item["loadControlLimitData"].as<decltype(dst.loadControlLimitData)::value_type>();
             } else {
                 //dst.loadControlLimitData = std::nullopt;
             }
+
         }
     } else {
         if (src["loadControlLimitData"]) {
@@ -29287,7 +30072,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitListDataType &
         } else {
             //dst.loadControlLimitData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const LoadControlLimitListDataSelectorsType &src, JsonVariant &dst)
@@ -29309,6 +30096,7 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitListDataSelect
             } else {
                 //dst.limitId = std::nullopt;
             }
+
         }
     } else {
         if (src["limitId"]) {
@@ -29316,7 +30104,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitListDataSelect
         } else {
             //dst.limitId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const LoadControlLimitConstraintsDataType &src, JsonVariant &dst)
@@ -29362,6 +30152,7 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsDat
             } else {
                 //dst.valueStepSize = std::nullopt;
             }
+
         }
     } else {
         if (src["limitId"]) {
@@ -29384,7 +30175,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsDat
         } else {
             //dst.valueStepSize = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const LoadControlLimitConstraintsDataElementsType &src, JsonVariant &dst)
@@ -29430,6 +30223,7 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsDat
             } else {
                 //dst.valueStepSize = std::nullopt;
             }
+
         }
     } else {
         if (src["limitId"]) {
@@ -29452,7 +30246,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsDat
         } else {
             //dst.valueStepSize = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const LoadControlLimitConstraintsListDataType &src, JsonVariant &dst)
@@ -29470,21 +30266,21 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsLis
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["loadControlLimitConstraintsData"]) {
-                dst.loadControlLimitConstraintsData = item["loadControlLimitConstraintsData"].as<decltype(dst.
-                    loadControlLimitConstraintsData)::value_type>();
+                dst.loadControlLimitConstraintsData = item["loadControlLimitConstraintsData"].as<decltype(dst.loadControlLimitConstraintsData)::value_type>();
             } else {
                 //dst.loadControlLimitConstraintsData = std::nullopt;
             }
+
         }
     } else {
         if (src["loadControlLimitConstraintsData"]) {
-            dst.loadControlLimitConstraintsData = src["loadControlLimitConstraintsData"].as<decltype(dst.
-                loadControlLimitConstraintsData
-            )::value_type>();
+            dst.loadControlLimitConstraintsData = src["loadControlLimitConstraintsData"].as<decltype(dst.loadControlLimitConstraintsData)::value_type>();
         } else {
             //dst.loadControlLimitConstraintsData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const LoadControlLimitConstraintsListDataSelectorsType &src, JsonVariant &dst)
@@ -29506,6 +30302,7 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsLis
             } else {
                 //dst.limitId = std::nullopt;
             }
+
         }
     } else {
         if (src["limitId"]) {
@@ -29513,7 +30310,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsLis
         } else {
             //dst.limitId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const LoadControlLimitDescriptionDataType &src, JsonVariant &dst)
@@ -29599,6 +30398,7 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionDat
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["limitId"]) {
@@ -29646,7 +30446,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionDat
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const LoadControlLimitDescriptionDataElementsType &src, JsonVariant &dst)
@@ -29732,6 +30534,7 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionDat
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["limitId"]) {
@@ -29779,7 +30582,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionDat
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const LoadControlLimitDescriptionListDataType &src, JsonVariant &dst)
@@ -29797,21 +30602,21 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionLis
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["loadControlLimitDescriptionData"]) {
-                dst.loadControlLimitDescriptionData = item["loadControlLimitDescriptionData"].as<decltype(dst.
-                    loadControlLimitDescriptionData)::value_type>();
+                dst.loadControlLimitDescriptionData = item["loadControlLimitDescriptionData"].as<decltype(dst.loadControlLimitDescriptionData)::value_type>();
             } else {
                 //dst.loadControlLimitDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["loadControlLimitDescriptionData"]) {
-            dst.loadControlLimitDescriptionData = src["loadControlLimitDescriptionData"].as<decltype(dst.
-                loadControlLimitDescriptionData
-            )::value_type>();
+            dst.loadControlLimitDescriptionData = src["loadControlLimitDescriptionData"].as<decltype(dst.loadControlLimitDescriptionData)::value_type>();
         } else {
             //dst.loadControlLimitDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const LoadControlLimitDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -29865,6 +30670,7 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionLis
             } else {
                 //dst.scopeType = std::nullopt;
             }
+
         }
     } else {
         if (src["limitId"]) {
@@ -29892,7 +30698,9 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionLis
         } else {
             //dst.scopeType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceClassificationManufacturerDataType &src, JsonVariant &dst)
@@ -29988,9 +30796,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceClassificationManufactur
                 //dst.powerSource = std::nullopt;
             }
             if (item["manufacturerNodeIdentification"]) {
-                dst.manufacturerNodeIdentification = item["manufacturerNodeIdentification"].as<decltype(dst.
-                    manufacturerNodeIdentification
-                )::value_type>();
+                dst.manufacturerNodeIdentification = item["manufacturerNodeIdentification"].as<decltype(dst.manufacturerNodeIdentification)::value_type>();
             } else {
                 //dst.manufacturerNodeIdentification = std::nullopt;
             }
@@ -30000,11 +30806,11 @@ void convertFromJson(const JsonVariantConst &src, DeviceClassificationManufactur
                 //dst.manufacturerLabel = std::nullopt;
             }
             if (item["manufacturerDescription"]) {
-                dst.manufacturerDescription = item["manufacturerDescription"].as<decltype(dst.manufacturerDescription
-                )::value_type>();
+                dst.manufacturerDescription = item["manufacturerDescription"].as<decltype(dst.manufacturerDescription)::value_type>();
             } else {
                 //dst.manufacturerDescription = std::nullopt;
             }
+
         }
     } else {
         if (src["deviceName"]) {
@@ -30053,9 +30859,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceClassificationManufactur
             //dst.powerSource = std::nullopt;
         }
         if (src["manufacturerNodeIdentification"]) {
-            dst.manufacturerNodeIdentification = src["manufacturerNodeIdentification"].as<decltype(dst.
-                manufacturerNodeIdentification
-            )::value_type>();
+            dst.manufacturerNodeIdentification = src["manufacturerNodeIdentification"].as<decltype(dst.manufacturerNodeIdentification)::value_type>();
         } else {
             //dst.manufacturerNodeIdentification = std::nullopt;
         }
@@ -30065,12 +30869,13 @@ void convertFromJson(const JsonVariantConst &src, DeviceClassificationManufactur
             //dst.manufacturerLabel = std::nullopt;
         }
         if (src["manufacturerDescription"]) {
-            dst.manufacturerDescription = src["manufacturerDescription"].as<decltype(dst.manufacturerDescription
-            )::value_type>();
+            dst.manufacturerDescription = src["manufacturerDescription"].as<decltype(dst.manufacturerDescription)::value_type>();
         } else {
             //dst.manufacturerDescription = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceClassificationManufacturerDataElementsType &src, JsonVariant &dst)
@@ -30166,9 +30971,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceClassificationManufactur
                 //dst.powerSource = std::nullopt;
             }
             if (item["manufacturerNodeIdentification"]) {
-                dst.manufacturerNodeIdentification = item["manufacturerNodeIdentification"].as<decltype(dst.
-                    manufacturerNodeIdentification
-                )::value_type>();
+                dst.manufacturerNodeIdentification = item["manufacturerNodeIdentification"].as<decltype(dst.manufacturerNodeIdentification)::value_type>();
             } else {
                 //dst.manufacturerNodeIdentification = std::nullopt;
             }
@@ -30178,11 +30981,11 @@ void convertFromJson(const JsonVariantConst &src, DeviceClassificationManufactur
                 //dst.manufacturerLabel = std::nullopt;
             }
             if (item["manufacturerDescription"]) {
-                dst.manufacturerDescription = item["manufacturerDescription"].as<decltype(dst.manufacturerDescription
-                )::value_type>();
+                dst.manufacturerDescription = item["manufacturerDescription"].as<decltype(dst.manufacturerDescription)::value_type>();
             } else {
                 //dst.manufacturerDescription = std::nullopt;
             }
+
         }
     } else {
         if (src["deviceName"]) {
@@ -30231,9 +31034,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceClassificationManufactur
             //dst.powerSource = std::nullopt;
         }
         if (src["manufacturerNodeIdentification"]) {
-            dst.manufacturerNodeIdentification = src["manufacturerNodeIdentification"].as<decltype(dst.
-                manufacturerNodeIdentification
-            )::value_type>();
+            dst.manufacturerNodeIdentification = src["manufacturerNodeIdentification"].as<decltype(dst.manufacturerNodeIdentification)::value_type>();
         } else {
             //dst.manufacturerNodeIdentification = std::nullopt;
         }
@@ -30243,12 +31044,13 @@ void convertFromJson(const JsonVariantConst &src, DeviceClassificationManufactur
             //dst.manufacturerLabel = std::nullopt;
         }
         if (src["manufacturerDescription"]) {
-            dst.manufacturerDescription = src["manufacturerDescription"].as<decltype(dst.manufacturerDescription
-            )::value_type>();
+            dst.manufacturerDescription = src["manufacturerDescription"].as<decltype(dst.manufacturerDescription)::value_type>();
         } else {
             //dst.manufacturerDescription = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceClassificationUserDataType &src, JsonVariant &dst)
@@ -30272,8 +31074,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceClassificationUserDataTy
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["userNodeIdentification"]) {
-                dst.userNodeIdentification = item["userNodeIdentification"].as<decltype(dst.userNodeIdentification
-                )::value_type>();
+                dst.userNodeIdentification = item["userNodeIdentification"].as<decltype(dst.userNodeIdentification)::value_type>();
             } else {
                 //dst.userNodeIdentification = std::nullopt;
             }
@@ -30287,11 +31088,11 @@ void convertFromJson(const JsonVariantConst &src, DeviceClassificationUserDataTy
             } else {
                 //dst.userDescription = std::nullopt;
             }
+
         }
     } else {
         if (src["userNodeIdentification"]) {
-            dst.userNodeIdentification = src["userNodeIdentification"].as<decltype(dst.userNodeIdentification
-            )::value_type>();
+            dst.userNodeIdentification = src["userNodeIdentification"].as<decltype(dst.userNodeIdentification)::value_type>();
         } else {
             //dst.userNodeIdentification = std::nullopt;
         }
@@ -30305,7 +31106,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceClassificationUserDataTy
         } else {
             //dst.userDescription = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceClassificationUserDataElementsType &src, JsonVariant &dst)
@@ -30329,8 +31132,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceClassificationUserDataEl
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["userNodeIdentification"]) {
-                dst.userNodeIdentification = item["userNodeIdentification"].as<decltype(dst.userNodeIdentification
-                )::value_type>();
+                dst.userNodeIdentification = item["userNodeIdentification"].as<decltype(dst.userNodeIdentification)::value_type>();
             } else {
                 //dst.userNodeIdentification = std::nullopt;
             }
@@ -30344,11 +31146,11 @@ void convertFromJson(const JsonVariantConst &src, DeviceClassificationUserDataEl
             } else {
                 //dst.userDescription = std::nullopt;
             }
+
         }
     } else {
         if (src["userNodeIdentification"]) {
-            dst.userNodeIdentification = src["userNodeIdentification"].as<decltype(dst.userNodeIdentification
-            )::value_type>();
+            dst.userNodeIdentification = src["userNodeIdentification"].as<decltype(dst.userNodeIdentification)::value_type>();
         } else {
             //dst.userNodeIdentification = std::nullopt;
         }
@@ -30362,7 +31164,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceClassificationUserDataEl
         } else {
             //dst.userDescription = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ActuatorLevelDataType &src, JsonVariant &dst)
@@ -30392,6 +31196,7 @@ void convertFromJson(const JsonVariantConst &src, ActuatorLevelDataType &dst)
             } else {
                 //dst.value = std::nullopt;
             }
+
         }
     } else {
         if (src["function"]) {
@@ -30404,7 +31209,9 @@ void convertFromJson(const JsonVariantConst &src, ActuatorLevelDataType &dst)
         } else {
             //dst.value = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ActuatorLevelDataElementsType &src, JsonVariant &dst)
@@ -30434,6 +31241,7 @@ void convertFromJson(const JsonVariantConst &src, ActuatorLevelDataElementsType 
             } else {
                 //dst.value = std::nullopt;
             }
+
         }
     } else {
         if (src["function"]) {
@@ -30446,7 +31254,9 @@ void convertFromJson(const JsonVariantConst &src, ActuatorLevelDataElementsType 
         } else {
             //dst.value = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ActuatorLevelDescriptionDataType &src, JsonVariant &dst)
@@ -30484,6 +31294,7 @@ void convertFromJson(const JsonVariantConst &src, ActuatorLevelDescriptionDataTy
             } else {
                 //dst.levelDefaultUnit = std::nullopt;
             }
+
         }
     } else {
         if (src["label"]) {
@@ -30501,7 +31312,9 @@ void convertFromJson(const JsonVariantConst &src, ActuatorLevelDescriptionDataTy
         } else {
             //dst.levelDefaultUnit = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ActuatorLevelDescriptionDataElementsType &src, JsonVariant &dst)
@@ -30539,6 +31352,7 @@ void convertFromJson(const JsonVariantConst &src, ActuatorLevelDescriptionDataEl
             } else {
                 //dst.levelDefaultUnit = std::nullopt;
             }
+
         }
     } else {
         if (src["label"]) {
@@ -30556,7 +31370,9 @@ void convertFromJson(const JsonVariantConst &src, ActuatorLevelDescriptionDataEl
         } else {
             //dst.levelDefaultUnit = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeSeriesSlotType &src, JsonVariant &dst)
@@ -30607,8 +31423,7 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesSlotType &dst)
                 //dst.duration = std::nullopt;
             }
             if (item["recurrenceInformation"]) {
-                dst.recurrenceInformation = item["recurrenceInformation"].as<decltype(dst.recurrenceInformation
-                )::value_type>();
+                dst.recurrenceInformation = item["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
             } else {
                 //dst.recurrenceInformation = std::nullopt;
             }
@@ -30627,6 +31442,7 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesSlotType &dst)
             } else {
                 //dst.maxValue = std::nullopt;
             }
+
         }
     } else {
         if (src["timeSeriesSlotId"]) {
@@ -30645,8 +31461,7 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesSlotType &dst)
             //dst.duration = std::nullopt;
         }
         if (src["recurrenceInformation"]) {
-            dst.recurrenceInformation = src["recurrenceInformation"].as<decltype(dst.recurrenceInformation
-            )::value_type>();
+            dst.recurrenceInformation = src["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
         } else {
             //dst.recurrenceInformation = std::nullopt;
         }
@@ -30665,7 +31480,9 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesSlotType &dst)
         } else {
             //dst.maxValue = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeSeriesSlotElementsType &src, JsonVariant &dst)
@@ -30716,8 +31533,7 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesSlotElementsType &ds
                 //dst.duration = std::nullopt;
             }
             if (item["recurrenceInformation"]) {
-                dst.recurrenceInformation = item["recurrenceInformation"].as<decltype(dst.recurrenceInformation
-                )::value_type>();
+                dst.recurrenceInformation = item["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
             } else {
                 //dst.recurrenceInformation = std::nullopt;
             }
@@ -30736,6 +31552,7 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesSlotElementsType &ds
             } else {
                 //dst.maxValue = std::nullopt;
             }
+
         }
     } else {
         if (src["timeSeriesSlotId"]) {
@@ -30754,8 +31571,7 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesSlotElementsType &ds
             //dst.duration = std::nullopt;
         }
         if (src["recurrenceInformation"]) {
-            dst.recurrenceInformation = src["recurrenceInformation"].as<decltype(dst.recurrenceInformation
-            )::value_type>();
+            dst.recurrenceInformation = src["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
         } else {
             //dst.recurrenceInformation = std::nullopt;
         }
@@ -30774,7 +31590,9 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesSlotElementsType &ds
         } else {
             //dst.maxValue = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeSeriesDataType &src, JsonVariant &dst)
@@ -30812,6 +31630,7 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDataType &dst)
             } else {
                 //dst.timeSeriesSlot = std::nullopt;
             }
+
         }
     } else {
         if (src["timeSeriesId"]) {
@@ -30829,7 +31648,9 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDataType &dst)
         } else {
             //dst.timeSeriesSlot = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeSeriesDataElementsType &src, JsonVariant &dst)
@@ -30867,6 +31688,7 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDataElementsType &ds
             } else {
                 //dst.timeSeriesSlot = std::nullopt;
             }
+
         }
     } else {
         if (src["timeSeriesId"]) {
@@ -30884,7 +31706,9 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDataElementsType &ds
         } else {
             //dst.timeSeriesSlot = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeSeriesListDataType &src, JsonVariant &dst)
@@ -30906,6 +31730,7 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesListDataType &dst)
             } else {
                 //dst.timeSeriesData = std::nullopt;
             }
+
         }
     } else {
         if (src["timeSeriesData"]) {
@@ -30913,7 +31738,9 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesListDataType &dst)
         } else {
             //dst.timeSeriesData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeSeriesListDataSelectorsType &src, JsonVariant &dst)
@@ -30943,6 +31770,7 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesListDataSelectorsTyp
             } else {
                 //dst.timeSeriesSlotId = std::nullopt;
             }
+
         }
     } else {
         if (src["timeSeriesId"]) {
@@ -30955,7 +31783,9 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesListDataSelectorsTyp
         } else {
             //dst.timeSeriesSlotId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeSeriesDescriptionDataType &src, JsonVariant &dst)
@@ -31010,8 +31840,7 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataType 
                 //dst.timeSeriesType = std::nullopt;
             }
             if (item["timeSeriesWriteable"]) {
-                dst.timeSeriesWriteable = item["timeSeriesWriteable"].as<decltype(dst.timeSeriesWriteable
-                )::value_type>();
+                dst.timeSeriesWriteable = item["timeSeriesWriteable"].as<decltype(dst.timeSeriesWriteable)::value_type>();
             } else {
                 //dst.timeSeriesWriteable = std::nullopt;
             }
@@ -31050,6 +31879,7 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataType 
             } else {
                 //dst.scopeType = std::nullopt;
             }
+
         }
     } else {
         if (src["timeSeriesId"]) {
@@ -31102,7 +31932,9 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataType 
         } else {
             //dst.scopeType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeSeriesDescriptionDataElementsType &src, JsonVariant &dst)
@@ -31157,8 +31989,7 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataEleme
                 //dst.timeSeriesType = std::nullopt;
             }
             if (item["timeSeriesWriteable"]) {
-                dst.timeSeriesWriteable = item["timeSeriesWriteable"].as<decltype(dst.timeSeriesWriteable
-                )::value_type>();
+                dst.timeSeriesWriteable = item["timeSeriesWriteable"].as<decltype(dst.timeSeriesWriteable)::value_type>();
             } else {
                 //dst.timeSeriesWriteable = std::nullopt;
             }
@@ -31197,6 +32028,7 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataEleme
             } else {
                 //dst.scopeType = std::nullopt;
             }
+
         }
     } else {
         if (src["timeSeriesId"]) {
@@ -31249,7 +32081,9 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataEleme
         } else {
             //dst.scopeType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeSeriesDescriptionListDataType &src, JsonVariant &dst)
@@ -31267,20 +32101,21 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionListDataT
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["timeSeriesDescriptionData"]) {
-                dst.timeSeriesDescriptionData = item["timeSeriesDescriptionData"].as<decltype(dst.
-                    timeSeriesDescriptionData)::value_type>();
+                dst.timeSeriesDescriptionData = item["timeSeriesDescriptionData"].as<decltype(dst.timeSeriesDescriptionData)::value_type>();
             } else {
                 //dst.timeSeriesDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["timeSeriesDescriptionData"]) {
-            dst.timeSeriesDescriptionData = src["timeSeriesDescriptionData"].as<decltype(dst.timeSeriesDescriptionData
-            )::value_type>();
+            dst.timeSeriesDescriptionData = src["timeSeriesDescriptionData"].as<decltype(dst.timeSeriesDescriptionData)::value_type>();
         } else {
             //dst.timeSeriesDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeSeriesDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -31326,6 +32161,7 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionListDataS
             } else {
                 //dst.scopeType = std::nullopt;
             }
+
         }
     } else {
         if (src["timeSeriesId"]) {
@@ -31348,7 +32184,9 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionListDataS
         } else {
             //dst.scopeType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeSeriesConstraintsDataType &src, JsonVariant &dst)
@@ -31421,21 +32259,17 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsDataType 
                 //dst.slotDurationMax = std::nullopt;
             }
             if (item["slotDurationStepSize"]) {
-                dst.slotDurationStepSize = item["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize
-                )::value_type>();
+                dst.slotDurationStepSize = item["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize)::value_type>();
             } else {
                 //dst.slotDurationStepSize = std::nullopt;
             }
             if (item["earliestTimeSeriesStartTime"]) {
-                dst.earliestTimeSeriesStartTime = item["earliestTimeSeriesStartTime"].as<decltype(dst.
-                    earliestTimeSeriesStartTime
-                )::value_type>();
+                dst.earliestTimeSeriesStartTime = item["earliestTimeSeriesStartTime"].as<decltype(dst.earliestTimeSeriesStartTime)::value_type>();
             } else {
                 //dst.earliestTimeSeriesStartTime = std::nullopt;
             }
             if (item["latestTimeSeriesEndTime"]) {
-                dst.latestTimeSeriesEndTime = item["latestTimeSeriesEndTime"].as<decltype(dst.latestTimeSeriesEndTime
-                )::value_type>();
+                dst.latestTimeSeriesEndTime = item["latestTimeSeriesEndTime"].as<decltype(dst.latestTimeSeriesEndTime)::value_type>();
             } else {
                 //dst.latestTimeSeriesEndTime = std::nullopt;
             }
@@ -31454,6 +32288,7 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsDataType 
             } else {
                 //dst.slotValueStepSize = std::nullopt;
             }
+
         }
     } else {
         if (src["timeSeriesId"]) {
@@ -31487,15 +32322,12 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsDataType 
             //dst.slotDurationStepSize = std::nullopt;
         }
         if (src["earliestTimeSeriesStartTime"]) {
-            dst.earliestTimeSeriesStartTime = src["earliestTimeSeriesStartTime"].as<decltype(dst.
-                earliestTimeSeriesStartTime
-            )::value_type>();
+            dst.earliestTimeSeriesStartTime = src["earliestTimeSeriesStartTime"].as<decltype(dst.earliestTimeSeriesStartTime)::value_type>();
         } else {
             //dst.earliestTimeSeriesStartTime = std::nullopt;
         }
         if (src["latestTimeSeriesEndTime"]) {
-            dst.latestTimeSeriesEndTime = src["latestTimeSeriesEndTime"].as<decltype(dst.latestTimeSeriesEndTime
-            )::value_type>();
+            dst.latestTimeSeriesEndTime = src["latestTimeSeriesEndTime"].as<decltype(dst.latestTimeSeriesEndTime)::value_type>();
         } else {
             //dst.latestTimeSeriesEndTime = std::nullopt;
         }
@@ -31514,7 +32346,9 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsDataType 
         } else {
             //dst.slotValueStepSize = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeSeriesConstraintsDataElementsType &src, JsonVariant &dst)
@@ -31587,21 +32421,17 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsDataEleme
                 //dst.slotDurationMax = std::nullopt;
             }
             if (item["slotDurationStepSize"]) {
-                dst.slotDurationStepSize = item["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize
-                )::value_type>();
+                dst.slotDurationStepSize = item["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize)::value_type>();
             } else {
                 //dst.slotDurationStepSize = std::nullopt;
             }
             if (item["earliestTimeSeriesStartTime"]) {
-                dst.earliestTimeSeriesStartTime = item["earliestTimeSeriesStartTime"].as<decltype(dst.
-                    earliestTimeSeriesStartTime
-                )::value_type>();
+                dst.earliestTimeSeriesStartTime = item["earliestTimeSeriesStartTime"].as<decltype(dst.earliestTimeSeriesStartTime)::value_type>();
             } else {
                 //dst.earliestTimeSeriesStartTime = std::nullopt;
             }
             if (item["latestTimeSeriesEndTime"]) {
-                dst.latestTimeSeriesEndTime = item["latestTimeSeriesEndTime"].as<decltype(dst.latestTimeSeriesEndTime
-                )::value_type>();
+                dst.latestTimeSeriesEndTime = item["latestTimeSeriesEndTime"].as<decltype(dst.latestTimeSeriesEndTime)::value_type>();
             } else {
                 //dst.latestTimeSeriesEndTime = std::nullopt;
             }
@@ -31620,6 +32450,7 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsDataEleme
             } else {
                 //dst.slotValueStepSize = std::nullopt;
             }
+
         }
     } else {
         if (src["timeSeriesId"]) {
@@ -31653,15 +32484,12 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsDataEleme
             //dst.slotDurationStepSize = std::nullopt;
         }
         if (src["earliestTimeSeriesStartTime"]) {
-            dst.earliestTimeSeriesStartTime = src["earliestTimeSeriesStartTime"].as<decltype(dst.
-                earliestTimeSeriesStartTime
-            )::value_type>();
+            dst.earliestTimeSeriesStartTime = src["earliestTimeSeriesStartTime"].as<decltype(dst.earliestTimeSeriesStartTime)::value_type>();
         } else {
             //dst.earliestTimeSeriesStartTime = std::nullopt;
         }
         if (src["latestTimeSeriesEndTime"]) {
-            dst.latestTimeSeriesEndTime = src["latestTimeSeriesEndTime"].as<decltype(dst.latestTimeSeriesEndTime
-            )::value_type>();
+            dst.latestTimeSeriesEndTime = src["latestTimeSeriesEndTime"].as<decltype(dst.latestTimeSeriesEndTime)::value_type>();
         } else {
             //dst.latestTimeSeriesEndTime = std::nullopt;
         }
@@ -31680,7 +32508,9 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsDataEleme
         } else {
             //dst.slotValueStepSize = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeSeriesConstraintsListDataType &src, JsonVariant &dst)
@@ -31698,20 +32528,21 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsListDataT
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["timeSeriesConstraintsData"]) {
-                dst.timeSeriesConstraintsData = item["timeSeriesConstraintsData"].as<decltype(dst.
-                    timeSeriesConstraintsData)::value_type>();
+                dst.timeSeriesConstraintsData = item["timeSeriesConstraintsData"].as<decltype(dst.timeSeriesConstraintsData)::value_type>();
             } else {
                 //dst.timeSeriesConstraintsData = std::nullopt;
             }
+
         }
     } else {
         if (src["timeSeriesConstraintsData"]) {
-            dst.timeSeriesConstraintsData = src["timeSeriesConstraintsData"].as<decltype(dst.timeSeriesConstraintsData
-            )::value_type>();
+            dst.timeSeriesConstraintsData = src["timeSeriesConstraintsData"].as<decltype(dst.timeSeriesConstraintsData)::value_type>();
         } else {
             //dst.timeSeriesConstraintsData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeSeriesConstraintsListDataSelectorsType &src, JsonVariant &dst)
@@ -31733,6 +32564,7 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsListDataS
             } else {
                 //dst.timeSeriesId = std::nullopt;
             }
+
         }
     } else {
         if (src["timeSeriesId"]) {
@@ -31740,7 +32572,9 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsListDataS
         } else {
             //dst.timeSeriesId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SmartEnergyManagementPsAlternativesRelationType &src, JsonVariant &dst)
@@ -31762,6 +32596,7 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlterna
             } else {
                 //dst.alternativesId = std::nullopt;
             }
+
         }
     } else {
         if (src["alternativesId"]) {
@@ -31769,7 +32604,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlterna
         } else {
             //dst.alternativesId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotValueListType &src, JsonVariant &dst)
@@ -31791,6 +32628,7 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTi
             } else {
                 //dst.value = std::nullopt;
             }
+
         }
     } else {
         if (src["value"]) {
@@ -31798,7 +32636,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTi
         } else {
             //dst.value = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotType &src, JsonVariant &dst)
@@ -31832,11 +32672,11 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTi
                 //dst.valueList = std::nullopt;
             }
             if (item["scheduleConstraints"]) {
-                dst.scheduleConstraints = item["scheduleConstraints"].as<decltype(dst.scheduleConstraints
-                )::value_type>();
+                dst.scheduleConstraints = item["scheduleConstraints"].as<decltype(dst.scheduleConstraints)::value_type>();
             } else {
                 //dst.scheduleConstraints = std::nullopt;
             }
+
         }
     } else {
         if (src["schedule"]) {
@@ -31854,7 +32694,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTi
         } else {
             //dst.scheduleConstraints = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SmartEnergyManagementPsPowerSequenceType &src, JsonVariant &dst)
@@ -31911,8 +32753,7 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerSe
                 //dst.schedule = std::nullopt;
             }
             if (item["scheduleConstraints"]) {
-                dst.scheduleConstraints = item["scheduleConstraints"].as<decltype(dst.scheduleConstraints
-                )::value_type>();
+                dst.scheduleConstraints = item["scheduleConstraints"].as<decltype(dst.scheduleConstraints)::value_type>();
             } else {
                 //dst.scheduleConstraints = std::nullopt;
             }
@@ -31922,23 +32763,17 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerSe
                 //dst.schedulePreference = std::nullopt;
             }
             if (item["operatingConstraintsInterrupt"]) {
-                dst.operatingConstraintsInterrupt = item["operatingConstraintsInterrupt"].as<decltype(dst.
-                    operatingConstraintsInterrupt
-                )::value_type>();
+                dst.operatingConstraintsInterrupt = item["operatingConstraintsInterrupt"].as<decltype(dst.operatingConstraintsInterrupt)::value_type>();
             } else {
                 //dst.operatingConstraintsInterrupt = std::nullopt;
             }
             if (item["operatingConstraintsDuration"]) {
-                dst.operatingConstraintsDuration = item["operatingConstraintsDuration"].as<decltype(dst.
-                    operatingConstraintsDuration
-                )::value_type>();
+                dst.operatingConstraintsDuration = item["operatingConstraintsDuration"].as<decltype(dst.operatingConstraintsDuration)::value_type>();
             } else {
                 //dst.operatingConstraintsDuration = std::nullopt;
             }
             if (item["operatingConstraintsResumeImplication"]) {
-                dst.operatingConstraintsResumeImplication = item["operatingConstraintsResumeImplication"].as<decltype(
-                    dst.
-                    operatingConstraintsResumeImplication)::value_type>();
+                dst.operatingConstraintsResumeImplication = item["operatingConstraintsResumeImplication"].as<decltype(dst.operatingConstraintsResumeImplication)::value_type>();
             } else {
                 //dst.operatingConstraintsResumeImplication = std::nullopt;
             }
@@ -31947,6 +32782,7 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerSe
             } else {
                 //dst.powerTimeSlot = std::nullopt;
             }
+
         }
     } else {
         if (src["description"]) {
@@ -31975,22 +32811,17 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerSe
             //dst.schedulePreference = std::nullopt;
         }
         if (src["operatingConstraintsInterrupt"]) {
-            dst.operatingConstraintsInterrupt = src["operatingConstraintsInterrupt"].as<decltype(dst.
-                operatingConstraintsInterrupt
-            )::value_type>();
+            dst.operatingConstraintsInterrupt = src["operatingConstraintsInterrupt"].as<decltype(dst.operatingConstraintsInterrupt)::value_type>();
         } else {
             //dst.operatingConstraintsInterrupt = std::nullopt;
         }
         if (src["operatingConstraintsDuration"]) {
-            dst.operatingConstraintsDuration = src["operatingConstraintsDuration"].as<decltype(dst.
-                operatingConstraintsDuration
-            )::value_type>();
+            dst.operatingConstraintsDuration = src["operatingConstraintsDuration"].as<decltype(dst.operatingConstraintsDuration)::value_type>();
         } else {
             //dst.operatingConstraintsDuration = std::nullopt;
         }
         if (src["operatingConstraintsResumeImplication"]) {
-            dst.operatingConstraintsResumeImplication = src["operatingConstraintsResumeImplication"].as<decltype(dst.
-                operatingConstraintsResumeImplication)::value_type>();
+            dst.operatingConstraintsResumeImplication = src["operatingConstraintsResumeImplication"].as<decltype(dst.operatingConstraintsResumeImplication)::value_type>();
         } else {
             //dst.operatingConstraintsResumeImplication = std::nullopt;
         }
@@ -31999,7 +32830,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerSe
         } else {
             //dst.powerTimeSlot = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SmartEnergyManagementPsAlternativesType &src, JsonVariant &dst)
@@ -32029,6 +32862,7 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlterna
             } else {
                 //dst.powerSequence = std::nullopt;
             }
+
         }
     } else {
         if (src["relation"]) {
@@ -32041,7 +32875,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlterna
         } else {
             //dst.powerSequence = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SmartEnergyManagementPsDataType &src, JsonVariant &dst)
@@ -32062,8 +32898,7 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataTyp
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["nodeScheduleInformation"]) {
-                dst.nodeScheduleInformation = item["nodeScheduleInformation"].as<decltype(dst.nodeScheduleInformation
-                )::value_type>();
+                dst.nodeScheduleInformation = item["nodeScheduleInformation"].as<decltype(dst.nodeScheduleInformation)::value_type>();
             } else {
                 //dst.nodeScheduleInformation = std::nullopt;
             }
@@ -32072,11 +32907,11 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataTyp
             } else {
                 //dst.alternatives = std::nullopt;
             }
+
         }
     } else {
         if (src["nodeScheduleInformation"]) {
-            dst.nodeScheduleInformation = src["nodeScheduleInformation"].as<decltype(dst.nodeScheduleInformation
-            )::value_type>();
+            dst.nodeScheduleInformation = src["nodeScheduleInformation"].as<decltype(dst.nodeScheduleInformation)::value_type>();
         } else {
             //dst.nodeScheduleInformation = std::nullopt;
         }
@@ -32085,7 +32920,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataTyp
         } else {
             //dst.alternatives = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SmartEnergyManagementPsAlternativesRelationElementsType &src, JsonVariant &dst)
@@ -32107,6 +32944,7 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlterna
             } else {
                 //dst.alternativesId = std::nullopt;
             }
+
         }
     } else {
         if (src["alternativesId"]) {
@@ -32114,7 +32952,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlterna
         } else {
             //dst.alternativesId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotValueListElementsType &src, JsonVariant &dst)
@@ -32136,6 +32976,7 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTi
             } else {
                 //dst.value = std::nullopt;
             }
+
         }
     } else {
         if (src["value"]) {
@@ -32143,7 +32984,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTi
         } else {
             //dst.value = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotElementsType &src, JsonVariant &dst)
@@ -32177,11 +33020,11 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTi
                 //dst.valueList = std::nullopt;
             }
             if (item["scheduleConstraints"]) {
-                dst.scheduleConstraints = item["scheduleConstraints"].as<decltype(dst.scheduleConstraints
-                )::value_type>();
+                dst.scheduleConstraints = item["scheduleConstraints"].as<decltype(dst.scheduleConstraints)::value_type>();
             } else {
                 //dst.scheduleConstraints = std::nullopt;
             }
+
         }
     } else {
         if (src["schedule"]) {
@@ -32199,7 +33042,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTi
         } else {
             //dst.scheduleConstraints = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SmartEnergyManagementPsPowerSequenceElementsType &src, JsonVariant &dst)
@@ -32256,8 +33101,7 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerSe
                 //dst.schedule = std::nullopt;
             }
             if (item["scheduleConstraints"]) {
-                dst.scheduleConstraints = item["scheduleConstraints"].as<decltype(dst.scheduleConstraints
-                )::value_type>();
+                dst.scheduleConstraints = item["scheduleConstraints"].as<decltype(dst.scheduleConstraints)::value_type>();
             } else {
                 //dst.scheduleConstraints = std::nullopt;
             }
@@ -32267,23 +33111,17 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerSe
                 //dst.schedulePreference = std::nullopt;
             }
             if (item["operatingConstraintsInterrupt"]) {
-                dst.operatingConstraintsInterrupt = item["operatingConstraintsInterrupt"].as<decltype(dst.
-                    operatingConstraintsInterrupt
-                )::value_type>();
+                dst.operatingConstraintsInterrupt = item["operatingConstraintsInterrupt"].as<decltype(dst.operatingConstraintsInterrupt)::value_type>();
             } else {
                 //dst.operatingConstraintsInterrupt = std::nullopt;
             }
             if (item["operatingConstraintsDuration"]) {
-                dst.operatingConstraintsDuration = item["operatingConstraintsDuration"].as<decltype(dst.
-                    operatingConstraintsDuration
-                )::value_type>();
+                dst.operatingConstraintsDuration = item["operatingConstraintsDuration"].as<decltype(dst.operatingConstraintsDuration)::value_type>();
             } else {
                 //dst.operatingConstraintsDuration = std::nullopt;
             }
             if (item["operatingConstraintsResumeImplication"]) {
-                dst.operatingConstraintsResumeImplication = item["operatingConstraintsResumeImplication"].as<decltype(
-                    dst.
-                    operatingConstraintsResumeImplication)::value_type>();
+                dst.operatingConstraintsResumeImplication = item["operatingConstraintsResumeImplication"].as<decltype(dst.operatingConstraintsResumeImplication)::value_type>();
             } else {
                 //dst.operatingConstraintsResumeImplication = std::nullopt;
             }
@@ -32292,6 +33130,7 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerSe
             } else {
                 //dst.powerTimeSlot = std::nullopt;
             }
+
         }
     } else {
         if (src["description"]) {
@@ -32320,22 +33159,17 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerSe
             //dst.schedulePreference = std::nullopt;
         }
         if (src["operatingConstraintsInterrupt"]) {
-            dst.operatingConstraintsInterrupt = src["operatingConstraintsInterrupt"].as<decltype(dst.
-                operatingConstraintsInterrupt
-            )::value_type>();
+            dst.operatingConstraintsInterrupt = src["operatingConstraintsInterrupt"].as<decltype(dst.operatingConstraintsInterrupt)::value_type>();
         } else {
             //dst.operatingConstraintsInterrupt = std::nullopt;
         }
         if (src["operatingConstraintsDuration"]) {
-            dst.operatingConstraintsDuration = src["operatingConstraintsDuration"].as<decltype(dst.
-                operatingConstraintsDuration
-            )::value_type>();
+            dst.operatingConstraintsDuration = src["operatingConstraintsDuration"].as<decltype(dst.operatingConstraintsDuration)::value_type>();
         } else {
             //dst.operatingConstraintsDuration = std::nullopt;
         }
         if (src["operatingConstraintsResumeImplication"]) {
-            dst.operatingConstraintsResumeImplication = src["operatingConstraintsResumeImplication"].as<decltype(dst.
-                operatingConstraintsResumeImplication)::value_type>();
+            dst.operatingConstraintsResumeImplication = src["operatingConstraintsResumeImplication"].as<decltype(dst.operatingConstraintsResumeImplication)::value_type>();
         } else {
             //dst.operatingConstraintsResumeImplication = std::nullopt;
         }
@@ -32344,7 +33178,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerSe
         } else {
             //dst.powerTimeSlot = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SmartEnergyManagementPsAlternativesElementsType &src, JsonVariant &dst)
@@ -32374,6 +33210,7 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlterna
             } else {
                 //dst.powerSequence = std::nullopt;
             }
+
         }
     } else {
         if (src["relation"]) {
@@ -32386,7 +33223,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlterna
         } else {
             //dst.powerSequence = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SmartEnergyManagementPsDataElementsType &src, JsonVariant &dst)
@@ -32407,8 +33246,7 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataEle
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["nodeScheduleInformation"]) {
-                dst.nodeScheduleInformation = item["nodeScheduleInformation"].as<decltype(dst.nodeScheduleInformation
-                )::value_type>();
+                dst.nodeScheduleInformation = item["nodeScheduleInformation"].as<decltype(dst.nodeScheduleInformation)::value_type>();
             } else {
                 //dst.nodeScheduleInformation = std::nullopt;
             }
@@ -32417,11 +33255,11 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataEle
             } else {
                 //dst.alternatives = std::nullopt;
             }
+
         }
     } else {
         if (src["nodeScheduleInformation"]) {
-            dst.nodeScheduleInformation = src["nodeScheduleInformation"].as<decltype(dst.nodeScheduleInformation
-            )::value_type>();
+            dst.nodeScheduleInformation = src["nodeScheduleInformation"].as<decltype(dst.nodeScheduleInformation)::value_type>();
         } else {
             //dst.nodeScheduleInformation = std::nullopt;
         }
@@ -32430,7 +33268,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataEle
         } else {
             //dst.alternatives = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SmartEnergyManagementPsDataSelectorsType &src, JsonVariant &dst)
@@ -32457,20 +33297,17 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataSel
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["alternativesRelation"]) {
-                dst.alternativesRelation = item["alternativesRelation"].as<decltype(dst.alternativesRelation
-                )::value_type>();
+                dst.alternativesRelation = item["alternativesRelation"].as<decltype(dst.alternativesRelation)::value_type>();
             } else {
                 //dst.alternativesRelation = std::nullopt;
             }
             if (item["powerSequenceDescription"]) {
-                dst.powerSequenceDescription = item["powerSequenceDescription"].as<decltype(dst.powerSequenceDescription
-                )::value_type>();
+                dst.powerSequenceDescription = item["powerSequenceDescription"].as<decltype(dst.powerSequenceDescription)::value_type>();
             } else {
                 //dst.powerSequenceDescription = std::nullopt;
             }
             if (item["powerTimeSlotSchedule"]) {
-                dst.powerTimeSlotSchedule = item["powerTimeSlotSchedule"].as<decltype(dst.powerTimeSlotSchedule
-                )::value_type>();
+                dst.powerTimeSlotSchedule = item["powerTimeSlotSchedule"].as<decltype(dst.powerTimeSlotSchedule)::value_type>();
             } else {
                 //dst.powerTimeSlotSchedule = std::nullopt;
             }
@@ -32479,6 +33316,7 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataSel
             } else {
                 //dst.powerTimeSlotValue = std::nullopt;
             }
+
         }
     } else {
         if (src["alternativesRelation"]) {
@@ -32487,14 +33325,12 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataSel
             //dst.alternativesRelation = std::nullopt;
         }
         if (src["powerSequenceDescription"]) {
-            dst.powerSequenceDescription = src["powerSequenceDescription"].as<decltype(dst.powerSequenceDescription
-            )::value_type>();
+            dst.powerSequenceDescription = src["powerSequenceDescription"].as<decltype(dst.powerSequenceDescription)::value_type>();
         } else {
             //dst.powerSequenceDescription = std::nullopt;
         }
         if (src["powerTimeSlotSchedule"]) {
-            dst.powerTimeSlotSchedule = src["powerTimeSlotSchedule"].as<decltype(dst.powerTimeSlotSchedule
-            )::value_type>();
+            dst.powerTimeSlotSchedule = src["powerTimeSlotSchedule"].as<decltype(dst.powerTimeSlotSchedule)::value_type>();
         } else {
             //dst.powerTimeSlotSchedule = std::nullopt;
         }
@@ -32503,7 +33339,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataSel
         } else {
             //dst.powerTimeSlotValue = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SmartEnergyManagementPsPriceDataType &src, JsonVariant &dst)
@@ -32525,6 +33363,7 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceDa
             } else {
                 //dst.price = std::nullopt;
             }
+
         }
     } else {
         if (src["price"]) {
@@ -32532,7 +33371,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceDa
         } else {
             //dst.price = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SmartEnergyManagementPsPriceDataElementsType &src, JsonVariant &dst)
@@ -32554,6 +33395,7 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceDa
             } else {
                 //dst.price = std::nullopt;
             }
+
         }
     } else {
         if (src["price"]) {
@@ -32561,7 +33403,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceDa
         } else {
             //dst.price = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SmartEnergyManagementPsPriceDataSelectorsType &src, JsonVariant &dst)
@@ -32583,6 +33427,7 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceDa
             } else {
                 //dst.price = std::nullopt;
             }
+
         }
     } else {
         if (src["price"]) {
@@ -32590,7 +33435,9 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceDa
         } else {
             //dst.price = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SmartEnergyManagementPsConfigurationRequestCallType &src, JsonVariant &dst)
@@ -32608,22 +33455,21 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsConfigu
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["scheduleConfigurationRequest"]) {
-                dst.scheduleConfigurationRequest = item["scheduleConfigurationRequest"].as<decltype(dst.
-                    scheduleConfigurationRequest
-                )::value_type>();
+                dst.scheduleConfigurationRequest = item["scheduleConfigurationRequest"].as<decltype(dst.scheduleConfigurationRequest)::value_type>();
             } else {
                 //dst.scheduleConfigurationRequest = std::nullopt;
             }
+
         }
     } else {
         if (src["scheduleConfigurationRequest"]) {
-            dst.scheduleConfigurationRequest = src["scheduleConfigurationRequest"].as<decltype(dst.
-                scheduleConfigurationRequest
-            )::value_type>();
+            dst.scheduleConfigurationRequest = src["scheduleConfigurationRequest"].as<decltype(dst.scheduleConfigurationRequest)::value_type>();
         } else {
             //dst.scheduleConfigurationRequest = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SmartEnergyManagementPsConfigurationRequestCallElementsType &src, JsonVariant &dst)
@@ -32641,22 +33487,21 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsConfigu
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["scheduleConfigurationRequest"]) {
-                dst.scheduleConfigurationRequest = item["scheduleConfigurationRequest"].as<decltype(dst.
-                    scheduleConfigurationRequest
-                )::value_type>();
+                dst.scheduleConfigurationRequest = item["scheduleConfigurationRequest"].as<decltype(dst.scheduleConfigurationRequest)::value_type>();
             } else {
                 //dst.scheduleConfigurationRequest = std::nullopt;
             }
+
         }
     } else {
         if (src["scheduleConfigurationRequest"]) {
-            dst.scheduleConfigurationRequest = src["scheduleConfigurationRequest"].as<decltype(dst.
-                scheduleConfigurationRequest
-            )::value_type>();
+            dst.scheduleConfigurationRequest = src["scheduleConfigurationRequest"].as<decltype(dst.scheduleConfigurationRequest)::value_type>();
         } else {
             //dst.scheduleConfigurationRequest = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SmartEnergyManagementPsPriceCalculationRequestCallType &src, JsonVariant &dst)
@@ -32674,20 +33519,21 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceCa
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["priceCalculationRequest"]) {
-                dst.priceCalculationRequest = item["priceCalculationRequest"].as<decltype(dst.priceCalculationRequest
-                )::value_type>();
+                dst.priceCalculationRequest = item["priceCalculationRequest"].as<decltype(dst.priceCalculationRequest)::value_type>();
             } else {
                 //dst.priceCalculationRequest = std::nullopt;
             }
+
         }
     } else {
         if (src["priceCalculationRequest"]) {
-            dst.priceCalculationRequest = src["priceCalculationRequest"].as<decltype(dst.priceCalculationRequest
-            )::value_type>();
+            dst.priceCalculationRequest = src["priceCalculationRequest"].as<decltype(dst.priceCalculationRequest)::value_type>();
         } else {
             //dst.priceCalculationRequest = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const SmartEnergyManagementPsPriceCalculationRequestCallElementsType &src, JsonVariant &dst)
@@ -32705,20 +33551,21 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceCa
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["priceCalculationRequest"]) {
-                dst.priceCalculationRequest = item["priceCalculationRequest"].as<decltype(dst.priceCalculationRequest
-                )::value_type>();
+                dst.priceCalculationRequest = item["priceCalculationRequest"].as<decltype(dst.priceCalculationRequest)::value_type>();
             } else {
                 //dst.priceCalculationRequest = std::nullopt;
             }
+
         }
     } else {
         if (src["priceCalculationRequest"]) {
-            dst.priceCalculationRequest = src["priceCalculationRequest"].as<decltype(dst.priceCalculationRequest
-            )::value_type>();
+            dst.priceCalculationRequest = src["priceCalculationRequest"].as<decltype(dst.priceCalculationRequest)::value_type>();
         } else {
             //dst.priceCalculationRequest = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MessagingDataType &src, JsonVariant &dst)
@@ -32764,6 +33611,7 @@ void convertFromJson(const JsonVariantConst &src, MessagingDataType &dst)
             } else {
                 //dst.text = std::nullopt;
             }
+
         }
     } else {
         if (src["timestamp"]) {
@@ -32786,7 +33634,9 @@ void convertFromJson(const JsonVariantConst &src, MessagingDataType &dst)
         } else {
             //dst.text = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MessagingDataElementsType &src, JsonVariant &dst)
@@ -32832,6 +33682,7 @@ void convertFromJson(const JsonVariantConst &src, MessagingDataElementsType &dst
             } else {
                 //dst.text = std::nullopt;
             }
+
         }
     } else {
         if (src["timestamp"]) {
@@ -32854,7 +33705,9 @@ void convertFromJson(const JsonVariantConst &src, MessagingDataElementsType &dst
         } else {
             //dst.text = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MessagingListDataType &src, JsonVariant &dst)
@@ -32876,6 +33729,7 @@ void convertFromJson(const JsonVariantConst &src, MessagingListDataType &dst)
             } else {
                 //dst.messagingData = std::nullopt;
             }
+
         }
     } else {
         if (src["messagingData"]) {
@@ -32883,7 +33737,9 @@ void convertFromJson(const JsonVariantConst &src, MessagingListDataType &dst)
         } else {
             //dst.messagingData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const MessagingListDataSelectorsType &src, JsonVariant &dst)
@@ -32913,6 +33769,7 @@ void convertFromJson(const JsonVariantConst &src, MessagingListDataSelectorsType
             } else {
                 //dst.messagingNumber = std::nullopt;
             }
+
         }
     } else {
         if (src["timestampInterval"]) {
@@ -32925,7 +33782,9 @@ void convertFromJson(const JsonVariantConst &src, MessagingListDataSelectorsType
         } else {
             //dst.messagingNumber = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TariffOverallConstraintsDataType &src, JsonVariant &dst)
@@ -32984,8 +33843,7 @@ void convertFromJson(const JsonVariantConst &src, TariffOverallConstraintsDataTy
                 //dst.maxIncentiveCount = std::nullopt;
             }
             if (item["maxBoundariesPerTariff"]) {
-                dst.maxBoundariesPerTariff = item["maxBoundariesPerTariff"].as<decltype(dst.maxBoundariesPerTariff
-                )::value_type>();
+                dst.maxBoundariesPerTariff = item["maxBoundariesPerTariff"].as<decltype(dst.maxBoundariesPerTariff)::value_type>();
             } else {
                 //dst.maxBoundariesPerTariff = std::nullopt;
             }
@@ -32995,17 +33853,16 @@ void convertFromJson(const JsonVariantConst &src, TariffOverallConstraintsDataTy
                 //dst.maxTiersPerTariff = std::nullopt;
             }
             if (item["maxBoundariesPerTier"]) {
-                dst.maxBoundariesPerTier = item["maxBoundariesPerTier"].as<decltype(dst.maxBoundariesPerTier
-                )::value_type>();
+                dst.maxBoundariesPerTier = item["maxBoundariesPerTier"].as<decltype(dst.maxBoundariesPerTier)::value_type>();
             } else {
                 //dst.maxBoundariesPerTier = std::nullopt;
             }
             if (item["maxIncentivesPerTier"]) {
-                dst.maxIncentivesPerTier = item["maxIncentivesPerTier"].as<decltype(dst.maxIncentivesPerTier
-                )::value_type>();
+                dst.maxIncentivesPerTier = item["maxIncentivesPerTier"].as<decltype(dst.maxIncentivesPerTier)::value_type>();
             } else {
                 //dst.maxIncentivesPerTier = std::nullopt;
             }
+
         }
     } else {
         if (src["maxTariffCount"]) {
@@ -33029,8 +33886,7 @@ void convertFromJson(const JsonVariantConst &src, TariffOverallConstraintsDataTy
             //dst.maxIncentiveCount = std::nullopt;
         }
         if (src["maxBoundariesPerTariff"]) {
-            dst.maxBoundariesPerTariff = src["maxBoundariesPerTariff"].as<decltype(dst.maxBoundariesPerTariff
-            )::value_type>();
+            dst.maxBoundariesPerTariff = src["maxBoundariesPerTariff"].as<decltype(dst.maxBoundariesPerTariff)::value_type>();
         } else {
             //dst.maxBoundariesPerTariff = std::nullopt;
         }
@@ -33049,7 +33905,9 @@ void convertFromJson(const JsonVariantConst &src, TariffOverallConstraintsDataTy
         } else {
             //dst.maxIncentivesPerTier = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TariffOverallConstraintsDataElementsType &src, JsonVariant &dst)
@@ -33108,8 +33966,7 @@ void convertFromJson(const JsonVariantConst &src, TariffOverallConstraintsDataEl
                 //dst.maxIncentiveCount = std::nullopt;
             }
             if (item["maxBoundariesPerTariff"]) {
-                dst.maxBoundariesPerTariff = item["maxBoundariesPerTariff"].as<decltype(dst.maxBoundariesPerTariff
-                )::value_type>();
+                dst.maxBoundariesPerTariff = item["maxBoundariesPerTariff"].as<decltype(dst.maxBoundariesPerTariff)::value_type>();
             } else {
                 //dst.maxBoundariesPerTariff = std::nullopt;
             }
@@ -33119,17 +33976,16 @@ void convertFromJson(const JsonVariantConst &src, TariffOverallConstraintsDataEl
                 //dst.maxTiersPerTariff = std::nullopt;
             }
             if (item["maxBoundariesPerTier"]) {
-                dst.maxBoundariesPerTier = item["maxBoundariesPerTier"].as<decltype(dst.maxBoundariesPerTier
-                )::value_type>();
+                dst.maxBoundariesPerTier = item["maxBoundariesPerTier"].as<decltype(dst.maxBoundariesPerTier)::value_type>();
             } else {
                 //dst.maxBoundariesPerTier = std::nullopt;
             }
             if (item["maxIncentivesPerTier"]) {
-                dst.maxIncentivesPerTier = item["maxIncentivesPerTier"].as<decltype(dst.maxIncentivesPerTier
-                )::value_type>();
+                dst.maxIncentivesPerTier = item["maxIncentivesPerTier"].as<decltype(dst.maxIncentivesPerTier)::value_type>();
             } else {
                 //dst.maxIncentivesPerTier = std::nullopt;
             }
+
         }
     } else {
         if (src["maxTariffCount"]) {
@@ -33153,8 +34009,7 @@ void convertFromJson(const JsonVariantConst &src, TariffOverallConstraintsDataEl
             //dst.maxIncentiveCount = std::nullopt;
         }
         if (src["maxBoundariesPerTariff"]) {
-            dst.maxBoundariesPerTariff = src["maxBoundariesPerTariff"].as<decltype(dst.maxBoundariesPerTariff
-            )::value_type>();
+            dst.maxBoundariesPerTariff = src["maxBoundariesPerTariff"].as<decltype(dst.maxBoundariesPerTariff)::value_type>();
         } else {
             //dst.maxBoundariesPerTariff = std::nullopt;
         }
@@ -33173,7 +34028,9 @@ void convertFromJson(const JsonVariantConst &src, TariffOverallConstraintsDataEl
         } else {
             //dst.maxIncentivesPerTier = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TariffDataType &src, JsonVariant &dst)
@@ -33203,6 +34060,7 @@ void convertFromJson(const JsonVariantConst &src, TariffDataType &dst)
             } else {
                 //dst.activeTierId = std::nullopt;
             }
+
         }
     } else {
         if (src["tariffId"]) {
@@ -33215,7 +34073,9 @@ void convertFromJson(const JsonVariantConst &src, TariffDataType &dst)
         } else {
             //dst.activeTierId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TariffDataElementsType &src, JsonVariant &dst)
@@ -33245,6 +34105,7 @@ void convertFromJson(const JsonVariantConst &src, TariffDataElementsType &dst)
             } else {
                 //dst.activeTierId = std::nullopt;
             }
+
         }
     } else {
         if (src["tariffId"]) {
@@ -33257,7 +34118,9 @@ void convertFromJson(const JsonVariantConst &src, TariffDataElementsType &dst)
         } else {
             //dst.activeTierId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TariffListDataType &src, JsonVariant &dst)
@@ -33279,6 +34142,7 @@ void convertFromJson(const JsonVariantConst &src, TariffListDataType &dst)
             } else {
                 //dst.tariffData = std::nullopt;
             }
+
         }
     } else {
         if (src["tariffData"]) {
@@ -33286,7 +34150,9 @@ void convertFromJson(const JsonVariantConst &src, TariffListDataType &dst)
         } else {
             //dst.tariffData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TariffListDataSelectorsType &src, JsonVariant &dst)
@@ -33316,6 +34182,7 @@ void convertFromJson(const JsonVariantConst &src, TariffListDataSelectorsType &d
             } else {
                 //dst.activeTierId = std::nullopt;
             }
+
         }
     } else {
         if (src["tariffId"]) {
@@ -33328,7 +34195,9 @@ void convertFromJson(const JsonVariantConst &src, TariffListDataSelectorsType &d
         } else {
             //dst.activeTierId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TariffTierRelationDataType &src, JsonVariant &dst)
@@ -33358,6 +34227,7 @@ void convertFromJson(const JsonVariantConst &src, TariffTierRelationDataType &ds
             } else {
                 //dst.tierId = std::nullopt;
             }
+
         }
     } else {
         if (src["tariffId"]) {
@@ -33370,7 +34240,9 @@ void convertFromJson(const JsonVariantConst &src, TariffTierRelationDataType &ds
         } else {
             //dst.tierId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TariffTierRelationDataElementsType &src, JsonVariant &dst)
@@ -33400,6 +34272,7 @@ void convertFromJson(const JsonVariantConst &src, TariffTierRelationDataElements
             } else {
                 //dst.tierId = std::nullopt;
             }
+
         }
     } else {
         if (src["tariffId"]) {
@@ -33412,7 +34285,9 @@ void convertFromJson(const JsonVariantConst &src, TariffTierRelationDataElements
         } else {
             //dst.tierId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TariffTierRelationListDataType &src, JsonVariant &dst)
@@ -33430,20 +34305,21 @@ void convertFromJson(const JsonVariantConst &src, TariffTierRelationListDataType
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["tariffTierRelationData"]) {
-                dst.tariffTierRelationData = item["tariffTierRelationData"].as<decltype(dst.tariffTierRelationData
-                )::value_type>();
+                dst.tariffTierRelationData = item["tariffTierRelationData"].as<decltype(dst.tariffTierRelationData)::value_type>();
             } else {
                 //dst.tariffTierRelationData = std::nullopt;
             }
+
         }
     } else {
         if (src["tariffTierRelationData"]) {
-            dst.tariffTierRelationData = src["tariffTierRelationData"].as<decltype(dst.tariffTierRelationData
-            )::value_type>();
+            dst.tariffTierRelationData = src["tariffTierRelationData"].as<decltype(dst.tariffTierRelationData)::value_type>();
         } else {
             //dst.tariffTierRelationData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TariffTierRelationListDataSelectorsType &src, JsonVariant &dst)
@@ -33473,6 +34349,7 @@ void convertFromJson(const JsonVariantConst &src, TariffTierRelationListDataSele
             } else {
                 //dst.tierId = std::nullopt;
             }
+
         }
     } else {
         if (src["tariffId"]) {
@@ -33485,7 +34362,9 @@ void convertFromJson(const JsonVariantConst &src, TariffTierRelationListDataSele
         } else {
             //dst.tierId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TariffBoundaryRelationDataType &src, JsonVariant &dst)
@@ -33515,6 +34394,7 @@ void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationDataType
             } else {
                 //dst.boundaryId = std::nullopt;
             }
+
         }
     } else {
         if (src["tariffId"]) {
@@ -33527,7 +34407,9 @@ void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationDataType
         } else {
             //dst.boundaryId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TariffBoundaryRelationDataElementsType &src, JsonVariant &dst)
@@ -33557,6 +34439,7 @@ void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationDataElem
             } else {
                 //dst.boundaryId = std::nullopt;
             }
+
         }
     } else {
         if (src["tariffId"]) {
@@ -33569,7 +34452,9 @@ void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationDataElem
         } else {
             //dst.boundaryId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TariffBoundaryRelationListDataType &src, JsonVariant &dst)
@@ -33587,21 +34472,21 @@ void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationListData
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["tariffBoundaryRelationData"]) {
-                dst.tariffBoundaryRelationData = item["tariffBoundaryRelationData"].as<decltype(dst.
-                    tariffBoundaryRelationData
-                )::value_type>();
+                dst.tariffBoundaryRelationData = item["tariffBoundaryRelationData"].as<decltype(dst.tariffBoundaryRelationData)::value_type>();
             } else {
                 //dst.tariffBoundaryRelationData = std::nullopt;
             }
+
         }
     } else {
         if (src["tariffBoundaryRelationData"]) {
-            dst.tariffBoundaryRelationData = src["tariffBoundaryRelationData"].as<decltype(dst.
-                tariffBoundaryRelationData)::value_type>();
+            dst.tariffBoundaryRelationData = src["tariffBoundaryRelationData"].as<decltype(dst.tariffBoundaryRelationData)::value_type>();
         } else {
             //dst.tariffBoundaryRelationData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TariffBoundaryRelationListDataSelectorsType &src, JsonVariant &dst)
@@ -33631,6 +34516,7 @@ void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationListData
             } else {
                 //dst.boundaryId = std::nullopt;
             }
+
         }
     } else {
         if (src["tariffId"]) {
@@ -33643,7 +34529,9 @@ void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationListData
         } else {
             //dst.boundaryId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TariffDescriptionDataType &src, JsonVariant &dst)
@@ -33729,6 +34617,7 @@ void convertFromJson(const JsonVariantConst &src, TariffDescriptionDataType &dst
             } else {
                 //dst.slotIdSupport = std::nullopt;
             }
+
         }
     } else {
         if (src["tariffId"]) {
@@ -33776,7 +34665,9 @@ void convertFromJson(const JsonVariantConst &src, TariffDescriptionDataType &dst
         } else {
             //dst.slotIdSupport = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TariffDescriptionDataElementsType &src, JsonVariant &dst)
@@ -33862,6 +34753,7 @@ void convertFromJson(const JsonVariantConst &src, TariffDescriptionDataElementsT
             } else {
                 //dst.slotIdSupport = std::nullopt;
             }
+
         }
     } else {
         if (src["tariffId"]) {
@@ -33909,7 +34801,9 @@ void convertFromJson(const JsonVariantConst &src, TariffDescriptionDataElementsT
         } else {
             //dst.slotIdSupport = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TariffDescriptionListDataType &src, JsonVariant &dst)
@@ -33927,20 +34821,21 @@ void convertFromJson(const JsonVariantConst &src, TariffDescriptionListDataType 
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["tariffDescriptionData"]) {
-                dst.tariffDescriptionData = item["tariffDescriptionData"].as<decltype(dst.tariffDescriptionData
-                )::value_type>();
+                dst.tariffDescriptionData = item["tariffDescriptionData"].as<decltype(dst.tariffDescriptionData)::value_type>();
             } else {
                 //dst.tariffDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["tariffDescriptionData"]) {
-            dst.tariffDescriptionData = src["tariffDescriptionData"].as<decltype(dst.tariffDescriptionData
-            )::value_type>();
+            dst.tariffDescriptionData = src["tariffDescriptionData"].as<decltype(dst.tariffDescriptionData)::value_type>();
         } else {
             //dst.tariffDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TariffDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -33986,6 +34881,7 @@ void convertFromJson(const JsonVariantConst &src, TariffDescriptionListDataSelec
             } else {
                 //dst.scopeType = std::nullopt;
             }
+
         }
     } else {
         if (src["tariffId"]) {
@@ -34008,7 +34904,9 @@ void convertFromJson(const JsonVariantConst &src, TariffDescriptionListDataSelec
         } else {
             //dst.scopeType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TierBoundaryDataType &src, JsonVariant &dst)
@@ -34062,6 +34960,7 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDataType &dst)
             } else {
                 //dst.upperBoundaryValue = std::nullopt;
             }
+
         }
     } else {
         if (src["boundaryId"]) {
@@ -34089,7 +34988,9 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDataType &dst)
         } else {
             //dst.upperBoundaryValue = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TierBoundaryDataElementsType &src, JsonVariant &dst)
@@ -34143,6 +35044,7 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDataElementsType &
             } else {
                 //dst.upperBoundaryValue = std::nullopt;
             }
+
         }
     } else {
         if (src["boundaryId"]) {
@@ -34170,7 +35072,9 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDataElementsType &
         } else {
             //dst.upperBoundaryValue = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TierBoundaryListDataType &src, JsonVariant &dst)
@@ -34192,6 +35096,7 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryListDataType &dst)
             } else {
                 //dst.tierBoundaryData = std::nullopt;
             }
+
         }
     } else {
         if (src["tierBoundaryData"]) {
@@ -34199,7 +35104,9 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryListDataType &dst)
         } else {
             //dst.tierBoundaryData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TierBoundaryListDataSelectorsType &src, JsonVariant &dst)
@@ -34221,6 +35128,7 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryListDataSelectorsT
             } else {
                 //dst.boundaryId = std::nullopt;
             }
+
         }
     } else {
         if (src["boundaryId"]) {
@@ -34228,7 +35136,9 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryListDataSelectorsT
         } else {
             //dst.boundaryId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TierBoundaryDescriptionDataType &src, JsonVariant &dst)
@@ -34282,14 +35192,12 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionDataTyp
                 //dst.validForTierId = std::nullopt;
             }
             if (item["switchToTierIdWhenLower"]) {
-                dst.switchToTierIdWhenLower = item["switchToTierIdWhenLower"].as<decltype(dst.switchToTierIdWhenLower
-                )::value_type>();
+                dst.switchToTierIdWhenLower = item["switchToTierIdWhenLower"].as<decltype(dst.switchToTierIdWhenLower)::value_type>();
             } else {
                 //dst.switchToTierIdWhenLower = std::nullopt;
             }
             if (item["switchToTierIdWhenHigher"]) {
-                dst.switchToTierIdWhenHigher = item["switchToTierIdWhenHigher"].as<decltype(dst.switchToTierIdWhenHigher
-                )::value_type>();
+                dst.switchToTierIdWhenHigher = item["switchToTierIdWhenHigher"].as<decltype(dst.switchToTierIdWhenHigher)::value_type>();
             } else {
                 //dst.switchToTierIdWhenHigher = std::nullopt;
             }
@@ -34308,6 +35216,7 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionDataTyp
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["boundaryId"]) {
@@ -34326,14 +35235,12 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionDataTyp
             //dst.validForTierId = std::nullopt;
         }
         if (src["switchToTierIdWhenLower"]) {
-            dst.switchToTierIdWhenLower = src["switchToTierIdWhenLower"].as<decltype(dst.switchToTierIdWhenLower
-            )::value_type>();
+            dst.switchToTierIdWhenLower = src["switchToTierIdWhenLower"].as<decltype(dst.switchToTierIdWhenLower)::value_type>();
         } else {
             //dst.switchToTierIdWhenLower = std::nullopt;
         }
         if (src["switchToTierIdWhenHigher"]) {
-            dst.switchToTierIdWhenHigher = src["switchToTierIdWhenHigher"].as<decltype(dst.switchToTierIdWhenHigher
-            )::value_type>();
+            dst.switchToTierIdWhenHigher = src["switchToTierIdWhenHigher"].as<decltype(dst.switchToTierIdWhenHigher)::value_type>();
         } else {
             //dst.switchToTierIdWhenHigher = std::nullopt;
         }
@@ -34352,7 +35259,9 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionDataTyp
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TierBoundaryDescriptionDataElementsType &src, JsonVariant &dst)
@@ -34406,14 +35315,12 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionDataEle
                 //dst.validForTierId = std::nullopt;
             }
             if (item["switchToTierIdWhenLower"]) {
-                dst.switchToTierIdWhenLower = item["switchToTierIdWhenLower"].as<decltype(dst.switchToTierIdWhenLower
-                )::value_type>();
+                dst.switchToTierIdWhenLower = item["switchToTierIdWhenLower"].as<decltype(dst.switchToTierIdWhenLower)::value_type>();
             } else {
                 //dst.switchToTierIdWhenLower = std::nullopt;
             }
             if (item["switchToTierIdWhenHigher"]) {
-                dst.switchToTierIdWhenHigher = item["switchToTierIdWhenHigher"].as<decltype(dst.switchToTierIdWhenHigher
-                )::value_type>();
+                dst.switchToTierIdWhenHigher = item["switchToTierIdWhenHigher"].as<decltype(dst.switchToTierIdWhenHigher)::value_type>();
             } else {
                 //dst.switchToTierIdWhenHigher = std::nullopt;
             }
@@ -34432,6 +35339,7 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionDataEle
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["boundaryId"]) {
@@ -34450,14 +35358,12 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionDataEle
             //dst.validForTierId = std::nullopt;
         }
         if (src["switchToTierIdWhenLower"]) {
-            dst.switchToTierIdWhenLower = src["switchToTierIdWhenLower"].as<decltype(dst.switchToTierIdWhenLower
-            )::value_type>();
+            dst.switchToTierIdWhenLower = src["switchToTierIdWhenLower"].as<decltype(dst.switchToTierIdWhenLower)::value_type>();
         } else {
             //dst.switchToTierIdWhenLower = std::nullopt;
         }
         if (src["switchToTierIdWhenHigher"]) {
-            dst.switchToTierIdWhenHigher = src["switchToTierIdWhenHigher"].as<decltype(dst.switchToTierIdWhenHigher
-            )::value_type>();
+            dst.switchToTierIdWhenHigher = src["switchToTierIdWhenHigher"].as<decltype(dst.switchToTierIdWhenHigher)::value_type>();
         } else {
             //dst.switchToTierIdWhenHigher = std::nullopt;
         }
@@ -34476,7 +35382,9 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionDataEle
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TierBoundaryDescriptionListDataType &src, JsonVariant &dst)
@@ -34494,22 +35402,21 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionListDat
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["tierBoundaryDescriptionData"]) {
-                dst.tierBoundaryDescriptionData = item["tierBoundaryDescriptionData"].as<decltype(dst.
-                    tierBoundaryDescriptionData
-                )::value_type>();
+                dst.tierBoundaryDescriptionData = item["tierBoundaryDescriptionData"].as<decltype(dst.tierBoundaryDescriptionData)::value_type>();
             } else {
                 //dst.tierBoundaryDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["tierBoundaryDescriptionData"]) {
-            dst.tierBoundaryDescriptionData = src["tierBoundaryDescriptionData"].as<decltype(dst.
-                tierBoundaryDescriptionData
-            )::value_type>();
+            dst.tierBoundaryDescriptionData = src["tierBoundaryDescriptionData"].as<decltype(dst.tierBoundaryDescriptionData)::value_type>();
         } else {
             //dst.tierBoundaryDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TierBoundaryDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -34539,6 +35446,7 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionListDat
             } else {
                 //dst.boundaryType = std::nullopt;
             }
+
         }
     } else {
         if (src["boundaryId"]) {
@@ -34551,7 +35459,9 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionListDat
         } else {
             //dst.boundaryType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const CommodityDataType &src, JsonVariant &dst)
@@ -34591,8 +35501,7 @@ void convertFromJson(const JsonVariantConst &src, CommodityDataType &dst)
                 //dst.commodityType = std::nullopt;
             }
             if (item["positiveEnergyDirection"]) {
-                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-                )::value_type>();
+                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
             } else {
                 //dst.positiveEnergyDirection = std::nullopt;
             }
@@ -34606,6 +35515,7 @@ void convertFromJson(const JsonVariantConst &src, CommodityDataType &dst)
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["commodityId"]) {
@@ -34619,8 +35529,7 @@ void convertFromJson(const JsonVariantConst &src, CommodityDataType &dst)
             //dst.commodityType = std::nullopt;
         }
         if (src["positiveEnergyDirection"]) {
-            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-            )::value_type>();
+            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
         } else {
             //dst.positiveEnergyDirection = std::nullopt;
         }
@@ -34634,7 +35543,9 @@ void convertFromJson(const JsonVariantConst &src, CommodityDataType &dst)
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const CommodityDataElementsType &src, JsonVariant &dst)
@@ -34674,8 +35585,7 @@ void convertFromJson(const JsonVariantConst &src, CommodityDataElementsType &dst
                 //dst.commodityType = std::nullopt;
             }
             if (item["positiveEnergyDirection"]) {
-                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-                )::value_type>();
+                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
             } else {
                 //dst.positiveEnergyDirection = std::nullopt;
             }
@@ -34689,6 +35599,7 @@ void convertFromJson(const JsonVariantConst &src, CommodityDataElementsType &dst
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["commodityId"]) {
@@ -34702,8 +35613,7 @@ void convertFromJson(const JsonVariantConst &src, CommodityDataElementsType &dst
             //dst.commodityType = std::nullopt;
         }
         if (src["positiveEnergyDirection"]) {
-            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-            )::value_type>();
+            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
         } else {
             //dst.positiveEnergyDirection = std::nullopt;
         }
@@ -34717,7 +35627,9 @@ void convertFromJson(const JsonVariantConst &src, CommodityDataElementsType &dst
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const CommodityListDataType &src, JsonVariant &dst)
@@ -34739,6 +35651,7 @@ void convertFromJson(const JsonVariantConst &src, CommodityListDataType &dst)
             } else {
                 //dst.commodityData = std::nullopt;
             }
+
         }
     } else {
         if (src["commodityData"]) {
@@ -34746,7 +35659,9 @@ void convertFromJson(const JsonVariantConst &src, CommodityListDataType &dst)
         } else {
             //dst.commodityData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const CommodityListDataSelectorsType &src, JsonVariant &dst)
@@ -34776,6 +35691,7 @@ void convertFromJson(const JsonVariantConst &src, CommodityListDataSelectorsType
             } else {
                 //dst.commodityType = std::nullopt;
             }
+
         }
     } else {
         if (src["commodityId"]) {
@@ -34788,7 +35704,9 @@ void convertFromJson(const JsonVariantConst &src, CommodityListDataSelectorsType
         } else {
             //dst.commodityType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TierDataType &src, JsonVariant &dst)
@@ -34834,6 +35752,7 @@ void convertFromJson(const JsonVariantConst &src, TierDataType &dst)
             } else {
                 //dst.activeIncentiveId = std::nullopt;
             }
+
         }
     } else {
         if (src["tierId"]) {
@@ -34856,7 +35775,9 @@ void convertFromJson(const JsonVariantConst &src, TierDataType &dst)
         } else {
             //dst.activeIncentiveId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TierDataElementsType &src, JsonVariant &dst)
@@ -34902,6 +35823,7 @@ void convertFromJson(const JsonVariantConst &src, TierDataElementsType &dst)
             } else {
                 //dst.activeIncentiveId = std::nullopt;
             }
+
         }
     } else {
         if (src["tierId"]) {
@@ -34924,7 +35846,9 @@ void convertFromJson(const JsonVariantConst &src, TierDataElementsType &dst)
         } else {
             //dst.activeIncentiveId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TierListDataType &src, JsonVariant &dst)
@@ -34946,6 +35870,7 @@ void convertFromJson(const JsonVariantConst &src, TierListDataType &dst)
             } else {
                 //dst.tierData = std::nullopt;
             }
+
         }
     } else {
         if (src["tierData"]) {
@@ -34953,7 +35878,9 @@ void convertFromJson(const JsonVariantConst &src, TierListDataType &dst)
         } else {
             //dst.tierData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TierListDataSelectorsType &src, JsonVariant &dst)
@@ -34983,6 +35910,7 @@ void convertFromJson(const JsonVariantConst &src, TierListDataSelectorsType &dst
             } else {
                 //dst.activeIncentiveId = std::nullopt;
             }
+
         }
     } else {
         if (src["tierId"]) {
@@ -34995,7 +35923,9 @@ void convertFromJson(const JsonVariantConst &src, TierListDataSelectorsType &dst
         } else {
             //dst.activeIncentiveId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TierIncentiveRelationDataType &src, JsonVariant &dst)
@@ -35025,6 +35955,7 @@ void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationDataType 
             } else {
                 //dst.incentiveId = std::nullopt;
             }
+
         }
     } else {
         if (src["tierId"]) {
@@ -35037,7 +35968,9 @@ void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationDataType 
         } else {
             //dst.incentiveId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TierIncentiveRelationDataElementsType &src, JsonVariant &dst)
@@ -35067,6 +36000,7 @@ void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationDataEleme
             } else {
                 //dst.incentiveId = std::nullopt;
             }
+
         }
     } else {
         if (src["tierId"]) {
@@ -35079,7 +36013,9 @@ void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationDataEleme
         } else {
             //dst.incentiveId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TierIncentiveRelationListDataType &src, JsonVariant &dst)
@@ -35097,20 +36033,21 @@ void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationListDataT
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["tierIncentiveRelationData"]) {
-                dst.tierIncentiveRelationData = item["tierIncentiveRelationData"].as<decltype(dst.
-                    tierIncentiveRelationData)::value_type>();
+                dst.tierIncentiveRelationData = item["tierIncentiveRelationData"].as<decltype(dst.tierIncentiveRelationData)::value_type>();
             } else {
                 //dst.tierIncentiveRelationData = std::nullopt;
             }
+
         }
     } else {
         if (src["tierIncentiveRelationData"]) {
-            dst.tierIncentiveRelationData = src["tierIncentiveRelationData"].as<decltype(dst.tierIncentiveRelationData
-            )::value_type>();
+            dst.tierIncentiveRelationData = src["tierIncentiveRelationData"].as<decltype(dst.tierIncentiveRelationData)::value_type>();
         } else {
             //dst.tierIncentiveRelationData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TierIncentiveRelationListDataSelectorsType &src, JsonVariant &dst)
@@ -35140,6 +36077,7 @@ void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationListDataS
             } else {
                 //dst.incentiveId = std::nullopt;
             }
+
         }
     } else {
         if (src["tierId"]) {
@@ -35152,7 +36090,9 @@ void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationListDataS
         } else {
             //dst.incentiveId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TierDescriptionDataType &src, JsonVariant &dst)
@@ -35198,6 +36138,7 @@ void convertFromJson(const JsonVariantConst &src, TierDescriptionDataType &dst)
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["tierId"]) {
@@ -35220,7 +36161,9 @@ void convertFromJson(const JsonVariantConst &src, TierDescriptionDataType &dst)
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TierDescriptionDataElementsType &src, JsonVariant &dst)
@@ -35266,6 +36209,7 @@ void convertFromJson(const JsonVariantConst &src, TierDescriptionDataElementsTyp
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["tierId"]) {
@@ -35288,7 +36232,9 @@ void convertFromJson(const JsonVariantConst &src, TierDescriptionDataElementsTyp
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TierDescriptionListDataType &src, JsonVariant &dst)
@@ -35306,11 +36252,11 @@ void convertFromJson(const JsonVariantConst &src, TierDescriptionListDataType &d
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["tierDescriptionData"]) {
-                dst.tierDescriptionData = item["tierDescriptionData"].as<decltype(dst.tierDescriptionData
-                )::value_type>();
+                dst.tierDescriptionData = item["tierDescriptionData"].as<decltype(dst.tierDescriptionData)::value_type>();
             } else {
                 //dst.tierDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["tierDescriptionData"]) {
@@ -35318,7 +36264,9 @@ void convertFromJson(const JsonVariantConst &src, TierDescriptionListDataType &d
         } else {
             //dst.tierDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TierDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -35348,6 +36296,7 @@ void convertFromJson(const JsonVariantConst &src, TierDescriptionListDataSelecto
             } else {
                 //dst.tierType = std::nullopt;
             }
+
         }
     } else {
         if (src["tierId"]) {
@@ -35360,7 +36309,9 @@ void convertFromJson(const JsonVariantConst &src, TierDescriptionListDataSelecto
         } else {
             //dst.tierType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveDataType &src, JsonVariant &dst)
@@ -35422,6 +36373,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDataType &dst)
             } else {
                 //dst.value = std::nullopt;
             }
+
         }
     } else {
         if (src["incentiveId"]) {
@@ -35454,7 +36406,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDataType &dst)
         } else {
             //dst.value = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveDataElementsType &src, JsonVariant &dst)
@@ -35516,6 +36470,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDataElementsType &dst
             } else {
                 //dst.value = std::nullopt;
             }
+
         }
     } else {
         if (src["incentiveId"]) {
@@ -35548,7 +36503,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDataElementsType &dst
         } else {
             //dst.value = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveListDataType &src, JsonVariant &dst)
@@ -35570,6 +36527,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveListDataType &dst)
             } else {
                 //dst.incentiveData = std::nullopt;
             }
+
         }
     } else {
         if (src["incentiveData"]) {
@@ -35577,7 +36535,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveListDataType &dst)
         } else {
             //dst.incentiveData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveListDataSelectorsType &src, JsonVariant &dst)
@@ -35615,6 +36575,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveListDataSelectorsType
             } else {
                 //dst.timestampInterval = std::nullopt;
             }
+
         }
     } else {
         if (src["incentiveId"]) {
@@ -35632,7 +36593,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveListDataSelectorsType
         } else {
             //dst.timestampInterval = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveDescriptionDataType &src, JsonVariant &dst)
@@ -35702,6 +36665,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionDataType &
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["incentiveId"]) {
@@ -35739,7 +36703,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionDataType &
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveDescriptionDataElementsType &src, JsonVariant &dst)
@@ -35809,6 +36775,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionDataElemen
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["incentiveId"]) {
@@ -35846,7 +36813,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionDataElemen
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveDescriptionListDataType &src, JsonVariant &dst)
@@ -35864,20 +36833,21 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionListDataTy
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["incentiveDescriptionData"]) {
-                dst.incentiveDescriptionData = item["incentiveDescriptionData"].as<decltype(dst.incentiveDescriptionData
-                )::value_type>();
+                dst.incentiveDescriptionData = item["incentiveDescriptionData"].as<decltype(dst.incentiveDescriptionData)::value_type>();
             } else {
                 //dst.incentiveDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["incentiveDescriptionData"]) {
-            dst.incentiveDescriptionData = src["incentiveDescriptionData"].as<decltype(dst.incentiveDescriptionData
-            )::value_type>();
+            dst.incentiveDescriptionData = src["incentiveDescriptionData"].as<decltype(dst.incentiveDescriptionData)::value_type>();
         } else {
             //dst.incentiveDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -35907,6 +36877,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionListDataSe
             } else {
                 //dst.incentiveType = std::nullopt;
             }
+
         }
     } else {
         if (src["incentiveId"]) {
@@ -35919,7 +36890,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionListDataSe
         } else {
             //dst.incentiveType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const StateInformationDataType &src, JsonVariant &dst)
@@ -35973,6 +36946,7 @@ void convertFromJson(const JsonVariantConst &src, StateInformationDataType &dst)
             } else {
                 //dst.timeOfLastChange = std::nullopt;
             }
+
         }
     } else {
         if (src["stateInformationId"]) {
@@ -36000,7 +36974,9 @@ void convertFromJson(const JsonVariantConst &src, StateInformationDataType &dst)
         } else {
             //dst.timeOfLastChange = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const StateInformationDataElementsType &src, JsonVariant &dst)
@@ -36054,6 +37030,7 @@ void convertFromJson(const JsonVariantConst &src, StateInformationDataElementsTy
             } else {
                 //dst.timeOfLastChange = std::nullopt;
             }
+
         }
     } else {
         if (src["stateInformationId"]) {
@@ -36081,7 +37058,9 @@ void convertFromJson(const JsonVariantConst &src, StateInformationDataElementsTy
         } else {
             //dst.timeOfLastChange = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const StateInformationListDataType &src, JsonVariant &dst)
@@ -36099,11 +37078,11 @@ void convertFromJson(const JsonVariantConst &src, StateInformationListDataType &
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["stateInformationData"]) {
-                dst.stateInformationData = item["stateInformationData"].as<decltype(dst.stateInformationData
-                )::value_type>();
+                dst.stateInformationData = item["stateInformationData"].as<decltype(dst.stateInformationData)::value_type>();
             } else {
                 //dst.stateInformationData = std::nullopt;
             }
+
         }
     } else {
         if (src["stateInformationData"]) {
@@ -36111,7 +37090,9 @@ void convertFromJson(const JsonVariantConst &src, StateInformationListDataType &
         } else {
             //dst.stateInformationData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const StateInformationListDataSelectorsType &src, JsonVariant &dst)
@@ -36157,6 +37138,7 @@ void convertFromJson(const JsonVariantConst &src, StateInformationListDataSelect
             } else {
                 //dst.category = std::nullopt;
             }
+
         }
     } else {
         if (src["stateInformationId"]) {
@@ -36179,7 +37161,9 @@ void convertFromJson(const JsonVariantConst &src, StateInformationListDataSelect
         } else {
             //dst.category = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ElectricalConnectionParameterDescriptionDataType &src, JsonVariant &dst)
@@ -36230,8 +37214,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["electricalConnectionId"]) {
-                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-                )::value_type>();
+                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
             } else {
                 //dst.electricalConnectionId = std::nullopt;
             }
@@ -36256,8 +37239,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
                 //dst.acMeasuredPhases = std::nullopt;
             }
             if (item["acMeasuredInReferenceTo"]) {
-                dst.acMeasuredInReferenceTo = item["acMeasuredInReferenceTo"].as<decltype(dst.acMeasuredInReferenceTo
-                )::value_type>();
+                dst.acMeasuredInReferenceTo = item["acMeasuredInReferenceTo"].as<decltype(dst.acMeasuredInReferenceTo)::value_type>();
             } else {
                 //dst.acMeasuredInReferenceTo = std::nullopt;
             }
@@ -36267,8 +37249,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
                 //dst.acMeasurementType = std::nullopt;
             }
             if (item["acMeasurementVariant"]) {
-                dst.acMeasurementVariant = item["acMeasurementVariant"].as<decltype(dst.acMeasurementVariant
-                )::value_type>();
+                dst.acMeasurementVariant = item["acMeasurementVariant"].as<decltype(dst.acMeasurementVariant)::value_type>();
             } else {
                 //dst.acMeasurementVariant = std::nullopt;
             }
@@ -36292,11 +37273,11 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["electricalConnectionId"]) {
-            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-            )::value_type>();
+            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
         } else {
             //dst.electricalConnectionId = std::nullopt;
         }
@@ -36321,8 +37302,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
             //dst.acMeasuredPhases = std::nullopt;
         }
         if (src["acMeasuredInReferenceTo"]) {
-            dst.acMeasuredInReferenceTo = src["acMeasuredInReferenceTo"].as<decltype(dst.acMeasuredInReferenceTo
-            )::value_type>();
+            dst.acMeasuredInReferenceTo = src["acMeasuredInReferenceTo"].as<decltype(dst.acMeasuredInReferenceTo)::value_type>();
         } else {
             //dst.acMeasuredInReferenceTo = std::nullopt;
         }
@@ -36356,7 +37336,9 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ElectricalConnectionParameterDescriptionDataElementsType &src, JsonVariant &dst)
@@ -36407,8 +37389,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["electricalConnectionId"]) {
-                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-                )::value_type>();
+                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
             } else {
                 //dst.electricalConnectionId = std::nullopt;
             }
@@ -36433,8 +37414,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
                 //dst.acMeasuredPhases = std::nullopt;
             }
             if (item["acMeasuredInReferenceTo"]) {
-                dst.acMeasuredInReferenceTo = item["acMeasuredInReferenceTo"].as<decltype(dst.acMeasuredInReferenceTo
-                )::value_type>();
+                dst.acMeasuredInReferenceTo = item["acMeasuredInReferenceTo"].as<decltype(dst.acMeasuredInReferenceTo)::value_type>();
             } else {
                 //dst.acMeasuredInReferenceTo = std::nullopt;
             }
@@ -36444,8 +37424,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
                 //dst.acMeasurementType = std::nullopt;
             }
             if (item["acMeasurementVariant"]) {
-                dst.acMeasurementVariant = item["acMeasurementVariant"].as<decltype(dst.acMeasurementVariant
-                )::value_type>();
+                dst.acMeasurementVariant = item["acMeasurementVariant"].as<decltype(dst.acMeasurementVariant)::value_type>();
             } else {
                 //dst.acMeasurementVariant = std::nullopt;
             }
@@ -36469,11 +37448,11 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["electricalConnectionId"]) {
-            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-            )::value_type>();
+            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
         } else {
             //dst.electricalConnectionId = std::nullopt;
         }
@@ -36498,8 +37477,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
             //dst.acMeasuredPhases = std::nullopt;
         }
         if (src["acMeasuredInReferenceTo"]) {
-            dst.acMeasuredInReferenceTo = src["acMeasuredInReferenceTo"].as<decltype(dst.acMeasuredInReferenceTo
-            )::value_type>();
+            dst.acMeasuredInReferenceTo = src["acMeasuredInReferenceTo"].as<decltype(dst.acMeasuredInReferenceTo)::value_type>();
         } else {
             //dst.acMeasuredInReferenceTo = std::nullopt;
         }
@@ -36533,7 +37511,9 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ElectricalConnectionParameterDescriptionListDataType &src, JsonVariant &dst)
@@ -36551,22 +37531,21 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["electricalConnectionParameterDescriptionData"]) {
-                dst.electricalConnectionParameterDescriptionData = item["electricalConnectionParameterDescriptionData"].
-                    as<decltype(dst.
-                        electricalConnectionParameterDescriptionData)::value_type>();
+                dst.electricalConnectionParameterDescriptionData = item["electricalConnectionParameterDescriptionData"].as<decltype(dst.electricalConnectionParameterDescriptionData)::value_type>();
             } else {
                 //dst.electricalConnectionParameterDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["electricalConnectionParameterDescriptionData"]) {
-            dst.electricalConnectionParameterDescriptionData = src["electricalConnectionParameterDescriptionData"].as<
-                decltype(dst.
-                    electricalConnectionParameterDescriptionData)::value_type>();
+            dst.electricalConnectionParameterDescriptionData = src["electricalConnectionParameterDescriptionData"].as<decltype(dst.electricalConnectionParameterDescriptionData)::value_type>();
         } else {
             //dst.electricalConnectionParameterDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ElectricalConnectionParameterDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -36593,8 +37572,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["electricalConnectionId"]) {
-                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-                )::value_type>();
+                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
             } else {
                 //dst.electricalConnectionId = std::nullopt;
             }
@@ -36613,11 +37591,11 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
             } else {
                 //dst.scopeType = std::nullopt;
             }
+
         }
     } else {
         if (src["electricalConnectionId"]) {
-            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-            )::value_type>();
+            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
         } else {
             //dst.electricalConnectionId = std::nullopt;
         }
@@ -36636,7 +37614,9 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
         } else {
             //dst.scopeType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ElectricalConnectionPermittedValueSetDataType &src, JsonVariant &dst)
@@ -36660,8 +37640,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedV
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["electricalConnectionId"]) {
-                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-                )::value_type>();
+                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
             } else {
                 //dst.electricalConnectionId = std::nullopt;
             }
@@ -36675,11 +37654,11 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedV
             } else {
                 //dst.permittedValueSet = std::nullopt;
             }
+
         }
     } else {
         if (src["electricalConnectionId"]) {
-            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-            )::value_type>();
+            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
         } else {
             //dst.electricalConnectionId = std::nullopt;
         }
@@ -36693,7 +37672,9 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedV
         } else {
             //dst.permittedValueSet = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ElectricalConnectionPermittedValueSetDataElementsType &src, JsonVariant &dst)
@@ -36717,8 +37698,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedV
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["electricalConnectionId"]) {
-                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-                )::value_type>();
+                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
             } else {
                 //dst.electricalConnectionId = std::nullopt;
             }
@@ -36732,11 +37712,11 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedV
             } else {
                 //dst.permittedValueSet = std::nullopt;
             }
+
         }
     } else {
         if (src["electricalConnectionId"]) {
-            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-            )::value_type>();
+            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
         } else {
             //dst.electricalConnectionId = std::nullopt;
         }
@@ -36750,7 +37730,9 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedV
         } else {
             //dst.permittedValueSet = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ElectricalConnectionPermittedValueSetListDataType &src, JsonVariant &dst)
@@ -36768,22 +37750,21 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedV
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["electricalConnectionPermittedValueSetData"]) {
-                dst.electricalConnectionPermittedValueSetData = item["electricalConnectionPermittedValueSetData"].as<
-                    decltype(dst.
-                        electricalConnectionPermittedValueSetData)::value_type>();
+                dst.electricalConnectionPermittedValueSetData = item["electricalConnectionPermittedValueSetData"].as<decltype(dst.electricalConnectionPermittedValueSetData)::value_type>();
             } else {
                 //dst.electricalConnectionPermittedValueSetData = std::nullopt;
             }
+
         }
     } else {
         if (src["electricalConnectionPermittedValueSetData"]) {
-            dst.electricalConnectionPermittedValueSetData = src["electricalConnectionPermittedValueSetData"].as<decltype
-                (dst.
-                    electricalConnectionPermittedValueSetData)::value_type>();
+            dst.electricalConnectionPermittedValueSetData = src["electricalConnectionPermittedValueSetData"].as<decltype(dst.electricalConnectionPermittedValueSetData)::value_type>();
         } else {
             //dst.electricalConnectionPermittedValueSetData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ElectricalConnectionPermittedValueSetListDataSelectorsType &src, JsonVariant &dst)
@@ -36804,8 +37785,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedV
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["electricalConnectionId"]) {
-                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-                )::value_type>();
+                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
             } else {
                 //dst.electricalConnectionId = std::nullopt;
             }
@@ -36814,11 +37794,11 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedV
             } else {
                 //dst.parameterId = std::nullopt;
             }
+
         }
     } else {
         if (src["electricalConnectionId"]) {
-            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-            )::value_type>();
+            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
         } else {
             //dst.electricalConnectionId = std::nullopt;
         }
@@ -36827,7 +37807,9 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedV
         } else {
             //dst.parameterId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ElectricalConnectionCharacteristicDataType &src, JsonVariant &dst)
@@ -36863,8 +37845,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["electricalConnectionId"]) {
-                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-                )::value_type>();
+                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
             } else {
                 //dst.electricalConnectionId = std::nullopt;
             }
@@ -36879,8 +37860,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
                 //dst.characteristicId = std::nullopt;
             }
             if (item["characteristicContext"]) {
-                dst.characteristicContext = item["characteristicContext"].as<decltype(dst.characteristicContext
-                )::value_type>();
+                dst.characteristicContext = item["characteristicContext"].as<decltype(dst.characteristicContext)::value_type>();
             } else {
                 //dst.characteristicContext = std::nullopt;
             }
@@ -36899,11 +37879,11 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
             } else {
                 //dst.unit = std::nullopt;
             }
+
         }
     } else {
         if (src["electricalConnectionId"]) {
-            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-            )::value_type>();
+            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
         } else {
             //dst.electricalConnectionId = std::nullopt;
         }
@@ -36918,8 +37898,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
             //dst.characteristicId = std::nullopt;
         }
         if (src["characteristicContext"]) {
-            dst.characteristicContext = src["characteristicContext"].as<decltype(dst.characteristicContext
-            )::value_type>();
+            dst.characteristicContext = src["characteristicContext"].as<decltype(dst.characteristicContext)::value_type>();
         } else {
             //dst.characteristicContext = std::nullopt;
         }
@@ -36938,7 +37917,9 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
         } else {
             //dst.unit = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ElectricalConnectionCharacteristicDataElementsType &src, JsonVariant &dst)
@@ -36974,8 +37955,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["electricalConnectionId"]) {
-                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-                )::value_type>();
+                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
             } else {
                 //dst.electricalConnectionId = std::nullopt;
             }
@@ -36990,8 +37970,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
                 //dst.characteristicId = std::nullopt;
             }
             if (item["characteristicContext"]) {
-                dst.characteristicContext = item["characteristicContext"].as<decltype(dst.characteristicContext
-                )::value_type>();
+                dst.characteristicContext = item["characteristicContext"].as<decltype(dst.characteristicContext)::value_type>();
             } else {
                 //dst.characteristicContext = std::nullopt;
             }
@@ -37010,11 +37989,11 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
             } else {
                 //dst.unit = std::nullopt;
             }
+
         }
     } else {
         if (src["electricalConnectionId"]) {
-            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-            )::value_type>();
+            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
         } else {
             //dst.electricalConnectionId = std::nullopt;
         }
@@ -37029,8 +38008,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
             //dst.characteristicId = std::nullopt;
         }
         if (src["characteristicContext"]) {
-            dst.characteristicContext = src["characteristicContext"].as<decltype(dst.characteristicContext
-            )::value_type>();
+            dst.characteristicContext = src["characteristicContext"].as<decltype(dst.characteristicContext)::value_type>();
         } else {
             //dst.characteristicContext = std::nullopt;
         }
@@ -37049,7 +38027,9 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
         } else {
             //dst.unit = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ElectricalConnectionCharacteristicListDataType &src, JsonVariant &dst)
@@ -37067,21 +38047,21 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["electricalConnectionCharacteristicData"]) {
-                dst.electricalConnectionCharacteristicData = item["electricalConnectionCharacteristicData"].as<decltype(
-                    dst.
-                    electricalConnectionCharacteristicData)::value_type>();
+                dst.electricalConnectionCharacteristicData = item["electricalConnectionCharacteristicData"].as<decltype(dst.electricalConnectionCharacteristicData)::value_type>();
             } else {
                 //dst.electricalConnectionCharacteristicData = std::nullopt;
             }
+
         }
     } else {
         if (src["electricalConnectionCharacteristicData"]) {
-            dst.electricalConnectionCharacteristicData = src["electricalConnectionCharacteristicData"].as<decltype(dst.
-                electricalConnectionCharacteristicData)::value_type>();
+            dst.electricalConnectionCharacteristicData = src["electricalConnectionCharacteristicData"].as<decltype(dst.electricalConnectionCharacteristicData)::value_type>();
         } else {
             //dst.electricalConnectionCharacteristicData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ElectricalConnectionCharacteristicListDataSelectorsType &src, JsonVariant &dst)
@@ -37111,8 +38091,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["electricalConnectionId"]) {
-                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-                )::value_type>();
+                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
             } else {
                 //dst.electricalConnectionId = std::nullopt;
             }
@@ -37127,8 +38106,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
                 //dst.characteristicId = std::nullopt;
             }
             if (item["characteristicContext"]) {
-                dst.characteristicContext = item["characteristicContext"].as<decltype(dst.characteristicContext
-                )::value_type>();
+                dst.characteristicContext = item["characteristicContext"].as<decltype(dst.characteristicContext)::value_type>();
             } else {
                 //dst.characteristicContext = std::nullopt;
             }
@@ -37137,11 +38115,11 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
             } else {
                 //dst.characteristicType = std::nullopt;
             }
+
         }
     } else {
         if (src["electricalConnectionId"]) {
-            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-            )::value_type>();
+            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
         } else {
             //dst.electricalConnectionId = std::nullopt;
         }
@@ -37156,8 +38134,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
             //dst.characteristicId = std::nullopt;
         }
         if (src["characteristicContext"]) {
-            dst.characteristicContext = src["characteristicContext"].as<decltype(dst.characteristicContext
-            )::value_type>();
+            dst.characteristicContext = src["characteristicContext"].as<decltype(dst.characteristicContext)::value_type>();
         } else {
             //dst.characteristicContext = std::nullopt;
         }
@@ -37166,7 +38143,9 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
         } else {
             //dst.characteristicType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ElectricalConnectionStateDataType &src, JsonVariant &dst)
@@ -37202,8 +38181,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateDataT
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["electricalConnectionId"]) {
-                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-                )::value_type>();
+                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
             } else {
                 //dst.electricalConnectionId = std::nullopt;
             }
@@ -37228,22 +38206,20 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateDataT
                 //dst.productionTime = std::nullopt;
             }
             if (item["totalConsumptionTime"]) {
-                dst.totalConsumptionTime = item["totalConsumptionTime"].as<decltype(dst.totalConsumptionTime
-                )::value_type>();
+                dst.totalConsumptionTime = item["totalConsumptionTime"].as<decltype(dst.totalConsumptionTime)::value_type>();
             } else {
                 //dst.totalConsumptionTime = std::nullopt;
             }
             if (item["totalProductionTime"]) {
-                dst.totalProductionTime = item["totalProductionTime"].as<decltype(dst.totalProductionTime
-                )::value_type>();
+                dst.totalProductionTime = item["totalProductionTime"].as<decltype(dst.totalProductionTime)::value_type>();
             } else {
                 //dst.totalProductionTime = std::nullopt;
             }
+
         }
     } else {
         if (src["electricalConnectionId"]) {
-            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-            )::value_type>();
+            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
         } else {
             //dst.electricalConnectionId = std::nullopt;
         }
@@ -37277,7 +38253,9 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateDataT
         } else {
             //dst.totalProductionTime = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ElectricalConnectionStateDataElementsType &src, JsonVariant &dst)
@@ -37313,8 +38291,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateDataE
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["electricalConnectionId"]) {
-                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-                )::value_type>();
+                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
             } else {
                 //dst.electricalConnectionId = std::nullopt;
             }
@@ -37339,22 +38316,20 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateDataE
                 //dst.productionTime = std::nullopt;
             }
             if (item["totalConsumptionTime"]) {
-                dst.totalConsumptionTime = item["totalConsumptionTime"].as<decltype(dst.totalConsumptionTime
-                )::value_type>();
+                dst.totalConsumptionTime = item["totalConsumptionTime"].as<decltype(dst.totalConsumptionTime)::value_type>();
             } else {
                 //dst.totalConsumptionTime = std::nullopt;
             }
             if (item["totalProductionTime"]) {
-                dst.totalProductionTime = item["totalProductionTime"].as<decltype(dst.totalProductionTime
-                )::value_type>();
+                dst.totalProductionTime = item["totalProductionTime"].as<decltype(dst.totalProductionTime)::value_type>();
             } else {
                 //dst.totalProductionTime = std::nullopt;
             }
+
         }
     } else {
         if (src["electricalConnectionId"]) {
-            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-            )::value_type>();
+            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
         } else {
             //dst.electricalConnectionId = std::nullopt;
         }
@@ -37388,7 +38363,9 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateDataE
         } else {
             //dst.totalProductionTime = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ElectricalConnectionStateListDataType &src, JsonVariant &dst)
@@ -37406,22 +38383,21 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateListD
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["electricalConnectionStateData"]) {
-                dst.electricalConnectionStateData = item["electricalConnectionStateData"].as<decltype(dst.
-                    electricalConnectionStateData
-                )::value_type>();
+                dst.electricalConnectionStateData = item["electricalConnectionStateData"].as<decltype(dst.electricalConnectionStateData)::value_type>();
             } else {
                 //dst.electricalConnectionStateData = std::nullopt;
             }
+
         }
     } else {
         if (src["electricalConnectionStateData"]) {
-            dst.electricalConnectionStateData = src["electricalConnectionStateData"].as<decltype(dst.
-                electricalConnectionStateData
-            )::value_type>();
+            dst.electricalConnectionStateData = src["electricalConnectionStateData"].as<decltype(dst.electricalConnectionStateData)::value_type>();
         } else {
             //dst.electricalConnectionStateData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ElectricalConnectionStateListDataSelectorsType &src, JsonVariant &dst)
@@ -37439,20 +38415,21 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateListD
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["electricalConnectionId"]) {
-                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-                )::value_type>();
+                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
             } else {
                 //dst.electricalConnectionId = std::nullopt;
             }
+
         }
     } else {
         if (src["electricalConnectionId"]) {
-            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-            )::value_type>();
+            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
         } else {
             //dst.electricalConnectionId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ElectricalConnectionDescriptionDataType &src, JsonVariant &dst)
@@ -37491,8 +38468,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptio
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["electricalConnectionId"]) {
-                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-                )::value_type>();
+                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
             } else {
                 //dst.electricalConnectionId = std::nullopt;
             }
@@ -37507,14 +38483,12 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptio
                 //dst.acConnectedPhases = std::nullopt;
             }
             if (item["acRmsPeriodDuration"]) {
-                dst.acRmsPeriodDuration = item["acRmsPeriodDuration"].as<decltype(dst.acRmsPeriodDuration
-                )::value_type>();
+                dst.acRmsPeriodDuration = item["acRmsPeriodDuration"].as<decltype(dst.acRmsPeriodDuration)::value_type>();
             } else {
                 //dst.acRmsPeriodDuration = std::nullopt;
             }
             if (item["positiveEnergyDirection"]) {
-                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-                )::value_type>();
+                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
             } else {
                 //dst.positiveEnergyDirection = std::nullopt;
             }
@@ -37533,11 +38507,11 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptio
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["electricalConnectionId"]) {
-            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-            )::value_type>();
+            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
         } else {
             //dst.electricalConnectionId = std::nullopt;
         }
@@ -37557,8 +38531,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptio
             //dst.acRmsPeriodDuration = std::nullopt;
         }
         if (src["positiveEnergyDirection"]) {
-            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-            )::value_type>();
+            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
         } else {
             //dst.positiveEnergyDirection = std::nullopt;
         }
@@ -37577,7 +38550,9 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptio
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ElectricalConnectionDescriptionDataElementsType &src, JsonVariant &dst)
@@ -37616,8 +38591,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptio
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["electricalConnectionId"]) {
-                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-                )::value_type>();
+                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
             } else {
                 //dst.electricalConnectionId = std::nullopt;
             }
@@ -37632,14 +38606,12 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptio
                 //dst.acConnectedPhases = std::nullopt;
             }
             if (item["acRmsPeriodDuration"]) {
-                dst.acRmsPeriodDuration = item["acRmsPeriodDuration"].as<decltype(dst.acRmsPeriodDuration
-                )::value_type>();
+                dst.acRmsPeriodDuration = item["acRmsPeriodDuration"].as<decltype(dst.acRmsPeriodDuration)::value_type>();
             } else {
                 //dst.acRmsPeriodDuration = std::nullopt;
             }
             if (item["positiveEnergyDirection"]) {
-                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-                )::value_type>();
+                dst.positiveEnergyDirection = item["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
             } else {
                 //dst.positiveEnergyDirection = std::nullopt;
             }
@@ -37658,11 +38630,11 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptio
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["electricalConnectionId"]) {
-            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-            )::value_type>();
+            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
         } else {
             //dst.electricalConnectionId = std::nullopt;
         }
@@ -37682,8 +38654,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptio
             //dst.acRmsPeriodDuration = std::nullopt;
         }
         if (src["positiveEnergyDirection"]) {
-            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection
-            )::value_type>();
+            dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
         } else {
             //dst.positiveEnergyDirection = std::nullopt;
         }
@@ -37702,7 +38673,9 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptio
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ElectricalConnectionDescriptionListDataType &src, JsonVariant &dst)
@@ -37720,20 +38693,21 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptio
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["electricalConnectionDescriptionData"]) {
-                dst.electricalConnectionDescriptionData = item["electricalConnectionDescriptionData"].as<decltype(dst.
-                    electricalConnectionDescriptionData)::value_type>();
+                dst.electricalConnectionDescriptionData = item["electricalConnectionDescriptionData"].as<decltype(dst.electricalConnectionDescriptionData)::value_type>();
             } else {
                 //dst.electricalConnectionDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["electricalConnectionDescriptionData"]) {
-            dst.electricalConnectionDescriptionData = src["electricalConnectionDescriptionData"].as<decltype(dst.
-                electricalConnectionDescriptionData)::value_type>();
+            dst.electricalConnectionDescriptionData = src["electricalConnectionDescriptionData"].as<decltype(dst.electricalConnectionDescriptionData)::value_type>();
         } else {
             //dst.electricalConnectionDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const ElectricalConnectionDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -37754,8 +38728,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptio
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["electricalConnectionId"]) {
-                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-                )::value_type>();
+                dst.electricalConnectionId = item["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
             } else {
                 //dst.electricalConnectionId = std::nullopt;
             }
@@ -37764,11 +38737,11 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptio
             } else {
                 //dst.scopeType = std::nullopt;
             }
+
         }
     } else {
         if (src["electricalConnectionId"]) {
-            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId
-            )::value_type>();
+            dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
         } else {
             //dst.electricalConnectionId = std::nullopt;
         }
@@ -37777,7 +38750,9 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptio
         } else {
             //dst.scopeType = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeInformationDataType &src, JsonVariant &dst)
@@ -37823,6 +38798,7 @@ void convertFromJson(const JsonVariantConst &src, TimeInformationDataType &dst)
             } else {
                 //dst.calendarWeek = std::nullopt;
             }
+
         }
     } else {
         if (src["utc"]) {
@@ -37845,7 +38821,9 @@ void convertFromJson(const JsonVariantConst &src, TimeInformationDataType &dst)
         } else {
             //dst.calendarWeek = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeInformationDataElementsType &src, JsonVariant &dst)
@@ -37891,6 +38869,7 @@ void convertFromJson(const JsonVariantConst &src, TimeInformationDataElementsTyp
             } else {
                 //dst.calendarWeek = std::nullopt;
             }
+
         }
     } else {
         if (src["utc"]) {
@@ -37913,7 +38892,9 @@ void convertFromJson(const JsonVariantConst &src, TimeInformationDataElementsTyp
         } else {
             //dst.calendarWeek = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeDistributorDataType &src, JsonVariant &dst)
@@ -37939,11 +38920,11 @@ void convertFromJson(const JsonVariantConst &src, TimeDistributorDataType &dst)
                 //dst.isTimeDistributor = std::nullopt;
             }
             if (item["distributorPriority"]) {
-                dst.distributorPriority = item["distributorPriority"].as<decltype(dst.distributorPriority
-                )::value_type>();
+                dst.distributorPriority = item["distributorPriority"].as<decltype(dst.distributorPriority)::value_type>();
             } else {
                 //dst.distributorPriority = std::nullopt;
             }
+
         }
     } else {
         if (src["isTimeDistributor"]) {
@@ -37956,7 +38937,9 @@ void convertFromJson(const JsonVariantConst &src, TimeDistributorDataType &dst)
         } else {
             //dst.distributorPriority = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeDistributorDataElementsType &src, JsonVariant &dst)
@@ -37982,11 +38965,11 @@ void convertFromJson(const JsonVariantConst &src, TimeDistributorDataElementsTyp
                 //dst.isTimeDistributor = std::nullopt;
             }
             if (item["distributorPriority"]) {
-                dst.distributorPriority = item["distributorPriority"].as<decltype(dst.distributorPriority
-                )::value_type>();
+                dst.distributorPriority = item["distributorPriority"].as<decltype(dst.distributorPriority)::value_type>();
             } else {
                 //dst.distributorPriority = std::nullopt;
             }
+
         }
     } else {
         if (src["isTimeDistributor"]) {
@@ -37999,7 +38982,9 @@ void convertFromJson(const JsonVariantConst &src, TimeDistributorDataElementsTyp
         } else {
             //dst.distributorPriority = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimePrecisionDataType &src, JsonVariant &dst)
@@ -38037,6 +39022,7 @@ void convertFromJson(const JsonVariantConst &src, TimePrecisionDataType &dst)
             } else {
                 //dst.clockDrift = std::nullopt;
             }
+
         }
     } else {
         if (src["isSynchronised"]) {
@@ -38054,7 +39040,9 @@ void convertFromJson(const JsonVariantConst &src, TimePrecisionDataType &dst)
         } else {
             //dst.clockDrift = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimePrecisionDataElementsType &src, JsonVariant &dst)
@@ -38092,6 +39080,7 @@ void convertFromJson(const JsonVariantConst &src, TimePrecisionDataElementsType 
             } else {
                 //dst.clockDrift = std::nullopt;
             }
+
         }
     } else {
         if (src["isSynchronised"]) {
@@ -38109,25 +39098,31 @@ void convertFromJson(const JsonVariantConst &src, TimePrecisionDataElementsType 
         } else {
             //dst.clockDrift = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const TimeDistributorEnquiryCallType &src, JsonVariant &dst)
 {
+
     return true;
 }
 
 void convertFromJson(const JsonVariantConst &src, TimeDistributorEnquiryCallType &dst)
 {
+
 }
 
 bool convertToJson(const TimeDistributorEnquiryCallElementsType &src, JsonVariant &dst)
 {
+
     return true;
 }
 
 void convertFromJson(const JsonVariantConst &src, TimeDistributorEnquiryCallElementsType &dst)
 {
+
 }
 
 bool convertToJson(const DeviceDiagnosisStateDataType &src, JsonVariant &dst)
@@ -38193,11 +39188,11 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisStateDataType &
                 //dst.totalUpTime = std::nullopt;
             }
             if (item["powerSupplyCondition"]) {
-                dst.powerSupplyCondition = item["powerSupplyCondition"].as<decltype(dst.powerSupplyCondition
-                )::value_type>();
+                dst.powerSupplyCondition = item["powerSupplyCondition"].as<decltype(dst.powerSupplyCondition)::value_type>();
             } else {
                 //dst.powerSupplyCondition = std::nullopt;
             }
+
         }
     } else {
         if (src["timestamp"]) {
@@ -38235,7 +39230,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisStateDataType &
         } else {
             //dst.powerSupplyCondition = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceDiagnosisStateDataElementsType &src, JsonVariant &dst)
@@ -38301,11 +39298,11 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisStateDataElemen
                 //dst.totalUpTime = std::nullopt;
             }
             if (item["powerSupplyCondition"]) {
-                dst.powerSupplyCondition = item["powerSupplyCondition"].as<decltype(dst.powerSupplyCondition
-                )::value_type>();
+                dst.powerSupplyCondition = item["powerSupplyCondition"].as<decltype(dst.powerSupplyCondition)::value_type>();
             } else {
                 //dst.powerSupplyCondition = std::nullopt;
             }
+
         }
     } else {
         if (src["timestamp"]) {
@@ -38343,7 +39340,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisStateDataElemen
         } else {
             //dst.powerSupplyCondition = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceDiagnosisHeartbeatDataType &src, JsonVariant &dst)
@@ -38381,6 +39380,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisHeartbeatDataTy
             } else {
                 //dst.heartbeatTimeout = std::nullopt;
             }
+
         }
     } else {
         if (src["timestamp"]) {
@@ -38398,7 +39398,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisHeartbeatDataTy
         } else {
             //dst.heartbeatTimeout = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceDiagnosisHeartbeatDataElementsType &src, JsonVariant &dst)
@@ -38436,6 +39438,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisHeartbeatDataEl
             } else {
                 //dst.heartbeatTimeout = std::nullopt;
             }
+
         }
     } else {
         if (src["timestamp"]) {
@@ -38453,7 +39456,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisHeartbeatDataEl
         } else {
             //dst.heartbeatTimeout = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceDiagnosisServiceDataType &src, JsonVariant &dst)
@@ -38499,6 +39504,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisServiceDataType
             } else {
                 //dst.nextService = std::nullopt;
             }
+
         }
     } else {
         if (src["timestamp"]) {
@@ -38521,7 +39527,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisServiceDataType
         } else {
             //dst.nextService = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceDiagnosisServiceDataElementsType &src, JsonVariant &dst)
@@ -38567,6 +39575,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisServiceDataElem
             } else {
                 //dst.nextService = std::nullopt;
             }
+
         }
     } else {
         if (src["timestamp"]) {
@@ -38589,7 +39598,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisServiceDataElem
         } else {
             //dst.nextService = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueValueType &src, JsonVariant &dst)
@@ -38667,6 +39678,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueVal
             } else {
                 //dst.integer = std::nullopt;
             }
+
         }
     } else {
         if (src["boolean"]) {
@@ -38709,7 +39721,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueVal
         } else {
             //dst.integer = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueValueElementsType &src, JsonVariant &dst)
@@ -38779,6 +39793,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueVal
             } else {
                 //dst.scaledNumber = std::nullopt;
             }
+
         }
     } else {
         if (src["boolean"]) {
@@ -38816,7 +39831,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueVal
         } else {
             //dst.scaledNumber = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueDataType &src, JsonVariant &dst)
@@ -38854,6 +39871,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDat
             } else {
                 //dst.isValueChangeable = std::nullopt;
             }
+
         }
     } else {
         if (src["keyId"]) {
@@ -38871,7 +39889,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDat
         } else {
             //dst.isValueChangeable = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueDataElementsType &src, JsonVariant &dst)
@@ -38909,6 +39929,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDat
             } else {
                 //dst.isValueChangeable = std::nullopt;
             }
+
         }
     } else {
         if (src["keyId"]) {
@@ -38926,7 +39947,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDat
         } else {
             //dst.isValueChangeable = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueListDataType &src, JsonVariant &dst)
@@ -38944,21 +39967,21 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueLis
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["deviceConfigurationKeyValueData"]) {
-                dst.deviceConfigurationKeyValueData = item["deviceConfigurationKeyValueData"].as<decltype(dst.
-                    deviceConfigurationKeyValueData)::value_type>();
+                dst.deviceConfigurationKeyValueData = item["deviceConfigurationKeyValueData"].as<decltype(dst.deviceConfigurationKeyValueData)::value_type>();
             } else {
                 //dst.deviceConfigurationKeyValueData = std::nullopt;
             }
+
         }
     } else {
         if (src["deviceConfigurationKeyValueData"]) {
-            dst.deviceConfigurationKeyValueData = src["deviceConfigurationKeyValueData"].as<decltype(dst.
-                deviceConfigurationKeyValueData
-            )::value_type>();
+            dst.deviceConfigurationKeyValueData = src["deviceConfigurationKeyValueData"].as<decltype(dst.deviceConfigurationKeyValueData)::value_type>();
         } else {
             //dst.deviceConfigurationKeyValueData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueListDataSelectorsType &src, JsonVariant &dst)
@@ -38980,6 +40003,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueLis
             } else {
                 //dst.keyId = std::nullopt;
             }
+
         }
     } else {
         if (src["keyId"]) {
@@ -38987,7 +40011,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueLis
         } else {
             //dst.keyId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueDescriptionDataType &src, JsonVariant &dst)
@@ -39049,6 +40075,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDes
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["keyId"]) {
@@ -39081,7 +40108,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDes
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueDescriptionDataElementsType &src, JsonVariant &dst)
@@ -39143,6 +40172,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDes
             } else {
                 //dst.description = std::nullopt;
             }
+
         }
     } else {
         if (src["keyId"]) {
@@ -39175,7 +40205,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDes
         } else {
             //dst.description = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueDescriptionListDataType &src, JsonVariant &dst)
@@ -39193,22 +40225,21 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDes
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["deviceConfigurationKeyValueDescriptionData"]) {
-                dst.deviceConfigurationKeyValueDescriptionData = item["deviceConfigurationKeyValueDescriptionData"].as<
-                    decltype(dst.
-                        deviceConfigurationKeyValueDescriptionData)::value_type>();
+                dst.deviceConfigurationKeyValueDescriptionData = item["deviceConfigurationKeyValueDescriptionData"].as<decltype(dst.deviceConfigurationKeyValueDescriptionData)::value_type>();
             } else {
                 //dst.deviceConfigurationKeyValueDescriptionData = std::nullopt;
             }
+
         }
     } else {
         if (src["deviceConfigurationKeyValueDescriptionData"]) {
-            dst.deviceConfigurationKeyValueDescriptionData = src["deviceConfigurationKeyValueDescriptionData"].as<
-                decltype(dst.
-                    deviceConfigurationKeyValueDescriptionData)::value_type>();
+            dst.deviceConfigurationKeyValueDescriptionData = src["deviceConfigurationKeyValueDescriptionData"].as<decltype(dst.deviceConfigurationKeyValueDescriptionData)::value_type>();
         } else {
             //dst.deviceConfigurationKeyValueDescriptionData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueDescriptionListDataSelectorsType &src, JsonVariant &dst)
@@ -39238,6 +40269,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDes
             } else {
                 //dst.keyName = std::nullopt;
             }
+
         }
     } else {
         if (src["keyId"]) {
@@ -39250,7 +40282,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDes
         } else {
             //dst.keyName = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueConstraintsDataType &src, JsonVariant &dst)
@@ -39296,6 +40330,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueCon
             } else {
                 //dst.valueStepSize = std::nullopt;
             }
+
         }
     } else {
         if (src["keyId"]) {
@@ -39318,7 +40353,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueCon
         } else {
             //dst.valueStepSize = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueConstraintsDataElementsType &src, JsonVariant &dst)
@@ -39364,6 +40401,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueCon
             } else {
                 //dst.valueStepSize = std::nullopt;
             }
+
         }
     } else {
         if (src["keyId"]) {
@@ -39386,7 +40424,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueCon
         } else {
             //dst.valueStepSize = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueConstraintsListDataType &src, JsonVariant &dst)
@@ -39404,22 +40444,21 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueCon
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["deviceConfigurationKeyValueConstraintsData"]) {
-                dst.deviceConfigurationKeyValueConstraintsData = item["deviceConfigurationKeyValueConstraintsData"].as<
-                    decltype(dst.
-                        deviceConfigurationKeyValueConstraintsData)::value_type>();
+                dst.deviceConfigurationKeyValueConstraintsData = item["deviceConfigurationKeyValueConstraintsData"].as<decltype(dst.deviceConfigurationKeyValueConstraintsData)::value_type>();
             } else {
                 //dst.deviceConfigurationKeyValueConstraintsData = std::nullopt;
             }
+
         }
     } else {
         if (src["deviceConfigurationKeyValueConstraintsData"]) {
-            dst.deviceConfigurationKeyValueConstraintsData = src["deviceConfigurationKeyValueConstraintsData"].as<
-                decltype(dst.
-                    deviceConfigurationKeyValueConstraintsData)::value_type>();
+            dst.deviceConfigurationKeyValueConstraintsData = src["deviceConfigurationKeyValueConstraintsData"].as<decltype(dst.deviceConfigurationKeyValueConstraintsData)::value_type>();
         } else {
             //dst.deviceConfigurationKeyValueConstraintsData = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueConstraintsListDataSelectorsType &src, JsonVariant &dst)
@@ -39441,6 +40480,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueCon
             } else {
                 //dst.keyId = std::nullopt;
             }
+
         }
     } else {
         if (src["keyId"]) {
@@ -39448,7 +40488,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueCon
         } else {
             //dst.keyId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const HeaderType &src, JsonVariant &dst)
@@ -39490,8 +40532,7 @@ void convertFromJson(const JsonVariantConst &src, HeaderType &dst)
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["specificationVersion"]) {
-                dst.specificationVersion = item["specificationVersion"].as<decltype(dst.specificationVersion
-                )::value_type>();
+                dst.specificationVersion = item["specificationVersion"].as<decltype(dst.specificationVersion)::value_type>();
             } else {
                 //dst.specificationVersion = std::nullopt;
             }
@@ -39516,8 +40557,7 @@ void convertFromJson(const JsonVariantConst &src, HeaderType &dst)
                 //dst.msgCounter = std::nullopt;
             }
             if (item["msgCounterReference"]) {
-                dst.msgCounterReference = item["msgCounterReference"].as<decltype(dst.msgCounterReference
-                )::value_type>();
+                dst.msgCounterReference = item["msgCounterReference"].as<decltype(dst.msgCounterReference)::value_type>();
             } else {
                 //dst.msgCounterReference = std::nullopt;
             }
@@ -39536,6 +40576,7 @@ void convertFromJson(const JsonVariantConst &src, HeaderType &dst)
             } else {
                 //dst.timestamp = std::nullopt;
             }
+
         }
     } else {
         if (src["specificationVersion"]) {
@@ -39583,7 +40624,9 @@ void convertFromJson(const JsonVariantConst &src, HeaderType &dst)
         } else {
             //dst.timestamp = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const CmdControlType &src, JsonVariant &dst)
@@ -39613,6 +40656,7 @@ void convertFromJson(const JsonVariantConst &src, CmdControlType &dst)
             } else {
                 //dst.partial = std::nullopt;
             }
+
         }
     } else {
         if (src["delete"]) {
@@ -39625,7 +40669,9 @@ void convertFromJson(const JsonVariantConst &src, CmdControlType &dst)
         } else {
             //dst.partial = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DataTunnelingHeaderType &src, JsonVariant &dst)
@@ -39663,6 +40709,7 @@ void convertFromJson(const JsonVariantConst &src, DataTunnelingHeaderType &dst)
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["purposeId"]) {
@@ -39680,7 +40727,9 @@ void convertFromJson(const JsonVariantConst &src, DataTunnelingHeaderType &dst)
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DataTunnelingHeaderElementsType &src, JsonVariant &dst)
@@ -39718,6 +40767,7 @@ void convertFromJson(const JsonVariantConst &src, DataTunnelingHeaderElementsTyp
             } else {
                 //dst.sequenceId = std::nullopt;
             }
+
         }
     } else {
         if (src["purposeId"]) {
@@ -39735,7 +40785,9 @@ void convertFromJson(const JsonVariantConst &src, DataTunnelingHeaderElementsTyp
         } else {
             //dst.sequenceId = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DataTunnelingCallType &src, JsonVariant &dst)
@@ -39765,6 +40817,7 @@ void convertFromJson(const JsonVariantConst &src, DataTunnelingCallType &dst)
             } else {
                 //dst.payload = std::nullopt;
             }
+
         }
     } else {
         if (src["header"]) {
@@ -39777,7 +40830,9 @@ void convertFromJson(const JsonVariantConst &src, DataTunnelingCallType &dst)
         } else {
             //dst.payload = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const DataTunnelingCallElementsType &src, JsonVariant &dst)
@@ -39807,6 +40862,7 @@ void convertFromJson(const JsonVariantConst &src, DataTunnelingCallElementsType 
             } else {
                 //dst.payload = std::nullopt;
             }
+
         }
     } else {
         if (src["header"]) {
@@ -39819,7 +40875,9 @@ void convertFromJson(const JsonVariantConst &src, DataTunnelingCallElementsType 
         } else {
             //dst.payload = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveTableTierType &src, JsonVariant &dst)
@@ -39857,6 +40915,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableTierType &dst)
             } else {
                 //dst.incentive = std::nullopt;
             }
+
         }
     } else {
         if (src["tier"]) {
@@ -39874,7 +40933,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableTierType &dst)
         } else {
             //dst.incentive = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveTableIncentiveSlotType &src, JsonVariant &dst)
@@ -39904,6 +40965,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableIncentiveSlotTyp
             } else {
                 //dst.tier = std::nullopt;
             }
+
         }
     } else {
         if (src["timeInterval"]) {
@@ -39916,7 +40978,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableIncentiveSlotTyp
         } else {
             //dst.tier = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveTableType &src, JsonVariant &dst)
@@ -39946,6 +41010,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableType &dst)
             } else {
                 //dst.incentiveSlot = std::nullopt;
             }
+
         }
     } else {
         if (src["tariff"]) {
@@ -39958,7 +41023,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableType &dst)
         } else {
             //dst.incentiveSlot = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveTableDataType &src, JsonVariant &dst)
@@ -39980,6 +41047,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDataType &dst)
             } else {
                 //dst.incentiveTable = std::nullopt;
             }
+
         }
     } else {
         if (src["incentiveTable"]) {
@@ -39987,7 +41055,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDataType &dst)
         } else {
             //dst.incentiveTable = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveTableTierElementsType &src, JsonVariant &dst)
@@ -40025,6 +41095,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableTierElementsType
             } else {
                 //dst.incentive = std::nullopt;
             }
+
         }
     } else {
         if (src["tier"]) {
@@ -40042,7 +41113,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableTierElementsType
         } else {
             //dst.incentive = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveTableIncentiveSlotElementsType &src, JsonVariant &dst)
@@ -40072,6 +41145,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableIncentiveSlotEle
             } else {
                 //dst.tier = std::nullopt;
             }
+
         }
     } else {
         if (src["timeInterval"]) {
@@ -40084,7 +41158,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableIncentiveSlotEle
         } else {
             //dst.tier = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveTableElementsType &src, JsonVariant &dst)
@@ -40114,6 +41190,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableElementsType &ds
             } else {
                 //dst.incentiveSlot = std::nullopt;
             }
+
         }
     } else {
         if (src["tariff"]) {
@@ -40126,7 +41203,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableElementsType &ds
         } else {
             //dst.incentiveSlot = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveTableDataElementsType &src, JsonVariant &dst)
@@ -40148,6 +41227,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDataElementsType
             } else {
                 //dst.incentiveTable = std::nullopt;
             }
+
         }
     } else {
         if (src["incentiveTable"]) {
@@ -40155,7 +41235,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDataElementsType
         } else {
             //dst.incentiveTable = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveTableDataSelectorsType &src, JsonVariant &dst)
@@ -40177,6 +41259,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDataSelectorsTyp
             } else {
                 //dst.tariff = std::nullopt;
             }
+
         }
     } else {
         if (src["tariff"]) {
@@ -40184,7 +41267,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDataSelectorsTyp
         } else {
             //dst.tariff = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveTableDescriptionTierType &src, JsonVariant &dst)
@@ -40213,17 +41298,16 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionTierT
                 //dst.tierDescription = std::nullopt;
             }
             if (item["boundaryDescription"]) {
-                dst.boundaryDescription = item["boundaryDescription"].as<decltype(dst.boundaryDescription
-                )::value_type>();
+                dst.boundaryDescription = item["boundaryDescription"].as<decltype(dst.boundaryDescription)::value_type>();
             } else {
                 //dst.boundaryDescription = std::nullopt;
             }
             if (item["incentiveDescription"]) {
-                dst.incentiveDescription = item["incentiveDescription"].as<decltype(dst.incentiveDescription
-                )::value_type>();
+                dst.incentiveDescription = item["incentiveDescription"].as<decltype(dst.incentiveDescription)::value_type>();
             } else {
                 //dst.incentiveDescription = std::nullopt;
             }
+
         }
     } else {
         if (src["tierDescription"]) {
@@ -40241,7 +41325,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionTierT
         } else {
             //dst.incentiveDescription = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveTableDescriptionType &src, JsonVariant &dst)
@@ -40271,6 +41357,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionType 
             } else {
                 //dst.tier = std::nullopt;
             }
+
         }
     } else {
         if (src["tariffDescription"]) {
@@ -40283,7 +41370,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionType 
         } else {
             //dst.tier = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveTableDescriptionDataType &src, JsonVariant &dst)
@@ -40301,20 +41390,21 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionDataT
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["incentiveTableDescription"]) {
-                dst.incentiveTableDescription = item["incentiveTableDescription"].as<decltype(dst.
-                    incentiveTableDescription)::value_type>();
+                dst.incentiveTableDescription = item["incentiveTableDescription"].as<decltype(dst.incentiveTableDescription)::value_type>();
             } else {
                 //dst.incentiveTableDescription = std::nullopt;
             }
+
         }
     } else {
         if (src["incentiveTableDescription"]) {
-            dst.incentiveTableDescription = src["incentiveTableDescription"].as<decltype(dst.incentiveTableDescription
-            )::value_type>();
+            dst.incentiveTableDescription = src["incentiveTableDescription"].as<decltype(dst.incentiveTableDescription)::value_type>();
         } else {
             //dst.incentiveTableDescription = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveTableDescriptionTierElementsType &src, JsonVariant &dst)
@@ -40343,17 +41433,16 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionTierE
                 //dst.tierDescription = std::nullopt;
             }
             if (item["boundaryDescription"]) {
-                dst.boundaryDescription = item["boundaryDescription"].as<decltype(dst.boundaryDescription
-                )::value_type>();
+                dst.boundaryDescription = item["boundaryDescription"].as<decltype(dst.boundaryDescription)::value_type>();
             } else {
                 //dst.boundaryDescription = std::nullopt;
             }
             if (item["incentiveDescription"]) {
-                dst.incentiveDescription = item["incentiveDescription"].as<decltype(dst.incentiveDescription
-                )::value_type>();
+                dst.incentiveDescription = item["incentiveDescription"].as<decltype(dst.incentiveDescription)::value_type>();
             } else {
                 //dst.incentiveDescription = std::nullopt;
             }
+
         }
     } else {
         if (src["tierDescription"]) {
@@ -40371,7 +41460,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionTierE
         } else {
             //dst.incentiveDescription = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveTableDescriptionElementsType &src, JsonVariant &dst)
@@ -40401,6 +41492,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionEleme
             } else {
                 //dst.tier = std::nullopt;
             }
+
         }
     } else {
         if (src["tariffDescription"]) {
@@ -40413,7 +41505,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionEleme
         } else {
             //dst.tier = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveTableDescriptionDataElementsType &src, JsonVariant &dst)
@@ -40431,20 +41525,21 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionDataE
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["incentiveTableDescription"]) {
-                dst.incentiveTableDescription = item["incentiveTableDescription"].as<decltype(dst.
-                    incentiveTableDescription)::value_type>();
+                dst.incentiveTableDescription = item["incentiveTableDescription"].as<decltype(dst.incentiveTableDescription)::value_type>();
             } else {
                 //dst.incentiveTableDescription = std::nullopt;
             }
+
         }
     } else {
         if (src["incentiveTableDescription"]) {
-            dst.incentiveTableDescription = src["incentiveTableDescription"].as<decltype(dst.incentiveTableDescription
-            )::value_type>();
+            dst.incentiveTableDescription = src["incentiveTableDescription"].as<decltype(dst.incentiveTableDescription)::value_type>();
         } else {
             //dst.incentiveTableDescription = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveTableDescriptionDataSelectorsType &src, JsonVariant &dst)
@@ -40466,6 +41561,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionDataS
             } else {
                 //dst.tariffDescription = std::nullopt;
             }
+
         }
     } else {
         if (src["tariffDescription"]) {
@@ -40473,7 +41569,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionDataS
         } else {
             //dst.tariffDescription = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveTableConstraintsType &src, JsonVariant &dst)
@@ -40507,11 +41605,11 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsType 
                 //dst.tariffConstraints = std::nullopt;
             }
             if (item["incentiveSlotConstraints"]) {
-                dst.incentiveSlotConstraints = item["incentiveSlotConstraints"].as<decltype(dst.incentiveSlotConstraints
-                )::value_type>();
+                dst.incentiveSlotConstraints = item["incentiveSlotConstraints"].as<decltype(dst.incentiveSlotConstraints)::value_type>();
             } else {
                 //dst.incentiveSlotConstraints = std::nullopt;
             }
+
         }
     } else {
         if (src["tariff"]) {
@@ -40525,12 +41623,13 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsType 
             //dst.tariffConstraints = std::nullopt;
         }
         if (src["incentiveSlotConstraints"]) {
-            dst.incentiveSlotConstraints = src["incentiveSlotConstraints"].as<decltype(dst.incentiveSlotConstraints
-            )::value_type>();
+            dst.incentiveSlotConstraints = src["incentiveSlotConstraints"].as<decltype(dst.incentiveSlotConstraints)::value_type>();
         } else {
             //dst.incentiveSlotConstraints = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveTableConstraintsDataType &src, JsonVariant &dst)
@@ -40548,20 +41647,21 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsDataT
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["incentiveTableConstraints"]) {
-                dst.incentiveTableConstraints = item["incentiveTableConstraints"].as<decltype(dst.
-                    incentiveTableConstraints)::value_type>();
+                dst.incentiveTableConstraints = item["incentiveTableConstraints"].as<decltype(dst.incentiveTableConstraints)::value_type>();
             } else {
                 //dst.incentiveTableConstraints = std::nullopt;
             }
+
         }
     } else {
         if (src["incentiveTableConstraints"]) {
-            dst.incentiveTableConstraints = src["incentiveTableConstraints"].as<decltype(dst.incentiveTableConstraints
-            )::value_type>();
+            dst.incentiveTableConstraints = src["incentiveTableConstraints"].as<decltype(dst.incentiveTableConstraints)::value_type>();
         } else {
             //dst.incentiveTableConstraints = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveTableConstraintsElementsType &src, JsonVariant &dst)
@@ -40595,11 +41695,11 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsEleme
                 //dst.tariffConstraints = std::nullopt;
             }
             if (item["incentiveSlotConstraints"]) {
-                dst.incentiveSlotConstraints = item["incentiveSlotConstraints"].as<decltype(dst.incentiveSlotConstraints
-                )::value_type>();
+                dst.incentiveSlotConstraints = item["incentiveSlotConstraints"].as<decltype(dst.incentiveSlotConstraints)::value_type>();
             } else {
                 //dst.incentiveSlotConstraints = std::nullopt;
             }
+
         }
     } else {
         if (src["tariff"]) {
@@ -40613,12 +41713,13 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsEleme
             //dst.tariffConstraints = std::nullopt;
         }
         if (src["incentiveSlotConstraints"]) {
-            dst.incentiveSlotConstraints = src["incentiveSlotConstraints"].as<decltype(dst.incentiveSlotConstraints
-            )::value_type>();
+            dst.incentiveSlotConstraints = src["incentiveSlotConstraints"].as<decltype(dst.incentiveSlotConstraints)::value_type>();
         } else {
             //dst.incentiveSlotConstraints = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveTableConstraintsDataElementsType &src, JsonVariant &dst)
@@ -40636,20 +41737,21 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsDataE
         JsonArrayConst array = src.as<JsonArrayConst>();
         for (JsonVariantConst item : array) {
             if (item["incentiveTableConstraints"]) {
-                dst.incentiveTableConstraints = item["incentiveTableConstraints"].as<decltype(dst.
-                    incentiveTableConstraints)::value_type>();
+                dst.incentiveTableConstraints = item["incentiveTableConstraints"].as<decltype(dst.incentiveTableConstraints)::value_type>();
             } else {
                 //dst.incentiveTableConstraints = std::nullopt;
             }
+
         }
     } else {
         if (src["incentiveTableConstraints"]) {
-            dst.incentiveTableConstraints = src["incentiveTableConstraints"].as<decltype(dst.incentiveTableConstraints
-            )::value_type>();
+            dst.incentiveTableConstraints = src["incentiveTableConstraints"].as<decltype(dst.incentiveTableConstraints)::value_type>();
         } else {
             //dst.incentiveTableConstraints = std::nullopt;
         }
+
     }
+
 }
 
 bool convertToJson(const IncentiveTableConstraintsDataSelectorsType &src, JsonVariant &dst)
@@ -40671,6 +41773,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsDataS
             } else {
                 //dst.tariff = std::nullopt;
             }
+
         }
     } else {
         if (src["tariff"]) {
@@ -40678,7 +41781,9 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsDataS
         } else {
             //dst.tariff = std::nullopt;
         }
+
     }
+
 }
 
 SpineDataTypeHandler::Type SpineDataTypeHandler::type_from_function(SpineDataTypeHandler::Function function)
@@ -41650,6 +42755,7 @@ SpineDataTypeHandler::Type SpineDataTypeHandler::type_from_function(SpineDataTyp
 
 SpineDataTypeHandler::Function SpineDataTypeHandler::function_from_string(const String function_name)
 {
+
     if (function_name == "directControlActivityData")
         return SpineDataTypeHandler::Function::directControlActivityData;
     if (function_name == "directControlActivityDataElements")
@@ -42613,338 +43719,265 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::function_from_string(const 
 
 SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst obj)
 {
+
     if (obj["directControlActivityData"]) {
         last_cmd = function_from_string("directControlActivityData");
-        directcontrolactivitydatatype = obj["directControlActivityData"].as<decltype(directcontrolactivitydatatype
-        )::value_type>();
+        directcontrolactivitydatatype = obj["directControlActivityData"].as<decltype(directcontrolactivitydatatype)::value_type>();
         return last_cmd;
     }
     if (obj["directControlActivityDataElements"]) {
         last_cmd = function_from_string("directControlActivityDataElements");
-        directcontrolactivitydataelementstype = obj["directControlActivityDataElements"].as<decltype(
-            directcontrolactivitydataelementstype
-        )::value_type>();
+        directcontrolactivitydataelementstype = obj["directControlActivityDataElements"].as<decltype(directcontrolactivitydataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["directControlActivityListData"]) {
         last_cmd = function_from_string("directControlActivityListData");
-        directcontrolactivitylistdatatype = obj["directControlActivityListData"].as<decltype(
-            directcontrolactivitylistdatatype
-        )::value_type>();
+        directcontrolactivitylistdatatype = obj["directControlActivityListData"].as<decltype(directcontrolactivitylistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["directControlActivityListDataSelectors"]) {
         last_cmd = function_from_string("directControlActivityListDataSelectors");
-        directcontrolactivitylistdataselectorstype = obj["directControlActivityListDataSelectors"].as<decltype(
-            directcontrolactivitylistdataselectorstype)::value_type>();
+        directcontrolactivitylistdataselectorstype = obj["directControlActivityListDataSelectors"].as<decltype(directcontrolactivitylistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["directControlDescriptionData"]) {
         last_cmd = function_from_string("directControlDescriptionData");
-        directcontroldescriptiondatatype = obj["directControlDescriptionData"].as<decltype(
-            directcontroldescriptiondatatype)::value_type>();
+        directcontroldescriptiondatatype = obj["directControlDescriptionData"].as<decltype(directcontroldescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["directControlDescriptionDataElements"]) {
         last_cmd = function_from_string("directControlDescriptionDataElements");
-        directcontroldescriptiondataelementstype = obj["directControlDescriptionDataElements"].as<decltype(
-            directcontroldescriptiondataelementstype)::value_type>();
+        directcontroldescriptiondataelementstype = obj["directControlDescriptionDataElements"].as<decltype(directcontroldescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["powerTimeSlotScheduleData"]) {
         last_cmd = function_from_string("powerTimeSlotScheduleData");
-        powertimeslotscheduledatatype = obj["powerTimeSlotScheduleData"].as<decltype(powertimeslotscheduledatatype
-        )::value_type>();
+        powertimeslotscheduledatatype = obj["powerTimeSlotScheduleData"].as<decltype(powertimeslotscheduledatatype)::value_type>();
         return last_cmd;
     }
     if (obj["powerTimeSlotScheduleDataElements"]) {
         last_cmd = function_from_string("powerTimeSlotScheduleDataElements");
-        powertimeslotscheduledataelementstype = obj["powerTimeSlotScheduleDataElements"].as<decltype(
-            powertimeslotscheduledataelementstype
-        )::value_type>();
+        powertimeslotscheduledataelementstype = obj["powerTimeSlotScheduleDataElements"].as<decltype(powertimeslotscheduledataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["powerTimeSlotScheduleListData"]) {
         last_cmd = function_from_string("powerTimeSlotScheduleListData");
-        powertimeslotschedulelistdatatype = obj["powerTimeSlotScheduleListData"].as<decltype(
-            powertimeslotschedulelistdatatype
-        )::value_type>();
+        powertimeslotschedulelistdatatype = obj["powerTimeSlotScheduleListData"].as<decltype(powertimeslotschedulelistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["powerTimeSlotScheduleListDataSelectors"]) {
         last_cmd = function_from_string("powerTimeSlotScheduleListDataSelectors");
-        powertimeslotschedulelistdataselectorstype = obj["powerTimeSlotScheduleListDataSelectors"].as<decltype(
-            powertimeslotschedulelistdataselectorstype)::value_type>();
+        powertimeslotschedulelistdataselectorstype = obj["powerTimeSlotScheduleListDataSelectors"].as<decltype(powertimeslotschedulelistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["powerTimeSlotValueData"]) {
         last_cmd = function_from_string("powerTimeSlotValueData");
-        powertimeslotvaluedatatype = obj["powerTimeSlotValueData"].as<decltype(powertimeslotvaluedatatype
-        )::value_type>();
+        powertimeslotvaluedatatype = obj["powerTimeSlotValueData"].as<decltype(powertimeslotvaluedatatype)::value_type>();
         return last_cmd;
     }
     if (obj["powerTimeSlotValueDataElements"]) {
         last_cmd = function_from_string("powerTimeSlotValueDataElements");
-        powertimeslotvaluedataelementstype = obj["powerTimeSlotValueDataElements"].as<decltype(
-            powertimeslotvaluedataelementstype
-        )::value_type>();
+        powertimeslotvaluedataelementstype = obj["powerTimeSlotValueDataElements"].as<decltype(powertimeslotvaluedataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["powerTimeSlotValueListData"]) {
         last_cmd = function_from_string("powerTimeSlotValueListData");
-        powertimeslotvaluelistdatatype = obj["powerTimeSlotValueListData"].as<decltype(powertimeslotvaluelistdatatype
-        )::value_type>();
+        powertimeslotvaluelistdatatype = obj["powerTimeSlotValueListData"].as<decltype(powertimeslotvaluelistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["powerTimeSlotValueListDataSelectors"]) {
         last_cmd = function_from_string("powerTimeSlotValueListDataSelectors");
-        powertimeslotvaluelistdataselectorstype = obj["powerTimeSlotValueListDataSelectors"].as<decltype(
-            powertimeslotvaluelistdataselectorstype)::value_type>();
+        powertimeslotvaluelistdataselectorstype = obj["powerTimeSlotValueListDataSelectors"].as<decltype(powertimeslotvaluelistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["powerTimeSlotScheduleConstraintsData"]) {
         last_cmd = function_from_string("powerTimeSlotScheduleConstraintsData");
-        powertimeslotscheduleconstraintsdatatype = obj["powerTimeSlotScheduleConstraintsData"].as<decltype(
-            powertimeslotscheduleconstraintsdatatype)::value_type>();
+        powertimeslotscheduleconstraintsdatatype = obj["powerTimeSlotScheduleConstraintsData"].as<decltype(powertimeslotscheduleconstraintsdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["powerTimeSlotScheduleConstraintsDataElements"]) {
         last_cmd = function_from_string("powerTimeSlotScheduleConstraintsDataElements");
-        powertimeslotscheduleconstraintsdataelementstype = obj["powerTimeSlotScheduleConstraintsDataElements"].as<
-            decltype(
-                powertimeslotscheduleconstraintsdataelementstype)::value_type>();
+        powertimeslotscheduleconstraintsdataelementstype = obj["powerTimeSlotScheduleConstraintsDataElements"].as<decltype(powertimeslotscheduleconstraintsdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["powerTimeSlotScheduleConstraintsListData"]) {
         last_cmd = function_from_string("powerTimeSlotScheduleConstraintsListData");
-        powertimeslotscheduleconstraintslistdatatype = obj["powerTimeSlotScheduleConstraintsListData"].as<decltype(
-            powertimeslotscheduleconstraintslistdatatype)::value_type>();
+        powertimeslotscheduleconstraintslistdatatype = obj["powerTimeSlotScheduleConstraintsListData"].as<decltype(powertimeslotscheduleconstraintslistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["powerTimeSlotScheduleConstraintsListDataSelectors"]) {
         last_cmd = function_from_string("powerTimeSlotScheduleConstraintsListDataSelectors");
-        powertimeslotscheduleconstraintslistdataselectorstype = obj["powerTimeSlotScheduleConstraintsListDataSelectors"]
-            .as<decltype(
-                powertimeslotscheduleconstraintslistdataselectorstype)::value_type>();
+        powertimeslotscheduleconstraintslistdataselectorstype = obj["powerTimeSlotScheduleConstraintsListDataSelectors"].as<decltype(powertimeslotscheduleconstraintslistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceAlternativesRelationData"]) {
         last_cmd = function_from_string("powerSequenceAlternativesRelationData");
-        powersequencealternativesrelationdatatype = obj["powerSequenceAlternativesRelationData"].as<decltype(
-            powersequencealternativesrelationdatatype)::value_type>();
+        powersequencealternativesrelationdatatype = obj["powerSequenceAlternativesRelationData"].as<decltype(powersequencealternativesrelationdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceAlternativesRelationDataElements"]) {
         last_cmd = function_from_string("powerSequenceAlternativesRelationDataElements");
-        powersequencealternativesrelationdataelementstype = obj["powerSequenceAlternativesRelationDataElements"].as<
-            decltype(
-                powersequencealternativesrelationdataelementstype)::value_type>();
+        powersequencealternativesrelationdataelementstype = obj["powerSequenceAlternativesRelationDataElements"].as<decltype(powersequencealternativesrelationdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceAlternativesRelationListData"]) {
         last_cmd = function_from_string("powerSequenceAlternativesRelationListData");
-        powersequencealternativesrelationlistdatatype = obj["powerSequenceAlternativesRelationListData"].as<decltype(
-            powersequencealternativesrelationlistdatatype)::value_type>();
+        powersequencealternativesrelationlistdatatype = obj["powerSequenceAlternativesRelationListData"].as<decltype(powersequencealternativesrelationlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceAlternativesRelationListDataSelectors"]) {
         last_cmd = function_from_string("powerSequenceAlternativesRelationListDataSelectors");
-        powersequencealternativesrelationlistdataselectorstype = obj[
-            "powerSequenceAlternativesRelationListDataSelectors"].as<decltype(
-            powersequencealternativesrelationlistdataselectorstype)::value_type>();
+        powersequencealternativesrelationlistdataselectorstype = obj["powerSequenceAlternativesRelationListDataSelectors"].as<decltype(powersequencealternativesrelationlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceDescriptionData"]) {
         last_cmd = function_from_string("powerSequenceDescriptionData");
-        powersequencedescriptiondatatype = obj["powerSequenceDescriptionData"].as<decltype(
-            powersequencedescriptiondatatype)::value_type>();
+        powersequencedescriptiondatatype = obj["powerSequenceDescriptionData"].as<decltype(powersequencedescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceDescriptionDataElements"]) {
         last_cmd = function_from_string("powerSequenceDescriptionDataElements");
-        powersequencedescriptiondataelementstype = obj["powerSequenceDescriptionDataElements"].as<decltype(
-            powersequencedescriptiondataelementstype)::value_type>();
+        powersequencedescriptiondataelementstype = obj["powerSequenceDescriptionDataElements"].as<decltype(powersequencedescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceDescriptionListData"]) {
         last_cmd = function_from_string("powerSequenceDescriptionListData");
-        powersequencedescriptionlistdatatype = obj["powerSequenceDescriptionListData"].as<decltype(
-            powersequencedescriptionlistdatatype
-        )::value_type>();
+        powersequencedescriptionlistdatatype = obj["powerSequenceDescriptionListData"].as<decltype(powersequencedescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("powerSequenceDescriptionListDataSelectors");
-        powersequencedescriptionlistdataselectorstype = obj["powerSequenceDescriptionListDataSelectors"].as<decltype(
-            powersequencedescriptionlistdataselectorstype)::value_type>();
+        powersequencedescriptionlistdataselectorstype = obj["powerSequenceDescriptionListDataSelectors"].as<decltype(powersequencedescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceStateData"]) {
         last_cmd = function_from_string("powerSequenceStateData");
-        powersequencestatedatatype = obj["powerSequenceStateData"].as<decltype(powersequencestatedatatype
-        )::value_type>();
+        powersequencestatedatatype = obj["powerSequenceStateData"].as<decltype(powersequencestatedatatype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceStateDataElements"]) {
         last_cmd = function_from_string("powerSequenceStateDataElements");
-        powersequencestatedataelementstype = obj["powerSequenceStateDataElements"].as<decltype(
-            powersequencestatedataelementstype
-        )::value_type>();
+        powersequencestatedataelementstype = obj["powerSequenceStateDataElements"].as<decltype(powersequencestatedataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceStateListData"]) {
         last_cmd = function_from_string("powerSequenceStateListData");
-        powersequencestatelistdatatype = obj["powerSequenceStateListData"].as<decltype(powersequencestatelistdatatype
-        )::value_type>();
+        powersequencestatelistdatatype = obj["powerSequenceStateListData"].as<decltype(powersequencestatelistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceStateListDataSelectors"]) {
         last_cmd = function_from_string("powerSequenceStateListDataSelectors");
-        powersequencestatelistdataselectorstype = obj["powerSequenceStateListDataSelectors"].as<decltype(
-            powersequencestatelistdataselectorstype)::value_type>();
+        powersequencestatelistdataselectorstype = obj["powerSequenceStateListDataSelectors"].as<decltype(powersequencestatelistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceScheduleData"]) {
         last_cmd = function_from_string("powerSequenceScheduleData");
-        powersequencescheduledatatype = obj["powerSequenceScheduleData"].as<decltype(powersequencescheduledatatype
-        )::value_type>();
+        powersequencescheduledatatype = obj["powerSequenceScheduleData"].as<decltype(powersequencescheduledatatype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceScheduleDataElements"]) {
         last_cmd = function_from_string("powerSequenceScheduleDataElements");
-        powersequencescheduledataelementstype = obj["powerSequenceScheduleDataElements"].as<decltype(
-            powersequencescheduledataelementstype
-        )::value_type>();
+        powersequencescheduledataelementstype = obj["powerSequenceScheduleDataElements"].as<decltype(powersequencescheduledataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceScheduleListData"]) {
         last_cmd = function_from_string("powerSequenceScheduleListData");
-        powersequenceschedulelistdatatype = obj["powerSequenceScheduleListData"].as<decltype(
-            powersequenceschedulelistdatatype
-        )::value_type>();
+        powersequenceschedulelistdatatype = obj["powerSequenceScheduleListData"].as<decltype(powersequenceschedulelistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceScheduleListDataSelectors"]) {
         last_cmd = function_from_string("powerSequenceScheduleListDataSelectors");
-        powersequenceschedulelistdataselectorstype = obj["powerSequenceScheduleListDataSelectors"].as<decltype(
-            powersequenceschedulelistdataselectorstype)::value_type>();
+        powersequenceschedulelistdataselectorstype = obj["powerSequenceScheduleListDataSelectors"].as<decltype(powersequenceschedulelistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceScheduleConstraintsData"]) {
         last_cmd = function_from_string("powerSequenceScheduleConstraintsData");
-        powersequencescheduleconstraintsdatatype = obj["powerSequenceScheduleConstraintsData"].as<decltype(
-            powersequencescheduleconstraintsdatatype)::value_type>();
+        powersequencescheduleconstraintsdatatype = obj["powerSequenceScheduleConstraintsData"].as<decltype(powersequencescheduleconstraintsdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceScheduleConstraintsDataElements"]) {
         last_cmd = function_from_string("powerSequenceScheduleConstraintsDataElements");
-        powersequencescheduleconstraintsdataelementstype = obj["powerSequenceScheduleConstraintsDataElements"].as<
-            decltype(
-                powersequencescheduleconstraintsdataelementstype)::value_type>();
+        powersequencescheduleconstraintsdataelementstype = obj["powerSequenceScheduleConstraintsDataElements"].as<decltype(powersequencescheduleconstraintsdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceScheduleConstraintsListData"]) {
         last_cmd = function_from_string("powerSequenceScheduleConstraintsListData");
-        powersequencescheduleconstraintslistdatatype = obj["powerSequenceScheduleConstraintsListData"].as<decltype(
-            powersequencescheduleconstraintslistdatatype)::value_type>();
+        powersequencescheduleconstraintslistdatatype = obj["powerSequenceScheduleConstraintsListData"].as<decltype(powersequencescheduleconstraintslistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceScheduleConstraintsListDataSelectors"]) {
         last_cmd = function_from_string("powerSequenceScheduleConstraintsListDataSelectors");
-        powersequencescheduleconstraintslistdataselectorstype = obj["powerSequenceScheduleConstraintsListDataSelectors"]
-            .as<decltype(
-                powersequencescheduleconstraintslistdataselectorstype)::value_type>();
+        powersequencescheduleconstraintslistdataselectorstype = obj["powerSequenceScheduleConstraintsListDataSelectors"].as<decltype(powersequencescheduleconstraintslistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequencePriceData"]) {
         last_cmd = function_from_string("powerSequencePriceData");
-        powersequencepricedatatype = obj["powerSequencePriceData"].as<decltype(powersequencepricedatatype
-        )::value_type>();
+        powersequencepricedatatype = obj["powerSequencePriceData"].as<decltype(powersequencepricedatatype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequencePriceDataElements"]) {
         last_cmd = function_from_string("powerSequencePriceDataElements");
-        powersequencepricedataelementstype = obj["powerSequencePriceDataElements"].as<decltype(
-            powersequencepricedataelementstype
-        )::value_type>();
+        powersequencepricedataelementstype = obj["powerSequencePriceDataElements"].as<decltype(powersequencepricedataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequencePriceListData"]) {
         last_cmd = function_from_string("powerSequencePriceListData");
-        powersequencepricelistdatatype = obj["powerSequencePriceListData"].as<decltype(powersequencepricelistdatatype
-        )::value_type>();
+        powersequencepricelistdatatype = obj["powerSequencePriceListData"].as<decltype(powersequencepricelistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequencePriceListDataSelectors"]) {
         last_cmd = function_from_string("powerSequencePriceListDataSelectors");
-        powersequencepricelistdataselectorstype = obj["powerSequencePriceListDataSelectors"].as<decltype(
-            powersequencepricelistdataselectorstype)::value_type>();
+        powersequencepricelistdataselectorstype = obj["powerSequencePriceListDataSelectors"].as<decltype(powersequencepricelistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceSchedulePreferenceData"]) {
         last_cmd = function_from_string("powerSequenceSchedulePreferenceData");
-        powersequenceschedulepreferencedatatype = obj["powerSequenceSchedulePreferenceData"].as<decltype(
-            powersequenceschedulepreferencedatatype)::value_type>();
+        powersequenceschedulepreferencedatatype = obj["powerSequenceSchedulePreferenceData"].as<decltype(powersequenceschedulepreferencedatatype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceSchedulePreferenceDataElements"]) {
         last_cmd = function_from_string("powerSequenceSchedulePreferenceDataElements");
-        powersequenceschedulepreferencedataelementstype = obj["powerSequenceSchedulePreferenceDataElements"].as<decltype
-            (
-                powersequenceschedulepreferencedataelementstype)::value_type>();
+        powersequenceschedulepreferencedataelementstype = obj["powerSequenceSchedulePreferenceDataElements"].as<decltype(powersequenceschedulepreferencedataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceSchedulePreferenceListData"]) {
         last_cmd = function_from_string("powerSequenceSchedulePreferenceListData");
-        powersequenceschedulepreferencelistdatatype = obj["powerSequenceSchedulePreferenceListData"].as<decltype(
-            powersequenceschedulepreferencelistdatatype)::value_type>();
+        powersequenceschedulepreferencelistdatatype = obj["powerSequenceSchedulePreferenceListData"].as<decltype(powersequenceschedulepreferencelistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceSchedulePreferenceListDataSelectors"]) {
         last_cmd = function_from_string("powerSequenceSchedulePreferenceListDataSelectors");
-        powersequenceschedulepreferencelistdataselectorstype = obj["powerSequenceSchedulePreferenceListDataSelectors"].
-            as<decltype(
-                powersequenceschedulepreferencelistdataselectorstype)::value_type>();
+        powersequenceschedulepreferencelistdataselectorstype = obj["powerSequenceSchedulePreferenceListDataSelectors"].as<decltype(powersequenceschedulepreferencelistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceNodeScheduleInformationData"]) {
         last_cmd = function_from_string("powerSequenceNodeScheduleInformationData");
-        powersequencenodescheduleinformationdatatype = obj["powerSequenceNodeScheduleInformationData"].as<decltype(
-            powersequencenodescheduleinformationdatatype)::value_type>();
+        powersequencenodescheduleinformationdatatype = obj["powerSequenceNodeScheduleInformationData"].as<decltype(powersequencenodescheduleinformationdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceNodeScheduleInformationDataElements"]) {
         last_cmd = function_from_string("powerSequenceNodeScheduleInformationDataElements");
-        powersequencenodescheduleinformationdataelementstype = obj["powerSequenceNodeScheduleInformationDataElements"].
-            as<decltype(
-                powersequencenodescheduleinformationdataelementstype)::value_type>();
+        powersequencenodescheduleinformationdataelementstype = obj["powerSequenceNodeScheduleInformationDataElements"].as<decltype(powersequencenodescheduleinformationdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceScheduleConfigurationRequestCall"]) {
         last_cmd = function_from_string("powerSequenceScheduleConfigurationRequestCall");
-        powersequencescheduleconfigurationrequestcalltype = obj["powerSequenceScheduleConfigurationRequestCall"].as<
-            decltype(
-                powersequencescheduleconfigurationrequestcalltype)::value_type>();
+        powersequencescheduleconfigurationrequestcalltype = obj["powerSequenceScheduleConfigurationRequestCall"].as<decltype(powersequencescheduleconfigurationrequestcalltype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequenceScheduleConfigurationRequestCallElements"]) {
         last_cmd = function_from_string("powerSequenceScheduleConfigurationRequestCallElements");
-        powersequencescheduleconfigurationrequestcallelementstype = obj[
-            "powerSequenceScheduleConfigurationRequestCallElements"].as<decltype
-            (powersequencescheduleconfigurationrequestcallelementstype)::value_type>();
+        powersequencescheduleconfigurationrequestcallelementstype = obj["powerSequenceScheduleConfigurationRequestCallElements"].as<decltype(powersequencescheduleconfigurationrequestcallelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequencePriceCalculationRequestCall"]) {
         last_cmd = function_from_string("powerSequencePriceCalculationRequestCall");
-        powersequencepricecalculationrequestcalltype = obj["powerSequencePriceCalculationRequestCall"].as<decltype(
-            powersequencepricecalculationrequestcalltype)::value_type>();
+        powersequencepricecalculationrequestcalltype = obj["powerSequencePriceCalculationRequestCall"].as<decltype(powersequencepricecalculationrequestcalltype)::value_type>();
         return last_cmd;
     }
     if (obj["powerSequencePriceCalculationRequestCallElements"]) {
         last_cmd = function_from_string("powerSequencePriceCalculationRequestCallElements");
-        powersequencepricecalculationrequestcallelementstype = obj["powerSequencePriceCalculationRequestCallElements"].
-            as<decltype(
-                powersequencepricecalculationrequestcallelementstype)::value_type>();
+        powersequencepricecalculationrequestcallelementstype = obj["powerSequencePriceCalculationRequestCallElements"].as<decltype(powersequencepricecalculationrequestcallelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["measurementData"]) {
@@ -42954,8 +43987,7 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["measurementDataElements"]) {
         last_cmd = function_from_string("measurementDataElements");
-        measurementdataelementstype = obj["measurementDataElements"].as<decltype(measurementdataelementstype
-        )::value_type>();
+        measurementdataelementstype = obj["measurementDataElements"].as<decltype(measurementdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["measurementListData"]) {
@@ -42965,8 +43997,7 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["measurementListDataSelectors"]) {
         last_cmd = function_from_string("measurementListDataSelectors");
-        measurementlistdataselectorstype = obj["measurementListDataSelectors"].as<decltype(
-            measurementlistdataselectorstype)::value_type>();
+        measurementlistdataselectorstype = obj["measurementListDataSelectors"].as<decltype(measurementlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["measurementSeriesData"]) {
@@ -42976,97 +44007,77 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["measurementSeriesDataElements"]) {
         last_cmd = function_from_string("measurementSeriesDataElements");
-        measurementseriesdataelementstype = obj["measurementSeriesDataElements"].as<decltype(
-            measurementseriesdataelementstype
-        )::value_type>();
+        measurementseriesdataelementstype = obj["measurementSeriesDataElements"].as<decltype(measurementseriesdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["measurementSeriesListData"]) {
         last_cmd = function_from_string("measurementSeriesListData");
-        measurementserieslistdatatype = obj["measurementSeriesListData"].as<decltype(measurementserieslistdatatype
-        )::value_type>();
+        measurementserieslistdatatype = obj["measurementSeriesListData"].as<decltype(measurementserieslistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["measurementSeriesListDataSelectors"]) {
         last_cmd = function_from_string("measurementSeriesListDataSelectors");
-        measurementserieslistdataselectorstype = obj["measurementSeriesListDataSelectors"].as<decltype(
-            measurementserieslistdataselectorstype)::value_type>();
+        measurementserieslistdataselectorstype = obj["measurementSeriesListDataSelectors"].as<decltype(measurementserieslistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["measurementConstraintsData"]) {
         last_cmd = function_from_string("measurementConstraintsData");
-        measurementconstraintsdatatype = obj["measurementConstraintsData"].as<decltype(measurementconstraintsdatatype
-        )::value_type>();
+        measurementconstraintsdatatype = obj["measurementConstraintsData"].as<decltype(measurementconstraintsdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["measurementConstraintsDataElements"]) {
         last_cmd = function_from_string("measurementConstraintsDataElements");
-        measurementconstraintsdataelementstype = obj["measurementConstraintsDataElements"].as<decltype(
-            measurementconstraintsdataelementstype)::value_type>();
+        measurementconstraintsdataelementstype = obj["measurementConstraintsDataElements"].as<decltype(measurementconstraintsdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["measurementConstraintsListData"]) {
         last_cmd = function_from_string("measurementConstraintsListData");
-        measurementconstraintslistdatatype = obj["measurementConstraintsListData"].as<decltype(
-            measurementconstraintslistdatatype
-        )::value_type>();
+        measurementconstraintslistdatatype = obj["measurementConstraintsListData"].as<decltype(measurementconstraintslistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["measurementConstraintsListDataSelectors"]) {
         last_cmd = function_from_string("measurementConstraintsListDataSelectors");
-        measurementconstraintslistdataselectorstype = obj["measurementConstraintsListDataSelectors"].as<decltype(
-            measurementconstraintslistdataselectorstype)::value_type>();
+        measurementconstraintslistdataselectorstype = obj["measurementConstraintsListDataSelectors"].as<decltype(measurementconstraintslistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["measurementDescriptionData"]) {
         last_cmd = function_from_string("measurementDescriptionData");
-        measurementdescriptiondatatype = obj["measurementDescriptionData"].as<decltype(measurementdescriptiondatatype
-        )::value_type>();
+        measurementdescriptiondatatype = obj["measurementDescriptionData"].as<decltype(measurementdescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["measurementDescriptionDataElements"]) {
         last_cmd = function_from_string("measurementDescriptionDataElements");
-        measurementdescriptiondataelementstype = obj["measurementDescriptionDataElements"].as<decltype(
-            measurementdescriptiondataelementstype)::value_type>();
+        measurementdescriptiondataelementstype = obj["measurementDescriptionDataElements"].as<decltype(measurementdescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["measurementDescriptionListData"]) {
         last_cmd = function_from_string("measurementDescriptionListData");
-        measurementdescriptionlistdatatype = obj["measurementDescriptionListData"].as<decltype(
-            measurementdescriptionlistdatatype
-        )::value_type>();
+        measurementdescriptionlistdatatype = obj["measurementDescriptionListData"].as<decltype(measurementdescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["measurementDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("measurementDescriptionListDataSelectors");
-        measurementdescriptionlistdataselectorstype = obj["measurementDescriptionListDataSelectors"].as<decltype(
-            measurementdescriptionlistdataselectorstype)::value_type>();
+        measurementdescriptionlistdataselectorstype = obj["measurementDescriptionListDataSelectors"].as<decltype(measurementdescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["measurementThresholdRelationData"]) {
         last_cmd = function_from_string("measurementThresholdRelationData");
-        measurementthresholdrelationdatatype = obj["measurementThresholdRelationData"].as<decltype(
-            measurementthresholdrelationdatatype
-        )::value_type>();
+        measurementthresholdrelationdatatype = obj["measurementThresholdRelationData"].as<decltype(measurementthresholdrelationdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["measurementThresholdRelationDataElements"]) {
         last_cmd = function_from_string("measurementThresholdRelationDataElements");
-        measurementthresholdrelationdataelementstype = obj["measurementThresholdRelationDataElements"].as<decltype(
-            measurementthresholdrelationdataelementstype)::value_type>();
+        measurementthresholdrelationdataelementstype = obj["measurementThresholdRelationDataElements"].as<decltype(measurementthresholdrelationdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["measurementThresholdRelationListData"]) {
         last_cmd = function_from_string("measurementThresholdRelationListData");
-        measurementthresholdrelationlistdatatype = obj["measurementThresholdRelationListData"].as<decltype(
-            measurementthresholdrelationlistdatatype)::value_type>();
+        measurementthresholdrelationlistdatatype = obj["measurementThresholdRelationListData"].as<decltype(measurementthresholdrelationlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["measurementThresholdRelationListDataSelectors"]) {
         last_cmd = function_from_string("measurementThresholdRelationListDataSelectors");
-        measurementthresholdrelationlistdataselectorstype = obj["measurementThresholdRelationListDataSelectors"].as<
-            decltype(
-                measurementthresholdrelationlistdataselectorstype)::value_type>();
+        measurementthresholdrelationlistdataselectorstype = obj["measurementThresholdRelationListDataSelectors"].as<decltype(measurementthresholdrelationlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["thresholdData"]) {
@@ -43086,214 +44097,167 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["thresholdListDataSelectors"]) {
         last_cmd = function_from_string("thresholdListDataSelectors");
-        thresholdlistdataselectorstype = obj["thresholdListDataSelectors"].as<decltype(thresholdlistdataselectorstype
-        )::value_type>();
+        thresholdlistdataselectorstype = obj["thresholdListDataSelectors"].as<decltype(thresholdlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["thresholdConstraintsData"]) {
         last_cmd = function_from_string("thresholdConstraintsData");
-        thresholdconstraintsdatatype = obj["thresholdConstraintsData"].as<decltype(thresholdconstraintsdatatype
-        )::value_type>();
+        thresholdconstraintsdatatype = obj["thresholdConstraintsData"].as<decltype(thresholdconstraintsdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["thresholdConstraintsDataElements"]) {
         last_cmd = function_from_string("thresholdConstraintsDataElements");
-        thresholdconstraintsdataelementstype = obj["thresholdConstraintsDataElements"].as<decltype(
-            thresholdconstraintsdataelementstype
-        )::value_type>();
+        thresholdconstraintsdataelementstype = obj["thresholdConstraintsDataElements"].as<decltype(thresholdconstraintsdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["thresholdConstraintsListData"]) {
         last_cmd = function_from_string("thresholdConstraintsListData");
-        thresholdconstraintslistdatatype = obj["thresholdConstraintsListData"].as<decltype(
-            thresholdconstraintslistdatatype)::value_type>();
+        thresholdconstraintslistdatatype = obj["thresholdConstraintsListData"].as<decltype(thresholdconstraintslistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["thresholdConstraintsListDataSelectors"]) {
         last_cmd = function_from_string("thresholdConstraintsListDataSelectors");
-        thresholdconstraintslistdataselectorstype = obj["thresholdConstraintsListDataSelectors"].as<decltype(
-            thresholdconstraintslistdataselectorstype)::value_type>();
+        thresholdconstraintslistdataselectorstype = obj["thresholdConstraintsListDataSelectors"].as<decltype(thresholdconstraintslistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["thresholdDescriptionData"]) {
         last_cmd = function_from_string("thresholdDescriptionData");
-        thresholddescriptiondatatype = obj["thresholdDescriptionData"].as<decltype(thresholddescriptiondatatype
-        )::value_type>();
+        thresholddescriptiondatatype = obj["thresholdDescriptionData"].as<decltype(thresholddescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["thresholdDescriptionDataElements"]) {
         last_cmd = function_from_string("thresholdDescriptionDataElements");
-        thresholddescriptiondataelementstype = obj["thresholdDescriptionDataElements"].as<decltype(
-            thresholddescriptiondataelementstype
-        )::value_type>();
+        thresholddescriptiondataelementstype = obj["thresholdDescriptionDataElements"].as<decltype(thresholddescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["thresholdDescriptionListData"]) {
         last_cmd = function_from_string("thresholdDescriptionListData");
-        thresholddescriptionlistdatatype = obj["thresholdDescriptionListData"].as<decltype(
-            thresholddescriptionlistdatatype)::value_type>();
+        thresholddescriptionlistdatatype = obj["thresholdDescriptionListData"].as<decltype(thresholddescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["thresholdDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("thresholdDescriptionListDataSelectors");
-        thresholddescriptionlistdataselectorstype = obj["thresholdDescriptionListDataSelectors"].as<decltype(
-            thresholddescriptionlistdataselectorstype)::value_type>();
+        thresholddescriptionlistdataselectorstype = obj["thresholdDescriptionListDataSelectors"].as<decltype(thresholddescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsInterruptData"]) {
         last_cmd = function_from_string("operatingConstraintsInterruptData");
-        operatingconstraintsinterruptdatatype = obj["operatingConstraintsInterruptData"].as<decltype(
-            operatingconstraintsinterruptdatatype
-        )::value_type>();
+        operatingconstraintsinterruptdatatype = obj["operatingConstraintsInterruptData"].as<decltype(operatingconstraintsinterruptdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsInterruptDataElements"]) {
         last_cmd = function_from_string("operatingConstraintsInterruptDataElements");
-        operatingconstraintsinterruptdataelementstype = obj["operatingConstraintsInterruptDataElements"].as<decltype(
-            operatingconstraintsinterruptdataelementstype)::value_type>();
+        operatingconstraintsinterruptdataelementstype = obj["operatingConstraintsInterruptDataElements"].as<decltype(operatingconstraintsinterruptdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsInterruptListData"]) {
         last_cmd = function_from_string("operatingConstraintsInterruptListData");
-        operatingconstraintsinterruptlistdatatype = obj["operatingConstraintsInterruptListData"].as<decltype(
-            operatingconstraintsinterruptlistdatatype)::value_type>();
+        operatingconstraintsinterruptlistdatatype = obj["operatingConstraintsInterruptListData"].as<decltype(operatingconstraintsinterruptlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsInterruptListDataSelectors"]) {
         last_cmd = function_from_string("operatingConstraintsInterruptListDataSelectors");
-        operatingconstraintsinterruptlistdataselectorstype = obj["operatingConstraintsInterruptListDataSelectors"].as<
-            decltype(
-                operatingconstraintsinterruptlistdataselectorstype)::value_type>();
+        operatingconstraintsinterruptlistdataselectorstype = obj["operatingConstraintsInterruptListDataSelectors"].as<decltype(operatingconstraintsinterruptlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsDurationData"]) {
         last_cmd = function_from_string("operatingConstraintsDurationData");
-        operatingconstraintsdurationdatatype = obj["operatingConstraintsDurationData"].as<decltype(
-            operatingconstraintsdurationdatatype
-        )::value_type>();
+        operatingconstraintsdurationdatatype = obj["operatingConstraintsDurationData"].as<decltype(operatingconstraintsdurationdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsDurationDataElements"]) {
         last_cmd = function_from_string("operatingConstraintsDurationDataElements");
-        operatingconstraintsdurationdataelementstype = obj["operatingConstraintsDurationDataElements"].as<decltype(
-            operatingconstraintsdurationdataelementstype)::value_type>();
+        operatingconstraintsdurationdataelementstype = obj["operatingConstraintsDurationDataElements"].as<decltype(operatingconstraintsdurationdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsDurationListData"]) {
         last_cmd = function_from_string("operatingConstraintsDurationListData");
-        operatingconstraintsdurationlistdatatype = obj["operatingConstraintsDurationListData"].as<decltype(
-            operatingconstraintsdurationlistdatatype)::value_type>();
+        operatingconstraintsdurationlistdatatype = obj["operatingConstraintsDurationListData"].as<decltype(operatingconstraintsdurationlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsDurationListDataSelectors"]) {
         last_cmd = function_from_string("operatingConstraintsDurationListDataSelectors");
-        operatingconstraintsdurationlistdataselectorstype = obj["operatingConstraintsDurationListDataSelectors"].as<
-            decltype(
-                operatingconstraintsdurationlistdataselectorstype)::value_type>();
+        operatingconstraintsdurationlistdataselectorstype = obj["operatingConstraintsDurationListDataSelectors"].as<decltype(operatingconstraintsdurationlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsPowerDescriptionData"]) {
         last_cmd = function_from_string("operatingConstraintsPowerDescriptionData");
-        operatingconstraintspowerdescriptiondatatype = obj["operatingConstraintsPowerDescriptionData"].as<decltype(
-            operatingconstraintspowerdescriptiondatatype)::value_type>();
+        operatingconstraintspowerdescriptiondatatype = obj["operatingConstraintsPowerDescriptionData"].as<decltype(operatingconstraintspowerdescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsPowerDescriptionDataElements"]) {
         last_cmd = function_from_string("operatingConstraintsPowerDescriptionDataElements");
-        operatingconstraintspowerdescriptiondataelementstype = obj["operatingConstraintsPowerDescriptionDataElements"].
-            as<decltype(
-                operatingconstraintspowerdescriptiondataelementstype)::value_type>();
+        operatingconstraintspowerdescriptiondataelementstype = obj["operatingConstraintsPowerDescriptionDataElements"].as<decltype(operatingconstraintspowerdescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsPowerDescriptionListData"]) {
         last_cmd = function_from_string("operatingConstraintsPowerDescriptionListData");
-        operatingconstraintspowerdescriptionlistdatatype = obj["operatingConstraintsPowerDescriptionListData"].as<
-            decltype(
-                operatingconstraintspowerdescriptionlistdatatype)::value_type>();
+        operatingconstraintspowerdescriptionlistdatatype = obj["operatingConstraintsPowerDescriptionListData"].as<decltype(operatingconstraintspowerdescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsPowerDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("operatingConstraintsPowerDescriptionListDataSelectors");
-        operatingconstraintspowerdescriptionlistdataselectorstype = obj[
-            "operatingConstraintsPowerDescriptionListDataSelectors"].as<decltype
-            (operatingconstraintspowerdescriptionlistdataselectorstype)::value_type>();
+        operatingconstraintspowerdescriptionlistdataselectorstype = obj["operatingConstraintsPowerDescriptionListDataSelectors"].as<decltype(operatingconstraintspowerdescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsPowerRangeData"]) {
         last_cmd = function_from_string("operatingConstraintsPowerRangeData");
-        operatingconstraintspowerrangedatatype = obj["operatingConstraintsPowerRangeData"].as<decltype(
-            operatingconstraintspowerrangedatatype)::value_type>();
+        operatingconstraintspowerrangedatatype = obj["operatingConstraintsPowerRangeData"].as<decltype(operatingconstraintspowerrangedatatype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsPowerRangeDataElements"]) {
         last_cmd = function_from_string("operatingConstraintsPowerRangeDataElements");
-        operatingconstraintspowerrangedataelementstype = obj["operatingConstraintsPowerRangeDataElements"].as<decltype(
-            operatingconstraintspowerrangedataelementstype)::value_type>();
+        operatingconstraintspowerrangedataelementstype = obj["operatingConstraintsPowerRangeDataElements"].as<decltype(operatingconstraintspowerrangedataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsPowerRangeListData"]) {
         last_cmd = function_from_string("operatingConstraintsPowerRangeListData");
-        operatingconstraintspowerrangelistdatatype = obj["operatingConstraintsPowerRangeListData"].as<decltype(
-            operatingconstraintspowerrangelistdatatype)::value_type>();
+        operatingconstraintspowerrangelistdatatype = obj["operatingConstraintsPowerRangeListData"].as<decltype(operatingconstraintspowerrangelistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsPowerRangeListDataSelectors"]) {
         last_cmd = function_from_string("operatingConstraintsPowerRangeListDataSelectors");
-        operatingconstraintspowerrangelistdataselectorstype = obj["operatingConstraintsPowerRangeListDataSelectors"].as<
-            decltype(
-                operatingconstraintspowerrangelistdataselectorstype)::value_type>();
+        operatingconstraintspowerrangelistdataselectorstype = obj["operatingConstraintsPowerRangeListDataSelectors"].as<decltype(operatingconstraintspowerrangelistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsPowerLevelData"]) {
         last_cmd = function_from_string("operatingConstraintsPowerLevelData");
-        operatingconstraintspowerleveldatatype = obj["operatingConstraintsPowerLevelData"].as<decltype(
-            operatingconstraintspowerleveldatatype)::value_type>();
+        operatingconstraintspowerleveldatatype = obj["operatingConstraintsPowerLevelData"].as<decltype(operatingconstraintspowerleveldatatype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsPowerLevelDataElements"]) {
         last_cmd = function_from_string("operatingConstraintsPowerLevelDataElements");
-        operatingconstraintspowerleveldataelementstype = obj["operatingConstraintsPowerLevelDataElements"].as<decltype(
-            operatingconstraintspowerleveldataelementstype)::value_type>();
+        operatingconstraintspowerleveldataelementstype = obj["operatingConstraintsPowerLevelDataElements"].as<decltype(operatingconstraintspowerleveldataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsPowerLevelListData"]) {
         last_cmd = function_from_string("operatingConstraintsPowerLevelListData");
-        operatingconstraintspowerlevellistdatatype = obj["operatingConstraintsPowerLevelListData"].as<decltype(
-            operatingconstraintspowerlevellistdatatype)::value_type>();
+        operatingconstraintspowerlevellistdatatype = obj["operatingConstraintsPowerLevelListData"].as<decltype(operatingconstraintspowerlevellistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsPowerLevelListDataSelectors"]) {
         last_cmd = function_from_string("operatingConstraintsPowerLevelListDataSelectors");
-        operatingconstraintspowerlevellistdataselectorstype = obj["operatingConstraintsPowerLevelListDataSelectors"].as<
-            decltype(
-                operatingconstraintspowerlevellistdataselectorstype)::value_type>();
+        operatingconstraintspowerlevellistdataselectorstype = obj["operatingConstraintsPowerLevelListDataSelectors"].as<decltype(operatingconstraintspowerlevellistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsResumeImplicationData"]) {
         last_cmd = function_from_string("operatingConstraintsResumeImplicationData");
-        operatingconstraintsresumeimplicationdatatype = obj["operatingConstraintsResumeImplicationData"].as<decltype(
-            operatingconstraintsresumeimplicationdatatype)::value_type>();
+        operatingconstraintsresumeimplicationdatatype = obj["operatingConstraintsResumeImplicationData"].as<decltype(operatingconstraintsresumeimplicationdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsResumeImplicationDataElements"]) {
         last_cmd = function_from_string("operatingConstraintsResumeImplicationDataElements");
-        operatingconstraintsresumeimplicationdataelementstype = obj["operatingConstraintsResumeImplicationDataElements"]
-            .as<decltype(
-                operatingconstraintsresumeimplicationdataelementstype)::value_type>();
+        operatingconstraintsresumeimplicationdataelementstype = obj["operatingConstraintsResumeImplicationDataElements"].as<decltype(operatingconstraintsresumeimplicationdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsResumeImplicationListData"]) {
         last_cmd = function_from_string("operatingConstraintsResumeImplicationListData");
-        operatingconstraintsresumeimplicationlistdatatype = obj["operatingConstraintsResumeImplicationListData"].as<
-            decltype(
-                operatingconstraintsresumeimplicationlistdatatype)::value_type>();
+        operatingconstraintsresumeimplicationlistdatatype = obj["operatingConstraintsResumeImplicationListData"].as<decltype(operatingconstraintsresumeimplicationlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["operatingConstraintsResumeImplicationListDataSelectors"]) {
         last_cmd = function_from_string("operatingConstraintsResumeImplicationListDataSelectors");
-        operatingconstraintsresumeimplicationlistdataselectorstype = obj[
-            "operatingConstraintsResumeImplicationListDataSelectors"].as<
-            decltype(operatingconstraintsresumeimplicationlistdataselectorstype)::value_type>();
+        operatingconstraintsresumeimplicationlistdataselectorstype = obj["operatingConstraintsResumeImplicationListDataSelectors"].as<decltype(operatingconstraintsresumeimplicationlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["billData"]) {
@@ -43323,21 +44287,17 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["billConstraintsDataElements"]) {
         last_cmd = function_from_string("billConstraintsDataElements");
-        billconstraintsdataelementstype = obj["billConstraintsDataElements"].as<decltype(billconstraintsdataelementstype
-        )::value_type>();
+        billconstraintsdataelementstype = obj["billConstraintsDataElements"].as<decltype(billconstraintsdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["billConstraintsListData"]) {
         last_cmd = function_from_string("billConstraintsListData");
-        billconstraintslistdatatype = obj["billConstraintsListData"].as<decltype(billconstraintslistdatatype
-        )::value_type>();
+        billconstraintslistdatatype = obj["billConstraintsListData"].as<decltype(billconstraintslistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["billConstraintsListDataSelectors"]) {
         last_cmd = function_from_string("billConstraintsListDataSelectors");
-        billconstraintslistdataselectorstype = obj["billConstraintsListDataSelectors"].as<decltype(
-            billconstraintslistdataselectorstype
-        )::value_type>();
+        billconstraintslistdataselectorstype = obj["billConstraintsListDataSelectors"].as<decltype(billconstraintslistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["billDescriptionData"]) {
@@ -43347,21 +44307,17 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["billDescriptionDataElements"]) {
         last_cmd = function_from_string("billDescriptionDataElements");
-        billdescriptiondataelementstype = obj["billDescriptionDataElements"].as<decltype(billdescriptiondataelementstype
-        )::value_type>();
+        billdescriptiondataelementstype = obj["billDescriptionDataElements"].as<decltype(billdescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["billDescriptionListData"]) {
         last_cmd = function_from_string("billDescriptionListData");
-        billdescriptionlistdatatype = obj["billDescriptionListData"].as<decltype(billdescriptionlistdatatype
-        )::value_type>();
+        billdescriptionlistdatatype = obj["billDescriptionListData"].as<decltype(billdescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["billDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("billDescriptionListDataSelectors");
-        billdescriptionlistdataselectorstype = obj["billDescriptionListDataSelectors"].as<decltype(
-            billdescriptionlistdataselectorstype
-        )::value_type>();
+        billdescriptionlistdataselectorstype = obj["billDescriptionListDataSelectors"].as<decltype(billdescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["identificationData"]) {
@@ -43371,73 +44327,57 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["identificationDataElements"]) {
         last_cmd = function_from_string("identificationDataElements");
-        identificationdataelementstype = obj["identificationDataElements"].as<decltype(identificationdataelementstype
-        )::value_type>();
+        identificationdataelementstype = obj["identificationDataElements"].as<decltype(identificationdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["identificationListData"]) {
         last_cmd = function_from_string("identificationListData");
-        identificationlistdatatype = obj["identificationListData"].as<decltype(identificationlistdatatype
-        )::value_type>();
+        identificationlistdatatype = obj["identificationListData"].as<decltype(identificationlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["identificationListDataSelectors"]) {
         last_cmd = function_from_string("identificationListDataSelectors");
-        identificationlistdataselectorstype = obj["identificationListDataSelectors"].as<decltype(
-            identificationlistdataselectorstype
-        )::value_type>();
+        identificationlistdataselectorstype = obj["identificationListDataSelectors"].as<decltype(identificationlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["sessionIdentificationData"]) {
         last_cmd = function_from_string("sessionIdentificationData");
-        sessionidentificationdatatype = obj["sessionIdentificationData"].as<decltype(sessionidentificationdatatype
-        )::value_type>();
+        sessionidentificationdatatype = obj["sessionIdentificationData"].as<decltype(sessionidentificationdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["sessionIdentificationDataElements"]) {
         last_cmd = function_from_string("sessionIdentificationDataElements");
-        sessionidentificationdataelementstype = obj["sessionIdentificationDataElements"].as<decltype(
-            sessionidentificationdataelementstype
-        )::value_type>();
+        sessionidentificationdataelementstype = obj["sessionIdentificationDataElements"].as<decltype(sessionidentificationdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["sessionIdentificationListData"]) {
         last_cmd = function_from_string("sessionIdentificationListData");
-        sessionidentificationlistdatatype = obj["sessionIdentificationListData"].as<decltype(
-            sessionidentificationlistdatatype
-        )::value_type>();
+        sessionidentificationlistdatatype = obj["sessionIdentificationListData"].as<decltype(sessionidentificationlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["sessionIdentificationListDataSelectors"]) {
         last_cmd = function_from_string("sessionIdentificationListDataSelectors");
-        sessionidentificationlistdataselectorstype = obj["sessionIdentificationListDataSelectors"].as<decltype(
-            sessionidentificationlistdataselectorstype)::value_type>();
+        sessionidentificationlistdataselectorstype = obj["sessionIdentificationListDataSelectors"].as<decltype(sessionidentificationlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["sessionMeasurementRelationData"]) {
         last_cmd = function_from_string("sessionMeasurementRelationData");
-        sessionmeasurementrelationdatatype = obj["sessionMeasurementRelationData"].as<decltype(
-            sessionmeasurementrelationdatatype
-        )::value_type>();
+        sessionmeasurementrelationdatatype = obj["sessionMeasurementRelationData"].as<decltype(sessionmeasurementrelationdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["sessionMeasurementRelationDataElements"]) {
         last_cmd = function_from_string("sessionMeasurementRelationDataElements");
-        sessionmeasurementrelationdataelementstype = obj["sessionMeasurementRelationDataElements"].as<decltype(
-            sessionmeasurementrelationdataelementstype)::value_type>();
+        sessionmeasurementrelationdataelementstype = obj["sessionMeasurementRelationDataElements"].as<decltype(sessionmeasurementrelationdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["sessionMeasurementRelationListData"]) {
         last_cmd = function_from_string("sessionMeasurementRelationListData");
-        sessionmeasurementrelationlistdatatype = obj["sessionMeasurementRelationListData"].as<decltype(
-            sessionmeasurementrelationlistdatatype)::value_type>();
+        sessionmeasurementrelationlistdatatype = obj["sessionMeasurementRelationListData"].as<decltype(sessionmeasurementrelationlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["sessionMeasurementRelationListDataSelectors"]) {
         last_cmd = function_from_string("sessionMeasurementRelationListDataSelectors");
-        sessionmeasurementrelationlistdataselectorstype = obj["sessionMeasurementRelationListDataSelectors"].as<decltype
-            (
-                sessionmeasurementrelationlistdataselectorstype)::value_type>();
+        sessionmeasurementrelationlistdataselectorstype = obj["sessionMeasurementRelationListDataSelectors"].as<decltype(sessionmeasurementrelationlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["setpointData"]) {
@@ -43457,58 +44397,47 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["setpointListDataSelectors"]) {
         last_cmd = function_from_string("setpointListDataSelectors");
-        setpointlistdataselectorstype = obj["setpointListDataSelectors"].as<decltype(setpointlistdataselectorstype
-        )::value_type>();
+        setpointlistdataselectorstype = obj["setpointListDataSelectors"].as<decltype(setpointlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["setpointConstraintsData"]) {
         last_cmd = function_from_string("setpointConstraintsData");
-        setpointconstraintsdatatype = obj["setpointConstraintsData"].as<decltype(setpointconstraintsdatatype
-        )::value_type>();
+        setpointconstraintsdatatype = obj["setpointConstraintsData"].as<decltype(setpointconstraintsdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["setpointConstraintsDataElements"]) {
         last_cmd = function_from_string("setpointConstraintsDataElements");
-        setpointconstraintsdataelementstype = obj["setpointConstraintsDataElements"].as<decltype(
-            setpointconstraintsdataelementstype
-        )::value_type>();
+        setpointconstraintsdataelementstype = obj["setpointConstraintsDataElements"].as<decltype(setpointconstraintsdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["setpointConstraintsListData"]) {
         last_cmd = function_from_string("setpointConstraintsListData");
-        setpointconstraintslistdatatype = obj["setpointConstraintsListData"].as<decltype(setpointconstraintslistdatatype
-        )::value_type>();
+        setpointconstraintslistdatatype = obj["setpointConstraintsListData"].as<decltype(setpointconstraintslistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["setpointConstraintsListDataSelectors"]) {
         last_cmd = function_from_string("setpointConstraintsListDataSelectors");
-        setpointconstraintslistdataselectorstype = obj["setpointConstraintsListDataSelectors"].as<decltype(
-            setpointconstraintslistdataselectorstype)::value_type>();
+        setpointconstraintslistdataselectorstype = obj["setpointConstraintsListDataSelectors"].as<decltype(setpointconstraintslistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["setpointDescriptionData"]) {
         last_cmd = function_from_string("setpointDescriptionData");
-        setpointdescriptiondatatype = obj["setpointDescriptionData"].as<decltype(setpointdescriptiondatatype
-        )::value_type>();
+        setpointdescriptiondatatype = obj["setpointDescriptionData"].as<decltype(setpointdescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["setpointDescriptionDataElements"]) {
         last_cmd = function_from_string("setpointDescriptionDataElements");
-        setpointdescriptiondataelementstype = obj["setpointDescriptionDataElements"].as<decltype(
-            setpointdescriptiondataelementstype
-        )::value_type>();
+        setpointdescriptiondataelementstype = obj["setpointDescriptionDataElements"].as<decltype(setpointdescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["setpointDescriptionListData"]) {
         last_cmd = function_from_string("setpointDescriptionListData");
-        setpointdescriptionlistdatatype = obj["setpointDescriptionListData"].as<decltype(setpointdescriptionlistdatatype
-        )::value_type>();
+        setpointdescriptionlistdatatype = obj["setpointDescriptionListData"].as<decltype(setpointdescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["setpointDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("setpointDescriptionListDataSelectors");
-        setpointdescriptionlistdataselectorstype = obj["setpointDescriptionListDataSelectors"].as<decltype(
-            setpointdescriptionlistdataselectorstype)::value_type>();
+        setpointdescriptionlistdataselectorstype = obj["setpointDescriptionListDataSelectors"].as<decltype(setpointdescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["timeTableData"]) {
@@ -43528,58 +44457,47 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["timeTableListDataSelectors"]) {
         last_cmd = function_from_string("timeTableListDataSelectors");
-        timetablelistdataselectorstype = obj["timeTableListDataSelectors"].as<decltype(timetablelistdataselectorstype
-        )::value_type>();
+        timetablelistdataselectorstype = obj["timeTableListDataSelectors"].as<decltype(timetablelistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["timeTableConstraintsData"]) {
         last_cmd = function_from_string("timeTableConstraintsData");
-        timetableconstraintsdatatype = obj["timeTableConstraintsData"].as<decltype(timetableconstraintsdatatype
-        )::value_type>();
+        timetableconstraintsdatatype = obj["timeTableConstraintsData"].as<decltype(timetableconstraintsdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["timeTableConstraintsDataElements"]) {
         last_cmd = function_from_string("timeTableConstraintsDataElements");
-        timetableconstraintsdataelementstype = obj["timeTableConstraintsDataElements"].as<decltype(
-            timetableconstraintsdataelementstype
-        )::value_type>();
+        timetableconstraintsdataelementstype = obj["timeTableConstraintsDataElements"].as<decltype(timetableconstraintsdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["timeTableConstraintsListData"]) {
         last_cmd = function_from_string("timeTableConstraintsListData");
-        timetableconstraintslistdatatype = obj["timeTableConstraintsListData"].as<decltype(
-            timetableconstraintslistdatatype)::value_type>();
+        timetableconstraintslistdatatype = obj["timeTableConstraintsListData"].as<decltype(timetableconstraintslistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["timeTableConstraintsListDataSelectors"]) {
         last_cmd = function_from_string("timeTableConstraintsListDataSelectors");
-        timetableconstraintslistdataselectorstype = obj["timeTableConstraintsListDataSelectors"].as<decltype(
-            timetableconstraintslistdataselectorstype)::value_type>();
+        timetableconstraintslistdataselectorstype = obj["timeTableConstraintsListDataSelectors"].as<decltype(timetableconstraintslistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["timeTableDescriptionData"]) {
         last_cmd = function_from_string("timeTableDescriptionData");
-        timetabledescriptiondatatype = obj["timeTableDescriptionData"].as<decltype(timetabledescriptiondatatype
-        )::value_type>();
+        timetabledescriptiondatatype = obj["timeTableDescriptionData"].as<decltype(timetabledescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["timeTableDescriptionDataElements"]) {
         last_cmd = function_from_string("timeTableDescriptionDataElements");
-        timetabledescriptiondataelementstype = obj["timeTableDescriptionDataElements"].as<decltype(
-            timetabledescriptiondataelementstype
-        )::value_type>();
+        timetabledescriptiondataelementstype = obj["timeTableDescriptionDataElements"].as<decltype(timetabledescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["timeTableDescriptionListData"]) {
         last_cmd = function_from_string("timeTableDescriptionListData");
-        timetabledescriptionlistdatatype = obj["timeTableDescriptionListData"].as<decltype(
-            timetabledescriptionlistdatatype)::value_type>();
+        timetabledescriptionlistdatatype = obj["timeTableDescriptionListData"].as<decltype(timetabledescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["timeTableDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("timeTableDescriptionListDataSelectors");
-        timetabledescriptionlistdataselectorstype = obj["timeTableDescriptionListDataSelectors"].as<decltype(
-            timetabledescriptionlistdataselectorstype)::value_type>();
+        timetabledescriptionlistdataselectorstype = obj["timeTableDescriptionListDataSelectors"].as<decltype(timetabledescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["sensingData"]) {
@@ -43599,21 +44517,17 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["sensingListDataSelectors"]) {
         last_cmd = function_from_string("sensingListDataSelectors");
-        sensinglistdataselectorstype = obj["sensingListDataSelectors"].as<decltype(sensinglistdataselectorstype
-        )::value_type>();
+        sensinglistdataselectorstype = obj["sensingListDataSelectors"].as<decltype(sensinglistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["sensingDescriptionData"]) {
         last_cmd = function_from_string("sensingDescriptionData");
-        sensingdescriptiondatatype = obj["sensingDescriptionData"].as<decltype(sensingdescriptiondatatype
-        )::value_type>();
+        sensingdescriptiondatatype = obj["sensingDescriptionData"].as<decltype(sensingdescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["sensingDescriptionDataElements"]) {
         last_cmd = function_from_string("sensingDescriptionDataElements");
-        sensingdescriptiondataelementstype = obj["sensingDescriptionDataElements"].as<decltype(
-            sensingdescriptiondataelementstype
-        )::value_type>();
+        sensingdescriptiondataelementstype = obj["sensingDescriptionDataElements"].as<decltype(sensingdescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["resultData"]) {
@@ -43628,215 +44542,167 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["actuatorSwitchDataElements"]) {
         last_cmd = function_from_string("actuatorSwitchDataElements");
-        actuatorswitchdataelementstype = obj["actuatorSwitchDataElements"].as<decltype(actuatorswitchdataelementstype
-        )::value_type>();
+        actuatorswitchdataelementstype = obj["actuatorSwitchDataElements"].as<decltype(actuatorswitchdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["actuatorSwitchDescriptionData"]) {
         last_cmd = function_from_string("actuatorSwitchDescriptionData");
-        actuatorswitchdescriptiondatatype = obj["actuatorSwitchDescriptionData"].as<decltype(
-            actuatorswitchdescriptiondatatype
-        )::value_type>();
+        actuatorswitchdescriptiondatatype = obj["actuatorSwitchDescriptionData"].as<decltype(actuatorswitchdescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["actuatorSwitchDescriptionDataElements"]) {
         last_cmd = function_from_string("actuatorSwitchDescriptionDataElements");
-        actuatorswitchdescriptiondataelementstype = obj["actuatorSwitchDescriptionDataElements"].as<decltype(
-            actuatorswitchdescriptiondataelementstype)::value_type>();
+        actuatorswitchdescriptiondataelementstype = obj["actuatorSwitchDescriptionDataElements"].as<decltype(actuatorswitchdescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementAddNodeCall"]) {
         last_cmd = function_from_string("networkManagementAddNodeCall");
-        networkmanagementaddnodecalltype = obj["networkManagementAddNodeCall"].as<decltype(
-            networkmanagementaddnodecalltype)::value_type>();
+        networkmanagementaddnodecalltype = obj["networkManagementAddNodeCall"].as<decltype(networkmanagementaddnodecalltype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementAddNodeCallElements"]) {
         last_cmd = function_from_string("networkManagementAddNodeCallElements");
-        networkmanagementaddnodecallelementstype = obj["networkManagementAddNodeCallElements"].as<decltype(
-            networkmanagementaddnodecallelementstype)::value_type>();
+        networkmanagementaddnodecallelementstype = obj["networkManagementAddNodeCallElements"].as<decltype(networkmanagementaddnodecallelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementRemoveNodeCall"]) {
         last_cmd = function_from_string("networkManagementRemoveNodeCall");
-        networkmanagementremovenodecalltype = obj["networkManagementRemoveNodeCall"].as<decltype(
-            networkmanagementremovenodecalltype
-        )::value_type>();
+        networkmanagementremovenodecalltype = obj["networkManagementRemoveNodeCall"].as<decltype(networkmanagementremovenodecalltype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementRemoveNodeCallElements"]) {
         last_cmd = function_from_string("networkManagementRemoveNodeCallElements");
-        networkmanagementremovenodecallelementstype = obj["networkManagementRemoveNodeCallElements"].as<decltype(
-            networkmanagementremovenodecallelementstype)::value_type>();
+        networkmanagementremovenodecallelementstype = obj["networkManagementRemoveNodeCallElements"].as<decltype(networkmanagementremovenodecallelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementModifyNodeCall"]) {
         last_cmd = function_from_string("networkManagementModifyNodeCall");
-        networkmanagementmodifynodecalltype = obj["networkManagementModifyNodeCall"].as<decltype(
-            networkmanagementmodifynodecalltype
-        )::value_type>();
+        networkmanagementmodifynodecalltype = obj["networkManagementModifyNodeCall"].as<decltype(networkmanagementmodifynodecalltype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementModifyNodeCallElements"]) {
         last_cmd = function_from_string("networkManagementModifyNodeCallElements");
-        networkmanagementmodifynodecallelementstype = obj["networkManagementModifyNodeCallElements"].as<decltype(
-            networkmanagementmodifynodecallelementstype)::value_type>();
+        networkmanagementmodifynodecallelementstype = obj["networkManagementModifyNodeCallElements"].as<decltype(networkmanagementmodifynodecallelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementScanNetworkCall"]) {
         last_cmd = function_from_string("networkManagementScanNetworkCall");
-        networkmanagementscannetworkcalltype = obj["networkManagementScanNetworkCall"].as<decltype(
-            networkmanagementscannetworkcalltype
-        )::value_type>();
+        networkmanagementscannetworkcalltype = obj["networkManagementScanNetworkCall"].as<decltype(networkmanagementscannetworkcalltype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementScanNetworkCallElements"]) {
         last_cmd = function_from_string("networkManagementScanNetworkCallElements");
-        networkmanagementscannetworkcallelementstype = obj["networkManagementScanNetworkCallElements"].as<decltype(
-            networkmanagementscannetworkcallelementstype)::value_type>();
+        networkmanagementscannetworkcallelementstype = obj["networkManagementScanNetworkCallElements"].as<decltype(networkmanagementscannetworkcallelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementDiscoverCall"]) {
         last_cmd = function_from_string("networkManagementDiscoverCall");
-        networkmanagementdiscovercalltype = obj["networkManagementDiscoverCall"].as<decltype(
-            networkmanagementdiscovercalltype
-        )::value_type>();
+        networkmanagementdiscovercalltype = obj["networkManagementDiscoverCall"].as<decltype(networkmanagementdiscovercalltype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementDiscoverCallElements"]) {
         last_cmd = function_from_string("networkManagementDiscoverCallElements");
-        networkmanagementdiscovercallelementstype = obj["networkManagementDiscoverCallElements"].as<decltype(
-            networkmanagementdiscovercallelementstype)::value_type>();
+        networkmanagementdiscovercallelementstype = obj["networkManagementDiscoverCallElements"].as<decltype(networkmanagementdiscovercallelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementAbortCall"]) {
         last_cmd = function_from_string("networkManagementAbortCall");
-        networkmanagementabortcalltype = obj["networkManagementAbortCall"].as<decltype(networkmanagementabortcalltype
-        )::value_type>();
+        networkmanagementabortcalltype = obj["networkManagementAbortCall"].as<decltype(networkmanagementabortcalltype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementAbortCallElements"]) {
         last_cmd = function_from_string("networkManagementAbortCallElements");
-        networkmanagementabortcallelementstype = obj["networkManagementAbortCallElements"].as<decltype(
-            networkmanagementabortcallelementstype)::value_type>();
+        networkmanagementabortcallelementstype = obj["networkManagementAbortCallElements"].as<decltype(networkmanagementabortcallelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementProcessStateData"]) {
         last_cmd = function_from_string("networkManagementProcessStateData");
-        networkmanagementprocessstatedatatype = obj["networkManagementProcessStateData"].as<decltype(
-            networkmanagementprocessstatedatatype
-        )::value_type>();
+        networkmanagementprocessstatedatatype = obj["networkManagementProcessStateData"].as<decltype(networkmanagementprocessstatedatatype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementProcessStateDataElements"]) {
         last_cmd = function_from_string("networkManagementProcessStateDataElements");
-        networkmanagementprocessstatedataelementstype = obj["networkManagementProcessStateDataElements"].as<decltype(
-            networkmanagementprocessstatedataelementstype)::value_type>();
+        networkmanagementprocessstatedataelementstype = obj["networkManagementProcessStateDataElements"].as<decltype(networkmanagementprocessstatedataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementJoiningModeData"]) {
         last_cmd = function_from_string("networkManagementJoiningModeData");
-        networkmanagementjoiningmodedatatype = obj["networkManagementJoiningModeData"].as<decltype(
-            networkmanagementjoiningmodedatatype
-        )::value_type>();
+        networkmanagementjoiningmodedatatype = obj["networkManagementJoiningModeData"].as<decltype(networkmanagementjoiningmodedatatype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementJoiningModeDataElements"]) {
         last_cmd = function_from_string("networkManagementJoiningModeDataElements");
-        networkmanagementjoiningmodedataelementstype = obj["networkManagementJoiningModeDataElements"].as<decltype(
-            networkmanagementjoiningmodedataelementstype)::value_type>();
+        networkmanagementjoiningmodedataelementstype = obj["networkManagementJoiningModeDataElements"].as<decltype(networkmanagementjoiningmodedataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementReportCandidateData"]) {
         last_cmd = function_from_string("networkManagementReportCandidateData");
-        networkmanagementreportcandidatedatatype = obj["networkManagementReportCandidateData"].as<decltype(
-            networkmanagementreportcandidatedatatype)::value_type>();
+        networkmanagementreportcandidatedatatype = obj["networkManagementReportCandidateData"].as<decltype(networkmanagementreportcandidatedatatype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementReportCandidateDataElements"]) {
         last_cmd = function_from_string("networkManagementReportCandidateDataElements");
-        networkmanagementreportcandidatedataelementstype = obj["networkManagementReportCandidateDataElements"].as<
-            decltype(
-                networkmanagementreportcandidatedataelementstype)::value_type>();
+        networkmanagementreportcandidatedataelementstype = obj["networkManagementReportCandidateDataElements"].as<decltype(networkmanagementreportcandidatedataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementDeviceDescriptionData"]) {
         last_cmd = function_from_string("networkManagementDeviceDescriptionData");
-        networkmanagementdevicedescriptiondatatype = obj["networkManagementDeviceDescriptionData"].as<decltype(
-            networkmanagementdevicedescriptiondatatype)::value_type>();
+        networkmanagementdevicedescriptiondatatype = obj["networkManagementDeviceDescriptionData"].as<decltype(networkmanagementdevicedescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementDeviceDescriptionDataElements"]) {
         last_cmd = function_from_string("networkManagementDeviceDescriptionDataElements");
-        networkmanagementdevicedescriptiondataelementstype = obj["networkManagementDeviceDescriptionDataElements"].as<
-            decltype(
-                networkmanagementdevicedescriptiondataelementstype)::value_type>();
+        networkmanagementdevicedescriptiondataelementstype = obj["networkManagementDeviceDescriptionDataElements"].as<decltype(networkmanagementdevicedescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementDeviceDescriptionListData"]) {
         last_cmd = function_from_string("networkManagementDeviceDescriptionListData");
-        networkmanagementdevicedescriptionlistdatatype = obj["networkManagementDeviceDescriptionListData"].as<decltype(
-            networkmanagementdevicedescriptionlistdatatype)::value_type>();
+        networkmanagementdevicedescriptionlistdatatype = obj["networkManagementDeviceDescriptionListData"].as<decltype(networkmanagementdevicedescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementDeviceDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("networkManagementDeviceDescriptionListDataSelectors");
-        networkmanagementdevicedescriptionlistdataselectorstype = obj[
-            "networkManagementDeviceDescriptionListDataSelectors"].as<decltype(
-            networkmanagementdevicedescriptionlistdataselectorstype)::value_type>();
+        networkmanagementdevicedescriptionlistdataselectorstype = obj["networkManagementDeviceDescriptionListDataSelectors"].as<decltype(networkmanagementdevicedescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementEntityDescriptionData"]) {
         last_cmd = function_from_string("networkManagementEntityDescriptionData");
-        networkmanagemententitydescriptiondatatype = obj["networkManagementEntityDescriptionData"].as<decltype(
-            networkmanagemententitydescriptiondatatype)::value_type>();
+        networkmanagemententitydescriptiondatatype = obj["networkManagementEntityDescriptionData"].as<decltype(networkmanagemententitydescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementEntityDescriptionDataElements"]) {
         last_cmd = function_from_string("networkManagementEntityDescriptionDataElements");
-        networkmanagemententitydescriptiondataelementstype = obj["networkManagementEntityDescriptionDataElements"].as<
-            decltype(
-                networkmanagemententitydescriptiondataelementstype)::value_type>();
+        networkmanagemententitydescriptiondataelementstype = obj["networkManagementEntityDescriptionDataElements"].as<decltype(networkmanagemententitydescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementEntityDescriptionListData"]) {
         last_cmd = function_from_string("networkManagementEntityDescriptionListData");
-        networkmanagemententitydescriptionlistdatatype = obj["networkManagementEntityDescriptionListData"].as<decltype(
-            networkmanagemententitydescriptionlistdatatype)::value_type>();
+        networkmanagemententitydescriptionlistdatatype = obj["networkManagementEntityDescriptionListData"].as<decltype(networkmanagemententitydescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementEntityDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("networkManagementEntityDescriptionListDataSelectors");
-        networkmanagemententitydescriptionlistdataselectorstype = obj[
-            "networkManagementEntityDescriptionListDataSelectors"].as<decltype(
-            networkmanagemententitydescriptionlistdataselectorstype)::value_type>();
+        networkmanagemententitydescriptionlistdataselectorstype = obj["networkManagementEntityDescriptionListDataSelectors"].as<decltype(networkmanagemententitydescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementFeatureDescriptionData"]) {
         last_cmd = function_from_string("networkManagementFeatureDescriptionData");
-        networkmanagementfeaturedescriptiondatatype = obj["networkManagementFeatureDescriptionData"].as<decltype(
-            networkmanagementfeaturedescriptiondatatype)::value_type>();
+        networkmanagementfeaturedescriptiondatatype = obj["networkManagementFeatureDescriptionData"].as<decltype(networkmanagementfeaturedescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementFeatureDescriptionDataElements"]) {
         last_cmd = function_from_string("networkManagementFeatureDescriptionDataElements");
-        networkmanagementfeaturedescriptiondataelementstype = obj["networkManagementFeatureDescriptionDataElements"].as<
-            decltype(
-                networkmanagementfeaturedescriptiondataelementstype)::value_type>();
+        networkmanagementfeaturedescriptiondataelementstype = obj["networkManagementFeatureDescriptionDataElements"].as<decltype(networkmanagementfeaturedescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementFeatureDescriptionListData"]) {
         last_cmd = function_from_string("networkManagementFeatureDescriptionListData");
-        networkmanagementfeaturedescriptionlistdatatype = obj["networkManagementFeatureDescriptionListData"].as<decltype
-            (
-                networkmanagementfeaturedescriptionlistdatatype)::value_type>();
+        networkmanagementfeaturedescriptionlistdatatype = obj["networkManagementFeatureDescriptionListData"].as<decltype(networkmanagementfeaturedescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["networkManagementFeatureDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("networkManagementFeatureDescriptionListDataSelectors");
-        networkmanagementfeaturedescriptionlistdataselectorstype = obj[
-            "networkManagementFeatureDescriptionListDataSelectors"].as<decltype(
-            networkmanagementfeaturedescriptionlistdataselectorstype)::value_type>();
+        networkmanagementfeaturedescriptionlistdataselectorstype = obj["networkManagementFeatureDescriptionListDataSelectors"].as<decltype(networkmanagementfeaturedescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["supplyConditionData"]) {
@@ -43846,73 +44712,57 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["supplyConditionDataElements"]) {
         last_cmd = function_from_string("supplyConditionDataElements");
-        supplyconditiondataelementstype = obj["supplyConditionDataElements"].as<decltype(supplyconditiondataelementstype
-        )::value_type>();
+        supplyconditiondataelementstype = obj["supplyConditionDataElements"].as<decltype(supplyconditiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["supplyConditionListData"]) {
         last_cmd = function_from_string("supplyConditionListData");
-        supplyconditionlistdatatype = obj["supplyConditionListData"].as<decltype(supplyconditionlistdatatype
-        )::value_type>();
+        supplyconditionlistdatatype = obj["supplyConditionListData"].as<decltype(supplyconditionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["supplyConditionListDataSelectors"]) {
         last_cmd = function_from_string("supplyConditionListDataSelectors");
-        supplyconditionlistdataselectorstype = obj["supplyConditionListDataSelectors"].as<decltype(
-            supplyconditionlistdataselectorstype
-        )::value_type>();
+        supplyconditionlistdataselectorstype = obj["supplyConditionListDataSelectors"].as<decltype(supplyconditionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["supplyConditionDescriptionData"]) {
         last_cmd = function_from_string("supplyConditionDescriptionData");
-        supplyconditiondescriptiondatatype = obj["supplyConditionDescriptionData"].as<decltype(
-            supplyconditiondescriptiondatatype
-        )::value_type>();
+        supplyconditiondescriptiondatatype = obj["supplyConditionDescriptionData"].as<decltype(supplyconditiondescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["supplyConditionDescriptionDataElements"]) {
         last_cmd = function_from_string("supplyConditionDescriptionDataElements");
-        supplyconditiondescriptiondataelementstype = obj["supplyConditionDescriptionDataElements"].as<decltype(
-            supplyconditiondescriptiondataelementstype)::value_type>();
+        supplyconditiondescriptiondataelementstype = obj["supplyConditionDescriptionDataElements"].as<decltype(supplyconditiondescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["supplyConditionDescriptionListData"]) {
         last_cmd = function_from_string("supplyConditionDescriptionListData");
-        supplyconditiondescriptionlistdatatype = obj["supplyConditionDescriptionListData"].as<decltype(
-            supplyconditiondescriptionlistdatatype)::value_type>();
+        supplyconditiondescriptionlistdatatype = obj["supplyConditionDescriptionListData"].as<decltype(supplyconditiondescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["supplyConditionDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("supplyConditionDescriptionListDataSelectors");
-        supplyconditiondescriptionlistdataselectorstype = obj["supplyConditionDescriptionListDataSelectors"].as<decltype
-            (
-                supplyconditiondescriptionlistdataselectorstype)::value_type>();
+        supplyconditiondescriptionlistdataselectorstype = obj["supplyConditionDescriptionListDataSelectors"].as<decltype(supplyconditiondescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["supplyConditionThresholdRelationData"]) {
         last_cmd = function_from_string("supplyConditionThresholdRelationData");
-        supplyconditionthresholdrelationdatatype = obj["supplyConditionThresholdRelationData"].as<decltype(
-            supplyconditionthresholdrelationdatatype)::value_type>();
+        supplyconditionthresholdrelationdatatype = obj["supplyConditionThresholdRelationData"].as<decltype(supplyconditionthresholdrelationdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["supplyConditionThresholdRelationDataElements"]) {
         last_cmd = function_from_string("supplyConditionThresholdRelationDataElements");
-        supplyconditionthresholdrelationdataelementstype = obj["supplyConditionThresholdRelationDataElements"].as<
-            decltype(
-                supplyconditionthresholdrelationdataelementstype)::value_type>();
+        supplyconditionthresholdrelationdataelementstype = obj["supplyConditionThresholdRelationDataElements"].as<decltype(supplyconditionthresholdrelationdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["supplyConditionThresholdRelationListData"]) {
         last_cmd = function_from_string("supplyConditionThresholdRelationListData");
-        supplyconditionthresholdrelationlistdatatype = obj["supplyConditionThresholdRelationListData"].as<decltype(
-            supplyconditionthresholdrelationlistdatatype)::value_type>();
+        supplyconditionthresholdrelationlistdatatype = obj["supplyConditionThresholdRelationListData"].as<decltype(supplyconditionthresholdrelationlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["supplyConditionThresholdRelationListDataSelectors"]) {
         last_cmd = function_from_string("supplyConditionThresholdRelationListDataSelectors");
-        supplyconditionthresholdrelationlistdataselectorstype = obj["supplyConditionThresholdRelationListDataSelectors"]
-            .as<decltype(
-                supplyconditionthresholdrelationlistdataselectorstype)::value_type>();
+        supplyconditionthresholdrelationlistdataselectorstype = obj["supplyConditionThresholdRelationListDataSelectors"].as<decltype(supplyconditionthresholdrelationlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["alarmData"]) {
@@ -43932,314 +44782,247 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["alarmListDataSelectors"]) {
         last_cmd = function_from_string("alarmListDataSelectors");
-        alarmlistdataselectorstype = obj["alarmListDataSelectors"].as<decltype(alarmlistdataselectorstype
-        )::value_type>();
+        alarmlistdataselectorstype = obj["alarmListDataSelectors"].as<decltype(alarmlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementDetailedDiscoveryData"]) {
         last_cmd = function_from_string("nodeManagementDetailedDiscoveryData");
-        nodemanagementdetaileddiscoverydatatype = obj["nodeManagementDetailedDiscoveryData"].as<decltype(
-            nodemanagementdetaileddiscoverydatatype)::value_type>();
+        nodemanagementdetaileddiscoverydatatype = obj["nodeManagementDetailedDiscoveryData"].as<decltype(nodemanagementdetaileddiscoverydatatype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementDetailedDiscoveryDataElements"]) {
         last_cmd = function_from_string("nodeManagementDetailedDiscoveryDataElements");
-        nodemanagementdetaileddiscoverydataelementstype = obj["nodeManagementDetailedDiscoveryDataElements"].as<decltype
-            (
-                nodemanagementdetaileddiscoverydataelementstype)::value_type>();
+        nodemanagementdetaileddiscoverydataelementstype = obj["nodeManagementDetailedDiscoveryDataElements"].as<decltype(nodemanagementdetaileddiscoverydataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementDetailedDiscoveryDataSelectors"]) {
         last_cmd = function_from_string("nodeManagementDetailedDiscoveryDataSelectors");
-        nodemanagementdetaileddiscoverydataselectorstype = obj["nodeManagementDetailedDiscoveryDataSelectors"].as<
-            decltype(
-                nodemanagementdetaileddiscoverydataselectorstype)::value_type>();
+        nodemanagementdetaileddiscoverydataselectorstype = obj["nodeManagementDetailedDiscoveryDataSelectors"].as<decltype(nodemanagementdetaileddiscoverydataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementBindingData"]) {
         last_cmd = function_from_string("nodeManagementBindingData");
-        nodemanagementbindingdatatype = obj["nodeManagementBindingData"].as<decltype(nodemanagementbindingdatatype
-        )::value_type>();
+        nodemanagementbindingdatatype = obj["nodeManagementBindingData"].as<decltype(nodemanagementbindingdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementBindingDataElements"]) {
         last_cmd = function_from_string("nodeManagementBindingDataElements");
-        nodemanagementbindingdataelementstype = obj["nodeManagementBindingDataElements"].as<decltype(
-            nodemanagementbindingdataelementstype
-        )::value_type>();
+        nodemanagementbindingdataelementstype = obj["nodeManagementBindingDataElements"].as<decltype(nodemanagementbindingdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementBindingDataSelectors"]) {
         last_cmd = function_from_string("nodeManagementBindingDataSelectors");
-        nodemanagementbindingdataselectorstype = obj["nodeManagementBindingDataSelectors"].as<decltype(
-            nodemanagementbindingdataselectorstype)::value_type>();
+        nodemanagementbindingdataselectorstype = obj["nodeManagementBindingDataSelectors"].as<decltype(nodemanagementbindingdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementBindingRequestCall"]) {
         last_cmd = function_from_string("nodeManagementBindingRequestCall");
-        nodemanagementbindingrequestcalltype = obj["nodeManagementBindingRequestCall"].as<decltype(
-            nodemanagementbindingrequestcalltype
-        )::value_type>();
+        nodemanagementbindingrequestcalltype = obj["nodeManagementBindingRequestCall"].as<decltype(nodemanagementbindingrequestcalltype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementBindingRequestCallElements"]) {
         last_cmd = function_from_string("nodeManagementBindingRequestCallElements");
-        nodemanagementbindingrequestcallelementstype = obj["nodeManagementBindingRequestCallElements"].as<decltype(
-            nodemanagementbindingrequestcallelementstype)::value_type>();
+        nodemanagementbindingrequestcallelementstype = obj["nodeManagementBindingRequestCallElements"].as<decltype(nodemanagementbindingrequestcallelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementBindingDeleteCall"]) {
         last_cmd = function_from_string("nodeManagementBindingDeleteCall");
-        nodemanagementbindingdeletecalltype = obj["nodeManagementBindingDeleteCall"].as<decltype(
-            nodemanagementbindingdeletecalltype
-        )::value_type>();
+        nodemanagementbindingdeletecalltype = obj["nodeManagementBindingDeleteCall"].as<decltype(nodemanagementbindingdeletecalltype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementBindingDeleteCallElements"]) {
         last_cmd = function_from_string("nodeManagementBindingDeleteCallElements");
-        nodemanagementbindingdeletecallelementstype = obj["nodeManagementBindingDeleteCallElements"].as<decltype(
-            nodemanagementbindingdeletecallelementstype)::value_type>();
+        nodemanagementbindingdeletecallelementstype = obj["nodeManagementBindingDeleteCallElements"].as<decltype(nodemanagementbindingdeletecallelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementSubscriptionData"]) {
         last_cmd = function_from_string("nodeManagementSubscriptionData");
-        nodemanagementsubscriptiondatatype = obj["nodeManagementSubscriptionData"].as<decltype(
-            nodemanagementsubscriptiondatatype
-        )::value_type>();
+        nodemanagementsubscriptiondatatype = obj["nodeManagementSubscriptionData"].as<decltype(nodemanagementsubscriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementSubscriptionDataElements"]) {
         last_cmd = function_from_string("nodeManagementSubscriptionDataElements");
-        nodemanagementsubscriptiondataelementstype = obj["nodeManagementSubscriptionDataElements"].as<decltype(
-            nodemanagementsubscriptiondataelementstype)::value_type>();
+        nodemanagementsubscriptiondataelementstype = obj["nodeManagementSubscriptionDataElements"].as<decltype(nodemanagementsubscriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementSubscriptionDataSelectors"]) {
         last_cmd = function_from_string("nodeManagementSubscriptionDataSelectors");
-        nodemanagementsubscriptiondataselectorstype = obj["nodeManagementSubscriptionDataSelectors"].as<decltype(
-            nodemanagementsubscriptiondataselectorstype)::value_type>();
+        nodemanagementsubscriptiondataselectorstype = obj["nodeManagementSubscriptionDataSelectors"].as<decltype(nodemanagementsubscriptiondataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementSubscriptionRequestCall"]) {
         last_cmd = function_from_string("nodeManagementSubscriptionRequestCall");
-        nodemanagementsubscriptionrequestcalltype = obj["nodeManagementSubscriptionRequestCall"].as<decltype(
-            nodemanagementsubscriptionrequestcalltype)::value_type>();
+        nodemanagementsubscriptionrequestcalltype = obj["nodeManagementSubscriptionRequestCall"].as<decltype(nodemanagementsubscriptionrequestcalltype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementSubscriptionRequestCallElements"]) {
         last_cmd = function_from_string("nodeManagementSubscriptionRequestCallElements");
-        nodemanagementsubscriptionrequestcallelementstype = obj["nodeManagementSubscriptionRequestCallElements"].as<
-            decltype(
-                nodemanagementsubscriptionrequestcallelementstype)::value_type>();
+        nodemanagementsubscriptionrequestcallelementstype = obj["nodeManagementSubscriptionRequestCallElements"].as<decltype(nodemanagementsubscriptionrequestcallelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementSubscriptionDeleteCall"]) {
         last_cmd = function_from_string("nodeManagementSubscriptionDeleteCall");
-        nodemanagementsubscriptiondeletecalltype = obj["nodeManagementSubscriptionDeleteCall"].as<decltype(
-            nodemanagementsubscriptiondeletecalltype)::value_type>();
+        nodemanagementsubscriptiondeletecalltype = obj["nodeManagementSubscriptionDeleteCall"].as<decltype(nodemanagementsubscriptiondeletecalltype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementSubscriptionDeleteCallElements"]) {
         last_cmd = function_from_string("nodeManagementSubscriptionDeleteCallElements");
-        nodemanagementsubscriptiondeletecallelementstype = obj["nodeManagementSubscriptionDeleteCallElements"].as<
-            decltype(
-                nodemanagementsubscriptiondeletecallelementstype)::value_type>();
+        nodemanagementsubscriptiondeletecallelementstype = obj["nodeManagementSubscriptionDeleteCallElements"].as<decltype(nodemanagementsubscriptiondeletecallelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementDestinationData"]) {
         last_cmd = function_from_string("nodeManagementDestinationData");
-        nodemanagementdestinationdatatype = obj["nodeManagementDestinationData"].as<decltype(
-            nodemanagementdestinationdatatype
-        )::value_type>();
+        nodemanagementdestinationdatatype = obj["nodeManagementDestinationData"].as<decltype(nodemanagementdestinationdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementDestinationDataElements"]) {
         last_cmd = function_from_string("nodeManagementDestinationDataElements");
-        nodemanagementdestinationdataelementstype = obj["nodeManagementDestinationDataElements"].as<decltype(
-            nodemanagementdestinationdataelementstype)::value_type>();
+        nodemanagementdestinationdataelementstype = obj["nodeManagementDestinationDataElements"].as<decltype(nodemanagementdestinationdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementDestinationListData"]) {
         last_cmd = function_from_string("nodeManagementDestinationListData");
-        nodemanagementdestinationlistdatatype = obj["nodeManagementDestinationListData"].as<decltype(
-            nodemanagementdestinationlistdatatype
-        )::value_type>();
+        nodemanagementdestinationlistdatatype = obj["nodeManagementDestinationListData"].as<decltype(nodemanagementdestinationlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementDestinationListDataSelectors"]) {
         last_cmd = function_from_string("nodeManagementDestinationListDataSelectors");
-        nodemanagementdestinationlistdataselectorstype = obj["nodeManagementDestinationListDataSelectors"].as<decltype(
-            nodemanagementdestinationlistdataselectorstype)::value_type>();
+        nodemanagementdestinationlistdataselectorstype = obj["nodeManagementDestinationListDataSelectors"].as<decltype(nodemanagementdestinationlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementUseCaseData"]) {
         last_cmd = function_from_string("nodeManagementUseCaseData");
-        nodemanagementusecasedatatype = obj["nodeManagementUseCaseData"].as<decltype(nodemanagementusecasedatatype
-        )::value_type>();
+        nodemanagementusecasedatatype = obj["nodeManagementUseCaseData"].as<decltype(nodemanagementusecasedatatype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementUseCaseDataElements"]) {
         last_cmd = function_from_string("nodeManagementUseCaseDataElements");
-        nodemanagementusecasedataelementstype = obj["nodeManagementUseCaseDataElements"].as<decltype(
-            nodemanagementusecasedataelementstype
-        )::value_type>();
+        nodemanagementusecasedataelementstype = obj["nodeManagementUseCaseDataElements"].as<decltype(nodemanagementusecasedataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["nodeManagementUseCaseDataSelectors"]) {
         last_cmd = function_from_string("nodeManagementUseCaseDataSelectors");
-        nodemanagementusecasedataselectorstype = obj["nodeManagementUseCaseDataSelectors"].as<decltype(
-            nodemanagementusecasedataselectorstype)::value_type>();
+        nodemanagementusecasedataselectorstype = obj["nodeManagementUseCaseDataSelectors"].as<decltype(nodemanagementusecasedataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["bindingManagementEntryData"]) {
         last_cmd = function_from_string("bindingManagementEntryData");
-        bindingmanagemententrydatatype = obj["bindingManagementEntryData"].as<decltype(bindingmanagemententrydatatype
-        )::value_type>();
+        bindingmanagemententrydatatype = obj["bindingManagementEntryData"].as<decltype(bindingmanagemententrydatatype)::value_type>();
         return last_cmd;
     }
     if (obj["bindingManagementEntryDataElements"]) {
         last_cmd = function_from_string("bindingManagementEntryDataElements");
-        bindingmanagemententrydataelementstype = obj["bindingManagementEntryDataElements"].as<decltype(
-            bindingmanagemententrydataelementstype)::value_type>();
+        bindingmanagemententrydataelementstype = obj["bindingManagementEntryDataElements"].as<decltype(bindingmanagemententrydataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["bindingManagementEntryListData"]) {
         last_cmd = function_from_string("bindingManagementEntryListData");
-        bindingmanagemententrylistdatatype = obj["bindingManagementEntryListData"].as<decltype(
-            bindingmanagemententrylistdatatype
-        )::value_type>();
+        bindingmanagemententrylistdatatype = obj["bindingManagementEntryListData"].as<decltype(bindingmanagemententrylistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["bindingManagementEntryListDataSelectors"]) {
         last_cmd = function_from_string("bindingManagementEntryListDataSelectors");
-        bindingmanagemententrylistdataselectorstype = obj["bindingManagementEntryListDataSelectors"].as<decltype(
-            bindingmanagemententrylistdataselectorstype)::value_type>();
+        bindingmanagemententrylistdataselectorstype = obj["bindingManagementEntryListDataSelectors"].as<decltype(bindingmanagemententrylistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["bindingManagementRequestCall"]) {
         last_cmd = function_from_string("bindingManagementRequestCall");
-        bindingmanagementrequestcalltype = obj["bindingManagementRequestCall"].as<decltype(
-            bindingmanagementrequestcalltype)::value_type>();
+        bindingmanagementrequestcalltype = obj["bindingManagementRequestCall"].as<decltype(bindingmanagementrequestcalltype)::value_type>();
         return last_cmd;
     }
     if (obj["bindingManagementRequestCallElements"]) {
         last_cmd = function_from_string("bindingManagementRequestCallElements");
-        bindingmanagementrequestcallelementstype = obj["bindingManagementRequestCallElements"].as<decltype(
-            bindingmanagementrequestcallelementstype)::value_type>();
+        bindingmanagementrequestcallelementstype = obj["bindingManagementRequestCallElements"].as<decltype(bindingmanagementrequestcallelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["bindingManagementDeleteCall"]) {
         last_cmd = function_from_string("bindingManagementDeleteCall");
-        bindingmanagementdeletecalltype = obj["bindingManagementDeleteCall"].as<decltype(bindingmanagementdeletecalltype
-        )::value_type>();
+        bindingmanagementdeletecalltype = obj["bindingManagementDeleteCall"].as<decltype(bindingmanagementdeletecalltype)::value_type>();
         return last_cmd;
     }
     if (obj["bindingManagementDeleteCallElements"]) {
         last_cmd = function_from_string("bindingManagementDeleteCallElements");
-        bindingmanagementdeletecallelementstype = obj["bindingManagementDeleteCallElements"].as<decltype(
-            bindingmanagementdeletecallelementstype)::value_type>();
+        bindingmanagementdeletecallelementstype = obj["bindingManagementDeleteCallElements"].as<decltype(bindingmanagementdeletecallelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["subscriptionManagementEntryData"]) {
         last_cmd = function_from_string("subscriptionManagementEntryData");
-        subscriptionmanagemententrydatatype = obj["subscriptionManagementEntryData"].as<decltype(
-            subscriptionmanagemententrydatatype
-        )::value_type>();
+        subscriptionmanagemententrydatatype = obj["subscriptionManagementEntryData"].as<decltype(subscriptionmanagemententrydatatype)::value_type>();
         return last_cmd;
     }
     if (obj["subscriptionManagementEntryDataElements"]) {
         last_cmd = function_from_string("subscriptionManagementEntryDataElements");
-        subscriptionmanagemententrydataelementstype = obj["subscriptionManagementEntryDataElements"].as<decltype(
-            subscriptionmanagemententrydataelementstype)::value_type>();
+        subscriptionmanagemententrydataelementstype = obj["subscriptionManagementEntryDataElements"].as<decltype(subscriptionmanagemententrydataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["subscriptionManagementEntryListData"]) {
         last_cmd = function_from_string("subscriptionManagementEntryListData");
-        subscriptionmanagemententrylistdatatype = obj["subscriptionManagementEntryListData"].as<decltype(
-            subscriptionmanagemententrylistdatatype)::value_type>();
+        subscriptionmanagemententrylistdatatype = obj["subscriptionManagementEntryListData"].as<decltype(subscriptionmanagemententrylistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["subscriptionManagementEntryListDataSelectors"]) {
         last_cmd = function_from_string("subscriptionManagementEntryListDataSelectors");
-        subscriptionmanagemententrylistdataselectorstype = obj["subscriptionManagementEntryListDataSelectors"].as<
-            decltype(
-                subscriptionmanagemententrylistdataselectorstype)::value_type>();
+        subscriptionmanagemententrylistdataselectorstype = obj["subscriptionManagementEntryListDataSelectors"].as<decltype(subscriptionmanagemententrylistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["subscriptionManagementRequestCall"]) {
         last_cmd = function_from_string("subscriptionManagementRequestCall");
-        subscriptionmanagementrequestcalltype = obj["subscriptionManagementRequestCall"].as<decltype(
-            subscriptionmanagementrequestcalltype
-        )::value_type>();
+        subscriptionmanagementrequestcalltype = obj["subscriptionManagementRequestCall"].as<decltype(subscriptionmanagementrequestcalltype)::value_type>();
         return last_cmd;
     }
     if (obj["subscriptionManagementRequestCallElements"]) {
         last_cmd = function_from_string("subscriptionManagementRequestCallElements");
-        subscriptionmanagementrequestcallelementstype = obj["subscriptionManagementRequestCallElements"].as<decltype(
-            subscriptionmanagementrequestcallelementstype)::value_type>();
+        subscriptionmanagementrequestcallelementstype = obj["subscriptionManagementRequestCallElements"].as<decltype(subscriptionmanagementrequestcallelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["subscriptionManagementDeleteCall"]) {
         last_cmd = function_from_string("subscriptionManagementDeleteCall");
-        subscriptionmanagementdeletecalltype = obj["subscriptionManagementDeleteCall"].as<decltype(
-            subscriptionmanagementdeletecalltype
-        )::value_type>();
+        subscriptionmanagementdeletecalltype = obj["subscriptionManagementDeleteCall"].as<decltype(subscriptionmanagementdeletecalltype)::value_type>();
         return last_cmd;
     }
     if (obj["subscriptionManagementDeleteCallElements"]) {
         last_cmd = function_from_string("subscriptionManagementDeleteCallElements");
-        subscriptionmanagementdeletecallelementstype = obj["subscriptionManagementDeleteCallElements"].as<decltype(
-            subscriptionmanagementdeletecallelementstype)::value_type>();
+        subscriptionmanagementdeletecallelementstype = obj["subscriptionManagementDeleteCallElements"].as<decltype(subscriptionmanagementdeletecallelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["useCaseInformationData"]) {
         last_cmd = function_from_string("useCaseInformationData");
-        usecaseinformationdatatype = obj["useCaseInformationData"].as<decltype(usecaseinformationdatatype
-        )::value_type>();
+        usecaseinformationdatatype = obj["useCaseInformationData"].as<decltype(usecaseinformationdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["useCaseInformationDataElements"]) {
         last_cmd = function_from_string("useCaseInformationDataElements");
-        usecaseinformationdataelementstype = obj["useCaseInformationDataElements"].as<decltype(
-            usecaseinformationdataelementstype
-        )::value_type>();
+        usecaseinformationdataelementstype = obj["useCaseInformationDataElements"].as<decltype(usecaseinformationdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["useCaseInformationListData"]) {
         last_cmd = function_from_string("useCaseInformationListData");
-        usecaseinformationlistdatatype = obj["useCaseInformationListData"].as<decltype(usecaseinformationlistdatatype
-        )::value_type>();
+        usecaseinformationlistdatatype = obj["useCaseInformationListData"].as<decltype(usecaseinformationlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["useCaseInformationListDataSelectors"]) {
         last_cmd = function_from_string("useCaseInformationListDataSelectors");
-        usecaseinformationlistdataselectorstype = obj["useCaseInformationListDataSelectors"].as<decltype(
-            usecaseinformationlistdataselectorstype)::value_type>();
+        usecaseinformationlistdataselectorstype = obj["useCaseInformationListDataSelectors"].as<decltype(usecaseinformationlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["specificationVersionData"]) {
         last_cmd = function_from_string("specificationVersionData");
-        specificationversiondatatype = obj["specificationVersionData"].as<decltype(specificationversiondatatype
-        )::value_type>();
+        specificationversiondatatype = obj["specificationVersionData"].as<decltype(specificationversiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["specificationVersionDataElements"]) {
         last_cmd = function_from_string("specificationVersionDataElements");
-        specificationversiondataelementstype = obj["specificationVersionDataElements"].as<decltype(
-            specificationversiondataelementstype
-        )::value_type>();
+        specificationversiondataelementstype = obj["specificationVersionDataElements"].as<decltype(specificationversiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["specificationVersionListData"]) {
         last_cmd = function_from_string("specificationVersionListData");
-        specificationversionlistdatatype = obj["specificationVersionListData"].as<decltype(
-            specificationversionlistdatatype)::value_type>();
+        specificationversionlistdatatype = obj["specificationVersionListData"].as<decltype(specificationversionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["specificationVersionListDataSelectors"]) {
         last_cmd = function_from_string("specificationVersionListDataSelectors");
-        specificationversionlistdataselectorstype = obj["specificationVersionListDataSelectors"].as<decltype(
-            specificationversionlistdataselectorstype)::value_type>();
+        specificationversionlistdataselectorstype = obj["specificationVersionListDataSelectors"].as<decltype(specificationversionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["taskManagementJobData"]) {
@@ -44249,244 +45032,187 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["taskManagementJobDataElements"]) {
         last_cmd = function_from_string("taskManagementJobDataElements");
-        taskmanagementjobdataelementstype = obj["taskManagementJobDataElements"].as<decltype(
-            taskmanagementjobdataelementstype
-        )::value_type>();
+        taskmanagementjobdataelementstype = obj["taskManagementJobDataElements"].as<decltype(taskmanagementjobdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["taskManagementJobListData"]) {
         last_cmd = function_from_string("taskManagementJobListData");
-        taskmanagementjoblistdatatype = obj["taskManagementJobListData"].as<decltype(taskmanagementjoblistdatatype
-        )::value_type>();
+        taskmanagementjoblistdatatype = obj["taskManagementJobListData"].as<decltype(taskmanagementjoblistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["taskManagementJobListDataSelectors"]) {
         last_cmd = function_from_string("taskManagementJobListDataSelectors");
-        taskmanagementjoblistdataselectorstype = obj["taskManagementJobListDataSelectors"].as<decltype(
-            taskmanagementjoblistdataselectorstype)::value_type>();
+        taskmanagementjoblistdataselectorstype = obj["taskManagementJobListDataSelectors"].as<decltype(taskmanagementjoblistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["taskManagementJobRelationData"]) {
         last_cmd = function_from_string("taskManagementJobRelationData");
-        taskmanagementjobrelationdatatype = obj["taskManagementJobRelationData"].as<decltype(
-            taskmanagementjobrelationdatatype
-        )::value_type>();
+        taskmanagementjobrelationdatatype = obj["taskManagementJobRelationData"].as<decltype(taskmanagementjobrelationdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["taskManagementJobRelationDataElements"]) {
         last_cmd = function_from_string("taskManagementJobRelationDataElements");
-        taskmanagementjobrelationdataelementstype = obj["taskManagementJobRelationDataElements"].as<decltype(
-            taskmanagementjobrelationdataelementstype)::value_type>();
+        taskmanagementjobrelationdataelementstype = obj["taskManagementJobRelationDataElements"].as<decltype(taskmanagementjobrelationdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["taskManagementJobRelationListData"]) {
         last_cmd = function_from_string("taskManagementJobRelationListData");
-        taskmanagementjobrelationlistdatatype = obj["taskManagementJobRelationListData"].as<decltype(
-            taskmanagementjobrelationlistdatatype
-        )::value_type>();
+        taskmanagementjobrelationlistdatatype = obj["taskManagementJobRelationListData"].as<decltype(taskmanagementjobrelationlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["taskManagementJobRelationListDataSelectors"]) {
         last_cmd = function_from_string("taskManagementJobRelationListDataSelectors");
-        taskmanagementjobrelationlistdataselectorstype = obj["taskManagementJobRelationListDataSelectors"].as<decltype(
-            taskmanagementjobrelationlistdataselectorstype)::value_type>();
+        taskmanagementjobrelationlistdataselectorstype = obj["taskManagementJobRelationListDataSelectors"].as<decltype(taskmanagementjobrelationlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["taskManagementJobDescriptionData"]) {
         last_cmd = function_from_string("taskManagementJobDescriptionData");
-        taskmanagementjobdescriptiondatatype = obj["taskManagementJobDescriptionData"].as<decltype(
-            taskmanagementjobdescriptiondatatype
-        )::value_type>();
+        taskmanagementjobdescriptiondatatype = obj["taskManagementJobDescriptionData"].as<decltype(taskmanagementjobdescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["taskManagementJobDescriptionDataElements"]) {
         last_cmd = function_from_string("taskManagementJobDescriptionDataElements");
-        taskmanagementjobdescriptiondataelementstype = obj["taskManagementJobDescriptionDataElements"].as<decltype(
-            taskmanagementjobdescriptiondataelementstype)::value_type>();
+        taskmanagementjobdescriptiondataelementstype = obj["taskManagementJobDescriptionDataElements"].as<decltype(taskmanagementjobdescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["taskManagementJobDescriptionListData"]) {
         last_cmd = function_from_string("taskManagementJobDescriptionListData");
-        taskmanagementjobdescriptionlistdatatype = obj["taskManagementJobDescriptionListData"].as<decltype(
-            taskmanagementjobdescriptionlistdatatype)::value_type>();
+        taskmanagementjobdescriptionlistdatatype = obj["taskManagementJobDescriptionListData"].as<decltype(taskmanagementjobdescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["taskManagementJobDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("taskManagementJobDescriptionListDataSelectors");
-        taskmanagementjobdescriptionlistdataselectorstype = obj["taskManagementJobDescriptionListDataSelectors"].as<
-            decltype(
-                taskmanagementjobdescriptionlistdataselectorstype)::value_type>();
+        taskmanagementjobdescriptionlistdataselectorstype = obj["taskManagementJobDescriptionListDataSelectors"].as<decltype(taskmanagementjobdescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["taskManagementOverviewData"]) {
         last_cmd = function_from_string("taskManagementOverviewData");
-        taskmanagementoverviewdatatype = obj["taskManagementOverviewData"].as<decltype(taskmanagementoverviewdatatype
-        )::value_type>();
+        taskmanagementoverviewdatatype = obj["taskManagementOverviewData"].as<decltype(taskmanagementoverviewdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["taskManagementOverviewDataElements"]) {
         last_cmd = function_from_string("taskManagementOverviewDataElements");
-        taskmanagementoverviewdataelementstype = obj["taskManagementOverviewDataElements"].as<decltype(
-            taskmanagementoverviewdataelementstype)::value_type>();
+        taskmanagementoverviewdataelementstype = obj["taskManagementOverviewDataElements"].as<decltype(taskmanagementoverviewdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacSystemFunctionData"]) {
         last_cmd = function_from_string("hvacSystemFunctionData");
-        hvacsystemfunctiondatatype = obj["hvacSystemFunctionData"].as<decltype(hvacsystemfunctiondatatype
-        )::value_type>();
+        hvacsystemfunctiondatatype = obj["hvacSystemFunctionData"].as<decltype(hvacsystemfunctiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacSystemFunctionDataElements"]) {
         last_cmd = function_from_string("hvacSystemFunctionDataElements");
-        hvacsystemfunctiondataelementstype = obj["hvacSystemFunctionDataElements"].as<decltype(
-            hvacsystemfunctiondataelementstype
-        )::value_type>();
+        hvacsystemfunctiondataelementstype = obj["hvacSystemFunctionDataElements"].as<decltype(hvacsystemfunctiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacSystemFunctionListData"]) {
         last_cmd = function_from_string("hvacSystemFunctionListData");
-        hvacsystemfunctionlistdatatype = obj["hvacSystemFunctionListData"].as<decltype(hvacsystemfunctionlistdatatype
-        )::value_type>();
+        hvacsystemfunctionlistdatatype = obj["hvacSystemFunctionListData"].as<decltype(hvacsystemfunctionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacSystemFunctionListDataSelectors"]) {
         last_cmd = function_from_string("hvacSystemFunctionListDataSelectors");
-        hvacsystemfunctionlistdataselectorstype = obj["hvacSystemFunctionListDataSelectors"].as<decltype(
-            hvacsystemfunctionlistdataselectorstype)::value_type>();
+        hvacsystemfunctionlistdataselectorstype = obj["hvacSystemFunctionListDataSelectors"].as<decltype(hvacsystemfunctionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacSystemFunctionOperationModeRelationData"]) {
         last_cmd = function_from_string("hvacSystemFunctionOperationModeRelationData");
-        hvacsystemfunctionoperationmoderelationdatatype = obj["hvacSystemFunctionOperationModeRelationData"].as<decltype
-            (
-                hvacsystemfunctionoperationmoderelationdatatype)::value_type>();
+        hvacsystemfunctionoperationmoderelationdatatype = obj["hvacSystemFunctionOperationModeRelationData"].as<decltype(hvacsystemfunctionoperationmoderelationdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacSystemFunctionOperationModeRelationDataElements"]) {
         last_cmd = function_from_string("hvacSystemFunctionOperationModeRelationDataElements");
-        hvacsystemfunctionoperationmoderelationdataelementstype = obj[
-            "hvacSystemFunctionOperationModeRelationDataElements"].as<decltype(
-            hvacsystemfunctionoperationmoderelationdataelementstype)::value_type>();
+        hvacsystemfunctionoperationmoderelationdataelementstype = obj["hvacSystemFunctionOperationModeRelationDataElements"].as<decltype(hvacsystemfunctionoperationmoderelationdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacSystemFunctionOperationModeRelationListData"]) {
         last_cmd = function_from_string("hvacSystemFunctionOperationModeRelationListData");
-        hvacsystemfunctionoperationmoderelationlistdatatype = obj["hvacSystemFunctionOperationModeRelationListData"].as<
-            decltype(
-                hvacsystemfunctionoperationmoderelationlistdatatype)::value_type>();
+        hvacsystemfunctionoperationmoderelationlistdatatype = obj["hvacSystemFunctionOperationModeRelationListData"].as<decltype(hvacsystemfunctionoperationmoderelationlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacSystemFunctionOperationModeRelationListDataSelectors"]) {
         last_cmd = function_from_string("hvacSystemFunctionOperationModeRelationListDataSelectors");
-        hvacsystemfunctionoperationmoderelationlistdataselectorstype = obj[
-            "hvacSystemFunctionOperationModeRelationListDataSelectors"].as<
-            decltype(hvacsystemfunctionoperationmoderelationlistdataselectorstype)::value_type>();
+        hvacsystemfunctionoperationmoderelationlistdataselectorstype = obj["hvacSystemFunctionOperationModeRelationListDataSelectors"].as<decltype(hvacsystemfunctionoperationmoderelationlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacSystemFunctionSetpointRelationData"]) {
         last_cmd = function_from_string("hvacSystemFunctionSetpointRelationData");
-        hvacsystemfunctionsetpointrelationdatatype = obj["hvacSystemFunctionSetpointRelationData"].as<decltype(
-            hvacsystemfunctionsetpointrelationdatatype)::value_type>();
+        hvacsystemfunctionsetpointrelationdatatype = obj["hvacSystemFunctionSetpointRelationData"].as<decltype(hvacsystemfunctionsetpointrelationdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacSystemFunctionSetpointRelationDataElements"]) {
         last_cmd = function_from_string("hvacSystemFunctionSetpointRelationDataElements");
-        hvacsystemfunctionsetpointrelationdataelementstype = obj["hvacSystemFunctionSetpointRelationDataElements"].as<
-            decltype(
-                hvacsystemfunctionsetpointrelationdataelementstype)::value_type>();
+        hvacsystemfunctionsetpointrelationdataelementstype = obj["hvacSystemFunctionSetpointRelationDataElements"].as<decltype(hvacsystemfunctionsetpointrelationdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacSystemFunctionSetpointRelationListData"]) {
         last_cmd = function_from_string("hvacSystemFunctionSetpointRelationListData");
-        hvacsystemfunctionsetpointrelationlistdatatype = obj["hvacSystemFunctionSetpointRelationListData"].as<decltype(
-            hvacsystemfunctionsetpointrelationlistdatatype)::value_type>();
+        hvacsystemfunctionsetpointrelationlistdatatype = obj["hvacSystemFunctionSetpointRelationListData"].as<decltype(hvacsystemfunctionsetpointrelationlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacSystemFunctionSetpointRelationListDataSelectors"]) {
         last_cmd = function_from_string("hvacSystemFunctionSetpointRelationListDataSelectors");
-        hvacsystemfunctionsetpointrelationlistdataselectorstype = obj[
-            "hvacSystemFunctionSetpointRelationListDataSelectors"].as<decltype(
-            hvacsystemfunctionsetpointrelationlistdataselectorstype)::value_type>();
+        hvacsystemfunctionsetpointrelationlistdataselectorstype = obj["hvacSystemFunctionSetpointRelationListDataSelectors"].as<decltype(hvacsystemfunctionsetpointrelationlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacSystemFunctionPowerSequenceRelationData"]) {
         last_cmd = function_from_string("hvacSystemFunctionPowerSequenceRelationData");
-        hvacsystemfunctionpowersequencerelationdatatype = obj["hvacSystemFunctionPowerSequenceRelationData"].as<decltype
-            (
-                hvacsystemfunctionpowersequencerelationdatatype)::value_type>();
+        hvacsystemfunctionpowersequencerelationdatatype = obj["hvacSystemFunctionPowerSequenceRelationData"].as<decltype(hvacsystemfunctionpowersequencerelationdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacSystemFunctionPowerSequenceRelationDataElements"]) {
         last_cmd = function_from_string("hvacSystemFunctionPowerSequenceRelationDataElements");
-        hvacsystemfunctionpowersequencerelationdataelementstype = obj[
-            "hvacSystemFunctionPowerSequenceRelationDataElements"].as<decltype(
-            hvacsystemfunctionpowersequencerelationdataelementstype)::value_type>();
+        hvacsystemfunctionpowersequencerelationdataelementstype = obj["hvacSystemFunctionPowerSequenceRelationDataElements"].as<decltype(hvacsystemfunctionpowersequencerelationdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacSystemFunctionPowerSequenceRelationListData"]) {
         last_cmd = function_from_string("hvacSystemFunctionPowerSequenceRelationListData");
-        hvacsystemfunctionpowersequencerelationlistdatatype = obj["hvacSystemFunctionPowerSequenceRelationListData"].as<
-            decltype(
-                hvacsystemfunctionpowersequencerelationlistdatatype)::value_type>();
+        hvacsystemfunctionpowersequencerelationlistdatatype = obj["hvacSystemFunctionPowerSequenceRelationListData"].as<decltype(hvacsystemfunctionpowersequencerelationlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacSystemFunctionPowerSequenceRelationListDataSelectors"]) {
         last_cmd = function_from_string("hvacSystemFunctionPowerSequenceRelationListDataSelectors");
-        hvacsystemfunctionpowersequencerelationlistdataselectorstype = obj[
-            "hvacSystemFunctionPowerSequenceRelationListDataSelectors"].as<
-            decltype(hvacsystemfunctionpowersequencerelationlistdataselectorstype)::value_type>();
+        hvacsystemfunctionpowersequencerelationlistdataselectorstype = obj["hvacSystemFunctionPowerSequenceRelationListDataSelectors"].as<decltype(hvacsystemfunctionpowersequencerelationlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacSystemFunctionDescriptionData"]) {
         last_cmd = function_from_string("hvacSystemFunctionDescriptionData");
-        hvacsystemfunctiondescriptiondatatype = obj["hvacSystemFunctionDescriptionData"].as<decltype(
-            hvacsystemfunctiondescriptiondatatype
-        )::value_type>();
+        hvacsystemfunctiondescriptiondatatype = obj["hvacSystemFunctionDescriptionData"].as<decltype(hvacsystemfunctiondescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacSystemFunctionDescriptionDataElements"]) {
         last_cmd = function_from_string("hvacSystemFunctionDescriptionDataElements");
-        hvacsystemfunctiondescriptiondataelementstype = obj["hvacSystemFunctionDescriptionDataElements"].as<decltype(
-            hvacsystemfunctiondescriptiondataelementstype)::value_type>();
+        hvacsystemfunctiondescriptiondataelementstype = obj["hvacSystemFunctionDescriptionDataElements"].as<decltype(hvacsystemfunctiondescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacSystemFunctionDescriptionListData"]) {
         last_cmd = function_from_string("hvacSystemFunctionDescriptionListData");
-        hvacsystemfunctiondescriptionlistdatatype = obj["hvacSystemFunctionDescriptionListData"].as<decltype(
-            hvacsystemfunctiondescriptionlistdatatype)::value_type>();
+        hvacsystemfunctiondescriptionlistdatatype = obj["hvacSystemFunctionDescriptionListData"].as<decltype(hvacsystemfunctiondescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacSystemFunctionDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("hvacSystemFunctionDescriptionListDataSelectors");
-        hvacsystemfunctiondescriptionlistdataselectorstype = obj["hvacSystemFunctionDescriptionListDataSelectors"].as<
-            decltype(
-                hvacsystemfunctiondescriptionlistdataselectorstype)::value_type>();
+        hvacsystemfunctiondescriptionlistdataselectorstype = obj["hvacSystemFunctionDescriptionListDataSelectors"].as<decltype(hvacsystemfunctiondescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacOperationModeDescriptionData"]) {
         last_cmd = function_from_string("hvacOperationModeDescriptionData");
-        hvacoperationmodedescriptiondatatype = obj["hvacOperationModeDescriptionData"].as<decltype(
-            hvacoperationmodedescriptiondatatype
-        )::value_type>();
+        hvacoperationmodedescriptiondatatype = obj["hvacOperationModeDescriptionData"].as<decltype(hvacoperationmodedescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacOperationModeDescriptionDataElements"]) {
         last_cmd = function_from_string("hvacOperationModeDescriptionDataElements");
-        hvacoperationmodedescriptiondataelementstype = obj["hvacOperationModeDescriptionDataElements"].as<decltype(
-            hvacoperationmodedescriptiondataelementstype)::value_type>();
+        hvacoperationmodedescriptiondataelementstype = obj["hvacOperationModeDescriptionDataElements"].as<decltype(hvacoperationmodedescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacOperationModeDescriptionListData"]) {
         last_cmd = function_from_string("hvacOperationModeDescriptionListData");
-        hvacoperationmodedescriptionlistdatatype = obj["hvacOperationModeDescriptionListData"].as<decltype(
-            hvacoperationmodedescriptionlistdatatype)::value_type>();
+        hvacoperationmodedescriptionlistdatatype = obj["hvacOperationModeDescriptionListData"].as<decltype(hvacoperationmodedescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacOperationModeDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("hvacOperationModeDescriptionListDataSelectors");
-        hvacoperationmodedescriptionlistdataselectorstype = obj["hvacOperationModeDescriptionListDataSelectors"].as<
-            decltype(
-                hvacoperationmodedescriptionlistdataselectorstype)::value_type>();
+        hvacoperationmodedescriptionlistdataselectorstype = obj["hvacOperationModeDescriptionListDataSelectors"].as<decltype(hvacoperationmodedescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacOverrunData"]) {
@@ -44496,8 +45222,7 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["hvacOverrunDataElements"]) {
         last_cmd = function_from_string("hvacOverrunDataElements");
-        hvacoverrundataelementstype = obj["hvacOverrunDataElements"].as<decltype(hvacoverrundataelementstype
-        )::value_type>();
+        hvacoverrundataelementstype = obj["hvacOverrunDataElements"].as<decltype(hvacoverrundataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacOverrunListData"]) {
@@ -44507,33 +45232,27 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["hvacOverrunListDataSelectors"]) {
         last_cmd = function_from_string("hvacOverrunListDataSelectors");
-        hvacoverrunlistdataselectorstype = obj["hvacOverrunListDataSelectors"].as<decltype(
-            hvacoverrunlistdataselectorstype)::value_type>();
+        hvacoverrunlistdataselectorstype = obj["hvacOverrunListDataSelectors"].as<decltype(hvacoverrunlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacOverrunDescriptionData"]) {
         last_cmd = function_from_string("hvacOverrunDescriptionData");
-        hvacoverrundescriptiondatatype = obj["hvacOverrunDescriptionData"].as<decltype(hvacoverrundescriptiondatatype
-        )::value_type>();
+        hvacoverrundescriptiondatatype = obj["hvacOverrunDescriptionData"].as<decltype(hvacoverrundescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacOverrunDescriptionDataElements"]) {
         last_cmd = function_from_string("hvacOverrunDescriptionDataElements");
-        hvacoverrundescriptiondataelementstype = obj["hvacOverrunDescriptionDataElements"].as<decltype(
-            hvacoverrundescriptiondataelementstype)::value_type>();
+        hvacoverrundescriptiondataelementstype = obj["hvacOverrunDescriptionDataElements"].as<decltype(hvacoverrundescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacOverrunDescriptionListData"]) {
         last_cmd = function_from_string("hvacOverrunDescriptionListData");
-        hvacoverrundescriptionlistdatatype = obj["hvacOverrunDescriptionListData"].as<decltype(
-            hvacoverrundescriptionlistdatatype
-        )::value_type>();
+        hvacoverrundescriptionlistdatatype = obj["hvacOverrunDescriptionListData"].as<decltype(hvacoverrundescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["hvacOverrunDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("hvacOverrunDescriptionListDataSelectors");
-        hvacoverrundescriptionlistdataselectorstype = obj["hvacOverrunDescriptionListDataSelectors"].as<decltype(
-            hvacoverrundescriptionlistdataselectorstype)::value_type>();
+        hvacoverrundescriptionlistdataselectorstype = obj["hvacOverrunDescriptionListDataSelectors"].as<decltype(hvacoverrundescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["loadControlNodeData"]) {
@@ -44543,8 +45262,7 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["loadControlNodeDataElements"]) {
         last_cmd = function_from_string("loadControlNodeDataElements");
-        loadcontrolnodedataelementstype = obj["loadControlNodeDataElements"].as<decltype(loadcontrolnodedataelementstype
-        )::value_type>();
+        loadcontrolnodedataelementstype = obj["loadControlNodeDataElements"].as<decltype(loadcontrolnodedataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["loadControlEventData"]) {
@@ -44554,21 +45272,17 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["loadControlEventDataElements"]) {
         last_cmd = function_from_string("loadControlEventDataElements");
-        loadcontroleventdataelementstype = obj["loadControlEventDataElements"].as<decltype(
-            loadcontroleventdataelementstype)::value_type>();
+        loadcontroleventdataelementstype = obj["loadControlEventDataElements"].as<decltype(loadcontroleventdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["loadControlEventListData"]) {
         last_cmd = function_from_string("loadControlEventListData");
-        loadcontroleventlistdatatype = obj["loadControlEventListData"].as<decltype(loadcontroleventlistdatatype
-        )::value_type>();
+        loadcontroleventlistdatatype = obj["loadControlEventListData"].as<decltype(loadcontroleventlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["loadControlEventListDataSelectors"]) {
         last_cmd = function_from_string("loadControlEventListDataSelectors");
-        loadcontroleventlistdataselectorstype = obj["loadControlEventListDataSelectors"].as<decltype(
-            loadcontroleventlistdataselectorstype
-        )::value_type>();
+        loadcontroleventlistdataselectorstype = obj["loadControlEventListDataSelectors"].as<decltype(loadcontroleventlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["loadControlStateData"]) {
@@ -44578,21 +45292,17 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["loadControlStateDataElements"]) {
         last_cmd = function_from_string("loadControlStateDataElements");
-        loadcontrolstatedataelementstype = obj["loadControlStateDataElements"].as<decltype(
-            loadcontrolstatedataelementstype)::value_type>();
+        loadcontrolstatedataelementstype = obj["loadControlStateDataElements"].as<decltype(loadcontrolstatedataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["loadControlStateListData"]) {
         last_cmd = function_from_string("loadControlStateListData");
-        loadcontrolstatelistdatatype = obj["loadControlStateListData"].as<decltype(loadcontrolstatelistdatatype
-        )::value_type>();
+        loadcontrolstatelistdatatype = obj["loadControlStateListData"].as<decltype(loadcontrolstatelistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["loadControlStateListDataSelectors"]) {
         last_cmd = function_from_string("loadControlStateListDataSelectors");
-        loadcontrolstatelistdataselectorstype = obj["loadControlStateListDataSelectors"].as<decltype(
-            loadcontrolstatelistdataselectorstype
-        )::value_type>();
+        loadcontrolstatelistdataselectorstype = obj["loadControlStateListDataSelectors"].as<decltype(loadcontrolstatelistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["loadControlLimitData"]) {
@@ -44602,98 +45312,77 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["loadControlLimitDataElements"]) {
         last_cmd = function_from_string("loadControlLimitDataElements");
-        loadcontrollimitdataelementstype = obj["loadControlLimitDataElements"].as<decltype(
-            loadcontrollimitdataelementstype)::value_type>();
+        loadcontrollimitdataelementstype = obj["loadControlLimitDataElements"].as<decltype(loadcontrollimitdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["loadControlLimitListData"]) {
         last_cmd = function_from_string("loadControlLimitListData");
-        loadcontrollimitlistdatatype = obj["loadControlLimitListData"].as<decltype(loadcontrollimitlistdatatype
-        )::value_type>();
+        loadcontrollimitlistdatatype = obj["loadControlLimitListData"].as<decltype(loadcontrollimitlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["loadControlLimitListDataSelectors"]) {
         last_cmd = function_from_string("loadControlLimitListDataSelectors");
-        loadcontrollimitlistdataselectorstype = obj["loadControlLimitListDataSelectors"].as<decltype(
-            loadcontrollimitlistdataselectorstype
-        )::value_type>();
+        loadcontrollimitlistdataselectorstype = obj["loadControlLimitListDataSelectors"].as<decltype(loadcontrollimitlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["loadControlLimitConstraintsData"]) {
         last_cmd = function_from_string("loadControlLimitConstraintsData");
-        loadcontrollimitconstraintsdatatype = obj["loadControlLimitConstraintsData"].as<decltype(
-            loadcontrollimitconstraintsdatatype
-        )::value_type>();
+        loadcontrollimitconstraintsdatatype = obj["loadControlLimitConstraintsData"].as<decltype(loadcontrollimitconstraintsdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["loadControlLimitConstraintsDataElements"]) {
         last_cmd = function_from_string("loadControlLimitConstraintsDataElements");
-        loadcontrollimitconstraintsdataelementstype = obj["loadControlLimitConstraintsDataElements"].as<decltype(
-            loadcontrollimitconstraintsdataelementstype)::value_type>();
+        loadcontrollimitconstraintsdataelementstype = obj["loadControlLimitConstraintsDataElements"].as<decltype(loadcontrollimitconstraintsdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["loadControlLimitConstraintsListData"]) {
         last_cmd = function_from_string("loadControlLimitConstraintsListData");
-        loadcontrollimitconstraintslistdatatype = obj["loadControlLimitConstraintsListData"].as<decltype(
-            loadcontrollimitconstraintslistdatatype)::value_type>();
+        loadcontrollimitconstraintslistdatatype = obj["loadControlLimitConstraintsListData"].as<decltype(loadcontrollimitconstraintslistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["loadControlLimitConstraintsListDataSelectors"]) {
         last_cmd = function_from_string("loadControlLimitConstraintsListDataSelectors");
-        loadcontrollimitconstraintslistdataselectorstype = obj["loadControlLimitConstraintsListDataSelectors"].as<
-            decltype(
-                loadcontrollimitconstraintslistdataselectorstype)::value_type>();
+        loadcontrollimitconstraintslistdataselectorstype = obj["loadControlLimitConstraintsListDataSelectors"].as<decltype(loadcontrollimitconstraintslistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["loadControlLimitDescriptionData"]) {
         last_cmd = function_from_string("loadControlLimitDescriptionData");
-        loadcontrollimitdescriptiondatatype = obj["loadControlLimitDescriptionData"].as<decltype(
-            loadcontrollimitdescriptiondatatype
-        )::value_type>();
+        loadcontrollimitdescriptiondatatype = obj["loadControlLimitDescriptionData"].as<decltype(loadcontrollimitdescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["loadControlLimitDescriptionDataElements"]) {
         last_cmd = function_from_string("loadControlLimitDescriptionDataElements");
-        loadcontrollimitdescriptiondataelementstype = obj["loadControlLimitDescriptionDataElements"].as<decltype(
-            loadcontrollimitdescriptiondataelementstype)::value_type>();
+        loadcontrollimitdescriptiondataelementstype = obj["loadControlLimitDescriptionDataElements"].as<decltype(loadcontrollimitdescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["loadControlLimitDescriptionListData"]) {
         last_cmd = function_from_string("loadControlLimitDescriptionListData");
-        loadcontrollimitdescriptionlistdatatype = obj["loadControlLimitDescriptionListData"].as<decltype(
-            loadcontrollimitdescriptionlistdatatype)::value_type>();
+        loadcontrollimitdescriptionlistdatatype = obj["loadControlLimitDescriptionListData"].as<decltype(loadcontrollimitdescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["loadControlLimitDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("loadControlLimitDescriptionListDataSelectors");
-        loadcontrollimitdescriptionlistdataselectorstype = obj["loadControlLimitDescriptionListDataSelectors"].as<
-            decltype(
-                loadcontrollimitdescriptionlistdataselectorstype)::value_type>();
+        loadcontrollimitdescriptionlistdataselectorstype = obj["loadControlLimitDescriptionListDataSelectors"].as<decltype(loadcontrollimitdescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["deviceClassificationManufacturerData"]) {
         last_cmd = function_from_string("deviceClassificationManufacturerData");
-        deviceclassificationmanufacturerdatatype = obj["deviceClassificationManufacturerData"].as<decltype(
-            deviceclassificationmanufacturerdatatype)::value_type>();
+        deviceclassificationmanufacturerdatatype = obj["deviceClassificationManufacturerData"].as<decltype(deviceclassificationmanufacturerdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["deviceClassificationManufacturerDataElements"]) {
         last_cmd = function_from_string("deviceClassificationManufacturerDataElements");
-        deviceclassificationmanufacturerdataelementstype = obj["deviceClassificationManufacturerDataElements"].as<
-            decltype(
-                deviceclassificationmanufacturerdataelementstype)::value_type>();
+        deviceclassificationmanufacturerdataelementstype = obj["deviceClassificationManufacturerDataElements"].as<decltype(deviceclassificationmanufacturerdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["deviceClassificationUserData"]) {
         last_cmd = function_from_string("deviceClassificationUserData");
-        deviceclassificationuserdatatype = obj["deviceClassificationUserData"].as<decltype(
-            deviceclassificationuserdatatype)::value_type>();
+        deviceclassificationuserdatatype = obj["deviceClassificationUserData"].as<decltype(deviceclassificationuserdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["deviceClassificationUserDataElements"]) {
         last_cmd = function_from_string("deviceClassificationUserDataElements");
-        deviceclassificationuserdataelementstype = obj["deviceClassificationUserDataElements"].as<decltype(
-            deviceclassificationuserdataelementstype)::value_type>();
+        deviceclassificationuserdataelementstype = obj["deviceClassificationUserDataElements"].as<decltype(deviceclassificationuserdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["actuatorLevelData"]) {
@@ -44703,20 +45392,17 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["actuatorLevelDataElements"]) {
         last_cmd = function_from_string("actuatorLevelDataElements");
-        actuatorleveldataelementstype = obj["actuatorLevelDataElements"].as<decltype(actuatorleveldataelementstype
-        )::value_type>();
+        actuatorleveldataelementstype = obj["actuatorLevelDataElements"].as<decltype(actuatorleveldataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["actuatorLevelDescriptionData"]) {
         last_cmd = function_from_string("actuatorLevelDescriptionData");
-        actuatorleveldescriptiondatatype = obj["actuatorLevelDescriptionData"].as<decltype(
-            actuatorleveldescriptiondatatype)::value_type>();
+        actuatorleveldescriptiondatatype = obj["actuatorLevelDescriptionData"].as<decltype(actuatorleveldescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["actuatorLevelDescriptionDataElements"]) {
         last_cmd = function_from_string("actuatorLevelDescriptionDataElements");
-        actuatorleveldescriptiondataelementstype = obj["actuatorLevelDescriptionDataElements"].as<decltype(
-            actuatorleveldescriptiondataelementstype)::value_type>();
+        actuatorleveldescriptiondataelementstype = obj["actuatorLevelDescriptionDataElements"].as<decltype(actuatorleveldescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["timeSeriesData"]) {
@@ -44726,8 +45412,7 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["timeSeriesDataElements"]) {
         last_cmd = function_from_string("timeSeriesDataElements");
-        timeseriesdataelementstype = obj["timeSeriesDataElements"].as<decltype(timeseriesdataelementstype
-        )::value_type>();
+        timeseriesdataelementstype = obj["timeSeriesDataElements"].as<decltype(timeseriesdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["timeSeriesListData"]) {
@@ -44737,125 +45422,97 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["timeSeriesListDataSelectors"]) {
         last_cmd = function_from_string("timeSeriesListDataSelectors");
-        timeserieslistdataselectorstype = obj["timeSeriesListDataSelectors"].as<decltype(timeserieslistdataselectorstype
-        )::value_type>();
+        timeserieslistdataselectorstype = obj["timeSeriesListDataSelectors"].as<decltype(timeserieslistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["timeSeriesDescriptionData"]) {
         last_cmd = function_from_string("timeSeriesDescriptionData");
-        timeseriesdescriptiondatatype = obj["timeSeriesDescriptionData"].as<decltype(timeseriesdescriptiondatatype
-        )::value_type>();
+        timeseriesdescriptiondatatype = obj["timeSeriesDescriptionData"].as<decltype(timeseriesdescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["timeSeriesDescriptionDataElements"]) {
         last_cmd = function_from_string("timeSeriesDescriptionDataElements");
-        timeseriesdescriptiondataelementstype = obj["timeSeriesDescriptionDataElements"].as<decltype(
-            timeseriesdescriptiondataelementstype
-        )::value_type>();
+        timeseriesdescriptiondataelementstype = obj["timeSeriesDescriptionDataElements"].as<decltype(timeseriesdescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["timeSeriesDescriptionListData"]) {
         last_cmd = function_from_string("timeSeriesDescriptionListData");
-        timeseriesdescriptionlistdatatype = obj["timeSeriesDescriptionListData"].as<decltype(
-            timeseriesdescriptionlistdatatype
-        )::value_type>();
+        timeseriesdescriptionlistdatatype = obj["timeSeriesDescriptionListData"].as<decltype(timeseriesdescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["timeSeriesDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("timeSeriesDescriptionListDataSelectors");
-        timeseriesdescriptionlistdataselectorstype = obj["timeSeriesDescriptionListDataSelectors"].as<decltype(
-            timeseriesdescriptionlistdataselectorstype)::value_type>();
+        timeseriesdescriptionlistdataselectorstype = obj["timeSeriesDescriptionListDataSelectors"].as<decltype(timeseriesdescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["timeSeriesConstraintsData"]) {
         last_cmd = function_from_string("timeSeriesConstraintsData");
-        timeseriesconstraintsdatatype = obj["timeSeriesConstraintsData"].as<decltype(timeseriesconstraintsdatatype
-        )::value_type>();
+        timeseriesconstraintsdatatype = obj["timeSeriesConstraintsData"].as<decltype(timeseriesconstraintsdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["timeSeriesConstraintsDataElements"]) {
         last_cmd = function_from_string("timeSeriesConstraintsDataElements");
-        timeseriesconstraintsdataelementstype = obj["timeSeriesConstraintsDataElements"].as<decltype(
-            timeseriesconstraintsdataelementstype
-        )::value_type>();
+        timeseriesconstraintsdataelementstype = obj["timeSeriesConstraintsDataElements"].as<decltype(timeseriesconstraintsdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["timeSeriesConstraintsListData"]) {
         last_cmd = function_from_string("timeSeriesConstraintsListData");
-        timeseriesconstraintslistdatatype = obj["timeSeriesConstraintsListData"].as<decltype(
-            timeseriesconstraintslistdatatype
-        )::value_type>();
+        timeseriesconstraintslistdatatype = obj["timeSeriesConstraintsListData"].as<decltype(timeseriesconstraintslistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["timeSeriesConstraintsListDataSelectors"]) {
         last_cmd = function_from_string("timeSeriesConstraintsListDataSelectors");
-        timeseriesconstraintslistdataselectorstype = obj["timeSeriesConstraintsListDataSelectors"].as<decltype(
-            timeseriesconstraintslistdataselectorstype)::value_type>();
+        timeseriesconstraintslistdataselectorstype = obj["timeSeriesConstraintsListDataSelectors"].as<decltype(timeseriesconstraintslistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["smartEnergyManagementPsData"]) {
         last_cmd = function_from_string("smartEnergyManagementPsData");
-        smartenergymanagementpsdatatype = obj["smartEnergyManagementPsData"].as<decltype(smartenergymanagementpsdatatype
-        )::value_type>();
+        smartenergymanagementpsdatatype = obj["smartEnergyManagementPsData"].as<decltype(smartenergymanagementpsdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["smartEnergyManagementPsDataElements"]) {
         last_cmd = function_from_string("smartEnergyManagementPsDataElements");
-        smartenergymanagementpsdataelementstype = obj["smartEnergyManagementPsDataElements"].as<decltype(
-            smartenergymanagementpsdataelementstype)::value_type>();
+        smartenergymanagementpsdataelementstype = obj["smartEnergyManagementPsDataElements"].as<decltype(smartenergymanagementpsdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["smartEnergyManagementPsDataSelectors"]) {
         last_cmd = function_from_string("smartEnergyManagementPsDataSelectors");
-        smartenergymanagementpsdataselectorstype = obj["smartEnergyManagementPsDataSelectors"].as<decltype(
-            smartenergymanagementpsdataselectorstype)::value_type>();
+        smartenergymanagementpsdataselectorstype = obj["smartEnergyManagementPsDataSelectors"].as<decltype(smartenergymanagementpsdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["smartEnergyManagementPsPriceData"]) {
         last_cmd = function_from_string("smartEnergyManagementPsPriceData");
-        smartenergymanagementpspricedatatype = obj["smartEnergyManagementPsPriceData"].as<decltype(
-            smartenergymanagementpspricedatatype
-        )::value_type>();
+        smartenergymanagementpspricedatatype = obj["smartEnergyManagementPsPriceData"].as<decltype(smartenergymanagementpspricedatatype)::value_type>();
         return last_cmd;
     }
     if (obj["smartEnergyManagementPsPriceDataElements"]) {
         last_cmd = function_from_string("smartEnergyManagementPsPriceDataElements");
-        smartenergymanagementpspricedataelementstype = obj["smartEnergyManagementPsPriceDataElements"].as<decltype(
-            smartenergymanagementpspricedataelementstype)::value_type>();
+        smartenergymanagementpspricedataelementstype = obj["smartEnergyManagementPsPriceDataElements"].as<decltype(smartenergymanagementpspricedataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["smartEnergyManagementPsPriceDataSelectors"]) {
         last_cmd = function_from_string("smartEnergyManagementPsPriceDataSelectors");
-        smartenergymanagementpspricedataselectorstype = obj["smartEnergyManagementPsPriceDataSelectors"].as<decltype(
-            smartenergymanagementpspricedataselectorstype)::value_type>();
+        smartenergymanagementpspricedataselectorstype = obj["smartEnergyManagementPsPriceDataSelectors"].as<decltype(smartenergymanagementpspricedataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["smartEnergyManagementPsConfigurationRequestCall"]) {
         last_cmd = function_from_string("smartEnergyManagementPsConfigurationRequestCall");
-        smartenergymanagementpsconfigurationrequestcalltype = obj["smartEnergyManagementPsConfigurationRequestCall"].as<
-            decltype(
-                smartenergymanagementpsconfigurationrequestcalltype)::value_type>();
+        smartenergymanagementpsconfigurationrequestcalltype = obj["smartEnergyManagementPsConfigurationRequestCall"].as<decltype(smartenergymanagementpsconfigurationrequestcalltype)::value_type>();
         return last_cmd;
     }
     if (obj["smartEnergyManagementPsConfigurationRequestCallElements"]) {
         last_cmd = function_from_string("smartEnergyManagementPsConfigurationRequestCallElements");
-        smartenergymanagementpsconfigurationrequestcallelementstype = obj[
-            "smartEnergyManagementPsConfigurationRequestCallElements"].as<
-            decltype(smartenergymanagementpsconfigurationrequestcallelementstype)::value_type>();
+        smartenergymanagementpsconfigurationrequestcallelementstype = obj["smartEnergyManagementPsConfigurationRequestCallElements"].as<decltype(smartenergymanagementpsconfigurationrequestcallelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["smartEnergyManagementPsPriceCalculationRequestCall"]) {
         last_cmd = function_from_string("smartEnergyManagementPsPriceCalculationRequestCall");
-        smartenergymanagementpspricecalculationrequestcalltype = obj[
-            "smartEnergyManagementPsPriceCalculationRequestCall"].as<decltype(
-            smartenergymanagementpspricecalculationrequestcalltype)::value_type>();
+        smartenergymanagementpspricecalculationrequestcalltype = obj["smartEnergyManagementPsPriceCalculationRequestCall"].as<decltype(smartenergymanagementpspricecalculationrequestcalltype)::value_type>();
         return last_cmd;
     }
     if (obj["smartEnergyManagementPsPriceCalculationRequestCallElements"]) {
         last_cmd = function_from_string("smartEnergyManagementPsPriceCalculationRequestCallElements");
-        smartenergymanagementpspricecalculationrequestcallelementstype = obj[
-                "smartEnergyManagementPsPriceCalculationRequestCallElements"].
-            as<decltype(smartenergymanagementpspricecalculationrequestcallelementstype)::value_type>();
+        smartenergymanagementpspricecalculationrequestcallelementstype = obj["smartEnergyManagementPsPriceCalculationRequestCallElements"].as<decltype(smartenergymanagementpspricecalculationrequestcallelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["messagingData"]) {
@@ -44875,20 +45532,17 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["messagingListDataSelectors"]) {
         last_cmd = function_from_string("messagingListDataSelectors");
-        messaginglistdataselectorstype = obj["messagingListDataSelectors"].as<decltype(messaginglistdataselectorstype
-        )::value_type>();
+        messaginglistdataselectorstype = obj["messagingListDataSelectors"].as<decltype(messaginglistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["tariffOverallConstraintsData"]) {
         last_cmd = function_from_string("tariffOverallConstraintsData");
-        tariffoverallconstraintsdatatype = obj["tariffOverallConstraintsData"].as<decltype(
-            tariffoverallconstraintsdatatype)::value_type>();
+        tariffoverallconstraintsdatatype = obj["tariffOverallConstraintsData"].as<decltype(tariffoverallconstraintsdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["tariffOverallConstraintsDataElements"]) {
         last_cmd = function_from_string("tariffOverallConstraintsDataElements");
-        tariffoverallconstraintsdataelementstype = obj["tariffOverallConstraintsDataElements"].as<decltype(
-            tariffoverallconstraintsdataelementstype)::value_type>();
+        tariffoverallconstraintsdataelementstype = obj["tariffOverallConstraintsDataElements"].as<decltype(tariffoverallconstraintsdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["tariffData"]) {
@@ -44908,58 +45562,47 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["tariffListDataSelectors"]) {
         last_cmd = function_from_string("tariffListDataSelectors");
-        tarifflistdataselectorstype = obj["tariffListDataSelectors"].as<decltype(tarifflistdataselectorstype
-        )::value_type>();
+        tarifflistdataselectorstype = obj["tariffListDataSelectors"].as<decltype(tarifflistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["tariffTierRelationData"]) {
         last_cmd = function_from_string("tariffTierRelationData");
-        tarifftierrelationdatatype = obj["tariffTierRelationData"].as<decltype(tarifftierrelationdatatype
-        )::value_type>();
+        tarifftierrelationdatatype = obj["tariffTierRelationData"].as<decltype(tarifftierrelationdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["tariffTierRelationDataElements"]) {
         last_cmd = function_from_string("tariffTierRelationDataElements");
-        tarifftierrelationdataelementstype = obj["tariffTierRelationDataElements"].as<decltype(
-            tarifftierrelationdataelementstype
-        )::value_type>();
+        tarifftierrelationdataelementstype = obj["tariffTierRelationDataElements"].as<decltype(tarifftierrelationdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["tariffTierRelationListData"]) {
         last_cmd = function_from_string("tariffTierRelationListData");
-        tarifftierrelationlistdatatype = obj["tariffTierRelationListData"].as<decltype(tarifftierrelationlistdatatype
-        )::value_type>();
+        tarifftierrelationlistdatatype = obj["tariffTierRelationListData"].as<decltype(tarifftierrelationlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["tariffTierRelationListDataSelectors"]) {
         last_cmd = function_from_string("tariffTierRelationListDataSelectors");
-        tarifftierrelationlistdataselectorstype = obj["tariffTierRelationListDataSelectors"].as<decltype(
-            tarifftierrelationlistdataselectorstype)::value_type>();
+        tarifftierrelationlistdataselectorstype = obj["tariffTierRelationListDataSelectors"].as<decltype(tarifftierrelationlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["tariffBoundaryRelationData"]) {
         last_cmd = function_from_string("tariffBoundaryRelationData");
-        tariffboundaryrelationdatatype = obj["tariffBoundaryRelationData"].as<decltype(tariffboundaryrelationdatatype
-        )::value_type>();
+        tariffboundaryrelationdatatype = obj["tariffBoundaryRelationData"].as<decltype(tariffboundaryrelationdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["tariffBoundaryRelationDataElements"]) {
         last_cmd = function_from_string("tariffBoundaryRelationDataElements");
-        tariffboundaryrelationdataelementstype = obj["tariffBoundaryRelationDataElements"].as<decltype(
-            tariffboundaryrelationdataelementstype)::value_type>();
+        tariffboundaryrelationdataelementstype = obj["tariffBoundaryRelationDataElements"].as<decltype(tariffboundaryrelationdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["tariffBoundaryRelationListData"]) {
         last_cmd = function_from_string("tariffBoundaryRelationListData");
-        tariffboundaryrelationlistdatatype = obj["tariffBoundaryRelationListData"].as<decltype(
-            tariffboundaryrelationlistdatatype
-        )::value_type>();
+        tariffboundaryrelationlistdatatype = obj["tariffBoundaryRelationListData"].as<decltype(tariffboundaryrelationlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["tariffBoundaryRelationListDataSelectors"]) {
         last_cmd = function_from_string("tariffBoundaryRelationListDataSelectors");
-        tariffboundaryrelationlistdataselectorstype = obj["tariffBoundaryRelationListDataSelectors"].as<decltype(
-            tariffboundaryrelationlistdataselectorstype)::value_type>();
+        tariffboundaryrelationlistdataselectorstype = obj["tariffBoundaryRelationListDataSelectors"].as<decltype(tariffboundaryrelationlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["tariffDescriptionData"]) {
@@ -44969,21 +45612,17 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["tariffDescriptionDataElements"]) {
         last_cmd = function_from_string("tariffDescriptionDataElements");
-        tariffdescriptiondataelementstype = obj["tariffDescriptionDataElements"].as<decltype(
-            tariffdescriptiondataelementstype
-        )::value_type>();
+        tariffdescriptiondataelementstype = obj["tariffDescriptionDataElements"].as<decltype(tariffdescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["tariffDescriptionListData"]) {
         last_cmd = function_from_string("tariffDescriptionListData");
-        tariffdescriptionlistdatatype = obj["tariffDescriptionListData"].as<decltype(tariffdescriptionlistdatatype
-        )::value_type>();
+        tariffdescriptionlistdatatype = obj["tariffDescriptionListData"].as<decltype(tariffdescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["tariffDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("tariffDescriptionListDataSelectors");
-        tariffdescriptionlistdataselectorstype = obj["tariffDescriptionListDataSelectors"].as<decltype(
-            tariffdescriptionlistdataselectorstype)::value_type>();
+        tariffdescriptionlistdataselectorstype = obj["tariffDescriptionListDataSelectors"].as<decltype(tariffdescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["tierBoundaryData"]) {
@@ -44993,8 +45632,7 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["tierBoundaryDataElements"]) {
         last_cmd = function_from_string("tierBoundaryDataElements");
-        tierboundarydataelementstype = obj["tierBoundaryDataElements"].as<decltype(tierboundarydataelementstype
-        )::value_type>();
+        tierboundarydataelementstype = obj["tierBoundaryDataElements"].as<decltype(tierboundarydataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["tierBoundaryListData"]) {
@@ -45004,34 +45642,27 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["tierBoundaryListDataSelectors"]) {
         last_cmd = function_from_string("tierBoundaryListDataSelectors");
-        tierboundarylistdataselectorstype = obj["tierBoundaryListDataSelectors"].as<decltype(
-            tierboundarylistdataselectorstype
-        )::value_type>();
+        tierboundarylistdataselectorstype = obj["tierBoundaryListDataSelectors"].as<decltype(tierboundarylistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["tierBoundaryDescriptionData"]) {
         last_cmd = function_from_string("tierBoundaryDescriptionData");
-        tierboundarydescriptiondatatype = obj["tierBoundaryDescriptionData"].as<decltype(tierboundarydescriptiondatatype
-        )::value_type>();
+        tierboundarydescriptiondatatype = obj["tierBoundaryDescriptionData"].as<decltype(tierboundarydescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["tierBoundaryDescriptionDataElements"]) {
         last_cmd = function_from_string("tierBoundaryDescriptionDataElements");
-        tierboundarydescriptiondataelementstype = obj["tierBoundaryDescriptionDataElements"].as<decltype(
-            tierboundarydescriptiondataelementstype)::value_type>();
+        tierboundarydescriptiondataelementstype = obj["tierBoundaryDescriptionDataElements"].as<decltype(tierboundarydescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["tierBoundaryDescriptionListData"]) {
         last_cmd = function_from_string("tierBoundaryDescriptionListData");
-        tierboundarydescriptionlistdatatype = obj["tierBoundaryDescriptionListData"].as<decltype(
-            tierboundarydescriptionlistdatatype
-        )::value_type>();
+        tierboundarydescriptionlistdatatype = obj["tierBoundaryDescriptionListData"].as<decltype(tierboundarydescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["tierBoundaryDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("tierBoundaryDescriptionListDataSelectors");
-        tierboundarydescriptionlistdataselectorstype = obj["tierBoundaryDescriptionListDataSelectors"].as<decltype(
-            tierboundarydescriptionlistdataselectorstype)::value_type>();
+        tierboundarydescriptionlistdataselectorstype = obj["tierBoundaryDescriptionListDataSelectors"].as<decltype(tierboundarydescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["commodityData"]) {
@@ -45051,8 +45682,7 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["commodityListDataSelectors"]) {
         last_cmd = function_from_string("commodityListDataSelectors");
-        commoditylistdataselectorstype = obj["commodityListDataSelectors"].as<decltype(commoditylistdataselectorstype
-        )::value_type>();
+        commoditylistdataselectorstype = obj["commodityListDataSelectors"].as<decltype(commoditylistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["tierData"]) {
@@ -45077,28 +45707,22 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["tierIncentiveRelationData"]) {
         last_cmd = function_from_string("tierIncentiveRelationData");
-        tierincentiverelationdatatype = obj["tierIncentiveRelationData"].as<decltype(tierincentiverelationdatatype
-        )::value_type>();
+        tierincentiverelationdatatype = obj["tierIncentiveRelationData"].as<decltype(tierincentiverelationdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["tierIncentiveRelationDataElements"]) {
         last_cmd = function_from_string("tierIncentiveRelationDataElements");
-        tierincentiverelationdataelementstype = obj["tierIncentiveRelationDataElements"].as<decltype(
-            tierincentiverelationdataelementstype
-        )::value_type>();
+        tierincentiverelationdataelementstype = obj["tierIncentiveRelationDataElements"].as<decltype(tierincentiverelationdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["tierIncentiveRelationListData"]) {
         last_cmd = function_from_string("tierIncentiveRelationListData");
-        tierincentiverelationlistdatatype = obj["tierIncentiveRelationListData"].as<decltype(
-            tierincentiverelationlistdatatype
-        )::value_type>();
+        tierincentiverelationlistdatatype = obj["tierIncentiveRelationListData"].as<decltype(tierincentiverelationlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["tierIncentiveRelationListDataSelectors"]) {
         last_cmd = function_from_string("tierIncentiveRelationListDataSelectors");
-        tierincentiverelationlistdataselectorstype = obj["tierIncentiveRelationListDataSelectors"].as<decltype(
-            tierincentiverelationlistdataselectorstype)::value_type>();
+        tierincentiverelationlistdataselectorstype = obj["tierIncentiveRelationListDataSelectors"].as<decltype(tierincentiverelationlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["tierDescriptionData"]) {
@@ -45108,21 +45732,17 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["tierDescriptionDataElements"]) {
         last_cmd = function_from_string("tierDescriptionDataElements");
-        tierdescriptiondataelementstype = obj["tierDescriptionDataElements"].as<decltype(tierdescriptiondataelementstype
-        )::value_type>();
+        tierdescriptiondataelementstype = obj["tierDescriptionDataElements"].as<decltype(tierdescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["tierDescriptionListData"]) {
         last_cmd = function_from_string("tierDescriptionListData");
-        tierdescriptionlistdatatype = obj["tierDescriptionListData"].as<decltype(tierdescriptionlistdatatype
-        )::value_type>();
+        tierdescriptionlistdatatype = obj["tierDescriptionListData"].as<decltype(tierdescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["tierDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("tierDescriptionListDataSelectors");
-        tierdescriptionlistdataselectorstype = obj["tierDescriptionListDataSelectors"].as<decltype(
-            tierdescriptionlistdataselectorstype
-        )::value_type>();
+        tierdescriptionlistdataselectorstype = obj["tierDescriptionListDataSelectors"].as<decltype(tierdescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["incentiveData"]) {
@@ -45142,33 +45762,27 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["incentiveListDataSelectors"]) {
         last_cmd = function_from_string("incentiveListDataSelectors");
-        incentivelistdataselectorstype = obj["incentiveListDataSelectors"].as<decltype(incentivelistdataselectorstype
-        )::value_type>();
+        incentivelistdataselectorstype = obj["incentiveListDataSelectors"].as<decltype(incentivelistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["incentiveDescriptionData"]) {
         last_cmd = function_from_string("incentiveDescriptionData");
-        incentivedescriptiondatatype = obj["incentiveDescriptionData"].as<decltype(incentivedescriptiondatatype
-        )::value_type>();
+        incentivedescriptiondatatype = obj["incentiveDescriptionData"].as<decltype(incentivedescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["incentiveDescriptionDataElements"]) {
         last_cmd = function_from_string("incentiveDescriptionDataElements");
-        incentivedescriptiondataelementstype = obj["incentiveDescriptionDataElements"].as<decltype(
-            incentivedescriptiondataelementstype
-        )::value_type>();
+        incentivedescriptiondataelementstype = obj["incentiveDescriptionDataElements"].as<decltype(incentivedescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["incentiveDescriptionListData"]) {
         last_cmd = function_from_string("incentiveDescriptionListData");
-        incentivedescriptionlistdatatype = obj["incentiveDescriptionListData"].as<decltype(
-            incentivedescriptionlistdatatype)::value_type>();
+        incentivedescriptionlistdatatype = obj["incentiveDescriptionListData"].as<decltype(incentivedescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["incentiveDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("incentiveDescriptionListDataSelectors");
-        incentivedescriptionlistdataselectorstype = obj["incentiveDescriptionListDataSelectors"].as<decltype(
-            incentivedescriptionlistdataselectorstype)::value_type>();
+        incentivedescriptionlistdataselectorstype = obj["incentiveDescriptionListDataSelectors"].as<decltype(incentivedescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["stateInformationData"]) {
@@ -45178,154 +45792,117 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["stateInformationDataElements"]) {
         last_cmd = function_from_string("stateInformationDataElements");
-        stateinformationdataelementstype = obj["stateInformationDataElements"].as<decltype(
-            stateinformationdataelementstype)::value_type>();
+        stateinformationdataelementstype = obj["stateInformationDataElements"].as<decltype(stateinformationdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["stateInformationListData"]) {
         last_cmd = function_from_string("stateInformationListData");
-        stateinformationlistdatatype = obj["stateInformationListData"].as<decltype(stateinformationlistdatatype
-        )::value_type>();
+        stateinformationlistdatatype = obj["stateInformationListData"].as<decltype(stateinformationlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["stateInformationListDataSelectors"]) {
         last_cmd = function_from_string("stateInformationListDataSelectors");
-        stateinformationlistdataselectorstype = obj["stateInformationListDataSelectors"].as<decltype(
-            stateinformationlistdataselectorstype
-        )::value_type>();
+        stateinformationlistdataselectorstype = obj["stateInformationListDataSelectors"].as<decltype(stateinformationlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["electricalConnectionParameterDescriptionData"]) {
         last_cmd = function_from_string("electricalConnectionParameterDescriptionData");
-        electricalconnectionparameterdescriptiondatatype = obj["electricalConnectionParameterDescriptionData"].as<
-            decltype(
-                electricalconnectionparameterdescriptiondatatype)::value_type>();
+        electricalconnectionparameterdescriptiondatatype = obj["electricalConnectionParameterDescriptionData"].as<decltype(electricalconnectionparameterdescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["electricalConnectionParameterDescriptionDataElements"]) {
         last_cmd = function_from_string("electricalConnectionParameterDescriptionDataElements");
-        electricalconnectionparameterdescriptiondataelementstype = obj[
-            "electricalConnectionParameterDescriptionDataElements"].as<decltype(
-            electricalconnectionparameterdescriptiondataelementstype)::value_type>();
+        electricalconnectionparameterdescriptiondataelementstype = obj["electricalConnectionParameterDescriptionDataElements"].as<decltype(electricalconnectionparameterdescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["electricalConnectionParameterDescriptionListData"]) {
         last_cmd = function_from_string("electricalConnectionParameterDescriptionListData");
-        electricalconnectionparameterdescriptionlistdatatype = obj["electricalConnectionParameterDescriptionListData"].
-            as<decltype(
-                electricalconnectionparameterdescriptionlistdatatype)::value_type>();
+        electricalconnectionparameterdescriptionlistdatatype = obj["electricalConnectionParameterDescriptionListData"].as<decltype(electricalconnectionparameterdescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["electricalConnectionParameterDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("electricalConnectionParameterDescriptionListDataSelectors");
-        electricalconnectionparameterdescriptionlistdataselectorstype = obj[
-            "electricalConnectionParameterDescriptionListDataSelectors"].as<
-            decltype(electricalconnectionparameterdescriptionlistdataselectorstype)::value_type>();
+        electricalconnectionparameterdescriptionlistdataselectorstype = obj["electricalConnectionParameterDescriptionListDataSelectors"].as<decltype(electricalconnectionparameterdescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["electricalConnectionPermittedValueSetData"]) {
         last_cmd = function_from_string("electricalConnectionPermittedValueSetData");
-        electricalconnectionpermittedvaluesetdatatype = obj["electricalConnectionPermittedValueSetData"].as<decltype(
-            electricalconnectionpermittedvaluesetdatatype)::value_type>();
+        electricalconnectionpermittedvaluesetdatatype = obj["electricalConnectionPermittedValueSetData"].as<decltype(electricalconnectionpermittedvaluesetdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["electricalConnectionPermittedValueSetDataElements"]) {
         last_cmd = function_from_string("electricalConnectionPermittedValueSetDataElements");
-        electricalconnectionpermittedvaluesetdataelementstype = obj["electricalConnectionPermittedValueSetDataElements"]
-            .as<decltype(
-                electricalconnectionpermittedvaluesetdataelementstype)::value_type>();
+        electricalconnectionpermittedvaluesetdataelementstype = obj["electricalConnectionPermittedValueSetDataElements"].as<decltype(electricalconnectionpermittedvaluesetdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["electricalConnectionPermittedValueSetListData"]) {
         last_cmd = function_from_string("electricalConnectionPermittedValueSetListData");
-        electricalconnectionpermittedvaluesetlistdatatype = obj["electricalConnectionPermittedValueSetListData"].as<
-            decltype(
-                electricalconnectionpermittedvaluesetlistdatatype)::value_type>();
+        electricalconnectionpermittedvaluesetlistdatatype = obj["electricalConnectionPermittedValueSetListData"].as<decltype(electricalconnectionpermittedvaluesetlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["electricalConnectionPermittedValueSetListDataSelectors"]) {
         last_cmd = function_from_string("electricalConnectionPermittedValueSetListDataSelectors");
-        electricalconnectionpermittedvaluesetlistdataselectorstype = obj[
-            "electricalConnectionPermittedValueSetListDataSelectors"].as<
-            decltype(electricalconnectionpermittedvaluesetlistdataselectorstype)::value_type>();
+        electricalconnectionpermittedvaluesetlistdataselectorstype = obj["electricalConnectionPermittedValueSetListDataSelectors"].as<decltype(electricalconnectionpermittedvaluesetlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["electricalConnectionCharacteristicData"]) {
         last_cmd = function_from_string("electricalConnectionCharacteristicData");
-        electricalconnectioncharacteristicdatatype = obj["electricalConnectionCharacteristicData"].as<decltype(
-            electricalconnectioncharacteristicdatatype)::value_type>();
+        electricalconnectioncharacteristicdatatype = obj["electricalConnectionCharacteristicData"].as<decltype(electricalconnectioncharacteristicdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["electricalConnectionCharacteristicDataElements"]) {
         last_cmd = function_from_string("electricalConnectionCharacteristicDataElements");
-        electricalconnectioncharacteristicdataelementstype = obj["electricalConnectionCharacteristicDataElements"].as<
-            decltype(
-                electricalconnectioncharacteristicdataelementstype)::value_type>();
+        electricalconnectioncharacteristicdataelementstype = obj["electricalConnectionCharacteristicDataElements"].as<decltype(electricalconnectioncharacteristicdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["electricalConnectionCharacteristicListData"]) {
         last_cmd = function_from_string("electricalConnectionCharacteristicListData");
-        electricalconnectioncharacteristiclistdatatype = obj["electricalConnectionCharacteristicListData"].as<decltype(
-            electricalconnectioncharacteristiclistdatatype)::value_type>();
+        electricalconnectioncharacteristiclistdatatype = obj["electricalConnectionCharacteristicListData"].as<decltype(electricalconnectioncharacteristiclistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["electricalConnectionCharacteristicListDataSelectors"]) {
         last_cmd = function_from_string("electricalConnectionCharacteristicListDataSelectors");
-        electricalconnectioncharacteristiclistdataselectorstype = obj[
-            "electricalConnectionCharacteristicListDataSelectors"].as<decltype(
-            electricalconnectioncharacteristiclistdataselectorstype)::value_type>();
+        electricalconnectioncharacteristiclistdataselectorstype = obj["electricalConnectionCharacteristicListDataSelectors"].as<decltype(electricalconnectioncharacteristiclistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["electricalConnectionStateData"]) {
         last_cmd = function_from_string("electricalConnectionStateData");
-        electricalconnectionstatedatatype = obj["electricalConnectionStateData"].as<decltype(
-            electricalconnectionstatedatatype
-        )::value_type>();
+        electricalconnectionstatedatatype = obj["electricalConnectionStateData"].as<decltype(electricalconnectionstatedatatype)::value_type>();
         return last_cmd;
     }
     if (obj["electricalConnectionStateDataElements"]) {
         last_cmd = function_from_string("electricalConnectionStateDataElements");
-        electricalconnectionstatedataelementstype = obj["electricalConnectionStateDataElements"].as<decltype(
-            electricalconnectionstatedataelementstype)::value_type>();
+        electricalconnectionstatedataelementstype = obj["electricalConnectionStateDataElements"].as<decltype(electricalconnectionstatedataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["electricalConnectionStateListData"]) {
         last_cmd = function_from_string("electricalConnectionStateListData");
-        electricalconnectionstatelistdatatype = obj["electricalConnectionStateListData"].as<decltype(
-            electricalconnectionstatelistdatatype
-        )::value_type>();
+        electricalconnectionstatelistdatatype = obj["electricalConnectionStateListData"].as<decltype(electricalconnectionstatelistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["electricalConnectionStateListDataSelectors"]) {
         last_cmd = function_from_string("electricalConnectionStateListDataSelectors");
-        electricalconnectionstatelistdataselectorstype = obj["electricalConnectionStateListDataSelectors"].as<decltype(
-            electricalconnectionstatelistdataselectorstype)::value_type>();
+        electricalconnectionstatelistdataselectorstype = obj["electricalConnectionStateListDataSelectors"].as<decltype(electricalconnectionstatelistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["electricalConnectionDescriptionData"]) {
         last_cmd = function_from_string("electricalConnectionDescriptionData");
-        electricalconnectiondescriptiondatatype = obj["electricalConnectionDescriptionData"].as<decltype(
-            electricalconnectiondescriptiondatatype)::value_type>();
+        electricalconnectiondescriptiondatatype = obj["electricalConnectionDescriptionData"].as<decltype(electricalconnectiondescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["electricalConnectionDescriptionDataElements"]) {
         last_cmd = function_from_string("electricalConnectionDescriptionDataElements");
-        electricalconnectiondescriptiondataelementstype = obj["electricalConnectionDescriptionDataElements"].as<decltype
-            (
-                electricalconnectiondescriptiondataelementstype)::value_type>();
+        electricalconnectiondescriptiondataelementstype = obj["electricalConnectionDescriptionDataElements"].as<decltype(electricalconnectiondescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["electricalConnectionDescriptionListData"]) {
         last_cmd = function_from_string("electricalConnectionDescriptionListData");
-        electricalconnectiondescriptionlistdatatype = obj["electricalConnectionDescriptionListData"].as<decltype(
-            electricalconnectiondescriptionlistdatatype)::value_type>();
+        electricalconnectiondescriptionlistdatatype = obj["electricalConnectionDescriptionListData"].as<decltype(electricalconnectiondescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["electricalConnectionDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("electricalConnectionDescriptionListDataSelectors");
-        electricalconnectiondescriptionlistdataselectorstype = obj["electricalConnectionDescriptionListDataSelectors"].
-            as<decltype(
-                electricalconnectiondescriptionlistdataselectorstype)::value_type>();
+        electricalconnectiondescriptionlistdataselectorstype = obj["electricalConnectionDescriptionListDataSelectors"].as<decltype(electricalconnectiondescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["timeInformationData"]) {
@@ -45335,8 +45912,7 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["timeInformationDataElements"]) {
         last_cmd = function_from_string("timeInformationDataElements");
-        timeinformationdataelementstype = obj["timeInformationDataElements"].as<decltype(timeinformationdataelementstype
-        )::value_type>();
+        timeinformationdataelementstype = obj["timeInformationDataElements"].as<decltype(timeinformationdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["timeDistributorData"]) {
@@ -45346,8 +45922,7 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["timeDistributorDataElements"]) {
         last_cmd = function_from_string("timeDistributorDataElements");
-        timedistributordataelementstype = obj["timeDistributorDataElements"].as<decltype(timedistributordataelementstype
-        )::value_type>();
+        timedistributordataelementstype = obj["timeDistributorDataElements"].as<decltype(timedistributordataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["timePrecisionData"]) {
@@ -45357,137 +45932,107 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["timePrecisionDataElements"]) {
         last_cmd = function_from_string("timePrecisionDataElements");
-        timeprecisiondataelementstype = obj["timePrecisionDataElements"].as<decltype(timeprecisiondataelementstype
-        )::value_type>();
+        timeprecisiondataelementstype = obj["timePrecisionDataElements"].as<decltype(timeprecisiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["timeDistributorEnquiryCall"]) {
         last_cmd = function_from_string("timeDistributorEnquiryCall");
-        timedistributorenquirycalltype = obj["timeDistributorEnquiryCall"].as<decltype(timedistributorenquirycalltype
-        )::value_type>();
+        timedistributorenquirycalltype = obj["timeDistributorEnquiryCall"].as<decltype(timedistributorenquirycalltype)::value_type>();
         return last_cmd;
     }
     if (obj["timeDistributorEnquiryCallElements"]) {
         last_cmd = function_from_string("timeDistributorEnquiryCallElements");
-        timedistributorenquirycallelementstype = obj["timeDistributorEnquiryCallElements"].as<decltype(
-            timedistributorenquirycallelementstype)::value_type>();
+        timedistributorenquirycallelementstype = obj["timeDistributorEnquiryCallElements"].as<decltype(timedistributorenquirycallelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["deviceDiagnosisStateData"]) {
         last_cmd = function_from_string("deviceDiagnosisStateData");
-        devicediagnosisstatedatatype = obj["deviceDiagnosisStateData"].as<decltype(devicediagnosisstatedatatype
-        )::value_type>();
+        devicediagnosisstatedatatype = obj["deviceDiagnosisStateData"].as<decltype(devicediagnosisstatedatatype)::value_type>();
         return last_cmd;
     }
     if (obj["deviceDiagnosisStateDataElements"]) {
         last_cmd = function_from_string("deviceDiagnosisStateDataElements");
-        devicediagnosisstatedataelementstype = obj["deviceDiagnosisStateDataElements"].as<decltype(
-            devicediagnosisstatedataelementstype
-        )::value_type>();
+        devicediagnosisstatedataelementstype = obj["deviceDiagnosisStateDataElements"].as<decltype(devicediagnosisstatedataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["deviceDiagnosisHeartbeatData"]) {
         last_cmd = function_from_string("deviceDiagnosisHeartbeatData");
-        devicediagnosisheartbeatdatatype = obj["deviceDiagnosisHeartbeatData"].as<decltype(
-            devicediagnosisheartbeatdatatype)::value_type>();
+        devicediagnosisheartbeatdatatype = obj["deviceDiagnosisHeartbeatData"].as<decltype(devicediagnosisheartbeatdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["deviceDiagnosisHeartbeatDataElements"]) {
         last_cmd = function_from_string("deviceDiagnosisHeartbeatDataElements");
-        devicediagnosisheartbeatdataelementstype = obj["deviceDiagnosisHeartbeatDataElements"].as<decltype(
-            devicediagnosisheartbeatdataelementstype)::value_type>();
+        devicediagnosisheartbeatdataelementstype = obj["deviceDiagnosisHeartbeatDataElements"].as<decltype(devicediagnosisheartbeatdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["deviceDiagnosisServiceData"]) {
         last_cmd = function_from_string("deviceDiagnosisServiceData");
-        devicediagnosisservicedatatype = obj["deviceDiagnosisServiceData"].as<decltype(devicediagnosisservicedatatype
-        )::value_type>();
+        devicediagnosisservicedatatype = obj["deviceDiagnosisServiceData"].as<decltype(devicediagnosisservicedatatype)::value_type>();
         return last_cmd;
     }
     if (obj["deviceDiagnosisServiceDataElements"]) {
         last_cmd = function_from_string("deviceDiagnosisServiceDataElements");
-        devicediagnosisservicedataelementstype = obj["deviceDiagnosisServiceDataElements"].as<decltype(
-            devicediagnosisservicedataelementstype)::value_type>();
+        devicediagnosisservicedataelementstype = obj["deviceDiagnosisServiceDataElements"].as<decltype(devicediagnosisservicedataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["deviceConfigurationKeyValueData"]) {
         last_cmd = function_from_string("deviceConfigurationKeyValueData");
-        deviceconfigurationkeyvaluedatatype = obj["deviceConfigurationKeyValueData"].as<decltype(
-            deviceconfigurationkeyvaluedatatype
-        )::value_type>();
+        deviceconfigurationkeyvaluedatatype = obj["deviceConfigurationKeyValueData"].as<decltype(deviceconfigurationkeyvaluedatatype)::value_type>();
         return last_cmd;
     }
     if (obj["deviceConfigurationKeyValueDataElements"]) {
         last_cmd = function_from_string("deviceConfigurationKeyValueDataElements");
-        deviceconfigurationkeyvaluedataelementstype = obj["deviceConfigurationKeyValueDataElements"].as<decltype(
-            deviceconfigurationkeyvaluedataelementstype)::value_type>();
+        deviceconfigurationkeyvaluedataelementstype = obj["deviceConfigurationKeyValueDataElements"].as<decltype(deviceconfigurationkeyvaluedataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["deviceConfigurationKeyValueListData"]) {
         last_cmd = function_from_string("deviceConfigurationKeyValueListData");
-        deviceconfigurationkeyvaluelistdatatype = obj["deviceConfigurationKeyValueListData"].as<decltype(
-            deviceconfigurationkeyvaluelistdatatype)::value_type>();
+        deviceconfigurationkeyvaluelistdatatype = obj["deviceConfigurationKeyValueListData"].as<decltype(deviceconfigurationkeyvaluelistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["deviceConfigurationKeyValueListDataSelectors"]) {
         last_cmd = function_from_string("deviceConfigurationKeyValueListDataSelectors");
-        deviceconfigurationkeyvaluelistdataselectorstype = obj["deviceConfigurationKeyValueListDataSelectors"].as<
-            decltype(
-                deviceconfigurationkeyvaluelistdataselectorstype)::value_type>();
+        deviceconfigurationkeyvaluelistdataselectorstype = obj["deviceConfigurationKeyValueListDataSelectors"].as<decltype(deviceconfigurationkeyvaluelistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["deviceConfigurationKeyValueDescriptionData"]) {
         last_cmd = function_from_string("deviceConfigurationKeyValueDescriptionData");
-        deviceconfigurationkeyvaluedescriptiondatatype = obj["deviceConfigurationKeyValueDescriptionData"].as<decltype(
-            deviceconfigurationkeyvaluedescriptiondatatype)::value_type>();
+        deviceconfigurationkeyvaluedescriptiondatatype = obj["deviceConfigurationKeyValueDescriptionData"].as<decltype(deviceconfigurationkeyvaluedescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["deviceConfigurationKeyValueDescriptionDataElements"]) {
         last_cmd = function_from_string("deviceConfigurationKeyValueDescriptionDataElements");
-        deviceconfigurationkeyvaluedescriptiondataelementstype = obj[
-            "deviceConfigurationKeyValueDescriptionDataElements"].as<decltype(
-            deviceconfigurationkeyvaluedescriptiondataelementstype)::value_type>();
+        deviceconfigurationkeyvaluedescriptiondataelementstype = obj["deviceConfigurationKeyValueDescriptionDataElements"].as<decltype(deviceconfigurationkeyvaluedescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["deviceConfigurationKeyValueDescriptionListData"]) {
         last_cmd = function_from_string("deviceConfigurationKeyValueDescriptionListData");
-        deviceconfigurationkeyvaluedescriptionlistdatatype = obj["deviceConfigurationKeyValueDescriptionListData"].as<
-            decltype(
-                deviceconfigurationkeyvaluedescriptionlistdatatype)::value_type>();
+        deviceconfigurationkeyvaluedescriptionlistdatatype = obj["deviceConfigurationKeyValueDescriptionListData"].as<decltype(deviceconfigurationkeyvaluedescriptionlistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["deviceConfigurationKeyValueDescriptionListDataSelectors"]) {
         last_cmd = function_from_string("deviceConfigurationKeyValueDescriptionListDataSelectors");
-        deviceconfigurationkeyvaluedescriptionlistdataselectorstype = obj[
-            "deviceConfigurationKeyValueDescriptionListDataSelectors"].as<
-            decltype(deviceconfigurationkeyvaluedescriptionlistdataselectorstype)::value_type>();
+        deviceconfigurationkeyvaluedescriptionlistdataselectorstype = obj["deviceConfigurationKeyValueDescriptionListDataSelectors"].as<decltype(deviceconfigurationkeyvaluedescriptionlistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["deviceConfigurationKeyValueConstraintsData"]) {
         last_cmd = function_from_string("deviceConfigurationKeyValueConstraintsData");
-        deviceconfigurationkeyvalueconstraintsdatatype = obj["deviceConfigurationKeyValueConstraintsData"].as<decltype(
-            deviceconfigurationkeyvalueconstraintsdatatype)::value_type>();
+        deviceconfigurationkeyvalueconstraintsdatatype = obj["deviceConfigurationKeyValueConstraintsData"].as<decltype(deviceconfigurationkeyvalueconstraintsdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["deviceConfigurationKeyValueConstraintsDataElements"]) {
         last_cmd = function_from_string("deviceConfigurationKeyValueConstraintsDataElements");
-        deviceconfigurationkeyvalueconstraintsdataelementstype = obj[
-            "deviceConfigurationKeyValueConstraintsDataElements"].as<decltype(
-            deviceconfigurationkeyvalueconstraintsdataelementstype)::value_type>();
+        deviceconfigurationkeyvalueconstraintsdataelementstype = obj["deviceConfigurationKeyValueConstraintsDataElements"].as<decltype(deviceconfigurationkeyvalueconstraintsdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["deviceConfigurationKeyValueConstraintsListData"]) {
         last_cmd = function_from_string("deviceConfigurationKeyValueConstraintsListData");
-        deviceconfigurationkeyvalueconstraintslistdatatype = obj["deviceConfigurationKeyValueConstraintsListData"].as<
-            decltype(
-                deviceconfigurationkeyvalueconstraintslistdatatype)::value_type>();
+        deviceconfigurationkeyvalueconstraintslistdatatype = obj["deviceConfigurationKeyValueConstraintsListData"].as<decltype(deviceconfigurationkeyvalueconstraintslistdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["deviceConfigurationKeyValueConstraintsListDataSelectors"]) {
         last_cmd = function_from_string("deviceConfigurationKeyValueConstraintsListDataSelectors");
-        deviceconfigurationkeyvalueconstraintslistdataselectorstype = obj[
-            "deviceConfigurationKeyValueConstraintsListDataSelectors"].as<
-            decltype(deviceconfigurationkeyvalueconstraintslistdataselectorstype)::value_type>();
+        deviceconfigurationkeyvalueconstraintslistdataselectorstype = obj["deviceConfigurationKeyValueConstraintsListDataSelectors"].as<decltype(deviceconfigurationkeyvalueconstraintslistdataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["header"]) {
@@ -45522,8 +46067,7 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["dataTunnelingCallElements"]) {
         last_cmd = function_from_string("dataTunnelingCallElements");
-        datatunnelingcallelementstype = obj["dataTunnelingCallElements"].as<decltype(datatunnelingcallelementstype
-        )::value_type>();
+        datatunnelingcallelementstype = obj["dataTunnelingCallElements"].as<decltype(datatunnelingcallelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["incentiveTableData"]) {
@@ -45533,52 +46077,42 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
     }
     if (obj["incentiveTableDataElements"]) {
         last_cmd = function_from_string("incentiveTableDataElements");
-        incentivetabledataelementstype = obj["incentiveTableDataElements"].as<decltype(incentivetabledataelementstype
-        )::value_type>();
+        incentivetabledataelementstype = obj["incentiveTableDataElements"].as<decltype(incentivetabledataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["incentiveTableDataSelectors"]) {
         last_cmd = function_from_string("incentiveTableDataSelectors");
-        incentivetabledataselectorstype = obj["incentiveTableDataSelectors"].as<decltype(incentivetabledataselectorstype
-        )::value_type>();
+        incentivetabledataselectorstype = obj["incentiveTableDataSelectors"].as<decltype(incentivetabledataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["incentiveTableDescriptionData"]) {
         last_cmd = function_from_string("incentiveTableDescriptionData");
-        incentivetabledescriptiondatatype = obj["incentiveTableDescriptionData"].as<decltype(
-            incentivetabledescriptiondatatype
-        )::value_type>();
+        incentivetabledescriptiondatatype = obj["incentiveTableDescriptionData"].as<decltype(incentivetabledescriptiondatatype)::value_type>();
         return last_cmd;
     }
     if (obj["incentiveTableDescriptionDataElements"]) {
         last_cmd = function_from_string("incentiveTableDescriptionDataElements");
-        incentivetabledescriptiondataelementstype = obj["incentiveTableDescriptionDataElements"].as<decltype(
-            incentivetabledescriptiondataelementstype)::value_type>();
+        incentivetabledescriptiondataelementstype = obj["incentiveTableDescriptionDataElements"].as<decltype(incentivetabledescriptiondataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["incentiveTableDescriptionDataSelectors"]) {
         last_cmd = function_from_string("incentiveTableDescriptionDataSelectors");
-        incentivetabledescriptiondataselectorstype = obj["incentiveTableDescriptionDataSelectors"].as<decltype(
-            incentivetabledescriptiondataselectorstype)::value_type>();
+        incentivetabledescriptiondataselectorstype = obj["incentiveTableDescriptionDataSelectors"].as<decltype(incentivetabledescriptiondataselectorstype)::value_type>();
         return last_cmd;
     }
     if (obj["incentiveTableConstraintsData"]) {
         last_cmd = function_from_string("incentiveTableConstraintsData");
-        incentivetableconstraintsdatatype = obj["incentiveTableConstraintsData"].as<decltype(
-            incentivetableconstraintsdatatype
-        )::value_type>();
+        incentivetableconstraintsdatatype = obj["incentiveTableConstraintsData"].as<decltype(incentivetableconstraintsdatatype)::value_type>();
         return last_cmd;
     }
     if (obj["incentiveTableConstraintsDataElements"]) {
         last_cmd = function_from_string("incentiveTableConstraintsDataElements");
-        incentivetableconstraintsdataelementstype = obj["incentiveTableConstraintsDataElements"].as<decltype(
-            incentivetableconstraintsdataelementstype)::value_type>();
+        incentivetableconstraintsdataelementstype = obj["incentiveTableConstraintsDataElements"].as<decltype(incentivetableconstraintsdataelementstype)::value_type>();
         return last_cmd;
     }
     if (obj["incentiveTableConstraintsDataSelectors"]) {
         last_cmd = function_from_string("incentiveTableConstraintsDataSelectors");
-        incentivetableconstraintsdataselectorstype = obj["incentiveTableConstraintsDataSelectors"].as<decltype(
-            incentivetableconstraintsdataselectorstype)::value_type>();
+        incentivetableconstraintsdataselectorstype = obj["incentiveTableConstraintsDataSelectors"].as<decltype(incentivetableconstraintsdataselectorstype)::value_type>();
         return last_cmd;
     }
     return SpineDataTypeHandler::Function::None;
@@ -45586,6 +46120,7 @@ SpineDataTypeHandler::Function SpineDataTypeHandler::handle_cmd(JsonObjectConst 
 
 String SpineDataTypeHandler::function_to_string(Function function)
 {
+
     if (function == SpineDataTypeHandler::Function::directControlActivityData)
         return "directControlActivityData";
     if (function == SpineDataTypeHandler::Function::directControlActivityDataElements)
@@ -46549,6 +47084,7 @@ String SpineDataTypeHandler::function_to_string(Function function)
 
 void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
 {
+
     if (last_cmd == SpineDataTypeHandler::Function::directControlActivityData) {
         dst["directControlActivityData"] = *directcontrolactivitydatatype;
     }
@@ -46618,8 +47154,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::powerTimeSlotScheduleConstraintsListDataSelectors) {
-        dst["powerTimeSlotScheduleConstraintsListDataSelectors"] = *
-            powertimeslotscheduleconstraintslistdataselectorstype;
+        dst["powerTimeSlotScheduleConstraintsListDataSelectors"] = *powertimeslotscheduleconstraintslistdataselectorstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::powerSequenceAlternativesRelationData) {
@@ -46635,8 +47170,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::powerSequenceAlternativesRelationListDataSelectors) {
-        dst["powerSequenceAlternativesRelationListDataSelectors"] = *
-            powersequencealternativesrelationlistdataselectorstype;
+        dst["powerSequenceAlternativesRelationListDataSelectors"] = *powersequencealternativesrelationlistdataselectorstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::powerSequenceDescriptionData) {
@@ -46700,8 +47234,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::powerSequenceScheduleConstraintsListDataSelectors) {
-        dst["powerSequenceScheduleConstraintsListDataSelectors"] = *
-            powersequencescheduleconstraintslistdataselectorstype;
+        dst["powerSequenceScheduleConstraintsListDataSelectors"] = *powersequencescheduleconstraintslistdataselectorstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::powerSequencePriceData) {
@@ -46749,8 +47282,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::powerSequenceScheduleConfigurationRequestCallElements) {
-        dst["powerSequenceScheduleConfigurationRequestCallElements"] = *
-            powersequencescheduleconfigurationrequestcallelementstype;
+        dst["powerSequenceScheduleConfigurationRequestCallElements"] = *powersequencescheduleconfigurationrequestcallelementstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::powerSequencePriceCalculationRequestCall) {
@@ -46934,8 +47466,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsPowerDescriptionListDataSelectors) {
-        dst["operatingConstraintsPowerDescriptionListDataSelectors"] = *
-            operatingconstraintspowerdescriptionlistdataselectorstype;
+        dst["operatingConstraintsPowerDescriptionListDataSelectors"] = *operatingconstraintspowerdescriptionlistdataselectorstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsPowerRangeData) {
@@ -46975,8 +47506,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsResumeImplicationDataElements) {
-        dst["operatingConstraintsResumeImplicationDataElements"] = *
-            operatingconstraintsresumeimplicationdataelementstype;
+        dst["operatingConstraintsResumeImplicationDataElements"] = *operatingconstraintsresumeimplicationdataelementstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsResumeImplicationListData) {
@@ -46984,8 +47514,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::operatingConstraintsResumeImplicationListDataSelectors) {
-        dst["operatingConstraintsResumeImplicationListDataSelectors"] = *
-            operatingconstraintsresumeimplicationlistdataselectorstype;
+        dst["operatingConstraintsResumeImplicationListDataSelectors"] = *operatingconstraintsresumeimplicationlistdataselectorstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::billData) {
@@ -47309,8 +47838,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::networkManagementDeviceDescriptionListDataSelectors) {
-        dst["networkManagementDeviceDescriptionListDataSelectors"] = *
-            networkmanagementdevicedescriptionlistdataselectorstype;
+        dst["networkManagementDeviceDescriptionListDataSelectors"] = *networkmanagementdevicedescriptionlistdataselectorstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::networkManagementEntityDescriptionData) {
@@ -47326,8 +47854,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::networkManagementEntityDescriptionListDataSelectors) {
-        dst["networkManagementEntityDescriptionListDataSelectors"] = *
-            networkmanagemententitydescriptionlistdataselectorstype;
+        dst["networkManagementEntityDescriptionListDataSelectors"] = *networkmanagemententitydescriptionlistdataselectorstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::networkManagementFeatureDescriptionData) {
@@ -47343,8 +47870,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::networkManagementFeatureDescriptionListDataSelectors) {
-        dst["networkManagementFeatureDescriptionListDataSelectors"] = *
-            networkmanagementfeaturedescriptionlistdataselectorstype;
+        dst["networkManagementFeatureDescriptionListDataSelectors"] = *networkmanagementfeaturedescriptionlistdataselectorstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::supplyConditionData) {
@@ -47392,8 +47918,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::supplyConditionThresholdRelationListDataSelectors) {
-        dst["supplyConditionThresholdRelationListDataSelectors"] = *
-            supplyconditionthresholdrelationlistdataselectorstype;
+        dst["supplyConditionThresholdRelationListDataSelectors"] = *supplyconditionthresholdrelationlistdataselectorstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::alarmData) {
@@ -47681,8 +48206,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionOperationModeRelationDataElements) {
-        dst["hvacSystemFunctionOperationModeRelationDataElements"] = *
-            hvacsystemfunctionoperationmoderelationdataelementstype;
+        dst["hvacSystemFunctionOperationModeRelationDataElements"] = *hvacsystemfunctionoperationmoderelationdataelementstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionOperationModeRelationListData) {
@@ -47690,8 +48214,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionOperationModeRelationListDataSelectors) {
-        dst["hvacSystemFunctionOperationModeRelationListDataSelectors"] = *
-            hvacsystemfunctionoperationmoderelationlistdataselectorstype;
+        dst["hvacSystemFunctionOperationModeRelationListDataSelectors"] = *hvacsystemfunctionoperationmoderelationlistdataselectorstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionSetpointRelationData) {
@@ -47707,8 +48230,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionSetpointRelationListDataSelectors) {
-        dst["hvacSystemFunctionSetpointRelationListDataSelectors"] = *
-            hvacsystemfunctionsetpointrelationlistdataselectorstype;
+        dst["hvacSystemFunctionSetpointRelationListDataSelectors"] = *hvacsystemfunctionsetpointrelationlistdataselectorstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionPowerSequenceRelationData) {
@@ -47716,8 +48238,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionPowerSequenceRelationDataElements) {
-        dst["hvacSystemFunctionPowerSequenceRelationDataElements"] = *
-            hvacsystemfunctionpowersequencerelationdataelementstype;
+        dst["hvacSystemFunctionPowerSequenceRelationDataElements"] = *hvacsystemfunctionpowersequencerelationdataelementstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionPowerSequenceRelationListData) {
@@ -47725,8 +48246,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionPowerSequenceRelationListDataSelectors) {
-        dst["hvacSystemFunctionPowerSequenceRelationListDataSelectors"] = *
-            hvacsystemfunctionpowersequencerelationlistdataselectorstype;
+        dst["hvacSystemFunctionPowerSequenceRelationListDataSelectors"] = *hvacsystemfunctionpowersequencerelationlistdataselectorstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::hvacSystemFunctionDescriptionData) {
@@ -47990,18 +48510,15 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::smartEnergyManagementPsConfigurationRequestCallElements) {
-        dst["smartEnergyManagementPsConfigurationRequestCallElements"] = *
-            smartenergymanagementpsconfigurationrequestcallelementstype;
+        dst["smartEnergyManagementPsConfigurationRequestCallElements"] = *smartenergymanagementpsconfigurationrequestcallelementstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::smartEnergyManagementPsPriceCalculationRequestCall) {
-        dst["smartEnergyManagementPsPriceCalculationRequestCall"] = *
-            smartenergymanagementpspricecalculationrequestcalltype;
+        dst["smartEnergyManagementPsPriceCalculationRequestCall"] = *smartenergymanagementpspricecalculationrequestcalltype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::smartEnergyManagementPsPriceCalculationRequestCallElements) {
-        dst["smartEnergyManagementPsPriceCalculationRequestCallElements"] = *
-            smartenergymanagementpspricecalculationrequestcallelementstype;
+        dst["smartEnergyManagementPsPriceCalculationRequestCallElements"] = *smartenergymanagementpspricecalculationrequestcallelementstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::messagingData) {
@@ -48241,8 +48758,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionDataElements) {
-        dst["electricalConnectionParameterDescriptionDataElements"] = *
-            electricalconnectionparameterdescriptiondataelementstype;
+        dst["electricalConnectionParameterDescriptionDataElements"] = *electricalconnectionparameterdescriptiondataelementstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionListData) {
@@ -48250,8 +48766,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionParameterDescriptionListDataSelectors) {
-        dst["electricalConnectionParameterDescriptionListDataSelectors"] = *
-            electricalconnectionparameterdescriptionlistdataselectorstype;
+        dst["electricalConnectionParameterDescriptionListDataSelectors"] = *electricalconnectionparameterdescriptionlistdataselectorstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionPermittedValueSetData) {
@@ -48259,8 +48774,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionPermittedValueSetDataElements) {
-        dst["electricalConnectionPermittedValueSetDataElements"] = *
-            electricalconnectionpermittedvaluesetdataelementstype;
+        dst["electricalConnectionPermittedValueSetDataElements"] = *electricalconnectionpermittedvaluesetdataelementstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionPermittedValueSetListData) {
@@ -48268,8 +48782,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionPermittedValueSetListDataSelectors) {
-        dst["electricalConnectionPermittedValueSetListDataSelectors"] = *
-            electricalconnectionpermittedvaluesetlistdataselectorstype;
+        dst["electricalConnectionPermittedValueSetListDataSelectors"] = *electricalconnectionpermittedvaluesetlistdataselectorstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionCharacteristicData) {
@@ -48285,8 +48798,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionCharacteristicListDataSelectors) {
-        dst["electricalConnectionCharacteristicListDataSelectors"] = *
-            electricalconnectioncharacteristiclistdataselectorstype;
+        dst["electricalConnectionCharacteristicListDataSelectors"] = *electricalconnectioncharacteristiclistdataselectorstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::electricalConnectionStateData) {
@@ -48398,8 +48910,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionDataElements) {
-        dst["deviceConfigurationKeyValueDescriptionDataElements"] = *
-            deviceconfigurationkeyvaluedescriptiondataelementstype;
+        dst["deviceConfigurationKeyValueDescriptionDataElements"] = *deviceconfigurationkeyvaluedescriptiondataelementstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListData) {
@@ -48407,8 +48918,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueDescriptionListDataSelectors) {
-        dst["deviceConfigurationKeyValueDescriptionListDataSelectors"] = *
-            deviceconfigurationkeyvaluedescriptionlistdataselectorstype;
+        dst["deviceConfigurationKeyValueDescriptionListDataSelectors"] = *deviceconfigurationkeyvaluedescriptionlistdataselectorstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsData) {
@@ -48416,8 +48926,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsDataElements) {
-        dst["deviceConfigurationKeyValueConstraintsDataElements"] = *
-            deviceconfigurationkeyvalueconstraintsdataelementstype;
+        dst["deviceConfigurationKeyValueConstraintsDataElements"] = *deviceconfigurationkeyvalueconstraintsdataelementstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsListData) {
@@ -48425,8 +48934,7 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::deviceConfigurationKeyValueConstraintsListDataSelectors) {
-        dst["deviceConfigurationKeyValueConstraintsListDataSelectors"] = *
-            deviceconfigurationkeyvalueconstraintslistdataselectorstype;
+        dst["deviceConfigurationKeyValueConstraintsListDataSelectors"] = *deviceconfigurationkeyvalueconstraintslistdataselectorstype;
     }
 
     if (last_cmd == SpineDataTypeHandler::Function::header) {
@@ -48492,4 +49000,5 @@ void SpineDataTypeHandler::last_cmd_to_json(JsonVariant &dst)
     if (last_cmd == SpineDataTypeHandler::Function::incentiveTableConstraintsDataSelectors) {
         dst["incentiveTableConstraintsDataSelectors"] = *incentivetableconstraintsdataselectorstype;
     }
+
 }
