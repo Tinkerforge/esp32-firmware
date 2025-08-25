@@ -8,7 +8,7 @@ import alpha_ess
 import shelly
 import goodwe
 import solax
-import fronius_gen24_plus
+import fronius
 import hailei
 import fox_ess
 import siemens
@@ -36,7 +36,7 @@ modules = [
     shelly,
     goodwe,
     solax,
-    fronius_gen24_plus,
+    fronius,
     hailei,
     fox_ess,
     siemens,
