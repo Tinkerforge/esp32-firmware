@@ -1,3 +1,7 @@
+default_device_addresses = [
+    ('Solarmax Max Storage', 1),
+]
+
 specs = [
     {
         'name': 'Solarmax Max Storage Inverter',

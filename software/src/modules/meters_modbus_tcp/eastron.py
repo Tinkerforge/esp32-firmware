@@ -1,3 +1,7 @@
+default_device_addresses = [
+    ('Eastron SDM630 TCP', 1),
+]
+
 specs = [
     {
         'name': 'Eastron SDM630 TCP',

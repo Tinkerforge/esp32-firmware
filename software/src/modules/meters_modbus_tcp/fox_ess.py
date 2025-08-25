@@ -1,3 +1,9 @@
+default_device_addresses = [
+    ('Fox ESS H3 Hybrid Inverter', 247),
+    ('Fox ESS H3 Smart Hybrid Inverter', 247),
+    ('Fox ESS H3 Pro Hybrid Inverter', 247),
+]
+
 specs = [
     {
         'name': 'Fox ESS H3 Hybrid Inverter',

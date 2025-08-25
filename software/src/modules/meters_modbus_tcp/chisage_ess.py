@@ -1,3 +1,7 @@
+default_device_addresses = [
+    ('Chisage ESS Hybrid Inverter', 1),
+]
+
 specs = [
     {
         'name': 'Chisage ESS Hybrid Inverter',

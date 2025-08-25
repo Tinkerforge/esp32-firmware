@@ -1,5 +1,9 @@
 # This is the same register table as Alpha ESS
 
+default_device_addresses = [
+    ('Hailei Hybrid Inverter', 85),
+]
+
 specs = [
     {
         'name': 'Hailei Hybrid Inverter',

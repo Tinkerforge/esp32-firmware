@@ -1,3 +1,8 @@
+default_device_addresses = [
+    ('VARTA Element', 255),
+    ('VARTA Flex', 255),
+]
+
 specs = [
     {
         'name': 'VARTA Element Grid',  # for models element, one, pulse and link

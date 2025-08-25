@@ -1,3 +1,7 @@
+default_device_addresses = [
+    ('Solaredge', 1),
+]
+
 specs = [
     {
         'name': 'Solaredge Battery',

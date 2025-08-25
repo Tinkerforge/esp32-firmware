@@ -1,3 +1,8 @@
+default_device_addresses = [
+    ('Shelly Pro EM', 1),
+    ('Shelly Pro 3EM', 1),
+]
+
 monophase_values = [
     {
         'name': 'Channel 1 voltage [V]',

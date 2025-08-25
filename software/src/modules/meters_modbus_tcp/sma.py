@@ -1,3 +1,7 @@
+default_device_addresses = [
+    ('SMA Hybrid Inverter', 3),
+]
+
 specs = [
     {
         'name': 'SMA Hybrid Inverter Battery',  # FIXME: handle NAN markers

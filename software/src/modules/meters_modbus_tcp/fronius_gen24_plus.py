@@ -2,6 +2,10 @@
 
 from copy import deepcopy
 
+default_device_addresses = [
+    ('Fronius GEN24 Plus', 1),
+]
+
 battery_integer_values = [
     {
         'name': 'DCA_SF: Current Scale Factor | DCA_SF',

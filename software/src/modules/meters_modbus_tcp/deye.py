@@ -1,3 +1,7 @@
+default_device_addresses = [
+    ('Deye Hybrid Inverter', 1),
+]
+
 specs = [
     {
         'name': 'Deye Hybrid Inverter',

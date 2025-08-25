@@ -1,3 +1,8 @@
+default_device_addresses = [
+    ('Sungrow Hybrid Inverter', 1),
+    ('Sungrow String Inverter', 1),
+]
+
 inverter_values = [
     {
         'name': 'Device Type',

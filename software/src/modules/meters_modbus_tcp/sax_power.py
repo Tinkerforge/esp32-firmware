@@ -1,3 +1,8 @@
+default_device_addresses = [
+    ('SAX Power Home Basic Mode', 64),
+    ('SAX Power Home Extended Mode', 40),
+]
+
 specs = [
     {
         'name': 'SAX Power Home Basic Mode Grid',  # Port: 3600 (and 502?), Unit ID: 64

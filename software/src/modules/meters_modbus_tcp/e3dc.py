@@ -1,3 +1,7 @@
+default_device_addresses = [
+    ('E3DC', 1),
+]
+
 specs = [
     {
         'name': 'E3DC Grid',

@@ -1,3 +1,9 @@
+default_device_addresses = [
+    ('Huawei SUN2000', 1),
+    ('Huawei SUN2000 Smart Dongle', 1),
+    ('Huawei EMMA', 0),
+]
+
 specs = [
     {
         'name': 'Huawei SUN2000 Inverter',

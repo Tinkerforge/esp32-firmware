@@ -1,3 +1,12 @@
+default_device_addresses = [
+    ('Siemens PAC2200', 1),
+    ('Siemens PAC3120', 1),
+    ('Siemens PAC3220', 1),
+    ('Siemens PAC3200', 1),
+    ('Siemens PAC4200', 1),
+    ('Siemens PAC4220', 1),
+]
+
 specs = [
     {
         'name': 'Siemens PAC2200',

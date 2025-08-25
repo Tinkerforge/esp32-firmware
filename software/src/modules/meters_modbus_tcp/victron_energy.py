@@ -1,3 +1,7 @@
+default_device_addresses = [
+    ('Victron Energy GX', 100),
+]
+
 specs = [
     {
         'name': 'Victron Energy GX Grid',

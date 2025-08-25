@@ -27,11 +27,44 @@ tfutil.create_parent_module(__file__, 'software')
 
 from software import util
 
-specs = sungrow.specs + solarmax.specs + victron_energy.specs + deye.specs + alpha_ess.specs + shelly.specs + goodwe.specs \
-      + solax.specs + fronius_gen24_plus.specs + hailei.specs + fox_ess.specs + siemens.specs + carlo_gavazzi.specs + solaredge.specs \
-      + eastron.specs + tinkerforge.specs + sax_power.specs + e3dc.specs + huawei.specs + sma.specs + varta.specs + chisage_ess.specs
+modules = [
+    sungrow,
+    solarmax,
+    victron_energy,
+    deye,
+    alpha_ess,
+    shelly,
+    goodwe,
+    solax,
+    fronius_gen24_plus,
+    hailei,
+    fox_ess,
+    siemens,
+    carlo_gavazzi,
+    solaredge,
+    eastron,
+    tinkerforge,
+    sax_power,
+    e3dc,
+    huawei,
+    sma,
+    varta,
+    chisage_ess,
+]
+
+default_device_addresses = []
+specs = []
+
+for module in modules:
+    default_device_addresses += module.default_device_addresses
+    specs += module.specs
+
 specs_h = []
 specs_cpp = []
+
+specs_h.append('namespace DefaultDeviceAddress {')
+specs_h.append(f'enum {{\n{"\n".join(["    {0} = {1},".format(util.FlavoredName(name).get().camel, value) for name, value in default_device_addresses])}\n}};')
+specs_h.append('}')
 
 for spec in specs:
     for variant_spec in spec.get('variants', [None]):
@@ -122,6 +155,20 @@ for spec in specs:
                          '};')
 
         specs_cpp.append(f'const MeterModbusTCP::TableSpec *{spec_name.under}_table = &{spec_name.under}_table_;')
+
+with open('../../../web/src/modules/meters_modbus_tcp/meter_modbus_tcp_specs.ts', 'w', encoding='utf-8') as f:
+    f.write('// WARNING: This file is generated.\n\n')
+    f.write('import { MeterModbusTCPTableID } from "./meter_modbus_tcp_table_id.enum";\n\n')
+    f.write('export const enum DefaultDeviceAddress {\n')
+    f.write('\n'.join([f'    {util.FlavoredName(name).get().camel} = {value},' for name, value in default_device_addresses]) + '\n')
+    f.write('}\n\n')
+    f.write('export function get_default_device_address(table: number)\n')
+    f.write('{\n')
+    f.write('    switch (table) {\n')
+    f.write('\n'.join([f'    case MeterModbusTCPTableID.{util.FlavoredName(name).get().camel}: return DefaultDeviceAddress.{util.FlavoredName(name).get().camel};' for name, value in default_device_addresses]) + '\n')
+    f.write('    default: return undefined;\n')
+    f.write('    }\n')
+    f.write('}\n')
 
 with open('meter_modbus_tcp_specs.h', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated.\n\n')

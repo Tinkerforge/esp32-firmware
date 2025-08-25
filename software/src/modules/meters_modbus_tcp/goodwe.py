@@ -1,3 +1,7 @@
+default_device_addresses = [
+    ('Goodwe Hybrid Inverter', 247),
+]
+
 specs = [
     {
         'name': 'Goodwe Hybrid Inverter',

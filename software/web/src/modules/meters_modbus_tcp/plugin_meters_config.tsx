@@ -29,6 +29,7 @@ import { get_meter_location_items } from "../meters/meter_location";
 import { MeterConfig } from "../meters/types";
 import { MeterValueIDSelector, get_meter_value_id_name } from "../meters_api/plugin_meters_config";
 import { MeterModbusTCPTableID } from "./meter_modbus_tcp_table_id.enum";
+import { DefaultDeviceAddress, get_default_device_address } from "./meter_modbus_tcp_specs";
 import { ModbusRegisterType } from "../modbus_tcp_client/modbus_register_type.enum";
 import { ModbusRegisterAddressMode } from "../modbus_tcp_client/modbus_register_address_mode.enum";
 import { ModbusValueType } from "../modbus_tcp_client/modbus_value_type.enum";
@@ -530,148 +531,148 @@ function new_table_config(table: MeterModbusTCPTableID): TableConfig {
             return [MeterModbusTCPTableID.Custom, {device_address: 1, register_address_mode: null, registers: []}];
 
         case MeterModbusTCPTableID.SungrowHybridInverter:
-            return [MeterModbusTCPTableID.SungrowHybridInverter, {virtual_meter: null, device_address: 1}];
+            return [MeterModbusTCPTableID.SungrowHybridInverter, {virtual_meter: null, device_address: DefaultDeviceAddress.SungrowHybridInverter}];
 
         case MeterModbusTCPTableID.SungrowStringInverter:
-            return [MeterModbusTCPTableID.SungrowStringInverter, {virtual_meter: null, device_address: 1}];
+            return [MeterModbusTCPTableID.SungrowStringInverter, {virtual_meter: null, device_address: DefaultDeviceAddress.SungrowStringInverter}];
 
         case MeterModbusTCPTableID.SolarmaxMaxStorage:
-            return [MeterModbusTCPTableID.SolarmaxMaxStorage, {virtual_meter: null, device_address: 1}];
+            return [MeterModbusTCPTableID.SolarmaxMaxStorage, {virtual_meter: null, device_address: DefaultDeviceAddress.SolarmaxMaxStorage}];
 
         case MeterModbusTCPTableID.VictronEnergyGX:
-            return [MeterModbusTCPTableID.VictronEnergyGX, {virtual_meter: null, device_address: 100}];
+            return [MeterModbusTCPTableID.VictronEnergyGX, {virtual_meter: null, device_address: DefaultDeviceAddress.VictronEnergyGX}];
 
         case MeterModbusTCPTableID.DeyeHybridInverter:
-            return [MeterModbusTCPTableID.DeyeHybridInverter, {virtual_meter: null, device_address: 1}];
+            return [MeterModbusTCPTableID.DeyeHybridInverter, {virtual_meter: null, device_address: DefaultDeviceAddress.DeyeHybridInverter}];
 
         case MeterModbusTCPTableID.AlphaESSHybridInverter:
-            return [MeterModbusTCPTableID.AlphaESSHybridInverter, {virtual_meter: null, device_address: 85}];
+            return [MeterModbusTCPTableID.AlphaESSHybridInverter, {virtual_meter: null, device_address: DefaultDeviceAddress.AlphaESSHybridInverter}];
 
         case MeterModbusTCPTableID.ShellyProEM:
-            return [MeterModbusTCPTableID.ShellyProEM, {device_address: 1, monophase_channel: null, monophase_mapping: null}];
+            return [MeterModbusTCPTableID.ShellyProEM, {device_address: DefaultDeviceAddress.ShellyProEM, monophase_channel: null, monophase_mapping: null}];
 
         case MeterModbusTCPTableID.ShellyPro3EM:
-            return [MeterModbusTCPTableID.ShellyPro3EM, {device_address: 1, device_profile: ShellyPro3EMDeviceProfile.Triphase, monophase_channel: ShellyEMMonophaseChannel.None, monophase_mapping: ShellyEMMonophaseMapping.None}];
+            return [MeterModbusTCPTableID.ShellyPro3EM, {device_address: DefaultDeviceAddress.ShellyPro3EM, device_profile: ShellyPro3EMDeviceProfile.Triphase, monophase_channel: ShellyEMMonophaseChannel.None, monophase_mapping: ShellyEMMonophaseMapping.None}];
 
         case MeterModbusTCPTableID.GoodweHybridInverter:
-            return [MeterModbusTCPTableID.GoodweHybridInverter, {virtual_meter: null, device_address: 247}];
+            return [MeterModbusTCPTableID.GoodweHybridInverter, {virtual_meter: null, device_address: DefaultDeviceAddress.GoodweHybridInverter}];
 
         case MeterModbusTCPTableID.SolaxHybridInverter:
-            return [MeterModbusTCPTableID.SolaxHybridInverter, {virtual_meter: null, device_address: 1}];
+            return [MeterModbusTCPTableID.SolaxHybridInverter, {virtual_meter: null, device_address: DefaultDeviceAddress.SolaxHybridInverter}];
 
         case MeterModbusTCPTableID.FroniusGEN24Plus:
-            return [MeterModbusTCPTableID.FroniusGEN24Plus, {virtual_meter: null, device_address: 1}];
+            return [MeterModbusTCPTableID.FroniusGEN24Plus, {virtual_meter: null, device_address: DefaultDeviceAddress.FroniusGEN24Plus}];
 
         case MeterModbusTCPTableID.HaileiHybridInverter:
-            return [MeterModbusTCPTableID.HaileiHybridInverter, {virtual_meter: null, device_address: 85}];
+            return [MeterModbusTCPTableID.HaileiHybridInverter, {virtual_meter: null, device_address: DefaultDeviceAddress.HaileiHybridInverter}];
 
         case MeterModbusTCPTableID.FoxESSH3HybridInverter:
-            return [MeterModbusTCPTableID.FoxESSH3HybridInverter, {virtual_meter: null, device_address: 247}];
+            return [MeterModbusTCPTableID.FoxESSH3HybridInverter, {virtual_meter: null, device_address: DefaultDeviceAddress.FoxESSH3HybridInverter}];
 
         case MeterModbusTCPTableID.SiemensPAC2200:
-            return [MeterModbusTCPTableID.SiemensPAC2200, {device_address: 1}];
+            return [MeterModbusTCPTableID.SiemensPAC2200, {device_address: DefaultDeviceAddress.SiemensPAC2200}];
 
         case MeterModbusTCPTableID.SiemensPAC3120:
-            return [MeterModbusTCPTableID.SiemensPAC3120, {device_address: 1}];
+            return [MeterModbusTCPTableID.SiemensPAC3120, {device_address: DefaultDeviceAddress.SiemensPAC3120}];
 
         case MeterModbusTCPTableID.SiemensPAC3200:
-            return [MeterModbusTCPTableID.SiemensPAC3200, {device_address: 1}];
+            return [MeterModbusTCPTableID.SiemensPAC3200, {device_address: DefaultDeviceAddress.SiemensPAC3200}];
 
         case MeterModbusTCPTableID.SiemensPAC3220:
-            return [MeterModbusTCPTableID.SiemensPAC3220, {device_address: 1}];
+            return [MeterModbusTCPTableID.SiemensPAC3220, {device_address: DefaultDeviceAddress.SiemensPAC3220}];
 
         case MeterModbusTCPTableID.SiemensPAC4200:
-            return [MeterModbusTCPTableID.SiemensPAC4200, {device_address: 1}];
+            return [MeterModbusTCPTableID.SiemensPAC4200, {device_address: DefaultDeviceAddress.SiemensPAC4200}];
 
         case MeterModbusTCPTableID.SiemensPAC4220:
-            return [MeterModbusTCPTableID.SiemensPAC4220, {device_address: 1}];
+            return [MeterModbusTCPTableID.SiemensPAC4220, {device_address: DefaultDeviceAddress.SiemensPAC4220}];
 
         case MeterModbusTCPTableID.CarloGavazziEM24DIN:
-            return [MeterModbusTCPTableID.CarloGavazziEM24DIN, {device_address: 1}];
+            return [MeterModbusTCPTableID.CarloGavazziEM24DIN, {device_address: DefaultDeviceAddress.CarloGavazziEM24DIN}];
 
         case MeterModbusTCPTableID.CarloGavazziEM24E1:
-            return [MeterModbusTCPTableID.CarloGavazziEM24E1, {device_address: 1}];
+            return [MeterModbusTCPTableID.CarloGavazziEM24E1, {device_address: DefaultDeviceAddress.CarloGavazziEM24E1}];
 
         case MeterModbusTCPTableID.CarloGavazziEM100:
-            return [MeterModbusTCPTableID.CarloGavazziEM100, {device_address: 1, phase: null}];
+            return [MeterModbusTCPTableID.CarloGavazziEM100, {device_address: DefaultDeviceAddress.CarloGavazziEM100, phase: null}];
 
         case MeterModbusTCPTableID.CarloGavazziET100:
-            return [MeterModbusTCPTableID.CarloGavazziET100, {device_address: 1, phase: null}];
+            return [MeterModbusTCPTableID.CarloGavazziET100, {device_address: DefaultDeviceAddress.CarloGavazziET100, phase: null}];
 
         case MeterModbusTCPTableID.CarloGavazziEM210:
-            return [MeterModbusTCPTableID.CarloGavazziEM210, {device_address: 1}];
+            return [MeterModbusTCPTableID.CarloGavazziEM210, {device_address: DefaultDeviceAddress.CarloGavazziEM210}];
 
         case MeterModbusTCPTableID.CarloGavazziEM270:
-            return [MeterModbusTCPTableID.CarloGavazziEM270, {virtual_meter: null, device_address: 1}];
+            return [MeterModbusTCPTableID.CarloGavazziEM270, {virtual_meter: null, device_address: DefaultDeviceAddress.CarloGavazziEM270}];
 
         case MeterModbusTCPTableID.CarloGavazziEM280:
-            return [MeterModbusTCPTableID.CarloGavazziEM280, {virtual_meter: null, device_address: 1}];
+            return [MeterModbusTCPTableID.CarloGavazziEM280, {virtual_meter: null, device_address: DefaultDeviceAddress.CarloGavazziEM280}];
 
         case MeterModbusTCPTableID.CarloGavazziEM300:
-            return [MeterModbusTCPTableID.CarloGavazziEM300, {device_address: 1}];
+            return [MeterModbusTCPTableID.CarloGavazziEM300, {device_address: DefaultDeviceAddress.CarloGavazziEM300}];
 
         case MeterModbusTCPTableID.CarloGavazziET300:
-            return [MeterModbusTCPTableID.CarloGavazziET300, {device_address: 1}];
+            return [MeterModbusTCPTableID.CarloGavazziET300, {device_address: DefaultDeviceAddress.CarloGavazziET300}];
 
         case MeterModbusTCPTableID.CarloGavazziEM510:
-            return [MeterModbusTCPTableID.CarloGavazziEM510, {device_address: 1, phase: null}];
+            return [MeterModbusTCPTableID.CarloGavazziEM510, {device_address: DefaultDeviceAddress.CarloGavazziEM510, phase: null}];
 
         case MeterModbusTCPTableID.CarloGavazziEM530:
-            return [MeterModbusTCPTableID.CarloGavazziEM530, {device_address: 1}];
+            return [MeterModbusTCPTableID.CarloGavazziEM530, {device_address: DefaultDeviceAddress.CarloGavazziEM530}];
 
         case MeterModbusTCPTableID.CarloGavazziEM540:
-            return [MeterModbusTCPTableID.CarloGavazziEM540, {device_address: 1}];
+            return [MeterModbusTCPTableID.CarloGavazziEM540, {device_address: DefaultDeviceAddress.CarloGavazziEM540}];
 
         case MeterModbusTCPTableID.Solaredge:
-            return [MeterModbusTCPTableID.Solaredge, {virtual_meter: null, device_address: 1}];
+            return [MeterModbusTCPTableID.Solaredge, {virtual_meter: null, device_address: DefaultDeviceAddress.Solaredge}];
 
         case MeterModbusTCPTableID.EastronSDM630TCP:
-            return [MeterModbusTCPTableID.EastronSDM630TCP, {device_address: 1}];
+            return [MeterModbusTCPTableID.EastronSDM630TCP, {device_address: DefaultDeviceAddress.EastronSDM630TCP}];
 
         case MeterModbusTCPTableID.TinkerforgeWARPCharger:
             return [MeterModbusTCPTableID.TinkerforgeWARPCharger, null];
 
         case MeterModbusTCPTableID.SAXPowerHomeBasicMode:
-            return [MeterModbusTCPTableID.SAXPowerHomeBasicMode, {virtual_meter: null, device_address: 64}];
+            return [MeterModbusTCPTableID.SAXPowerHomeBasicMode, {virtual_meter: null, device_address: DefaultDeviceAddress.SAXPowerHomeBasicMode}];
 
         case MeterModbusTCPTableID.SAXPowerHomeExtendedMode:
-            return [MeterModbusTCPTableID.SAXPowerHomeExtendedMode, {virtual_meter: null, device_address: 40}];
+            return [MeterModbusTCPTableID.SAXPowerHomeExtendedMode, {virtual_meter: null, device_address: DefaultDeviceAddress.SAXPowerHomeExtendedMode}];
 
         case MeterModbusTCPTableID.E3DC:
-            return [MeterModbusTCPTableID.E3DC, {virtual_meter: null, device_address: 1}];
+            return [MeterModbusTCPTableID.E3DC, {virtual_meter: null, device_address: DefaultDeviceAddress.E3DC}];
 
         case MeterModbusTCPTableID.HuaweiSUN2000:
-            return [MeterModbusTCPTableID.HuaweiSUN2000, {virtual_meter: null, device_address: 1}];
+            return [MeterModbusTCPTableID.HuaweiSUN2000, {virtual_meter: null, device_address: DefaultDeviceAddress.HuaweiSUN2000}];
 
         case MeterModbusTCPTableID.HuaweiSUN2000SmartDongle:
-            return [MeterModbusTCPTableID.HuaweiSUN2000SmartDongle, {virtual_meter: null, device_address: 1}];
+            return [MeterModbusTCPTableID.HuaweiSUN2000SmartDongle, {virtual_meter: null, device_address: DefaultDeviceAddress.HuaweiSUN2000SmartDongle}];
 
         case MeterModbusTCPTableID.HuaweiEMMA:
-            return [MeterModbusTCPTableID.HuaweiEMMA, {virtual_meter: null, device_address: 0}];
+            return [MeterModbusTCPTableID.HuaweiEMMA, {virtual_meter: null, device_address: DefaultDeviceAddress.HuaweiEMMA}];
 
         case MeterModbusTCPTableID.CarloGavazziEM580:
-            return [MeterModbusTCPTableID.CarloGavazziEM580, {device_address: 1}];
+            return [MeterModbusTCPTableID.CarloGavazziEM580, {device_address: DefaultDeviceAddress.CarloGavazziEM580}];
 
         case MeterModbusTCPTableID.SolaxStringInverter:
-            return [MeterModbusTCPTableID.SolaxStringInverter, {virtual_meter: null, device_address: 1}];
+            return [MeterModbusTCPTableID.SolaxStringInverter, {virtual_meter: null, device_address: DefaultDeviceAddress.SolaxStringInverter}];
 
         case MeterModbusTCPTableID.FoxESSH3SmartHybridInverter:
-            return [MeterModbusTCPTableID.FoxESSH3SmartHybridInverter, {virtual_meter: null, device_address: 247}];
+            return [MeterModbusTCPTableID.FoxESSH3SmartHybridInverter, {virtual_meter: null, device_address: DefaultDeviceAddress.FoxESSH3SmartHybridInverter}];
 
         case MeterModbusTCPTableID.FoxESSH3ProHybridInverter:
-            return [MeterModbusTCPTableID.FoxESSH3ProHybridInverter, {virtual_meter: null, device_address: 247}];
+            return [MeterModbusTCPTableID.FoxESSH3ProHybridInverter, {virtual_meter: null, device_address: DefaultDeviceAddress.FoxESSH3ProHybridInverter}];
 
         case MeterModbusTCPTableID.SMAHybridInverter:
-            return [MeterModbusTCPTableID.SMAHybridInverter, {virtual_meter: null, device_address: 3}];
+            return [MeterModbusTCPTableID.SMAHybridInverter, {virtual_meter: null, device_address: DefaultDeviceAddress.SMAHybridInverter}];
 
         case MeterModbusTCPTableID.VARTAElement:
-            return [MeterModbusTCPTableID.VARTAElement, {virtual_meter: null, device_address: 255}];
+            return [MeterModbusTCPTableID.VARTAElement, {virtual_meter: null, device_address: DefaultDeviceAddress.VARTAElement}];
 
         case MeterModbusTCPTableID.VARTAFlex:
-            return [MeterModbusTCPTableID.VARTAFlex, {virtual_meter: null, device_address: 255}];
+            return [MeterModbusTCPTableID.VARTAFlex, {virtual_meter: null, device_address: DefaultDeviceAddress.VARTAFlex}];
 
         case MeterModbusTCPTableID.ChisageESSHybridInverter:
-            return [MeterModbusTCPTableID.ChisageESSHybridInverter, {virtual_meter: null, device_address: 1}];
+            return [MeterModbusTCPTableID.ChisageESSHybridInverter, {virtual_meter: null, device_address: DefaultDeviceAddress.ChisageESSHybridInverter}];
 
         default:
             return [MeterModbusTCPTableID.None, null];
@@ -1013,7 +1014,6 @@ export function init() {
                     let virtual_meter_items: [string, string][] = [];
                     let default_location: MeterLocation = undefined; // undefined: there is no default location, null: default location is not known yet
                     let get_default_location: (virtual_meter: number) => MeterLocation = undefined; // undefined: there is no default location
-                    let default_device_address: number = 1;
 
                     if (config[1].table[0] == MeterModbusTCPTableID.SungrowHybridInverter) {
                         virtual_meter_items = [
@@ -1090,8 +1090,6 @@ export function init() {
 
                             return MeterLocation.Unknown;
                         }
-
-                        default_device_address = 100;
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.DeyeHybridInverter) {
                         virtual_meter_items = [
@@ -1132,8 +1130,6 @@ export function init() {
 
                             return MeterLocation.Unknown;
                         }
-
-                        default_device_address = 85;
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.GoodweHybridInverter) {
                         virtual_meter_items = [
@@ -1159,8 +1155,6 @@ export function init() {
 
                             return MeterLocation.Unknown;
                         }
-
-                        default_device_address = 247;
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.SolaxHybridInverter) {
                         virtual_meter_items = [
@@ -1212,8 +1206,6 @@ export function init() {
 
                             return MeterLocation.Unknown;
                         }
-
-                        default_device_address = 85;
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.FoxESSH3HybridInverter) {
                         virtual_meter_items = [
@@ -1235,8 +1227,6 @@ export function init() {
 
                             return MeterLocation.Unknown;
                         }
-
-                        default_device_address = 247;
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.CarloGavazziEM270) {
                         virtual_meter_items = [
@@ -1282,8 +1272,6 @@ export function init() {
 
                             return MeterLocation.Unknown;
                         }
-
-                        default_device_address = 40;
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.SAXPowerHomeExtendedMode) {
                         virtual_meter_items = [
@@ -1299,8 +1287,6 @@ export function init() {
 
                             return MeterLocation.Unknown;
                         }
-
-                        default_device_address = 64;
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.E3DC) {
                         virtual_meter_items = [
@@ -1381,8 +1367,6 @@ export function init() {
 
                             return MeterLocation.Unknown;
                         }
-
-                        default_device_address = 0;
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.SolaxStringInverter) {
                         virtual_meter_items = [
@@ -1421,8 +1405,6 @@ export function init() {
 
                             return MeterLocation.Unknown;
                         }
-
-                        default_device_address = 247;
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.FoxESSH3ProHybridInverter) {
                         virtual_meter_items = [
@@ -1444,8 +1426,6 @@ export function init() {
 
                             return MeterLocation.Unknown;
                         }
-
-                        default_device_address = 247;
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.SMAHybridInverter) {
                         virtual_meter_items = [
@@ -1459,8 +1439,6 @@ export function init() {
 
                             return MeterLocation.Unknown;
                         }
-
-                        default_device_address = 3;
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.VARTAElement) {
                         virtual_meter_items = [
@@ -1476,8 +1454,6 @@ export function init() {
 
                             return MeterLocation.Unknown;
                         }
-
-                        default_device_address = 255;
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.VARTAFlex) {
                         virtual_meter_items = [
@@ -1493,8 +1469,6 @@ export function init() {
 
                             return MeterLocation.Unknown;
                         }
-
-                        default_device_address = 255;
                     }
                     else if (config[1].table[0] == MeterModbusTCPTableID.ChisageESSHybridInverter) {
                         virtual_meter_items = [
@@ -1589,7 +1563,7 @@ export function init() {
 
                     if (config[1].table[0] != MeterModbusTCPTableID.TinkerforgeWARPCharger) {
                         edit_children.push(
-                            <FormRow label={__("meters_modbus_tcp.content.device_address")} label_muted={__("meters_modbus_tcp.content.device_address_muted")(default_device_address)}>
+                            <FormRow label={__("meters_modbus_tcp.content.device_address")} label_muted={__("meters_modbus_tcp.content.device_address_muted")(get_default_device_address(config[1].table[0]))}>
                                 <InputNumber
                                     required
                                     min={0}

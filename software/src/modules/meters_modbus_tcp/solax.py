@@ -1,3 +1,8 @@
+default_device_addresses = [
+    ('Solax Hybrid Inverter', 1),
+    ('Solax String Inverter', 1),
+]
+
 specs = [
     {
         'name': 'Solax Hybrid Inverter',

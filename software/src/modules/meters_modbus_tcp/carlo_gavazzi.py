@@ -1,3 +1,19 @@
+default_device_addresses = [
+    ('Carlo Gavazzi EM24 DIN', 1),
+    ('Carlo Gavazzi EM24 E1', 1),
+    ('Carlo Gavazzi EM100', 1),
+    ('Carlo Gavazzi ET100', 1),
+    ('Carlo Gavazzi EM210', 1),
+    ('Carlo Gavazzi EM270', 1),
+    ('Carlo Gavazzi EM280', 1),
+    ('Carlo Gavazzi EM300', 1),
+    ('Carlo Gavazzi ET300', 1),
+    ('Carlo Gavazzi EM510', 1),
+    ('Carlo Gavazzi EM530', 1),
+    ('Carlo Gavazzi EM540', 1),
+    ('Carlo Gavazzi EM580', 1),
+]
+
 em100_and_et100_single_phase_values = [
     {
         'name': 'V L-N [0.1 V]',
