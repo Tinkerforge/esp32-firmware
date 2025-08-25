@@ -30,7 +30,8 @@ from software import util
 specs = sungrow.specs + solarmax.specs + victron_energy.specs + deye.specs + alpha_ess.specs + shelly.specs + goodwe.specs \
       + solax.specs + fronius_gen24_plus.specs + hailei.specs + fox_ess.specs + siemens.specs + carlo_gavazzi.specs + solaredge.specs \
       + eastron.specs + tinkerforge.specs + sax_power.specs + e3dc.specs + huawei.specs + sma.specs + varta.specs + chisage_ess.specs
-spec_values = []
+specs_h = []
+specs_cpp = []
 
 for spec in specs:
     for variant_spec in spec.get('variants', [None]):
@@ -92,31 +93,47 @@ for spec in specs:
                 value_index.append(f'    {current_index},')
                 current_index += 1
 
-        spec_values.append(f'enum class {spec_name.camel}Address : uint16_t {{\n' + '\n'.join(value_addresses) + '\n};')
-        spec_values.append(f'static const MeterModbusTCP::ValueSpec {spec_name.under}_specs[] = {{\n' + '\n'.join(value_specs) + '\n};')
+        specs_h.append(f'namespace {spec_name.camel}Address {{')
+        specs_h.append(f'enum {{\n{"\n".join(value_addresses)}\n}};')
+        specs_h.append('}')
+
+        specs_cpp.append(f'static const MeterModbusTCP::ValueSpec {spec_name.under}_specs[] = {{\n' + '\n'.join(value_specs) + '\n};')
 
         if len(value_ids) > 0:
-            spec_values.append(f'static const MeterValueID {spec_name.under}_ids[] = {{\n' + '\n'.join(value_ids) + '\n};')
+            specs_cpp.append(f'static const MeterValueID {spec_name.under}_ids[] = {{\n' + '\n'.join(value_ids) + '\n};')
 
-        spec_values.append(f'static const uint32_t {spec_name.under}_index[] = {{\n' + '\n'.join(value_index) + '\n};')
-        spec_values.append(f'static const MeterModbusTCP::TableSpec {spec_name.under}_table = {{\n'
-                           f'    {spec_name.under}_specs,\n'
-                           f'    ARRAY_SIZE({spec_name.under}_specs),\r')
+        specs_cpp.append(f'static const uint32_t {spec_name.under}_index[] = {{\n' + '\n'.join(value_index) + '\n};')
+
+        specs_cpp.append(f'static const MeterModbusTCP::TableSpec {spec_name.under}_table_ = {{\n'
+                         f'    {spec_name.under}_specs,\n'
+                         f'    ARRAY_SIZE({spec_name.under}_specs),\r')
+
+        specs_h.append(f'extern const MeterModbusTCP::TableSpec *{spec_name.under}_table;')
 
         if len(value_ids) > 0:
-            spec_values.append(f'    {spec_name.under}_ids,\n'
-                               f'    ARRAY_SIZE({spec_name.under}_ids),\r')
+            specs_cpp.append(f'    {spec_name.under}_ids,\n'
+                             f'    ARRAY_SIZE({spec_name.under}_ids),\r')
         else:
-            spec_values.append('    nullptr,\n'
-                               '    0,\r')
+            specs_cpp.append('    nullptr,\n'
+                             '    0,\r')
 
-        spec_values.append(f'    {spec_name.under}_index,\n'
-                           f'    {f32_negative_max_as_nan},\n'
-                           '};')
+        specs_cpp.append(f'    {spec_name.under}_index,\n'
+                         f'    {f32_negative_max_as_nan},\n'
+                         '};')
 
-with open('meters_modbus_tcp_defs.inc', 'w', encoding='utf-8') as f:
+        specs_cpp.append(f'const MeterModbusTCP::TableSpec *{spec_name.under}_table = &{spec_name.under}_table_;')
+
+with open('meter_modbus_tcp_specs.h', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated.\n\n')
+    f.write('#include "meter_modbus_tcp.h"\n\n')
     f.write('#define VALUE_INDEX_META  0xFFFFFFFEu\n')
     f.write('#define VALUE_INDEX_DEBUG 0xFFFFFFFDu\n\n')
     f.write('#define START_ADDRESS_VIRTUAL 0xFFFFFFFEu\n\n')
-    f.write('\n\n'.join(spec_values).replace('\r\n', '') + '\n')
+    f.write('\n\n'.join(specs_h).replace('\r\n', '') + '\n')
+
+with open('meter_modbus_tcp_specs.cpp', 'w', encoding='utf-8') as f:
+    f.write('// WARNING: This file is generated.\n\n')
+    f.write('#include "meter_modbus_tcp_specs.h"\n\n')
+    f.write('#define VALUE_INDEX_DEBUG 0xFFFFFFFDu\n\n')
+    f.write('#define START_ADDRESS_VIRTUAL 0xFFFFFFFEu\n\n')
+    f.write('\n\n'.join(specs_cpp).replace('\r\n', '') + '\n')

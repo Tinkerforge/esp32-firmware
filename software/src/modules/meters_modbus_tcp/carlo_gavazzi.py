@@ -741,17 +741,17 @@ specs = [
         ],
     },
     {
-        'name': 'Carlo Gavazzi EM100 and ET100 At L1',
+        'name': 'Carlo Gavazzi EM100 And ET100 At L1',
         'register_type': 'InputRegister',
         'values': make_em100_and_et100_single_phase_values('L1')
     },
     {
-        'name': 'Carlo Gavazzi EM100 and ET100 At L2',
+        'name': 'Carlo Gavazzi EM100 And ET100 At L2',
         'register_type': 'InputRegister',
         'values': make_em100_and_et100_single_phase_values('L2')
     },
     {
-        'name': 'Carlo Gavazzi EM100 and ET100 At L3',
+        'name': 'Carlo Gavazzi EM100 And ET100 At L3',
         'register_type': 'InputRegister',
         'values': make_em100_and_et100_single_phase_values('L3')
     },
@@ -979,7 +979,7 @@ specs = [
         ],
     },
     {
-        'name': 'Carlo Gavazzi EM270 and EM280 Meter',
+        'name': 'Carlo Gavazzi EM270 And EM280 Meter',
         'register_type': 'InputRegister',
         'values': [
             {
@@ -1917,17 +1917,17 @@ specs = [
         ],
     },
     {
-        'name': 'Carlo Gavazzi EM510 at L1',
+        'name': 'Carlo Gavazzi EM510 At L1',
         'register_type': 'InputRegister',
         'values': make_em510_single_phase_values('L1')
     },
     {
-        'name': 'Carlo Gavazzi EM510 at L2',
+        'name': 'Carlo Gavazzi EM510 At L2',
         'register_type': 'InputRegister',
         'values': make_em510_single_phase_values('L2')
     },
     {
-        'name': 'Carlo Gavazzi EM510 at L3',
+        'name': 'Carlo Gavazzi EM510 At L3',
         'register_type': 'InputRegister',
         'values': make_em510_single_phase_values('L3')
     },

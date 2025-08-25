@@ -1,1 +1,2 @@
-meters_modbus_tcp_defs.inc
+meter_modbus_tcp_specs.h
+meter_modbus_tcp_specs.cpp
