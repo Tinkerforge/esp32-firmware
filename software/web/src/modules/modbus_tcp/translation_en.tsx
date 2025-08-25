@@ -185,6 +185,8 @@ let x = {
                                 <li>5: SDM630MCT V2</li>
                                 <li>6: DSZ15DZMOD</li>
                                 <li>7: DEM4A</li>
+                                <li>8: DMED341MID7ER</li>
+                                <li>9: DSZ15DZE</li>
                             </ul>
                         </td>
                     </tr>

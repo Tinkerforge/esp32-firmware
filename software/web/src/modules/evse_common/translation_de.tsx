@@ -341,6 +341,8 @@ let x = {
             "meter_type_3": "Eastron SDM72V2",
             "meter_type_6": "Eltako DSZ15DZMOD",
             "meter_type_7": "YTL DEM4A",
+            "meter_type_8": "Lovato DMED341MID7ER",
+            "meter_type_9": "Eltako DSZ15DZE",
             "meter_type_254": "intern"
         }
     }
