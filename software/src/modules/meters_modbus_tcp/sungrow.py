@@ -214,6 +214,7 @@ hybrid_inverter_phase_current_values = [
 specs = [
     {
         'name': 'Sungrow Inverter Output Type',
+        'default_location': 'Inverter',
         'register_type': 'InputRegister',
         'start_address_offset': 1,
         'values': [
@@ -228,6 +229,7 @@ specs = [
     {
         'name': 'Sungrow {variant} Inverter 1P2L',  # output type 1
         'variants': ['Hybrid', 'String'],
+        'default_location': 'Inverter',
         'register_type': 'InputRegister',
         'start_address_offset': 1,
         'values': inverter_values + inverter_phase_voltage_values[:1] + hybrid_inverter_phase_current_values[:1],
@@ -235,6 +237,7 @@ specs = [
     {
         'name': 'Sungrow {variant} Inverter 3P4L',  # output type 2
         'variants': ['Hybrid', 'String'],
+        'default_location': 'Inverter',
         'register_type': 'InputRegister',
         'start_address_offset': 1,
         'values': inverter_values + inverter_phase_voltage_values + hybrid_inverter_phase_current_values,
@@ -242,6 +245,7 @@ specs = [
     {
         'name': 'Sungrow {variant} Inverter 3P3L',  # output type 3
         'variants': ['Hybrid', 'String'],
+        'default_location': 'Inverter',
         'register_type': 'InputRegister',
         'start_address_offset': 1,
         'values': inverter_values + inverter_line_voltage_values + hybrid_inverter_phase_current_values,
@@ -249,6 +253,7 @@ specs = [
     {
         'name': 'Sungrow {variant} Inverter Grid',
         'variants': ['Hybrid', 'String'],
+        'default_location': 'Grid',
         'register_type': 'InputRegister',
         'start_address_offset': 1,
         'values': [
@@ -339,6 +344,7 @@ specs = [
     },
     {
         'name': 'Sungrow Hybrid Inverter Battery',
+        'default_location': 'Battery',
         'register_type': 'InputRegister',
         'start_address_offset': 1,
         'values': [
@@ -416,6 +422,7 @@ specs = [
     {
         'name': 'Sungrow {variant} Inverter Load',
         'variants': ['Hybrid', 'String'],
+        'default_location': 'Load',
         'register_type': 'InputRegister',
         'start_address_offset': 1,
         'values': [
@@ -438,6 +445,7 @@ specs = [
     {
         'name': 'Sungrow {variant} Inverter PV',
         'variants': ['Hybrid', 'String'],
+        'default_location': 'PV',
         'register_type': 'InputRegister',
         'start_address_offset': 1,
         'values': [

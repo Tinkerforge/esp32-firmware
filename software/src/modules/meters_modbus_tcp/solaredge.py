@@ -5,6 +5,7 @@ default_device_addresses = [
 specs = [
     {
         'name': 'Solaredge Battery',
+        'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'f32_negative_max_as_nan': True,
         'values': [

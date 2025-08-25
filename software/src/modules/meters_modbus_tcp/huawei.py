@@ -7,6 +7,7 @@ default_device_addresses = [
 specs = [
     {
         'name': 'Huawei SUN2000 Inverter',
+        'default_location': 'Inverter',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -110,6 +111,7 @@ specs = [
     },
     {
         'name': 'Huawei SUN2000 Grid',
+        'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -248,6 +250,7 @@ specs = [
     },
     {
         'name': 'Huawei SUN2000 Battery Product Model',
+        'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -271,6 +274,7 @@ specs = [
     },
     {
         'name': 'Huawei SUN2000 Battery Huawei LUNA2000',  # two can be connected, use combined registers
+        'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -329,6 +333,7 @@ specs = [
     },
     {
         'name': 'Huawei SUN2000 Battery LG RESU',  # only one can be connected, use unit 1 registers
+        'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -383,6 +388,7 @@ specs = [
     },
     {
         'name': 'Huawei SUN2000 PV String Count',
+        'default_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -395,8 +401,9 @@ specs = [
     },
     {
         'name': 'Huawei SUN2000 PV {variant}',
-        'register_type': 'HoldingRegister',
         'variants': ['No Strings', '1 String', '2 Strings', '3 Strings', '4 Strings', '5 Strings', '6 Strings', '7 Strings', '8 Strings', '9 Strings'],
+        'default_location': 'PV',
+        'register_type': 'HoldingRegister',
         'values': [
             {
                 'name': 'PV1 voltage [0.1 V]',
@@ -564,6 +571,7 @@ specs = [
     },
     {
         'name': 'Huawei SUN2000 Smart Dongle Grid',
+        'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -598,6 +606,7 @@ specs = [
     },
     {
         'name': 'Huawei SUN2000 Smart Dongle Battery Huawei LUNA2000',  # two can be connected, use combined registers
+        'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -617,6 +626,7 @@ specs = [
     },
     {
         'name': 'Huawei SUN2000 Smart Dongle Battery LG RESU',  # only one can be connected, use unit 1 registers
+        'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -636,6 +646,7 @@ specs = [
     },
     {
         'name': 'Huawei SUN2000 Smart Dongle PV',
+        'default_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -653,6 +664,7 @@ specs = [
     },
     {
         'name': 'Huawei EMMA Inverter',
+        'default_location': 'Inverter',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -680,6 +692,7 @@ specs = [
     },
     {
         'name': 'Huawei EMMA Grid Internal Sensor',
+        'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -808,6 +821,7 @@ specs = [
     },
     {
         'name': 'Huawei EMMA Grid External Sensor',
+        'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -936,6 +950,7 @@ specs = [
     },
     {
         'name': 'Huawei EMMA Battery',
+        'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -969,6 +984,7 @@ specs = [
     },
     {
         'name': 'Huawei EMMA Load',
+        'default_location': 'Load',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -986,6 +1002,7 @@ specs = [
     },
     {
         'name': 'Huawei EMMA PV',
+        'default_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [
             {

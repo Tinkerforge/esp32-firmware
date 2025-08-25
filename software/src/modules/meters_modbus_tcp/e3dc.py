@@ -5,6 +5,7 @@ default_device_addresses = [
 specs = [
     {
         'name': 'E3DC Grid',
+        'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'start_address_offset': 1,
         'values': [
@@ -18,6 +19,7 @@ specs = [
     },
     {
         'name': 'E3DC Battery',
+        'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'start_address_offset': 1,
         'values': [
@@ -37,6 +39,7 @@ specs = [
     },
     {
         'name': 'E3DC Load',
+        'default_location': 'Load',
         'register_type': 'HoldingRegister',
         'start_address_offset': 1,
         'values': [
@@ -50,6 +53,7 @@ specs = [
     },
     {
         'name': 'E3DC PV',
+        'default_location': 'PV',
         'register_type': 'HoldingRegister',
         'start_address_offset': 1,
         'values': [
@@ -125,6 +129,7 @@ specs = [
     },
     {
         'name': 'E3DC Additional Generation',
+        'default_location': 'PV',
         'register_type': 'HoldingRegister',
         'start_address_offset': 1,
         'values': [

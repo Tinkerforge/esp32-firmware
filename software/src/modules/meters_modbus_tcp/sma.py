@@ -5,6 +5,7 @@ default_device_addresses = [
 specs = [
     {
         'name': 'SMA Hybrid Inverter Battery',  # FIXME: handle NAN markers
+        'default_location': 'Battery',
         'register_type': 'InputRegister',
         'values': [
             {

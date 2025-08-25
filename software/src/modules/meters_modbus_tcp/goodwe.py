@@ -5,6 +5,7 @@ default_device_addresses = [
 specs = [
     {
         'name': 'Goodwe Hybrid Inverter',
+        'default_location': 'Inverter',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -39,6 +40,7 @@ specs = [
     },
     {
         'name': 'Goodwe Hybrid Inverter Grid',
+        'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -164,6 +166,7 @@ specs = [
     },
     {
         'name': 'Goodwe Hybrid Inverter Battery Modes',
+        'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -184,6 +187,7 @@ specs = [
     },
     {
         'name': 'Goodwe Hybrid Inverter Battery 1',
+        'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -238,6 +242,7 @@ specs = [
     },
     {
         'name': 'Goodwe Hybrid Inverter Battery 2',
+        'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -292,6 +297,7 @@ specs = [
     },
     {
         'name': 'Goodwe Hybrid Inverter Battery 1 And 2',
+        'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -405,6 +411,7 @@ specs = [
     },
     {
         'name': 'Goodwe Hybrid Inverter Load',
+        'default_location': 'Load',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -442,6 +449,7 @@ specs = [
     },
     {
         'name': 'Goodwe Hybrid Inverter Backup Load',
+        'default_location': 'Load',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -535,6 +543,7 @@ specs = [
     },
     {
         'name': 'Goodwe Hybrid Inverter Meter',
+        'default_location': 'Other',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -716,6 +725,7 @@ specs = [
     },
     {
         'name': 'Goodwe Hybrid Inverter PV',
+        'default_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [
             {

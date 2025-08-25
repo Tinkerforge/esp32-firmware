@@ -135,6 +135,7 @@ def make_battery_values(start_address_offset):
 specs = [
     {
         'name': 'Fronius GEN24 Plus Battery Type',
+        'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'start_address_offset': 1,
         'values': [
@@ -148,12 +149,14 @@ specs = [
     },
     {
         'name': 'Fronius GEN24 Plus Battery Integer',
+        'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'start_address_offset': 1,
         'values': make_battery_values(0),
     },
     {
         'name': 'Fronius GEN24 Plus Battery Float',
+        'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'start_address_offset': 1,
         'values': make_battery_values(10),

@@ -92,6 +92,7 @@ def make_monophase_values(channel, phase, start_address_offset):
 specs = [
     {
         'name': 'Shelly EM Triphase',
+        'default_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': [
             {
@@ -286,46 +287,55 @@ specs = [
     },
     {
         'name': 'Shelly EM Monophase Channel 1 As L1',
+        'default_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 1', 'L1', 0)
     },
     {
         'name': 'Shelly EM Monophase Channel 1 As L2',
+        'default_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 1', 'L2', 0)
     },
     {
         'name': 'Shelly EM Monophase Channel 1 As L3',
+        'default_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 1', 'L3', 0)
     },
     {
         'name': 'Shelly EM Monophase Channel 2 As L1',
+        'default_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 2', 'L1', 20)
     },
     {
         'name': 'Shelly EM Monophase Channel 2 As L2',
+        'default_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 2', 'L2', 20)
     },
     {
         'name': 'Shelly EM Monophase Channel 2 As L3',
+        'default_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 2', 'L3', 20)
     },
     {
         'name': 'Shelly EM Monophase Channel 3 As L1',
+        'default_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 3', 'L1', 40)
     },
     {
         'name': 'Shelly EM Monophase Channel 3 As L2',
+        'default_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 3', 'L2', 40)
     },
     {
         'name': 'Shelly EM Monophase Channel 3 As L3',
+        'default_location': 'Unknown',
         'register_type': 'InputRegister',
         'values': make_monophase_values('Channel 3', 'L3', 40)
     },

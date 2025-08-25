@@ -22,10 +22,11 @@
 
 #include <stdint.h>
 
-#include "modules/modbus_tcp_client/generic_modbus_tcp_client.h"
+#include "config.h"
 #include "modules/meters/imeter.h"
 #include "modules/meters/meter_value_id.h"
-#include "config.h"
+#include "modules/meters/meter_location.enum.h"
+#include "modules/modbus_tcp_client/generic_modbus_tcp_client.h"
 #include "modules/modbus_tcp_client/modbus_register_type.enum.h"
 #include "modules/modbus_tcp_client/modbus_value_type.enum.h"
 #include "meter_modbus_tcp_table_id.enum.h"
@@ -81,6 +82,7 @@ public:
     };
 
     struct TableSpec {
+        MeterLocation default_location;
         const ValueSpec *specs;
         size_t specs_length;
         const MeterValueID *ids;

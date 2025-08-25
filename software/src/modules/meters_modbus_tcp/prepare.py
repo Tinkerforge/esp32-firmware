@@ -138,6 +138,7 @@ for spec in specs:
         specs_cpp.append(f'static const uint32_t {spec_name.under}_index[] = {{\n' + '\n'.join(value_index) + '\n};')
 
         specs_cpp.append(f'static const MeterModbusTCP::TableSpec {spec_name.under}_table_ = {{\n'
+                         f'    MeterLocation::{spec['default_location']},\n'
                          f'    {spec_name.under}_specs,\n'
                          f'    ARRAY_SIZE({spec_name.under}_specs),\r')
 
@@ -162,9 +163,9 @@ with open('../../../web/src/modules/meters_modbus_tcp/meter_modbus_tcp_specs.ts'
     f.write('export const enum DefaultDeviceAddress {\n')
     f.write('\n'.join([f'    {util.FlavoredName(name).get().camel} = {value},' for name, value in default_device_addresses]) + '\n')
     f.write('}\n\n')
-    f.write('export function get_default_device_address(table: number)\n')
+    f.write('export function get_default_device_address(table_id: number)\n')
     f.write('{\n')
-    f.write('    switch (table) {\n')
+    f.write('    switch (table_id) {\n')
     f.write('\n'.join([f'    case MeterModbusTCPTableID.{util.FlavoredName(name).get().camel}: return DefaultDeviceAddress.{util.FlavoredName(name).get().camel};' for name, value in default_device_addresses]) + '\n')
     f.write('    default: return undefined;\n')
     f.write('    }\n')
@@ -181,6 +182,4 @@ with open('meter_modbus_tcp_specs.h', 'w', encoding='utf-8') as f:
 with open('meter_modbus_tcp_specs.cpp', 'w', encoding='utf-8') as f:
     f.write('// WARNING: This file is generated.\n\n')
     f.write('#include "meter_modbus_tcp_specs.h"\n\n')
-    f.write('#define VALUE_INDEX_DEBUG 0xFFFFFFFDu\n\n')
-    f.write('#define START_ADDRESS_VIRTUAL 0xFFFFFFFEu\n\n')
     f.write('\n\n'.join(specs_cpp).replace('\r\n', '') + '\n')

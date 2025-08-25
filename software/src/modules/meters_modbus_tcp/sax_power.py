@@ -6,6 +6,7 @@ default_device_addresses = [
 specs = [
     {
         'name': 'SAX Power Home Basic Mode Grid',  # Port: 3600 (and 502?), Unit ID: 64
+        'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -19,6 +20,7 @@ specs = [
     },
     {
         'name': 'SAX Power Home Basic Mode Battery',  # Port: 3600 (and 502?), Unit ID: 64
+        'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -39,6 +41,7 @@ specs = [
     },
     {
         'name': 'SAX Power Home Extended Mode Grid',  # Port: 502, Unit ID: 40
+        'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -129,6 +132,7 @@ specs = [
     },
     {
         'name': 'SAX Power Home Extended Mode Battery',  # Port: 502, Unit ID: 40
+        'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {

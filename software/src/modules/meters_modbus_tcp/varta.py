@@ -6,6 +6,7 @@ default_device_addresses = [
 specs = [
     {
         'name': 'VARTA Element Grid',  # for models element, one, pulse and link
+        'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -19,6 +20,7 @@ specs = [
     },
     {
         'name': 'VARTA Element Battery',  # for models element, one, pulse and link
+        'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -50,6 +52,7 @@ specs = [
     },
     {
         'name': 'VARTA Flex Grid',  # for models pulse neo and flex storage
+        'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -81,6 +84,7 @@ specs = [
     },
     {
         'name': 'VARTA Flex Battery',  # for models pulse neo and flex storage
+        'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {

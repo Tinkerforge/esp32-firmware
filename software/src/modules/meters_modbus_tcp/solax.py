@@ -6,6 +6,7 @@ default_device_addresses = [
 specs = [
     {
         'name': 'Solax Hybrid Inverter',
+        'default_location': 'Inverter',
         'register_type': 'InputRegister',
         'values': [
             {
@@ -19,6 +20,7 @@ specs = [
     },
     {
         'name': 'Solax Hybrid Inverter Grid',
+        'default_location': 'Grid',
         'register_type': 'InputRegister',
         'values': [
             {
@@ -161,6 +163,7 @@ specs = [
     },
     {
         'name': 'Solax Hybrid Inverter Battery',
+        'default_location': 'Battery',
         'register_type': 'InputRegister',
         'values': [
             {
@@ -213,6 +216,7 @@ specs = [
     },
     {
         'name': 'Solax Hybrid Inverter PV',  # FIXME: some models have PV3, but it's unclear how to detect it properly: https://github.com/evcc-io/evcc/issues/19598
+        'default_location': 'PV',
         'register_type': 'InputRegister',
         'values': [
             {
@@ -286,6 +290,7 @@ specs = [
     },
     {
         'name': 'Solax String Inverter',
+        'default_location': 'Inverter',
         'register_type': 'InputRegister',
         'values': [
             {
@@ -348,6 +353,7 @@ specs = [
     },
     {
         'name': 'Solax String Inverter Grid',
+        'default_location': 'Grid',
         'register_type': 'InputRegister',
         'values': [
             {
@@ -438,6 +444,7 @@ specs = [
     },
     {
         'name': 'Solax String Inverter PV',
+        'default_location': 'PV',
         'register_type': 'InputRegister',
         'values': [
             {

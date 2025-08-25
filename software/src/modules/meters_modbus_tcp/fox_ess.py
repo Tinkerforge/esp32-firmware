@@ -7,6 +7,7 @@ default_device_addresses = [
 specs = [
     {
         'name': 'Fox ESS H3 Hybrid Inverter',
+        'default_location': 'Inverter',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -94,6 +95,7 @@ specs = [
     },
     {
         'name': 'Fox ESS H3 Hybrid Inverter Grid',
+        'default_location': 'Grid',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -135,6 +137,7 @@ specs = [
     },
     {
         'name': 'Fox ESS H3 Hybrid Inverter Battery',
+        'default_location': 'Battery',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -189,6 +192,7 @@ specs = [
     },
     {
         'name': 'Fox ESS H3 Hybrid Inverter Load',
+        'default_location': 'Load',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -223,6 +227,7 @@ specs = [
     },
     {
         'name': 'Fox ESS H3 Hybrid Inverter PV',
+        'default_location': 'PV',
         'register_type': 'HoldingRegister',
         'values': [
             {
@@ -296,8 +301,9 @@ specs = [
     },
     {
         'name': 'Fox ESS H3 {variant} Hybrid Inverter',
-        'register_type': 'HoldingRegister',
         'variants': ['Smart', 'Pro'],
+        'default_location': 'Inverter',
+        'register_type': 'HoldingRegister',
         'values': [
             {
                 'name': 'Grid Voltage Phase R [0.1 V]',
@@ -393,8 +399,9 @@ specs = [
     },
     {
         'name': 'Fox ESS H3 {variant} Hybrid Inverter Grid',
-        'register_type': 'HoldingRegister',
         'variants': ['Smart', 'Pro'],
+        'default_location': 'Grid',
+        'register_type': 'HoldingRegister',
         'values': [
             {
                 'name': 'Smart Meter Export Total [0.01 kWh]',
@@ -453,8 +460,9 @@ specs = [
     },
     {
         'name': 'Fox ESS H3 {variant} Hybrid Inverter Battery',  # FIXME: add support for battery 2
-        'register_type': 'HoldingRegister',
         'variants': ['Smart', 'Pro'],
+        'default_location': 'Battery',
+        'register_type': 'HoldingRegister',
         'values': [
             {
                 'name': 'Battery 1 Voltage [0.1 V]',
@@ -526,8 +534,9 @@ specs = [
     },
     {
         'name': 'Fox ESS H3 {variant} Hybrid Inverter Load',
-        'register_type': 'HoldingRegister',
         'variants': ['Smart', 'Pro'],
+        'default_location': 'Load',
+        'register_type': 'HoldingRegister',
         'values': [
             {
                 'name': 'Load Import Total [0.01 kWh]',
@@ -577,8 +586,9 @@ specs = [
     },
     {
         'name': 'Fox ESS H3 {variant} Hybrid Inverter PV',
-        'register_type': 'HoldingRegister',
         'variants': ['Smart', 'Pro'],
+        'default_location': 'PV',
+        'register_type': 'HoldingRegister',
         'values': [
             {
                 'name': 'Solar Energy Total [0.1 kWh]',

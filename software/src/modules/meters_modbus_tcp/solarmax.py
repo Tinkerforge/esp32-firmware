@@ -5,6 +5,7 @@ default_device_addresses = [
 specs = [
     {
         'name': 'Solarmax Max Storage Inverter',
+        'default_location': 'Inverter',
         'register_type': 'InputRegister',
         'values': [
             {
@@ -35,6 +36,7 @@ specs = [
     },
     {
         'name': 'Solarmax Max Storage Grid',
+        'default_location': 'Grid',
         'register_type': 'InputRegister',
         'values': [
             {
@@ -48,6 +50,7 @@ specs = [
     },
     {
         'name': 'Solarmax Max Storage Battery',
+        'default_location': 'Battery',
         'register_type': 'InputRegister',
         'values': [
             {

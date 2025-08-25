@@ -5,6 +5,7 @@ default_device_addresses = [
 specs = [
     {
         'name': 'Victron Energy GX Grid',
+        'default_location': 'Grid',
         'register_type': 'InputRegister',
         'values': [
             {
@@ -29,6 +30,7 @@ specs = [
     },
     {
         'name': 'Victron Energy GX Battery',
+        'default_location': 'Battery',
         'register_type': 'InputRegister',
         'values': [
             {
@@ -61,6 +63,7 @@ specs = [
     },
     {
         'name': 'Victron Energy GX Load',
+        'default_location': 'Load',
         'register_type': 'InputRegister',
         'values': [
             {
@@ -95,6 +98,7 @@ specs = [
     },
     {
         'name': 'Victron Energy GX PV',
+        'default_location': 'PV',
         'register_type': 'InputRegister',
         'values': [
             {

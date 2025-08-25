@@ -8,6 +8,7 @@ default_device_addresses = [
 specs = [
     {
         'name': 'Tinkerforge WARP Charger',
+        'default_location': 'Load',
         'register_type': 'InputRegister',
         'values': [
             {
