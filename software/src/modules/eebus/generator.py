@@ -35,7 +35,6 @@ spine_cpp_header_header = """
 
 namespace ArduinoJson
 {
-inline bool spine_go_compatibility_mode = false; // If true, the JSON will be formatted and parsed in a way that it is compatible with SPINE-GO
 template <typename T> struct Converter<std::vector<T>> {
     static void toJson(const std::vector<T> &src, JsonVariant dst);
     static std::vector<T> fromJson(JsonVariantConst src);
@@ -70,13 +69,7 @@ namespace ArduinoJson
 template <typename T>
 void Converter<std::vector<T>>::toJson(const std::vector<T> &src, JsonVariant dst)
 {
-    JsonArray array;
-    // SPINE-GO wants a double wrapped array for objects (but not for fundamental types) or else it breaks the JSON.
-    if (std::is_fundamental<T>::value || !spine_go_compatibility_mode) {
-        array = dst.to<JsonArray>();
-    }else {
-        array = dst.to<JsonArray>().createNestedArray();
-    }
+    JsonArray array = dst.to<JsonArray>();
     for (T item : src)
         array.add(item);
 }
@@ -85,14 +78,8 @@ template <typename T>
 std::vector<T> Converter<std::vector<T>>::fromJson(JsonVariantConst src)
 {
     std::vector<T> dst;
-    if (std::is_fundamental<T>::value || !spine_go_compatibility_mode) {
-        for (T item : src.as<JsonArrayConst>())
-            dst.push_back(item);
-    } else {
-        src = src.as<JsonArrayConst>()[0];
-        for (T item : src.as<JsonArrayConst>())
-            dst.push_back(item);
-    }
+    for (T item : src.as<JsonArrayConst>())
+        dst.push_back(item);    
     return dst;
 }
 
@@ -368,6 +355,7 @@ def process_complex_type(complex_type):
             new_type.from_json_code = from_json_reformat
 
         new_type.code += f"\n\t{struct_type_name}() = default;\n}};\n"
+
         # make the constructor for the struct
         #new_type.code += f"\n\t{struct_type_name}()\n\t\t:"
         #for variable_type, variable_name, is_vec in elements:

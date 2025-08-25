@@ -32,63 +32,75 @@
 
 namespace SHIP_TYPES
 {
-    // SHIP Datatypes as defined in SHIP .xsd
-    enum DeserializationResult
-    {
-        SUCCESS,
-        ERROR,
-        NOT_IMPLEMENTED
-    };
+// SHIP Datatypes as defined in SHIP .xsd
+enum DeserializationResult
+{
+    SUCCESS,
+    ERROR,
+    NOT_IMPLEMENTED
+};
 
-    void DeserializeOptionalField(JsonObject* data, const char* field_name, bool* field_valid, String* field_value);
+void DeserializeOptionalField(JsonObject *data, const char *field_name, bool *field_valid, String *field_value);
 
-    template <typename T>
-    void DeserializeOptionalField(JsonObject* data, const char* field_name, bool* field_valid,
-                                  std::vector<T>* field_value);
+template <typename T>
+void DeserializeOptionalField(JsonObject *data,                              const char *field_name,                              bool *field_valid,std::vector<T> *field_value);
 
-    struct ShipMessageDataType
-    {
-        // SHIP 13.4.5.2.1
-        // Mandatory
-        bool valid = false;
-        String protocol_id{};
-        JsonVariant payload{};
+/**
+ * EEBUS wants objects to be arrays with each field being an array element. This function converts a normal json object to the EEBUS format
+ * @param src The Json object to convert. Should belong to a different JsonDocument than dst
+ * @param dst Target Json object where the converted json will be stored. Should belong to a different JsonDocument than src
+ */
+void JsonToEEBusJson(JsonVariant src, JsonVariant dst);
+/**
+ * EEBUS wants objects to be arrays with each field being an array element. This function converts EEBUS json to a normal json object
+ * @param json_in The EEBUS Json
+ * @return Json in regular JSON format
+ */
+String EEBUSJsonToJson(String json_in);
 
-        // Optional
-        // This is used by Manufacturers to add their own data to the message
-        // If a field is to be sent out it has to be set to valid = true, otherwise it will be ignored
-        bool extension_id_valid = false;
-        bool extension_binary_valid = false;
-        bool extension_string_valid = false;
-        String extension_id{};
-        std::vector<bool> extension_binary{}; // This technically an array of integers
-        String extension_string{};
+struct ShipMessageDataType
+{
+    // SHIP 13.4.5.2.1
+    // Mandatory
+    bool valid = false;
+    String protocol_id{};
+    JsonVariant payload{};
+
+    // Optional
+    // This is used by Manufacturers to add their own data to the message
+    // If a field is to be sent out it has to be set to valid = true, otherwise it will be ignored
+    bool extension_id_valid = false;
+    bool extension_binary_valid = false;
+    bool extension_string_valid = false;
+    String extension_id{};
+    std::vector<bool> extension_binary{}; // This technically an array of integers
+    String extension_string{};
+
+    bool eebus_json_compatibility_mode = true; // If true, the json will be converted to EEBUS format during deserialization and back to normal json during serialization
+    DeserializationResult json_to_type(uint8_t *data, size_t length, JsonDocument &doc);
+    // Needs a jsondoc otherwise the payload cant be stored
+    String type_to_json();
+};
+
+struct ShipMessageAccessMethodsRequest
+{
+    String request; // There is no datatype defined for this yet
+    DeserializationResult json_to_type(uint8_t *data, size_t length);
+    String type_to_json();
+};
+
+struct ShipMessageAccessMethods
+{
+    String id;
+    std::vector<String> dns_sd_mdns;
+    bool dns_sd_mdns_valid = false;
+    std::vector<String> dns{};
+    bool dns_valid = false;
+    String dns_uri{};
+    bool dns_uri_valid = false;
 
 
-        DeserializationResult json_to_type(uint8_t* data, size_t length, bool compatiblity_mode, JsonDocument& doc);
-        // Needs a jsondoc otherwise the payload cant be stored
-        String type_to_json();
-    };
-
-    struct ShipMessageAccessMethodsRequest
-    {
-        String request; // There is no datatype defined for this yet
-        DeserializationResult json_to_type(uint8_t* data, size_t length);
-        String type_to_json();
-    };
-
-    struct ShipMessageAccessMethods
-    {
-        String id;
-        std::vector<String> dns_sd_mdns;
-        bool dns_sd_mdns_valid = false;
-        std::vector<String> dns{};
-        bool dns_valid = false;
-        String dns_uri{};
-        bool dns_uri_valid = false;
-
-
-        DeserializationResult json_to_type(uint8_t* data, size_t length);
-        String type_to_json();
-    };
+    DeserializationResult json_to_type(uint8_t *data, size_t length);
+    String type_to_json();
+};
 } // namespace SHIP_TYPES
