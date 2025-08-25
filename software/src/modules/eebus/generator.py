@@ -638,17 +638,17 @@ def process_xsd_directory(input_dir, output_header_path, output_cpp_path, handli
 
 def main():
     parser = argparse.ArgumentParser(description="Generate C++ code for SPINE and SHIP types from XSD files.")
-    parser.add_argument('--no-ship', action='store_true',
-                        help='Do not process SHIP XSD files. Defaults to processing SHIP files.')
+    #parser.add_argument('--no-ship', action='store_true',
+    #                    help='Do not process SHIP XSD files. Defaults to processing SHIP files.')
     parser.add_argument('--no-spine', action='store_true',
                         help='Do not process SPINE XSD files. Defaults to processing SPINE files.')
     parser.add_argument('--spine-input', default='SPINE',
                         help='Input directory for SPINE XSD files. Defaults to "SPINE".')
     parser.add_argument('--spine-output', default='spine_types',
                         help='Output filename for SPINE C++ code (without file extension). Defaults to "spine_types". which generates "spine_types.h" and "spine_types.cpp".')
-    parser.add_argument('--ship-input', default='SHIP', help='Input directory for SHIP XSD files. Defaults to "SHIP".')
-    parser.add_argument('--ship-output', default='ship_types_new',
-                        help='Output filename for SHIP C++ code (without file extension). Defaults to "ship_types_new". which generates "ship_types_new.h" and "ship_types_new.cpp".')
+    #parser.add_argument('--ship-input', default='SHIP', help='Input directory for SHIP XSD files. Defaults to "SHIP".')
+    #parser.add_argument('--ship-output', default='ship_types_new',
+    #                    help='Output filename for SHIP C++ code (without file extension). Defaults to "ship_types_new". which generates "ship_types_new.h" and "ship_types_new.cpp".')
 
     args = parser.parse_args()
 
@@ -662,16 +662,16 @@ def main():
                               code_header=spine_cpp_header_header, code_implementation=spine_cpp_implementation_header)
         print("Done processing SPINE XSD files.")
 
-    if not args.no_ship:
-        print("Processing SHIP XSD files...")
-        ship_path = args.ship_input
-        output_header = args.ship_output + ".h"
-        output_cpp = args.ship_output + ".cpp"
-        process_xsd_directory(ship_path, output_header, output_cpp, handling_type="ship",
-                              code_header=ship_cpp_header_header, code_implementation=ship_cpp_implementation_header)
-        if args.no_spine:
-            print("WARNING: SHIP code is generated without SPINE code. SHIP requires SPINE to function properly.")
-        print("Done processing SHIP XSD files.")
+    #if not args.no_ship:
+    #    print("Processing SHIP XSD files...")
+    #    ship_path = args.ship_input
+    #    output_header = args.ship_output + ".h"
+    #    output_cpp = args.ship_output + ".cpp"
+    #    process_xsd_directory(ship_path, output_header, output_cpp, handling_type="ship",
+    #                          code_header=ship_cpp_header_header, code_implementation=ship_cpp_implementation_header)
+    #    if args.no_spine:
+    #        print("WARNING: SHIP code is generated without SPINE code. SHIP requires SPINE to function properly.")
+    #    print("Done processing SHIP XSD files.")
     print("Done!")
 
 
