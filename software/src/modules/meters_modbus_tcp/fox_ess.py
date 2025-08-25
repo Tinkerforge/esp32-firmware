@@ -135,7 +135,7 @@ specs = [
     },
     {
         'name': 'Fox ESS H3 Hybrid Inverter Battery',
-        'register_type': 'InputRegister',
+        'register_type': 'HoldingRegister',
         'values': [
             {
                 'name': 'Battery Voltage [0.1 V]',
@@ -189,7 +189,7 @@ specs = [
     },
     {
         'name': 'Fox ESS H3 Hybrid Inverter Load',
-        'register_type': 'InputRegister',
+        'register_type': 'HoldingRegister',
         'values': [
             {
                 'name': 'Load Import Total [0.1 kWh]',
@@ -453,7 +453,7 @@ specs = [
     },
     {
         'name': 'Fox ESS H3 {variant} Hybrid Inverter Battery',  # FIXME: add support for battery 2
-        'register_type': 'InputRegister',
+        'register_type': 'HoldingRegister',
         'variants': ['Smart', 'Pro'],
         'values': [
             {
@@ -526,7 +526,7 @@ specs = [
     },
     {
         'name': 'Fox ESS H3 {variant} Hybrid Inverter Load',
-        'register_type': 'InputRegister',
+        'register_type': 'HoldingRegister',
         'variants': ['Smart', 'Pro'],
         'values': [
             {
