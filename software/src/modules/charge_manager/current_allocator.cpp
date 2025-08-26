@@ -1130,13 +1130,15 @@ static void stage_4(StageContext &sc) {
 
         const auto *state = &sc.charger_state[sc.idx_array[i]];
 
-        bool force_3p = !deadline_elapsed(state->last_phase_switch + sc.cfg->global_hysteresis) && state->phases == 3;
-        if (force_3p)
-            set_charger_decision(sc, sc.idx_array[i], OnePhaseDecision::NoForced3pUntil(state->last_phase_switch + sc.cfg->global_hysteresis));
+        auto phase_switch_hyst = state->last_phase_switch + sc.cfg->global_hysteresis;
 
-        bool force_1p = !deadline_elapsed(state->last_phase_switch + sc.cfg->global_hysteresis) && state->phases == 1;
+        bool force_3p = !deadline_elapsed(phase_switch_hyst) && state->phases == 3;
+        if (force_3p)
+            set_charger_decision(sc, sc.idx_array[i], OnePhaseDecision::NoForced3pUntil(phase_switch_hyst.to<seconds_t>()));
+
+        bool force_1p = !deadline_elapsed(phase_switch_hyst) && state->phases == 1;
         if (force_1p)
-            set_charger_decision(sc, sc.idx_array[i], ThreePhaseDecision::NoForced1pUntil(state->last_phase_switch + sc.cfg->global_hysteresis));
+            set_charger_decision(sc, sc.idx_array[i], ThreePhaseDecision::NoForced1pUntil(phase_switch_hyst.to<seconds_t>()));
 
         bool is_fixed_3p = state->phases == 3 && !state->phase_switch_supported;
         if (is_fixed_3p)
@@ -1247,10 +1249,12 @@ static void stage_5(StageContext &sc) {
         if (!sc.ca_state->global_hysteresis_elapsed && sc.charger_allocation_state[sc.idx_array[i]].allocated_current != 0)
             continue;
 
+        auto phase_switch_hyst = state->last_phase_switch + sc.cfg->global_hysteresis;
+
         // The global hysteresis is not elapsed yet, but this charger was switched less than one hysteresis ago.
         // This could have been a phase switch, so don't switch again immediately.
-        if (!deadline_elapsed(state->last_phase_switch + sc.cfg->global_hysteresis)) {
-            set_charger_decision(sc, sc.idx_array[i], ThreePhaseDecision::NoPhaseSwitchBlockedUntil(state->last_phase_switch + sc.cfg->global_hysteresis));
+        if (!deadline_elapsed(phase_switch_hyst)) {
+            set_charger_decision(sc, sc.idx_array[i], ThreePhaseDecision::NoPhaseSwitchBlockedUntil(phase_switch_hyst.to<seconds_t>()));
             continue;
         }
 
