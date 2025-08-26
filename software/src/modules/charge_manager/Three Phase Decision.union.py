@@ -29,4 +29,5 @@ spec = Union("Three Phase Decision", 12, variants=[
         Member('Timestamp', Types.Micros)
     ]),
     Variant('Yes Waking Up'),
+    Variant('Yes Normal'),
 ])
