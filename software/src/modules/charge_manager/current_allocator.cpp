@@ -1294,10 +1294,6 @@ static void stage_5(StageContext &sc) {
             continue;
         }
 
-        /*if (sc.phase_allocation[sc.idx_array[i]] == 0)
-            set_charger_decision(sc, sc.idx_array[i], ChargerDecision::Activating1(3));
-        else
-            set_charger_decision(sc, sc.idx_array[i], ChargerDecision::PhaseSwitching0());*/
 
         trace("%s", buf);
 
