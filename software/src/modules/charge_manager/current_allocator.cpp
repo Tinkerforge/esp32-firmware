@@ -1294,6 +1294,7 @@ static void stage_5(StageContext &sc) {
             continue;
         }
 
+        set_charger_decision(sc, sc.idx_array[i], ThreePhaseDecision::YesNormal());
 
         trace("%s", buf);
 
