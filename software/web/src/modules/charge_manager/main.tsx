@@ -198,6 +198,8 @@ function one_phase_desc_to_text(d1: OnePhaseDecision): ComponentChild {
             return "No: Charger is supplied with three phases and does not support phase switch";
         case OnePhaseDecisionTag.YesWakingUp:
             return "Yes: Waking up vehicle";
+        case OnePhaseDecisionTag.YesNormal:
+            return "Yes";
     }
 }
 
@@ -227,6 +229,8 @@ function three_phase_desc_to_text(d3: ThreePhaseDecision): ComponentChild {
             return with_timespan((timespan) => "No: Phase switch blocked until" + timespan, d3[1]);
         case ThreePhaseDecisionTag.YesWakingUp:
             return "Yes: Waking up vehicle";
+        case ThreePhaseDecisionTag.YesNormal:
+            return "Yes";
     }
 }
 
