@@ -7,13 +7,13 @@ from software.util import *
 spec = Union("Global Decision", 16, variants=[
     Variant('None'),
     Variant('PV Excess Overloaded Hysteresis Blocks Until', [
-        Member('Timestamp', Types.Micros),
+        Member('Timestamp', Types.Seconds),
         Member('Overload mA', Types.U32),
     ]),
     Variant('Hysteresis Elapses At', [
-        Member('Timestamp', Types.Micros)
+        Member('Timestamp', Types.Seconds)
     ]),
     Variant('Next Rotation At', [
-        Member('Timestamp', Types.Micros)
+        Member('Timestamp', Types.Seconds)
     ]),
 ])
