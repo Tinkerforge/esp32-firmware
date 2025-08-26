@@ -598,10 +598,6 @@ for model in models:
 
         print_cpp(f"static float {get_fn_name}(const void *register_data, uint32_t quirks, bool detection)")
         print_cpp(r"{")
-
-        if value_is_phase_to_phase_voltage:
-            print_cpp(r"    if (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_INVALID) return NAN;")
-
         print_cpp(f"    const struct {struct_name} *model = static_cast<const struct {struct_name} *>(register_data);")
 
         # Retrieve value from struct
@@ -630,6 +626,9 @@ for model in models:
             elif value_is_der_phase_power_factor:
                 print_cpp(r"    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_DER_PHASE_POWER_FACTOR_IS_UINT16) == 0 ? INT16_MIN : -1;")
                 print_cpp(r"    if (val == not_implemented_val) return NAN;")
+            elif value_is_phase_to_phase_voltage:
+                print_cpp(r"    int16_t not_implemented_val = (quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_UINT16) == 0 ? INT16_MIN : -1;")
+                print_cpp(r"    if (val == not_implemented_val) return NAN;")
             else:
                 print_cpp(r"    if (val == INT16_MIN) return NAN;")
         elif field_type == "uint16":
@@ -657,6 +656,17 @@ for model in models:
         # Convert value to float
         if field_type == "float32":
             print_cpp(r"    float fval = val;")
+        elif field_type == "int16":
+            if value_is_phase_to_phase_voltage:
+                print_cpp(r"    float fval;")
+                print_cpp(r"    if ((quirks & SUN_SPEC_QUIRKS_PHASE_TO_PHASE_VOLTAGE_IS_UINT16) == 0) {")
+                print_cpp(r"        fval = static_cast<float>(val);")
+                print_cpp(r"    } else {")
+                print_cpp(r"        uint16_t uval = static_cast<uint16_t>(val);")
+                print_cpp(r"        fval = static_cast<float>(uval);")
+                print_cpp(r"    }")
+            else:
+                print_cpp(r"    float fval = static_cast<float>(val);")
         elif field_type == "uint16":
             if value_is_integer_inverter_current:
                 print_cpp(r"    float fval;")
