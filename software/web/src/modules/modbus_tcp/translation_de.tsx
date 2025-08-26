@@ -188,7 +188,7 @@ let x = {
                                 <li>6: DSZ15DZMOD</li>
                                 <li>7: DEM4A</li>
                                 <li>8: DMED341MID7ER</li>
-                                <li>9: DSZ15DZE</li>
+                                <li>9: DSZ16DZE</li>
                             </ul>
                         </td>
                     </tr>
