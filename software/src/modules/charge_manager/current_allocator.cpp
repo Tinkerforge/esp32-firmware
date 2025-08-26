@@ -1152,8 +1152,9 @@ static void stage_4(StageContext &sc) {
         uint8_t phase_alloc = 0;
 
         if (try_3p && try_activate(sc, sc.idx_array[i], sw, state, true, have_active_chargers, nullptr)) {
-            if (is_unknown_rot_switchable)
-                set_charger_decision(sc, sc.idx_array[i], ThreePhaseDecision::YesUnknownRotSwitchable());
+            set_charger_decision(sc, sc.idx_array[i],
+                is_unknown_rot_switchable ? ThreePhaseDecision::YesUnknownRotSwitchable()
+                                          : ThreePhaseDecision::YesNormal());
 
             try_1p = false;
             phase_alloc = 3;
@@ -1161,6 +1162,7 @@ static void stage_4(StageContext &sc) {
 
         if (try_1p && try_activate(sc, sc.idx_array[i], sw, state, false, have_active_chargers, nullptr)) {
             phase_alloc = 1;
+            set_charger_decision(sc, sc.idx_array[i], OnePhaseDecision::YesNormal());
         }
 
         sc.phase_allocation[sc.idx_array[i]] = phase_alloc;
