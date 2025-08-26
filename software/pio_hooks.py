@@ -965,8 +965,11 @@ def main():
 
     env.Replace(BUILD_FLAGS=build_flags)
 
+    version_full_str = "{}.{}.{}{}+{:x}".format(*version[:3], f"-beta.{version[3]}" if version[3] != "255" else "", build_timestamp)
+
     build_lines = []
     build_lines.append('#pragma once')
+    build_lines.append('#include <stddef.h>')
     build_lines.append('#include <stdint.h>')
     build_lines.append('#define BUILD_VERSION_OLDEST_MAJOR {}'.format(version_oldest[0]))
     build_lines.append('#define BUILD_VERSION_OLDEST_MINOR {}'.format(version_oldest[1]))
@@ -982,6 +985,7 @@ def main():
     build_lines.append('uint32_t build_timestamp();')
     build_lines.append('const char *build_timestamp_hex_str();')
     build_lines.append('const char *build_version_full_str();')
+    build_lines.append('constexpr size_t build_version_full_str_len = {};'.format(len(version_full_str)))
     build_lines.append('const char *build_version_full_str_upper();')
     build_lines.append('const char *build_info_str();')
     build_lines.append('const char *build_filename_str();')
@@ -1009,8 +1013,6 @@ def main():
         build_timestamp,
         dirty_suffix,
     )
-
-    version_full_str = "{}.{}.{}{}+{:x}".format(*version[:3], f"-beta.{version[3]}" if version[3] != "255" else "", build_timestamp)
 
     build_lines = []
     build_lines.append('#include "build.h"')

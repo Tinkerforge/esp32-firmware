@@ -32,13 +32,10 @@
 #include "tools.h"
 #include "tools/fs.h"
 #include "tools/memory.h"
-#include "tools/string_builder.h"
+
+#include "gcc_warnings.h"
 
 extern TF_HAL hal;
-
-API::API()
-{
-}
 
 void API::pre_setup()
 {
@@ -51,7 +48,7 @@ void API::pre_setup()
     );
 
     version = Config::Object({
-        {"firmware", Config::Str(build_version_full_str(), 0, strlen(build_version_full_str()))},
+        {"firmware", Config::Str(build_version_full_str(), 0, static_cast<uint16_t>(build_version_full_str_len))},
         {"config", Config::Str("", 0, 12)},
         {"config_type", Config::Str("", 0, 32)},
     });
@@ -103,7 +100,7 @@ void API::setup()
 
             const size_t backend_count = this->backends.size();
 
-            uint8_t to_send = reg.config->was_updated((1 << backend_count) - 1);
+            uint8_t to_send = reg.config->was_updated(static_cast<uint8_t>((1 << backend_count) - 1));
             // If the config was not updated for any API, we don't have to serialize the payload.
             if (to_send == 0) {
                 continue;
@@ -112,7 +109,7 @@ void API::setup()
             auto wsu = IAPIBackend::WantsStateUpdate::No;
             for (size_t backend_idx = 0; backend_idx < backend_count; ++backend_idx) {
                 auto backend_wsu = this->backends[backend_idx]->wantsStateUpdate(state_idx);
-                if ((int) wsu < (int) backend_wsu) {
+                if (static_cast<int>(wsu) < static_cast<int>(backend_wsu)) {
                     wsu = backend_wsu;
                 }
             }
@@ -419,8 +416,8 @@ void API::addResponse(const char * const path, ConfigRoot *config, const std::ve
         ktc,
         config,
         std::move(callback),
-        (uint8_t)path_len,
-        (uint8_t)ktc_size
+        static_cast<uint8_t>(path_len),
+        static_cast<uint8_t>(ktc_size)
     });
     auto responseIdx = responses.size() - 1;
 
@@ -846,7 +843,7 @@ void API::callCommandNonBlocking(CommandRegistration &reg, const char *payload, 
         return;
     }
 
-    char *cpy = (char *)malloc(len);
+    char *cpy = static_cast<char *>(malloc(len));
     if (cpy == nullptr) {
         String err = "callCommandNonBlocking: Failed to allocate payload copy!";
         done_cb(err);
@@ -1035,7 +1032,7 @@ const char *API::build_suffix_path(SuffixPath &suffix_path, const char *suffix, 
         }
 
         if (is_number) {
-            if (!suffix_path.path.add((size_t)strtoul(ptr, nullptr, 10))) {
+            if (!suffix_path.path.add(static_cast<size_t>(strtoul(ptr, nullptr, 10)))) {
                 return "path too long";
             }
         } else {

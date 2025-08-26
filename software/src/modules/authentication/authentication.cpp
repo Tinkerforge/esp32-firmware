@@ -23,6 +23,8 @@
 #include "module_dependencies.h"
 #include "digest_auth.h"
 
+#include "gcc_warnings.h"
+
 void Authentication::pre_setup()
 {
     config = ConfigRoot{Config::Object({

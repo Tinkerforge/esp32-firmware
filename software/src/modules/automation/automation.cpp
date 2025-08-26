@@ -300,7 +300,7 @@ bool Automation::trigger(AutomationTriggerID number, void *data, IAutomationBack
             AutomationActionID action_ident = action->getTag<AutomationActionID>();
 
             if (action_ident != AutomationActionID::None && action_map.find(action_ident) == action_map.end()) {
-                logger.printfln("There is no action with ID %u!", (uint8_t)action_ident);
+                logger.printfln("There is no action with ID %u!", static_cast<uint8_t>(action_ident));
                 continue;
             }
 
@@ -383,7 +383,7 @@ static bool is_last_day(struct tm time)
 bool Automation::has_triggered(const Config *conf, void *data)
 {
     const Config *cfg = static_cast<const Config *>(conf->get());
-    tm *time_struct = (tm *)data;
+    tm *time_struct = static_cast<tm *>(data);
     bool triggered = false;
 
     int32_t wday = cfg->get("wday")->asInt();

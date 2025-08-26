@@ -26,6 +26,8 @@
 #include "module_dependencies.h"
 #include "options.h"
 
+#include "gcc_warnings.h"
+
 #define CERT_DIRECTORY "/certs"
 
 static inline String get_cert_path(uint8_t cert_id) {
@@ -72,7 +74,7 @@ void Certs::pre_setup()
                         &ctx,
                         "-----BEGIN CERTIFICATE-----",
                         "-----END CERTIFICATE-----",
-                        (const unsigned char *)cert.c_str(),
+                        reinterpret_cast<const unsigned char *>(cert.c_str()),
                         nullptr, 0,
                         &ignored);
 
@@ -83,7 +85,7 @@ void Certs::pre_setup()
                         &key_ctx,
                         "-----BEGIN PRIVATE KEY-----",
                         "-----END PRIVATE KEY-----",
-                        (const unsigned char *)cert.c_str(),
+                        reinterpret_cast<const unsigned char *>(cert.c_str()),
                         nullptr, 0,
                         &ignored);
         mbedtls_pem_free(&key_ctx);
@@ -92,7 +94,7 @@ void Certs::pre_setup()
                         &key_ctx,
                         "-----BEGIN RSA PRIVATE KEY-----",
                         "-----END RSA PRIVATE KEY-----",
-                        (const unsigned char *)cert.c_str(),
+                        reinterpret_cast<const unsigned char *>(cert.c_str()),
                         nullptr, 0,
                         &ignored);
         mbedtls_pem_free(&key_ctx);
@@ -101,7 +103,7 @@ void Certs::pre_setup()
                         &key_ctx,
                         "-----BEGIN EC PRIVATE KEY-----",
                         "-----END EC PRIVATE KEY-----",
-                        (const unsigned char *)cert.c_str(),
+                        reinterpret_cast<const unsigned char *>(cert.c_str()),
                         nullptr, 0,
                         &ignored);
         mbedtls_pem_free(&key_ctx);
@@ -171,7 +173,7 @@ void Certs::register_urls()
             return;
         }
 
-        uint8_t cert_id = add.get("id")->asUint();
+        uint8_t cert_id = add.get("id")->asUint8();
 
         for (const auto &cert: state.get("certs")) {
             if (cert.get("id")->asUint() == cert_id) {
@@ -183,14 +185,14 @@ void Certs::register_urls()
         {
             File f = LittleFS.open(get_cert_name_path(cert_id), "w");
             const String &cert_name = add.get("name")->asString();
-            f.write((const uint8_t *) cert_name.c_str(), cert_name.length());
+            f.write(reinterpret_cast<const uint8_t *>(cert_name.c_str()), cert_name.length());
         }
 
         {
             File f = LittleFS.open(get_cert_path(cert_id), "w");
             // TODO: more robust writing
             const String &cert = add.get("cert")->asString();
-            f.write((const uint8_t *) cert.c_str(), cert.length());
+            f.write(reinterpret_cast<const uint8_t *>(cert.c_str()), cert.length());
         }
 
         // Cert is written into flash. Drop from config to free memory.
@@ -201,7 +203,7 @@ void Certs::register_urls()
     }, true);
 
     api.addCommand("certs/modify", &add, {}, [this](String &errmsg) {
-        uint8_t cert_id = add.get("id")->asUint();
+        uint8_t cert_id = add.get("id")->asUint8();
         bool found = false;
         for (const auto &cert: state.get("certs")) {
             if (cert.get("id")->asUint() == cert_id) {
@@ -218,14 +220,14 @@ void Certs::register_urls()
         {
             File f = LittleFS.open(get_cert_name_path(cert_id), "w");
             const String &cert_name = add.get("name")->asString();
-            f.write((const uint8_t *) cert_name.c_str(), cert_name.length());
+            f.write(reinterpret_cast<const uint8_t *>(cert_name.c_str()), cert_name.length());
         }
 
         if (!add.get("cert")->asString().isEmpty()) { // TODO: Should empty certificats really be accepted here?
             File f = LittleFS.open(get_cert_path(cert_id), "w"); // TODO: Does this truncate a larger existing file?
             // TODO: more robust writing
             const String &cert = add.get("cert")->asString();
-            f.write((const uint8_t *) cert.c_str(), cert.length());
+            f.write(reinterpret_cast<const uint8_t *>(cert.c_str()), cert.length());
         }
 
         // Cert is written into flash. Drop from config to free memory.
@@ -236,7 +238,7 @@ void Certs::register_urls()
     }, true);
 
     api.addCommand("certs/remove", &remove, {}, [this](String &errmsg) {
-        uint8_t cert_id = remove.get("id")->asUint();
+        uint8_t cert_id = remove.get("id")->asUint8();
 
         String path = get_cert_path(cert_id);
 

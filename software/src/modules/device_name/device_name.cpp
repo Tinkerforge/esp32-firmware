@@ -22,6 +22,8 @@
 #include "module_dependencies.h"
 #include "options.h"
 
+#include "gcc_warnings.h"
+
 extern char local_uid_str[32];
 
 static const size_t options_hostname_prefix_length = constexpr_strlen(OPTIONS_HOSTNAME_PREFIX());
@@ -41,7 +43,7 @@ void DeviceName::pre_setup()
 }
 
 #if OPTIONS_PRODUCT_ID_IS_WARP() || OPTIONS_PRODUCT_ID_IS_WARP2() || OPTIONS_PRODUCT_ID_IS_WARP3() || OPTIONS_PRODUCT_ID_IS_WARP4() || OPTIONS_PRODUCT_ID_IS_ELTAKO()
-String getWarpDisplayType(bool add_optional_hw=true)
+static String getWarpDisplayType(bool add_optional_hw=true)
 {
     String display_type =
 #if OPTIONS_PRODUCT_ID_IS_ELTAKO()

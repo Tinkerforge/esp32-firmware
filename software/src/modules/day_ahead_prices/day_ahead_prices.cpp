@@ -21,6 +21,7 @@
 #include "region.enum.h"
 #include "resolution.enum.h"
 
+#include <math.h>
 #include <time.h>
 #include <lwip/inet.h>
 
@@ -28,7 +29,6 @@
 #include "module_dependencies.h"
 #include "tools.h"
 #include "options.h"
-#include <cmath>
 
 static constexpr auto CHECK_INTERVAL = 1_min;
 static constexpr auto PRICE_UPDATE_INTERVAL = 15_min;

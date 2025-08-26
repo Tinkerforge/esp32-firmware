@@ -114,7 +114,7 @@ public:
         FixedStackVector<Config::Key, Config::MAX_NESTING> path;
     };
 
-    API();
+    API() = default;
 
     void pre_setup() override;
     void setup() override;
