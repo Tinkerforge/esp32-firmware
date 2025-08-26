@@ -157,69 +157,70 @@ presets = [
     ]),
 ]
 
-with open('presets.inc', 'w', encoding='utf-8') as f:
-    f.write('// WARNING: This file is generated\n\n')
-    f.write('#include "../meters/meter_value_id.h"\n')
-    f.write('#include "../meters/meter_location.enum.h"\n\n')
+inc = '// WARNING: This file is generated\n\n'
+inc += '#include "../meters/meter_value_id.h"\n'
+inc += '#include "../meters/meter_location.enum.h"\n\n'
 
-    for preset in presets:
-        if preset[1] == 'Unknown':
-            continue
+for preset in presets:
+    if preset[1] == 'Unknown':
+        continue
 
-        f.write(f'static const MeterValueID preset_value_ids_{preset[0]}[] = {{\n')
+    inc += f'static const MeterValueID preset_value_ids_{preset[0]}[] = {{\n'
 
-        for mvid in preset[2]:
-            f.write(f'    MeterValueID::{mvid.name},\n')
+    for mvid in preset[2]:
+        inc += f'    MeterValueID::{mvid.name},\n'
 
-        f.write('};\n\n')
+    inc += '};\n\n'
 
-    f.write('static const MeterValueID *preset_value_ids[] = {\n')
+inc += 'static const MeterValueID *preset_value_ids[] = {\n'
 
-    for preset in presets:
-        if preset[1] == 'Unknown':
-            continue
+for preset in presets:
+    if preset[1] == 'Unknown':
+        continue
 
-        f.write(f"    preset_value_ids_{preset[0]},\n")
+    inc += f"    preset_value_ids_{preset[0]},\n"
 
-    f.write('};\n\n')
-    f.write('static const size_t preset_value_ids_count[] = {\n')
+inc += '};\n\n'
+inc += 'static const size_t preset_value_ids_count[] = {\n'
 
-    for preset in presets:
-        if preset[1] == 'Unknown':
-            continue
+for preset in presets:
+    if preset[1] == 'Unknown':
+        continue
 
-        f.write(f"    {len(preset[2])},\n")
+    inc += f"    {len(preset[2])},\n"
 
-    f.write('};\n\n')
-    f.write('static const MeterLocation preset_default_locations[] = {\n')
+inc += '};\n\n'
+inc += 'static const MeterLocation preset_default_locations[] = {\n'
 
-    for preset in presets:
-        if preset[1] == 'Unknown':
-            continue
+for preset in presets:
+    if preset[1] == 'Unknown':
+        continue
 
-        f.write(f"    MeterLocation::{preset[1]},\n")
+    inc += f"    MeterLocation::{preset[1]},\n"
 
-    f.write('};\n')
+inc += '};\n'
 
-with open('../../../web/src/modules/meters_api/presets.ts', 'w', encoding='utf-8') as f:
-    f.write('// WARNING: This file is generated\n\n')
-    f.write('import { MeterValueID } from "../meters/meter_value_id"\n')
-    f.write('import { MeterLocation } from "../meters/meter_location.enum"\n\n')
-    f.write('export const PRESET_VALUE_IDS: {[key: string]: MeterValueID[]} = {\n')
+tfutil.write_file_if_different('presets.inc', inc)
 
-    for preset in presets:
-        f.write(f"   '{preset[0]}': [\n")
+ts = '// WARNING: This file is generated\n\n'
+ts += 'import { MeterValueID } from "../meters/meter_value_id"\n'
+ts += 'import { MeterLocation } from "../meters/meter_location.enum"\n\n'
+ts += 'export const PRESET_VALUE_IDS: {[key: string]: MeterValueID[]} = {\n'
 
-        for mvid in preset[2]:
-            f.write(f'       MeterValueID.{mvid.name},\n')
+for preset in presets:
+    ts += f"   '{preset[0]}': [\n"
 
-        f.write('   ],\n')
+    for mvid in preset[2]:
+        ts += f'       MeterValueID.{mvid.name},\n'
 
-    f.write('};\n\n')
-    f.write('export const PRESET_DEFAULT_LOCATIONS: {[key: string]: MeterLocation} = {\n')
+    ts += '   ],\n'
 
-    for preset in presets:
-        f.write(f"   '{preset[0]}': MeterLocation.{preset[1]},\n")
+ts += '};\n\n'
+ts += 'export const PRESET_DEFAULT_LOCATIONS: {[key: string]: MeterLocation} = {\n'
 
-    f.write('};\n')
+for preset in presets:
+    ts += f"   '{preset[0]}': MeterLocation.{preset[1]},\n"
 
+ts += '};\n'
+
+tfutil.write_file_if_different('../../../web/src/modules/meters_api/presets.ts', ts)

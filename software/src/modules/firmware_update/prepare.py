@@ -82,42 +82,26 @@ else:
 
     sodium_public_key = bytes.fromhex(sodium_public_key_json['sodium_public_key'])
 
-h_path = 'signature_verify.embedded.h'
+h = '// WARNING: This file is generated\n\n'
+h += 'extern const char *signature_publisher;\n\n'
+h += 'extern const unsigned char signature_sodium_public_key_data[];\n\n'
+h += f'#define signature_sodium_public_key_length {len(sodium_public_key)}\n'
 
-try:
-    os.remove(h_path)
-except FileNotFoundError:
-    pass
+tfutil.write_file_if_different('signature_verify.embedded.h', h)
 
-with open(h_path + '.tmp', 'w', encoding='utf-8') as f:
-    f.write('// WARNING: This file is generated\n\n')
-    f.write('extern const char *signature_publisher;\n\n')
-    f.write('extern const unsigned char signature_sodium_public_key_data[];\n\n')
-    f.write(f'#define signature_sodium_public_key_length {len(sodium_public_key)}\n')
+cpp = '// WARNING: This file is generated\n\n'
+cpp += f'const char *signature_publisher = "{publisher_literal}";\n\n'
+cpp += 'extern const unsigned char signature_sodium_public_key_data[] = {\n'
 
-os.replace(h_path + '.tmp', h_path)
+sodium_public_key_io = io.BytesIO(sodium_public_key)
+b = sodium_public_key_io.read(12)
 
-cpp_path = 'signature_verify.embedded.cpp'
+while len(b) != 0:
+    # read first to prevent trailing "," after last byte
+    next_b = sodium_public_key_io.read(12)
+    cpp += '    ' + ', '.join(['0x{:02x}'.format(x) for x in b]) + (',\n' if len(next_b) != 0 else '\n')
+    b = next_b
 
-try:
-    os.remove(cpp_path)
-except FileNotFoundError:
-    pass
+cpp += '};\n'
 
-with open(cpp_path + '.tmp', 'w', encoding='utf-8') as f:
-    f.write('// WARNING: This file is generated\n\n')
-    f.write(f'const char *signature_publisher = "{publisher_literal}";\n\n')
-    f.write('extern const unsigned char signature_sodium_public_key_data[] = {\n')
-
-    sodium_public_key_io = io.BytesIO(sodium_public_key)
-    b = sodium_public_key_io.read(12)
-
-    while len(b) != 0:
-        # read first to prevent trailing , after last byte
-        next_b = sodium_public_key_io.read(12)
-        f.write('    ' + ', '.join(['0x{:02x}'.format(x) for x in b]) + (',\n' if len(next_b) != 0 else '\n'))
-        b = next_b
-
-    f.write('};\n')
-
-os.replace(cpp_path + '.tmp', cpp_path)
+tfutil.write_file_if_different('signature_verify.embedded.cpp', cpp)

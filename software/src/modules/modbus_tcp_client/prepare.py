@@ -30,8 +30,9 @@ modbus_value_types = [
     ('F64LE', make_modbus_value_type(4, True,  True,  True)),
 ]
 
-with open('Modbus Value Type.uint8.enum', 'w', encoding='utf-8') as f:
-    f.write('# WARNING: This file is generated\n')
+enum = '# WARNING: This file is generated\n'
 
-    for item in modbus_value_types:
-        f.write(f'{item[0]} = {item[1]}\n')
+for item in modbus_value_types:
+    enum += f'{item[0]} = {item[1]}\n'
+
+tfutil.write_file_if_different('Modbus Value Type.uint8.enum', enum)

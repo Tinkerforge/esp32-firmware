@@ -391,8 +391,5 @@ for lang in translation_values:
         '{{{fragments}}}': ',\n            '.join(translation_fragments[lang]),
     })
 
-with open('../ocpp/mvid_to_measurand.h', 'w', encoding='utf-8') as f:
-    f.write(ocpp_lut_header.format(mvid_count=len(ocpp_map)))
-
-with open('../ocpp/mvid_to_measurand.cpp', 'w', encoding='utf-8') as f:
-    f.write(ocpp_lut_template.format(mvid_count=len(ocpp_map), mappings="\n    ".join(ocpp_map)))
+tfutil.write_file_if_different('../ocpp/mvid_to_measurand.h', ocpp_lut_header.format(mvid_count=len(ocpp_map)))
+tfutil.write_file_if_different('../ocpp/mvid_to_measurand.cpp', ocpp_lut_template.format(mvid_count=len(ocpp_map), mappings='\n    '.join(ocpp_map)))

@@ -139,48 +139,51 @@ for model_spec in model_specs:
     model_meter_location.append(f'    {model_spec.model_id}: MeterLocation.{model_spec.meter_location},\n')
     model_is_supported.append(f'    {model_spec.model_id}: {str(model_spec.is_supported).lower()},\n')
 
-with open('sun_spec_model_specs.h', 'w', encoding='utf-8') as f:
-    f.write('// WARNING: This file is generated.\n\n')
-    f.write('#include <stdint.h>\n')
-    f.write('#include <stdlib.h>\n\n')
-    f.write('#include "modules/meters/meter_location.enum.h"\n\n')
-    f.write('#pragma once\n\n')
-    f.write('enum class SunSpecModelID : uint16_t {\n')
-    f.write(''.join(enum_values))
-    f.write('};\n\n')
-    f.write('struct SunSpecModelSpec {\n')
-    f.write('    SunSpecModelID model_id;\n')
-    f.write('    const char *model_name;\n')
-    f.write('    MeterLocation meter_location;\n')
-    f.write('};\n\n')
-    f.write('extern const SunSpecModelSpec sun_spec_model_specs[];\n\n')
-    f.write('extern const size_t sun_spec_model_specs_length;\n')
+h = '// WARNING: This file is generated.\n\n'
+h += '#include <stdint.h>\n'
+h += '#include <stdlib.h>\n\n'
+h += '#include "modules/meters/meter_location.enum.h"\n\n'
+h += '#pragma once\n\n'
+h += 'enum class SunSpecModelID : uint16_t {\n'
+h += ''.join(enum_values)
+h += '};\n\n'
+h += 'struct SunSpecModelSpec {\n'
+h += '    SunSpecModelID model_id;\n'
+h += '    const char *model_name;\n'
+h += '    MeterLocation meter_location;\n'
+h += '};\n\n'
+h += 'extern const SunSpecModelSpec sun_spec_model_specs[];\n\n'
+h += 'extern const size_t sun_spec_model_specs_length;\n'
 
-with open('sun_spec_model_specs.cpp', 'w', encoding='utf-8') as f:
-    f.write('// WARNING: This file is generated.\n\n')
-    f.write('#include "sun_spec_model_specs.h"\n\n')
-    f.write('const SunSpecModelSpec sun_spec_model_specs[] = {\n')
-    f.write(''.join(spec_values))
-    f.write('};\n\n')
-    f.write(f'const size_t sun_spec_model_specs_length = {len(model_specs)};\n')
+tfutil.write_file_if_different('sun_spec_model_specs.h', h)
+
+cpp = '// WARNING: This file is generated.\n\n'
+cpp += '#include "sun_spec_model_specs.h"\n\n'
+cpp += 'const SunSpecModelSpec sun_spec_model_specs[] = {\n'
+cpp += ''.join(spec_values)
+cpp += '};\n\n'
+cpp += f'const size_t sun_spec_model_specs_length = {len(model_specs)};\n'
+
+tfutil.write_file_if_different('sun_spec_model_specs.cpp', cpp)
 
 for lang in translation_values:
     tfutil.specialize_template(f'../../../web/src/modules/meters_sun_spec/translation_{lang}.tsx.template', f'../../../web/src/modules/meters_sun_spec/translation_{lang}.tsx', {
         '{{{models}}}': ',\n            '.join(translation_values[lang]),
     })
 
-with open('../../../web/src/modules/meters_sun_spec/sun_spec_model_specs.ts', 'w', encoding='utf-8') as f:
-    f.write('// WARNING: This file is generated.\n\n')
-    f.write('import { MeterLocation } from "../meters/meter_location.enum";\n\n')
-    f.write('export const SUN_SPEC_MODEL_INFOS: {model_id: number, is_meter_like: boolean, is_supported: boolean}[] = [\n')
-    f.write(''.join(model_infos))
-    f.write('];\n\n')
-    f.write('export const SUN_SPEC_MODEL_IS_METER_LIKE: {[model_id: number]: boolean} = {\n')
-    f.write(''.join(model_is_meter_like))
-    f.write('};\n\n')
-    f.write('export const SUN_SPEC_MODEL_METER_LOCATION: {[model_id: number]: number} = {\n')
-    f.write(''.join(model_meter_location))
-    f.write('};\n\n')
-    f.write('export const SUN_SPEC_MODEL_IS_SUPPORTED: {[model_id: number]: boolean} = {\n')
-    f.write(''.join(model_is_supported))
-    f.write('};\n')
+ts = '// WARNING: This file is generated.\n\n'
+ts += 'import { MeterLocation } from "../meters/meter_location.enum";\n\n'
+ts += 'export const SUN_SPEC_MODEL_INFOS: {model_id: number, is_meter_like: boolean, is_supported: boolean}[] = [\n'
+ts += ''.join(model_infos)
+ts += '];\n\n'
+ts += 'export const SUN_SPEC_MODEL_IS_METER_LIKE: {[model_id: number]: boolean} = {\n'
+ts += ''.join(model_is_meter_like)
+ts += '};\n\n'
+ts += 'export const SUN_SPEC_MODEL_METER_LOCATION: {[model_id: number]: number} = {\n'
+ts += ''.join(model_meter_location)
+ts += '};\n\n'
+ts += 'export const SUN_SPEC_MODEL_IS_SUPPORTED: {[model_id: number]: boolean} = {\n'
+ts += ''.join(model_is_supported)
+ts += '};\n'
+
+tfutil.write_file_if_different('../../../web/src/modules/meters_sun_spec/sun_spec_model_specs.ts', ts)

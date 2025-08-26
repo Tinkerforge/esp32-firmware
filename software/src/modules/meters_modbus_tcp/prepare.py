@@ -157,29 +157,32 @@ for spec in specs:
 
         specs_cpp.append(f'const MeterModbusTCP::TableSpec *{spec_name.under}_table = &{spec_name.under}_table_;')
 
-with open('../../../web/src/modules/meters_modbus_tcp/meter_modbus_tcp_specs.ts', 'w', encoding='utf-8') as f:
-    f.write('// WARNING: This file is generated.\n\n')
-    f.write('import { MeterModbusTCPTableID } from "./meter_modbus_tcp_table_id.enum";\n\n')
-    f.write('export const enum DefaultDeviceAddress {\n')
-    f.write('\n'.join([f'    {util.FlavoredName(name).get().camel} = {value},' for name, value in default_device_addresses]) + '\n')
-    f.write('}\n\n')
-    f.write('export function get_default_device_address(table_id: number)\n')
-    f.write('{\n')
-    f.write('    switch (table_id) {\n')
-    f.write('\n'.join([f'    case MeterModbusTCPTableID.{util.FlavoredName(name).get().camel}: return DefaultDeviceAddress.{util.FlavoredName(name).get().camel};' for name, value in default_device_addresses]) + '\n')
-    f.write('    default: return undefined;\n')
-    f.write('    }\n')
-    f.write('}\n')
+ts = '// WARNING: This file is generated.\n\n'
+ts += 'import { MeterModbusTCPTableID } from "./meter_modbus_tcp_table_id.enum";\n\n'
+ts += 'export const enum DefaultDeviceAddress {\n'
+ts += '\n'.join([f'    {util.FlavoredName(name).get().camel} = {value},' for name, value in default_device_addresses]) + '\n'
+ts += '}\n\n'
+ts += 'export function get_default_device_address(table_id: number)\n'
+ts += '{\n'
+ts += '    switch (table_id) {\n'
+ts += '\n'.join([f'    case MeterModbusTCPTableID.{util.FlavoredName(name).get().camel}: return DefaultDeviceAddress.{util.FlavoredName(name).get().camel};' for name, value in default_device_addresses]) + '\n'
+ts += '    default: return undefined;\n'
+ts += '    }\n'
+ts += '}\n'
 
-with open('meter_modbus_tcp_specs.h', 'w', encoding='utf-8') as f:
-    f.write('// WARNING: This file is generated.\n\n')
-    f.write('#include "meter_modbus_tcp.h"\n\n')
-    f.write('#define VALUE_INDEX_META  0xFFFFFFFEu\n')
-    f.write('#define VALUE_INDEX_DEBUG 0xFFFFFFFDu\n\n')
-    f.write('#define START_ADDRESS_VIRTUAL 0xFFFFFFFEu\n\n')
-    f.write('\n\n'.join(specs_h).replace('\r\n', '') + '\n')
+tfutil.write_file_if_different('../../../web/src/modules/meters_modbus_tcp/meter_modbus_tcp_specs.ts', ts)
 
-with open('meter_modbus_tcp_specs.cpp', 'w', encoding='utf-8') as f:
-    f.write('// WARNING: This file is generated.\n\n')
-    f.write('#include "meter_modbus_tcp_specs.h"\n\n')
-    f.write('\n\n'.join(specs_cpp).replace('\r\n', '') + '\n')
+h = '// WARNING: This file is generated.\n\n'
+h += '#include "meter_modbus_tcp.h"\n\n'
+h += '#define VALUE_INDEX_META  0xFFFFFFFEu\n'
+h += '#define VALUE_INDEX_DEBUG 0xFFFFFFFDu\n\n'
+h += '#define START_ADDRESS_VIRTUAL 0xFFFFFFFEu\n\n'
+h += '\n\n'.join(specs_h).replace('\r\n', '') + '\n'
+
+tfutil.write_file_if_different('meter_modbus_tcp_specs.h', h)
+
+cpp = '// WARNING: This file is generated.\n\n'
+cpp += '#include "meter_modbus_tcp_specs.h"\n\n'
+cpp += '\n\n'.join(specs_cpp).replace('\r\n', '') + '\n'
+
+tfutil.write_file_if_different('meter_modbus_tcp_specs.cpp', cpp)

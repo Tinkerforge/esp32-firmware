@@ -34,8 +34,7 @@ with open('manifest.json.template', 'r', encoding='utf-8') as f:
 
 content = content.replace(" ", "").replace("\n", "").replace("maskableany", "maskable any")
 
-with open('manifest.json', 'w', encoding='utf-8') as f:
-    f.write(content)
+tfutil.write_file_if_different('manifest.json', content)
 
 tfutil.specialize_template('manifest.json', 'manifest.json', {
     '{{{theme_color}}}': color,
