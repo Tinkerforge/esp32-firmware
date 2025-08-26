@@ -392,6 +392,17 @@ static void stage_1(StageContext &sc) {
     Cost b1_on_phase= {0, 0, 0, 0};
     int highest_charge_mode_bit_seen = 0;
 
+    // Clear all decisions of chargers without vehicle attached
+    for (int i = 0; i < sc.charger_count; ++i) {
+        const auto *state = &sc.charger_state[i];
+        if (!state->is_charging && !state->wants_to_charge && !state->wants_to_charge_low_priority) {
+            set_charger_decision(sc, i, ZeroPhaseDecision::None());
+            set_charger_decision(sc, i, OnePhaseDecision::None());
+            set_charger_decision(sc, i, ThreePhaseDecision::None());
+            set_charger_decision(sc, i, CurrentDecision::None());
+        }
+    }
+
     bool have_active_chargers = false;
     for (int i = 0; i < sc.charger_count; ++i) {
         if (sc.phase_allocation[i] > 0) {
