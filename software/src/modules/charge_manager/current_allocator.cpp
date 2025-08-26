@@ -293,24 +293,24 @@ static int get_highest_charge_mode_bit(const ChargerState *state) {
 }
 
 /*
-    if (sc.charger_decisions[charger_idx].tag == ChargerDecisionTag::WelcomeChargeUntil2 && desc.tag == ChargerDecisionTag::PhaseSwitching0)
+    if (sc.charger_decisions[charger_idx].tag == ChargerDecisionTag::WelcomeChargeUntil2 && decision.tag == ChargerDecisionTag::PhaseSwitching0)
         return;
 */
 
-static void set_charger_decision(StageContext &sc, int charger_idx, ZeroPhaseDecision &&desc) {
-    sc.charger_decisions[charger_idx].zero = desc;
+static void set_charger_decision(StageContext &sc, int charger_idx, ZeroPhaseDecision &&decision) {
+    sc.charger_decisions[charger_idx].zero = decision;
 }
 
-static void set_charger_decision(StageContext &sc, int charger_idx, OnePhaseDecision &&desc) {
-    sc.charger_decisions[charger_idx].one = desc;
+static void set_charger_decision(StageContext &sc, int charger_idx, OnePhaseDecision &&decision) {
+    sc.charger_decisions[charger_idx].one = decision;
 }
 
-static void set_charger_decision(StageContext &sc, int charger_idx, ThreePhaseDecision &&desc) {
-    sc.charger_decisions[charger_idx].three = desc;
+static void set_charger_decision(StageContext &sc, int charger_idx, ThreePhaseDecision &&decision) {
+    sc.charger_decisions[charger_idx].three = decision;
 }
 
-static void set_charger_decision(StageContext &sc, int charger_idx, CurrentDecision &&desc) {
-    sc.charger_decisions[charger_idx].current = desc;
+static void set_charger_decision(StageContext &sc, int charger_idx, CurrentDecision &&decision) {
+    sc.charger_decisions[charger_idx].current = decision;
 }
 
 static void clear_charger_decision(StageContext &sc, int charger_idx, ZeroPhaseDecisionTag tag) {
@@ -352,8 +352,8 @@ static void clear_charger_decision_all(StageContext &sc, T tag) {
     }
 }
 
-static void set_global_decision(StageContext &sc, GlobalDecision &&desc) {
-    *sc.global_decision = desc;
+static void set_global_decision(StageContext &sc, GlobalDecision &&decision) {
+    *sc.global_decision = decision;
 }
 
 static void clear_global_decision(StageContext &sc, GlobalDecisionTag tag) {
@@ -1393,12 +1393,12 @@ static Cost get_fair_current(int matched, int start, int *idx_array, uint8_t *ph
     return fair;
 }
 
-struct MinDesc {
-    void operator()(int new_current, CurrentDecision &&desc) {
+struct MinWithDecision {
+    void operator()(int new_current, CurrentDecision &&decision) {
         if (std::min(current, new_current) == current)
             return;
 
-        set_charger_decision(sc, charger_idx, std::move(desc));
+        set_charger_decision(sc, charger_idx, std::move(decision));
         current = new_current;
     }
 
@@ -1433,7 +1433,7 @@ static void stage_7(StageContext &sc) {
         auto allocated_current = sc.current_allocation[sc.idx_array[i]];
         auto allocated_phases = sc.phase_allocation[sc.idx_array[i]];
 
-        auto min_desc = MinDesc{32000, sc, sc.idx_array[i]};
+        auto min_ = MinWithDecision{32000, sc, sc.idx_array[i]};
 
         // Limit to fair PV current (or guaranteed PV current if this is more)
         if (state->observe_pv_limit) {
@@ -1441,18 +1441,18 @@ static void stage_7(StageContext &sc) {
             auto guaranteed_pv = state->guaranteed_pv_current / allocated_phases - allocated_current;
             // Guaranteed PV current is allowed to exceed the fair current.
             if (guaranteed_pv > fair_pv)
-                min_desc(guaranteed_pv, CurrentDecision::GuaranteedPV());
+                min_(guaranteed_pv, CurrentDecision::GuaranteedPV());
             else
-                min_desc(fair_pv, CurrentDecision::Fair(false));
+                min_(fair_pv, CurrentDecision::Fair(false));
         }
 
         // Limit to minimum fair phase current
         if (state->phase_rotation == PhaseRotation::Unknown) {
-            min_desc(fair.min_phase(), CurrentDecision::Fair(true));
+            min_(fair.min_phase(), CurrentDecision::Fair(true));
         } else {
             for (size_t p = 0; p < allocated_phases; ++p) {
                 auto phase = get_phase(state->phase_rotation, (ChargerPhase)((size_t)ChargerPhase::P1 + p));
-                min_desc(fair[phase], CurrentDecision::Fair(false));
+                min_(fair[phase], CurrentDecision::Fair(false));
             }
         }
 
@@ -1462,14 +1462,14 @@ static void stage_7(StageContext &sc) {
             auto enable_current = get_enable_cost(state, allocated_phases == 3, true, nullptr, &enable_cost, sc.cfg);
             // Don't steal from allocation if enable current is less than minimum current
             enable_current = std::max(0, enable_current - allocated_current);
-            min_desc(enable_current, CurrentDecision::EnableNotCharging());
+            min_(enable_current, CurrentDecision::EnableNotCharging());
         }
 
         // TODO disambiguate between Requested and PhaseLimit here
-        min_desc(current_capacity(sc.limits, state, allocated_current, allocated_phases, sc.cfg), CurrentDecision::Requested());
+        min_(current_capacity(sc.limits, state, allocated_current, allocated_phases, sc.cfg), CurrentDecision::Requested());
 
 
-        auto current = allocated_current + min_desc.current;
+        auto current = allocated_current + min_.current;
         auto cost = get_cost(current, (ChargerPhase)allocated_phases, state->phase_rotation, allocated_current, (ChargerPhase)allocated_phases);
 
         // This should never happen:
