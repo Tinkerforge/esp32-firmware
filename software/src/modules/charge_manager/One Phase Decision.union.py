@@ -22,4 +22,5 @@ spec = Union("One Phase Decision", 12, variants=[
     ]),
     Variant('No Fixed 3p'),
     Variant('Yes Waking Up'),
+    Variant('Yes Normal'),
 ])
