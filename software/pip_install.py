@@ -12,4 +12,14 @@ except ImportError:
     install = True
 
 if install:
-    env.Execute(f"$PYTHONEXE -m pip install tinkerforge_util=={version}")
+    has_pip = True
+
+    try:
+        import pip
+    except ImportError:
+        has_pip = False
+
+    if has_pip:
+        env.Execute(f"$PYTHONEXE -m pip install tinkerforge_util=={version}")
+    else:
+        env.Execute(f"uv pip install tinkerforge_util=={version}")

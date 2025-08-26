@@ -2,9 +2,17 @@ Import("env")
 
 import sys
 
-if sys.hexversion < 0x3060000:
-    print('Error: Python >= 3.6 required')
+python_version_required = (3, 12)
+python_version_required_str = '.'.join([str(x) for x in python_version_required])
+python_version_in_use = tuple(sys.version_info)[:2]
+python_version_in_use_str = '.'.join([str(x) for x in python_version_in_use])
+
+if python_version_in_use < python_version_required:
+    print(f'Error: Python >= {python_version_required_str} required')
     sys.exit(1)
+
+if python_version_in_use > python_version_required:
+    print(f'Warning: Python {python_version_in_use_str} in use. Do not use Python features more recent than {python_version_required_str}')
 
 import configparser
 import os
