@@ -64,7 +64,7 @@ public:
      * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
      * @return true if a response was generated and needs to be sent, false if no response is needed.
      */
-    virtual bool handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject &response, SpineConnection *connection) = 0;
+    virtual bool handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) = 0;
 
     /**
      * Returns the usecase information for this usecase.
@@ -94,7 +94,7 @@ public:
     * @param response The JsonObject to write the response to. This should be filled with the response data.
     * @return true if a response was generated and needs to be sent, false if no response is needed.
     */
-    bool handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject &response);
+    bool handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response);
     // The list of bindings for this usecase.
     // The SPINE Protocol specification implies in 7.3.6 that this should be stored persistently but it also allows binding information to be discarded in case the device was offline.
     BindingManagementEntryListDataType binding_management_entry_list_{};
@@ -115,7 +115,7 @@ public:
     * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
     * @return true if a response was generated and needs to be sent, false if no response is needed.
     */
-    bool handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject &response, SpineConnection *connection) override;
+    bool handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
 
     [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     [[nodiscard]] NodeManagementDetailedDiscoveryFeatureInformationType get_detailed_discovery_feature_information() const override;
@@ -131,11 +131,11 @@ private:
     EEBusUseCases *usecase_interface{};
 
     NodeManagementSubscriptionDataType subscription_data{};
-    bool read_usecase_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject &response) const;
+    bool read_usecase_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) const;
 
-    bool read_detailed_discovery_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject &response) const;
+    bool read_detailed_discovery_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) const;
 
-    bool handle_subscription(HeaderType &header, SpineDataTypeHandler *data, JsonObject &response, SpineConnection *connection);
+    bool handle_subscription(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
 };
 
 /**
@@ -161,7 +161,7 @@ public:
      * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
      * @return true if a response was generated and needs to be sent, false if no response is needed.
      */
-    bool handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject &response, SpineConnection *connection) override;
+    bool handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
 
     [[nodiscard]] UseCaseType get_usecase_type() const override
     {

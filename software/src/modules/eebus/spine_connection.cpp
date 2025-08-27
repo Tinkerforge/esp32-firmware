@@ -76,8 +76,12 @@ void SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType 
     header.msgCounter = msg_counter++;
     header.msgCounterReference = received_header.msgCounter; // The message counter of the last received datagram
 
+    // TODO: Fix this stuff so it generates proper json and not eebus json
     response_doc["datagram"][0]["header"] = header;
-    response_doc["datagram"][1]["payload"]["cmd"][0] = payload;
+    if (!response_doc["datagram"][1]["payload"]["cmd"][0].set(payload)) {
+        eebus.trace_fmtln("SPINE: ERROR: Could not set payload for the datagram");
+        return;
+    }
 #ifdef EEBUS_DEV_ENABLE_RESPONSE
     ship_connection->send_data_message(response_doc.as<JsonVariant>());
 #else
