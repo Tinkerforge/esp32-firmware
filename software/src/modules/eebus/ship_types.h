@@ -43,14 +43,16 @@ enum DeserializationResult
 void DeserializeOptionalField(JsonObject *data, const char *field_name, bool *field_valid, String *field_value);
 
 template <typename T>
-void DeserializeOptionalField(JsonObject *data,                              const char *field_name,                              bool *field_valid,std::vector<T> *field_value);
+void DeserializeOptionalField(JsonObject *data, const char *field_name, bool *field_valid, std::vector<T> *field_value);
 
+static constexpr uint16_t JSON_TO_EEBUS_MAX_DEPTH = 32;
 /**
  * EEBUS wants objects to be arrays with each field being an array element. This function converts a normal json object to the EEBUS format
  * @param src The Json object to convert. Should belong to a different JsonDocument than dst
  * @param dst Target Json object where the converted json will be stored. Should belong to a different JsonDocument than src
+ * @param recursion_depth Depth of current recursion. Used to avoid too deep recursion. Should be 0 when called as it might create invalid EEBUS Json
  */
-void JsonToEEBusJson(JsonVariant src, JsonVariant dst);
+void JsonToEEBusJson(JsonVariantConst src, JsonVariant dst, uint16_t depth = 0);
 /**
  * EEBUS wants objects to be arrays with each field being an array element. This function converts EEBUS json to a normal json object
  * @param json_in The EEBUS Json
