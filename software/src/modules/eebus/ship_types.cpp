@@ -74,9 +74,8 @@ DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, 
 
 String ShipMessageDataType::type_to_json()
 {
-    DynamicJsonDocument doc(SHIP_TYPES_MAX_JSON_SIZE); // This exists just in this function
+    DynamicJsonDocument doc(SHIP_TYPES_MAX_JSON_SIZE);
 
-    //JsonObject data = doc["data"];
     doc["data"]["header"]["protocolId"] = protocol_id;
     bool payload_loaded = doc["data"]["payload"].set(payload);
     if (!payload_loaded) {
@@ -86,10 +85,6 @@ String ShipMessageDataType::type_to_json()
 
     if (extension_id_valid || extension_binary_valid || extension_string_valid) {
         JsonObject data_extension = doc["data"].createNestedObject("extension");
-        logger.printfln("Valid: %d, Binary: %d, String: %d",
-                        extension_id_valid,
-                        extension_binary_valid,
-                        extension_string_valid);
         if (extension_id_valid) {
             data_extension["extensionId"] = extension_id;
         }
@@ -103,17 +98,58 @@ String ShipMessageDataType::type_to_json()
             data_extension["string"] = extension_string;
         }
     }
+
     if (eebus_json_compatibility_mode) {
-        DynamicJsonDocument destination_doc{SHIP_TYPES_MAX_JSON_SIZE};
-        JsonToEEBusJson(doc, destination_doc.as<JsonVariant>());
+        DynamicJsonDocument destination_doc(SHIP_TYPES_MAX_JSON_SIZE);
+
+        // Reformat SHIP Header manually
+        JsonArray dataArr = destination_doc.createNestedArray("data");
+        JsonObject headerWrapper = dataArr.createNestedObject();
+        JsonArray headerOut = headerWrapper.createNestedArray("header");
+        JsonObjectConst srcHeader = doc["data"]["header"].as<JsonObjectConst>();
+        if (!srcHeader.isNull()) {
+            for (JsonPairConst kv : srcHeader) {
+                JsonObject single = headerOut.createNestedObject();
+                single[kv.key().c_str()] = kv.value();
+            }
+        }
+        JsonObject payloadWrapper = dataArr.createNestedObject();
+        JsonObject payloadOut = payloadWrapper.createNestedObject("payload");
+
+        // Process datagram recursively
+        JsonArrayConst datagramSrc = doc["data"]["payload"]["datagram"].as<JsonArrayConst>();
+        if (!datagramSrc.isNull()) {
+            JsonArray datagramOut = payloadOut.createNestedArray("datagram");
+
+            for (JsonVariantConst entry : datagramSrc) {
+                if (!entry.is<JsonObjectConst>()) {
+                    datagramOut.add(entry);
+                    continue;
+                }
+                JsonObject dstEntry = datagramOut.createNestedObject();
+                for (JsonPairConst kv : entry.as<JsonObjectConst>()) {
+                    const char *key = kv.key().c_str();
+                    JsonVariantConst val = kv.value();
+                    if (val.is<JsonObjectConst>() || val.is<JsonArrayConst>()) {
+                        JsonArray arr = dstEntry.createNestedArray(key);
+                        if (arr.isNull()) continue;
+                        JsonToEEBusJson(val, arr, 0);
+                    } else {
+                        JsonArray arr = dstEntry.createNestedArray(key);
+                        if (arr.isNull()) continue;
+                        JsonObject single = arr.createNestedObject();
+                        single[key] = val;
+                    }
+                }
+            }
+        }
         doc.clear();
         doc.set(destination_doc);
     }
 
-    String message_outgoing_data = "";
-    message_outgoing_data.reserve(SHIP_TYPES_MAX_JSON_SIZE - 1); // Reserve space for the JSON data
+    String message_outgoing_data;
+    message_outgoing_data.reserve(SHIP_TYPES_MAX_JSON_SIZE - 1);
     serializeJson(doc, message_outgoing_data);
-
     return message_outgoing_data;
 }
 
@@ -127,44 +163,50 @@ void DeserializeOptionalField(JsonObject *data, const char *field_name, bool *fi
     }
 }
 
-void JsonToEEBusJson(JsonVariant src, JsonVariant dst)
+void JsonToEEBusJson(JsonVariantConst src, JsonVariant dst, uint16_t depth)
 {
-    logger.printfln("Converting json to eebusjson: %s ", src.as<String>().c_str());
-    if (src.is<JsonObject>()) {
-        logger.printfln("Object found");
-
-        logger.printfln("dst.is<JsonArray>: %d ", dst.is<JsonArray>());
-        logger.printfln("dst.is<JsonObject>: %d ", dst.is<JsonObject>());
-        logger.printfln("dst: %s ", dst.as<String>().c_str());
-        JsonArray arr = dst.as<JsonArray>();
-
-        for (JsonPair kv : src.as<JsonObject>()) {
-            JsonObject singleKeyObject = arr.createNestedObject();
-            if (singleKeyObject.isNull()) {
-                logger.printfln("Allocating object failed. No point continuing here");
-                return;
-            }
-            JsonToEEBusJson(kv.value(), singleKeyObject[kv.key()]);
-        }
-    } else if (src.is<JsonArray>()) {
-        logger.printfln("Array found");
-        for (JsonVariant v : src.as<JsonArray>()) {
-            JsonToEEBusJson(v, dst.createNestedArray());
-        }
-    } else {
-        logger.printfln("Probably primitive");
-        bool set_res = false;
-        if (src.is<String>()) {
-            set_res = dst.set(src.as<String>());
-        }else {
-            set_res = dst.set(src);
-        }
-        if (!set_res) {
-            logger.printfln("Failed to set primitive");
-        }
+    if (src.isNull() || depth > JSON_TO_EEBUS_MAX_DEPTH) {
+        return;
     }
-    logger.printfln("eebusjson: %s ", dst.as<String>().c_str());
+    if (src.is<JsonObjectConst>()) {
+        JsonArray out = dst.is<JsonArray>() ? dst.as<JsonArray>() : dst.to<JsonArray>();
+        if (out.isNull())
+            return;
+        for (JsonPairConst kv : src.as<JsonObjectConst>()) {
+            JsonObject single = out.createNestedObject();
+            if (single.isNull())
+                return;
+            JsonVariantConst val = kv.value();
+            if (val.is<JsonObjectConst>() || val.is<JsonArrayConst>()) {
+                JsonArray childArr = single.createNestedArray(kv.key().c_str());
+                if (childArr.isNull())
+                    return;
+                JsonToEEBusJson(val, childArr, depth + 1);
 
+            } else {
+                single[kv.key().c_str()] = val; // Primitive
+            }
+        }
+        return;
+    }
+    if (src.is<JsonArrayConst>()) {
+        JsonArray out = dst.is<JsonArray>() ? dst.as<JsonArray>() : dst.to<JsonArray>();
+        if (out.isNull())
+            return;
+        for (JsonVariantConst e : src.as<JsonArrayConst>()) {
+            if (e.is<JsonObjectConst>() || e.is<JsonArrayConst>()) {
+                // Each complex element gets a new array containing its object/array transformation
+                JsonArray nested = out.createNestedArray();
+                if (nested.isNull())
+                    return;
+                JsonToEEBusJson(e, nested, depth + 1);
+            } else {
+                out.add(e); // Primitive
+            }
+        }
+        return;
+    }
+    dst.set(src);
 }
 
 String EEBUSJsonToJson(String json_in)
