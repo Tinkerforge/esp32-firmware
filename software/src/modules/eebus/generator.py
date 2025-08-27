@@ -345,13 +345,13 @@ def process_complex_type(complex_type):
                 unprocessed_elements += 1
                 return
             new_type.to_json_code += f"""\tif (src.{variable_name_cpp}) {{\n\t\tdst["{variable_name_string}"] = *src.{variable_name_cpp};\n\t}}\n"""
-            new_type.from_json_code += f"""\tif (src["{variable_name_string}"]) {{\n\t\tdst.{variable_name_cpp} = src["{variable_name_string}"].as<decltype(dst.{variable_name_cpp})::value_type>();\n\t}} else {{\n\t\t//dst.{variable_name_cpp} = std::nullopt;\n\t}}\n"""
+            new_type.from_json_code += f"""\tif (src["{variable_name_string}"]) {{\n\t\tdst.{variable_name_cpp} = src["{variable_name_string}"].as<decltype(dst.{variable_name_cpp})::value_type>();\n\t}} else {{\n\t\tdst.{variable_name_cpp} = std::nullopt;\n\t}}\n"""
         #if its an empty element, we still need to generate the to/from json code but it doesnt need to do anything
         if len(elements) < 1:
             new_type.to_json_code = f"""bool convertToJson(const {struct_type_name} &src, JsonVariant& dst) {{\n"""
             new_type.from_json_code = f"""void convertFromJson(const JsonVariantConst& src, {struct_type_name} &dst) {{\n"""
         else:
-            from_json_reformat = f"""void convertFromJson(const JsonVariantConst& src, {struct_type_name} &dst) {{\n\tif (src.is<JsonArrayConst>()) {{\n\t\tJsonArrayConst array = src.as<JsonArrayConst>();\n\t\tfor (JsonVariantConst item : array) {{{new_type.from_json_code.replace("src", "item")}\n\t\t}}\n\t}} else {{\n\t\t{new_type.from_json_code}\n\t}}\n"""
+            from_json_reformat = f"""void convertFromJson(const JsonVariantConst& src, {struct_type_name} &dst) {{\n\t\n\t\t{new_type.from_json_code}\n\t\n"""
             new_type.from_json_code = from_json_reformat
 
         new_type.code += f"\n\t{struct_type_name}() = default;\n}};\n"
@@ -458,10 +458,10 @@ def process_schema(xml_schema):
 
     ignored_types = ["filtertype", "payloadtype", "datagramtype", "hexbinary"]
     ignored_names = ["device", "entity", "feature", "hexbinary"]
-    for element_name in xml_schema.elements.target_dict:
+    for element_name in xml_schema.elements._target_dict:
         if "{http://www.w3.org/2001/XMLSchema}" not in element_name:
             element_name_short = remove_namespace(element_name)
-            element_type = remove_namespace(xml_schema.elements.target_dict[element_name].type.name)
+            element_type = remove_namespace(xml_schema.elements._target_dict[element_name].type.name)
             if element_name_short.lower() not in ignored_names and element_type.lower() not in ignored_types:
                 mapping = (element_name_short, element_type)
                 type_function_mapping.append(mapping)
