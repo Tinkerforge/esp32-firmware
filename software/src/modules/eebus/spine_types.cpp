@@ -8638,12 +8638,12 @@ bool convertToJson(const ScaledNumberType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, ScaledNumberType &dst)
 {
 
-    if (src["number"]) {
+    if (!src["number"].isNull()) {
         dst.number = src["number"].as<decltype(dst.number)::value_type>();
     } else {
         dst.number = std::nullopt;
     }
-    if (src["scale"]) {
+    if (!src["scale"].isNull()) {
         dst.scale = src["scale"].as<decltype(dst.scale)::value_type>();
     } else {
         dst.scale = std::nullopt;
@@ -8690,52 +8690,52 @@ bool convertToJson(const DirectControlActivityDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataType &dst)
 {
 
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["activityState"]) {
+    if (!src["activityState"].isNull()) {
         dst.activityState = src["activityState"].as<decltype(dst.activityState)::value_type>();
     } else {
         dst.activityState = std::nullopt;
     }
-    if (src["isActivityStateChangeable"]) {
+    if (!src["isActivityStateChangeable"].isNull()) {
         dst.isActivityStateChangeable = src["isActivityStateChangeable"].as<decltype(dst.isActivityStateChangeable)::value_type>();
     } else {
         dst.isActivityStateChangeable = std::nullopt;
     }
-    if (src["energyMode"]) {
+    if (!src["energyMode"].isNull()) {
         dst.energyMode = src["energyMode"].as<decltype(dst.energyMode)::value_type>();
     } else {
         dst.energyMode = std::nullopt;
     }
-    if (src["isEnergyModeChangeable"]) {
+    if (!src["isEnergyModeChangeable"].isNull()) {
         dst.isEnergyModeChangeable = src["isEnergyModeChangeable"].as<decltype(dst.isEnergyModeChangeable)::value_type>();
     } else {
         dst.isEnergyModeChangeable = std::nullopt;
     }
-    if (src["power"]) {
+    if (!src["power"].isNull()) {
         dst.power = src["power"].as<decltype(dst.power)::value_type>();
     } else {
         dst.power = std::nullopt;
     }
-    if (src["isPowerChangeable"]) {
+    if (!src["isPowerChangeable"].isNull()) {
         dst.isPowerChangeable = src["isPowerChangeable"].as<decltype(dst.isPowerChangeable)::value_type>();
     } else {
         dst.isPowerChangeable = std::nullopt;
     }
-    if (src["energy"]) {
+    if (!src["energy"].isNull()) {
         dst.energy = src["energy"].as<decltype(dst.energy)::value_type>();
     } else {
         dst.energy = std::nullopt;
     }
-    if (src["isEnergyChangeable"]) {
+    if (!src["isEnergyChangeable"].isNull()) {
         dst.isEnergyChangeable = src["isEnergyChangeable"].as<decltype(dst.isEnergyChangeable)::value_type>();
     } else {
         dst.isEnergyChangeable = std::nullopt;
     }
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -8769,12 +8769,12 @@ bool convertToJson(const ScaledNumberElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, ScaledNumberElementsType &dst)
 {
 
-    if (src["number"]) {
+    if (!src["number"].isNull()) {
         dst.number = src["number"].as<decltype(dst.number)::value_type>();
     } else {
         dst.number = std::nullopt;
     }
-    if (src["scale"]) {
+    if (!src["scale"].isNull()) {
         dst.scale = src["scale"].as<decltype(dst.scale)::value_type>();
     } else {
         dst.scale = std::nullopt;
@@ -8821,52 +8821,52 @@ bool convertToJson(const DirectControlActivityDataElementsType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataElementsType &dst)
 {
 
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["activityState"]) {
+    if (!src["activityState"].isNull()) {
         dst.activityState = src["activityState"].as<decltype(dst.activityState)::value_type>();
     } else {
         dst.activityState = std::nullopt;
     }
-    if (src["isActivityStateChangeable"]) {
+    if (!src["isActivityStateChangeable"].isNull()) {
         dst.isActivityStateChangeable = src["isActivityStateChangeable"].as<decltype(dst.isActivityStateChangeable)::value_type>();
     } else {
         dst.isActivityStateChangeable = std::nullopt;
     }
-    if (src["energyMode"]) {
+    if (!src["energyMode"].isNull()) {
         dst.energyMode = src["energyMode"].as<decltype(dst.energyMode)::value_type>();
     } else {
         dst.energyMode = std::nullopt;
     }
-    if (src["isEnergyModeChangeable"]) {
+    if (!src["isEnergyModeChangeable"].isNull()) {
         dst.isEnergyModeChangeable = src["isEnergyModeChangeable"].as<decltype(dst.isEnergyModeChangeable)::value_type>();
     } else {
         dst.isEnergyModeChangeable = std::nullopt;
     }
-    if (src["power"]) {
+    if (!src["power"].isNull()) {
         dst.power = src["power"].as<decltype(dst.power)::value_type>();
     } else {
         dst.power = std::nullopt;
     }
-    if (src["isPowerChangeable"]) {
+    if (!src["isPowerChangeable"].isNull()) {
         dst.isPowerChangeable = src["isPowerChangeable"].as<decltype(dst.isPowerChangeable)::value_type>();
     } else {
         dst.isPowerChangeable = std::nullopt;
     }
-    if (src["energy"]) {
+    if (!src["energy"].isNull()) {
         dst.energy = src["energy"].as<decltype(dst.energy)::value_type>();
     } else {
         dst.energy = std::nullopt;
     }
-    if (src["isEnergyChangeable"]) {
+    if (!src["isEnergyChangeable"].isNull()) {
         dst.isEnergyChangeable = src["isEnergyChangeable"].as<decltype(dst.isEnergyChangeable)::value_type>();
     } else {
         dst.isEnergyChangeable = std::nullopt;
     }
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -8886,7 +8886,7 @@ bool convertToJson(const DirectControlActivityListDataType &src, JsonVariant &ds
 void convertFromJson(const JsonVariantConst &src, DirectControlActivityListDataType &dst)
 {
 
-    if (src["directControlActivityData"]) {
+    if (!src["directControlActivityData"].isNull()) {
         dst.directControlActivityData = src["directControlActivityData"].as<decltype(dst.directControlActivityData)::value_type>();
     } else {
         dst.directControlActivityData = std::nullopt;
@@ -8909,12 +8909,12 @@ bool convertToJson(const TimestampIntervalType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TimestampIntervalType &dst)
 {
 
-    if (src["startTime"]) {
+    if (!src["startTime"].isNull()) {
         dst.startTime = src["startTime"].as<decltype(dst.startTime)::value_type>();
     } else {
         dst.startTime = std::nullopt;
     }
-    if (src["endTime"]) {
+    if (!src["endTime"].isNull()) {
         dst.endTime = src["endTime"].as<decltype(dst.endTime)::value_type>();
     } else {
         dst.endTime = std::nullopt;
@@ -8934,7 +8934,7 @@ bool convertToJson(const DirectControlActivityListDataSelectorsType &src, JsonVa
 void convertFromJson(const JsonVariantConst &src, DirectControlActivityListDataSelectorsType &dst)
 {
 
-    if (src["timestampInterval"]) {
+    if (!src["timestampInterval"].isNull()) {
         dst.timestampInterval = src["timestampInterval"].as<decltype(dst.timestampInterval)::value_type>();
     } else {
         dst.timestampInterval = std::nullopt;
@@ -8960,17 +8960,17 @@ bool convertToJson(const DirectControlDescriptionDataType &src, JsonVariant &dst
 void convertFromJson(const JsonVariantConst &src, DirectControlDescriptionDataType &dst)
 {
 
-    if (src["positiveEnergyDirection"]) {
+    if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
         dst.positiveEnergyDirection = std::nullopt;
     }
-    if (src["powerUnit"]) {
+    if (!src["powerUnit"].isNull()) {
         dst.powerUnit = src["powerUnit"].as<decltype(dst.powerUnit)::value_type>();
     } else {
         dst.powerUnit = std::nullopt;
     }
-    if (src["energyUnit"]) {
+    if (!src["energyUnit"].isNull()) {
         dst.energyUnit = src["energyUnit"].as<decltype(dst.energyUnit)::value_type>();
     } else {
         dst.energyUnit = std::nullopt;
@@ -8996,17 +8996,17 @@ bool convertToJson(const DirectControlDescriptionDataElementsType &src, JsonVari
 void convertFromJson(const JsonVariantConst &src, DirectControlDescriptionDataElementsType &dst)
 {
 
-    if (src["positiveEnergyDirection"]) {
+    if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
         dst.positiveEnergyDirection = std::nullopt;
     }
-    if (src["powerUnit"]) {
+    if (!src["powerUnit"].isNull()) {
         dst.powerUnit = src["powerUnit"].as<decltype(dst.powerUnit)::value_type>();
     } else {
         dst.powerUnit = std::nullopt;
     }
-    if (src["energyUnit"]) {
+    if (!src["energyUnit"].isNull()) {
         dst.energyUnit = src["energyUnit"].as<decltype(dst.energyUnit)::value_type>();
     } else {
         dst.energyUnit = std::nullopt;
@@ -9029,12 +9029,12 @@ bool convertToJson(const TimePeriodType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TimePeriodType &dst)
 {
 
-    if (src["startTime"]) {
+    if (!src["startTime"].isNull()) {
         dst.startTime = src["startTime"].as<decltype(dst.startTime)::value_type>();
     } else {
         dst.startTime = std::nullopt;
     }
-    if (src["endTime"]) {
+    if (!src["endTime"].isNull()) {
         dst.endTime = src["endTime"].as<decltype(dst.endTime)::value_type>();
     } else {
         dst.endTime = std::nullopt;
@@ -9057,12 +9057,12 @@ bool convertToJson(const TimePeriodElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TimePeriodElementsType &dst)
 {
 
-    if (src["startTime"]) {
+    if (!src["startTime"].isNull()) {
         dst.startTime = src["startTime"].as<decltype(dst.startTime)::value_type>();
     } else {
         dst.startTime = std::nullopt;
     }
-    if (src["endTime"]) {
+    if (!src["endTime"].isNull()) {
         dst.endTime = src["endTime"].as<decltype(dst.endTime)::value_type>();
     } else {
         dst.endTime = std::nullopt;
@@ -9100,37 +9100,37 @@ bool convertToJson(const DaysOfWeekType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, DaysOfWeekType &dst)
 {
 
-    if (src["monday"]) {
+    if (!src["monday"].isNull()) {
         dst.monday = src["monday"].as<decltype(dst.monday)::value_type>();
     } else {
         dst.monday = std::nullopt;
     }
-    if (src["tuesday"]) {
+    if (!src["tuesday"].isNull()) {
         dst.tuesday = src["tuesday"].as<decltype(dst.tuesday)::value_type>();
     } else {
         dst.tuesday = std::nullopt;
     }
-    if (src["wednesday"]) {
+    if (!src["wednesday"].isNull()) {
         dst.wednesday = src["wednesday"].as<decltype(dst.wednesday)::value_type>();
     } else {
         dst.wednesday = std::nullopt;
     }
-    if (src["thursday"]) {
+    if (!src["thursday"].isNull()) {
         dst.thursday = src["thursday"].as<decltype(dst.thursday)::value_type>();
     } else {
         dst.thursday = std::nullopt;
     }
-    if (src["friday"]) {
+    if (!src["friday"].isNull()) {
         dst.friday = src["friday"].as<decltype(dst.friday)::value_type>();
     } else {
         dst.friday = std::nullopt;
     }
-    if (src["saturday"]) {
+    if (!src["saturday"].isNull()) {
         dst.saturday = src["saturday"].as<decltype(dst.saturday)::value_type>();
     } else {
         dst.saturday = std::nullopt;
     }
-    if (src["sunday"]) {
+    if (!src["sunday"].isNull()) {
         dst.sunday = src["sunday"].as<decltype(dst.sunday)::value_type>();
     } else {
         dst.sunday = std::nullopt;
@@ -9171,42 +9171,42 @@ bool convertToJson(const AbsoluteOrRecurringTimeType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, AbsoluteOrRecurringTimeType &dst)
 {
 
-    if (src["dateTime"]) {
+    if (!src["dateTime"].isNull()) {
         dst.dateTime = src["dateTime"].as<decltype(dst.dateTime)::value_type>();
     } else {
         dst.dateTime = std::nullopt;
     }
-    if (src["month"]) {
+    if (!src["month"].isNull()) {
         dst.month = src["month"].as<decltype(dst.month)::value_type>();
     } else {
         dst.month = std::nullopt;
     }
-    if (src["dayOfMonth"]) {
+    if (!src["dayOfMonth"].isNull()) {
         dst.dayOfMonth = src["dayOfMonth"].as<decltype(dst.dayOfMonth)::value_type>();
     } else {
         dst.dayOfMonth = std::nullopt;
     }
-    if (src["calendarWeek"]) {
+    if (!src["calendarWeek"].isNull()) {
         dst.calendarWeek = src["calendarWeek"].as<decltype(dst.calendarWeek)::value_type>();
     } else {
         dst.calendarWeek = std::nullopt;
     }
-    if (src["dayOfWeekOccurrence"]) {
+    if (!src["dayOfWeekOccurrence"].isNull()) {
         dst.dayOfWeekOccurrence = src["dayOfWeekOccurrence"].as<decltype(dst.dayOfWeekOccurrence)::value_type>();
     } else {
         dst.dayOfWeekOccurrence = std::nullopt;
     }
-    if (src["daysOfWeek"]) {
+    if (!src["daysOfWeek"].isNull()) {
         dst.daysOfWeek = src["daysOfWeek"].as<decltype(dst.daysOfWeek)::value_type>();
     } else {
         dst.daysOfWeek = std::nullopt;
     }
-    if (src["time"]) {
+    if (!src["time"].isNull()) {
         dst.time = src["time"].as<decltype(dst.time)::value_type>();
     } else {
         dst.time = std::nullopt;
     }
-    if (src["relative"]) {
+    if (!src["relative"].isNull()) {
         dst.relative = src["relative"].as<decltype(dst.relative)::value_type>();
     } else {
         dst.relative = std::nullopt;
@@ -9247,42 +9247,42 @@ bool convertToJson(const AbsoluteOrRecurringTimeElementsType &src, JsonVariant &
 void convertFromJson(const JsonVariantConst &src, AbsoluteOrRecurringTimeElementsType &dst)
 {
 
-    if (src["dateTime"]) {
+    if (!src["dateTime"].isNull()) {
         dst.dateTime = src["dateTime"].as<decltype(dst.dateTime)::value_type>();
     } else {
         dst.dateTime = std::nullopt;
     }
-    if (src["month"]) {
+    if (!src["month"].isNull()) {
         dst.month = src["month"].as<decltype(dst.month)::value_type>();
     } else {
         dst.month = std::nullopt;
     }
-    if (src["dayOfMonth"]) {
+    if (!src["dayOfMonth"].isNull()) {
         dst.dayOfMonth = src["dayOfMonth"].as<decltype(dst.dayOfMonth)::value_type>();
     } else {
         dst.dayOfMonth = std::nullopt;
     }
-    if (src["calendarWeek"]) {
+    if (!src["calendarWeek"].isNull()) {
         dst.calendarWeek = src["calendarWeek"].as<decltype(dst.calendarWeek)::value_type>();
     } else {
         dst.calendarWeek = std::nullopt;
     }
-    if (src["dayOfWeekOccurrence"]) {
+    if (!src["dayOfWeekOccurrence"].isNull()) {
         dst.dayOfWeekOccurrence = src["dayOfWeekOccurrence"].as<decltype(dst.dayOfWeekOccurrence)::value_type>();
     } else {
         dst.dayOfWeekOccurrence = std::nullopt;
     }
-    if (src["daysOfWeek"]) {
+    if (!src["daysOfWeek"].isNull()) {
         dst.daysOfWeek = src["daysOfWeek"].as<decltype(dst.daysOfWeek)::value_type>();
     } else {
         dst.daysOfWeek = std::nullopt;
     }
-    if (src["time"]) {
+    if (!src["time"].isNull()) {
         dst.time = src["time"].as<decltype(dst.time)::value_type>();
     } else {
         dst.time = std::nullopt;
     }
-    if (src["relative"]) {
+    if (!src["relative"].isNull()) {
         dst.relative = src["relative"].as<decltype(dst.relative)::value_type>();
     } else {
         dst.relative = std::nullopt;
@@ -9314,27 +9314,27 @@ bool convertToJson(const RecurrenceInformationType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, RecurrenceInformationType &dst)
 {
 
-    if (src["recurringInterval"]) {
+    if (!src["recurringInterval"].isNull()) {
         dst.recurringInterval = src["recurringInterval"].as<decltype(dst.recurringInterval)::value_type>();
     } else {
         dst.recurringInterval = std::nullopt;
     }
-    if (src["recurringIntervalStep"]) {
+    if (!src["recurringIntervalStep"].isNull()) {
         dst.recurringIntervalStep = src["recurringIntervalStep"].as<decltype(dst.recurringIntervalStep)::value_type>();
     } else {
         dst.recurringIntervalStep = std::nullopt;
     }
-    if (src["firstExecution"]) {
+    if (!src["firstExecution"].isNull()) {
         dst.firstExecution = src["firstExecution"].as<decltype(dst.firstExecution)::value_type>();
     } else {
         dst.firstExecution = std::nullopt;
     }
-    if (src["executionCount"]) {
+    if (!src["executionCount"].isNull()) {
         dst.executionCount = src["executionCount"].as<decltype(dst.executionCount)::value_type>();
     } else {
         dst.executionCount = std::nullopt;
     }
-    if (src["lastExecution"]) {
+    if (!src["lastExecution"].isNull()) {
         dst.lastExecution = src["lastExecution"].as<decltype(dst.lastExecution)::value_type>();
     } else {
         dst.lastExecution = std::nullopt;
@@ -9366,27 +9366,27 @@ bool convertToJson(const RecurrenceInformationElementsType &src, JsonVariant &ds
 void convertFromJson(const JsonVariantConst &src, RecurrenceInformationElementsType &dst)
 {
 
-    if (src["recurringInterval"]) {
+    if (!src["recurringInterval"].isNull()) {
         dst.recurringInterval = src["recurringInterval"].as<decltype(dst.recurringInterval)::value_type>();
     } else {
         dst.recurringInterval = std::nullopt;
     }
-    if (src["recurringIntervalStep"]) {
+    if (!src["recurringIntervalStep"].isNull()) {
         dst.recurringIntervalStep = src["recurringIntervalStep"].as<decltype(dst.recurringIntervalStep)::value_type>();
     } else {
         dst.recurringIntervalStep = std::nullopt;
     }
-    if (src["firstExecution"]) {
+    if (!src["firstExecution"].isNull()) {
         dst.firstExecution = src["firstExecution"].as<decltype(dst.firstExecution)::value_type>();
     } else {
         dst.firstExecution = std::nullopt;
     }
-    if (src["executionCount"]) {
+    if (!src["executionCount"].isNull()) {
         dst.executionCount = src["executionCount"].as<decltype(dst.executionCount)::value_type>();
     } else {
         dst.executionCount = std::nullopt;
     }
-    if (src["lastExecution"]) {
+    if (!src["lastExecution"].isNull()) {
         dst.lastExecution = src["lastExecution"].as<decltype(dst.lastExecution)::value_type>();
     } else {
         dst.lastExecution = std::nullopt;
@@ -9409,12 +9409,12 @@ bool convertToJson(const ScaledNumberRangeType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, ScaledNumberRangeType &dst)
 {
 
-    if (src["min"]) {
+    if (!src["min"].isNull()) {
         dst.min = src["min"].as<decltype(dst.min)::value_type>();
     } else {
         dst.min = std::nullopt;
     }
-    if (src["max"]) {
+    if (!src["max"].isNull()) {
         dst.max = src["max"].as<decltype(dst.max)::value_type>();
     } else {
         dst.max = std::nullopt;
@@ -9437,12 +9437,12 @@ bool convertToJson(const ScaledNumberRangeElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, ScaledNumberRangeElementsType &dst)
 {
 
-    if (src["min"]) {
+    if (!src["min"].isNull()) {
         dst.min = src["min"].as<decltype(dst.min)::value_type>();
     } else {
         dst.min = std::nullopt;
     }
-    if (src["max"]) {
+    if (!src["max"].isNull()) {
         dst.max = src["max"].as<decltype(dst.max)::value_type>();
     } else {
         dst.max = std::nullopt;
@@ -9465,12 +9465,12 @@ bool convertToJson(const ScaledNumberSetType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, ScaledNumberSetType &dst)
 {
 
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
     }
-    if (src["range"]) {
+    if (!src["range"].isNull()) {
         dst.range = src["range"].as<decltype(dst.range)::value_type>();
     } else {
         dst.range = std::nullopt;
@@ -9493,12 +9493,12 @@ bool convertToJson(const ScaledNumberSetElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, ScaledNumberSetElementsType &dst)
 {
 
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
     }
-    if (src["range"]) {
+    if (!src["range"].isNull()) {
         dst.range = src["range"].as<decltype(dst.range)::value_type>();
     } else {
         dst.range = std::nullopt;
@@ -9518,7 +9518,7 @@ bool convertToJson(const DeviceAddressType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, DeviceAddressType &dst)
 {
 
-    if (src["device"]) {
+    if (!src["device"].isNull()) {
         dst.device = src["device"].as<decltype(dst.device)::value_type>();
     } else {
         dst.device = std::nullopt;
@@ -9538,7 +9538,7 @@ bool convertToJson(const DeviceAddressElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, DeviceAddressElementsType &dst)
 {
 
-    if (src["device"]) {
+    if (!src["device"].isNull()) {
         dst.device = src["device"].as<decltype(dst.device)::value_type>();
     } else {
         dst.device = std::nullopt;
@@ -9561,12 +9561,12 @@ bool convertToJson(const EntityAddressType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, EntityAddressType &dst)
 {
 
-    if (src["device"]) {
+    if (!src["device"].isNull()) {
         dst.device = src["device"].as<decltype(dst.device)::value_type>();
     } else {
         dst.device = std::nullopt;
     }
-    if (src["entity"]) {
+    if (!src["entity"].isNull()) {
         dst.entity = src["entity"].as<decltype(dst.entity)::value_type>();
     } else {
         dst.entity = std::nullopt;
@@ -9589,12 +9589,12 @@ bool convertToJson(const EntityAddressElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, EntityAddressElementsType &dst)
 {
 
-    if (src["device"]) {
+    if (!src["device"].isNull()) {
         dst.device = src["device"].as<decltype(dst.device)::value_type>();
     } else {
         dst.device = std::nullopt;
     }
-    if (src["entity"]) {
+    if (!src["entity"].isNull()) {
         dst.entity = src["entity"].as<decltype(dst.entity)::value_type>();
     } else {
         dst.entity = std::nullopt;
@@ -9620,17 +9620,17 @@ bool convertToJson(const FeatureAddressType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, FeatureAddressType &dst)
 {
 
-    if (src["device"]) {
+    if (!src["device"].isNull()) {
         dst.device = src["device"].as<decltype(dst.device)::value_type>();
     } else {
         dst.device = std::nullopt;
     }
-    if (src["entity"]) {
+    if (!src["entity"].isNull()) {
         dst.entity = src["entity"].as<decltype(dst.entity)::value_type>();
     } else {
         dst.entity = std::nullopt;
     }
-    if (src["feature"]) {
+    if (!src["feature"].isNull()) {
         dst.feature = src["feature"].as<decltype(dst.feature)::value_type>();
     } else {
         dst.feature = std::nullopt;
@@ -9656,17 +9656,17 @@ bool convertToJson(const FeatureAddressElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, FeatureAddressElementsType &dst)
 {
 
-    if (src["device"]) {
+    if (!src["device"].isNull()) {
         dst.device = src["device"].as<decltype(dst.device)::value_type>();
     } else {
         dst.device = std::nullopt;
     }
-    if (src["entity"]) {
+    if (!src["entity"].isNull()) {
         dst.entity = src["entity"].as<decltype(dst.entity)::value_type>();
     } else {
         dst.entity = std::nullopt;
     }
-    if (src["feature"]) {
+    if (!src["feature"].isNull()) {
         dst.feature = src["feature"].as<decltype(dst.feature)::value_type>();
     } else {
         dst.feature = std::nullopt;
@@ -9686,7 +9686,7 @@ bool convertToJson(const PossibleOperationsClassifierType &src, JsonVariant &dst
 void convertFromJson(const JsonVariantConst &src, PossibleOperationsClassifierType &dst)
 {
 
-    if (src["partial"]) {
+    if (!src["partial"].isNull()) {
         dst.partial = src["partial"].as<decltype(dst.partial)::value_type>();
     } else {
         dst.partial = std::nullopt;
@@ -9706,7 +9706,7 @@ bool convertToJson(const PossibleOperationsReadType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, PossibleOperationsReadType &dst)
 {
 
-    if (src["partial"]) {
+    if (!src["partial"].isNull()) {
         dst.partial = src["partial"].as<decltype(dst.partial)::value_type>();
     } else {
         dst.partial = std::nullopt;
@@ -9726,7 +9726,7 @@ bool convertToJson(const PossibleOperationsWriteType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, PossibleOperationsWriteType &dst)
 {
 
-    if (src["partial"]) {
+    if (!src["partial"].isNull()) {
         dst.partial = src["partial"].as<decltype(dst.partial)::value_type>();
     } else {
         dst.partial = std::nullopt;
@@ -9749,12 +9749,12 @@ bool convertToJson(const PossibleOperationsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, PossibleOperationsType &dst)
 {
 
-    if (src["read"]) {
+    if (!src["read"].isNull()) {
         dst.read = src["read"].as<decltype(dst.read)::value_type>();
     } else {
         dst.read = std::nullopt;
     }
-    if (src["write"]) {
+    if (!src["write"].isNull()) {
         dst.write = src["write"].as<decltype(dst.write)::value_type>();
     } else {
         dst.write = std::nullopt;
@@ -9777,12 +9777,12 @@ bool convertToJson(const PossibleOperationsElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, PossibleOperationsElementsType &dst)
 {
 
-    if (src["read"]) {
+    if (!src["read"].isNull()) {
         dst.read = src["read"].as<decltype(dst.read)::value_type>();
     } else {
         dst.read = std::nullopt;
     }
-    if (src["write"]) {
+    if (!src["write"].isNull()) {
         dst.write = src["write"].as<decltype(dst.write)::value_type>();
     } else {
         dst.write = std::nullopt;
@@ -9805,12 +9805,12 @@ bool convertToJson(const FunctionPropertyType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, FunctionPropertyType &dst)
 {
 
-    if (src["function"]) {
+    if (!src["function"].isNull()) {
         dst.function = src["function"].as<decltype(dst.function)::value_type>();
     } else {
         dst.function = std::nullopt;
     }
-    if (src["possibleOperations"]) {
+    if (!src["possibleOperations"].isNull()) {
         dst.possibleOperations = src["possibleOperations"].as<decltype(dst.possibleOperations)::value_type>();
     } else {
         dst.possibleOperations = std::nullopt;
@@ -9833,12 +9833,12 @@ bool convertToJson(const FunctionPropertyElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, FunctionPropertyElementsType &dst)
 {
 
-    if (src["function"]) {
+    if (!src["function"].isNull()) {
         dst.function = src["function"].as<decltype(dst.function)::value_type>();
     } else {
         dst.function = std::nullopt;
     }
-    if (src["possibleOperations"]) {
+    if (!src["possibleOperations"].isNull()) {
         dst.possibleOperations = src["possibleOperations"].as<decltype(dst.possibleOperations)::value_type>();
     } else {
         dst.possibleOperations = std::nullopt;
@@ -9876,37 +9876,37 @@ bool convertToJson(const PowerTimeSlotScheduleDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleDataType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["slotNumber"]) {
+    if (!src["slotNumber"].isNull()) {
         dst.slotNumber = src["slotNumber"].as<decltype(dst.slotNumber)::value_type>();
     } else {
         dst.slotNumber = std::nullopt;
     }
-    if (src["timePeriod"]) {
+    if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
         dst.timePeriod = std::nullopt;
     }
-    if (src["defaultDuration"]) {
+    if (!src["defaultDuration"].isNull()) {
         dst.defaultDuration = src["defaultDuration"].as<decltype(dst.defaultDuration)::value_type>();
     } else {
         dst.defaultDuration = std::nullopt;
     }
-    if (src["durationUncertainty"]) {
+    if (!src["durationUncertainty"].isNull()) {
         dst.durationUncertainty = src["durationUncertainty"].as<decltype(dst.durationUncertainty)::value_type>();
     } else {
         dst.durationUncertainty = std::nullopt;
     }
-    if (src["slotActivated"]) {
+    if (!src["slotActivated"].isNull()) {
         dst.slotActivated = src["slotActivated"].as<decltype(dst.slotActivated)::value_type>();
     } else {
         dst.slotActivated = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -9944,37 +9944,37 @@ bool convertToJson(const PowerTimeSlotScheduleDataElementsType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleDataElementsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["slotNumber"]) {
+    if (!src["slotNumber"].isNull()) {
         dst.slotNumber = src["slotNumber"].as<decltype(dst.slotNumber)::value_type>();
     } else {
         dst.slotNumber = std::nullopt;
     }
-    if (src["timePeriod"]) {
+    if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
         dst.timePeriod = std::nullopt;
     }
-    if (src["defaultDuration"]) {
+    if (!src["defaultDuration"].isNull()) {
         dst.defaultDuration = src["defaultDuration"].as<decltype(dst.defaultDuration)::value_type>();
     } else {
         dst.defaultDuration = std::nullopt;
     }
-    if (src["durationUncertainty"]) {
+    if (!src["durationUncertainty"].isNull()) {
         dst.durationUncertainty = src["durationUncertainty"].as<decltype(dst.durationUncertainty)::value_type>();
     } else {
         dst.durationUncertainty = std::nullopt;
     }
-    if (src["slotActivated"]) {
+    if (!src["slotActivated"].isNull()) {
         dst.slotActivated = src["slotActivated"].as<decltype(dst.slotActivated)::value_type>();
     } else {
         dst.slotActivated = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -9994,7 +9994,7 @@ bool convertToJson(const PowerTimeSlotScheduleListDataType &src, JsonVariant &ds
 void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleListDataType &dst)
 {
 
-    if (src["powerTimeSlotScheduleData"]) {
+    if (!src["powerTimeSlotScheduleData"].isNull()) {
         dst.powerTimeSlotScheduleData = src["powerTimeSlotScheduleData"].as<decltype(dst.powerTimeSlotScheduleData)::value_type>();
     } else {
         dst.powerTimeSlotScheduleData = std::nullopt;
@@ -10017,12 +10017,12 @@ bool convertToJson(const PowerTimeSlotScheduleListDataSelectorsType &src, JsonVa
 void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleListDataSelectorsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["slotNumber"]) {
+    if (!src["slotNumber"].isNull()) {
         dst.slotNumber = src["slotNumber"].as<decltype(dst.slotNumber)::value_type>();
     } else {
         dst.slotNumber = std::nullopt;
@@ -10051,22 +10051,22 @@ bool convertToJson(const PowerTimeSlotValueDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueDataType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["slotNumber"]) {
+    if (!src["slotNumber"].isNull()) {
         dst.slotNumber = src["slotNumber"].as<decltype(dst.slotNumber)::value_type>();
     } else {
         dst.slotNumber = std::nullopt;
     }
-    if (src["valueType"]) {
+    if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
         dst.valueType = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
@@ -10095,22 +10095,22 @@ bool convertToJson(const PowerTimeSlotValueDataElementsType &src, JsonVariant &d
 void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueDataElementsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["slotNumber"]) {
+    if (!src["slotNumber"].isNull()) {
         dst.slotNumber = src["slotNumber"].as<decltype(dst.slotNumber)::value_type>();
     } else {
         dst.slotNumber = std::nullopt;
     }
-    if (src["valueType"]) {
+    if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
         dst.valueType = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
@@ -10130,7 +10130,7 @@ bool convertToJson(const PowerTimeSlotValueListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueListDataType &dst)
 {
 
-    if (src["powerTimeSlotValueData"]) {
+    if (!src["powerTimeSlotValueData"].isNull()) {
         dst.powerTimeSlotValueData = src["powerTimeSlotValueData"].as<decltype(dst.powerTimeSlotValueData)::value_type>();
     } else {
         dst.powerTimeSlotValueData = std::nullopt;
@@ -10156,17 +10156,17 @@ bool convertToJson(const PowerTimeSlotValueListDataSelectorsType &src, JsonVaria
 void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueListDataSelectorsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["slotNumber"]) {
+    if (!src["slotNumber"].isNull()) {
         dst.slotNumber = src["slotNumber"].as<decltype(dst.slotNumber)::value_type>();
     } else {
         dst.slotNumber = std::nullopt;
     }
-    if (src["valueType"]) {
+    if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
         dst.valueType = std::nullopt;
@@ -10204,37 +10204,37 @@ bool convertToJson(const PowerTimeSlotScheduleConstraintsDataType &src, JsonVari
 void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstraintsDataType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["slotNumber"]) {
+    if (!src["slotNumber"].isNull()) {
         dst.slotNumber = src["slotNumber"].as<decltype(dst.slotNumber)::value_type>();
     } else {
         dst.slotNumber = std::nullopt;
     }
-    if (src["earliestStartTime"]) {
+    if (!src["earliestStartTime"].isNull()) {
         dst.earliestStartTime = src["earliestStartTime"].as<decltype(dst.earliestStartTime)::value_type>();
     } else {
         dst.earliestStartTime = std::nullopt;
     }
-    if (src["latestEndTime"]) {
+    if (!src["latestEndTime"].isNull()) {
         dst.latestEndTime = src["latestEndTime"].as<decltype(dst.latestEndTime)::value_type>();
     } else {
         dst.latestEndTime = std::nullopt;
     }
-    if (src["minDuration"]) {
+    if (!src["minDuration"].isNull()) {
         dst.minDuration = src["minDuration"].as<decltype(dst.minDuration)::value_type>();
     } else {
         dst.minDuration = std::nullopt;
     }
-    if (src["maxDuration"]) {
+    if (!src["maxDuration"].isNull()) {
         dst.maxDuration = src["maxDuration"].as<decltype(dst.maxDuration)::value_type>();
     } else {
         dst.maxDuration = std::nullopt;
     }
-    if (src["optionalSlot"]) {
+    if (!src["optionalSlot"].isNull()) {
         dst.optionalSlot = src["optionalSlot"].as<decltype(dst.optionalSlot)::value_type>();
     } else {
         dst.optionalSlot = std::nullopt;
@@ -10272,37 +10272,37 @@ bool convertToJson(const PowerTimeSlotScheduleConstraintsDataElementsType &src, 
 void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstraintsDataElementsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["slotNumber"]) {
+    if (!src["slotNumber"].isNull()) {
         dst.slotNumber = src["slotNumber"].as<decltype(dst.slotNumber)::value_type>();
     } else {
         dst.slotNumber = std::nullopt;
     }
-    if (src["earliestStartTime"]) {
+    if (!src["earliestStartTime"].isNull()) {
         dst.earliestStartTime = src["earliestStartTime"].as<decltype(dst.earliestStartTime)::value_type>();
     } else {
         dst.earliestStartTime = std::nullopt;
     }
-    if (src["latestEndTime"]) {
+    if (!src["latestEndTime"].isNull()) {
         dst.latestEndTime = src["latestEndTime"].as<decltype(dst.latestEndTime)::value_type>();
     } else {
         dst.latestEndTime = std::nullopt;
     }
-    if (src["minDuration"]) {
+    if (!src["minDuration"].isNull()) {
         dst.minDuration = src["minDuration"].as<decltype(dst.minDuration)::value_type>();
     } else {
         dst.minDuration = std::nullopt;
     }
-    if (src["maxDuration"]) {
+    if (!src["maxDuration"].isNull()) {
         dst.maxDuration = src["maxDuration"].as<decltype(dst.maxDuration)::value_type>();
     } else {
         dst.maxDuration = std::nullopt;
     }
-    if (src["optionalSlot"]) {
+    if (!src["optionalSlot"].isNull()) {
         dst.optionalSlot = src["optionalSlot"].as<decltype(dst.optionalSlot)::value_type>();
     } else {
         dst.optionalSlot = std::nullopt;
@@ -10322,7 +10322,7 @@ bool convertToJson(const PowerTimeSlotScheduleConstraintsListDataType &src, Json
 void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstraintsListDataType &dst)
 {
 
-    if (src["powerTimeSlotScheduleConstraintsData"]) {
+    if (!src["powerTimeSlotScheduleConstraintsData"].isNull()) {
         dst.powerTimeSlotScheduleConstraintsData = src["powerTimeSlotScheduleConstraintsData"].as<decltype(dst.powerTimeSlotScheduleConstraintsData)::value_type>();
     } else {
         dst.powerTimeSlotScheduleConstraintsData = std::nullopt;
@@ -10345,12 +10345,12 @@ bool convertToJson(const PowerTimeSlotScheduleConstraintsListDataSelectorsType &
 void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstraintsListDataSelectorsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["slotNumber"]) {
+    if (!src["slotNumber"].isNull()) {
         dst.slotNumber = src["slotNumber"].as<decltype(dst.slotNumber)::value_type>();
     } else {
         dst.slotNumber = std::nullopt;
@@ -10373,12 +10373,12 @@ bool convertToJson(const PowerSequenceAlternativesRelationDataType &src, JsonVar
 void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelationDataType &dst)
 {
 
-    if (src["alternativesId"]) {
+    if (!src["alternativesId"].isNull()) {
         dst.alternativesId = src["alternativesId"].as<decltype(dst.alternativesId)::value_type>();
     } else {
         dst.alternativesId = std::nullopt;
     }
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -10401,12 +10401,12 @@ bool convertToJson(const PowerSequenceAlternativesRelationDataElementsType &src,
 void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelationDataElementsType &dst)
 {
 
-    if (src["alternativesId"]) {
+    if (!src["alternativesId"].isNull()) {
         dst.alternativesId = src["alternativesId"].as<decltype(dst.alternativesId)::value_type>();
     } else {
         dst.alternativesId = std::nullopt;
     }
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -10426,7 +10426,7 @@ bool convertToJson(const PowerSequenceAlternativesRelationListDataType &src, Jso
 void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelationListDataType &dst)
 {
 
-    if (src["powerSequenceAlternativesRelationData"]) {
+    if (!src["powerSequenceAlternativesRelationData"].isNull()) {
         dst.powerSequenceAlternativesRelationData = src["powerSequenceAlternativesRelationData"].as<decltype(dst.powerSequenceAlternativesRelationData)::value_type>();
     } else {
         dst.powerSequenceAlternativesRelationData = std::nullopt;
@@ -10449,12 +10449,12 @@ bool convertToJson(const PowerSequenceAlternativesRelationListDataSelectorsType 
 void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelationListDataSelectorsType &dst)
 {
 
-    if (src["alternativesId"]) {
+    if (!src["alternativesId"].isNull()) {
         dst.alternativesId = src["alternativesId"].as<decltype(dst.alternativesId)::value_type>();
     } else {
         dst.alternativesId = std::nullopt;
     }
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -10498,47 +10498,47 @@ bool convertToJson(const PowerSequenceDescriptionDataType &src, JsonVariant &dst
 void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionDataType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
     }
-    if (src["positiveEnergyDirection"]) {
+    if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
         dst.positiveEnergyDirection = std::nullopt;
     }
-    if (src["powerUnit"]) {
+    if (!src["powerUnit"].isNull()) {
         dst.powerUnit = src["powerUnit"].as<decltype(dst.powerUnit)::value_type>();
     } else {
         dst.powerUnit = std::nullopt;
     }
-    if (src["energyUnit"]) {
+    if (!src["energyUnit"].isNull()) {
         dst.energyUnit = src["energyUnit"].as<decltype(dst.energyUnit)::value_type>();
     } else {
         dst.energyUnit = std::nullopt;
     }
-    if (src["valueSource"]) {
+    if (!src["valueSource"].isNull()) {
         dst.valueSource = src["valueSource"].as<decltype(dst.valueSource)::value_type>();
     } else {
         dst.valueSource = std::nullopt;
     }
-    if (src["scope"]) {
+    if (!src["scope"].isNull()) {
         dst.scope = src["scope"].as<decltype(dst.scope)::value_type>();
     } else {
         dst.scope = std::nullopt;
     }
-    if (src["taskIdentifier"]) {
+    if (!src["taskIdentifier"].isNull()) {
         dst.taskIdentifier = src["taskIdentifier"].as<decltype(dst.taskIdentifier)::value_type>();
     } else {
         dst.taskIdentifier = std::nullopt;
     }
-    if (src["repetitionsTotal"]) {
+    if (!src["repetitionsTotal"].isNull()) {
         dst.repetitionsTotal = src["repetitionsTotal"].as<decltype(dst.repetitionsTotal)::value_type>();
     } else {
         dst.repetitionsTotal = std::nullopt;
@@ -10582,47 +10582,47 @@ bool convertToJson(const PowerSequenceDescriptionDataElementsType &src, JsonVari
 void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionDataElementsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
     }
-    if (src["positiveEnergyDirection"]) {
+    if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
         dst.positiveEnergyDirection = std::nullopt;
     }
-    if (src["powerUnit"]) {
+    if (!src["powerUnit"].isNull()) {
         dst.powerUnit = src["powerUnit"].as<decltype(dst.powerUnit)::value_type>();
     } else {
         dst.powerUnit = std::nullopt;
     }
-    if (src["energyUnit"]) {
+    if (!src["energyUnit"].isNull()) {
         dst.energyUnit = src["energyUnit"].as<decltype(dst.energyUnit)::value_type>();
     } else {
         dst.energyUnit = std::nullopt;
     }
-    if (src["valueSource"]) {
+    if (!src["valueSource"].isNull()) {
         dst.valueSource = src["valueSource"].as<decltype(dst.valueSource)::value_type>();
     } else {
         dst.valueSource = std::nullopt;
     }
-    if (src["scope"]) {
+    if (!src["scope"].isNull()) {
         dst.scope = src["scope"].as<decltype(dst.scope)::value_type>();
     } else {
         dst.scope = std::nullopt;
     }
-    if (src["taskIdentifier"]) {
+    if (!src["taskIdentifier"].isNull()) {
         dst.taskIdentifier = src["taskIdentifier"].as<decltype(dst.taskIdentifier)::value_type>();
     } else {
         dst.taskIdentifier = std::nullopt;
     }
-    if (src["repetitionsTotal"]) {
+    if (!src["repetitionsTotal"].isNull()) {
         dst.repetitionsTotal = src["repetitionsTotal"].as<decltype(dst.repetitionsTotal)::value_type>();
     } else {
         dst.repetitionsTotal = std::nullopt;
@@ -10642,7 +10642,7 @@ bool convertToJson(const PowerSequenceDescriptionListDataType &src, JsonVariant 
 void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionListDataType &dst)
 {
 
-    if (src["powerSequenceDescriptionData"]) {
+    if (!src["powerSequenceDescriptionData"].isNull()) {
         dst.powerSequenceDescriptionData = src["powerSequenceDescriptionData"].as<decltype(dst.powerSequenceDescriptionData)::value_type>();
     } else {
         dst.powerSequenceDescriptionData = std::nullopt;
@@ -10662,7 +10662,7 @@ bool convertToJson(const PowerSequenceDescriptionListDataSelectorsType &src, Jso
 void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -10703,42 +10703,42 @@ bool convertToJson(const PowerSequenceStateDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, PowerSequenceStateDataType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["state"]) {
+    if (!src["state"].isNull()) {
         dst.state = src["state"].as<decltype(dst.state)::value_type>();
     } else {
         dst.state = std::nullopt;
     }
-    if (src["activeSlotNumber"]) {
+    if (!src["activeSlotNumber"].isNull()) {
         dst.activeSlotNumber = src["activeSlotNumber"].as<decltype(dst.activeSlotNumber)::value_type>();
     } else {
         dst.activeSlotNumber = std::nullopt;
     }
-    if (src["elapsedSlotTime"]) {
+    if (!src["elapsedSlotTime"].isNull()) {
         dst.elapsedSlotTime = src["elapsedSlotTime"].as<decltype(dst.elapsedSlotTime)::value_type>();
     } else {
         dst.elapsedSlotTime = std::nullopt;
     }
-    if (src["remainingSlotTime"]) {
+    if (!src["remainingSlotTime"].isNull()) {
         dst.remainingSlotTime = src["remainingSlotTime"].as<decltype(dst.remainingSlotTime)::value_type>();
     } else {
         dst.remainingSlotTime = std::nullopt;
     }
-    if (src["sequenceRemoteControllable"]) {
+    if (!src["sequenceRemoteControllable"].isNull()) {
         dst.sequenceRemoteControllable = src["sequenceRemoteControllable"].as<decltype(dst.sequenceRemoteControllable)::value_type>();
     } else {
         dst.sequenceRemoteControllable = std::nullopt;
     }
-    if (src["activeRepetitionNumber"]) {
+    if (!src["activeRepetitionNumber"].isNull()) {
         dst.activeRepetitionNumber = src["activeRepetitionNumber"].as<decltype(dst.activeRepetitionNumber)::value_type>();
     } else {
         dst.activeRepetitionNumber = std::nullopt;
     }
-    if (src["remainingPauseTime"]) {
+    if (!src["remainingPauseTime"].isNull()) {
         dst.remainingPauseTime = src["remainingPauseTime"].as<decltype(dst.remainingPauseTime)::value_type>();
     } else {
         dst.remainingPauseTime = std::nullopt;
@@ -10779,42 +10779,42 @@ bool convertToJson(const PowerSequenceStateDataElementsType &src, JsonVariant &d
 void convertFromJson(const JsonVariantConst &src, PowerSequenceStateDataElementsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["state"]) {
+    if (!src["state"].isNull()) {
         dst.state = src["state"].as<decltype(dst.state)::value_type>();
     } else {
         dst.state = std::nullopt;
     }
-    if (src["activeSlotNumber"]) {
+    if (!src["activeSlotNumber"].isNull()) {
         dst.activeSlotNumber = src["activeSlotNumber"].as<decltype(dst.activeSlotNumber)::value_type>();
     } else {
         dst.activeSlotNumber = std::nullopt;
     }
-    if (src["elapsedSlotTime"]) {
+    if (!src["elapsedSlotTime"].isNull()) {
         dst.elapsedSlotTime = src["elapsedSlotTime"].as<decltype(dst.elapsedSlotTime)::value_type>();
     } else {
         dst.elapsedSlotTime = std::nullopt;
     }
-    if (src["remainingSlotTime"]) {
+    if (!src["remainingSlotTime"].isNull()) {
         dst.remainingSlotTime = src["remainingSlotTime"].as<decltype(dst.remainingSlotTime)::value_type>();
     } else {
         dst.remainingSlotTime = std::nullopt;
     }
-    if (src["sequenceRemoteControllable"]) {
+    if (!src["sequenceRemoteControllable"].isNull()) {
         dst.sequenceRemoteControllable = src["sequenceRemoteControllable"].as<decltype(dst.sequenceRemoteControllable)::value_type>();
     } else {
         dst.sequenceRemoteControllable = std::nullopt;
     }
-    if (src["activeRepetitionNumber"]) {
+    if (!src["activeRepetitionNumber"].isNull()) {
         dst.activeRepetitionNumber = src["activeRepetitionNumber"].as<decltype(dst.activeRepetitionNumber)::value_type>();
     } else {
         dst.activeRepetitionNumber = std::nullopt;
     }
-    if (src["remainingPauseTime"]) {
+    if (!src["remainingPauseTime"].isNull()) {
         dst.remainingPauseTime = src["remainingPauseTime"].as<decltype(dst.remainingPauseTime)::value_type>();
     } else {
         dst.remainingPauseTime = std::nullopt;
@@ -10834,7 +10834,7 @@ bool convertToJson(const PowerSequenceStateListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, PowerSequenceStateListDataType &dst)
 {
 
-    if (src["powerSequenceStateData"]) {
+    if (!src["powerSequenceStateData"].isNull()) {
         dst.powerSequenceStateData = src["powerSequenceStateData"].as<decltype(dst.powerSequenceStateData)::value_type>();
     } else {
         dst.powerSequenceStateData = std::nullopt;
@@ -10854,7 +10854,7 @@ bool convertToJson(const PowerSequenceStateListDataSelectorsType &src, JsonVaria
 void convertFromJson(const JsonVariantConst &src, PowerSequenceStateListDataSelectorsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -10880,17 +10880,17 @@ bool convertToJson(const PowerSequenceScheduleDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleDataType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["startTime"]) {
+    if (!src["startTime"].isNull()) {
         dst.startTime = src["startTime"].as<decltype(dst.startTime)::value_type>();
     } else {
         dst.startTime = std::nullopt;
     }
-    if (src["endTime"]) {
+    if (!src["endTime"].isNull()) {
         dst.endTime = src["endTime"].as<decltype(dst.endTime)::value_type>();
     } else {
         dst.endTime = std::nullopt;
@@ -10916,17 +10916,17 @@ bool convertToJson(const PowerSequenceScheduleDataElementsType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleDataElementsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["startTime"]) {
+    if (!src["startTime"].isNull()) {
         dst.startTime = src["startTime"].as<decltype(dst.startTime)::value_type>();
     } else {
         dst.startTime = std::nullopt;
     }
-    if (src["endTime"]) {
+    if (!src["endTime"].isNull()) {
         dst.endTime = src["endTime"].as<decltype(dst.endTime)::value_type>();
     } else {
         dst.endTime = std::nullopt;
@@ -10946,7 +10946,7 @@ bool convertToJson(const PowerSequenceScheduleListDataType &src, JsonVariant &ds
 void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleListDataType &dst)
 {
 
-    if (src["powerSequenceScheduleData"]) {
+    if (!src["powerSequenceScheduleData"].isNull()) {
         dst.powerSequenceScheduleData = src["powerSequenceScheduleData"].as<decltype(dst.powerSequenceScheduleData)::value_type>();
     } else {
         dst.powerSequenceScheduleData = std::nullopt;
@@ -10966,7 +10966,7 @@ bool convertToJson(const PowerSequenceScheduleListDataSelectorsType &src, JsonVa
 void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleListDataSelectorsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -11001,32 +11001,32 @@ bool convertToJson(const PowerSequenceScheduleConstraintsDataType &src, JsonVari
 void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstraintsDataType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["earliestStartTime"]) {
+    if (!src["earliestStartTime"].isNull()) {
         dst.earliestStartTime = src["earliestStartTime"].as<decltype(dst.earliestStartTime)::value_type>();
     } else {
         dst.earliestStartTime = std::nullopt;
     }
-    if (src["latestStartTime"]) {
+    if (!src["latestStartTime"].isNull()) {
         dst.latestStartTime = src["latestStartTime"].as<decltype(dst.latestStartTime)::value_type>();
     } else {
         dst.latestStartTime = std::nullopt;
     }
-    if (src["earliestEndTime"]) {
+    if (!src["earliestEndTime"].isNull()) {
         dst.earliestEndTime = src["earliestEndTime"].as<decltype(dst.earliestEndTime)::value_type>();
     } else {
         dst.earliestEndTime = std::nullopt;
     }
-    if (src["latestEndTime"]) {
+    if (!src["latestEndTime"].isNull()) {
         dst.latestEndTime = src["latestEndTime"].as<decltype(dst.latestEndTime)::value_type>();
     } else {
         dst.latestEndTime = std::nullopt;
     }
-    if (src["optionalSequence"]) {
+    if (!src["optionalSequence"].isNull()) {
         dst.optionalSequence = src["optionalSequence"].as<decltype(dst.optionalSequence)::value_type>();
     } else {
         dst.optionalSequence = std::nullopt;
@@ -11061,32 +11061,32 @@ bool convertToJson(const PowerSequenceScheduleConstraintsDataElementsType &src, 
 void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstraintsDataElementsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["earliestStartTime"]) {
+    if (!src["earliestStartTime"].isNull()) {
         dst.earliestStartTime = src["earliestStartTime"].as<decltype(dst.earliestStartTime)::value_type>();
     } else {
         dst.earliestStartTime = std::nullopt;
     }
-    if (src["latestStartTime"]) {
+    if (!src["latestStartTime"].isNull()) {
         dst.latestStartTime = src["latestStartTime"].as<decltype(dst.latestStartTime)::value_type>();
     } else {
         dst.latestStartTime = std::nullopt;
     }
-    if (src["earliestEndTime"]) {
+    if (!src["earliestEndTime"].isNull()) {
         dst.earliestEndTime = src["earliestEndTime"].as<decltype(dst.earliestEndTime)::value_type>();
     } else {
         dst.earliestEndTime = std::nullopt;
     }
-    if (src["latestEndTime"]) {
+    if (!src["latestEndTime"].isNull()) {
         dst.latestEndTime = src["latestEndTime"].as<decltype(dst.latestEndTime)::value_type>();
     } else {
         dst.latestEndTime = std::nullopt;
     }
-    if (src["optionalSequence"]) {
+    if (!src["optionalSequence"].isNull()) {
         dst.optionalSequence = src["optionalSequence"].as<decltype(dst.optionalSequence)::value_type>();
     } else {
         dst.optionalSequence = std::nullopt;
@@ -11106,7 +11106,7 @@ bool convertToJson(const PowerSequenceScheduleConstraintsListDataType &src, Json
 void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstraintsListDataType &dst)
 {
 
-    if (src["powerSequenceScheduleConstraintsData"]) {
+    if (!src["powerSequenceScheduleConstraintsData"].isNull()) {
         dst.powerSequenceScheduleConstraintsData = src["powerSequenceScheduleConstraintsData"].as<decltype(dst.powerSequenceScheduleConstraintsData)::value_type>();
     } else {
         dst.powerSequenceScheduleConstraintsData = std::nullopt;
@@ -11126,7 +11126,7 @@ bool convertToJson(const PowerSequenceScheduleConstraintsListDataSelectorsType &
 void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstraintsListDataSelectorsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -11155,22 +11155,22 @@ bool convertToJson(const PowerSequencePriceDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, PowerSequencePriceDataType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["potentialStartTime"]) {
+    if (!src["potentialStartTime"].isNull()) {
         dst.potentialStartTime = src["potentialStartTime"].as<decltype(dst.potentialStartTime)::value_type>();
     } else {
         dst.potentialStartTime = std::nullopt;
     }
-    if (src["price"]) {
+    if (!src["price"].isNull()) {
         dst.price = src["price"].as<decltype(dst.price)::value_type>();
     } else {
         dst.price = std::nullopt;
     }
-    if (src["currency"]) {
+    if (!src["currency"].isNull()) {
         dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
     } else {
         dst.currency = std::nullopt;
@@ -11199,22 +11199,22 @@ bool convertToJson(const PowerSequencePriceDataElementsType &src, JsonVariant &d
 void convertFromJson(const JsonVariantConst &src, PowerSequencePriceDataElementsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["potentialStartTime"]) {
+    if (!src["potentialStartTime"].isNull()) {
         dst.potentialStartTime = src["potentialStartTime"].as<decltype(dst.potentialStartTime)::value_type>();
     } else {
         dst.potentialStartTime = std::nullopt;
     }
-    if (src["price"]) {
+    if (!src["price"].isNull()) {
         dst.price = src["price"].as<decltype(dst.price)::value_type>();
     } else {
         dst.price = std::nullopt;
     }
-    if (src["currency"]) {
+    if (!src["currency"].isNull()) {
         dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
     } else {
         dst.currency = std::nullopt;
@@ -11234,7 +11234,7 @@ bool convertToJson(const PowerSequencePriceListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, PowerSequencePriceListDataType &dst)
 {
 
-    if (src["powerSequencePriceData"]) {
+    if (!src["powerSequencePriceData"].isNull()) {
         dst.powerSequencePriceData = src["powerSequencePriceData"].as<decltype(dst.powerSequencePriceData)::value_type>();
     } else {
         dst.powerSequencePriceData = std::nullopt;
@@ -11257,12 +11257,12 @@ bool convertToJson(const PowerSequencePriceListDataSelectorsType &src, JsonVaria
 void convertFromJson(const JsonVariantConst &src, PowerSequencePriceListDataSelectorsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["potentialStartTimeInterval"]) {
+    if (!src["potentialStartTimeInterval"].isNull()) {
         dst.potentialStartTimeInterval = src["potentialStartTimeInterval"].as<decltype(dst.potentialStartTimeInterval)::value_type>();
     } else {
         dst.potentialStartTimeInterval = std::nullopt;
@@ -11288,17 +11288,17 @@ bool convertToJson(const PowerSequenceSchedulePreferenceDataType &src, JsonVaria
 void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenceDataType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["greenest"]) {
+    if (!src["greenest"].isNull()) {
         dst.greenest = src["greenest"].as<decltype(dst.greenest)::value_type>();
     } else {
         dst.greenest = std::nullopt;
     }
-    if (src["cheapest"]) {
+    if (!src["cheapest"].isNull()) {
         dst.cheapest = src["cheapest"].as<decltype(dst.cheapest)::value_type>();
     } else {
         dst.cheapest = std::nullopt;
@@ -11324,17 +11324,17 @@ bool convertToJson(const PowerSequenceSchedulePreferenceDataElementsType &src, J
 void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenceDataElementsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["greenest"]) {
+    if (!src["greenest"].isNull()) {
         dst.greenest = src["greenest"].as<decltype(dst.greenest)::value_type>();
     } else {
         dst.greenest = std::nullopt;
     }
-    if (src["cheapest"]) {
+    if (!src["cheapest"].isNull()) {
         dst.cheapest = src["cheapest"].as<decltype(dst.cheapest)::value_type>();
     } else {
         dst.cheapest = std::nullopt;
@@ -11354,7 +11354,7 @@ bool convertToJson(const PowerSequenceSchedulePreferenceListDataType &src, JsonV
 void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenceListDataType &dst)
 {
 
-    if (src["powerSequenceSchedulePreferenceData"]) {
+    if (!src["powerSequenceSchedulePreferenceData"].isNull()) {
         dst.powerSequenceSchedulePreferenceData = src["powerSequenceSchedulePreferenceData"].as<decltype(dst.powerSequenceSchedulePreferenceData)::value_type>();
     } else {
         dst.powerSequenceSchedulePreferenceData = std::nullopt;
@@ -11374,7 +11374,7 @@ bool convertToJson(const PowerSequenceSchedulePreferenceListDataSelectorsType &s
 void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenceListDataSelectorsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -11406,27 +11406,27 @@ bool convertToJson(const PowerSequenceNodeScheduleInformationDataType &src, Json
 void convertFromJson(const JsonVariantConst &src, PowerSequenceNodeScheduleInformationDataType &dst)
 {
 
-    if (src["nodeRemoteControllable"]) {
+    if (!src["nodeRemoteControllable"].isNull()) {
         dst.nodeRemoteControllable = src["nodeRemoteControllable"].as<decltype(dst.nodeRemoteControllable)::value_type>();
     } else {
         dst.nodeRemoteControllable = std::nullopt;
     }
-    if (src["supportsSingleSlotSchedulingOnly"]) {
+    if (!src["supportsSingleSlotSchedulingOnly"].isNull()) {
         dst.supportsSingleSlotSchedulingOnly = src["supportsSingleSlotSchedulingOnly"].as<decltype(dst.supportsSingleSlotSchedulingOnly)::value_type>();
     } else {
         dst.supportsSingleSlotSchedulingOnly = std::nullopt;
     }
-    if (src["alternativesCount"]) {
+    if (!src["alternativesCount"].isNull()) {
         dst.alternativesCount = src["alternativesCount"].as<decltype(dst.alternativesCount)::value_type>();
     } else {
         dst.alternativesCount = std::nullopt;
     }
-    if (src["totalSequencesCountMax"]) {
+    if (!src["totalSequencesCountMax"].isNull()) {
         dst.totalSequencesCountMax = src["totalSequencesCountMax"].as<decltype(dst.totalSequencesCountMax)::value_type>();
     } else {
         dst.totalSequencesCountMax = std::nullopt;
     }
-    if (src["supportsReselection"]) {
+    if (!src["supportsReselection"].isNull()) {
         dst.supportsReselection = src["supportsReselection"].as<decltype(dst.supportsReselection)::value_type>();
     } else {
         dst.supportsReselection = std::nullopt;
@@ -11458,27 +11458,27 @@ bool convertToJson(const PowerSequenceNodeScheduleInformationDataElementsType &s
 void convertFromJson(const JsonVariantConst &src, PowerSequenceNodeScheduleInformationDataElementsType &dst)
 {
 
-    if (src["nodeRemoteControllable"]) {
+    if (!src["nodeRemoteControllable"].isNull()) {
         dst.nodeRemoteControllable = src["nodeRemoteControllable"].as<decltype(dst.nodeRemoteControllable)::value_type>();
     } else {
         dst.nodeRemoteControllable = std::nullopt;
     }
-    if (src["supportsSingleSlotSchedulingOnly"]) {
+    if (!src["supportsSingleSlotSchedulingOnly"].isNull()) {
         dst.supportsSingleSlotSchedulingOnly = src["supportsSingleSlotSchedulingOnly"].as<decltype(dst.supportsSingleSlotSchedulingOnly)::value_type>();
     } else {
         dst.supportsSingleSlotSchedulingOnly = std::nullopt;
     }
-    if (src["alternativesCount"]) {
+    if (!src["alternativesCount"].isNull()) {
         dst.alternativesCount = src["alternativesCount"].as<decltype(dst.alternativesCount)::value_type>();
     } else {
         dst.alternativesCount = std::nullopt;
     }
-    if (src["totalSequencesCountMax"]) {
+    if (!src["totalSequencesCountMax"].isNull()) {
         dst.totalSequencesCountMax = src["totalSequencesCountMax"].as<decltype(dst.totalSequencesCountMax)::value_type>();
     } else {
         dst.totalSequencesCountMax = std::nullopt;
     }
-    if (src["supportsReselection"]) {
+    if (!src["supportsReselection"].isNull()) {
         dst.supportsReselection = src["supportsReselection"].as<decltype(dst.supportsReselection)::value_type>();
     } else {
         dst.supportsReselection = std::nullopt;
@@ -11498,7 +11498,7 @@ bool convertToJson(const PowerSequenceScheduleConfigurationRequestCallType &src,
 void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConfigurationRequestCallType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -11518,7 +11518,7 @@ bool convertToJson(const PowerSequenceScheduleConfigurationRequestCallElementsTy
 void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConfigurationRequestCallElementsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -11541,12 +11541,12 @@ bool convertToJson(const PowerSequencePriceCalculationRequestCallType &src, Json
 void convertFromJson(const JsonVariantConst &src, PowerSequencePriceCalculationRequestCallType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["potentialStartTime"]) {
+    if (!src["potentialStartTime"].isNull()) {
         dst.potentialStartTime = src["potentialStartTime"].as<decltype(dst.potentialStartTime)::value_type>();
     } else {
         dst.potentialStartTime = std::nullopt;
@@ -11569,12 +11569,12 @@ bool convertToJson(const PowerSequencePriceCalculationRequestCallElementsType &s
 void convertFromJson(const JsonVariantConst &src, PowerSequencePriceCalculationRequestCallElementsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["potentialStartTime"]) {
+    if (!src["potentialStartTime"].isNull()) {
         dst.potentialStartTime = src["potentialStartTime"].as<decltype(dst.potentialStartTime)::value_type>();
     } else {
         dst.potentialStartTime = std::nullopt;
@@ -11615,42 +11615,42 @@ bool convertToJson(const MeasurementDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, MeasurementDataType &dst)
 {
 
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["valueType"]) {
+    if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
         dst.valueType = std::nullopt;
     }
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
     }
-    if (src["evaluationPeriod"]) {
+    if (!src["evaluationPeriod"].isNull()) {
         dst.evaluationPeriod = src["evaluationPeriod"].as<decltype(dst.evaluationPeriod)::value_type>();
     } else {
         dst.evaluationPeriod = std::nullopt;
     }
-    if (src["valueSource"]) {
+    if (!src["valueSource"].isNull()) {
         dst.valueSource = src["valueSource"].as<decltype(dst.valueSource)::value_type>();
     } else {
         dst.valueSource = std::nullopt;
     }
-    if (src["valueTendency"]) {
+    if (!src["valueTendency"].isNull()) {
         dst.valueTendency = src["valueTendency"].as<decltype(dst.valueTendency)::value_type>();
     } else {
         dst.valueTendency = std::nullopt;
     }
-    if (src["valueState"]) {
+    if (!src["valueState"].isNull()) {
         dst.valueState = src["valueState"].as<decltype(dst.valueState)::value_type>();
     } else {
         dst.valueState = std::nullopt;
@@ -11691,42 +11691,42 @@ bool convertToJson(const MeasurementDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, MeasurementDataElementsType &dst)
 {
 
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["valueType"]) {
+    if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
         dst.valueType = std::nullopt;
     }
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
     }
-    if (src["evaluationPeriod"]) {
+    if (!src["evaluationPeriod"].isNull()) {
         dst.evaluationPeriod = src["evaluationPeriod"].as<decltype(dst.evaluationPeriod)::value_type>();
     } else {
         dst.evaluationPeriod = std::nullopt;
     }
-    if (src["valueSource"]) {
+    if (!src["valueSource"].isNull()) {
         dst.valueSource = src["valueSource"].as<decltype(dst.valueSource)::value_type>();
     } else {
         dst.valueSource = std::nullopt;
     }
-    if (src["valueTendency"]) {
+    if (!src["valueTendency"].isNull()) {
         dst.valueTendency = src["valueTendency"].as<decltype(dst.valueTendency)::value_type>();
     } else {
         dst.valueTendency = std::nullopt;
     }
-    if (src["valueState"]) {
+    if (!src["valueState"].isNull()) {
         dst.valueState = src["valueState"].as<decltype(dst.valueState)::value_type>();
     } else {
         dst.valueState = std::nullopt;
@@ -11746,7 +11746,7 @@ bool convertToJson(const MeasurementListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, MeasurementListDataType &dst)
 {
 
-    if (src["measurementData"]) {
+    if (!src["measurementData"].isNull()) {
         dst.measurementData = src["measurementData"].as<decltype(dst.measurementData)::value_type>();
     } else {
         dst.measurementData = std::nullopt;
@@ -11772,17 +11772,17 @@ bool convertToJson(const MeasurementListDataSelectorsType &src, JsonVariant &dst
 void convertFromJson(const JsonVariantConst &src, MeasurementListDataSelectorsType &dst)
 {
 
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["valueType"]) {
+    if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
         dst.valueType = std::nullopt;
     }
-    if (src["timestampInterval"]) {
+    if (!src["timestampInterval"].isNull()) {
         dst.timestampInterval = src["timestampInterval"].as<decltype(dst.timestampInterval)::value_type>();
     } else {
         dst.timestampInterval = std::nullopt;
@@ -11823,42 +11823,42 @@ bool convertToJson(const MeasurementSeriesDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, MeasurementSeriesDataType &dst)
 {
 
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["valueType"]) {
+    if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
         dst.valueType = std::nullopt;
     }
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
     }
-    if (src["evaluationPeriod"]) {
+    if (!src["evaluationPeriod"].isNull()) {
         dst.evaluationPeriod = src["evaluationPeriod"].as<decltype(dst.evaluationPeriod)::value_type>();
     } else {
         dst.evaluationPeriod = std::nullopt;
     }
-    if (src["valueSource"]) {
+    if (!src["valueSource"].isNull()) {
         dst.valueSource = src["valueSource"].as<decltype(dst.valueSource)::value_type>();
     } else {
         dst.valueSource = std::nullopt;
     }
-    if (src["valueTendency"]) {
+    if (!src["valueTendency"].isNull()) {
         dst.valueTendency = src["valueTendency"].as<decltype(dst.valueTendency)::value_type>();
     } else {
         dst.valueTendency = std::nullopt;
     }
-    if (src["valueState"]) {
+    if (!src["valueState"].isNull()) {
         dst.valueState = src["valueState"].as<decltype(dst.valueState)::value_type>();
     } else {
         dst.valueState = std::nullopt;
@@ -11899,42 +11899,42 @@ bool convertToJson(const MeasurementSeriesDataElementsType &src, JsonVariant &ds
 void convertFromJson(const JsonVariantConst &src, MeasurementSeriesDataElementsType &dst)
 {
 
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["valueType"]) {
+    if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
         dst.valueType = std::nullopt;
     }
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
     }
-    if (src["evaluationPeriod"]) {
+    if (!src["evaluationPeriod"].isNull()) {
         dst.evaluationPeriod = src["evaluationPeriod"].as<decltype(dst.evaluationPeriod)::value_type>();
     } else {
         dst.evaluationPeriod = std::nullopt;
     }
-    if (src["valueSource"]) {
+    if (!src["valueSource"].isNull()) {
         dst.valueSource = src["valueSource"].as<decltype(dst.valueSource)::value_type>();
     } else {
         dst.valueSource = std::nullopt;
     }
-    if (src["valueTendency"]) {
+    if (!src["valueTendency"].isNull()) {
         dst.valueTendency = src["valueTendency"].as<decltype(dst.valueTendency)::value_type>();
     } else {
         dst.valueTendency = std::nullopt;
     }
-    if (src["valueState"]) {
+    if (!src["valueState"].isNull()) {
         dst.valueState = src["valueState"].as<decltype(dst.valueState)::value_type>();
     } else {
         dst.valueState = std::nullopt;
@@ -11954,7 +11954,7 @@ bool convertToJson(const MeasurementSeriesListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, MeasurementSeriesListDataType &dst)
 {
 
-    if (src["measurementSeriesData"]) {
+    if (!src["measurementSeriesData"].isNull()) {
         dst.measurementSeriesData = src["measurementSeriesData"].as<decltype(dst.measurementSeriesData)::value_type>();
     } else {
         dst.measurementSeriesData = std::nullopt;
@@ -11980,17 +11980,17 @@ bool convertToJson(const MeasurementSeriesListDataSelectorsType &src, JsonVarian
 void convertFromJson(const JsonVariantConst &src, MeasurementSeriesListDataSelectorsType &dst)
 {
 
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["valueType"]) {
+    if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
         dst.valueType = std::nullopt;
     }
-    if (src["timestampInterval"]) {
+    if (!src["timestampInterval"].isNull()) {
         dst.timestampInterval = src["timestampInterval"].as<decltype(dst.timestampInterval)::value_type>();
     } else {
         dst.timestampInterval = std::nullopt;
@@ -12019,22 +12019,22 @@ bool convertToJson(const MeasurementConstraintsDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsDataType &dst)
 {
 
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["valueRangeMin"]) {
+    if (!src["valueRangeMin"].isNull()) {
         dst.valueRangeMin = src["valueRangeMin"].as<decltype(dst.valueRangeMin)::value_type>();
     } else {
         dst.valueRangeMin = std::nullopt;
     }
-    if (src["valueRangeMax"]) {
+    if (!src["valueRangeMax"].isNull()) {
         dst.valueRangeMax = src["valueRangeMax"].as<decltype(dst.valueRangeMax)::value_type>();
     } else {
         dst.valueRangeMax = std::nullopt;
     }
-    if (src["valueStepSize"]) {
+    if (!src["valueStepSize"].isNull()) {
         dst.valueStepSize = src["valueStepSize"].as<decltype(dst.valueStepSize)::value_type>();
     } else {
         dst.valueStepSize = std::nullopt;
@@ -12063,22 +12063,22 @@ bool convertToJson(const MeasurementConstraintsDataElementsType &src, JsonVarian
 void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsDataElementsType &dst)
 {
 
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["valueRangeMin"]) {
+    if (!src["valueRangeMin"].isNull()) {
         dst.valueRangeMin = src["valueRangeMin"].as<decltype(dst.valueRangeMin)::value_type>();
     } else {
         dst.valueRangeMin = std::nullopt;
     }
-    if (src["valueRangeMax"]) {
+    if (!src["valueRangeMax"].isNull()) {
         dst.valueRangeMax = src["valueRangeMax"].as<decltype(dst.valueRangeMax)::value_type>();
     } else {
         dst.valueRangeMax = std::nullopt;
     }
-    if (src["valueStepSize"]) {
+    if (!src["valueStepSize"].isNull()) {
         dst.valueStepSize = src["valueStepSize"].as<decltype(dst.valueStepSize)::value_type>();
     } else {
         dst.valueStepSize = std::nullopt;
@@ -12098,7 +12098,7 @@ bool convertToJson(const MeasurementConstraintsListDataType &src, JsonVariant &d
 void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsListDataType &dst)
 {
 
-    if (src["measurementConstraintsData"]) {
+    if (!src["measurementConstraintsData"].isNull()) {
         dst.measurementConstraintsData = src["measurementConstraintsData"].as<decltype(dst.measurementConstraintsData)::value_type>();
     } else {
         dst.measurementConstraintsData = std::nullopt;
@@ -12118,7 +12118,7 @@ bool convertToJson(const MeasurementConstraintsListDataSelectorsType &src, JsonV
 void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsListDataSelectorsType &dst)
 {
 
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
@@ -12159,42 +12159,42 @@ bool convertToJson(const MeasurementDescriptionDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionDataType &dst)
 {
 
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["measurementType"]) {
+    if (!src["measurementType"].isNull()) {
         dst.measurementType = src["measurementType"].as<decltype(dst.measurementType)::value_type>();
     } else {
         dst.measurementType = std::nullopt;
     }
-    if (src["commodityType"]) {
+    if (!src["commodityType"].isNull()) {
         dst.commodityType = src["commodityType"].as<decltype(dst.commodityType)::value_type>();
     } else {
         dst.commodityType = std::nullopt;
     }
-    if (src["unit"]) {
+    if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
         dst.unit = std::nullopt;
     }
-    if (src["calibrationValue"]) {
+    if (!src["calibrationValue"].isNull()) {
         dst.calibrationValue = src["calibrationValue"].as<decltype(dst.calibrationValue)::value_type>();
     } else {
         dst.calibrationValue = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -12235,42 +12235,42 @@ bool convertToJson(const MeasurementDescriptionDataElementsType &src, JsonVarian
 void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionDataElementsType &dst)
 {
 
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["measurementType"]) {
+    if (!src["measurementType"].isNull()) {
         dst.measurementType = src["measurementType"].as<decltype(dst.measurementType)::value_type>();
     } else {
         dst.measurementType = std::nullopt;
     }
-    if (src["commodityType"]) {
+    if (!src["commodityType"].isNull()) {
         dst.commodityType = src["commodityType"].as<decltype(dst.commodityType)::value_type>();
     } else {
         dst.commodityType = std::nullopt;
     }
-    if (src["unit"]) {
+    if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
         dst.unit = std::nullopt;
     }
-    if (src["calibrationValue"]) {
+    if (!src["calibrationValue"].isNull()) {
         dst.calibrationValue = src["calibrationValue"].as<decltype(dst.calibrationValue)::value_type>();
     } else {
         dst.calibrationValue = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -12290,7 +12290,7 @@ bool convertToJson(const MeasurementDescriptionListDataType &src, JsonVariant &d
 void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionListDataType &dst)
 {
 
-    if (src["measurementDescriptionData"]) {
+    if (!src["measurementDescriptionData"].isNull()) {
         dst.measurementDescriptionData = src["measurementDescriptionData"].as<decltype(dst.measurementDescriptionData)::value_type>();
     } else {
         dst.measurementDescriptionData = std::nullopt;
@@ -12319,22 +12319,22 @@ bool convertToJson(const MeasurementDescriptionListDataSelectorsType &src, JsonV
 void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["measurementType"]) {
+    if (!src["measurementType"].isNull()) {
         dst.measurementType = src["measurementType"].as<decltype(dst.measurementType)::value_type>();
     } else {
         dst.measurementType = std::nullopt;
     }
-    if (src["commodityType"]) {
+    if (!src["commodityType"].isNull()) {
         dst.commodityType = src["commodityType"].as<decltype(dst.commodityType)::value_type>();
     } else {
         dst.commodityType = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
@@ -12357,12 +12357,12 @@ bool convertToJson(const MeasurementThresholdRelationDataType &src, JsonVariant 
 void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationDataType &dst)
 {
 
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["thresholdId"]) {
+    if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
         dst.thresholdId = std::nullopt;
@@ -12385,12 +12385,12 @@ bool convertToJson(const MeasurementThresholdRelationDataElementsType &src, Json
 void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationDataElementsType &dst)
 {
 
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["thresholdId"]) {
+    if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
         dst.thresholdId = std::nullopt;
@@ -12410,7 +12410,7 @@ bool convertToJson(const MeasurementThresholdRelationListDataType &src, JsonVari
 void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationListDataType &dst)
 {
 
-    if (src["measurementThresholdRelationData"]) {
+    if (!src["measurementThresholdRelationData"].isNull()) {
         dst.measurementThresholdRelationData = src["measurementThresholdRelationData"].as<decltype(dst.measurementThresholdRelationData)::value_type>();
     } else {
         dst.measurementThresholdRelationData = std::nullopt;
@@ -12433,12 +12433,12 @@ bool convertToJson(const MeasurementThresholdRelationListDataSelectorsType &src,
 void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationListDataSelectorsType &dst)
 {
 
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["thresholdId"]) {
+    if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
         dst.thresholdId = std::nullopt;
@@ -12461,12 +12461,12 @@ bool convertToJson(const ThresholdDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, ThresholdDataType &dst)
 {
 
-    if (src["thresholdId"]) {
+    if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
         dst.thresholdId = std::nullopt;
     }
-    if (src["thresholdValue"]) {
+    if (!src["thresholdValue"].isNull()) {
         dst.thresholdValue = src["thresholdValue"].as<decltype(dst.thresholdValue)::value_type>();
     } else {
         dst.thresholdValue = std::nullopt;
@@ -12489,12 +12489,12 @@ bool convertToJson(const ThresholdDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, ThresholdDataElementsType &dst)
 {
 
-    if (src["thresholdId"]) {
+    if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
         dst.thresholdId = std::nullopt;
     }
-    if (src["thresholdValue"]) {
+    if (!src["thresholdValue"].isNull()) {
         dst.thresholdValue = src["thresholdValue"].as<decltype(dst.thresholdValue)::value_type>();
     } else {
         dst.thresholdValue = std::nullopt;
@@ -12514,7 +12514,7 @@ bool convertToJson(const ThresholdListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, ThresholdListDataType &dst)
 {
 
-    if (src["thresholdData"]) {
+    if (!src["thresholdData"].isNull()) {
         dst.thresholdData = src["thresholdData"].as<decltype(dst.thresholdData)::value_type>();
     } else {
         dst.thresholdData = std::nullopt;
@@ -12534,7 +12534,7 @@ bool convertToJson(const ThresholdListDataSelectorsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, ThresholdListDataSelectorsType &dst)
 {
 
-    if (src["thresholdId"]) {
+    if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
         dst.thresholdId = std::nullopt;
@@ -12563,22 +12563,22 @@ bool convertToJson(const ThresholdConstraintsDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsDataType &dst)
 {
 
-    if (src["thresholdId"]) {
+    if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
         dst.thresholdId = std::nullopt;
     }
-    if (src["thresholdRangeMin"]) {
+    if (!src["thresholdRangeMin"].isNull()) {
         dst.thresholdRangeMin = src["thresholdRangeMin"].as<decltype(dst.thresholdRangeMin)::value_type>();
     } else {
         dst.thresholdRangeMin = std::nullopt;
     }
-    if (src["thresholdRangeMax"]) {
+    if (!src["thresholdRangeMax"].isNull()) {
         dst.thresholdRangeMax = src["thresholdRangeMax"].as<decltype(dst.thresholdRangeMax)::value_type>();
     } else {
         dst.thresholdRangeMax = std::nullopt;
     }
-    if (src["thresholdStepSize"]) {
+    if (!src["thresholdStepSize"].isNull()) {
         dst.thresholdStepSize = src["thresholdStepSize"].as<decltype(dst.thresholdStepSize)::value_type>();
     } else {
         dst.thresholdStepSize = std::nullopt;
@@ -12607,22 +12607,22 @@ bool convertToJson(const ThresholdConstraintsDataElementsType &src, JsonVariant 
 void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsDataElementsType &dst)
 {
 
-    if (src["thresholdId"]) {
+    if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
         dst.thresholdId = std::nullopt;
     }
-    if (src["thresholdRangeMin"]) {
+    if (!src["thresholdRangeMin"].isNull()) {
         dst.thresholdRangeMin = src["thresholdRangeMin"].as<decltype(dst.thresholdRangeMin)::value_type>();
     } else {
         dst.thresholdRangeMin = std::nullopt;
     }
-    if (src["thresholdRangeMax"]) {
+    if (!src["thresholdRangeMax"].isNull()) {
         dst.thresholdRangeMax = src["thresholdRangeMax"].as<decltype(dst.thresholdRangeMax)::value_type>();
     } else {
         dst.thresholdRangeMax = std::nullopt;
     }
-    if (src["thresholdStepSize"]) {
+    if (!src["thresholdStepSize"].isNull()) {
         dst.thresholdStepSize = src["thresholdStepSize"].as<decltype(dst.thresholdStepSize)::value_type>();
     } else {
         dst.thresholdStepSize = std::nullopt;
@@ -12642,7 +12642,7 @@ bool convertToJson(const ThresholdConstraintsListDataType &src, JsonVariant &dst
 void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsListDataType &dst)
 {
 
-    if (src["thresholdConstraintsData"]) {
+    if (!src["thresholdConstraintsData"].isNull()) {
         dst.thresholdConstraintsData = src["thresholdConstraintsData"].as<decltype(dst.thresholdConstraintsData)::value_type>();
     } else {
         dst.thresholdConstraintsData = std::nullopt;
@@ -12662,7 +12662,7 @@ bool convertToJson(const ThresholdConstraintsListDataSelectorsType &src, JsonVar
 void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsListDataSelectorsType &dst)
 {
 
-    if (src["thresholdId"]) {
+    if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
         dst.thresholdId = std::nullopt;
@@ -12697,32 +12697,32 @@ bool convertToJson(const ThresholdDescriptionDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionDataType &dst)
 {
 
-    if (src["thresholdId"]) {
+    if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
         dst.thresholdId = std::nullopt;
     }
-    if (src["thresholdType"]) {
+    if (!src["thresholdType"].isNull()) {
         dst.thresholdType = src["thresholdType"].as<decltype(dst.thresholdType)::value_type>();
     } else {
         dst.thresholdType = std::nullopt;
     }
-    if (src["unit"]) {
+    if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
         dst.unit = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -12757,32 +12757,32 @@ bool convertToJson(const ThresholdDescriptionDataElementsType &src, JsonVariant 
 void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionDataElementsType &dst)
 {
 
-    if (src["thresholdId"]) {
+    if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
         dst.thresholdId = std::nullopt;
     }
-    if (src["thresholdType"]) {
+    if (!src["thresholdType"].isNull()) {
         dst.thresholdType = src["thresholdType"].as<decltype(dst.thresholdType)::value_type>();
     } else {
         dst.thresholdType = std::nullopt;
     }
-    if (src["unit"]) {
+    if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
         dst.unit = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -12802,7 +12802,7 @@ bool convertToJson(const ThresholdDescriptionListDataType &src, JsonVariant &dst
 void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionListDataType &dst)
 {
 
-    if (src["thresholdDescriptionData"]) {
+    if (!src["thresholdDescriptionData"].isNull()) {
         dst.thresholdDescriptionData = src["thresholdDescriptionData"].as<decltype(dst.thresholdDescriptionData)::value_type>();
     } else {
         dst.thresholdDescriptionData = std::nullopt;
@@ -12825,12 +12825,12 @@ bool convertToJson(const ThresholdDescriptionListDataSelectorsType &src, JsonVar
 void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["thresholdId"]) {
+    if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
         dst.thresholdId = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
@@ -12862,27 +12862,27 @@ bool convertToJson(const OperatingConstraintsInterruptDataType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptDataType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["isPausable"]) {
+    if (!src["isPausable"].isNull()) {
         dst.isPausable = src["isPausable"].as<decltype(dst.isPausable)::value_type>();
     } else {
         dst.isPausable = std::nullopt;
     }
-    if (src["isStoppable"]) {
+    if (!src["isStoppable"].isNull()) {
         dst.isStoppable = src["isStoppable"].as<decltype(dst.isStoppable)::value_type>();
     } else {
         dst.isStoppable = std::nullopt;
     }
-    if (src["notInterruptibleAtHighPower"]) {
+    if (!src["notInterruptibleAtHighPower"].isNull()) {
         dst.notInterruptibleAtHighPower = src["notInterruptibleAtHighPower"].as<decltype(dst.notInterruptibleAtHighPower)::value_type>();
     } else {
         dst.notInterruptibleAtHighPower = std::nullopt;
     }
-    if (src["maxCyclesPerDay"]) {
+    if (!src["maxCyclesPerDay"].isNull()) {
         dst.maxCyclesPerDay = src["maxCyclesPerDay"].as<decltype(dst.maxCyclesPerDay)::value_type>();
     } else {
         dst.maxCyclesPerDay = std::nullopt;
@@ -12914,27 +12914,27 @@ bool convertToJson(const OperatingConstraintsInterruptDataElementsType &src, Jso
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptDataElementsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["isPausable"]) {
+    if (!src["isPausable"].isNull()) {
         dst.isPausable = src["isPausable"].as<decltype(dst.isPausable)::value_type>();
     } else {
         dst.isPausable = std::nullopt;
     }
-    if (src["isStoppable"]) {
+    if (!src["isStoppable"].isNull()) {
         dst.isStoppable = src["isStoppable"].as<decltype(dst.isStoppable)::value_type>();
     } else {
         dst.isStoppable = std::nullopt;
     }
-    if (src["notInterruptibleAtHighPower"]) {
+    if (!src["notInterruptibleAtHighPower"].isNull()) {
         dst.notInterruptibleAtHighPower = src["notInterruptibleAtHighPower"].as<decltype(dst.notInterruptibleAtHighPower)::value_type>();
     } else {
         dst.notInterruptibleAtHighPower = std::nullopt;
     }
-    if (src["maxCyclesPerDay"]) {
+    if (!src["maxCyclesPerDay"].isNull()) {
         dst.maxCyclesPerDay = src["maxCyclesPerDay"].as<decltype(dst.maxCyclesPerDay)::value_type>();
     } else {
         dst.maxCyclesPerDay = std::nullopt;
@@ -12954,7 +12954,7 @@ bool convertToJson(const OperatingConstraintsInterruptListDataType &src, JsonVar
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptListDataType &dst)
 {
 
-    if (src["operatingConstraintsInterruptData"]) {
+    if (!src["operatingConstraintsInterruptData"].isNull()) {
         dst.operatingConstraintsInterruptData = src["operatingConstraintsInterruptData"].as<decltype(dst.operatingConstraintsInterruptData)::value_type>();
     } else {
         dst.operatingConstraintsInterruptData = std::nullopt;
@@ -12974,7 +12974,7 @@ bool convertToJson(const OperatingConstraintsInterruptListDataSelectorsType &src
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptListDataSelectorsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -13012,37 +13012,37 @@ bool convertToJson(const OperatingConstraintsDurationDataType &src, JsonVariant 
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationDataType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["activeDurationMin"]) {
+    if (!src["activeDurationMin"].isNull()) {
         dst.activeDurationMin = src["activeDurationMin"].as<decltype(dst.activeDurationMin)::value_type>();
     } else {
         dst.activeDurationMin = std::nullopt;
     }
-    if (src["activeDurationMax"]) {
+    if (!src["activeDurationMax"].isNull()) {
         dst.activeDurationMax = src["activeDurationMax"].as<decltype(dst.activeDurationMax)::value_type>();
     } else {
         dst.activeDurationMax = std::nullopt;
     }
-    if (src["pauseDurationMin"]) {
+    if (!src["pauseDurationMin"].isNull()) {
         dst.pauseDurationMin = src["pauseDurationMin"].as<decltype(dst.pauseDurationMin)::value_type>();
     } else {
         dst.pauseDurationMin = std::nullopt;
     }
-    if (src["pauseDurationMax"]) {
+    if (!src["pauseDurationMax"].isNull()) {
         dst.pauseDurationMax = src["pauseDurationMax"].as<decltype(dst.pauseDurationMax)::value_type>();
     } else {
         dst.pauseDurationMax = std::nullopt;
     }
-    if (src["activeDurationSumMin"]) {
+    if (!src["activeDurationSumMin"].isNull()) {
         dst.activeDurationSumMin = src["activeDurationSumMin"].as<decltype(dst.activeDurationSumMin)::value_type>();
     } else {
         dst.activeDurationSumMin = std::nullopt;
     }
-    if (src["activeDurationSumMax"]) {
+    if (!src["activeDurationSumMax"].isNull()) {
         dst.activeDurationSumMax = src["activeDurationSumMax"].as<decltype(dst.activeDurationSumMax)::value_type>();
     } else {
         dst.activeDurationSumMax = std::nullopt;
@@ -13080,37 +13080,37 @@ bool convertToJson(const OperatingConstraintsDurationDataElementsType &src, Json
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationDataElementsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["activeDurationMin"]) {
+    if (!src["activeDurationMin"].isNull()) {
         dst.activeDurationMin = src["activeDurationMin"].as<decltype(dst.activeDurationMin)::value_type>();
     } else {
         dst.activeDurationMin = std::nullopt;
     }
-    if (src["activeDurationMax"]) {
+    if (!src["activeDurationMax"].isNull()) {
         dst.activeDurationMax = src["activeDurationMax"].as<decltype(dst.activeDurationMax)::value_type>();
     } else {
         dst.activeDurationMax = std::nullopt;
     }
-    if (src["pauseDurationMin"]) {
+    if (!src["pauseDurationMin"].isNull()) {
         dst.pauseDurationMin = src["pauseDurationMin"].as<decltype(dst.pauseDurationMin)::value_type>();
     } else {
         dst.pauseDurationMin = std::nullopt;
     }
-    if (src["pauseDurationMax"]) {
+    if (!src["pauseDurationMax"].isNull()) {
         dst.pauseDurationMax = src["pauseDurationMax"].as<decltype(dst.pauseDurationMax)::value_type>();
     } else {
         dst.pauseDurationMax = std::nullopt;
     }
-    if (src["activeDurationSumMin"]) {
+    if (!src["activeDurationSumMin"].isNull()) {
         dst.activeDurationSumMin = src["activeDurationSumMin"].as<decltype(dst.activeDurationSumMin)::value_type>();
     } else {
         dst.activeDurationSumMin = std::nullopt;
     }
-    if (src["activeDurationSumMax"]) {
+    if (!src["activeDurationSumMax"].isNull()) {
         dst.activeDurationSumMax = src["activeDurationSumMax"].as<decltype(dst.activeDurationSumMax)::value_type>();
     } else {
         dst.activeDurationSumMax = std::nullopt;
@@ -13130,7 +13130,7 @@ bool convertToJson(const OperatingConstraintsDurationListDataType &src, JsonVari
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationListDataType &dst)
 {
 
-    if (src["operatingConstraintsDurationData"]) {
+    if (!src["operatingConstraintsDurationData"].isNull()) {
         dst.operatingConstraintsDurationData = src["operatingConstraintsDurationData"].as<decltype(dst.operatingConstraintsDurationData)::value_type>();
     } else {
         dst.operatingConstraintsDurationData = std::nullopt;
@@ -13150,7 +13150,7 @@ bool convertToJson(const OperatingConstraintsDurationListDataSelectorsType &src,
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationListDataSelectorsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -13182,27 +13182,27 @@ bool convertToJson(const OperatingConstraintsPowerDescriptionDataType &src, Json
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescriptionDataType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["positiveEnergyDirection"]) {
+    if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
         dst.positiveEnergyDirection = std::nullopt;
     }
-    if (src["powerUnit"]) {
+    if (!src["powerUnit"].isNull()) {
         dst.powerUnit = src["powerUnit"].as<decltype(dst.powerUnit)::value_type>();
     } else {
         dst.powerUnit = std::nullopt;
     }
-    if (src["energyUnit"]) {
+    if (!src["energyUnit"].isNull()) {
         dst.energyUnit = src["energyUnit"].as<decltype(dst.energyUnit)::value_type>();
     } else {
         dst.energyUnit = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -13234,27 +13234,27 @@ bool convertToJson(const OperatingConstraintsPowerDescriptionDataElementsType &s
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescriptionDataElementsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["positiveEnergyDirection"]) {
+    if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
         dst.positiveEnergyDirection = std::nullopt;
     }
-    if (src["powerUnit"]) {
+    if (!src["powerUnit"].isNull()) {
         dst.powerUnit = src["powerUnit"].as<decltype(dst.powerUnit)::value_type>();
     } else {
         dst.powerUnit = std::nullopt;
     }
-    if (src["energyUnit"]) {
+    if (!src["energyUnit"].isNull()) {
         dst.energyUnit = src["energyUnit"].as<decltype(dst.energyUnit)::value_type>();
     } else {
         dst.energyUnit = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -13274,7 +13274,7 @@ bool convertToJson(const OperatingConstraintsPowerDescriptionListDataType &src, 
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescriptionListDataType &dst)
 {
 
-    if (src["operatingConstraintsPowerDescriptionData"]) {
+    if (!src["operatingConstraintsPowerDescriptionData"].isNull()) {
         dst.operatingConstraintsPowerDescriptionData = src["operatingConstraintsPowerDescriptionData"].as<decltype(dst.operatingConstraintsPowerDescriptionData)::value_type>();
     } else {
         dst.operatingConstraintsPowerDescriptionData = std::nullopt;
@@ -13294,7 +13294,7 @@ bool convertToJson(const OperatingConstraintsPowerDescriptionListDataSelectorsTy
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -13326,27 +13326,27 @@ bool convertToJson(const OperatingConstraintsPowerRangeDataType &src, JsonVarian
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRangeDataType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["powerMin"]) {
+    if (!src["powerMin"].isNull()) {
         dst.powerMin = src["powerMin"].as<decltype(dst.powerMin)::value_type>();
     } else {
         dst.powerMin = std::nullopt;
     }
-    if (src["powerMax"]) {
+    if (!src["powerMax"].isNull()) {
         dst.powerMax = src["powerMax"].as<decltype(dst.powerMax)::value_type>();
     } else {
         dst.powerMax = std::nullopt;
     }
-    if (src["energyMin"]) {
+    if (!src["energyMin"].isNull()) {
         dst.energyMin = src["energyMin"].as<decltype(dst.energyMin)::value_type>();
     } else {
         dst.energyMin = std::nullopt;
     }
-    if (src["energyMax"]) {
+    if (!src["energyMax"].isNull()) {
         dst.energyMax = src["energyMax"].as<decltype(dst.energyMax)::value_type>();
     } else {
         dst.energyMax = std::nullopt;
@@ -13378,27 +13378,27 @@ bool convertToJson(const OperatingConstraintsPowerRangeDataElementsType &src, Js
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRangeDataElementsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["powerMin"]) {
+    if (!src["powerMin"].isNull()) {
         dst.powerMin = src["powerMin"].as<decltype(dst.powerMin)::value_type>();
     } else {
         dst.powerMin = std::nullopt;
     }
-    if (src["powerMax"]) {
+    if (!src["powerMax"].isNull()) {
         dst.powerMax = src["powerMax"].as<decltype(dst.powerMax)::value_type>();
     } else {
         dst.powerMax = std::nullopt;
     }
-    if (src["energyMin"]) {
+    if (!src["energyMin"].isNull()) {
         dst.energyMin = src["energyMin"].as<decltype(dst.energyMin)::value_type>();
     } else {
         dst.energyMin = std::nullopt;
     }
-    if (src["energyMax"]) {
+    if (!src["energyMax"].isNull()) {
         dst.energyMax = src["energyMax"].as<decltype(dst.energyMax)::value_type>();
     } else {
         dst.energyMax = std::nullopt;
@@ -13418,7 +13418,7 @@ bool convertToJson(const OperatingConstraintsPowerRangeListDataType &src, JsonVa
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRangeListDataType &dst)
 {
 
-    if (src["operatingConstraintsPowerRangeData"]) {
+    if (!src["operatingConstraintsPowerRangeData"].isNull()) {
         dst.operatingConstraintsPowerRangeData = src["operatingConstraintsPowerRangeData"].as<decltype(dst.operatingConstraintsPowerRangeData)::value_type>();
     } else {
         dst.operatingConstraintsPowerRangeData = std::nullopt;
@@ -13438,7 +13438,7 @@ bool convertToJson(const OperatingConstraintsPowerRangeListDataSelectorsType &sr
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRangeListDataSelectorsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -13461,12 +13461,12 @@ bool convertToJson(const OperatingConstraintsPowerLevelDataType &src, JsonVarian
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevelDataType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["power"]) {
+    if (!src["power"].isNull()) {
         dst.power = src["power"].as<decltype(dst.power)::value_type>();
     } else {
         dst.power = std::nullopt;
@@ -13489,12 +13489,12 @@ bool convertToJson(const OperatingConstraintsPowerLevelDataElementsType &src, Js
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevelDataElementsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["power"]) {
+    if (!src["power"].isNull()) {
         dst.power = src["power"].as<decltype(dst.power)::value_type>();
     } else {
         dst.power = std::nullopt;
@@ -13514,7 +13514,7 @@ bool convertToJson(const OperatingConstraintsPowerLevelListDataType &src, JsonVa
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevelListDataType &dst)
 {
 
-    if (src["operatingConstraintsPowerLevelData"]) {
+    if (!src["operatingConstraintsPowerLevelData"].isNull()) {
         dst.operatingConstraintsPowerLevelData = src["operatingConstraintsPowerLevelData"].as<decltype(dst.operatingConstraintsPowerLevelData)::value_type>();
     } else {
         dst.operatingConstraintsPowerLevelData = std::nullopt;
@@ -13534,7 +13534,7 @@ bool convertToJson(const OperatingConstraintsPowerLevelListDataSelectorsType &sr
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevelListDataSelectorsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -13566,27 +13566,27 @@ bool convertToJson(const OperatingConstraintsResumeImplicationDataType &src, Jso
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImplicationDataType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["resumeEnergyEstimated"]) {
+    if (!src["resumeEnergyEstimated"].isNull()) {
         dst.resumeEnergyEstimated = src["resumeEnergyEstimated"].as<decltype(dst.resumeEnergyEstimated)::value_type>();
     } else {
         dst.resumeEnergyEstimated = std::nullopt;
     }
-    if (src["energyUnit"]) {
+    if (!src["energyUnit"].isNull()) {
         dst.energyUnit = src["energyUnit"].as<decltype(dst.energyUnit)::value_type>();
     } else {
         dst.energyUnit = std::nullopt;
     }
-    if (src["resumeCostEstimated"]) {
+    if (!src["resumeCostEstimated"].isNull()) {
         dst.resumeCostEstimated = src["resumeCostEstimated"].as<decltype(dst.resumeCostEstimated)::value_type>();
     } else {
         dst.resumeCostEstimated = std::nullopt;
     }
-    if (src["currency"]) {
+    if (!src["currency"].isNull()) {
         dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
     } else {
         dst.currency = std::nullopt;
@@ -13618,27 +13618,27 @@ bool convertToJson(const OperatingConstraintsResumeImplicationDataElementsType &
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImplicationDataElementsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
     }
-    if (src["resumeEnergyEstimated"]) {
+    if (!src["resumeEnergyEstimated"].isNull()) {
         dst.resumeEnergyEstimated = src["resumeEnergyEstimated"].as<decltype(dst.resumeEnergyEstimated)::value_type>();
     } else {
         dst.resumeEnergyEstimated = std::nullopt;
     }
-    if (src["energyUnit"]) {
+    if (!src["energyUnit"].isNull()) {
         dst.energyUnit = src["energyUnit"].as<decltype(dst.energyUnit)::value_type>();
     } else {
         dst.energyUnit = std::nullopt;
     }
-    if (src["resumeCostEstimated"]) {
+    if (!src["resumeCostEstimated"].isNull()) {
         dst.resumeCostEstimated = src["resumeCostEstimated"].as<decltype(dst.resumeCostEstimated)::value_type>();
     } else {
         dst.resumeCostEstimated = std::nullopt;
     }
-    if (src["currency"]) {
+    if (!src["currency"].isNull()) {
         dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
     } else {
         dst.currency = std::nullopt;
@@ -13658,7 +13658,7 @@ bool convertToJson(const OperatingConstraintsResumeImplicationListDataType &src,
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImplicationListDataType &dst)
 {
 
-    if (src["operatingConstraintsResumeImplicationData"]) {
+    if (!src["operatingConstraintsResumeImplicationData"].isNull()) {
         dst.operatingConstraintsResumeImplicationData = src["operatingConstraintsResumeImplicationData"].as<decltype(dst.operatingConstraintsResumeImplicationData)::value_type>();
     } else {
         dst.operatingConstraintsResumeImplicationData = std::nullopt;
@@ -13678,7 +13678,7 @@ bool convertToJson(const OperatingConstraintsResumeImplicationListDataSelectorsT
 void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImplicationListDataSelectorsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -13707,22 +13707,22 @@ bool convertToJson(const BillValueType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, BillValueType &dst)
 {
 
-    if (src["valueId"]) {
+    if (!src["valueId"].isNull()) {
         dst.valueId = src["valueId"].as<decltype(dst.valueId)::value_type>();
     } else {
         dst.valueId = std::nullopt;
     }
-    if (src["unit"]) {
+    if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
         dst.unit = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
     }
-    if (src["valuePercentage"]) {
+    if (!src["valuePercentage"].isNull()) {
         dst.valuePercentage = src["valuePercentage"].as<decltype(dst.valuePercentage)::value_type>();
     } else {
         dst.valuePercentage = std::nullopt;
@@ -13751,22 +13751,22 @@ bool convertToJson(const BillValueElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, BillValueElementsType &dst)
 {
 
-    if (src["valueId"]) {
+    if (!src["valueId"].isNull()) {
         dst.valueId = src["valueId"].as<decltype(dst.valueId)::value_type>();
     } else {
         dst.valueId = std::nullopt;
     }
-    if (src["unit"]) {
+    if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
         dst.unit = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
     }
-    if (src["valuePercentage"]) {
+    if (!src["valuePercentage"].isNull()) {
         dst.valuePercentage = src["valuePercentage"].as<decltype(dst.valuePercentage)::value_type>();
     } else {
         dst.valuePercentage = std::nullopt;
@@ -13804,37 +13804,37 @@ bool convertToJson(const BillCostType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, BillCostType &dst)
 {
 
-    if (src["costId"]) {
+    if (!src["costId"].isNull()) {
         dst.costId = src["costId"].as<decltype(dst.costId)::value_type>();
     } else {
         dst.costId = std::nullopt;
     }
-    if (src["costType"]) {
+    if (!src["costType"].isNull()) {
         dst.costType = src["costType"].as<decltype(dst.costType)::value_type>();
     } else {
         dst.costType = std::nullopt;
     }
-    if (src["valueId"]) {
+    if (!src["valueId"].isNull()) {
         dst.valueId = src["valueId"].as<decltype(dst.valueId)::value_type>();
     } else {
         dst.valueId = std::nullopt;
     }
-    if (src["unit"]) {
+    if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
         dst.unit = std::nullopt;
     }
-    if (src["currency"]) {
+    if (!src["currency"].isNull()) {
         dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
     } else {
         dst.currency = std::nullopt;
     }
-    if (src["cost"]) {
+    if (!src["cost"].isNull()) {
         dst.cost = src["cost"].as<decltype(dst.cost)::value_type>();
     } else {
         dst.cost = std::nullopt;
     }
-    if (src["costPercentage"]) {
+    if (!src["costPercentage"].isNull()) {
         dst.costPercentage = src["costPercentage"].as<decltype(dst.costPercentage)::value_type>();
     } else {
         dst.costPercentage = std::nullopt;
@@ -13872,37 +13872,37 @@ bool convertToJson(const BillCostElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, BillCostElementsType &dst)
 {
 
-    if (src["costId"]) {
+    if (!src["costId"].isNull()) {
         dst.costId = src["costId"].as<decltype(dst.costId)::value_type>();
     } else {
         dst.costId = std::nullopt;
     }
-    if (src["costType"]) {
+    if (!src["costType"].isNull()) {
         dst.costType = src["costType"].as<decltype(dst.costType)::value_type>();
     } else {
         dst.costType = std::nullopt;
     }
-    if (src["valueId"]) {
+    if (!src["valueId"].isNull()) {
         dst.valueId = src["valueId"].as<decltype(dst.valueId)::value_type>();
     } else {
         dst.valueId = std::nullopt;
     }
-    if (src["unit"]) {
+    if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
         dst.unit = std::nullopt;
     }
-    if (src["currency"]) {
+    if (!src["currency"].isNull()) {
         dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
     } else {
         dst.currency = std::nullopt;
     }
-    if (src["cost"]) {
+    if (!src["cost"].isNull()) {
         dst.cost = src["cost"].as<decltype(dst.cost)::value_type>();
     } else {
         dst.cost = std::nullopt;
     }
-    if (src["costPercentage"]) {
+    if (!src["costPercentage"].isNull()) {
         dst.costPercentage = src["costPercentage"].as<decltype(dst.costPercentage)::value_type>();
     } else {
         dst.costPercentage = std::nullopt;
@@ -13940,37 +13940,37 @@ bool convertToJson(const BillPositionType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, BillPositionType &dst)
 {
 
-    if (src["positionId"]) {
+    if (!src["positionId"].isNull()) {
         dst.positionId = src["positionId"].as<decltype(dst.positionId)::value_type>();
     } else {
         dst.positionId = std::nullopt;
     }
-    if (src["positionType"]) {
+    if (!src["positionType"].isNull()) {
         dst.positionType = src["positionType"].as<decltype(dst.positionType)::value_type>();
     } else {
         dst.positionType = std::nullopt;
     }
-    if (src["timePeriod"]) {
+    if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
         dst.timePeriod = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
     }
-    if (src["cost"]) {
+    if (!src["cost"].isNull()) {
         dst.cost = src["cost"].as<decltype(dst.cost)::value_type>();
     } else {
         dst.cost = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -14008,37 +14008,37 @@ bool convertToJson(const BillPositionElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, BillPositionElementsType &dst)
 {
 
-    if (src["positionId"]) {
+    if (!src["positionId"].isNull()) {
         dst.positionId = src["positionId"].as<decltype(dst.positionId)::value_type>();
     } else {
         dst.positionId = std::nullopt;
     }
-    if (src["positionType"]) {
+    if (!src["positionType"].isNull()) {
         dst.positionType = src["positionType"].as<decltype(dst.positionType)::value_type>();
     } else {
         dst.positionType = std::nullopt;
     }
-    if (src["timePeriod"]) {
+    if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
         dst.timePeriod = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
     }
-    if (src["cost"]) {
+    if (!src["cost"].isNull()) {
         dst.cost = src["cost"].as<decltype(dst.cost)::value_type>();
     } else {
         dst.cost = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -14070,27 +14070,27 @@ bool convertToJson(const BillDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, BillDataType &dst)
 {
 
-    if (src["billId"]) {
+    if (!src["billId"].isNull()) {
         dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
     } else {
         dst.billId = std::nullopt;
     }
-    if (src["billType"]) {
+    if (!src["billType"].isNull()) {
         dst.billType = src["billType"].as<decltype(dst.billType)::value_type>();
     } else {
         dst.billType = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
     }
-    if (src["total"]) {
+    if (!src["total"].isNull()) {
         dst.total = src["total"].as<decltype(dst.total)::value_type>();
     } else {
         dst.total = std::nullopt;
     }
-    if (src["position"]) {
+    if (!src["position"].isNull()) {
         dst.position = src["position"].as<decltype(dst.position)::value_type>();
     } else {
         dst.position = std::nullopt;
@@ -14122,27 +14122,27 @@ bool convertToJson(const BillDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, BillDataElementsType &dst)
 {
 
-    if (src["billId"]) {
+    if (!src["billId"].isNull()) {
         dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
     } else {
         dst.billId = std::nullopt;
     }
-    if (src["billType"]) {
+    if (!src["billType"].isNull()) {
         dst.billType = src["billType"].as<decltype(dst.billType)::value_type>();
     } else {
         dst.billType = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
     }
-    if (src["total"]) {
+    if (!src["total"].isNull()) {
         dst.total = src["total"].as<decltype(dst.total)::value_type>();
     } else {
         dst.total = std::nullopt;
     }
-    if (src["position"]) {
+    if (!src["position"].isNull()) {
         dst.position = src["position"].as<decltype(dst.position)::value_type>();
     } else {
         dst.position = std::nullopt;
@@ -14162,7 +14162,7 @@ bool convertToJson(const BillListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, BillListDataType &dst)
 {
 
-    if (src["billData"]) {
+    if (!src["billData"].isNull()) {
         dst.billData = src["billData"].as<decltype(dst.billData)::value_type>();
     } else {
         dst.billData = std::nullopt;
@@ -14185,12 +14185,12 @@ bool convertToJson(const BillListDataSelectorsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, BillListDataSelectorsType &dst)
 {
 
-    if (src["billId"]) {
+    if (!src["billId"].isNull()) {
         dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
     } else {
         dst.billId = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
@@ -14216,17 +14216,17 @@ bool convertToJson(const BillConstraintsDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, BillConstraintsDataType &dst)
 {
 
-    if (src["billId"]) {
+    if (!src["billId"].isNull()) {
         dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
     } else {
         dst.billId = std::nullopt;
     }
-    if (src["positionCountMin"]) {
+    if (!src["positionCountMin"].isNull()) {
         dst.positionCountMin = src["positionCountMin"].as<decltype(dst.positionCountMin)::value_type>();
     } else {
         dst.positionCountMin = std::nullopt;
     }
-    if (src["positionCountMax"]) {
+    if (!src["positionCountMax"].isNull()) {
         dst.positionCountMax = src["positionCountMax"].as<decltype(dst.positionCountMax)::value_type>();
     } else {
         dst.positionCountMax = std::nullopt;
@@ -14252,17 +14252,17 @@ bool convertToJson(const BillConstraintsDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, BillConstraintsDataElementsType &dst)
 {
 
-    if (src["billId"]) {
+    if (!src["billId"].isNull()) {
         dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
     } else {
         dst.billId = std::nullopt;
     }
-    if (src["positionCountMin"]) {
+    if (!src["positionCountMin"].isNull()) {
         dst.positionCountMin = src["positionCountMin"].as<decltype(dst.positionCountMin)::value_type>();
     } else {
         dst.positionCountMin = std::nullopt;
     }
-    if (src["positionCountMax"]) {
+    if (!src["positionCountMax"].isNull()) {
         dst.positionCountMax = src["positionCountMax"].as<decltype(dst.positionCountMax)::value_type>();
     } else {
         dst.positionCountMax = std::nullopt;
@@ -14282,7 +14282,7 @@ bool convertToJson(const BillConstraintsListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, BillConstraintsListDataType &dst)
 {
 
-    if (src["billConstraintsData"]) {
+    if (!src["billConstraintsData"].isNull()) {
         dst.billConstraintsData = src["billConstraintsData"].as<decltype(dst.billConstraintsData)::value_type>();
     } else {
         dst.billConstraintsData = std::nullopt;
@@ -14302,7 +14302,7 @@ bool convertToJson(const BillConstraintsListDataSelectorsType &src, JsonVariant 
 void convertFromJson(const JsonVariantConst &src, BillConstraintsListDataSelectorsType &dst)
 {
 
-    if (src["billId"]) {
+    if (!src["billId"].isNull()) {
         dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
     } else {
         dst.billId = std::nullopt;
@@ -14334,27 +14334,27 @@ bool convertToJson(const BillDescriptionDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, BillDescriptionDataType &dst)
 {
 
-    if (src["billId"]) {
+    if (!src["billId"].isNull()) {
         dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
     } else {
         dst.billId = std::nullopt;
     }
-    if (src["billWriteable"]) {
+    if (!src["billWriteable"].isNull()) {
         dst.billWriteable = src["billWriteable"].as<decltype(dst.billWriteable)::value_type>();
     } else {
         dst.billWriteable = std::nullopt;
     }
-    if (src["updateRequired"]) {
+    if (!src["updateRequired"].isNull()) {
         dst.updateRequired = src["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
     } else {
         dst.updateRequired = std::nullopt;
     }
-    if (src["supportedBillType"]) {
+    if (!src["supportedBillType"].isNull()) {
         dst.supportedBillType = src["supportedBillType"].as<decltype(dst.supportedBillType)::value_type>();
     } else {
         dst.supportedBillType = std::nullopt;
     }
-    if (src["sessionId"]) {
+    if (!src["sessionId"].isNull()) {
         dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
     } else {
         dst.sessionId = std::nullopt;
@@ -14386,27 +14386,27 @@ bool convertToJson(const BillDescriptionDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, BillDescriptionDataElementsType &dst)
 {
 
-    if (src["billId"]) {
+    if (!src["billId"].isNull()) {
         dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
     } else {
         dst.billId = std::nullopt;
     }
-    if (src["billWriteable"]) {
+    if (!src["billWriteable"].isNull()) {
         dst.billWriteable = src["billWriteable"].as<decltype(dst.billWriteable)::value_type>();
     } else {
         dst.billWriteable = std::nullopt;
     }
-    if (src["updateRequired"]) {
+    if (!src["updateRequired"].isNull()) {
         dst.updateRequired = src["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
     } else {
         dst.updateRequired = std::nullopt;
     }
-    if (src["supportedBillType"]) {
+    if (!src["supportedBillType"].isNull()) {
         dst.supportedBillType = src["supportedBillType"].as<decltype(dst.supportedBillType)::value_type>();
     } else {
         dst.supportedBillType = std::nullopt;
     }
-    if (src["sessionId"]) {
+    if (!src["sessionId"].isNull()) {
         dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
     } else {
         dst.sessionId = std::nullopt;
@@ -14426,7 +14426,7 @@ bool convertToJson(const BillDescriptionListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, BillDescriptionListDataType &dst)
 {
 
-    if (src["billDescriptionData"]) {
+    if (!src["billDescriptionData"].isNull()) {
         dst.billDescriptionData = src["billDescriptionData"].as<decltype(dst.billDescriptionData)::value_type>();
     } else {
         dst.billDescriptionData = std::nullopt;
@@ -14446,7 +14446,7 @@ bool convertToJson(const BillDescriptionListDataSelectorsType &src, JsonVariant 
 void convertFromJson(const JsonVariantConst &src, BillDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["billId"]) {
+    if (!src["billId"].isNull()) {
         dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
     } else {
         dst.billId = std::nullopt;
@@ -14475,22 +14475,22 @@ bool convertToJson(const IdentificationDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, IdentificationDataType &dst)
 {
 
-    if (src["identificationId"]) {
+    if (!src["identificationId"].isNull()) {
         dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
     } else {
         dst.identificationId = std::nullopt;
     }
-    if (src["identificationType"]) {
+    if (!src["identificationType"].isNull()) {
         dst.identificationType = src["identificationType"].as<decltype(dst.identificationType)::value_type>();
     } else {
         dst.identificationType = std::nullopt;
     }
-    if (src["identificationValue"]) {
+    if (!src["identificationValue"].isNull()) {
         dst.identificationValue = src["identificationValue"].as<decltype(dst.identificationValue)::value_type>();
     } else {
         dst.identificationValue = std::nullopt;
     }
-    if (src["authorized"]) {
+    if (!src["authorized"].isNull()) {
         dst.authorized = src["authorized"].as<decltype(dst.authorized)::value_type>();
     } else {
         dst.authorized = std::nullopt;
@@ -14519,22 +14519,22 @@ bool convertToJson(const IdentificationDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, IdentificationDataElementsType &dst)
 {
 
-    if (src["identificationId"]) {
+    if (!src["identificationId"].isNull()) {
         dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
     } else {
         dst.identificationId = std::nullopt;
     }
-    if (src["identificationType"]) {
+    if (!src["identificationType"].isNull()) {
         dst.identificationType = src["identificationType"].as<decltype(dst.identificationType)::value_type>();
     } else {
         dst.identificationType = std::nullopt;
     }
-    if (src["identificationValue"]) {
+    if (!src["identificationValue"].isNull()) {
         dst.identificationValue = src["identificationValue"].as<decltype(dst.identificationValue)::value_type>();
     } else {
         dst.identificationValue = std::nullopt;
     }
-    if (src["authorized"]) {
+    if (!src["authorized"].isNull()) {
         dst.authorized = src["authorized"].as<decltype(dst.authorized)::value_type>();
     } else {
         dst.authorized = std::nullopt;
@@ -14554,7 +14554,7 @@ bool convertToJson(const IdentificationListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, IdentificationListDataType &dst)
 {
 
-    if (src["identificationData"]) {
+    if (!src["identificationData"].isNull()) {
         dst.identificationData = src["identificationData"].as<decltype(dst.identificationData)::value_type>();
     } else {
         dst.identificationData = std::nullopt;
@@ -14577,12 +14577,12 @@ bool convertToJson(const IdentificationListDataSelectorsType &src, JsonVariant &
 void convertFromJson(const JsonVariantConst &src, IdentificationListDataSelectorsType &dst)
 {
 
-    if (src["identificationId"]) {
+    if (!src["identificationId"].isNull()) {
         dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
     } else {
         dst.identificationId = std::nullopt;
     }
-    if (src["identificationType"]) {
+    if (!src["identificationType"].isNull()) {
         dst.identificationType = src["identificationType"].as<decltype(dst.identificationType)::value_type>();
     } else {
         dst.identificationType = std::nullopt;
@@ -14611,22 +14611,22 @@ bool convertToJson(const SessionIdentificationDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, SessionIdentificationDataType &dst)
 {
 
-    if (src["sessionId"]) {
+    if (!src["sessionId"].isNull()) {
         dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
     } else {
         dst.sessionId = std::nullopt;
     }
-    if (src["identificationId"]) {
+    if (!src["identificationId"].isNull()) {
         dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
     } else {
         dst.identificationId = std::nullopt;
     }
-    if (src["isLatestSession"]) {
+    if (!src["isLatestSession"].isNull()) {
         dst.isLatestSession = src["isLatestSession"].as<decltype(dst.isLatestSession)::value_type>();
     } else {
         dst.isLatestSession = std::nullopt;
     }
-    if (src["timePeriod"]) {
+    if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
         dst.timePeriod = std::nullopt;
@@ -14655,22 +14655,22 @@ bool convertToJson(const SessionIdentificationDataElementsType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, SessionIdentificationDataElementsType &dst)
 {
 
-    if (src["sessionId"]) {
+    if (!src["sessionId"].isNull()) {
         dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
     } else {
         dst.sessionId = std::nullopt;
     }
-    if (src["identificationId"]) {
+    if (!src["identificationId"].isNull()) {
         dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
     } else {
         dst.identificationId = std::nullopt;
     }
-    if (src["isLatestSession"]) {
+    if (!src["isLatestSession"].isNull()) {
         dst.isLatestSession = src["isLatestSession"].as<decltype(dst.isLatestSession)::value_type>();
     } else {
         dst.isLatestSession = std::nullopt;
     }
-    if (src["timePeriod"]) {
+    if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
         dst.timePeriod = std::nullopt;
@@ -14690,7 +14690,7 @@ bool convertToJson(const SessionIdentificationListDataType &src, JsonVariant &ds
 void convertFromJson(const JsonVariantConst &src, SessionIdentificationListDataType &dst)
 {
 
-    if (src["sessionIdentificationData"]) {
+    if (!src["sessionIdentificationData"].isNull()) {
         dst.sessionIdentificationData = src["sessionIdentificationData"].as<decltype(dst.sessionIdentificationData)::value_type>();
     } else {
         dst.sessionIdentificationData = std::nullopt;
@@ -14719,22 +14719,22 @@ bool convertToJson(const SessionIdentificationListDataSelectorsType &src, JsonVa
 void convertFromJson(const JsonVariantConst &src, SessionIdentificationListDataSelectorsType &dst)
 {
 
-    if (src["sessionId"]) {
+    if (!src["sessionId"].isNull()) {
         dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
     } else {
         dst.sessionId = std::nullopt;
     }
-    if (src["identificationId"]) {
+    if (!src["identificationId"].isNull()) {
         dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
     } else {
         dst.identificationId = std::nullopt;
     }
-    if (src["isLatestSession"]) {
+    if (!src["isLatestSession"].isNull()) {
         dst.isLatestSession = src["isLatestSession"].as<decltype(dst.isLatestSession)::value_type>();
     } else {
         dst.isLatestSession = std::nullopt;
     }
-    if (src["timePeriod"]) {
+    if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
         dst.timePeriod = std::nullopt;
@@ -14757,12 +14757,12 @@ bool convertToJson(const SessionMeasurementRelationDataType &src, JsonVariant &d
 void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationDataType &dst)
 {
 
-    if (src["sessionId"]) {
+    if (!src["sessionId"].isNull()) {
         dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
     } else {
         dst.sessionId = std::nullopt;
     }
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
@@ -14785,12 +14785,12 @@ bool convertToJson(const SessionMeasurementRelationDataElementsType &src, JsonVa
 void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationDataElementsType &dst)
 {
 
-    if (src["sessionId"]) {
+    if (!src["sessionId"].isNull()) {
         dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
     } else {
         dst.sessionId = std::nullopt;
     }
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
@@ -14810,7 +14810,7 @@ bool convertToJson(const SessionMeasurementRelationListDataType &src, JsonVarian
 void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationListDataType &dst)
 {
 
-    if (src["sessionMeasurementRelationData"]) {
+    if (!src["sessionMeasurementRelationData"].isNull()) {
         dst.sessionMeasurementRelationData = src["sessionMeasurementRelationData"].as<decltype(dst.sessionMeasurementRelationData)::value_type>();
     } else {
         dst.sessionMeasurementRelationData = std::nullopt;
@@ -14833,12 +14833,12 @@ bool convertToJson(const SessionMeasurementRelationListDataSelectorsType &src, J
 void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationListDataSelectorsType &dst)
 {
 
-    if (src["sessionId"]) {
+    if (!src["sessionId"].isNull()) {
         dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
     } else {
         dst.sessionId = std::nullopt;
     }
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
@@ -14882,47 +14882,47 @@ bool convertToJson(const SetpointDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, SetpointDataType &dst)
 {
 
-    if (src["setpointId"]) {
+    if (!src["setpointId"].isNull()) {
         dst.setpointId = src["setpointId"].as<decltype(dst.setpointId)::value_type>();
     } else {
         dst.setpointId = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
     }
-    if (src["valueMin"]) {
+    if (!src["valueMin"].isNull()) {
         dst.valueMin = src["valueMin"].as<decltype(dst.valueMin)::value_type>();
     } else {
         dst.valueMin = std::nullopt;
     }
-    if (src["valueMax"]) {
+    if (!src["valueMax"].isNull()) {
         dst.valueMax = src["valueMax"].as<decltype(dst.valueMax)::value_type>();
     } else {
         dst.valueMax = std::nullopt;
     }
-    if (src["valueToleranceAbsolute"]) {
+    if (!src["valueToleranceAbsolute"].isNull()) {
         dst.valueToleranceAbsolute = src["valueToleranceAbsolute"].as<decltype(dst.valueToleranceAbsolute)::value_type>();
     } else {
         dst.valueToleranceAbsolute = std::nullopt;
     }
-    if (src["valueTolerancePercentage"]) {
+    if (!src["valueTolerancePercentage"].isNull()) {
         dst.valueTolerancePercentage = src["valueTolerancePercentage"].as<decltype(dst.valueTolerancePercentage)::value_type>();
     } else {
         dst.valueTolerancePercentage = std::nullopt;
     }
-    if (src["isSetpointChangeable"]) {
+    if (!src["isSetpointChangeable"].isNull()) {
         dst.isSetpointChangeable = src["isSetpointChangeable"].as<decltype(dst.isSetpointChangeable)::value_type>();
     } else {
         dst.isSetpointChangeable = std::nullopt;
     }
-    if (src["isSetpointActive"]) {
+    if (!src["isSetpointActive"].isNull()) {
         dst.isSetpointActive = src["isSetpointActive"].as<decltype(dst.isSetpointActive)::value_type>();
     } else {
         dst.isSetpointActive = std::nullopt;
     }
-    if (src["timePeriod"]) {
+    if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
         dst.timePeriod = std::nullopt;
@@ -14966,47 +14966,47 @@ bool convertToJson(const SetpointDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, SetpointDataElementsType &dst)
 {
 
-    if (src["setpointId"]) {
+    if (!src["setpointId"].isNull()) {
         dst.setpointId = src["setpointId"].as<decltype(dst.setpointId)::value_type>();
     } else {
         dst.setpointId = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
     }
-    if (src["valueMin"]) {
+    if (!src["valueMin"].isNull()) {
         dst.valueMin = src["valueMin"].as<decltype(dst.valueMin)::value_type>();
     } else {
         dst.valueMin = std::nullopt;
     }
-    if (src["valueMax"]) {
+    if (!src["valueMax"].isNull()) {
         dst.valueMax = src["valueMax"].as<decltype(dst.valueMax)::value_type>();
     } else {
         dst.valueMax = std::nullopt;
     }
-    if (src["valueToleranceAbsolute"]) {
+    if (!src["valueToleranceAbsolute"].isNull()) {
         dst.valueToleranceAbsolute = src["valueToleranceAbsolute"].as<decltype(dst.valueToleranceAbsolute)::value_type>();
     } else {
         dst.valueToleranceAbsolute = std::nullopt;
     }
-    if (src["valueTolerancePercentage"]) {
+    if (!src["valueTolerancePercentage"].isNull()) {
         dst.valueTolerancePercentage = src["valueTolerancePercentage"].as<decltype(dst.valueTolerancePercentage)::value_type>();
     } else {
         dst.valueTolerancePercentage = std::nullopt;
     }
-    if (src["isSetpointChangeable"]) {
+    if (!src["isSetpointChangeable"].isNull()) {
         dst.isSetpointChangeable = src["isSetpointChangeable"].as<decltype(dst.isSetpointChangeable)::value_type>();
     } else {
         dst.isSetpointChangeable = std::nullopt;
     }
-    if (src["isSetpointActive"]) {
+    if (!src["isSetpointActive"].isNull()) {
         dst.isSetpointActive = src["isSetpointActive"].as<decltype(dst.isSetpointActive)::value_type>();
     } else {
         dst.isSetpointActive = std::nullopt;
     }
-    if (src["timePeriod"]) {
+    if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
         dst.timePeriod = std::nullopt;
@@ -15026,7 +15026,7 @@ bool convertToJson(const SetpointListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, SetpointListDataType &dst)
 {
 
-    if (src["setpointData"]) {
+    if (!src["setpointData"].isNull()) {
         dst.setpointData = src["setpointData"].as<decltype(dst.setpointData)::value_type>();
     } else {
         dst.setpointData = std::nullopt;
@@ -15046,7 +15046,7 @@ bool convertToJson(const SetpointListDataSelectorsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, SetpointListDataSelectorsType &dst)
 {
 
-    if (src["setpointId"]) {
+    if (!src["setpointId"].isNull()) {
         dst.setpointId = src["setpointId"].as<decltype(dst.setpointId)::value_type>();
     } else {
         dst.setpointId = std::nullopt;
@@ -15075,22 +15075,22 @@ bool convertToJson(const SetpointConstraintsDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, SetpointConstraintsDataType &dst)
 {
 
-    if (src["setpointId"]) {
+    if (!src["setpointId"].isNull()) {
         dst.setpointId = src["setpointId"].as<decltype(dst.setpointId)::value_type>();
     } else {
         dst.setpointId = std::nullopt;
     }
-    if (src["setpointRangeMin"]) {
+    if (!src["setpointRangeMin"].isNull()) {
         dst.setpointRangeMin = src["setpointRangeMin"].as<decltype(dst.setpointRangeMin)::value_type>();
     } else {
         dst.setpointRangeMin = std::nullopt;
     }
-    if (src["setpointRangeMax"]) {
+    if (!src["setpointRangeMax"].isNull()) {
         dst.setpointRangeMax = src["setpointRangeMax"].as<decltype(dst.setpointRangeMax)::value_type>();
     } else {
         dst.setpointRangeMax = std::nullopt;
     }
-    if (src["setpointStepSize"]) {
+    if (!src["setpointStepSize"].isNull()) {
         dst.setpointStepSize = src["setpointStepSize"].as<decltype(dst.setpointStepSize)::value_type>();
     } else {
         dst.setpointStepSize = std::nullopt;
@@ -15119,22 +15119,22 @@ bool convertToJson(const SetpointConstraintsDataElementsType &src, JsonVariant &
 void convertFromJson(const JsonVariantConst &src, SetpointConstraintsDataElementsType &dst)
 {
 
-    if (src["setpointId"]) {
+    if (!src["setpointId"].isNull()) {
         dst.setpointId = src["setpointId"].as<decltype(dst.setpointId)::value_type>();
     } else {
         dst.setpointId = std::nullopt;
     }
-    if (src["setpointRangeMin"]) {
+    if (!src["setpointRangeMin"].isNull()) {
         dst.setpointRangeMin = src["setpointRangeMin"].as<decltype(dst.setpointRangeMin)::value_type>();
     } else {
         dst.setpointRangeMin = std::nullopt;
     }
-    if (src["setpointRangeMax"]) {
+    if (!src["setpointRangeMax"].isNull()) {
         dst.setpointRangeMax = src["setpointRangeMax"].as<decltype(dst.setpointRangeMax)::value_type>();
     } else {
         dst.setpointRangeMax = std::nullopt;
     }
-    if (src["setpointStepSize"]) {
+    if (!src["setpointStepSize"].isNull()) {
         dst.setpointStepSize = src["setpointStepSize"].as<decltype(dst.setpointStepSize)::value_type>();
     } else {
         dst.setpointStepSize = std::nullopt;
@@ -15154,7 +15154,7 @@ bool convertToJson(const SetpointConstraintsListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, SetpointConstraintsListDataType &dst)
 {
 
-    if (src["setpointConstraintsData"]) {
+    if (!src["setpointConstraintsData"].isNull()) {
         dst.setpointConstraintsData = src["setpointConstraintsData"].as<decltype(dst.setpointConstraintsData)::value_type>();
     } else {
         dst.setpointConstraintsData = std::nullopt;
@@ -15174,7 +15174,7 @@ bool convertToJson(const SetpointConstraintsListDataSelectorsType &src, JsonVari
 void convertFromJson(const JsonVariantConst &src, SetpointConstraintsListDataSelectorsType &dst)
 {
 
-    if (src["setpointId"]) {
+    if (!src["setpointId"].isNull()) {
         dst.setpointId = src["setpointId"].as<decltype(dst.setpointId)::value_type>();
     } else {
         dst.setpointId = std::nullopt;
@@ -15215,42 +15215,42 @@ bool convertToJson(const SetpointDescriptionDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, SetpointDescriptionDataType &dst)
 {
 
-    if (src["setpointId"]) {
+    if (!src["setpointId"].isNull()) {
         dst.setpointId = src["setpointId"].as<decltype(dst.setpointId)::value_type>();
     } else {
         dst.setpointId = std::nullopt;
     }
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["timeTableId"]) {
+    if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
         dst.timeTableId = std::nullopt;
     }
-    if (src["setpointType"]) {
+    if (!src["setpointType"].isNull()) {
         dst.setpointType = src["setpointType"].as<decltype(dst.setpointType)::value_type>();
     } else {
         dst.setpointType = std::nullopt;
     }
-    if (src["unit"]) {
+    if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
         dst.unit = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -15291,42 +15291,42 @@ bool convertToJson(const SetpointDescriptionDataElementsType &src, JsonVariant &
 void convertFromJson(const JsonVariantConst &src, SetpointDescriptionDataElementsType &dst)
 {
 
-    if (src["setpointId"]) {
+    if (!src["setpointId"].isNull()) {
         dst.setpointId = src["setpointId"].as<decltype(dst.setpointId)::value_type>();
     } else {
         dst.setpointId = std::nullopt;
     }
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["timeTableId"]) {
+    if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
         dst.timeTableId = std::nullopt;
     }
-    if (src["setpointType"]) {
+    if (!src["setpointType"].isNull()) {
         dst.setpointType = src["setpointType"].as<decltype(dst.setpointType)::value_type>();
     } else {
         dst.setpointType = std::nullopt;
     }
-    if (src["unit"]) {
+    if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
         dst.unit = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -15346,7 +15346,7 @@ bool convertToJson(const SetpointDescriptionListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, SetpointDescriptionListDataType &dst)
 {
 
-    if (src["setpointDescriptionData"]) {
+    if (!src["setpointDescriptionData"].isNull()) {
         dst.setpointDescriptionData = src["setpointDescriptionData"].as<decltype(dst.setpointDescriptionData)::value_type>();
     } else {
         dst.setpointDescriptionData = std::nullopt;
@@ -15378,27 +15378,27 @@ bool convertToJson(const SetpointDescriptionListDataSelectorsType &src, JsonVari
 void convertFromJson(const JsonVariantConst &src, SetpointDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["setpointId"]) {
+    if (!src["setpointId"].isNull()) {
         dst.setpointId = src["setpointId"].as<decltype(dst.setpointId)::value_type>();
     } else {
         dst.setpointId = std::nullopt;
     }
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["timeTableId"]) {
+    if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
         dst.timeTableId = std::nullopt;
     }
-    if (src["setpointType"]) {
+    if (!src["setpointType"].isNull()) {
         dst.setpointType = src["setpointType"].as<decltype(dst.setpointType)::value_type>();
     } else {
         dst.setpointType = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
@@ -15430,27 +15430,27 @@ bool convertToJson(const TimeTableDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TimeTableDataType &dst)
 {
 
-    if (src["timeTableId"]) {
+    if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
         dst.timeTableId = std::nullopt;
     }
-    if (src["timeSlotId"]) {
+    if (!src["timeSlotId"].isNull()) {
         dst.timeSlotId = src["timeSlotId"].as<decltype(dst.timeSlotId)::value_type>();
     } else {
         dst.timeSlotId = std::nullopt;
     }
-    if (src["recurrenceInformation"]) {
+    if (!src["recurrenceInformation"].isNull()) {
         dst.recurrenceInformation = src["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
     } else {
         dst.recurrenceInformation = std::nullopt;
     }
-    if (src["startTime"]) {
+    if (!src["startTime"].isNull()) {
         dst.startTime = src["startTime"].as<decltype(dst.startTime)::value_type>();
     } else {
         dst.startTime = std::nullopt;
     }
-    if (src["endTime"]) {
+    if (!src["endTime"].isNull()) {
         dst.endTime = src["endTime"].as<decltype(dst.endTime)::value_type>();
     } else {
         dst.endTime = std::nullopt;
@@ -15482,27 +15482,27 @@ bool convertToJson(const TimeTableDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TimeTableDataElementsType &dst)
 {
 
-    if (src["timeTableId"]) {
+    if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
         dst.timeTableId = std::nullopt;
     }
-    if (src["timeSlotId"]) {
+    if (!src["timeSlotId"].isNull()) {
         dst.timeSlotId = src["timeSlotId"].as<decltype(dst.timeSlotId)::value_type>();
     } else {
         dst.timeSlotId = std::nullopt;
     }
-    if (src["recurrenceInformation"]) {
+    if (!src["recurrenceInformation"].isNull()) {
         dst.recurrenceInformation = src["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
     } else {
         dst.recurrenceInformation = std::nullopt;
     }
-    if (src["startTime"]) {
+    if (!src["startTime"].isNull()) {
         dst.startTime = src["startTime"].as<decltype(dst.startTime)::value_type>();
     } else {
         dst.startTime = std::nullopt;
     }
-    if (src["endTime"]) {
+    if (!src["endTime"].isNull()) {
         dst.endTime = src["endTime"].as<decltype(dst.endTime)::value_type>();
     } else {
         dst.endTime = std::nullopt;
@@ -15522,7 +15522,7 @@ bool convertToJson(const TimeTableListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TimeTableListDataType &dst)
 {
 
-    if (src["timeTableData"]) {
+    if (!src["timeTableData"].isNull()) {
         dst.timeTableData = src["timeTableData"].as<decltype(dst.timeTableData)::value_type>();
     } else {
         dst.timeTableData = std::nullopt;
@@ -15545,12 +15545,12 @@ bool convertToJson(const TimeTableListDataSelectorsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TimeTableListDataSelectorsType &dst)
 {
 
-    if (src["timeTableId"]) {
+    if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
         dst.timeTableId = std::nullopt;
     }
-    if (src["timeSlotId"]) {
+    if (!src["timeSlotId"].isNull()) {
         dst.timeSlotId = src["timeSlotId"].as<decltype(dst.timeSlotId)::value_type>();
     } else {
         dst.timeSlotId = std::nullopt;
@@ -15591,42 +15591,42 @@ bool convertToJson(const TimeTableConstraintsDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsDataType &dst)
 {
 
-    if (src["timeTableId"]) {
+    if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
         dst.timeTableId = std::nullopt;
     }
-    if (src["slotCountMin"]) {
+    if (!src["slotCountMin"].isNull()) {
         dst.slotCountMin = src["slotCountMin"].as<decltype(dst.slotCountMin)::value_type>();
     } else {
         dst.slotCountMin = std::nullopt;
     }
-    if (src["slotCountMax"]) {
+    if (!src["slotCountMax"].isNull()) {
         dst.slotCountMax = src["slotCountMax"].as<decltype(dst.slotCountMax)::value_type>();
     } else {
         dst.slotCountMax = std::nullopt;
     }
-    if (src["slotDurationMin"]) {
+    if (!src["slotDurationMin"].isNull()) {
         dst.slotDurationMin = src["slotDurationMin"].as<decltype(dst.slotDurationMin)::value_type>();
     } else {
         dst.slotDurationMin = std::nullopt;
     }
-    if (src["slotDurationMax"]) {
+    if (!src["slotDurationMax"].isNull()) {
         dst.slotDurationMax = src["slotDurationMax"].as<decltype(dst.slotDurationMax)::value_type>();
     } else {
         dst.slotDurationMax = std::nullopt;
     }
-    if (src["slotDurationStepSize"]) {
+    if (!src["slotDurationStepSize"].isNull()) {
         dst.slotDurationStepSize = src["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize)::value_type>();
     } else {
         dst.slotDurationStepSize = std::nullopt;
     }
-    if (src["slotShiftStepSize"]) {
+    if (!src["slotShiftStepSize"].isNull()) {
         dst.slotShiftStepSize = src["slotShiftStepSize"].as<decltype(dst.slotShiftStepSize)::value_type>();
     } else {
         dst.slotShiftStepSize = std::nullopt;
     }
-    if (src["firstSlotBeginsAt"]) {
+    if (!src["firstSlotBeginsAt"].isNull()) {
         dst.firstSlotBeginsAt = src["firstSlotBeginsAt"].as<decltype(dst.firstSlotBeginsAt)::value_type>();
     } else {
         dst.firstSlotBeginsAt = std::nullopt;
@@ -15667,42 +15667,42 @@ bool convertToJson(const TimeTableConstraintsDataElementsType &src, JsonVariant 
 void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsDataElementsType &dst)
 {
 
-    if (src["timeTableId"]) {
+    if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
         dst.timeTableId = std::nullopt;
     }
-    if (src["slotCountMin"]) {
+    if (!src["slotCountMin"].isNull()) {
         dst.slotCountMin = src["slotCountMin"].as<decltype(dst.slotCountMin)::value_type>();
     } else {
         dst.slotCountMin = std::nullopt;
     }
-    if (src["slotCountMax"]) {
+    if (!src["slotCountMax"].isNull()) {
         dst.slotCountMax = src["slotCountMax"].as<decltype(dst.slotCountMax)::value_type>();
     } else {
         dst.slotCountMax = std::nullopt;
     }
-    if (src["slotDurationMin"]) {
+    if (!src["slotDurationMin"].isNull()) {
         dst.slotDurationMin = src["slotDurationMin"].as<decltype(dst.slotDurationMin)::value_type>();
     } else {
         dst.slotDurationMin = std::nullopt;
     }
-    if (src["slotDurationMax"]) {
+    if (!src["slotDurationMax"].isNull()) {
         dst.slotDurationMax = src["slotDurationMax"].as<decltype(dst.slotDurationMax)::value_type>();
     } else {
         dst.slotDurationMax = std::nullopt;
     }
-    if (src["slotDurationStepSize"]) {
+    if (!src["slotDurationStepSize"].isNull()) {
         dst.slotDurationStepSize = src["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize)::value_type>();
     } else {
         dst.slotDurationStepSize = std::nullopt;
     }
-    if (src["slotShiftStepSize"]) {
+    if (!src["slotShiftStepSize"].isNull()) {
         dst.slotShiftStepSize = src["slotShiftStepSize"].as<decltype(dst.slotShiftStepSize)::value_type>();
     } else {
         dst.slotShiftStepSize = std::nullopt;
     }
-    if (src["firstSlotBeginsAt"]) {
+    if (!src["firstSlotBeginsAt"].isNull()) {
         dst.firstSlotBeginsAt = src["firstSlotBeginsAt"].as<decltype(dst.firstSlotBeginsAt)::value_type>();
     } else {
         dst.firstSlotBeginsAt = std::nullopt;
@@ -15722,7 +15722,7 @@ bool convertToJson(const TimeTableConstraintsListDataType &src, JsonVariant &dst
 void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsListDataType &dst)
 {
 
-    if (src["timeTableConstraintsData"]) {
+    if (!src["timeTableConstraintsData"].isNull()) {
         dst.timeTableConstraintsData = src["timeTableConstraintsData"].as<decltype(dst.timeTableConstraintsData)::value_type>();
     } else {
         dst.timeTableConstraintsData = std::nullopt;
@@ -15742,7 +15742,7 @@ bool convertToJson(const TimeTableConstraintsListDataSelectorsType &src, JsonVar
 void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsListDataSelectorsType &dst)
 {
 
-    if (src["timeTableId"]) {
+    if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
         dst.timeTableId = std::nullopt;
@@ -15777,32 +15777,32 @@ bool convertToJson(const TimeTableDescriptionDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionDataType &dst)
 {
 
-    if (src["timeTableId"]) {
+    if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
         dst.timeTableId = std::nullopt;
     }
-    if (src["timeSlotCountChangeable"]) {
+    if (!src["timeSlotCountChangeable"].isNull()) {
         dst.timeSlotCountChangeable = src["timeSlotCountChangeable"].as<decltype(dst.timeSlotCountChangeable)::value_type>();
     } else {
         dst.timeSlotCountChangeable = std::nullopt;
     }
-    if (src["timeSlotTimesChangeable"]) {
+    if (!src["timeSlotTimesChangeable"].isNull()) {
         dst.timeSlotTimesChangeable = src["timeSlotTimesChangeable"].as<decltype(dst.timeSlotTimesChangeable)::value_type>();
     } else {
         dst.timeSlotTimesChangeable = std::nullopt;
     }
-    if (src["timeSlotTimeMode"]) {
+    if (!src["timeSlotTimeMode"].isNull()) {
         dst.timeSlotTimeMode = src["timeSlotTimeMode"].as<decltype(dst.timeSlotTimeMode)::value_type>();
     } else {
         dst.timeSlotTimeMode = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -15837,32 +15837,32 @@ bool convertToJson(const TimeTableDescriptionDataElementsType &src, JsonVariant 
 void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionDataElementsType &dst)
 {
 
-    if (src["timeTableId"]) {
+    if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
         dst.timeTableId = std::nullopt;
     }
-    if (src["timeSlotCountChangeable"]) {
+    if (!src["timeSlotCountChangeable"].isNull()) {
         dst.timeSlotCountChangeable = src["timeSlotCountChangeable"].as<decltype(dst.timeSlotCountChangeable)::value_type>();
     } else {
         dst.timeSlotCountChangeable = std::nullopt;
     }
-    if (src["timeSlotTimesChangeable"]) {
+    if (!src["timeSlotTimesChangeable"].isNull()) {
         dst.timeSlotTimesChangeable = src["timeSlotTimesChangeable"].as<decltype(dst.timeSlotTimesChangeable)::value_type>();
     } else {
         dst.timeSlotTimesChangeable = std::nullopt;
     }
-    if (src["timeSlotTimeMode"]) {
+    if (!src["timeSlotTimeMode"].isNull()) {
         dst.timeSlotTimeMode = src["timeSlotTimeMode"].as<decltype(dst.timeSlotTimeMode)::value_type>();
     } else {
         dst.timeSlotTimeMode = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -15882,7 +15882,7 @@ bool convertToJson(const TimeTableDescriptionListDataType &src, JsonVariant &dst
 void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionListDataType &dst)
 {
 
-    if (src["timeTableDescriptionData"]) {
+    if (!src["timeTableDescriptionData"].isNull()) {
         dst.timeTableDescriptionData = src["timeTableDescriptionData"].as<decltype(dst.timeTableDescriptionData)::value_type>();
     } else {
         dst.timeTableDescriptionData = std::nullopt;
@@ -15902,7 +15902,7 @@ bool convertToJson(const TimeTableDescriptionListDataSelectorsType &src, JsonVar
 void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["timeTableId"]) {
+    if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
         dst.timeTableId = std::nullopt;
@@ -15928,17 +15928,17 @@ bool convertToJson(const SensingDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, SensingDataType &dst)
 {
 
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["state"]) {
+    if (!src["state"].isNull()) {
         dst.state = src["state"].as<decltype(dst.state)::value_type>();
     } else {
         dst.state = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
@@ -15964,17 +15964,17 @@ bool convertToJson(const SensingDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, SensingDataElementsType &dst)
 {
 
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["state"]) {
+    if (!src["state"].isNull()) {
         dst.state = src["state"].as<decltype(dst.state)::value_type>();
     } else {
         dst.state = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
@@ -15994,7 +15994,7 @@ bool convertToJson(const SensingListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, SensingListDataType &dst)
 {
 
-    if (src["sensingData"]) {
+    if (!src["sensingData"].isNull()) {
         dst.sensingData = src["sensingData"].as<decltype(dst.sensingData)::value_type>();
     } else {
         dst.sensingData = std::nullopt;
@@ -16014,7 +16014,7 @@ bool convertToJson(const SensingListDataSelectorsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, SensingListDataSelectorsType &dst)
 {
 
-    if (src["timestampInterval"]) {
+    if (!src["timestampInterval"].isNull()) {
         dst.timestampInterval = src["timestampInterval"].as<decltype(dst.timestampInterval)::value_type>();
     } else {
         dst.timestampInterval = std::nullopt;
@@ -16046,27 +16046,27 @@ bool convertToJson(const SensingDescriptionDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, SensingDescriptionDataType &dst)
 {
 
-    if (src["sensingType"]) {
+    if (!src["sensingType"].isNull()) {
         dst.sensingType = src["sensingType"].as<decltype(dst.sensingType)::value_type>();
     } else {
         dst.sensingType = std::nullopt;
     }
-    if (src["unit"]) {
+    if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
         dst.unit = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -16098,27 +16098,27 @@ bool convertToJson(const SensingDescriptionDataElementsType &src, JsonVariant &d
 void convertFromJson(const JsonVariantConst &src, SensingDescriptionDataElementsType &dst)
 {
 
-    if (src["sensingType"]) {
+    if (!src["sensingType"].isNull()) {
         dst.sensingType = src["sensingType"].as<decltype(dst.sensingType)::value_type>();
     } else {
         dst.sensingType = std::nullopt;
     }
-    if (src["unit"]) {
+    if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
         dst.unit = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -16141,12 +16141,12 @@ bool convertToJson(const ResultDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, ResultDataType &dst)
 {
 
-    if (src["errorNumber"]) {
+    if (!src["errorNumber"].isNull()) {
         dst.errorNumber = src["errorNumber"].as<decltype(dst.errorNumber)::value_type>();
     } else {
         dst.errorNumber = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -16166,7 +16166,7 @@ bool convertToJson(const ActuatorSwitchDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDataType &dst)
 {
 
-    if (src["function"]) {
+    if (!src["function"].isNull()) {
         dst.function = src["function"].as<decltype(dst.function)::value_type>();
     } else {
         dst.function = std::nullopt;
@@ -16186,7 +16186,7 @@ bool convertToJson(const ActuatorSwitchDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDataElementsType &dst)
 {
 
-    if (src["function"]) {
+    if (!src["function"].isNull()) {
         dst.function = src["function"].as<decltype(dst.function)::value_type>();
     } else {
         dst.function = std::nullopt;
@@ -16209,12 +16209,12 @@ bool convertToJson(const ActuatorSwitchDescriptionDataType &src, JsonVariant &ds
 void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDescriptionDataType &dst)
 {
 
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -16237,12 +16237,12 @@ bool convertToJson(const ActuatorSwitchDescriptionDataElementsType &src, JsonVar
 void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDescriptionDataElementsType &dst)
 {
 
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -16274,27 +16274,27 @@ bool convertToJson(const NetworkManagementAddNodeCallType &src, JsonVariant &dst
 void convertFromJson(const JsonVariantConst &src, NetworkManagementAddNodeCallType &dst)
 {
 
-    if (src["nodeAddress"]) {
+    if (!src["nodeAddress"].isNull()) {
         dst.nodeAddress = src["nodeAddress"].as<decltype(dst.nodeAddress)::value_type>();
     } else {
         dst.nodeAddress = std::nullopt;
     }
-    if (src["nativeSetup"]) {
+    if (!src["nativeSetup"].isNull()) {
         dst.nativeSetup = src["nativeSetup"].as<decltype(dst.nativeSetup)::value_type>();
     } else {
         dst.nativeSetup = std::nullopt;
     }
-    if (src["timeout"]) {
+    if (!src["timeout"].isNull()) {
         dst.timeout = src["timeout"].as<decltype(dst.timeout)::value_type>();
     } else {
         dst.timeout = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -16326,27 +16326,27 @@ bool convertToJson(const NetworkManagementAddNodeCallElementsType &src, JsonVari
 void convertFromJson(const JsonVariantConst &src, NetworkManagementAddNodeCallElementsType &dst)
 {
 
-    if (src["nodeAddress"]) {
+    if (!src["nodeAddress"].isNull()) {
         dst.nodeAddress = src["nodeAddress"].as<decltype(dst.nodeAddress)::value_type>();
     } else {
         dst.nodeAddress = std::nullopt;
     }
-    if (src["nativeSetup"]) {
+    if (!src["nativeSetup"].isNull()) {
         dst.nativeSetup = src["nativeSetup"].as<decltype(dst.nativeSetup)::value_type>();
     } else {
         dst.nativeSetup = std::nullopt;
     }
-    if (src["timeout"]) {
+    if (!src["timeout"].isNull()) {
         dst.timeout = src["timeout"].as<decltype(dst.timeout)::value_type>();
     } else {
         dst.timeout = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -16369,12 +16369,12 @@ bool convertToJson(const NetworkManagementRemoveNodeCallType &src, JsonVariant &
 void convertFromJson(const JsonVariantConst &src, NetworkManagementRemoveNodeCallType &dst)
 {
 
-    if (src["nodeAddress"]) {
+    if (!src["nodeAddress"].isNull()) {
         dst.nodeAddress = src["nodeAddress"].as<decltype(dst.nodeAddress)::value_type>();
     } else {
         dst.nodeAddress = std::nullopt;
     }
-    if (src["timeout"]) {
+    if (!src["timeout"].isNull()) {
         dst.timeout = src["timeout"].as<decltype(dst.timeout)::value_type>();
     } else {
         dst.timeout = std::nullopt;
@@ -16397,12 +16397,12 @@ bool convertToJson(const NetworkManagementRemoveNodeCallElementsType &src, JsonV
 void convertFromJson(const JsonVariantConst &src, NetworkManagementRemoveNodeCallElementsType &dst)
 {
 
-    if (src["nodeAddress"]) {
+    if (!src["nodeAddress"].isNull()) {
         dst.nodeAddress = src["nodeAddress"].as<decltype(dst.nodeAddress)::value_type>();
     } else {
         dst.nodeAddress = std::nullopt;
     }
-    if (src["timeout"]) {
+    if (!src["timeout"].isNull()) {
         dst.timeout = src["timeout"].as<decltype(dst.timeout)::value_type>();
     } else {
         dst.timeout = std::nullopt;
@@ -16434,27 +16434,27 @@ bool convertToJson(const NetworkManagementModifyNodeCallType &src, JsonVariant &
 void convertFromJson(const JsonVariantConst &src, NetworkManagementModifyNodeCallType &dst)
 {
 
-    if (src["nodeAddress"]) {
+    if (!src["nodeAddress"].isNull()) {
         dst.nodeAddress = src["nodeAddress"].as<decltype(dst.nodeAddress)::value_type>();
     } else {
         dst.nodeAddress = std::nullopt;
     }
-    if (src["nativeSetup"]) {
+    if (!src["nativeSetup"].isNull()) {
         dst.nativeSetup = src["nativeSetup"].as<decltype(dst.nativeSetup)::value_type>();
     } else {
         dst.nativeSetup = std::nullopt;
     }
-    if (src["timeout"]) {
+    if (!src["timeout"].isNull()) {
         dst.timeout = src["timeout"].as<decltype(dst.timeout)::value_type>();
     } else {
         dst.timeout = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -16486,27 +16486,27 @@ bool convertToJson(const NetworkManagementModifyNodeCallElementsType &src, JsonV
 void convertFromJson(const JsonVariantConst &src, NetworkManagementModifyNodeCallElementsType &dst)
 {
 
-    if (src["nodeAddress"]) {
+    if (!src["nodeAddress"].isNull()) {
         dst.nodeAddress = src["nodeAddress"].as<decltype(dst.nodeAddress)::value_type>();
     } else {
         dst.nodeAddress = std::nullopt;
     }
-    if (src["nativeSetup"]) {
+    if (!src["nativeSetup"].isNull()) {
         dst.nativeSetup = src["nativeSetup"].as<decltype(dst.nativeSetup)::value_type>();
     } else {
         dst.nativeSetup = std::nullopt;
     }
-    if (src["timeout"]) {
+    if (!src["timeout"].isNull()) {
         dst.timeout = src["timeout"].as<decltype(dst.timeout)::value_type>();
     } else {
         dst.timeout = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -16529,12 +16529,12 @@ bool convertToJson(const NetworkManagementScanNetworkCallType &src, JsonVariant 
 void convertFromJson(const JsonVariantConst &src, NetworkManagementScanNetworkCallType &dst)
 {
 
-    if (src["scanSetup"]) {
+    if (!src["scanSetup"].isNull()) {
         dst.scanSetup = src["scanSetup"].as<decltype(dst.scanSetup)::value_type>();
     } else {
         dst.scanSetup = std::nullopt;
     }
-    if (src["timeout"]) {
+    if (!src["timeout"].isNull()) {
         dst.timeout = src["timeout"].as<decltype(dst.timeout)::value_type>();
     } else {
         dst.timeout = std::nullopt;
@@ -16557,12 +16557,12 @@ bool convertToJson(const NetworkManagementScanNetworkCallElementsType &src, Json
 void convertFromJson(const JsonVariantConst &src, NetworkManagementScanNetworkCallElementsType &dst)
 {
 
-    if (src["scanSetup"]) {
+    if (!src["scanSetup"].isNull()) {
         dst.scanSetup = src["scanSetup"].as<decltype(dst.scanSetup)::value_type>();
     } else {
         dst.scanSetup = std::nullopt;
     }
-    if (src["timeout"]) {
+    if (!src["timeout"].isNull()) {
         dst.timeout = src["timeout"].as<decltype(dst.timeout)::value_type>();
     } else {
         dst.timeout = std::nullopt;
@@ -16582,7 +16582,7 @@ bool convertToJson(const NetworkManagementDiscoverCallType &src, JsonVariant &ds
 void convertFromJson(const JsonVariantConst &src, NetworkManagementDiscoverCallType &dst)
 {
 
-    if (src["discoverAddress"]) {
+    if (!src["discoverAddress"].isNull()) {
         dst.discoverAddress = src["discoverAddress"].as<decltype(dst.discoverAddress)::value_type>();
     } else {
         dst.discoverAddress = std::nullopt;
@@ -16602,7 +16602,7 @@ bool convertToJson(const NetworkManagementDiscoverCallElementsType &src, JsonVar
 void convertFromJson(const JsonVariantConst &src, NetworkManagementDiscoverCallElementsType &dst)
 {
 
-    if (src["discoverAddress"]) {
+    if (!src["discoverAddress"].isNull()) {
         dst.discoverAddress = src["discoverAddress"].as<decltype(dst.discoverAddress)::value_type>();
     } else {
         dst.discoverAddress = std::nullopt;
@@ -16647,12 +16647,12 @@ bool convertToJson(const NetworkManagementProcessStateDataType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, NetworkManagementProcessStateDataType &dst)
 {
 
-    if (src["state"]) {
+    if (!src["state"].isNull()) {
         dst.state = src["state"].as<decltype(dst.state)::value_type>();
     } else {
         dst.state = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -16675,12 +16675,12 @@ bool convertToJson(const NetworkManagementProcessStateDataElementsType &src, Jso
 void convertFromJson(const JsonVariantConst &src, NetworkManagementProcessStateDataElementsType &dst)
 {
 
-    if (src["state"]) {
+    if (!src["state"].isNull()) {
         dst.state = src["state"].as<decltype(dst.state)::value_type>();
     } else {
         dst.state = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -16700,7 +16700,7 @@ bool convertToJson(const NetworkManagementJoiningModeDataType &src, JsonVariant 
 void convertFromJson(const JsonVariantConst &src, NetworkManagementJoiningModeDataType &dst)
 {
 
-    if (src["setup"]) {
+    if (!src["setup"].isNull()) {
         dst.setup = src["setup"].as<decltype(dst.setup)::value_type>();
     } else {
         dst.setup = std::nullopt;
@@ -16720,7 +16720,7 @@ bool convertToJson(const NetworkManagementJoiningModeDataElementsType &src, Json
 void convertFromJson(const JsonVariantConst &src, NetworkManagementJoiningModeDataElementsType &dst)
 {
 
-    if (src["setup"]) {
+    if (!src["setup"].isNull()) {
         dst.setup = src["setup"].as<decltype(dst.setup)::value_type>();
     } else {
         dst.setup = std::nullopt;
@@ -16749,22 +16749,22 @@ bool convertToJson(const NetworkManagementReportCandidateDataType &src, JsonVari
 void convertFromJson(const JsonVariantConst &src, NetworkManagementReportCandidateDataType &dst)
 {
 
-    if (src["candidateSetup"]) {
+    if (!src["candidateSetup"].isNull()) {
         dst.candidateSetup = src["candidateSetup"].as<decltype(dst.candidateSetup)::value_type>();
     } else {
         dst.candidateSetup = std::nullopt;
     }
-    if (src["setupUsableForAdd"]) {
+    if (!src["setupUsableForAdd"].isNull()) {
         dst.setupUsableForAdd = src["setupUsableForAdd"].as<decltype(dst.setupUsableForAdd)::value_type>();
     } else {
         dst.setupUsableForAdd = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -16793,22 +16793,22 @@ bool convertToJson(const NetworkManagementReportCandidateDataElementsType &src, 
 void convertFromJson(const JsonVariantConst &src, NetworkManagementReportCandidateDataElementsType &dst)
 {
 
-    if (src["candidateSetup"]) {
+    if (!src["candidateSetup"].isNull()) {
         dst.candidateSetup = src["candidateSetup"].as<decltype(dst.candidateSetup)::value_type>();
     } else {
         dst.candidateSetup = std::nullopt;
     }
-    if (src["setupUsableForAdd"]) {
+    if (!src["setupUsableForAdd"].isNull()) {
         dst.setupUsableForAdd = src["setupUsableForAdd"].as<decltype(dst.setupUsableForAdd)::value_type>();
     } else {
         dst.setupUsableForAdd = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -16858,57 +16858,57 @@ bool convertToJson(const NetworkManagementDeviceDescriptionDataType &src, JsonVa
 void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescriptionDataType &dst)
 {
 
-    if (src["deviceAddress"]) {
+    if (!src["deviceAddress"].isNull()) {
         dst.deviceAddress = src["deviceAddress"].as<decltype(dst.deviceAddress)::value_type>();
     } else {
         dst.deviceAddress = std::nullopt;
     }
-    if (src["deviceType"]) {
+    if (!src["deviceType"].isNull()) {
         dst.deviceType = src["deviceType"].as<decltype(dst.deviceType)::value_type>();
     } else {
         dst.deviceType = std::nullopt;
     }
-    if (src["networkManagementResponsibleAddress"]) {
+    if (!src["networkManagementResponsibleAddress"].isNull()) {
         dst.networkManagementResponsibleAddress = src["networkManagementResponsibleAddress"].as<decltype(dst.networkManagementResponsibleAddress)::value_type>();
     } else {
         dst.networkManagementResponsibleAddress = std::nullopt;
     }
-    if (src["nativeSetup"]) {
+    if (!src["nativeSetup"].isNull()) {
         dst.nativeSetup = src["nativeSetup"].as<decltype(dst.nativeSetup)::value_type>();
     } else {
         dst.nativeSetup = std::nullopt;
     }
-    if (src["technologyAddress"]) {
+    if (!src["technologyAddress"].isNull()) {
         dst.technologyAddress = src["technologyAddress"].as<decltype(dst.technologyAddress)::value_type>();
     } else {
         dst.technologyAddress = std::nullopt;
     }
-    if (src["communicationsTechnologyInformation"]) {
+    if (!src["communicationsTechnologyInformation"].isNull()) {
         dst.communicationsTechnologyInformation = src["communicationsTechnologyInformation"].as<decltype(dst.communicationsTechnologyInformation)::value_type>();
     } else {
         dst.communicationsTechnologyInformation = std::nullopt;
     }
-    if (src["networkFeatureSet"]) {
+    if (!src["networkFeatureSet"].isNull()) {
         dst.networkFeatureSet = src["networkFeatureSet"].as<decltype(dst.networkFeatureSet)::value_type>();
     } else {
         dst.networkFeatureSet = std::nullopt;
     }
-    if (src["lastStateChange"]) {
+    if (!src["lastStateChange"].isNull()) {
         dst.lastStateChange = src["lastStateChange"].as<decltype(dst.lastStateChange)::value_type>();
     } else {
         dst.lastStateChange = std::nullopt;
     }
-    if (src["minimumTrustLevel"]) {
+    if (!src["minimumTrustLevel"].isNull()) {
         dst.minimumTrustLevel = src["minimumTrustLevel"].as<decltype(dst.minimumTrustLevel)::value_type>();
     } else {
         dst.minimumTrustLevel = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -16958,57 +16958,57 @@ bool convertToJson(const NetworkManagementDeviceDescriptionDataElementsType &src
 void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescriptionDataElementsType &dst)
 {
 
-    if (src["deviceAddress"]) {
+    if (!src["deviceAddress"].isNull()) {
         dst.deviceAddress = src["deviceAddress"].as<decltype(dst.deviceAddress)::value_type>();
     } else {
         dst.deviceAddress = std::nullopt;
     }
-    if (src["deviceType"]) {
+    if (!src["deviceType"].isNull()) {
         dst.deviceType = src["deviceType"].as<decltype(dst.deviceType)::value_type>();
     } else {
         dst.deviceType = std::nullopt;
     }
-    if (src["networkManagementResponsibleAddress"]) {
+    if (!src["networkManagementResponsibleAddress"].isNull()) {
         dst.networkManagementResponsibleAddress = src["networkManagementResponsibleAddress"].as<decltype(dst.networkManagementResponsibleAddress)::value_type>();
     } else {
         dst.networkManagementResponsibleAddress = std::nullopt;
     }
-    if (src["nativeSetup"]) {
+    if (!src["nativeSetup"].isNull()) {
         dst.nativeSetup = src["nativeSetup"].as<decltype(dst.nativeSetup)::value_type>();
     } else {
         dst.nativeSetup = std::nullopt;
     }
-    if (src["technologyAddress"]) {
+    if (!src["technologyAddress"].isNull()) {
         dst.technologyAddress = src["technologyAddress"].as<decltype(dst.technologyAddress)::value_type>();
     } else {
         dst.technologyAddress = std::nullopt;
     }
-    if (src["communicationsTechnologyInformation"]) {
+    if (!src["communicationsTechnologyInformation"].isNull()) {
         dst.communicationsTechnologyInformation = src["communicationsTechnologyInformation"].as<decltype(dst.communicationsTechnologyInformation)::value_type>();
     } else {
         dst.communicationsTechnologyInformation = std::nullopt;
     }
-    if (src["networkFeatureSet"]) {
+    if (!src["networkFeatureSet"].isNull()) {
         dst.networkFeatureSet = src["networkFeatureSet"].as<decltype(dst.networkFeatureSet)::value_type>();
     } else {
         dst.networkFeatureSet = std::nullopt;
     }
-    if (src["lastStateChange"]) {
+    if (!src["lastStateChange"].isNull()) {
         dst.lastStateChange = src["lastStateChange"].as<decltype(dst.lastStateChange)::value_type>();
     } else {
         dst.lastStateChange = std::nullopt;
     }
-    if (src["minimumTrustLevel"]) {
+    if (!src["minimumTrustLevel"].isNull()) {
         dst.minimumTrustLevel = src["minimumTrustLevel"].as<decltype(dst.minimumTrustLevel)::value_type>();
     } else {
         dst.minimumTrustLevel = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -17028,7 +17028,7 @@ bool convertToJson(const NetworkManagementDeviceDescriptionListDataType &src, Js
 void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescriptionListDataType &dst)
 {
 
-    if (src["networkManagementDeviceDescriptionData"]) {
+    if (!src["networkManagementDeviceDescriptionData"].isNull()) {
         dst.networkManagementDeviceDescriptionData = src["networkManagementDeviceDescriptionData"].as<decltype(dst.networkManagementDeviceDescriptionData)::value_type>();
     } else {
         dst.networkManagementDeviceDescriptionData = std::nullopt;
@@ -17051,12 +17051,12 @@ bool convertToJson(const NetworkManagementDeviceDescriptionListDataSelectorsType
 void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["deviceAddress"]) {
+    if (!src["deviceAddress"].isNull()) {
         dst.deviceAddress = src["deviceAddress"].as<decltype(dst.deviceAddress)::value_type>();
     } else {
         dst.deviceAddress = std::nullopt;
     }
-    if (src["deviceType"]) {
+    if (!src["deviceType"].isNull()) {
         dst.deviceType = src["deviceType"].as<decltype(dst.deviceType)::value_type>();
     } else {
         dst.deviceType = std::nullopt;
@@ -17091,32 +17091,32 @@ bool convertToJson(const NetworkManagementEntityDescriptionDataType &src, JsonVa
 void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescriptionDataType &dst)
 {
 
-    if (src["entityAddress"]) {
+    if (!src["entityAddress"].isNull()) {
         dst.entityAddress = src["entityAddress"].as<decltype(dst.entityAddress)::value_type>();
     } else {
         dst.entityAddress = std::nullopt;
     }
-    if (src["entityType"]) {
+    if (!src["entityType"].isNull()) {
         dst.entityType = src["entityType"].as<decltype(dst.entityType)::value_type>();
     } else {
         dst.entityType = std::nullopt;
     }
-    if (src["lastStateChange"]) {
+    if (!src["lastStateChange"].isNull()) {
         dst.lastStateChange = src["lastStateChange"].as<decltype(dst.lastStateChange)::value_type>();
     } else {
         dst.lastStateChange = std::nullopt;
     }
-    if (src["minimumTrustLevel"]) {
+    if (!src["minimumTrustLevel"].isNull()) {
         dst.minimumTrustLevel = src["minimumTrustLevel"].as<decltype(dst.minimumTrustLevel)::value_type>();
     } else {
         dst.minimumTrustLevel = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -17151,32 +17151,32 @@ bool convertToJson(const NetworkManagementEntityDescriptionDataElementsType &src
 void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescriptionDataElementsType &dst)
 {
 
-    if (src["entityAddress"]) {
+    if (!src["entityAddress"].isNull()) {
         dst.entityAddress = src["entityAddress"].as<decltype(dst.entityAddress)::value_type>();
     } else {
         dst.entityAddress = std::nullopt;
     }
-    if (src["entityType"]) {
+    if (!src["entityType"].isNull()) {
         dst.entityType = src["entityType"].as<decltype(dst.entityType)::value_type>();
     } else {
         dst.entityType = std::nullopt;
     }
-    if (src["lastStateChange"]) {
+    if (!src["lastStateChange"].isNull()) {
         dst.lastStateChange = src["lastStateChange"].as<decltype(dst.lastStateChange)::value_type>();
     } else {
         dst.lastStateChange = std::nullopt;
     }
-    if (src["minimumTrustLevel"]) {
+    if (!src["minimumTrustLevel"].isNull()) {
         dst.minimumTrustLevel = src["minimumTrustLevel"].as<decltype(dst.minimumTrustLevel)::value_type>();
     } else {
         dst.minimumTrustLevel = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -17196,7 +17196,7 @@ bool convertToJson(const NetworkManagementEntityDescriptionListDataType &src, Js
 void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescriptionListDataType &dst)
 {
 
-    if (src["networkManagementEntityDescriptionData"]) {
+    if (!src["networkManagementEntityDescriptionData"].isNull()) {
         dst.networkManagementEntityDescriptionData = src["networkManagementEntityDescriptionData"].as<decltype(dst.networkManagementEntityDescriptionData)::value_type>();
     } else {
         dst.networkManagementEntityDescriptionData = std::nullopt;
@@ -17219,12 +17219,12 @@ bool convertToJson(const NetworkManagementEntityDescriptionListDataSelectorsType
 void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["entityAddress"]) {
+    if (!src["entityAddress"].isNull()) {
         dst.entityAddress = src["entityAddress"].as<decltype(dst.entityAddress)::value_type>();
     } else {
         dst.entityAddress = std::nullopt;
     }
-    if (src["entityType"]) {
+    if (!src["entityType"].isNull()) {
         dst.entityType = src["entityType"].as<decltype(dst.entityType)::value_type>();
     } else {
         dst.entityType = std::nullopt;
@@ -17274,57 +17274,57 @@ bool convertToJson(const NetworkManagementFeatureDescriptionDataType &src, JsonV
 void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescriptionDataType &dst)
 {
 
-    if (src["featureAddress"]) {
+    if (!src["featureAddress"].isNull()) {
         dst.featureAddress = src["featureAddress"].as<decltype(dst.featureAddress)::value_type>();
     } else {
         dst.featureAddress = std::nullopt;
     }
-    if (src["featureType"]) {
+    if (!src["featureType"].isNull()) {
         dst.featureType = src["featureType"].as<decltype(dst.featureType)::value_type>();
     } else {
         dst.featureType = std::nullopt;
     }
-    if (src["specificUsage"]) {
+    if (!src["specificUsage"].isNull()) {
         dst.specificUsage = src["specificUsage"].as<decltype(dst.specificUsage)::value_type>();
     } else {
         dst.specificUsage = std::nullopt;
     }
-    if (src["featureGroup"]) {
+    if (!src["featureGroup"].isNull()) {
         dst.featureGroup = src["featureGroup"].as<decltype(dst.featureGroup)::value_type>();
     } else {
         dst.featureGroup = std::nullopt;
     }
-    if (src["role"]) {
+    if (!src["role"].isNull()) {
         dst.role = src["role"].as<decltype(dst.role)::value_type>();
     } else {
         dst.role = std::nullopt;
     }
-    if (src["supportedFunction"]) {
+    if (!src["supportedFunction"].isNull()) {
         dst.supportedFunction = src["supportedFunction"].as<decltype(dst.supportedFunction)::value_type>();
     } else {
         dst.supportedFunction = std::nullopt;
     }
-    if (src["lastStateChange"]) {
+    if (!src["lastStateChange"].isNull()) {
         dst.lastStateChange = src["lastStateChange"].as<decltype(dst.lastStateChange)::value_type>();
     } else {
         dst.lastStateChange = std::nullopt;
     }
-    if (src["minimumTrustLevel"]) {
+    if (!src["minimumTrustLevel"].isNull()) {
         dst.minimumTrustLevel = src["minimumTrustLevel"].as<decltype(dst.minimumTrustLevel)::value_type>();
     } else {
         dst.minimumTrustLevel = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
     }
-    if (src["maxResponseDelay"]) {
+    if (!src["maxResponseDelay"].isNull()) {
         dst.maxResponseDelay = src["maxResponseDelay"].as<decltype(dst.maxResponseDelay)::value_type>();
     } else {
         dst.maxResponseDelay = std::nullopt;
@@ -17374,57 +17374,57 @@ bool convertToJson(const NetworkManagementFeatureDescriptionDataElementsType &sr
 void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescriptionDataElementsType &dst)
 {
 
-    if (src["featureAddress"]) {
+    if (!src["featureAddress"].isNull()) {
         dst.featureAddress = src["featureAddress"].as<decltype(dst.featureAddress)::value_type>();
     } else {
         dst.featureAddress = std::nullopt;
     }
-    if (src["featureType"]) {
+    if (!src["featureType"].isNull()) {
         dst.featureType = src["featureType"].as<decltype(dst.featureType)::value_type>();
     } else {
         dst.featureType = std::nullopt;
     }
-    if (src["specificUsage"]) {
+    if (!src["specificUsage"].isNull()) {
         dst.specificUsage = src["specificUsage"].as<decltype(dst.specificUsage)::value_type>();
     } else {
         dst.specificUsage = std::nullopt;
     }
-    if (src["featureGroup"]) {
+    if (!src["featureGroup"].isNull()) {
         dst.featureGroup = src["featureGroup"].as<decltype(dst.featureGroup)::value_type>();
     } else {
         dst.featureGroup = std::nullopt;
     }
-    if (src["role"]) {
+    if (!src["role"].isNull()) {
         dst.role = src["role"].as<decltype(dst.role)::value_type>();
     } else {
         dst.role = std::nullopt;
     }
-    if (src["supportedFunction"]) {
+    if (!src["supportedFunction"].isNull()) {
         dst.supportedFunction = src["supportedFunction"].as<decltype(dst.supportedFunction)::value_type>();
     } else {
         dst.supportedFunction = std::nullopt;
     }
-    if (src["lastStateChange"]) {
+    if (!src["lastStateChange"].isNull()) {
         dst.lastStateChange = src["lastStateChange"].as<decltype(dst.lastStateChange)::value_type>();
     } else {
         dst.lastStateChange = std::nullopt;
     }
-    if (src["minimumTrustLevel"]) {
+    if (!src["minimumTrustLevel"].isNull()) {
         dst.minimumTrustLevel = src["minimumTrustLevel"].as<decltype(dst.minimumTrustLevel)::value_type>();
     } else {
         dst.minimumTrustLevel = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
     }
-    if (src["maxResponseDelay"]) {
+    if (!src["maxResponseDelay"].isNull()) {
         dst.maxResponseDelay = src["maxResponseDelay"].as<decltype(dst.maxResponseDelay)::value_type>();
     } else {
         dst.maxResponseDelay = std::nullopt;
@@ -17444,7 +17444,7 @@ bool convertToJson(const NetworkManagementFeatureDescriptionListDataType &src, J
 void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescriptionListDataType &dst)
 {
 
-    if (src["networkManagementFeatureDescriptionData"]) {
+    if (!src["networkManagementFeatureDescriptionData"].isNull()) {
         dst.networkManagementFeatureDescriptionData = src["networkManagementFeatureDescriptionData"].as<decltype(dst.networkManagementFeatureDescriptionData)::value_type>();
     } else {
         dst.networkManagementFeatureDescriptionData = std::nullopt;
@@ -17467,12 +17467,12 @@ bool convertToJson(const NetworkManagementFeatureDescriptionListDataSelectorsTyp
 void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["featureAddress"]) {
+    if (!src["featureAddress"].isNull()) {
         dst.featureAddress = src["featureAddress"].as<decltype(dst.featureAddress)::value_type>();
     } else {
         dst.featureAddress = std::nullopt;
     }
-    if (src["featureType"]) {
+    if (!src["featureType"].isNull()) {
         dst.featureType = src["featureType"].as<decltype(dst.featureType)::value_type>();
     } else {
         dst.featureType = std::nullopt;
@@ -17516,47 +17516,47 @@ bool convertToJson(const SupplyConditionDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, SupplyConditionDataType &dst)
 {
 
-    if (src["conditionId"]) {
+    if (!src["conditionId"].isNull()) {
         dst.conditionId = src["conditionId"].as<decltype(dst.conditionId)::value_type>();
     } else {
         dst.conditionId = std::nullopt;
     }
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["eventType"]) {
+    if (!src["eventType"].isNull()) {
         dst.eventType = src["eventType"].as<decltype(dst.eventType)::value_type>();
     } else {
         dst.eventType = std::nullopt;
     }
-    if (src["originator"]) {
+    if (!src["originator"].isNull()) {
         dst.originator = src["originator"].as<decltype(dst.originator)::value_type>();
     } else {
         dst.originator = std::nullopt;
     }
-    if (src["thresholdId"]) {
+    if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
         dst.thresholdId = std::nullopt;
     }
-    if (src["thresholdPercentage"]) {
+    if (!src["thresholdPercentage"].isNull()) {
         dst.thresholdPercentage = src["thresholdPercentage"].as<decltype(dst.thresholdPercentage)::value_type>();
     } else {
         dst.thresholdPercentage = std::nullopt;
     }
-    if (src["relevantPeriod"]) {
+    if (!src["relevantPeriod"].isNull()) {
         dst.relevantPeriod = src["relevantPeriod"].as<decltype(dst.relevantPeriod)::value_type>();
     } else {
         dst.relevantPeriod = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
     }
-    if (src["gridCondition"]) {
+    if (!src["gridCondition"].isNull()) {
         dst.gridCondition = src["gridCondition"].as<decltype(dst.gridCondition)::value_type>();
     } else {
         dst.gridCondition = std::nullopt;
@@ -17600,47 +17600,47 @@ bool convertToJson(const SupplyConditionDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, SupplyConditionDataElementsType &dst)
 {
 
-    if (src["conditionId"]) {
+    if (!src["conditionId"].isNull()) {
         dst.conditionId = src["conditionId"].as<decltype(dst.conditionId)::value_type>();
     } else {
         dst.conditionId = std::nullopt;
     }
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["eventType"]) {
+    if (!src["eventType"].isNull()) {
         dst.eventType = src["eventType"].as<decltype(dst.eventType)::value_type>();
     } else {
         dst.eventType = std::nullopt;
     }
-    if (src["originator"]) {
+    if (!src["originator"].isNull()) {
         dst.originator = src["originator"].as<decltype(dst.originator)::value_type>();
     } else {
         dst.originator = std::nullopt;
     }
-    if (src["thresholdId"]) {
+    if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
         dst.thresholdId = std::nullopt;
     }
-    if (src["thresholdPercentage"]) {
+    if (!src["thresholdPercentage"].isNull()) {
         dst.thresholdPercentage = src["thresholdPercentage"].as<decltype(dst.thresholdPercentage)::value_type>();
     } else {
         dst.thresholdPercentage = std::nullopt;
     }
-    if (src["relevantPeriod"]) {
+    if (!src["relevantPeriod"].isNull()) {
         dst.relevantPeriod = src["relevantPeriod"].as<decltype(dst.relevantPeriod)::value_type>();
     } else {
         dst.relevantPeriod = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
     }
-    if (src["gridCondition"]) {
+    if (!src["gridCondition"].isNull()) {
         dst.gridCondition = src["gridCondition"].as<decltype(dst.gridCondition)::value_type>();
     } else {
         dst.gridCondition = std::nullopt;
@@ -17660,7 +17660,7 @@ bool convertToJson(const SupplyConditionListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, SupplyConditionListDataType &dst)
 {
 
-    if (src["supplyConditionData"]) {
+    if (!src["supplyConditionData"].isNull()) {
         dst.supplyConditionData = src["supplyConditionData"].as<decltype(dst.supplyConditionData)::value_type>();
     } else {
         dst.supplyConditionData = std::nullopt;
@@ -17689,22 +17689,22 @@ bool convertToJson(const SupplyConditionListDataSelectorsType &src, JsonVariant 
 void convertFromJson(const JsonVariantConst &src, SupplyConditionListDataSelectorsType &dst)
 {
 
-    if (src["conditionId"]) {
+    if (!src["conditionId"].isNull()) {
         dst.conditionId = src["conditionId"].as<decltype(dst.conditionId)::value_type>();
     } else {
         dst.conditionId = std::nullopt;
     }
-    if (src["timestampInterval"]) {
+    if (!src["timestampInterval"].isNull()) {
         dst.timestampInterval = src["timestampInterval"].as<decltype(dst.timestampInterval)::value_type>();
     } else {
         dst.timestampInterval = std::nullopt;
     }
-    if (src["eventType"]) {
+    if (!src["eventType"].isNull()) {
         dst.eventType = src["eventType"].as<decltype(dst.eventType)::value_type>();
     } else {
         dst.eventType = std::nullopt;
     }
-    if (src["originator"]) {
+    if (!src["originator"].isNull()) {
         dst.originator = src["originator"].as<decltype(dst.originator)::value_type>();
     } else {
         dst.originator = std::nullopt;
@@ -17736,27 +17736,27 @@ bool convertToJson(const SupplyConditionDescriptionDataType &src, JsonVariant &d
 void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionDataType &dst)
 {
 
-    if (src["conditionId"]) {
+    if (!src["conditionId"].isNull()) {
         dst.conditionId = src["conditionId"].as<decltype(dst.conditionId)::value_type>();
     } else {
         dst.conditionId = std::nullopt;
     }
-    if (src["commodityType"]) {
+    if (!src["commodityType"].isNull()) {
         dst.commodityType = src["commodityType"].as<decltype(dst.commodityType)::value_type>();
     } else {
         dst.commodityType = std::nullopt;
     }
-    if (src["positiveEnergyDirection"]) {
+    if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
         dst.positiveEnergyDirection = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -17788,27 +17788,27 @@ bool convertToJson(const SupplyConditionDescriptionDataElementsType &src, JsonVa
 void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionDataElementsType &dst)
 {
 
-    if (src["conditionId"]) {
+    if (!src["conditionId"].isNull()) {
         dst.conditionId = src["conditionId"].as<decltype(dst.conditionId)::value_type>();
     } else {
         dst.conditionId = std::nullopt;
     }
-    if (src["commodityType"]) {
+    if (!src["commodityType"].isNull()) {
         dst.commodityType = src["commodityType"].as<decltype(dst.commodityType)::value_type>();
     } else {
         dst.commodityType = std::nullopt;
     }
-    if (src["positiveEnergyDirection"]) {
+    if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
         dst.positiveEnergyDirection = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -17828,7 +17828,7 @@ bool convertToJson(const SupplyConditionDescriptionListDataType &src, JsonVarian
 void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionListDataType &dst)
 {
 
-    if (src["supplyConditionDescriptionData"]) {
+    if (!src["supplyConditionDescriptionData"].isNull()) {
         dst.supplyConditionDescriptionData = src["supplyConditionDescriptionData"].as<decltype(dst.supplyConditionDescriptionData)::value_type>();
     } else {
         dst.supplyConditionDescriptionData = std::nullopt;
@@ -17848,7 +17848,7 @@ bool convertToJson(const SupplyConditionDescriptionListDataSelectorsType &src, J
 void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["conditionId"]) {
+    if (!src["conditionId"].isNull()) {
         dst.conditionId = src["conditionId"].as<decltype(dst.conditionId)::value_type>();
     } else {
         dst.conditionId = std::nullopt;
@@ -17871,12 +17871,12 @@ bool convertToJson(const SupplyConditionThresholdRelationDataType &src, JsonVari
 void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelationDataType &dst)
 {
 
-    if (src["conditionId"]) {
+    if (!src["conditionId"].isNull()) {
         dst.conditionId = src["conditionId"].as<decltype(dst.conditionId)::value_type>();
     } else {
         dst.conditionId = std::nullopt;
     }
-    if (src["thresholdId"]) {
+    if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
         dst.thresholdId = std::nullopt;
@@ -17899,12 +17899,12 @@ bool convertToJson(const SupplyConditionThresholdRelationDataElementsType &src, 
 void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelationDataElementsType &dst)
 {
 
-    if (src["conditionId"]) {
+    if (!src["conditionId"].isNull()) {
         dst.conditionId = src["conditionId"].as<decltype(dst.conditionId)::value_type>();
     } else {
         dst.conditionId = std::nullopt;
     }
-    if (src["thresholdId"]) {
+    if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
         dst.thresholdId = std::nullopt;
@@ -17924,7 +17924,7 @@ bool convertToJson(const SupplyConditionThresholdRelationListDataType &src, Json
 void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelationListDataType &dst)
 {
 
-    if (src["supplyConditionThresholdRelationData"]) {
+    if (!src["supplyConditionThresholdRelationData"].isNull()) {
         dst.supplyConditionThresholdRelationData = src["supplyConditionThresholdRelationData"].as<decltype(dst.supplyConditionThresholdRelationData)::value_type>();
     } else {
         dst.supplyConditionThresholdRelationData = std::nullopt;
@@ -17947,12 +17947,12 @@ bool convertToJson(const SupplyConditionThresholdRelationListDataSelectorsType &
 void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelationListDataSelectorsType &dst)
 {
 
-    if (src["conditionId"]) {
+    if (!src["conditionId"].isNull()) {
         dst.conditionId = src["conditionId"].as<decltype(dst.conditionId)::value_type>();
     } else {
         dst.conditionId = std::nullopt;
     }
-    if (src["thresholdId"]) {
+    if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
         dst.thresholdId = std::nullopt;
@@ -17996,47 +17996,47 @@ bool convertToJson(const AlarmDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, AlarmDataType &dst)
 {
 
-    if (src["alarmId"]) {
+    if (!src["alarmId"].isNull()) {
         dst.alarmId = src["alarmId"].as<decltype(dst.alarmId)::value_type>();
     } else {
         dst.alarmId = std::nullopt;
     }
-    if (src["thresholdId"]) {
+    if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
         dst.thresholdId = std::nullopt;
     }
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["alarmType"]) {
+    if (!src["alarmType"].isNull()) {
         dst.alarmType = src["alarmType"].as<decltype(dst.alarmType)::value_type>();
     } else {
         dst.alarmType = std::nullopt;
     }
-    if (src["measuredValue"]) {
+    if (!src["measuredValue"].isNull()) {
         dst.measuredValue = src["measuredValue"].as<decltype(dst.measuredValue)::value_type>();
     } else {
         dst.measuredValue = std::nullopt;
     }
-    if (src["evaluationPeriod"]) {
+    if (!src["evaluationPeriod"].isNull()) {
         dst.evaluationPeriod = src["evaluationPeriod"].as<decltype(dst.evaluationPeriod)::value_type>();
     } else {
         dst.evaluationPeriod = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -18080,47 +18080,47 @@ bool convertToJson(const AlarmDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, AlarmDataElementsType &dst)
 {
 
-    if (src["alarmId"]) {
+    if (!src["alarmId"].isNull()) {
         dst.alarmId = src["alarmId"].as<decltype(dst.alarmId)::value_type>();
     } else {
         dst.alarmId = std::nullopt;
     }
-    if (src["thresholdId"]) {
+    if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
         dst.thresholdId = std::nullopt;
     }
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["alarmType"]) {
+    if (!src["alarmType"].isNull()) {
         dst.alarmType = src["alarmType"].as<decltype(dst.alarmType)::value_type>();
     } else {
         dst.alarmType = std::nullopt;
     }
-    if (src["measuredValue"]) {
+    if (!src["measuredValue"].isNull()) {
         dst.measuredValue = src["measuredValue"].as<decltype(dst.measuredValue)::value_type>();
     } else {
         dst.measuredValue = std::nullopt;
     }
-    if (src["evaluationPeriod"]) {
+    if (!src["evaluationPeriod"].isNull()) {
         dst.evaluationPeriod = src["evaluationPeriod"].as<decltype(dst.evaluationPeriod)::value_type>();
     } else {
         dst.evaluationPeriod = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -18140,7 +18140,7 @@ bool convertToJson(const AlarmListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, AlarmListDataType &dst)
 {
 
-    if (src["alarmData"]) {
+    if (!src["alarmData"].isNull()) {
         dst.alarmData = src["alarmData"].as<decltype(dst.alarmData)::value_type>();
     } else {
         dst.alarmData = std::nullopt;
@@ -18163,12 +18163,12 @@ bool convertToJson(const AlarmListDataSelectorsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, AlarmListDataSelectorsType &dst)
 {
 
-    if (src["alarmId"]) {
+    if (!src["alarmId"].isNull()) {
         dst.alarmId = src["alarmId"].as<decltype(dst.alarmId)::value_type>();
     } else {
         dst.alarmId = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
@@ -18188,7 +18188,7 @@ bool convertToJson(const NodeManagementSpecificationVersionListType &src, JsonVa
 void convertFromJson(const JsonVariantConst &src, NodeManagementSpecificationVersionListType &dst)
 {
 
-    if (src["specificationVersion"]) {
+    if (!src["specificationVersion"].isNull()) {
         dst.specificationVersion = src["specificationVersion"].as<decltype(dst.specificationVersion)::value_type>();
     } else {
         dst.specificationVersion = std::nullopt;
@@ -18208,7 +18208,7 @@ bool convertToJson(const NodeManagementDetailedDiscoveryDeviceInformationType &s
 void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryDeviceInformationType &dst)
 {
 
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -18228,7 +18228,7 @@ bool convertToJson(const NodeManagementDetailedDiscoveryEntityInformationType &s
 void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryEntityInformationType &dst)
 {
 
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -18248,7 +18248,7 @@ bool convertToJson(const NodeManagementDetailedDiscoveryFeatureInformationType &
 void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryFeatureInformationType &dst)
 {
 
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -18277,22 +18277,22 @@ bool convertToJson(const NodeManagementDetailedDiscoveryDataType &src, JsonVaria
 void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryDataType &dst)
 {
 
-    if (src["specificationVersionList"]) {
+    if (!src["specificationVersionList"].isNull()) {
         dst.specificationVersionList = src["specificationVersionList"].as<decltype(dst.specificationVersionList)::value_type>();
     } else {
         dst.specificationVersionList = std::nullopt;
     }
-    if (src["deviceInformation"]) {
+    if (!src["deviceInformation"].isNull()) {
         dst.deviceInformation = src["deviceInformation"].as<decltype(dst.deviceInformation)::value_type>();
     } else {
         dst.deviceInformation = std::nullopt;
     }
-    if (src["entityInformation"]) {
+    if (!src["entityInformation"].isNull()) {
         dst.entityInformation = src["entityInformation"].as<decltype(dst.entityInformation)::value_type>();
     } else {
         dst.entityInformation = std::nullopt;
     }
-    if (src["featureInformation"]) {
+    if (!src["featureInformation"].isNull()) {
         dst.featureInformation = src["featureInformation"].as<decltype(dst.featureInformation)::value_type>();
     } else {
         dst.featureInformation = std::nullopt;
@@ -18323,7 +18323,7 @@ bool convertToJson(const NodeManagementSpecificationVersionListElementsType &src
 void convertFromJson(const JsonVariantConst &src, NodeManagementSpecificationVersionListElementsType &dst)
 {
 
-    if (src["specificationVersion"]) {
+    if (!src["specificationVersion"].isNull()) {
         dst.specificationVersion = src["specificationVersion"].as<decltype(dst.specificationVersion)::value_type>();
     } else {
         dst.specificationVersion = std::nullopt;
@@ -18343,7 +18343,7 @@ bool convertToJson(const NodeManagementDetailedDiscoveryDeviceInformationElement
 void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryDeviceInformationElementsType &dst)
 {
 
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -18363,7 +18363,7 @@ bool convertToJson(const NodeManagementDetailedDiscoveryEntityInformationElement
 void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryEntityInformationElementsType &dst)
 {
 
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -18383,7 +18383,7 @@ bool convertToJson(const NodeManagementDetailedDiscoveryFeatureInformationElemen
 void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryFeatureInformationElementsType &dst)
 {
 
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -18412,22 +18412,22 @@ bool convertToJson(const NodeManagementDetailedDiscoveryDataElementsType &src, J
 void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryDataElementsType &dst)
 {
 
-    if (src["specificationVersionList"]) {
+    if (!src["specificationVersionList"].isNull()) {
         dst.specificationVersionList = src["specificationVersionList"].as<decltype(dst.specificationVersionList)::value_type>();
     } else {
         dst.specificationVersionList = std::nullopt;
     }
-    if (src["deviceInformation"]) {
+    if (!src["deviceInformation"].isNull()) {
         dst.deviceInformation = src["deviceInformation"].as<decltype(dst.deviceInformation)::value_type>();
     } else {
         dst.deviceInformation = std::nullopt;
     }
-    if (src["entityInformation"]) {
+    if (!src["entityInformation"].isNull()) {
         dst.entityInformation = src["entityInformation"].as<decltype(dst.entityInformation)::value_type>();
     } else {
         dst.entityInformation = std::nullopt;
     }
-    if (src["featureInformation"]) {
+    if (!src["featureInformation"].isNull()) {
         dst.featureInformation = src["featureInformation"].as<decltype(dst.featureInformation)::value_type>();
     } else {
         dst.featureInformation = std::nullopt;
@@ -18453,17 +18453,17 @@ bool convertToJson(const NodeManagementDetailedDiscoveryDataSelectorsType &src, 
 void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscoveryDataSelectorsType &dst)
 {
 
-    if (src["deviceInformation"]) {
+    if (!src["deviceInformation"].isNull()) {
         dst.deviceInformation = src["deviceInformation"].as<decltype(dst.deviceInformation)::value_type>();
     } else {
         dst.deviceInformation = std::nullopt;
     }
-    if (src["entityInformation"]) {
+    if (!src["entityInformation"].isNull()) {
         dst.entityInformation = src["entityInformation"].as<decltype(dst.entityInformation)::value_type>();
     } else {
         dst.entityInformation = std::nullopt;
     }
-    if (src["featureInformation"]) {
+    if (!src["featureInformation"].isNull()) {
         dst.featureInformation = src["featureInformation"].as<decltype(dst.featureInformation)::value_type>();
     } else {
         dst.featureInformation = std::nullopt;
@@ -18495,27 +18495,27 @@ bool convertToJson(const BindingManagementEntryDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, BindingManagementEntryDataType &dst)
 {
 
-    if (src["bindingId"]) {
+    if (!src["bindingId"].isNull()) {
         dst.bindingId = src["bindingId"].as<decltype(dst.bindingId)::value_type>();
     } else {
         dst.bindingId = std::nullopt;
     }
-    if (src["clientAddress"]) {
+    if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
         dst.clientAddress = std::nullopt;
     }
-    if (src["serverAddress"]) {
+    if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
         dst.serverAddress = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -18535,7 +18535,7 @@ bool convertToJson(const NodeManagementBindingDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDataType &dst)
 {
 
-    if (src["bindingEntry"]) {
+    if (!src["bindingEntry"].isNull()) {
         dst.bindingEntry = src["bindingEntry"].as<decltype(dst.bindingEntry)::value_type>();
     } else {
         dst.bindingEntry = std::nullopt;
@@ -18567,27 +18567,27 @@ bool convertToJson(const BindingManagementEntryDataElementsType &src, JsonVarian
 void convertFromJson(const JsonVariantConst &src, BindingManagementEntryDataElementsType &dst)
 {
 
-    if (src["bindingId"]) {
+    if (!src["bindingId"].isNull()) {
         dst.bindingId = src["bindingId"].as<decltype(dst.bindingId)::value_type>();
     } else {
         dst.bindingId = std::nullopt;
     }
-    if (src["clientAddress"]) {
+    if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
         dst.clientAddress = std::nullopt;
     }
-    if (src["serverAddress"]) {
+    if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
         dst.serverAddress = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -18607,7 +18607,7 @@ bool convertToJson(const NodeManagementBindingDataElementsType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDataElementsType &dst)
 {
 
-    if (src["bindingEntry"]) {
+    if (!src["bindingEntry"].isNull()) {
         dst.bindingEntry = src["bindingEntry"].as<decltype(dst.bindingEntry)::value_type>();
     } else {
         dst.bindingEntry = std::nullopt;
@@ -18633,17 +18633,17 @@ bool convertToJson(const BindingManagementEntryListDataSelectorsType &src, JsonV
 void convertFromJson(const JsonVariantConst &src, BindingManagementEntryListDataSelectorsType &dst)
 {
 
-    if (src["bindingId"]) {
+    if (!src["bindingId"].isNull()) {
         dst.bindingId = src["bindingId"].as<decltype(dst.bindingId)::value_type>();
     } else {
         dst.bindingId = std::nullopt;
     }
-    if (src["clientAddress"]) {
+    if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
         dst.clientAddress = std::nullopt;
     }
-    if (src["serverAddress"]) {
+    if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
         dst.serverAddress = std::nullopt;
@@ -18663,7 +18663,7 @@ bool convertToJson(const NodeManagementBindingDataSelectorsType &src, JsonVarian
 void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDataSelectorsType &dst)
 {
 
-    if (src["bindingEntry"]) {
+    if (!src["bindingEntry"].isNull()) {
         dst.bindingEntry = src["bindingEntry"].as<decltype(dst.bindingEntry)::value_type>();
     } else {
         dst.bindingEntry = std::nullopt;
@@ -18689,17 +18689,17 @@ bool convertToJson(const BindingManagementRequestCallType &src, JsonVariant &dst
 void convertFromJson(const JsonVariantConst &src, BindingManagementRequestCallType &dst)
 {
 
-    if (src["clientAddress"]) {
+    if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
         dst.clientAddress = std::nullopt;
     }
-    if (src["serverAddress"]) {
+    if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
         dst.serverAddress = std::nullopt;
     }
-    if (src["serverFeatureType"]) {
+    if (!src["serverFeatureType"].isNull()) {
         dst.serverFeatureType = src["serverFeatureType"].as<decltype(dst.serverFeatureType)::value_type>();
     } else {
         dst.serverFeatureType = std::nullopt;
@@ -18719,7 +18719,7 @@ bool convertToJson(const NodeManagementBindingRequestCallType &src, JsonVariant 
 void convertFromJson(const JsonVariantConst &src, NodeManagementBindingRequestCallType &dst)
 {
 
-    if (src["bindingRequest"]) {
+    if (!src["bindingRequest"].isNull()) {
         dst.bindingRequest = src["bindingRequest"].as<decltype(dst.bindingRequest)::value_type>();
     } else {
         dst.bindingRequest = std::nullopt;
@@ -18745,17 +18745,17 @@ bool convertToJson(const BindingManagementRequestCallElementsType &src, JsonVari
 void convertFromJson(const JsonVariantConst &src, BindingManagementRequestCallElementsType &dst)
 {
 
-    if (src["clientAddress"]) {
+    if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
         dst.clientAddress = std::nullopt;
     }
-    if (src["serverAddress"]) {
+    if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
         dst.serverAddress = std::nullopt;
     }
-    if (src["serverFeatureType"]) {
+    if (!src["serverFeatureType"].isNull()) {
         dst.serverFeatureType = src["serverFeatureType"].as<decltype(dst.serverFeatureType)::value_type>();
     } else {
         dst.serverFeatureType = std::nullopt;
@@ -18775,7 +18775,7 @@ bool convertToJson(const NodeManagementBindingRequestCallElementsType &src, Json
 void convertFromJson(const JsonVariantConst &src, NodeManagementBindingRequestCallElementsType &dst)
 {
 
-    if (src["bindingRequest"]) {
+    if (!src["bindingRequest"].isNull()) {
         dst.bindingRequest = src["bindingRequest"].as<decltype(dst.bindingRequest)::value_type>();
     } else {
         dst.bindingRequest = std::nullopt;
@@ -18801,17 +18801,17 @@ bool convertToJson(const BindingManagementDeleteCallType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, BindingManagementDeleteCallType &dst)
 {
 
-    if (src["bindingId"]) {
+    if (!src["bindingId"].isNull()) {
         dst.bindingId = src["bindingId"].as<decltype(dst.bindingId)::value_type>();
     } else {
         dst.bindingId = std::nullopt;
     }
-    if (src["clientAddress"]) {
+    if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
         dst.clientAddress = std::nullopt;
     }
-    if (src["serverAddress"]) {
+    if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
         dst.serverAddress = std::nullopt;
@@ -18831,7 +18831,7 @@ bool convertToJson(const NodeManagementBindingDeleteCallType &src, JsonVariant &
 void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDeleteCallType &dst)
 {
 
-    if (src["bindingDelete"]) {
+    if (!src["bindingDelete"].isNull()) {
         dst.bindingDelete = src["bindingDelete"].as<decltype(dst.bindingDelete)::value_type>();
     } else {
         dst.bindingDelete = std::nullopt;
@@ -18857,17 +18857,17 @@ bool convertToJson(const BindingManagementDeleteCallElementsType &src, JsonVaria
 void convertFromJson(const JsonVariantConst &src, BindingManagementDeleteCallElementsType &dst)
 {
 
-    if (src["bindingId"]) {
+    if (!src["bindingId"].isNull()) {
         dst.bindingId = src["bindingId"].as<decltype(dst.bindingId)::value_type>();
     } else {
         dst.bindingId = std::nullopt;
     }
-    if (src["clientAddress"]) {
+    if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
         dst.clientAddress = std::nullopt;
     }
-    if (src["serverAddress"]) {
+    if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
         dst.serverAddress = std::nullopt;
@@ -18887,7 +18887,7 @@ bool convertToJson(const NodeManagementBindingDeleteCallElementsType &src, JsonV
 void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDeleteCallElementsType &dst)
 {
 
-    if (src["bindingDelete"]) {
+    if (!src["bindingDelete"].isNull()) {
         dst.bindingDelete = src["bindingDelete"].as<decltype(dst.bindingDelete)::value_type>();
     } else {
         dst.bindingDelete = std::nullopt;
@@ -18919,27 +18919,27 @@ bool convertToJson(const SubscriptionManagementEntryDataType &src, JsonVariant &
 void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryDataType &dst)
 {
 
-    if (src["subscriptionId"]) {
+    if (!src["subscriptionId"].isNull()) {
         dst.subscriptionId = src["subscriptionId"].as<decltype(dst.subscriptionId)::value_type>();
     } else {
         dst.subscriptionId = std::nullopt;
     }
-    if (src["clientAddress"]) {
+    if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
         dst.clientAddress = std::nullopt;
     }
-    if (src["serverAddress"]) {
+    if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
         dst.serverAddress = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -18959,7 +18959,7 @@ bool convertToJson(const NodeManagementSubscriptionDataType &src, JsonVariant &d
 void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDataType &dst)
 {
 
-    if (src["subscriptionEntry"]) {
+    if (!src["subscriptionEntry"].isNull()) {
         dst.subscriptionEntry = src["subscriptionEntry"].as<decltype(dst.subscriptionEntry)::value_type>();
     } else {
         dst.subscriptionEntry = std::nullopt;
@@ -18991,27 +18991,27 @@ bool convertToJson(const SubscriptionManagementEntryDataElementsType &src, JsonV
 void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryDataElementsType &dst)
 {
 
-    if (src["subscriptionId"]) {
+    if (!src["subscriptionId"].isNull()) {
         dst.subscriptionId = src["subscriptionId"].as<decltype(dst.subscriptionId)::value_type>();
     } else {
         dst.subscriptionId = std::nullopt;
     }
-    if (src["clientAddress"]) {
+    if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
         dst.clientAddress = std::nullopt;
     }
-    if (src["serverAddress"]) {
+    if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
         dst.serverAddress = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -19031,7 +19031,7 @@ bool convertToJson(const NodeManagementSubscriptionDataElementsType &src, JsonVa
 void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDataElementsType &dst)
 {
 
-    if (src["subscriptionEntry"]) {
+    if (!src["subscriptionEntry"].isNull()) {
         dst.subscriptionEntry = src["subscriptionEntry"].as<decltype(dst.subscriptionEntry)::value_type>();
     } else {
         dst.subscriptionEntry = std::nullopt;
@@ -19057,17 +19057,17 @@ bool convertToJson(const SubscriptionManagementEntryListDataSelectorsType &src, 
 void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryListDataSelectorsType &dst)
 {
 
-    if (src["subscriptionId"]) {
+    if (!src["subscriptionId"].isNull()) {
         dst.subscriptionId = src["subscriptionId"].as<decltype(dst.subscriptionId)::value_type>();
     } else {
         dst.subscriptionId = std::nullopt;
     }
-    if (src["clientAddress"]) {
+    if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
         dst.clientAddress = std::nullopt;
     }
-    if (src["serverAddress"]) {
+    if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
         dst.serverAddress = std::nullopt;
@@ -19087,7 +19087,7 @@ bool convertToJson(const NodeManagementSubscriptionDataSelectorsType &src, JsonV
 void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDataSelectorsType &dst)
 {
 
-    if (src["subscriptionEntry"]) {
+    if (!src["subscriptionEntry"].isNull()) {
         dst.subscriptionEntry = src["subscriptionEntry"].as<decltype(dst.subscriptionEntry)::value_type>();
     } else {
         dst.subscriptionEntry = std::nullopt;
@@ -19113,17 +19113,17 @@ bool convertToJson(const SubscriptionManagementRequestCallType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, SubscriptionManagementRequestCallType &dst)
 {
 
-    if (src["clientAddress"]) {
+    if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
         dst.clientAddress = std::nullopt;
     }
-    if (src["serverAddress"]) {
+    if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
         dst.serverAddress = std::nullopt;
     }
-    if (src["serverFeatureType"]) {
+    if (!src["serverFeatureType"].isNull()) {
         dst.serverFeatureType = src["serverFeatureType"].as<decltype(dst.serverFeatureType)::value_type>();
     } else {
         dst.serverFeatureType = std::nullopt;
@@ -19143,7 +19143,7 @@ bool convertToJson(const NodeManagementSubscriptionRequestCallType &src, JsonVar
 void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionRequestCallType &dst)
 {
 
-    if (src["subscriptionRequest"]) {
+    if (!src["subscriptionRequest"].isNull()) {
         dst.subscriptionRequest = src["subscriptionRequest"].as<decltype(dst.subscriptionRequest)::value_type>();
     } else {
         dst.subscriptionRequest = std::nullopt;
@@ -19169,17 +19169,17 @@ bool convertToJson(const SubscriptionManagementRequestCallElementsType &src, Jso
 void convertFromJson(const JsonVariantConst &src, SubscriptionManagementRequestCallElementsType &dst)
 {
 
-    if (src["clientAddress"]) {
+    if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
         dst.clientAddress = std::nullopt;
     }
-    if (src["serverAddress"]) {
+    if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
         dst.serverAddress = std::nullopt;
     }
-    if (src["serverFeatureType"]) {
+    if (!src["serverFeatureType"].isNull()) {
         dst.serverFeatureType = src["serverFeatureType"].as<decltype(dst.serverFeatureType)::value_type>();
     } else {
         dst.serverFeatureType = std::nullopt;
@@ -19199,7 +19199,7 @@ bool convertToJson(const NodeManagementSubscriptionRequestCallElementsType &src,
 void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionRequestCallElementsType &dst)
 {
 
-    if (src["subscriptionRequest"]) {
+    if (!src["subscriptionRequest"].isNull()) {
         dst.subscriptionRequest = src["subscriptionRequest"].as<decltype(dst.subscriptionRequest)::value_type>();
     } else {
         dst.subscriptionRequest = std::nullopt;
@@ -19225,17 +19225,17 @@ bool convertToJson(const SubscriptionManagementDeleteCallType &src, JsonVariant 
 void convertFromJson(const JsonVariantConst &src, SubscriptionManagementDeleteCallType &dst)
 {
 
-    if (src["subscriptionId"]) {
+    if (!src["subscriptionId"].isNull()) {
         dst.subscriptionId = src["subscriptionId"].as<decltype(dst.subscriptionId)::value_type>();
     } else {
         dst.subscriptionId = std::nullopt;
     }
-    if (src["clientAddress"]) {
+    if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
         dst.clientAddress = std::nullopt;
     }
-    if (src["serverAddress"]) {
+    if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
         dst.serverAddress = std::nullopt;
@@ -19255,7 +19255,7 @@ bool convertToJson(const NodeManagementSubscriptionDeleteCallType &src, JsonVari
 void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDeleteCallType &dst)
 {
 
-    if (src["subscriptionDelete"]) {
+    if (!src["subscriptionDelete"].isNull()) {
         dst.subscriptionDelete = src["subscriptionDelete"].as<decltype(dst.subscriptionDelete)::value_type>();
     } else {
         dst.subscriptionDelete = std::nullopt;
@@ -19281,17 +19281,17 @@ bool convertToJson(const SubscriptionManagementDeleteCallElementsType &src, Json
 void convertFromJson(const JsonVariantConst &src, SubscriptionManagementDeleteCallElementsType &dst)
 {
 
-    if (src["subscriptionId"]) {
+    if (!src["subscriptionId"].isNull()) {
         dst.subscriptionId = src["subscriptionId"].as<decltype(dst.subscriptionId)::value_type>();
     } else {
         dst.subscriptionId = std::nullopt;
     }
-    if (src["clientAddress"]) {
+    if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
         dst.clientAddress = std::nullopt;
     }
-    if (src["serverAddress"]) {
+    if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
         dst.serverAddress = std::nullopt;
@@ -19311,7 +19311,7 @@ bool convertToJson(const NodeManagementSubscriptionDeleteCallElementsType &src, 
 void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDeleteCallElementsType &dst)
 {
 
-    if (src["subscriptionDelete"]) {
+    if (!src["subscriptionDelete"].isNull()) {
         dst.subscriptionDelete = src["subscriptionDelete"].as<decltype(dst.subscriptionDelete)::value_type>();
     } else {
         dst.subscriptionDelete = std::nullopt;
@@ -19331,7 +19331,7 @@ bool convertToJson(const NodeManagementDestinationDataType &src, JsonVariant &ds
 void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationDataType &dst)
 {
 
-    if (src["deviceDescription"]) {
+    if (!src["deviceDescription"].isNull()) {
         dst.deviceDescription = src["deviceDescription"].as<decltype(dst.deviceDescription)::value_type>();
     } else {
         dst.deviceDescription = std::nullopt;
@@ -19351,7 +19351,7 @@ bool convertToJson(const NodeManagementDestinationDataElementsType &src, JsonVar
 void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationDataElementsType &dst)
 {
 
-    if (src["deviceDescription"]) {
+    if (!src["deviceDescription"].isNull()) {
         dst.deviceDescription = src["deviceDescription"].as<decltype(dst.deviceDescription)::value_type>();
     } else {
         dst.deviceDescription = std::nullopt;
@@ -19371,7 +19371,7 @@ bool convertToJson(const NodeManagementDestinationListDataType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationListDataType &dst)
 {
 
-    if (src["nodeManagementDestinationData"]) {
+    if (!src["nodeManagementDestinationData"].isNull()) {
         dst.nodeManagementDestinationData = src["nodeManagementDestinationData"].as<decltype(dst.nodeManagementDestinationData)::value_type>();
     } else {
         dst.nodeManagementDestinationData = std::nullopt;
@@ -19391,7 +19391,7 @@ bool convertToJson(const NodeManagementDestinationListDataSelectorsType &src, Js
 void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationListDataSelectorsType &dst)
 {
 
-    if (src["deviceDescription"]) {
+    if (!src["deviceDescription"].isNull()) {
         dst.deviceDescription = src["deviceDescription"].as<decltype(dst.deviceDescription)::value_type>();
     } else {
         dst.deviceDescription = std::nullopt;
@@ -19423,27 +19423,27 @@ bool convertToJson(const UseCaseSupportType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, UseCaseSupportType &dst)
 {
 
-    if (src["useCaseName"]) {
+    if (!src["useCaseName"].isNull()) {
         dst.useCaseName = src["useCaseName"].as<decltype(dst.useCaseName)::value_type>();
     } else {
         dst.useCaseName = std::nullopt;
     }
-    if (src["useCaseVersion"]) {
+    if (!src["useCaseVersion"].isNull()) {
         dst.useCaseVersion = src["useCaseVersion"].as<decltype(dst.useCaseVersion)::value_type>();
     } else {
         dst.useCaseVersion = std::nullopt;
     }
-    if (src["useCaseAvailable"]) {
+    if (!src["useCaseAvailable"].isNull()) {
         dst.useCaseAvailable = src["useCaseAvailable"].as<decltype(dst.useCaseAvailable)::value_type>();
     } else {
         dst.useCaseAvailable = std::nullopt;
     }
-    if (src["scenarioSupport"]) {
+    if (!src["scenarioSupport"].isNull()) {
         dst.scenarioSupport = src["scenarioSupport"].as<decltype(dst.scenarioSupport)::value_type>();
     } else {
         dst.scenarioSupport = std::nullopt;
     }
-    if (src["useCaseDocumentSubRevision"]) {
+    if (!src["useCaseDocumentSubRevision"].isNull()) {
         dst.useCaseDocumentSubRevision = src["useCaseDocumentSubRevision"].as<decltype(dst.useCaseDocumentSubRevision)::value_type>();
     } else {
         dst.useCaseDocumentSubRevision = std::nullopt;
@@ -19469,17 +19469,17 @@ bool convertToJson(const UseCaseInformationDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, UseCaseInformationDataType &dst)
 {
 
-    if (src["address"]) {
+    if (!src["address"].isNull()) {
         dst.address = src["address"].as<decltype(dst.address)::value_type>();
     } else {
         dst.address = std::nullopt;
     }
-    if (src["actor"]) {
+    if (!src["actor"].isNull()) {
         dst.actor = src["actor"].as<decltype(dst.actor)::value_type>();
     } else {
         dst.actor = std::nullopt;
     }
-    if (src["useCaseSupport"]) {
+    if (!src["useCaseSupport"].isNull()) {
         dst.useCaseSupport = src["useCaseSupport"].as<decltype(dst.useCaseSupport)::value_type>();
     } else {
         dst.useCaseSupport = std::nullopt;
@@ -19499,7 +19499,7 @@ bool convertToJson(const NodeManagementUseCaseDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, NodeManagementUseCaseDataType &dst)
 {
 
-    if (src["useCaseInformation"]) {
+    if (!src["useCaseInformation"].isNull()) {
         dst.useCaseInformation = src["useCaseInformation"].as<decltype(dst.useCaseInformation)::value_type>();
     } else {
         dst.useCaseInformation = std::nullopt;
@@ -19531,27 +19531,27 @@ bool convertToJson(const UseCaseSupportElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, UseCaseSupportElementsType &dst)
 {
 
-    if (src["useCaseName"]) {
+    if (!src["useCaseName"].isNull()) {
         dst.useCaseName = src["useCaseName"].as<decltype(dst.useCaseName)::value_type>();
     } else {
         dst.useCaseName = std::nullopt;
     }
-    if (src["useCaseVersion"]) {
+    if (!src["useCaseVersion"].isNull()) {
         dst.useCaseVersion = src["useCaseVersion"].as<decltype(dst.useCaseVersion)::value_type>();
     } else {
         dst.useCaseVersion = std::nullopt;
     }
-    if (src["useCaseAvailable"]) {
+    if (!src["useCaseAvailable"].isNull()) {
         dst.useCaseAvailable = src["useCaseAvailable"].as<decltype(dst.useCaseAvailable)::value_type>();
     } else {
         dst.useCaseAvailable = std::nullopt;
     }
-    if (src["scenarioSupport"]) {
+    if (!src["scenarioSupport"].isNull()) {
         dst.scenarioSupport = src["scenarioSupport"].as<decltype(dst.scenarioSupport)::value_type>();
     } else {
         dst.scenarioSupport = std::nullopt;
     }
-    if (src["useCaseDocumentSubRevision"]) {
+    if (!src["useCaseDocumentSubRevision"].isNull()) {
         dst.useCaseDocumentSubRevision = src["useCaseDocumentSubRevision"].as<decltype(dst.useCaseDocumentSubRevision)::value_type>();
     } else {
         dst.useCaseDocumentSubRevision = std::nullopt;
@@ -19577,17 +19577,17 @@ bool convertToJson(const UseCaseInformationDataElementsType &src, JsonVariant &d
 void convertFromJson(const JsonVariantConst &src, UseCaseInformationDataElementsType &dst)
 {
 
-    if (src["address"]) {
+    if (!src["address"].isNull()) {
         dst.address = src["address"].as<decltype(dst.address)::value_type>();
     } else {
         dst.address = std::nullopt;
     }
-    if (src["actor"]) {
+    if (!src["actor"].isNull()) {
         dst.actor = src["actor"].as<decltype(dst.actor)::value_type>();
     } else {
         dst.actor = std::nullopt;
     }
-    if (src["useCaseSupport"]) {
+    if (!src["useCaseSupport"].isNull()) {
         dst.useCaseSupport = src["useCaseSupport"].as<decltype(dst.useCaseSupport)::value_type>();
     } else {
         dst.useCaseSupport = std::nullopt;
@@ -19607,7 +19607,7 @@ bool convertToJson(const NodeManagementUseCaseDataElementsType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, NodeManagementUseCaseDataElementsType &dst)
 {
 
-    if (src["useCaseInformation"]) {
+    if (!src["useCaseInformation"].isNull()) {
         dst.useCaseInformation = src["useCaseInformation"].as<decltype(dst.useCaseInformation)::value_type>();
     } else {
         dst.useCaseInformation = std::nullopt;
@@ -19633,17 +19633,17 @@ bool convertToJson(const UseCaseSupportSelectorsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, UseCaseSupportSelectorsType &dst)
 {
 
-    if (src["useCaseName"]) {
+    if (!src["useCaseName"].isNull()) {
         dst.useCaseName = src["useCaseName"].as<decltype(dst.useCaseName)::value_type>();
     } else {
         dst.useCaseName = std::nullopt;
     }
-    if (src["useCaseVersion"]) {
+    if (!src["useCaseVersion"].isNull()) {
         dst.useCaseVersion = src["useCaseVersion"].as<decltype(dst.useCaseVersion)::value_type>();
     } else {
         dst.useCaseVersion = std::nullopt;
     }
-    if (src["scenarioSupport"]) {
+    if (!src["scenarioSupport"].isNull()) {
         dst.scenarioSupport = src["scenarioSupport"].as<decltype(dst.scenarioSupport)::value_type>();
     } else {
         dst.scenarioSupport = std::nullopt;
@@ -19669,17 +19669,17 @@ bool convertToJson(const UseCaseInformationListDataSelectorsType &src, JsonVaria
 void convertFromJson(const JsonVariantConst &src, UseCaseInformationListDataSelectorsType &dst)
 {
 
-    if (src["address"]) {
+    if (!src["address"].isNull()) {
         dst.address = src["address"].as<decltype(dst.address)::value_type>();
     } else {
         dst.address = std::nullopt;
     }
-    if (src["actor"]) {
+    if (!src["actor"].isNull()) {
         dst.actor = src["actor"].as<decltype(dst.actor)::value_type>();
     } else {
         dst.actor = std::nullopt;
     }
-    if (src["useCaseSupport"]) {
+    if (!src["useCaseSupport"].isNull()) {
         dst.useCaseSupport = src["useCaseSupport"].as<decltype(dst.useCaseSupport)::value_type>();
     } else {
         dst.useCaseSupport = std::nullopt;
@@ -19699,7 +19699,7 @@ bool convertToJson(const NodeManagementUseCaseDataSelectorsType &src, JsonVarian
 void convertFromJson(const JsonVariantConst &src, NodeManagementUseCaseDataSelectorsType &dst)
 {
 
-    if (src["useCaseInformation"]) {
+    if (!src["useCaseInformation"].isNull()) {
         dst.useCaseInformation = src["useCaseInformation"].as<decltype(dst.useCaseInformation)::value_type>();
     } else {
         dst.useCaseInformation = std::nullopt;
@@ -19719,7 +19719,7 @@ bool convertToJson(const BindingManagementEntryListDataType &src, JsonVariant &d
 void convertFromJson(const JsonVariantConst &src, BindingManagementEntryListDataType &dst)
 {
 
-    if (src["bindingManagementEntryData"]) {
+    if (!src["bindingManagementEntryData"].isNull()) {
         dst.bindingManagementEntryData = src["bindingManagementEntryData"].as<decltype(dst.bindingManagementEntryData)::value_type>();
     } else {
         dst.bindingManagementEntryData = std::nullopt;
@@ -19739,7 +19739,7 @@ bool convertToJson(const SubscriptionManagementEntryListDataType &src, JsonVaria
 void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryListDataType &dst)
 {
 
-    if (src["subscriptionManagementEntryData"]) {
+    if (!src["subscriptionManagementEntryData"].isNull()) {
         dst.subscriptionManagementEntryData = src["subscriptionManagementEntryData"].as<decltype(dst.subscriptionManagementEntryData)::value_type>();
     } else {
         dst.subscriptionManagementEntryData = std::nullopt;
@@ -19759,7 +19759,7 @@ bool convertToJson(const UseCaseInformationListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, UseCaseInformationListDataType &dst)
 {
 
-    if (src["useCaseInformationData"]) {
+    if (!src["useCaseInformationData"].isNull()) {
         dst.useCaseInformationData = src["useCaseInformationData"].as<decltype(dst.useCaseInformationData)::value_type>();
     } else {
         dst.useCaseInformationData = std::nullopt;
@@ -19779,7 +19779,7 @@ bool convertToJson(const SpecificationVersionListDataType &src, JsonVariant &dst
 void convertFromJson(const JsonVariantConst &src, SpecificationVersionListDataType &dst)
 {
 
-    if (src["specificationVersionData"]) {
+    if (!src["specificationVersionData"].isNull()) {
         dst.specificationVersionData = src["specificationVersionData"].as<decltype(dst.specificationVersionData)::value_type>();
     } else {
         dst.specificationVersionData = std::nullopt;
@@ -19832,7 +19832,7 @@ bool convertToJson(const TaskManagementHvacRelatedType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TaskManagementHvacRelatedType &dst)
 {
 
-    if (src["overrunId"]) {
+    if (!src["overrunId"].isNull()) {
         dst.overrunId = src["overrunId"].as<decltype(dst.overrunId)::value_type>();
     } else {
         dst.overrunId = std::nullopt;
@@ -19852,7 +19852,7 @@ bool convertToJson(const TaskManagementHvacRelatedElementsType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, TaskManagementHvacRelatedElementsType &dst)
 {
 
-    if (src["overrunId"]) {
+    if (!src["overrunId"].isNull()) {
         dst.overrunId = src["overrunId"].as<decltype(dst.overrunId)::value_type>();
     } else {
         dst.overrunId = std::nullopt;
@@ -19872,7 +19872,7 @@ bool convertToJson(const TaskManagementLoadControlReleatedType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, TaskManagementLoadControlReleatedType &dst)
 {
 
-    if (src["eventId"]) {
+    if (!src["eventId"].isNull()) {
         dst.eventId = src["eventId"].as<decltype(dst.eventId)::value_type>();
     } else {
         dst.eventId = std::nullopt;
@@ -19892,7 +19892,7 @@ bool convertToJson(const TaskManagementLoadControlReleatedElementsType &src, Jso
 void convertFromJson(const JsonVariantConst &src, TaskManagementLoadControlReleatedElementsType &dst)
 {
 
-    if (src["eventId"]) {
+    if (!src["eventId"].isNull()) {
         dst.eventId = src["eventId"].as<decltype(dst.eventId)::value_type>();
     } else {
         dst.eventId = std::nullopt;
@@ -19912,7 +19912,7 @@ bool convertToJson(const TaskManagementPowerSequencesRelatedType &src, JsonVaria
 void convertFromJson(const JsonVariantConst &src, TaskManagementPowerSequencesRelatedType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -19932,7 +19932,7 @@ bool convertToJson(const TaskManagementPowerSequencesRelatedElementsType &src, J
 void convertFromJson(const JsonVariantConst &src, TaskManagementPowerSequencesRelatedElementsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -19952,7 +19952,7 @@ bool convertToJson(const TaskManagementSmartEnergyManagementPsRelatedType &src, 
 void convertFromJson(const JsonVariantConst &src, TaskManagementSmartEnergyManagementPsRelatedType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -19972,7 +19972,7 @@ bool convertToJson(const TaskManagementSmartEnergyManagementPsRelatedElementsTyp
 void convertFromJson(const JsonVariantConst &src, TaskManagementSmartEnergyManagementPsRelatedElementsType &dst)
 {
 
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -20004,27 +20004,27 @@ bool convertToJson(const TaskManagementJobDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TaskManagementJobDataType &dst)
 {
 
-    if (src["jobId"]) {
+    if (!src["jobId"].isNull()) {
         dst.jobId = src["jobId"].as<decltype(dst.jobId)::value_type>();
     } else {
         dst.jobId = std::nullopt;
     }
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["jobState"]) {
+    if (!src["jobState"].isNull()) {
         dst.jobState = src["jobState"].as<decltype(dst.jobState)::value_type>();
     } else {
         dst.jobState = std::nullopt;
     }
-    if (src["elapsedTime"]) {
+    if (!src["elapsedTime"].isNull()) {
         dst.elapsedTime = src["elapsedTime"].as<decltype(dst.elapsedTime)::value_type>();
     } else {
         dst.elapsedTime = std::nullopt;
     }
-    if (src["remainingTime"]) {
+    if (!src["remainingTime"].isNull()) {
         dst.remainingTime = src["remainingTime"].as<decltype(dst.remainingTime)::value_type>();
     } else {
         dst.remainingTime = std::nullopt;
@@ -20056,27 +20056,27 @@ bool convertToJson(const TaskManagementJobDataElementsType &src, JsonVariant &ds
 void convertFromJson(const JsonVariantConst &src, TaskManagementJobDataElementsType &dst)
 {
 
-    if (src["jobId"]) {
+    if (!src["jobId"].isNull()) {
         dst.jobId = src["jobId"].as<decltype(dst.jobId)::value_type>();
     } else {
         dst.jobId = std::nullopt;
     }
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["jobState"]) {
+    if (!src["jobState"].isNull()) {
         dst.jobState = src["jobState"].as<decltype(dst.jobState)::value_type>();
     } else {
         dst.jobState = std::nullopt;
     }
-    if (src["elapsedTime"]) {
+    if (!src["elapsedTime"].isNull()) {
         dst.elapsedTime = src["elapsedTime"].as<decltype(dst.elapsedTime)::value_type>();
     } else {
         dst.elapsedTime = std::nullopt;
     }
-    if (src["remainingTime"]) {
+    if (!src["remainingTime"].isNull()) {
         dst.remainingTime = src["remainingTime"].as<decltype(dst.remainingTime)::value_type>();
     } else {
         dst.remainingTime = std::nullopt;
@@ -20096,7 +20096,7 @@ bool convertToJson(const TaskManagementJobListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TaskManagementJobListDataType &dst)
 {
 
-    if (src["taskManagementJobData"]) {
+    if (!src["taskManagementJobData"].isNull()) {
         dst.taskManagementJobData = src["taskManagementJobData"].as<decltype(dst.taskManagementJobData)::value_type>();
     } else {
         dst.taskManagementJobData = std::nullopt;
@@ -20119,12 +20119,12 @@ bool convertToJson(const TaskManagementJobListDataSelectorsType &src, JsonVarian
 void convertFromJson(const JsonVariantConst &src, TaskManagementJobListDataSelectorsType &dst)
 {
 
-    if (src["jobId"]) {
+    if (!src["jobId"].isNull()) {
         dst.jobId = src["jobId"].as<decltype(dst.jobId)::value_type>();
     } else {
         dst.jobId = std::nullopt;
     }
-    if (src["jobState"]) {
+    if (!src["jobState"].isNull()) {
         dst.jobState = src["jobState"].as<decltype(dst.jobState)::value_type>();
     } else {
         dst.jobState = std::nullopt;
@@ -20159,32 +20159,32 @@ bool convertToJson(const TaskManagementJobRelationDataType &src, JsonVariant &ds
 void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationDataType &dst)
 {
 
-    if (src["jobId"]) {
+    if (!src["jobId"].isNull()) {
         dst.jobId = src["jobId"].as<decltype(dst.jobId)::value_type>();
     } else {
         dst.jobId = std::nullopt;
     }
-    if (src["directControlRelated"]) {
+    if (!src["directControlRelated"].isNull()) {
         dst.directControlRelated = src["directControlRelated"].as<decltype(dst.directControlRelated)::value_type>();
     } else {
         dst.directControlRelated = std::nullopt;
     }
-    if (src["hvacRelated"]) {
+    if (!src["hvacRelated"].isNull()) {
         dst.hvacRelated = src["hvacRelated"].as<decltype(dst.hvacRelated)::value_type>();
     } else {
         dst.hvacRelated = std::nullopt;
     }
-    if (src["loadControlReleated"]) {
+    if (!src["loadControlReleated"].isNull()) {
         dst.loadControlReleated = src["loadControlReleated"].as<decltype(dst.loadControlReleated)::value_type>();
     } else {
         dst.loadControlReleated = std::nullopt;
     }
-    if (src["powerSequencesRelated"]) {
+    if (!src["powerSequencesRelated"].isNull()) {
         dst.powerSequencesRelated = src["powerSequencesRelated"].as<decltype(dst.powerSequencesRelated)::value_type>();
     } else {
         dst.powerSequencesRelated = std::nullopt;
     }
-    if (src["smartEnergyManagementPsRelated"]) {
+    if (!src["smartEnergyManagementPsRelated"].isNull()) {
         dst.smartEnergyManagementPsRelated = src["smartEnergyManagementPsRelated"].as<decltype(dst.smartEnergyManagementPsRelated)::value_type>();
     } else {
         dst.smartEnergyManagementPsRelated = std::nullopt;
@@ -20219,32 +20219,32 @@ bool convertToJson(const TaskManagementJobRelationDataElementsType &src, JsonVar
 void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationDataElementsType &dst)
 {
 
-    if (src["jobId"]) {
+    if (!src["jobId"].isNull()) {
         dst.jobId = src["jobId"].as<decltype(dst.jobId)::value_type>();
     } else {
         dst.jobId = std::nullopt;
     }
-    if (src["directControlRelated"]) {
+    if (!src["directControlRelated"].isNull()) {
         dst.directControlRelated = src["directControlRelated"].as<decltype(dst.directControlRelated)::value_type>();
     } else {
         dst.directControlRelated = std::nullopt;
     }
-    if (src["hvacRelated"]) {
+    if (!src["hvacRelated"].isNull()) {
         dst.hvacRelated = src["hvacRelated"].as<decltype(dst.hvacRelated)::value_type>();
     } else {
         dst.hvacRelated = std::nullopt;
     }
-    if (src["loadControlReleated"]) {
+    if (!src["loadControlReleated"].isNull()) {
         dst.loadControlReleated = src["loadControlReleated"].as<decltype(dst.loadControlReleated)::value_type>();
     } else {
         dst.loadControlReleated = std::nullopt;
     }
-    if (src["powerSequencesRelated"]) {
+    if (!src["powerSequencesRelated"].isNull()) {
         dst.powerSequencesRelated = src["powerSequencesRelated"].as<decltype(dst.powerSequencesRelated)::value_type>();
     } else {
         dst.powerSequencesRelated = std::nullopt;
     }
-    if (src["smartEnergyManagementPsRelated"]) {
+    if (!src["smartEnergyManagementPsRelated"].isNull()) {
         dst.smartEnergyManagementPsRelated = src["smartEnergyManagementPsRelated"].as<decltype(dst.smartEnergyManagementPsRelated)::value_type>();
     } else {
         dst.smartEnergyManagementPsRelated = std::nullopt;
@@ -20264,7 +20264,7 @@ bool convertToJson(const TaskManagementJobRelationListDataType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationListDataType &dst)
 {
 
-    if (src["taskManagementJobRelationData"]) {
+    if (!src["taskManagementJobRelationData"].isNull()) {
         dst.taskManagementJobRelationData = src["taskManagementJobRelationData"].as<decltype(dst.taskManagementJobRelationData)::value_type>();
     } else {
         dst.taskManagementJobRelationData = std::nullopt;
@@ -20284,7 +20284,7 @@ bool convertToJson(const TaskManagementJobRelationListDataSelectorsType &src, Js
 void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationListDataSelectorsType &dst)
 {
 
-    if (src["jobId"]) {
+    if (!src["jobId"].isNull()) {
         dst.jobId = src["jobId"].as<decltype(dst.jobId)::value_type>();
     } else {
         dst.jobId = std::nullopt;
@@ -20313,22 +20313,22 @@ bool convertToJson(const TaskManagementJobDescriptionDataType &src, JsonVariant 
 void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionDataType &dst)
 {
 
-    if (src["jobId"]) {
+    if (!src["jobId"].isNull()) {
         dst.jobId = src["jobId"].as<decltype(dst.jobId)::value_type>();
     } else {
         dst.jobId = std::nullopt;
     }
-    if (src["jobSource"]) {
+    if (!src["jobSource"].isNull()) {
         dst.jobSource = src["jobSource"].as<decltype(dst.jobSource)::value_type>();
     } else {
         dst.jobSource = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -20357,22 +20357,22 @@ bool convertToJson(const TaskManagementJobDescriptionDataElementsType &src, Json
 void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionDataElementsType &dst)
 {
 
-    if (src["jobId"]) {
+    if (!src["jobId"].isNull()) {
         dst.jobId = src["jobId"].as<decltype(dst.jobId)::value_type>();
     } else {
         dst.jobId = std::nullopt;
     }
-    if (src["jobSource"]) {
+    if (!src["jobSource"].isNull()) {
         dst.jobSource = src["jobSource"].as<decltype(dst.jobSource)::value_type>();
     } else {
         dst.jobSource = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -20392,7 +20392,7 @@ bool convertToJson(const TaskManagementJobDescriptionListDataType &src, JsonVari
 void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionListDataType &dst)
 {
 
-    if (src["taskManagementJobDescriptionData"]) {
+    if (!src["taskManagementJobDescriptionData"].isNull()) {
         dst.taskManagementJobDescriptionData = src["taskManagementJobDescriptionData"].as<decltype(dst.taskManagementJobDescriptionData)::value_type>();
     } else {
         dst.taskManagementJobDescriptionData = std::nullopt;
@@ -20415,12 +20415,12 @@ bool convertToJson(const TaskManagementJobDescriptionListDataSelectorsType &src,
 void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["jobId"]) {
+    if (!src["jobId"].isNull()) {
         dst.jobId = src["jobId"].as<decltype(dst.jobId)::value_type>();
     } else {
         dst.jobId = std::nullopt;
     }
-    if (src["jobSource"]) {
+    if (!src["jobSource"].isNull()) {
         dst.jobSource = src["jobSource"].as<decltype(dst.jobSource)::value_type>();
     } else {
         dst.jobSource = std::nullopt;
@@ -20443,12 +20443,12 @@ bool convertToJson(const TaskManagementOverviewDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TaskManagementOverviewDataType &dst)
 {
 
-    if (src["remoteControllable"]) {
+    if (!src["remoteControllable"].isNull()) {
         dst.remoteControllable = src["remoteControllable"].as<decltype(dst.remoteControllable)::value_type>();
     } else {
         dst.remoteControllable = std::nullopt;
     }
-    if (src["jobsActive"]) {
+    if (!src["jobsActive"].isNull()) {
         dst.jobsActive = src["jobsActive"].as<decltype(dst.jobsActive)::value_type>();
     } else {
         dst.jobsActive = std::nullopt;
@@ -20471,12 +20471,12 @@ bool convertToJson(const TaskManagementOverviewDataElementsType &src, JsonVarian
 void convertFromJson(const JsonVariantConst &src, TaskManagementOverviewDataElementsType &dst)
 {
 
-    if (src["remoteControllable"]) {
+    if (!src["remoteControllable"].isNull()) {
         dst.remoteControllable = src["remoteControllable"].as<decltype(dst.remoteControllable)::value_type>();
     } else {
         dst.remoteControllable = std::nullopt;
     }
-    if (src["jobsActive"]) {
+    if (!src["jobsActive"].isNull()) {
         dst.jobsActive = src["jobsActive"].as<decltype(dst.jobsActive)::value_type>();
     } else {
         dst.jobsActive = std::nullopt;
@@ -20511,32 +20511,32 @@ bool convertToJson(const HvacSystemFunctionDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDataType &dst)
 {
 
-    if (src["systemFunctionId"]) {
+    if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
         dst.systemFunctionId = std::nullopt;
     }
-    if (src["currentOperationModeId"]) {
+    if (!src["currentOperationModeId"].isNull()) {
         dst.currentOperationModeId = src["currentOperationModeId"].as<decltype(dst.currentOperationModeId)::value_type>();
     } else {
         dst.currentOperationModeId = std::nullopt;
     }
-    if (src["isOperationModeIdChangeable"]) {
+    if (!src["isOperationModeIdChangeable"].isNull()) {
         dst.isOperationModeIdChangeable = src["isOperationModeIdChangeable"].as<decltype(dst.isOperationModeIdChangeable)::value_type>();
     } else {
         dst.isOperationModeIdChangeable = std::nullopt;
     }
-    if (src["currentSetpointId"]) {
+    if (!src["currentSetpointId"].isNull()) {
         dst.currentSetpointId = src["currentSetpointId"].as<decltype(dst.currentSetpointId)::value_type>();
     } else {
         dst.currentSetpointId = std::nullopt;
     }
-    if (src["isSetpointIdChangeable"]) {
+    if (!src["isSetpointIdChangeable"].isNull()) {
         dst.isSetpointIdChangeable = src["isSetpointIdChangeable"].as<decltype(dst.isSetpointIdChangeable)::value_type>();
     } else {
         dst.isSetpointIdChangeable = std::nullopt;
     }
-    if (src["isOverrunActive"]) {
+    if (!src["isOverrunActive"].isNull()) {
         dst.isOverrunActive = src["isOverrunActive"].as<decltype(dst.isOverrunActive)::value_type>();
     } else {
         dst.isOverrunActive = std::nullopt;
@@ -20571,32 +20571,32 @@ bool convertToJson(const HvacSystemFunctionDataElementsType &src, JsonVariant &d
 void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDataElementsType &dst)
 {
 
-    if (src["systemFunctionId"]) {
+    if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
         dst.systemFunctionId = std::nullopt;
     }
-    if (src["currentOperationModeId"]) {
+    if (!src["currentOperationModeId"].isNull()) {
         dst.currentOperationModeId = src["currentOperationModeId"].as<decltype(dst.currentOperationModeId)::value_type>();
     } else {
         dst.currentOperationModeId = std::nullopt;
     }
-    if (src["isOperationModeIdChangeable"]) {
+    if (!src["isOperationModeIdChangeable"].isNull()) {
         dst.isOperationModeIdChangeable = src["isOperationModeIdChangeable"].as<decltype(dst.isOperationModeIdChangeable)::value_type>();
     } else {
         dst.isOperationModeIdChangeable = std::nullopt;
     }
-    if (src["currentSetpointId"]) {
+    if (!src["currentSetpointId"].isNull()) {
         dst.currentSetpointId = src["currentSetpointId"].as<decltype(dst.currentSetpointId)::value_type>();
     } else {
         dst.currentSetpointId = std::nullopt;
     }
-    if (src["isSetpointIdChangeable"]) {
+    if (!src["isSetpointIdChangeable"].isNull()) {
         dst.isSetpointIdChangeable = src["isSetpointIdChangeable"].as<decltype(dst.isSetpointIdChangeable)::value_type>();
     } else {
         dst.isSetpointIdChangeable = std::nullopt;
     }
-    if (src["isOverrunActive"]) {
+    if (!src["isOverrunActive"].isNull()) {
         dst.isOverrunActive = src["isOverrunActive"].as<decltype(dst.isOverrunActive)::value_type>();
     } else {
         dst.isOverrunActive = std::nullopt;
@@ -20616,7 +20616,7 @@ bool convertToJson(const HvacSystemFunctionListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionListDataType &dst)
 {
 
-    if (src["hvacSystemFunctionData"]) {
+    if (!src["hvacSystemFunctionData"].isNull()) {
         dst.hvacSystemFunctionData = src["hvacSystemFunctionData"].as<decltype(dst.hvacSystemFunctionData)::value_type>();
     } else {
         dst.hvacSystemFunctionData = std::nullopt;
@@ -20636,7 +20636,7 @@ bool convertToJson(const HvacSystemFunctionListDataSelectorsType &src, JsonVaria
 void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionListDataSelectorsType &dst)
 {
 
-    if (src["systemFunctionId"]) {
+    if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
         dst.systemFunctionId = std::nullopt;
@@ -20659,12 +20659,12 @@ bool convertToJson(const HvacSystemFunctionOperationModeRelationDataType &src, J
 void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationModeRelationDataType &dst)
 {
 
-    if (src["systemFunctionId"]) {
+    if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
         dst.systemFunctionId = std::nullopt;
     }
-    if (src["operationModeId"]) {
+    if (!src["operationModeId"].isNull()) {
         dst.operationModeId = src["operationModeId"].as<decltype(dst.operationModeId)::value_type>();
     } else {
         dst.operationModeId = std::nullopt;
@@ -20687,12 +20687,12 @@ bool convertToJson(const HvacSystemFunctionOperationModeRelationDataElementsType
 void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationModeRelationDataElementsType &dst)
 {
 
-    if (src["systemFunctionId"]) {
+    if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
         dst.systemFunctionId = std::nullopt;
     }
-    if (src["operationModeId"]) {
+    if (!src["operationModeId"].isNull()) {
         dst.operationModeId = src["operationModeId"].as<decltype(dst.operationModeId)::value_type>();
     } else {
         dst.operationModeId = std::nullopt;
@@ -20712,7 +20712,7 @@ bool convertToJson(const HvacSystemFunctionOperationModeRelationListDataType &sr
 void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationModeRelationListDataType &dst)
 {
 
-    if (src["hvacSystemFunctionOperationModeRelationData"]) {
+    if (!src["hvacSystemFunctionOperationModeRelationData"].isNull()) {
         dst.hvacSystemFunctionOperationModeRelationData = src["hvacSystemFunctionOperationModeRelationData"].as<decltype(dst.hvacSystemFunctionOperationModeRelationData)::value_type>();
     } else {
         dst.hvacSystemFunctionOperationModeRelationData = std::nullopt;
@@ -20732,7 +20732,7 @@ bool convertToJson(const HvacSystemFunctionOperationModeRelationListDataSelector
 void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationModeRelationListDataSelectorsType &dst)
 {
 
-    if (src["systemFunctionId"]) {
+    if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
         dst.systemFunctionId = std::nullopt;
@@ -20758,17 +20758,17 @@ bool convertToJson(const HvacSystemFunctionSetpointRelationDataType &src, JsonVa
 void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRelationDataType &dst)
 {
 
-    if (src["systemFunctionId"]) {
+    if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
         dst.systemFunctionId = std::nullopt;
     }
-    if (src["operationModeId"]) {
+    if (!src["operationModeId"].isNull()) {
         dst.operationModeId = src["operationModeId"].as<decltype(dst.operationModeId)::value_type>();
     } else {
         dst.operationModeId = std::nullopt;
     }
-    if (src["setpointId"]) {
+    if (!src["setpointId"].isNull()) {
         dst.setpointId = src["setpointId"].as<decltype(dst.setpointId)::value_type>();
     } else {
         dst.setpointId = std::nullopt;
@@ -20794,17 +20794,17 @@ bool convertToJson(const HvacSystemFunctionSetpointRelationDataElementsType &src
 void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRelationDataElementsType &dst)
 {
 
-    if (src["systemFunctionId"]) {
+    if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
         dst.systemFunctionId = std::nullopt;
     }
-    if (src["operationModeId"]) {
+    if (!src["operationModeId"].isNull()) {
         dst.operationModeId = src["operationModeId"].as<decltype(dst.operationModeId)::value_type>();
     } else {
         dst.operationModeId = std::nullopt;
     }
-    if (src["setpointId"]) {
+    if (!src["setpointId"].isNull()) {
         dst.setpointId = src["setpointId"].as<decltype(dst.setpointId)::value_type>();
     } else {
         dst.setpointId = std::nullopt;
@@ -20824,7 +20824,7 @@ bool convertToJson(const HvacSystemFunctionSetpointRelationListDataType &src, Js
 void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRelationListDataType &dst)
 {
 
-    if (src["hvacSystemFunctionSetpointRelationData"]) {
+    if (!src["hvacSystemFunctionSetpointRelationData"].isNull()) {
         dst.hvacSystemFunctionSetpointRelationData = src["hvacSystemFunctionSetpointRelationData"].as<decltype(dst.hvacSystemFunctionSetpointRelationData)::value_type>();
     } else {
         dst.hvacSystemFunctionSetpointRelationData = std::nullopt;
@@ -20847,12 +20847,12 @@ bool convertToJson(const HvacSystemFunctionSetpointRelationListDataSelectorsType
 void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRelationListDataSelectorsType &dst)
 {
 
-    if (src["systemFunctionId"]) {
+    if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
         dst.systemFunctionId = std::nullopt;
     }
-    if (src["operationModeId"]) {
+    if (!src["operationModeId"].isNull()) {
         dst.operationModeId = src["operationModeId"].as<decltype(dst.operationModeId)::value_type>();
     } else {
         dst.operationModeId = std::nullopt;
@@ -20875,12 +20875,12 @@ bool convertToJson(const HvacSystemFunctionPowerSequenceRelationDataType &src, J
 void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenceRelationDataType &dst)
 {
 
-    if (src["systemFunctionId"]) {
+    if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
         dst.systemFunctionId = std::nullopt;
     }
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -20903,12 +20903,12 @@ bool convertToJson(const HvacSystemFunctionPowerSequenceRelationDataElementsType
 void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenceRelationDataElementsType &dst)
 {
 
-    if (src["systemFunctionId"]) {
+    if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
         dst.systemFunctionId = std::nullopt;
     }
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -20928,7 +20928,7 @@ bool convertToJson(const HvacSystemFunctionPowerSequenceRelationListDataType &sr
 void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenceRelationListDataType &dst)
 {
 
-    if (src["hvacSystemFunctionPowerSequenceRelationData"]) {
+    if (!src["hvacSystemFunctionPowerSequenceRelationData"].isNull()) {
         dst.hvacSystemFunctionPowerSequenceRelationData = src["hvacSystemFunctionPowerSequenceRelationData"].as<decltype(dst.hvacSystemFunctionPowerSequenceRelationData)::value_type>();
     } else {
         dst.hvacSystemFunctionPowerSequenceRelationData = std::nullopt;
@@ -20948,7 +20948,7 @@ bool convertToJson(const HvacSystemFunctionPowerSequenceRelationListDataSelector
 void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenceRelationListDataSelectorsType &dst)
 {
 
-    if (src["systemFunctionId"]) {
+    if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
         dst.systemFunctionId = std::nullopt;
@@ -20977,22 +20977,22 @@ bool convertToJson(const HvacSystemFunctionDescriptionDataType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionDataType &dst)
 {
 
-    if (src["systemFunctionId"]) {
+    if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
         dst.systemFunctionId = std::nullopt;
     }
-    if (src["systemFunctionType"]) {
+    if (!src["systemFunctionType"].isNull()) {
         dst.systemFunctionType = src["systemFunctionType"].as<decltype(dst.systemFunctionType)::value_type>();
     } else {
         dst.systemFunctionType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -21021,22 +21021,22 @@ bool convertToJson(const HvacSystemFunctionDescriptionDataElementsType &src, Jso
 void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionDataElementsType &dst)
 {
 
-    if (src["systemFunctionId"]) {
+    if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
         dst.systemFunctionId = std::nullopt;
     }
-    if (src["systemFunctionType"]) {
+    if (!src["systemFunctionType"].isNull()) {
         dst.systemFunctionType = src["systemFunctionType"].as<decltype(dst.systemFunctionType)::value_type>();
     } else {
         dst.systemFunctionType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -21056,7 +21056,7 @@ bool convertToJson(const HvacSystemFunctionDescriptionListDataType &src, JsonVar
 void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionListDataType &dst)
 {
 
-    if (src["hvacSystemFunctionDescriptionData"]) {
+    if (!src["hvacSystemFunctionDescriptionData"].isNull()) {
         dst.hvacSystemFunctionDescriptionData = src["hvacSystemFunctionDescriptionData"].as<decltype(dst.hvacSystemFunctionDescriptionData)::value_type>();
     } else {
         dst.hvacSystemFunctionDescriptionData = std::nullopt;
@@ -21076,7 +21076,7 @@ bool convertToJson(const HvacSystemFunctionDescriptionListDataSelectorsType &src
 void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["systemFunctionId"]) {
+    if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
         dst.systemFunctionId = std::nullopt;
@@ -21105,22 +21105,22 @@ bool convertToJson(const HvacOperationModeDescriptionDataType &src, JsonVariant 
 void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionDataType &dst)
 {
 
-    if (src["operationModeId"]) {
+    if (!src["operationModeId"].isNull()) {
         dst.operationModeId = src["operationModeId"].as<decltype(dst.operationModeId)::value_type>();
     } else {
         dst.operationModeId = std::nullopt;
     }
-    if (src["operationModeType"]) {
+    if (!src["operationModeType"].isNull()) {
         dst.operationModeType = src["operationModeType"].as<decltype(dst.operationModeType)::value_type>();
     } else {
         dst.operationModeType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -21149,22 +21149,22 @@ bool convertToJson(const HvacOperationModeDescriptionDataElementsType &src, Json
 void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionDataElementsType &dst)
 {
 
-    if (src["operationModeId"]) {
+    if (!src["operationModeId"].isNull()) {
         dst.operationModeId = src["operationModeId"].as<decltype(dst.operationModeId)::value_type>();
     } else {
         dst.operationModeId = std::nullopt;
     }
-    if (src["operationModeType"]) {
+    if (!src["operationModeType"].isNull()) {
         dst.operationModeType = src["operationModeType"].as<decltype(dst.operationModeType)::value_type>();
     } else {
         dst.operationModeType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -21184,7 +21184,7 @@ bool convertToJson(const HvacOperationModeDescriptionListDataType &src, JsonVari
 void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionListDataType &dst)
 {
 
-    if (src["hvacOperationModeDescriptionData"]) {
+    if (!src["hvacOperationModeDescriptionData"].isNull()) {
         dst.hvacOperationModeDescriptionData = src["hvacOperationModeDescriptionData"].as<decltype(dst.hvacOperationModeDescriptionData)::value_type>();
     } else {
         dst.hvacOperationModeDescriptionData = std::nullopt;
@@ -21204,7 +21204,7 @@ bool convertToJson(const HvacOperationModeDescriptionListDataSelectorsType &src,
 void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["operationModeId"]) {
+    if (!src["operationModeId"].isNull()) {
         dst.operationModeId = src["operationModeId"].as<decltype(dst.operationModeId)::value_type>();
     } else {
         dst.operationModeId = std::nullopt;
@@ -21233,22 +21233,22 @@ bool convertToJson(const HvacOverrunDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, HvacOverrunDataType &dst)
 {
 
-    if (src["overrunId"]) {
+    if (!src["overrunId"].isNull()) {
         dst.overrunId = src["overrunId"].as<decltype(dst.overrunId)::value_type>();
     } else {
         dst.overrunId = std::nullopt;
     }
-    if (src["overrunStatus"]) {
+    if (!src["overrunStatus"].isNull()) {
         dst.overrunStatus = src["overrunStatus"].as<decltype(dst.overrunStatus)::value_type>();
     } else {
         dst.overrunStatus = std::nullopt;
     }
-    if (src["timeTableId"]) {
+    if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
         dst.timeTableId = std::nullopt;
     }
-    if (src["isOverrunStatusChangeable"]) {
+    if (!src["isOverrunStatusChangeable"].isNull()) {
         dst.isOverrunStatusChangeable = src["isOverrunStatusChangeable"].as<decltype(dst.isOverrunStatusChangeable)::value_type>();
     } else {
         dst.isOverrunStatusChangeable = std::nullopt;
@@ -21277,22 +21277,22 @@ bool convertToJson(const HvacOverrunDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, HvacOverrunDataElementsType &dst)
 {
 
-    if (src["overrunId"]) {
+    if (!src["overrunId"].isNull()) {
         dst.overrunId = src["overrunId"].as<decltype(dst.overrunId)::value_type>();
     } else {
         dst.overrunId = std::nullopt;
     }
-    if (src["overrunStatus"]) {
+    if (!src["overrunStatus"].isNull()) {
         dst.overrunStatus = src["overrunStatus"].as<decltype(dst.overrunStatus)::value_type>();
     } else {
         dst.overrunStatus = std::nullopt;
     }
-    if (src["timeTableId"]) {
+    if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
         dst.timeTableId = std::nullopt;
     }
-    if (src["isOverrunStatusChangeable"]) {
+    if (!src["isOverrunStatusChangeable"].isNull()) {
         dst.isOverrunStatusChangeable = src["isOverrunStatusChangeable"].as<decltype(dst.isOverrunStatusChangeable)::value_type>();
     } else {
         dst.isOverrunStatusChangeable = std::nullopt;
@@ -21312,7 +21312,7 @@ bool convertToJson(const HvacOverrunListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, HvacOverrunListDataType &dst)
 {
 
-    if (src["hvacOverrunData"]) {
+    if (!src["hvacOverrunData"].isNull()) {
         dst.hvacOverrunData = src["hvacOverrunData"].as<decltype(dst.hvacOverrunData)::value_type>();
     } else {
         dst.hvacOverrunData = std::nullopt;
@@ -21332,7 +21332,7 @@ bool convertToJson(const HvacOverrunListDataSelectorsType &src, JsonVariant &dst
 void convertFromJson(const JsonVariantConst &src, HvacOverrunListDataSelectorsType &dst)
 {
 
-    if (src["overrunId"]) {
+    if (!src["overrunId"].isNull()) {
         dst.overrunId = src["overrunId"].as<decltype(dst.overrunId)::value_type>();
     } else {
         dst.overrunId = std::nullopt;
@@ -21364,27 +21364,27 @@ bool convertToJson(const HvacOverrunDescriptionDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionDataType &dst)
 {
 
-    if (src["overrunId"]) {
+    if (!src["overrunId"].isNull()) {
         dst.overrunId = src["overrunId"].as<decltype(dst.overrunId)::value_type>();
     } else {
         dst.overrunId = std::nullopt;
     }
-    if (src["overrunType"]) {
+    if (!src["overrunType"].isNull()) {
         dst.overrunType = src["overrunType"].as<decltype(dst.overrunType)::value_type>();
     } else {
         dst.overrunType = std::nullopt;
     }
-    if (src["affectedSystemFunctionId"]) {
+    if (!src["affectedSystemFunctionId"].isNull()) {
         dst.affectedSystemFunctionId = src["affectedSystemFunctionId"].as<decltype(dst.affectedSystemFunctionId)::value_type>();
     } else {
         dst.affectedSystemFunctionId = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -21416,27 +21416,27 @@ bool convertToJson(const HvacOverrunDescriptionDataElementsType &src, JsonVarian
 void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionDataElementsType &dst)
 {
 
-    if (src["overrunId"]) {
+    if (!src["overrunId"].isNull()) {
         dst.overrunId = src["overrunId"].as<decltype(dst.overrunId)::value_type>();
     } else {
         dst.overrunId = std::nullopt;
     }
-    if (src["overrunType"]) {
+    if (!src["overrunType"].isNull()) {
         dst.overrunType = src["overrunType"].as<decltype(dst.overrunType)::value_type>();
     } else {
         dst.overrunType = std::nullopt;
     }
-    if (src["affectedSystemFunctionId"]) {
+    if (!src["affectedSystemFunctionId"].isNull()) {
         dst.affectedSystemFunctionId = src["affectedSystemFunctionId"].as<decltype(dst.affectedSystemFunctionId)::value_type>();
     } else {
         dst.affectedSystemFunctionId = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -21456,7 +21456,7 @@ bool convertToJson(const HvacOverrunDescriptionListDataType &src, JsonVariant &d
 void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionListDataType &dst)
 {
 
-    if (src["hvacOverrunDescriptionData"]) {
+    if (!src["hvacOverrunDescriptionData"].isNull()) {
         dst.hvacOverrunDescriptionData = src["hvacOverrunDescriptionData"].as<decltype(dst.hvacOverrunDescriptionData)::value_type>();
     } else {
         dst.hvacOverrunDescriptionData = std::nullopt;
@@ -21476,7 +21476,7 @@ bool convertToJson(const HvacOverrunDescriptionListDataSelectorsType &src, JsonV
 void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["overrunId"]) {
+    if (!src["overrunId"].isNull()) {
         dst.overrunId = src["overrunId"].as<decltype(dst.overrunId)::value_type>();
     } else {
         dst.overrunId = std::nullopt;
@@ -21496,7 +21496,7 @@ bool convertToJson(const LoadControlNodeDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, LoadControlNodeDataType &dst)
 {
 
-    if (src["isNodeRemoteControllable"]) {
+    if (!src["isNodeRemoteControllable"].isNull()) {
         dst.isNodeRemoteControllable = src["isNodeRemoteControllable"].as<decltype(dst.isNodeRemoteControllable)::value_type>();
     } else {
         dst.isNodeRemoteControllable = std::nullopt;
@@ -21516,7 +21516,7 @@ bool convertToJson(const LoadControlNodeDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, LoadControlNodeDataElementsType &dst)
 {
 
-    if (src["isNodeRemoteControllable"]) {
+    if (!src["isNodeRemoteControllable"].isNull()) {
         dst.isNodeRemoteControllable = src["isNodeRemoteControllable"].as<decltype(dst.isNodeRemoteControllable)::value_type>();
     } else {
         dst.isNodeRemoteControllable = std::nullopt;
@@ -21548,27 +21548,27 @@ bool convertToJson(const LoadControlEventDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, LoadControlEventDataType &dst)
 {
 
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["eventId"]) {
+    if (!src["eventId"].isNull()) {
         dst.eventId = src["eventId"].as<decltype(dst.eventId)::value_type>();
     } else {
         dst.eventId = std::nullopt;
     }
-    if (src["eventActionConsume"]) {
+    if (!src["eventActionConsume"].isNull()) {
         dst.eventActionConsume = src["eventActionConsume"].as<decltype(dst.eventActionConsume)::value_type>();
     } else {
         dst.eventActionConsume = std::nullopt;
     }
-    if (src["eventActionProduce"]) {
+    if (!src["eventActionProduce"].isNull()) {
         dst.eventActionProduce = src["eventActionProduce"].as<decltype(dst.eventActionProduce)::value_type>();
     } else {
         dst.eventActionProduce = std::nullopt;
     }
-    if (src["timePeriod"]) {
+    if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
         dst.timePeriod = std::nullopt;
@@ -21600,27 +21600,27 @@ bool convertToJson(const LoadControlEventDataElementsType &src, JsonVariant &dst
 void convertFromJson(const JsonVariantConst &src, LoadControlEventDataElementsType &dst)
 {
 
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["eventId"]) {
+    if (!src["eventId"].isNull()) {
         dst.eventId = src["eventId"].as<decltype(dst.eventId)::value_type>();
     } else {
         dst.eventId = std::nullopt;
     }
-    if (src["eventActionConsume"]) {
+    if (!src["eventActionConsume"].isNull()) {
         dst.eventActionConsume = src["eventActionConsume"].as<decltype(dst.eventActionConsume)::value_type>();
     } else {
         dst.eventActionConsume = std::nullopt;
     }
-    if (src["eventActionProduce"]) {
+    if (!src["eventActionProduce"].isNull()) {
         dst.eventActionProduce = src["eventActionProduce"].as<decltype(dst.eventActionProduce)::value_type>();
     } else {
         dst.eventActionProduce = std::nullopt;
     }
-    if (src["timePeriod"]) {
+    if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
         dst.timePeriod = std::nullopt;
@@ -21640,7 +21640,7 @@ bool convertToJson(const LoadControlEventListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, LoadControlEventListDataType &dst)
 {
 
-    if (src["loadControlEventData"]) {
+    if (!src["loadControlEventData"].isNull()) {
         dst.loadControlEventData = src["loadControlEventData"].as<decltype(dst.loadControlEventData)::value_type>();
     } else {
         dst.loadControlEventData = std::nullopt;
@@ -21663,12 +21663,12 @@ bool convertToJson(const LoadControlEventListDataSelectorsType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, LoadControlEventListDataSelectorsType &dst)
 {
 
-    if (src["timestampInterval"]) {
+    if (!src["timestampInterval"].isNull()) {
         dst.timestampInterval = src["timestampInterval"].as<decltype(dst.timestampInterval)::value_type>();
     } else {
         dst.timestampInterval = std::nullopt;
     }
-    if (src["eventId"]) {
+    if (!src["eventId"].isNull()) {
         dst.eventId = src["eventId"].as<decltype(dst.eventId)::value_type>();
     } else {
         dst.eventId = std::nullopt;
@@ -21703,32 +21703,32 @@ bool convertToJson(const LoadControlStateDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, LoadControlStateDataType &dst)
 {
 
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["eventId"]) {
+    if (!src["eventId"].isNull()) {
         dst.eventId = src["eventId"].as<decltype(dst.eventId)::value_type>();
     } else {
         dst.eventId = std::nullopt;
     }
-    if (src["eventStateConsume"]) {
+    if (!src["eventStateConsume"].isNull()) {
         dst.eventStateConsume = src["eventStateConsume"].as<decltype(dst.eventStateConsume)::value_type>();
     } else {
         dst.eventStateConsume = std::nullopt;
     }
-    if (src["appliedEventActionConsume"]) {
+    if (!src["appliedEventActionConsume"].isNull()) {
         dst.appliedEventActionConsume = src["appliedEventActionConsume"].as<decltype(dst.appliedEventActionConsume)::value_type>();
     } else {
         dst.appliedEventActionConsume = std::nullopt;
     }
-    if (src["eventStateProduce"]) {
+    if (!src["eventStateProduce"].isNull()) {
         dst.eventStateProduce = src["eventStateProduce"].as<decltype(dst.eventStateProduce)::value_type>();
     } else {
         dst.eventStateProduce = std::nullopt;
     }
-    if (src["appliedEventActionProduce"]) {
+    if (!src["appliedEventActionProduce"].isNull()) {
         dst.appliedEventActionProduce = src["appliedEventActionProduce"].as<decltype(dst.appliedEventActionProduce)::value_type>();
     } else {
         dst.appliedEventActionProduce = std::nullopt;
@@ -21763,32 +21763,32 @@ bool convertToJson(const LoadControlStateDataElementsType &src, JsonVariant &dst
 void convertFromJson(const JsonVariantConst &src, LoadControlStateDataElementsType &dst)
 {
 
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["eventId"]) {
+    if (!src["eventId"].isNull()) {
         dst.eventId = src["eventId"].as<decltype(dst.eventId)::value_type>();
     } else {
         dst.eventId = std::nullopt;
     }
-    if (src["eventStateConsume"]) {
+    if (!src["eventStateConsume"].isNull()) {
         dst.eventStateConsume = src["eventStateConsume"].as<decltype(dst.eventStateConsume)::value_type>();
     } else {
         dst.eventStateConsume = std::nullopt;
     }
-    if (src["appliedEventActionConsume"]) {
+    if (!src["appliedEventActionConsume"].isNull()) {
         dst.appliedEventActionConsume = src["appliedEventActionConsume"].as<decltype(dst.appliedEventActionConsume)::value_type>();
     } else {
         dst.appliedEventActionConsume = std::nullopt;
     }
-    if (src["eventStateProduce"]) {
+    if (!src["eventStateProduce"].isNull()) {
         dst.eventStateProduce = src["eventStateProduce"].as<decltype(dst.eventStateProduce)::value_type>();
     } else {
         dst.eventStateProduce = std::nullopt;
     }
-    if (src["appliedEventActionProduce"]) {
+    if (!src["appliedEventActionProduce"].isNull()) {
         dst.appliedEventActionProduce = src["appliedEventActionProduce"].as<decltype(dst.appliedEventActionProduce)::value_type>();
     } else {
         dst.appliedEventActionProduce = std::nullopt;
@@ -21808,7 +21808,7 @@ bool convertToJson(const LoadControlStateListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, LoadControlStateListDataType &dst)
 {
 
-    if (src["loadControlStateData"]) {
+    if (!src["loadControlStateData"].isNull()) {
         dst.loadControlStateData = src["loadControlStateData"].as<decltype(dst.loadControlStateData)::value_type>();
     } else {
         dst.loadControlStateData = std::nullopt;
@@ -21831,12 +21831,12 @@ bool convertToJson(const LoadControlStateListDataSelectorsType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, LoadControlStateListDataSelectorsType &dst)
 {
 
-    if (src["timestampInterval"]) {
+    if (!src["timestampInterval"].isNull()) {
         dst.timestampInterval = src["timestampInterval"].as<decltype(dst.timestampInterval)::value_type>();
     } else {
         dst.timestampInterval = std::nullopt;
     }
-    if (src["eventId"]) {
+    if (!src["eventId"].isNull()) {
         dst.eventId = src["eventId"].as<decltype(dst.eventId)::value_type>();
     } else {
         dst.eventId = std::nullopt;
@@ -21868,27 +21868,27 @@ bool convertToJson(const LoadControlLimitDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, LoadControlLimitDataType &dst)
 {
 
-    if (src["limitId"]) {
+    if (!src["limitId"].isNull()) {
         dst.limitId = src["limitId"].as<decltype(dst.limitId)::value_type>();
     } else {
         dst.limitId = std::nullopt;
     }
-    if (src["isLimitChangeable"]) {
+    if (!src["isLimitChangeable"].isNull()) {
         dst.isLimitChangeable = src["isLimitChangeable"].as<decltype(dst.isLimitChangeable)::value_type>();
     } else {
         dst.isLimitChangeable = std::nullopt;
     }
-    if (src["isLimitActive"]) {
+    if (!src["isLimitActive"].isNull()) {
         dst.isLimitActive = src["isLimitActive"].as<decltype(dst.isLimitActive)::value_type>();
     } else {
         dst.isLimitActive = std::nullopt;
     }
-    if (src["timePeriod"]) {
+    if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
         dst.timePeriod = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
@@ -21920,27 +21920,27 @@ bool convertToJson(const LoadControlLimitDataElementsType &src, JsonVariant &dst
 void convertFromJson(const JsonVariantConst &src, LoadControlLimitDataElementsType &dst)
 {
 
-    if (src["limitId"]) {
+    if (!src["limitId"].isNull()) {
         dst.limitId = src["limitId"].as<decltype(dst.limitId)::value_type>();
     } else {
         dst.limitId = std::nullopt;
     }
-    if (src["isLimitChangeable"]) {
+    if (!src["isLimitChangeable"].isNull()) {
         dst.isLimitChangeable = src["isLimitChangeable"].as<decltype(dst.isLimitChangeable)::value_type>();
     } else {
         dst.isLimitChangeable = std::nullopt;
     }
-    if (src["isLimitActive"]) {
+    if (!src["isLimitActive"].isNull()) {
         dst.isLimitActive = src["isLimitActive"].as<decltype(dst.isLimitActive)::value_type>();
     } else {
         dst.isLimitActive = std::nullopt;
     }
-    if (src["timePeriod"]) {
+    if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
         dst.timePeriod = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
@@ -21960,7 +21960,7 @@ bool convertToJson(const LoadControlLimitListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, LoadControlLimitListDataType &dst)
 {
 
-    if (src["loadControlLimitData"]) {
+    if (!src["loadControlLimitData"].isNull()) {
         dst.loadControlLimitData = src["loadControlLimitData"].as<decltype(dst.loadControlLimitData)::value_type>();
     } else {
         dst.loadControlLimitData = std::nullopt;
@@ -21980,7 +21980,7 @@ bool convertToJson(const LoadControlLimitListDataSelectorsType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, LoadControlLimitListDataSelectorsType &dst)
 {
 
-    if (src["limitId"]) {
+    if (!src["limitId"].isNull()) {
         dst.limitId = src["limitId"].as<decltype(dst.limitId)::value_type>();
     } else {
         dst.limitId = std::nullopt;
@@ -22009,22 +22009,22 @@ bool convertToJson(const LoadControlLimitConstraintsDataType &src, JsonVariant &
 void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsDataType &dst)
 {
 
-    if (src["limitId"]) {
+    if (!src["limitId"].isNull()) {
         dst.limitId = src["limitId"].as<decltype(dst.limitId)::value_type>();
     } else {
         dst.limitId = std::nullopt;
     }
-    if (src["valueRangeMin"]) {
+    if (!src["valueRangeMin"].isNull()) {
         dst.valueRangeMin = src["valueRangeMin"].as<decltype(dst.valueRangeMin)::value_type>();
     } else {
         dst.valueRangeMin = std::nullopt;
     }
-    if (src["valueRangeMax"]) {
+    if (!src["valueRangeMax"].isNull()) {
         dst.valueRangeMax = src["valueRangeMax"].as<decltype(dst.valueRangeMax)::value_type>();
     } else {
         dst.valueRangeMax = std::nullopt;
     }
-    if (src["valueStepSize"]) {
+    if (!src["valueStepSize"].isNull()) {
         dst.valueStepSize = src["valueStepSize"].as<decltype(dst.valueStepSize)::value_type>();
     } else {
         dst.valueStepSize = std::nullopt;
@@ -22053,22 +22053,22 @@ bool convertToJson(const LoadControlLimitConstraintsDataElementsType &src, JsonV
 void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsDataElementsType &dst)
 {
 
-    if (src["limitId"]) {
+    if (!src["limitId"].isNull()) {
         dst.limitId = src["limitId"].as<decltype(dst.limitId)::value_type>();
     } else {
         dst.limitId = std::nullopt;
     }
-    if (src["valueRangeMin"]) {
+    if (!src["valueRangeMin"].isNull()) {
         dst.valueRangeMin = src["valueRangeMin"].as<decltype(dst.valueRangeMin)::value_type>();
     } else {
         dst.valueRangeMin = std::nullopt;
     }
-    if (src["valueRangeMax"]) {
+    if (!src["valueRangeMax"].isNull()) {
         dst.valueRangeMax = src["valueRangeMax"].as<decltype(dst.valueRangeMax)::value_type>();
     } else {
         dst.valueRangeMax = std::nullopt;
     }
-    if (src["valueStepSize"]) {
+    if (!src["valueStepSize"].isNull()) {
         dst.valueStepSize = src["valueStepSize"].as<decltype(dst.valueStepSize)::value_type>();
     } else {
         dst.valueStepSize = std::nullopt;
@@ -22088,7 +22088,7 @@ bool convertToJson(const LoadControlLimitConstraintsListDataType &src, JsonVaria
 void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsListDataType &dst)
 {
 
-    if (src["loadControlLimitConstraintsData"]) {
+    if (!src["loadControlLimitConstraintsData"].isNull()) {
         dst.loadControlLimitConstraintsData = src["loadControlLimitConstraintsData"].as<decltype(dst.loadControlLimitConstraintsData)::value_type>();
     } else {
         dst.loadControlLimitConstraintsData = std::nullopt;
@@ -22108,7 +22108,7 @@ bool convertToJson(const LoadControlLimitConstraintsListDataSelectorsType &src, 
 void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsListDataSelectorsType &dst)
 {
 
-    if (src["limitId"]) {
+    if (!src["limitId"].isNull()) {
         dst.limitId = src["limitId"].as<decltype(dst.limitId)::value_type>();
     } else {
         dst.limitId = std::nullopt;
@@ -22152,47 +22152,47 @@ bool convertToJson(const LoadControlLimitDescriptionDataType &src, JsonVariant &
 void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionDataType &dst)
 {
 
-    if (src["limitId"]) {
+    if (!src["limitId"].isNull()) {
         dst.limitId = src["limitId"].as<decltype(dst.limitId)::value_type>();
     } else {
         dst.limitId = std::nullopt;
     }
-    if (src["limitType"]) {
+    if (!src["limitType"].isNull()) {
         dst.limitType = src["limitType"].as<decltype(dst.limitType)::value_type>();
     } else {
         dst.limitType = std::nullopt;
     }
-    if (src["limitCategory"]) {
+    if (!src["limitCategory"].isNull()) {
         dst.limitCategory = src["limitCategory"].as<decltype(dst.limitCategory)::value_type>();
     } else {
         dst.limitCategory = std::nullopt;
     }
-    if (src["limitDirection"]) {
+    if (!src["limitDirection"].isNull()) {
         dst.limitDirection = src["limitDirection"].as<decltype(dst.limitDirection)::value_type>();
     } else {
         dst.limitDirection = std::nullopt;
     }
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["unit"]) {
+    if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
         dst.unit = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -22236,47 +22236,47 @@ bool convertToJson(const LoadControlLimitDescriptionDataElementsType &src, JsonV
 void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionDataElementsType &dst)
 {
 
-    if (src["limitId"]) {
+    if (!src["limitId"].isNull()) {
         dst.limitId = src["limitId"].as<decltype(dst.limitId)::value_type>();
     } else {
         dst.limitId = std::nullopt;
     }
-    if (src["limitType"]) {
+    if (!src["limitType"].isNull()) {
         dst.limitType = src["limitType"].as<decltype(dst.limitType)::value_type>();
     } else {
         dst.limitType = std::nullopt;
     }
-    if (src["limitCategory"]) {
+    if (!src["limitCategory"].isNull()) {
         dst.limitCategory = src["limitCategory"].as<decltype(dst.limitCategory)::value_type>();
     } else {
         dst.limitCategory = std::nullopt;
     }
-    if (src["limitDirection"]) {
+    if (!src["limitDirection"].isNull()) {
         dst.limitDirection = src["limitDirection"].as<decltype(dst.limitDirection)::value_type>();
     } else {
         dst.limitDirection = std::nullopt;
     }
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["unit"]) {
+    if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
         dst.unit = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -22296,7 +22296,7 @@ bool convertToJson(const LoadControlLimitDescriptionListDataType &src, JsonVaria
 void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionListDataType &dst)
 {
 
-    if (src["loadControlLimitDescriptionData"]) {
+    if (!src["loadControlLimitDescriptionData"].isNull()) {
         dst.loadControlLimitDescriptionData = src["loadControlLimitDescriptionData"].as<decltype(dst.loadControlLimitDescriptionData)::value_type>();
     } else {
         dst.loadControlLimitDescriptionData = std::nullopt;
@@ -22328,27 +22328,27 @@ bool convertToJson(const LoadControlLimitDescriptionListDataSelectorsType &src, 
 void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["limitId"]) {
+    if (!src["limitId"].isNull()) {
         dst.limitId = src["limitId"].as<decltype(dst.limitId)::value_type>();
     } else {
         dst.limitId = std::nullopt;
     }
-    if (src["limitType"]) {
+    if (!src["limitType"].isNull()) {
         dst.limitType = src["limitType"].as<decltype(dst.limitType)::value_type>();
     } else {
         dst.limitType = std::nullopt;
     }
-    if (src["limitDirection"]) {
+    if (!src["limitDirection"].isNull()) {
         dst.limitDirection = src["limitDirection"].as<decltype(dst.limitDirection)::value_type>();
     } else {
         dst.limitDirection = std::nullopt;
     }
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
@@ -22401,62 +22401,62 @@ bool convertToJson(const DeviceClassificationManufacturerDataType &src, JsonVari
 void convertFromJson(const JsonVariantConst &src, DeviceClassificationManufacturerDataType &dst)
 {
 
-    if (src["deviceName"]) {
+    if (!src["deviceName"].isNull()) {
         dst.deviceName = src["deviceName"].as<decltype(dst.deviceName)::value_type>();
     } else {
         dst.deviceName = std::nullopt;
     }
-    if (src["deviceCode"]) {
+    if (!src["deviceCode"].isNull()) {
         dst.deviceCode = src["deviceCode"].as<decltype(dst.deviceCode)::value_type>();
     } else {
         dst.deviceCode = std::nullopt;
     }
-    if (src["serialNumber"]) {
+    if (!src["serialNumber"].isNull()) {
         dst.serialNumber = src["serialNumber"].as<decltype(dst.serialNumber)::value_type>();
     } else {
         dst.serialNumber = std::nullopt;
     }
-    if (src["softwareRevision"]) {
+    if (!src["softwareRevision"].isNull()) {
         dst.softwareRevision = src["softwareRevision"].as<decltype(dst.softwareRevision)::value_type>();
     } else {
         dst.softwareRevision = std::nullopt;
     }
-    if (src["hardwareRevision"]) {
+    if (!src["hardwareRevision"].isNull()) {
         dst.hardwareRevision = src["hardwareRevision"].as<decltype(dst.hardwareRevision)::value_type>();
     } else {
         dst.hardwareRevision = std::nullopt;
     }
-    if (src["vendorName"]) {
+    if (!src["vendorName"].isNull()) {
         dst.vendorName = src["vendorName"].as<decltype(dst.vendorName)::value_type>();
     } else {
         dst.vendorName = std::nullopt;
     }
-    if (src["vendorCode"]) {
+    if (!src["vendorCode"].isNull()) {
         dst.vendorCode = src["vendorCode"].as<decltype(dst.vendorCode)::value_type>();
     } else {
         dst.vendorCode = std::nullopt;
     }
-    if (src["brandName"]) {
+    if (!src["brandName"].isNull()) {
         dst.brandName = src["brandName"].as<decltype(dst.brandName)::value_type>();
     } else {
         dst.brandName = std::nullopt;
     }
-    if (src["powerSource"]) {
+    if (!src["powerSource"].isNull()) {
         dst.powerSource = src["powerSource"].as<decltype(dst.powerSource)::value_type>();
     } else {
         dst.powerSource = std::nullopt;
     }
-    if (src["manufacturerNodeIdentification"]) {
+    if (!src["manufacturerNodeIdentification"].isNull()) {
         dst.manufacturerNodeIdentification = src["manufacturerNodeIdentification"].as<decltype(dst.manufacturerNodeIdentification)::value_type>();
     } else {
         dst.manufacturerNodeIdentification = std::nullopt;
     }
-    if (src["manufacturerLabel"]) {
+    if (!src["manufacturerLabel"].isNull()) {
         dst.manufacturerLabel = src["manufacturerLabel"].as<decltype(dst.manufacturerLabel)::value_type>();
     } else {
         dst.manufacturerLabel = std::nullopt;
     }
-    if (src["manufacturerDescription"]) {
+    if (!src["manufacturerDescription"].isNull()) {
         dst.manufacturerDescription = src["manufacturerDescription"].as<decltype(dst.manufacturerDescription)::value_type>();
     } else {
         dst.manufacturerDescription = std::nullopt;
@@ -22509,62 +22509,62 @@ bool convertToJson(const DeviceClassificationManufacturerDataElementsType &src, 
 void convertFromJson(const JsonVariantConst &src, DeviceClassificationManufacturerDataElementsType &dst)
 {
 
-    if (src["deviceName"]) {
+    if (!src["deviceName"].isNull()) {
         dst.deviceName = src["deviceName"].as<decltype(dst.deviceName)::value_type>();
     } else {
         dst.deviceName = std::nullopt;
     }
-    if (src["deviceCode"]) {
+    if (!src["deviceCode"].isNull()) {
         dst.deviceCode = src["deviceCode"].as<decltype(dst.deviceCode)::value_type>();
     } else {
         dst.deviceCode = std::nullopt;
     }
-    if (src["serialNumber"]) {
+    if (!src["serialNumber"].isNull()) {
         dst.serialNumber = src["serialNumber"].as<decltype(dst.serialNumber)::value_type>();
     } else {
         dst.serialNumber = std::nullopt;
     }
-    if (src["softwareRevision"]) {
+    if (!src["softwareRevision"].isNull()) {
         dst.softwareRevision = src["softwareRevision"].as<decltype(dst.softwareRevision)::value_type>();
     } else {
         dst.softwareRevision = std::nullopt;
     }
-    if (src["hardwareRevision"]) {
+    if (!src["hardwareRevision"].isNull()) {
         dst.hardwareRevision = src["hardwareRevision"].as<decltype(dst.hardwareRevision)::value_type>();
     } else {
         dst.hardwareRevision = std::nullopt;
     }
-    if (src["vendorName"]) {
+    if (!src["vendorName"].isNull()) {
         dst.vendorName = src["vendorName"].as<decltype(dst.vendorName)::value_type>();
     } else {
         dst.vendorName = std::nullopt;
     }
-    if (src["vendorCode"]) {
+    if (!src["vendorCode"].isNull()) {
         dst.vendorCode = src["vendorCode"].as<decltype(dst.vendorCode)::value_type>();
     } else {
         dst.vendorCode = std::nullopt;
     }
-    if (src["brandName"]) {
+    if (!src["brandName"].isNull()) {
         dst.brandName = src["brandName"].as<decltype(dst.brandName)::value_type>();
     } else {
         dst.brandName = std::nullopt;
     }
-    if (src["powerSource"]) {
+    if (!src["powerSource"].isNull()) {
         dst.powerSource = src["powerSource"].as<decltype(dst.powerSource)::value_type>();
     } else {
         dst.powerSource = std::nullopt;
     }
-    if (src["manufacturerNodeIdentification"]) {
+    if (!src["manufacturerNodeIdentification"].isNull()) {
         dst.manufacturerNodeIdentification = src["manufacturerNodeIdentification"].as<decltype(dst.manufacturerNodeIdentification)::value_type>();
     } else {
         dst.manufacturerNodeIdentification = std::nullopt;
     }
-    if (src["manufacturerLabel"]) {
+    if (!src["manufacturerLabel"].isNull()) {
         dst.manufacturerLabel = src["manufacturerLabel"].as<decltype(dst.manufacturerLabel)::value_type>();
     } else {
         dst.manufacturerLabel = std::nullopt;
     }
-    if (src["manufacturerDescription"]) {
+    if (!src["manufacturerDescription"].isNull()) {
         dst.manufacturerDescription = src["manufacturerDescription"].as<decltype(dst.manufacturerDescription)::value_type>();
     } else {
         dst.manufacturerDescription = std::nullopt;
@@ -22590,17 +22590,17 @@ bool convertToJson(const DeviceClassificationUserDataType &src, JsonVariant &dst
 void convertFromJson(const JsonVariantConst &src, DeviceClassificationUserDataType &dst)
 {
 
-    if (src["userNodeIdentification"]) {
+    if (!src["userNodeIdentification"].isNull()) {
         dst.userNodeIdentification = src["userNodeIdentification"].as<decltype(dst.userNodeIdentification)::value_type>();
     } else {
         dst.userNodeIdentification = std::nullopt;
     }
-    if (src["userLabel"]) {
+    if (!src["userLabel"].isNull()) {
         dst.userLabel = src["userLabel"].as<decltype(dst.userLabel)::value_type>();
     } else {
         dst.userLabel = std::nullopt;
     }
-    if (src["userDescription"]) {
+    if (!src["userDescription"].isNull()) {
         dst.userDescription = src["userDescription"].as<decltype(dst.userDescription)::value_type>();
     } else {
         dst.userDescription = std::nullopt;
@@ -22626,17 +22626,17 @@ bool convertToJson(const DeviceClassificationUserDataElementsType &src, JsonVari
 void convertFromJson(const JsonVariantConst &src, DeviceClassificationUserDataElementsType &dst)
 {
 
-    if (src["userNodeIdentification"]) {
+    if (!src["userNodeIdentification"].isNull()) {
         dst.userNodeIdentification = src["userNodeIdentification"].as<decltype(dst.userNodeIdentification)::value_type>();
     } else {
         dst.userNodeIdentification = std::nullopt;
     }
-    if (src["userLabel"]) {
+    if (!src["userLabel"].isNull()) {
         dst.userLabel = src["userLabel"].as<decltype(dst.userLabel)::value_type>();
     } else {
         dst.userLabel = std::nullopt;
     }
-    if (src["userDescription"]) {
+    if (!src["userDescription"].isNull()) {
         dst.userDescription = src["userDescription"].as<decltype(dst.userDescription)::value_type>();
     } else {
         dst.userDescription = std::nullopt;
@@ -22659,12 +22659,12 @@ bool convertToJson(const ActuatorLevelDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, ActuatorLevelDataType &dst)
 {
 
-    if (src["function"]) {
+    if (!src["function"].isNull()) {
         dst.function = src["function"].as<decltype(dst.function)::value_type>();
     } else {
         dst.function = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
@@ -22687,12 +22687,12 @@ bool convertToJson(const ActuatorLevelDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, ActuatorLevelDataElementsType &dst)
 {
 
-    if (src["function"]) {
+    if (!src["function"].isNull()) {
         dst.function = src["function"].as<decltype(dst.function)::value_type>();
     } else {
         dst.function = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
@@ -22718,17 +22718,17 @@ bool convertToJson(const ActuatorLevelDescriptionDataType &src, JsonVariant &dst
 void convertFromJson(const JsonVariantConst &src, ActuatorLevelDescriptionDataType &dst)
 {
 
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
     }
-    if (src["levelDefaultUnit"]) {
+    if (!src["levelDefaultUnit"].isNull()) {
         dst.levelDefaultUnit = src["levelDefaultUnit"].as<decltype(dst.levelDefaultUnit)::value_type>();
     } else {
         dst.levelDefaultUnit = std::nullopt;
@@ -22754,17 +22754,17 @@ bool convertToJson(const ActuatorLevelDescriptionDataElementsType &src, JsonVari
 void convertFromJson(const JsonVariantConst &src, ActuatorLevelDescriptionDataElementsType &dst)
 {
 
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
     }
-    if (src["levelDefaultUnit"]) {
+    if (!src["levelDefaultUnit"].isNull()) {
         dst.levelDefaultUnit = src["levelDefaultUnit"].as<decltype(dst.levelDefaultUnit)::value_type>();
     } else {
         dst.levelDefaultUnit = std::nullopt;
@@ -22802,37 +22802,37 @@ bool convertToJson(const TimeSeriesSlotType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TimeSeriesSlotType &dst)
 {
 
-    if (src["timeSeriesSlotId"]) {
+    if (!src["timeSeriesSlotId"].isNull()) {
         dst.timeSeriesSlotId = src["timeSeriesSlotId"].as<decltype(dst.timeSeriesSlotId)::value_type>();
     } else {
         dst.timeSeriesSlotId = std::nullopt;
     }
-    if (src["timePeriod"]) {
+    if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
         dst.timePeriod = std::nullopt;
     }
-    if (src["duration"]) {
+    if (!src["duration"].isNull()) {
         dst.duration = src["duration"].as<decltype(dst.duration)::value_type>();
     } else {
         dst.duration = std::nullopt;
     }
-    if (src["recurrenceInformation"]) {
+    if (!src["recurrenceInformation"].isNull()) {
         dst.recurrenceInformation = src["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
     } else {
         dst.recurrenceInformation = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
     }
-    if (src["minValue"]) {
+    if (!src["minValue"].isNull()) {
         dst.minValue = src["minValue"].as<decltype(dst.minValue)::value_type>();
     } else {
         dst.minValue = std::nullopt;
     }
-    if (src["maxValue"]) {
+    if (!src["maxValue"].isNull()) {
         dst.maxValue = src["maxValue"].as<decltype(dst.maxValue)::value_type>();
     } else {
         dst.maxValue = std::nullopt;
@@ -22870,37 +22870,37 @@ bool convertToJson(const TimeSeriesSlotElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TimeSeriesSlotElementsType &dst)
 {
 
-    if (src["timeSeriesSlotId"]) {
+    if (!src["timeSeriesSlotId"].isNull()) {
         dst.timeSeriesSlotId = src["timeSeriesSlotId"].as<decltype(dst.timeSeriesSlotId)::value_type>();
     } else {
         dst.timeSeriesSlotId = std::nullopt;
     }
-    if (src["timePeriod"]) {
+    if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
         dst.timePeriod = std::nullopt;
     }
-    if (src["duration"]) {
+    if (!src["duration"].isNull()) {
         dst.duration = src["duration"].as<decltype(dst.duration)::value_type>();
     } else {
         dst.duration = std::nullopt;
     }
-    if (src["recurrenceInformation"]) {
+    if (!src["recurrenceInformation"].isNull()) {
         dst.recurrenceInformation = src["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
     } else {
         dst.recurrenceInformation = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
     }
-    if (src["minValue"]) {
+    if (!src["minValue"].isNull()) {
         dst.minValue = src["minValue"].as<decltype(dst.minValue)::value_type>();
     } else {
         dst.minValue = std::nullopt;
     }
-    if (src["maxValue"]) {
+    if (!src["maxValue"].isNull()) {
         dst.maxValue = src["maxValue"].as<decltype(dst.maxValue)::value_type>();
     } else {
         dst.maxValue = std::nullopt;
@@ -22926,17 +22926,17 @@ bool convertToJson(const TimeSeriesDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TimeSeriesDataType &dst)
 {
 
-    if (src["timeSeriesId"]) {
+    if (!src["timeSeriesId"].isNull()) {
         dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
     } else {
         dst.timeSeriesId = std::nullopt;
     }
-    if (src["timePeriod"]) {
+    if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
         dst.timePeriod = std::nullopt;
     }
-    if (src["timeSeriesSlot"]) {
+    if (!src["timeSeriesSlot"].isNull()) {
         dst.timeSeriesSlot = src["timeSeriesSlot"].as<decltype(dst.timeSeriesSlot)::value_type>();
     } else {
         dst.timeSeriesSlot = std::nullopt;
@@ -22962,17 +22962,17 @@ bool convertToJson(const TimeSeriesDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TimeSeriesDataElementsType &dst)
 {
 
-    if (src["timeSeriesId"]) {
+    if (!src["timeSeriesId"].isNull()) {
         dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
     } else {
         dst.timeSeriesId = std::nullopt;
     }
-    if (src["timePeriod"]) {
+    if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
         dst.timePeriod = std::nullopt;
     }
-    if (src["timeSeriesSlot"]) {
+    if (!src["timeSeriesSlot"].isNull()) {
         dst.timeSeriesSlot = src["timeSeriesSlot"].as<decltype(dst.timeSeriesSlot)::value_type>();
     } else {
         dst.timeSeriesSlot = std::nullopt;
@@ -22992,7 +22992,7 @@ bool convertToJson(const TimeSeriesListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TimeSeriesListDataType &dst)
 {
 
-    if (src["timeSeriesData"]) {
+    if (!src["timeSeriesData"].isNull()) {
         dst.timeSeriesData = src["timeSeriesData"].as<decltype(dst.timeSeriesData)::value_type>();
     } else {
         dst.timeSeriesData = std::nullopt;
@@ -23015,12 +23015,12 @@ bool convertToJson(const TimeSeriesListDataSelectorsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TimeSeriesListDataSelectorsType &dst)
 {
 
-    if (src["timeSeriesId"]) {
+    if (!src["timeSeriesId"].isNull()) {
         dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
     } else {
         dst.timeSeriesId = std::nullopt;
     }
-    if (src["timeSeriesSlotId"]) {
+    if (!src["timeSeriesSlotId"].isNull()) {
         dst.timeSeriesSlotId = src["timeSeriesSlotId"].as<decltype(dst.timeSeriesSlotId)::value_type>();
     } else {
         dst.timeSeriesSlotId = std::nullopt;
@@ -23067,52 +23067,52 @@ bool convertToJson(const TimeSeriesDescriptionDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataType &dst)
 {
 
-    if (src["timeSeriesId"]) {
+    if (!src["timeSeriesId"].isNull()) {
         dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
     } else {
         dst.timeSeriesId = std::nullopt;
     }
-    if (src["timeSeriesType"]) {
+    if (!src["timeSeriesType"].isNull()) {
         dst.timeSeriesType = src["timeSeriesType"].as<decltype(dst.timeSeriesType)::value_type>();
     } else {
         dst.timeSeriesType = std::nullopt;
     }
-    if (src["timeSeriesWriteable"]) {
+    if (!src["timeSeriesWriteable"].isNull()) {
         dst.timeSeriesWriteable = src["timeSeriesWriteable"].as<decltype(dst.timeSeriesWriteable)::value_type>();
     } else {
         dst.timeSeriesWriteable = std::nullopt;
     }
-    if (src["updateRequired"]) {
+    if (!src["updateRequired"].isNull()) {
         dst.updateRequired = src["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
     } else {
         dst.updateRequired = std::nullopt;
     }
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["currency"]) {
+    if (!src["currency"].isNull()) {
         dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
     } else {
         dst.currency = std::nullopt;
     }
-    if (src["unit"]) {
+    if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
         dst.unit = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
@@ -23159,52 +23159,52 @@ bool convertToJson(const TimeSeriesDescriptionDataElementsType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataElementsType &dst)
 {
 
-    if (src["timeSeriesId"]) {
+    if (!src["timeSeriesId"].isNull()) {
         dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
     } else {
         dst.timeSeriesId = std::nullopt;
     }
-    if (src["timeSeriesType"]) {
+    if (!src["timeSeriesType"].isNull()) {
         dst.timeSeriesType = src["timeSeriesType"].as<decltype(dst.timeSeriesType)::value_type>();
     } else {
         dst.timeSeriesType = std::nullopt;
     }
-    if (src["timeSeriesWriteable"]) {
+    if (!src["timeSeriesWriteable"].isNull()) {
         dst.timeSeriesWriteable = src["timeSeriesWriteable"].as<decltype(dst.timeSeriesWriteable)::value_type>();
     } else {
         dst.timeSeriesWriteable = std::nullopt;
     }
-    if (src["updateRequired"]) {
+    if (!src["updateRequired"].isNull()) {
         dst.updateRequired = src["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
     } else {
         dst.updateRequired = std::nullopt;
     }
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["currency"]) {
+    if (!src["currency"].isNull()) {
         dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
     } else {
         dst.currency = std::nullopt;
     }
-    if (src["unit"]) {
+    if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
         dst.unit = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
@@ -23224,7 +23224,7 @@ bool convertToJson(const TimeSeriesDescriptionListDataType &src, JsonVariant &ds
 void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionListDataType &dst)
 {
 
-    if (src["timeSeriesDescriptionData"]) {
+    if (!src["timeSeriesDescriptionData"].isNull()) {
         dst.timeSeriesDescriptionData = src["timeSeriesDescriptionData"].as<decltype(dst.timeSeriesDescriptionData)::value_type>();
     } else {
         dst.timeSeriesDescriptionData = std::nullopt;
@@ -23253,22 +23253,22 @@ bool convertToJson(const TimeSeriesDescriptionListDataSelectorsType &src, JsonVa
 void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["timeSeriesId"]) {
+    if (!src["timeSeriesId"].isNull()) {
         dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
     } else {
         dst.timeSeriesId = std::nullopt;
     }
-    if (src["timeSeriesType"]) {
+    if (!src["timeSeriesType"].isNull()) {
         dst.timeSeriesType = src["timeSeriesType"].as<decltype(dst.timeSeriesType)::value_type>();
     } else {
         dst.timeSeriesType = std::nullopt;
     }
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
@@ -23318,57 +23318,57 @@ bool convertToJson(const TimeSeriesConstraintsDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsDataType &dst)
 {
 
-    if (src["timeSeriesId"]) {
+    if (!src["timeSeriesId"].isNull()) {
         dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
     } else {
         dst.timeSeriesId = std::nullopt;
     }
-    if (src["slotCountMin"]) {
+    if (!src["slotCountMin"].isNull()) {
         dst.slotCountMin = src["slotCountMin"].as<decltype(dst.slotCountMin)::value_type>();
     } else {
         dst.slotCountMin = std::nullopt;
     }
-    if (src["slotCountMax"]) {
+    if (!src["slotCountMax"].isNull()) {
         dst.slotCountMax = src["slotCountMax"].as<decltype(dst.slotCountMax)::value_type>();
     } else {
         dst.slotCountMax = std::nullopt;
     }
-    if (src["slotDurationMin"]) {
+    if (!src["slotDurationMin"].isNull()) {
         dst.slotDurationMin = src["slotDurationMin"].as<decltype(dst.slotDurationMin)::value_type>();
     } else {
         dst.slotDurationMin = std::nullopt;
     }
-    if (src["slotDurationMax"]) {
+    if (!src["slotDurationMax"].isNull()) {
         dst.slotDurationMax = src["slotDurationMax"].as<decltype(dst.slotDurationMax)::value_type>();
     } else {
         dst.slotDurationMax = std::nullopt;
     }
-    if (src["slotDurationStepSize"]) {
+    if (!src["slotDurationStepSize"].isNull()) {
         dst.slotDurationStepSize = src["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize)::value_type>();
     } else {
         dst.slotDurationStepSize = std::nullopt;
     }
-    if (src["earliestTimeSeriesStartTime"]) {
+    if (!src["earliestTimeSeriesStartTime"].isNull()) {
         dst.earliestTimeSeriesStartTime = src["earliestTimeSeriesStartTime"].as<decltype(dst.earliestTimeSeriesStartTime)::value_type>();
     } else {
         dst.earliestTimeSeriesStartTime = std::nullopt;
     }
-    if (src["latestTimeSeriesEndTime"]) {
+    if (!src["latestTimeSeriesEndTime"].isNull()) {
         dst.latestTimeSeriesEndTime = src["latestTimeSeriesEndTime"].as<decltype(dst.latestTimeSeriesEndTime)::value_type>();
     } else {
         dst.latestTimeSeriesEndTime = std::nullopt;
     }
-    if (src["slotValueMin"]) {
+    if (!src["slotValueMin"].isNull()) {
         dst.slotValueMin = src["slotValueMin"].as<decltype(dst.slotValueMin)::value_type>();
     } else {
         dst.slotValueMin = std::nullopt;
     }
-    if (src["slotValueMax"]) {
+    if (!src["slotValueMax"].isNull()) {
         dst.slotValueMax = src["slotValueMax"].as<decltype(dst.slotValueMax)::value_type>();
     } else {
         dst.slotValueMax = std::nullopt;
     }
-    if (src["slotValueStepSize"]) {
+    if (!src["slotValueStepSize"].isNull()) {
         dst.slotValueStepSize = src["slotValueStepSize"].as<decltype(dst.slotValueStepSize)::value_type>();
     } else {
         dst.slotValueStepSize = std::nullopt;
@@ -23418,57 +23418,57 @@ bool convertToJson(const TimeSeriesConstraintsDataElementsType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsDataElementsType &dst)
 {
 
-    if (src["timeSeriesId"]) {
+    if (!src["timeSeriesId"].isNull()) {
         dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
     } else {
         dst.timeSeriesId = std::nullopt;
     }
-    if (src["slotCountMin"]) {
+    if (!src["slotCountMin"].isNull()) {
         dst.slotCountMin = src["slotCountMin"].as<decltype(dst.slotCountMin)::value_type>();
     } else {
         dst.slotCountMin = std::nullopt;
     }
-    if (src["slotCountMax"]) {
+    if (!src["slotCountMax"].isNull()) {
         dst.slotCountMax = src["slotCountMax"].as<decltype(dst.slotCountMax)::value_type>();
     } else {
         dst.slotCountMax = std::nullopt;
     }
-    if (src["slotDurationMin"]) {
+    if (!src["slotDurationMin"].isNull()) {
         dst.slotDurationMin = src["slotDurationMin"].as<decltype(dst.slotDurationMin)::value_type>();
     } else {
         dst.slotDurationMin = std::nullopt;
     }
-    if (src["slotDurationMax"]) {
+    if (!src["slotDurationMax"].isNull()) {
         dst.slotDurationMax = src["slotDurationMax"].as<decltype(dst.slotDurationMax)::value_type>();
     } else {
         dst.slotDurationMax = std::nullopt;
     }
-    if (src["slotDurationStepSize"]) {
+    if (!src["slotDurationStepSize"].isNull()) {
         dst.slotDurationStepSize = src["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize)::value_type>();
     } else {
         dst.slotDurationStepSize = std::nullopt;
     }
-    if (src["earliestTimeSeriesStartTime"]) {
+    if (!src["earliestTimeSeriesStartTime"].isNull()) {
         dst.earliestTimeSeriesStartTime = src["earliestTimeSeriesStartTime"].as<decltype(dst.earliestTimeSeriesStartTime)::value_type>();
     } else {
         dst.earliestTimeSeriesStartTime = std::nullopt;
     }
-    if (src["latestTimeSeriesEndTime"]) {
+    if (!src["latestTimeSeriesEndTime"].isNull()) {
         dst.latestTimeSeriesEndTime = src["latestTimeSeriesEndTime"].as<decltype(dst.latestTimeSeriesEndTime)::value_type>();
     } else {
         dst.latestTimeSeriesEndTime = std::nullopt;
     }
-    if (src["slotValueMin"]) {
+    if (!src["slotValueMin"].isNull()) {
         dst.slotValueMin = src["slotValueMin"].as<decltype(dst.slotValueMin)::value_type>();
     } else {
         dst.slotValueMin = std::nullopt;
     }
-    if (src["slotValueMax"]) {
+    if (!src["slotValueMax"].isNull()) {
         dst.slotValueMax = src["slotValueMax"].as<decltype(dst.slotValueMax)::value_type>();
     } else {
         dst.slotValueMax = std::nullopt;
     }
-    if (src["slotValueStepSize"]) {
+    if (!src["slotValueStepSize"].isNull()) {
         dst.slotValueStepSize = src["slotValueStepSize"].as<decltype(dst.slotValueStepSize)::value_type>();
     } else {
         dst.slotValueStepSize = std::nullopt;
@@ -23488,7 +23488,7 @@ bool convertToJson(const TimeSeriesConstraintsListDataType &src, JsonVariant &ds
 void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsListDataType &dst)
 {
 
-    if (src["timeSeriesConstraintsData"]) {
+    if (!src["timeSeriesConstraintsData"].isNull()) {
         dst.timeSeriesConstraintsData = src["timeSeriesConstraintsData"].as<decltype(dst.timeSeriesConstraintsData)::value_type>();
     } else {
         dst.timeSeriesConstraintsData = std::nullopt;
@@ -23508,7 +23508,7 @@ bool convertToJson(const TimeSeriesConstraintsListDataSelectorsType &src, JsonVa
 void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsListDataSelectorsType &dst)
 {
 
-    if (src["timeSeriesId"]) {
+    if (!src["timeSeriesId"].isNull()) {
         dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
     } else {
         dst.timeSeriesId = std::nullopt;
@@ -23528,7 +23528,7 @@ bool convertToJson(const SmartEnergyManagementPsAlternativesRelationType &src, J
 void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlternativesRelationType &dst)
 {
 
-    if (src["alternativesId"]) {
+    if (!src["alternativesId"].isNull()) {
         dst.alternativesId = src["alternativesId"].as<decltype(dst.alternativesId)::value_type>();
     } else {
         dst.alternativesId = std::nullopt;
@@ -23548,7 +23548,7 @@ bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotValueListType &src,
 void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTimeSlotValueListType &dst)
 {
 
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
@@ -23574,17 +23574,17 @@ bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotType &src, JsonVari
 void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTimeSlotType &dst)
 {
 
-    if (src["schedule"]) {
+    if (!src["schedule"].isNull()) {
         dst.schedule = src["schedule"].as<decltype(dst.schedule)::value_type>();
     } else {
         dst.schedule = std::nullopt;
     }
-    if (src["valueList"]) {
+    if (!src["valueList"].isNull()) {
         dst.valueList = src["valueList"].as<decltype(dst.valueList)::value_type>();
     } else {
         dst.valueList = std::nullopt;
     }
-    if (src["scheduleConstraints"]) {
+    if (!src["scheduleConstraints"].isNull()) {
         dst.scheduleConstraints = src["scheduleConstraints"].as<decltype(dst.scheduleConstraints)::value_type>();
     } else {
         dst.scheduleConstraints = std::nullopt;
@@ -23628,47 +23628,47 @@ bool convertToJson(const SmartEnergyManagementPsPowerSequenceType &src, JsonVari
 void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerSequenceType &dst)
 {
 
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
     }
-    if (src["state"]) {
+    if (!src["state"].isNull()) {
         dst.state = src["state"].as<decltype(dst.state)::value_type>();
     } else {
         dst.state = std::nullopt;
     }
-    if (src["schedule"]) {
+    if (!src["schedule"].isNull()) {
         dst.schedule = src["schedule"].as<decltype(dst.schedule)::value_type>();
     } else {
         dst.schedule = std::nullopt;
     }
-    if (src["scheduleConstraints"]) {
+    if (!src["scheduleConstraints"].isNull()) {
         dst.scheduleConstraints = src["scheduleConstraints"].as<decltype(dst.scheduleConstraints)::value_type>();
     } else {
         dst.scheduleConstraints = std::nullopt;
     }
-    if (src["schedulePreference"]) {
+    if (!src["schedulePreference"].isNull()) {
         dst.schedulePreference = src["schedulePreference"].as<decltype(dst.schedulePreference)::value_type>();
     } else {
         dst.schedulePreference = std::nullopt;
     }
-    if (src["operatingConstraintsInterrupt"]) {
+    if (!src["operatingConstraintsInterrupt"].isNull()) {
         dst.operatingConstraintsInterrupt = src["operatingConstraintsInterrupt"].as<decltype(dst.operatingConstraintsInterrupt)::value_type>();
     } else {
         dst.operatingConstraintsInterrupt = std::nullopt;
     }
-    if (src["operatingConstraintsDuration"]) {
+    if (!src["operatingConstraintsDuration"].isNull()) {
         dst.operatingConstraintsDuration = src["operatingConstraintsDuration"].as<decltype(dst.operatingConstraintsDuration)::value_type>();
     } else {
         dst.operatingConstraintsDuration = std::nullopt;
     }
-    if (src["operatingConstraintsResumeImplication"]) {
+    if (!src["operatingConstraintsResumeImplication"].isNull()) {
         dst.operatingConstraintsResumeImplication = src["operatingConstraintsResumeImplication"].as<decltype(dst.operatingConstraintsResumeImplication)::value_type>();
     } else {
         dst.operatingConstraintsResumeImplication = std::nullopt;
     }
-    if (src["powerTimeSlot"]) {
+    if (!src["powerTimeSlot"].isNull()) {
         dst.powerTimeSlot = src["powerTimeSlot"].as<decltype(dst.powerTimeSlot)::value_type>();
     } else {
         dst.powerTimeSlot = std::nullopt;
@@ -23691,12 +23691,12 @@ bool convertToJson(const SmartEnergyManagementPsAlternativesType &src, JsonVaria
 void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlternativesType &dst)
 {
 
-    if (src["relation"]) {
+    if (!src["relation"].isNull()) {
         dst.relation = src["relation"].as<decltype(dst.relation)::value_type>();
     } else {
         dst.relation = std::nullopt;
     }
-    if (src["powerSequence"]) {
+    if (!src["powerSequence"].isNull()) {
         dst.powerSequence = src["powerSequence"].as<decltype(dst.powerSequence)::value_type>();
     } else {
         dst.powerSequence = std::nullopt;
@@ -23719,12 +23719,12 @@ bool convertToJson(const SmartEnergyManagementPsDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataType &dst)
 {
 
-    if (src["nodeScheduleInformation"]) {
+    if (!src["nodeScheduleInformation"].isNull()) {
         dst.nodeScheduleInformation = src["nodeScheduleInformation"].as<decltype(dst.nodeScheduleInformation)::value_type>();
     } else {
         dst.nodeScheduleInformation = std::nullopt;
     }
-    if (src["alternatives"]) {
+    if (!src["alternatives"].isNull()) {
         dst.alternatives = src["alternatives"].as<decltype(dst.alternatives)::value_type>();
     } else {
         dst.alternatives = std::nullopt;
@@ -23744,7 +23744,7 @@ bool convertToJson(const SmartEnergyManagementPsAlternativesRelationElementsType
 void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlternativesRelationElementsType &dst)
 {
 
-    if (src["alternativesId"]) {
+    if (!src["alternativesId"].isNull()) {
         dst.alternativesId = src["alternativesId"].as<decltype(dst.alternativesId)::value_type>();
     } else {
         dst.alternativesId = std::nullopt;
@@ -23764,7 +23764,7 @@ bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotValueListElementsTy
 void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTimeSlotValueListElementsType &dst)
 {
 
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
@@ -23790,17 +23790,17 @@ bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotElementsType &src, 
 void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTimeSlotElementsType &dst)
 {
 
-    if (src["schedule"]) {
+    if (!src["schedule"].isNull()) {
         dst.schedule = src["schedule"].as<decltype(dst.schedule)::value_type>();
     } else {
         dst.schedule = std::nullopt;
     }
-    if (src["valueList"]) {
+    if (!src["valueList"].isNull()) {
         dst.valueList = src["valueList"].as<decltype(dst.valueList)::value_type>();
     } else {
         dst.valueList = std::nullopt;
     }
-    if (src["scheduleConstraints"]) {
+    if (!src["scheduleConstraints"].isNull()) {
         dst.scheduleConstraints = src["scheduleConstraints"].as<decltype(dst.scheduleConstraints)::value_type>();
     } else {
         dst.scheduleConstraints = std::nullopt;
@@ -23844,47 +23844,47 @@ bool convertToJson(const SmartEnergyManagementPsPowerSequenceElementsType &src, 
 void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerSequenceElementsType &dst)
 {
 
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
     }
-    if (src["state"]) {
+    if (!src["state"].isNull()) {
         dst.state = src["state"].as<decltype(dst.state)::value_type>();
     } else {
         dst.state = std::nullopt;
     }
-    if (src["schedule"]) {
+    if (!src["schedule"].isNull()) {
         dst.schedule = src["schedule"].as<decltype(dst.schedule)::value_type>();
     } else {
         dst.schedule = std::nullopt;
     }
-    if (src["scheduleConstraints"]) {
+    if (!src["scheduleConstraints"].isNull()) {
         dst.scheduleConstraints = src["scheduleConstraints"].as<decltype(dst.scheduleConstraints)::value_type>();
     } else {
         dst.scheduleConstraints = std::nullopt;
     }
-    if (src["schedulePreference"]) {
+    if (!src["schedulePreference"].isNull()) {
         dst.schedulePreference = src["schedulePreference"].as<decltype(dst.schedulePreference)::value_type>();
     } else {
         dst.schedulePreference = std::nullopt;
     }
-    if (src["operatingConstraintsInterrupt"]) {
+    if (!src["operatingConstraintsInterrupt"].isNull()) {
         dst.operatingConstraintsInterrupt = src["operatingConstraintsInterrupt"].as<decltype(dst.operatingConstraintsInterrupt)::value_type>();
     } else {
         dst.operatingConstraintsInterrupt = std::nullopt;
     }
-    if (src["operatingConstraintsDuration"]) {
+    if (!src["operatingConstraintsDuration"].isNull()) {
         dst.operatingConstraintsDuration = src["operatingConstraintsDuration"].as<decltype(dst.operatingConstraintsDuration)::value_type>();
     } else {
         dst.operatingConstraintsDuration = std::nullopt;
     }
-    if (src["operatingConstraintsResumeImplication"]) {
+    if (!src["operatingConstraintsResumeImplication"].isNull()) {
         dst.operatingConstraintsResumeImplication = src["operatingConstraintsResumeImplication"].as<decltype(dst.operatingConstraintsResumeImplication)::value_type>();
     } else {
         dst.operatingConstraintsResumeImplication = std::nullopt;
     }
-    if (src["powerTimeSlot"]) {
+    if (!src["powerTimeSlot"].isNull()) {
         dst.powerTimeSlot = src["powerTimeSlot"].as<decltype(dst.powerTimeSlot)::value_type>();
     } else {
         dst.powerTimeSlot = std::nullopt;
@@ -23907,12 +23907,12 @@ bool convertToJson(const SmartEnergyManagementPsAlternativesElementsType &src, J
 void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlternativesElementsType &dst)
 {
 
-    if (src["relation"]) {
+    if (!src["relation"].isNull()) {
         dst.relation = src["relation"].as<decltype(dst.relation)::value_type>();
     } else {
         dst.relation = std::nullopt;
     }
-    if (src["powerSequence"]) {
+    if (!src["powerSequence"].isNull()) {
         dst.powerSequence = src["powerSequence"].as<decltype(dst.powerSequence)::value_type>();
     } else {
         dst.powerSequence = std::nullopt;
@@ -23935,12 +23935,12 @@ bool convertToJson(const SmartEnergyManagementPsDataElementsType &src, JsonVaria
 void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataElementsType &dst)
 {
 
-    if (src["nodeScheduleInformation"]) {
+    if (!src["nodeScheduleInformation"].isNull()) {
         dst.nodeScheduleInformation = src["nodeScheduleInformation"].as<decltype(dst.nodeScheduleInformation)::value_type>();
     } else {
         dst.nodeScheduleInformation = std::nullopt;
     }
-    if (src["alternatives"]) {
+    if (!src["alternatives"].isNull()) {
         dst.alternatives = src["alternatives"].as<decltype(dst.alternatives)::value_type>();
     } else {
         dst.alternatives = std::nullopt;
@@ -23969,22 +23969,22 @@ bool convertToJson(const SmartEnergyManagementPsDataSelectorsType &src, JsonVari
 void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataSelectorsType &dst)
 {
 
-    if (src["alternativesRelation"]) {
+    if (!src["alternativesRelation"].isNull()) {
         dst.alternativesRelation = src["alternativesRelation"].as<decltype(dst.alternativesRelation)::value_type>();
     } else {
         dst.alternativesRelation = std::nullopt;
     }
-    if (src["powerSequenceDescription"]) {
+    if (!src["powerSequenceDescription"].isNull()) {
         dst.powerSequenceDescription = src["powerSequenceDescription"].as<decltype(dst.powerSequenceDescription)::value_type>();
     } else {
         dst.powerSequenceDescription = std::nullopt;
     }
-    if (src["powerTimeSlotSchedule"]) {
+    if (!src["powerTimeSlotSchedule"].isNull()) {
         dst.powerTimeSlotSchedule = src["powerTimeSlotSchedule"].as<decltype(dst.powerTimeSlotSchedule)::value_type>();
     } else {
         dst.powerTimeSlotSchedule = std::nullopt;
     }
-    if (src["powerTimeSlotValue"]) {
+    if (!src["powerTimeSlotValue"].isNull()) {
         dst.powerTimeSlotValue = src["powerTimeSlotValue"].as<decltype(dst.powerTimeSlotValue)::value_type>();
     } else {
         dst.powerTimeSlotValue = std::nullopt;
@@ -24004,7 +24004,7 @@ bool convertToJson(const SmartEnergyManagementPsPriceDataType &src, JsonVariant 
 void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceDataType &dst)
 {
 
-    if (src["price"]) {
+    if (!src["price"].isNull()) {
         dst.price = src["price"].as<decltype(dst.price)::value_type>();
     } else {
         dst.price = std::nullopt;
@@ -24024,7 +24024,7 @@ bool convertToJson(const SmartEnergyManagementPsPriceDataElementsType &src, Json
 void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceDataElementsType &dst)
 {
 
-    if (src["price"]) {
+    if (!src["price"].isNull()) {
         dst.price = src["price"].as<decltype(dst.price)::value_type>();
     } else {
         dst.price = std::nullopt;
@@ -24044,7 +24044,7 @@ bool convertToJson(const SmartEnergyManagementPsPriceDataSelectorsType &src, Jso
 void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceDataSelectorsType &dst)
 {
 
-    if (src["price"]) {
+    if (!src["price"].isNull()) {
         dst.price = src["price"].as<decltype(dst.price)::value_type>();
     } else {
         dst.price = std::nullopt;
@@ -24064,7 +24064,7 @@ bool convertToJson(const SmartEnergyManagementPsConfigurationRequestCallType &sr
 void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsConfigurationRequestCallType &dst)
 {
 
-    if (src["scheduleConfigurationRequest"]) {
+    if (!src["scheduleConfigurationRequest"].isNull()) {
         dst.scheduleConfigurationRequest = src["scheduleConfigurationRequest"].as<decltype(dst.scheduleConfigurationRequest)::value_type>();
     } else {
         dst.scheduleConfigurationRequest = std::nullopt;
@@ -24084,7 +24084,7 @@ bool convertToJson(const SmartEnergyManagementPsConfigurationRequestCallElements
 void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsConfigurationRequestCallElementsType &dst)
 {
 
-    if (src["scheduleConfigurationRequest"]) {
+    if (!src["scheduleConfigurationRequest"].isNull()) {
         dst.scheduleConfigurationRequest = src["scheduleConfigurationRequest"].as<decltype(dst.scheduleConfigurationRequest)::value_type>();
     } else {
         dst.scheduleConfigurationRequest = std::nullopt;
@@ -24104,7 +24104,7 @@ bool convertToJson(const SmartEnergyManagementPsPriceCalculationRequestCallType 
 void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceCalculationRequestCallType &dst)
 {
 
-    if (src["priceCalculationRequest"]) {
+    if (!src["priceCalculationRequest"].isNull()) {
         dst.priceCalculationRequest = src["priceCalculationRequest"].as<decltype(dst.priceCalculationRequest)::value_type>();
     } else {
         dst.priceCalculationRequest = std::nullopt;
@@ -24124,7 +24124,7 @@ bool convertToJson(const SmartEnergyManagementPsPriceCalculationRequestCallEleme
 void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceCalculationRequestCallElementsType &dst)
 {
 
-    if (src["priceCalculationRequest"]) {
+    if (!src["priceCalculationRequest"].isNull()) {
         dst.priceCalculationRequest = src["priceCalculationRequest"].as<decltype(dst.priceCalculationRequest)::value_type>();
     } else {
         dst.priceCalculationRequest = std::nullopt;
@@ -24153,22 +24153,22 @@ bool convertToJson(const MessagingDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, MessagingDataType &dst)
 {
 
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["messagingNumber"]) {
+    if (!src["messagingNumber"].isNull()) {
         dst.messagingNumber = src["messagingNumber"].as<decltype(dst.messagingNumber)::value_type>();
     } else {
         dst.messagingNumber = std::nullopt;
     }
-    if (src["type"]) {
+    if (!src["type"].isNull()) {
         dst.type = src["type"].as<decltype(dst.type)::value_type>();
     } else {
         dst.type = std::nullopt;
     }
-    if (src["text"]) {
+    if (!src["text"].isNull()) {
         dst.text = src["text"].as<decltype(dst.text)::value_type>();
     } else {
         dst.text = std::nullopt;
@@ -24197,22 +24197,22 @@ bool convertToJson(const MessagingDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, MessagingDataElementsType &dst)
 {
 
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["messagingNumber"]) {
+    if (!src["messagingNumber"].isNull()) {
         dst.messagingNumber = src["messagingNumber"].as<decltype(dst.messagingNumber)::value_type>();
     } else {
         dst.messagingNumber = std::nullopt;
     }
-    if (src["type"]) {
+    if (!src["type"].isNull()) {
         dst.type = src["type"].as<decltype(dst.type)::value_type>();
     } else {
         dst.type = std::nullopt;
     }
-    if (src["text"]) {
+    if (!src["text"].isNull()) {
         dst.text = src["text"].as<decltype(dst.text)::value_type>();
     } else {
         dst.text = std::nullopt;
@@ -24232,7 +24232,7 @@ bool convertToJson(const MessagingListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, MessagingListDataType &dst)
 {
 
-    if (src["messagingData"]) {
+    if (!src["messagingData"].isNull()) {
         dst.messagingData = src["messagingData"].as<decltype(dst.messagingData)::value_type>();
     } else {
         dst.messagingData = std::nullopt;
@@ -24255,12 +24255,12 @@ bool convertToJson(const MessagingListDataSelectorsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, MessagingListDataSelectorsType &dst)
 {
 
-    if (src["timestampInterval"]) {
+    if (!src["timestampInterval"].isNull()) {
         dst.timestampInterval = src["timestampInterval"].as<decltype(dst.timestampInterval)::value_type>();
     } else {
         dst.timestampInterval = std::nullopt;
     }
-    if (src["messagingNumber"]) {
+    if (!src["messagingNumber"].isNull()) {
         dst.messagingNumber = src["messagingNumber"].as<decltype(dst.messagingNumber)::value_type>();
     } else {
         dst.messagingNumber = std::nullopt;
@@ -24301,42 +24301,42 @@ bool convertToJson(const TariffOverallConstraintsDataType &src, JsonVariant &dst
 void convertFromJson(const JsonVariantConst &src, TariffOverallConstraintsDataType &dst)
 {
 
-    if (src["maxTariffCount"]) {
+    if (!src["maxTariffCount"].isNull()) {
         dst.maxTariffCount = src["maxTariffCount"].as<decltype(dst.maxTariffCount)::value_type>();
     } else {
         dst.maxTariffCount = std::nullopt;
     }
-    if (src["maxBoundaryCount"]) {
+    if (!src["maxBoundaryCount"].isNull()) {
         dst.maxBoundaryCount = src["maxBoundaryCount"].as<decltype(dst.maxBoundaryCount)::value_type>();
     } else {
         dst.maxBoundaryCount = std::nullopt;
     }
-    if (src["maxTierCount"]) {
+    if (!src["maxTierCount"].isNull()) {
         dst.maxTierCount = src["maxTierCount"].as<decltype(dst.maxTierCount)::value_type>();
     } else {
         dst.maxTierCount = std::nullopt;
     }
-    if (src["maxIncentiveCount"]) {
+    if (!src["maxIncentiveCount"].isNull()) {
         dst.maxIncentiveCount = src["maxIncentiveCount"].as<decltype(dst.maxIncentiveCount)::value_type>();
     } else {
         dst.maxIncentiveCount = std::nullopt;
     }
-    if (src["maxBoundariesPerTariff"]) {
+    if (!src["maxBoundariesPerTariff"].isNull()) {
         dst.maxBoundariesPerTariff = src["maxBoundariesPerTariff"].as<decltype(dst.maxBoundariesPerTariff)::value_type>();
     } else {
         dst.maxBoundariesPerTariff = std::nullopt;
     }
-    if (src["maxTiersPerTariff"]) {
+    if (!src["maxTiersPerTariff"].isNull()) {
         dst.maxTiersPerTariff = src["maxTiersPerTariff"].as<decltype(dst.maxTiersPerTariff)::value_type>();
     } else {
         dst.maxTiersPerTariff = std::nullopt;
     }
-    if (src["maxBoundariesPerTier"]) {
+    if (!src["maxBoundariesPerTier"].isNull()) {
         dst.maxBoundariesPerTier = src["maxBoundariesPerTier"].as<decltype(dst.maxBoundariesPerTier)::value_type>();
     } else {
         dst.maxBoundariesPerTier = std::nullopt;
     }
-    if (src["maxIncentivesPerTier"]) {
+    if (!src["maxIncentivesPerTier"].isNull()) {
         dst.maxIncentivesPerTier = src["maxIncentivesPerTier"].as<decltype(dst.maxIncentivesPerTier)::value_type>();
     } else {
         dst.maxIncentivesPerTier = std::nullopt;
@@ -24377,42 +24377,42 @@ bool convertToJson(const TariffOverallConstraintsDataElementsType &src, JsonVari
 void convertFromJson(const JsonVariantConst &src, TariffOverallConstraintsDataElementsType &dst)
 {
 
-    if (src["maxTariffCount"]) {
+    if (!src["maxTariffCount"].isNull()) {
         dst.maxTariffCount = src["maxTariffCount"].as<decltype(dst.maxTariffCount)::value_type>();
     } else {
         dst.maxTariffCount = std::nullopt;
     }
-    if (src["maxBoundaryCount"]) {
+    if (!src["maxBoundaryCount"].isNull()) {
         dst.maxBoundaryCount = src["maxBoundaryCount"].as<decltype(dst.maxBoundaryCount)::value_type>();
     } else {
         dst.maxBoundaryCount = std::nullopt;
     }
-    if (src["maxTierCount"]) {
+    if (!src["maxTierCount"].isNull()) {
         dst.maxTierCount = src["maxTierCount"].as<decltype(dst.maxTierCount)::value_type>();
     } else {
         dst.maxTierCount = std::nullopt;
     }
-    if (src["maxIncentiveCount"]) {
+    if (!src["maxIncentiveCount"].isNull()) {
         dst.maxIncentiveCount = src["maxIncentiveCount"].as<decltype(dst.maxIncentiveCount)::value_type>();
     } else {
         dst.maxIncentiveCount = std::nullopt;
     }
-    if (src["maxBoundariesPerTariff"]) {
+    if (!src["maxBoundariesPerTariff"].isNull()) {
         dst.maxBoundariesPerTariff = src["maxBoundariesPerTariff"].as<decltype(dst.maxBoundariesPerTariff)::value_type>();
     } else {
         dst.maxBoundariesPerTariff = std::nullopt;
     }
-    if (src["maxTiersPerTariff"]) {
+    if (!src["maxTiersPerTariff"].isNull()) {
         dst.maxTiersPerTariff = src["maxTiersPerTariff"].as<decltype(dst.maxTiersPerTariff)::value_type>();
     } else {
         dst.maxTiersPerTariff = std::nullopt;
     }
-    if (src["maxBoundariesPerTier"]) {
+    if (!src["maxBoundariesPerTier"].isNull()) {
         dst.maxBoundariesPerTier = src["maxBoundariesPerTier"].as<decltype(dst.maxBoundariesPerTier)::value_type>();
     } else {
         dst.maxBoundariesPerTier = std::nullopt;
     }
-    if (src["maxIncentivesPerTier"]) {
+    if (!src["maxIncentivesPerTier"].isNull()) {
         dst.maxIncentivesPerTier = src["maxIncentivesPerTier"].as<decltype(dst.maxIncentivesPerTier)::value_type>();
     } else {
         dst.maxIncentivesPerTier = std::nullopt;
@@ -24435,12 +24435,12 @@ bool convertToJson(const TariffDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TariffDataType &dst)
 {
 
-    if (src["tariffId"]) {
+    if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
         dst.tariffId = std::nullopt;
     }
-    if (src["activeTierId"]) {
+    if (!src["activeTierId"].isNull()) {
         dst.activeTierId = src["activeTierId"].as<decltype(dst.activeTierId)::value_type>();
     } else {
         dst.activeTierId = std::nullopt;
@@ -24463,12 +24463,12 @@ bool convertToJson(const TariffDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TariffDataElementsType &dst)
 {
 
-    if (src["tariffId"]) {
+    if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
         dst.tariffId = std::nullopt;
     }
-    if (src["activeTierId"]) {
+    if (!src["activeTierId"].isNull()) {
         dst.activeTierId = src["activeTierId"].as<decltype(dst.activeTierId)::value_type>();
     } else {
         dst.activeTierId = std::nullopt;
@@ -24488,7 +24488,7 @@ bool convertToJson(const TariffListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TariffListDataType &dst)
 {
 
-    if (src["tariffData"]) {
+    if (!src["tariffData"].isNull()) {
         dst.tariffData = src["tariffData"].as<decltype(dst.tariffData)::value_type>();
     } else {
         dst.tariffData = std::nullopt;
@@ -24511,12 +24511,12 @@ bool convertToJson(const TariffListDataSelectorsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TariffListDataSelectorsType &dst)
 {
 
-    if (src["tariffId"]) {
+    if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
         dst.tariffId = std::nullopt;
     }
-    if (src["activeTierId"]) {
+    if (!src["activeTierId"].isNull()) {
         dst.activeTierId = src["activeTierId"].as<decltype(dst.activeTierId)::value_type>();
     } else {
         dst.activeTierId = std::nullopt;
@@ -24539,12 +24539,12 @@ bool convertToJson(const TariffTierRelationDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TariffTierRelationDataType &dst)
 {
 
-    if (src["tariffId"]) {
+    if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
         dst.tariffId = std::nullopt;
     }
-    if (src["tierId"]) {
+    if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
         dst.tierId = std::nullopt;
@@ -24567,12 +24567,12 @@ bool convertToJson(const TariffTierRelationDataElementsType &src, JsonVariant &d
 void convertFromJson(const JsonVariantConst &src, TariffTierRelationDataElementsType &dst)
 {
 
-    if (src["tariffId"]) {
+    if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
         dst.tariffId = std::nullopt;
     }
-    if (src["tierId"]) {
+    if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
         dst.tierId = std::nullopt;
@@ -24592,7 +24592,7 @@ bool convertToJson(const TariffTierRelationListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TariffTierRelationListDataType &dst)
 {
 
-    if (src["tariffTierRelationData"]) {
+    if (!src["tariffTierRelationData"].isNull()) {
         dst.tariffTierRelationData = src["tariffTierRelationData"].as<decltype(dst.tariffTierRelationData)::value_type>();
     } else {
         dst.tariffTierRelationData = std::nullopt;
@@ -24615,12 +24615,12 @@ bool convertToJson(const TariffTierRelationListDataSelectorsType &src, JsonVaria
 void convertFromJson(const JsonVariantConst &src, TariffTierRelationListDataSelectorsType &dst)
 {
 
-    if (src["tariffId"]) {
+    if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
         dst.tariffId = std::nullopt;
     }
-    if (src["tierId"]) {
+    if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
         dst.tierId = std::nullopt;
@@ -24643,12 +24643,12 @@ bool convertToJson(const TariffBoundaryRelationDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationDataType &dst)
 {
 
-    if (src["tariffId"]) {
+    if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
         dst.tariffId = std::nullopt;
     }
-    if (src["boundaryId"]) {
+    if (!src["boundaryId"].isNull()) {
         dst.boundaryId = src["boundaryId"].as<decltype(dst.boundaryId)::value_type>();
     } else {
         dst.boundaryId = std::nullopt;
@@ -24671,12 +24671,12 @@ bool convertToJson(const TariffBoundaryRelationDataElementsType &src, JsonVarian
 void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationDataElementsType &dst)
 {
 
-    if (src["tariffId"]) {
+    if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
         dst.tariffId = std::nullopt;
     }
-    if (src["boundaryId"]) {
+    if (!src["boundaryId"].isNull()) {
         dst.boundaryId = src["boundaryId"].as<decltype(dst.boundaryId)::value_type>();
     } else {
         dst.boundaryId = std::nullopt;
@@ -24696,7 +24696,7 @@ bool convertToJson(const TariffBoundaryRelationListDataType &src, JsonVariant &d
 void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationListDataType &dst)
 {
 
-    if (src["tariffBoundaryRelationData"]) {
+    if (!src["tariffBoundaryRelationData"].isNull()) {
         dst.tariffBoundaryRelationData = src["tariffBoundaryRelationData"].as<decltype(dst.tariffBoundaryRelationData)::value_type>();
     } else {
         dst.tariffBoundaryRelationData = std::nullopt;
@@ -24719,12 +24719,12 @@ bool convertToJson(const TariffBoundaryRelationListDataSelectorsType &src, JsonV
 void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationListDataSelectorsType &dst)
 {
 
-    if (src["tariffId"]) {
+    if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
         dst.tariffId = std::nullopt;
     }
-    if (src["boundaryId"]) {
+    if (!src["boundaryId"].isNull()) {
         dst.boundaryId = src["boundaryId"].as<decltype(dst.boundaryId)::value_type>();
     } else {
         dst.boundaryId = std::nullopt;
@@ -24768,47 +24768,47 @@ bool convertToJson(const TariffDescriptionDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TariffDescriptionDataType &dst)
 {
 
-    if (src["tariffId"]) {
+    if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
         dst.tariffId = std::nullopt;
     }
-    if (src["commodityId"]) {
+    if (!src["commodityId"].isNull()) {
         dst.commodityId = src["commodityId"].as<decltype(dst.commodityId)::value_type>();
     } else {
         dst.commodityId = std::nullopt;
     }
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["tariffWriteable"]) {
+    if (!src["tariffWriteable"].isNull()) {
         dst.tariffWriteable = src["tariffWriteable"].as<decltype(dst.tariffWriteable)::value_type>();
     } else {
         dst.tariffWriteable = std::nullopt;
     }
-    if (src["updateRequired"]) {
+    if (!src["updateRequired"].isNull()) {
         dst.updateRequired = src["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
     } else {
         dst.updateRequired = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
     }
-    if (src["slotIdSupport"]) {
+    if (!src["slotIdSupport"].isNull()) {
         dst.slotIdSupport = src["slotIdSupport"].as<decltype(dst.slotIdSupport)::value_type>();
     } else {
         dst.slotIdSupport = std::nullopt;
@@ -24852,47 +24852,47 @@ bool convertToJson(const TariffDescriptionDataElementsType &src, JsonVariant &ds
 void convertFromJson(const JsonVariantConst &src, TariffDescriptionDataElementsType &dst)
 {
 
-    if (src["tariffId"]) {
+    if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
         dst.tariffId = std::nullopt;
     }
-    if (src["commodityId"]) {
+    if (!src["commodityId"].isNull()) {
         dst.commodityId = src["commodityId"].as<decltype(dst.commodityId)::value_type>();
     } else {
         dst.commodityId = std::nullopt;
     }
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["tariffWriteable"]) {
+    if (!src["tariffWriteable"].isNull()) {
         dst.tariffWriteable = src["tariffWriteable"].as<decltype(dst.tariffWriteable)::value_type>();
     } else {
         dst.tariffWriteable = std::nullopt;
     }
-    if (src["updateRequired"]) {
+    if (!src["updateRequired"].isNull()) {
         dst.updateRequired = src["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
     } else {
         dst.updateRequired = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
     }
-    if (src["slotIdSupport"]) {
+    if (!src["slotIdSupport"].isNull()) {
         dst.slotIdSupport = src["slotIdSupport"].as<decltype(dst.slotIdSupport)::value_type>();
     } else {
         dst.slotIdSupport = std::nullopt;
@@ -24912,7 +24912,7 @@ bool convertToJson(const TariffDescriptionListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TariffDescriptionListDataType &dst)
 {
 
-    if (src["tariffDescriptionData"]) {
+    if (!src["tariffDescriptionData"].isNull()) {
         dst.tariffDescriptionData = src["tariffDescriptionData"].as<decltype(dst.tariffDescriptionData)::value_type>();
     } else {
         dst.tariffDescriptionData = std::nullopt;
@@ -24941,22 +24941,22 @@ bool convertToJson(const TariffDescriptionListDataSelectorsType &src, JsonVarian
 void convertFromJson(const JsonVariantConst &src, TariffDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["tariffId"]) {
+    if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
         dst.tariffId = std::nullopt;
     }
-    if (src["commodityId"]) {
+    if (!src["commodityId"].isNull()) {
         dst.commodityId = src["commodityId"].as<decltype(dst.commodityId)::value_type>();
     } else {
         dst.commodityId = std::nullopt;
     }
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
@@ -24988,27 +24988,27 @@ bool convertToJson(const TierBoundaryDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TierBoundaryDataType &dst)
 {
 
-    if (src["boundaryId"]) {
+    if (!src["boundaryId"].isNull()) {
         dst.boundaryId = src["boundaryId"].as<decltype(dst.boundaryId)::value_type>();
     } else {
         dst.boundaryId = std::nullopt;
     }
-    if (src["timePeriod"]) {
+    if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
         dst.timePeriod = std::nullopt;
     }
-    if (src["timeTableId"]) {
+    if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
         dst.timeTableId = std::nullopt;
     }
-    if (src["lowerBoundaryValue"]) {
+    if (!src["lowerBoundaryValue"].isNull()) {
         dst.lowerBoundaryValue = src["lowerBoundaryValue"].as<decltype(dst.lowerBoundaryValue)::value_type>();
     } else {
         dst.lowerBoundaryValue = std::nullopt;
     }
-    if (src["upperBoundaryValue"]) {
+    if (!src["upperBoundaryValue"].isNull()) {
         dst.upperBoundaryValue = src["upperBoundaryValue"].as<decltype(dst.upperBoundaryValue)::value_type>();
     } else {
         dst.upperBoundaryValue = std::nullopt;
@@ -25040,27 +25040,27 @@ bool convertToJson(const TierBoundaryDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TierBoundaryDataElementsType &dst)
 {
 
-    if (src["boundaryId"]) {
+    if (!src["boundaryId"].isNull()) {
         dst.boundaryId = src["boundaryId"].as<decltype(dst.boundaryId)::value_type>();
     } else {
         dst.boundaryId = std::nullopt;
     }
-    if (src["timePeriod"]) {
+    if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
         dst.timePeriod = std::nullopt;
     }
-    if (src["timeTableId"]) {
+    if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
         dst.timeTableId = std::nullopt;
     }
-    if (src["lowerBoundaryValue"]) {
+    if (!src["lowerBoundaryValue"].isNull()) {
         dst.lowerBoundaryValue = src["lowerBoundaryValue"].as<decltype(dst.lowerBoundaryValue)::value_type>();
     } else {
         dst.lowerBoundaryValue = std::nullopt;
     }
-    if (src["upperBoundaryValue"]) {
+    if (!src["upperBoundaryValue"].isNull()) {
         dst.upperBoundaryValue = src["upperBoundaryValue"].as<decltype(dst.upperBoundaryValue)::value_type>();
     } else {
         dst.upperBoundaryValue = std::nullopt;
@@ -25080,7 +25080,7 @@ bool convertToJson(const TierBoundaryListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TierBoundaryListDataType &dst)
 {
 
-    if (src["tierBoundaryData"]) {
+    if (!src["tierBoundaryData"].isNull()) {
         dst.tierBoundaryData = src["tierBoundaryData"].as<decltype(dst.tierBoundaryData)::value_type>();
     } else {
         dst.tierBoundaryData = std::nullopt;
@@ -25100,7 +25100,7 @@ bool convertToJson(const TierBoundaryListDataSelectorsType &src, JsonVariant &ds
 void convertFromJson(const JsonVariantConst &src, TierBoundaryListDataSelectorsType &dst)
 {
 
-    if (src["boundaryId"]) {
+    if (!src["boundaryId"].isNull()) {
         dst.boundaryId = src["boundaryId"].as<decltype(dst.boundaryId)::value_type>();
     } else {
         dst.boundaryId = std::nullopt;
@@ -25141,42 +25141,42 @@ bool convertToJson(const TierBoundaryDescriptionDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionDataType &dst)
 {
 
-    if (src["boundaryId"]) {
+    if (!src["boundaryId"].isNull()) {
         dst.boundaryId = src["boundaryId"].as<decltype(dst.boundaryId)::value_type>();
     } else {
         dst.boundaryId = std::nullopt;
     }
-    if (src["boundaryType"]) {
+    if (!src["boundaryType"].isNull()) {
         dst.boundaryType = src["boundaryType"].as<decltype(dst.boundaryType)::value_type>();
     } else {
         dst.boundaryType = std::nullopt;
     }
-    if (src["validForTierId"]) {
+    if (!src["validForTierId"].isNull()) {
         dst.validForTierId = src["validForTierId"].as<decltype(dst.validForTierId)::value_type>();
     } else {
         dst.validForTierId = std::nullopt;
     }
-    if (src["switchToTierIdWhenLower"]) {
+    if (!src["switchToTierIdWhenLower"].isNull()) {
         dst.switchToTierIdWhenLower = src["switchToTierIdWhenLower"].as<decltype(dst.switchToTierIdWhenLower)::value_type>();
     } else {
         dst.switchToTierIdWhenLower = std::nullopt;
     }
-    if (src["switchToTierIdWhenHigher"]) {
+    if (!src["switchToTierIdWhenHigher"].isNull()) {
         dst.switchToTierIdWhenHigher = src["switchToTierIdWhenHigher"].as<decltype(dst.switchToTierIdWhenHigher)::value_type>();
     } else {
         dst.switchToTierIdWhenHigher = std::nullopt;
     }
-    if (src["boundaryUnit"]) {
+    if (!src["boundaryUnit"].isNull()) {
         dst.boundaryUnit = src["boundaryUnit"].as<decltype(dst.boundaryUnit)::value_type>();
     } else {
         dst.boundaryUnit = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -25217,42 +25217,42 @@ bool convertToJson(const TierBoundaryDescriptionDataElementsType &src, JsonVaria
 void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionDataElementsType &dst)
 {
 
-    if (src["boundaryId"]) {
+    if (!src["boundaryId"].isNull()) {
         dst.boundaryId = src["boundaryId"].as<decltype(dst.boundaryId)::value_type>();
     } else {
         dst.boundaryId = std::nullopt;
     }
-    if (src["boundaryType"]) {
+    if (!src["boundaryType"].isNull()) {
         dst.boundaryType = src["boundaryType"].as<decltype(dst.boundaryType)::value_type>();
     } else {
         dst.boundaryType = std::nullopt;
     }
-    if (src["validForTierId"]) {
+    if (!src["validForTierId"].isNull()) {
         dst.validForTierId = src["validForTierId"].as<decltype(dst.validForTierId)::value_type>();
     } else {
         dst.validForTierId = std::nullopt;
     }
-    if (src["switchToTierIdWhenLower"]) {
+    if (!src["switchToTierIdWhenLower"].isNull()) {
         dst.switchToTierIdWhenLower = src["switchToTierIdWhenLower"].as<decltype(dst.switchToTierIdWhenLower)::value_type>();
     } else {
         dst.switchToTierIdWhenLower = std::nullopt;
     }
-    if (src["switchToTierIdWhenHigher"]) {
+    if (!src["switchToTierIdWhenHigher"].isNull()) {
         dst.switchToTierIdWhenHigher = src["switchToTierIdWhenHigher"].as<decltype(dst.switchToTierIdWhenHigher)::value_type>();
     } else {
         dst.switchToTierIdWhenHigher = std::nullopt;
     }
-    if (src["boundaryUnit"]) {
+    if (!src["boundaryUnit"].isNull()) {
         dst.boundaryUnit = src["boundaryUnit"].as<decltype(dst.boundaryUnit)::value_type>();
     } else {
         dst.boundaryUnit = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -25272,7 +25272,7 @@ bool convertToJson(const TierBoundaryDescriptionListDataType &src, JsonVariant &
 void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionListDataType &dst)
 {
 
-    if (src["tierBoundaryDescriptionData"]) {
+    if (!src["tierBoundaryDescriptionData"].isNull()) {
         dst.tierBoundaryDescriptionData = src["tierBoundaryDescriptionData"].as<decltype(dst.tierBoundaryDescriptionData)::value_type>();
     } else {
         dst.tierBoundaryDescriptionData = std::nullopt;
@@ -25295,12 +25295,12 @@ bool convertToJson(const TierBoundaryDescriptionListDataSelectorsType &src, Json
 void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["boundaryId"]) {
+    if (!src["boundaryId"].isNull()) {
         dst.boundaryId = src["boundaryId"].as<decltype(dst.boundaryId)::value_type>();
     } else {
         dst.boundaryId = std::nullopt;
     }
-    if (src["boundaryType"]) {
+    if (!src["boundaryType"].isNull()) {
         dst.boundaryType = src["boundaryType"].as<decltype(dst.boundaryType)::value_type>();
     } else {
         dst.boundaryType = std::nullopt;
@@ -25332,27 +25332,27 @@ bool convertToJson(const CommodityDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, CommodityDataType &dst)
 {
 
-    if (src["commodityId"]) {
+    if (!src["commodityId"].isNull()) {
         dst.commodityId = src["commodityId"].as<decltype(dst.commodityId)::value_type>();
     } else {
         dst.commodityId = std::nullopt;
     }
-    if (src["commodityType"]) {
+    if (!src["commodityType"].isNull()) {
         dst.commodityType = src["commodityType"].as<decltype(dst.commodityType)::value_type>();
     } else {
         dst.commodityType = std::nullopt;
     }
-    if (src["positiveEnergyDirection"]) {
+    if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
         dst.positiveEnergyDirection = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -25384,27 +25384,27 @@ bool convertToJson(const CommodityDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, CommodityDataElementsType &dst)
 {
 
-    if (src["commodityId"]) {
+    if (!src["commodityId"].isNull()) {
         dst.commodityId = src["commodityId"].as<decltype(dst.commodityId)::value_type>();
     } else {
         dst.commodityId = std::nullopt;
     }
-    if (src["commodityType"]) {
+    if (!src["commodityType"].isNull()) {
         dst.commodityType = src["commodityType"].as<decltype(dst.commodityType)::value_type>();
     } else {
         dst.commodityType = std::nullopt;
     }
-    if (src["positiveEnergyDirection"]) {
+    if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
         dst.positiveEnergyDirection = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -25424,7 +25424,7 @@ bool convertToJson(const CommodityListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, CommodityListDataType &dst)
 {
 
-    if (src["commodityData"]) {
+    if (!src["commodityData"].isNull()) {
         dst.commodityData = src["commodityData"].as<decltype(dst.commodityData)::value_type>();
     } else {
         dst.commodityData = std::nullopt;
@@ -25447,12 +25447,12 @@ bool convertToJson(const CommodityListDataSelectorsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, CommodityListDataSelectorsType &dst)
 {
 
-    if (src["commodityId"]) {
+    if (!src["commodityId"].isNull()) {
         dst.commodityId = src["commodityId"].as<decltype(dst.commodityId)::value_type>();
     } else {
         dst.commodityId = std::nullopt;
     }
-    if (src["commodityType"]) {
+    if (!src["commodityType"].isNull()) {
         dst.commodityType = src["commodityType"].as<decltype(dst.commodityType)::value_type>();
     } else {
         dst.commodityType = std::nullopt;
@@ -25481,22 +25481,22 @@ bool convertToJson(const TierDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TierDataType &dst)
 {
 
-    if (src["tierId"]) {
+    if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
         dst.tierId = std::nullopt;
     }
-    if (src["timePeriod"]) {
+    if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
         dst.timePeriod = std::nullopt;
     }
-    if (src["timeTableId"]) {
+    if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
         dst.timeTableId = std::nullopt;
     }
-    if (src["activeIncentiveId"]) {
+    if (!src["activeIncentiveId"].isNull()) {
         dst.activeIncentiveId = src["activeIncentiveId"].as<decltype(dst.activeIncentiveId)::value_type>();
     } else {
         dst.activeIncentiveId = std::nullopt;
@@ -25525,22 +25525,22 @@ bool convertToJson(const TierDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TierDataElementsType &dst)
 {
 
-    if (src["tierId"]) {
+    if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
         dst.tierId = std::nullopt;
     }
-    if (src["timePeriod"]) {
+    if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
         dst.timePeriod = std::nullopt;
     }
-    if (src["timeTableId"]) {
+    if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
         dst.timeTableId = std::nullopt;
     }
-    if (src["activeIncentiveId"]) {
+    if (!src["activeIncentiveId"].isNull()) {
         dst.activeIncentiveId = src["activeIncentiveId"].as<decltype(dst.activeIncentiveId)::value_type>();
     } else {
         dst.activeIncentiveId = std::nullopt;
@@ -25560,7 +25560,7 @@ bool convertToJson(const TierListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TierListDataType &dst)
 {
 
-    if (src["tierData"]) {
+    if (!src["tierData"].isNull()) {
         dst.tierData = src["tierData"].as<decltype(dst.tierData)::value_type>();
     } else {
         dst.tierData = std::nullopt;
@@ -25583,12 +25583,12 @@ bool convertToJson(const TierListDataSelectorsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TierListDataSelectorsType &dst)
 {
 
-    if (src["tierId"]) {
+    if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
         dst.tierId = std::nullopt;
     }
-    if (src["activeIncentiveId"]) {
+    if (!src["activeIncentiveId"].isNull()) {
         dst.activeIncentiveId = src["activeIncentiveId"].as<decltype(dst.activeIncentiveId)::value_type>();
     } else {
         dst.activeIncentiveId = std::nullopt;
@@ -25611,12 +25611,12 @@ bool convertToJson(const TierIncentiveRelationDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationDataType &dst)
 {
 
-    if (src["tierId"]) {
+    if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
         dst.tierId = std::nullopt;
     }
-    if (src["incentiveId"]) {
+    if (!src["incentiveId"].isNull()) {
         dst.incentiveId = src["incentiveId"].as<decltype(dst.incentiveId)::value_type>();
     } else {
         dst.incentiveId = std::nullopt;
@@ -25639,12 +25639,12 @@ bool convertToJson(const TierIncentiveRelationDataElementsType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationDataElementsType &dst)
 {
 
-    if (src["tierId"]) {
+    if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
         dst.tierId = std::nullopt;
     }
-    if (src["incentiveId"]) {
+    if (!src["incentiveId"].isNull()) {
         dst.incentiveId = src["incentiveId"].as<decltype(dst.incentiveId)::value_type>();
     } else {
         dst.incentiveId = std::nullopt;
@@ -25664,7 +25664,7 @@ bool convertToJson(const TierIncentiveRelationListDataType &src, JsonVariant &ds
 void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationListDataType &dst)
 {
 
-    if (src["tierIncentiveRelationData"]) {
+    if (!src["tierIncentiveRelationData"].isNull()) {
         dst.tierIncentiveRelationData = src["tierIncentiveRelationData"].as<decltype(dst.tierIncentiveRelationData)::value_type>();
     } else {
         dst.tierIncentiveRelationData = std::nullopt;
@@ -25687,12 +25687,12 @@ bool convertToJson(const TierIncentiveRelationListDataSelectorsType &src, JsonVa
 void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationListDataSelectorsType &dst)
 {
 
-    if (src["tierId"]) {
+    if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
         dst.tierId = std::nullopt;
     }
-    if (src["incentiveId"]) {
+    if (!src["incentiveId"].isNull()) {
         dst.incentiveId = src["incentiveId"].as<decltype(dst.incentiveId)::value_type>();
     } else {
         dst.incentiveId = std::nullopt;
@@ -25721,22 +25721,22 @@ bool convertToJson(const TierDescriptionDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TierDescriptionDataType &dst)
 {
 
-    if (src["tierId"]) {
+    if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
         dst.tierId = std::nullopt;
     }
-    if (src["tierType"]) {
+    if (!src["tierType"].isNull()) {
         dst.tierType = src["tierType"].as<decltype(dst.tierType)::value_type>();
     } else {
         dst.tierType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -25765,22 +25765,22 @@ bool convertToJson(const TierDescriptionDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TierDescriptionDataElementsType &dst)
 {
 
-    if (src["tierId"]) {
+    if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
         dst.tierId = std::nullopt;
     }
-    if (src["tierType"]) {
+    if (!src["tierType"].isNull()) {
         dst.tierType = src["tierType"].as<decltype(dst.tierType)::value_type>();
     } else {
         dst.tierType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -25800,7 +25800,7 @@ bool convertToJson(const TierDescriptionListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TierDescriptionListDataType &dst)
 {
 
-    if (src["tierDescriptionData"]) {
+    if (!src["tierDescriptionData"].isNull()) {
         dst.tierDescriptionData = src["tierDescriptionData"].as<decltype(dst.tierDescriptionData)::value_type>();
     } else {
         dst.tierDescriptionData = std::nullopt;
@@ -25823,12 +25823,12 @@ bool convertToJson(const TierDescriptionListDataSelectorsType &src, JsonVariant 
 void convertFromJson(const JsonVariantConst &src, TierDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["tierId"]) {
+    if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
         dst.tierId = std::nullopt;
     }
-    if (src["tierType"]) {
+    if (!src["tierType"].isNull()) {
         dst.tierType = src["tierType"].as<decltype(dst.tierType)::value_type>();
     } else {
         dst.tierType = std::nullopt;
@@ -25863,32 +25863,32 @@ bool convertToJson(const IncentiveDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, IncentiveDataType &dst)
 {
 
-    if (src["incentiveId"]) {
+    if (!src["incentiveId"].isNull()) {
         dst.incentiveId = src["incentiveId"].as<decltype(dst.incentiveId)::value_type>();
     } else {
         dst.incentiveId = std::nullopt;
     }
-    if (src["valueType"]) {
+    if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
         dst.valueType = std::nullopt;
     }
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["timePeriod"]) {
+    if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
         dst.timePeriod = std::nullopt;
     }
-    if (src["timeTableId"]) {
+    if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
         dst.timeTableId = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
@@ -25923,32 +25923,32 @@ bool convertToJson(const IncentiveDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, IncentiveDataElementsType &dst)
 {
 
-    if (src["incentiveId"]) {
+    if (!src["incentiveId"].isNull()) {
         dst.incentiveId = src["incentiveId"].as<decltype(dst.incentiveId)::value_type>();
     } else {
         dst.incentiveId = std::nullopt;
     }
-    if (src["valueType"]) {
+    if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
         dst.valueType = std::nullopt;
     }
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["timePeriod"]) {
+    if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
         dst.timePeriod = std::nullopt;
     }
-    if (src["timeTableId"]) {
+    if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
         dst.timeTableId = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
@@ -25968,7 +25968,7 @@ bool convertToJson(const IncentiveListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, IncentiveListDataType &dst)
 {
 
-    if (src["incentiveData"]) {
+    if (!src["incentiveData"].isNull()) {
         dst.incentiveData = src["incentiveData"].as<decltype(dst.incentiveData)::value_type>();
     } else {
         dst.incentiveData = std::nullopt;
@@ -25994,17 +25994,17 @@ bool convertToJson(const IncentiveListDataSelectorsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, IncentiveListDataSelectorsType &dst)
 {
 
-    if (src["incentiveId"]) {
+    if (!src["incentiveId"].isNull()) {
         dst.incentiveId = src["incentiveId"].as<decltype(dst.incentiveId)::value_type>();
     } else {
         dst.incentiveId = std::nullopt;
     }
-    if (src["valueType"]) {
+    if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
         dst.valueType = std::nullopt;
     }
-    if (src["timestampInterval"]) {
+    if (!src["timestampInterval"].isNull()) {
         dst.timestampInterval = src["timestampInterval"].as<decltype(dst.timestampInterval)::value_type>();
     } else {
         dst.timestampInterval = std::nullopt;
@@ -26042,37 +26042,37 @@ bool convertToJson(const IncentiveDescriptionDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionDataType &dst)
 {
 
-    if (src["incentiveId"]) {
+    if (!src["incentiveId"].isNull()) {
         dst.incentiveId = src["incentiveId"].as<decltype(dst.incentiveId)::value_type>();
     } else {
         dst.incentiveId = std::nullopt;
     }
-    if (src["incentiveType"]) {
+    if (!src["incentiveType"].isNull()) {
         dst.incentiveType = src["incentiveType"].as<decltype(dst.incentiveType)::value_type>();
     } else {
         dst.incentiveType = std::nullopt;
     }
-    if (src["incentivePriority"]) {
+    if (!src["incentivePriority"].isNull()) {
         dst.incentivePriority = src["incentivePriority"].as<decltype(dst.incentivePriority)::value_type>();
     } else {
         dst.incentivePriority = std::nullopt;
     }
-    if (src["currency"]) {
+    if (!src["currency"].isNull()) {
         dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
     } else {
         dst.currency = std::nullopt;
     }
-    if (src["unit"]) {
+    if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
         dst.unit = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -26110,37 +26110,37 @@ bool convertToJson(const IncentiveDescriptionDataElementsType &src, JsonVariant 
 void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionDataElementsType &dst)
 {
 
-    if (src["incentiveId"]) {
+    if (!src["incentiveId"].isNull()) {
         dst.incentiveId = src["incentiveId"].as<decltype(dst.incentiveId)::value_type>();
     } else {
         dst.incentiveId = std::nullopt;
     }
-    if (src["incentiveType"]) {
+    if (!src["incentiveType"].isNull()) {
         dst.incentiveType = src["incentiveType"].as<decltype(dst.incentiveType)::value_type>();
     } else {
         dst.incentiveType = std::nullopt;
     }
-    if (src["incentivePriority"]) {
+    if (!src["incentivePriority"].isNull()) {
         dst.incentivePriority = src["incentivePriority"].as<decltype(dst.incentivePriority)::value_type>();
     } else {
         dst.incentivePriority = std::nullopt;
     }
-    if (src["currency"]) {
+    if (!src["currency"].isNull()) {
         dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
     } else {
         dst.currency = std::nullopt;
     }
-    if (src["unit"]) {
+    if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
         dst.unit = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -26160,7 +26160,7 @@ bool convertToJson(const IncentiveDescriptionListDataType &src, JsonVariant &dst
 void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionListDataType &dst)
 {
 
-    if (src["incentiveDescriptionData"]) {
+    if (!src["incentiveDescriptionData"].isNull()) {
         dst.incentiveDescriptionData = src["incentiveDescriptionData"].as<decltype(dst.incentiveDescriptionData)::value_type>();
     } else {
         dst.incentiveDescriptionData = std::nullopt;
@@ -26183,12 +26183,12 @@ bool convertToJson(const IncentiveDescriptionListDataSelectorsType &src, JsonVar
 void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["incentiveId"]) {
+    if (!src["incentiveId"].isNull()) {
         dst.incentiveId = src["incentiveId"].as<decltype(dst.incentiveId)::value_type>();
     } else {
         dst.incentiveId = std::nullopt;
     }
-    if (src["incentiveType"]) {
+    if (!src["incentiveType"].isNull()) {
         dst.incentiveType = src["incentiveType"].as<decltype(dst.incentiveType)::value_type>();
     } else {
         dst.incentiveType = std::nullopt;
@@ -26220,27 +26220,27 @@ bool convertToJson(const StateInformationDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, StateInformationDataType &dst)
 {
 
-    if (src["stateInformationId"]) {
+    if (!src["stateInformationId"].isNull()) {
         dst.stateInformationId = src["stateInformationId"].as<decltype(dst.stateInformationId)::value_type>();
     } else {
         dst.stateInformationId = std::nullopt;
     }
-    if (src["stateInformation"]) {
+    if (!src["stateInformation"].isNull()) {
         dst.stateInformation = src["stateInformation"].as<decltype(dst.stateInformation)::value_type>();
     } else {
         dst.stateInformation = std::nullopt;
     }
-    if (src["isActive"]) {
+    if (!src["isActive"].isNull()) {
         dst.isActive = src["isActive"].as<decltype(dst.isActive)::value_type>();
     } else {
         dst.isActive = std::nullopt;
     }
-    if (src["category"]) {
+    if (!src["category"].isNull()) {
         dst.category = src["category"].as<decltype(dst.category)::value_type>();
     } else {
         dst.category = std::nullopt;
     }
-    if (src["timeOfLastChange"]) {
+    if (!src["timeOfLastChange"].isNull()) {
         dst.timeOfLastChange = src["timeOfLastChange"].as<decltype(dst.timeOfLastChange)::value_type>();
     } else {
         dst.timeOfLastChange = std::nullopt;
@@ -26272,27 +26272,27 @@ bool convertToJson(const StateInformationDataElementsType &src, JsonVariant &dst
 void convertFromJson(const JsonVariantConst &src, StateInformationDataElementsType &dst)
 {
 
-    if (src["stateInformationId"]) {
+    if (!src["stateInformationId"].isNull()) {
         dst.stateInformationId = src["stateInformationId"].as<decltype(dst.stateInformationId)::value_type>();
     } else {
         dst.stateInformationId = std::nullopt;
     }
-    if (src["stateInformation"]) {
+    if (!src["stateInformation"].isNull()) {
         dst.stateInformation = src["stateInformation"].as<decltype(dst.stateInformation)::value_type>();
     } else {
         dst.stateInformation = std::nullopt;
     }
-    if (src["isActive"]) {
+    if (!src["isActive"].isNull()) {
         dst.isActive = src["isActive"].as<decltype(dst.isActive)::value_type>();
     } else {
         dst.isActive = std::nullopt;
     }
-    if (src["category"]) {
+    if (!src["category"].isNull()) {
         dst.category = src["category"].as<decltype(dst.category)::value_type>();
     } else {
         dst.category = std::nullopt;
     }
-    if (src["timeOfLastChange"]) {
+    if (!src["timeOfLastChange"].isNull()) {
         dst.timeOfLastChange = src["timeOfLastChange"].as<decltype(dst.timeOfLastChange)::value_type>();
     } else {
         dst.timeOfLastChange = std::nullopt;
@@ -26312,7 +26312,7 @@ bool convertToJson(const StateInformationListDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, StateInformationListDataType &dst)
 {
 
-    if (src["stateInformationData"]) {
+    if (!src["stateInformationData"].isNull()) {
         dst.stateInformationData = src["stateInformationData"].as<decltype(dst.stateInformationData)::value_type>();
     } else {
         dst.stateInformationData = std::nullopt;
@@ -26341,22 +26341,22 @@ bool convertToJson(const StateInformationListDataSelectorsType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, StateInformationListDataSelectorsType &dst)
 {
 
-    if (src["stateInformationId"]) {
+    if (!src["stateInformationId"].isNull()) {
         dst.stateInformationId = src["stateInformationId"].as<decltype(dst.stateInformationId)::value_type>();
     } else {
         dst.stateInformationId = std::nullopt;
     }
-    if (src["stateInformation"]) {
+    if (!src["stateInformation"].isNull()) {
         dst.stateInformation = src["stateInformation"].as<decltype(dst.stateInformation)::value_type>();
     } else {
         dst.stateInformation = std::nullopt;
     }
-    if (src["isActive"]) {
+    if (!src["isActive"].isNull()) {
         dst.isActive = src["isActive"].as<decltype(dst.isActive)::value_type>();
     } else {
         dst.isActive = std::nullopt;
     }
-    if (src["category"]) {
+    if (!src["category"].isNull()) {
         dst.category = src["category"].as<decltype(dst.category)::value_type>();
     } else {
         dst.category = std::nullopt;
@@ -26409,62 +26409,62 @@ bool convertToJson(const ElectricalConnectionParameterDescriptionDataType &src, 
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterDescriptionDataType &dst)
 {
 
-    if (src["electricalConnectionId"]) {
+    if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
         dst.electricalConnectionId = std::nullopt;
     }
-    if (src["parameterId"]) {
+    if (!src["parameterId"].isNull()) {
         dst.parameterId = src["parameterId"].as<decltype(dst.parameterId)::value_type>();
     } else {
         dst.parameterId = std::nullopt;
     }
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["voltageType"]) {
+    if (!src["voltageType"].isNull()) {
         dst.voltageType = src["voltageType"].as<decltype(dst.voltageType)::value_type>();
     } else {
         dst.voltageType = std::nullopt;
     }
-    if (src["acMeasuredPhases"]) {
+    if (!src["acMeasuredPhases"].isNull()) {
         dst.acMeasuredPhases = src["acMeasuredPhases"].as<decltype(dst.acMeasuredPhases)::value_type>();
     } else {
         dst.acMeasuredPhases = std::nullopt;
     }
-    if (src["acMeasuredInReferenceTo"]) {
+    if (!src["acMeasuredInReferenceTo"].isNull()) {
         dst.acMeasuredInReferenceTo = src["acMeasuredInReferenceTo"].as<decltype(dst.acMeasuredInReferenceTo)::value_type>();
     } else {
         dst.acMeasuredInReferenceTo = std::nullopt;
     }
-    if (src["acMeasurementType"]) {
+    if (!src["acMeasurementType"].isNull()) {
         dst.acMeasurementType = src["acMeasurementType"].as<decltype(dst.acMeasurementType)::value_type>();
     } else {
         dst.acMeasurementType = std::nullopt;
     }
-    if (src["acMeasurementVariant"]) {
+    if (!src["acMeasurementVariant"].isNull()) {
         dst.acMeasurementVariant = src["acMeasurementVariant"].as<decltype(dst.acMeasurementVariant)::value_type>();
     } else {
         dst.acMeasurementVariant = std::nullopt;
     }
-    if (src["acMeasuredHarmonic"]) {
+    if (!src["acMeasuredHarmonic"].isNull()) {
         dst.acMeasuredHarmonic = src["acMeasuredHarmonic"].as<decltype(dst.acMeasuredHarmonic)::value_type>();
     } else {
         dst.acMeasuredHarmonic = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -26517,62 +26517,62 @@ bool convertToJson(const ElectricalConnectionParameterDescriptionDataElementsTyp
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterDescriptionDataElementsType &dst)
 {
 
-    if (src["electricalConnectionId"]) {
+    if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
         dst.electricalConnectionId = std::nullopt;
     }
-    if (src["parameterId"]) {
+    if (!src["parameterId"].isNull()) {
         dst.parameterId = src["parameterId"].as<decltype(dst.parameterId)::value_type>();
     } else {
         dst.parameterId = std::nullopt;
     }
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["voltageType"]) {
+    if (!src["voltageType"].isNull()) {
         dst.voltageType = src["voltageType"].as<decltype(dst.voltageType)::value_type>();
     } else {
         dst.voltageType = std::nullopt;
     }
-    if (src["acMeasuredPhases"]) {
+    if (!src["acMeasuredPhases"].isNull()) {
         dst.acMeasuredPhases = src["acMeasuredPhases"].as<decltype(dst.acMeasuredPhases)::value_type>();
     } else {
         dst.acMeasuredPhases = std::nullopt;
     }
-    if (src["acMeasuredInReferenceTo"]) {
+    if (!src["acMeasuredInReferenceTo"].isNull()) {
         dst.acMeasuredInReferenceTo = src["acMeasuredInReferenceTo"].as<decltype(dst.acMeasuredInReferenceTo)::value_type>();
     } else {
         dst.acMeasuredInReferenceTo = std::nullopt;
     }
-    if (src["acMeasurementType"]) {
+    if (!src["acMeasurementType"].isNull()) {
         dst.acMeasurementType = src["acMeasurementType"].as<decltype(dst.acMeasurementType)::value_type>();
     } else {
         dst.acMeasurementType = std::nullopt;
     }
-    if (src["acMeasurementVariant"]) {
+    if (!src["acMeasurementVariant"].isNull()) {
         dst.acMeasurementVariant = src["acMeasurementVariant"].as<decltype(dst.acMeasurementVariant)::value_type>();
     } else {
         dst.acMeasurementVariant = std::nullopt;
     }
-    if (src["acMeasuredHarmonic"]) {
+    if (!src["acMeasuredHarmonic"].isNull()) {
         dst.acMeasuredHarmonic = src["acMeasuredHarmonic"].as<decltype(dst.acMeasuredHarmonic)::value_type>();
     } else {
         dst.acMeasuredHarmonic = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -26592,7 +26592,7 @@ bool convertToJson(const ElectricalConnectionParameterDescriptionListDataType &s
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterDescriptionListDataType &dst)
 {
 
-    if (src["electricalConnectionParameterDescriptionData"]) {
+    if (!src["electricalConnectionParameterDescriptionData"].isNull()) {
         dst.electricalConnectionParameterDescriptionData = src["electricalConnectionParameterDescriptionData"].as<decltype(dst.electricalConnectionParameterDescriptionData)::value_type>();
     } else {
         dst.electricalConnectionParameterDescriptionData = std::nullopt;
@@ -26621,22 +26621,22 @@ bool convertToJson(const ElectricalConnectionParameterDescriptionListDataSelecto
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["electricalConnectionId"]) {
+    if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
         dst.electricalConnectionId = std::nullopt;
     }
-    if (src["parameterId"]) {
+    if (!src["parameterId"].isNull()) {
         dst.parameterId = src["parameterId"].as<decltype(dst.parameterId)::value_type>();
     } else {
         dst.parameterId = std::nullopt;
     }
-    if (src["measurementId"]) {
+    if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
         dst.measurementId = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
@@ -26662,17 +26662,17 @@ bool convertToJson(const ElectricalConnectionPermittedValueSetDataType &src, Jso
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedValueSetDataType &dst)
 {
 
-    if (src["electricalConnectionId"]) {
+    if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
         dst.electricalConnectionId = std::nullopt;
     }
-    if (src["parameterId"]) {
+    if (!src["parameterId"].isNull()) {
         dst.parameterId = src["parameterId"].as<decltype(dst.parameterId)::value_type>();
     } else {
         dst.parameterId = std::nullopt;
     }
-    if (src["permittedValueSet"]) {
+    if (!src["permittedValueSet"].isNull()) {
         dst.permittedValueSet = src["permittedValueSet"].as<decltype(dst.permittedValueSet)::value_type>();
     } else {
         dst.permittedValueSet = std::nullopt;
@@ -26698,17 +26698,17 @@ bool convertToJson(const ElectricalConnectionPermittedValueSetDataElementsType &
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedValueSetDataElementsType &dst)
 {
 
-    if (src["electricalConnectionId"]) {
+    if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
         dst.electricalConnectionId = std::nullopt;
     }
-    if (src["parameterId"]) {
+    if (!src["parameterId"].isNull()) {
         dst.parameterId = src["parameterId"].as<decltype(dst.parameterId)::value_type>();
     } else {
         dst.parameterId = std::nullopt;
     }
-    if (src["permittedValueSet"]) {
+    if (!src["permittedValueSet"].isNull()) {
         dst.permittedValueSet = src["permittedValueSet"].as<decltype(dst.permittedValueSet)::value_type>();
     } else {
         dst.permittedValueSet = std::nullopt;
@@ -26728,7 +26728,7 @@ bool convertToJson(const ElectricalConnectionPermittedValueSetListDataType &src,
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedValueSetListDataType &dst)
 {
 
-    if (src["electricalConnectionPermittedValueSetData"]) {
+    if (!src["electricalConnectionPermittedValueSetData"].isNull()) {
         dst.electricalConnectionPermittedValueSetData = src["electricalConnectionPermittedValueSetData"].as<decltype(dst.electricalConnectionPermittedValueSetData)::value_type>();
     } else {
         dst.electricalConnectionPermittedValueSetData = std::nullopt;
@@ -26751,12 +26751,12 @@ bool convertToJson(const ElectricalConnectionPermittedValueSetListDataSelectorsT
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedValueSetListDataSelectorsType &dst)
 {
 
-    if (src["electricalConnectionId"]) {
+    if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
         dst.electricalConnectionId = std::nullopt;
     }
-    if (src["parameterId"]) {
+    if (!src["parameterId"].isNull()) {
         dst.parameterId = src["parameterId"].as<decltype(dst.parameterId)::value_type>();
     } else {
         dst.parameterId = std::nullopt;
@@ -26794,37 +26794,37 @@ bool convertToJson(const ElectricalConnectionCharacteristicDataType &src, JsonVa
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicDataType &dst)
 {
 
-    if (src["electricalConnectionId"]) {
+    if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
         dst.electricalConnectionId = std::nullopt;
     }
-    if (src["parameterId"]) {
+    if (!src["parameterId"].isNull()) {
         dst.parameterId = src["parameterId"].as<decltype(dst.parameterId)::value_type>();
     } else {
         dst.parameterId = std::nullopt;
     }
-    if (src["characteristicId"]) {
+    if (!src["characteristicId"].isNull()) {
         dst.characteristicId = src["characteristicId"].as<decltype(dst.characteristicId)::value_type>();
     } else {
         dst.characteristicId = std::nullopt;
     }
-    if (src["characteristicContext"]) {
+    if (!src["characteristicContext"].isNull()) {
         dst.characteristicContext = src["characteristicContext"].as<decltype(dst.characteristicContext)::value_type>();
     } else {
         dst.characteristicContext = std::nullopt;
     }
-    if (src["characteristicType"]) {
+    if (!src["characteristicType"].isNull()) {
         dst.characteristicType = src["characteristicType"].as<decltype(dst.characteristicType)::value_type>();
     } else {
         dst.characteristicType = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
     }
-    if (src["unit"]) {
+    if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
         dst.unit = std::nullopt;
@@ -26862,37 +26862,37 @@ bool convertToJson(const ElectricalConnectionCharacteristicDataElementsType &src
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicDataElementsType &dst)
 {
 
-    if (src["electricalConnectionId"]) {
+    if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
         dst.electricalConnectionId = std::nullopt;
     }
-    if (src["parameterId"]) {
+    if (!src["parameterId"].isNull()) {
         dst.parameterId = src["parameterId"].as<decltype(dst.parameterId)::value_type>();
     } else {
         dst.parameterId = std::nullopt;
     }
-    if (src["characteristicId"]) {
+    if (!src["characteristicId"].isNull()) {
         dst.characteristicId = src["characteristicId"].as<decltype(dst.characteristicId)::value_type>();
     } else {
         dst.characteristicId = std::nullopt;
     }
-    if (src["characteristicContext"]) {
+    if (!src["characteristicContext"].isNull()) {
         dst.characteristicContext = src["characteristicContext"].as<decltype(dst.characteristicContext)::value_type>();
     } else {
         dst.characteristicContext = std::nullopt;
     }
-    if (src["characteristicType"]) {
+    if (!src["characteristicType"].isNull()) {
         dst.characteristicType = src["characteristicType"].as<decltype(dst.characteristicType)::value_type>();
     } else {
         dst.characteristicType = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
     }
-    if (src["unit"]) {
+    if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
         dst.unit = std::nullopt;
@@ -26912,7 +26912,7 @@ bool convertToJson(const ElectricalConnectionCharacteristicListDataType &src, Js
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicListDataType &dst)
 {
 
-    if (src["electricalConnectionCharacteristicData"]) {
+    if (!src["electricalConnectionCharacteristicData"].isNull()) {
         dst.electricalConnectionCharacteristicData = src["electricalConnectionCharacteristicData"].as<decltype(dst.electricalConnectionCharacteristicData)::value_type>();
     } else {
         dst.electricalConnectionCharacteristicData = std::nullopt;
@@ -26944,27 +26944,27 @@ bool convertToJson(const ElectricalConnectionCharacteristicListDataSelectorsType
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteristicListDataSelectorsType &dst)
 {
 
-    if (src["electricalConnectionId"]) {
+    if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
         dst.electricalConnectionId = std::nullopt;
     }
-    if (src["parameterId"]) {
+    if (!src["parameterId"].isNull()) {
         dst.parameterId = src["parameterId"].as<decltype(dst.parameterId)::value_type>();
     } else {
         dst.parameterId = std::nullopt;
     }
-    if (src["characteristicId"]) {
+    if (!src["characteristicId"].isNull()) {
         dst.characteristicId = src["characteristicId"].as<decltype(dst.characteristicId)::value_type>();
     } else {
         dst.characteristicId = std::nullopt;
     }
-    if (src["characteristicContext"]) {
+    if (!src["characteristicContext"].isNull()) {
         dst.characteristicContext = src["characteristicContext"].as<decltype(dst.characteristicContext)::value_type>();
     } else {
         dst.characteristicContext = std::nullopt;
     }
-    if (src["characteristicType"]) {
+    if (!src["characteristicType"].isNull()) {
         dst.characteristicType = src["characteristicType"].as<decltype(dst.characteristicType)::value_type>();
     } else {
         dst.characteristicType = std::nullopt;
@@ -27002,37 +27002,37 @@ bool convertToJson(const ElectricalConnectionStateDataType &src, JsonVariant &ds
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateDataType &dst)
 {
 
-    if (src["electricalConnectionId"]) {
+    if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
         dst.electricalConnectionId = std::nullopt;
     }
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["currentEnergyMode"]) {
+    if (!src["currentEnergyMode"].isNull()) {
         dst.currentEnergyMode = src["currentEnergyMode"].as<decltype(dst.currentEnergyMode)::value_type>();
     } else {
         dst.currentEnergyMode = std::nullopt;
     }
-    if (src["consumptionTime"]) {
+    if (!src["consumptionTime"].isNull()) {
         dst.consumptionTime = src["consumptionTime"].as<decltype(dst.consumptionTime)::value_type>();
     } else {
         dst.consumptionTime = std::nullopt;
     }
-    if (src["productionTime"]) {
+    if (!src["productionTime"].isNull()) {
         dst.productionTime = src["productionTime"].as<decltype(dst.productionTime)::value_type>();
     } else {
         dst.productionTime = std::nullopt;
     }
-    if (src["totalConsumptionTime"]) {
+    if (!src["totalConsumptionTime"].isNull()) {
         dst.totalConsumptionTime = src["totalConsumptionTime"].as<decltype(dst.totalConsumptionTime)::value_type>();
     } else {
         dst.totalConsumptionTime = std::nullopt;
     }
-    if (src["totalProductionTime"]) {
+    if (!src["totalProductionTime"].isNull()) {
         dst.totalProductionTime = src["totalProductionTime"].as<decltype(dst.totalProductionTime)::value_type>();
     } else {
         dst.totalProductionTime = std::nullopt;
@@ -27070,37 +27070,37 @@ bool convertToJson(const ElectricalConnectionStateDataElementsType &src, JsonVar
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateDataElementsType &dst)
 {
 
-    if (src["electricalConnectionId"]) {
+    if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
         dst.electricalConnectionId = std::nullopt;
     }
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["currentEnergyMode"]) {
+    if (!src["currentEnergyMode"].isNull()) {
         dst.currentEnergyMode = src["currentEnergyMode"].as<decltype(dst.currentEnergyMode)::value_type>();
     } else {
         dst.currentEnergyMode = std::nullopt;
     }
-    if (src["consumptionTime"]) {
+    if (!src["consumptionTime"].isNull()) {
         dst.consumptionTime = src["consumptionTime"].as<decltype(dst.consumptionTime)::value_type>();
     } else {
         dst.consumptionTime = std::nullopt;
     }
-    if (src["productionTime"]) {
+    if (!src["productionTime"].isNull()) {
         dst.productionTime = src["productionTime"].as<decltype(dst.productionTime)::value_type>();
     } else {
         dst.productionTime = std::nullopt;
     }
-    if (src["totalConsumptionTime"]) {
+    if (!src["totalConsumptionTime"].isNull()) {
         dst.totalConsumptionTime = src["totalConsumptionTime"].as<decltype(dst.totalConsumptionTime)::value_type>();
     } else {
         dst.totalConsumptionTime = std::nullopt;
     }
-    if (src["totalProductionTime"]) {
+    if (!src["totalProductionTime"].isNull()) {
         dst.totalProductionTime = src["totalProductionTime"].as<decltype(dst.totalProductionTime)::value_type>();
     } else {
         dst.totalProductionTime = std::nullopt;
@@ -27120,7 +27120,7 @@ bool convertToJson(const ElectricalConnectionStateListDataType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateListDataType &dst)
 {
 
-    if (src["electricalConnectionStateData"]) {
+    if (!src["electricalConnectionStateData"].isNull()) {
         dst.electricalConnectionStateData = src["electricalConnectionStateData"].as<decltype(dst.electricalConnectionStateData)::value_type>();
     } else {
         dst.electricalConnectionStateData = std::nullopt;
@@ -27140,7 +27140,7 @@ bool convertToJson(const ElectricalConnectionStateListDataSelectorsType &src, Js
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateListDataSelectorsType &dst)
 {
 
-    if (src["electricalConnectionId"]) {
+    if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
         dst.electricalConnectionId = std::nullopt;
@@ -27181,42 +27181,42 @@ bool convertToJson(const ElectricalConnectionDescriptionDataType &src, JsonVaria
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptionDataType &dst)
 {
 
-    if (src["electricalConnectionId"]) {
+    if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
         dst.electricalConnectionId = std::nullopt;
     }
-    if (src["powerSupplyType"]) {
+    if (!src["powerSupplyType"].isNull()) {
         dst.powerSupplyType = src["powerSupplyType"].as<decltype(dst.powerSupplyType)::value_type>();
     } else {
         dst.powerSupplyType = std::nullopt;
     }
-    if (src["acConnectedPhases"]) {
+    if (!src["acConnectedPhases"].isNull()) {
         dst.acConnectedPhases = src["acConnectedPhases"].as<decltype(dst.acConnectedPhases)::value_type>();
     } else {
         dst.acConnectedPhases = std::nullopt;
     }
-    if (src["acRmsPeriodDuration"]) {
+    if (!src["acRmsPeriodDuration"].isNull()) {
         dst.acRmsPeriodDuration = src["acRmsPeriodDuration"].as<decltype(dst.acRmsPeriodDuration)::value_type>();
     } else {
         dst.acRmsPeriodDuration = std::nullopt;
     }
-    if (src["positiveEnergyDirection"]) {
+    if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
         dst.positiveEnergyDirection = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -27257,42 +27257,42 @@ bool convertToJson(const ElectricalConnectionDescriptionDataElementsType &src, J
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptionDataElementsType &dst)
 {
 
-    if (src["electricalConnectionId"]) {
+    if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
         dst.electricalConnectionId = std::nullopt;
     }
-    if (src["powerSupplyType"]) {
+    if (!src["powerSupplyType"].isNull()) {
         dst.powerSupplyType = src["powerSupplyType"].as<decltype(dst.powerSupplyType)::value_type>();
     } else {
         dst.powerSupplyType = std::nullopt;
     }
-    if (src["acConnectedPhases"]) {
+    if (!src["acConnectedPhases"].isNull()) {
         dst.acConnectedPhases = src["acConnectedPhases"].as<decltype(dst.acConnectedPhases)::value_type>();
     } else {
         dst.acConnectedPhases = std::nullopt;
     }
-    if (src["acRmsPeriodDuration"]) {
+    if (!src["acRmsPeriodDuration"].isNull()) {
         dst.acRmsPeriodDuration = src["acRmsPeriodDuration"].as<decltype(dst.acRmsPeriodDuration)::value_type>();
     } else {
         dst.acRmsPeriodDuration = std::nullopt;
     }
-    if (src["positiveEnergyDirection"]) {
+    if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
         dst.positiveEnergyDirection = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -27312,7 +27312,7 @@ bool convertToJson(const ElectricalConnectionDescriptionListDataType &src, JsonV
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptionListDataType &dst)
 {
 
-    if (src["electricalConnectionDescriptionData"]) {
+    if (!src["electricalConnectionDescriptionData"].isNull()) {
         dst.electricalConnectionDescriptionData = src["electricalConnectionDescriptionData"].as<decltype(dst.electricalConnectionDescriptionData)::value_type>();
     } else {
         dst.electricalConnectionDescriptionData = std::nullopt;
@@ -27335,12 +27335,12 @@ bool convertToJson(const ElectricalConnectionDescriptionListDataSelectorsType &s
 void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["electricalConnectionId"]) {
+    if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
         dst.electricalConnectionId = std::nullopt;
     }
-    if (src["scopeType"]) {
+    if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
         dst.scopeType = std::nullopt;
@@ -27369,22 +27369,22 @@ bool convertToJson(const TimeInformationDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TimeInformationDataType &dst)
 {
 
-    if (src["utc"]) {
+    if (!src["utc"].isNull()) {
         dst.utc = src["utc"].as<decltype(dst.utc)::value_type>();
     } else {
         dst.utc = std::nullopt;
     }
-    if (src["utcOffset"]) {
+    if (!src["utcOffset"].isNull()) {
         dst.utcOffset = src["utcOffset"].as<decltype(dst.utcOffset)::value_type>();
     } else {
         dst.utcOffset = std::nullopt;
     }
-    if (src["dayOfWeek"]) {
+    if (!src["dayOfWeek"].isNull()) {
         dst.dayOfWeek = src["dayOfWeek"].as<decltype(dst.dayOfWeek)::value_type>();
     } else {
         dst.dayOfWeek = std::nullopt;
     }
-    if (src["calendarWeek"]) {
+    if (!src["calendarWeek"].isNull()) {
         dst.calendarWeek = src["calendarWeek"].as<decltype(dst.calendarWeek)::value_type>();
     } else {
         dst.calendarWeek = std::nullopt;
@@ -27413,22 +27413,22 @@ bool convertToJson(const TimeInformationDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TimeInformationDataElementsType &dst)
 {
 
-    if (src["utc"]) {
+    if (!src["utc"].isNull()) {
         dst.utc = src["utc"].as<decltype(dst.utc)::value_type>();
     } else {
         dst.utc = std::nullopt;
     }
-    if (src["utcOffset"]) {
+    if (!src["utcOffset"].isNull()) {
         dst.utcOffset = src["utcOffset"].as<decltype(dst.utcOffset)::value_type>();
     } else {
         dst.utcOffset = std::nullopt;
     }
-    if (src["dayOfWeek"]) {
+    if (!src["dayOfWeek"].isNull()) {
         dst.dayOfWeek = src["dayOfWeek"].as<decltype(dst.dayOfWeek)::value_type>();
     } else {
         dst.dayOfWeek = std::nullopt;
     }
-    if (src["calendarWeek"]) {
+    if (!src["calendarWeek"].isNull()) {
         dst.calendarWeek = src["calendarWeek"].as<decltype(dst.calendarWeek)::value_type>();
     } else {
         dst.calendarWeek = std::nullopt;
@@ -27451,12 +27451,12 @@ bool convertToJson(const TimeDistributorDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TimeDistributorDataType &dst)
 {
 
-    if (src["isTimeDistributor"]) {
+    if (!src["isTimeDistributor"].isNull()) {
         dst.isTimeDistributor = src["isTimeDistributor"].as<decltype(dst.isTimeDistributor)::value_type>();
     } else {
         dst.isTimeDistributor = std::nullopt;
     }
-    if (src["distributorPriority"]) {
+    if (!src["distributorPriority"].isNull()) {
         dst.distributorPriority = src["distributorPriority"].as<decltype(dst.distributorPriority)::value_type>();
     } else {
         dst.distributorPriority = std::nullopt;
@@ -27479,12 +27479,12 @@ bool convertToJson(const TimeDistributorDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TimeDistributorDataElementsType &dst)
 {
 
-    if (src["isTimeDistributor"]) {
+    if (!src["isTimeDistributor"].isNull()) {
         dst.isTimeDistributor = src["isTimeDistributor"].as<decltype(dst.isTimeDistributor)::value_type>();
     } else {
         dst.isTimeDistributor = std::nullopt;
     }
-    if (src["distributorPriority"]) {
+    if (!src["distributorPriority"].isNull()) {
         dst.distributorPriority = src["distributorPriority"].as<decltype(dst.distributorPriority)::value_type>();
     } else {
         dst.distributorPriority = std::nullopt;
@@ -27510,17 +27510,17 @@ bool convertToJson(const TimePrecisionDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TimePrecisionDataType &dst)
 {
 
-    if (src["isSynchronised"]) {
+    if (!src["isSynchronised"].isNull()) {
         dst.isSynchronised = src["isSynchronised"].as<decltype(dst.isSynchronised)::value_type>();
     } else {
         dst.isSynchronised = std::nullopt;
     }
-    if (src["lastSyncAt"]) {
+    if (!src["lastSyncAt"].isNull()) {
         dst.lastSyncAt = src["lastSyncAt"].as<decltype(dst.lastSyncAt)::value_type>();
     } else {
         dst.lastSyncAt = std::nullopt;
     }
-    if (src["clockDrift"]) {
+    if (!src["clockDrift"].isNull()) {
         dst.clockDrift = src["clockDrift"].as<decltype(dst.clockDrift)::value_type>();
     } else {
         dst.clockDrift = std::nullopt;
@@ -27546,17 +27546,17 @@ bool convertToJson(const TimePrecisionDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, TimePrecisionDataElementsType &dst)
 {
 
-    if (src["isSynchronised"]) {
+    if (!src["isSynchronised"].isNull()) {
         dst.isSynchronised = src["isSynchronised"].as<decltype(dst.isSynchronised)::value_type>();
     } else {
         dst.isSynchronised = std::nullopt;
     }
-    if (src["lastSyncAt"]) {
+    if (!src["lastSyncAt"].isNull()) {
         dst.lastSyncAt = src["lastSyncAt"].as<decltype(dst.lastSyncAt)::value_type>();
     } else {
         dst.lastSyncAt = std::nullopt;
     }
-    if (src["clockDrift"]) {
+    if (!src["clockDrift"].isNull()) {
         dst.clockDrift = src["clockDrift"].as<decltype(dst.clockDrift)::value_type>();
     } else {
         dst.clockDrift = std::nullopt;
@@ -27616,37 +27616,37 @@ bool convertToJson(const DeviceDiagnosisStateDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisStateDataType &dst)
 {
 
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["operatingState"]) {
+    if (!src["operatingState"].isNull()) {
         dst.operatingState = src["operatingState"].as<decltype(dst.operatingState)::value_type>();
     } else {
         dst.operatingState = std::nullopt;
     }
-    if (src["vendorStateCode"]) {
+    if (!src["vendorStateCode"].isNull()) {
         dst.vendorStateCode = src["vendorStateCode"].as<decltype(dst.vendorStateCode)::value_type>();
     } else {
         dst.vendorStateCode = std::nullopt;
     }
-    if (src["lastErrorCode"]) {
+    if (!src["lastErrorCode"].isNull()) {
         dst.lastErrorCode = src["lastErrorCode"].as<decltype(dst.lastErrorCode)::value_type>();
     } else {
         dst.lastErrorCode = std::nullopt;
     }
-    if (src["upTime"]) {
+    if (!src["upTime"].isNull()) {
         dst.upTime = src["upTime"].as<decltype(dst.upTime)::value_type>();
     } else {
         dst.upTime = std::nullopt;
     }
-    if (src["totalUpTime"]) {
+    if (!src["totalUpTime"].isNull()) {
         dst.totalUpTime = src["totalUpTime"].as<decltype(dst.totalUpTime)::value_type>();
     } else {
         dst.totalUpTime = std::nullopt;
     }
-    if (src["powerSupplyCondition"]) {
+    if (!src["powerSupplyCondition"].isNull()) {
         dst.powerSupplyCondition = src["powerSupplyCondition"].as<decltype(dst.powerSupplyCondition)::value_type>();
     } else {
         dst.powerSupplyCondition = std::nullopt;
@@ -27684,37 +27684,37 @@ bool convertToJson(const DeviceDiagnosisStateDataElementsType &src, JsonVariant 
 void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisStateDataElementsType &dst)
 {
 
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["operatingState"]) {
+    if (!src["operatingState"].isNull()) {
         dst.operatingState = src["operatingState"].as<decltype(dst.operatingState)::value_type>();
     } else {
         dst.operatingState = std::nullopt;
     }
-    if (src["vendorStateCode"]) {
+    if (!src["vendorStateCode"].isNull()) {
         dst.vendorStateCode = src["vendorStateCode"].as<decltype(dst.vendorStateCode)::value_type>();
     } else {
         dst.vendorStateCode = std::nullopt;
     }
-    if (src["lastErrorCode"]) {
+    if (!src["lastErrorCode"].isNull()) {
         dst.lastErrorCode = src["lastErrorCode"].as<decltype(dst.lastErrorCode)::value_type>();
     } else {
         dst.lastErrorCode = std::nullopt;
     }
-    if (src["upTime"]) {
+    if (!src["upTime"].isNull()) {
         dst.upTime = src["upTime"].as<decltype(dst.upTime)::value_type>();
     } else {
         dst.upTime = std::nullopt;
     }
-    if (src["totalUpTime"]) {
+    if (!src["totalUpTime"].isNull()) {
         dst.totalUpTime = src["totalUpTime"].as<decltype(dst.totalUpTime)::value_type>();
     } else {
         dst.totalUpTime = std::nullopt;
     }
-    if (src["powerSupplyCondition"]) {
+    if (!src["powerSupplyCondition"].isNull()) {
         dst.powerSupplyCondition = src["powerSupplyCondition"].as<decltype(dst.powerSupplyCondition)::value_type>();
     } else {
         dst.powerSupplyCondition = std::nullopt;
@@ -27740,17 +27740,17 @@ bool convertToJson(const DeviceDiagnosisHeartbeatDataType &src, JsonVariant &dst
 void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisHeartbeatDataType &dst)
 {
 
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["heartbeatCounter"]) {
+    if (!src["heartbeatCounter"].isNull()) {
         dst.heartbeatCounter = src["heartbeatCounter"].as<decltype(dst.heartbeatCounter)::value_type>();
     } else {
         dst.heartbeatCounter = std::nullopt;
     }
-    if (src["heartbeatTimeout"]) {
+    if (!src["heartbeatTimeout"].isNull()) {
         dst.heartbeatTimeout = src["heartbeatTimeout"].as<decltype(dst.heartbeatTimeout)::value_type>();
     } else {
         dst.heartbeatTimeout = std::nullopt;
@@ -27776,17 +27776,17 @@ bool convertToJson(const DeviceDiagnosisHeartbeatDataElementsType &src, JsonVari
 void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisHeartbeatDataElementsType &dst)
 {
 
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["heartbeatCounter"]) {
+    if (!src["heartbeatCounter"].isNull()) {
         dst.heartbeatCounter = src["heartbeatCounter"].as<decltype(dst.heartbeatCounter)::value_type>();
     } else {
         dst.heartbeatCounter = std::nullopt;
     }
-    if (src["heartbeatTimeout"]) {
+    if (!src["heartbeatTimeout"].isNull()) {
         dst.heartbeatTimeout = src["heartbeatTimeout"].as<decltype(dst.heartbeatTimeout)::value_type>();
     } else {
         dst.heartbeatTimeout = std::nullopt;
@@ -27815,22 +27815,22 @@ bool convertToJson(const DeviceDiagnosisServiceDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisServiceDataType &dst)
 {
 
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["installationTime"]) {
+    if (!src["installationTime"].isNull()) {
         dst.installationTime = src["installationTime"].as<decltype(dst.installationTime)::value_type>();
     } else {
         dst.installationTime = std::nullopt;
     }
-    if (src["bootCounter"]) {
+    if (!src["bootCounter"].isNull()) {
         dst.bootCounter = src["bootCounter"].as<decltype(dst.bootCounter)::value_type>();
     } else {
         dst.bootCounter = std::nullopt;
     }
-    if (src["nextService"]) {
+    if (!src["nextService"].isNull()) {
         dst.nextService = src["nextService"].as<decltype(dst.nextService)::value_type>();
     } else {
         dst.nextService = std::nullopt;
@@ -27859,22 +27859,22 @@ bool convertToJson(const DeviceDiagnosisServiceDataElementsType &src, JsonVarian
 void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisServiceDataElementsType &dst)
 {
 
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
     }
-    if (src["installationTime"]) {
+    if (!src["installationTime"].isNull()) {
         dst.installationTime = src["installationTime"].as<decltype(dst.installationTime)::value_type>();
     } else {
         dst.installationTime = std::nullopt;
     }
-    if (src["bootCounter"]) {
+    if (!src["bootCounter"].isNull()) {
         dst.bootCounter = src["bootCounter"].as<decltype(dst.bootCounter)::value_type>();
     } else {
         dst.bootCounter = std::nullopt;
     }
-    if (src["nextService"]) {
+    if (!src["nextService"].isNull()) {
         dst.nextService = src["nextService"].as<decltype(dst.nextService)::value_type>();
     } else {
         dst.nextService = std::nullopt;
@@ -27915,42 +27915,42 @@ bool convertToJson(const DeviceConfigurationKeyValueValueType &src, JsonVariant 
 void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueValueType &dst)
 {
 
-    if (src["boolean"]) {
+    if (!src["boolean"].isNull()) {
         dst.boolean = src["boolean"].as<decltype(dst.boolean)::value_type>();
     } else {
         dst.boolean = std::nullopt;
     }
-    if (src["date"]) {
+    if (!src["date"].isNull()) {
         dst.date = src["date"].as<decltype(dst.date)::value_type>();
     } else {
         dst.date = std::nullopt;
     }
-    if (src["dateTime"]) {
+    if (!src["dateTime"].isNull()) {
         dst.dateTime = src["dateTime"].as<decltype(dst.dateTime)::value_type>();
     } else {
         dst.dateTime = std::nullopt;
     }
-    if (src["duration"]) {
+    if (!src["duration"].isNull()) {
         dst.duration = src["duration"].as<decltype(dst.duration)::value_type>();
     } else {
         dst.duration = std::nullopt;
     }
-    if (src["string"]) {
+    if (!src["string"].isNull()) {
         dst.string = src["string"].as<decltype(dst.string)::value_type>();
     } else {
         dst.string = std::nullopt;
     }
-    if (src["time"]) {
+    if (!src["time"].isNull()) {
         dst.time = src["time"].as<decltype(dst.time)::value_type>();
     } else {
         dst.time = std::nullopt;
     }
-    if (src["scaledNumber"]) {
+    if (!src["scaledNumber"].isNull()) {
         dst.scaledNumber = src["scaledNumber"].as<decltype(dst.scaledNumber)::value_type>();
     } else {
         dst.scaledNumber = std::nullopt;
     }
-    if (src["integer"]) {
+    if (!src["integer"].isNull()) {
         dst.integer = src["integer"].as<decltype(dst.integer)::value_type>();
     } else {
         dst.integer = std::nullopt;
@@ -27988,37 +27988,37 @@ bool convertToJson(const DeviceConfigurationKeyValueValueElementsType &src, Json
 void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueValueElementsType &dst)
 {
 
-    if (src["boolean"]) {
+    if (!src["boolean"].isNull()) {
         dst.boolean = src["boolean"].as<decltype(dst.boolean)::value_type>();
     } else {
         dst.boolean = std::nullopt;
     }
-    if (src["date"]) {
+    if (!src["date"].isNull()) {
         dst.date = src["date"].as<decltype(dst.date)::value_type>();
     } else {
         dst.date = std::nullopt;
     }
-    if (src["dateTime"]) {
+    if (!src["dateTime"].isNull()) {
         dst.dateTime = src["dateTime"].as<decltype(dst.dateTime)::value_type>();
     } else {
         dst.dateTime = std::nullopt;
     }
-    if (src["duration"]) {
+    if (!src["duration"].isNull()) {
         dst.duration = src["duration"].as<decltype(dst.duration)::value_type>();
     } else {
         dst.duration = std::nullopt;
     }
-    if (src["string"]) {
+    if (!src["string"].isNull()) {
         dst.string = src["string"].as<decltype(dst.string)::value_type>();
     } else {
         dst.string = std::nullopt;
     }
-    if (src["time"]) {
+    if (!src["time"].isNull()) {
         dst.time = src["time"].as<decltype(dst.time)::value_type>();
     } else {
         dst.time = std::nullopt;
     }
-    if (src["scaledNumber"]) {
+    if (!src["scaledNumber"].isNull()) {
         dst.scaledNumber = src["scaledNumber"].as<decltype(dst.scaledNumber)::value_type>();
     } else {
         dst.scaledNumber = std::nullopt;
@@ -28044,17 +28044,17 @@ bool convertToJson(const DeviceConfigurationKeyValueDataType &src, JsonVariant &
 void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDataType &dst)
 {
 
-    if (src["keyId"]) {
+    if (!src["keyId"].isNull()) {
         dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
     } else {
         dst.keyId = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
     }
-    if (src["isValueChangeable"]) {
+    if (!src["isValueChangeable"].isNull()) {
         dst.isValueChangeable = src["isValueChangeable"].as<decltype(dst.isValueChangeable)::value_type>();
     } else {
         dst.isValueChangeable = std::nullopt;
@@ -28080,17 +28080,17 @@ bool convertToJson(const DeviceConfigurationKeyValueDataElementsType &src, JsonV
 void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDataElementsType &dst)
 {
 
-    if (src["keyId"]) {
+    if (!src["keyId"].isNull()) {
         dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
     } else {
         dst.keyId = std::nullopt;
     }
-    if (src["value"]) {
+    if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
         dst.value = std::nullopt;
     }
-    if (src["isValueChangeable"]) {
+    if (!src["isValueChangeable"].isNull()) {
         dst.isValueChangeable = src["isValueChangeable"].as<decltype(dst.isValueChangeable)::value_type>();
     } else {
         dst.isValueChangeable = std::nullopt;
@@ -28110,7 +28110,7 @@ bool convertToJson(const DeviceConfigurationKeyValueListDataType &src, JsonVaria
 void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueListDataType &dst)
 {
 
-    if (src["deviceConfigurationKeyValueData"]) {
+    if (!src["deviceConfigurationKeyValueData"].isNull()) {
         dst.deviceConfigurationKeyValueData = src["deviceConfigurationKeyValueData"].as<decltype(dst.deviceConfigurationKeyValueData)::value_type>();
     } else {
         dst.deviceConfigurationKeyValueData = std::nullopt;
@@ -28130,7 +28130,7 @@ bool convertToJson(const DeviceConfigurationKeyValueListDataSelectorsType &src, 
 void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueListDataSelectorsType &dst)
 {
 
-    if (src["keyId"]) {
+    if (!src["keyId"].isNull()) {
         dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
     } else {
         dst.keyId = std::nullopt;
@@ -28165,32 +28165,32 @@ bool convertToJson(const DeviceConfigurationKeyValueDescriptionDataType &src, Js
 void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDescriptionDataType &dst)
 {
 
-    if (src["keyId"]) {
+    if (!src["keyId"].isNull()) {
         dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
     } else {
         dst.keyId = std::nullopt;
     }
-    if (src["keyName"]) {
+    if (!src["keyName"].isNull()) {
         dst.keyName = src["keyName"].as<decltype(dst.keyName)::value_type>();
     } else {
         dst.keyName = std::nullopt;
     }
-    if (src["valueType"]) {
+    if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
         dst.valueType = std::nullopt;
     }
-    if (src["unit"]) {
+    if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
         dst.unit = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -28225,32 +28225,32 @@ bool convertToJson(const DeviceConfigurationKeyValueDescriptionDataElementsType 
 void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDescriptionDataElementsType &dst)
 {
 
-    if (src["keyId"]) {
+    if (!src["keyId"].isNull()) {
         dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
     } else {
         dst.keyId = std::nullopt;
     }
-    if (src["keyName"]) {
+    if (!src["keyName"].isNull()) {
         dst.keyName = src["keyName"].as<decltype(dst.keyName)::value_type>();
     } else {
         dst.keyName = std::nullopt;
     }
-    if (src["valueType"]) {
+    if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
         dst.valueType = std::nullopt;
     }
-    if (src["unit"]) {
+    if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
         dst.unit = std::nullopt;
     }
-    if (src["label"]) {
+    if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
         dst.label = std::nullopt;
     }
-    if (src["description"]) {
+    if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
         dst.description = std::nullopt;
@@ -28270,7 +28270,7 @@ bool convertToJson(const DeviceConfigurationKeyValueDescriptionListDataType &src
 void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDescriptionListDataType &dst)
 {
 
-    if (src["deviceConfigurationKeyValueDescriptionData"]) {
+    if (!src["deviceConfigurationKeyValueDescriptionData"].isNull()) {
         dst.deviceConfigurationKeyValueDescriptionData = src["deviceConfigurationKeyValueDescriptionData"].as<decltype(dst.deviceConfigurationKeyValueDescriptionData)::value_type>();
     } else {
         dst.deviceConfigurationKeyValueDescriptionData = std::nullopt;
@@ -28293,12 +28293,12 @@ bool convertToJson(const DeviceConfigurationKeyValueDescriptionListDataSelectors
 void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDescriptionListDataSelectorsType &dst)
 {
 
-    if (src["keyId"]) {
+    if (!src["keyId"].isNull()) {
         dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
     } else {
         dst.keyId = std::nullopt;
     }
-    if (src["keyName"]) {
+    if (!src["keyName"].isNull()) {
         dst.keyName = src["keyName"].as<decltype(dst.keyName)::value_type>();
     } else {
         dst.keyName = std::nullopt;
@@ -28327,22 +28327,22 @@ bool convertToJson(const DeviceConfigurationKeyValueConstraintsDataType &src, Js
 void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueConstraintsDataType &dst)
 {
 
-    if (src["keyId"]) {
+    if (!src["keyId"].isNull()) {
         dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
     } else {
         dst.keyId = std::nullopt;
     }
-    if (src["valueRangeMin"]) {
+    if (!src["valueRangeMin"].isNull()) {
         dst.valueRangeMin = src["valueRangeMin"].as<decltype(dst.valueRangeMin)::value_type>();
     } else {
         dst.valueRangeMin = std::nullopt;
     }
-    if (src["valueRangeMax"]) {
+    if (!src["valueRangeMax"].isNull()) {
         dst.valueRangeMax = src["valueRangeMax"].as<decltype(dst.valueRangeMax)::value_type>();
     } else {
         dst.valueRangeMax = std::nullopt;
     }
-    if (src["valueStepSize"]) {
+    if (!src["valueStepSize"].isNull()) {
         dst.valueStepSize = src["valueStepSize"].as<decltype(dst.valueStepSize)::value_type>();
     } else {
         dst.valueStepSize = std::nullopt;
@@ -28371,22 +28371,22 @@ bool convertToJson(const DeviceConfigurationKeyValueConstraintsDataElementsType 
 void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueConstraintsDataElementsType &dst)
 {
 
-    if (src["keyId"]) {
+    if (!src["keyId"].isNull()) {
         dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
     } else {
         dst.keyId = std::nullopt;
     }
-    if (src["valueRangeMin"]) {
+    if (!src["valueRangeMin"].isNull()) {
         dst.valueRangeMin = src["valueRangeMin"].as<decltype(dst.valueRangeMin)::value_type>();
     } else {
         dst.valueRangeMin = std::nullopt;
     }
-    if (src["valueRangeMax"]) {
+    if (!src["valueRangeMax"].isNull()) {
         dst.valueRangeMax = src["valueRangeMax"].as<decltype(dst.valueRangeMax)::value_type>();
     } else {
         dst.valueRangeMax = std::nullopt;
     }
-    if (src["valueStepSize"]) {
+    if (!src["valueStepSize"].isNull()) {
         dst.valueStepSize = src["valueStepSize"].as<decltype(dst.valueStepSize)::value_type>();
     } else {
         dst.valueStepSize = std::nullopt;
@@ -28406,7 +28406,7 @@ bool convertToJson(const DeviceConfigurationKeyValueConstraintsListDataType &src
 void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueConstraintsListDataType &dst)
 {
 
-    if (src["deviceConfigurationKeyValueConstraintsData"]) {
+    if (!src["deviceConfigurationKeyValueConstraintsData"].isNull()) {
         dst.deviceConfigurationKeyValueConstraintsData = src["deviceConfigurationKeyValueConstraintsData"].as<decltype(dst.deviceConfigurationKeyValueConstraintsData)::value_type>();
     } else {
         dst.deviceConfigurationKeyValueConstraintsData = std::nullopt;
@@ -28426,7 +28426,7 @@ bool convertToJson(const DeviceConfigurationKeyValueConstraintsListDataSelectors
 void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueConstraintsListDataSelectorsType &dst)
 {
 
-    if (src["keyId"]) {
+    if (!src["keyId"].isNull()) {
         dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
     } else {
         dst.keyId = std::nullopt;
@@ -28470,47 +28470,47 @@ bool convertToJson(const HeaderType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, HeaderType &dst)
 {
 
-    if (src["specificationVersion"]) {
+    if (!src["specificationVersion"].isNull()) {
         dst.specificationVersion = src["specificationVersion"].as<decltype(dst.specificationVersion)::value_type>();
     } else {
         dst.specificationVersion = std::nullopt;
     }
-    if (src["addressSource"]) {
+    if (!src["addressSource"].isNull()) {
         dst.addressSource = src["addressSource"].as<decltype(dst.addressSource)::value_type>();
     } else {
         dst.addressSource = std::nullopt;
     }
-    if (src["addressDestination"]) {
+    if (!src["addressDestination"].isNull()) {
         dst.addressDestination = src["addressDestination"].as<decltype(dst.addressDestination)::value_type>();
     } else {
         dst.addressDestination = std::nullopt;
     }
-    if (src["addressOriginator"]) {
+    if (!src["addressOriginator"].isNull()) {
         dst.addressOriginator = src["addressOriginator"].as<decltype(dst.addressOriginator)::value_type>();
     } else {
         dst.addressOriginator = std::nullopt;
     }
-    if (src["msgCounter"]) {
+    if (!src["msgCounter"].isNull()) {
         dst.msgCounter = src["msgCounter"].as<decltype(dst.msgCounter)::value_type>();
     } else {
         dst.msgCounter = std::nullopt;
     }
-    if (src["msgCounterReference"]) {
+    if (!src["msgCounterReference"].isNull()) {
         dst.msgCounterReference = src["msgCounterReference"].as<decltype(dst.msgCounterReference)::value_type>();
     } else {
         dst.msgCounterReference = std::nullopt;
     }
-    if (src["cmdClassifier"]) {
+    if (!src["cmdClassifier"].isNull()) {
         dst.cmdClassifier = src["cmdClassifier"].as<decltype(dst.cmdClassifier)::value_type>();
     } else {
         dst.cmdClassifier = std::nullopt;
     }
-    if (src["ackRequest"]) {
+    if (!src["ackRequest"].isNull()) {
         dst.ackRequest = src["ackRequest"].as<decltype(dst.ackRequest)::value_type>();
     } else {
         dst.ackRequest = std::nullopt;
     }
-    if (src["timestamp"]) {
+    if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
         dst.timestamp = std::nullopt;
@@ -28533,12 +28533,12 @@ bool convertToJson(const CmdControlType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, CmdControlType &dst)
 {
 
-    if (src["delete"]) {
+    if (!src["delete"].isNull()) {
         dst.var_delete = src["delete"].as<decltype(dst.var_delete)::value_type>();
     } else {
         dst.var_delete = std::nullopt;
     }
-    if (src["partial"]) {
+    if (!src["partial"].isNull()) {
         dst.partial = src["partial"].as<decltype(dst.partial)::value_type>();
     } else {
         dst.partial = std::nullopt;
@@ -28564,17 +28564,17 @@ bool convertToJson(const DataTunnelingHeaderType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, DataTunnelingHeaderType &dst)
 {
 
-    if (src["purposeId"]) {
+    if (!src["purposeId"].isNull()) {
         dst.purposeId = src["purposeId"].as<decltype(dst.purposeId)::value_type>();
     } else {
         dst.purposeId = std::nullopt;
     }
-    if (src["channelId"]) {
+    if (!src["channelId"].isNull()) {
         dst.channelId = src["channelId"].as<decltype(dst.channelId)::value_type>();
     } else {
         dst.channelId = std::nullopt;
     }
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -28600,17 +28600,17 @@ bool convertToJson(const DataTunnelingHeaderElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, DataTunnelingHeaderElementsType &dst)
 {
 
-    if (src["purposeId"]) {
+    if (!src["purposeId"].isNull()) {
         dst.purposeId = src["purposeId"].as<decltype(dst.purposeId)::value_type>();
     } else {
         dst.purposeId = std::nullopt;
     }
-    if (src["channelId"]) {
+    if (!src["channelId"].isNull()) {
         dst.channelId = src["channelId"].as<decltype(dst.channelId)::value_type>();
     } else {
         dst.channelId = std::nullopt;
     }
-    if (src["sequenceId"]) {
+    if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
         dst.sequenceId = std::nullopt;
@@ -28633,12 +28633,12 @@ bool convertToJson(const DataTunnelingCallType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, DataTunnelingCallType &dst)
 {
 
-    if (src["header"]) {
+    if (!src["header"].isNull()) {
         dst.header = src["header"].as<decltype(dst.header)::value_type>();
     } else {
         dst.header = std::nullopt;
     }
-    if (src["payload"]) {
+    if (!src["payload"].isNull()) {
         dst.payload = src["payload"].as<decltype(dst.payload)::value_type>();
     } else {
         dst.payload = std::nullopt;
@@ -28661,12 +28661,12 @@ bool convertToJson(const DataTunnelingCallElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, DataTunnelingCallElementsType &dst)
 {
 
-    if (src["header"]) {
+    if (!src["header"].isNull()) {
         dst.header = src["header"].as<decltype(dst.header)::value_type>();
     } else {
         dst.header = std::nullopt;
     }
-    if (src["payload"]) {
+    if (!src["payload"].isNull()) {
         dst.payload = src["payload"].as<decltype(dst.payload)::value_type>();
     } else {
         dst.payload = std::nullopt;
@@ -28692,17 +28692,17 @@ bool convertToJson(const IncentiveTableTierType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, IncentiveTableTierType &dst)
 {
 
-    if (src["tier"]) {
+    if (!src["tier"].isNull()) {
         dst.tier = src["tier"].as<decltype(dst.tier)::value_type>();
     } else {
         dst.tier = std::nullopt;
     }
-    if (src["boundary"]) {
+    if (!src["boundary"].isNull()) {
         dst.boundary = src["boundary"].as<decltype(dst.boundary)::value_type>();
     } else {
         dst.boundary = std::nullopt;
     }
-    if (src["incentive"]) {
+    if (!src["incentive"].isNull()) {
         dst.incentive = src["incentive"].as<decltype(dst.incentive)::value_type>();
     } else {
         dst.incentive = std::nullopt;
@@ -28725,12 +28725,12 @@ bool convertToJson(const IncentiveTableIncentiveSlotType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, IncentiveTableIncentiveSlotType &dst)
 {
 
-    if (src["timeInterval"]) {
+    if (!src["timeInterval"].isNull()) {
         dst.timeInterval = src["timeInterval"].as<decltype(dst.timeInterval)::value_type>();
     } else {
         dst.timeInterval = std::nullopt;
     }
-    if (src["tier"]) {
+    if (!src["tier"].isNull()) {
         dst.tier = src["tier"].as<decltype(dst.tier)::value_type>();
     } else {
         dst.tier = std::nullopt;
@@ -28753,12 +28753,12 @@ bool convertToJson(const IncentiveTableType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, IncentiveTableType &dst)
 {
 
-    if (src["tariff"]) {
+    if (!src["tariff"].isNull()) {
         dst.tariff = src["tariff"].as<decltype(dst.tariff)::value_type>();
     } else {
         dst.tariff = std::nullopt;
     }
-    if (src["incentiveSlot"]) {
+    if (!src["incentiveSlot"].isNull()) {
         dst.incentiveSlot = src["incentiveSlot"].as<decltype(dst.incentiveSlot)::value_type>();
     } else {
         dst.incentiveSlot = std::nullopt;
@@ -28778,7 +28778,7 @@ bool convertToJson(const IncentiveTableDataType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, IncentiveTableDataType &dst)
 {
 
-    if (src["incentiveTable"]) {
+    if (!src["incentiveTable"].isNull()) {
         dst.incentiveTable = src["incentiveTable"].as<decltype(dst.incentiveTable)::value_type>();
     } else {
         dst.incentiveTable = std::nullopt;
@@ -28804,17 +28804,17 @@ bool convertToJson(const IncentiveTableTierElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, IncentiveTableTierElementsType &dst)
 {
 
-    if (src["tier"]) {
+    if (!src["tier"].isNull()) {
         dst.tier = src["tier"].as<decltype(dst.tier)::value_type>();
     } else {
         dst.tier = std::nullopt;
     }
-    if (src["boundary"]) {
+    if (!src["boundary"].isNull()) {
         dst.boundary = src["boundary"].as<decltype(dst.boundary)::value_type>();
     } else {
         dst.boundary = std::nullopt;
     }
-    if (src["incentive"]) {
+    if (!src["incentive"].isNull()) {
         dst.incentive = src["incentive"].as<decltype(dst.incentive)::value_type>();
     } else {
         dst.incentive = std::nullopt;
@@ -28837,12 +28837,12 @@ bool convertToJson(const IncentiveTableIncentiveSlotElementsType &src, JsonVaria
 void convertFromJson(const JsonVariantConst &src, IncentiveTableIncentiveSlotElementsType &dst)
 {
 
-    if (src["timeInterval"]) {
+    if (!src["timeInterval"].isNull()) {
         dst.timeInterval = src["timeInterval"].as<decltype(dst.timeInterval)::value_type>();
     } else {
         dst.timeInterval = std::nullopt;
     }
-    if (src["tier"]) {
+    if (!src["tier"].isNull()) {
         dst.tier = src["tier"].as<decltype(dst.tier)::value_type>();
     } else {
         dst.tier = std::nullopt;
@@ -28865,12 +28865,12 @@ bool convertToJson(const IncentiveTableElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, IncentiveTableElementsType &dst)
 {
 
-    if (src["tariff"]) {
+    if (!src["tariff"].isNull()) {
         dst.tariff = src["tariff"].as<decltype(dst.tariff)::value_type>();
     } else {
         dst.tariff = std::nullopt;
     }
-    if (src["incentiveSlot"]) {
+    if (!src["incentiveSlot"].isNull()) {
         dst.incentiveSlot = src["incentiveSlot"].as<decltype(dst.incentiveSlot)::value_type>();
     } else {
         dst.incentiveSlot = std::nullopt;
@@ -28890,7 +28890,7 @@ bool convertToJson(const IncentiveTableDataElementsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, IncentiveTableDataElementsType &dst)
 {
 
-    if (src["incentiveTable"]) {
+    if (!src["incentiveTable"].isNull()) {
         dst.incentiveTable = src["incentiveTable"].as<decltype(dst.incentiveTable)::value_type>();
     } else {
         dst.incentiveTable = std::nullopt;
@@ -28910,7 +28910,7 @@ bool convertToJson(const IncentiveTableDataSelectorsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, IncentiveTableDataSelectorsType &dst)
 {
 
-    if (src["tariff"]) {
+    if (!src["tariff"].isNull()) {
         dst.tariff = src["tariff"].as<decltype(dst.tariff)::value_type>();
     } else {
         dst.tariff = std::nullopt;
@@ -28936,17 +28936,17 @@ bool convertToJson(const IncentiveTableDescriptionTierType &src, JsonVariant &ds
 void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionTierType &dst)
 {
 
-    if (src["tierDescription"]) {
+    if (!src["tierDescription"].isNull()) {
         dst.tierDescription = src["tierDescription"].as<decltype(dst.tierDescription)::value_type>();
     } else {
         dst.tierDescription = std::nullopt;
     }
-    if (src["boundaryDescription"]) {
+    if (!src["boundaryDescription"].isNull()) {
         dst.boundaryDescription = src["boundaryDescription"].as<decltype(dst.boundaryDescription)::value_type>();
     } else {
         dst.boundaryDescription = std::nullopt;
     }
-    if (src["incentiveDescription"]) {
+    if (!src["incentiveDescription"].isNull()) {
         dst.incentiveDescription = src["incentiveDescription"].as<decltype(dst.incentiveDescription)::value_type>();
     } else {
         dst.incentiveDescription = std::nullopt;
@@ -28969,12 +28969,12 @@ bool convertToJson(const IncentiveTableDescriptionType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionType &dst)
 {
 
-    if (src["tariffDescription"]) {
+    if (!src["tariffDescription"].isNull()) {
         dst.tariffDescription = src["tariffDescription"].as<decltype(dst.tariffDescription)::value_type>();
     } else {
         dst.tariffDescription = std::nullopt;
     }
-    if (src["tier"]) {
+    if (!src["tier"].isNull()) {
         dst.tier = src["tier"].as<decltype(dst.tier)::value_type>();
     } else {
         dst.tier = std::nullopt;
@@ -28994,7 +28994,7 @@ bool convertToJson(const IncentiveTableDescriptionDataType &src, JsonVariant &ds
 void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionDataType &dst)
 {
 
-    if (src["incentiveTableDescription"]) {
+    if (!src["incentiveTableDescription"].isNull()) {
         dst.incentiveTableDescription = src["incentiveTableDescription"].as<decltype(dst.incentiveTableDescription)::value_type>();
     } else {
         dst.incentiveTableDescription = std::nullopt;
@@ -29020,17 +29020,17 @@ bool convertToJson(const IncentiveTableDescriptionTierElementsType &src, JsonVar
 void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionTierElementsType &dst)
 {
 
-    if (src["tierDescription"]) {
+    if (!src["tierDescription"].isNull()) {
         dst.tierDescription = src["tierDescription"].as<decltype(dst.tierDescription)::value_type>();
     } else {
         dst.tierDescription = std::nullopt;
     }
-    if (src["boundaryDescription"]) {
+    if (!src["boundaryDescription"].isNull()) {
         dst.boundaryDescription = src["boundaryDescription"].as<decltype(dst.boundaryDescription)::value_type>();
     } else {
         dst.boundaryDescription = std::nullopt;
     }
-    if (src["incentiveDescription"]) {
+    if (!src["incentiveDescription"].isNull()) {
         dst.incentiveDescription = src["incentiveDescription"].as<decltype(dst.incentiveDescription)::value_type>();
     } else {
         dst.incentiveDescription = std::nullopt;
@@ -29053,12 +29053,12 @@ bool convertToJson(const IncentiveTableDescriptionElementsType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionElementsType &dst)
 {
 
-    if (src["tariffDescription"]) {
+    if (!src["tariffDescription"].isNull()) {
         dst.tariffDescription = src["tariffDescription"].as<decltype(dst.tariffDescription)::value_type>();
     } else {
         dst.tariffDescription = std::nullopt;
     }
-    if (src["tier"]) {
+    if (!src["tier"].isNull()) {
         dst.tier = src["tier"].as<decltype(dst.tier)::value_type>();
     } else {
         dst.tier = std::nullopt;
@@ -29078,7 +29078,7 @@ bool convertToJson(const IncentiveTableDescriptionDataElementsType &src, JsonVar
 void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionDataElementsType &dst)
 {
 
-    if (src["incentiveTableDescription"]) {
+    if (!src["incentiveTableDescription"].isNull()) {
         dst.incentiveTableDescription = src["incentiveTableDescription"].as<decltype(dst.incentiveTableDescription)::value_type>();
     } else {
         dst.incentiveTableDescription = std::nullopt;
@@ -29098,7 +29098,7 @@ bool convertToJson(const IncentiveTableDescriptionDataSelectorsType &src, JsonVa
 void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionDataSelectorsType &dst)
 {
 
-    if (src["tariffDescription"]) {
+    if (!src["tariffDescription"].isNull()) {
         dst.tariffDescription = src["tariffDescription"].as<decltype(dst.tariffDescription)::value_type>();
     } else {
         dst.tariffDescription = std::nullopt;
@@ -29124,17 +29124,17 @@ bool convertToJson(const IncentiveTableConstraintsType &src, JsonVariant &dst)
 void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsType &dst)
 {
 
-    if (src["tariff"]) {
+    if (!src["tariff"].isNull()) {
         dst.tariff = src["tariff"].as<decltype(dst.tariff)::value_type>();
     } else {
         dst.tariff = std::nullopt;
     }
-    if (src["tariffConstraints"]) {
+    if (!src["tariffConstraints"].isNull()) {
         dst.tariffConstraints = src["tariffConstraints"].as<decltype(dst.tariffConstraints)::value_type>();
     } else {
         dst.tariffConstraints = std::nullopt;
     }
-    if (src["incentiveSlotConstraints"]) {
+    if (!src["incentiveSlotConstraints"].isNull()) {
         dst.incentiveSlotConstraints = src["incentiveSlotConstraints"].as<decltype(dst.incentiveSlotConstraints)::value_type>();
     } else {
         dst.incentiveSlotConstraints = std::nullopt;
@@ -29154,7 +29154,7 @@ bool convertToJson(const IncentiveTableConstraintsDataType &src, JsonVariant &ds
 void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsDataType &dst)
 {
 
-    if (src["incentiveTableConstraints"]) {
+    if (!src["incentiveTableConstraints"].isNull()) {
         dst.incentiveTableConstraints = src["incentiveTableConstraints"].as<decltype(dst.incentiveTableConstraints)::value_type>();
     } else {
         dst.incentiveTableConstraints = std::nullopt;
@@ -29180,17 +29180,17 @@ bool convertToJson(const IncentiveTableConstraintsElementsType &src, JsonVariant
 void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsElementsType &dst)
 {
 
-    if (src["tariff"]) {
+    if (!src["tariff"].isNull()) {
         dst.tariff = src["tariff"].as<decltype(dst.tariff)::value_type>();
     } else {
         dst.tariff = std::nullopt;
     }
-    if (src["tariffConstraints"]) {
+    if (!src["tariffConstraints"].isNull()) {
         dst.tariffConstraints = src["tariffConstraints"].as<decltype(dst.tariffConstraints)::value_type>();
     } else {
         dst.tariffConstraints = std::nullopt;
     }
-    if (src["incentiveSlotConstraints"]) {
+    if (!src["incentiveSlotConstraints"].isNull()) {
         dst.incentiveSlotConstraints = src["incentiveSlotConstraints"].as<decltype(dst.incentiveSlotConstraints)::value_type>();
     } else {
         dst.incentiveSlotConstraints = std::nullopt;
@@ -29210,7 +29210,7 @@ bool convertToJson(const IncentiveTableConstraintsDataElementsType &src, JsonVar
 void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsDataElementsType &dst)
 {
 
-    if (src["incentiveTableConstraints"]) {
+    if (!src["incentiveTableConstraints"].isNull()) {
         dst.incentiveTableConstraints = src["incentiveTableConstraints"].as<decltype(dst.incentiveTableConstraints)::value_type>();
     } else {
         dst.incentiveTableConstraints = std::nullopt;
@@ -29230,7 +29230,7 @@ bool convertToJson(const IncentiveTableConstraintsDataSelectorsType &src, JsonVa
 void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsDataSelectorsType &dst)
 {
 
-    if (src["tariff"]) {
+    if (!src["tariff"].isNull()) {
         dst.tariff = src["tariff"].as<decltype(dst.tariff)::value_type>();
     } else {
         dst.tariff = std::nullopt;
