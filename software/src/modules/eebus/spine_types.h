@@ -33,11 +33,11 @@ struct DateTimeStruct
 };
 
 
+using EnumExtendType = std::string;
 using DirectControlActivityStateType = std::string;
 using LabelType = std::string;
 using DescriptionType = std::string;
 using SpecificationVersionType = std::string;
-using EnumExtendType = std::string;
 using AbsoluteOrRelativeTimeType = std::string;
 using RecurringIntervalType = std::string;
 using DayOfMonthType = int;
@@ -59,8 +59,8 @@ using FeatureGroupType = std::string;
 using DeviceTypeType = std::string;
 using EntityTypeType = std::string;
 using FeatureTypeType = std::string;
-using FeatureSpecificUsageType = std::string;
 using FeatureSpecificUsageEnumType = std::string;
+using FeatureSpecificUsageType = std::string;
 using FunctionType = std::string;
 using AlternativesIdType = int;
 using PowerSequenceIdType = int;
@@ -114,10 +114,10 @@ using AlarmIdType = int;
 using AlarmTypeType = std::string;
 using BindingIdType = int;
 using SubscriptionIdType = int;
-using UseCaseActorType = std::string;
 using UseCaseActorEnumType = std::string;
-using UseCaseNameType = std::string;
+using UseCaseActorType = std::string;
 using UseCaseNameEnumType = std::string;
+using UseCaseNameType = std::string;
 using UseCaseScenarioSupportType = int;
 using SpecificationVersionDataType = std::string;
 using TaskManagementJobIdType = int;
@@ -2007,6 +2007,58 @@ bool convertToJson(const AlarmTypeEnumType &src, JsonVariant &dst);
 void convertFromJson(const JsonVariantConst &src, AlarmTypeEnumType &dst);
 
 /**
+* Datatype HvacOverrunStatusEnumType as defined in EEBus_SPINE_TS_HVAC.xsd
+*/
+enum class HvacOverrunStatusEnumType
+{
+    active,
+    running,
+    finished,
+    inactive,
+};
+
+/**
+ * Convert the enum HvacOverrunStatusEnumType to its String representation
+ * @param src The source HvacOverrunStatusEnumType value to convert.
+ * @param dst The destination JsonVariant where the string will be stored.
+ * @return true if the conversion was successful, false otherwise.
+ */
+bool convertToJson(const HvacOverrunStatusEnumType &src, JsonVariant &dst);
+/**
+ * Convert a string to a HvacOverrunStatusEnumType 
+ * @param src The JSON variant containing the string.
+ * @param dst The destination HvacOverrunStatusEnumType.
+ */
+void convertFromJson(const JsonVariantConst &src, HvacOverrunStatusEnumType &dst);
+
+/**
+* Datatype LoadControlEventStateEnumType as defined in EEBus_SPINE_TS_LoadControl.xsd
+*/
+enum class LoadControlEventStateEnumType
+{
+    eventAccepted,
+    eventStarted,
+    eventStopped,
+    eventRejected,
+    eventCancelled,
+    eventError,
+};
+
+/**
+ * Convert the enum LoadControlEventStateEnumType to its String representation
+ * @param src The source LoadControlEventStateEnumType value to convert.
+ * @param dst The destination JsonVariant where the string will be stored.
+ * @return true if the conversion was successful, false otherwise.
+ */
+bool convertToJson(const LoadControlEventStateEnumType &src, JsonVariant &dst);
+/**
+ * Convert a string to a LoadControlEventStateEnumType 
+ * @param src The JSON variant containing the string.
+ * @param dst The destination LoadControlEventStateEnumType.
+ */
+void convertFromJson(const JsonVariantConst &src, LoadControlEventStateEnumType &dst);
+
+/**
 * Datatype TaskManagementJobSourceEnumType as defined in EEBus_SPINE_TS_TaskManagement.xsd
 */
 enum class TaskManagementJobSourceEnumType
@@ -2112,31 +2164,6 @@ bool convertToJson(const HvacOverrunTypeEnumType &src, JsonVariant &dst);
 void convertFromJson(const JsonVariantConst &src, HvacOverrunTypeEnumType &dst);
 
 /**
-* Datatype HvacOverrunStatusEnumType as defined in EEBus_SPINE_TS_HVAC.xsd
-*/
-enum class HvacOverrunStatusEnumType
-{
-    active,
-    running,
-    finished,
-    inactive,
-};
-
-/**
- * Convert the enum HvacOverrunStatusEnumType to its String representation
- * @param src The source HvacOverrunStatusEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
- */
-bool convertToJson(const HvacOverrunStatusEnumType &src, JsonVariant &dst);
-/**
- * Convert a string to a HvacOverrunStatusEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination HvacOverrunStatusEnumType.
- */
-void convertFromJson(const JsonVariantConst &src, HvacOverrunStatusEnumType &dst);
-
-/**
 * Datatype LoadControlEventActionEnumType as defined in EEBus_SPINE_TS_LoadControl.xsd
 */
 enum class LoadControlEventActionEnumType
@@ -2162,33 +2189,6 @@ bool convertToJson(const LoadControlEventActionEnumType &src, JsonVariant &dst);
  * @param dst The destination LoadControlEventActionEnumType.
  */
 void convertFromJson(const JsonVariantConst &src, LoadControlEventActionEnumType &dst);
-
-/**
-* Datatype LoadControlEventStateEnumType as defined in EEBus_SPINE_TS_LoadControl.xsd
-*/
-enum class LoadControlEventStateEnumType
-{
-    eventAccepted,
-    eventStarted,
-    eventStopped,
-    eventRejected,
-    eventCancelled,
-    eventError,
-};
-
-/**
- * Convert the enum LoadControlEventStateEnumType to its String representation
- * @param src The source LoadControlEventStateEnumType value to convert.
- * @param dst The destination JsonVariant where the string will be stored.
- * @return true if the conversion was successful, false otherwise.
- */
-bool convertToJson(const LoadControlEventStateEnumType &src, JsonVariant &dst);
-/**
- * Convert a string to a LoadControlEventStateEnumType 
- * @param src The JSON variant containing the string.
- * @param dst The destination LoadControlEventStateEnumType.
- */
-void convertFromJson(const JsonVariantConst &src, LoadControlEventStateEnumType &dst);
 
 /**
 * Datatype LoadControlLimitTypeEnumType as defined in EEBus_SPINE_TS_LoadControl.xsd
@@ -17482,11 +17482,11 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsDataS
 class SpineDataTypeHandler
 {
 public:
+    std::optional<EnumExtendType> enumextendtype;
     std::optional<DirectControlActivityStateType> directcontrolactivitystatetype;
     std::optional<LabelType> labeltype;
     std::optional<DescriptionType> descriptiontype;
     std::optional<SpecificationVersionType> specificationversiontype;
-    std::optional<EnumExtendType> enumextendtype;
     std::optional<AbsoluteOrRelativeTimeType> absoluteorrelativetimetype;
     std::optional<RecurringIntervalType> recurringintervaltype;
     std::optional<DayOfMonthType> dayofmonthtype;
@@ -17508,8 +17508,8 @@ public:
     std::optional<DeviceTypeType> devicetypetype;
     std::optional<EntityTypeType> entitytypetype;
     std::optional<FeatureTypeType> featuretypetype;
-    std::optional<FeatureSpecificUsageType> featurespecificusagetype;
     std::optional<FeatureSpecificUsageEnumType> featurespecificusageenumtype;
+    std::optional<FeatureSpecificUsageType> featurespecificusagetype;
     std::optional<FunctionType> functiontype;
     std::optional<AlternativesIdType> alternativesidtype;
     std::optional<PowerSequenceIdType> powersequenceidtype;
@@ -17563,10 +17563,10 @@ public:
     std::optional<AlarmTypeType> alarmtypetype;
     std::optional<BindingIdType> bindingidtype;
     std::optional<SubscriptionIdType> subscriptionidtype;
-    std::optional<UseCaseActorType> usecaseactortype;
     std::optional<UseCaseActorEnumType> usecaseactorenumtype;
-    std::optional<UseCaseNameType> usecasenametype;
+    std::optional<UseCaseActorType> usecaseactortype;
     std::optional<UseCaseNameEnumType> usecasenameenumtype;
+    std::optional<UseCaseNameType> usecasenametype;
     std::optional<UseCaseScenarioSupportType> usecasescenariosupporttype;
     std::optional<SpecificationVersionDataType> specificationversiondatatype;
     std::optional<TaskManagementJobIdType> taskmanagementjobidtype;
@@ -17678,13 +17678,13 @@ public:
     std::optional<SupplyConditionOriginatorEnumType> supplyconditionoriginatorenumtype;
     std::optional<GridConditionEnumType> gridconditionenumtype;
     std::optional<AlarmTypeEnumType> alarmtypeenumtype;
+    std::optional<HvacOverrunStatusEnumType> hvacoverrunstatusenumtype;
+    std::optional<LoadControlEventStateEnumType> loadcontroleventstateenumtype;
     std::optional<TaskManagementJobSourceEnumType> taskmanagementjobsourceenumtype;
     std::optional<HvacSystemFunctionTypeEnumType> hvacsystemfunctiontypeenumtype;
     std::optional<HvacOperationModeTypeEnumType> hvacoperationmodetypeenumtype;
     std::optional<HvacOverrunTypeEnumType> hvacoverruntypeenumtype;
-    std::optional<HvacOverrunStatusEnumType> hvacoverrunstatusenumtype;
     std::optional<LoadControlEventActionEnumType> loadcontroleventactionenumtype;
-    std::optional<LoadControlEventStateEnumType> loadcontroleventstateenumtype;
     std::optional<LoadControlLimitTypeEnumType> loadcontrollimittypeenumtype;
     std::optional<LoadControlCategoryEnumType> loadcontrolcategoryenumtype;
     std::optional<PowerSourceEnumType> powersourceenumtype;
