@@ -172,6 +172,9 @@ void Debug::pre_setup()
         {"conf_tuple_buf_size", Config::Uint32(0)},
         {"ipsock_cur", Config::Uint8(0)},
         {"ipsock_hwm", Config::Uint8(0)},
+        {"api_states",    Config::Uint16(0)},
+        {"api_commands",  Config::Uint16(0)},
+        {"api_responses", Config::Uint16(0)},
     });
 
     state_slots = Config::Tuple(CONFIG_TYPES, Config::Tuple(5, Config::Uint16(0)));
@@ -632,6 +635,21 @@ void Debug::custom_loop() {
         }
     }
     last_run = start;
+}
+
+void Debug::api_state_count(size_t count)
+{
+    state_slow.get("api_states")->updateUint(count);
+}
+
+void Debug::api_command_count(size_t count)
+{
+    state_slow.get("api_commands")->updateUint(count);
+}
+
+void Debug::api_response_count(size_t count)
+{
+    state_slow.get("api_responses")->updateUint(count);
 }
 
 void Debug::register_task(const char *task_name, uint32_t stack_size, TaskAvailability availability)

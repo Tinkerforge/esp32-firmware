@@ -58,6 +58,8 @@
             "heap_integrity_runtime": "Laufzeit Integritätsprüfung",
             "heap_integrity_runtime_muted": "Durchschnitt, Maximum",
 
+            "api_registrations": "Registrierungen",
+
             "sockets_header": "Sockets",
             "lwip_socket_counts": "lwIP-Sockets",
             "lwip_socket_counts_muted": "ignoriert kurzlebige Sockets",

@@ -53,6 +53,9 @@ export interface state_slow {
     conf_tuple_buf_size: number;
     ipsock_cur: number;
     ipsock_hwm: number;
+    api_states: number;
+    api_commands: number;
+    api_responses: number;
 }
 
 type slot_info = number[];

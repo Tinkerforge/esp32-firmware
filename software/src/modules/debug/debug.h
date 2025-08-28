@@ -44,6 +44,11 @@ public:
     void custom_loop();
 
     void task_scheduler_idle_call();
+
+    void api_state_count(size_t count);
+    void api_command_count(size_t count);
+    void api_response_count(size_t count);
+
     void register_task(const char *task_name, uint32_t stack_size, TaskAvailability availability = ExpectPresent);
     void register_task(TaskHandle_t handle, uint32_t stack_size);
     void deregister_task(const char *task_name);

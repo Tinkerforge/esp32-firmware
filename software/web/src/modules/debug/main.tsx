@@ -260,6 +260,17 @@ export class Debug extends Component {
 
                 })}
 
+                <FormSeparator heading="API" first={false} />
+
+                <Row l={<p class="mb-0 mt-2 form-label text-center">State</p>}
+                     c={<p class="mb-0 mt-2 form-label text-center">Command</p>}
+                     r={<p class="mb-0 mt-2 form-label text-center">Response</p>}/>
+
+                <Row label={__("debug.content.api_registrations")}
+                     l={<OutputFloat value={state_slow.api_states   } digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>}
+                     c={<OutputFloat value={state_slow.api_commands } digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>}
+                     r={<OutputFloat value={state_slow.api_responses} digits={0} scale={0} unit="" maxUnitLengthOnPage={0}/>}/>
+
                 <FormSeparator heading={__("debug.content.sockets_header")} first={false} />
 
                 <Row l={<p class="mb-0 mt-2 form-label text-center">{__("debug.content.lwip_sockets_used")}</p>}

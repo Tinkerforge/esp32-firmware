@@ -202,11 +202,16 @@ void API::addCommand(const char * const path, ConfigRoot *config, const std::vec
         command_data
     });
 
-    auto commandIdx = commands.size() - 1;
+    const size_t commands_size = commands.size();
+    const size_t commandIdx    = commands_size - 1;
 
     for (auto *backend : this->backends) {
         backend->addCommand(commandIdx, commands[commandIdx]);
     }
+
+#if MODULE_DEBUG_AVAILABLE()
+    debug.api_command_count(commands_size);
+#endif
 }
 
 void API::addCommand(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor_in_debug_report, std::function<void(void)> &&callback, bool is_action) {
@@ -287,11 +292,16 @@ void API::addState(const char * const path, ConfigRoot *config, const std::vecto
         state_data
     });
 
-    auto stateIdx = states.size() - 1;
+    const size_t states_size = states.size();
+    const size_t stateIdx    = states_size - 1;
 
     for (auto *backend : this->backends) {
         backend->addState(stateIdx, states[stateIdx]);
     }
+
+#if MODULE_DEBUG_AVAILABLE()
+    debug.api_state_count(states_size);
+#endif
 }
 
 void API::addState(const String &path, ConfigRoot *config, const std::vector<const char *> &keys_to_censor, const std::vector<const char *> &keys_to_censor_in_debug_report, bool low_latency)
@@ -419,11 +429,17 @@ void API::addResponse(const char * const path, ConfigRoot *config, const std::ve
         static_cast<uint8_t>(path_len),
         static_cast<uint8_t>(ktc_size)
     });
-    auto responseIdx = responses.size() - 1;
+
+    const size_t responses_size = responses.size();
+    const size_t responseIdx    = responses_size - 1;
 
     for (auto *backend : this->backends) {
         backend->addResponse(responseIdx, responses[responseIdx]);
     }
+
+#if MODULE_DEBUG_AVAILABLE()
+    debug.api_response_count(responses_size);
+#endif
 }
 
 bool API::hasFeature(const char *name)
