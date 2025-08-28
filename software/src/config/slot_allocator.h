@@ -240,13 +240,13 @@ extern template Config::ConfUint53::Slot *get_slot<Config::ConfUint53>(uint16_t 
 extern template Config::ConfInt52::Slot  *get_slot<Config::ConfInt52>(uint16_t idx);
 extern template Config::ConfTuple::Slot  *get_slot<Config::ConfTuple>(uint16_t idx);
 
+#if MODULE_DEBUG_AVAILABLE()
 template<typename ConfigT>
 size_t get_allocated_slot_memory()
 {
     return RootBlock<ConfigT>::allocated_blocks * SlotConfig<ConfigT>::slots_per_block * sizeof(typename ConfigT::Slot);
 }
 
-#if MODULE_DEBUG_AVAILABLE()
 struct SlotDebugInfo {
     uint16_t first_free_slot;
     uint16_t used_slots;

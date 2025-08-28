@@ -48,9 +48,9 @@ template<> Superblock<Config::ConfInt52>  *RootBlock<Config::ConfInt52>::first_s
 template<> Superblock<Config::ConfTuple>  *RootBlock<Config::ConfTuple>::first_superblock  = &first_superblock_ConfTuple;
 
 template<typename ConfT> uint16_t RootBlock<ConfT>::first_free_slot  = 0;
-template<typename ConfT> uint16_t RootBlock<ConfT>::allocated_blocks = 0;
 
 #if MODULE_DEBUG_AVAILABLE()
+template<typename ConfT> uint16_t RootBlock<ConfT>::allocated_blocks = 0;
 template<typename ConfT> uint16_t RootBlock<ConfT>::used_slots       = 0;
 template<typename ConfT> uint16_t RootBlock<ConfT>::last_used_slot   = 0;
 template<typename ConfT> uint16_t RootBlock<ConfT>::slots_hwm        = 0;
@@ -72,7 +72,19 @@ uint16_t nextSlot()
     size_t block_i = RootBlock<ConfigT>::first_free_slot / SlotConfig<ConfigT>::slots_per_block;
     size_t slot_i  = RootBlock<ConfigT>::first_free_slot % SlotConfig<ConfigT>::slots_per_block;
 
-    while (block_i > SlotConfig<ConfigT>::blocks_per_superblock) {
+    while (block_i >= SlotConfig<ConfigT>::blocks_per_superblock) {
+        if (superblock->next_superblock == nullptr) {
+            // When the first free slot points into the next unallocated block,
+            // don't decrease block_i so that the following block iteration is skipped
+            // when looking for a free slot and a new superblock gets allocated first.
+
+            if (block_i != SlotConfig<ConfigT>::blocks_per_superblock || slot_i != 0) {
+                esp_system_abort("Unexpected block_i or slot_i: not first in next block");
+            }
+
+            break;
+        }
+
         block_i -= SlotConfig<ConfigT>::blocks_per_superblock;
         superblock = superblock->next_superblock;
         superblock_offset++;
@@ -81,15 +93,18 @@ uint16_t nextSlot()
     while (true) {
         for (; block_i < SlotConfig<ConfigT>::blocks_per_superblock; block_i++) {
             typename ConfigT::Slot *block = superblock->blocks[block_i];
-            if (!block) {
+            if (block == nullptr) {
                 block = ConfigT::allocSlotBuf(SlotConfig<ConfigT>::slots_per_block);
 
-                if (!block) {
+                if (block == nullptr) {
                     esp_system_abort("Couldn't allocate slot buffer");
                 }
 
                 superblock->blocks[block_i] = block;
+
+#if MODULE_DEBUG_AVAILABLE()
                 RootBlock<ConfigT>::allocated_blocks++;
+#endif
             }
 
             for (; slot_i < SlotConfig<ConfigT>::slots_per_block; slot_i++) {
@@ -117,10 +132,10 @@ uint16_t nextSlot()
             slot_i = 0;
         }
 
-        if (!superblock->next_superblock) {
+        if (superblock->next_superblock == nullptr) {
             Superblock<ConfigT> *new_superblock = static_cast<decltype(superblock)>(calloc_32bit_addressed(1, sizeof(*superblock)));
 
-            if (!new_superblock) {
+            if (new_superblock == nullptr) {
                 esp_system_abort("Couldn't allocate new superblock");
             }
 
@@ -186,7 +201,7 @@ static void check_slot_accounting()
         for (size_t block_i = 0; block_i < SlotConfig<ConfigT>::blocks_per_superblock; block_i++) {
             typename ConfigT::Slot *block = superblock->blocks[block_i];
 
-            if (!block) {
+            if (block == nullptr) {
                 break;
             }
 
@@ -211,7 +226,7 @@ static void check_slot_accounting()
     superblock = RootBlock<ConfigT>::first_superblock;
 
     while (true) {
-        if (!superblock) {
+        if (superblock == nullptr) {
             if (last_idx == 0) {
                 // Points to first slot in unallocated superblock, which is ok.
                 return;
@@ -224,7 +239,7 @@ static void check_slot_accounting()
         for (size_t block_i = 0; block_i < SlotConfig<ConfigT>::blocks_per_superblock; block_i++) {
             typename ConfigT::Slot *block = superblock->blocks[block_i];
 
-            if (!block) {
+            if (block == nullptr) {
                 if (last_idx == 0) {
                     // Points to first slot in unallocated block, which is ok.
                     return;
