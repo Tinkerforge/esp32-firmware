@@ -1021,6 +1021,16 @@ public:
         return get<ConfUnion>()->changeUnionVariant(static_cast<uint8_t>(tag));
     }
 
+    // For tuple.
+    // Technically
+    // foo.get("bar").replace(3, ConfUint8(0));
+    // is the same as
+    // *(Config *)foo.get("bar") = Config::Tuple(3, ConfUint8(0));
+    // but we (I) don't want to establish the pattern of constructing new configs in the loop phase.
+    // Also we only allow replacing tuples with tuples.
+    void replace(std::initializer_list<Config> tup);
+    void replace(size_t length, Config &&cfg);
+
 private:
     template<typename T, typename ConfigT>
     size_t fillArray(T *arr, size_t elements) {
