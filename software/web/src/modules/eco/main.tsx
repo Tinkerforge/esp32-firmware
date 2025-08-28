@@ -41,7 +41,6 @@ import { is_day_ahead_prices_enabled, get_price_from_index, get_prices_as_15min,
 import { Departure } from "./departure.enum";
 import { Resolution } from "../day_ahead_prices/resolution.enum";
 import { ConfigChargeMode } from "modules/charge_manager/config_charge_mode.enum";
-import { get_allowed_charge_modes } from "modules/charge_manager/main";
 
 export function EcoNavbar() {
     return (
