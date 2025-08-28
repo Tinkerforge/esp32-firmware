@@ -161,7 +161,19 @@ bool NodeManagementUsecase::handle_message(HeaderType &header, SpineDataTypeHand
         eebus.trace_fmtln("NodeManagementUsecase: Command identified as NodeManagementDetailedDiscoveryData");
         return read_detailed_discovery_data(header, data, response);
     }
+    if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionData || data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionRequestCall || data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionDeleteCall) {
+        eebus.trace_fmtln("NodeManagementUsecase: Command identified as Subscription handling");
+        return handle_subscription(header, data, response, connection);
+    }
+
+
     // TODO: Add handling for subscription and binding functions
+
+    eebus.trace_fmtln("NodeManagementUsecase: Unknown. Command not handled");
+    EEBUS_USECASE_HELPERS::build_result_data(response,
+                                             EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandNotSupported,
+                                             "Unknown. Command not supported. Support may be pending.");
+
     return false;
 }
 
@@ -379,6 +391,11 @@ void NodeManagementUsecase::inform_subscribers(int entity, int feature, SpineDat
     }
 };
 
+void NodeManagementUsecase::set_usecaseManager(EEBusUseCases *new_usecase_interface)
+{
+    usecase_interface = new_usecase_interface;
+}
+
 UseCaseInformationDataType ChargingSummaryUsecase::get_usecase_information()
 {
     UseCaseInformationDataType evcs_usecase;
@@ -452,10 +469,6 @@ NodeManagementDetailedDiscoveryFeatureInformationType ChargingSummaryUsecase::ge
     return feature;
 }
 
-void NodeManagementUsecase::set_usecaseManager(EEBusUseCases *new_usecase_interface)
-{
-    usecase_interface = new_usecase_interface;
-}
 
 EEBusUseCases::EEBusUseCases()
 {
