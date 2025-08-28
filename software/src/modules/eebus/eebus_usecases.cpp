@@ -506,6 +506,7 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
     }
     if (send_response) {
         eebus.trace_fmtln("Usecases: Sending response");
+        // TODO: not everything is sent with a reply. Some things might be an error or a result
         connection->send_datagram(response_doc, CmdClassifierType::reply, *header.addressSource, *header.addressDestination, false);
     } else {
         eebus.trace_fmtln("Usecases: No response needed. Not sending anything");
