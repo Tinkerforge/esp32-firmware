@@ -205,6 +205,15 @@ struct CoolArray {
         if (used >= capacity_)
             esp_system_abort("CoolArray was full!");
 
+        val[used] = std::move(elem);
+        ++used;
+        return true;
+    }
+
+    bool push_back(T elem) {
+        if (used >= capacity_)
+            return false;
+
         val[used] = elem;
         ++used;
         return true;
@@ -212,8 +221,16 @@ struct CoolArray {
 
     T *data() { return val; }
     const T *data() const { return val; }
+
+    bool empty() { return used == 0; }
     size_t size() const { return used; }
     size_t capacity() const { return capacity_; }
+
+    void clear() {
+        for (size_t i = 0; i < used; ++i)
+            val[i] = T{};
+        used = 0;
+    }
 
 private:
     size_t used = 0;
