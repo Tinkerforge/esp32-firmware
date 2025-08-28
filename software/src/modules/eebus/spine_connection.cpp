@@ -93,9 +93,9 @@ void SpineConnection::send_datagram(JsonVariantConst payload, CmdClassifierType 
 void SpineConnection::check_message_counter()
 {
     // TODO: Implement a proper message counter check
-    if (received_header.msgCounter && received_header.msgCounter.value() < msg_counter_received) {
+    if (received_header.msgCounter && received_header.msgCounter.get() < msg_counter_received) {
         eebus.trace_fmtln("SPINE Message counter is lower than expected. The peer might have technical issues or has been rebooted.");
-        msg_counter_received = received_header.msgCounter.value();
+        msg_counter_received = received_header.msgCounter.get();
         msg_counter_error_count++;
     } else {
         msg_counter_error_count = msg_counter_error_count > 0 ? msg_counter_error_count - 1 : 0;
@@ -107,7 +107,7 @@ void SpineConnection::check_message_counter()
 bool SpineConnection::check_known_address(const FeatureAddressType &address)
 {
     for (FeatureAddressType &known_address : known_addresses) {
-        if (known_address.device == address.device && known_address.feature == address.feature && known_address.entity == address.entity) {
+        if (known_address.device.get() == address.device.get() && known_address.feature.get() == address.feature.get() && known_address.entity.get() == address.entity.get()) {
             return true; // The address is known
         }
     }

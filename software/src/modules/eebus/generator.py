@@ -45,19 +45,87 @@ template <typename T> struct Converter<std::vector<T>> {
 };
 } // namespace ArduinoJson
 
+template <typename T>
+class SpineOptional
+{
+    mutable T value{};
+    mutable bool is_set = false;
 
-struct DateTimeStruct { // Added manually
-    std::optional<uint16_t> year;
-    std::optional<uint8_t> month;
-    std::optional<uint8_t> day;
-    std::optional<uint8_t> hour;
-    std::optional<uint8_t> minute;
-    std::optional<uint8_t> second;
-    std::optional<uint16_t> millisecond;
-    std::optional<int8_t> timezone; // Offset from UTC in hours, 0 if time is UTC, empty if no TZ is given
+public:
+    using value_type = T;
+    SpineOptional() = default;
+
+    SpineOptional(const T &v) : value(v), is_set(true) {}
+    SpineOptional &operator=(const T &v){
+        value = v;
+        is_set = true;
+        return *this;
+    } 
+    
+    explicit operator bool() const noexcept { return is_set; }
+    
+    T& operator*() { return value; }
+    const T& operator*() const { return value; }
+
+    T* operator->() { 
+        if(!is_set) {
+            value = T{};
+        }
+        is_set = true;
+        return &value; 
+    }
+    const T* operator->() const { 
+        if(!is_set) {
+            value = T{};
+        }
+        is_set = true;
+        return &value; 
+        }
+    
+    T &get(){
+        is_set = true;
+        return value;
+    }
+    const T &get() const{
+        is_set = true;
+        return value;
+    }
+    bool has_value() const{
+        return is_set;
+    }
+    void reset(){
+        is_set = false;
+        value = T{};
+    }
+    bool isNull() const{ return !is_set; }    
+    void emplace (){
+        is_set = true;
+        value = T{};
+    }    
+    friend bool operator==(const SpineOptional<T>& opt, const T& v) {
+        return opt.is_set && opt.value == v;
+    }
+    friend bool operator==(const T& v, const SpineOptional<T>& opt) {
+        return opt.is_set && opt.value == v;
+    }
+    friend bool operator!=(const SpineOptional<T>& opt, const T& v) {
+        return !(opt == v);
+    }
+    friend bool operator!=(const T& v, const SpineOptional<T>& opt) {
+        return !(v == opt);
+    }
 };
 
-
+struct DateTimeStruct { // Added manually
+    SpineOptional<uint16_t> year;
+    SpineOptional<uint8_t> month;
+    SpineOptional<uint8_t> day;
+    SpineOptional<uint8_t> hour;
+    SpineOptional<uint8_t> minute;
+    SpineOptional<uint8_t> second;
+    SpineOptional<uint16_t> millisecond;
+    SpineOptional<int8_t> timezone; // Offset from UTC in hours, 0 if time is UTC, empty if no TZ is given
+};
 """
 
 spine_cpp_implementation_header = """
@@ -342,13 +410,13 @@ def process_complex_type(complex_type):
             # Done
             if is_vec:
                 variable_type = "std::vector<" + variable_type + ">"
-            new_type.code += f"\tstd::optional<{variable_type}> {variable_name_cpp};\n"
+            new_type.code += f"\tSpineOptional<{variable_type}> {variable_name_cpp};\n"
             if variable_type == "None" or variable_type is None:
                 print("Variable type is None while making complex type")
                 unprocessed_elements += 1
                 return
-            new_type.to_json_code += f"""\tif (src.{variable_name_cpp}) {{\n\t\tdst["{variable_name_string}"] = *src.{variable_name_cpp};\n\t}}\n"""
-            new_type.from_json_code += f"""\tif (!src["{variable_name_string}"].isNull()) {{\n\t\tdst.{variable_name_cpp} = src["{variable_name_string}"].as<decltype(dst.{variable_name_cpp})::value_type>();\n\t}} else {{\n\t\tdst.{variable_name_cpp} = std::nullopt;\n\t}}\n"""
+            new_type.to_json_code += f"""\tif (src.{variable_name_cpp}.has_value()) {{\n\t\tdst["{variable_name_string}"] = *src.{variable_name_cpp};\n\t}}\n"""
+            new_type.from_json_code += f"""\tif (!src["{variable_name_string}"].isNull()) {{\n\t\tdst.{variable_name_cpp} = src["{variable_name_string}"].as<decltype(dst.{variable_name_cpp})::value_type>();\n\t}} else {{\n\t\tdst.{variable_name_cpp}.reset();\n\t}}\n"""
         #if its an empty element, we still need to generate the to/from json code but it doesnt need to do anything
         if len(elements) < 1:
             new_type.to_json_code = f"""bool convertToJson(const {struct_type_name} &src, JsonVariant& dst) {{\n"""
@@ -485,7 +553,7 @@ def generate_data_handler_class() -> (str, str):
         f"\n\tif (function == SpineDataTypeHandler::Function::{function[0]}) return \"{function[0]}\";" for function in
         type_function_mapping)
     data_types = ''.join(
-        f"\n\t\tstd::optional<{cpp_datatype.name}> {cpp_datatype.name.lower()};" for cpp_datatype in cpp_datatypes)
+        f"\n\t\tSpineOptional<{cpp_datatype.name}> {cpp_datatype.name.lower()};" for cpp_datatype in cpp_datatypes)
 
     last_cmd_to_json_mapping = ''.join(f"""
     if (last_cmd == SpineDataTypeHandler::Function::{function[0]}) {{
