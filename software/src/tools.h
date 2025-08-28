@@ -203,7 +203,7 @@ struct FixedStackVector {
 
     bool add(T &&elem) {
         if (used >= capacity_)
-             return false;
+            return false;
 
         val[used] = elem;
         ++used;
