@@ -159,7 +159,9 @@ public:
     std::vector<CommandRegistration, IRAMAlloc<CommandRegistration>> commands;
     std::vector<ResponseRegistration> responses;
 
-    std::vector<IAPIBackend *> backends;
+    // There are currently only 4 implementors of IAPIBackend:
+    // event, http, mqtt and ws
+    CoolArray<IAPIBackend *, 4> backends;
 
     ConfigRoot features;
     ConfigRoot version;
