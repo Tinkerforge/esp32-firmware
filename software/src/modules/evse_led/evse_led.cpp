@@ -143,7 +143,8 @@ bool EvseLed::accepts_new_state(Blink new_state)
 
 bool EvseLed::set(Blink state, uint16_t duration_ms, uint16_t h, uint8_t s, uint8_t v, bool via_api)
 {
-    if (!accepts_new_state(state))
+    bool api_change = this->current_state_via_api && via_api;
+    if (!api_change && !accepts_new_state(state))
         return false;
 
     micros_t new_duration_end_us = now_us() + micros_t{duration_ms * 1000};
