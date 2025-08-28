@@ -8625,10 +8625,13 @@ void convertFromJson(const JsonVariantConst &src, CmdClassifierType &dst)
 
 bool convertToJson(const ScaledNumberType &src, JsonVariant &dst)
 {
-    if (src.number) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.number.has_value()) {
         dst["number"] = *src.number;
     }
-    if (src.scale) {
+    if (src.scale.has_value()) {
         dst["scale"] = *src.scale;
     }
 
@@ -8641,46 +8644,49 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberType &dst)
     if (!src["number"].isNull()) {
         dst.number = src["number"].as<decltype(dst.number)::value_type>();
     } else {
-        dst.number = std::nullopt;
+        dst.number.reset();
     }
     if (!src["scale"].isNull()) {
         dst.scale = src["scale"].as<decltype(dst.scale)::value_type>();
     } else {
-        dst.scale = std::nullopt;
+        dst.scale.reset();
     }
 
 }
 
 bool convertToJson(const DirectControlActivityDataType &src, JsonVariant &dst)
 {
-    if (src.timestamp) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.activityState) {
+    if (src.activityState.has_value()) {
         dst["activityState"] = *src.activityState;
     }
-    if (src.isActivityStateChangeable) {
+    if (src.isActivityStateChangeable.has_value()) {
         dst["isActivityStateChangeable"] = *src.isActivityStateChangeable;
     }
-    if (src.energyMode) {
+    if (src.energyMode.has_value()) {
         dst["energyMode"] = *src.energyMode;
     }
-    if (src.isEnergyModeChangeable) {
+    if (src.isEnergyModeChangeable.has_value()) {
         dst["isEnergyModeChangeable"] = *src.isEnergyModeChangeable;
     }
-    if (src.power) {
+    if (src.power.has_value()) {
         dst["power"] = *src.power;
     }
-    if (src.isPowerChangeable) {
+    if (src.isPowerChangeable.has_value()) {
         dst["isPowerChangeable"] = *src.isPowerChangeable;
     }
-    if (src.energy) {
+    if (src.energy.has_value()) {
         dst["energy"] = *src.energy;
     }
-    if (src.isEnergyChangeable) {
+    if (src.isEnergyChangeable.has_value()) {
         dst["isEnergyChangeable"] = *src.isEnergyChangeable;
     }
-    if (src.sequenceId) {
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -8693,52 +8699,52 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataType 
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["activityState"].isNull()) {
         dst.activityState = src["activityState"].as<decltype(dst.activityState)::value_type>();
     } else {
-        dst.activityState = std::nullopt;
+        dst.activityState.reset();
     }
     if (!src["isActivityStateChangeable"].isNull()) {
         dst.isActivityStateChangeable = src["isActivityStateChangeable"].as<decltype(dst.isActivityStateChangeable)::value_type>();
     } else {
-        dst.isActivityStateChangeable = std::nullopt;
+        dst.isActivityStateChangeable.reset();
     }
     if (!src["energyMode"].isNull()) {
         dst.energyMode = src["energyMode"].as<decltype(dst.energyMode)::value_type>();
     } else {
-        dst.energyMode = std::nullopt;
+        dst.energyMode.reset();
     }
     if (!src["isEnergyModeChangeable"].isNull()) {
         dst.isEnergyModeChangeable = src["isEnergyModeChangeable"].as<decltype(dst.isEnergyModeChangeable)::value_type>();
     } else {
-        dst.isEnergyModeChangeable = std::nullopt;
+        dst.isEnergyModeChangeable.reset();
     }
     if (!src["power"].isNull()) {
         dst.power = src["power"].as<decltype(dst.power)::value_type>();
     } else {
-        dst.power = std::nullopt;
+        dst.power.reset();
     }
     if (!src["isPowerChangeable"].isNull()) {
         dst.isPowerChangeable = src["isPowerChangeable"].as<decltype(dst.isPowerChangeable)::value_type>();
     } else {
-        dst.isPowerChangeable = std::nullopt;
+        dst.isPowerChangeable.reset();
     }
     if (!src["energy"].isNull()) {
         dst.energy = src["energy"].as<decltype(dst.energy)::value_type>();
     } else {
-        dst.energy = std::nullopt;
+        dst.energy.reset();
     }
     if (!src["isEnergyChangeable"].isNull()) {
         dst.isEnergyChangeable = src["isEnergyChangeable"].as<decltype(dst.isEnergyChangeable)::value_type>();
     } else {
-        dst.isEnergyChangeable = std::nullopt;
+        dst.isEnergyChangeable.reset();
     }
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
@@ -8756,10 +8762,13 @@ void convertFromJson(const JsonVariantConst &src, ElementTagType &dst)
 
 bool convertToJson(const ScaledNumberElementsType &src, JsonVariant &dst)
 {
-    if (src.number) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.number.has_value()) {
         dst["number"] = *src.number;
     }
-    if (src.scale) {
+    if (src.scale.has_value()) {
         dst["scale"] = *src.scale;
     }
 
@@ -8772,46 +8781,49 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberElementsType &dst)
     if (!src["number"].isNull()) {
         dst.number = src["number"].as<decltype(dst.number)::value_type>();
     } else {
-        dst.number = std::nullopt;
+        dst.number.reset();
     }
     if (!src["scale"].isNull()) {
         dst.scale = src["scale"].as<decltype(dst.scale)::value_type>();
     } else {
-        dst.scale = std::nullopt;
+        dst.scale.reset();
     }
 
 }
 
 bool convertToJson(const DirectControlActivityDataElementsType &src, JsonVariant &dst)
 {
-    if (src.timestamp) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.activityState) {
+    if (src.activityState.has_value()) {
         dst["activityState"] = *src.activityState;
     }
-    if (src.isActivityStateChangeable) {
+    if (src.isActivityStateChangeable.has_value()) {
         dst["isActivityStateChangeable"] = *src.isActivityStateChangeable;
     }
-    if (src.energyMode) {
+    if (src.energyMode.has_value()) {
         dst["energyMode"] = *src.energyMode;
     }
-    if (src.isEnergyModeChangeable) {
+    if (src.isEnergyModeChangeable.has_value()) {
         dst["isEnergyModeChangeable"] = *src.isEnergyModeChangeable;
     }
-    if (src.power) {
+    if (src.power.has_value()) {
         dst["power"] = *src.power;
     }
-    if (src.isPowerChangeable) {
+    if (src.isPowerChangeable.has_value()) {
         dst["isPowerChangeable"] = *src.isPowerChangeable;
     }
-    if (src.energy) {
+    if (src.energy.has_value()) {
         dst["energy"] = *src.energy;
     }
-    if (src.isEnergyChangeable) {
+    if (src.isEnergyChangeable.has_value()) {
         dst["isEnergyChangeable"] = *src.isEnergyChangeable;
     }
-    if (src.sequenceId) {
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -8824,59 +8836,62 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityDataEleme
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["activityState"].isNull()) {
         dst.activityState = src["activityState"].as<decltype(dst.activityState)::value_type>();
     } else {
-        dst.activityState = std::nullopt;
+        dst.activityState.reset();
     }
     if (!src["isActivityStateChangeable"].isNull()) {
         dst.isActivityStateChangeable = src["isActivityStateChangeable"].as<decltype(dst.isActivityStateChangeable)::value_type>();
     } else {
-        dst.isActivityStateChangeable = std::nullopt;
+        dst.isActivityStateChangeable.reset();
     }
     if (!src["energyMode"].isNull()) {
         dst.energyMode = src["energyMode"].as<decltype(dst.energyMode)::value_type>();
     } else {
-        dst.energyMode = std::nullopt;
+        dst.energyMode.reset();
     }
     if (!src["isEnergyModeChangeable"].isNull()) {
         dst.isEnergyModeChangeable = src["isEnergyModeChangeable"].as<decltype(dst.isEnergyModeChangeable)::value_type>();
     } else {
-        dst.isEnergyModeChangeable = std::nullopt;
+        dst.isEnergyModeChangeable.reset();
     }
     if (!src["power"].isNull()) {
         dst.power = src["power"].as<decltype(dst.power)::value_type>();
     } else {
-        dst.power = std::nullopt;
+        dst.power.reset();
     }
     if (!src["isPowerChangeable"].isNull()) {
         dst.isPowerChangeable = src["isPowerChangeable"].as<decltype(dst.isPowerChangeable)::value_type>();
     } else {
-        dst.isPowerChangeable = std::nullopt;
+        dst.isPowerChangeable.reset();
     }
     if (!src["energy"].isNull()) {
         dst.energy = src["energy"].as<decltype(dst.energy)::value_type>();
     } else {
-        dst.energy = std::nullopt;
+        dst.energy.reset();
     }
     if (!src["isEnergyChangeable"].isNull()) {
         dst.isEnergyChangeable = src["isEnergyChangeable"].as<decltype(dst.isEnergyChangeable)::value_type>();
     } else {
-        dst.isEnergyChangeable = std::nullopt;
+        dst.isEnergyChangeable.reset();
     }
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const DirectControlActivityListDataType &src, JsonVariant &dst)
 {
-    if (src.directControlActivityData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.directControlActivityData.has_value()) {
         dst["directControlActivityData"] = *src.directControlActivityData;
     }
 
@@ -8889,17 +8904,20 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityListDataT
     if (!src["directControlActivityData"].isNull()) {
         dst.directControlActivityData = src["directControlActivityData"].as<decltype(dst.directControlActivityData)::value_type>();
     } else {
-        dst.directControlActivityData = std::nullopt;
+        dst.directControlActivityData.reset();
     }
 
 }
 
 bool convertToJson(const TimestampIntervalType &src, JsonVariant &dst)
 {
-    if (src.startTime) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.startTime.has_value()) {
         dst["startTime"] = *src.startTime;
     }
-    if (src.endTime) {
+    if (src.endTime.has_value()) {
         dst["endTime"] = *src.endTime;
     }
 
@@ -8912,19 +8930,22 @@ void convertFromJson(const JsonVariantConst &src, TimestampIntervalType &dst)
     if (!src["startTime"].isNull()) {
         dst.startTime = src["startTime"].as<decltype(dst.startTime)::value_type>();
     } else {
-        dst.startTime = std::nullopt;
+        dst.startTime.reset();
     }
     if (!src["endTime"].isNull()) {
         dst.endTime = src["endTime"].as<decltype(dst.endTime)::value_type>();
     } else {
-        dst.endTime = std::nullopt;
+        dst.endTime.reset();
     }
 
 }
 
 bool convertToJson(const DirectControlActivityListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.timestampInterval) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timestampInterval.has_value()) {
         dst["timestampInterval"] = *src.timestampInterval;
     }
 
@@ -8937,20 +8958,23 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityListDataS
     if (!src["timestampInterval"].isNull()) {
         dst.timestampInterval = src["timestampInterval"].as<decltype(dst.timestampInterval)::value_type>();
     } else {
-        dst.timestampInterval = std::nullopt;
+        dst.timestampInterval.reset();
     }
 
 }
 
 bool convertToJson(const DirectControlDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.positiveEnergyDirection) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.positiveEnergyDirection.has_value()) {
         dst["positiveEnergyDirection"] = *src.positiveEnergyDirection;
     }
-    if (src.powerUnit) {
+    if (src.powerUnit.has_value()) {
         dst["powerUnit"] = *src.powerUnit;
     }
-    if (src.energyUnit) {
+    if (src.energyUnit.has_value()) {
         dst["energyUnit"] = *src.energyUnit;
     }
 
@@ -8963,30 +8987,33 @@ void convertFromJson(const JsonVariantConst &src, DirectControlDescriptionDataTy
     if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
-        dst.positiveEnergyDirection = std::nullopt;
+        dst.positiveEnergyDirection.reset();
     }
     if (!src["powerUnit"].isNull()) {
         dst.powerUnit = src["powerUnit"].as<decltype(dst.powerUnit)::value_type>();
     } else {
-        dst.powerUnit = std::nullopt;
+        dst.powerUnit.reset();
     }
     if (!src["energyUnit"].isNull()) {
         dst.energyUnit = src["energyUnit"].as<decltype(dst.energyUnit)::value_type>();
     } else {
-        dst.energyUnit = std::nullopt;
+        dst.energyUnit.reset();
     }
 
 }
 
 bool convertToJson(const DirectControlDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.positiveEnergyDirection) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.positiveEnergyDirection.has_value()) {
         dst["positiveEnergyDirection"] = *src.positiveEnergyDirection;
     }
-    if (src.powerUnit) {
+    if (src.powerUnit.has_value()) {
         dst["powerUnit"] = *src.powerUnit;
     }
-    if (src.energyUnit) {
+    if (src.energyUnit.has_value()) {
         dst["energyUnit"] = *src.energyUnit;
     }
 
@@ -8999,27 +9026,30 @@ void convertFromJson(const JsonVariantConst &src, DirectControlDescriptionDataEl
     if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
-        dst.positiveEnergyDirection = std::nullopt;
+        dst.positiveEnergyDirection.reset();
     }
     if (!src["powerUnit"].isNull()) {
         dst.powerUnit = src["powerUnit"].as<decltype(dst.powerUnit)::value_type>();
     } else {
-        dst.powerUnit = std::nullopt;
+        dst.powerUnit.reset();
     }
     if (!src["energyUnit"].isNull()) {
         dst.energyUnit = src["energyUnit"].as<decltype(dst.energyUnit)::value_type>();
     } else {
-        dst.energyUnit = std::nullopt;
+        dst.energyUnit.reset();
     }
 
 }
 
 bool convertToJson(const TimePeriodType &src, JsonVariant &dst)
 {
-    if (src.startTime) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.startTime.has_value()) {
         dst["startTime"] = *src.startTime;
     }
-    if (src.endTime) {
+    if (src.endTime.has_value()) {
         dst["endTime"] = *src.endTime;
     }
 
@@ -9032,22 +9062,25 @@ void convertFromJson(const JsonVariantConst &src, TimePeriodType &dst)
     if (!src["startTime"].isNull()) {
         dst.startTime = src["startTime"].as<decltype(dst.startTime)::value_type>();
     } else {
-        dst.startTime = std::nullopt;
+        dst.startTime.reset();
     }
     if (!src["endTime"].isNull()) {
         dst.endTime = src["endTime"].as<decltype(dst.endTime)::value_type>();
     } else {
-        dst.endTime = std::nullopt;
+        dst.endTime.reset();
     }
 
 }
 
 bool convertToJson(const TimePeriodElementsType &src, JsonVariant &dst)
 {
-    if (src.startTime) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.startTime.has_value()) {
         dst["startTime"] = *src.startTime;
     }
-    if (src.endTime) {
+    if (src.endTime.has_value()) {
         dst["endTime"] = *src.endTime;
     }
 
@@ -9060,37 +9093,40 @@ void convertFromJson(const JsonVariantConst &src, TimePeriodElementsType &dst)
     if (!src["startTime"].isNull()) {
         dst.startTime = src["startTime"].as<decltype(dst.startTime)::value_type>();
     } else {
-        dst.startTime = std::nullopt;
+        dst.startTime.reset();
     }
     if (!src["endTime"].isNull()) {
         dst.endTime = src["endTime"].as<decltype(dst.endTime)::value_type>();
     } else {
-        dst.endTime = std::nullopt;
+        dst.endTime.reset();
     }
 
 }
 
 bool convertToJson(const DaysOfWeekType &src, JsonVariant &dst)
 {
-    if (src.monday) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.monday.has_value()) {
         dst["monday"] = *src.monday;
     }
-    if (src.tuesday) {
+    if (src.tuesday.has_value()) {
         dst["tuesday"] = *src.tuesday;
     }
-    if (src.wednesday) {
+    if (src.wednesday.has_value()) {
         dst["wednesday"] = *src.wednesday;
     }
-    if (src.thursday) {
+    if (src.thursday.has_value()) {
         dst["thursday"] = *src.thursday;
     }
-    if (src.friday) {
+    if (src.friday.has_value()) {
         dst["friday"] = *src.friday;
     }
-    if (src.saturday) {
+    if (src.saturday.has_value()) {
         dst["saturday"] = *src.saturday;
     }
-    if (src.sunday) {
+    if (src.sunday.has_value()) {
         dst["sunday"] = *src.sunday;
     }
 
@@ -9103,65 +9139,68 @@ void convertFromJson(const JsonVariantConst &src, DaysOfWeekType &dst)
     if (!src["monday"].isNull()) {
         dst.monday = src["monday"].as<decltype(dst.monday)::value_type>();
     } else {
-        dst.monday = std::nullopt;
+        dst.monday.reset();
     }
     if (!src["tuesday"].isNull()) {
         dst.tuesday = src["tuesday"].as<decltype(dst.tuesday)::value_type>();
     } else {
-        dst.tuesday = std::nullopt;
+        dst.tuesday.reset();
     }
     if (!src["wednesday"].isNull()) {
         dst.wednesday = src["wednesday"].as<decltype(dst.wednesday)::value_type>();
     } else {
-        dst.wednesday = std::nullopt;
+        dst.wednesday.reset();
     }
     if (!src["thursday"].isNull()) {
         dst.thursday = src["thursday"].as<decltype(dst.thursday)::value_type>();
     } else {
-        dst.thursday = std::nullopt;
+        dst.thursday.reset();
     }
     if (!src["friday"].isNull()) {
         dst.friday = src["friday"].as<decltype(dst.friday)::value_type>();
     } else {
-        dst.friday = std::nullopt;
+        dst.friday.reset();
     }
     if (!src["saturday"].isNull()) {
         dst.saturday = src["saturday"].as<decltype(dst.saturday)::value_type>();
     } else {
-        dst.saturday = std::nullopt;
+        dst.saturday.reset();
     }
     if (!src["sunday"].isNull()) {
         dst.sunday = src["sunday"].as<decltype(dst.sunday)::value_type>();
     } else {
-        dst.sunday = std::nullopt;
+        dst.sunday.reset();
     }
 
 }
 
 bool convertToJson(const AbsoluteOrRecurringTimeType &src, JsonVariant &dst)
 {
-    if (src.dateTime) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.dateTime.has_value()) {
         dst["dateTime"] = *src.dateTime;
     }
-    if (src.month) {
+    if (src.month.has_value()) {
         dst["month"] = *src.month;
     }
-    if (src.dayOfMonth) {
+    if (src.dayOfMonth.has_value()) {
         dst["dayOfMonth"] = *src.dayOfMonth;
     }
-    if (src.calendarWeek) {
+    if (src.calendarWeek.has_value()) {
         dst["calendarWeek"] = *src.calendarWeek;
     }
-    if (src.dayOfWeekOccurrence) {
+    if (src.dayOfWeekOccurrence.has_value()) {
         dst["dayOfWeekOccurrence"] = *src.dayOfWeekOccurrence;
     }
-    if (src.daysOfWeek) {
+    if (src.daysOfWeek.has_value()) {
         dst["daysOfWeek"] = *src.daysOfWeek;
     }
-    if (src.time) {
+    if (src.time.has_value()) {
         dst["time"] = *src.time;
     }
-    if (src.relative) {
+    if (src.relative.has_value()) {
         dst["relative"] = *src.relative;
     }
 
@@ -9174,70 +9213,73 @@ void convertFromJson(const JsonVariantConst &src, AbsoluteOrRecurringTimeType &d
     if (!src["dateTime"].isNull()) {
         dst.dateTime = src["dateTime"].as<decltype(dst.dateTime)::value_type>();
     } else {
-        dst.dateTime = std::nullopt;
+        dst.dateTime.reset();
     }
     if (!src["month"].isNull()) {
         dst.month = src["month"].as<decltype(dst.month)::value_type>();
     } else {
-        dst.month = std::nullopt;
+        dst.month.reset();
     }
     if (!src["dayOfMonth"].isNull()) {
         dst.dayOfMonth = src["dayOfMonth"].as<decltype(dst.dayOfMonth)::value_type>();
     } else {
-        dst.dayOfMonth = std::nullopt;
+        dst.dayOfMonth.reset();
     }
     if (!src["calendarWeek"].isNull()) {
         dst.calendarWeek = src["calendarWeek"].as<decltype(dst.calendarWeek)::value_type>();
     } else {
-        dst.calendarWeek = std::nullopt;
+        dst.calendarWeek.reset();
     }
     if (!src["dayOfWeekOccurrence"].isNull()) {
         dst.dayOfWeekOccurrence = src["dayOfWeekOccurrence"].as<decltype(dst.dayOfWeekOccurrence)::value_type>();
     } else {
-        dst.dayOfWeekOccurrence = std::nullopt;
+        dst.dayOfWeekOccurrence.reset();
     }
     if (!src["daysOfWeek"].isNull()) {
         dst.daysOfWeek = src["daysOfWeek"].as<decltype(dst.daysOfWeek)::value_type>();
     } else {
-        dst.daysOfWeek = std::nullopt;
+        dst.daysOfWeek.reset();
     }
     if (!src["time"].isNull()) {
         dst.time = src["time"].as<decltype(dst.time)::value_type>();
     } else {
-        dst.time = std::nullopt;
+        dst.time.reset();
     }
     if (!src["relative"].isNull()) {
         dst.relative = src["relative"].as<decltype(dst.relative)::value_type>();
     } else {
-        dst.relative = std::nullopt;
+        dst.relative.reset();
     }
 
 }
 
 bool convertToJson(const AbsoluteOrRecurringTimeElementsType &src, JsonVariant &dst)
 {
-    if (src.dateTime) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.dateTime.has_value()) {
         dst["dateTime"] = *src.dateTime;
     }
-    if (src.month) {
+    if (src.month.has_value()) {
         dst["month"] = *src.month;
     }
-    if (src.dayOfMonth) {
+    if (src.dayOfMonth.has_value()) {
         dst["dayOfMonth"] = *src.dayOfMonth;
     }
-    if (src.calendarWeek) {
+    if (src.calendarWeek.has_value()) {
         dst["calendarWeek"] = *src.calendarWeek;
     }
-    if (src.dayOfWeekOccurrence) {
+    if (src.dayOfWeekOccurrence.has_value()) {
         dst["dayOfWeekOccurrence"] = *src.dayOfWeekOccurrence;
     }
-    if (src.daysOfWeek) {
+    if (src.daysOfWeek.has_value()) {
         dst["daysOfWeek"] = *src.daysOfWeek;
     }
-    if (src.time) {
+    if (src.time.has_value()) {
         dst["time"] = *src.time;
     }
-    if (src.relative) {
+    if (src.relative.has_value()) {
         dst["relative"] = *src.relative;
     }
 
@@ -9250,61 +9292,64 @@ void convertFromJson(const JsonVariantConst &src, AbsoluteOrRecurringTimeElement
     if (!src["dateTime"].isNull()) {
         dst.dateTime = src["dateTime"].as<decltype(dst.dateTime)::value_type>();
     } else {
-        dst.dateTime = std::nullopt;
+        dst.dateTime.reset();
     }
     if (!src["month"].isNull()) {
         dst.month = src["month"].as<decltype(dst.month)::value_type>();
     } else {
-        dst.month = std::nullopt;
+        dst.month.reset();
     }
     if (!src["dayOfMonth"].isNull()) {
         dst.dayOfMonth = src["dayOfMonth"].as<decltype(dst.dayOfMonth)::value_type>();
     } else {
-        dst.dayOfMonth = std::nullopt;
+        dst.dayOfMonth.reset();
     }
     if (!src["calendarWeek"].isNull()) {
         dst.calendarWeek = src["calendarWeek"].as<decltype(dst.calendarWeek)::value_type>();
     } else {
-        dst.calendarWeek = std::nullopt;
+        dst.calendarWeek.reset();
     }
     if (!src["dayOfWeekOccurrence"].isNull()) {
         dst.dayOfWeekOccurrence = src["dayOfWeekOccurrence"].as<decltype(dst.dayOfWeekOccurrence)::value_type>();
     } else {
-        dst.dayOfWeekOccurrence = std::nullopt;
+        dst.dayOfWeekOccurrence.reset();
     }
     if (!src["daysOfWeek"].isNull()) {
         dst.daysOfWeek = src["daysOfWeek"].as<decltype(dst.daysOfWeek)::value_type>();
     } else {
-        dst.daysOfWeek = std::nullopt;
+        dst.daysOfWeek.reset();
     }
     if (!src["time"].isNull()) {
         dst.time = src["time"].as<decltype(dst.time)::value_type>();
     } else {
-        dst.time = std::nullopt;
+        dst.time.reset();
     }
     if (!src["relative"].isNull()) {
         dst.relative = src["relative"].as<decltype(dst.relative)::value_type>();
     } else {
-        dst.relative = std::nullopt;
+        dst.relative.reset();
     }
 
 }
 
 bool convertToJson(const RecurrenceInformationType &src, JsonVariant &dst)
 {
-    if (src.recurringInterval) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.recurringInterval.has_value()) {
         dst["recurringInterval"] = *src.recurringInterval;
     }
-    if (src.recurringIntervalStep) {
+    if (src.recurringIntervalStep.has_value()) {
         dst["recurringIntervalStep"] = *src.recurringIntervalStep;
     }
-    if (src.firstExecution) {
+    if (src.firstExecution.has_value()) {
         dst["firstExecution"] = *src.firstExecution;
     }
-    if (src.executionCount) {
+    if (src.executionCount.has_value()) {
         dst["executionCount"] = *src.executionCount;
     }
-    if (src.lastExecution) {
+    if (src.lastExecution.has_value()) {
         dst["lastExecution"] = *src.lastExecution;
     }
 
@@ -9317,46 +9362,49 @@ void convertFromJson(const JsonVariantConst &src, RecurrenceInformationType &dst
     if (!src["recurringInterval"].isNull()) {
         dst.recurringInterval = src["recurringInterval"].as<decltype(dst.recurringInterval)::value_type>();
     } else {
-        dst.recurringInterval = std::nullopt;
+        dst.recurringInterval.reset();
     }
     if (!src["recurringIntervalStep"].isNull()) {
         dst.recurringIntervalStep = src["recurringIntervalStep"].as<decltype(dst.recurringIntervalStep)::value_type>();
     } else {
-        dst.recurringIntervalStep = std::nullopt;
+        dst.recurringIntervalStep.reset();
     }
     if (!src["firstExecution"].isNull()) {
         dst.firstExecution = src["firstExecution"].as<decltype(dst.firstExecution)::value_type>();
     } else {
-        dst.firstExecution = std::nullopt;
+        dst.firstExecution.reset();
     }
     if (!src["executionCount"].isNull()) {
         dst.executionCount = src["executionCount"].as<decltype(dst.executionCount)::value_type>();
     } else {
-        dst.executionCount = std::nullopt;
+        dst.executionCount.reset();
     }
     if (!src["lastExecution"].isNull()) {
         dst.lastExecution = src["lastExecution"].as<decltype(dst.lastExecution)::value_type>();
     } else {
-        dst.lastExecution = std::nullopt;
+        dst.lastExecution.reset();
     }
 
 }
 
 bool convertToJson(const RecurrenceInformationElementsType &src, JsonVariant &dst)
 {
-    if (src.recurringInterval) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.recurringInterval.has_value()) {
         dst["recurringInterval"] = *src.recurringInterval;
     }
-    if (src.recurringIntervalStep) {
+    if (src.recurringIntervalStep.has_value()) {
         dst["recurringIntervalStep"] = *src.recurringIntervalStep;
     }
-    if (src.firstExecution) {
+    if (src.firstExecution.has_value()) {
         dst["firstExecution"] = *src.firstExecution;
     }
-    if (src.executionCount) {
+    if (src.executionCount.has_value()) {
         dst["executionCount"] = *src.executionCount;
     }
-    if (src.lastExecution) {
+    if (src.lastExecution.has_value()) {
         dst["lastExecution"] = *src.lastExecution;
     }
 
@@ -9369,37 +9417,40 @@ void convertFromJson(const JsonVariantConst &src, RecurrenceInformationElementsT
     if (!src["recurringInterval"].isNull()) {
         dst.recurringInterval = src["recurringInterval"].as<decltype(dst.recurringInterval)::value_type>();
     } else {
-        dst.recurringInterval = std::nullopt;
+        dst.recurringInterval.reset();
     }
     if (!src["recurringIntervalStep"].isNull()) {
         dst.recurringIntervalStep = src["recurringIntervalStep"].as<decltype(dst.recurringIntervalStep)::value_type>();
     } else {
-        dst.recurringIntervalStep = std::nullopt;
+        dst.recurringIntervalStep.reset();
     }
     if (!src["firstExecution"].isNull()) {
         dst.firstExecution = src["firstExecution"].as<decltype(dst.firstExecution)::value_type>();
     } else {
-        dst.firstExecution = std::nullopt;
+        dst.firstExecution.reset();
     }
     if (!src["executionCount"].isNull()) {
         dst.executionCount = src["executionCount"].as<decltype(dst.executionCount)::value_type>();
     } else {
-        dst.executionCount = std::nullopt;
+        dst.executionCount.reset();
     }
     if (!src["lastExecution"].isNull()) {
         dst.lastExecution = src["lastExecution"].as<decltype(dst.lastExecution)::value_type>();
     } else {
-        dst.lastExecution = std::nullopt;
+        dst.lastExecution.reset();
     }
 
 }
 
 bool convertToJson(const ScaledNumberRangeType &src, JsonVariant &dst)
 {
-    if (src.min) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.min.has_value()) {
         dst["min"] = *src.min;
     }
-    if (src.max) {
+    if (src.max.has_value()) {
         dst["max"] = *src.max;
     }
 
@@ -9412,22 +9463,25 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberRangeType &dst)
     if (!src["min"].isNull()) {
         dst.min = src["min"].as<decltype(dst.min)::value_type>();
     } else {
-        dst.min = std::nullopt;
+        dst.min.reset();
     }
     if (!src["max"].isNull()) {
         dst.max = src["max"].as<decltype(dst.max)::value_type>();
     } else {
-        dst.max = std::nullopt;
+        dst.max.reset();
     }
 
 }
 
 bool convertToJson(const ScaledNumberRangeElementsType &src, JsonVariant &dst)
 {
-    if (src.min) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.min.has_value()) {
         dst["min"] = *src.min;
     }
-    if (src.max) {
+    if (src.max.has_value()) {
         dst["max"] = *src.max;
     }
 
@@ -9440,22 +9494,25 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberRangeElementsType 
     if (!src["min"].isNull()) {
         dst.min = src["min"].as<decltype(dst.min)::value_type>();
     } else {
-        dst.min = std::nullopt;
+        dst.min.reset();
     }
     if (!src["max"].isNull()) {
         dst.max = src["max"].as<decltype(dst.max)::value_type>();
     } else {
-        dst.max = std::nullopt;
+        dst.max.reset();
     }
 
 }
 
 bool convertToJson(const ScaledNumberSetType &src, JsonVariant &dst)
 {
-    if (src.value) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
-    if (src.range) {
+    if (src.range.has_value()) {
         dst["range"] = *src.range;
     }
 
@@ -9468,22 +9525,25 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberSetType &dst)
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
     if (!src["range"].isNull()) {
         dst.range = src["range"].as<decltype(dst.range)::value_type>();
     } else {
-        dst.range = std::nullopt;
+        dst.range.reset();
     }
 
 }
 
 bool convertToJson(const ScaledNumberSetElementsType &src, JsonVariant &dst)
 {
-    if (src.value) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
-    if (src.range) {
+    if (src.range.has_value()) {
         dst["range"] = *src.range;
     }
 
@@ -9496,19 +9556,22 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberSetElementsType &d
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
     if (!src["range"].isNull()) {
         dst.range = src["range"].as<decltype(dst.range)::value_type>();
     } else {
-        dst.range = std::nullopt;
+        dst.range.reset();
     }
 
 }
 
 bool convertToJson(const DeviceAddressType &src, JsonVariant &dst)
 {
-    if (src.device) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.device.has_value()) {
         dst["device"] = *src.device;
     }
 
@@ -9521,14 +9584,17 @@ void convertFromJson(const JsonVariantConst &src, DeviceAddressType &dst)
     if (!src["device"].isNull()) {
         dst.device = src["device"].as<decltype(dst.device)::value_type>();
     } else {
-        dst.device = std::nullopt;
+        dst.device.reset();
     }
 
 }
 
 bool convertToJson(const DeviceAddressElementsType &src, JsonVariant &dst)
 {
-    if (src.device) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.device.has_value()) {
         dst["device"] = *src.device;
     }
 
@@ -9541,17 +9607,20 @@ void convertFromJson(const JsonVariantConst &src, DeviceAddressElementsType &dst
     if (!src["device"].isNull()) {
         dst.device = src["device"].as<decltype(dst.device)::value_type>();
     } else {
-        dst.device = std::nullopt;
+        dst.device.reset();
     }
 
 }
 
 bool convertToJson(const EntityAddressType &src, JsonVariant &dst)
 {
-    if (src.device) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.device.has_value()) {
         dst["device"] = *src.device;
     }
-    if (src.entity) {
+    if (src.entity.has_value()) {
         dst["entity"] = *src.entity;
     }
 
@@ -9564,22 +9633,25 @@ void convertFromJson(const JsonVariantConst &src, EntityAddressType &dst)
     if (!src["device"].isNull()) {
         dst.device = src["device"].as<decltype(dst.device)::value_type>();
     } else {
-        dst.device = std::nullopt;
+        dst.device.reset();
     }
     if (!src["entity"].isNull()) {
         dst.entity = src["entity"].as<decltype(dst.entity)::value_type>();
     } else {
-        dst.entity = std::nullopt;
+        dst.entity.reset();
     }
 
 }
 
 bool convertToJson(const EntityAddressElementsType &src, JsonVariant &dst)
 {
-    if (src.device) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.device.has_value()) {
         dst["device"] = *src.device;
     }
-    if (src.entity) {
+    if (src.entity.has_value()) {
         dst["entity"] = *src.entity;
     }
 
@@ -9592,25 +9664,28 @@ void convertFromJson(const JsonVariantConst &src, EntityAddressElementsType &dst
     if (!src["device"].isNull()) {
         dst.device = src["device"].as<decltype(dst.device)::value_type>();
     } else {
-        dst.device = std::nullopt;
+        dst.device.reset();
     }
     if (!src["entity"].isNull()) {
         dst.entity = src["entity"].as<decltype(dst.entity)::value_type>();
     } else {
-        dst.entity = std::nullopt;
+        dst.entity.reset();
     }
 
 }
 
 bool convertToJson(const FeatureAddressType &src, JsonVariant &dst)
 {
-    if (src.device) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.device.has_value()) {
         dst["device"] = *src.device;
     }
-    if (src.entity) {
+    if (src.entity.has_value()) {
         dst["entity"] = *src.entity;
     }
-    if (src.feature) {
+    if (src.feature.has_value()) {
         dst["feature"] = *src.feature;
     }
 
@@ -9623,30 +9698,33 @@ void convertFromJson(const JsonVariantConst &src, FeatureAddressType &dst)
     if (!src["device"].isNull()) {
         dst.device = src["device"].as<decltype(dst.device)::value_type>();
     } else {
-        dst.device = std::nullopt;
+        dst.device.reset();
     }
     if (!src["entity"].isNull()) {
         dst.entity = src["entity"].as<decltype(dst.entity)::value_type>();
     } else {
-        dst.entity = std::nullopt;
+        dst.entity.reset();
     }
     if (!src["feature"].isNull()) {
         dst.feature = src["feature"].as<decltype(dst.feature)::value_type>();
     } else {
-        dst.feature = std::nullopt;
+        dst.feature.reset();
     }
 
 }
 
 bool convertToJson(const FeatureAddressElementsType &src, JsonVariant &dst)
 {
-    if (src.device) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.device.has_value()) {
         dst["device"] = *src.device;
     }
-    if (src.entity) {
+    if (src.entity.has_value()) {
         dst["entity"] = *src.entity;
     }
-    if (src.feature) {
+    if (src.feature.has_value()) {
         dst["feature"] = *src.feature;
     }
 
@@ -9659,24 +9737,27 @@ void convertFromJson(const JsonVariantConst &src, FeatureAddressElementsType &ds
     if (!src["device"].isNull()) {
         dst.device = src["device"].as<decltype(dst.device)::value_type>();
     } else {
-        dst.device = std::nullopt;
+        dst.device.reset();
     }
     if (!src["entity"].isNull()) {
         dst.entity = src["entity"].as<decltype(dst.entity)::value_type>();
     } else {
-        dst.entity = std::nullopt;
+        dst.entity.reset();
     }
     if (!src["feature"].isNull()) {
         dst.feature = src["feature"].as<decltype(dst.feature)::value_type>();
     } else {
-        dst.feature = std::nullopt;
+        dst.feature.reset();
     }
 
 }
 
 bool convertToJson(const PossibleOperationsClassifierType &src, JsonVariant &dst)
 {
-    if (src.partial) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.partial.has_value()) {
         dst["partial"] = *src.partial;
     }
 
@@ -9689,14 +9770,17 @@ void convertFromJson(const JsonVariantConst &src, PossibleOperationsClassifierTy
     if (!src["partial"].isNull()) {
         dst.partial = src["partial"].as<decltype(dst.partial)::value_type>();
     } else {
-        dst.partial = std::nullopt;
+        dst.partial.reset();
     }
 
 }
 
 bool convertToJson(const PossibleOperationsReadType &src, JsonVariant &dst)
 {
-    if (src.partial) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.partial.has_value()) {
         dst["partial"] = *src.partial;
     }
 
@@ -9709,14 +9793,17 @@ void convertFromJson(const JsonVariantConst &src, PossibleOperationsReadType &ds
     if (!src["partial"].isNull()) {
         dst.partial = src["partial"].as<decltype(dst.partial)::value_type>();
     } else {
-        dst.partial = std::nullopt;
+        dst.partial.reset();
     }
 
 }
 
 bool convertToJson(const PossibleOperationsWriteType &src, JsonVariant &dst)
 {
-    if (src.partial) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.partial.has_value()) {
         dst["partial"] = *src.partial;
     }
 
@@ -9729,17 +9816,20 @@ void convertFromJson(const JsonVariantConst &src, PossibleOperationsWriteType &d
     if (!src["partial"].isNull()) {
         dst.partial = src["partial"].as<decltype(dst.partial)::value_type>();
     } else {
-        dst.partial = std::nullopt;
+        dst.partial.reset();
     }
 
 }
 
 bool convertToJson(const PossibleOperationsType &src, JsonVariant &dst)
 {
-    if (src.read) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.read.has_value()) {
         dst["read"] = *src.read;
     }
-    if (src.write) {
+    if (src.write.has_value()) {
         dst["write"] = *src.write;
     }
 
@@ -9752,22 +9842,25 @@ void convertFromJson(const JsonVariantConst &src, PossibleOperationsType &dst)
     if (!src["read"].isNull()) {
         dst.read = src["read"].as<decltype(dst.read)::value_type>();
     } else {
-        dst.read = std::nullopt;
+        dst.read.reset();
     }
     if (!src["write"].isNull()) {
         dst.write = src["write"].as<decltype(dst.write)::value_type>();
     } else {
-        dst.write = std::nullopt;
+        dst.write.reset();
     }
 
 }
 
 bool convertToJson(const PossibleOperationsElementsType &src, JsonVariant &dst)
 {
-    if (src.read) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.read.has_value()) {
         dst["read"] = *src.read;
     }
-    if (src.write) {
+    if (src.write.has_value()) {
         dst["write"] = *src.write;
     }
 
@@ -9780,22 +9873,25 @@ void convertFromJson(const JsonVariantConst &src, PossibleOperationsElementsType
     if (!src["read"].isNull()) {
         dst.read = src["read"].as<decltype(dst.read)::value_type>();
     } else {
-        dst.read = std::nullopt;
+        dst.read.reset();
     }
     if (!src["write"].isNull()) {
         dst.write = src["write"].as<decltype(dst.write)::value_type>();
     } else {
-        dst.write = std::nullopt;
+        dst.write.reset();
     }
 
 }
 
 bool convertToJson(const FunctionPropertyType &src, JsonVariant &dst)
 {
-    if (src.function) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.function.has_value()) {
         dst["function"] = *src.function;
     }
-    if (src.possibleOperations) {
+    if (src.possibleOperations.has_value()) {
         dst["possibleOperations"] = *src.possibleOperations;
     }
 
@@ -9808,22 +9904,25 @@ void convertFromJson(const JsonVariantConst &src, FunctionPropertyType &dst)
     if (!src["function"].isNull()) {
         dst.function = src["function"].as<decltype(dst.function)::value_type>();
     } else {
-        dst.function = std::nullopt;
+        dst.function.reset();
     }
     if (!src["possibleOperations"].isNull()) {
         dst.possibleOperations = src["possibleOperations"].as<decltype(dst.possibleOperations)::value_type>();
     } else {
-        dst.possibleOperations = std::nullopt;
+        dst.possibleOperations.reset();
     }
 
 }
 
 bool convertToJson(const FunctionPropertyElementsType &src, JsonVariant &dst)
 {
-    if (src.function) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.function.has_value()) {
         dst["function"] = *src.function;
     }
-    if (src.possibleOperations) {
+    if (src.possibleOperations.has_value()) {
         dst["possibleOperations"] = *src.possibleOperations;
     }
 
@@ -9836,37 +9935,40 @@ void convertFromJson(const JsonVariantConst &src, FunctionPropertyElementsType &
     if (!src["function"].isNull()) {
         dst.function = src["function"].as<decltype(dst.function)::value_type>();
     } else {
-        dst.function = std::nullopt;
+        dst.function.reset();
     }
     if (!src["possibleOperations"].isNull()) {
         dst.possibleOperations = src["possibleOperations"].as<decltype(dst.possibleOperations)::value_type>();
     } else {
-        dst.possibleOperations = std::nullopt;
+        dst.possibleOperations.reset();
     }
 
 }
 
 bool convertToJson(const PowerTimeSlotScheduleDataType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.slotNumber) {
+    if (src.slotNumber.has_value()) {
         dst["slotNumber"] = *src.slotNumber;
     }
-    if (src.timePeriod) {
+    if (src.timePeriod.has_value()) {
         dst["timePeriod"] = *src.timePeriod;
     }
-    if (src.defaultDuration) {
+    if (src.defaultDuration.has_value()) {
         dst["defaultDuration"] = *src.defaultDuration;
     }
-    if (src.durationUncertainty) {
+    if (src.durationUncertainty.has_value()) {
         dst["durationUncertainty"] = *src.durationUncertainty;
     }
-    if (src.slotActivated) {
+    if (src.slotActivated.has_value()) {
         dst["slotActivated"] = *src.slotActivated;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -9879,62 +9981,65 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleDataType 
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["slotNumber"].isNull()) {
         dst.slotNumber = src["slotNumber"].as<decltype(dst.slotNumber)::value_type>();
     } else {
-        dst.slotNumber = std::nullopt;
+        dst.slotNumber.reset();
     }
     if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
-        dst.timePeriod = std::nullopt;
+        dst.timePeriod.reset();
     }
     if (!src["defaultDuration"].isNull()) {
         dst.defaultDuration = src["defaultDuration"].as<decltype(dst.defaultDuration)::value_type>();
     } else {
-        dst.defaultDuration = std::nullopt;
+        dst.defaultDuration.reset();
     }
     if (!src["durationUncertainty"].isNull()) {
         dst.durationUncertainty = src["durationUncertainty"].as<decltype(dst.durationUncertainty)::value_type>();
     } else {
-        dst.durationUncertainty = std::nullopt;
+        dst.durationUncertainty.reset();
     }
     if (!src["slotActivated"].isNull()) {
         dst.slotActivated = src["slotActivated"].as<decltype(dst.slotActivated)::value_type>();
     } else {
-        dst.slotActivated = std::nullopt;
+        dst.slotActivated.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const PowerTimeSlotScheduleDataElementsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.slotNumber) {
+    if (src.slotNumber.has_value()) {
         dst["slotNumber"] = *src.slotNumber;
     }
-    if (src.timePeriod) {
+    if (src.timePeriod.has_value()) {
         dst["timePeriod"] = *src.timePeriod;
     }
-    if (src.defaultDuration) {
+    if (src.defaultDuration.has_value()) {
         dst["defaultDuration"] = *src.defaultDuration;
     }
-    if (src.durationUncertainty) {
+    if (src.durationUncertainty.has_value()) {
         dst["durationUncertainty"] = *src.durationUncertainty;
     }
-    if (src.slotActivated) {
+    if (src.slotActivated.has_value()) {
         dst["slotActivated"] = *src.slotActivated;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -9947,44 +10052,47 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleDataEleme
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["slotNumber"].isNull()) {
         dst.slotNumber = src["slotNumber"].as<decltype(dst.slotNumber)::value_type>();
     } else {
-        dst.slotNumber = std::nullopt;
+        dst.slotNumber.reset();
     }
     if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
-        dst.timePeriod = std::nullopt;
+        dst.timePeriod.reset();
     }
     if (!src["defaultDuration"].isNull()) {
         dst.defaultDuration = src["defaultDuration"].as<decltype(dst.defaultDuration)::value_type>();
     } else {
-        dst.defaultDuration = std::nullopt;
+        dst.defaultDuration.reset();
     }
     if (!src["durationUncertainty"].isNull()) {
         dst.durationUncertainty = src["durationUncertainty"].as<decltype(dst.durationUncertainty)::value_type>();
     } else {
-        dst.durationUncertainty = std::nullopt;
+        dst.durationUncertainty.reset();
     }
     if (!src["slotActivated"].isNull()) {
         dst.slotActivated = src["slotActivated"].as<decltype(dst.slotActivated)::value_type>();
     } else {
-        dst.slotActivated = std::nullopt;
+        dst.slotActivated.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const PowerTimeSlotScheduleListDataType &src, JsonVariant &dst)
 {
-    if (src.powerTimeSlotScheduleData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.powerTimeSlotScheduleData.has_value()) {
         dst["powerTimeSlotScheduleData"] = *src.powerTimeSlotScheduleData;
     }
 
@@ -9997,17 +10105,20 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleListDataT
     if (!src["powerTimeSlotScheduleData"].isNull()) {
         dst.powerTimeSlotScheduleData = src["powerTimeSlotScheduleData"].as<decltype(dst.powerTimeSlotScheduleData)::value_type>();
     } else {
-        dst.powerTimeSlotScheduleData = std::nullopt;
+        dst.powerTimeSlotScheduleData.reset();
     }
 
 }
 
 bool convertToJson(const PowerTimeSlotScheduleListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.slotNumber) {
+    if (src.slotNumber.has_value()) {
         dst["slotNumber"] = *src.slotNumber;
     }
 
@@ -10020,28 +10131,31 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleListDataS
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["slotNumber"].isNull()) {
         dst.slotNumber = src["slotNumber"].as<decltype(dst.slotNumber)::value_type>();
     } else {
-        dst.slotNumber = std::nullopt;
+        dst.slotNumber.reset();
     }
 
 }
 
 bool convertToJson(const PowerTimeSlotValueDataType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.slotNumber) {
+    if (src.slotNumber.has_value()) {
         dst["slotNumber"] = *src.slotNumber;
     }
-    if (src.valueType) {
+    if (src.valueType.has_value()) {
         dst["valueType"] = *src.valueType;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
 
@@ -10054,38 +10168,41 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueDataType &ds
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["slotNumber"].isNull()) {
         dst.slotNumber = src["slotNumber"].as<decltype(dst.slotNumber)::value_type>();
     } else {
-        dst.slotNumber = std::nullopt;
+        dst.slotNumber.reset();
     }
     if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
-        dst.valueType = std::nullopt;
+        dst.valueType.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
 
 }
 
 bool convertToJson(const PowerTimeSlotValueDataElementsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.slotNumber) {
+    if (src.slotNumber.has_value()) {
         dst["slotNumber"] = *src.slotNumber;
     }
-    if (src.valueType) {
+    if (src.valueType.has_value()) {
         dst["valueType"] = *src.valueType;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
 
@@ -10098,29 +10215,32 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueDataElements
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["slotNumber"].isNull()) {
         dst.slotNumber = src["slotNumber"].as<decltype(dst.slotNumber)::value_type>();
     } else {
-        dst.slotNumber = std::nullopt;
+        dst.slotNumber.reset();
     }
     if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
-        dst.valueType = std::nullopt;
+        dst.valueType.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
 
 }
 
 bool convertToJson(const PowerTimeSlotValueListDataType &src, JsonVariant &dst)
 {
-    if (src.powerTimeSlotValueData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.powerTimeSlotValueData.has_value()) {
         dst["powerTimeSlotValueData"] = *src.powerTimeSlotValueData;
     }
 
@@ -10133,20 +10253,23 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueListDataType
     if (!src["powerTimeSlotValueData"].isNull()) {
         dst.powerTimeSlotValueData = src["powerTimeSlotValueData"].as<decltype(dst.powerTimeSlotValueData)::value_type>();
     } else {
-        dst.powerTimeSlotValueData = std::nullopt;
+        dst.powerTimeSlotValueData.reset();
     }
 
 }
 
 bool convertToJson(const PowerTimeSlotValueListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.slotNumber) {
+    if (src.slotNumber.has_value()) {
         dst["slotNumber"] = *src.slotNumber;
     }
-    if (src.valueType) {
+    if (src.valueType.has_value()) {
         dst["valueType"] = *src.valueType;
     }
 
@@ -10159,42 +10282,45 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueListDataSele
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["slotNumber"].isNull()) {
         dst.slotNumber = src["slotNumber"].as<decltype(dst.slotNumber)::value_type>();
     } else {
-        dst.slotNumber = std::nullopt;
+        dst.slotNumber.reset();
     }
     if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
-        dst.valueType = std::nullopt;
+        dst.valueType.reset();
     }
 
 }
 
 bool convertToJson(const PowerTimeSlotScheduleConstraintsDataType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.slotNumber) {
+    if (src.slotNumber.has_value()) {
         dst["slotNumber"] = *src.slotNumber;
     }
-    if (src.earliestStartTime) {
+    if (src.earliestStartTime.has_value()) {
         dst["earliestStartTime"] = *src.earliestStartTime;
     }
-    if (src.latestEndTime) {
+    if (src.latestEndTime.has_value()) {
         dst["latestEndTime"] = *src.latestEndTime;
     }
-    if (src.minDuration) {
+    if (src.minDuration.has_value()) {
         dst["minDuration"] = *src.minDuration;
     }
-    if (src.maxDuration) {
+    if (src.maxDuration.has_value()) {
         dst["maxDuration"] = *src.maxDuration;
     }
-    if (src.optionalSlot) {
+    if (src.optionalSlot.has_value()) {
         dst["optionalSlot"] = *src.optionalSlot;
     }
 
@@ -10207,62 +10333,65 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstrain
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["slotNumber"].isNull()) {
         dst.slotNumber = src["slotNumber"].as<decltype(dst.slotNumber)::value_type>();
     } else {
-        dst.slotNumber = std::nullopt;
+        dst.slotNumber.reset();
     }
     if (!src["earliestStartTime"].isNull()) {
         dst.earliestStartTime = src["earliestStartTime"].as<decltype(dst.earliestStartTime)::value_type>();
     } else {
-        dst.earliestStartTime = std::nullopt;
+        dst.earliestStartTime.reset();
     }
     if (!src["latestEndTime"].isNull()) {
         dst.latestEndTime = src["latestEndTime"].as<decltype(dst.latestEndTime)::value_type>();
     } else {
-        dst.latestEndTime = std::nullopt;
+        dst.latestEndTime.reset();
     }
     if (!src["minDuration"].isNull()) {
         dst.minDuration = src["minDuration"].as<decltype(dst.minDuration)::value_type>();
     } else {
-        dst.minDuration = std::nullopt;
+        dst.minDuration.reset();
     }
     if (!src["maxDuration"].isNull()) {
         dst.maxDuration = src["maxDuration"].as<decltype(dst.maxDuration)::value_type>();
     } else {
-        dst.maxDuration = std::nullopt;
+        dst.maxDuration.reset();
     }
     if (!src["optionalSlot"].isNull()) {
         dst.optionalSlot = src["optionalSlot"].as<decltype(dst.optionalSlot)::value_type>();
     } else {
-        dst.optionalSlot = std::nullopt;
+        dst.optionalSlot.reset();
     }
 
 }
 
 bool convertToJson(const PowerTimeSlotScheduleConstraintsDataElementsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.slotNumber) {
+    if (src.slotNumber.has_value()) {
         dst["slotNumber"] = *src.slotNumber;
     }
-    if (src.earliestStartTime) {
+    if (src.earliestStartTime.has_value()) {
         dst["earliestStartTime"] = *src.earliestStartTime;
     }
-    if (src.latestEndTime) {
+    if (src.latestEndTime.has_value()) {
         dst["latestEndTime"] = *src.latestEndTime;
     }
-    if (src.minDuration) {
+    if (src.minDuration.has_value()) {
         dst["minDuration"] = *src.minDuration;
     }
-    if (src.maxDuration) {
+    if (src.maxDuration.has_value()) {
         dst["maxDuration"] = *src.maxDuration;
     }
-    if (src.optionalSlot) {
+    if (src.optionalSlot.has_value()) {
         dst["optionalSlot"] = *src.optionalSlot;
     }
 
@@ -10275,44 +10404,47 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstrain
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["slotNumber"].isNull()) {
         dst.slotNumber = src["slotNumber"].as<decltype(dst.slotNumber)::value_type>();
     } else {
-        dst.slotNumber = std::nullopt;
+        dst.slotNumber.reset();
     }
     if (!src["earliestStartTime"].isNull()) {
         dst.earliestStartTime = src["earliestStartTime"].as<decltype(dst.earliestStartTime)::value_type>();
     } else {
-        dst.earliestStartTime = std::nullopt;
+        dst.earliestStartTime.reset();
     }
     if (!src["latestEndTime"].isNull()) {
         dst.latestEndTime = src["latestEndTime"].as<decltype(dst.latestEndTime)::value_type>();
     } else {
-        dst.latestEndTime = std::nullopt;
+        dst.latestEndTime.reset();
     }
     if (!src["minDuration"].isNull()) {
         dst.minDuration = src["minDuration"].as<decltype(dst.minDuration)::value_type>();
     } else {
-        dst.minDuration = std::nullopt;
+        dst.minDuration.reset();
     }
     if (!src["maxDuration"].isNull()) {
         dst.maxDuration = src["maxDuration"].as<decltype(dst.maxDuration)::value_type>();
     } else {
-        dst.maxDuration = std::nullopt;
+        dst.maxDuration.reset();
     }
     if (!src["optionalSlot"].isNull()) {
         dst.optionalSlot = src["optionalSlot"].as<decltype(dst.optionalSlot)::value_type>();
     } else {
-        dst.optionalSlot = std::nullopt;
+        dst.optionalSlot.reset();
     }
 
 }
 
 bool convertToJson(const PowerTimeSlotScheduleConstraintsListDataType &src, JsonVariant &dst)
 {
-    if (src.powerTimeSlotScheduleConstraintsData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.powerTimeSlotScheduleConstraintsData.has_value()) {
         dst["powerTimeSlotScheduleConstraintsData"] = *src.powerTimeSlotScheduleConstraintsData;
     }
 
@@ -10325,17 +10457,20 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstrain
     if (!src["powerTimeSlotScheduleConstraintsData"].isNull()) {
         dst.powerTimeSlotScheduleConstraintsData = src["powerTimeSlotScheduleConstraintsData"].as<decltype(dst.powerTimeSlotScheduleConstraintsData)::value_type>();
     } else {
-        dst.powerTimeSlotScheduleConstraintsData = std::nullopt;
+        dst.powerTimeSlotScheduleConstraintsData.reset();
     }
 
 }
 
 bool convertToJson(const PowerTimeSlotScheduleConstraintsListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.slotNumber) {
+    if (src.slotNumber.has_value()) {
         dst["slotNumber"] = *src.slotNumber;
     }
 
@@ -10348,22 +10483,25 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotScheduleConstrain
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["slotNumber"].isNull()) {
         dst.slotNumber = src["slotNumber"].as<decltype(dst.slotNumber)::value_type>();
     } else {
-        dst.slotNumber = std::nullopt;
+        dst.slotNumber.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceAlternativesRelationDataType &src, JsonVariant &dst)
 {
-    if (src.alternativesId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.alternativesId.has_value()) {
         dst["alternativesId"] = *src.alternativesId;
     }
-    if (src.sequenceId) {
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -10376,22 +10514,25 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelat
     if (!src["alternativesId"].isNull()) {
         dst.alternativesId = src["alternativesId"].as<decltype(dst.alternativesId)::value_type>();
     } else {
-        dst.alternativesId = std::nullopt;
+        dst.alternativesId.reset();
     }
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceAlternativesRelationDataElementsType &src, JsonVariant &dst)
 {
-    if (src.alternativesId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.alternativesId.has_value()) {
         dst["alternativesId"] = *src.alternativesId;
     }
-    if (src.sequenceId) {
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -10404,19 +10545,22 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelat
     if (!src["alternativesId"].isNull()) {
         dst.alternativesId = src["alternativesId"].as<decltype(dst.alternativesId)::value_type>();
     } else {
-        dst.alternativesId = std::nullopt;
+        dst.alternativesId.reset();
     }
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceAlternativesRelationListDataType &src, JsonVariant &dst)
 {
-    if (src.powerSequenceAlternativesRelationData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.powerSequenceAlternativesRelationData.has_value()) {
         dst["powerSequenceAlternativesRelationData"] = *src.powerSequenceAlternativesRelationData;
     }
 
@@ -10429,17 +10573,20 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelat
     if (!src["powerSequenceAlternativesRelationData"].isNull()) {
         dst.powerSequenceAlternativesRelationData = src["powerSequenceAlternativesRelationData"].as<decltype(dst.powerSequenceAlternativesRelationData)::value_type>();
     } else {
-        dst.powerSequenceAlternativesRelationData = std::nullopt;
+        dst.powerSequenceAlternativesRelationData.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceAlternativesRelationListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.alternativesId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.alternativesId.has_value()) {
         dst["alternativesId"] = *src.alternativesId;
     }
-    if (src.sequenceId) {
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -10452,43 +10599,46 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceAlternativesRelat
     if (!src["alternativesId"].isNull()) {
         dst.alternativesId = src["alternativesId"].as<decltype(dst.alternativesId)::value_type>();
     } else {
-        dst.alternativesId = std::nullopt;
+        dst.alternativesId.reset();
     }
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
-    if (src.positiveEnergyDirection) {
+    if (src.positiveEnergyDirection.has_value()) {
         dst["positiveEnergyDirection"] = *src.positiveEnergyDirection;
     }
-    if (src.powerUnit) {
+    if (src.powerUnit.has_value()) {
         dst["powerUnit"] = *src.powerUnit;
     }
-    if (src.energyUnit) {
+    if (src.energyUnit.has_value()) {
         dst["energyUnit"] = *src.energyUnit;
     }
-    if (src.valueSource) {
+    if (src.valueSource.has_value()) {
         dst["valueSource"] = *src.valueSource;
     }
-    if (src.scope) {
+    if (src.scope.has_value()) {
         dst["scope"] = *src.scope;
     }
-    if (src.taskIdentifier) {
+    if (src.taskIdentifier.has_value()) {
         dst["taskIdentifier"] = *src.taskIdentifier;
     }
-    if (src.repetitionsTotal) {
+    if (src.repetitionsTotal.has_value()) {
         dst["repetitionsTotal"] = *src.repetitionsTotal;
     }
 
@@ -10501,78 +10651,81 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionDataTy
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
     if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
-        dst.positiveEnergyDirection = std::nullopt;
+        dst.positiveEnergyDirection.reset();
     }
     if (!src["powerUnit"].isNull()) {
         dst.powerUnit = src["powerUnit"].as<decltype(dst.powerUnit)::value_type>();
     } else {
-        dst.powerUnit = std::nullopt;
+        dst.powerUnit.reset();
     }
     if (!src["energyUnit"].isNull()) {
         dst.energyUnit = src["energyUnit"].as<decltype(dst.energyUnit)::value_type>();
     } else {
-        dst.energyUnit = std::nullopt;
+        dst.energyUnit.reset();
     }
     if (!src["valueSource"].isNull()) {
         dst.valueSource = src["valueSource"].as<decltype(dst.valueSource)::value_type>();
     } else {
-        dst.valueSource = std::nullopt;
+        dst.valueSource.reset();
     }
     if (!src["scope"].isNull()) {
         dst.scope = src["scope"].as<decltype(dst.scope)::value_type>();
     } else {
-        dst.scope = std::nullopt;
+        dst.scope.reset();
     }
     if (!src["taskIdentifier"].isNull()) {
         dst.taskIdentifier = src["taskIdentifier"].as<decltype(dst.taskIdentifier)::value_type>();
     } else {
-        dst.taskIdentifier = std::nullopt;
+        dst.taskIdentifier.reset();
     }
     if (!src["repetitionsTotal"].isNull()) {
         dst.repetitionsTotal = src["repetitionsTotal"].as<decltype(dst.repetitionsTotal)::value_type>();
     } else {
-        dst.repetitionsTotal = std::nullopt;
+        dst.repetitionsTotal.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
-    if (src.positiveEnergyDirection) {
+    if (src.positiveEnergyDirection.has_value()) {
         dst["positiveEnergyDirection"] = *src.positiveEnergyDirection;
     }
-    if (src.powerUnit) {
+    if (src.powerUnit.has_value()) {
         dst["powerUnit"] = *src.powerUnit;
     }
-    if (src.energyUnit) {
+    if (src.energyUnit.has_value()) {
         dst["energyUnit"] = *src.energyUnit;
     }
-    if (src.valueSource) {
+    if (src.valueSource.has_value()) {
         dst["valueSource"] = *src.valueSource;
     }
-    if (src.scope) {
+    if (src.scope.has_value()) {
         dst["scope"] = *src.scope;
     }
-    if (src.taskIdentifier) {
+    if (src.taskIdentifier.has_value()) {
         dst["taskIdentifier"] = *src.taskIdentifier;
     }
-    if (src.repetitionsTotal) {
+    if (src.repetitionsTotal.has_value()) {
         dst["repetitionsTotal"] = *src.repetitionsTotal;
     }
 
@@ -10585,54 +10738,57 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionDataEl
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
     if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
-        dst.positiveEnergyDirection = std::nullopt;
+        dst.positiveEnergyDirection.reset();
     }
     if (!src["powerUnit"].isNull()) {
         dst.powerUnit = src["powerUnit"].as<decltype(dst.powerUnit)::value_type>();
     } else {
-        dst.powerUnit = std::nullopt;
+        dst.powerUnit.reset();
     }
     if (!src["energyUnit"].isNull()) {
         dst.energyUnit = src["energyUnit"].as<decltype(dst.energyUnit)::value_type>();
     } else {
-        dst.energyUnit = std::nullopt;
+        dst.energyUnit.reset();
     }
     if (!src["valueSource"].isNull()) {
         dst.valueSource = src["valueSource"].as<decltype(dst.valueSource)::value_type>();
     } else {
-        dst.valueSource = std::nullopt;
+        dst.valueSource.reset();
     }
     if (!src["scope"].isNull()) {
         dst.scope = src["scope"].as<decltype(dst.scope)::value_type>();
     } else {
-        dst.scope = std::nullopt;
+        dst.scope.reset();
     }
     if (!src["taskIdentifier"].isNull()) {
         dst.taskIdentifier = src["taskIdentifier"].as<decltype(dst.taskIdentifier)::value_type>();
     } else {
-        dst.taskIdentifier = std::nullopt;
+        dst.taskIdentifier.reset();
     }
     if (!src["repetitionsTotal"].isNull()) {
         dst.repetitionsTotal = src["repetitionsTotal"].as<decltype(dst.repetitionsTotal)::value_type>();
     } else {
-        dst.repetitionsTotal = std::nullopt;
+        dst.repetitionsTotal.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.powerSequenceDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.powerSequenceDescriptionData.has_value()) {
         dst["powerSequenceDescriptionData"] = *src.powerSequenceDescriptionData;
     }
 
@@ -10645,14 +10801,17 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionListDa
     if (!src["powerSequenceDescriptionData"].isNull()) {
         dst.powerSequenceDescriptionData = src["powerSequenceDescriptionData"].as<decltype(dst.powerSequenceDescriptionData)::value_type>();
     } else {
-        dst.powerSequenceDescriptionData = std::nullopt;
+        dst.powerSequenceDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -10665,35 +10824,38 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionListDa
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceStateDataType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.state) {
+    if (src.state.has_value()) {
         dst["state"] = *src.state;
     }
-    if (src.activeSlotNumber) {
+    if (src.activeSlotNumber.has_value()) {
         dst["activeSlotNumber"] = *src.activeSlotNumber;
     }
-    if (src.elapsedSlotTime) {
+    if (src.elapsedSlotTime.has_value()) {
         dst["elapsedSlotTime"] = *src.elapsedSlotTime;
     }
-    if (src.remainingSlotTime) {
+    if (src.remainingSlotTime.has_value()) {
         dst["remainingSlotTime"] = *src.remainingSlotTime;
     }
-    if (src.sequenceRemoteControllable) {
+    if (src.sequenceRemoteControllable.has_value()) {
         dst["sequenceRemoteControllable"] = *src.sequenceRemoteControllable;
     }
-    if (src.activeRepetitionNumber) {
+    if (src.activeRepetitionNumber.has_value()) {
         dst["activeRepetitionNumber"] = *src.activeRepetitionNumber;
     }
-    if (src.remainingPauseTime) {
+    if (src.remainingPauseTime.has_value()) {
         dst["remainingPauseTime"] = *src.remainingPauseTime;
     }
 
@@ -10706,70 +10868,73 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceStateDataType &ds
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["state"].isNull()) {
         dst.state = src["state"].as<decltype(dst.state)::value_type>();
     } else {
-        dst.state = std::nullopt;
+        dst.state.reset();
     }
     if (!src["activeSlotNumber"].isNull()) {
         dst.activeSlotNumber = src["activeSlotNumber"].as<decltype(dst.activeSlotNumber)::value_type>();
     } else {
-        dst.activeSlotNumber = std::nullopt;
+        dst.activeSlotNumber.reset();
     }
     if (!src["elapsedSlotTime"].isNull()) {
         dst.elapsedSlotTime = src["elapsedSlotTime"].as<decltype(dst.elapsedSlotTime)::value_type>();
     } else {
-        dst.elapsedSlotTime = std::nullopt;
+        dst.elapsedSlotTime.reset();
     }
     if (!src["remainingSlotTime"].isNull()) {
         dst.remainingSlotTime = src["remainingSlotTime"].as<decltype(dst.remainingSlotTime)::value_type>();
     } else {
-        dst.remainingSlotTime = std::nullopt;
+        dst.remainingSlotTime.reset();
     }
     if (!src["sequenceRemoteControllable"].isNull()) {
         dst.sequenceRemoteControllable = src["sequenceRemoteControllable"].as<decltype(dst.sequenceRemoteControllable)::value_type>();
     } else {
-        dst.sequenceRemoteControllable = std::nullopt;
+        dst.sequenceRemoteControllable.reset();
     }
     if (!src["activeRepetitionNumber"].isNull()) {
         dst.activeRepetitionNumber = src["activeRepetitionNumber"].as<decltype(dst.activeRepetitionNumber)::value_type>();
     } else {
-        dst.activeRepetitionNumber = std::nullopt;
+        dst.activeRepetitionNumber.reset();
     }
     if (!src["remainingPauseTime"].isNull()) {
         dst.remainingPauseTime = src["remainingPauseTime"].as<decltype(dst.remainingPauseTime)::value_type>();
     } else {
-        dst.remainingPauseTime = std::nullopt;
+        dst.remainingPauseTime.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceStateDataElementsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.state) {
+    if (src.state.has_value()) {
         dst["state"] = *src.state;
     }
-    if (src.activeSlotNumber) {
+    if (src.activeSlotNumber.has_value()) {
         dst["activeSlotNumber"] = *src.activeSlotNumber;
     }
-    if (src.elapsedSlotTime) {
+    if (src.elapsedSlotTime.has_value()) {
         dst["elapsedSlotTime"] = *src.elapsedSlotTime;
     }
-    if (src.remainingSlotTime) {
+    if (src.remainingSlotTime.has_value()) {
         dst["remainingSlotTime"] = *src.remainingSlotTime;
     }
-    if (src.sequenceRemoteControllable) {
+    if (src.sequenceRemoteControllable.has_value()) {
         dst["sequenceRemoteControllable"] = *src.sequenceRemoteControllable;
     }
-    if (src.activeRepetitionNumber) {
+    if (src.activeRepetitionNumber.has_value()) {
         dst["activeRepetitionNumber"] = *src.activeRepetitionNumber;
     }
-    if (src.remainingPauseTime) {
+    if (src.remainingPauseTime.has_value()) {
         dst["remainingPauseTime"] = *src.remainingPauseTime;
     }
 
@@ -10782,49 +10947,52 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceStateDataElements
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["state"].isNull()) {
         dst.state = src["state"].as<decltype(dst.state)::value_type>();
     } else {
-        dst.state = std::nullopt;
+        dst.state.reset();
     }
     if (!src["activeSlotNumber"].isNull()) {
         dst.activeSlotNumber = src["activeSlotNumber"].as<decltype(dst.activeSlotNumber)::value_type>();
     } else {
-        dst.activeSlotNumber = std::nullopt;
+        dst.activeSlotNumber.reset();
     }
     if (!src["elapsedSlotTime"].isNull()) {
         dst.elapsedSlotTime = src["elapsedSlotTime"].as<decltype(dst.elapsedSlotTime)::value_type>();
     } else {
-        dst.elapsedSlotTime = std::nullopt;
+        dst.elapsedSlotTime.reset();
     }
     if (!src["remainingSlotTime"].isNull()) {
         dst.remainingSlotTime = src["remainingSlotTime"].as<decltype(dst.remainingSlotTime)::value_type>();
     } else {
-        dst.remainingSlotTime = std::nullopt;
+        dst.remainingSlotTime.reset();
     }
     if (!src["sequenceRemoteControllable"].isNull()) {
         dst.sequenceRemoteControllable = src["sequenceRemoteControllable"].as<decltype(dst.sequenceRemoteControllable)::value_type>();
     } else {
-        dst.sequenceRemoteControllable = std::nullopt;
+        dst.sequenceRemoteControllable.reset();
     }
     if (!src["activeRepetitionNumber"].isNull()) {
         dst.activeRepetitionNumber = src["activeRepetitionNumber"].as<decltype(dst.activeRepetitionNumber)::value_type>();
     } else {
-        dst.activeRepetitionNumber = std::nullopt;
+        dst.activeRepetitionNumber.reset();
     }
     if (!src["remainingPauseTime"].isNull()) {
         dst.remainingPauseTime = src["remainingPauseTime"].as<decltype(dst.remainingPauseTime)::value_type>();
     } else {
-        dst.remainingPauseTime = std::nullopt;
+        dst.remainingPauseTime.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceStateListDataType &src, JsonVariant &dst)
 {
-    if (src.powerSequenceStateData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.powerSequenceStateData.has_value()) {
         dst["powerSequenceStateData"] = *src.powerSequenceStateData;
     }
 
@@ -10837,14 +11005,17 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceStateListDataType
     if (!src["powerSequenceStateData"].isNull()) {
         dst.powerSequenceStateData = src["powerSequenceStateData"].as<decltype(dst.powerSequenceStateData)::value_type>();
     } else {
-        dst.powerSequenceStateData = std::nullopt;
+        dst.powerSequenceStateData.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceStateListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -10857,20 +11028,23 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceStateListDataSele
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceScheduleDataType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.startTime) {
+    if (src.startTime.has_value()) {
         dst["startTime"] = *src.startTime;
     }
-    if (src.endTime) {
+    if (src.endTime.has_value()) {
         dst["endTime"] = *src.endTime;
     }
 
@@ -10883,30 +11057,33 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleDataType 
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["startTime"].isNull()) {
         dst.startTime = src["startTime"].as<decltype(dst.startTime)::value_type>();
     } else {
-        dst.startTime = std::nullopt;
+        dst.startTime.reset();
     }
     if (!src["endTime"].isNull()) {
         dst.endTime = src["endTime"].as<decltype(dst.endTime)::value_type>();
     } else {
-        dst.endTime = std::nullopt;
+        dst.endTime.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceScheduleDataElementsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.startTime) {
+    if (src.startTime.has_value()) {
         dst["startTime"] = *src.startTime;
     }
-    if (src.endTime) {
+    if (src.endTime.has_value()) {
         dst["endTime"] = *src.endTime;
     }
 
@@ -10919,24 +11096,27 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleDataEleme
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["startTime"].isNull()) {
         dst.startTime = src["startTime"].as<decltype(dst.startTime)::value_type>();
     } else {
-        dst.startTime = std::nullopt;
+        dst.startTime.reset();
     }
     if (!src["endTime"].isNull()) {
         dst.endTime = src["endTime"].as<decltype(dst.endTime)::value_type>();
     } else {
-        dst.endTime = std::nullopt;
+        dst.endTime.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceScheduleListDataType &src, JsonVariant &dst)
 {
-    if (src.powerSequenceScheduleData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.powerSequenceScheduleData.has_value()) {
         dst["powerSequenceScheduleData"] = *src.powerSequenceScheduleData;
     }
 
@@ -10949,14 +11129,17 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleListDataT
     if (!src["powerSequenceScheduleData"].isNull()) {
         dst.powerSequenceScheduleData = src["powerSequenceScheduleData"].as<decltype(dst.powerSequenceScheduleData)::value_type>();
     } else {
-        dst.powerSequenceScheduleData = std::nullopt;
+        dst.powerSequenceScheduleData.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceScheduleListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -10969,29 +11152,32 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleListDataS
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceScheduleConstraintsDataType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.earliestStartTime) {
+    if (src.earliestStartTime.has_value()) {
         dst["earliestStartTime"] = *src.earliestStartTime;
     }
-    if (src.latestStartTime) {
+    if (src.latestStartTime.has_value()) {
         dst["latestStartTime"] = *src.latestStartTime;
     }
-    if (src.earliestEndTime) {
+    if (src.earliestEndTime.has_value()) {
         dst["earliestEndTime"] = *src.earliestEndTime;
     }
-    if (src.latestEndTime) {
+    if (src.latestEndTime.has_value()) {
         dst["latestEndTime"] = *src.latestEndTime;
     }
-    if (src.optionalSequence) {
+    if (src.optionalSequence.has_value()) {
         dst["optionalSequence"] = *src.optionalSequence;
     }
 
@@ -11004,54 +11190,57 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstrain
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["earliestStartTime"].isNull()) {
         dst.earliestStartTime = src["earliestStartTime"].as<decltype(dst.earliestStartTime)::value_type>();
     } else {
-        dst.earliestStartTime = std::nullopt;
+        dst.earliestStartTime.reset();
     }
     if (!src["latestStartTime"].isNull()) {
         dst.latestStartTime = src["latestStartTime"].as<decltype(dst.latestStartTime)::value_type>();
     } else {
-        dst.latestStartTime = std::nullopt;
+        dst.latestStartTime.reset();
     }
     if (!src["earliestEndTime"].isNull()) {
         dst.earliestEndTime = src["earliestEndTime"].as<decltype(dst.earliestEndTime)::value_type>();
     } else {
-        dst.earliestEndTime = std::nullopt;
+        dst.earliestEndTime.reset();
     }
     if (!src["latestEndTime"].isNull()) {
         dst.latestEndTime = src["latestEndTime"].as<decltype(dst.latestEndTime)::value_type>();
     } else {
-        dst.latestEndTime = std::nullopt;
+        dst.latestEndTime.reset();
     }
     if (!src["optionalSequence"].isNull()) {
         dst.optionalSequence = src["optionalSequence"].as<decltype(dst.optionalSequence)::value_type>();
     } else {
-        dst.optionalSequence = std::nullopt;
+        dst.optionalSequence.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceScheduleConstraintsDataElementsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.earliestStartTime) {
+    if (src.earliestStartTime.has_value()) {
         dst["earliestStartTime"] = *src.earliestStartTime;
     }
-    if (src.latestStartTime) {
+    if (src.latestStartTime.has_value()) {
         dst["latestStartTime"] = *src.latestStartTime;
     }
-    if (src.earliestEndTime) {
+    if (src.earliestEndTime.has_value()) {
         dst["earliestEndTime"] = *src.earliestEndTime;
     }
-    if (src.latestEndTime) {
+    if (src.latestEndTime.has_value()) {
         dst["latestEndTime"] = *src.latestEndTime;
     }
-    if (src.optionalSequence) {
+    if (src.optionalSequence.has_value()) {
         dst["optionalSequence"] = *src.optionalSequence;
     }
 
@@ -11064,39 +11253,42 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstrain
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["earliestStartTime"].isNull()) {
         dst.earliestStartTime = src["earliestStartTime"].as<decltype(dst.earliestStartTime)::value_type>();
     } else {
-        dst.earliestStartTime = std::nullopt;
+        dst.earliestStartTime.reset();
     }
     if (!src["latestStartTime"].isNull()) {
         dst.latestStartTime = src["latestStartTime"].as<decltype(dst.latestStartTime)::value_type>();
     } else {
-        dst.latestStartTime = std::nullopt;
+        dst.latestStartTime.reset();
     }
     if (!src["earliestEndTime"].isNull()) {
         dst.earliestEndTime = src["earliestEndTime"].as<decltype(dst.earliestEndTime)::value_type>();
     } else {
-        dst.earliestEndTime = std::nullopt;
+        dst.earliestEndTime.reset();
     }
     if (!src["latestEndTime"].isNull()) {
         dst.latestEndTime = src["latestEndTime"].as<decltype(dst.latestEndTime)::value_type>();
     } else {
-        dst.latestEndTime = std::nullopt;
+        dst.latestEndTime.reset();
     }
     if (!src["optionalSequence"].isNull()) {
         dst.optionalSequence = src["optionalSequence"].as<decltype(dst.optionalSequence)::value_type>();
     } else {
-        dst.optionalSequence = std::nullopt;
+        dst.optionalSequence.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceScheduleConstraintsListDataType &src, JsonVariant &dst)
 {
-    if (src.powerSequenceScheduleConstraintsData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.powerSequenceScheduleConstraintsData.has_value()) {
         dst["powerSequenceScheduleConstraintsData"] = *src.powerSequenceScheduleConstraintsData;
     }
 
@@ -11109,14 +11301,17 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstrain
     if (!src["powerSequenceScheduleConstraintsData"].isNull()) {
         dst.powerSequenceScheduleConstraintsData = src["powerSequenceScheduleConstraintsData"].as<decltype(dst.powerSequenceScheduleConstraintsData)::value_type>();
     } else {
-        dst.powerSequenceScheduleConstraintsData = std::nullopt;
+        dst.powerSequenceScheduleConstraintsData.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceScheduleConstraintsListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -11129,23 +11324,26 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConstrain
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequencePriceDataType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.potentialStartTime) {
+    if (src.potentialStartTime.has_value()) {
         dst["potentialStartTime"] = *src.potentialStartTime;
     }
-    if (src.price) {
+    if (src.price.has_value()) {
         dst["price"] = *src.price;
     }
-    if (src.currency) {
+    if (src.currency.has_value()) {
         dst["currency"] = *src.currency;
     }
 
@@ -11158,38 +11356,41 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceDataType &ds
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["potentialStartTime"].isNull()) {
         dst.potentialStartTime = src["potentialStartTime"].as<decltype(dst.potentialStartTime)::value_type>();
     } else {
-        dst.potentialStartTime = std::nullopt;
+        dst.potentialStartTime.reset();
     }
     if (!src["price"].isNull()) {
         dst.price = src["price"].as<decltype(dst.price)::value_type>();
     } else {
-        dst.price = std::nullopt;
+        dst.price.reset();
     }
     if (!src["currency"].isNull()) {
         dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
     } else {
-        dst.currency = std::nullopt;
+        dst.currency.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequencePriceDataElementsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.potentialStartTime) {
+    if (src.potentialStartTime.has_value()) {
         dst["potentialStartTime"] = *src.potentialStartTime;
     }
-    if (src.price) {
+    if (src.price.has_value()) {
         dst["price"] = *src.price;
     }
-    if (src.currency) {
+    if (src.currency.has_value()) {
         dst["currency"] = *src.currency;
     }
 
@@ -11202,29 +11403,32 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceDataElements
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["potentialStartTime"].isNull()) {
         dst.potentialStartTime = src["potentialStartTime"].as<decltype(dst.potentialStartTime)::value_type>();
     } else {
-        dst.potentialStartTime = std::nullopt;
+        dst.potentialStartTime.reset();
     }
     if (!src["price"].isNull()) {
         dst.price = src["price"].as<decltype(dst.price)::value_type>();
     } else {
-        dst.price = std::nullopt;
+        dst.price.reset();
     }
     if (!src["currency"].isNull()) {
         dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
     } else {
-        dst.currency = std::nullopt;
+        dst.currency.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequencePriceListDataType &src, JsonVariant &dst)
 {
-    if (src.powerSequencePriceData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.powerSequencePriceData.has_value()) {
         dst["powerSequencePriceData"] = *src.powerSequencePriceData;
     }
 
@@ -11237,17 +11441,20 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceListDataType
     if (!src["powerSequencePriceData"].isNull()) {
         dst.powerSequencePriceData = src["powerSequencePriceData"].as<decltype(dst.powerSequencePriceData)::value_type>();
     } else {
-        dst.powerSequencePriceData = std::nullopt;
+        dst.powerSequencePriceData.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequencePriceListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.potentialStartTimeInterval) {
+    if (src.potentialStartTimeInterval.has_value()) {
         dst["potentialStartTimeInterval"] = *src.potentialStartTimeInterval;
     }
 
@@ -11260,25 +11467,28 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceListDataSele
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["potentialStartTimeInterval"].isNull()) {
         dst.potentialStartTimeInterval = src["potentialStartTimeInterval"].as<decltype(dst.potentialStartTimeInterval)::value_type>();
     } else {
-        dst.potentialStartTimeInterval = std::nullopt;
+        dst.potentialStartTimeInterval.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceSchedulePreferenceDataType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.greenest) {
+    if (src.greenest.has_value()) {
         dst["greenest"] = *src.greenest;
     }
-    if (src.cheapest) {
+    if (src.cheapest.has_value()) {
         dst["cheapest"] = *src.cheapest;
     }
 
@@ -11291,30 +11501,33 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenc
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["greenest"].isNull()) {
         dst.greenest = src["greenest"].as<decltype(dst.greenest)::value_type>();
     } else {
-        dst.greenest = std::nullopt;
+        dst.greenest.reset();
     }
     if (!src["cheapest"].isNull()) {
         dst.cheapest = src["cheapest"].as<decltype(dst.cheapest)::value_type>();
     } else {
-        dst.cheapest = std::nullopt;
+        dst.cheapest.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceSchedulePreferenceDataElementsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.greenest) {
+    if (src.greenest.has_value()) {
         dst["greenest"] = *src.greenest;
     }
-    if (src.cheapest) {
+    if (src.cheapest.has_value()) {
         dst["cheapest"] = *src.cheapest;
     }
 
@@ -11327,24 +11540,27 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenc
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["greenest"].isNull()) {
         dst.greenest = src["greenest"].as<decltype(dst.greenest)::value_type>();
     } else {
-        dst.greenest = std::nullopt;
+        dst.greenest.reset();
     }
     if (!src["cheapest"].isNull()) {
         dst.cheapest = src["cheapest"].as<decltype(dst.cheapest)::value_type>();
     } else {
-        dst.cheapest = std::nullopt;
+        dst.cheapest.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceSchedulePreferenceListDataType &src, JsonVariant &dst)
 {
-    if (src.powerSequenceSchedulePreferenceData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.powerSequenceSchedulePreferenceData.has_value()) {
         dst["powerSequenceSchedulePreferenceData"] = *src.powerSequenceSchedulePreferenceData;
     }
 
@@ -11357,14 +11573,17 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenc
     if (!src["powerSequenceSchedulePreferenceData"].isNull()) {
         dst.powerSequenceSchedulePreferenceData = src["powerSequenceSchedulePreferenceData"].as<decltype(dst.powerSequenceSchedulePreferenceData)::value_type>();
     } else {
-        dst.powerSequenceSchedulePreferenceData = std::nullopt;
+        dst.powerSequenceSchedulePreferenceData.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceSchedulePreferenceListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -11377,26 +11596,29 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceSchedulePreferenc
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceNodeScheduleInformationDataType &src, JsonVariant &dst)
 {
-    if (src.nodeRemoteControllable) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.nodeRemoteControllable.has_value()) {
         dst["nodeRemoteControllable"] = *src.nodeRemoteControllable;
     }
-    if (src.supportsSingleSlotSchedulingOnly) {
+    if (src.supportsSingleSlotSchedulingOnly.has_value()) {
         dst["supportsSingleSlotSchedulingOnly"] = *src.supportsSingleSlotSchedulingOnly;
     }
-    if (src.alternativesCount) {
+    if (src.alternativesCount.has_value()) {
         dst["alternativesCount"] = *src.alternativesCount;
     }
-    if (src.totalSequencesCountMax) {
+    if (src.totalSequencesCountMax.has_value()) {
         dst["totalSequencesCountMax"] = *src.totalSequencesCountMax;
     }
-    if (src.supportsReselection) {
+    if (src.supportsReselection.has_value()) {
         dst["supportsReselection"] = *src.supportsReselection;
     }
 
@@ -11409,46 +11631,49 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceNodeScheduleInfor
     if (!src["nodeRemoteControllable"].isNull()) {
         dst.nodeRemoteControllable = src["nodeRemoteControllable"].as<decltype(dst.nodeRemoteControllable)::value_type>();
     } else {
-        dst.nodeRemoteControllable = std::nullopt;
+        dst.nodeRemoteControllable.reset();
     }
     if (!src["supportsSingleSlotSchedulingOnly"].isNull()) {
         dst.supportsSingleSlotSchedulingOnly = src["supportsSingleSlotSchedulingOnly"].as<decltype(dst.supportsSingleSlotSchedulingOnly)::value_type>();
     } else {
-        dst.supportsSingleSlotSchedulingOnly = std::nullopt;
+        dst.supportsSingleSlotSchedulingOnly.reset();
     }
     if (!src["alternativesCount"].isNull()) {
         dst.alternativesCount = src["alternativesCount"].as<decltype(dst.alternativesCount)::value_type>();
     } else {
-        dst.alternativesCount = std::nullopt;
+        dst.alternativesCount.reset();
     }
     if (!src["totalSequencesCountMax"].isNull()) {
         dst.totalSequencesCountMax = src["totalSequencesCountMax"].as<decltype(dst.totalSequencesCountMax)::value_type>();
     } else {
-        dst.totalSequencesCountMax = std::nullopt;
+        dst.totalSequencesCountMax.reset();
     }
     if (!src["supportsReselection"].isNull()) {
         dst.supportsReselection = src["supportsReselection"].as<decltype(dst.supportsReselection)::value_type>();
     } else {
-        dst.supportsReselection = std::nullopt;
+        dst.supportsReselection.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceNodeScheduleInformationDataElementsType &src, JsonVariant &dst)
 {
-    if (src.nodeRemoteControllable) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.nodeRemoteControllable.has_value()) {
         dst["nodeRemoteControllable"] = *src.nodeRemoteControllable;
     }
-    if (src.supportsSingleSlotSchedulingOnly) {
+    if (src.supportsSingleSlotSchedulingOnly.has_value()) {
         dst["supportsSingleSlotSchedulingOnly"] = *src.supportsSingleSlotSchedulingOnly;
     }
-    if (src.alternativesCount) {
+    if (src.alternativesCount.has_value()) {
         dst["alternativesCount"] = *src.alternativesCount;
     }
-    if (src.totalSequencesCountMax) {
+    if (src.totalSequencesCountMax.has_value()) {
         dst["totalSequencesCountMax"] = *src.totalSequencesCountMax;
     }
-    if (src.supportsReselection) {
+    if (src.supportsReselection.has_value()) {
         dst["supportsReselection"] = *src.supportsReselection;
     }
 
@@ -11461,34 +11686,37 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceNodeScheduleInfor
     if (!src["nodeRemoteControllable"].isNull()) {
         dst.nodeRemoteControllable = src["nodeRemoteControllable"].as<decltype(dst.nodeRemoteControllable)::value_type>();
     } else {
-        dst.nodeRemoteControllable = std::nullopt;
+        dst.nodeRemoteControllable.reset();
     }
     if (!src["supportsSingleSlotSchedulingOnly"].isNull()) {
         dst.supportsSingleSlotSchedulingOnly = src["supportsSingleSlotSchedulingOnly"].as<decltype(dst.supportsSingleSlotSchedulingOnly)::value_type>();
     } else {
-        dst.supportsSingleSlotSchedulingOnly = std::nullopt;
+        dst.supportsSingleSlotSchedulingOnly.reset();
     }
     if (!src["alternativesCount"].isNull()) {
         dst.alternativesCount = src["alternativesCount"].as<decltype(dst.alternativesCount)::value_type>();
     } else {
-        dst.alternativesCount = std::nullopt;
+        dst.alternativesCount.reset();
     }
     if (!src["totalSequencesCountMax"].isNull()) {
         dst.totalSequencesCountMax = src["totalSequencesCountMax"].as<decltype(dst.totalSequencesCountMax)::value_type>();
     } else {
-        dst.totalSequencesCountMax = std::nullopt;
+        dst.totalSequencesCountMax.reset();
     }
     if (!src["supportsReselection"].isNull()) {
         dst.supportsReselection = src["supportsReselection"].as<decltype(dst.supportsReselection)::value_type>();
     } else {
-        dst.supportsReselection = std::nullopt;
+        dst.supportsReselection.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceScheduleConfigurationRequestCallType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -11501,14 +11729,17 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConfigura
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequenceScheduleConfigurationRequestCallElementsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -11521,17 +11752,20 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScheduleConfigura
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequencePriceCalculationRequestCallType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.potentialStartTime) {
+    if (src.potentialStartTime.has_value()) {
         dst["potentialStartTime"] = *src.potentialStartTime;
     }
 
@@ -11544,22 +11778,25 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceCalculationR
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["potentialStartTime"].isNull()) {
         dst.potentialStartTime = src["potentialStartTime"].as<decltype(dst.potentialStartTime)::value_type>();
     } else {
-        dst.potentialStartTime = std::nullopt;
+        dst.potentialStartTime.reset();
     }
 
 }
 
 bool convertToJson(const PowerSequencePriceCalculationRequestCallElementsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.potentialStartTime) {
+    if (src.potentialStartTime.has_value()) {
         dst["potentialStartTime"] = *src.potentialStartTime;
     }
 
@@ -11572,40 +11809,43 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceCalculationR
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["potentialStartTime"].isNull()) {
         dst.potentialStartTime = src["potentialStartTime"].as<decltype(dst.potentialStartTime)::value_type>();
     } else {
-        dst.potentialStartTime = std::nullopt;
+        dst.potentialStartTime.reset();
     }
 
 }
 
 bool convertToJson(const MeasurementDataType &src, JsonVariant &dst)
 {
-    if (src.measurementId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.valueType) {
+    if (src.valueType.has_value()) {
         dst["valueType"] = *src.valueType;
     }
-    if (src.timestamp) {
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
-    if (src.evaluationPeriod) {
+    if (src.evaluationPeriod.has_value()) {
         dst["evaluationPeriod"] = *src.evaluationPeriod;
     }
-    if (src.valueSource) {
+    if (src.valueSource.has_value()) {
         dst["valueSource"] = *src.valueSource;
     }
-    if (src.valueTendency) {
+    if (src.valueTendency.has_value()) {
         dst["valueTendency"] = *src.valueTendency;
     }
-    if (src.valueState) {
+    if (src.valueState.has_value()) {
         dst["valueState"] = *src.valueState;
     }
 
@@ -11618,70 +11858,73 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDataType &dst)
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
-        dst.valueType = std::nullopt;
+        dst.valueType.reset();
     }
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
     if (!src["evaluationPeriod"].isNull()) {
         dst.evaluationPeriod = src["evaluationPeriod"].as<decltype(dst.evaluationPeriod)::value_type>();
     } else {
-        dst.evaluationPeriod = std::nullopt;
+        dst.evaluationPeriod.reset();
     }
     if (!src["valueSource"].isNull()) {
         dst.valueSource = src["valueSource"].as<decltype(dst.valueSource)::value_type>();
     } else {
-        dst.valueSource = std::nullopt;
+        dst.valueSource.reset();
     }
     if (!src["valueTendency"].isNull()) {
         dst.valueTendency = src["valueTendency"].as<decltype(dst.valueTendency)::value_type>();
     } else {
-        dst.valueTendency = std::nullopt;
+        dst.valueTendency.reset();
     }
     if (!src["valueState"].isNull()) {
         dst.valueState = src["valueState"].as<decltype(dst.valueState)::value_type>();
     } else {
-        dst.valueState = std::nullopt;
+        dst.valueState.reset();
     }
 
 }
 
 bool convertToJson(const MeasurementDataElementsType &src, JsonVariant &dst)
 {
-    if (src.measurementId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.valueType) {
+    if (src.valueType.has_value()) {
         dst["valueType"] = *src.valueType;
     }
-    if (src.timestamp) {
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
-    if (src.evaluationPeriod) {
+    if (src.evaluationPeriod.has_value()) {
         dst["evaluationPeriod"] = *src.evaluationPeriod;
     }
-    if (src.valueSource) {
+    if (src.valueSource.has_value()) {
         dst["valueSource"] = *src.valueSource;
     }
-    if (src.valueTendency) {
+    if (src.valueTendency.has_value()) {
         dst["valueTendency"] = *src.valueTendency;
     }
-    if (src.valueState) {
+    if (src.valueState.has_value()) {
         dst["valueState"] = *src.valueState;
     }
 
@@ -11694,49 +11937,52 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDataElementsType &d
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
-        dst.valueType = std::nullopt;
+        dst.valueType.reset();
     }
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
     if (!src["evaluationPeriod"].isNull()) {
         dst.evaluationPeriod = src["evaluationPeriod"].as<decltype(dst.evaluationPeriod)::value_type>();
     } else {
-        dst.evaluationPeriod = std::nullopt;
+        dst.evaluationPeriod.reset();
     }
     if (!src["valueSource"].isNull()) {
         dst.valueSource = src["valueSource"].as<decltype(dst.valueSource)::value_type>();
     } else {
-        dst.valueSource = std::nullopt;
+        dst.valueSource.reset();
     }
     if (!src["valueTendency"].isNull()) {
         dst.valueTendency = src["valueTendency"].as<decltype(dst.valueTendency)::value_type>();
     } else {
-        dst.valueTendency = std::nullopt;
+        dst.valueTendency.reset();
     }
     if (!src["valueState"].isNull()) {
         dst.valueState = src["valueState"].as<decltype(dst.valueState)::value_type>();
     } else {
-        dst.valueState = std::nullopt;
+        dst.valueState.reset();
     }
 
 }
 
 bool convertToJson(const MeasurementListDataType &src, JsonVariant &dst)
 {
-    if (src.measurementData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.measurementData.has_value()) {
         dst["measurementData"] = *src.measurementData;
     }
 
@@ -11749,20 +11995,23 @@ void convertFromJson(const JsonVariantConst &src, MeasurementListDataType &dst)
     if (!src["measurementData"].isNull()) {
         dst.measurementData = src["measurementData"].as<decltype(dst.measurementData)::value_type>();
     } else {
-        dst.measurementData = std::nullopt;
+        dst.measurementData.reset();
     }
 
 }
 
 bool convertToJson(const MeasurementListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.measurementId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.valueType) {
+    if (src.valueType.has_value()) {
         dst["valueType"] = *src.valueType;
     }
-    if (src.timestampInterval) {
+    if (src.timestampInterval.has_value()) {
         dst["timestampInterval"] = *src.timestampInterval;
     }
 
@@ -11775,45 +12024,48 @@ void convertFromJson(const JsonVariantConst &src, MeasurementListDataSelectorsTy
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
-        dst.valueType = std::nullopt;
+        dst.valueType.reset();
     }
     if (!src["timestampInterval"].isNull()) {
         dst.timestampInterval = src["timestampInterval"].as<decltype(dst.timestampInterval)::value_type>();
     } else {
-        dst.timestampInterval = std::nullopt;
+        dst.timestampInterval.reset();
     }
 
 }
 
 bool convertToJson(const MeasurementSeriesDataType &src, JsonVariant &dst)
 {
-    if (src.measurementId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.valueType) {
+    if (src.valueType.has_value()) {
         dst["valueType"] = *src.valueType;
     }
-    if (src.timestamp) {
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
-    if (src.evaluationPeriod) {
+    if (src.evaluationPeriod.has_value()) {
         dst["evaluationPeriod"] = *src.evaluationPeriod;
     }
-    if (src.valueSource) {
+    if (src.valueSource.has_value()) {
         dst["valueSource"] = *src.valueSource;
     }
-    if (src.valueTendency) {
+    if (src.valueTendency.has_value()) {
         dst["valueTendency"] = *src.valueTendency;
     }
-    if (src.valueState) {
+    if (src.valueState.has_value()) {
         dst["valueState"] = *src.valueState;
     }
 
@@ -11826,70 +12078,73 @@ void convertFromJson(const JsonVariantConst &src, MeasurementSeriesDataType &dst
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
-        dst.valueType = std::nullopt;
+        dst.valueType.reset();
     }
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
     if (!src["evaluationPeriod"].isNull()) {
         dst.evaluationPeriod = src["evaluationPeriod"].as<decltype(dst.evaluationPeriod)::value_type>();
     } else {
-        dst.evaluationPeriod = std::nullopt;
+        dst.evaluationPeriod.reset();
     }
     if (!src["valueSource"].isNull()) {
         dst.valueSource = src["valueSource"].as<decltype(dst.valueSource)::value_type>();
     } else {
-        dst.valueSource = std::nullopt;
+        dst.valueSource.reset();
     }
     if (!src["valueTendency"].isNull()) {
         dst.valueTendency = src["valueTendency"].as<decltype(dst.valueTendency)::value_type>();
     } else {
-        dst.valueTendency = std::nullopt;
+        dst.valueTendency.reset();
     }
     if (!src["valueState"].isNull()) {
         dst.valueState = src["valueState"].as<decltype(dst.valueState)::value_type>();
     } else {
-        dst.valueState = std::nullopt;
+        dst.valueState.reset();
     }
 
 }
 
 bool convertToJson(const MeasurementSeriesDataElementsType &src, JsonVariant &dst)
 {
-    if (src.measurementId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.valueType) {
+    if (src.valueType.has_value()) {
         dst["valueType"] = *src.valueType;
     }
-    if (src.timestamp) {
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
-    if (src.evaluationPeriod) {
+    if (src.evaluationPeriod.has_value()) {
         dst["evaluationPeriod"] = *src.evaluationPeriod;
     }
-    if (src.valueSource) {
+    if (src.valueSource.has_value()) {
         dst["valueSource"] = *src.valueSource;
     }
-    if (src.valueTendency) {
+    if (src.valueTendency.has_value()) {
         dst["valueTendency"] = *src.valueTendency;
     }
-    if (src.valueState) {
+    if (src.valueState.has_value()) {
         dst["valueState"] = *src.valueState;
     }
 
@@ -11902,49 +12157,52 @@ void convertFromJson(const JsonVariantConst &src, MeasurementSeriesDataElementsT
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
-        dst.valueType = std::nullopt;
+        dst.valueType.reset();
     }
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
     if (!src["evaluationPeriod"].isNull()) {
         dst.evaluationPeriod = src["evaluationPeriod"].as<decltype(dst.evaluationPeriod)::value_type>();
     } else {
-        dst.evaluationPeriod = std::nullopt;
+        dst.evaluationPeriod.reset();
     }
     if (!src["valueSource"].isNull()) {
         dst.valueSource = src["valueSource"].as<decltype(dst.valueSource)::value_type>();
     } else {
-        dst.valueSource = std::nullopt;
+        dst.valueSource.reset();
     }
     if (!src["valueTendency"].isNull()) {
         dst.valueTendency = src["valueTendency"].as<decltype(dst.valueTendency)::value_type>();
     } else {
-        dst.valueTendency = std::nullopt;
+        dst.valueTendency.reset();
     }
     if (!src["valueState"].isNull()) {
         dst.valueState = src["valueState"].as<decltype(dst.valueState)::value_type>();
     } else {
-        dst.valueState = std::nullopt;
+        dst.valueState.reset();
     }
 
 }
 
 bool convertToJson(const MeasurementSeriesListDataType &src, JsonVariant &dst)
 {
-    if (src.measurementSeriesData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.measurementSeriesData.has_value()) {
         dst["measurementSeriesData"] = *src.measurementSeriesData;
     }
 
@@ -11957,20 +12215,23 @@ void convertFromJson(const JsonVariantConst &src, MeasurementSeriesListDataType 
     if (!src["measurementSeriesData"].isNull()) {
         dst.measurementSeriesData = src["measurementSeriesData"].as<decltype(dst.measurementSeriesData)::value_type>();
     } else {
-        dst.measurementSeriesData = std::nullopt;
+        dst.measurementSeriesData.reset();
     }
 
 }
 
 bool convertToJson(const MeasurementSeriesListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.measurementId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.valueType) {
+    if (src.valueType.has_value()) {
         dst["valueType"] = *src.valueType;
     }
-    if (src.timestampInterval) {
+    if (src.timestampInterval.has_value()) {
         dst["timestampInterval"] = *src.timestampInterval;
     }
 
@@ -11983,33 +12244,36 @@ void convertFromJson(const JsonVariantConst &src, MeasurementSeriesListDataSelec
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
-        dst.valueType = std::nullopt;
+        dst.valueType.reset();
     }
     if (!src["timestampInterval"].isNull()) {
         dst.timestampInterval = src["timestampInterval"].as<decltype(dst.timestampInterval)::value_type>();
     } else {
-        dst.timestampInterval = std::nullopt;
+        dst.timestampInterval.reset();
     }
 
 }
 
 bool convertToJson(const MeasurementConstraintsDataType &src, JsonVariant &dst)
 {
-    if (src.measurementId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.valueRangeMin) {
+    if (src.valueRangeMin.has_value()) {
         dst["valueRangeMin"] = *src.valueRangeMin;
     }
-    if (src.valueRangeMax) {
+    if (src.valueRangeMax.has_value()) {
         dst["valueRangeMax"] = *src.valueRangeMax;
     }
-    if (src.valueStepSize) {
+    if (src.valueStepSize.has_value()) {
         dst["valueStepSize"] = *src.valueStepSize;
     }
 
@@ -12022,38 +12286,41 @@ void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsDataType
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["valueRangeMin"].isNull()) {
         dst.valueRangeMin = src["valueRangeMin"].as<decltype(dst.valueRangeMin)::value_type>();
     } else {
-        dst.valueRangeMin = std::nullopt;
+        dst.valueRangeMin.reset();
     }
     if (!src["valueRangeMax"].isNull()) {
         dst.valueRangeMax = src["valueRangeMax"].as<decltype(dst.valueRangeMax)::value_type>();
     } else {
-        dst.valueRangeMax = std::nullopt;
+        dst.valueRangeMax.reset();
     }
     if (!src["valueStepSize"].isNull()) {
         dst.valueStepSize = src["valueStepSize"].as<decltype(dst.valueStepSize)::value_type>();
     } else {
-        dst.valueStepSize = std::nullopt;
+        dst.valueStepSize.reset();
     }
 
 }
 
 bool convertToJson(const MeasurementConstraintsDataElementsType &src, JsonVariant &dst)
 {
-    if (src.measurementId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.valueRangeMin) {
+    if (src.valueRangeMin.has_value()) {
         dst["valueRangeMin"] = *src.valueRangeMin;
     }
-    if (src.valueRangeMax) {
+    if (src.valueRangeMax.has_value()) {
         dst["valueRangeMax"] = *src.valueRangeMax;
     }
-    if (src.valueStepSize) {
+    if (src.valueStepSize.has_value()) {
         dst["valueStepSize"] = *src.valueStepSize;
     }
 
@@ -12066,29 +12333,32 @@ void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsDataElem
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["valueRangeMin"].isNull()) {
         dst.valueRangeMin = src["valueRangeMin"].as<decltype(dst.valueRangeMin)::value_type>();
     } else {
-        dst.valueRangeMin = std::nullopt;
+        dst.valueRangeMin.reset();
     }
     if (!src["valueRangeMax"].isNull()) {
         dst.valueRangeMax = src["valueRangeMax"].as<decltype(dst.valueRangeMax)::value_type>();
     } else {
-        dst.valueRangeMax = std::nullopt;
+        dst.valueRangeMax.reset();
     }
     if (!src["valueStepSize"].isNull()) {
         dst.valueStepSize = src["valueStepSize"].as<decltype(dst.valueStepSize)::value_type>();
     } else {
-        dst.valueStepSize = std::nullopt;
+        dst.valueStepSize.reset();
     }
 
 }
 
 bool convertToJson(const MeasurementConstraintsListDataType &src, JsonVariant &dst)
 {
-    if (src.measurementConstraintsData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.measurementConstraintsData.has_value()) {
         dst["measurementConstraintsData"] = *src.measurementConstraintsData;
     }
 
@@ -12101,14 +12371,17 @@ void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsListData
     if (!src["measurementConstraintsData"].isNull()) {
         dst.measurementConstraintsData = src["measurementConstraintsData"].as<decltype(dst.measurementConstraintsData)::value_type>();
     } else {
-        dst.measurementConstraintsData = std::nullopt;
+        dst.measurementConstraintsData.reset();
     }
 
 }
 
 bool convertToJson(const MeasurementConstraintsListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.measurementId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
 
@@ -12121,35 +12394,38 @@ void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsListData
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
 
 }
 
 bool convertToJson(const MeasurementDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.measurementId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.measurementType) {
+    if (src.measurementType.has_value()) {
         dst["measurementType"] = *src.measurementType;
     }
-    if (src.commodityType) {
+    if (src.commodityType.has_value()) {
         dst["commodityType"] = *src.commodityType;
     }
-    if (src.unit) {
+    if (src.unit.has_value()) {
         dst["unit"] = *src.unit;
     }
-    if (src.calibrationValue) {
+    if (src.calibrationValue.has_value()) {
         dst["calibrationValue"] = *src.calibrationValue;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -12162,70 +12438,73 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionDataType
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["measurementType"].isNull()) {
         dst.measurementType = src["measurementType"].as<decltype(dst.measurementType)::value_type>();
     } else {
-        dst.measurementType = std::nullopt;
+        dst.measurementType.reset();
     }
     if (!src["commodityType"].isNull()) {
         dst.commodityType = src["commodityType"].as<decltype(dst.commodityType)::value_type>();
     } else {
-        dst.commodityType = std::nullopt;
+        dst.commodityType.reset();
     }
     if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
-        dst.unit = std::nullopt;
+        dst.unit.reset();
     }
     if (!src["calibrationValue"].isNull()) {
         dst.calibrationValue = src["calibrationValue"].as<decltype(dst.calibrationValue)::value_type>();
     } else {
-        dst.calibrationValue = std::nullopt;
+        dst.calibrationValue.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const MeasurementDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.measurementId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.measurementType) {
+    if (src.measurementType.has_value()) {
         dst["measurementType"] = *src.measurementType;
     }
-    if (src.commodityType) {
+    if (src.commodityType.has_value()) {
         dst["commodityType"] = *src.commodityType;
     }
-    if (src.unit) {
+    if (src.unit.has_value()) {
         dst["unit"] = *src.unit;
     }
-    if (src.calibrationValue) {
+    if (src.calibrationValue.has_value()) {
         dst["calibrationValue"] = *src.calibrationValue;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -12238,49 +12517,52 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionDataElem
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["measurementType"].isNull()) {
         dst.measurementType = src["measurementType"].as<decltype(dst.measurementType)::value_type>();
     } else {
-        dst.measurementType = std::nullopt;
+        dst.measurementType.reset();
     }
     if (!src["commodityType"].isNull()) {
         dst.commodityType = src["commodityType"].as<decltype(dst.commodityType)::value_type>();
     } else {
-        dst.commodityType = std::nullopt;
+        dst.commodityType.reset();
     }
     if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
-        dst.unit = std::nullopt;
+        dst.unit.reset();
     }
     if (!src["calibrationValue"].isNull()) {
         dst.calibrationValue = src["calibrationValue"].as<decltype(dst.calibrationValue)::value_type>();
     } else {
-        dst.calibrationValue = std::nullopt;
+        dst.calibrationValue.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const MeasurementDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.measurementDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.measurementDescriptionData.has_value()) {
         dst["measurementDescriptionData"] = *src.measurementDescriptionData;
     }
 
@@ -12293,23 +12575,26 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionListData
     if (!src["measurementDescriptionData"].isNull()) {
         dst.measurementDescriptionData = src["measurementDescriptionData"].as<decltype(dst.measurementDescriptionData)::value_type>();
     } else {
-        dst.measurementDescriptionData = std::nullopt;
+        dst.measurementDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const MeasurementDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.measurementId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.measurementType) {
+    if (src.measurementType.has_value()) {
         dst["measurementType"] = *src.measurementType;
     }
-    if (src.commodityType) {
+    if (src.commodityType.has_value()) {
         dst["commodityType"] = *src.commodityType;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
 
@@ -12322,32 +12607,35 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionListData
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["measurementType"].isNull()) {
         dst.measurementType = src["measurementType"].as<decltype(dst.measurementType)::value_type>();
     } else {
-        dst.measurementType = std::nullopt;
+        dst.measurementType.reset();
     }
     if (!src["commodityType"].isNull()) {
         dst.commodityType = src["commodityType"].as<decltype(dst.commodityType)::value_type>();
     } else {
-        dst.commodityType = std::nullopt;
+        dst.commodityType.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
 
 }
 
 bool convertToJson(const MeasurementThresholdRelationDataType &src, JsonVariant &dst)
 {
-    if (src.measurementId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.thresholdId) {
+    if (src.thresholdId.has_value()) {
         dst["thresholdId"] = *src.thresholdId;
     }
 
@@ -12360,22 +12648,25 @@ void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationDa
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
-        dst.thresholdId = std::nullopt;
+        dst.thresholdId.reset();
     }
 
 }
 
 bool convertToJson(const MeasurementThresholdRelationDataElementsType &src, JsonVariant &dst)
 {
-    if (src.measurementId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.thresholdId) {
+    if (src.thresholdId.has_value()) {
         dst["thresholdId"] = *src.thresholdId;
     }
 
@@ -12388,19 +12679,22 @@ void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationDa
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
-        dst.thresholdId = std::nullopt;
+        dst.thresholdId.reset();
     }
 
 }
 
 bool convertToJson(const MeasurementThresholdRelationListDataType &src, JsonVariant &dst)
 {
-    if (src.measurementThresholdRelationData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.measurementThresholdRelationData.has_value()) {
         dst["measurementThresholdRelationData"] = *src.measurementThresholdRelationData;
     }
 
@@ -12413,17 +12707,20 @@ void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationLi
     if (!src["measurementThresholdRelationData"].isNull()) {
         dst.measurementThresholdRelationData = src["measurementThresholdRelationData"].as<decltype(dst.measurementThresholdRelationData)::value_type>();
     } else {
-        dst.measurementThresholdRelationData = std::nullopt;
+        dst.measurementThresholdRelationData.reset();
     }
 
 }
 
 bool convertToJson(const MeasurementThresholdRelationListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.measurementId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.thresholdId) {
+    if (src.thresholdId.has_value()) {
         dst["thresholdId"] = *src.thresholdId;
     }
 
@@ -12436,22 +12733,25 @@ void convertFromJson(const JsonVariantConst &src, MeasurementThresholdRelationLi
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
-        dst.thresholdId = std::nullopt;
+        dst.thresholdId.reset();
     }
 
 }
 
 bool convertToJson(const ThresholdDataType &src, JsonVariant &dst)
 {
-    if (src.thresholdId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.thresholdId.has_value()) {
         dst["thresholdId"] = *src.thresholdId;
     }
-    if (src.thresholdValue) {
+    if (src.thresholdValue.has_value()) {
         dst["thresholdValue"] = *src.thresholdValue;
     }
 
@@ -12464,22 +12764,25 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDataType &dst)
     if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
-        dst.thresholdId = std::nullopt;
+        dst.thresholdId.reset();
     }
     if (!src["thresholdValue"].isNull()) {
         dst.thresholdValue = src["thresholdValue"].as<decltype(dst.thresholdValue)::value_type>();
     } else {
-        dst.thresholdValue = std::nullopt;
+        dst.thresholdValue.reset();
     }
 
 }
 
 bool convertToJson(const ThresholdDataElementsType &src, JsonVariant &dst)
 {
-    if (src.thresholdId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.thresholdId.has_value()) {
         dst["thresholdId"] = *src.thresholdId;
     }
-    if (src.thresholdValue) {
+    if (src.thresholdValue.has_value()) {
         dst["thresholdValue"] = *src.thresholdValue;
     }
 
@@ -12492,19 +12795,22 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDataElementsType &dst
     if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
-        dst.thresholdId = std::nullopt;
+        dst.thresholdId.reset();
     }
     if (!src["thresholdValue"].isNull()) {
         dst.thresholdValue = src["thresholdValue"].as<decltype(dst.thresholdValue)::value_type>();
     } else {
-        dst.thresholdValue = std::nullopt;
+        dst.thresholdValue.reset();
     }
 
 }
 
 bool convertToJson(const ThresholdListDataType &src, JsonVariant &dst)
 {
-    if (src.thresholdData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.thresholdData.has_value()) {
         dst["thresholdData"] = *src.thresholdData;
     }
 
@@ -12517,14 +12823,17 @@ void convertFromJson(const JsonVariantConst &src, ThresholdListDataType &dst)
     if (!src["thresholdData"].isNull()) {
         dst.thresholdData = src["thresholdData"].as<decltype(dst.thresholdData)::value_type>();
     } else {
-        dst.thresholdData = std::nullopt;
+        dst.thresholdData.reset();
     }
 
 }
 
 bool convertToJson(const ThresholdListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.thresholdId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.thresholdId.has_value()) {
         dst["thresholdId"] = *src.thresholdId;
     }
 
@@ -12537,23 +12846,26 @@ void convertFromJson(const JsonVariantConst &src, ThresholdListDataSelectorsType
     if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
-        dst.thresholdId = std::nullopt;
+        dst.thresholdId.reset();
     }
 
 }
 
 bool convertToJson(const ThresholdConstraintsDataType &src, JsonVariant &dst)
 {
-    if (src.thresholdId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.thresholdId.has_value()) {
         dst["thresholdId"] = *src.thresholdId;
     }
-    if (src.thresholdRangeMin) {
+    if (src.thresholdRangeMin.has_value()) {
         dst["thresholdRangeMin"] = *src.thresholdRangeMin;
     }
-    if (src.thresholdRangeMax) {
+    if (src.thresholdRangeMax.has_value()) {
         dst["thresholdRangeMax"] = *src.thresholdRangeMax;
     }
-    if (src.thresholdStepSize) {
+    if (src.thresholdStepSize.has_value()) {
         dst["thresholdStepSize"] = *src.thresholdStepSize;
     }
 
@@ -12566,38 +12878,41 @@ void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsDataType &
     if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
-        dst.thresholdId = std::nullopt;
+        dst.thresholdId.reset();
     }
     if (!src["thresholdRangeMin"].isNull()) {
         dst.thresholdRangeMin = src["thresholdRangeMin"].as<decltype(dst.thresholdRangeMin)::value_type>();
     } else {
-        dst.thresholdRangeMin = std::nullopt;
+        dst.thresholdRangeMin.reset();
     }
     if (!src["thresholdRangeMax"].isNull()) {
         dst.thresholdRangeMax = src["thresholdRangeMax"].as<decltype(dst.thresholdRangeMax)::value_type>();
     } else {
-        dst.thresholdRangeMax = std::nullopt;
+        dst.thresholdRangeMax.reset();
     }
     if (!src["thresholdStepSize"].isNull()) {
         dst.thresholdStepSize = src["thresholdStepSize"].as<decltype(dst.thresholdStepSize)::value_type>();
     } else {
-        dst.thresholdStepSize = std::nullopt;
+        dst.thresholdStepSize.reset();
     }
 
 }
 
 bool convertToJson(const ThresholdConstraintsDataElementsType &src, JsonVariant &dst)
 {
-    if (src.thresholdId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.thresholdId.has_value()) {
         dst["thresholdId"] = *src.thresholdId;
     }
-    if (src.thresholdRangeMin) {
+    if (src.thresholdRangeMin.has_value()) {
         dst["thresholdRangeMin"] = *src.thresholdRangeMin;
     }
-    if (src.thresholdRangeMax) {
+    if (src.thresholdRangeMax.has_value()) {
         dst["thresholdRangeMax"] = *src.thresholdRangeMax;
     }
-    if (src.thresholdStepSize) {
+    if (src.thresholdStepSize.has_value()) {
         dst["thresholdStepSize"] = *src.thresholdStepSize;
     }
 
@@ -12610,29 +12925,32 @@ void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsDataElemen
     if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
-        dst.thresholdId = std::nullopt;
+        dst.thresholdId.reset();
     }
     if (!src["thresholdRangeMin"].isNull()) {
         dst.thresholdRangeMin = src["thresholdRangeMin"].as<decltype(dst.thresholdRangeMin)::value_type>();
     } else {
-        dst.thresholdRangeMin = std::nullopt;
+        dst.thresholdRangeMin.reset();
     }
     if (!src["thresholdRangeMax"].isNull()) {
         dst.thresholdRangeMax = src["thresholdRangeMax"].as<decltype(dst.thresholdRangeMax)::value_type>();
     } else {
-        dst.thresholdRangeMax = std::nullopt;
+        dst.thresholdRangeMax.reset();
     }
     if (!src["thresholdStepSize"].isNull()) {
         dst.thresholdStepSize = src["thresholdStepSize"].as<decltype(dst.thresholdStepSize)::value_type>();
     } else {
-        dst.thresholdStepSize = std::nullopt;
+        dst.thresholdStepSize.reset();
     }
 
 }
 
 bool convertToJson(const ThresholdConstraintsListDataType &src, JsonVariant &dst)
 {
-    if (src.thresholdConstraintsData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.thresholdConstraintsData.has_value()) {
         dst["thresholdConstraintsData"] = *src.thresholdConstraintsData;
     }
 
@@ -12645,14 +12963,17 @@ void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsListDataTy
     if (!src["thresholdConstraintsData"].isNull()) {
         dst.thresholdConstraintsData = src["thresholdConstraintsData"].as<decltype(dst.thresholdConstraintsData)::value_type>();
     } else {
-        dst.thresholdConstraintsData = std::nullopt;
+        dst.thresholdConstraintsData.reset();
     }
 
 }
 
 bool convertToJson(const ThresholdConstraintsListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.thresholdId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.thresholdId.has_value()) {
         dst["thresholdId"] = *src.thresholdId;
     }
 
@@ -12665,29 +12986,32 @@ void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsListDataSe
     if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
-        dst.thresholdId = std::nullopt;
+        dst.thresholdId.reset();
     }
 
 }
 
 bool convertToJson(const ThresholdDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.thresholdId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.thresholdId.has_value()) {
         dst["thresholdId"] = *src.thresholdId;
     }
-    if (src.thresholdType) {
+    if (src.thresholdType.has_value()) {
         dst["thresholdType"] = *src.thresholdType;
     }
-    if (src.unit) {
+    if (src.unit.has_value()) {
         dst["unit"] = *src.unit;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -12700,54 +13024,57 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionDataType &
     if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
-        dst.thresholdId = std::nullopt;
+        dst.thresholdId.reset();
     }
     if (!src["thresholdType"].isNull()) {
         dst.thresholdType = src["thresholdType"].as<decltype(dst.thresholdType)::value_type>();
     } else {
-        dst.thresholdType = std::nullopt;
+        dst.thresholdType.reset();
     }
     if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
-        dst.unit = std::nullopt;
+        dst.unit.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const ThresholdDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.thresholdId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.thresholdId.has_value()) {
         dst["thresholdId"] = *src.thresholdId;
     }
-    if (src.thresholdType) {
+    if (src.thresholdType.has_value()) {
         dst["thresholdType"] = *src.thresholdType;
     }
-    if (src.unit) {
+    if (src.unit.has_value()) {
         dst["unit"] = *src.unit;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -12760,39 +13087,42 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionDataElemen
     if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
-        dst.thresholdId = std::nullopt;
+        dst.thresholdId.reset();
     }
     if (!src["thresholdType"].isNull()) {
         dst.thresholdType = src["thresholdType"].as<decltype(dst.thresholdType)::value_type>();
     } else {
-        dst.thresholdType = std::nullopt;
+        dst.thresholdType.reset();
     }
     if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
-        dst.unit = std::nullopt;
+        dst.unit.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const ThresholdDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.thresholdDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.thresholdDescriptionData.has_value()) {
         dst["thresholdDescriptionData"] = *src.thresholdDescriptionData;
     }
 
@@ -12805,17 +13135,20 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionListDataTy
     if (!src["thresholdDescriptionData"].isNull()) {
         dst.thresholdDescriptionData = src["thresholdDescriptionData"].as<decltype(dst.thresholdDescriptionData)::value_type>();
     } else {
-        dst.thresholdDescriptionData = std::nullopt;
+        dst.thresholdDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const ThresholdDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.thresholdId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.thresholdId.has_value()) {
         dst["thresholdId"] = *src.thresholdId;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
 
@@ -12828,31 +13161,34 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionListDataSe
     if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
-        dst.thresholdId = std::nullopt;
+        dst.thresholdId.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsInterruptDataType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.isPausable) {
+    if (src.isPausable.has_value()) {
         dst["isPausable"] = *src.isPausable;
     }
-    if (src.isStoppable) {
+    if (src.isStoppable.has_value()) {
         dst["isStoppable"] = *src.isStoppable;
     }
-    if (src.notInterruptibleAtHighPower) {
+    if (src.notInterruptibleAtHighPower.has_value()) {
         dst["notInterruptibleAtHighPower"] = *src.notInterruptibleAtHighPower;
     }
-    if (src.maxCyclesPerDay) {
+    if (src.maxCyclesPerDay.has_value()) {
         dst["maxCyclesPerDay"] = *src.maxCyclesPerDay;
     }
 
@@ -12865,46 +13201,49 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptD
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["isPausable"].isNull()) {
         dst.isPausable = src["isPausable"].as<decltype(dst.isPausable)::value_type>();
     } else {
-        dst.isPausable = std::nullopt;
+        dst.isPausable.reset();
     }
     if (!src["isStoppable"].isNull()) {
         dst.isStoppable = src["isStoppable"].as<decltype(dst.isStoppable)::value_type>();
     } else {
-        dst.isStoppable = std::nullopt;
+        dst.isStoppable.reset();
     }
     if (!src["notInterruptibleAtHighPower"].isNull()) {
         dst.notInterruptibleAtHighPower = src["notInterruptibleAtHighPower"].as<decltype(dst.notInterruptibleAtHighPower)::value_type>();
     } else {
-        dst.notInterruptibleAtHighPower = std::nullopt;
+        dst.notInterruptibleAtHighPower.reset();
     }
     if (!src["maxCyclesPerDay"].isNull()) {
         dst.maxCyclesPerDay = src["maxCyclesPerDay"].as<decltype(dst.maxCyclesPerDay)::value_type>();
     } else {
-        dst.maxCyclesPerDay = std::nullopt;
+        dst.maxCyclesPerDay.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsInterruptDataElementsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.isPausable) {
+    if (src.isPausable.has_value()) {
         dst["isPausable"] = *src.isPausable;
     }
-    if (src.isStoppable) {
+    if (src.isStoppable.has_value()) {
         dst["isStoppable"] = *src.isStoppable;
     }
-    if (src.notInterruptibleAtHighPower) {
+    if (src.notInterruptibleAtHighPower.has_value()) {
         dst["notInterruptibleAtHighPower"] = *src.notInterruptibleAtHighPower;
     }
-    if (src.maxCyclesPerDay) {
+    if (src.maxCyclesPerDay.has_value()) {
         dst["maxCyclesPerDay"] = *src.maxCyclesPerDay;
     }
 
@@ -12917,34 +13256,37 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptD
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["isPausable"].isNull()) {
         dst.isPausable = src["isPausable"].as<decltype(dst.isPausable)::value_type>();
     } else {
-        dst.isPausable = std::nullopt;
+        dst.isPausable.reset();
     }
     if (!src["isStoppable"].isNull()) {
         dst.isStoppable = src["isStoppable"].as<decltype(dst.isStoppable)::value_type>();
     } else {
-        dst.isStoppable = std::nullopt;
+        dst.isStoppable.reset();
     }
     if (!src["notInterruptibleAtHighPower"].isNull()) {
         dst.notInterruptibleAtHighPower = src["notInterruptibleAtHighPower"].as<decltype(dst.notInterruptibleAtHighPower)::value_type>();
     } else {
-        dst.notInterruptibleAtHighPower = std::nullopt;
+        dst.notInterruptibleAtHighPower.reset();
     }
     if (!src["maxCyclesPerDay"].isNull()) {
         dst.maxCyclesPerDay = src["maxCyclesPerDay"].as<decltype(dst.maxCyclesPerDay)::value_type>();
     } else {
-        dst.maxCyclesPerDay = std::nullopt;
+        dst.maxCyclesPerDay.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsInterruptListDataType &src, JsonVariant &dst)
 {
-    if (src.operatingConstraintsInterruptData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.operatingConstraintsInterruptData.has_value()) {
         dst["operatingConstraintsInterruptData"] = *src.operatingConstraintsInterruptData;
     }
 
@@ -12957,14 +13299,17 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptL
     if (!src["operatingConstraintsInterruptData"].isNull()) {
         dst.operatingConstraintsInterruptData = src["operatingConstraintsInterruptData"].as<decltype(dst.operatingConstraintsInterruptData)::value_type>();
     } else {
-        dst.operatingConstraintsInterruptData = std::nullopt;
+        dst.operatingConstraintsInterruptData.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsInterruptListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -12977,32 +13322,35 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsInterruptL
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsDurationDataType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.activeDurationMin) {
+    if (src.activeDurationMin.has_value()) {
         dst["activeDurationMin"] = *src.activeDurationMin;
     }
-    if (src.activeDurationMax) {
+    if (src.activeDurationMax.has_value()) {
         dst["activeDurationMax"] = *src.activeDurationMax;
     }
-    if (src.pauseDurationMin) {
+    if (src.pauseDurationMin.has_value()) {
         dst["pauseDurationMin"] = *src.pauseDurationMin;
     }
-    if (src.pauseDurationMax) {
+    if (src.pauseDurationMax.has_value()) {
         dst["pauseDurationMax"] = *src.pauseDurationMax;
     }
-    if (src.activeDurationSumMin) {
+    if (src.activeDurationSumMin.has_value()) {
         dst["activeDurationSumMin"] = *src.activeDurationSumMin;
     }
-    if (src.activeDurationSumMax) {
+    if (src.activeDurationSumMax.has_value()) {
         dst["activeDurationSumMax"] = *src.activeDurationSumMax;
     }
 
@@ -13015,62 +13363,65 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationDa
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["activeDurationMin"].isNull()) {
         dst.activeDurationMin = src["activeDurationMin"].as<decltype(dst.activeDurationMin)::value_type>();
     } else {
-        dst.activeDurationMin = std::nullopt;
+        dst.activeDurationMin.reset();
     }
     if (!src["activeDurationMax"].isNull()) {
         dst.activeDurationMax = src["activeDurationMax"].as<decltype(dst.activeDurationMax)::value_type>();
     } else {
-        dst.activeDurationMax = std::nullopt;
+        dst.activeDurationMax.reset();
     }
     if (!src["pauseDurationMin"].isNull()) {
         dst.pauseDurationMin = src["pauseDurationMin"].as<decltype(dst.pauseDurationMin)::value_type>();
     } else {
-        dst.pauseDurationMin = std::nullopt;
+        dst.pauseDurationMin.reset();
     }
     if (!src["pauseDurationMax"].isNull()) {
         dst.pauseDurationMax = src["pauseDurationMax"].as<decltype(dst.pauseDurationMax)::value_type>();
     } else {
-        dst.pauseDurationMax = std::nullopt;
+        dst.pauseDurationMax.reset();
     }
     if (!src["activeDurationSumMin"].isNull()) {
         dst.activeDurationSumMin = src["activeDurationSumMin"].as<decltype(dst.activeDurationSumMin)::value_type>();
     } else {
-        dst.activeDurationSumMin = std::nullopt;
+        dst.activeDurationSumMin.reset();
     }
     if (!src["activeDurationSumMax"].isNull()) {
         dst.activeDurationSumMax = src["activeDurationSumMax"].as<decltype(dst.activeDurationSumMax)::value_type>();
     } else {
-        dst.activeDurationSumMax = std::nullopt;
+        dst.activeDurationSumMax.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsDurationDataElementsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.activeDurationMin) {
+    if (src.activeDurationMin.has_value()) {
         dst["activeDurationMin"] = *src.activeDurationMin;
     }
-    if (src.activeDurationMax) {
+    if (src.activeDurationMax.has_value()) {
         dst["activeDurationMax"] = *src.activeDurationMax;
     }
-    if (src.pauseDurationMin) {
+    if (src.pauseDurationMin.has_value()) {
         dst["pauseDurationMin"] = *src.pauseDurationMin;
     }
-    if (src.pauseDurationMax) {
+    if (src.pauseDurationMax.has_value()) {
         dst["pauseDurationMax"] = *src.pauseDurationMax;
     }
-    if (src.activeDurationSumMin) {
+    if (src.activeDurationSumMin.has_value()) {
         dst["activeDurationSumMin"] = *src.activeDurationSumMin;
     }
-    if (src.activeDurationSumMax) {
+    if (src.activeDurationSumMax.has_value()) {
         dst["activeDurationSumMax"] = *src.activeDurationSumMax;
     }
 
@@ -13083,44 +13434,47 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationDa
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["activeDurationMin"].isNull()) {
         dst.activeDurationMin = src["activeDurationMin"].as<decltype(dst.activeDurationMin)::value_type>();
     } else {
-        dst.activeDurationMin = std::nullopt;
+        dst.activeDurationMin.reset();
     }
     if (!src["activeDurationMax"].isNull()) {
         dst.activeDurationMax = src["activeDurationMax"].as<decltype(dst.activeDurationMax)::value_type>();
     } else {
-        dst.activeDurationMax = std::nullopt;
+        dst.activeDurationMax.reset();
     }
     if (!src["pauseDurationMin"].isNull()) {
         dst.pauseDurationMin = src["pauseDurationMin"].as<decltype(dst.pauseDurationMin)::value_type>();
     } else {
-        dst.pauseDurationMin = std::nullopt;
+        dst.pauseDurationMin.reset();
     }
     if (!src["pauseDurationMax"].isNull()) {
         dst.pauseDurationMax = src["pauseDurationMax"].as<decltype(dst.pauseDurationMax)::value_type>();
     } else {
-        dst.pauseDurationMax = std::nullopt;
+        dst.pauseDurationMax.reset();
     }
     if (!src["activeDurationSumMin"].isNull()) {
         dst.activeDurationSumMin = src["activeDurationSumMin"].as<decltype(dst.activeDurationSumMin)::value_type>();
     } else {
-        dst.activeDurationSumMin = std::nullopt;
+        dst.activeDurationSumMin.reset();
     }
     if (!src["activeDurationSumMax"].isNull()) {
         dst.activeDurationSumMax = src["activeDurationSumMax"].as<decltype(dst.activeDurationSumMax)::value_type>();
     } else {
-        dst.activeDurationSumMax = std::nullopt;
+        dst.activeDurationSumMax.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsDurationListDataType &src, JsonVariant &dst)
 {
-    if (src.operatingConstraintsDurationData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.operatingConstraintsDurationData.has_value()) {
         dst["operatingConstraintsDurationData"] = *src.operatingConstraintsDurationData;
     }
 
@@ -13133,14 +13487,17 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationLi
     if (!src["operatingConstraintsDurationData"].isNull()) {
         dst.operatingConstraintsDurationData = src["operatingConstraintsDurationData"].as<decltype(dst.operatingConstraintsDurationData)::value_type>();
     } else {
-        dst.operatingConstraintsDurationData = std::nullopt;
+        dst.operatingConstraintsDurationData.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsDurationListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -13153,26 +13510,29 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationLi
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsPowerDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.positiveEnergyDirection) {
+    if (src.positiveEnergyDirection.has_value()) {
         dst["positiveEnergyDirection"] = *src.positiveEnergyDirection;
     }
-    if (src.powerUnit) {
+    if (src.powerUnit.has_value()) {
         dst["powerUnit"] = *src.powerUnit;
     }
-    if (src.energyUnit) {
+    if (src.energyUnit.has_value()) {
         dst["energyUnit"] = *src.energyUnit;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -13185,46 +13545,49 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescr
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
-        dst.positiveEnergyDirection = std::nullopt;
+        dst.positiveEnergyDirection.reset();
     }
     if (!src["powerUnit"].isNull()) {
         dst.powerUnit = src["powerUnit"].as<decltype(dst.powerUnit)::value_type>();
     } else {
-        dst.powerUnit = std::nullopt;
+        dst.powerUnit.reset();
     }
     if (!src["energyUnit"].isNull()) {
         dst.energyUnit = src["energyUnit"].as<decltype(dst.energyUnit)::value_type>();
     } else {
-        dst.energyUnit = std::nullopt;
+        dst.energyUnit.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsPowerDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.positiveEnergyDirection) {
+    if (src.positiveEnergyDirection.has_value()) {
         dst["positiveEnergyDirection"] = *src.positiveEnergyDirection;
     }
-    if (src.powerUnit) {
+    if (src.powerUnit.has_value()) {
         dst["powerUnit"] = *src.powerUnit;
     }
-    if (src.energyUnit) {
+    if (src.energyUnit.has_value()) {
         dst["energyUnit"] = *src.energyUnit;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -13237,34 +13600,37 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescr
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
-        dst.positiveEnergyDirection = std::nullopt;
+        dst.positiveEnergyDirection.reset();
     }
     if (!src["powerUnit"].isNull()) {
         dst.powerUnit = src["powerUnit"].as<decltype(dst.powerUnit)::value_type>();
     } else {
-        dst.powerUnit = std::nullopt;
+        dst.powerUnit.reset();
     }
     if (!src["energyUnit"].isNull()) {
         dst.energyUnit = src["energyUnit"].as<decltype(dst.energyUnit)::value_type>();
     } else {
-        dst.energyUnit = std::nullopt;
+        dst.energyUnit.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsPowerDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.operatingConstraintsPowerDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.operatingConstraintsPowerDescriptionData.has_value()) {
         dst["operatingConstraintsPowerDescriptionData"] = *src.operatingConstraintsPowerDescriptionData;
     }
 
@@ -13277,14 +13643,17 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescr
     if (!src["operatingConstraintsPowerDescriptionData"].isNull()) {
         dst.operatingConstraintsPowerDescriptionData = src["operatingConstraintsPowerDescriptionData"].as<decltype(dst.operatingConstraintsPowerDescriptionData)::value_type>();
     } else {
-        dst.operatingConstraintsPowerDescriptionData = std::nullopt;
+        dst.operatingConstraintsPowerDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsPowerDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -13297,26 +13666,29 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerDescr
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsPowerRangeDataType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.powerMin) {
+    if (src.powerMin.has_value()) {
         dst["powerMin"] = *src.powerMin;
     }
-    if (src.powerMax) {
+    if (src.powerMax.has_value()) {
         dst["powerMax"] = *src.powerMax;
     }
-    if (src.energyMin) {
+    if (src.energyMin.has_value()) {
         dst["energyMin"] = *src.energyMin;
     }
-    if (src.energyMax) {
+    if (src.energyMax.has_value()) {
         dst["energyMax"] = *src.energyMax;
     }
 
@@ -13329,46 +13701,49 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRange
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["powerMin"].isNull()) {
         dst.powerMin = src["powerMin"].as<decltype(dst.powerMin)::value_type>();
     } else {
-        dst.powerMin = std::nullopt;
+        dst.powerMin.reset();
     }
     if (!src["powerMax"].isNull()) {
         dst.powerMax = src["powerMax"].as<decltype(dst.powerMax)::value_type>();
     } else {
-        dst.powerMax = std::nullopt;
+        dst.powerMax.reset();
     }
     if (!src["energyMin"].isNull()) {
         dst.energyMin = src["energyMin"].as<decltype(dst.energyMin)::value_type>();
     } else {
-        dst.energyMin = std::nullopt;
+        dst.energyMin.reset();
     }
     if (!src["energyMax"].isNull()) {
         dst.energyMax = src["energyMax"].as<decltype(dst.energyMax)::value_type>();
     } else {
-        dst.energyMax = std::nullopt;
+        dst.energyMax.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsPowerRangeDataElementsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.powerMin) {
+    if (src.powerMin.has_value()) {
         dst["powerMin"] = *src.powerMin;
     }
-    if (src.powerMax) {
+    if (src.powerMax.has_value()) {
         dst["powerMax"] = *src.powerMax;
     }
-    if (src.energyMin) {
+    if (src.energyMin.has_value()) {
         dst["energyMin"] = *src.energyMin;
     }
-    if (src.energyMax) {
+    if (src.energyMax.has_value()) {
         dst["energyMax"] = *src.energyMax;
     }
 
@@ -13381,34 +13756,37 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRange
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["powerMin"].isNull()) {
         dst.powerMin = src["powerMin"].as<decltype(dst.powerMin)::value_type>();
     } else {
-        dst.powerMin = std::nullopt;
+        dst.powerMin.reset();
     }
     if (!src["powerMax"].isNull()) {
         dst.powerMax = src["powerMax"].as<decltype(dst.powerMax)::value_type>();
     } else {
-        dst.powerMax = std::nullopt;
+        dst.powerMax.reset();
     }
     if (!src["energyMin"].isNull()) {
         dst.energyMin = src["energyMin"].as<decltype(dst.energyMin)::value_type>();
     } else {
-        dst.energyMin = std::nullopt;
+        dst.energyMin.reset();
     }
     if (!src["energyMax"].isNull()) {
         dst.energyMax = src["energyMax"].as<decltype(dst.energyMax)::value_type>();
     } else {
-        dst.energyMax = std::nullopt;
+        dst.energyMax.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsPowerRangeListDataType &src, JsonVariant &dst)
 {
-    if (src.operatingConstraintsPowerRangeData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.operatingConstraintsPowerRangeData.has_value()) {
         dst["operatingConstraintsPowerRangeData"] = *src.operatingConstraintsPowerRangeData;
     }
 
@@ -13421,14 +13799,17 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRange
     if (!src["operatingConstraintsPowerRangeData"].isNull()) {
         dst.operatingConstraintsPowerRangeData = src["operatingConstraintsPowerRangeData"].as<decltype(dst.operatingConstraintsPowerRangeData)::value_type>();
     } else {
-        dst.operatingConstraintsPowerRangeData = std::nullopt;
+        dst.operatingConstraintsPowerRangeData.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsPowerRangeListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -13441,17 +13822,20 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerRange
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsPowerLevelDataType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.power) {
+    if (src.power.has_value()) {
         dst["power"] = *src.power;
     }
 
@@ -13464,22 +13848,25 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevel
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["power"].isNull()) {
         dst.power = src["power"].as<decltype(dst.power)::value_type>();
     } else {
-        dst.power = std::nullopt;
+        dst.power.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsPowerLevelDataElementsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.power) {
+    if (src.power.has_value()) {
         dst["power"] = *src.power;
     }
 
@@ -13492,19 +13879,22 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevel
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["power"].isNull()) {
         dst.power = src["power"].as<decltype(dst.power)::value_type>();
     } else {
-        dst.power = std::nullopt;
+        dst.power.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsPowerLevelListDataType &src, JsonVariant &dst)
 {
-    if (src.operatingConstraintsPowerLevelData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.operatingConstraintsPowerLevelData.has_value()) {
         dst["operatingConstraintsPowerLevelData"] = *src.operatingConstraintsPowerLevelData;
     }
 
@@ -13517,14 +13907,17 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevel
     if (!src["operatingConstraintsPowerLevelData"].isNull()) {
         dst.operatingConstraintsPowerLevelData = src["operatingConstraintsPowerLevelData"].as<decltype(dst.operatingConstraintsPowerLevelData)::value_type>();
     } else {
-        dst.operatingConstraintsPowerLevelData = std::nullopt;
+        dst.operatingConstraintsPowerLevelData.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsPowerLevelListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -13537,26 +13930,29 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsPowerLevel
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsResumeImplicationDataType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.resumeEnergyEstimated) {
+    if (src.resumeEnergyEstimated.has_value()) {
         dst["resumeEnergyEstimated"] = *src.resumeEnergyEstimated;
     }
-    if (src.energyUnit) {
+    if (src.energyUnit.has_value()) {
         dst["energyUnit"] = *src.energyUnit;
     }
-    if (src.resumeCostEstimated) {
+    if (src.resumeCostEstimated.has_value()) {
         dst["resumeCostEstimated"] = *src.resumeCostEstimated;
     }
-    if (src.currency) {
+    if (src.currency.has_value()) {
         dst["currency"] = *src.currency;
     }
 
@@ -13569,46 +13965,49 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImpl
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["resumeEnergyEstimated"].isNull()) {
         dst.resumeEnergyEstimated = src["resumeEnergyEstimated"].as<decltype(dst.resumeEnergyEstimated)::value_type>();
     } else {
-        dst.resumeEnergyEstimated = std::nullopt;
+        dst.resumeEnergyEstimated.reset();
     }
     if (!src["energyUnit"].isNull()) {
         dst.energyUnit = src["energyUnit"].as<decltype(dst.energyUnit)::value_type>();
     } else {
-        dst.energyUnit = std::nullopt;
+        dst.energyUnit.reset();
     }
     if (!src["resumeCostEstimated"].isNull()) {
         dst.resumeCostEstimated = src["resumeCostEstimated"].as<decltype(dst.resumeCostEstimated)::value_type>();
     } else {
-        dst.resumeCostEstimated = std::nullopt;
+        dst.resumeCostEstimated.reset();
     }
     if (!src["currency"].isNull()) {
         dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
     } else {
-        dst.currency = std::nullopt;
+        dst.currency.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsResumeImplicationDataElementsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
-    if (src.resumeEnergyEstimated) {
+    if (src.resumeEnergyEstimated.has_value()) {
         dst["resumeEnergyEstimated"] = *src.resumeEnergyEstimated;
     }
-    if (src.energyUnit) {
+    if (src.energyUnit.has_value()) {
         dst["energyUnit"] = *src.energyUnit;
     }
-    if (src.resumeCostEstimated) {
+    if (src.resumeCostEstimated.has_value()) {
         dst["resumeCostEstimated"] = *src.resumeCostEstimated;
     }
-    if (src.currency) {
+    if (src.currency.has_value()) {
         dst["currency"] = *src.currency;
     }
 
@@ -13621,34 +14020,37 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImpl
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
     if (!src["resumeEnergyEstimated"].isNull()) {
         dst.resumeEnergyEstimated = src["resumeEnergyEstimated"].as<decltype(dst.resumeEnergyEstimated)::value_type>();
     } else {
-        dst.resumeEnergyEstimated = std::nullopt;
+        dst.resumeEnergyEstimated.reset();
     }
     if (!src["energyUnit"].isNull()) {
         dst.energyUnit = src["energyUnit"].as<decltype(dst.energyUnit)::value_type>();
     } else {
-        dst.energyUnit = std::nullopt;
+        dst.energyUnit.reset();
     }
     if (!src["resumeCostEstimated"].isNull()) {
         dst.resumeCostEstimated = src["resumeCostEstimated"].as<decltype(dst.resumeCostEstimated)::value_type>();
     } else {
-        dst.resumeCostEstimated = std::nullopt;
+        dst.resumeCostEstimated.reset();
     }
     if (!src["currency"].isNull()) {
         dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
     } else {
-        dst.currency = std::nullopt;
+        dst.currency.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsResumeImplicationListDataType &src, JsonVariant &dst)
 {
-    if (src.operatingConstraintsResumeImplicationData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.operatingConstraintsResumeImplicationData.has_value()) {
         dst["operatingConstraintsResumeImplicationData"] = *src.operatingConstraintsResumeImplicationData;
     }
 
@@ -13661,14 +14063,17 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImpl
     if (!src["operatingConstraintsResumeImplicationData"].isNull()) {
         dst.operatingConstraintsResumeImplicationData = src["operatingConstraintsResumeImplicationData"].as<decltype(dst.operatingConstraintsResumeImplicationData)::value_type>();
     } else {
-        dst.operatingConstraintsResumeImplicationData = std::nullopt;
+        dst.operatingConstraintsResumeImplicationData.reset();
     }
 
 }
 
 bool convertToJson(const OperatingConstraintsResumeImplicationListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -13681,23 +14086,26 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImpl
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const BillValueType &src, JsonVariant &dst)
 {
-    if (src.valueId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.valueId.has_value()) {
         dst["valueId"] = *src.valueId;
     }
-    if (src.unit) {
+    if (src.unit.has_value()) {
         dst["unit"] = *src.unit;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
-    if (src.valuePercentage) {
+    if (src.valuePercentage.has_value()) {
         dst["valuePercentage"] = *src.valuePercentage;
     }
 
@@ -13710,38 +14118,41 @@ void convertFromJson(const JsonVariantConst &src, BillValueType &dst)
     if (!src["valueId"].isNull()) {
         dst.valueId = src["valueId"].as<decltype(dst.valueId)::value_type>();
     } else {
-        dst.valueId = std::nullopt;
+        dst.valueId.reset();
     }
     if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
-        dst.unit = std::nullopt;
+        dst.unit.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
     if (!src["valuePercentage"].isNull()) {
         dst.valuePercentage = src["valuePercentage"].as<decltype(dst.valuePercentage)::value_type>();
     } else {
-        dst.valuePercentage = std::nullopt;
+        dst.valuePercentage.reset();
     }
 
 }
 
 bool convertToJson(const BillValueElementsType &src, JsonVariant &dst)
 {
-    if (src.valueId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.valueId.has_value()) {
         dst["valueId"] = *src.valueId;
     }
-    if (src.unit) {
+    if (src.unit.has_value()) {
         dst["unit"] = *src.unit;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
-    if (src.valuePercentage) {
+    if (src.valuePercentage.has_value()) {
         dst["valuePercentage"] = *src.valuePercentage;
     }
 
@@ -13754,47 +14165,50 @@ void convertFromJson(const JsonVariantConst &src, BillValueElementsType &dst)
     if (!src["valueId"].isNull()) {
         dst.valueId = src["valueId"].as<decltype(dst.valueId)::value_type>();
     } else {
-        dst.valueId = std::nullopt;
+        dst.valueId.reset();
     }
     if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
-        dst.unit = std::nullopt;
+        dst.unit.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
     if (!src["valuePercentage"].isNull()) {
         dst.valuePercentage = src["valuePercentage"].as<decltype(dst.valuePercentage)::value_type>();
     } else {
-        dst.valuePercentage = std::nullopt;
+        dst.valuePercentage.reset();
     }
 
 }
 
 bool convertToJson(const BillCostType &src, JsonVariant &dst)
 {
-    if (src.costId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.costId.has_value()) {
         dst["costId"] = *src.costId;
     }
-    if (src.costType) {
+    if (src.costType.has_value()) {
         dst["costType"] = *src.costType;
     }
-    if (src.valueId) {
+    if (src.valueId.has_value()) {
         dst["valueId"] = *src.valueId;
     }
-    if (src.unit) {
+    if (src.unit.has_value()) {
         dst["unit"] = *src.unit;
     }
-    if (src.currency) {
+    if (src.currency.has_value()) {
         dst["currency"] = *src.currency;
     }
-    if (src.cost) {
+    if (src.cost.has_value()) {
         dst["cost"] = *src.cost;
     }
-    if (src.costPercentage) {
+    if (src.costPercentage.has_value()) {
         dst["costPercentage"] = *src.costPercentage;
     }
 
@@ -13807,62 +14221,65 @@ void convertFromJson(const JsonVariantConst &src, BillCostType &dst)
     if (!src["costId"].isNull()) {
         dst.costId = src["costId"].as<decltype(dst.costId)::value_type>();
     } else {
-        dst.costId = std::nullopt;
+        dst.costId.reset();
     }
     if (!src["costType"].isNull()) {
         dst.costType = src["costType"].as<decltype(dst.costType)::value_type>();
     } else {
-        dst.costType = std::nullopt;
+        dst.costType.reset();
     }
     if (!src["valueId"].isNull()) {
         dst.valueId = src["valueId"].as<decltype(dst.valueId)::value_type>();
     } else {
-        dst.valueId = std::nullopt;
+        dst.valueId.reset();
     }
     if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
-        dst.unit = std::nullopt;
+        dst.unit.reset();
     }
     if (!src["currency"].isNull()) {
         dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
     } else {
-        dst.currency = std::nullopt;
+        dst.currency.reset();
     }
     if (!src["cost"].isNull()) {
         dst.cost = src["cost"].as<decltype(dst.cost)::value_type>();
     } else {
-        dst.cost = std::nullopt;
+        dst.cost.reset();
     }
     if (!src["costPercentage"].isNull()) {
         dst.costPercentage = src["costPercentage"].as<decltype(dst.costPercentage)::value_type>();
     } else {
-        dst.costPercentage = std::nullopt;
+        dst.costPercentage.reset();
     }
 
 }
 
 bool convertToJson(const BillCostElementsType &src, JsonVariant &dst)
 {
-    if (src.costId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.costId.has_value()) {
         dst["costId"] = *src.costId;
     }
-    if (src.costType) {
+    if (src.costType.has_value()) {
         dst["costType"] = *src.costType;
     }
-    if (src.valueId) {
+    if (src.valueId.has_value()) {
         dst["valueId"] = *src.valueId;
     }
-    if (src.unit) {
+    if (src.unit.has_value()) {
         dst["unit"] = *src.unit;
     }
-    if (src.currency) {
+    if (src.currency.has_value()) {
         dst["currency"] = *src.currency;
     }
-    if (src.cost) {
+    if (src.cost.has_value()) {
         dst["cost"] = *src.cost;
     }
-    if (src.costPercentage) {
+    if (src.costPercentage.has_value()) {
         dst["costPercentage"] = *src.costPercentage;
     }
 
@@ -13875,62 +14292,65 @@ void convertFromJson(const JsonVariantConst &src, BillCostElementsType &dst)
     if (!src["costId"].isNull()) {
         dst.costId = src["costId"].as<decltype(dst.costId)::value_type>();
     } else {
-        dst.costId = std::nullopt;
+        dst.costId.reset();
     }
     if (!src["costType"].isNull()) {
         dst.costType = src["costType"].as<decltype(dst.costType)::value_type>();
     } else {
-        dst.costType = std::nullopt;
+        dst.costType.reset();
     }
     if (!src["valueId"].isNull()) {
         dst.valueId = src["valueId"].as<decltype(dst.valueId)::value_type>();
     } else {
-        dst.valueId = std::nullopt;
+        dst.valueId.reset();
     }
     if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
-        dst.unit = std::nullopt;
+        dst.unit.reset();
     }
     if (!src["currency"].isNull()) {
         dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
     } else {
-        dst.currency = std::nullopt;
+        dst.currency.reset();
     }
     if (!src["cost"].isNull()) {
         dst.cost = src["cost"].as<decltype(dst.cost)::value_type>();
     } else {
-        dst.cost = std::nullopt;
+        dst.cost.reset();
     }
     if (!src["costPercentage"].isNull()) {
         dst.costPercentage = src["costPercentage"].as<decltype(dst.costPercentage)::value_type>();
     } else {
-        dst.costPercentage = std::nullopt;
+        dst.costPercentage.reset();
     }
 
 }
 
 bool convertToJson(const BillPositionType &src, JsonVariant &dst)
 {
-    if (src.positionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.positionId.has_value()) {
         dst["positionId"] = *src.positionId;
     }
-    if (src.positionType) {
+    if (src.positionType.has_value()) {
         dst["positionType"] = *src.positionType;
     }
-    if (src.timePeriod) {
+    if (src.timePeriod.has_value()) {
         dst["timePeriod"] = *src.timePeriod;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
-    if (src.cost) {
+    if (src.cost.has_value()) {
         dst["cost"] = *src.cost;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -13943,62 +14363,65 @@ void convertFromJson(const JsonVariantConst &src, BillPositionType &dst)
     if (!src["positionId"].isNull()) {
         dst.positionId = src["positionId"].as<decltype(dst.positionId)::value_type>();
     } else {
-        dst.positionId = std::nullopt;
+        dst.positionId.reset();
     }
     if (!src["positionType"].isNull()) {
         dst.positionType = src["positionType"].as<decltype(dst.positionType)::value_type>();
     } else {
-        dst.positionType = std::nullopt;
+        dst.positionType.reset();
     }
     if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
-        dst.timePeriod = std::nullopt;
+        dst.timePeriod.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
     if (!src["cost"].isNull()) {
         dst.cost = src["cost"].as<decltype(dst.cost)::value_type>();
     } else {
-        dst.cost = std::nullopt;
+        dst.cost.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const BillPositionElementsType &src, JsonVariant &dst)
 {
-    if (src.positionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.positionId.has_value()) {
         dst["positionId"] = *src.positionId;
     }
-    if (src.positionType) {
+    if (src.positionType.has_value()) {
         dst["positionType"] = *src.positionType;
     }
-    if (src.timePeriod) {
+    if (src.timePeriod.has_value()) {
         dst["timePeriod"] = *src.timePeriod;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
-    if (src.cost) {
+    if (src.cost.has_value()) {
         dst["cost"] = *src.cost;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -14011,56 +14434,59 @@ void convertFromJson(const JsonVariantConst &src, BillPositionElementsType &dst)
     if (!src["positionId"].isNull()) {
         dst.positionId = src["positionId"].as<decltype(dst.positionId)::value_type>();
     } else {
-        dst.positionId = std::nullopt;
+        dst.positionId.reset();
     }
     if (!src["positionType"].isNull()) {
         dst.positionType = src["positionType"].as<decltype(dst.positionType)::value_type>();
     } else {
-        dst.positionType = std::nullopt;
+        dst.positionType.reset();
     }
     if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
-        dst.timePeriod = std::nullopt;
+        dst.timePeriod.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
     if (!src["cost"].isNull()) {
         dst.cost = src["cost"].as<decltype(dst.cost)::value_type>();
     } else {
-        dst.cost = std::nullopt;
+        dst.cost.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const BillDataType &src, JsonVariant &dst)
 {
-    if (src.billId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.billId.has_value()) {
         dst["billId"] = *src.billId;
     }
-    if (src.billType) {
+    if (src.billType.has_value()) {
         dst["billType"] = *src.billType;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
-    if (src.total) {
+    if (src.total.has_value()) {
         dst["total"] = *src.total;
     }
-    if (src.position) {
+    if (src.position.has_value()) {
         dst["position"] = *src.position;
     }
 
@@ -14073,46 +14499,49 @@ void convertFromJson(const JsonVariantConst &src, BillDataType &dst)
     if (!src["billId"].isNull()) {
         dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
     } else {
-        dst.billId = std::nullopt;
+        dst.billId.reset();
     }
     if (!src["billType"].isNull()) {
         dst.billType = src["billType"].as<decltype(dst.billType)::value_type>();
     } else {
-        dst.billType = std::nullopt;
+        dst.billType.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
     if (!src["total"].isNull()) {
         dst.total = src["total"].as<decltype(dst.total)::value_type>();
     } else {
-        dst.total = std::nullopt;
+        dst.total.reset();
     }
     if (!src["position"].isNull()) {
         dst.position = src["position"].as<decltype(dst.position)::value_type>();
     } else {
-        dst.position = std::nullopt;
+        dst.position.reset();
     }
 
 }
 
 bool convertToJson(const BillDataElementsType &src, JsonVariant &dst)
 {
-    if (src.billId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.billId.has_value()) {
         dst["billId"] = *src.billId;
     }
-    if (src.billType) {
+    if (src.billType.has_value()) {
         dst["billType"] = *src.billType;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
-    if (src.total) {
+    if (src.total.has_value()) {
         dst["total"] = *src.total;
     }
-    if (src.position) {
+    if (src.position.has_value()) {
         dst["position"] = *src.position;
     }
 
@@ -14125,34 +14554,37 @@ void convertFromJson(const JsonVariantConst &src, BillDataElementsType &dst)
     if (!src["billId"].isNull()) {
         dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
     } else {
-        dst.billId = std::nullopt;
+        dst.billId.reset();
     }
     if (!src["billType"].isNull()) {
         dst.billType = src["billType"].as<decltype(dst.billType)::value_type>();
     } else {
-        dst.billType = std::nullopt;
+        dst.billType.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
     if (!src["total"].isNull()) {
         dst.total = src["total"].as<decltype(dst.total)::value_type>();
     } else {
-        dst.total = std::nullopt;
+        dst.total.reset();
     }
     if (!src["position"].isNull()) {
         dst.position = src["position"].as<decltype(dst.position)::value_type>();
     } else {
-        dst.position = std::nullopt;
+        dst.position.reset();
     }
 
 }
 
 bool convertToJson(const BillListDataType &src, JsonVariant &dst)
 {
-    if (src.billData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.billData.has_value()) {
         dst["billData"] = *src.billData;
     }
 
@@ -14165,17 +14597,20 @@ void convertFromJson(const JsonVariantConst &src, BillListDataType &dst)
     if (!src["billData"].isNull()) {
         dst.billData = src["billData"].as<decltype(dst.billData)::value_type>();
     } else {
-        dst.billData = std::nullopt;
+        dst.billData.reset();
     }
 
 }
 
 bool convertToJson(const BillListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.billId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.billId.has_value()) {
         dst["billId"] = *src.billId;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
 
@@ -14188,25 +14623,28 @@ void convertFromJson(const JsonVariantConst &src, BillListDataSelectorsType &dst
     if (!src["billId"].isNull()) {
         dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
     } else {
-        dst.billId = std::nullopt;
+        dst.billId.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
 
 }
 
 bool convertToJson(const BillConstraintsDataType &src, JsonVariant &dst)
 {
-    if (src.billId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.billId.has_value()) {
         dst["billId"] = *src.billId;
     }
-    if (src.positionCountMin) {
+    if (src.positionCountMin.has_value()) {
         dst["positionCountMin"] = *src.positionCountMin;
     }
-    if (src.positionCountMax) {
+    if (src.positionCountMax.has_value()) {
         dst["positionCountMax"] = *src.positionCountMax;
     }
 
@@ -14219,30 +14657,33 @@ void convertFromJson(const JsonVariantConst &src, BillConstraintsDataType &dst)
     if (!src["billId"].isNull()) {
         dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
     } else {
-        dst.billId = std::nullopt;
+        dst.billId.reset();
     }
     if (!src["positionCountMin"].isNull()) {
         dst.positionCountMin = src["positionCountMin"].as<decltype(dst.positionCountMin)::value_type>();
     } else {
-        dst.positionCountMin = std::nullopt;
+        dst.positionCountMin.reset();
     }
     if (!src["positionCountMax"].isNull()) {
         dst.positionCountMax = src["positionCountMax"].as<decltype(dst.positionCountMax)::value_type>();
     } else {
-        dst.positionCountMax = std::nullopt;
+        dst.positionCountMax.reset();
     }
 
 }
 
 bool convertToJson(const BillConstraintsDataElementsType &src, JsonVariant &dst)
 {
-    if (src.billId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.billId.has_value()) {
         dst["billId"] = *src.billId;
     }
-    if (src.positionCountMin) {
+    if (src.positionCountMin.has_value()) {
         dst["positionCountMin"] = *src.positionCountMin;
     }
-    if (src.positionCountMax) {
+    if (src.positionCountMax.has_value()) {
         dst["positionCountMax"] = *src.positionCountMax;
     }
 
@@ -14255,24 +14696,27 @@ void convertFromJson(const JsonVariantConst &src, BillConstraintsDataElementsTyp
     if (!src["billId"].isNull()) {
         dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
     } else {
-        dst.billId = std::nullopt;
+        dst.billId.reset();
     }
     if (!src["positionCountMin"].isNull()) {
         dst.positionCountMin = src["positionCountMin"].as<decltype(dst.positionCountMin)::value_type>();
     } else {
-        dst.positionCountMin = std::nullopt;
+        dst.positionCountMin.reset();
     }
     if (!src["positionCountMax"].isNull()) {
         dst.positionCountMax = src["positionCountMax"].as<decltype(dst.positionCountMax)::value_type>();
     } else {
-        dst.positionCountMax = std::nullopt;
+        dst.positionCountMax.reset();
     }
 
 }
 
 bool convertToJson(const BillConstraintsListDataType &src, JsonVariant &dst)
 {
-    if (src.billConstraintsData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.billConstraintsData.has_value()) {
         dst["billConstraintsData"] = *src.billConstraintsData;
     }
 
@@ -14285,14 +14729,17 @@ void convertFromJson(const JsonVariantConst &src, BillConstraintsListDataType &d
     if (!src["billConstraintsData"].isNull()) {
         dst.billConstraintsData = src["billConstraintsData"].as<decltype(dst.billConstraintsData)::value_type>();
     } else {
-        dst.billConstraintsData = std::nullopt;
+        dst.billConstraintsData.reset();
     }
 
 }
 
 bool convertToJson(const BillConstraintsListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.billId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.billId.has_value()) {
         dst["billId"] = *src.billId;
     }
 
@@ -14305,26 +14752,29 @@ void convertFromJson(const JsonVariantConst &src, BillConstraintsListDataSelecto
     if (!src["billId"].isNull()) {
         dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
     } else {
-        dst.billId = std::nullopt;
+        dst.billId.reset();
     }
 
 }
 
 bool convertToJson(const BillDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.billId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.billId.has_value()) {
         dst["billId"] = *src.billId;
     }
-    if (src.billWriteable) {
+    if (src.billWriteable.has_value()) {
         dst["billWriteable"] = *src.billWriteable;
     }
-    if (src.updateRequired) {
+    if (src.updateRequired.has_value()) {
         dst["updateRequired"] = *src.updateRequired;
     }
-    if (src.supportedBillType) {
+    if (src.supportedBillType.has_value()) {
         dst["supportedBillType"] = *src.supportedBillType;
     }
-    if (src.sessionId) {
+    if (src.sessionId.has_value()) {
         dst["sessionId"] = *src.sessionId;
     }
 
@@ -14337,46 +14787,49 @@ void convertFromJson(const JsonVariantConst &src, BillDescriptionDataType &dst)
     if (!src["billId"].isNull()) {
         dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
     } else {
-        dst.billId = std::nullopt;
+        dst.billId.reset();
     }
     if (!src["billWriteable"].isNull()) {
         dst.billWriteable = src["billWriteable"].as<decltype(dst.billWriteable)::value_type>();
     } else {
-        dst.billWriteable = std::nullopt;
+        dst.billWriteable.reset();
     }
     if (!src["updateRequired"].isNull()) {
         dst.updateRequired = src["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
     } else {
-        dst.updateRequired = std::nullopt;
+        dst.updateRequired.reset();
     }
     if (!src["supportedBillType"].isNull()) {
         dst.supportedBillType = src["supportedBillType"].as<decltype(dst.supportedBillType)::value_type>();
     } else {
-        dst.supportedBillType = std::nullopt;
+        dst.supportedBillType.reset();
     }
     if (!src["sessionId"].isNull()) {
         dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
     } else {
-        dst.sessionId = std::nullopt;
+        dst.sessionId.reset();
     }
 
 }
 
 bool convertToJson(const BillDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.billId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.billId.has_value()) {
         dst["billId"] = *src.billId;
     }
-    if (src.billWriteable) {
+    if (src.billWriteable.has_value()) {
         dst["billWriteable"] = *src.billWriteable;
     }
-    if (src.updateRequired) {
+    if (src.updateRequired.has_value()) {
         dst["updateRequired"] = *src.updateRequired;
     }
-    if (src.supportedBillType) {
+    if (src.supportedBillType.has_value()) {
         dst["supportedBillType"] = *src.supportedBillType;
     }
-    if (src.sessionId) {
+    if (src.sessionId.has_value()) {
         dst["sessionId"] = *src.sessionId;
     }
 
@@ -14389,34 +14842,37 @@ void convertFromJson(const JsonVariantConst &src, BillDescriptionDataElementsTyp
     if (!src["billId"].isNull()) {
         dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
     } else {
-        dst.billId = std::nullopt;
+        dst.billId.reset();
     }
     if (!src["billWriteable"].isNull()) {
         dst.billWriteable = src["billWriteable"].as<decltype(dst.billWriteable)::value_type>();
     } else {
-        dst.billWriteable = std::nullopt;
+        dst.billWriteable.reset();
     }
     if (!src["updateRequired"].isNull()) {
         dst.updateRequired = src["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
     } else {
-        dst.updateRequired = std::nullopt;
+        dst.updateRequired.reset();
     }
     if (!src["supportedBillType"].isNull()) {
         dst.supportedBillType = src["supportedBillType"].as<decltype(dst.supportedBillType)::value_type>();
     } else {
-        dst.supportedBillType = std::nullopt;
+        dst.supportedBillType.reset();
     }
     if (!src["sessionId"].isNull()) {
         dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
     } else {
-        dst.sessionId = std::nullopt;
+        dst.sessionId.reset();
     }
 
 }
 
 bool convertToJson(const BillDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.billDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.billDescriptionData.has_value()) {
         dst["billDescriptionData"] = *src.billDescriptionData;
     }
 
@@ -14429,14 +14885,17 @@ void convertFromJson(const JsonVariantConst &src, BillDescriptionListDataType &d
     if (!src["billDescriptionData"].isNull()) {
         dst.billDescriptionData = src["billDescriptionData"].as<decltype(dst.billDescriptionData)::value_type>();
     } else {
-        dst.billDescriptionData = std::nullopt;
+        dst.billDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const BillDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.billId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.billId.has_value()) {
         dst["billId"] = *src.billId;
     }
 
@@ -14449,23 +14908,26 @@ void convertFromJson(const JsonVariantConst &src, BillDescriptionListDataSelecto
     if (!src["billId"].isNull()) {
         dst.billId = src["billId"].as<decltype(dst.billId)::value_type>();
     } else {
-        dst.billId = std::nullopt;
+        dst.billId.reset();
     }
 
 }
 
 bool convertToJson(const IdentificationDataType &src, JsonVariant &dst)
 {
-    if (src.identificationId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.identificationId.has_value()) {
         dst["identificationId"] = *src.identificationId;
     }
-    if (src.identificationType) {
+    if (src.identificationType.has_value()) {
         dst["identificationType"] = *src.identificationType;
     }
-    if (src.identificationValue) {
+    if (src.identificationValue.has_value()) {
         dst["identificationValue"] = *src.identificationValue;
     }
-    if (src.authorized) {
+    if (src.authorized.has_value()) {
         dst["authorized"] = *src.authorized;
     }
 
@@ -14478,38 +14940,41 @@ void convertFromJson(const JsonVariantConst &src, IdentificationDataType &dst)
     if (!src["identificationId"].isNull()) {
         dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
     } else {
-        dst.identificationId = std::nullopt;
+        dst.identificationId.reset();
     }
     if (!src["identificationType"].isNull()) {
         dst.identificationType = src["identificationType"].as<decltype(dst.identificationType)::value_type>();
     } else {
-        dst.identificationType = std::nullopt;
+        dst.identificationType.reset();
     }
     if (!src["identificationValue"].isNull()) {
         dst.identificationValue = src["identificationValue"].as<decltype(dst.identificationValue)::value_type>();
     } else {
-        dst.identificationValue = std::nullopt;
+        dst.identificationValue.reset();
     }
     if (!src["authorized"].isNull()) {
         dst.authorized = src["authorized"].as<decltype(dst.authorized)::value_type>();
     } else {
-        dst.authorized = std::nullopt;
+        dst.authorized.reset();
     }
 
 }
 
 bool convertToJson(const IdentificationDataElementsType &src, JsonVariant &dst)
 {
-    if (src.identificationId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.identificationId.has_value()) {
         dst["identificationId"] = *src.identificationId;
     }
-    if (src.identificationType) {
+    if (src.identificationType.has_value()) {
         dst["identificationType"] = *src.identificationType;
     }
-    if (src.identificationValue) {
+    if (src.identificationValue.has_value()) {
         dst["identificationValue"] = *src.identificationValue;
     }
-    if (src.authorized) {
+    if (src.authorized.has_value()) {
         dst["authorized"] = *src.authorized;
     }
 
@@ -14522,29 +14987,32 @@ void convertFromJson(const JsonVariantConst &src, IdentificationDataElementsType
     if (!src["identificationId"].isNull()) {
         dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
     } else {
-        dst.identificationId = std::nullopt;
+        dst.identificationId.reset();
     }
     if (!src["identificationType"].isNull()) {
         dst.identificationType = src["identificationType"].as<decltype(dst.identificationType)::value_type>();
     } else {
-        dst.identificationType = std::nullopt;
+        dst.identificationType.reset();
     }
     if (!src["identificationValue"].isNull()) {
         dst.identificationValue = src["identificationValue"].as<decltype(dst.identificationValue)::value_type>();
     } else {
-        dst.identificationValue = std::nullopt;
+        dst.identificationValue.reset();
     }
     if (!src["authorized"].isNull()) {
         dst.authorized = src["authorized"].as<decltype(dst.authorized)::value_type>();
     } else {
-        dst.authorized = std::nullopt;
+        dst.authorized.reset();
     }
 
 }
 
 bool convertToJson(const IdentificationListDataType &src, JsonVariant &dst)
 {
-    if (src.identificationData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.identificationData.has_value()) {
         dst["identificationData"] = *src.identificationData;
     }
 
@@ -14557,17 +15025,20 @@ void convertFromJson(const JsonVariantConst &src, IdentificationListDataType &ds
     if (!src["identificationData"].isNull()) {
         dst.identificationData = src["identificationData"].as<decltype(dst.identificationData)::value_type>();
     } else {
-        dst.identificationData = std::nullopt;
+        dst.identificationData.reset();
     }
 
 }
 
 bool convertToJson(const IdentificationListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.identificationId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.identificationId.has_value()) {
         dst["identificationId"] = *src.identificationId;
     }
-    if (src.identificationType) {
+    if (src.identificationType.has_value()) {
         dst["identificationType"] = *src.identificationType;
     }
 
@@ -14580,28 +15051,31 @@ void convertFromJson(const JsonVariantConst &src, IdentificationListDataSelector
     if (!src["identificationId"].isNull()) {
         dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
     } else {
-        dst.identificationId = std::nullopt;
+        dst.identificationId.reset();
     }
     if (!src["identificationType"].isNull()) {
         dst.identificationType = src["identificationType"].as<decltype(dst.identificationType)::value_type>();
     } else {
-        dst.identificationType = std::nullopt;
+        dst.identificationType.reset();
     }
 
 }
 
 bool convertToJson(const SessionIdentificationDataType &src, JsonVariant &dst)
 {
-    if (src.sessionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sessionId.has_value()) {
         dst["sessionId"] = *src.sessionId;
     }
-    if (src.identificationId) {
+    if (src.identificationId.has_value()) {
         dst["identificationId"] = *src.identificationId;
     }
-    if (src.isLatestSession) {
+    if (src.isLatestSession.has_value()) {
         dst["isLatestSession"] = *src.isLatestSession;
     }
-    if (src.timePeriod) {
+    if (src.timePeriod.has_value()) {
         dst["timePeriod"] = *src.timePeriod;
     }
 
@@ -14614,38 +15088,41 @@ void convertFromJson(const JsonVariantConst &src, SessionIdentificationDataType 
     if (!src["sessionId"].isNull()) {
         dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
     } else {
-        dst.sessionId = std::nullopt;
+        dst.sessionId.reset();
     }
     if (!src["identificationId"].isNull()) {
         dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
     } else {
-        dst.identificationId = std::nullopt;
+        dst.identificationId.reset();
     }
     if (!src["isLatestSession"].isNull()) {
         dst.isLatestSession = src["isLatestSession"].as<decltype(dst.isLatestSession)::value_type>();
     } else {
-        dst.isLatestSession = std::nullopt;
+        dst.isLatestSession.reset();
     }
     if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
-        dst.timePeriod = std::nullopt;
+        dst.timePeriod.reset();
     }
 
 }
 
 bool convertToJson(const SessionIdentificationDataElementsType &src, JsonVariant &dst)
 {
-    if (src.sessionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sessionId.has_value()) {
         dst["sessionId"] = *src.sessionId;
     }
-    if (src.identificationId) {
+    if (src.identificationId.has_value()) {
         dst["identificationId"] = *src.identificationId;
     }
-    if (src.isLatestSession) {
+    if (src.isLatestSession.has_value()) {
         dst["isLatestSession"] = *src.isLatestSession;
     }
-    if (src.timePeriod) {
+    if (src.timePeriod.has_value()) {
         dst["timePeriod"] = *src.timePeriod;
     }
 
@@ -14658,29 +15135,32 @@ void convertFromJson(const JsonVariantConst &src, SessionIdentificationDataEleme
     if (!src["sessionId"].isNull()) {
         dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
     } else {
-        dst.sessionId = std::nullopt;
+        dst.sessionId.reset();
     }
     if (!src["identificationId"].isNull()) {
         dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
     } else {
-        dst.identificationId = std::nullopt;
+        dst.identificationId.reset();
     }
     if (!src["isLatestSession"].isNull()) {
         dst.isLatestSession = src["isLatestSession"].as<decltype(dst.isLatestSession)::value_type>();
     } else {
-        dst.isLatestSession = std::nullopt;
+        dst.isLatestSession.reset();
     }
     if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
-        dst.timePeriod = std::nullopt;
+        dst.timePeriod.reset();
     }
 
 }
 
 bool convertToJson(const SessionIdentificationListDataType &src, JsonVariant &dst)
 {
-    if (src.sessionIdentificationData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sessionIdentificationData.has_value()) {
         dst["sessionIdentificationData"] = *src.sessionIdentificationData;
     }
 
@@ -14693,23 +15173,26 @@ void convertFromJson(const JsonVariantConst &src, SessionIdentificationListDataT
     if (!src["sessionIdentificationData"].isNull()) {
         dst.sessionIdentificationData = src["sessionIdentificationData"].as<decltype(dst.sessionIdentificationData)::value_type>();
     } else {
-        dst.sessionIdentificationData = std::nullopt;
+        dst.sessionIdentificationData.reset();
     }
 
 }
 
 bool convertToJson(const SessionIdentificationListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.sessionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sessionId.has_value()) {
         dst["sessionId"] = *src.sessionId;
     }
-    if (src.identificationId) {
+    if (src.identificationId.has_value()) {
         dst["identificationId"] = *src.identificationId;
     }
-    if (src.isLatestSession) {
+    if (src.isLatestSession.has_value()) {
         dst["isLatestSession"] = *src.isLatestSession;
     }
-    if (src.timePeriod) {
+    if (src.timePeriod.has_value()) {
         dst["timePeriod"] = *src.timePeriod;
     }
 
@@ -14722,32 +15205,35 @@ void convertFromJson(const JsonVariantConst &src, SessionIdentificationListDataS
     if (!src["sessionId"].isNull()) {
         dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
     } else {
-        dst.sessionId = std::nullopt;
+        dst.sessionId.reset();
     }
     if (!src["identificationId"].isNull()) {
         dst.identificationId = src["identificationId"].as<decltype(dst.identificationId)::value_type>();
     } else {
-        dst.identificationId = std::nullopt;
+        dst.identificationId.reset();
     }
     if (!src["isLatestSession"].isNull()) {
         dst.isLatestSession = src["isLatestSession"].as<decltype(dst.isLatestSession)::value_type>();
     } else {
-        dst.isLatestSession = std::nullopt;
+        dst.isLatestSession.reset();
     }
     if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
-        dst.timePeriod = std::nullopt;
+        dst.timePeriod.reset();
     }
 
 }
 
 bool convertToJson(const SessionMeasurementRelationDataType &src, JsonVariant &dst)
 {
-    if (src.sessionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sessionId.has_value()) {
         dst["sessionId"] = *src.sessionId;
     }
-    if (src.measurementId) {
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
 
@@ -14760,22 +15246,25 @@ void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationData
     if (!src["sessionId"].isNull()) {
         dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
     } else {
-        dst.sessionId = std::nullopt;
+        dst.sessionId.reset();
     }
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
 
 }
 
 bool convertToJson(const SessionMeasurementRelationDataElementsType &src, JsonVariant &dst)
 {
-    if (src.sessionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sessionId.has_value()) {
         dst["sessionId"] = *src.sessionId;
     }
-    if (src.measurementId) {
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
 
@@ -14788,19 +15277,22 @@ void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationData
     if (!src["sessionId"].isNull()) {
         dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
     } else {
-        dst.sessionId = std::nullopt;
+        dst.sessionId.reset();
     }
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
 
 }
 
 bool convertToJson(const SessionMeasurementRelationListDataType &src, JsonVariant &dst)
 {
-    if (src.sessionMeasurementRelationData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sessionMeasurementRelationData.has_value()) {
         dst["sessionMeasurementRelationData"] = *src.sessionMeasurementRelationData;
     }
 
@@ -14813,17 +15305,20 @@ void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationList
     if (!src["sessionMeasurementRelationData"].isNull()) {
         dst.sessionMeasurementRelationData = src["sessionMeasurementRelationData"].as<decltype(dst.sessionMeasurementRelationData)::value_type>();
     } else {
-        dst.sessionMeasurementRelationData = std::nullopt;
+        dst.sessionMeasurementRelationData.reset();
     }
 
 }
 
 bool convertToJson(const SessionMeasurementRelationListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.sessionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sessionId.has_value()) {
         dst["sessionId"] = *src.sessionId;
     }
-    if (src.measurementId) {
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
 
@@ -14836,43 +15331,46 @@ void convertFromJson(const JsonVariantConst &src, SessionMeasurementRelationList
     if (!src["sessionId"].isNull()) {
         dst.sessionId = src["sessionId"].as<decltype(dst.sessionId)::value_type>();
     } else {
-        dst.sessionId = std::nullopt;
+        dst.sessionId.reset();
     }
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
 
 }
 
 bool convertToJson(const SetpointDataType &src, JsonVariant &dst)
 {
-    if (src.setpointId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.setpointId.has_value()) {
         dst["setpointId"] = *src.setpointId;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
-    if (src.valueMin) {
+    if (src.valueMin.has_value()) {
         dst["valueMin"] = *src.valueMin;
     }
-    if (src.valueMax) {
+    if (src.valueMax.has_value()) {
         dst["valueMax"] = *src.valueMax;
     }
-    if (src.valueToleranceAbsolute) {
+    if (src.valueToleranceAbsolute.has_value()) {
         dst["valueToleranceAbsolute"] = *src.valueToleranceAbsolute;
     }
-    if (src.valueTolerancePercentage) {
+    if (src.valueTolerancePercentage.has_value()) {
         dst["valueTolerancePercentage"] = *src.valueTolerancePercentage;
     }
-    if (src.isSetpointChangeable) {
+    if (src.isSetpointChangeable.has_value()) {
         dst["isSetpointChangeable"] = *src.isSetpointChangeable;
     }
-    if (src.isSetpointActive) {
+    if (src.isSetpointActive.has_value()) {
         dst["isSetpointActive"] = *src.isSetpointActive;
     }
-    if (src.timePeriod) {
+    if (src.timePeriod.has_value()) {
         dst["timePeriod"] = *src.timePeriod;
     }
 
@@ -14885,78 +15383,81 @@ void convertFromJson(const JsonVariantConst &src, SetpointDataType &dst)
     if (!src["setpointId"].isNull()) {
         dst.setpointId = src["setpointId"].as<decltype(dst.setpointId)::value_type>();
     } else {
-        dst.setpointId = std::nullopt;
+        dst.setpointId.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
     if (!src["valueMin"].isNull()) {
         dst.valueMin = src["valueMin"].as<decltype(dst.valueMin)::value_type>();
     } else {
-        dst.valueMin = std::nullopt;
+        dst.valueMin.reset();
     }
     if (!src["valueMax"].isNull()) {
         dst.valueMax = src["valueMax"].as<decltype(dst.valueMax)::value_type>();
     } else {
-        dst.valueMax = std::nullopt;
+        dst.valueMax.reset();
     }
     if (!src["valueToleranceAbsolute"].isNull()) {
         dst.valueToleranceAbsolute = src["valueToleranceAbsolute"].as<decltype(dst.valueToleranceAbsolute)::value_type>();
     } else {
-        dst.valueToleranceAbsolute = std::nullopt;
+        dst.valueToleranceAbsolute.reset();
     }
     if (!src["valueTolerancePercentage"].isNull()) {
         dst.valueTolerancePercentage = src["valueTolerancePercentage"].as<decltype(dst.valueTolerancePercentage)::value_type>();
     } else {
-        dst.valueTolerancePercentage = std::nullopt;
+        dst.valueTolerancePercentage.reset();
     }
     if (!src["isSetpointChangeable"].isNull()) {
         dst.isSetpointChangeable = src["isSetpointChangeable"].as<decltype(dst.isSetpointChangeable)::value_type>();
     } else {
-        dst.isSetpointChangeable = std::nullopt;
+        dst.isSetpointChangeable.reset();
     }
     if (!src["isSetpointActive"].isNull()) {
         dst.isSetpointActive = src["isSetpointActive"].as<decltype(dst.isSetpointActive)::value_type>();
     } else {
-        dst.isSetpointActive = std::nullopt;
+        dst.isSetpointActive.reset();
     }
     if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
-        dst.timePeriod = std::nullopt;
+        dst.timePeriod.reset();
     }
 
 }
 
 bool convertToJson(const SetpointDataElementsType &src, JsonVariant &dst)
 {
-    if (src.setpointId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.setpointId.has_value()) {
         dst["setpointId"] = *src.setpointId;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
-    if (src.valueMin) {
+    if (src.valueMin.has_value()) {
         dst["valueMin"] = *src.valueMin;
     }
-    if (src.valueMax) {
+    if (src.valueMax.has_value()) {
         dst["valueMax"] = *src.valueMax;
     }
-    if (src.valueToleranceAbsolute) {
+    if (src.valueToleranceAbsolute.has_value()) {
         dst["valueToleranceAbsolute"] = *src.valueToleranceAbsolute;
     }
-    if (src.valueTolerancePercentage) {
+    if (src.valueTolerancePercentage.has_value()) {
         dst["valueTolerancePercentage"] = *src.valueTolerancePercentage;
     }
-    if (src.isSetpointChangeable) {
+    if (src.isSetpointChangeable.has_value()) {
         dst["isSetpointChangeable"] = *src.isSetpointChangeable;
     }
-    if (src.isSetpointActive) {
+    if (src.isSetpointActive.has_value()) {
         dst["isSetpointActive"] = *src.isSetpointActive;
     }
-    if (src.timePeriod) {
+    if (src.timePeriod.has_value()) {
         dst["timePeriod"] = *src.timePeriod;
     }
 
@@ -14969,54 +15470,57 @@ void convertFromJson(const JsonVariantConst &src, SetpointDataElementsType &dst)
     if (!src["setpointId"].isNull()) {
         dst.setpointId = src["setpointId"].as<decltype(dst.setpointId)::value_type>();
     } else {
-        dst.setpointId = std::nullopt;
+        dst.setpointId.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
     if (!src["valueMin"].isNull()) {
         dst.valueMin = src["valueMin"].as<decltype(dst.valueMin)::value_type>();
     } else {
-        dst.valueMin = std::nullopt;
+        dst.valueMin.reset();
     }
     if (!src["valueMax"].isNull()) {
         dst.valueMax = src["valueMax"].as<decltype(dst.valueMax)::value_type>();
     } else {
-        dst.valueMax = std::nullopt;
+        dst.valueMax.reset();
     }
     if (!src["valueToleranceAbsolute"].isNull()) {
         dst.valueToleranceAbsolute = src["valueToleranceAbsolute"].as<decltype(dst.valueToleranceAbsolute)::value_type>();
     } else {
-        dst.valueToleranceAbsolute = std::nullopt;
+        dst.valueToleranceAbsolute.reset();
     }
     if (!src["valueTolerancePercentage"].isNull()) {
         dst.valueTolerancePercentage = src["valueTolerancePercentage"].as<decltype(dst.valueTolerancePercentage)::value_type>();
     } else {
-        dst.valueTolerancePercentage = std::nullopt;
+        dst.valueTolerancePercentage.reset();
     }
     if (!src["isSetpointChangeable"].isNull()) {
         dst.isSetpointChangeable = src["isSetpointChangeable"].as<decltype(dst.isSetpointChangeable)::value_type>();
     } else {
-        dst.isSetpointChangeable = std::nullopt;
+        dst.isSetpointChangeable.reset();
     }
     if (!src["isSetpointActive"].isNull()) {
         dst.isSetpointActive = src["isSetpointActive"].as<decltype(dst.isSetpointActive)::value_type>();
     } else {
-        dst.isSetpointActive = std::nullopt;
+        dst.isSetpointActive.reset();
     }
     if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
-        dst.timePeriod = std::nullopt;
+        dst.timePeriod.reset();
     }
 
 }
 
 bool convertToJson(const SetpointListDataType &src, JsonVariant &dst)
 {
-    if (src.setpointData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.setpointData.has_value()) {
         dst["setpointData"] = *src.setpointData;
     }
 
@@ -15029,14 +15533,17 @@ void convertFromJson(const JsonVariantConst &src, SetpointListDataType &dst)
     if (!src["setpointData"].isNull()) {
         dst.setpointData = src["setpointData"].as<decltype(dst.setpointData)::value_type>();
     } else {
-        dst.setpointData = std::nullopt;
+        dst.setpointData.reset();
     }
 
 }
 
 bool convertToJson(const SetpointListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.setpointId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.setpointId.has_value()) {
         dst["setpointId"] = *src.setpointId;
     }
 
@@ -15049,23 +15556,26 @@ void convertFromJson(const JsonVariantConst &src, SetpointListDataSelectorsType 
     if (!src["setpointId"].isNull()) {
         dst.setpointId = src["setpointId"].as<decltype(dst.setpointId)::value_type>();
     } else {
-        dst.setpointId = std::nullopt;
+        dst.setpointId.reset();
     }
 
 }
 
 bool convertToJson(const SetpointConstraintsDataType &src, JsonVariant &dst)
 {
-    if (src.setpointId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.setpointId.has_value()) {
         dst["setpointId"] = *src.setpointId;
     }
-    if (src.setpointRangeMin) {
+    if (src.setpointRangeMin.has_value()) {
         dst["setpointRangeMin"] = *src.setpointRangeMin;
     }
-    if (src.setpointRangeMax) {
+    if (src.setpointRangeMax.has_value()) {
         dst["setpointRangeMax"] = *src.setpointRangeMax;
     }
-    if (src.setpointStepSize) {
+    if (src.setpointStepSize.has_value()) {
         dst["setpointStepSize"] = *src.setpointStepSize;
     }
 
@@ -15078,38 +15588,41 @@ void convertFromJson(const JsonVariantConst &src, SetpointConstraintsDataType &d
     if (!src["setpointId"].isNull()) {
         dst.setpointId = src["setpointId"].as<decltype(dst.setpointId)::value_type>();
     } else {
-        dst.setpointId = std::nullopt;
+        dst.setpointId.reset();
     }
     if (!src["setpointRangeMin"].isNull()) {
         dst.setpointRangeMin = src["setpointRangeMin"].as<decltype(dst.setpointRangeMin)::value_type>();
     } else {
-        dst.setpointRangeMin = std::nullopt;
+        dst.setpointRangeMin.reset();
     }
     if (!src["setpointRangeMax"].isNull()) {
         dst.setpointRangeMax = src["setpointRangeMax"].as<decltype(dst.setpointRangeMax)::value_type>();
     } else {
-        dst.setpointRangeMax = std::nullopt;
+        dst.setpointRangeMax.reset();
     }
     if (!src["setpointStepSize"].isNull()) {
         dst.setpointStepSize = src["setpointStepSize"].as<decltype(dst.setpointStepSize)::value_type>();
     } else {
-        dst.setpointStepSize = std::nullopt;
+        dst.setpointStepSize.reset();
     }
 
 }
 
 bool convertToJson(const SetpointConstraintsDataElementsType &src, JsonVariant &dst)
 {
-    if (src.setpointId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.setpointId.has_value()) {
         dst["setpointId"] = *src.setpointId;
     }
-    if (src.setpointRangeMin) {
+    if (src.setpointRangeMin.has_value()) {
         dst["setpointRangeMin"] = *src.setpointRangeMin;
     }
-    if (src.setpointRangeMax) {
+    if (src.setpointRangeMax.has_value()) {
         dst["setpointRangeMax"] = *src.setpointRangeMax;
     }
-    if (src.setpointStepSize) {
+    if (src.setpointStepSize.has_value()) {
         dst["setpointStepSize"] = *src.setpointStepSize;
     }
 
@@ -15122,29 +15635,32 @@ void convertFromJson(const JsonVariantConst &src, SetpointConstraintsDataElement
     if (!src["setpointId"].isNull()) {
         dst.setpointId = src["setpointId"].as<decltype(dst.setpointId)::value_type>();
     } else {
-        dst.setpointId = std::nullopt;
+        dst.setpointId.reset();
     }
     if (!src["setpointRangeMin"].isNull()) {
         dst.setpointRangeMin = src["setpointRangeMin"].as<decltype(dst.setpointRangeMin)::value_type>();
     } else {
-        dst.setpointRangeMin = std::nullopt;
+        dst.setpointRangeMin.reset();
     }
     if (!src["setpointRangeMax"].isNull()) {
         dst.setpointRangeMax = src["setpointRangeMax"].as<decltype(dst.setpointRangeMax)::value_type>();
     } else {
-        dst.setpointRangeMax = std::nullopt;
+        dst.setpointRangeMax.reset();
     }
     if (!src["setpointStepSize"].isNull()) {
         dst.setpointStepSize = src["setpointStepSize"].as<decltype(dst.setpointStepSize)::value_type>();
     } else {
-        dst.setpointStepSize = std::nullopt;
+        dst.setpointStepSize.reset();
     }
 
 }
 
 bool convertToJson(const SetpointConstraintsListDataType &src, JsonVariant &dst)
 {
-    if (src.setpointConstraintsData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.setpointConstraintsData.has_value()) {
         dst["setpointConstraintsData"] = *src.setpointConstraintsData;
     }
 
@@ -15157,14 +15673,17 @@ void convertFromJson(const JsonVariantConst &src, SetpointConstraintsListDataTyp
     if (!src["setpointConstraintsData"].isNull()) {
         dst.setpointConstraintsData = src["setpointConstraintsData"].as<decltype(dst.setpointConstraintsData)::value_type>();
     } else {
-        dst.setpointConstraintsData = std::nullopt;
+        dst.setpointConstraintsData.reset();
     }
 
 }
 
 bool convertToJson(const SetpointConstraintsListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.setpointId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.setpointId.has_value()) {
         dst["setpointId"] = *src.setpointId;
     }
 
@@ -15177,35 +15696,38 @@ void convertFromJson(const JsonVariantConst &src, SetpointConstraintsListDataSel
     if (!src["setpointId"].isNull()) {
         dst.setpointId = src["setpointId"].as<decltype(dst.setpointId)::value_type>();
     } else {
-        dst.setpointId = std::nullopt;
+        dst.setpointId.reset();
     }
 
 }
 
 bool convertToJson(const SetpointDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.setpointId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.setpointId.has_value()) {
         dst["setpointId"] = *src.setpointId;
     }
-    if (src.measurementId) {
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.timeTableId) {
+    if (src.timeTableId.has_value()) {
         dst["timeTableId"] = *src.timeTableId;
     }
-    if (src.setpointType) {
+    if (src.setpointType.has_value()) {
         dst["setpointType"] = *src.setpointType;
     }
-    if (src.unit) {
+    if (src.unit.has_value()) {
         dst["unit"] = *src.unit;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -15218,70 +15740,73 @@ void convertFromJson(const JsonVariantConst &src, SetpointDescriptionDataType &d
     if (!src["setpointId"].isNull()) {
         dst.setpointId = src["setpointId"].as<decltype(dst.setpointId)::value_type>();
     } else {
-        dst.setpointId = std::nullopt;
+        dst.setpointId.reset();
     }
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
-        dst.timeTableId = std::nullopt;
+        dst.timeTableId.reset();
     }
     if (!src["setpointType"].isNull()) {
         dst.setpointType = src["setpointType"].as<decltype(dst.setpointType)::value_type>();
     } else {
-        dst.setpointType = std::nullopt;
+        dst.setpointType.reset();
     }
     if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
-        dst.unit = std::nullopt;
+        dst.unit.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const SetpointDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.setpointId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.setpointId.has_value()) {
         dst["setpointId"] = *src.setpointId;
     }
-    if (src.measurementId) {
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.timeTableId) {
+    if (src.timeTableId.has_value()) {
         dst["timeTableId"] = *src.timeTableId;
     }
-    if (src.setpointType) {
+    if (src.setpointType.has_value()) {
         dst["setpointType"] = *src.setpointType;
     }
-    if (src.unit) {
+    if (src.unit.has_value()) {
         dst["unit"] = *src.unit;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -15294,49 +15819,52 @@ void convertFromJson(const JsonVariantConst &src, SetpointDescriptionDataElement
     if (!src["setpointId"].isNull()) {
         dst.setpointId = src["setpointId"].as<decltype(dst.setpointId)::value_type>();
     } else {
-        dst.setpointId = std::nullopt;
+        dst.setpointId.reset();
     }
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
-        dst.timeTableId = std::nullopt;
+        dst.timeTableId.reset();
     }
     if (!src["setpointType"].isNull()) {
         dst.setpointType = src["setpointType"].as<decltype(dst.setpointType)::value_type>();
     } else {
-        dst.setpointType = std::nullopt;
+        dst.setpointType.reset();
     }
     if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
-        dst.unit = std::nullopt;
+        dst.unit.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const SetpointDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.setpointDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.setpointDescriptionData.has_value()) {
         dst["setpointDescriptionData"] = *src.setpointDescriptionData;
     }
 
@@ -15349,26 +15877,29 @@ void convertFromJson(const JsonVariantConst &src, SetpointDescriptionListDataTyp
     if (!src["setpointDescriptionData"].isNull()) {
         dst.setpointDescriptionData = src["setpointDescriptionData"].as<decltype(dst.setpointDescriptionData)::value_type>();
     } else {
-        dst.setpointDescriptionData = std::nullopt;
+        dst.setpointDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const SetpointDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.setpointId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.setpointId.has_value()) {
         dst["setpointId"] = *src.setpointId;
     }
-    if (src.measurementId) {
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.timeTableId) {
+    if (src.timeTableId.has_value()) {
         dst["timeTableId"] = *src.timeTableId;
     }
-    if (src.setpointType) {
+    if (src.setpointType.has_value()) {
         dst["setpointType"] = *src.setpointType;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
 
@@ -15381,46 +15912,49 @@ void convertFromJson(const JsonVariantConst &src, SetpointDescriptionListDataSel
     if (!src["setpointId"].isNull()) {
         dst.setpointId = src["setpointId"].as<decltype(dst.setpointId)::value_type>();
     } else {
-        dst.setpointId = std::nullopt;
+        dst.setpointId.reset();
     }
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
-        dst.timeTableId = std::nullopt;
+        dst.timeTableId.reset();
     }
     if (!src["setpointType"].isNull()) {
         dst.setpointType = src["setpointType"].as<decltype(dst.setpointType)::value_type>();
     } else {
-        dst.setpointType = std::nullopt;
+        dst.setpointType.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
 
 }
 
 bool convertToJson(const TimeTableDataType &src, JsonVariant &dst)
 {
-    if (src.timeTableId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeTableId.has_value()) {
         dst["timeTableId"] = *src.timeTableId;
     }
-    if (src.timeSlotId) {
+    if (src.timeSlotId.has_value()) {
         dst["timeSlotId"] = *src.timeSlotId;
     }
-    if (src.recurrenceInformation) {
+    if (src.recurrenceInformation.has_value()) {
         dst["recurrenceInformation"] = *src.recurrenceInformation;
     }
-    if (src.startTime) {
+    if (src.startTime.has_value()) {
         dst["startTime"] = *src.startTime;
     }
-    if (src.endTime) {
+    if (src.endTime.has_value()) {
         dst["endTime"] = *src.endTime;
     }
 
@@ -15433,46 +15967,49 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDataType &dst)
     if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
-        dst.timeTableId = std::nullopt;
+        dst.timeTableId.reset();
     }
     if (!src["timeSlotId"].isNull()) {
         dst.timeSlotId = src["timeSlotId"].as<decltype(dst.timeSlotId)::value_type>();
     } else {
-        dst.timeSlotId = std::nullopt;
+        dst.timeSlotId.reset();
     }
     if (!src["recurrenceInformation"].isNull()) {
         dst.recurrenceInformation = src["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
     } else {
-        dst.recurrenceInformation = std::nullopt;
+        dst.recurrenceInformation.reset();
     }
     if (!src["startTime"].isNull()) {
         dst.startTime = src["startTime"].as<decltype(dst.startTime)::value_type>();
     } else {
-        dst.startTime = std::nullopt;
+        dst.startTime.reset();
     }
     if (!src["endTime"].isNull()) {
         dst.endTime = src["endTime"].as<decltype(dst.endTime)::value_type>();
     } else {
-        dst.endTime = std::nullopt;
+        dst.endTime.reset();
     }
 
 }
 
 bool convertToJson(const TimeTableDataElementsType &src, JsonVariant &dst)
 {
-    if (src.timeTableId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeTableId.has_value()) {
         dst["timeTableId"] = *src.timeTableId;
     }
-    if (src.timeSlotId) {
+    if (src.timeSlotId.has_value()) {
         dst["timeSlotId"] = *src.timeSlotId;
     }
-    if (src.recurrenceInformation) {
+    if (src.recurrenceInformation.has_value()) {
         dst["recurrenceInformation"] = *src.recurrenceInformation;
     }
-    if (src.startTime) {
+    if (src.startTime.has_value()) {
         dst["startTime"] = *src.startTime;
     }
-    if (src.endTime) {
+    if (src.endTime.has_value()) {
         dst["endTime"] = *src.endTime;
     }
 
@@ -15485,34 +16022,37 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDataElementsType &dst
     if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
-        dst.timeTableId = std::nullopt;
+        dst.timeTableId.reset();
     }
     if (!src["timeSlotId"].isNull()) {
         dst.timeSlotId = src["timeSlotId"].as<decltype(dst.timeSlotId)::value_type>();
     } else {
-        dst.timeSlotId = std::nullopt;
+        dst.timeSlotId.reset();
     }
     if (!src["recurrenceInformation"].isNull()) {
         dst.recurrenceInformation = src["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
     } else {
-        dst.recurrenceInformation = std::nullopt;
+        dst.recurrenceInformation.reset();
     }
     if (!src["startTime"].isNull()) {
         dst.startTime = src["startTime"].as<decltype(dst.startTime)::value_type>();
     } else {
-        dst.startTime = std::nullopt;
+        dst.startTime.reset();
     }
     if (!src["endTime"].isNull()) {
         dst.endTime = src["endTime"].as<decltype(dst.endTime)::value_type>();
     } else {
-        dst.endTime = std::nullopt;
+        dst.endTime.reset();
     }
 
 }
 
 bool convertToJson(const TimeTableListDataType &src, JsonVariant &dst)
 {
-    if (src.timeTableData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeTableData.has_value()) {
         dst["timeTableData"] = *src.timeTableData;
     }
 
@@ -15525,17 +16065,20 @@ void convertFromJson(const JsonVariantConst &src, TimeTableListDataType &dst)
     if (!src["timeTableData"].isNull()) {
         dst.timeTableData = src["timeTableData"].as<decltype(dst.timeTableData)::value_type>();
     } else {
-        dst.timeTableData = std::nullopt;
+        dst.timeTableData.reset();
     }
 
 }
 
 bool convertToJson(const TimeTableListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.timeTableId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeTableId.has_value()) {
         dst["timeTableId"] = *src.timeTableId;
     }
-    if (src.timeSlotId) {
+    if (src.timeSlotId.has_value()) {
         dst["timeSlotId"] = *src.timeSlotId;
     }
 
@@ -15548,40 +16091,43 @@ void convertFromJson(const JsonVariantConst &src, TimeTableListDataSelectorsType
     if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
-        dst.timeTableId = std::nullopt;
+        dst.timeTableId.reset();
     }
     if (!src["timeSlotId"].isNull()) {
         dst.timeSlotId = src["timeSlotId"].as<decltype(dst.timeSlotId)::value_type>();
     } else {
-        dst.timeSlotId = std::nullopt;
+        dst.timeSlotId.reset();
     }
 
 }
 
 bool convertToJson(const TimeTableConstraintsDataType &src, JsonVariant &dst)
 {
-    if (src.timeTableId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeTableId.has_value()) {
         dst["timeTableId"] = *src.timeTableId;
     }
-    if (src.slotCountMin) {
+    if (src.slotCountMin.has_value()) {
         dst["slotCountMin"] = *src.slotCountMin;
     }
-    if (src.slotCountMax) {
+    if (src.slotCountMax.has_value()) {
         dst["slotCountMax"] = *src.slotCountMax;
     }
-    if (src.slotDurationMin) {
+    if (src.slotDurationMin.has_value()) {
         dst["slotDurationMin"] = *src.slotDurationMin;
     }
-    if (src.slotDurationMax) {
+    if (src.slotDurationMax.has_value()) {
         dst["slotDurationMax"] = *src.slotDurationMax;
     }
-    if (src.slotDurationStepSize) {
+    if (src.slotDurationStepSize.has_value()) {
         dst["slotDurationStepSize"] = *src.slotDurationStepSize;
     }
-    if (src.slotShiftStepSize) {
+    if (src.slotShiftStepSize.has_value()) {
         dst["slotShiftStepSize"] = *src.slotShiftStepSize;
     }
-    if (src.firstSlotBeginsAt) {
+    if (src.firstSlotBeginsAt.has_value()) {
         dst["firstSlotBeginsAt"] = *src.firstSlotBeginsAt;
     }
 
@@ -15594,70 +16140,73 @@ void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsDataType &
     if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
-        dst.timeTableId = std::nullopt;
+        dst.timeTableId.reset();
     }
     if (!src["slotCountMin"].isNull()) {
         dst.slotCountMin = src["slotCountMin"].as<decltype(dst.slotCountMin)::value_type>();
     } else {
-        dst.slotCountMin = std::nullopt;
+        dst.slotCountMin.reset();
     }
     if (!src["slotCountMax"].isNull()) {
         dst.slotCountMax = src["slotCountMax"].as<decltype(dst.slotCountMax)::value_type>();
     } else {
-        dst.slotCountMax = std::nullopt;
+        dst.slotCountMax.reset();
     }
     if (!src["slotDurationMin"].isNull()) {
         dst.slotDurationMin = src["slotDurationMin"].as<decltype(dst.slotDurationMin)::value_type>();
     } else {
-        dst.slotDurationMin = std::nullopt;
+        dst.slotDurationMin.reset();
     }
     if (!src["slotDurationMax"].isNull()) {
         dst.slotDurationMax = src["slotDurationMax"].as<decltype(dst.slotDurationMax)::value_type>();
     } else {
-        dst.slotDurationMax = std::nullopt;
+        dst.slotDurationMax.reset();
     }
     if (!src["slotDurationStepSize"].isNull()) {
         dst.slotDurationStepSize = src["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize)::value_type>();
     } else {
-        dst.slotDurationStepSize = std::nullopt;
+        dst.slotDurationStepSize.reset();
     }
     if (!src["slotShiftStepSize"].isNull()) {
         dst.slotShiftStepSize = src["slotShiftStepSize"].as<decltype(dst.slotShiftStepSize)::value_type>();
     } else {
-        dst.slotShiftStepSize = std::nullopt;
+        dst.slotShiftStepSize.reset();
     }
     if (!src["firstSlotBeginsAt"].isNull()) {
         dst.firstSlotBeginsAt = src["firstSlotBeginsAt"].as<decltype(dst.firstSlotBeginsAt)::value_type>();
     } else {
-        dst.firstSlotBeginsAt = std::nullopt;
+        dst.firstSlotBeginsAt.reset();
     }
 
 }
 
 bool convertToJson(const TimeTableConstraintsDataElementsType &src, JsonVariant &dst)
 {
-    if (src.timeTableId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeTableId.has_value()) {
         dst["timeTableId"] = *src.timeTableId;
     }
-    if (src.slotCountMin) {
+    if (src.slotCountMin.has_value()) {
         dst["slotCountMin"] = *src.slotCountMin;
     }
-    if (src.slotCountMax) {
+    if (src.slotCountMax.has_value()) {
         dst["slotCountMax"] = *src.slotCountMax;
     }
-    if (src.slotDurationMin) {
+    if (src.slotDurationMin.has_value()) {
         dst["slotDurationMin"] = *src.slotDurationMin;
     }
-    if (src.slotDurationMax) {
+    if (src.slotDurationMax.has_value()) {
         dst["slotDurationMax"] = *src.slotDurationMax;
     }
-    if (src.slotDurationStepSize) {
+    if (src.slotDurationStepSize.has_value()) {
         dst["slotDurationStepSize"] = *src.slotDurationStepSize;
     }
-    if (src.slotShiftStepSize) {
+    if (src.slotShiftStepSize.has_value()) {
         dst["slotShiftStepSize"] = *src.slotShiftStepSize;
     }
-    if (src.firstSlotBeginsAt) {
+    if (src.firstSlotBeginsAt.has_value()) {
         dst["firstSlotBeginsAt"] = *src.firstSlotBeginsAt;
     }
 
@@ -15670,49 +16219,52 @@ void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsDataElemen
     if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
-        dst.timeTableId = std::nullopt;
+        dst.timeTableId.reset();
     }
     if (!src["slotCountMin"].isNull()) {
         dst.slotCountMin = src["slotCountMin"].as<decltype(dst.slotCountMin)::value_type>();
     } else {
-        dst.slotCountMin = std::nullopt;
+        dst.slotCountMin.reset();
     }
     if (!src["slotCountMax"].isNull()) {
         dst.slotCountMax = src["slotCountMax"].as<decltype(dst.slotCountMax)::value_type>();
     } else {
-        dst.slotCountMax = std::nullopt;
+        dst.slotCountMax.reset();
     }
     if (!src["slotDurationMin"].isNull()) {
         dst.slotDurationMin = src["slotDurationMin"].as<decltype(dst.slotDurationMin)::value_type>();
     } else {
-        dst.slotDurationMin = std::nullopt;
+        dst.slotDurationMin.reset();
     }
     if (!src["slotDurationMax"].isNull()) {
         dst.slotDurationMax = src["slotDurationMax"].as<decltype(dst.slotDurationMax)::value_type>();
     } else {
-        dst.slotDurationMax = std::nullopt;
+        dst.slotDurationMax.reset();
     }
     if (!src["slotDurationStepSize"].isNull()) {
         dst.slotDurationStepSize = src["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize)::value_type>();
     } else {
-        dst.slotDurationStepSize = std::nullopt;
+        dst.slotDurationStepSize.reset();
     }
     if (!src["slotShiftStepSize"].isNull()) {
         dst.slotShiftStepSize = src["slotShiftStepSize"].as<decltype(dst.slotShiftStepSize)::value_type>();
     } else {
-        dst.slotShiftStepSize = std::nullopt;
+        dst.slotShiftStepSize.reset();
     }
     if (!src["firstSlotBeginsAt"].isNull()) {
         dst.firstSlotBeginsAt = src["firstSlotBeginsAt"].as<decltype(dst.firstSlotBeginsAt)::value_type>();
     } else {
-        dst.firstSlotBeginsAt = std::nullopt;
+        dst.firstSlotBeginsAt.reset();
     }
 
 }
 
 bool convertToJson(const TimeTableConstraintsListDataType &src, JsonVariant &dst)
 {
-    if (src.timeTableConstraintsData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeTableConstraintsData.has_value()) {
         dst["timeTableConstraintsData"] = *src.timeTableConstraintsData;
     }
 
@@ -15725,14 +16277,17 @@ void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsListDataTy
     if (!src["timeTableConstraintsData"].isNull()) {
         dst.timeTableConstraintsData = src["timeTableConstraintsData"].as<decltype(dst.timeTableConstraintsData)::value_type>();
     } else {
-        dst.timeTableConstraintsData = std::nullopt;
+        dst.timeTableConstraintsData.reset();
     }
 
 }
 
 bool convertToJson(const TimeTableConstraintsListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.timeTableId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeTableId.has_value()) {
         dst["timeTableId"] = *src.timeTableId;
     }
 
@@ -15745,29 +16300,32 @@ void convertFromJson(const JsonVariantConst &src, TimeTableConstraintsListDataSe
     if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
-        dst.timeTableId = std::nullopt;
+        dst.timeTableId.reset();
     }
 
 }
 
 bool convertToJson(const TimeTableDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.timeTableId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeTableId.has_value()) {
         dst["timeTableId"] = *src.timeTableId;
     }
-    if (src.timeSlotCountChangeable) {
+    if (src.timeSlotCountChangeable.has_value()) {
         dst["timeSlotCountChangeable"] = *src.timeSlotCountChangeable;
     }
-    if (src.timeSlotTimesChangeable) {
+    if (src.timeSlotTimesChangeable.has_value()) {
         dst["timeSlotTimesChangeable"] = *src.timeSlotTimesChangeable;
     }
-    if (src.timeSlotTimeMode) {
+    if (src.timeSlotTimeMode.has_value()) {
         dst["timeSlotTimeMode"] = *src.timeSlotTimeMode;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -15780,54 +16338,57 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionDataType &
     if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
-        dst.timeTableId = std::nullopt;
+        dst.timeTableId.reset();
     }
     if (!src["timeSlotCountChangeable"].isNull()) {
         dst.timeSlotCountChangeable = src["timeSlotCountChangeable"].as<decltype(dst.timeSlotCountChangeable)::value_type>();
     } else {
-        dst.timeSlotCountChangeable = std::nullopt;
+        dst.timeSlotCountChangeable.reset();
     }
     if (!src["timeSlotTimesChangeable"].isNull()) {
         dst.timeSlotTimesChangeable = src["timeSlotTimesChangeable"].as<decltype(dst.timeSlotTimesChangeable)::value_type>();
     } else {
-        dst.timeSlotTimesChangeable = std::nullopt;
+        dst.timeSlotTimesChangeable.reset();
     }
     if (!src["timeSlotTimeMode"].isNull()) {
         dst.timeSlotTimeMode = src["timeSlotTimeMode"].as<decltype(dst.timeSlotTimeMode)::value_type>();
     } else {
-        dst.timeSlotTimeMode = std::nullopt;
+        dst.timeSlotTimeMode.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const TimeTableDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.timeTableId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeTableId.has_value()) {
         dst["timeTableId"] = *src.timeTableId;
     }
-    if (src.timeSlotCountChangeable) {
+    if (src.timeSlotCountChangeable.has_value()) {
         dst["timeSlotCountChangeable"] = *src.timeSlotCountChangeable;
     }
-    if (src.timeSlotTimesChangeable) {
+    if (src.timeSlotTimesChangeable.has_value()) {
         dst["timeSlotTimesChangeable"] = *src.timeSlotTimesChangeable;
     }
-    if (src.timeSlotTimeMode) {
+    if (src.timeSlotTimeMode.has_value()) {
         dst["timeSlotTimeMode"] = *src.timeSlotTimeMode;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -15840,39 +16401,42 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionDataElemen
     if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
-        dst.timeTableId = std::nullopt;
+        dst.timeTableId.reset();
     }
     if (!src["timeSlotCountChangeable"].isNull()) {
         dst.timeSlotCountChangeable = src["timeSlotCountChangeable"].as<decltype(dst.timeSlotCountChangeable)::value_type>();
     } else {
-        dst.timeSlotCountChangeable = std::nullopt;
+        dst.timeSlotCountChangeable.reset();
     }
     if (!src["timeSlotTimesChangeable"].isNull()) {
         dst.timeSlotTimesChangeable = src["timeSlotTimesChangeable"].as<decltype(dst.timeSlotTimesChangeable)::value_type>();
     } else {
-        dst.timeSlotTimesChangeable = std::nullopt;
+        dst.timeSlotTimesChangeable.reset();
     }
     if (!src["timeSlotTimeMode"].isNull()) {
         dst.timeSlotTimeMode = src["timeSlotTimeMode"].as<decltype(dst.timeSlotTimeMode)::value_type>();
     } else {
-        dst.timeSlotTimeMode = std::nullopt;
+        dst.timeSlotTimeMode.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const TimeTableDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.timeTableDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeTableDescriptionData.has_value()) {
         dst["timeTableDescriptionData"] = *src.timeTableDescriptionData;
     }
 
@@ -15885,14 +16449,17 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionListDataTy
     if (!src["timeTableDescriptionData"].isNull()) {
         dst.timeTableDescriptionData = src["timeTableDescriptionData"].as<decltype(dst.timeTableDescriptionData)::value_type>();
     } else {
-        dst.timeTableDescriptionData = std::nullopt;
+        dst.timeTableDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const TimeTableDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.timeTableId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeTableId.has_value()) {
         dst["timeTableId"] = *src.timeTableId;
     }
 
@@ -15905,20 +16472,23 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionListDataSe
     if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
-        dst.timeTableId = std::nullopt;
+        dst.timeTableId.reset();
     }
 
 }
 
 bool convertToJson(const SensingDataType &src, JsonVariant &dst)
 {
-    if (src.timestamp) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.state) {
+    if (src.state.has_value()) {
         dst["state"] = *src.state;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
 
@@ -15931,30 +16501,33 @@ void convertFromJson(const JsonVariantConst &src, SensingDataType &dst)
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["state"].isNull()) {
         dst.state = src["state"].as<decltype(dst.state)::value_type>();
     } else {
-        dst.state = std::nullopt;
+        dst.state.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
 
 }
 
 bool convertToJson(const SensingDataElementsType &src, JsonVariant &dst)
 {
-    if (src.timestamp) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.state) {
+    if (src.state.has_value()) {
         dst["state"] = *src.state;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
 
@@ -15967,24 +16540,27 @@ void convertFromJson(const JsonVariantConst &src, SensingDataElementsType &dst)
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["state"].isNull()) {
         dst.state = src["state"].as<decltype(dst.state)::value_type>();
     } else {
-        dst.state = std::nullopt;
+        dst.state.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
 
 }
 
 bool convertToJson(const SensingListDataType &src, JsonVariant &dst)
 {
-    if (src.sensingData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sensingData.has_value()) {
         dst["sensingData"] = *src.sensingData;
     }
 
@@ -15997,14 +16573,17 @@ void convertFromJson(const JsonVariantConst &src, SensingListDataType &dst)
     if (!src["sensingData"].isNull()) {
         dst.sensingData = src["sensingData"].as<decltype(dst.sensingData)::value_type>();
     } else {
-        dst.sensingData = std::nullopt;
+        dst.sensingData.reset();
     }
 
 }
 
 bool convertToJson(const SensingListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.timestampInterval) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timestampInterval.has_value()) {
         dst["timestampInterval"] = *src.timestampInterval;
     }
 
@@ -16017,26 +16596,29 @@ void convertFromJson(const JsonVariantConst &src, SensingListDataSelectorsType &
     if (!src["timestampInterval"].isNull()) {
         dst.timestampInterval = src["timestampInterval"].as<decltype(dst.timestampInterval)::value_type>();
     } else {
-        dst.timestampInterval = std::nullopt;
+        dst.timestampInterval.reset();
     }
 
 }
 
 bool convertToJson(const SensingDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.sensingType) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sensingType.has_value()) {
         dst["sensingType"] = *src.sensingType;
     }
-    if (src.unit) {
+    if (src.unit.has_value()) {
         dst["unit"] = *src.unit;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -16049,46 +16631,49 @@ void convertFromJson(const JsonVariantConst &src, SensingDescriptionDataType &ds
     if (!src["sensingType"].isNull()) {
         dst.sensingType = src["sensingType"].as<decltype(dst.sensingType)::value_type>();
     } else {
-        dst.sensingType = std::nullopt;
+        dst.sensingType.reset();
     }
     if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
-        dst.unit = std::nullopt;
+        dst.unit.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const SensingDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.sensingType) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sensingType.has_value()) {
         dst["sensingType"] = *src.sensingType;
     }
-    if (src.unit) {
+    if (src.unit.has_value()) {
         dst["unit"] = *src.unit;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -16101,37 +16686,40 @@ void convertFromJson(const JsonVariantConst &src, SensingDescriptionDataElements
     if (!src["sensingType"].isNull()) {
         dst.sensingType = src["sensingType"].as<decltype(dst.sensingType)::value_type>();
     } else {
-        dst.sensingType = std::nullopt;
+        dst.sensingType.reset();
     }
     if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
-        dst.unit = std::nullopt;
+        dst.unit.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const ResultDataType &src, JsonVariant &dst)
 {
-    if (src.errorNumber) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.errorNumber.has_value()) {
         dst["errorNumber"] = *src.errorNumber;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -16144,19 +16732,22 @@ void convertFromJson(const JsonVariantConst &src, ResultDataType &dst)
     if (!src["errorNumber"].isNull()) {
         dst.errorNumber = src["errorNumber"].as<decltype(dst.errorNumber)::value_type>();
     } else {
-        dst.errorNumber = std::nullopt;
+        dst.errorNumber.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const ActuatorSwitchDataType &src, JsonVariant &dst)
 {
-    if (src.function) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.function.has_value()) {
         dst["function"] = *src.function;
     }
 
@@ -16169,14 +16760,17 @@ void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDataType &dst)
     if (!src["function"].isNull()) {
         dst.function = src["function"].as<decltype(dst.function)::value_type>();
     } else {
-        dst.function = std::nullopt;
+        dst.function.reset();
     }
 
 }
 
 bool convertToJson(const ActuatorSwitchDataElementsType &src, JsonVariant &dst)
 {
-    if (src.function) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.function.has_value()) {
         dst["function"] = *src.function;
     }
 
@@ -16189,17 +16783,20 @@ void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDataElementsType
     if (!src["function"].isNull()) {
         dst.function = src["function"].as<decltype(dst.function)::value_type>();
     } else {
-        dst.function = std::nullopt;
+        dst.function.reset();
     }
 
 }
 
 bool convertToJson(const ActuatorSwitchDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.label) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -16212,22 +16809,25 @@ void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDescriptionDataT
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const ActuatorSwitchDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.label) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -16240,31 +16840,34 @@ void convertFromJson(const JsonVariantConst &src, ActuatorSwitchDescriptionDataE
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementAddNodeCallType &src, JsonVariant &dst)
 {
-    if (src.nodeAddress) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.nodeAddress.has_value()) {
         dst["nodeAddress"] = *src.nodeAddress;
     }
-    if (src.nativeSetup) {
+    if (src.nativeSetup.has_value()) {
         dst["nativeSetup"] = *src.nativeSetup;
     }
-    if (src.timeout) {
+    if (src.timeout.has_value()) {
         dst["timeout"] = *src.timeout;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -16277,46 +16880,49 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementAddNodeCallTy
     if (!src["nodeAddress"].isNull()) {
         dst.nodeAddress = src["nodeAddress"].as<decltype(dst.nodeAddress)::value_type>();
     } else {
-        dst.nodeAddress = std::nullopt;
+        dst.nodeAddress.reset();
     }
     if (!src["nativeSetup"].isNull()) {
         dst.nativeSetup = src["nativeSetup"].as<decltype(dst.nativeSetup)::value_type>();
     } else {
-        dst.nativeSetup = std::nullopt;
+        dst.nativeSetup.reset();
     }
     if (!src["timeout"].isNull()) {
         dst.timeout = src["timeout"].as<decltype(dst.timeout)::value_type>();
     } else {
-        dst.timeout = std::nullopt;
+        dst.timeout.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementAddNodeCallElementsType &src, JsonVariant &dst)
 {
-    if (src.nodeAddress) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.nodeAddress.has_value()) {
         dst["nodeAddress"] = *src.nodeAddress;
     }
-    if (src.nativeSetup) {
+    if (src.nativeSetup.has_value()) {
         dst["nativeSetup"] = *src.nativeSetup;
     }
-    if (src.timeout) {
+    if (src.timeout.has_value()) {
         dst["timeout"] = *src.timeout;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -16329,37 +16935,40 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementAddNodeCallEl
     if (!src["nodeAddress"].isNull()) {
         dst.nodeAddress = src["nodeAddress"].as<decltype(dst.nodeAddress)::value_type>();
     } else {
-        dst.nodeAddress = std::nullopt;
+        dst.nodeAddress.reset();
     }
     if (!src["nativeSetup"].isNull()) {
         dst.nativeSetup = src["nativeSetup"].as<decltype(dst.nativeSetup)::value_type>();
     } else {
-        dst.nativeSetup = std::nullopt;
+        dst.nativeSetup.reset();
     }
     if (!src["timeout"].isNull()) {
         dst.timeout = src["timeout"].as<decltype(dst.timeout)::value_type>();
     } else {
-        dst.timeout = std::nullopt;
+        dst.timeout.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementRemoveNodeCallType &src, JsonVariant &dst)
 {
-    if (src.nodeAddress) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.nodeAddress.has_value()) {
         dst["nodeAddress"] = *src.nodeAddress;
     }
-    if (src.timeout) {
+    if (src.timeout.has_value()) {
         dst["timeout"] = *src.timeout;
     }
 
@@ -16372,22 +16981,25 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementRemoveNodeCal
     if (!src["nodeAddress"].isNull()) {
         dst.nodeAddress = src["nodeAddress"].as<decltype(dst.nodeAddress)::value_type>();
     } else {
-        dst.nodeAddress = std::nullopt;
+        dst.nodeAddress.reset();
     }
     if (!src["timeout"].isNull()) {
         dst.timeout = src["timeout"].as<decltype(dst.timeout)::value_type>();
     } else {
-        dst.timeout = std::nullopt;
+        dst.timeout.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementRemoveNodeCallElementsType &src, JsonVariant &dst)
 {
-    if (src.nodeAddress) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.nodeAddress.has_value()) {
         dst["nodeAddress"] = *src.nodeAddress;
     }
-    if (src.timeout) {
+    if (src.timeout.has_value()) {
         dst["timeout"] = *src.timeout;
     }
 
@@ -16400,31 +17012,34 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementRemoveNodeCal
     if (!src["nodeAddress"].isNull()) {
         dst.nodeAddress = src["nodeAddress"].as<decltype(dst.nodeAddress)::value_type>();
     } else {
-        dst.nodeAddress = std::nullopt;
+        dst.nodeAddress.reset();
     }
     if (!src["timeout"].isNull()) {
         dst.timeout = src["timeout"].as<decltype(dst.timeout)::value_type>();
     } else {
-        dst.timeout = std::nullopt;
+        dst.timeout.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementModifyNodeCallType &src, JsonVariant &dst)
 {
-    if (src.nodeAddress) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.nodeAddress.has_value()) {
         dst["nodeAddress"] = *src.nodeAddress;
     }
-    if (src.nativeSetup) {
+    if (src.nativeSetup.has_value()) {
         dst["nativeSetup"] = *src.nativeSetup;
     }
-    if (src.timeout) {
+    if (src.timeout.has_value()) {
         dst["timeout"] = *src.timeout;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -16437,46 +17052,49 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementModifyNodeCal
     if (!src["nodeAddress"].isNull()) {
         dst.nodeAddress = src["nodeAddress"].as<decltype(dst.nodeAddress)::value_type>();
     } else {
-        dst.nodeAddress = std::nullopt;
+        dst.nodeAddress.reset();
     }
     if (!src["nativeSetup"].isNull()) {
         dst.nativeSetup = src["nativeSetup"].as<decltype(dst.nativeSetup)::value_type>();
     } else {
-        dst.nativeSetup = std::nullopt;
+        dst.nativeSetup.reset();
     }
     if (!src["timeout"].isNull()) {
         dst.timeout = src["timeout"].as<decltype(dst.timeout)::value_type>();
     } else {
-        dst.timeout = std::nullopt;
+        dst.timeout.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementModifyNodeCallElementsType &src, JsonVariant &dst)
 {
-    if (src.nodeAddress) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.nodeAddress.has_value()) {
         dst["nodeAddress"] = *src.nodeAddress;
     }
-    if (src.nativeSetup) {
+    if (src.nativeSetup.has_value()) {
         dst["nativeSetup"] = *src.nativeSetup;
     }
-    if (src.timeout) {
+    if (src.timeout.has_value()) {
         dst["timeout"] = *src.timeout;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -16489,37 +17107,40 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementModifyNodeCal
     if (!src["nodeAddress"].isNull()) {
         dst.nodeAddress = src["nodeAddress"].as<decltype(dst.nodeAddress)::value_type>();
     } else {
-        dst.nodeAddress = std::nullopt;
+        dst.nodeAddress.reset();
     }
     if (!src["nativeSetup"].isNull()) {
         dst.nativeSetup = src["nativeSetup"].as<decltype(dst.nativeSetup)::value_type>();
     } else {
-        dst.nativeSetup = std::nullopt;
+        dst.nativeSetup.reset();
     }
     if (!src["timeout"].isNull()) {
         dst.timeout = src["timeout"].as<decltype(dst.timeout)::value_type>();
     } else {
-        dst.timeout = std::nullopt;
+        dst.timeout.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementScanNetworkCallType &src, JsonVariant &dst)
 {
-    if (src.scanSetup) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.scanSetup.has_value()) {
         dst["scanSetup"] = *src.scanSetup;
     }
-    if (src.timeout) {
+    if (src.timeout.has_value()) {
         dst["timeout"] = *src.timeout;
     }
 
@@ -16532,22 +17153,25 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementScanNetworkCa
     if (!src["scanSetup"].isNull()) {
         dst.scanSetup = src["scanSetup"].as<decltype(dst.scanSetup)::value_type>();
     } else {
-        dst.scanSetup = std::nullopt;
+        dst.scanSetup.reset();
     }
     if (!src["timeout"].isNull()) {
         dst.timeout = src["timeout"].as<decltype(dst.timeout)::value_type>();
     } else {
-        dst.timeout = std::nullopt;
+        dst.timeout.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementScanNetworkCallElementsType &src, JsonVariant &dst)
 {
-    if (src.scanSetup) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.scanSetup.has_value()) {
         dst["scanSetup"] = *src.scanSetup;
     }
-    if (src.timeout) {
+    if (src.timeout.has_value()) {
         dst["timeout"] = *src.timeout;
     }
 
@@ -16560,19 +17184,22 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementScanNetworkCa
     if (!src["scanSetup"].isNull()) {
         dst.scanSetup = src["scanSetup"].as<decltype(dst.scanSetup)::value_type>();
     } else {
-        dst.scanSetup = std::nullopt;
+        dst.scanSetup.reset();
     }
     if (!src["timeout"].isNull()) {
         dst.timeout = src["timeout"].as<decltype(dst.timeout)::value_type>();
     } else {
-        dst.timeout = std::nullopt;
+        dst.timeout.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementDiscoverCallType &src, JsonVariant &dst)
 {
-    if (src.discoverAddress) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.discoverAddress.has_value()) {
         dst["discoverAddress"] = *src.discoverAddress;
     }
 
@@ -16585,14 +17212,17 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDiscoverCallT
     if (!src["discoverAddress"].isNull()) {
         dst.discoverAddress = src["discoverAddress"].as<decltype(dst.discoverAddress)::value_type>();
     } else {
-        dst.discoverAddress = std::nullopt;
+        dst.discoverAddress.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementDiscoverCallElementsType &src, JsonVariant &dst)
 {
-    if (src.discoverAddress) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.discoverAddress.has_value()) {
         dst["discoverAddress"] = *src.discoverAddress;
     }
 
@@ -16605,7 +17235,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDiscoverCallE
     if (!src["discoverAddress"].isNull()) {
         dst.discoverAddress = src["discoverAddress"].as<decltype(dst.discoverAddress)::value_type>();
     } else {
-        dst.discoverAddress = std::nullopt;
+        dst.discoverAddress.reset();
     }
 
 }
@@ -16634,10 +17264,13 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementAbortCallElem
 
 bool convertToJson(const NetworkManagementProcessStateDataType &src, JsonVariant &dst)
 {
-    if (src.state) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.state.has_value()) {
         dst["state"] = *src.state;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -16650,22 +17283,25 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementProcessStateD
     if (!src["state"].isNull()) {
         dst.state = src["state"].as<decltype(dst.state)::value_type>();
     } else {
-        dst.state = std::nullopt;
+        dst.state.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementProcessStateDataElementsType &src, JsonVariant &dst)
 {
-    if (src.state) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.state.has_value()) {
         dst["state"] = *src.state;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -16678,19 +17314,22 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementProcessStateD
     if (!src["state"].isNull()) {
         dst.state = src["state"].as<decltype(dst.state)::value_type>();
     } else {
-        dst.state = std::nullopt;
+        dst.state.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementJoiningModeDataType &src, JsonVariant &dst)
 {
-    if (src.setup) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.setup.has_value()) {
         dst["setup"] = *src.setup;
     }
 
@@ -16703,14 +17342,17 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementJoiningModeDa
     if (!src["setup"].isNull()) {
         dst.setup = src["setup"].as<decltype(dst.setup)::value_type>();
     } else {
-        dst.setup = std::nullopt;
+        dst.setup.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementJoiningModeDataElementsType &src, JsonVariant &dst)
 {
-    if (src.setup) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.setup.has_value()) {
         dst["setup"] = *src.setup;
     }
 
@@ -16723,23 +17365,26 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementJoiningModeDa
     if (!src["setup"].isNull()) {
         dst.setup = src["setup"].as<decltype(dst.setup)::value_type>();
     } else {
-        dst.setup = std::nullopt;
+        dst.setup.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementReportCandidateDataType &src, JsonVariant &dst)
 {
-    if (src.candidateSetup) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.candidateSetup.has_value()) {
         dst["candidateSetup"] = *src.candidateSetup;
     }
-    if (src.setupUsableForAdd) {
+    if (src.setupUsableForAdd.has_value()) {
         dst["setupUsableForAdd"] = *src.setupUsableForAdd;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -16752,38 +17397,41 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementReportCandida
     if (!src["candidateSetup"].isNull()) {
         dst.candidateSetup = src["candidateSetup"].as<decltype(dst.candidateSetup)::value_type>();
     } else {
-        dst.candidateSetup = std::nullopt;
+        dst.candidateSetup.reset();
     }
     if (!src["setupUsableForAdd"].isNull()) {
         dst.setupUsableForAdd = src["setupUsableForAdd"].as<decltype(dst.setupUsableForAdd)::value_type>();
     } else {
-        dst.setupUsableForAdd = std::nullopt;
+        dst.setupUsableForAdd.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementReportCandidateDataElementsType &src, JsonVariant &dst)
 {
-    if (src.candidateSetup) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.candidateSetup.has_value()) {
         dst["candidateSetup"] = *src.candidateSetup;
     }
-    if (src.setupUsableForAdd) {
+    if (src.setupUsableForAdd.has_value()) {
         dst["setupUsableForAdd"] = *src.setupUsableForAdd;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -16796,59 +17444,62 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementReportCandida
     if (!src["candidateSetup"].isNull()) {
         dst.candidateSetup = src["candidateSetup"].as<decltype(dst.candidateSetup)::value_type>();
     } else {
-        dst.candidateSetup = std::nullopt;
+        dst.candidateSetup.reset();
     }
     if (!src["setupUsableForAdd"].isNull()) {
         dst.setupUsableForAdd = src["setupUsableForAdd"].as<decltype(dst.setupUsableForAdd)::value_type>();
     } else {
-        dst.setupUsableForAdd = std::nullopt;
+        dst.setupUsableForAdd.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementDeviceDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.deviceAddress) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.deviceAddress.has_value()) {
         dst["deviceAddress"] = *src.deviceAddress;
     }
-    if (src.deviceType) {
+    if (src.deviceType.has_value()) {
         dst["deviceType"] = *src.deviceType;
     }
-    if (src.networkManagementResponsibleAddress) {
+    if (src.networkManagementResponsibleAddress.has_value()) {
         dst["networkManagementResponsibleAddress"] = *src.networkManagementResponsibleAddress;
     }
-    if (src.nativeSetup) {
+    if (src.nativeSetup.has_value()) {
         dst["nativeSetup"] = *src.nativeSetup;
     }
-    if (src.technologyAddress) {
+    if (src.technologyAddress.has_value()) {
         dst["technologyAddress"] = *src.technologyAddress;
     }
-    if (src.communicationsTechnologyInformation) {
+    if (src.communicationsTechnologyInformation.has_value()) {
         dst["communicationsTechnologyInformation"] = *src.communicationsTechnologyInformation;
     }
-    if (src.networkFeatureSet) {
+    if (src.networkFeatureSet.has_value()) {
         dst["networkFeatureSet"] = *src.networkFeatureSet;
     }
-    if (src.lastStateChange) {
+    if (src.lastStateChange.has_value()) {
         dst["lastStateChange"] = *src.lastStateChange;
     }
-    if (src.minimumTrustLevel) {
+    if (src.minimumTrustLevel.has_value()) {
         dst["minimumTrustLevel"] = *src.minimumTrustLevel;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -16861,94 +17512,97 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
     if (!src["deviceAddress"].isNull()) {
         dst.deviceAddress = src["deviceAddress"].as<decltype(dst.deviceAddress)::value_type>();
     } else {
-        dst.deviceAddress = std::nullopt;
+        dst.deviceAddress.reset();
     }
     if (!src["deviceType"].isNull()) {
         dst.deviceType = src["deviceType"].as<decltype(dst.deviceType)::value_type>();
     } else {
-        dst.deviceType = std::nullopt;
+        dst.deviceType.reset();
     }
     if (!src["networkManagementResponsibleAddress"].isNull()) {
         dst.networkManagementResponsibleAddress = src["networkManagementResponsibleAddress"].as<decltype(dst.networkManagementResponsibleAddress)::value_type>();
     } else {
-        dst.networkManagementResponsibleAddress = std::nullopt;
+        dst.networkManagementResponsibleAddress.reset();
     }
     if (!src["nativeSetup"].isNull()) {
         dst.nativeSetup = src["nativeSetup"].as<decltype(dst.nativeSetup)::value_type>();
     } else {
-        dst.nativeSetup = std::nullopt;
+        dst.nativeSetup.reset();
     }
     if (!src["technologyAddress"].isNull()) {
         dst.technologyAddress = src["technologyAddress"].as<decltype(dst.technologyAddress)::value_type>();
     } else {
-        dst.technologyAddress = std::nullopt;
+        dst.technologyAddress.reset();
     }
     if (!src["communicationsTechnologyInformation"].isNull()) {
         dst.communicationsTechnologyInformation = src["communicationsTechnologyInformation"].as<decltype(dst.communicationsTechnologyInformation)::value_type>();
     } else {
-        dst.communicationsTechnologyInformation = std::nullopt;
+        dst.communicationsTechnologyInformation.reset();
     }
     if (!src["networkFeatureSet"].isNull()) {
         dst.networkFeatureSet = src["networkFeatureSet"].as<decltype(dst.networkFeatureSet)::value_type>();
     } else {
-        dst.networkFeatureSet = std::nullopt;
+        dst.networkFeatureSet.reset();
     }
     if (!src["lastStateChange"].isNull()) {
         dst.lastStateChange = src["lastStateChange"].as<decltype(dst.lastStateChange)::value_type>();
     } else {
-        dst.lastStateChange = std::nullopt;
+        dst.lastStateChange.reset();
     }
     if (!src["minimumTrustLevel"].isNull()) {
         dst.minimumTrustLevel = src["minimumTrustLevel"].as<decltype(dst.minimumTrustLevel)::value_type>();
     } else {
-        dst.minimumTrustLevel = std::nullopt;
+        dst.minimumTrustLevel.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementDeviceDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.deviceAddress) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.deviceAddress.has_value()) {
         dst["deviceAddress"] = *src.deviceAddress;
     }
-    if (src.deviceType) {
+    if (src.deviceType.has_value()) {
         dst["deviceType"] = *src.deviceType;
     }
-    if (src.networkManagementResponsibleAddress) {
+    if (src.networkManagementResponsibleAddress.has_value()) {
         dst["networkManagementResponsibleAddress"] = *src.networkManagementResponsibleAddress;
     }
-    if (src.nativeSetup) {
+    if (src.nativeSetup.has_value()) {
         dst["nativeSetup"] = *src.nativeSetup;
     }
-    if (src.technologyAddress) {
+    if (src.technologyAddress.has_value()) {
         dst["technologyAddress"] = *src.technologyAddress;
     }
-    if (src.communicationsTechnologyInformation) {
+    if (src.communicationsTechnologyInformation.has_value()) {
         dst["communicationsTechnologyInformation"] = *src.communicationsTechnologyInformation;
     }
-    if (src.networkFeatureSet) {
+    if (src.networkFeatureSet.has_value()) {
         dst["networkFeatureSet"] = *src.networkFeatureSet;
     }
-    if (src.lastStateChange) {
+    if (src.lastStateChange.has_value()) {
         dst["lastStateChange"] = *src.lastStateChange;
     }
-    if (src.minimumTrustLevel) {
+    if (src.minimumTrustLevel.has_value()) {
         dst["minimumTrustLevel"] = *src.minimumTrustLevel;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -16961,64 +17615,67 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
     if (!src["deviceAddress"].isNull()) {
         dst.deviceAddress = src["deviceAddress"].as<decltype(dst.deviceAddress)::value_type>();
     } else {
-        dst.deviceAddress = std::nullopt;
+        dst.deviceAddress.reset();
     }
     if (!src["deviceType"].isNull()) {
         dst.deviceType = src["deviceType"].as<decltype(dst.deviceType)::value_type>();
     } else {
-        dst.deviceType = std::nullopt;
+        dst.deviceType.reset();
     }
     if (!src["networkManagementResponsibleAddress"].isNull()) {
         dst.networkManagementResponsibleAddress = src["networkManagementResponsibleAddress"].as<decltype(dst.networkManagementResponsibleAddress)::value_type>();
     } else {
-        dst.networkManagementResponsibleAddress = std::nullopt;
+        dst.networkManagementResponsibleAddress.reset();
     }
     if (!src["nativeSetup"].isNull()) {
         dst.nativeSetup = src["nativeSetup"].as<decltype(dst.nativeSetup)::value_type>();
     } else {
-        dst.nativeSetup = std::nullopt;
+        dst.nativeSetup.reset();
     }
     if (!src["technologyAddress"].isNull()) {
         dst.technologyAddress = src["technologyAddress"].as<decltype(dst.technologyAddress)::value_type>();
     } else {
-        dst.technologyAddress = std::nullopt;
+        dst.technologyAddress.reset();
     }
     if (!src["communicationsTechnologyInformation"].isNull()) {
         dst.communicationsTechnologyInformation = src["communicationsTechnologyInformation"].as<decltype(dst.communicationsTechnologyInformation)::value_type>();
     } else {
-        dst.communicationsTechnologyInformation = std::nullopt;
+        dst.communicationsTechnologyInformation.reset();
     }
     if (!src["networkFeatureSet"].isNull()) {
         dst.networkFeatureSet = src["networkFeatureSet"].as<decltype(dst.networkFeatureSet)::value_type>();
     } else {
-        dst.networkFeatureSet = std::nullopt;
+        dst.networkFeatureSet.reset();
     }
     if (!src["lastStateChange"].isNull()) {
         dst.lastStateChange = src["lastStateChange"].as<decltype(dst.lastStateChange)::value_type>();
     } else {
-        dst.lastStateChange = std::nullopt;
+        dst.lastStateChange.reset();
     }
     if (!src["minimumTrustLevel"].isNull()) {
         dst.minimumTrustLevel = src["minimumTrustLevel"].as<decltype(dst.minimumTrustLevel)::value_type>();
     } else {
-        dst.minimumTrustLevel = std::nullopt;
+        dst.minimumTrustLevel.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementDeviceDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.networkManagementDeviceDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.networkManagementDeviceDescriptionData.has_value()) {
         dst["networkManagementDeviceDescriptionData"] = *src.networkManagementDeviceDescriptionData;
     }
 
@@ -17031,17 +17688,20 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
     if (!src["networkManagementDeviceDescriptionData"].isNull()) {
         dst.networkManagementDeviceDescriptionData = src["networkManagementDeviceDescriptionData"].as<decltype(dst.networkManagementDeviceDescriptionData)::value_type>();
     } else {
-        dst.networkManagementDeviceDescriptionData = std::nullopt;
+        dst.networkManagementDeviceDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementDeviceDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.deviceAddress) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.deviceAddress.has_value()) {
         dst["deviceAddress"] = *src.deviceAddress;
     }
-    if (src.deviceType) {
+    if (src.deviceType.has_value()) {
         dst["deviceType"] = *src.deviceType;
     }
 
@@ -17054,34 +17714,37 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
     if (!src["deviceAddress"].isNull()) {
         dst.deviceAddress = src["deviceAddress"].as<decltype(dst.deviceAddress)::value_type>();
     } else {
-        dst.deviceAddress = std::nullopt;
+        dst.deviceAddress.reset();
     }
     if (!src["deviceType"].isNull()) {
         dst.deviceType = src["deviceType"].as<decltype(dst.deviceType)::value_type>();
     } else {
-        dst.deviceType = std::nullopt;
+        dst.deviceType.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementEntityDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.entityAddress) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.entityAddress.has_value()) {
         dst["entityAddress"] = *src.entityAddress;
     }
-    if (src.entityType) {
+    if (src.entityType.has_value()) {
         dst["entityType"] = *src.entityType;
     }
-    if (src.lastStateChange) {
+    if (src.lastStateChange.has_value()) {
         dst["lastStateChange"] = *src.lastStateChange;
     }
-    if (src.minimumTrustLevel) {
+    if (src.minimumTrustLevel.has_value()) {
         dst["minimumTrustLevel"] = *src.minimumTrustLevel;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -17094,54 +17757,57 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescrip
     if (!src["entityAddress"].isNull()) {
         dst.entityAddress = src["entityAddress"].as<decltype(dst.entityAddress)::value_type>();
     } else {
-        dst.entityAddress = std::nullopt;
+        dst.entityAddress.reset();
     }
     if (!src["entityType"].isNull()) {
         dst.entityType = src["entityType"].as<decltype(dst.entityType)::value_type>();
     } else {
-        dst.entityType = std::nullopt;
+        dst.entityType.reset();
     }
     if (!src["lastStateChange"].isNull()) {
         dst.lastStateChange = src["lastStateChange"].as<decltype(dst.lastStateChange)::value_type>();
     } else {
-        dst.lastStateChange = std::nullopt;
+        dst.lastStateChange.reset();
     }
     if (!src["minimumTrustLevel"].isNull()) {
         dst.minimumTrustLevel = src["minimumTrustLevel"].as<decltype(dst.minimumTrustLevel)::value_type>();
     } else {
-        dst.minimumTrustLevel = std::nullopt;
+        dst.minimumTrustLevel.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementEntityDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.entityAddress) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.entityAddress.has_value()) {
         dst["entityAddress"] = *src.entityAddress;
     }
-    if (src.entityType) {
+    if (src.entityType.has_value()) {
         dst["entityType"] = *src.entityType;
     }
-    if (src.lastStateChange) {
+    if (src.lastStateChange.has_value()) {
         dst["lastStateChange"] = *src.lastStateChange;
     }
-    if (src.minimumTrustLevel) {
+    if (src.minimumTrustLevel.has_value()) {
         dst["minimumTrustLevel"] = *src.minimumTrustLevel;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -17154,39 +17820,42 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescrip
     if (!src["entityAddress"].isNull()) {
         dst.entityAddress = src["entityAddress"].as<decltype(dst.entityAddress)::value_type>();
     } else {
-        dst.entityAddress = std::nullopt;
+        dst.entityAddress.reset();
     }
     if (!src["entityType"].isNull()) {
         dst.entityType = src["entityType"].as<decltype(dst.entityType)::value_type>();
     } else {
-        dst.entityType = std::nullopt;
+        dst.entityType.reset();
     }
     if (!src["lastStateChange"].isNull()) {
         dst.lastStateChange = src["lastStateChange"].as<decltype(dst.lastStateChange)::value_type>();
     } else {
-        dst.lastStateChange = std::nullopt;
+        dst.lastStateChange.reset();
     }
     if (!src["minimumTrustLevel"].isNull()) {
         dst.minimumTrustLevel = src["minimumTrustLevel"].as<decltype(dst.minimumTrustLevel)::value_type>();
     } else {
-        dst.minimumTrustLevel = std::nullopt;
+        dst.minimumTrustLevel.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementEntityDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.networkManagementEntityDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.networkManagementEntityDescriptionData.has_value()) {
         dst["networkManagementEntityDescriptionData"] = *src.networkManagementEntityDescriptionData;
     }
 
@@ -17199,17 +17868,20 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescrip
     if (!src["networkManagementEntityDescriptionData"].isNull()) {
         dst.networkManagementEntityDescriptionData = src["networkManagementEntityDescriptionData"].as<decltype(dst.networkManagementEntityDescriptionData)::value_type>();
     } else {
-        dst.networkManagementEntityDescriptionData = std::nullopt;
+        dst.networkManagementEntityDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementEntityDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.entityAddress) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.entityAddress.has_value()) {
         dst["entityAddress"] = *src.entityAddress;
     }
-    if (src.entityType) {
+    if (src.entityType.has_value()) {
         dst["entityType"] = *src.entityType;
     }
 
@@ -17222,49 +17894,52 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescrip
     if (!src["entityAddress"].isNull()) {
         dst.entityAddress = src["entityAddress"].as<decltype(dst.entityAddress)::value_type>();
     } else {
-        dst.entityAddress = std::nullopt;
+        dst.entityAddress.reset();
     }
     if (!src["entityType"].isNull()) {
         dst.entityType = src["entityType"].as<decltype(dst.entityType)::value_type>();
     } else {
-        dst.entityType = std::nullopt;
+        dst.entityType.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementFeatureDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.featureAddress) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.featureAddress.has_value()) {
         dst["featureAddress"] = *src.featureAddress;
     }
-    if (src.featureType) {
+    if (src.featureType.has_value()) {
         dst["featureType"] = *src.featureType;
     }
-    if (src.specificUsage) {
+    if (src.specificUsage.has_value()) {
         dst["specificUsage"] = *src.specificUsage;
     }
-    if (src.featureGroup) {
+    if (src.featureGroup.has_value()) {
         dst["featureGroup"] = *src.featureGroup;
     }
-    if (src.role) {
+    if (src.role.has_value()) {
         dst["role"] = *src.role;
     }
-    if (src.supportedFunction) {
+    if (src.supportedFunction.has_value()) {
         dst["supportedFunction"] = *src.supportedFunction;
     }
-    if (src.lastStateChange) {
+    if (src.lastStateChange.has_value()) {
         dst["lastStateChange"] = *src.lastStateChange;
     }
-    if (src.minimumTrustLevel) {
+    if (src.minimumTrustLevel.has_value()) {
         dst["minimumTrustLevel"] = *src.minimumTrustLevel;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
-    if (src.maxResponseDelay) {
+    if (src.maxResponseDelay.has_value()) {
         dst["maxResponseDelay"] = *src.maxResponseDelay;
     }
 
@@ -17277,94 +17952,97 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescri
     if (!src["featureAddress"].isNull()) {
         dst.featureAddress = src["featureAddress"].as<decltype(dst.featureAddress)::value_type>();
     } else {
-        dst.featureAddress = std::nullopt;
+        dst.featureAddress.reset();
     }
     if (!src["featureType"].isNull()) {
         dst.featureType = src["featureType"].as<decltype(dst.featureType)::value_type>();
     } else {
-        dst.featureType = std::nullopt;
+        dst.featureType.reset();
     }
     if (!src["specificUsage"].isNull()) {
         dst.specificUsage = src["specificUsage"].as<decltype(dst.specificUsage)::value_type>();
     } else {
-        dst.specificUsage = std::nullopt;
+        dst.specificUsage.reset();
     }
     if (!src["featureGroup"].isNull()) {
         dst.featureGroup = src["featureGroup"].as<decltype(dst.featureGroup)::value_type>();
     } else {
-        dst.featureGroup = std::nullopt;
+        dst.featureGroup.reset();
     }
     if (!src["role"].isNull()) {
         dst.role = src["role"].as<decltype(dst.role)::value_type>();
     } else {
-        dst.role = std::nullopt;
+        dst.role.reset();
     }
     if (!src["supportedFunction"].isNull()) {
         dst.supportedFunction = src["supportedFunction"].as<decltype(dst.supportedFunction)::value_type>();
     } else {
-        dst.supportedFunction = std::nullopt;
+        dst.supportedFunction.reset();
     }
     if (!src["lastStateChange"].isNull()) {
         dst.lastStateChange = src["lastStateChange"].as<decltype(dst.lastStateChange)::value_type>();
     } else {
-        dst.lastStateChange = std::nullopt;
+        dst.lastStateChange.reset();
     }
     if (!src["minimumTrustLevel"].isNull()) {
         dst.minimumTrustLevel = src["minimumTrustLevel"].as<decltype(dst.minimumTrustLevel)::value_type>();
     } else {
-        dst.minimumTrustLevel = std::nullopt;
+        dst.minimumTrustLevel.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
     if (!src["maxResponseDelay"].isNull()) {
         dst.maxResponseDelay = src["maxResponseDelay"].as<decltype(dst.maxResponseDelay)::value_type>();
     } else {
-        dst.maxResponseDelay = std::nullopt;
+        dst.maxResponseDelay.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementFeatureDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.featureAddress) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.featureAddress.has_value()) {
         dst["featureAddress"] = *src.featureAddress;
     }
-    if (src.featureType) {
+    if (src.featureType.has_value()) {
         dst["featureType"] = *src.featureType;
     }
-    if (src.specificUsage) {
+    if (src.specificUsage.has_value()) {
         dst["specificUsage"] = *src.specificUsage;
     }
-    if (src.featureGroup) {
+    if (src.featureGroup.has_value()) {
         dst["featureGroup"] = *src.featureGroup;
     }
-    if (src.role) {
+    if (src.role.has_value()) {
         dst["role"] = *src.role;
     }
-    if (src.supportedFunction) {
+    if (src.supportedFunction.has_value()) {
         dst["supportedFunction"] = *src.supportedFunction;
     }
-    if (src.lastStateChange) {
+    if (src.lastStateChange.has_value()) {
         dst["lastStateChange"] = *src.lastStateChange;
     }
-    if (src.minimumTrustLevel) {
+    if (src.minimumTrustLevel.has_value()) {
         dst["minimumTrustLevel"] = *src.minimumTrustLevel;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
-    if (src.maxResponseDelay) {
+    if (src.maxResponseDelay.has_value()) {
         dst["maxResponseDelay"] = *src.maxResponseDelay;
     }
 
@@ -17377,64 +18055,67 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescri
     if (!src["featureAddress"].isNull()) {
         dst.featureAddress = src["featureAddress"].as<decltype(dst.featureAddress)::value_type>();
     } else {
-        dst.featureAddress = std::nullopt;
+        dst.featureAddress.reset();
     }
     if (!src["featureType"].isNull()) {
         dst.featureType = src["featureType"].as<decltype(dst.featureType)::value_type>();
     } else {
-        dst.featureType = std::nullopt;
+        dst.featureType.reset();
     }
     if (!src["specificUsage"].isNull()) {
         dst.specificUsage = src["specificUsage"].as<decltype(dst.specificUsage)::value_type>();
     } else {
-        dst.specificUsage = std::nullopt;
+        dst.specificUsage.reset();
     }
     if (!src["featureGroup"].isNull()) {
         dst.featureGroup = src["featureGroup"].as<decltype(dst.featureGroup)::value_type>();
     } else {
-        dst.featureGroup = std::nullopt;
+        dst.featureGroup.reset();
     }
     if (!src["role"].isNull()) {
         dst.role = src["role"].as<decltype(dst.role)::value_type>();
     } else {
-        dst.role = std::nullopt;
+        dst.role.reset();
     }
     if (!src["supportedFunction"].isNull()) {
         dst.supportedFunction = src["supportedFunction"].as<decltype(dst.supportedFunction)::value_type>();
     } else {
-        dst.supportedFunction = std::nullopt;
+        dst.supportedFunction.reset();
     }
     if (!src["lastStateChange"].isNull()) {
         dst.lastStateChange = src["lastStateChange"].as<decltype(dst.lastStateChange)::value_type>();
     } else {
-        dst.lastStateChange = std::nullopt;
+        dst.lastStateChange.reset();
     }
     if (!src["minimumTrustLevel"].isNull()) {
         dst.minimumTrustLevel = src["minimumTrustLevel"].as<decltype(dst.minimumTrustLevel)::value_type>();
     } else {
-        dst.minimumTrustLevel = std::nullopt;
+        dst.minimumTrustLevel.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
     if (!src["maxResponseDelay"].isNull()) {
         dst.maxResponseDelay = src["maxResponseDelay"].as<decltype(dst.maxResponseDelay)::value_type>();
     } else {
-        dst.maxResponseDelay = std::nullopt;
+        dst.maxResponseDelay.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementFeatureDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.networkManagementFeatureDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.networkManagementFeatureDescriptionData.has_value()) {
         dst["networkManagementFeatureDescriptionData"] = *src.networkManagementFeatureDescriptionData;
     }
 
@@ -17447,17 +18128,20 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescri
     if (!src["networkManagementFeatureDescriptionData"].isNull()) {
         dst.networkManagementFeatureDescriptionData = src["networkManagementFeatureDescriptionData"].as<decltype(dst.networkManagementFeatureDescriptionData)::value_type>();
     } else {
-        dst.networkManagementFeatureDescriptionData = std::nullopt;
+        dst.networkManagementFeatureDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const NetworkManagementFeatureDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.featureAddress) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.featureAddress.has_value()) {
         dst["featureAddress"] = *src.featureAddress;
     }
-    if (src.featureType) {
+    if (src.featureType.has_value()) {
         dst["featureType"] = *src.featureType;
     }
 
@@ -17470,43 +18154,46 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescri
     if (!src["featureAddress"].isNull()) {
         dst.featureAddress = src["featureAddress"].as<decltype(dst.featureAddress)::value_type>();
     } else {
-        dst.featureAddress = std::nullopt;
+        dst.featureAddress.reset();
     }
     if (!src["featureType"].isNull()) {
         dst.featureType = src["featureType"].as<decltype(dst.featureType)::value_type>();
     } else {
-        dst.featureType = std::nullopt;
+        dst.featureType.reset();
     }
 
 }
 
 bool convertToJson(const SupplyConditionDataType &src, JsonVariant &dst)
 {
-    if (src.conditionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.conditionId.has_value()) {
         dst["conditionId"] = *src.conditionId;
     }
-    if (src.timestamp) {
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.eventType) {
+    if (src.eventType.has_value()) {
         dst["eventType"] = *src.eventType;
     }
-    if (src.originator) {
+    if (src.originator.has_value()) {
         dst["originator"] = *src.originator;
     }
-    if (src.thresholdId) {
+    if (src.thresholdId.has_value()) {
         dst["thresholdId"] = *src.thresholdId;
     }
-    if (src.thresholdPercentage) {
+    if (src.thresholdPercentage.has_value()) {
         dst["thresholdPercentage"] = *src.thresholdPercentage;
     }
-    if (src.relevantPeriod) {
+    if (src.relevantPeriod.has_value()) {
         dst["relevantPeriod"] = *src.relevantPeriod;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
-    if (src.gridCondition) {
+    if (src.gridCondition.has_value()) {
         dst["gridCondition"] = *src.gridCondition;
     }
 
@@ -17519,78 +18206,81 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDataType &dst)
     if (!src["conditionId"].isNull()) {
         dst.conditionId = src["conditionId"].as<decltype(dst.conditionId)::value_type>();
     } else {
-        dst.conditionId = std::nullopt;
+        dst.conditionId.reset();
     }
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["eventType"].isNull()) {
         dst.eventType = src["eventType"].as<decltype(dst.eventType)::value_type>();
     } else {
-        dst.eventType = std::nullopt;
+        dst.eventType.reset();
     }
     if (!src["originator"].isNull()) {
         dst.originator = src["originator"].as<decltype(dst.originator)::value_type>();
     } else {
-        dst.originator = std::nullopt;
+        dst.originator.reset();
     }
     if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
-        dst.thresholdId = std::nullopt;
+        dst.thresholdId.reset();
     }
     if (!src["thresholdPercentage"].isNull()) {
         dst.thresholdPercentage = src["thresholdPercentage"].as<decltype(dst.thresholdPercentage)::value_type>();
     } else {
-        dst.thresholdPercentage = std::nullopt;
+        dst.thresholdPercentage.reset();
     }
     if (!src["relevantPeriod"].isNull()) {
         dst.relevantPeriod = src["relevantPeriod"].as<decltype(dst.relevantPeriod)::value_type>();
     } else {
-        dst.relevantPeriod = std::nullopt;
+        dst.relevantPeriod.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
     if (!src["gridCondition"].isNull()) {
         dst.gridCondition = src["gridCondition"].as<decltype(dst.gridCondition)::value_type>();
     } else {
-        dst.gridCondition = std::nullopt;
+        dst.gridCondition.reset();
     }
 
 }
 
 bool convertToJson(const SupplyConditionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.conditionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.conditionId.has_value()) {
         dst["conditionId"] = *src.conditionId;
     }
-    if (src.timestamp) {
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.eventType) {
+    if (src.eventType.has_value()) {
         dst["eventType"] = *src.eventType;
     }
-    if (src.originator) {
+    if (src.originator.has_value()) {
         dst["originator"] = *src.originator;
     }
-    if (src.thresholdId) {
+    if (src.thresholdId.has_value()) {
         dst["thresholdId"] = *src.thresholdId;
     }
-    if (src.thresholdPercentage) {
+    if (src.thresholdPercentage.has_value()) {
         dst["thresholdPercentage"] = *src.thresholdPercentage;
     }
-    if (src.relevantPeriod) {
+    if (src.relevantPeriod.has_value()) {
         dst["relevantPeriod"] = *src.relevantPeriod;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
-    if (src.gridCondition) {
+    if (src.gridCondition.has_value()) {
         dst["gridCondition"] = *src.gridCondition;
     }
 
@@ -17603,54 +18293,57 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDataElementsTyp
     if (!src["conditionId"].isNull()) {
         dst.conditionId = src["conditionId"].as<decltype(dst.conditionId)::value_type>();
     } else {
-        dst.conditionId = std::nullopt;
+        dst.conditionId.reset();
     }
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["eventType"].isNull()) {
         dst.eventType = src["eventType"].as<decltype(dst.eventType)::value_type>();
     } else {
-        dst.eventType = std::nullopt;
+        dst.eventType.reset();
     }
     if (!src["originator"].isNull()) {
         dst.originator = src["originator"].as<decltype(dst.originator)::value_type>();
     } else {
-        dst.originator = std::nullopt;
+        dst.originator.reset();
     }
     if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
-        dst.thresholdId = std::nullopt;
+        dst.thresholdId.reset();
     }
     if (!src["thresholdPercentage"].isNull()) {
         dst.thresholdPercentage = src["thresholdPercentage"].as<decltype(dst.thresholdPercentage)::value_type>();
     } else {
-        dst.thresholdPercentage = std::nullopt;
+        dst.thresholdPercentage.reset();
     }
     if (!src["relevantPeriod"].isNull()) {
         dst.relevantPeriod = src["relevantPeriod"].as<decltype(dst.relevantPeriod)::value_type>();
     } else {
-        dst.relevantPeriod = std::nullopt;
+        dst.relevantPeriod.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
     if (!src["gridCondition"].isNull()) {
         dst.gridCondition = src["gridCondition"].as<decltype(dst.gridCondition)::value_type>();
     } else {
-        dst.gridCondition = std::nullopt;
+        dst.gridCondition.reset();
     }
 
 }
 
 bool convertToJson(const SupplyConditionListDataType &src, JsonVariant &dst)
 {
-    if (src.supplyConditionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.supplyConditionData.has_value()) {
         dst["supplyConditionData"] = *src.supplyConditionData;
     }
 
@@ -17663,23 +18356,26 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionListDataType &d
     if (!src["supplyConditionData"].isNull()) {
         dst.supplyConditionData = src["supplyConditionData"].as<decltype(dst.supplyConditionData)::value_type>();
     } else {
-        dst.supplyConditionData = std::nullopt;
+        dst.supplyConditionData.reset();
     }
 
 }
 
 bool convertToJson(const SupplyConditionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.conditionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.conditionId.has_value()) {
         dst["conditionId"] = *src.conditionId;
     }
-    if (src.timestampInterval) {
+    if (src.timestampInterval.has_value()) {
         dst["timestampInterval"] = *src.timestampInterval;
     }
-    if (src.eventType) {
+    if (src.eventType.has_value()) {
         dst["eventType"] = *src.eventType;
     }
-    if (src.originator) {
+    if (src.originator.has_value()) {
         dst["originator"] = *src.originator;
     }
 
@@ -17692,41 +18388,44 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionListDataSelecto
     if (!src["conditionId"].isNull()) {
         dst.conditionId = src["conditionId"].as<decltype(dst.conditionId)::value_type>();
     } else {
-        dst.conditionId = std::nullopt;
+        dst.conditionId.reset();
     }
     if (!src["timestampInterval"].isNull()) {
         dst.timestampInterval = src["timestampInterval"].as<decltype(dst.timestampInterval)::value_type>();
     } else {
-        dst.timestampInterval = std::nullopt;
+        dst.timestampInterval.reset();
     }
     if (!src["eventType"].isNull()) {
         dst.eventType = src["eventType"].as<decltype(dst.eventType)::value_type>();
     } else {
-        dst.eventType = std::nullopt;
+        dst.eventType.reset();
     }
     if (!src["originator"].isNull()) {
         dst.originator = src["originator"].as<decltype(dst.originator)::value_type>();
     } else {
-        dst.originator = std::nullopt;
+        dst.originator.reset();
     }
 
 }
 
 bool convertToJson(const SupplyConditionDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.conditionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.conditionId.has_value()) {
         dst["conditionId"] = *src.conditionId;
     }
-    if (src.commodityType) {
+    if (src.commodityType.has_value()) {
         dst["commodityType"] = *src.commodityType;
     }
-    if (src.positiveEnergyDirection) {
+    if (src.positiveEnergyDirection.has_value()) {
         dst["positiveEnergyDirection"] = *src.positiveEnergyDirection;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -17739,46 +18438,49 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionData
     if (!src["conditionId"].isNull()) {
         dst.conditionId = src["conditionId"].as<decltype(dst.conditionId)::value_type>();
     } else {
-        dst.conditionId = std::nullopt;
+        dst.conditionId.reset();
     }
     if (!src["commodityType"].isNull()) {
         dst.commodityType = src["commodityType"].as<decltype(dst.commodityType)::value_type>();
     } else {
-        dst.commodityType = std::nullopt;
+        dst.commodityType.reset();
     }
     if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
-        dst.positiveEnergyDirection = std::nullopt;
+        dst.positiveEnergyDirection.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const SupplyConditionDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.conditionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.conditionId.has_value()) {
         dst["conditionId"] = *src.conditionId;
     }
-    if (src.commodityType) {
+    if (src.commodityType.has_value()) {
         dst["commodityType"] = *src.commodityType;
     }
-    if (src.positiveEnergyDirection) {
+    if (src.positiveEnergyDirection.has_value()) {
         dst["positiveEnergyDirection"] = *src.positiveEnergyDirection;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -17791,34 +18493,37 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionData
     if (!src["conditionId"].isNull()) {
         dst.conditionId = src["conditionId"].as<decltype(dst.conditionId)::value_type>();
     } else {
-        dst.conditionId = std::nullopt;
+        dst.conditionId.reset();
     }
     if (!src["commodityType"].isNull()) {
         dst.commodityType = src["commodityType"].as<decltype(dst.commodityType)::value_type>();
     } else {
-        dst.commodityType = std::nullopt;
+        dst.commodityType.reset();
     }
     if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
-        dst.positiveEnergyDirection = std::nullopt;
+        dst.positiveEnergyDirection.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const SupplyConditionDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.supplyConditionDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.supplyConditionDescriptionData.has_value()) {
         dst["supplyConditionDescriptionData"] = *src.supplyConditionDescriptionData;
     }
 
@@ -17831,14 +18536,17 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionList
     if (!src["supplyConditionDescriptionData"].isNull()) {
         dst.supplyConditionDescriptionData = src["supplyConditionDescriptionData"].as<decltype(dst.supplyConditionDescriptionData)::value_type>();
     } else {
-        dst.supplyConditionDescriptionData = std::nullopt;
+        dst.supplyConditionDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const SupplyConditionDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.conditionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.conditionId.has_value()) {
         dst["conditionId"] = *src.conditionId;
     }
 
@@ -17851,17 +18559,20 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionDescriptionList
     if (!src["conditionId"].isNull()) {
         dst.conditionId = src["conditionId"].as<decltype(dst.conditionId)::value_type>();
     } else {
-        dst.conditionId = std::nullopt;
+        dst.conditionId.reset();
     }
 
 }
 
 bool convertToJson(const SupplyConditionThresholdRelationDataType &src, JsonVariant &dst)
 {
-    if (src.conditionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.conditionId.has_value()) {
         dst["conditionId"] = *src.conditionId;
     }
-    if (src.thresholdId) {
+    if (src.thresholdId.has_value()) {
         dst["thresholdId"] = *src.thresholdId;
     }
 
@@ -17874,22 +18585,25 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelati
     if (!src["conditionId"].isNull()) {
         dst.conditionId = src["conditionId"].as<decltype(dst.conditionId)::value_type>();
     } else {
-        dst.conditionId = std::nullopt;
+        dst.conditionId.reset();
     }
     if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
-        dst.thresholdId = std::nullopt;
+        dst.thresholdId.reset();
     }
 
 }
 
 bool convertToJson(const SupplyConditionThresholdRelationDataElementsType &src, JsonVariant &dst)
 {
-    if (src.conditionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.conditionId.has_value()) {
         dst["conditionId"] = *src.conditionId;
     }
-    if (src.thresholdId) {
+    if (src.thresholdId.has_value()) {
         dst["thresholdId"] = *src.thresholdId;
     }
 
@@ -17902,19 +18616,22 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelati
     if (!src["conditionId"].isNull()) {
         dst.conditionId = src["conditionId"].as<decltype(dst.conditionId)::value_type>();
     } else {
-        dst.conditionId = std::nullopt;
+        dst.conditionId.reset();
     }
     if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
-        dst.thresholdId = std::nullopt;
+        dst.thresholdId.reset();
     }
 
 }
 
 bool convertToJson(const SupplyConditionThresholdRelationListDataType &src, JsonVariant &dst)
 {
-    if (src.supplyConditionThresholdRelationData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.supplyConditionThresholdRelationData.has_value()) {
         dst["supplyConditionThresholdRelationData"] = *src.supplyConditionThresholdRelationData;
     }
 
@@ -17927,17 +18644,20 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelati
     if (!src["supplyConditionThresholdRelationData"].isNull()) {
         dst.supplyConditionThresholdRelationData = src["supplyConditionThresholdRelationData"].as<decltype(dst.supplyConditionThresholdRelationData)::value_type>();
     } else {
-        dst.supplyConditionThresholdRelationData = std::nullopt;
+        dst.supplyConditionThresholdRelationData.reset();
     }
 
 }
 
 bool convertToJson(const SupplyConditionThresholdRelationListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.conditionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.conditionId.has_value()) {
         dst["conditionId"] = *src.conditionId;
     }
-    if (src.thresholdId) {
+    if (src.thresholdId.has_value()) {
         dst["thresholdId"] = *src.thresholdId;
     }
 
@@ -17950,43 +18670,46 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionThresholdRelati
     if (!src["conditionId"].isNull()) {
         dst.conditionId = src["conditionId"].as<decltype(dst.conditionId)::value_type>();
     } else {
-        dst.conditionId = std::nullopt;
+        dst.conditionId.reset();
     }
     if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
-        dst.thresholdId = std::nullopt;
+        dst.thresholdId.reset();
     }
 
 }
 
 bool convertToJson(const AlarmDataType &src, JsonVariant &dst)
 {
-    if (src.alarmId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.alarmId.has_value()) {
         dst["alarmId"] = *src.alarmId;
     }
-    if (src.thresholdId) {
+    if (src.thresholdId.has_value()) {
         dst["thresholdId"] = *src.thresholdId;
     }
-    if (src.timestamp) {
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.alarmType) {
+    if (src.alarmType.has_value()) {
         dst["alarmType"] = *src.alarmType;
     }
-    if (src.measuredValue) {
+    if (src.measuredValue.has_value()) {
         dst["measuredValue"] = *src.measuredValue;
     }
-    if (src.evaluationPeriod) {
+    if (src.evaluationPeriod.has_value()) {
         dst["evaluationPeriod"] = *src.evaluationPeriod;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -17999,78 +18722,81 @@ void convertFromJson(const JsonVariantConst &src, AlarmDataType &dst)
     if (!src["alarmId"].isNull()) {
         dst.alarmId = src["alarmId"].as<decltype(dst.alarmId)::value_type>();
     } else {
-        dst.alarmId = std::nullopt;
+        dst.alarmId.reset();
     }
     if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
-        dst.thresholdId = std::nullopt;
+        dst.thresholdId.reset();
     }
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["alarmType"].isNull()) {
         dst.alarmType = src["alarmType"].as<decltype(dst.alarmType)::value_type>();
     } else {
-        dst.alarmType = std::nullopt;
+        dst.alarmType.reset();
     }
     if (!src["measuredValue"].isNull()) {
         dst.measuredValue = src["measuredValue"].as<decltype(dst.measuredValue)::value_type>();
     } else {
-        dst.measuredValue = std::nullopt;
+        dst.measuredValue.reset();
     }
     if (!src["evaluationPeriod"].isNull()) {
         dst.evaluationPeriod = src["evaluationPeriod"].as<decltype(dst.evaluationPeriod)::value_type>();
     } else {
-        dst.evaluationPeriod = std::nullopt;
+        dst.evaluationPeriod.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const AlarmDataElementsType &src, JsonVariant &dst)
 {
-    if (src.alarmId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.alarmId.has_value()) {
         dst["alarmId"] = *src.alarmId;
     }
-    if (src.thresholdId) {
+    if (src.thresholdId.has_value()) {
         dst["thresholdId"] = *src.thresholdId;
     }
-    if (src.timestamp) {
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.alarmType) {
+    if (src.alarmType.has_value()) {
         dst["alarmType"] = *src.alarmType;
     }
-    if (src.measuredValue) {
+    if (src.measuredValue.has_value()) {
         dst["measuredValue"] = *src.measuredValue;
     }
-    if (src.evaluationPeriod) {
+    if (src.evaluationPeriod.has_value()) {
         dst["evaluationPeriod"] = *src.evaluationPeriod;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -18083,54 +18809,57 @@ void convertFromJson(const JsonVariantConst &src, AlarmDataElementsType &dst)
     if (!src["alarmId"].isNull()) {
         dst.alarmId = src["alarmId"].as<decltype(dst.alarmId)::value_type>();
     } else {
-        dst.alarmId = std::nullopt;
+        dst.alarmId.reset();
     }
     if (!src["thresholdId"].isNull()) {
         dst.thresholdId = src["thresholdId"].as<decltype(dst.thresholdId)::value_type>();
     } else {
-        dst.thresholdId = std::nullopt;
+        dst.thresholdId.reset();
     }
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["alarmType"].isNull()) {
         dst.alarmType = src["alarmType"].as<decltype(dst.alarmType)::value_type>();
     } else {
-        dst.alarmType = std::nullopt;
+        dst.alarmType.reset();
     }
     if (!src["measuredValue"].isNull()) {
         dst.measuredValue = src["measuredValue"].as<decltype(dst.measuredValue)::value_type>();
     } else {
-        dst.measuredValue = std::nullopt;
+        dst.measuredValue.reset();
     }
     if (!src["evaluationPeriod"].isNull()) {
         dst.evaluationPeriod = src["evaluationPeriod"].as<decltype(dst.evaluationPeriod)::value_type>();
     } else {
-        dst.evaluationPeriod = std::nullopt;
+        dst.evaluationPeriod.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const AlarmListDataType &src, JsonVariant &dst)
 {
-    if (src.alarmData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.alarmData.has_value()) {
         dst["alarmData"] = *src.alarmData;
     }
 
@@ -18143,17 +18872,20 @@ void convertFromJson(const JsonVariantConst &src, AlarmListDataType &dst)
     if (!src["alarmData"].isNull()) {
         dst.alarmData = src["alarmData"].as<decltype(dst.alarmData)::value_type>();
     } else {
-        dst.alarmData = std::nullopt;
+        dst.alarmData.reset();
     }
 
 }
 
 bool convertToJson(const AlarmListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.alarmId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.alarmId.has_value()) {
         dst["alarmId"] = *src.alarmId;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
 
@@ -18166,19 +18898,22 @@ void convertFromJson(const JsonVariantConst &src, AlarmListDataSelectorsType &ds
     if (!src["alarmId"].isNull()) {
         dst.alarmId = src["alarmId"].as<decltype(dst.alarmId)::value_type>();
     } else {
-        dst.alarmId = std::nullopt;
+        dst.alarmId.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementSpecificationVersionListType &src, JsonVariant &dst)
 {
-    if (src.specificationVersion) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.specificationVersion.has_value()) {
         dst["specificationVersion"] = *src.specificationVersion;
     }
 
@@ -18191,14 +18926,17 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSpecificationVer
     if (!src["specificationVersion"].isNull()) {
         dst.specificationVersion = src["specificationVersion"].as<decltype(dst.specificationVersion)::value_type>();
     } else {
-        dst.specificationVersion = std::nullopt;
+        dst.specificationVersion.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementDetailedDiscoveryDeviceInformationType &src, JsonVariant &dst)
 {
-    if (src.description) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -18211,14 +18949,17 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementDetailedDiscoveryEntityInformationType &src, JsonVariant &dst)
 {
-    if (src.description) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -18231,14 +18972,17 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementDetailedDiscoveryFeatureInformationType &src, JsonVariant &dst)
 {
-    if (src.description) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -18251,23 +18995,26 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementDetailedDiscoveryDataType &src, JsonVariant &dst)
 {
-    if (src.specificationVersionList) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.specificationVersionList.has_value()) {
         dst["specificationVersionList"] = *src.specificationVersionList;
     }
-    if (src.deviceInformation) {
+    if (src.deviceInformation.has_value()) {
         dst["deviceInformation"] = *src.deviceInformation;
     }
-    if (src.entityInformation) {
+    if (src.entityInformation.has_value()) {
         dst["entityInformation"] = *src.entityInformation;
     }
-    if (src.featureInformation) {
+    if (src.featureInformation.has_value()) {
         dst["featureInformation"] = *src.featureInformation;
     }
 
@@ -18280,22 +19027,22 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
     if (!src["specificationVersionList"].isNull()) {
         dst.specificationVersionList = src["specificationVersionList"].as<decltype(dst.specificationVersionList)::value_type>();
     } else {
-        dst.specificationVersionList = std::nullopt;
+        dst.specificationVersionList.reset();
     }
     if (!src["deviceInformation"].isNull()) {
         dst.deviceInformation = src["deviceInformation"].as<decltype(dst.deviceInformation)::value_type>();
     } else {
-        dst.deviceInformation = std::nullopt;
+        dst.deviceInformation.reset();
     }
     if (!src["entityInformation"].isNull()) {
         dst.entityInformation = src["entityInformation"].as<decltype(dst.entityInformation)::value_type>();
     } else {
-        dst.entityInformation = std::nullopt;
+        dst.entityInformation.reset();
     }
     if (!src["featureInformation"].isNull()) {
         dst.featureInformation = src["featureInformation"].as<decltype(dst.featureInformation)::value_type>();
     } else {
-        dst.featureInformation = std::nullopt;
+        dst.featureInformation.reset();
     }
 
 }
@@ -18313,7 +19060,10 @@ void convertFromJson(const JsonVariantConst &src, SpecificationVersionDataElemen
 
 bool convertToJson(const NodeManagementSpecificationVersionListElementsType &src, JsonVariant &dst)
 {
-    if (src.specificationVersion) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.specificationVersion.has_value()) {
         dst["specificationVersion"] = *src.specificationVersion;
     }
 
@@ -18326,14 +19076,17 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSpecificationVer
     if (!src["specificationVersion"].isNull()) {
         dst.specificationVersion = src["specificationVersion"].as<decltype(dst.specificationVersion)::value_type>();
     } else {
-        dst.specificationVersion = std::nullopt;
+        dst.specificationVersion.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementDetailedDiscoveryDeviceInformationElementsType &src, JsonVariant &dst)
 {
-    if (src.description) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -18346,14 +19099,17 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementDetailedDiscoveryEntityInformationElementsType &src, JsonVariant &dst)
 {
-    if (src.description) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -18366,14 +19122,17 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementDetailedDiscoveryFeatureInformationElementsType &src, JsonVariant &dst)
 {
-    if (src.description) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -18386,23 +19145,26 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementDetailedDiscoveryDataElementsType &src, JsonVariant &dst)
 {
-    if (src.specificationVersionList) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.specificationVersionList.has_value()) {
         dst["specificationVersionList"] = *src.specificationVersionList;
     }
-    if (src.deviceInformation) {
+    if (src.deviceInformation.has_value()) {
         dst["deviceInformation"] = *src.deviceInformation;
     }
-    if (src.entityInformation) {
+    if (src.entityInformation.has_value()) {
         dst["entityInformation"] = *src.entityInformation;
     }
-    if (src.featureInformation) {
+    if (src.featureInformation.has_value()) {
         dst["featureInformation"] = *src.featureInformation;
     }
 
@@ -18415,35 +19177,38 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
     if (!src["specificationVersionList"].isNull()) {
         dst.specificationVersionList = src["specificationVersionList"].as<decltype(dst.specificationVersionList)::value_type>();
     } else {
-        dst.specificationVersionList = std::nullopt;
+        dst.specificationVersionList.reset();
     }
     if (!src["deviceInformation"].isNull()) {
         dst.deviceInformation = src["deviceInformation"].as<decltype(dst.deviceInformation)::value_type>();
     } else {
-        dst.deviceInformation = std::nullopt;
+        dst.deviceInformation.reset();
     }
     if (!src["entityInformation"].isNull()) {
         dst.entityInformation = src["entityInformation"].as<decltype(dst.entityInformation)::value_type>();
     } else {
-        dst.entityInformation = std::nullopt;
+        dst.entityInformation.reset();
     }
     if (!src["featureInformation"].isNull()) {
         dst.featureInformation = src["featureInformation"].as<decltype(dst.featureInformation)::value_type>();
     } else {
-        dst.featureInformation = std::nullopt;
+        dst.featureInformation.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementDetailedDiscoveryDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.deviceInformation) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.deviceInformation.has_value()) {
         dst["deviceInformation"] = *src.deviceInformation;
     }
-    if (src.entityInformation) {
+    if (src.entityInformation.has_value()) {
         dst["entityInformation"] = *src.entityInformation;
     }
-    if (src.featureInformation) {
+    if (src.featureInformation.has_value()) {
         dst["featureInformation"] = *src.featureInformation;
     }
 
@@ -18456,36 +19221,39 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDetailedDiscover
     if (!src["deviceInformation"].isNull()) {
         dst.deviceInformation = src["deviceInformation"].as<decltype(dst.deviceInformation)::value_type>();
     } else {
-        dst.deviceInformation = std::nullopt;
+        dst.deviceInformation.reset();
     }
     if (!src["entityInformation"].isNull()) {
         dst.entityInformation = src["entityInformation"].as<decltype(dst.entityInformation)::value_type>();
     } else {
-        dst.entityInformation = std::nullopt;
+        dst.entityInformation.reset();
     }
     if (!src["featureInformation"].isNull()) {
         dst.featureInformation = src["featureInformation"].as<decltype(dst.featureInformation)::value_type>();
     } else {
-        dst.featureInformation = std::nullopt;
+        dst.featureInformation.reset();
     }
 
 }
 
 bool convertToJson(const BindingManagementEntryDataType &src, JsonVariant &dst)
 {
-    if (src.bindingId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.bindingId.has_value()) {
         dst["bindingId"] = *src.bindingId;
     }
-    if (src.clientAddress) {
+    if (src.clientAddress.has_value()) {
         dst["clientAddress"] = *src.clientAddress;
     }
-    if (src.serverAddress) {
+    if (src.serverAddress.has_value()) {
         dst["serverAddress"] = *src.serverAddress;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -18498,34 +19266,37 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementEntryDataType
     if (!src["bindingId"].isNull()) {
         dst.bindingId = src["bindingId"].as<decltype(dst.bindingId)::value_type>();
     } else {
-        dst.bindingId = std::nullopt;
+        dst.bindingId.reset();
     }
     if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
-        dst.clientAddress = std::nullopt;
+        dst.clientAddress.reset();
     }
     if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
-        dst.serverAddress = std::nullopt;
+        dst.serverAddress.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementBindingDataType &src, JsonVariant &dst)
 {
-    if (src.bindingEntry) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.bindingEntry.has_value()) {
         dst["bindingEntry"] = *src.bindingEntry;
     }
 
@@ -18538,26 +19309,29 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDataType 
     if (!src["bindingEntry"].isNull()) {
         dst.bindingEntry = src["bindingEntry"].as<decltype(dst.bindingEntry)::value_type>();
     } else {
-        dst.bindingEntry = std::nullopt;
+        dst.bindingEntry.reset();
     }
 
 }
 
 bool convertToJson(const BindingManagementEntryDataElementsType &src, JsonVariant &dst)
 {
-    if (src.bindingId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.bindingId.has_value()) {
         dst["bindingId"] = *src.bindingId;
     }
-    if (src.clientAddress) {
+    if (src.clientAddress.has_value()) {
         dst["clientAddress"] = *src.clientAddress;
     }
-    if (src.serverAddress) {
+    if (src.serverAddress.has_value()) {
         dst["serverAddress"] = *src.serverAddress;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -18570,34 +19344,37 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementEntryDataElem
     if (!src["bindingId"].isNull()) {
         dst.bindingId = src["bindingId"].as<decltype(dst.bindingId)::value_type>();
     } else {
-        dst.bindingId = std::nullopt;
+        dst.bindingId.reset();
     }
     if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
-        dst.clientAddress = std::nullopt;
+        dst.clientAddress.reset();
     }
     if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
-        dst.serverAddress = std::nullopt;
+        dst.serverAddress.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementBindingDataElementsType &src, JsonVariant &dst)
 {
-    if (src.bindingEntry) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.bindingEntry.has_value()) {
         dst["bindingEntry"] = *src.bindingEntry;
     }
 
@@ -18610,20 +19387,23 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDataEleme
     if (!src["bindingEntry"].isNull()) {
         dst.bindingEntry = src["bindingEntry"].as<decltype(dst.bindingEntry)::value_type>();
     } else {
-        dst.bindingEntry = std::nullopt;
+        dst.bindingEntry.reset();
     }
 
 }
 
 bool convertToJson(const BindingManagementEntryListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.bindingId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.bindingId.has_value()) {
         dst["bindingId"] = *src.bindingId;
     }
-    if (src.clientAddress) {
+    if (src.clientAddress.has_value()) {
         dst["clientAddress"] = *src.clientAddress;
     }
-    if (src.serverAddress) {
+    if (src.serverAddress.has_value()) {
         dst["serverAddress"] = *src.serverAddress;
     }
 
@@ -18636,24 +19416,27 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementEntryListData
     if (!src["bindingId"].isNull()) {
         dst.bindingId = src["bindingId"].as<decltype(dst.bindingId)::value_type>();
     } else {
-        dst.bindingId = std::nullopt;
+        dst.bindingId.reset();
     }
     if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
-        dst.clientAddress = std::nullopt;
+        dst.clientAddress.reset();
     }
     if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
-        dst.serverAddress = std::nullopt;
+        dst.serverAddress.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementBindingDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.bindingEntry) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.bindingEntry.has_value()) {
         dst["bindingEntry"] = *src.bindingEntry;
     }
 
@@ -18666,20 +19449,23 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDataSelec
     if (!src["bindingEntry"].isNull()) {
         dst.bindingEntry = src["bindingEntry"].as<decltype(dst.bindingEntry)::value_type>();
     } else {
-        dst.bindingEntry = std::nullopt;
+        dst.bindingEntry.reset();
     }
 
 }
 
 bool convertToJson(const BindingManagementRequestCallType &src, JsonVariant &dst)
 {
-    if (src.clientAddress) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.clientAddress.has_value()) {
         dst["clientAddress"] = *src.clientAddress;
     }
-    if (src.serverAddress) {
+    if (src.serverAddress.has_value()) {
         dst["serverAddress"] = *src.serverAddress;
     }
-    if (src.serverFeatureType) {
+    if (src.serverFeatureType.has_value()) {
         dst["serverFeatureType"] = *src.serverFeatureType;
     }
 
@@ -18692,24 +19478,27 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementRequestCallTy
     if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
-        dst.clientAddress = std::nullopt;
+        dst.clientAddress.reset();
     }
     if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
-        dst.serverAddress = std::nullopt;
+        dst.serverAddress.reset();
     }
     if (!src["serverFeatureType"].isNull()) {
         dst.serverFeatureType = src["serverFeatureType"].as<decltype(dst.serverFeatureType)::value_type>();
     } else {
-        dst.serverFeatureType = std::nullopt;
+        dst.serverFeatureType.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementBindingRequestCallType &src, JsonVariant &dst)
 {
-    if (src.bindingRequest) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.bindingRequest.has_value()) {
         dst["bindingRequest"] = *src.bindingRequest;
     }
 
@@ -18722,20 +19511,23 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingRequestCa
     if (!src["bindingRequest"].isNull()) {
         dst.bindingRequest = src["bindingRequest"].as<decltype(dst.bindingRequest)::value_type>();
     } else {
-        dst.bindingRequest = std::nullopt;
+        dst.bindingRequest.reset();
     }
 
 }
 
 bool convertToJson(const BindingManagementRequestCallElementsType &src, JsonVariant &dst)
 {
-    if (src.clientAddress) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.clientAddress.has_value()) {
         dst["clientAddress"] = *src.clientAddress;
     }
-    if (src.serverAddress) {
+    if (src.serverAddress.has_value()) {
         dst["serverAddress"] = *src.serverAddress;
     }
-    if (src.serverFeatureType) {
+    if (src.serverFeatureType.has_value()) {
         dst["serverFeatureType"] = *src.serverFeatureType;
     }
 
@@ -18748,24 +19540,27 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementRequestCallEl
     if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
-        dst.clientAddress = std::nullopt;
+        dst.clientAddress.reset();
     }
     if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
-        dst.serverAddress = std::nullopt;
+        dst.serverAddress.reset();
     }
     if (!src["serverFeatureType"].isNull()) {
         dst.serverFeatureType = src["serverFeatureType"].as<decltype(dst.serverFeatureType)::value_type>();
     } else {
-        dst.serverFeatureType = std::nullopt;
+        dst.serverFeatureType.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementBindingRequestCallElementsType &src, JsonVariant &dst)
 {
-    if (src.bindingRequest) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.bindingRequest.has_value()) {
         dst["bindingRequest"] = *src.bindingRequest;
     }
 
@@ -18778,20 +19573,23 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingRequestCa
     if (!src["bindingRequest"].isNull()) {
         dst.bindingRequest = src["bindingRequest"].as<decltype(dst.bindingRequest)::value_type>();
     } else {
-        dst.bindingRequest = std::nullopt;
+        dst.bindingRequest.reset();
     }
 
 }
 
 bool convertToJson(const BindingManagementDeleteCallType &src, JsonVariant &dst)
 {
-    if (src.bindingId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.bindingId.has_value()) {
         dst["bindingId"] = *src.bindingId;
     }
-    if (src.clientAddress) {
+    if (src.clientAddress.has_value()) {
         dst["clientAddress"] = *src.clientAddress;
     }
-    if (src.serverAddress) {
+    if (src.serverAddress.has_value()) {
         dst["serverAddress"] = *src.serverAddress;
     }
 
@@ -18804,24 +19602,27 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementDeleteCallTyp
     if (!src["bindingId"].isNull()) {
         dst.bindingId = src["bindingId"].as<decltype(dst.bindingId)::value_type>();
     } else {
-        dst.bindingId = std::nullopt;
+        dst.bindingId.reset();
     }
     if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
-        dst.clientAddress = std::nullopt;
+        dst.clientAddress.reset();
     }
     if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
-        dst.serverAddress = std::nullopt;
+        dst.serverAddress.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementBindingDeleteCallType &src, JsonVariant &dst)
 {
-    if (src.bindingDelete) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.bindingDelete.has_value()) {
         dst["bindingDelete"] = *src.bindingDelete;
     }
 
@@ -18834,20 +19635,23 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDeleteCal
     if (!src["bindingDelete"].isNull()) {
         dst.bindingDelete = src["bindingDelete"].as<decltype(dst.bindingDelete)::value_type>();
     } else {
-        dst.bindingDelete = std::nullopt;
+        dst.bindingDelete.reset();
     }
 
 }
 
 bool convertToJson(const BindingManagementDeleteCallElementsType &src, JsonVariant &dst)
 {
-    if (src.bindingId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.bindingId.has_value()) {
         dst["bindingId"] = *src.bindingId;
     }
-    if (src.clientAddress) {
+    if (src.clientAddress.has_value()) {
         dst["clientAddress"] = *src.clientAddress;
     }
-    if (src.serverAddress) {
+    if (src.serverAddress.has_value()) {
         dst["serverAddress"] = *src.serverAddress;
     }
 
@@ -18860,24 +19664,27 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementDeleteCallEle
     if (!src["bindingId"].isNull()) {
         dst.bindingId = src["bindingId"].as<decltype(dst.bindingId)::value_type>();
     } else {
-        dst.bindingId = std::nullopt;
+        dst.bindingId.reset();
     }
     if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
-        dst.clientAddress = std::nullopt;
+        dst.clientAddress.reset();
     }
     if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
-        dst.serverAddress = std::nullopt;
+        dst.serverAddress.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementBindingDeleteCallElementsType &src, JsonVariant &dst)
 {
-    if (src.bindingDelete) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.bindingDelete.has_value()) {
         dst["bindingDelete"] = *src.bindingDelete;
     }
 
@@ -18890,26 +19697,29 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementBindingDeleteCal
     if (!src["bindingDelete"].isNull()) {
         dst.bindingDelete = src["bindingDelete"].as<decltype(dst.bindingDelete)::value_type>();
     } else {
-        dst.bindingDelete = std::nullopt;
+        dst.bindingDelete.reset();
     }
 
 }
 
 bool convertToJson(const SubscriptionManagementEntryDataType &src, JsonVariant &dst)
 {
-    if (src.subscriptionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.subscriptionId.has_value()) {
         dst["subscriptionId"] = *src.subscriptionId;
     }
-    if (src.clientAddress) {
+    if (src.clientAddress.has_value()) {
         dst["clientAddress"] = *src.clientAddress;
     }
-    if (src.serverAddress) {
+    if (src.serverAddress.has_value()) {
         dst["serverAddress"] = *src.serverAddress;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -18922,34 +19732,37 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryDat
     if (!src["subscriptionId"].isNull()) {
         dst.subscriptionId = src["subscriptionId"].as<decltype(dst.subscriptionId)::value_type>();
     } else {
-        dst.subscriptionId = std::nullopt;
+        dst.subscriptionId.reset();
     }
     if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
-        dst.clientAddress = std::nullopt;
+        dst.clientAddress.reset();
     }
     if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
-        dst.serverAddress = std::nullopt;
+        dst.serverAddress.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementSubscriptionDataType &src, JsonVariant &dst)
 {
-    if (src.subscriptionEntry) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.subscriptionEntry.has_value()) {
         dst["subscriptionEntry"] = *src.subscriptionEntry;
     }
 
@@ -18962,26 +19775,29 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionData
     if (!src["subscriptionEntry"].isNull()) {
         dst.subscriptionEntry = src["subscriptionEntry"].as<decltype(dst.subscriptionEntry)::value_type>();
     } else {
-        dst.subscriptionEntry = std::nullopt;
+        dst.subscriptionEntry.reset();
     }
 
 }
 
 bool convertToJson(const SubscriptionManagementEntryDataElementsType &src, JsonVariant &dst)
 {
-    if (src.subscriptionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.subscriptionId.has_value()) {
         dst["subscriptionId"] = *src.subscriptionId;
     }
-    if (src.clientAddress) {
+    if (src.clientAddress.has_value()) {
         dst["clientAddress"] = *src.clientAddress;
     }
-    if (src.serverAddress) {
+    if (src.serverAddress.has_value()) {
         dst["serverAddress"] = *src.serverAddress;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -18994,34 +19810,37 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryDat
     if (!src["subscriptionId"].isNull()) {
         dst.subscriptionId = src["subscriptionId"].as<decltype(dst.subscriptionId)::value_type>();
     } else {
-        dst.subscriptionId = std::nullopt;
+        dst.subscriptionId.reset();
     }
     if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
-        dst.clientAddress = std::nullopt;
+        dst.clientAddress.reset();
     }
     if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
-        dst.serverAddress = std::nullopt;
+        dst.serverAddress.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementSubscriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.subscriptionEntry) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.subscriptionEntry.has_value()) {
         dst["subscriptionEntry"] = *src.subscriptionEntry;
     }
 
@@ -19034,20 +19853,23 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionData
     if (!src["subscriptionEntry"].isNull()) {
         dst.subscriptionEntry = src["subscriptionEntry"].as<decltype(dst.subscriptionEntry)::value_type>();
     } else {
-        dst.subscriptionEntry = std::nullopt;
+        dst.subscriptionEntry.reset();
     }
 
 }
 
 bool convertToJson(const SubscriptionManagementEntryListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.subscriptionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.subscriptionId.has_value()) {
         dst["subscriptionId"] = *src.subscriptionId;
     }
-    if (src.clientAddress) {
+    if (src.clientAddress.has_value()) {
         dst["clientAddress"] = *src.clientAddress;
     }
-    if (src.serverAddress) {
+    if (src.serverAddress.has_value()) {
         dst["serverAddress"] = *src.serverAddress;
     }
 
@@ -19060,24 +19882,27 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryLis
     if (!src["subscriptionId"].isNull()) {
         dst.subscriptionId = src["subscriptionId"].as<decltype(dst.subscriptionId)::value_type>();
     } else {
-        dst.subscriptionId = std::nullopt;
+        dst.subscriptionId.reset();
     }
     if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
-        dst.clientAddress = std::nullopt;
+        dst.clientAddress.reset();
     }
     if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
-        dst.serverAddress = std::nullopt;
+        dst.serverAddress.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementSubscriptionDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.subscriptionEntry) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.subscriptionEntry.has_value()) {
         dst["subscriptionEntry"] = *src.subscriptionEntry;
     }
 
@@ -19090,20 +19915,23 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionData
     if (!src["subscriptionEntry"].isNull()) {
         dst.subscriptionEntry = src["subscriptionEntry"].as<decltype(dst.subscriptionEntry)::value_type>();
     } else {
-        dst.subscriptionEntry = std::nullopt;
+        dst.subscriptionEntry.reset();
     }
 
 }
 
 bool convertToJson(const SubscriptionManagementRequestCallType &src, JsonVariant &dst)
 {
-    if (src.clientAddress) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.clientAddress.has_value()) {
         dst["clientAddress"] = *src.clientAddress;
     }
-    if (src.serverAddress) {
+    if (src.serverAddress.has_value()) {
         dst["serverAddress"] = *src.serverAddress;
     }
-    if (src.serverFeatureType) {
+    if (src.serverFeatureType.has_value()) {
         dst["serverFeatureType"] = *src.serverFeatureType;
     }
 
@@ -19116,24 +19944,27 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementRequestC
     if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
-        dst.clientAddress = std::nullopt;
+        dst.clientAddress.reset();
     }
     if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
-        dst.serverAddress = std::nullopt;
+        dst.serverAddress.reset();
     }
     if (!src["serverFeatureType"].isNull()) {
         dst.serverFeatureType = src["serverFeatureType"].as<decltype(dst.serverFeatureType)::value_type>();
     } else {
-        dst.serverFeatureType = std::nullopt;
+        dst.serverFeatureType.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementSubscriptionRequestCallType &src, JsonVariant &dst)
 {
-    if (src.subscriptionRequest) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.subscriptionRequest.has_value()) {
         dst["subscriptionRequest"] = *src.subscriptionRequest;
     }
 
@@ -19146,20 +19977,23 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionRequ
     if (!src["subscriptionRequest"].isNull()) {
         dst.subscriptionRequest = src["subscriptionRequest"].as<decltype(dst.subscriptionRequest)::value_type>();
     } else {
-        dst.subscriptionRequest = std::nullopt;
+        dst.subscriptionRequest.reset();
     }
 
 }
 
 bool convertToJson(const SubscriptionManagementRequestCallElementsType &src, JsonVariant &dst)
 {
-    if (src.clientAddress) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.clientAddress.has_value()) {
         dst["clientAddress"] = *src.clientAddress;
     }
-    if (src.serverAddress) {
+    if (src.serverAddress.has_value()) {
         dst["serverAddress"] = *src.serverAddress;
     }
-    if (src.serverFeatureType) {
+    if (src.serverFeatureType.has_value()) {
         dst["serverFeatureType"] = *src.serverFeatureType;
     }
 
@@ -19172,24 +20006,27 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementRequestC
     if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
-        dst.clientAddress = std::nullopt;
+        dst.clientAddress.reset();
     }
     if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
-        dst.serverAddress = std::nullopt;
+        dst.serverAddress.reset();
     }
     if (!src["serverFeatureType"].isNull()) {
         dst.serverFeatureType = src["serverFeatureType"].as<decltype(dst.serverFeatureType)::value_type>();
     } else {
-        dst.serverFeatureType = std::nullopt;
+        dst.serverFeatureType.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementSubscriptionRequestCallElementsType &src, JsonVariant &dst)
 {
-    if (src.subscriptionRequest) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.subscriptionRequest.has_value()) {
         dst["subscriptionRequest"] = *src.subscriptionRequest;
     }
 
@@ -19202,20 +20039,23 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionRequ
     if (!src["subscriptionRequest"].isNull()) {
         dst.subscriptionRequest = src["subscriptionRequest"].as<decltype(dst.subscriptionRequest)::value_type>();
     } else {
-        dst.subscriptionRequest = std::nullopt;
+        dst.subscriptionRequest.reset();
     }
 
 }
 
 bool convertToJson(const SubscriptionManagementDeleteCallType &src, JsonVariant &dst)
 {
-    if (src.subscriptionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.subscriptionId.has_value()) {
         dst["subscriptionId"] = *src.subscriptionId;
     }
-    if (src.clientAddress) {
+    if (src.clientAddress.has_value()) {
         dst["clientAddress"] = *src.clientAddress;
     }
-    if (src.serverAddress) {
+    if (src.serverAddress.has_value()) {
         dst["serverAddress"] = *src.serverAddress;
     }
 
@@ -19228,24 +20068,27 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementDeleteCa
     if (!src["subscriptionId"].isNull()) {
         dst.subscriptionId = src["subscriptionId"].as<decltype(dst.subscriptionId)::value_type>();
     } else {
-        dst.subscriptionId = std::nullopt;
+        dst.subscriptionId.reset();
     }
     if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
-        dst.clientAddress = std::nullopt;
+        dst.clientAddress.reset();
     }
     if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
-        dst.serverAddress = std::nullopt;
+        dst.serverAddress.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementSubscriptionDeleteCallType &src, JsonVariant &dst)
 {
-    if (src.subscriptionDelete) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.subscriptionDelete.has_value()) {
         dst["subscriptionDelete"] = *src.subscriptionDelete;
     }
 
@@ -19258,20 +20101,23 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDele
     if (!src["subscriptionDelete"].isNull()) {
         dst.subscriptionDelete = src["subscriptionDelete"].as<decltype(dst.subscriptionDelete)::value_type>();
     } else {
-        dst.subscriptionDelete = std::nullopt;
+        dst.subscriptionDelete.reset();
     }
 
 }
 
 bool convertToJson(const SubscriptionManagementDeleteCallElementsType &src, JsonVariant &dst)
 {
-    if (src.subscriptionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.subscriptionId.has_value()) {
         dst["subscriptionId"] = *src.subscriptionId;
     }
-    if (src.clientAddress) {
+    if (src.clientAddress.has_value()) {
         dst["clientAddress"] = *src.clientAddress;
     }
-    if (src.serverAddress) {
+    if (src.serverAddress.has_value()) {
         dst["serverAddress"] = *src.serverAddress;
     }
 
@@ -19284,24 +20130,27 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementDeleteCa
     if (!src["subscriptionId"].isNull()) {
         dst.subscriptionId = src["subscriptionId"].as<decltype(dst.subscriptionId)::value_type>();
     } else {
-        dst.subscriptionId = std::nullopt;
+        dst.subscriptionId.reset();
     }
     if (!src["clientAddress"].isNull()) {
         dst.clientAddress = src["clientAddress"].as<decltype(dst.clientAddress)::value_type>();
     } else {
-        dst.clientAddress = std::nullopt;
+        dst.clientAddress.reset();
     }
     if (!src["serverAddress"].isNull()) {
         dst.serverAddress = src["serverAddress"].as<decltype(dst.serverAddress)::value_type>();
     } else {
-        dst.serverAddress = std::nullopt;
+        dst.serverAddress.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementSubscriptionDeleteCallElementsType &src, JsonVariant &dst)
 {
-    if (src.subscriptionDelete) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.subscriptionDelete.has_value()) {
         dst["subscriptionDelete"] = *src.subscriptionDelete;
     }
 
@@ -19314,14 +20163,17 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementSubscriptionDele
     if (!src["subscriptionDelete"].isNull()) {
         dst.subscriptionDelete = src["subscriptionDelete"].as<decltype(dst.subscriptionDelete)::value_type>();
     } else {
-        dst.subscriptionDelete = std::nullopt;
+        dst.subscriptionDelete.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementDestinationDataType &src, JsonVariant &dst)
 {
-    if (src.deviceDescription) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.deviceDescription.has_value()) {
         dst["deviceDescription"] = *src.deviceDescription;
     }
 
@@ -19334,14 +20186,17 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationDataT
     if (!src["deviceDescription"].isNull()) {
         dst.deviceDescription = src["deviceDescription"].as<decltype(dst.deviceDescription)::value_type>();
     } else {
-        dst.deviceDescription = std::nullopt;
+        dst.deviceDescription.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementDestinationDataElementsType &src, JsonVariant &dst)
 {
-    if (src.deviceDescription) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.deviceDescription.has_value()) {
         dst["deviceDescription"] = *src.deviceDescription;
     }
 
@@ -19354,14 +20209,17 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationDataE
     if (!src["deviceDescription"].isNull()) {
         dst.deviceDescription = src["deviceDescription"].as<decltype(dst.deviceDescription)::value_type>();
     } else {
-        dst.deviceDescription = std::nullopt;
+        dst.deviceDescription.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementDestinationListDataType &src, JsonVariant &dst)
 {
-    if (src.nodeManagementDestinationData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.nodeManagementDestinationData.has_value()) {
         dst["nodeManagementDestinationData"] = *src.nodeManagementDestinationData;
     }
 
@@ -19374,14 +20232,17 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationListD
     if (!src["nodeManagementDestinationData"].isNull()) {
         dst.nodeManagementDestinationData = src["nodeManagementDestinationData"].as<decltype(dst.nodeManagementDestinationData)::value_type>();
     } else {
-        dst.nodeManagementDestinationData = std::nullopt;
+        dst.nodeManagementDestinationData.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementDestinationListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.deviceDescription) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.deviceDescription.has_value()) {
         dst["deviceDescription"] = *src.deviceDescription;
     }
 
@@ -19394,26 +20255,29 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementDestinationListD
     if (!src["deviceDescription"].isNull()) {
         dst.deviceDescription = src["deviceDescription"].as<decltype(dst.deviceDescription)::value_type>();
     } else {
-        dst.deviceDescription = std::nullopt;
+        dst.deviceDescription.reset();
     }
 
 }
 
 bool convertToJson(const UseCaseSupportType &src, JsonVariant &dst)
 {
-    if (src.useCaseName) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.useCaseName.has_value()) {
         dst["useCaseName"] = *src.useCaseName;
     }
-    if (src.useCaseVersion) {
+    if (src.useCaseVersion.has_value()) {
         dst["useCaseVersion"] = *src.useCaseVersion;
     }
-    if (src.useCaseAvailable) {
+    if (src.useCaseAvailable.has_value()) {
         dst["useCaseAvailable"] = *src.useCaseAvailable;
     }
-    if (src.scenarioSupport) {
+    if (src.scenarioSupport.has_value()) {
         dst["scenarioSupport"] = *src.scenarioSupport;
     }
-    if (src.useCaseDocumentSubRevision) {
+    if (src.useCaseDocumentSubRevision.has_value()) {
         dst["useCaseDocumentSubRevision"] = *src.useCaseDocumentSubRevision;
     }
 
@@ -19426,40 +20290,43 @@ void convertFromJson(const JsonVariantConst &src, UseCaseSupportType &dst)
     if (!src["useCaseName"].isNull()) {
         dst.useCaseName = src["useCaseName"].as<decltype(dst.useCaseName)::value_type>();
     } else {
-        dst.useCaseName = std::nullopt;
+        dst.useCaseName.reset();
     }
     if (!src["useCaseVersion"].isNull()) {
         dst.useCaseVersion = src["useCaseVersion"].as<decltype(dst.useCaseVersion)::value_type>();
     } else {
-        dst.useCaseVersion = std::nullopt;
+        dst.useCaseVersion.reset();
     }
     if (!src["useCaseAvailable"].isNull()) {
         dst.useCaseAvailable = src["useCaseAvailable"].as<decltype(dst.useCaseAvailable)::value_type>();
     } else {
-        dst.useCaseAvailable = std::nullopt;
+        dst.useCaseAvailable.reset();
     }
     if (!src["scenarioSupport"].isNull()) {
         dst.scenarioSupport = src["scenarioSupport"].as<decltype(dst.scenarioSupport)::value_type>();
     } else {
-        dst.scenarioSupport = std::nullopt;
+        dst.scenarioSupport.reset();
     }
     if (!src["useCaseDocumentSubRevision"].isNull()) {
         dst.useCaseDocumentSubRevision = src["useCaseDocumentSubRevision"].as<decltype(dst.useCaseDocumentSubRevision)::value_type>();
     } else {
-        dst.useCaseDocumentSubRevision = std::nullopt;
+        dst.useCaseDocumentSubRevision.reset();
     }
 
 }
 
 bool convertToJson(const UseCaseInformationDataType &src, JsonVariant &dst)
 {
-    if (src.address) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.address.has_value()) {
         dst["address"] = *src.address;
     }
-    if (src.actor) {
+    if (src.actor.has_value()) {
         dst["actor"] = *src.actor;
     }
-    if (src.useCaseSupport) {
+    if (src.useCaseSupport.has_value()) {
         dst["useCaseSupport"] = *src.useCaseSupport;
     }
 
@@ -19472,24 +20339,27 @@ void convertFromJson(const JsonVariantConst &src, UseCaseInformationDataType &ds
     if (!src["address"].isNull()) {
         dst.address = src["address"].as<decltype(dst.address)::value_type>();
     } else {
-        dst.address = std::nullopt;
+        dst.address.reset();
     }
     if (!src["actor"].isNull()) {
         dst.actor = src["actor"].as<decltype(dst.actor)::value_type>();
     } else {
-        dst.actor = std::nullopt;
+        dst.actor.reset();
     }
     if (!src["useCaseSupport"].isNull()) {
         dst.useCaseSupport = src["useCaseSupport"].as<decltype(dst.useCaseSupport)::value_type>();
     } else {
-        dst.useCaseSupport = std::nullopt;
+        dst.useCaseSupport.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementUseCaseDataType &src, JsonVariant &dst)
 {
-    if (src.useCaseInformation) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.useCaseInformation.has_value()) {
         dst["useCaseInformation"] = *src.useCaseInformation;
     }
 
@@ -19502,26 +20372,29 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementUseCaseDataType 
     if (!src["useCaseInformation"].isNull()) {
         dst.useCaseInformation = src["useCaseInformation"].as<decltype(dst.useCaseInformation)::value_type>();
     } else {
-        dst.useCaseInformation = std::nullopt;
+        dst.useCaseInformation.reset();
     }
 
 }
 
 bool convertToJson(const UseCaseSupportElementsType &src, JsonVariant &dst)
 {
-    if (src.useCaseName) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.useCaseName.has_value()) {
         dst["useCaseName"] = *src.useCaseName;
     }
-    if (src.useCaseVersion) {
+    if (src.useCaseVersion.has_value()) {
         dst["useCaseVersion"] = *src.useCaseVersion;
     }
-    if (src.useCaseAvailable) {
+    if (src.useCaseAvailable.has_value()) {
         dst["useCaseAvailable"] = *src.useCaseAvailable;
     }
-    if (src.scenarioSupport) {
+    if (src.scenarioSupport.has_value()) {
         dst["scenarioSupport"] = *src.scenarioSupport;
     }
-    if (src.useCaseDocumentSubRevision) {
+    if (src.useCaseDocumentSubRevision.has_value()) {
         dst["useCaseDocumentSubRevision"] = *src.useCaseDocumentSubRevision;
     }
 
@@ -19534,40 +20407,43 @@ void convertFromJson(const JsonVariantConst &src, UseCaseSupportElementsType &ds
     if (!src["useCaseName"].isNull()) {
         dst.useCaseName = src["useCaseName"].as<decltype(dst.useCaseName)::value_type>();
     } else {
-        dst.useCaseName = std::nullopt;
+        dst.useCaseName.reset();
     }
     if (!src["useCaseVersion"].isNull()) {
         dst.useCaseVersion = src["useCaseVersion"].as<decltype(dst.useCaseVersion)::value_type>();
     } else {
-        dst.useCaseVersion = std::nullopt;
+        dst.useCaseVersion.reset();
     }
     if (!src["useCaseAvailable"].isNull()) {
         dst.useCaseAvailable = src["useCaseAvailable"].as<decltype(dst.useCaseAvailable)::value_type>();
     } else {
-        dst.useCaseAvailable = std::nullopt;
+        dst.useCaseAvailable.reset();
     }
     if (!src["scenarioSupport"].isNull()) {
         dst.scenarioSupport = src["scenarioSupport"].as<decltype(dst.scenarioSupport)::value_type>();
     } else {
-        dst.scenarioSupport = std::nullopt;
+        dst.scenarioSupport.reset();
     }
     if (!src["useCaseDocumentSubRevision"].isNull()) {
         dst.useCaseDocumentSubRevision = src["useCaseDocumentSubRevision"].as<decltype(dst.useCaseDocumentSubRevision)::value_type>();
     } else {
-        dst.useCaseDocumentSubRevision = std::nullopt;
+        dst.useCaseDocumentSubRevision.reset();
     }
 
 }
 
 bool convertToJson(const UseCaseInformationDataElementsType &src, JsonVariant &dst)
 {
-    if (src.address) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.address.has_value()) {
         dst["address"] = *src.address;
     }
-    if (src.actor) {
+    if (src.actor.has_value()) {
         dst["actor"] = *src.actor;
     }
-    if (src.useCaseSupport) {
+    if (src.useCaseSupport.has_value()) {
         dst["useCaseSupport"] = *src.useCaseSupport;
     }
 
@@ -19580,24 +20456,27 @@ void convertFromJson(const JsonVariantConst &src, UseCaseInformationDataElements
     if (!src["address"].isNull()) {
         dst.address = src["address"].as<decltype(dst.address)::value_type>();
     } else {
-        dst.address = std::nullopt;
+        dst.address.reset();
     }
     if (!src["actor"].isNull()) {
         dst.actor = src["actor"].as<decltype(dst.actor)::value_type>();
     } else {
-        dst.actor = std::nullopt;
+        dst.actor.reset();
     }
     if (!src["useCaseSupport"].isNull()) {
         dst.useCaseSupport = src["useCaseSupport"].as<decltype(dst.useCaseSupport)::value_type>();
     } else {
-        dst.useCaseSupport = std::nullopt;
+        dst.useCaseSupport.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementUseCaseDataElementsType &src, JsonVariant &dst)
 {
-    if (src.useCaseInformation) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.useCaseInformation.has_value()) {
         dst["useCaseInformation"] = *src.useCaseInformation;
     }
 
@@ -19610,20 +20489,23 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementUseCaseDataEleme
     if (!src["useCaseInformation"].isNull()) {
         dst.useCaseInformation = src["useCaseInformation"].as<decltype(dst.useCaseInformation)::value_type>();
     } else {
-        dst.useCaseInformation = std::nullopt;
+        dst.useCaseInformation.reset();
     }
 
 }
 
 bool convertToJson(const UseCaseSupportSelectorsType &src, JsonVariant &dst)
 {
-    if (src.useCaseName) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.useCaseName.has_value()) {
         dst["useCaseName"] = *src.useCaseName;
     }
-    if (src.useCaseVersion) {
+    if (src.useCaseVersion.has_value()) {
         dst["useCaseVersion"] = *src.useCaseVersion;
     }
-    if (src.scenarioSupport) {
+    if (src.scenarioSupport.has_value()) {
         dst["scenarioSupport"] = *src.scenarioSupport;
     }
 
@@ -19636,30 +20518,33 @@ void convertFromJson(const JsonVariantConst &src, UseCaseSupportSelectorsType &d
     if (!src["useCaseName"].isNull()) {
         dst.useCaseName = src["useCaseName"].as<decltype(dst.useCaseName)::value_type>();
     } else {
-        dst.useCaseName = std::nullopt;
+        dst.useCaseName.reset();
     }
     if (!src["useCaseVersion"].isNull()) {
         dst.useCaseVersion = src["useCaseVersion"].as<decltype(dst.useCaseVersion)::value_type>();
     } else {
-        dst.useCaseVersion = std::nullopt;
+        dst.useCaseVersion.reset();
     }
     if (!src["scenarioSupport"].isNull()) {
         dst.scenarioSupport = src["scenarioSupport"].as<decltype(dst.scenarioSupport)::value_type>();
     } else {
-        dst.scenarioSupport = std::nullopt;
+        dst.scenarioSupport.reset();
     }
 
 }
 
 bool convertToJson(const UseCaseInformationListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.address) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.address.has_value()) {
         dst["address"] = *src.address;
     }
-    if (src.actor) {
+    if (src.actor.has_value()) {
         dst["actor"] = *src.actor;
     }
-    if (src.useCaseSupport) {
+    if (src.useCaseSupport.has_value()) {
         dst["useCaseSupport"] = *src.useCaseSupport;
     }
 
@@ -19672,24 +20557,27 @@ void convertFromJson(const JsonVariantConst &src, UseCaseInformationListDataSele
     if (!src["address"].isNull()) {
         dst.address = src["address"].as<decltype(dst.address)::value_type>();
     } else {
-        dst.address = std::nullopt;
+        dst.address.reset();
     }
     if (!src["actor"].isNull()) {
         dst.actor = src["actor"].as<decltype(dst.actor)::value_type>();
     } else {
-        dst.actor = std::nullopt;
+        dst.actor.reset();
     }
     if (!src["useCaseSupport"].isNull()) {
         dst.useCaseSupport = src["useCaseSupport"].as<decltype(dst.useCaseSupport)::value_type>();
     } else {
-        dst.useCaseSupport = std::nullopt;
+        dst.useCaseSupport.reset();
     }
 
 }
 
 bool convertToJson(const NodeManagementUseCaseDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.useCaseInformation) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.useCaseInformation.has_value()) {
         dst["useCaseInformation"] = *src.useCaseInformation;
     }
 
@@ -19702,14 +20590,17 @@ void convertFromJson(const JsonVariantConst &src, NodeManagementUseCaseDataSelec
     if (!src["useCaseInformation"].isNull()) {
         dst.useCaseInformation = src["useCaseInformation"].as<decltype(dst.useCaseInformation)::value_type>();
     } else {
-        dst.useCaseInformation = std::nullopt;
+        dst.useCaseInformation.reset();
     }
 
 }
 
 bool convertToJson(const BindingManagementEntryListDataType &src, JsonVariant &dst)
 {
-    if (src.bindingManagementEntryData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.bindingManagementEntryData.has_value()) {
         dst["bindingManagementEntryData"] = *src.bindingManagementEntryData;
     }
 
@@ -19722,14 +20613,17 @@ void convertFromJson(const JsonVariantConst &src, BindingManagementEntryListData
     if (!src["bindingManagementEntryData"].isNull()) {
         dst.bindingManagementEntryData = src["bindingManagementEntryData"].as<decltype(dst.bindingManagementEntryData)::value_type>();
     } else {
-        dst.bindingManagementEntryData = std::nullopt;
+        dst.bindingManagementEntryData.reset();
     }
 
 }
 
 bool convertToJson(const SubscriptionManagementEntryListDataType &src, JsonVariant &dst)
 {
-    if (src.subscriptionManagementEntryData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.subscriptionManagementEntryData.has_value()) {
         dst["subscriptionManagementEntryData"] = *src.subscriptionManagementEntryData;
     }
 
@@ -19742,14 +20636,17 @@ void convertFromJson(const JsonVariantConst &src, SubscriptionManagementEntryLis
     if (!src["subscriptionManagementEntryData"].isNull()) {
         dst.subscriptionManagementEntryData = src["subscriptionManagementEntryData"].as<decltype(dst.subscriptionManagementEntryData)::value_type>();
     } else {
-        dst.subscriptionManagementEntryData = std::nullopt;
+        dst.subscriptionManagementEntryData.reset();
     }
 
 }
 
 bool convertToJson(const UseCaseInformationListDataType &src, JsonVariant &dst)
 {
-    if (src.useCaseInformationData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.useCaseInformationData.has_value()) {
         dst["useCaseInformationData"] = *src.useCaseInformationData;
     }
 
@@ -19762,14 +20659,17 @@ void convertFromJson(const JsonVariantConst &src, UseCaseInformationListDataType
     if (!src["useCaseInformationData"].isNull()) {
         dst.useCaseInformationData = src["useCaseInformationData"].as<decltype(dst.useCaseInformationData)::value_type>();
     } else {
-        dst.useCaseInformationData = std::nullopt;
+        dst.useCaseInformationData.reset();
     }
 
 }
 
 bool convertToJson(const SpecificationVersionListDataType &src, JsonVariant &dst)
 {
-    if (src.specificationVersionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.specificationVersionData.has_value()) {
         dst["specificationVersionData"] = *src.specificationVersionData;
     }
 
@@ -19782,7 +20682,7 @@ void convertFromJson(const JsonVariantConst &src, SpecificationVersionListDataTy
     if (!src["specificationVersionData"].isNull()) {
         dst.specificationVersionData = src["specificationVersionData"].as<decltype(dst.specificationVersionData)::value_type>();
     } else {
-        dst.specificationVersionData = std::nullopt;
+        dst.specificationVersionData.reset();
     }
 
 }
@@ -19822,7 +20722,10 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementDirectControlRel
 
 bool convertToJson(const TaskManagementHvacRelatedType &src, JsonVariant &dst)
 {
-    if (src.overrunId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.overrunId.has_value()) {
         dst["overrunId"] = *src.overrunId;
     }
 
@@ -19835,14 +20738,17 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementHvacRelatedType 
     if (!src["overrunId"].isNull()) {
         dst.overrunId = src["overrunId"].as<decltype(dst.overrunId)::value_type>();
     } else {
-        dst.overrunId = std::nullopt;
+        dst.overrunId.reset();
     }
 
 }
 
 bool convertToJson(const TaskManagementHvacRelatedElementsType &src, JsonVariant &dst)
 {
-    if (src.overrunId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.overrunId.has_value()) {
         dst["overrunId"] = *src.overrunId;
     }
 
@@ -19855,14 +20761,17 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementHvacRelatedEleme
     if (!src["overrunId"].isNull()) {
         dst.overrunId = src["overrunId"].as<decltype(dst.overrunId)::value_type>();
     } else {
-        dst.overrunId = std::nullopt;
+        dst.overrunId.reset();
     }
 
 }
 
 bool convertToJson(const TaskManagementLoadControlReleatedType &src, JsonVariant &dst)
 {
-    if (src.eventId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.eventId.has_value()) {
         dst["eventId"] = *src.eventId;
     }
 
@@ -19875,14 +20784,17 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementLoadControlRelea
     if (!src["eventId"].isNull()) {
         dst.eventId = src["eventId"].as<decltype(dst.eventId)::value_type>();
     } else {
-        dst.eventId = std::nullopt;
+        dst.eventId.reset();
     }
 
 }
 
 bool convertToJson(const TaskManagementLoadControlReleatedElementsType &src, JsonVariant &dst)
 {
-    if (src.eventId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.eventId.has_value()) {
         dst["eventId"] = *src.eventId;
     }
 
@@ -19895,14 +20807,17 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementLoadControlRelea
     if (!src["eventId"].isNull()) {
         dst.eventId = src["eventId"].as<decltype(dst.eventId)::value_type>();
     } else {
-        dst.eventId = std::nullopt;
+        dst.eventId.reset();
     }
 
 }
 
 bool convertToJson(const TaskManagementPowerSequencesRelatedType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -19915,14 +20830,17 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementPowerSequencesRe
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const TaskManagementPowerSequencesRelatedElementsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -19935,14 +20853,17 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementPowerSequencesRe
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const TaskManagementSmartEnergyManagementPsRelatedType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -19955,14 +20876,17 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementSmartEnergyManag
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const TaskManagementSmartEnergyManagementPsRelatedElementsType &src, JsonVariant &dst)
 {
-    if (src.sequenceId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -19975,26 +20899,29 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementSmartEnergyManag
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const TaskManagementJobDataType &src, JsonVariant &dst)
 {
-    if (src.jobId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.jobId.has_value()) {
         dst["jobId"] = *src.jobId;
     }
-    if (src.timestamp) {
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.jobState) {
+    if (src.jobState.has_value()) {
         dst["jobState"] = *src.jobState;
     }
-    if (src.elapsedTime) {
+    if (src.elapsedTime.has_value()) {
         dst["elapsedTime"] = *src.elapsedTime;
     }
-    if (src.remainingTime) {
+    if (src.remainingTime.has_value()) {
         dst["remainingTime"] = *src.remainingTime;
     }
 
@@ -20007,46 +20934,49 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDataType &dst
     if (!src["jobId"].isNull()) {
         dst.jobId = src["jobId"].as<decltype(dst.jobId)::value_type>();
     } else {
-        dst.jobId = std::nullopt;
+        dst.jobId.reset();
     }
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["jobState"].isNull()) {
         dst.jobState = src["jobState"].as<decltype(dst.jobState)::value_type>();
     } else {
-        dst.jobState = std::nullopt;
+        dst.jobState.reset();
     }
     if (!src["elapsedTime"].isNull()) {
         dst.elapsedTime = src["elapsedTime"].as<decltype(dst.elapsedTime)::value_type>();
     } else {
-        dst.elapsedTime = std::nullopt;
+        dst.elapsedTime.reset();
     }
     if (!src["remainingTime"].isNull()) {
         dst.remainingTime = src["remainingTime"].as<decltype(dst.remainingTime)::value_type>();
     } else {
-        dst.remainingTime = std::nullopt;
+        dst.remainingTime.reset();
     }
 
 }
 
 bool convertToJson(const TaskManagementJobDataElementsType &src, JsonVariant &dst)
 {
-    if (src.jobId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.jobId.has_value()) {
         dst["jobId"] = *src.jobId;
     }
-    if (src.timestamp) {
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.jobState) {
+    if (src.jobState.has_value()) {
         dst["jobState"] = *src.jobState;
     }
-    if (src.elapsedTime) {
+    if (src.elapsedTime.has_value()) {
         dst["elapsedTime"] = *src.elapsedTime;
     }
-    if (src.remainingTime) {
+    if (src.remainingTime.has_value()) {
         dst["remainingTime"] = *src.remainingTime;
     }
 
@@ -20059,34 +20989,37 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDataElementsT
     if (!src["jobId"].isNull()) {
         dst.jobId = src["jobId"].as<decltype(dst.jobId)::value_type>();
     } else {
-        dst.jobId = std::nullopt;
+        dst.jobId.reset();
     }
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["jobState"].isNull()) {
         dst.jobState = src["jobState"].as<decltype(dst.jobState)::value_type>();
     } else {
-        dst.jobState = std::nullopt;
+        dst.jobState.reset();
     }
     if (!src["elapsedTime"].isNull()) {
         dst.elapsedTime = src["elapsedTime"].as<decltype(dst.elapsedTime)::value_type>();
     } else {
-        dst.elapsedTime = std::nullopt;
+        dst.elapsedTime.reset();
     }
     if (!src["remainingTime"].isNull()) {
         dst.remainingTime = src["remainingTime"].as<decltype(dst.remainingTime)::value_type>();
     } else {
-        dst.remainingTime = std::nullopt;
+        dst.remainingTime.reset();
     }
 
 }
 
 bool convertToJson(const TaskManagementJobListDataType &src, JsonVariant &dst)
 {
-    if (src.taskManagementJobData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.taskManagementJobData.has_value()) {
         dst["taskManagementJobData"] = *src.taskManagementJobData;
     }
 
@@ -20099,17 +21032,20 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobListDataType 
     if (!src["taskManagementJobData"].isNull()) {
         dst.taskManagementJobData = src["taskManagementJobData"].as<decltype(dst.taskManagementJobData)::value_type>();
     } else {
-        dst.taskManagementJobData = std::nullopt;
+        dst.taskManagementJobData.reset();
     }
 
 }
 
 bool convertToJson(const TaskManagementJobListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.jobId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.jobId.has_value()) {
         dst["jobId"] = *src.jobId;
     }
-    if (src.jobState) {
+    if (src.jobState.has_value()) {
         dst["jobState"] = *src.jobState;
     }
 
@@ -20122,34 +21058,37 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobListDataSelec
     if (!src["jobId"].isNull()) {
         dst.jobId = src["jobId"].as<decltype(dst.jobId)::value_type>();
     } else {
-        dst.jobId = std::nullopt;
+        dst.jobId.reset();
     }
     if (!src["jobState"].isNull()) {
         dst.jobState = src["jobState"].as<decltype(dst.jobState)::value_type>();
     } else {
-        dst.jobState = std::nullopt;
+        dst.jobState.reset();
     }
 
 }
 
 bool convertToJson(const TaskManagementJobRelationDataType &src, JsonVariant &dst)
 {
-    if (src.jobId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.jobId.has_value()) {
         dst["jobId"] = *src.jobId;
     }
-    if (src.directControlRelated) {
+    if (src.directControlRelated.has_value()) {
         dst["directControlRelated"] = *src.directControlRelated;
     }
-    if (src.hvacRelated) {
+    if (src.hvacRelated.has_value()) {
         dst["hvacRelated"] = *src.hvacRelated;
     }
-    if (src.loadControlReleated) {
+    if (src.loadControlReleated.has_value()) {
         dst["loadControlReleated"] = *src.loadControlReleated;
     }
-    if (src.powerSequencesRelated) {
+    if (src.powerSequencesRelated.has_value()) {
         dst["powerSequencesRelated"] = *src.powerSequencesRelated;
     }
-    if (src.smartEnergyManagementPsRelated) {
+    if (src.smartEnergyManagementPsRelated.has_value()) {
         dst["smartEnergyManagementPsRelated"] = *src.smartEnergyManagementPsRelated;
     }
 
@@ -20162,54 +21101,57 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationDataT
     if (!src["jobId"].isNull()) {
         dst.jobId = src["jobId"].as<decltype(dst.jobId)::value_type>();
     } else {
-        dst.jobId = std::nullopt;
+        dst.jobId.reset();
     }
     if (!src["directControlRelated"].isNull()) {
         dst.directControlRelated = src["directControlRelated"].as<decltype(dst.directControlRelated)::value_type>();
     } else {
-        dst.directControlRelated = std::nullopt;
+        dst.directControlRelated.reset();
     }
     if (!src["hvacRelated"].isNull()) {
         dst.hvacRelated = src["hvacRelated"].as<decltype(dst.hvacRelated)::value_type>();
     } else {
-        dst.hvacRelated = std::nullopt;
+        dst.hvacRelated.reset();
     }
     if (!src["loadControlReleated"].isNull()) {
         dst.loadControlReleated = src["loadControlReleated"].as<decltype(dst.loadControlReleated)::value_type>();
     } else {
-        dst.loadControlReleated = std::nullopt;
+        dst.loadControlReleated.reset();
     }
     if (!src["powerSequencesRelated"].isNull()) {
         dst.powerSequencesRelated = src["powerSequencesRelated"].as<decltype(dst.powerSequencesRelated)::value_type>();
     } else {
-        dst.powerSequencesRelated = std::nullopt;
+        dst.powerSequencesRelated.reset();
     }
     if (!src["smartEnergyManagementPsRelated"].isNull()) {
         dst.smartEnergyManagementPsRelated = src["smartEnergyManagementPsRelated"].as<decltype(dst.smartEnergyManagementPsRelated)::value_type>();
     } else {
-        dst.smartEnergyManagementPsRelated = std::nullopt;
+        dst.smartEnergyManagementPsRelated.reset();
     }
 
 }
 
 bool convertToJson(const TaskManagementJobRelationDataElementsType &src, JsonVariant &dst)
 {
-    if (src.jobId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.jobId.has_value()) {
         dst["jobId"] = *src.jobId;
     }
-    if (src.directControlRelated) {
+    if (src.directControlRelated.has_value()) {
         dst["directControlRelated"] = *src.directControlRelated;
     }
-    if (src.hvacRelated) {
+    if (src.hvacRelated.has_value()) {
         dst["hvacRelated"] = *src.hvacRelated;
     }
-    if (src.loadControlReleated) {
+    if (src.loadControlReleated.has_value()) {
         dst["loadControlReleated"] = *src.loadControlReleated;
     }
-    if (src.powerSequencesRelated) {
+    if (src.powerSequencesRelated.has_value()) {
         dst["powerSequencesRelated"] = *src.powerSequencesRelated;
     }
-    if (src.smartEnergyManagementPsRelated) {
+    if (src.smartEnergyManagementPsRelated.has_value()) {
         dst["smartEnergyManagementPsRelated"] = *src.smartEnergyManagementPsRelated;
     }
 
@@ -20222,39 +21164,42 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationDataE
     if (!src["jobId"].isNull()) {
         dst.jobId = src["jobId"].as<decltype(dst.jobId)::value_type>();
     } else {
-        dst.jobId = std::nullopt;
+        dst.jobId.reset();
     }
     if (!src["directControlRelated"].isNull()) {
         dst.directControlRelated = src["directControlRelated"].as<decltype(dst.directControlRelated)::value_type>();
     } else {
-        dst.directControlRelated = std::nullopt;
+        dst.directControlRelated.reset();
     }
     if (!src["hvacRelated"].isNull()) {
         dst.hvacRelated = src["hvacRelated"].as<decltype(dst.hvacRelated)::value_type>();
     } else {
-        dst.hvacRelated = std::nullopt;
+        dst.hvacRelated.reset();
     }
     if (!src["loadControlReleated"].isNull()) {
         dst.loadControlReleated = src["loadControlReleated"].as<decltype(dst.loadControlReleated)::value_type>();
     } else {
-        dst.loadControlReleated = std::nullopt;
+        dst.loadControlReleated.reset();
     }
     if (!src["powerSequencesRelated"].isNull()) {
         dst.powerSequencesRelated = src["powerSequencesRelated"].as<decltype(dst.powerSequencesRelated)::value_type>();
     } else {
-        dst.powerSequencesRelated = std::nullopt;
+        dst.powerSequencesRelated.reset();
     }
     if (!src["smartEnergyManagementPsRelated"].isNull()) {
         dst.smartEnergyManagementPsRelated = src["smartEnergyManagementPsRelated"].as<decltype(dst.smartEnergyManagementPsRelated)::value_type>();
     } else {
-        dst.smartEnergyManagementPsRelated = std::nullopt;
+        dst.smartEnergyManagementPsRelated.reset();
     }
 
 }
 
 bool convertToJson(const TaskManagementJobRelationListDataType &src, JsonVariant &dst)
 {
-    if (src.taskManagementJobRelationData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.taskManagementJobRelationData.has_value()) {
         dst["taskManagementJobRelationData"] = *src.taskManagementJobRelationData;
     }
 
@@ -20267,14 +21212,17 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationListD
     if (!src["taskManagementJobRelationData"].isNull()) {
         dst.taskManagementJobRelationData = src["taskManagementJobRelationData"].as<decltype(dst.taskManagementJobRelationData)::value_type>();
     } else {
-        dst.taskManagementJobRelationData = std::nullopt;
+        dst.taskManagementJobRelationData.reset();
     }
 
 }
 
 bool convertToJson(const TaskManagementJobRelationListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.jobId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.jobId.has_value()) {
         dst["jobId"] = *src.jobId;
     }
 
@@ -20287,23 +21235,26 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationListD
     if (!src["jobId"].isNull()) {
         dst.jobId = src["jobId"].as<decltype(dst.jobId)::value_type>();
     } else {
-        dst.jobId = std::nullopt;
+        dst.jobId.reset();
     }
 
 }
 
 bool convertToJson(const TaskManagementJobDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.jobId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.jobId.has_value()) {
         dst["jobId"] = *src.jobId;
     }
-    if (src.jobSource) {
+    if (src.jobSource.has_value()) {
         dst["jobSource"] = *src.jobSource;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -20316,38 +21267,41 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionDa
     if (!src["jobId"].isNull()) {
         dst.jobId = src["jobId"].as<decltype(dst.jobId)::value_type>();
     } else {
-        dst.jobId = std::nullopt;
+        dst.jobId.reset();
     }
     if (!src["jobSource"].isNull()) {
         dst.jobSource = src["jobSource"].as<decltype(dst.jobSource)::value_type>();
     } else {
-        dst.jobSource = std::nullopt;
+        dst.jobSource.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const TaskManagementJobDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.jobId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.jobId.has_value()) {
         dst["jobId"] = *src.jobId;
     }
-    if (src.jobSource) {
+    if (src.jobSource.has_value()) {
         dst["jobSource"] = *src.jobSource;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -20360,29 +21314,32 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionDa
     if (!src["jobId"].isNull()) {
         dst.jobId = src["jobId"].as<decltype(dst.jobId)::value_type>();
     } else {
-        dst.jobId = std::nullopt;
+        dst.jobId.reset();
     }
     if (!src["jobSource"].isNull()) {
         dst.jobSource = src["jobSource"].as<decltype(dst.jobSource)::value_type>();
     } else {
-        dst.jobSource = std::nullopt;
+        dst.jobSource.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const TaskManagementJobDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.taskManagementJobDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.taskManagementJobDescriptionData.has_value()) {
         dst["taskManagementJobDescriptionData"] = *src.taskManagementJobDescriptionData;
     }
 
@@ -20395,17 +21352,20 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionLi
     if (!src["taskManagementJobDescriptionData"].isNull()) {
         dst.taskManagementJobDescriptionData = src["taskManagementJobDescriptionData"].as<decltype(dst.taskManagementJobDescriptionData)::value_type>();
     } else {
-        dst.taskManagementJobDescriptionData = std::nullopt;
+        dst.taskManagementJobDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const TaskManagementJobDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.jobId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.jobId.has_value()) {
         dst["jobId"] = *src.jobId;
     }
-    if (src.jobSource) {
+    if (src.jobSource.has_value()) {
         dst["jobSource"] = *src.jobSource;
     }
 
@@ -20418,22 +21378,25 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionLi
     if (!src["jobId"].isNull()) {
         dst.jobId = src["jobId"].as<decltype(dst.jobId)::value_type>();
     } else {
-        dst.jobId = std::nullopt;
+        dst.jobId.reset();
     }
     if (!src["jobSource"].isNull()) {
         dst.jobSource = src["jobSource"].as<decltype(dst.jobSource)::value_type>();
     } else {
-        dst.jobSource = std::nullopt;
+        dst.jobSource.reset();
     }
 
 }
 
 bool convertToJson(const TaskManagementOverviewDataType &src, JsonVariant &dst)
 {
-    if (src.remoteControllable) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.remoteControllable.has_value()) {
         dst["remoteControllable"] = *src.remoteControllable;
     }
-    if (src.jobsActive) {
+    if (src.jobsActive.has_value()) {
         dst["jobsActive"] = *src.jobsActive;
     }
 
@@ -20446,22 +21409,25 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementOverviewDataType
     if (!src["remoteControllable"].isNull()) {
         dst.remoteControllable = src["remoteControllable"].as<decltype(dst.remoteControllable)::value_type>();
     } else {
-        dst.remoteControllable = std::nullopt;
+        dst.remoteControllable.reset();
     }
     if (!src["jobsActive"].isNull()) {
         dst.jobsActive = src["jobsActive"].as<decltype(dst.jobsActive)::value_type>();
     } else {
-        dst.jobsActive = std::nullopt;
+        dst.jobsActive.reset();
     }
 
 }
 
 bool convertToJson(const TaskManagementOverviewDataElementsType &src, JsonVariant &dst)
 {
-    if (src.remoteControllable) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.remoteControllable.has_value()) {
         dst["remoteControllable"] = *src.remoteControllable;
     }
-    if (src.jobsActive) {
+    if (src.jobsActive.has_value()) {
         dst["jobsActive"] = *src.jobsActive;
     }
 
@@ -20474,34 +21440,37 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementOverviewDataElem
     if (!src["remoteControllable"].isNull()) {
         dst.remoteControllable = src["remoteControllable"].as<decltype(dst.remoteControllable)::value_type>();
     } else {
-        dst.remoteControllable = std::nullopt;
+        dst.remoteControllable.reset();
     }
     if (!src["jobsActive"].isNull()) {
         dst.jobsActive = src["jobsActive"].as<decltype(dst.jobsActive)::value_type>();
     } else {
-        dst.jobsActive = std::nullopt;
+        dst.jobsActive.reset();
     }
 
 }
 
 bool convertToJson(const HvacSystemFunctionDataType &src, JsonVariant &dst)
 {
-    if (src.systemFunctionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.systemFunctionId.has_value()) {
         dst["systemFunctionId"] = *src.systemFunctionId;
     }
-    if (src.currentOperationModeId) {
+    if (src.currentOperationModeId.has_value()) {
         dst["currentOperationModeId"] = *src.currentOperationModeId;
     }
-    if (src.isOperationModeIdChangeable) {
+    if (src.isOperationModeIdChangeable.has_value()) {
         dst["isOperationModeIdChangeable"] = *src.isOperationModeIdChangeable;
     }
-    if (src.currentSetpointId) {
+    if (src.currentSetpointId.has_value()) {
         dst["currentSetpointId"] = *src.currentSetpointId;
     }
-    if (src.isSetpointIdChangeable) {
+    if (src.isSetpointIdChangeable.has_value()) {
         dst["isSetpointIdChangeable"] = *src.isSetpointIdChangeable;
     }
-    if (src.isOverrunActive) {
+    if (src.isOverrunActive.has_value()) {
         dst["isOverrunActive"] = *src.isOverrunActive;
     }
 
@@ -20514,54 +21483,57 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDataType &ds
     if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
-        dst.systemFunctionId = std::nullopt;
+        dst.systemFunctionId.reset();
     }
     if (!src["currentOperationModeId"].isNull()) {
         dst.currentOperationModeId = src["currentOperationModeId"].as<decltype(dst.currentOperationModeId)::value_type>();
     } else {
-        dst.currentOperationModeId = std::nullopt;
+        dst.currentOperationModeId.reset();
     }
     if (!src["isOperationModeIdChangeable"].isNull()) {
         dst.isOperationModeIdChangeable = src["isOperationModeIdChangeable"].as<decltype(dst.isOperationModeIdChangeable)::value_type>();
     } else {
-        dst.isOperationModeIdChangeable = std::nullopt;
+        dst.isOperationModeIdChangeable.reset();
     }
     if (!src["currentSetpointId"].isNull()) {
         dst.currentSetpointId = src["currentSetpointId"].as<decltype(dst.currentSetpointId)::value_type>();
     } else {
-        dst.currentSetpointId = std::nullopt;
+        dst.currentSetpointId.reset();
     }
     if (!src["isSetpointIdChangeable"].isNull()) {
         dst.isSetpointIdChangeable = src["isSetpointIdChangeable"].as<decltype(dst.isSetpointIdChangeable)::value_type>();
     } else {
-        dst.isSetpointIdChangeable = std::nullopt;
+        dst.isSetpointIdChangeable.reset();
     }
     if (!src["isOverrunActive"].isNull()) {
         dst.isOverrunActive = src["isOverrunActive"].as<decltype(dst.isOverrunActive)::value_type>();
     } else {
-        dst.isOverrunActive = std::nullopt;
+        dst.isOverrunActive.reset();
     }
 
 }
 
 bool convertToJson(const HvacSystemFunctionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.systemFunctionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.systemFunctionId.has_value()) {
         dst["systemFunctionId"] = *src.systemFunctionId;
     }
-    if (src.currentOperationModeId) {
+    if (src.currentOperationModeId.has_value()) {
         dst["currentOperationModeId"] = *src.currentOperationModeId;
     }
-    if (src.isOperationModeIdChangeable) {
+    if (src.isOperationModeIdChangeable.has_value()) {
         dst["isOperationModeIdChangeable"] = *src.isOperationModeIdChangeable;
     }
-    if (src.currentSetpointId) {
+    if (src.currentSetpointId.has_value()) {
         dst["currentSetpointId"] = *src.currentSetpointId;
     }
-    if (src.isSetpointIdChangeable) {
+    if (src.isSetpointIdChangeable.has_value()) {
         dst["isSetpointIdChangeable"] = *src.isSetpointIdChangeable;
     }
-    if (src.isOverrunActive) {
+    if (src.isOverrunActive.has_value()) {
         dst["isOverrunActive"] = *src.isOverrunActive;
     }
 
@@ -20574,39 +21546,42 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDataElements
     if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
-        dst.systemFunctionId = std::nullopt;
+        dst.systemFunctionId.reset();
     }
     if (!src["currentOperationModeId"].isNull()) {
         dst.currentOperationModeId = src["currentOperationModeId"].as<decltype(dst.currentOperationModeId)::value_type>();
     } else {
-        dst.currentOperationModeId = std::nullopt;
+        dst.currentOperationModeId.reset();
     }
     if (!src["isOperationModeIdChangeable"].isNull()) {
         dst.isOperationModeIdChangeable = src["isOperationModeIdChangeable"].as<decltype(dst.isOperationModeIdChangeable)::value_type>();
     } else {
-        dst.isOperationModeIdChangeable = std::nullopt;
+        dst.isOperationModeIdChangeable.reset();
     }
     if (!src["currentSetpointId"].isNull()) {
         dst.currentSetpointId = src["currentSetpointId"].as<decltype(dst.currentSetpointId)::value_type>();
     } else {
-        dst.currentSetpointId = std::nullopt;
+        dst.currentSetpointId.reset();
     }
     if (!src["isSetpointIdChangeable"].isNull()) {
         dst.isSetpointIdChangeable = src["isSetpointIdChangeable"].as<decltype(dst.isSetpointIdChangeable)::value_type>();
     } else {
-        dst.isSetpointIdChangeable = std::nullopt;
+        dst.isSetpointIdChangeable.reset();
     }
     if (!src["isOverrunActive"].isNull()) {
         dst.isOverrunActive = src["isOverrunActive"].as<decltype(dst.isOverrunActive)::value_type>();
     } else {
-        dst.isOverrunActive = std::nullopt;
+        dst.isOverrunActive.reset();
     }
 
 }
 
 bool convertToJson(const HvacSystemFunctionListDataType &src, JsonVariant &dst)
 {
-    if (src.hvacSystemFunctionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.hvacSystemFunctionData.has_value()) {
         dst["hvacSystemFunctionData"] = *src.hvacSystemFunctionData;
     }
 
@@ -20619,14 +21594,17 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionListDataType
     if (!src["hvacSystemFunctionData"].isNull()) {
         dst.hvacSystemFunctionData = src["hvacSystemFunctionData"].as<decltype(dst.hvacSystemFunctionData)::value_type>();
     } else {
-        dst.hvacSystemFunctionData = std::nullopt;
+        dst.hvacSystemFunctionData.reset();
     }
 
 }
 
 bool convertToJson(const HvacSystemFunctionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.systemFunctionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.systemFunctionId.has_value()) {
         dst["systemFunctionId"] = *src.systemFunctionId;
     }
 
@@ -20639,17 +21617,20 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionListDataSele
     if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
-        dst.systemFunctionId = std::nullopt;
+        dst.systemFunctionId.reset();
     }
 
 }
 
 bool convertToJson(const HvacSystemFunctionOperationModeRelationDataType &src, JsonVariant &dst)
 {
-    if (src.systemFunctionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.systemFunctionId.has_value()) {
         dst["systemFunctionId"] = *src.systemFunctionId;
     }
-    if (src.operationModeId) {
+    if (src.operationModeId.has_value()) {
         dst["operationModeId"] = *src.operationModeId;
     }
 
@@ -20662,22 +21643,25 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationMod
     if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
-        dst.systemFunctionId = std::nullopt;
+        dst.systemFunctionId.reset();
     }
     if (!src["operationModeId"].isNull()) {
         dst.operationModeId = src["operationModeId"].as<decltype(dst.operationModeId)::value_type>();
     } else {
-        dst.operationModeId = std::nullopt;
+        dst.operationModeId.reset();
     }
 
 }
 
 bool convertToJson(const HvacSystemFunctionOperationModeRelationDataElementsType &src, JsonVariant &dst)
 {
-    if (src.systemFunctionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.systemFunctionId.has_value()) {
         dst["systemFunctionId"] = *src.systemFunctionId;
     }
-    if (src.operationModeId) {
+    if (src.operationModeId.has_value()) {
         dst["operationModeId"] = *src.operationModeId;
     }
 
@@ -20690,19 +21674,22 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationMod
     if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
-        dst.systemFunctionId = std::nullopt;
+        dst.systemFunctionId.reset();
     }
     if (!src["operationModeId"].isNull()) {
         dst.operationModeId = src["operationModeId"].as<decltype(dst.operationModeId)::value_type>();
     } else {
-        dst.operationModeId = std::nullopt;
+        dst.operationModeId.reset();
     }
 
 }
 
 bool convertToJson(const HvacSystemFunctionOperationModeRelationListDataType &src, JsonVariant &dst)
 {
-    if (src.hvacSystemFunctionOperationModeRelationData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.hvacSystemFunctionOperationModeRelationData.has_value()) {
         dst["hvacSystemFunctionOperationModeRelationData"] = *src.hvacSystemFunctionOperationModeRelationData;
     }
 
@@ -20715,14 +21702,17 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationMod
     if (!src["hvacSystemFunctionOperationModeRelationData"].isNull()) {
         dst.hvacSystemFunctionOperationModeRelationData = src["hvacSystemFunctionOperationModeRelationData"].as<decltype(dst.hvacSystemFunctionOperationModeRelationData)::value_type>();
     } else {
-        dst.hvacSystemFunctionOperationModeRelationData = std::nullopt;
+        dst.hvacSystemFunctionOperationModeRelationData.reset();
     }
 
 }
 
 bool convertToJson(const HvacSystemFunctionOperationModeRelationListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.systemFunctionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.systemFunctionId.has_value()) {
         dst["systemFunctionId"] = *src.systemFunctionId;
     }
 
@@ -20735,20 +21725,23 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionOperationMod
     if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
-        dst.systemFunctionId = std::nullopt;
+        dst.systemFunctionId.reset();
     }
 
 }
 
 bool convertToJson(const HvacSystemFunctionSetpointRelationDataType &src, JsonVariant &dst)
 {
-    if (src.systemFunctionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.systemFunctionId.has_value()) {
         dst["systemFunctionId"] = *src.systemFunctionId;
     }
-    if (src.operationModeId) {
+    if (src.operationModeId.has_value()) {
         dst["operationModeId"] = *src.operationModeId;
     }
-    if (src.setpointId) {
+    if (src.setpointId.has_value()) {
         dst["setpointId"] = *src.setpointId;
     }
 
@@ -20761,30 +21754,33 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRela
     if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
-        dst.systemFunctionId = std::nullopt;
+        dst.systemFunctionId.reset();
     }
     if (!src["operationModeId"].isNull()) {
         dst.operationModeId = src["operationModeId"].as<decltype(dst.operationModeId)::value_type>();
     } else {
-        dst.operationModeId = std::nullopt;
+        dst.operationModeId.reset();
     }
     if (!src["setpointId"].isNull()) {
         dst.setpointId = src["setpointId"].as<decltype(dst.setpointId)::value_type>();
     } else {
-        dst.setpointId = std::nullopt;
+        dst.setpointId.reset();
     }
 
 }
 
 bool convertToJson(const HvacSystemFunctionSetpointRelationDataElementsType &src, JsonVariant &dst)
 {
-    if (src.systemFunctionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.systemFunctionId.has_value()) {
         dst["systemFunctionId"] = *src.systemFunctionId;
     }
-    if (src.operationModeId) {
+    if (src.operationModeId.has_value()) {
         dst["operationModeId"] = *src.operationModeId;
     }
-    if (src.setpointId) {
+    if (src.setpointId.has_value()) {
         dst["setpointId"] = *src.setpointId;
     }
 
@@ -20797,24 +21793,27 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRela
     if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
-        dst.systemFunctionId = std::nullopt;
+        dst.systemFunctionId.reset();
     }
     if (!src["operationModeId"].isNull()) {
         dst.operationModeId = src["operationModeId"].as<decltype(dst.operationModeId)::value_type>();
     } else {
-        dst.operationModeId = std::nullopt;
+        dst.operationModeId.reset();
     }
     if (!src["setpointId"].isNull()) {
         dst.setpointId = src["setpointId"].as<decltype(dst.setpointId)::value_type>();
     } else {
-        dst.setpointId = std::nullopt;
+        dst.setpointId.reset();
     }
 
 }
 
 bool convertToJson(const HvacSystemFunctionSetpointRelationListDataType &src, JsonVariant &dst)
 {
-    if (src.hvacSystemFunctionSetpointRelationData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.hvacSystemFunctionSetpointRelationData.has_value()) {
         dst["hvacSystemFunctionSetpointRelationData"] = *src.hvacSystemFunctionSetpointRelationData;
     }
 
@@ -20827,17 +21826,20 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRela
     if (!src["hvacSystemFunctionSetpointRelationData"].isNull()) {
         dst.hvacSystemFunctionSetpointRelationData = src["hvacSystemFunctionSetpointRelationData"].as<decltype(dst.hvacSystemFunctionSetpointRelationData)::value_type>();
     } else {
-        dst.hvacSystemFunctionSetpointRelationData = std::nullopt;
+        dst.hvacSystemFunctionSetpointRelationData.reset();
     }
 
 }
 
 bool convertToJson(const HvacSystemFunctionSetpointRelationListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.systemFunctionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.systemFunctionId.has_value()) {
         dst["systemFunctionId"] = *src.systemFunctionId;
     }
-    if (src.operationModeId) {
+    if (src.operationModeId.has_value()) {
         dst["operationModeId"] = *src.operationModeId;
     }
 
@@ -20850,22 +21852,25 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionSetpointRela
     if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
-        dst.systemFunctionId = std::nullopt;
+        dst.systemFunctionId.reset();
     }
     if (!src["operationModeId"].isNull()) {
         dst.operationModeId = src["operationModeId"].as<decltype(dst.operationModeId)::value_type>();
     } else {
-        dst.operationModeId = std::nullopt;
+        dst.operationModeId.reset();
     }
 
 }
 
 bool convertToJson(const HvacSystemFunctionPowerSequenceRelationDataType &src, JsonVariant &dst)
 {
-    if (src.systemFunctionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.systemFunctionId.has_value()) {
         dst["systemFunctionId"] = *src.systemFunctionId;
     }
-    if (src.sequenceId) {
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -20878,22 +21883,25 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenc
     if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
-        dst.systemFunctionId = std::nullopt;
+        dst.systemFunctionId.reset();
     }
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const HvacSystemFunctionPowerSequenceRelationDataElementsType &src, JsonVariant &dst)
 {
-    if (src.systemFunctionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.systemFunctionId.has_value()) {
         dst["systemFunctionId"] = *src.systemFunctionId;
     }
-    if (src.sequenceId) {
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -20906,19 +21914,22 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenc
     if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
-        dst.systemFunctionId = std::nullopt;
+        dst.systemFunctionId.reset();
     }
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const HvacSystemFunctionPowerSequenceRelationListDataType &src, JsonVariant &dst)
 {
-    if (src.hvacSystemFunctionPowerSequenceRelationData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.hvacSystemFunctionPowerSequenceRelationData.has_value()) {
         dst["hvacSystemFunctionPowerSequenceRelationData"] = *src.hvacSystemFunctionPowerSequenceRelationData;
     }
 
@@ -20931,14 +21942,17 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenc
     if (!src["hvacSystemFunctionPowerSequenceRelationData"].isNull()) {
         dst.hvacSystemFunctionPowerSequenceRelationData = src["hvacSystemFunctionPowerSequenceRelationData"].as<decltype(dst.hvacSystemFunctionPowerSequenceRelationData)::value_type>();
     } else {
-        dst.hvacSystemFunctionPowerSequenceRelationData = std::nullopt;
+        dst.hvacSystemFunctionPowerSequenceRelationData.reset();
     }
 
 }
 
 bool convertToJson(const HvacSystemFunctionPowerSequenceRelationListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.systemFunctionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.systemFunctionId.has_value()) {
         dst["systemFunctionId"] = *src.systemFunctionId;
     }
 
@@ -20951,23 +21965,26 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenc
     if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
-        dst.systemFunctionId = std::nullopt;
+        dst.systemFunctionId.reset();
     }
 
 }
 
 bool convertToJson(const HvacSystemFunctionDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.systemFunctionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.systemFunctionId.has_value()) {
         dst["systemFunctionId"] = *src.systemFunctionId;
     }
-    if (src.systemFunctionType) {
+    if (src.systemFunctionType.has_value()) {
         dst["systemFunctionType"] = *src.systemFunctionType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -20980,38 +21997,41 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionD
     if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
-        dst.systemFunctionId = std::nullopt;
+        dst.systemFunctionId.reset();
     }
     if (!src["systemFunctionType"].isNull()) {
         dst.systemFunctionType = src["systemFunctionType"].as<decltype(dst.systemFunctionType)::value_type>();
     } else {
-        dst.systemFunctionType = std::nullopt;
+        dst.systemFunctionType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const HvacSystemFunctionDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.systemFunctionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.systemFunctionId.has_value()) {
         dst["systemFunctionId"] = *src.systemFunctionId;
     }
-    if (src.systemFunctionType) {
+    if (src.systemFunctionType.has_value()) {
         dst["systemFunctionType"] = *src.systemFunctionType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -21024,29 +22044,32 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionD
     if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
-        dst.systemFunctionId = std::nullopt;
+        dst.systemFunctionId.reset();
     }
     if (!src["systemFunctionType"].isNull()) {
         dst.systemFunctionType = src["systemFunctionType"].as<decltype(dst.systemFunctionType)::value_type>();
     } else {
-        dst.systemFunctionType = std::nullopt;
+        dst.systemFunctionType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const HvacSystemFunctionDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.hvacSystemFunctionDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.hvacSystemFunctionDescriptionData.has_value()) {
         dst["hvacSystemFunctionDescriptionData"] = *src.hvacSystemFunctionDescriptionData;
     }
 
@@ -21059,14 +22082,17 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionL
     if (!src["hvacSystemFunctionDescriptionData"].isNull()) {
         dst.hvacSystemFunctionDescriptionData = src["hvacSystemFunctionDescriptionData"].as<decltype(dst.hvacSystemFunctionDescriptionData)::value_type>();
     } else {
-        dst.hvacSystemFunctionDescriptionData = std::nullopt;
+        dst.hvacSystemFunctionDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const HvacSystemFunctionDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.systemFunctionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.systemFunctionId.has_value()) {
         dst["systemFunctionId"] = *src.systemFunctionId;
     }
 
@@ -21079,23 +22105,26 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionL
     if (!src["systemFunctionId"].isNull()) {
         dst.systemFunctionId = src["systemFunctionId"].as<decltype(dst.systemFunctionId)::value_type>();
     } else {
-        dst.systemFunctionId = std::nullopt;
+        dst.systemFunctionId.reset();
     }
 
 }
 
 bool convertToJson(const HvacOperationModeDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.operationModeId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.operationModeId.has_value()) {
         dst["operationModeId"] = *src.operationModeId;
     }
-    if (src.operationModeType) {
+    if (src.operationModeType.has_value()) {
         dst["operationModeType"] = *src.operationModeType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -21108,38 +22137,41 @@ void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionDa
     if (!src["operationModeId"].isNull()) {
         dst.operationModeId = src["operationModeId"].as<decltype(dst.operationModeId)::value_type>();
     } else {
-        dst.operationModeId = std::nullopt;
+        dst.operationModeId.reset();
     }
     if (!src["operationModeType"].isNull()) {
         dst.operationModeType = src["operationModeType"].as<decltype(dst.operationModeType)::value_type>();
     } else {
-        dst.operationModeType = std::nullopt;
+        dst.operationModeType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const HvacOperationModeDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.operationModeId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.operationModeId.has_value()) {
         dst["operationModeId"] = *src.operationModeId;
     }
-    if (src.operationModeType) {
+    if (src.operationModeType.has_value()) {
         dst["operationModeType"] = *src.operationModeType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -21152,29 +22184,32 @@ void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionDa
     if (!src["operationModeId"].isNull()) {
         dst.operationModeId = src["operationModeId"].as<decltype(dst.operationModeId)::value_type>();
     } else {
-        dst.operationModeId = std::nullopt;
+        dst.operationModeId.reset();
     }
     if (!src["operationModeType"].isNull()) {
         dst.operationModeType = src["operationModeType"].as<decltype(dst.operationModeType)::value_type>();
     } else {
-        dst.operationModeType = std::nullopt;
+        dst.operationModeType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const HvacOperationModeDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.hvacOperationModeDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.hvacOperationModeDescriptionData.has_value()) {
         dst["hvacOperationModeDescriptionData"] = *src.hvacOperationModeDescriptionData;
     }
 
@@ -21187,14 +22222,17 @@ void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionLi
     if (!src["hvacOperationModeDescriptionData"].isNull()) {
         dst.hvacOperationModeDescriptionData = src["hvacOperationModeDescriptionData"].as<decltype(dst.hvacOperationModeDescriptionData)::value_type>();
     } else {
-        dst.hvacOperationModeDescriptionData = std::nullopt;
+        dst.hvacOperationModeDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const HvacOperationModeDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.operationModeId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.operationModeId.has_value()) {
         dst["operationModeId"] = *src.operationModeId;
     }
 
@@ -21207,23 +22245,26 @@ void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionLi
     if (!src["operationModeId"].isNull()) {
         dst.operationModeId = src["operationModeId"].as<decltype(dst.operationModeId)::value_type>();
     } else {
-        dst.operationModeId = std::nullopt;
+        dst.operationModeId.reset();
     }
 
 }
 
 bool convertToJson(const HvacOverrunDataType &src, JsonVariant &dst)
 {
-    if (src.overrunId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.overrunId.has_value()) {
         dst["overrunId"] = *src.overrunId;
     }
-    if (src.overrunStatus) {
+    if (src.overrunStatus.has_value()) {
         dst["overrunStatus"] = *src.overrunStatus;
     }
-    if (src.timeTableId) {
+    if (src.timeTableId.has_value()) {
         dst["timeTableId"] = *src.timeTableId;
     }
-    if (src.isOverrunStatusChangeable) {
+    if (src.isOverrunStatusChangeable.has_value()) {
         dst["isOverrunStatusChangeable"] = *src.isOverrunStatusChangeable;
     }
 
@@ -21236,38 +22277,41 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDataType &dst)
     if (!src["overrunId"].isNull()) {
         dst.overrunId = src["overrunId"].as<decltype(dst.overrunId)::value_type>();
     } else {
-        dst.overrunId = std::nullopt;
+        dst.overrunId.reset();
     }
     if (!src["overrunStatus"].isNull()) {
         dst.overrunStatus = src["overrunStatus"].as<decltype(dst.overrunStatus)::value_type>();
     } else {
-        dst.overrunStatus = std::nullopt;
+        dst.overrunStatus.reset();
     }
     if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
-        dst.timeTableId = std::nullopt;
+        dst.timeTableId.reset();
     }
     if (!src["isOverrunStatusChangeable"].isNull()) {
         dst.isOverrunStatusChangeable = src["isOverrunStatusChangeable"].as<decltype(dst.isOverrunStatusChangeable)::value_type>();
     } else {
-        dst.isOverrunStatusChangeable = std::nullopt;
+        dst.isOverrunStatusChangeable.reset();
     }
 
 }
 
 bool convertToJson(const HvacOverrunDataElementsType &src, JsonVariant &dst)
 {
-    if (src.overrunId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.overrunId.has_value()) {
         dst["overrunId"] = *src.overrunId;
     }
-    if (src.overrunStatus) {
+    if (src.overrunStatus.has_value()) {
         dst["overrunStatus"] = *src.overrunStatus;
     }
-    if (src.timeTableId) {
+    if (src.timeTableId.has_value()) {
         dst["timeTableId"] = *src.timeTableId;
     }
-    if (src.isOverrunStatusChangeable) {
+    if (src.isOverrunStatusChangeable.has_value()) {
         dst["isOverrunStatusChangeable"] = *src.isOverrunStatusChangeable;
     }
 
@@ -21280,29 +22324,32 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDataElementsType &d
     if (!src["overrunId"].isNull()) {
         dst.overrunId = src["overrunId"].as<decltype(dst.overrunId)::value_type>();
     } else {
-        dst.overrunId = std::nullopt;
+        dst.overrunId.reset();
     }
     if (!src["overrunStatus"].isNull()) {
         dst.overrunStatus = src["overrunStatus"].as<decltype(dst.overrunStatus)::value_type>();
     } else {
-        dst.overrunStatus = std::nullopt;
+        dst.overrunStatus.reset();
     }
     if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
-        dst.timeTableId = std::nullopt;
+        dst.timeTableId.reset();
     }
     if (!src["isOverrunStatusChangeable"].isNull()) {
         dst.isOverrunStatusChangeable = src["isOverrunStatusChangeable"].as<decltype(dst.isOverrunStatusChangeable)::value_type>();
     } else {
-        dst.isOverrunStatusChangeable = std::nullopt;
+        dst.isOverrunStatusChangeable.reset();
     }
 
 }
 
 bool convertToJson(const HvacOverrunListDataType &src, JsonVariant &dst)
 {
-    if (src.hvacOverrunData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.hvacOverrunData.has_value()) {
         dst["hvacOverrunData"] = *src.hvacOverrunData;
     }
 
@@ -21315,14 +22362,17 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunListDataType &dst)
     if (!src["hvacOverrunData"].isNull()) {
         dst.hvacOverrunData = src["hvacOverrunData"].as<decltype(dst.hvacOverrunData)::value_type>();
     } else {
-        dst.hvacOverrunData = std::nullopt;
+        dst.hvacOverrunData.reset();
     }
 
 }
 
 bool convertToJson(const HvacOverrunListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.overrunId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.overrunId.has_value()) {
         dst["overrunId"] = *src.overrunId;
     }
 
@@ -21335,26 +22385,29 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunListDataSelectorsTy
     if (!src["overrunId"].isNull()) {
         dst.overrunId = src["overrunId"].as<decltype(dst.overrunId)::value_type>();
     } else {
-        dst.overrunId = std::nullopt;
+        dst.overrunId.reset();
     }
 
 }
 
 bool convertToJson(const HvacOverrunDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.overrunId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.overrunId.has_value()) {
         dst["overrunId"] = *src.overrunId;
     }
-    if (src.overrunType) {
+    if (src.overrunType.has_value()) {
         dst["overrunType"] = *src.overrunType;
     }
-    if (src.affectedSystemFunctionId) {
+    if (src.affectedSystemFunctionId.has_value()) {
         dst["affectedSystemFunctionId"] = *src.affectedSystemFunctionId;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -21367,46 +22420,49 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionDataType
     if (!src["overrunId"].isNull()) {
         dst.overrunId = src["overrunId"].as<decltype(dst.overrunId)::value_type>();
     } else {
-        dst.overrunId = std::nullopt;
+        dst.overrunId.reset();
     }
     if (!src["overrunType"].isNull()) {
         dst.overrunType = src["overrunType"].as<decltype(dst.overrunType)::value_type>();
     } else {
-        dst.overrunType = std::nullopt;
+        dst.overrunType.reset();
     }
     if (!src["affectedSystemFunctionId"].isNull()) {
         dst.affectedSystemFunctionId = src["affectedSystemFunctionId"].as<decltype(dst.affectedSystemFunctionId)::value_type>();
     } else {
-        dst.affectedSystemFunctionId = std::nullopt;
+        dst.affectedSystemFunctionId.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const HvacOverrunDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.overrunId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.overrunId.has_value()) {
         dst["overrunId"] = *src.overrunId;
     }
-    if (src.overrunType) {
+    if (src.overrunType.has_value()) {
         dst["overrunType"] = *src.overrunType;
     }
-    if (src.affectedSystemFunctionId) {
+    if (src.affectedSystemFunctionId.has_value()) {
         dst["affectedSystemFunctionId"] = *src.affectedSystemFunctionId;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -21419,34 +22475,37 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionDataElem
     if (!src["overrunId"].isNull()) {
         dst.overrunId = src["overrunId"].as<decltype(dst.overrunId)::value_type>();
     } else {
-        dst.overrunId = std::nullopt;
+        dst.overrunId.reset();
     }
     if (!src["overrunType"].isNull()) {
         dst.overrunType = src["overrunType"].as<decltype(dst.overrunType)::value_type>();
     } else {
-        dst.overrunType = std::nullopt;
+        dst.overrunType.reset();
     }
     if (!src["affectedSystemFunctionId"].isNull()) {
         dst.affectedSystemFunctionId = src["affectedSystemFunctionId"].as<decltype(dst.affectedSystemFunctionId)::value_type>();
     } else {
-        dst.affectedSystemFunctionId = std::nullopt;
+        dst.affectedSystemFunctionId.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const HvacOverrunDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.hvacOverrunDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.hvacOverrunDescriptionData.has_value()) {
         dst["hvacOverrunDescriptionData"] = *src.hvacOverrunDescriptionData;
     }
 
@@ -21459,14 +22518,17 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionListData
     if (!src["hvacOverrunDescriptionData"].isNull()) {
         dst.hvacOverrunDescriptionData = src["hvacOverrunDescriptionData"].as<decltype(dst.hvacOverrunDescriptionData)::value_type>();
     } else {
-        dst.hvacOverrunDescriptionData = std::nullopt;
+        dst.hvacOverrunDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const HvacOverrunDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.overrunId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.overrunId.has_value()) {
         dst["overrunId"] = *src.overrunId;
     }
 
@@ -21479,14 +22541,17 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunDescriptionListData
     if (!src["overrunId"].isNull()) {
         dst.overrunId = src["overrunId"].as<decltype(dst.overrunId)::value_type>();
     } else {
-        dst.overrunId = std::nullopt;
+        dst.overrunId.reset();
     }
 
 }
 
 bool convertToJson(const LoadControlNodeDataType &src, JsonVariant &dst)
 {
-    if (src.isNodeRemoteControllable) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.isNodeRemoteControllable.has_value()) {
         dst["isNodeRemoteControllable"] = *src.isNodeRemoteControllable;
     }
 
@@ -21499,14 +22564,17 @@ void convertFromJson(const JsonVariantConst &src, LoadControlNodeDataType &dst)
     if (!src["isNodeRemoteControllable"].isNull()) {
         dst.isNodeRemoteControllable = src["isNodeRemoteControllable"].as<decltype(dst.isNodeRemoteControllable)::value_type>();
     } else {
-        dst.isNodeRemoteControllable = std::nullopt;
+        dst.isNodeRemoteControllable.reset();
     }
 
 }
 
 bool convertToJson(const LoadControlNodeDataElementsType &src, JsonVariant &dst)
 {
-    if (src.isNodeRemoteControllable) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.isNodeRemoteControllable.has_value()) {
         dst["isNodeRemoteControllable"] = *src.isNodeRemoteControllable;
     }
 
@@ -21519,26 +22587,29 @@ void convertFromJson(const JsonVariantConst &src, LoadControlNodeDataElementsTyp
     if (!src["isNodeRemoteControllable"].isNull()) {
         dst.isNodeRemoteControllable = src["isNodeRemoteControllable"].as<decltype(dst.isNodeRemoteControllable)::value_type>();
     } else {
-        dst.isNodeRemoteControllable = std::nullopt;
+        dst.isNodeRemoteControllable.reset();
     }
 
 }
 
 bool convertToJson(const LoadControlEventDataType &src, JsonVariant &dst)
 {
-    if (src.timestamp) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.eventId) {
+    if (src.eventId.has_value()) {
         dst["eventId"] = *src.eventId;
     }
-    if (src.eventActionConsume) {
+    if (src.eventActionConsume.has_value()) {
         dst["eventActionConsume"] = *src.eventActionConsume;
     }
-    if (src.eventActionProduce) {
+    if (src.eventActionProduce.has_value()) {
         dst["eventActionProduce"] = *src.eventActionProduce;
     }
-    if (src.timePeriod) {
+    if (src.timePeriod.has_value()) {
         dst["timePeriod"] = *src.timePeriod;
     }
 
@@ -21551,46 +22622,49 @@ void convertFromJson(const JsonVariantConst &src, LoadControlEventDataType &dst)
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["eventId"].isNull()) {
         dst.eventId = src["eventId"].as<decltype(dst.eventId)::value_type>();
     } else {
-        dst.eventId = std::nullopt;
+        dst.eventId.reset();
     }
     if (!src["eventActionConsume"].isNull()) {
         dst.eventActionConsume = src["eventActionConsume"].as<decltype(dst.eventActionConsume)::value_type>();
     } else {
-        dst.eventActionConsume = std::nullopt;
+        dst.eventActionConsume.reset();
     }
     if (!src["eventActionProduce"].isNull()) {
         dst.eventActionProduce = src["eventActionProduce"].as<decltype(dst.eventActionProduce)::value_type>();
     } else {
-        dst.eventActionProduce = std::nullopt;
+        dst.eventActionProduce.reset();
     }
     if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
-        dst.timePeriod = std::nullopt;
+        dst.timePeriod.reset();
     }
 
 }
 
 bool convertToJson(const LoadControlEventDataElementsType &src, JsonVariant &dst)
 {
-    if (src.timestamp) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.eventId) {
+    if (src.eventId.has_value()) {
         dst["eventId"] = *src.eventId;
     }
-    if (src.eventActionConsume) {
+    if (src.eventActionConsume.has_value()) {
         dst["eventActionConsume"] = *src.eventActionConsume;
     }
-    if (src.eventActionProduce) {
+    if (src.eventActionProduce.has_value()) {
         dst["eventActionProduce"] = *src.eventActionProduce;
     }
-    if (src.timePeriod) {
+    if (src.timePeriod.has_value()) {
         dst["timePeriod"] = *src.timePeriod;
     }
 
@@ -21603,34 +22677,37 @@ void convertFromJson(const JsonVariantConst &src, LoadControlEventDataElementsTy
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["eventId"].isNull()) {
         dst.eventId = src["eventId"].as<decltype(dst.eventId)::value_type>();
     } else {
-        dst.eventId = std::nullopt;
+        dst.eventId.reset();
     }
     if (!src["eventActionConsume"].isNull()) {
         dst.eventActionConsume = src["eventActionConsume"].as<decltype(dst.eventActionConsume)::value_type>();
     } else {
-        dst.eventActionConsume = std::nullopt;
+        dst.eventActionConsume.reset();
     }
     if (!src["eventActionProduce"].isNull()) {
         dst.eventActionProduce = src["eventActionProduce"].as<decltype(dst.eventActionProduce)::value_type>();
     } else {
-        dst.eventActionProduce = std::nullopt;
+        dst.eventActionProduce.reset();
     }
     if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
-        dst.timePeriod = std::nullopt;
+        dst.timePeriod.reset();
     }
 
 }
 
 bool convertToJson(const LoadControlEventListDataType &src, JsonVariant &dst)
 {
-    if (src.loadControlEventData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.loadControlEventData.has_value()) {
         dst["loadControlEventData"] = *src.loadControlEventData;
     }
 
@@ -21643,17 +22720,20 @@ void convertFromJson(const JsonVariantConst &src, LoadControlEventListDataType &
     if (!src["loadControlEventData"].isNull()) {
         dst.loadControlEventData = src["loadControlEventData"].as<decltype(dst.loadControlEventData)::value_type>();
     } else {
-        dst.loadControlEventData = std::nullopt;
+        dst.loadControlEventData.reset();
     }
 
 }
 
 bool convertToJson(const LoadControlEventListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.timestampInterval) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timestampInterval.has_value()) {
         dst["timestampInterval"] = *src.timestampInterval;
     }
-    if (src.eventId) {
+    if (src.eventId.has_value()) {
         dst["eventId"] = *src.eventId;
     }
 
@@ -21666,34 +22746,37 @@ void convertFromJson(const JsonVariantConst &src, LoadControlEventListDataSelect
     if (!src["timestampInterval"].isNull()) {
         dst.timestampInterval = src["timestampInterval"].as<decltype(dst.timestampInterval)::value_type>();
     } else {
-        dst.timestampInterval = std::nullopt;
+        dst.timestampInterval.reset();
     }
     if (!src["eventId"].isNull()) {
         dst.eventId = src["eventId"].as<decltype(dst.eventId)::value_type>();
     } else {
-        dst.eventId = std::nullopt;
+        dst.eventId.reset();
     }
 
 }
 
 bool convertToJson(const LoadControlStateDataType &src, JsonVariant &dst)
 {
-    if (src.timestamp) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.eventId) {
+    if (src.eventId.has_value()) {
         dst["eventId"] = *src.eventId;
     }
-    if (src.eventStateConsume) {
+    if (src.eventStateConsume.has_value()) {
         dst["eventStateConsume"] = *src.eventStateConsume;
     }
-    if (src.appliedEventActionConsume) {
+    if (src.appliedEventActionConsume.has_value()) {
         dst["appliedEventActionConsume"] = *src.appliedEventActionConsume;
     }
-    if (src.eventStateProduce) {
+    if (src.eventStateProduce.has_value()) {
         dst["eventStateProduce"] = *src.eventStateProduce;
     }
-    if (src.appliedEventActionProduce) {
+    if (src.appliedEventActionProduce.has_value()) {
         dst["appliedEventActionProduce"] = *src.appliedEventActionProduce;
     }
 
@@ -21706,54 +22789,57 @@ void convertFromJson(const JsonVariantConst &src, LoadControlStateDataType &dst)
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["eventId"].isNull()) {
         dst.eventId = src["eventId"].as<decltype(dst.eventId)::value_type>();
     } else {
-        dst.eventId = std::nullopt;
+        dst.eventId.reset();
     }
     if (!src["eventStateConsume"].isNull()) {
         dst.eventStateConsume = src["eventStateConsume"].as<decltype(dst.eventStateConsume)::value_type>();
     } else {
-        dst.eventStateConsume = std::nullopt;
+        dst.eventStateConsume.reset();
     }
     if (!src["appliedEventActionConsume"].isNull()) {
         dst.appliedEventActionConsume = src["appliedEventActionConsume"].as<decltype(dst.appliedEventActionConsume)::value_type>();
     } else {
-        dst.appliedEventActionConsume = std::nullopt;
+        dst.appliedEventActionConsume.reset();
     }
     if (!src["eventStateProduce"].isNull()) {
         dst.eventStateProduce = src["eventStateProduce"].as<decltype(dst.eventStateProduce)::value_type>();
     } else {
-        dst.eventStateProduce = std::nullopt;
+        dst.eventStateProduce.reset();
     }
     if (!src["appliedEventActionProduce"].isNull()) {
         dst.appliedEventActionProduce = src["appliedEventActionProduce"].as<decltype(dst.appliedEventActionProduce)::value_type>();
     } else {
-        dst.appliedEventActionProduce = std::nullopt;
+        dst.appliedEventActionProduce.reset();
     }
 
 }
 
 bool convertToJson(const LoadControlStateDataElementsType &src, JsonVariant &dst)
 {
-    if (src.timestamp) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.eventId) {
+    if (src.eventId.has_value()) {
         dst["eventId"] = *src.eventId;
     }
-    if (src.eventStateConsume) {
+    if (src.eventStateConsume.has_value()) {
         dst["eventStateConsume"] = *src.eventStateConsume;
     }
-    if (src.appliedEventActionConsume) {
+    if (src.appliedEventActionConsume.has_value()) {
         dst["appliedEventActionConsume"] = *src.appliedEventActionConsume;
     }
-    if (src.eventStateProduce) {
+    if (src.eventStateProduce.has_value()) {
         dst["eventStateProduce"] = *src.eventStateProduce;
     }
-    if (src.appliedEventActionProduce) {
+    if (src.appliedEventActionProduce.has_value()) {
         dst["appliedEventActionProduce"] = *src.appliedEventActionProduce;
     }
 
@@ -21766,39 +22852,42 @@ void convertFromJson(const JsonVariantConst &src, LoadControlStateDataElementsTy
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["eventId"].isNull()) {
         dst.eventId = src["eventId"].as<decltype(dst.eventId)::value_type>();
     } else {
-        dst.eventId = std::nullopt;
+        dst.eventId.reset();
     }
     if (!src["eventStateConsume"].isNull()) {
         dst.eventStateConsume = src["eventStateConsume"].as<decltype(dst.eventStateConsume)::value_type>();
     } else {
-        dst.eventStateConsume = std::nullopt;
+        dst.eventStateConsume.reset();
     }
     if (!src["appliedEventActionConsume"].isNull()) {
         dst.appliedEventActionConsume = src["appliedEventActionConsume"].as<decltype(dst.appliedEventActionConsume)::value_type>();
     } else {
-        dst.appliedEventActionConsume = std::nullopt;
+        dst.appliedEventActionConsume.reset();
     }
     if (!src["eventStateProduce"].isNull()) {
         dst.eventStateProduce = src["eventStateProduce"].as<decltype(dst.eventStateProduce)::value_type>();
     } else {
-        dst.eventStateProduce = std::nullopt;
+        dst.eventStateProduce.reset();
     }
     if (!src["appliedEventActionProduce"].isNull()) {
         dst.appliedEventActionProduce = src["appliedEventActionProduce"].as<decltype(dst.appliedEventActionProduce)::value_type>();
     } else {
-        dst.appliedEventActionProduce = std::nullopt;
+        dst.appliedEventActionProduce.reset();
     }
 
 }
 
 bool convertToJson(const LoadControlStateListDataType &src, JsonVariant &dst)
 {
-    if (src.loadControlStateData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.loadControlStateData.has_value()) {
         dst["loadControlStateData"] = *src.loadControlStateData;
     }
 
@@ -21811,17 +22900,20 @@ void convertFromJson(const JsonVariantConst &src, LoadControlStateListDataType &
     if (!src["loadControlStateData"].isNull()) {
         dst.loadControlStateData = src["loadControlStateData"].as<decltype(dst.loadControlStateData)::value_type>();
     } else {
-        dst.loadControlStateData = std::nullopt;
+        dst.loadControlStateData.reset();
     }
 
 }
 
 bool convertToJson(const LoadControlStateListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.timestampInterval) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timestampInterval.has_value()) {
         dst["timestampInterval"] = *src.timestampInterval;
     }
-    if (src.eventId) {
+    if (src.eventId.has_value()) {
         dst["eventId"] = *src.eventId;
     }
 
@@ -21834,31 +22926,34 @@ void convertFromJson(const JsonVariantConst &src, LoadControlStateListDataSelect
     if (!src["timestampInterval"].isNull()) {
         dst.timestampInterval = src["timestampInterval"].as<decltype(dst.timestampInterval)::value_type>();
     } else {
-        dst.timestampInterval = std::nullopt;
+        dst.timestampInterval.reset();
     }
     if (!src["eventId"].isNull()) {
         dst.eventId = src["eventId"].as<decltype(dst.eventId)::value_type>();
     } else {
-        dst.eventId = std::nullopt;
+        dst.eventId.reset();
     }
 
 }
 
 bool convertToJson(const LoadControlLimitDataType &src, JsonVariant &dst)
 {
-    if (src.limitId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.limitId.has_value()) {
         dst["limitId"] = *src.limitId;
     }
-    if (src.isLimitChangeable) {
+    if (src.isLimitChangeable.has_value()) {
         dst["isLimitChangeable"] = *src.isLimitChangeable;
     }
-    if (src.isLimitActive) {
+    if (src.isLimitActive.has_value()) {
         dst["isLimitActive"] = *src.isLimitActive;
     }
-    if (src.timePeriod) {
+    if (src.timePeriod.has_value()) {
         dst["timePeriod"] = *src.timePeriod;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
 
@@ -21871,46 +22966,49 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDataType &dst)
     if (!src["limitId"].isNull()) {
         dst.limitId = src["limitId"].as<decltype(dst.limitId)::value_type>();
     } else {
-        dst.limitId = std::nullopt;
+        dst.limitId.reset();
     }
     if (!src["isLimitChangeable"].isNull()) {
         dst.isLimitChangeable = src["isLimitChangeable"].as<decltype(dst.isLimitChangeable)::value_type>();
     } else {
-        dst.isLimitChangeable = std::nullopt;
+        dst.isLimitChangeable.reset();
     }
     if (!src["isLimitActive"].isNull()) {
         dst.isLimitActive = src["isLimitActive"].as<decltype(dst.isLimitActive)::value_type>();
     } else {
-        dst.isLimitActive = std::nullopt;
+        dst.isLimitActive.reset();
     }
     if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
-        dst.timePeriod = std::nullopt;
+        dst.timePeriod.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
 
 }
 
 bool convertToJson(const LoadControlLimitDataElementsType &src, JsonVariant &dst)
 {
-    if (src.limitId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.limitId.has_value()) {
         dst["limitId"] = *src.limitId;
     }
-    if (src.isLimitChangeable) {
+    if (src.isLimitChangeable.has_value()) {
         dst["isLimitChangeable"] = *src.isLimitChangeable;
     }
-    if (src.isLimitActive) {
+    if (src.isLimitActive.has_value()) {
         dst["isLimitActive"] = *src.isLimitActive;
     }
-    if (src.timePeriod) {
+    if (src.timePeriod.has_value()) {
         dst["timePeriod"] = *src.timePeriod;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
 
@@ -21923,34 +23021,37 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDataElementsTy
     if (!src["limitId"].isNull()) {
         dst.limitId = src["limitId"].as<decltype(dst.limitId)::value_type>();
     } else {
-        dst.limitId = std::nullopt;
+        dst.limitId.reset();
     }
     if (!src["isLimitChangeable"].isNull()) {
         dst.isLimitChangeable = src["isLimitChangeable"].as<decltype(dst.isLimitChangeable)::value_type>();
     } else {
-        dst.isLimitChangeable = std::nullopt;
+        dst.isLimitChangeable.reset();
     }
     if (!src["isLimitActive"].isNull()) {
         dst.isLimitActive = src["isLimitActive"].as<decltype(dst.isLimitActive)::value_type>();
     } else {
-        dst.isLimitActive = std::nullopt;
+        dst.isLimitActive.reset();
     }
     if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
-        dst.timePeriod = std::nullopt;
+        dst.timePeriod.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
 
 }
 
 bool convertToJson(const LoadControlLimitListDataType &src, JsonVariant &dst)
 {
-    if (src.loadControlLimitData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.loadControlLimitData.has_value()) {
         dst["loadControlLimitData"] = *src.loadControlLimitData;
     }
 
@@ -21963,14 +23064,17 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitListDataType &
     if (!src["loadControlLimitData"].isNull()) {
         dst.loadControlLimitData = src["loadControlLimitData"].as<decltype(dst.loadControlLimitData)::value_type>();
     } else {
-        dst.loadControlLimitData = std::nullopt;
+        dst.loadControlLimitData.reset();
     }
 
 }
 
 bool convertToJson(const LoadControlLimitListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.limitId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.limitId.has_value()) {
         dst["limitId"] = *src.limitId;
     }
 
@@ -21983,23 +23087,26 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitListDataSelect
     if (!src["limitId"].isNull()) {
         dst.limitId = src["limitId"].as<decltype(dst.limitId)::value_type>();
     } else {
-        dst.limitId = std::nullopt;
+        dst.limitId.reset();
     }
 
 }
 
 bool convertToJson(const LoadControlLimitConstraintsDataType &src, JsonVariant &dst)
 {
-    if (src.limitId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.limitId.has_value()) {
         dst["limitId"] = *src.limitId;
     }
-    if (src.valueRangeMin) {
+    if (src.valueRangeMin.has_value()) {
         dst["valueRangeMin"] = *src.valueRangeMin;
     }
-    if (src.valueRangeMax) {
+    if (src.valueRangeMax.has_value()) {
         dst["valueRangeMax"] = *src.valueRangeMax;
     }
-    if (src.valueStepSize) {
+    if (src.valueStepSize.has_value()) {
         dst["valueStepSize"] = *src.valueStepSize;
     }
 
@@ -22012,38 +23119,41 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsDat
     if (!src["limitId"].isNull()) {
         dst.limitId = src["limitId"].as<decltype(dst.limitId)::value_type>();
     } else {
-        dst.limitId = std::nullopt;
+        dst.limitId.reset();
     }
     if (!src["valueRangeMin"].isNull()) {
         dst.valueRangeMin = src["valueRangeMin"].as<decltype(dst.valueRangeMin)::value_type>();
     } else {
-        dst.valueRangeMin = std::nullopt;
+        dst.valueRangeMin.reset();
     }
     if (!src["valueRangeMax"].isNull()) {
         dst.valueRangeMax = src["valueRangeMax"].as<decltype(dst.valueRangeMax)::value_type>();
     } else {
-        dst.valueRangeMax = std::nullopt;
+        dst.valueRangeMax.reset();
     }
     if (!src["valueStepSize"].isNull()) {
         dst.valueStepSize = src["valueStepSize"].as<decltype(dst.valueStepSize)::value_type>();
     } else {
-        dst.valueStepSize = std::nullopt;
+        dst.valueStepSize.reset();
     }
 
 }
 
 bool convertToJson(const LoadControlLimitConstraintsDataElementsType &src, JsonVariant &dst)
 {
-    if (src.limitId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.limitId.has_value()) {
         dst["limitId"] = *src.limitId;
     }
-    if (src.valueRangeMin) {
+    if (src.valueRangeMin.has_value()) {
         dst["valueRangeMin"] = *src.valueRangeMin;
     }
-    if (src.valueRangeMax) {
+    if (src.valueRangeMax.has_value()) {
         dst["valueRangeMax"] = *src.valueRangeMax;
     }
-    if (src.valueStepSize) {
+    if (src.valueStepSize.has_value()) {
         dst["valueStepSize"] = *src.valueStepSize;
     }
 
@@ -22056,29 +23166,32 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsDat
     if (!src["limitId"].isNull()) {
         dst.limitId = src["limitId"].as<decltype(dst.limitId)::value_type>();
     } else {
-        dst.limitId = std::nullopt;
+        dst.limitId.reset();
     }
     if (!src["valueRangeMin"].isNull()) {
         dst.valueRangeMin = src["valueRangeMin"].as<decltype(dst.valueRangeMin)::value_type>();
     } else {
-        dst.valueRangeMin = std::nullopt;
+        dst.valueRangeMin.reset();
     }
     if (!src["valueRangeMax"].isNull()) {
         dst.valueRangeMax = src["valueRangeMax"].as<decltype(dst.valueRangeMax)::value_type>();
     } else {
-        dst.valueRangeMax = std::nullopt;
+        dst.valueRangeMax.reset();
     }
     if (!src["valueStepSize"].isNull()) {
         dst.valueStepSize = src["valueStepSize"].as<decltype(dst.valueStepSize)::value_type>();
     } else {
-        dst.valueStepSize = std::nullopt;
+        dst.valueStepSize.reset();
     }
 
 }
 
 bool convertToJson(const LoadControlLimitConstraintsListDataType &src, JsonVariant &dst)
 {
-    if (src.loadControlLimitConstraintsData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.loadControlLimitConstraintsData.has_value()) {
         dst["loadControlLimitConstraintsData"] = *src.loadControlLimitConstraintsData;
     }
 
@@ -22091,14 +23204,17 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsLis
     if (!src["loadControlLimitConstraintsData"].isNull()) {
         dst.loadControlLimitConstraintsData = src["loadControlLimitConstraintsData"].as<decltype(dst.loadControlLimitConstraintsData)::value_type>();
     } else {
-        dst.loadControlLimitConstraintsData = std::nullopt;
+        dst.loadControlLimitConstraintsData.reset();
     }
 
 }
 
 bool convertToJson(const LoadControlLimitConstraintsListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.limitId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.limitId.has_value()) {
         dst["limitId"] = *src.limitId;
     }
 
@@ -22111,38 +23227,41 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsLis
     if (!src["limitId"].isNull()) {
         dst.limitId = src["limitId"].as<decltype(dst.limitId)::value_type>();
     } else {
-        dst.limitId = std::nullopt;
+        dst.limitId.reset();
     }
 
 }
 
 bool convertToJson(const LoadControlLimitDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.limitId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.limitId.has_value()) {
         dst["limitId"] = *src.limitId;
     }
-    if (src.limitType) {
+    if (src.limitType.has_value()) {
         dst["limitType"] = *src.limitType;
     }
-    if (src.limitCategory) {
+    if (src.limitCategory.has_value()) {
         dst["limitCategory"] = *src.limitCategory;
     }
-    if (src.limitDirection) {
+    if (src.limitDirection.has_value()) {
         dst["limitDirection"] = *src.limitDirection;
     }
-    if (src.measurementId) {
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.unit) {
+    if (src.unit.has_value()) {
         dst["unit"] = *src.unit;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -22155,78 +23274,81 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionDat
     if (!src["limitId"].isNull()) {
         dst.limitId = src["limitId"].as<decltype(dst.limitId)::value_type>();
     } else {
-        dst.limitId = std::nullopt;
+        dst.limitId.reset();
     }
     if (!src["limitType"].isNull()) {
         dst.limitType = src["limitType"].as<decltype(dst.limitType)::value_type>();
     } else {
-        dst.limitType = std::nullopt;
+        dst.limitType.reset();
     }
     if (!src["limitCategory"].isNull()) {
         dst.limitCategory = src["limitCategory"].as<decltype(dst.limitCategory)::value_type>();
     } else {
-        dst.limitCategory = std::nullopt;
+        dst.limitCategory.reset();
     }
     if (!src["limitDirection"].isNull()) {
         dst.limitDirection = src["limitDirection"].as<decltype(dst.limitDirection)::value_type>();
     } else {
-        dst.limitDirection = std::nullopt;
+        dst.limitDirection.reset();
     }
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
-        dst.unit = std::nullopt;
+        dst.unit.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const LoadControlLimitDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.limitId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.limitId.has_value()) {
         dst["limitId"] = *src.limitId;
     }
-    if (src.limitType) {
+    if (src.limitType.has_value()) {
         dst["limitType"] = *src.limitType;
     }
-    if (src.limitCategory) {
+    if (src.limitCategory.has_value()) {
         dst["limitCategory"] = *src.limitCategory;
     }
-    if (src.limitDirection) {
+    if (src.limitDirection.has_value()) {
         dst["limitDirection"] = *src.limitDirection;
     }
-    if (src.measurementId) {
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.unit) {
+    if (src.unit.has_value()) {
         dst["unit"] = *src.unit;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -22239,54 +23361,57 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionDat
     if (!src["limitId"].isNull()) {
         dst.limitId = src["limitId"].as<decltype(dst.limitId)::value_type>();
     } else {
-        dst.limitId = std::nullopt;
+        dst.limitId.reset();
     }
     if (!src["limitType"].isNull()) {
         dst.limitType = src["limitType"].as<decltype(dst.limitType)::value_type>();
     } else {
-        dst.limitType = std::nullopt;
+        dst.limitType.reset();
     }
     if (!src["limitCategory"].isNull()) {
         dst.limitCategory = src["limitCategory"].as<decltype(dst.limitCategory)::value_type>();
     } else {
-        dst.limitCategory = std::nullopt;
+        dst.limitCategory.reset();
     }
     if (!src["limitDirection"].isNull()) {
         dst.limitDirection = src["limitDirection"].as<decltype(dst.limitDirection)::value_type>();
     } else {
-        dst.limitDirection = std::nullopt;
+        dst.limitDirection.reset();
     }
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
-        dst.unit = std::nullopt;
+        dst.unit.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const LoadControlLimitDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.loadControlLimitDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.loadControlLimitDescriptionData.has_value()) {
         dst["loadControlLimitDescriptionData"] = *src.loadControlLimitDescriptionData;
     }
 
@@ -22299,26 +23424,29 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionLis
     if (!src["loadControlLimitDescriptionData"].isNull()) {
         dst.loadControlLimitDescriptionData = src["loadControlLimitDescriptionData"].as<decltype(dst.loadControlLimitDescriptionData)::value_type>();
     } else {
-        dst.loadControlLimitDescriptionData = std::nullopt;
+        dst.loadControlLimitDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const LoadControlLimitDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.limitId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.limitId.has_value()) {
         dst["limitId"] = *src.limitId;
     }
-    if (src.limitType) {
+    if (src.limitType.has_value()) {
         dst["limitType"] = *src.limitType;
     }
-    if (src.limitDirection) {
+    if (src.limitDirection.has_value()) {
         dst["limitDirection"] = *src.limitDirection;
     }
-    if (src.measurementId) {
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
 
@@ -22331,67 +23459,70 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionLis
     if (!src["limitId"].isNull()) {
         dst.limitId = src["limitId"].as<decltype(dst.limitId)::value_type>();
     } else {
-        dst.limitId = std::nullopt;
+        dst.limitId.reset();
     }
     if (!src["limitType"].isNull()) {
         dst.limitType = src["limitType"].as<decltype(dst.limitType)::value_type>();
     } else {
-        dst.limitType = std::nullopt;
+        dst.limitType.reset();
     }
     if (!src["limitDirection"].isNull()) {
         dst.limitDirection = src["limitDirection"].as<decltype(dst.limitDirection)::value_type>();
     } else {
-        dst.limitDirection = std::nullopt;
+        dst.limitDirection.reset();
     }
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
 
 }
 
 bool convertToJson(const DeviceClassificationManufacturerDataType &src, JsonVariant &dst)
 {
-    if (src.deviceName) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.deviceName.has_value()) {
         dst["deviceName"] = *src.deviceName;
     }
-    if (src.deviceCode) {
+    if (src.deviceCode.has_value()) {
         dst["deviceCode"] = *src.deviceCode;
     }
-    if (src.serialNumber) {
+    if (src.serialNumber.has_value()) {
         dst["serialNumber"] = *src.serialNumber;
     }
-    if (src.softwareRevision) {
+    if (src.softwareRevision.has_value()) {
         dst["softwareRevision"] = *src.softwareRevision;
     }
-    if (src.hardwareRevision) {
+    if (src.hardwareRevision.has_value()) {
         dst["hardwareRevision"] = *src.hardwareRevision;
     }
-    if (src.vendorName) {
+    if (src.vendorName.has_value()) {
         dst["vendorName"] = *src.vendorName;
     }
-    if (src.vendorCode) {
+    if (src.vendorCode.has_value()) {
         dst["vendorCode"] = *src.vendorCode;
     }
-    if (src.brandName) {
+    if (src.brandName.has_value()) {
         dst["brandName"] = *src.brandName;
     }
-    if (src.powerSource) {
+    if (src.powerSource.has_value()) {
         dst["powerSource"] = *src.powerSource;
     }
-    if (src.manufacturerNodeIdentification) {
+    if (src.manufacturerNodeIdentification.has_value()) {
         dst["manufacturerNodeIdentification"] = *src.manufacturerNodeIdentification;
     }
-    if (src.manufacturerLabel) {
+    if (src.manufacturerLabel.has_value()) {
         dst["manufacturerLabel"] = *src.manufacturerLabel;
     }
-    if (src.manufacturerDescription) {
+    if (src.manufacturerDescription.has_value()) {
         dst["manufacturerDescription"] = *src.manufacturerDescription;
     }
 
@@ -22404,102 +23535,105 @@ void convertFromJson(const JsonVariantConst &src, DeviceClassificationManufactur
     if (!src["deviceName"].isNull()) {
         dst.deviceName = src["deviceName"].as<decltype(dst.deviceName)::value_type>();
     } else {
-        dst.deviceName = std::nullopt;
+        dst.deviceName.reset();
     }
     if (!src["deviceCode"].isNull()) {
         dst.deviceCode = src["deviceCode"].as<decltype(dst.deviceCode)::value_type>();
     } else {
-        dst.deviceCode = std::nullopt;
+        dst.deviceCode.reset();
     }
     if (!src["serialNumber"].isNull()) {
         dst.serialNumber = src["serialNumber"].as<decltype(dst.serialNumber)::value_type>();
     } else {
-        dst.serialNumber = std::nullopt;
+        dst.serialNumber.reset();
     }
     if (!src["softwareRevision"].isNull()) {
         dst.softwareRevision = src["softwareRevision"].as<decltype(dst.softwareRevision)::value_type>();
     } else {
-        dst.softwareRevision = std::nullopt;
+        dst.softwareRevision.reset();
     }
     if (!src["hardwareRevision"].isNull()) {
         dst.hardwareRevision = src["hardwareRevision"].as<decltype(dst.hardwareRevision)::value_type>();
     } else {
-        dst.hardwareRevision = std::nullopt;
+        dst.hardwareRevision.reset();
     }
     if (!src["vendorName"].isNull()) {
         dst.vendorName = src["vendorName"].as<decltype(dst.vendorName)::value_type>();
     } else {
-        dst.vendorName = std::nullopt;
+        dst.vendorName.reset();
     }
     if (!src["vendorCode"].isNull()) {
         dst.vendorCode = src["vendorCode"].as<decltype(dst.vendorCode)::value_type>();
     } else {
-        dst.vendorCode = std::nullopt;
+        dst.vendorCode.reset();
     }
     if (!src["brandName"].isNull()) {
         dst.brandName = src["brandName"].as<decltype(dst.brandName)::value_type>();
     } else {
-        dst.brandName = std::nullopt;
+        dst.brandName.reset();
     }
     if (!src["powerSource"].isNull()) {
         dst.powerSource = src["powerSource"].as<decltype(dst.powerSource)::value_type>();
     } else {
-        dst.powerSource = std::nullopt;
+        dst.powerSource.reset();
     }
     if (!src["manufacturerNodeIdentification"].isNull()) {
         dst.manufacturerNodeIdentification = src["manufacturerNodeIdentification"].as<decltype(dst.manufacturerNodeIdentification)::value_type>();
     } else {
-        dst.manufacturerNodeIdentification = std::nullopt;
+        dst.manufacturerNodeIdentification.reset();
     }
     if (!src["manufacturerLabel"].isNull()) {
         dst.manufacturerLabel = src["manufacturerLabel"].as<decltype(dst.manufacturerLabel)::value_type>();
     } else {
-        dst.manufacturerLabel = std::nullopt;
+        dst.manufacturerLabel.reset();
     }
     if (!src["manufacturerDescription"].isNull()) {
         dst.manufacturerDescription = src["manufacturerDescription"].as<decltype(dst.manufacturerDescription)::value_type>();
     } else {
-        dst.manufacturerDescription = std::nullopt;
+        dst.manufacturerDescription.reset();
     }
 
 }
 
 bool convertToJson(const DeviceClassificationManufacturerDataElementsType &src, JsonVariant &dst)
 {
-    if (src.deviceName) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.deviceName.has_value()) {
         dst["deviceName"] = *src.deviceName;
     }
-    if (src.deviceCode) {
+    if (src.deviceCode.has_value()) {
         dst["deviceCode"] = *src.deviceCode;
     }
-    if (src.serialNumber) {
+    if (src.serialNumber.has_value()) {
         dst["serialNumber"] = *src.serialNumber;
     }
-    if (src.softwareRevision) {
+    if (src.softwareRevision.has_value()) {
         dst["softwareRevision"] = *src.softwareRevision;
     }
-    if (src.hardwareRevision) {
+    if (src.hardwareRevision.has_value()) {
         dst["hardwareRevision"] = *src.hardwareRevision;
     }
-    if (src.vendorName) {
+    if (src.vendorName.has_value()) {
         dst["vendorName"] = *src.vendorName;
     }
-    if (src.vendorCode) {
+    if (src.vendorCode.has_value()) {
         dst["vendorCode"] = *src.vendorCode;
     }
-    if (src.brandName) {
+    if (src.brandName.has_value()) {
         dst["brandName"] = *src.brandName;
     }
-    if (src.powerSource) {
+    if (src.powerSource.has_value()) {
         dst["powerSource"] = *src.powerSource;
     }
-    if (src.manufacturerNodeIdentification) {
+    if (src.manufacturerNodeIdentification.has_value()) {
         dst["manufacturerNodeIdentification"] = *src.manufacturerNodeIdentification;
     }
-    if (src.manufacturerLabel) {
+    if (src.manufacturerLabel.has_value()) {
         dst["manufacturerLabel"] = *src.manufacturerLabel;
     }
-    if (src.manufacturerDescription) {
+    if (src.manufacturerDescription.has_value()) {
         dst["manufacturerDescription"] = *src.manufacturerDescription;
     }
 
@@ -22512,75 +23646,78 @@ void convertFromJson(const JsonVariantConst &src, DeviceClassificationManufactur
     if (!src["deviceName"].isNull()) {
         dst.deviceName = src["deviceName"].as<decltype(dst.deviceName)::value_type>();
     } else {
-        dst.deviceName = std::nullopt;
+        dst.deviceName.reset();
     }
     if (!src["deviceCode"].isNull()) {
         dst.deviceCode = src["deviceCode"].as<decltype(dst.deviceCode)::value_type>();
     } else {
-        dst.deviceCode = std::nullopt;
+        dst.deviceCode.reset();
     }
     if (!src["serialNumber"].isNull()) {
         dst.serialNumber = src["serialNumber"].as<decltype(dst.serialNumber)::value_type>();
     } else {
-        dst.serialNumber = std::nullopt;
+        dst.serialNumber.reset();
     }
     if (!src["softwareRevision"].isNull()) {
         dst.softwareRevision = src["softwareRevision"].as<decltype(dst.softwareRevision)::value_type>();
     } else {
-        dst.softwareRevision = std::nullopt;
+        dst.softwareRevision.reset();
     }
     if (!src["hardwareRevision"].isNull()) {
         dst.hardwareRevision = src["hardwareRevision"].as<decltype(dst.hardwareRevision)::value_type>();
     } else {
-        dst.hardwareRevision = std::nullopt;
+        dst.hardwareRevision.reset();
     }
     if (!src["vendorName"].isNull()) {
         dst.vendorName = src["vendorName"].as<decltype(dst.vendorName)::value_type>();
     } else {
-        dst.vendorName = std::nullopt;
+        dst.vendorName.reset();
     }
     if (!src["vendorCode"].isNull()) {
         dst.vendorCode = src["vendorCode"].as<decltype(dst.vendorCode)::value_type>();
     } else {
-        dst.vendorCode = std::nullopt;
+        dst.vendorCode.reset();
     }
     if (!src["brandName"].isNull()) {
         dst.brandName = src["brandName"].as<decltype(dst.brandName)::value_type>();
     } else {
-        dst.brandName = std::nullopt;
+        dst.brandName.reset();
     }
     if (!src["powerSource"].isNull()) {
         dst.powerSource = src["powerSource"].as<decltype(dst.powerSource)::value_type>();
     } else {
-        dst.powerSource = std::nullopt;
+        dst.powerSource.reset();
     }
     if (!src["manufacturerNodeIdentification"].isNull()) {
         dst.manufacturerNodeIdentification = src["manufacturerNodeIdentification"].as<decltype(dst.manufacturerNodeIdentification)::value_type>();
     } else {
-        dst.manufacturerNodeIdentification = std::nullopt;
+        dst.manufacturerNodeIdentification.reset();
     }
     if (!src["manufacturerLabel"].isNull()) {
         dst.manufacturerLabel = src["manufacturerLabel"].as<decltype(dst.manufacturerLabel)::value_type>();
     } else {
-        dst.manufacturerLabel = std::nullopt;
+        dst.manufacturerLabel.reset();
     }
     if (!src["manufacturerDescription"].isNull()) {
         dst.manufacturerDescription = src["manufacturerDescription"].as<decltype(dst.manufacturerDescription)::value_type>();
     } else {
-        dst.manufacturerDescription = std::nullopt;
+        dst.manufacturerDescription.reset();
     }
 
 }
 
 bool convertToJson(const DeviceClassificationUserDataType &src, JsonVariant &dst)
 {
-    if (src.userNodeIdentification) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.userNodeIdentification.has_value()) {
         dst["userNodeIdentification"] = *src.userNodeIdentification;
     }
-    if (src.userLabel) {
+    if (src.userLabel.has_value()) {
         dst["userLabel"] = *src.userLabel;
     }
-    if (src.userDescription) {
+    if (src.userDescription.has_value()) {
         dst["userDescription"] = *src.userDescription;
     }
 
@@ -22593,30 +23730,33 @@ void convertFromJson(const JsonVariantConst &src, DeviceClassificationUserDataTy
     if (!src["userNodeIdentification"].isNull()) {
         dst.userNodeIdentification = src["userNodeIdentification"].as<decltype(dst.userNodeIdentification)::value_type>();
     } else {
-        dst.userNodeIdentification = std::nullopt;
+        dst.userNodeIdentification.reset();
     }
     if (!src["userLabel"].isNull()) {
         dst.userLabel = src["userLabel"].as<decltype(dst.userLabel)::value_type>();
     } else {
-        dst.userLabel = std::nullopt;
+        dst.userLabel.reset();
     }
     if (!src["userDescription"].isNull()) {
         dst.userDescription = src["userDescription"].as<decltype(dst.userDescription)::value_type>();
     } else {
-        dst.userDescription = std::nullopt;
+        dst.userDescription.reset();
     }
 
 }
 
 bool convertToJson(const DeviceClassificationUserDataElementsType &src, JsonVariant &dst)
 {
-    if (src.userNodeIdentification) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.userNodeIdentification.has_value()) {
         dst["userNodeIdentification"] = *src.userNodeIdentification;
     }
-    if (src.userLabel) {
+    if (src.userLabel.has_value()) {
         dst["userLabel"] = *src.userLabel;
     }
-    if (src.userDescription) {
+    if (src.userDescription.has_value()) {
         dst["userDescription"] = *src.userDescription;
     }
 
@@ -22629,27 +23769,30 @@ void convertFromJson(const JsonVariantConst &src, DeviceClassificationUserDataEl
     if (!src["userNodeIdentification"].isNull()) {
         dst.userNodeIdentification = src["userNodeIdentification"].as<decltype(dst.userNodeIdentification)::value_type>();
     } else {
-        dst.userNodeIdentification = std::nullopt;
+        dst.userNodeIdentification.reset();
     }
     if (!src["userLabel"].isNull()) {
         dst.userLabel = src["userLabel"].as<decltype(dst.userLabel)::value_type>();
     } else {
-        dst.userLabel = std::nullopt;
+        dst.userLabel.reset();
     }
     if (!src["userDescription"].isNull()) {
         dst.userDescription = src["userDescription"].as<decltype(dst.userDescription)::value_type>();
     } else {
-        dst.userDescription = std::nullopt;
+        dst.userDescription.reset();
     }
 
 }
 
 bool convertToJson(const ActuatorLevelDataType &src, JsonVariant &dst)
 {
-    if (src.function) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.function.has_value()) {
         dst["function"] = *src.function;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
 
@@ -22662,22 +23805,25 @@ void convertFromJson(const JsonVariantConst &src, ActuatorLevelDataType &dst)
     if (!src["function"].isNull()) {
         dst.function = src["function"].as<decltype(dst.function)::value_type>();
     } else {
-        dst.function = std::nullopt;
+        dst.function.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
 
 }
 
 bool convertToJson(const ActuatorLevelDataElementsType &src, JsonVariant &dst)
 {
-    if (src.function) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.function.has_value()) {
         dst["function"] = *src.function;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
 
@@ -22690,25 +23836,28 @@ void convertFromJson(const JsonVariantConst &src, ActuatorLevelDataElementsType 
     if (!src["function"].isNull()) {
         dst.function = src["function"].as<decltype(dst.function)::value_type>();
     } else {
-        dst.function = std::nullopt;
+        dst.function.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
 
 }
 
 bool convertToJson(const ActuatorLevelDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.label) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
-    if (src.levelDefaultUnit) {
+    if (src.levelDefaultUnit.has_value()) {
         dst["levelDefaultUnit"] = *src.levelDefaultUnit;
     }
 
@@ -22721,30 +23870,33 @@ void convertFromJson(const JsonVariantConst &src, ActuatorLevelDescriptionDataTy
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
     if (!src["levelDefaultUnit"].isNull()) {
         dst.levelDefaultUnit = src["levelDefaultUnit"].as<decltype(dst.levelDefaultUnit)::value_type>();
     } else {
-        dst.levelDefaultUnit = std::nullopt;
+        dst.levelDefaultUnit.reset();
     }
 
 }
 
 bool convertToJson(const ActuatorLevelDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.label) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
-    if (src.levelDefaultUnit) {
+    if (src.levelDefaultUnit.has_value()) {
         dst["levelDefaultUnit"] = *src.levelDefaultUnit;
     }
 
@@ -22757,42 +23909,45 @@ void convertFromJson(const JsonVariantConst &src, ActuatorLevelDescriptionDataEl
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
     if (!src["levelDefaultUnit"].isNull()) {
         dst.levelDefaultUnit = src["levelDefaultUnit"].as<decltype(dst.levelDefaultUnit)::value_type>();
     } else {
-        dst.levelDefaultUnit = std::nullopt;
+        dst.levelDefaultUnit.reset();
     }
 
 }
 
 bool convertToJson(const TimeSeriesSlotType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesSlotId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeSeriesSlotId.has_value()) {
         dst["timeSeriesSlotId"] = *src.timeSeriesSlotId;
     }
-    if (src.timePeriod) {
+    if (src.timePeriod.has_value()) {
         dst["timePeriod"] = *src.timePeriod;
     }
-    if (src.duration) {
+    if (src.duration.has_value()) {
         dst["duration"] = *src.duration;
     }
-    if (src.recurrenceInformation) {
+    if (src.recurrenceInformation.has_value()) {
         dst["recurrenceInformation"] = *src.recurrenceInformation;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
-    if (src.minValue) {
+    if (src.minValue.has_value()) {
         dst["minValue"] = *src.minValue;
     }
-    if (src.maxValue) {
+    if (src.maxValue.has_value()) {
         dst["maxValue"] = *src.maxValue;
     }
 
@@ -22805,62 +23960,65 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesSlotType &dst)
     if (!src["timeSeriesSlotId"].isNull()) {
         dst.timeSeriesSlotId = src["timeSeriesSlotId"].as<decltype(dst.timeSeriesSlotId)::value_type>();
     } else {
-        dst.timeSeriesSlotId = std::nullopt;
+        dst.timeSeriesSlotId.reset();
     }
     if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
-        dst.timePeriod = std::nullopt;
+        dst.timePeriod.reset();
     }
     if (!src["duration"].isNull()) {
         dst.duration = src["duration"].as<decltype(dst.duration)::value_type>();
     } else {
-        dst.duration = std::nullopt;
+        dst.duration.reset();
     }
     if (!src["recurrenceInformation"].isNull()) {
         dst.recurrenceInformation = src["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
     } else {
-        dst.recurrenceInformation = std::nullopt;
+        dst.recurrenceInformation.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
     if (!src["minValue"].isNull()) {
         dst.minValue = src["minValue"].as<decltype(dst.minValue)::value_type>();
     } else {
-        dst.minValue = std::nullopt;
+        dst.minValue.reset();
     }
     if (!src["maxValue"].isNull()) {
         dst.maxValue = src["maxValue"].as<decltype(dst.maxValue)::value_type>();
     } else {
-        dst.maxValue = std::nullopt;
+        dst.maxValue.reset();
     }
 
 }
 
 bool convertToJson(const TimeSeriesSlotElementsType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesSlotId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeSeriesSlotId.has_value()) {
         dst["timeSeriesSlotId"] = *src.timeSeriesSlotId;
     }
-    if (src.timePeriod) {
+    if (src.timePeriod.has_value()) {
         dst["timePeriod"] = *src.timePeriod;
     }
-    if (src.duration) {
+    if (src.duration.has_value()) {
         dst["duration"] = *src.duration;
     }
-    if (src.recurrenceInformation) {
+    if (src.recurrenceInformation.has_value()) {
         dst["recurrenceInformation"] = *src.recurrenceInformation;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
-    if (src.minValue) {
+    if (src.minValue.has_value()) {
         dst["minValue"] = *src.minValue;
     }
-    if (src.maxValue) {
+    if (src.maxValue.has_value()) {
         dst["maxValue"] = *src.maxValue;
     }
 
@@ -22873,50 +24031,53 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesSlotElementsType &ds
     if (!src["timeSeriesSlotId"].isNull()) {
         dst.timeSeriesSlotId = src["timeSeriesSlotId"].as<decltype(dst.timeSeriesSlotId)::value_type>();
     } else {
-        dst.timeSeriesSlotId = std::nullopt;
+        dst.timeSeriesSlotId.reset();
     }
     if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
-        dst.timePeriod = std::nullopt;
+        dst.timePeriod.reset();
     }
     if (!src["duration"].isNull()) {
         dst.duration = src["duration"].as<decltype(dst.duration)::value_type>();
     } else {
-        dst.duration = std::nullopt;
+        dst.duration.reset();
     }
     if (!src["recurrenceInformation"].isNull()) {
         dst.recurrenceInformation = src["recurrenceInformation"].as<decltype(dst.recurrenceInformation)::value_type>();
     } else {
-        dst.recurrenceInformation = std::nullopt;
+        dst.recurrenceInformation.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
     if (!src["minValue"].isNull()) {
         dst.minValue = src["minValue"].as<decltype(dst.minValue)::value_type>();
     } else {
-        dst.minValue = std::nullopt;
+        dst.minValue.reset();
     }
     if (!src["maxValue"].isNull()) {
         dst.maxValue = src["maxValue"].as<decltype(dst.maxValue)::value_type>();
     } else {
-        dst.maxValue = std::nullopt;
+        dst.maxValue.reset();
     }
 
 }
 
 bool convertToJson(const TimeSeriesDataType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeSeriesId.has_value()) {
         dst["timeSeriesId"] = *src.timeSeriesId;
     }
-    if (src.timePeriod) {
+    if (src.timePeriod.has_value()) {
         dst["timePeriod"] = *src.timePeriod;
     }
-    if (src.timeSeriesSlot) {
+    if (src.timeSeriesSlot.has_value()) {
         dst["timeSeriesSlot"] = *src.timeSeriesSlot;
     }
 
@@ -22929,30 +24090,33 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDataType &dst)
     if (!src["timeSeriesId"].isNull()) {
         dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
     } else {
-        dst.timeSeriesId = std::nullopt;
+        dst.timeSeriesId.reset();
     }
     if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
-        dst.timePeriod = std::nullopt;
+        dst.timePeriod.reset();
     }
     if (!src["timeSeriesSlot"].isNull()) {
         dst.timeSeriesSlot = src["timeSeriesSlot"].as<decltype(dst.timeSeriesSlot)::value_type>();
     } else {
-        dst.timeSeriesSlot = std::nullopt;
+        dst.timeSeriesSlot.reset();
     }
 
 }
 
 bool convertToJson(const TimeSeriesDataElementsType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeSeriesId.has_value()) {
         dst["timeSeriesId"] = *src.timeSeriesId;
     }
-    if (src.timePeriod) {
+    if (src.timePeriod.has_value()) {
         dst["timePeriod"] = *src.timePeriod;
     }
-    if (src.timeSeriesSlot) {
+    if (src.timeSeriesSlot.has_value()) {
         dst["timeSeriesSlot"] = *src.timeSeriesSlot;
     }
 
@@ -22965,24 +24129,27 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDataElementsType &ds
     if (!src["timeSeriesId"].isNull()) {
         dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
     } else {
-        dst.timeSeriesId = std::nullopt;
+        dst.timeSeriesId.reset();
     }
     if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
-        dst.timePeriod = std::nullopt;
+        dst.timePeriod.reset();
     }
     if (!src["timeSeriesSlot"].isNull()) {
         dst.timeSeriesSlot = src["timeSeriesSlot"].as<decltype(dst.timeSeriesSlot)::value_type>();
     } else {
-        dst.timeSeriesSlot = std::nullopt;
+        dst.timeSeriesSlot.reset();
     }
 
 }
 
 bool convertToJson(const TimeSeriesListDataType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeSeriesData.has_value()) {
         dst["timeSeriesData"] = *src.timeSeriesData;
     }
 
@@ -22995,17 +24162,20 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesListDataType &dst)
     if (!src["timeSeriesData"].isNull()) {
         dst.timeSeriesData = src["timeSeriesData"].as<decltype(dst.timeSeriesData)::value_type>();
     } else {
-        dst.timeSeriesData = std::nullopt;
+        dst.timeSeriesData.reset();
     }
 
 }
 
 bool convertToJson(const TimeSeriesListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeSeriesId.has_value()) {
         dst["timeSeriesId"] = *src.timeSeriesId;
     }
-    if (src.timeSeriesSlotId) {
+    if (src.timeSeriesSlotId.has_value()) {
         dst["timeSeriesSlotId"] = *src.timeSeriesSlotId;
     }
 
@@ -23018,46 +24188,49 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesListDataSelectorsTyp
     if (!src["timeSeriesId"].isNull()) {
         dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
     } else {
-        dst.timeSeriesId = std::nullopt;
+        dst.timeSeriesId.reset();
     }
     if (!src["timeSeriesSlotId"].isNull()) {
         dst.timeSeriesSlotId = src["timeSeriesSlotId"].as<decltype(dst.timeSeriesSlotId)::value_type>();
     } else {
-        dst.timeSeriesSlotId = std::nullopt;
+        dst.timeSeriesSlotId.reset();
     }
 
 }
 
 bool convertToJson(const TimeSeriesDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeSeriesId.has_value()) {
         dst["timeSeriesId"] = *src.timeSeriesId;
     }
-    if (src.timeSeriesType) {
+    if (src.timeSeriesType.has_value()) {
         dst["timeSeriesType"] = *src.timeSeriesType;
     }
-    if (src.timeSeriesWriteable) {
+    if (src.timeSeriesWriteable.has_value()) {
         dst["timeSeriesWriteable"] = *src.timeSeriesWriteable;
     }
-    if (src.updateRequired) {
+    if (src.updateRequired.has_value()) {
         dst["updateRequired"] = *src.updateRequired;
     }
-    if (src.measurementId) {
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.currency) {
+    if (src.currency.has_value()) {
         dst["currency"] = *src.currency;
     }
-    if (src.unit) {
+    if (src.unit.has_value()) {
         dst["unit"] = *src.unit;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
 
@@ -23070,86 +24243,89 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataType 
     if (!src["timeSeriesId"].isNull()) {
         dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
     } else {
-        dst.timeSeriesId = std::nullopt;
+        dst.timeSeriesId.reset();
     }
     if (!src["timeSeriesType"].isNull()) {
         dst.timeSeriesType = src["timeSeriesType"].as<decltype(dst.timeSeriesType)::value_type>();
     } else {
-        dst.timeSeriesType = std::nullopt;
+        dst.timeSeriesType.reset();
     }
     if (!src["timeSeriesWriteable"].isNull()) {
         dst.timeSeriesWriteable = src["timeSeriesWriteable"].as<decltype(dst.timeSeriesWriteable)::value_type>();
     } else {
-        dst.timeSeriesWriteable = std::nullopt;
+        dst.timeSeriesWriteable.reset();
     }
     if (!src["updateRequired"].isNull()) {
         dst.updateRequired = src["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
     } else {
-        dst.updateRequired = std::nullopt;
+        dst.updateRequired.reset();
     }
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["currency"].isNull()) {
         dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
     } else {
-        dst.currency = std::nullopt;
+        dst.currency.reset();
     }
     if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
-        dst.unit = std::nullopt;
+        dst.unit.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
 
 }
 
 bool convertToJson(const TimeSeriesDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeSeriesId.has_value()) {
         dst["timeSeriesId"] = *src.timeSeriesId;
     }
-    if (src.timeSeriesType) {
+    if (src.timeSeriesType.has_value()) {
         dst["timeSeriesType"] = *src.timeSeriesType;
     }
-    if (src.timeSeriesWriteable) {
+    if (src.timeSeriesWriteable.has_value()) {
         dst["timeSeriesWriteable"] = *src.timeSeriesWriteable;
     }
-    if (src.updateRequired) {
+    if (src.updateRequired.has_value()) {
         dst["updateRequired"] = *src.updateRequired;
     }
-    if (src.measurementId) {
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.currency) {
+    if (src.currency.has_value()) {
         dst["currency"] = *src.currency;
     }
-    if (src.unit) {
+    if (src.unit.has_value()) {
         dst["unit"] = *src.unit;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
 
@@ -23162,59 +24338,62 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionDataEleme
     if (!src["timeSeriesId"].isNull()) {
         dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
     } else {
-        dst.timeSeriesId = std::nullopt;
+        dst.timeSeriesId.reset();
     }
     if (!src["timeSeriesType"].isNull()) {
         dst.timeSeriesType = src["timeSeriesType"].as<decltype(dst.timeSeriesType)::value_type>();
     } else {
-        dst.timeSeriesType = std::nullopt;
+        dst.timeSeriesType.reset();
     }
     if (!src["timeSeriesWriteable"].isNull()) {
         dst.timeSeriesWriteable = src["timeSeriesWriteable"].as<decltype(dst.timeSeriesWriteable)::value_type>();
     } else {
-        dst.timeSeriesWriteable = std::nullopt;
+        dst.timeSeriesWriteable.reset();
     }
     if (!src["updateRequired"].isNull()) {
         dst.updateRequired = src["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
     } else {
-        dst.updateRequired = std::nullopt;
+        dst.updateRequired.reset();
     }
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["currency"].isNull()) {
         dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
     } else {
-        dst.currency = std::nullopt;
+        dst.currency.reset();
     }
     if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
-        dst.unit = std::nullopt;
+        dst.unit.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
 
 }
 
 bool convertToJson(const TimeSeriesDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeSeriesDescriptionData.has_value()) {
         dst["timeSeriesDescriptionData"] = *src.timeSeriesDescriptionData;
     }
 
@@ -23227,23 +24406,26 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionListDataT
     if (!src["timeSeriesDescriptionData"].isNull()) {
         dst.timeSeriesDescriptionData = src["timeSeriesDescriptionData"].as<decltype(dst.timeSeriesDescriptionData)::value_type>();
     } else {
-        dst.timeSeriesDescriptionData = std::nullopt;
+        dst.timeSeriesDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const TimeSeriesDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeSeriesId.has_value()) {
         dst["timeSeriesId"] = *src.timeSeriesId;
     }
-    if (src.timeSeriesType) {
+    if (src.timeSeriesType.has_value()) {
         dst["timeSeriesType"] = *src.timeSeriesType;
     }
-    if (src.measurementId) {
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
 
@@ -23256,59 +24438,62 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionListDataS
     if (!src["timeSeriesId"].isNull()) {
         dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
     } else {
-        dst.timeSeriesId = std::nullopt;
+        dst.timeSeriesId.reset();
     }
     if (!src["timeSeriesType"].isNull()) {
         dst.timeSeriesType = src["timeSeriesType"].as<decltype(dst.timeSeriesType)::value_type>();
     } else {
-        dst.timeSeriesType = std::nullopt;
+        dst.timeSeriesType.reset();
     }
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
 
 }
 
 bool convertToJson(const TimeSeriesConstraintsDataType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeSeriesId.has_value()) {
         dst["timeSeriesId"] = *src.timeSeriesId;
     }
-    if (src.slotCountMin) {
+    if (src.slotCountMin.has_value()) {
         dst["slotCountMin"] = *src.slotCountMin;
     }
-    if (src.slotCountMax) {
+    if (src.slotCountMax.has_value()) {
         dst["slotCountMax"] = *src.slotCountMax;
     }
-    if (src.slotDurationMin) {
+    if (src.slotDurationMin.has_value()) {
         dst["slotDurationMin"] = *src.slotDurationMin;
     }
-    if (src.slotDurationMax) {
+    if (src.slotDurationMax.has_value()) {
         dst["slotDurationMax"] = *src.slotDurationMax;
     }
-    if (src.slotDurationStepSize) {
+    if (src.slotDurationStepSize.has_value()) {
         dst["slotDurationStepSize"] = *src.slotDurationStepSize;
     }
-    if (src.earliestTimeSeriesStartTime) {
+    if (src.earliestTimeSeriesStartTime.has_value()) {
         dst["earliestTimeSeriesStartTime"] = *src.earliestTimeSeriesStartTime;
     }
-    if (src.latestTimeSeriesEndTime) {
+    if (src.latestTimeSeriesEndTime.has_value()) {
         dst["latestTimeSeriesEndTime"] = *src.latestTimeSeriesEndTime;
     }
-    if (src.slotValueMin) {
+    if (src.slotValueMin.has_value()) {
         dst["slotValueMin"] = *src.slotValueMin;
     }
-    if (src.slotValueMax) {
+    if (src.slotValueMax.has_value()) {
         dst["slotValueMax"] = *src.slotValueMax;
     }
-    if (src.slotValueStepSize) {
+    if (src.slotValueStepSize.has_value()) {
         dst["slotValueStepSize"] = *src.slotValueStepSize;
     }
 
@@ -23321,94 +24506,97 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsDataType 
     if (!src["timeSeriesId"].isNull()) {
         dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
     } else {
-        dst.timeSeriesId = std::nullopt;
+        dst.timeSeriesId.reset();
     }
     if (!src["slotCountMin"].isNull()) {
         dst.slotCountMin = src["slotCountMin"].as<decltype(dst.slotCountMin)::value_type>();
     } else {
-        dst.slotCountMin = std::nullopt;
+        dst.slotCountMin.reset();
     }
     if (!src["slotCountMax"].isNull()) {
         dst.slotCountMax = src["slotCountMax"].as<decltype(dst.slotCountMax)::value_type>();
     } else {
-        dst.slotCountMax = std::nullopt;
+        dst.slotCountMax.reset();
     }
     if (!src["slotDurationMin"].isNull()) {
         dst.slotDurationMin = src["slotDurationMin"].as<decltype(dst.slotDurationMin)::value_type>();
     } else {
-        dst.slotDurationMin = std::nullopt;
+        dst.slotDurationMin.reset();
     }
     if (!src["slotDurationMax"].isNull()) {
         dst.slotDurationMax = src["slotDurationMax"].as<decltype(dst.slotDurationMax)::value_type>();
     } else {
-        dst.slotDurationMax = std::nullopt;
+        dst.slotDurationMax.reset();
     }
     if (!src["slotDurationStepSize"].isNull()) {
         dst.slotDurationStepSize = src["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize)::value_type>();
     } else {
-        dst.slotDurationStepSize = std::nullopt;
+        dst.slotDurationStepSize.reset();
     }
     if (!src["earliestTimeSeriesStartTime"].isNull()) {
         dst.earliestTimeSeriesStartTime = src["earliestTimeSeriesStartTime"].as<decltype(dst.earliestTimeSeriesStartTime)::value_type>();
     } else {
-        dst.earliestTimeSeriesStartTime = std::nullopt;
+        dst.earliestTimeSeriesStartTime.reset();
     }
     if (!src["latestTimeSeriesEndTime"].isNull()) {
         dst.latestTimeSeriesEndTime = src["latestTimeSeriesEndTime"].as<decltype(dst.latestTimeSeriesEndTime)::value_type>();
     } else {
-        dst.latestTimeSeriesEndTime = std::nullopt;
+        dst.latestTimeSeriesEndTime.reset();
     }
     if (!src["slotValueMin"].isNull()) {
         dst.slotValueMin = src["slotValueMin"].as<decltype(dst.slotValueMin)::value_type>();
     } else {
-        dst.slotValueMin = std::nullopt;
+        dst.slotValueMin.reset();
     }
     if (!src["slotValueMax"].isNull()) {
         dst.slotValueMax = src["slotValueMax"].as<decltype(dst.slotValueMax)::value_type>();
     } else {
-        dst.slotValueMax = std::nullopt;
+        dst.slotValueMax.reset();
     }
     if (!src["slotValueStepSize"].isNull()) {
         dst.slotValueStepSize = src["slotValueStepSize"].as<decltype(dst.slotValueStepSize)::value_type>();
     } else {
-        dst.slotValueStepSize = std::nullopt;
+        dst.slotValueStepSize.reset();
     }
 
 }
 
 bool convertToJson(const TimeSeriesConstraintsDataElementsType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeSeriesId.has_value()) {
         dst["timeSeriesId"] = *src.timeSeriesId;
     }
-    if (src.slotCountMin) {
+    if (src.slotCountMin.has_value()) {
         dst["slotCountMin"] = *src.slotCountMin;
     }
-    if (src.slotCountMax) {
+    if (src.slotCountMax.has_value()) {
         dst["slotCountMax"] = *src.slotCountMax;
     }
-    if (src.slotDurationMin) {
+    if (src.slotDurationMin.has_value()) {
         dst["slotDurationMin"] = *src.slotDurationMin;
     }
-    if (src.slotDurationMax) {
+    if (src.slotDurationMax.has_value()) {
         dst["slotDurationMax"] = *src.slotDurationMax;
     }
-    if (src.slotDurationStepSize) {
+    if (src.slotDurationStepSize.has_value()) {
         dst["slotDurationStepSize"] = *src.slotDurationStepSize;
     }
-    if (src.earliestTimeSeriesStartTime) {
+    if (src.earliestTimeSeriesStartTime.has_value()) {
         dst["earliestTimeSeriesStartTime"] = *src.earliestTimeSeriesStartTime;
     }
-    if (src.latestTimeSeriesEndTime) {
+    if (src.latestTimeSeriesEndTime.has_value()) {
         dst["latestTimeSeriesEndTime"] = *src.latestTimeSeriesEndTime;
     }
-    if (src.slotValueMin) {
+    if (src.slotValueMin.has_value()) {
         dst["slotValueMin"] = *src.slotValueMin;
     }
-    if (src.slotValueMax) {
+    if (src.slotValueMax.has_value()) {
         dst["slotValueMax"] = *src.slotValueMax;
     }
-    if (src.slotValueStepSize) {
+    if (src.slotValueStepSize.has_value()) {
         dst["slotValueStepSize"] = *src.slotValueStepSize;
     }
 
@@ -23421,64 +24609,67 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsDataEleme
     if (!src["timeSeriesId"].isNull()) {
         dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
     } else {
-        dst.timeSeriesId = std::nullopt;
+        dst.timeSeriesId.reset();
     }
     if (!src["slotCountMin"].isNull()) {
         dst.slotCountMin = src["slotCountMin"].as<decltype(dst.slotCountMin)::value_type>();
     } else {
-        dst.slotCountMin = std::nullopt;
+        dst.slotCountMin.reset();
     }
     if (!src["slotCountMax"].isNull()) {
         dst.slotCountMax = src["slotCountMax"].as<decltype(dst.slotCountMax)::value_type>();
     } else {
-        dst.slotCountMax = std::nullopt;
+        dst.slotCountMax.reset();
     }
     if (!src["slotDurationMin"].isNull()) {
         dst.slotDurationMin = src["slotDurationMin"].as<decltype(dst.slotDurationMin)::value_type>();
     } else {
-        dst.slotDurationMin = std::nullopt;
+        dst.slotDurationMin.reset();
     }
     if (!src["slotDurationMax"].isNull()) {
         dst.slotDurationMax = src["slotDurationMax"].as<decltype(dst.slotDurationMax)::value_type>();
     } else {
-        dst.slotDurationMax = std::nullopt;
+        dst.slotDurationMax.reset();
     }
     if (!src["slotDurationStepSize"].isNull()) {
         dst.slotDurationStepSize = src["slotDurationStepSize"].as<decltype(dst.slotDurationStepSize)::value_type>();
     } else {
-        dst.slotDurationStepSize = std::nullopt;
+        dst.slotDurationStepSize.reset();
     }
     if (!src["earliestTimeSeriesStartTime"].isNull()) {
         dst.earliestTimeSeriesStartTime = src["earliestTimeSeriesStartTime"].as<decltype(dst.earliestTimeSeriesStartTime)::value_type>();
     } else {
-        dst.earliestTimeSeriesStartTime = std::nullopt;
+        dst.earliestTimeSeriesStartTime.reset();
     }
     if (!src["latestTimeSeriesEndTime"].isNull()) {
         dst.latestTimeSeriesEndTime = src["latestTimeSeriesEndTime"].as<decltype(dst.latestTimeSeriesEndTime)::value_type>();
     } else {
-        dst.latestTimeSeriesEndTime = std::nullopt;
+        dst.latestTimeSeriesEndTime.reset();
     }
     if (!src["slotValueMin"].isNull()) {
         dst.slotValueMin = src["slotValueMin"].as<decltype(dst.slotValueMin)::value_type>();
     } else {
-        dst.slotValueMin = std::nullopt;
+        dst.slotValueMin.reset();
     }
     if (!src["slotValueMax"].isNull()) {
         dst.slotValueMax = src["slotValueMax"].as<decltype(dst.slotValueMax)::value_type>();
     } else {
-        dst.slotValueMax = std::nullopt;
+        dst.slotValueMax.reset();
     }
     if (!src["slotValueStepSize"].isNull()) {
         dst.slotValueStepSize = src["slotValueStepSize"].as<decltype(dst.slotValueStepSize)::value_type>();
     } else {
-        dst.slotValueStepSize = std::nullopt;
+        dst.slotValueStepSize.reset();
     }
 
 }
 
 bool convertToJson(const TimeSeriesConstraintsListDataType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesConstraintsData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeSeriesConstraintsData.has_value()) {
         dst["timeSeriesConstraintsData"] = *src.timeSeriesConstraintsData;
     }
 
@@ -23491,14 +24682,17 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsListDataT
     if (!src["timeSeriesConstraintsData"].isNull()) {
         dst.timeSeriesConstraintsData = src["timeSeriesConstraintsData"].as<decltype(dst.timeSeriesConstraintsData)::value_type>();
     } else {
-        dst.timeSeriesConstraintsData = std::nullopt;
+        dst.timeSeriesConstraintsData.reset();
     }
 
 }
 
 bool convertToJson(const TimeSeriesConstraintsListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.timeSeriesId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeSeriesId.has_value()) {
         dst["timeSeriesId"] = *src.timeSeriesId;
     }
 
@@ -23511,14 +24705,17 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesConstraintsListDataS
     if (!src["timeSeriesId"].isNull()) {
         dst.timeSeriesId = src["timeSeriesId"].as<decltype(dst.timeSeriesId)::value_type>();
     } else {
-        dst.timeSeriesId = std::nullopt;
+        dst.timeSeriesId.reset();
     }
 
 }
 
 bool convertToJson(const SmartEnergyManagementPsAlternativesRelationType &src, JsonVariant &dst)
 {
-    if (src.alternativesId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.alternativesId.has_value()) {
         dst["alternativesId"] = *src.alternativesId;
     }
 
@@ -23531,14 +24728,17 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlterna
     if (!src["alternativesId"].isNull()) {
         dst.alternativesId = src["alternativesId"].as<decltype(dst.alternativesId)::value_type>();
     } else {
-        dst.alternativesId = std::nullopt;
+        dst.alternativesId.reset();
     }
 
 }
 
 bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotValueListType &src, JsonVariant &dst)
 {
-    if (src.value) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
 
@@ -23551,20 +24751,23 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTi
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
 
 }
 
 bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotType &src, JsonVariant &dst)
 {
-    if (src.schedule) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.schedule.has_value()) {
         dst["schedule"] = *src.schedule;
     }
-    if (src.valueList) {
+    if (src.valueList.has_value()) {
         dst["valueList"] = *src.valueList;
     }
-    if (src.scheduleConstraints) {
+    if (src.scheduleConstraints.has_value()) {
         dst["scheduleConstraints"] = *src.scheduleConstraints;
     }
 
@@ -23577,48 +24780,51 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTi
     if (!src["schedule"].isNull()) {
         dst.schedule = src["schedule"].as<decltype(dst.schedule)::value_type>();
     } else {
-        dst.schedule = std::nullopt;
+        dst.schedule.reset();
     }
     if (!src["valueList"].isNull()) {
         dst.valueList = src["valueList"].as<decltype(dst.valueList)::value_type>();
     } else {
-        dst.valueList = std::nullopt;
+        dst.valueList.reset();
     }
     if (!src["scheduleConstraints"].isNull()) {
         dst.scheduleConstraints = src["scheduleConstraints"].as<decltype(dst.scheduleConstraints)::value_type>();
     } else {
-        dst.scheduleConstraints = std::nullopt;
+        dst.scheduleConstraints.reset();
     }
 
 }
 
 bool convertToJson(const SmartEnergyManagementPsPowerSequenceType &src, JsonVariant &dst)
 {
-    if (src.description) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
-    if (src.state) {
+    if (src.state.has_value()) {
         dst["state"] = *src.state;
     }
-    if (src.schedule) {
+    if (src.schedule.has_value()) {
         dst["schedule"] = *src.schedule;
     }
-    if (src.scheduleConstraints) {
+    if (src.scheduleConstraints.has_value()) {
         dst["scheduleConstraints"] = *src.scheduleConstraints;
     }
-    if (src.schedulePreference) {
+    if (src.schedulePreference.has_value()) {
         dst["schedulePreference"] = *src.schedulePreference;
     }
-    if (src.operatingConstraintsInterrupt) {
+    if (src.operatingConstraintsInterrupt.has_value()) {
         dst["operatingConstraintsInterrupt"] = *src.operatingConstraintsInterrupt;
     }
-    if (src.operatingConstraintsDuration) {
+    if (src.operatingConstraintsDuration.has_value()) {
         dst["operatingConstraintsDuration"] = *src.operatingConstraintsDuration;
     }
-    if (src.operatingConstraintsResumeImplication) {
+    if (src.operatingConstraintsResumeImplication.has_value()) {
         dst["operatingConstraintsResumeImplication"] = *src.operatingConstraintsResumeImplication;
     }
-    if (src.powerTimeSlot) {
+    if (src.powerTimeSlot.has_value()) {
         dst["powerTimeSlot"] = *src.powerTimeSlot;
     }
 
@@ -23631,57 +24837,60 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerSe
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
     if (!src["state"].isNull()) {
         dst.state = src["state"].as<decltype(dst.state)::value_type>();
     } else {
-        dst.state = std::nullopt;
+        dst.state.reset();
     }
     if (!src["schedule"].isNull()) {
         dst.schedule = src["schedule"].as<decltype(dst.schedule)::value_type>();
     } else {
-        dst.schedule = std::nullopt;
+        dst.schedule.reset();
     }
     if (!src["scheduleConstraints"].isNull()) {
         dst.scheduleConstraints = src["scheduleConstraints"].as<decltype(dst.scheduleConstraints)::value_type>();
     } else {
-        dst.scheduleConstraints = std::nullopt;
+        dst.scheduleConstraints.reset();
     }
     if (!src["schedulePreference"].isNull()) {
         dst.schedulePreference = src["schedulePreference"].as<decltype(dst.schedulePreference)::value_type>();
     } else {
-        dst.schedulePreference = std::nullopt;
+        dst.schedulePreference.reset();
     }
     if (!src["operatingConstraintsInterrupt"].isNull()) {
         dst.operatingConstraintsInterrupt = src["operatingConstraintsInterrupt"].as<decltype(dst.operatingConstraintsInterrupt)::value_type>();
     } else {
-        dst.operatingConstraintsInterrupt = std::nullopt;
+        dst.operatingConstraintsInterrupt.reset();
     }
     if (!src["operatingConstraintsDuration"].isNull()) {
         dst.operatingConstraintsDuration = src["operatingConstraintsDuration"].as<decltype(dst.operatingConstraintsDuration)::value_type>();
     } else {
-        dst.operatingConstraintsDuration = std::nullopt;
+        dst.operatingConstraintsDuration.reset();
     }
     if (!src["operatingConstraintsResumeImplication"].isNull()) {
         dst.operatingConstraintsResumeImplication = src["operatingConstraintsResumeImplication"].as<decltype(dst.operatingConstraintsResumeImplication)::value_type>();
     } else {
-        dst.operatingConstraintsResumeImplication = std::nullopt;
+        dst.operatingConstraintsResumeImplication.reset();
     }
     if (!src["powerTimeSlot"].isNull()) {
         dst.powerTimeSlot = src["powerTimeSlot"].as<decltype(dst.powerTimeSlot)::value_type>();
     } else {
-        dst.powerTimeSlot = std::nullopt;
+        dst.powerTimeSlot.reset();
     }
 
 }
 
 bool convertToJson(const SmartEnergyManagementPsAlternativesType &src, JsonVariant &dst)
 {
-    if (src.relation) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.relation.has_value()) {
         dst["relation"] = *src.relation;
     }
-    if (src.powerSequence) {
+    if (src.powerSequence.has_value()) {
         dst["powerSequence"] = *src.powerSequence;
     }
 
@@ -23694,22 +24903,25 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlterna
     if (!src["relation"].isNull()) {
         dst.relation = src["relation"].as<decltype(dst.relation)::value_type>();
     } else {
-        dst.relation = std::nullopt;
+        dst.relation.reset();
     }
     if (!src["powerSequence"].isNull()) {
         dst.powerSequence = src["powerSequence"].as<decltype(dst.powerSequence)::value_type>();
     } else {
-        dst.powerSequence = std::nullopt;
+        dst.powerSequence.reset();
     }
 
 }
 
 bool convertToJson(const SmartEnergyManagementPsDataType &src, JsonVariant &dst)
 {
-    if (src.nodeScheduleInformation) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.nodeScheduleInformation.has_value()) {
         dst["nodeScheduleInformation"] = *src.nodeScheduleInformation;
     }
-    if (src.alternatives) {
+    if (src.alternatives.has_value()) {
         dst["alternatives"] = *src.alternatives;
     }
 
@@ -23722,19 +24934,22 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataTyp
     if (!src["nodeScheduleInformation"].isNull()) {
         dst.nodeScheduleInformation = src["nodeScheduleInformation"].as<decltype(dst.nodeScheduleInformation)::value_type>();
     } else {
-        dst.nodeScheduleInformation = std::nullopt;
+        dst.nodeScheduleInformation.reset();
     }
     if (!src["alternatives"].isNull()) {
         dst.alternatives = src["alternatives"].as<decltype(dst.alternatives)::value_type>();
     } else {
-        dst.alternatives = std::nullopt;
+        dst.alternatives.reset();
     }
 
 }
 
 bool convertToJson(const SmartEnergyManagementPsAlternativesRelationElementsType &src, JsonVariant &dst)
 {
-    if (src.alternativesId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.alternativesId.has_value()) {
         dst["alternativesId"] = *src.alternativesId;
     }
 
@@ -23747,14 +24962,17 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlterna
     if (!src["alternativesId"].isNull()) {
         dst.alternativesId = src["alternativesId"].as<decltype(dst.alternativesId)::value_type>();
     } else {
-        dst.alternativesId = std::nullopt;
+        dst.alternativesId.reset();
     }
 
 }
 
 bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotValueListElementsType &src, JsonVariant &dst)
 {
-    if (src.value) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
 
@@ -23767,20 +24985,23 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTi
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
 
 }
 
 bool convertToJson(const SmartEnergyManagementPsPowerTimeSlotElementsType &src, JsonVariant &dst)
 {
-    if (src.schedule) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.schedule.has_value()) {
         dst["schedule"] = *src.schedule;
     }
-    if (src.valueList) {
+    if (src.valueList.has_value()) {
         dst["valueList"] = *src.valueList;
     }
-    if (src.scheduleConstraints) {
+    if (src.scheduleConstraints.has_value()) {
         dst["scheduleConstraints"] = *src.scheduleConstraints;
     }
 
@@ -23793,48 +25014,51 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerTi
     if (!src["schedule"].isNull()) {
         dst.schedule = src["schedule"].as<decltype(dst.schedule)::value_type>();
     } else {
-        dst.schedule = std::nullopt;
+        dst.schedule.reset();
     }
     if (!src["valueList"].isNull()) {
         dst.valueList = src["valueList"].as<decltype(dst.valueList)::value_type>();
     } else {
-        dst.valueList = std::nullopt;
+        dst.valueList.reset();
     }
     if (!src["scheduleConstraints"].isNull()) {
         dst.scheduleConstraints = src["scheduleConstraints"].as<decltype(dst.scheduleConstraints)::value_type>();
     } else {
-        dst.scheduleConstraints = std::nullopt;
+        dst.scheduleConstraints.reset();
     }
 
 }
 
 bool convertToJson(const SmartEnergyManagementPsPowerSequenceElementsType &src, JsonVariant &dst)
 {
-    if (src.description) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
-    if (src.state) {
+    if (src.state.has_value()) {
         dst["state"] = *src.state;
     }
-    if (src.schedule) {
+    if (src.schedule.has_value()) {
         dst["schedule"] = *src.schedule;
     }
-    if (src.scheduleConstraints) {
+    if (src.scheduleConstraints.has_value()) {
         dst["scheduleConstraints"] = *src.scheduleConstraints;
     }
-    if (src.schedulePreference) {
+    if (src.schedulePreference.has_value()) {
         dst["schedulePreference"] = *src.schedulePreference;
     }
-    if (src.operatingConstraintsInterrupt) {
+    if (src.operatingConstraintsInterrupt.has_value()) {
         dst["operatingConstraintsInterrupt"] = *src.operatingConstraintsInterrupt;
     }
-    if (src.operatingConstraintsDuration) {
+    if (src.operatingConstraintsDuration.has_value()) {
         dst["operatingConstraintsDuration"] = *src.operatingConstraintsDuration;
     }
-    if (src.operatingConstraintsResumeImplication) {
+    if (src.operatingConstraintsResumeImplication.has_value()) {
         dst["operatingConstraintsResumeImplication"] = *src.operatingConstraintsResumeImplication;
     }
-    if (src.powerTimeSlot) {
+    if (src.powerTimeSlot.has_value()) {
         dst["powerTimeSlot"] = *src.powerTimeSlot;
     }
 
@@ -23847,57 +25071,60 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPowerSe
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
     if (!src["state"].isNull()) {
         dst.state = src["state"].as<decltype(dst.state)::value_type>();
     } else {
-        dst.state = std::nullopt;
+        dst.state.reset();
     }
     if (!src["schedule"].isNull()) {
         dst.schedule = src["schedule"].as<decltype(dst.schedule)::value_type>();
     } else {
-        dst.schedule = std::nullopt;
+        dst.schedule.reset();
     }
     if (!src["scheduleConstraints"].isNull()) {
         dst.scheduleConstraints = src["scheduleConstraints"].as<decltype(dst.scheduleConstraints)::value_type>();
     } else {
-        dst.scheduleConstraints = std::nullopt;
+        dst.scheduleConstraints.reset();
     }
     if (!src["schedulePreference"].isNull()) {
         dst.schedulePreference = src["schedulePreference"].as<decltype(dst.schedulePreference)::value_type>();
     } else {
-        dst.schedulePreference = std::nullopt;
+        dst.schedulePreference.reset();
     }
     if (!src["operatingConstraintsInterrupt"].isNull()) {
         dst.operatingConstraintsInterrupt = src["operatingConstraintsInterrupt"].as<decltype(dst.operatingConstraintsInterrupt)::value_type>();
     } else {
-        dst.operatingConstraintsInterrupt = std::nullopt;
+        dst.operatingConstraintsInterrupt.reset();
     }
     if (!src["operatingConstraintsDuration"].isNull()) {
         dst.operatingConstraintsDuration = src["operatingConstraintsDuration"].as<decltype(dst.operatingConstraintsDuration)::value_type>();
     } else {
-        dst.operatingConstraintsDuration = std::nullopt;
+        dst.operatingConstraintsDuration.reset();
     }
     if (!src["operatingConstraintsResumeImplication"].isNull()) {
         dst.operatingConstraintsResumeImplication = src["operatingConstraintsResumeImplication"].as<decltype(dst.operatingConstraintsResumeImplication)::value_type>();
     } else {
-        dst.operatingConstraintsResumeImplication = std::nullopt;
+        dst.operatingConstraintsResumeImplication.reset();
     }
     if (!src["powerTimeSlot"].isNull()) {
         dst.powerTimeSlot = src["powerTimeSlot"].as<decltype(dst.powerTimeSlot)::value_type>();
     } else {
-        dst.powerTimeSlot = std::nullopt;
+        dst.powerTimeSlot.reset();
     }
 
 }
 
 bool convertToJson(const SmartEnergyManagementPsAlternativesElementsType &src, JsonVariant &dst)
 {
-    if (src.relation) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.relation.has_value()) {
         dst["relation"] = *src.relation;
     }
-    if (src.powerSequence) {
+    if (src.powerSequence.has_value()) {
         dst["powerSequence"] = *src.powerSequence;
     }
 
@@ -23910,22 +25137,25 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsAlterna
     if (!src["relation"].isNull()) {
         dst.relation = src["relation"].as<decltype(dst.relation)::value_type>();
     } else {
-        dst.relation = std::nullopt;
+        dst.relation.reset();
     }
     if (!src["powerSequence"].isNull()) {
         dst.powerSequence = src["powerSequence"].as<decltype(dst.powerSequence)::value_type>();
     } else {
-        dst.powerSequence = std::nullopt;
+        dst.powerSequence.reset();
     }
 
 }
 
 bool convertToJson(const SmartEnergyManagementPsDataElementsType &src, JsonVariant &dst)
 {
-    if (src.nodeScheduleInformation) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.nodeScheduleInformation.has_value()) {
         dst["nodeScheduleInformation"] = *src.nodeScheduleInformation;
     }
-    if (src.alternatives) {
+    if (src.alternatives.has_value()) {
         dst["alternatives"] = *src.alternatives;
     }
 
@@ -23938,28 +25168,31 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataEle
     if (!src["nodeScheduleInformation"].isNull()) {
         dst.nodeScheduleInformation = src["nodeScheduleInformation"].as<decltype(dst.nodeScheduleInformation)::value_type>();
     } else {
-        dst.nodeScheduleInformation = std::nullopt;
+        dst.nodeScheduleInformation.reset();
     }
     if (!src["alternatives"].isNull()) {
         dst.alternatives = src["alternatives"].as<decltype(dst.alternatives)::value_type>();
     } else {
-        dst.alternatives = std::nullopt;
+        dst.alternatives.reset();
     }
 
 }
 
 bool convertToJson(const SmartEnergyManagementPsDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.alternativesRelation) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.alternativesRelation.has_value()) {
         dst["alternativesRelation"] = *src.alternativesRelation;
     }
-    if (src.powerSequenceDescription) {
+    if (src.powerSequenceDescription.has_value()) {
         dst["powerSequenceDescription"] = *src.powerSequenceDescription;
     }
-    if (src.powerTimeSlotSchedule) {
+    if (src.powerTimeSlotSchedule.has_value()) {
         dst["powerTimeSlotSchedule"] = *src.powerTimeSlotSchedule;
     }
-    if (src.powerTimeSlotValue) {
+    if (src.powerTimeSlotValue.has_value()) {
         dst["powerTimeSlotValue"] = *src.powerTimeSlotValue;
     }
 
@@ -23972,29 +25205,32 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsDataSel
     if (!src["alternativesRelation"].isNull()) {
         dst.alternativesRelation = src["alternativesRelation"].as<decltype(dst.alternativesRelation)::value_type>();
     } else {
-        dst.alternativesRelation = std::nullopt;
+        dst.alternativesRelation.reset();
     }
     if (!src["powerSequenceDescription"].isNull()) {
         dst.powerSequenceDescription = src["powerSequenceDescription"].as<decltype(dst.powerSequenceDescription)::value_type>();
     } else {
-        dst.powerSequenceDescription = std::nullopt;
+        dst.powerSequenceDescription.reset();
     }
     if (!src["powerTimeSlotSchedule"].isNull()) {
         dst.powerTimeSlotSchedule = src["powerTimeSlotSchedule"].as<decltype(dst.powerTimeSlotSchedule)::value_type>();
     } else {
-        dst.powerTimeSlotSchedule = std::nullopt;
+        dst.powerTimeSlotSchedule.reset();
     }
     if (!src["powerTimeSlotValue"].isNull()) {
         dst.powerTimeSlotValue = src["powerTimeSlotValue"].as<decltype(dst.powerTimeSlotValue)::value_type>();
     } else {
-        dst.powerTimeSlotValue = std::nullopt;
+        dst.powerTimeSlotValue.reset();
     }
 
 }
 
 bool convertToJson(const SmartEnergyManagementPsPriceDataType &src, JsonVariant &dst)
 {
-    if (src.price) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.price.has_value()) {
         dst["price"] = *src.price;
     }
 
@@ -24007,14 +25243,17 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceDa
     if (!src["price"].isNull()) {
         dst.price = src["price"].as<decltype(dst.price)::value_type>();
     } else {
-        dst.price = std::nullopt;
+        dst.price.reset();
     }
 
 }
 
 bool convertToJson(const SmartEnergyManagementPsPriceDataElementsType &src, JsonVariant &dst)
 {
-    if (src.price) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.price.has_value()) {
         dst["price"] = *src.price;
     }
 
@@ -24027,14 +25266,17 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceDa
     if (!src["price"].isNull()) {
         dst.price = src["price"].as<decltype(dst.price)::value_type>();
     } else {
-        dst.price = std::nullopt;
+        dst.price.reset();
     }
 
 }
 
 bool convertToJson(const SmartEnergyManagementPsPriceDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.price) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.price.has_value()) {
         dst["price"] = *src.price;
     }
 
@@ -24047,14 +25289,17 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceDa
     if (!src["price"].isNull()) {
         dst.price = src["price"].as<decltype(dst.price)::value_type>();
     } else {
-        dst.price = std::nullopt;
+        dst.price.reset();
     }
 
 }
 
 bool convertToJson(const SmartEnergyManagementPsConfigurationRequestCallType &src, JsonVariant &dst)
 {
-    if (src.scheduleConfigurationRequest) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.scheduleConfigurationRequest.has_value()) {
         dst["scheduleConfigurationRequest"] = *src.scheduleConfigurationRequest;
     }
 
@@ -24067,14 +25312,17 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsConfigu
     if (!src["scheduleConfigurationRequest"].isNull()) {
         dst.scheduleConfigurationRequest = src["scheduleConfigurationRequest"].as<decltype(dst.scheduleConfigurationRequest)::value_type>();
     } else {
-        dst.scheduleConfigurationRequest = std::nullopt;
+        dst.scheduleConfigurationRequest.reset();
     }
 
 }
 
 bool convertToJson(const SmartEnergyManagementPsConfigurationRequestCallElementsType &src, JsonVariant &dst)
 {
-    if (src.scheduleConfigurationRequest) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.scheduleConfigurationRequest.has_value()) {
         dst["scheduleConfigurationRequest"] = *src.scheduleConfigurationRequest;
     }
 
@@ -24087,14 +25335,17 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsConfigu
     if (!src["scheduleConfigurationRequest"].isNull()) {
         dst.scheduleConfigurationRequest = src["scheduleConfigurationRequest"].as<decltype(dst.scheduleConfigurationRequest)::value_type>();
     } else {
-        dst.scheduleConfigurationRequest = std::nullopt;
+        dst.scheduleConfigurationRequest.reset();
     }
 
 }
 
 bool convertToJson(const SmartEnergyManagementPsPriceCalculationRequestCallType &src, JsonVariant &dst)
 {
-    if (src.priceCalculationRequest) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.priceCalculationRequest.has_value()) {
         dst["priceCalculationRequest"] = *src.priceCalculationRequest;
     }
 
@@ -24107,14 +25358,17 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceCa
     if (!src["priceCalculationRequest"].isNull()) {
         dst.priceCalculationRequest = src["priceCalculationRequest"].as<decltype(dst.priceCalculationRequest)::value_type>();
     } else {
-        dst.priceCalculationRequest = std::nullopt;
+        dst.priceCalculationRequest.reset();
     }
 
 }
 
 bool convertToJson(const SmartEnergyManagementPsPriceCalculationRequestCallElementsType &src, JsonVariant &dst)
 {
-    if (src.priceCalculationRequest) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.priceCalculationRequest.has_value()) {
         dst["priceCalculationRequest"] = *src.priceCalculationRequest;
     }
 
@@ -24127,23 +25381,26 @@ void convertFromJson(const JsonVariantConst &src, SmartEnergyManagementPsPriceCa
     if (!src["priceCalculationRequest"].isNull()) {
         dst.priceCalculationRequest = src["priceCalculationRequest"].as<decltype(dst.priceCalculationRequest)::value_type>();
     } else {
-        dst.priceCalculationRequest = std::nullopt;
+        dst.priceCalculationRequest.reset();
     }
 
 }
 
 bool convertToJson(const MessagingDataType &src, JsonVariant &dst)
 {
-    if (src.timestamp) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.messagingNumber) {
+    if (src.messagingNumber.has_value()) {
         dst["messagingNumber"] = *src.messagingNumber;
     }
-    if (src.type) {
+    if (src.type.has_value()) {
         dst["type"] = *src.type;
     }
-    if (src.text) {
+    if (src.text.has_value()) {
         dst["text"] = *src.text;
     }
 
@@ -24156,38 +25413,41 @@ void convertFromJson(const JsonVariantConst &src, MessagingDataType &dst)
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["messagingNumber"].isNull()) {
         dst.messagingNumber = src["messagingNumber"].as<decltype(dst.messagingNumber)::value_type>();
     } else {
-        dst.messagingNumber = std::nullopt;
+        dst.messagingNumber.reset();
     }
     if (!src["type"].isNull()) {
         dst.type = src["type"].as<decltype(dst.type)::value_type>();
     } else {
-        dst.type = std::nullopt;
+        dst.type.reset();
     }
     if (!src["text"].isNull()) {
         dst.text = src["text"].as<decltype(dst.text)::value_type>();
     } else {
-        dst.text = std::nullopt;
+        dst.text.reset();
     }
 
 }
 
 bool convertToJson(const MessagingDataElementsType &src, JsonVariant &dst)
 {
-    if (src.timestamp) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.messagingNumber) {
+    if (src.messagingNumber.has_value()) {
         dst["messagingNumber"] = *src.messagingNumber;
     }
-    if (src.type) {
+    if (src.type.has_value()) {
         dst["type"] = *src.type;
     }
-    if (src.text) {
+    if (src.text.has_value()) {
         dst["text"] = *src.text;
     }
 
@@ -24200,29 +25460,32 @@ void convertFromJson(const JsonVariantConst &src, MessagingDataElementsType &dst
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["messagingNumber"].isNull()) {
         dst.messagingNumber = src["messagingNumber"].as<decltype(dst.messagingNumber)::value_type>();
     } else {
-        dst.messagingNumber = std::nullopt;
+        dst.messagingNumber.reset();
     }
     if (!src["type"].isNull()) {
         dst.type = src["type"].as<decltype(dst.type)::value_type>();
     } else {
-        dst.type = std::nullopt;
+        dst.type.reset();
     }
     if (!src["text"].isNull()) {
         dst.text = src["text"].as<decltype(dst.text)::value_type>();
     } else {
-        dst.text = std::nullopt;
+        dst.text.reset();
     }
 
 }
 
 bool convertToJson(const MessagingListDataType &src, JsonVariant &dst)
 {
-    if (src.messagingData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.messagingData.has_value()) {
         dst["messagingData"] = *src.messagingData;
     }
 
@@ -24235,17 +25498,20 @@ void convertFromJson(const JsonVariantConst &src, MessagingListDataType &dst)
     if (!src["messagingData"].isNull()) {
         dst.messagingData = src["messagingData"].as<decltype(dst.messagingData)::value_type>();
     } else {
-        dst.messagingData = std::nullopt;
+        dst.messagingData.reset();
     }
 
 }
 
 bool convertToJson(const MessagingListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.timestampInterval) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timestampInterval.has_value()) {
         dst["timestampInterval"] = *src.timestampInterval;
     }
-    if (src.messagingNumber) {
+    if (src.messagingNumber.has_value()) {
         dst["messagingNumber"] = *src.messagingNumber;
     }
 
@@ -24258,40 +25524,43 @@ void convertFromJson(const JsonVariantConst &src, MessagingListDataSelectorsType
     if (!src["timestampInterval"].isNull()) {
         dst.timestampInterval = src["timestampInterval"].as<decltype(dst.timestampInterval)::value_type>();
     } else {
-        dst.timestampInterval = std::nullopt;
+        dst.timestampInterval.reset();
     }
     if (!src["messagingNumber"].isNull()) {
         dst.messagingNumber = src["messagingNumber"].as<decltype(dst.messagingNumber)::value_type>();
     } else {
-        dst.messagingNumber = std::nullopt;
+        dst.messagingNumber.reset();
     }
 
 }
 
 bool convertToJson(const TariffOverallConstraintsDataType &src, JsonVariant &dst)
 {
-    if (src.maxTariffCount) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.maxTariffCount.has_value()) {
         dst["maxTariffCount"] = *src.maxTariffCount;
     }
-    if (src.maxBoundaryCount) {
+    if (src.maxBoundaryCount.has_value()) {
         dst["maxBoundaryCount"] = *src.maxBoundaryCount;
     }
-    if (src.maxTierCount) {
+    if (src.maxTierCount.has_value()) {
         dst["maxTierCount"] = *src.maxTierCount;
     }
-    if (src.maxIncentiveCount) {
+    if (src.maxIncentiveCount.has_value()) {
         dst["maxIncentiveCount"] = *src.maxIncentiveCount;
     }
-    if (src.maxBoundariesPerTariff) {
+    if (src.maxBoundariesPerTariff.has_value()) {
         dst["maxBoundariesPerTariff"] = *src.maxBoundariesPerTariff;
     }
-    if (src.maxTiersPerTariff) {
+    if (src.maxTiersPerTariff.has_value()) {
         dst["maxTiersPerTariff"] = *src.maxTiersPerTariff;
     }
-    if (src.maxBoundariesPerTier) {
+    if (src.maxBoundariesPerTier.has_value()) {
         dst["maxBoundariesPerTier"] = *src.maxBoundariesPerTier;
     }
-    if (src.maxIncentivesPerTier) {
+    if (src.maxIncentivesPerTier.has_value()) {
         dst["maxIncentivesPerTier"] = *src.maxIncentivesPerTier;
     }
 
@@ -24304,70 +25573,73 @@ void convertFromJson(const JsonVariantConst &src, TariffOverallConstraintsDataTy
     if (!src["maxTariffCount"].isNull()) {
         dst.maxTariffCount = src["maxTariffCount"].as<decltype(dst.maxTariffCount)::value_type>();
     } else {
-        dst.maxTariffCount = std::nullopt;
+        dst.maxTariffCount.reset();
     }
     if (!src["maxBoundaryCount"].isNull()) {
         dst.maxBoundaryCount = src["maxBoundaryCount"].as<decltype(dst.maxBoundaryCount)::value_type>();
     } else {
-        dst.maxBoundaryCount = std::nullopt;
+        dst.maxBoundaryCount.reset();
     }
     if (!src["maxTierCount"].isNull()) {
         dst.maxTierCount = src["maxTierCount"].as<decltype(dst.maxTierCount)::value_type>();
     } else {
-        dst.maxTierCount = std::nullopt;
+        dst.maxTierCount.reset();
     }
     if (!src["maxIncentiveCount"].isNull()) {
         dst.maxIncentiveCount = src["maxIncentiveCount"].as<decltype(dst.maxIncentiveCount)::value_type>();
     } else {
-        dst.maxIncentiveCount = std::nullopt;
+        dst.maxIncentiveCount.reset();
     }
     if (!src["maxBoundariesPerTariff"].isNull()) {
         dst.maxBoundariesPerTariff = src["maxBoundariesPerTariff"].as<decltype(dst.maxBoundariesPerTariff)::value_type>();
     } else {
-        dst.maxBoundariesPerTariff = std::nullopt;
+        dst.maxBoundariesPerTariff.reset();
     }
     if (!src["maxTiersPerTariff"].isNull()) {
         dst.maxTiersPerTariff = src["maxTiersPerTariff"].as<decltype(dst.maxTiersPerTariff)::value_type>();
     } else {
-        dst.maxTiersPerTariff = std::nullopt;
+        dst.maxTiersPerTariff.reset();
     }
     if (!src["maxBoundariesPerTier"].isNull()) {
         dst.maxBoundariesPerTier = src["maxBoundariesPerTier"].as<decltype(dst.maxBoundariesPerTier)::value_type>();
     } else {
-        dst.maxBoundariesPerTier = std::nullopt;
+        dst.maxBoundariesPerTier.reset();
     }
     if (!src["maxIncentivesPerTier"].isNull()) {
         dst.maxIncentivesPerTier = src["maxIncentivesPerTier"].as<decltype(dst.maxIncentivesPerTier)::value_type>();
     } else {
-        dst.maxIncentivesPerTier = std::nullopt;
+        dst.maxIncentivesPerTier.reset();
     }
 
 }
 
 bool convertToJson(const TariffOverallConstraintsDataElementsType &src, JsonVariant &dst)
 {
-    if (src.maxTariffCount) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.maxTariffCount.has_value()) {
         dst["maxTariffCount"] = *src.maxTariffCount;
     }
-    if (src.maxBoundaryCount) {
+    if (src.maxBoundaryCount.has_value()) {
         dst["maxBoundaryCount"] = *src.maxBoundaryCount;
     }
-    if (src.maxTierCount) {
+    if (src.maxTierCount.has_value()) {
         dst["maxTierCount"] = *src.maxTierCount;
     }
-    if (src.maxIncentiveCount) {
+    if (src.maxIncentiveCount.has_value()) {
         dst["maxIncentiveCount"] = *src.maxIncentiveCount;
     }
-    if (src.maxBoundariesPerTariff) {
+    if (src.maxBoundariesPerTariff.has_value()) {
         dst["maxBoundariesPerTariff"] = *src.maxBoundariesPerTariff;
     }
-    if (src.maxTiersPerTariff) {
+    if (src.maxTiersPerTariff.has_value()) {
         dst["maxTiersPerTariff"] = *src.maxTiersPerTariff;
     }
-    if (src.maxBoundariesPerTier) {
+    if (src.maxBoundariesPerTier.has_value()) {
         dst["maxBoundariesPerTier"] = *src.maxBoundariesPerTier;
     }
-    if (src.maxIncentivesPerTier) {
+    if (src.maxIncentivesPerTier.has_value()) {
         dst["maxIncentivesPerTier"] = *src.maxIncentivesPerTier;
     }
 
@@ -24380,52 +25652,55 @@ void convertFromJson(const JsonVariantConst &src, TariffOverallConstraintsDataEl
     if (!src["maxTariffCount"].isNull()) {
         dst.maxTariffCount = src["maxTariffCount"].as<decltype(dst.maxTariffCount)::value_type>();
     } else {
-        dst.maxTariffCount = std::nullopt;
+        dst.maxTariffCount.reset();
     }
     if (!src["maxBoundaryCount"].isNull()) {
         dst.maxBoundaryCount = src["maxBoundaryCount"].as<decltype(dst.maxBoundaryCount)::value_type>();
     } else {
-        dst.maxBoundaryCount = std::nullopt;
+        dst.maxBoundaryCount.reset();
     }
     if (!src["maxTierCount"].isNull()) {
         dst.maxTierCount = src["maxTierCount"].as<decltype(dst.maxTierCount)::value_type>();
     } else {
-        dst.maxTierCount = std::nullopt;
+        dst.maxTierCount.reset();
     }
     if (!src["maxIncentiveCount"].isNull()) {
         dst.maxIncentiveCount = src["maxIncentiveCount"].as<decltype(dst.maxIncentiveCount)::value_type>();
     } else {
-        dst.maxIncentiveCount = std::nullopt;
+        dst.maxIncentiveCount.reset();
     }
     if (!src["maxBoundariesPerTariff"].isNull()) {
         dst.maxBoundariesPerTariff = src["maxBoundariesPerTariff"].as<decltype(dst.maxBoundariesPerTariff)::value_type>();
     } else {
-        dst.maxBoundariesPerTariff = std::nullopt;
+        dst.maxBoundariesPerTariff.reset();
     }
     if (!src["maxTiersPerTariff"].isNull()) {
         dst.maxTiersPerTariff = src["maxTiersPerTariff"].as<decltype(dst.maxTiersPerTariff)::value_type>();
     } else {
-        dst.maxTiersPerTariff = std::nullopt;
+        dst.maxTiersPerTariff.reset();
     }
     if (!src["maxBoundariesPerTier"].isNull()) {
         dst.maxBoundariesPerTier = src["maxBoundariesPerTier"].as<decltype(dst.maxBoundariesPerTier)::value_type>();
     } else {
-        dst.maxBoundariesPerTier = std::nullopt;
+        dst.maxBoundariesPerTier.reset();
     }
     if (!src["maxIncentivesPerTier"].isNull()) {
         dst.maxIncentivesPerTier = src["maxIncentivesPerTier"].as<decltype(dst.maxIncentivesPerTier)::value_type>();
     } else {
-        dst.maxIncentivesPerTier = std::nullopt;
+        dst.maxIncentivesPerTier.reset();
     }
 
 }
 
 bool convertToJson(const TariffDataType &src, JsonVariant &dst)
 {
-    if (src.tariffId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariffId.has_value()) {
         dst["tariffId"] = *src.tariffId;
     }
-    if (src.activeTierId) {
+    if (src.activeTierId.has_value()) {
         dst["activeTierId"] = *src.activeTierId;
     }
 
@@ -24438,22 +25713,25 @@ void convertFromJson(const JsonVariantConst &src, TariffDataType &dst)
     if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
-        dst.tariffId = std::nullopt;
+        dst.tariffId.reset();
     }
     if (!src["activeTierId"].isNull()) {
         dst.activeTierId = src["activeTierId"].as<decltype(dst.activeTierId)::value_type>();
     } else {
-        dst.activeTierId = std::nullopt;
+        dst.activeTierId.reset();
     }
 
 }
 
 bool convertToJson(const TariffDataElementsType &src, JsonVariant &dst)
 {
-    if (src.tariffId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariffId.has_value()) {
         dst["tariffId"] = *src.tariffId;
     }
-    if (src.activeTierId) {
+    if (src.activeTierId.has_value()) {
         dst["activeTierId"] = *src.activeTierId;
     }
 
@@ -24466,19 +25744,22 @@ void convertFromJson(const JsonVariantConst &src, TariffDataElementsType &dst)
     if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
-        dst.tariffId = std::nullopt;
+        dst.tariffId.reset();
     }
     if (!src["activeTierId"].isNull()) {
         dst.activeTierId = src["activeTierId"].as<decltype(dst.activeTierId)::value_type>();
     } else {
-        dst.activeTierId = std::nullopt;
+        dst.activeTierId.reset();
     }
 
 }
 
 bool convertToJson(const TariffListDataType &src, JsonVariant &dst)
 {
-    if (src.tariffData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariffData.has_value()) {
         dst["tariffData"] = *src.tariffData;
     }
 
@@ -24491,17 +25772,20 @@ void convertFromJson(const JsonVariantConst &src, TariffListDataType &dst)
     if (!src["tariffData"].isNull()) {
         dst.tariffData = src["tariffData"].as<decltype(dst.tariffData)::value_type>();
     } else {
-        dst.tariffData = std::nullopt;
+        dst.tariffData.reset();
     }
 
 }
 
 bool convertToJson(const TariffListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.tariffId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariffId.has_value()) {
         dst["tariffId"] = *src.tariffId;
     }
-    if (src.activeTierId) {
+    if (src.activeTierId.has_value()) {
         dst["activeTierId"] = *src.activeTierId;
     }
 
@@ -24514,22 +25798,25 @@ void convertFromJson(const JsonVariantConst &src, TariffListDataSelectorsType &d
     if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
-        dst.tariffId = std::nullopt;
+        dst.tariffId.reset();
     }
     if (!src["activeTierId"].isNull()) {
         dst.activeTierId = src["activeTierId"].as<decltype(dst.activeTierId)::value_type>();
     } else {
-        dst.activeTierId = std::nullopt;
+        dst.activeTierId.reset();
     }
 
 }
 
 bool convertToJson(const TariffTierRelationDataType &src, JsonVariant &dst)
 {
-    if (src.tariffId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariffId.has_value()) {
         dst["tariffId"] = *src.tariffId;
     }
-    if (src.tierId) {
+    if (src.tierId.has_value()) {
         dst["tierId"] = *src.tierId;
     }
 
@@ -24542,22 +25829,25 @@ void convertFromJson(const JsonVariantConst &src, TariffTierRelationDataType &ds
     if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
-        dst.tariffId = std::nullopt;
+        dst.tariffId.reset();
     }
     if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
-        dst.tierId = std::nullopt;
+        dst.tierId.reset();
     }
 
 }
 
 bool convertToJson(const TariffTierRelationDataElementsType &src, JsonVariant &dst)
 {
-    if (src.tariffId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariffId.has_value()) {
         dst["tariffId"] = *src.tariffId;
     }
-    if (src.tierId) {
+    if (src.tierId.has_value()) {
         dst["tierId"] = *src.tierId;
     }
 
@@ -24570,19 +25860,22 @@ void convertFromJson(const JsonVariantConst &src, TariffTierRelationDataElements
     if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
-        dst.tariffId = std::nullopt;
+        dst.tariffId.reset();
     }
     if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
-        dst.tierId = std::nullopt;
+        dst.tierId.reset();
     }
 
 }
 
 bool convertToJson(const TariffTierRelationListDataType &src, JsonVariant &dst)
 {
-    if (src.tariffTierRelationData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariffTierRelationData.has_value()) {
         dst["tariffTierRelationData"] = *src.tariffTierRelationData;
     }
 
@@ -24595,17 +25888,20 @@ void convertFromJson(const JsonVariantConst &src, TariffTierRelationListDataType
     if (!src["tariffTierRelationData"].isNull()) {
         dst.tariffTierRelationData = src["tariffTierRelationData"].as<decltype(dst.tariffTierRelationData)::value_type>();
     } else {
-        dst.tariffTierRelationData = std::nullopt;
+        dst.tariffTierRelationData.reset();
     }
 
 }
 
 bool convertToJson(const TariffTierRelationListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.tariffId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariffId.has_value()) {
         dst["tariffId"] = *src.tariffId;
     }
-    if (src.tierId) {
+    if (src.tierId.has_value()) {
         dst["tierId"] = *src.tierId;
     }
 
@@ -24618,22 +25914,25 @@ void convertFromJson(const JsonVariantConst &src, TariffTierRelationListDataSele
     if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
-        dst.tariffId = std::nullopt;
+        dst.tariffId.reset();
     }
     if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
-        dst.tierId = std::nullopt;
+        dst.tierId.reset();
     }
 
 }
 
 bool convertToJson(const TariffBoundaryRelationDataType &src, JsonVariant &dst)
 {
-    if (src.tariffId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariffId.has_value()) {
         dst["tariffId"] = *src.tariffId;
     }
-    if (src.boundaryId) {
+    if (src.boundaryId.has_value()) {
         dst["boundaryId"] = *src.boundaryId;
     }
 
@@ -24646,22 +25945,25 @@ void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationDataType
     if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
-        dst.tariffId = std::nullopt;
+        dst.tariffId.reset();
     }
     if (!src["boundaryId"].isNull()) {
         dst.boundaryId = src["boundaryId"].as<decltype(dst.boundaryId)::value_type>();
     } else {
-        dst.boundaryId = std::nullopt;
+        dst.boundaryId.reset();
     }
 
 }
 
 bool convertToJson(const TariffBoundaryRelationDataElementsType &src, JsonVariant &dst)
 {
-    if (src.tariffId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariffId.has_value()) {
         dst["tariffId"] = *src.tariffId;
     }
-    if (src.boundaryId) {
+    if (src.boundaryId.has_value()) {
         dst["boundaryId"] = *src.boundaryId;
     }
 
@@ -24674,19 +25976,22 @@ void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationDataElem
     if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
-        dst.tariffId = std::nullopt;
+        dst.tariffId.reset();
     }
     if (!src["boundaryId"].isNull()) {
         dst.boundaryId = src["boundaryId"].as<decltype(dst.boundaryId)::value_type>();
     } else {
-        dst.boundaryId = std::nullopt;
+        dst.boundaryId.reset();
     }
 
 }
 
 bool convertToJson(const TariffBoundaryRelationListDataType &src, JsonVariant &dst)
 {
-    if (src.tariffBoundaryRelationData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariffBoundaryRelationData.has_value()) {
         dst["tariffBoundaryRelationData"] = *src.tariffBoundaryRelationData;
     }
 
@@ -24699,17 +26004,20 @@ void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationListData
     if (!src["tariffBoundaryRelationData"].isNull()) {
         dst.tariffBoundaryRelationData = src["tariffBoundaryRelationData"].as<decltype(dst.tariffBoundaryRelationData)::value_type>();
     } else {
-        dst.tariffBoundaryRelationData = std::nullopt;
+        dst.tariffBoundaryRelationData.reset();
     }
 
 }
 
 bool convertToJson(const TariffBoundaryRelationListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.tariffId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariffId.has_value()) {
         dst["tariffId"] = *src.tariffId;
     }
-    if (src.boundaryId) {
+    if (src.boundaryId.has_value()) {
         dst["boundaryId"] = *src.boundaryId;
     }
 
@@ -24722,43 +26030,46 @@ void convertFromJson(const JsonVariantConst &src, TariffBoundaryRelationListData
     if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
-        dst.tariffId = std::nullopt;
+        dst.tariffId.reset();
     }
     if (!src["boundaryId"].isNull()) {
         dst.boundaryId = src["boundaryId"].as<decltype(dst.boundaryId)::value_type>();
     } else {
-        dst.boundaryId = std::nullopt;
+        dst.boundaryId.reset();
     }
 
 }
 
 bool convertToJson(const TariffDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.tariffId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariffId.has_value()) {
         dst["tariffId"] = *src.tariffId;
     }
-    if (src.commodityId) {
+    if (src.commodityId.has_value()) {
         dst["commodityId"] = *src.commodityId;
     }
-    if (src.measurementId) {
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.tariffWriteable) {
+    if (src.tariffWriteable.has_value()) {
         dst["tariffWriteable"] = *src.tariffWriteable;
     }
-    if (src.updateRequired) {
+    if (src.updateRequired.has_value()) {
         dst["updateRequired"] = *src.updateRequired;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
-    if (src.slotIdSupport) {
+    if (src.slotIdSupport.has_value()) {
         dst["slotIdSupport"] = *src.slotIdSupport;
     }
 
@@ -24771,78 +26082,81 @@ void convertFromJson(const JsonVariantConst &src, TariffDescriptionDataType &dst
     if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
-        dst.tariffId = std::nullopt;
+        dst.tariffId.reset();
     }
     if (!src["commodityId"].isNull()) {
         dst.commodityId = src["commodityId"].as<decltype(dst.commodityId)::value_type>();
     } else {
-        dst.commodityId = std::nullopt;
+        dst.commodityId.reset();
     }
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["tariffWriteable"].isNull()) {
         dst.tariffWriteable = src["tariffWriteable"].as<decltype(dst.tariffWriteable)::value_type>();
     } else {
-        dst.tariffWriteable = std::nullopt;
+        dst.tariffWriteable.reset();
     }
     if (!src["updateRequired"].isNull()) {
         dst.updateRequired = src["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
     } else {
-        dst.updateRequired = std::nullopt;
+        dst.updateRequired.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
     if (!src["slotIdSupport"].isNull()) {
         dst.slotIdSupport = src["slotIdSupport"].as<decltype(dst.slotIdSupport)::value_type>();
     } else {
-        dst.slotIdSupport = std::nullopt;
+        dst.slotIdSupport.reset();
     }
 
 }
 
 bool convertToJson(const TariffDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.tariffId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariffId.has_value()) {
         dst["tariffId"] = *src.tariffId;
     }
-    if (src.commodityId) {
+    if (src.commodityId.has_value()) {
         dst["commodityId"] = *src.commodityId;
     }
-    if (src.measurementId) {
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.tariffWriteable) {
+    if (src.tariffWriteable.has_value()) {
         dst["tariffWriteable"] = *src.tariffWriteable;
     }
-    if (src.updateRequired) {
+    if (src.updateRequired.has_value()) {
         dst["updateRequired"] = *src.updateRequired;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
-    if (src.slotIdSupport) {
+    if (src.slotIdSupport.has_value()) {
         dst["slotIdSupport"] = *src.slotIdSupport;
     }
 
@@ -24855,54 +26169,57 @@ void convertFromJson(const JsonVariantConst &src, TariffDescriptionDataElementsT
     if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
-        dst.tariffId = std::nullopt;
+        dst.tariffId.reset();
     }
     if (!src["commodityId"].isNull()) {
         dst.commodityId = src["commodityId"].as<decltype(dst.commodityId)::value_type>();
     } else {
-        dst.commodityId = std::nullopt;
+        dst.commodityId.reset();
     }
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["tariffWriteable"].isNull()) {
         dst.tariffWriteable = src["tariffWriteable"].as<decltype(dst.tariffWriteable)::value_type>();
     } else {
-        dst.tariffWriteable = std::nullopt;
+        dst.tariffWriteable.reset();
     }
     if (!src["updateRequired"].isNull()) {
         dst.updateRequired = src["updateRequired"].as<decltype(dst.updateRequired)::value_type>();
     } else {
-        dst.updateRequired = std::nullopt;
+        dst.updateRequired.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
     if (!src["slotIdSupport"].isNull()) {
         dst.slotIdSupport = src["slotIdSupport"].as<decltype(dst.slotIdSupport)::value_type>();
     } else {
-        dst.slotIdSupport = std::nullopt;
+        dst.slotIdSupport.reset();
     }
 
 }
 
 bool convertToJson(const TariffDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.tariffDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariffDescriptionData.has_value()) {
         dst["tariffDescriptionData"] = *src.tariffDescriptionData;
     }
 
@@ -24915,23 +26232,26 @@ void convertFromJson(const JsonVariantConst &src, TariffDescriptionListDataType 
     if (!src["tariffDescriptionData"].isNull()) {
         dst.tariffDescriptionData = src["tariffDescriptionData"].as<decltype(dst.tariffDescriptionData)::value_type>();
     } else {
-        dst.tariffDescriptionData = std::nullopt;
+        dst.tariffDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const TariffDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.tariffId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariffId.has_value()) {
         dst["tariffId"] = *src.tariffId;
     }
-    if (src.commodityId) {
+    if (src.commodityId.has_value()) {
         dst["commodityId"] = *src.commodityId;
     }
-    if (src.measurementId) {
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
 
@@ -24944,41 +26264,44 @@ void convertFromJson(const JsonVariantConst &src, TariffDescriptionListDataSelec
     if (!src["tariffId"].isNull()) {
         dst.tariffId = src["tariffId"].as<decltype(dst.tariffId)::value_type>();
     } else {
-        dst.tariffId = std::nullopt;
+        dst.tariffId.reset();
     }
     if (!src["commodityId"].isNull()) {
         dst.commodityId = src["commodityId"].as<decltype(dst.commodityId)::value_type>();
     } else {
-        dst.commodityId = std::nullopt;
+        dst.commodityId.reset();
     }
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
 
 }
 
 bool convertToJson(const TierBoundaryDataType &src, JsonVariant &dst)
 {
-    if (src.boundaryId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.boundaryId.has_value()) {
         dst["boundaryId"] = *src.boundaryId;
     }
-    if (src.timePeriod) {
+    if (src.timePeriod.has_value()) {
         dst["timePeriod"] = *src.timePeriod;
     }
-    if (src.timeTableId) {
+    if (src.timeTableId.has_value()) {
         dst["timeTableId"] = *src.timeTableId;
     }
-    if (src.lowerBoundaryValue) {
+    if (src.lowerBoundaryValue.has_value()) {
         dst["lowerBoundaryValue"] = *src.lowerBoundaryValue;
     }
-    if (src.upperBoundaryValue) {
+    if (src.upperBoundaryValue.has_value()) {
         dst["upperBoundaryValue"] = *src.upperBoundaryValue;
     }
 
@@ -24991,46 +26314,49 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDataType &dst)
     if (!src["boundaryId"].isNull()) {
         dst.boundaryId = src["boundaryId"].as<decltype(dst.boundaryId)::value_type>();
     } else {
-        dst.boundaryId = std::nullopt;
+        dst.boundaryId.reset();
     }
     if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
-        dst.timePeriod = std::nullopt;
+        dst.timePeriod.reset();
     }
     if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
-        dst.timeTableId = std::nullopt;
+        dst.timeTableId.reset();
     }
     if (!src["lowerBoundaryValue"].isNull()) {
         dst.lowerBoundaryValue = src["lowerBoundaryValue"].as<decltype(dst.lowerBoundaryValue)::value_type>();
     } else {
-        dst.lowerBoundaryValue = std::nullopt;
+        dst.lowerBoundaryValue.reset();
     }
     if (!src["upperBoundaryValue"].isNull()) {
         dst.upperBoundaryValue = src["upperBoundaryValue"].as<decltype(dst.upperBoundaryValue)::value_type>();
     } else {
-        dst.upperBoundaryValue = std::nullopt;
+        dst.upperBoundaryValue.reset();
     }
 
 }
 
 bool convertToJson(const TierBoundaryDataElementsType &src, JsonVariant &dst)
 {
-    if (src.boundaryId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.boundaryId.has_value()) {
         dst["boundaryId"] = *src.boundaryId;
     }
-    if (src.timePeriod) {
+    if (src.timePeriod.has_value()) {
         dst["timePeriod"] = *src.timePeriod;
     }
-    if (src.timeTableId) {
+    if (src.timeTableId.has_value()) {
         dst["timeTableId"] = *src.timeTableId;
     }
-    if (src.lowerBoundaryValue) {
+    if (src.lowerBoundaryValue.has_value()) {
         dst["lowerBoundaryValue"] = *src.lowerBoundaryValue;
     }
-    if (src.upperBoundaryValue) {
+    if (src.upperBoundaryValue.has_value()) {
         dst["upperBoundaryValue"] = *src.upperBoundaryValue;
     }
 
@@ -25043,34 +26369,37 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDataElementsType &
     if (!src["boundaryId"].isNull()) {
         dst.boundaryId = src["boundaryId"].as<decltype(dst.boundaryId)::value_type>();
     } else {
-        dst.boundaryId = std::nullopt;
+        dst.boundaryId.reset();
     }
     if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
-        dst.timePeriod = std::nullopt;
+        dst.timePeriod.reset();
     }
     if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
-        dst.timeTableId = std::nullopt;
+        dst.timeTableId.reset();
     }
     if (!src["lowerBoundaryValue"].isNull()) {
         dst.lowerBoundaryValue = src["lowerBoundaryValue"].as<decltype(dst.lowerBoundaryValue)::value_type>();
     } else {
-        dst.lowerBoundaryValue = std::nullopt;
+        dst.lowerBoundaryValue.reset();
     }
     if (!src["upperBoundaryValue"].isNull()) {
         dst.upperBoundaryValue = src["upperBoundaryValue"].as<decltype(dst.upperBoundaryValue)::value_type>();
     } else {
-        dst.upperBoundaryValue = std::nullopt;
+        dst.upperBoundaryValue.reset();
     }
 
 }
 
 bool convertToJson(const TierBoundaryListDataType &src, JsonVariant &dst)
 {
-    if (src.tierBoundaryData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tierBoundaryData.has_value()) {
         dst["tierBoundaryData"] = *src.tierBoundaryData;
     }
 
@@ -25083,14 +26412,17 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryListDataType &dst)
     if (!src["tierBoundaryData"].isNull()) {
         dst.tierBoundaryData = src["tierBoundaryData"].as<decltype(dst.tierBoundaryData)::value_type>();
     } else {
-        dst.tierBoundaryData = std::nullopt;
+        dst.tierBoundaryData.reset();
     }
 
 }
 
 bool convertToJson(const TierBoundaryListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.boundaryId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.boundaryId.has_value()) {
         dst["boundaryId"] = *src.boundaryId;
     }
 
@@ -25103,35 +26435,38 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryListDataSelectorsT
     if (!src["boundaryId"].isNull()) {
         dst.boundaryId = src["boundaryId"].as<decltype(dst.boundaryId)::value_type>();
     } else {
-        dst.boundaryId = std::nullopt;
+        dst.boundaryId.reset();
     }
 
 }
 
 bool convertToJson(const TierBoundaryDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.boundaryId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.boundaryId.has_value()) {
         dst["boundaryId"] = *src.boundaryId;
     }
-    if (src.boundaryType) {
+    if (src.boundaryType.has_value()) {
         dst["boundaryType"] = *src.boundaryType;
     }
-    if (src.validForTierId) {
+    if (src.validForTierId.has_value()) {
         dst["validForTierId"] = *src.validForTierId;
     }
-    if (src.switchToTierIdWhenLower) {
+    if (src.switchToTierIdWhenLower.has_value()) {
         dst["switchToTierIdWhenLower"] = *src.switchToTierIdWhenLower;
     }
-    if (src.switchToTierIdWhenHigher) {
+    if (src.switchToTierIdWhenHigher.has_value()) {
         dst["switchToTierIdWhenHigher"] = *src.switchToTierIdWhenHigher;
     }
-    if (src.boundaryUnit) {
+    if (src.boundaryUnit.has_value()) {
         dst["boundaryUnit"] = *src.boundaryUnit;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -25144,70 +26479,73 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionDataTyp
     if (!src["boundaryId"].isNull()) {
         dst.boundaryId = src["boundaryId"].as<decltype(dst.boundaryId)::value_type>();
     } else {
-        dst.boundaryId = std::nullopt;
+        dst.boundaryId.reset();
     }
     if (!src["boundaryType"].isNull()) {
         dst.boundaryType = src["boundaryType"].as<decltype(dst.boundaryType)::value_type>();
     } else {
-        dst.boundaryType = std::nullopt;
+        dst.boundaryType.reset();
     }
     if (!src["validForTierId"].isNull()) {
         dst.validForTierId = src["validForTierId"].as<decltype(dst.validForTierId)::value_type>();
     } else {
-        dst.validForTierId = std::nullopt;
+        dst.validForTierId.reset();
     }
     if (!src["switchToTierIdWhenLower"].isNull()) {
         dst.switchToTierIdWhenLower = src["switchToTierIdWhenLower"].as<decltype(dst.switchToTierIdWhenLower)::value_type>();
     } else {
-        dst.switchToTierIdWhenLower = std::nullopt;
+        dst.switchToTierIdWhenLower.reset();
     }
     if (!src["switchToTierIdWhenHigher"].isNull()) {
         dst.switchToTierIdWhenHigher = src["switchToTierIdWhenHigher"].as<decltype(dst.switchToTierIdWhenHigher)::value_type>();
     } else {
-        dst.switchToTierIdWhenHigher = std::nullopt;
+        dst.switchToTierIdWhenHigher.reset();
     }
     if (!src["boundaryUnit"].isNull()) {
         dst.boundaryUnit = src["boundaryUnit"].as<decltype(dst.boundaryUnit)::value_type>();
     } else {
-        dst.boundaryUnit = std::nullopt;
+        dst.boundaryUnit.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const TierBoundaryDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.boundaryId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.boundaryId.has_value()) {
         dst["boundaryId"] = *src.boundaryId;
     }
-    if (src.boundaryType) {
+    if (src.boundaryType.has_value()) {
         dst["boundaryType"] = *src.boundaryType;
     }
-    if (src.validForTierId) {
+    if (src.validForTierId.has_value()) {
         dst["validForTierId"] = *src.validForTierId;
     }
-    if (src.switchToTierIdWhenLower) {
+    if (src.switchToTierIdWhenLower.has_value()) {
         dst["switchToTierIdWhenLower"] = *src.switchToTierIdWhenLower;
     }
-    if (src.switchToTierIdWhenHigher) {
+    if (src.switchToTierIdWhenHigher.has_value()) {
         dst["switchToTierIdWhenHigher"] = *src.switchToTierIdWhenHigher;
     }
-    if (src.boundaryUnit) {
+    if (src.boundaryUnit.has_value()) {
         dst["boundaryUnit"] = *src.boundaryUnit;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -25220,49 +26558,52 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionDataEle
     if (!src["boundaryId"].isNull()) {
         dst.boundaryId = src["boundaryId"].as<decltype(dst.boundaryId)::value_type>();
     } else {
-        dst.boundaryId = std::nullopt;
+        dst.boundaryId.reset();
     }
     if (!src["boundaryType"].isNull()) {
         dst.boundaryType = src["boundaryType"].as<decltype(dst.boundaryType)::value_type>();
     } else {
-        dst.boundaryType = std::nullopt;
+        dst.boundaryType.reset();
     }
     if (!src["validForTierId"].isNull()) {
         dst.validForTierId = src["validForTierId"].as<decltype(dst.validForTierId)::value_type>();
     } else {
-        dst.validForTierId = std::nullopt;
+        dst.validForTierId.reset();
     }
     if (!src["switchToTierIdWhenLower"].isNull()) {
         dst.switchToTierIdWhenLower = src["switchToTierIdWhenLower"].as<decltype(dst.switchToTierIdWhenLower)::value_type>();
     } else {
-        dst.switchToTierIdWhenLower = std::nullopt;
+        dst.switchToTierIdWhenLower.reset();
     }
     if (!src["switchToTierIdWhenHigher"].isNull()) {
         dst.switchToTierIdWhenHigher = src["switchToTierIdWhenHigher"].as<decltype(dst.switchToTierIdWhenHigher)::value_type>();
     } else {
-        dst.switchToTierIdWhenHigher = std::nullopt;
+        dst.switchToTierIdWhenHigher.reset();
     }
     if (!src["boundaryUnit"].isNull()) {
         dst.boundaryUnit = src["boundaryUnit"].as<decltype(dst.boundaryUnit)::value_type>();
     } else {
-        dst.boundaryUnit = std::nullopt;
+        dst.boundaryUnit.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const TierBoundaryDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.tierBoundaryDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tierBoundaryDescriptionData.has_value()) {
         dst["tierBoundaryDescriptionData"] = *src.tierBoundaryDescriptionData;
     }
 
@@ -25275,17 +26616,20 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionListDat
     if (!src["tierBoundaryDescriptionData"].isNull()) {
         dst.tierBoundaryDescriptionData = src["tierBoundaryDescriptionData"].as<decltype(dst.tierBoundaryDescriptionData)::value_type>();
     } else {
-        dst.tierBoundaryDescriptionData = std::nullopt;
+        dst.tierBoundaryDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const TierBoundaryDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.boundaryId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.boundaryId.has_value()) {
         dst["boundaryId"] = *src.boundaryId;
     }
-    if (src.boundaryType) {
+    if (src.boundaryType.has_value()) {
         dst["boundaryType"] = *src.boundaryType;
     }
 
@@ -25298,31 +26642,34 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionListDat
     if (!src["boundaryId"].isNull()) {
         dst.boundaryId = src["boundaryId"].as<decltype(dst.boundaryId)::value_type>();
     } else {
-        dst.boundaryId = std::nullopt;
+        dst.boundaryId.reset();
     }
     if (!src["boundaryType"].isNull()) {
         dst.boundaryType = src["boundaryType"].as<decltype(dst.boundaryType)::value_type>();
     } else {
-        dst.boundaryType = std::nullopt;
+        dst.boundaryType.reset();
     }
 
 }
 
 bool convertToJson(const CommodityDataType &src, JsonVariant &dst)
 {
-    if (src.commodityId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.commodityId.has_value()) {
         dst["commodityId"] = *src.commodityId;
     }
-    if (src.commodityType) {
+    if (src.commodityType.has_value()) {
         dst["commodityType"] = *src.commodityType;
     }
-    if (src.positiveEnergyDirection) {
+    if (src.positiveEnergyDirection.has_value()) {
         dst["positiveEnergyDirection"] = *src.positiveEnergyDirection;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -25335,46 +26682,49 @@ void convertFromJson(const JsonVariantConst &src, CommodityDataType &dst)
     if (!src["commodityId"].isNull()) {
         dst.commodityId = src["commodityId"].as<decltype(dst.commodityId)::value_type>();
     } else {
-        dst.commodityId = std::nullopt;
+        dst.commodityId.reset();
     }
     if (!src["commodityType"].isNull()) {
         dst.commodityType = src["commodityType"].as<decltype(dst.commodityType)::value_type>();
     } else {
-        dst.commodityType = std::nullopt;
+        dst.commodityType.reset();
     }
     if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
-        dst.positiveEnergyDirection = std::nullopt;
+        dst.positiveEnergyDirection.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const CommodityDataElementsType &src, JsonVariant &dst)
 {
-    if (src.commodityId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.commodityId.has_value()) {
         dst["commodityId"] = *src.commodityId;
     }
-    if (src.commodityType) {
+    if (src.commodityType.has_value()) {
         dst["commodityType"] = *src.commodityType;
     }
-    if (src.positiveEnergyDirection) {
+    if (src.positiveEnergyDirection.has_value()) {
         dst["positiveEnergyDirection"] = *src.positiveEnergyDirection;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -25387,34 +26737,37 @@ void convertFromJson(const JsonVariantConst &src, CommodityDataElementsType &dst
     if (!src["commodityId"].isNull()) {
         dst.commodityId = src["commodityId"].as<decltype(dst.commodityId)::value_type>();
     } else {
-        dst.commodityId = std::nullopt;
+        dst.commodityId.reset();
     }
     if (!src["commodityType"].isNull()) {
         dst.commodityType = src["commodityType"].as<decltype(dst.commodityType)::value_type>();
     } else {
-        dst.commodityType = std::nullopt;
+        dst.commodityType.reset();
     }
     if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
-        dst.positiveEnergyDirection = std::nullopt;
+        dst.positiveEnergyDirection.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const CommodityListDataType &src, JsonVariant &dst)
 {
-    if (src.commodityData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.commodityData.has_value()) {
         dst["commodityData"] = *src.commodityData;
     }
 
@@ -25427,17 +26780,20 @@ void convertFromJson(const JsonVariantConst &src, CommodityListDataType &dst)
     if (!src["commodityData"].isNull()) {
         dst.commodityData = src["commodityData"].as<decltype(dst.commodityData)::value_type>();
     } else {
-        dst.commodityData = std::nullopt;
+        dst.commodityData.reset();
     }
 
 }
 
 bool convertToJson(const CommodityListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.commodityId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.commodityId.has_value()) {
         dst["commodityId"] = *src.commodityId;
     }
-    if (src.commodityType) {
+    if (src.commodityType.has_value()) {
         dst["commodityType"] = *src.commodityType;
     }
 
@@ -25450,28 +26806,31 @@ void convertFromJson(const JsonVariantConst &src, CommodityListDataSelectorsType
     if (!src["commodityId"].isNull()) {
         dst.commodityId = src["commodityId"].as<decltype(dst.commodityId)::value_type>();
     } else {
-        dst.commodityId = std::nullopt;
+        dst.commodityId.reset();
     }
     if (!src["commodityType"].isNull()) {
         dst.commodityType = src["commodityType"].as<decltype(dst.commodityType)::value_type>();
     } else {
-        dst.commodityType = std::nullopt;
+        dst.commodityType.reset();
     }
 
 }
 
 bool convertToJson(const TierDataType &src, JsonVariant &dst)
 {
-    if (src.tierId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tierId.has_value()) {
         dst["tierId"] = *src.tierId;
     }
-    if (src.timePeriod) {
+    if (src.timePeriod.has_value()) {
         dst["timePeriod"] = *src.timePeriod;
     }
-    if (src.timeTableId) {
+    if (src.timeTableId.has_value()) {
         dst["timeTableId"] = *src.timeTableId;
     }
-    if (src.activeIncentiveId) {
+    if (src.activeIncentiveId.has_value()) {
         dst["activeIncentiveId"] = *src.activeIncentiveId;
     }
 
@@ -25484,38 +26843,41 @@ void convertFromJson(const JsonVariantConst &src, TierDataType &dst)
     if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
-        dst.tierId = std::nullopt;
+        dst.tierId.reset();
     }
     if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
-        dst.timePeriod = std::nullopt;
+        dst.timePeriod.reset();
     }
     if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
-        dst.timeTableId = std::nullopt;
+        dst.timeTableId.reset();
     }
     if (!src["activeIncentiveId"].isNull()) {
         dst.activeIncentiveId = src["activeIncentiveId"].as<decltype(dst.activeIncentiveId)::value_type>();
     } else {
-        dst.activeIncentiveId = std::nullopt;
+        dst.activeIncentiveId.reset();
     }
 
 }
 
 bool convertToJson(const TierDataElementsType &src, JsonVariant &dst)
 {
-    if (src.tierId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tierId.has_value()) {
         dst["tierId"] = *src.tierId;
     }
-    if (src.timePeriod) {
+    if (src.timePeriod.has_value()) {
         dst["timePeriod"] = *src.timePeriod;
     }
-    if (src.timeTableId) {
+    if (src.timeTableId.has_value()) {
         dst["timeTableId"] = *src.timeTableId;
     }
-    if (src.activeIncentiveId) {
+    if (src.activeIncentiveId.has_value()) {
         dst["activeIncentiveId"] = *src.activeIncentiveId;
     }
 
@@ -25528,29 +26890,32 @@ void convertFromJson(const JsonVariantConst &src, TierDataElementsType &dst)
     if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
-        dst.tierId = std::nullopt;
+        dst.tierId.reset();
     }
     if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
-        dst.timePeriod = std::nullopt;
+        dst.timePeriod.reset();
     }
     if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
-        dst.timeTableId = std::nullopt;
+        dst.timeTableId.reset();
     }
     if (!src["activeIncentiveId"].isNull()) {
         dst.activeIncentiveId = src["activeIncentiveId"].as<decltype(dst.activeIncentiveId)::value_type>();
     } else {
-        dst.activeIncentiveId = std::nullopt;
+        dst.activeIncentiveId.reset();
     }
 
 }
 
 bool convertToJson(const TierListDataType &src, JsonVariant &dst)
 {
-    if (src.tierData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tierData.has_value()) {
         dst["tierData"] = *src.tierData;
     }
 
@@ -25563,17 +26928,20 @@ void convertFromJson(const JsonVariantConst &src, TierListDataType &dst)
     if (!src["tierData"].isNull()) {
         dst.tierData = src["tierData"].as<decltype(dst.tierData)::value_type>();
     } else {
-        dst.tierData = std::nullopt;
+        dst.tierData.reset();
     }
 
 }
 
 bool convertToJson(const TierListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.tierId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tierId.has_value()) {
         dst["tierId"] = *src.tierId;
     }
-    if (src.activeIncentiveId) {
+    if (src.activeIncentiveId.has_value()) {
         dst["activeIncentiveId"] = *src.activeIncentiveId;
     }
 
@@ -25586,22 +26954,25 @@ void convertFromJson(const JsonVariantConst &src, TierListDataSelectorsType &dst
     if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
-        dst.tierId = std::nullopt;
+        dst.tierId.reset();
     }
     if (!src["activeIncentiveId"].isNull()) {
         dst.activeIncentiveId = src["activeIncentiveId"].as<decltype(dst.activeIncentiveId)::value_type>();
     } else {
-        dst.activeIncentiveId = std::nullopt;
+        dst.activeIncentiveId.reset();
     }
 
 }
 
 bool convertToJson(const TierIncentiveRelationDataType &src, JsonVariant &dst)
 {
-    if (src.tierId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tierId.has_value()) {
         dst["tierId"] = *src.tierId;
     }
-    if (src.incentiveId) {
+    if (src.incentiveId.has_value()) {
         dst["incentiveId"] = *src.incentiveId;
     }
 
@@ -25614,22 +26985,25 @@ void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationDataType 
     if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
-        dst.tierId = std::nullopt;
+        dst.tierId.reset();
     }
     if (!src["incentiveId"].isNull()) {
         dst.incentiveId = src["incentiveId"].as<decltype(dst.incentiveId)::value_type>();
     } else {
-        dst.incentiveId = std::nullopt;
+        dst.incentiveId.reset();
     }
 
 }
 
 bool convertToJson(const TierIncentiveRelationDataElementsType &src, JsonVariant &dst)
 {
-    if (src.tierId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tierId.has_value()) {
         dst["tierId"] = *src.tierId;
     }
-    if (src.incentiveId) {
+    if (src.incentiveId.has_value()) {
         dst["incentiveId"] = *src.incentiveId;
     }
 
@@ -25642,19 +27016,22 @@ void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationDataEleme
     if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
-        dst.tierId = std::nullopt;
+        dst.tierId.reset();
     }
     if (!src["incentiveId"].isNull()) {
         dst.incentiveId = src["incentiveId"].as<decltype(dst.incentiveId)::value_type>();
     } else {
-        dst.incentiveId = std::nullopt;
+        dst.incentiveId.reset();
     }
 
 }
 
 bool convertToJson(const TierIncentiveRelationListDataType &src, JsonVariant &dst)
 {
-    if (src.tierIncentiveRelationData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tierIncentiveRelationData.has_value()) {
         dst["tierIncentiveRelationData"] = *src.tierIncentiveRelationData;
     }
 
@@ -25667,17 +27044,20 @@ void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationListDataT
     if (!src["tierIncentiveRelationData"].isNull()) {
         dst.tierIncentiveRelationData = src["tierIncentiveRelationData"].as<decltype(dst.tierIncentiveRelationData)::value_type>();
     } else {
-        dst.tierIncentiveRelationData = std::nullopt;
+        dst.tierIncentiveRelationData.reset();
     }
 
 }
 
 bool convertToJson(const TierIncentiveRelationListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.tierId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tierId.has_value()) {
         dst["tierId"] = *src.tierId;
     }
-    if (src.incentiveId) {
+    if (src.incentiveId.has_value()) {
         dst["incentiveId"] = *src.incentiveId;
     }
 
@@ -25690,28 +27070,31 @@ void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationListDataS
     if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
-        dst.tierId = std::nullopt;
+        dst.tierId.reset();
     }
     if (!src["incentiveId"].isNull()) {
         dst.incentiveId = src["incentiveId"].as<decltype(dst.incentiveId)::value_type>();
     } else {
-        dst.incentiveId = std::nullopt;
+        dst.incentiveId.reset();
     }
 
 }
 
 bool convertToJson(const TierDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.tierId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tierId.has_value()) {
         dst["tierId"] = *src.tierId;
     }
-    if (src.tierType) {
+    if (src.tierType.has_value()) {
         dst["tierType"] = *src.tierType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -25724,38 +27107,41 @@ void convertFromJson(const JsonVariantConst &src, TierDescriptionDataType &dst)
     if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
-        dst.tierId = std::nullopt;
+        dst.tierId.reset();
     }
     if (!src["tierType"].isNull()) {
         dst.tierType = src["tierType"].as<decltype(dst.tierType)::value_type>();
     } else {
-        dst.tierType = std::nullopt;
+        dst.tierType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const TierDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.tierId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tierId.has_value()) {
         dst["tierId"] = *src.tierId;
     }
-    if (src.tierType) {
+    if (src.tierType.has_value()) {
         dst["tierType"] = *src.tierType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -25768,29 +27154,32 @@ void convertFromJson(const JsonVariantConst &src, TierDescriptionDataElementsTyp
     if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
-        dst.tierId = std::nullopt;
+        dst.tierId.reset();
     }
     if (!src["tierType"].isNull()) {
         dst.tierType = src["tierType"].as<decltype(dst.tierType)::value_type>();
     } else {
-        dst.tierType = std::nullopt;
+        dst.tierType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const TierDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.tierDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tierDescriptionData.has_value()) {
         dst["tierDescriptionData"] = *src.tierDescriptionData;
     }
 
@@ -25803,17 +27192,20 @@ void convertFromJson(const JsonVariantConst &src, TierDescriptionListDataType &d
     if (!src["tierDescriptionData"].isNull()) {
         dst.tierDescriptionData = src["tierDescriptionData"].as<decltype(dst.tierDescriptionData)::value_type>();
     } else {
-        dst.tierDescriptionData = std::nullopt;
+        dst.tierDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const TierDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.tierId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tierId.has_value()) {
         dst["tierId"] = *src.tierId;
     }
-    if (src.tierType) {
+    if (src.tierType.has_value()) {
         dst["tierType"] = *src.tierType;
     }
 
@@ -25826,34 +27218,37 @@ void convertFromJson(const JsonVariantConst &src, TierDescriptionListDataSelecto
     if (!src["tierId"].isNull()) {
         dst.tierId = src["tierId"].as<decltype(dst.tierId)::value_type>();
     } else {
-        dst.tierId = std::nullopt;
+        dst.tierId.reset();
     }
     if (!src["tierType"].isNull()) {
         dst.tierType = src["tierType"].as<decltype(dst.tierType)::value_type>();
     } else {
-        dst.tierType = std::nullopt;
+        dst.tierType.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveDataType &src, JsonVariant &dst)
 {
-    if (src.incentiveId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.incentiveId.has_value()) {
         dst["incentiveId"] = *src.incentiveId;
     }
-    if (src.valueType) {
+    if (src.valueType.has_value()) {
         dst["valueType"] = *src.valueType;
     }
-    if (src.timestamp) {
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.timePeriod) {
+    if (src.timePeriod.has_value()) {
         dst["timePeriod"] = *src.timePeriod;
     }
-    if (src.timeTableId) {
+    if (src.timeTableId.has_value()) {
         dst["timeTableId"] = *src.timeTableId;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
 
@@ -25866,54 +27261,57 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDataType &dst)
     if (!src["incentiveId"].isNull()) {
         dst.incentiveId = src["incentiveId"].as<decltype(dst.incentiveId)::value_type>();
     } else {
-        dst.incentiveId = std::nullopt;
+        dst.incentiveId.reset();
     }
     if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
-        dst.valueType = std::nullopt;
+        dst.valueType.reset();
     }
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
-        dst.timePeriod = std::nullopt;
+        dst.timePeriod.reset();
     }
     if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
-        dst.timeTableId = std::nullopt;
+        dst.timeTableId.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveDataElementsType &src, JsonVariant &dst)
 {
-    if (src.incentiveId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.incentiveId.has_value()) {
         dst["incentiveId"] = *src.incentiveId;
     }
-    if (src.valueType) {
+    if (src.valueType.has_value()) {
         dst["valueType"] = *src.valueType;
     }
-    if (src.timestamp) {
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.timePeriod) {
+    if (src.timePeriod.has_value()) {
         dst["timePeriod"] = *src.timePeriod;
     }
-    if (src.timeTableId) {
+    if (src.timeTableId.has_value()) {
         dst["timeTableId"] = *src.timeTableId;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
 
@@ -25926,39 +27324,42 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDataElementsType &dst
     if (!src["incentiveId"].isNull()) {
         dst.incentiveId = src["incentiveId"].as<decltype(dst.incentiveId)::value_type>();
     } else {
-        dst.incentiveId = std::nullopt;
+        dst.incentiveId.reset();
     }
     if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
-        dst.valueType = std::nullopt;
+        dst.valueType.reset();
     }
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["timePeriod"].isNull()) {
         dst.timePeriod = src["timePeriod"].as<decltype(dst.timePeriod)::value_type>();
     } else {
-        dst.timePeriod = std::nullopt;
+        dst.timePeriod.reset();
     }
     if (!src["timeTableId"].isNull()) {
         dst.timeTableId = src["timeTableId"].as<decltype(dst.timeTableId)::value_type>();
     } else {
-        dst.timeTableId = std::nullopt;
+        dst.timeTableId.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveListDataType &src, JsonVariant &dst)
 {
-    if (src.incentiveData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.incentiveData.has_value()) {
         dst["incentiveData"] = *src.incentiveData;
     }
 
@@ -25971,20 +27372,23 @@ void convertFromJson(const JsonVariantConst &src, IncentiveListDataType &dst)
     if (!src["incentiveData"].isNull()) {
         dst.incentiveData = src["incentiveData"].as<decltype(dst.incentiveData)::value_type>();
     } else {
-        dst.incentiveData = std::nullopt;
+        dst.incentiveData.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.incentiveId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.incentiveId.has_value()) {
         dst["incentiveId"] = *src.incentiveId;
     }
-    if (src.valueType) {
+    if (src.valueType.has_value()) {
         dst["valueType"] = *src.valueType;
     }
-    if (src.timestampInterval) {
+    if (src.timestampInterval.has_value()) {
         dst["timestampInterval"] = *src.timestampInterval;
     }
 
@@ -25997,42 +27401,45 @@ void convertFromJson(const JsonVariantConst &src, IncentiveListDataSelectorsType
     if (!src["incentiveId"].isNull()) {
         dst.incentiveId = src["incentiveId"].as<decltype(dst.incentiveId)::value_type>();
     } else {
-        dst.incentiveId = std::nullopt;
+        dst.incentiveId.reset();
     }
     if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
-        dst.valueType = std::nullopt;
+        dst.valueType.reset();
     }
     if (!src["timestampInterval"].isNull()) {
         dst.timestampInterval = src["timestampInterval"].as<decltype(dst.timestampInterval)::value_type>();
     } else {
-        dst.timestampInterval = std::nullopt;
+        dst.timestampInterval.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.incentiveId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.incentiveId.has_value()) {
         dst["incentiveId"] = *src.incentiveId;
     }
-    if (src.incentiveType) {
+    if (src.incentiveType.has_value()) {
         dst["incentiveType"] = *src.incentiveType;
     }
-    if (src.incentivePriority) {
+    if (src.incentivePriority.has_value()) {
         dst["incentivePriority"] = *src.incentivePriority;
     }
-    if (src.currency) {
+    if (src.currency.has_value()) {
         dst["currency"] = *src.currency;
     }
-    if (src.unit) {
+    if (src.unit.has_value()) {
         dst["unit"] = *src.unit;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -26045,62 +27452,65 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionDataType &
     if (!src["incentiveId"].isNull()) {
         dst.incentiveId = src["incentiveId"].as<decltype(dst.incentiveId)::value_type>();
     } else {
-        dst.incentiveId = std::nullopt;
+        dst.incentiveId.reset();
     }
     if (!src["incentiveType"].isNull()) {
         dst.incentiveType = src["incentiveType"].as<decltype(dst.incentiveType)::value_type>();
     } else {
-        dst.incentiveType = std::nullopt;
+        dst.incentiveType.reset();
     }
     if (!src["incentivePriority"].isNull()) {
         dst.incentivePriority = src["incentivePriority"].as<decltype(dst.incentivePriority)::value_type>();
     } else {
-        dst.incentivePriority = std::nullopt;
+        dst.incentivePriority.reset();
     }
     if (!src["currency"].isNull()) {
         dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
     } else {
-        dst.currency = std::nullopt;
+        dst.currency.reset();
     }
     if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
-        dst.unit = std::nullopt;
+        dst.unit.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.incentiveId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.incentiveId.has_value()) {
         dst["incentiveId"] = *src.incentiveId;
     }
-    if (src.incentiveType) {
+    if (src.incentiveType.has_value()) {
         dst["incentiveType"] = *src.incentiveType;
     }
-    if (src.incentivePriority) {
+    if (src.incentivePriority.has_value()) {
         dst["incentivePriority"] = *src.incentivePriority;
     }
-    if (src.currency) {
+    if (src.currency.has_value()) {
         dst["currency"] = *src.currency;
     }
-    if (src.unit) {
+    if (src.unit.has_value()) {
         dst["unit"] = *src.unit;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -26113,44 +27523,47 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionDataElemen
     if (!src["incentiveId"].isNull()) {
         dst.incentiveId = src["incentiveId"].as<decltype(dst.incentiveId)::value_type>();
     } else {
-        dst.incentiveId = std::nullopt;
+        dst.incentiveId.reset();
     }
     if (!src["incentiveType"].isNull()) {
         dst.incentiveType = src["incentiveType"].as<decltype(dst.incentiveType)::value_type>();
     } else {
-        dst.incentiveType = std::nullopt;
+        dst.incentiveType.reset();
     }
     if (!src["incentivePriority"].isNull()) {
         dst.incentivePriority = src["incentivePriority"].as<decltype(dst.incentivePriority)::value_type>();
     } else {
-        dst.incentivePriority = std::nullopt;
+        dst.incentivePriority.reset();
     }
     if (!src["currency"].isNull()) {
         dst.currency = src["currency"].as<decltype(dst.currency)::value_type>();
     } else {
-        dst.currency = std::nullopt;
+        dst.currency.reset();
     }
     if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
-        dst.unit = std::nullopt;
+        dst.unit.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.incentiveDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.incentiveDescriptionData.has_value()) {
         dst["incentiveDescriptionData"] = *src.incentiveDescriptionData;
     }
 
@@ -26163,17 +27576,20 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionListDataTy
     if (!src["incentiveDescriptionData"].isNull()) {
         dst.incentiveDescriptionData = src["incentiveDescriptionData"].as<decltype(dst.incentiveDescriptionData)::value_type>();
     } else {
-        dst.incentiveDescriptionData = std::nullopt;
+        dst.incentiveDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.incentiveId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.incentiveId.has_value()) {
         dst["incentiveId"] = *src.incentiveId;
     }
-    if (src.incentiveType) {
+    if (src.incentiveType.has_value()) {
         dst["incentiveType"] = *src.incentiveType;
     }
 
@@ -26186,31 +27602,34 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionListDataSe
     if (!src["incentiveId"].isNull()) {
         dst.incentiveId = src["incentiveId"].as<decltype(dst.incentiveId)::value_type>();
     } else {
-        dst.incentiveId = std::nullopt;
+        dst.incentiveId.reset();
     }
     if (!src["incentiveType"].isNull()) {
         dst.incentiveType = src["incentiveType"].as<decltype(dst.incentiveType)::value_type>();
     } else {
-        dst.incentiveType = std::nullopt;
+        dst.incentiveType.reset();
     }
 
 }
 
 bool convertToJson(const StateInformationDataType &src, JsonVariant &dst)
 {
-    if (src.stateInformationId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.stateInformationId.has_value()) {
         dst["stateInformationId"] = *src.stateInformationId;
     }
-    if (src.stateInformation) {
+    if (src.stateInformation.has_value()) {
         dst["stateInformation"] = *src.stateInformation;
     }
-    if (src.isActive) {
+    if (src.isActive.has_value()) {
         dst["isActive"] = *src.isActive;
     }
-    if (src.category) {
+    if (src.category.has_value()) {
         dst["category"] = *src.category;
     }
-    if (src.timeOfLastChange) {
+    if (src.timeOfLastChange.has_value()) {
         dst["timeOfLastChange"] = *src.timeOfLastChange;
     }
 
@@ -26223,46 +27642,49 @@ void convertFromJson(const JsonVariantConst &src, StateInformationDataType &dst)
     if (!src["stateInformationId"].isNull()) {
         dst.stateInformationId = src["stateInformationId"].as<decltype(dst.stateInformationId)::value_type>();
     } else {
-        dst.stateInformationId = std::nullopt;
+        dst.stateInformationId.reset();
     }
     if (!src["stateInformation"].isNull()) {
         dst.stateInformation = src["stateInformation"].as<decltype(dst.stateInformation)::value_type>();
     } else {
-        dst.stateInformation = std::nullopt;
+        dst.stateInformation.reset();
     }
     if (!src["isActive"].isNull()) {
         dst.isActive = src["isActive"].as<decltype(dst.isActive)::value_type>();
     } else {
-        dst.isActive = std::nullopt;
+        dst.isActive.reset();
     }
     if (!src["category"].isNull()) {
         dst.category = src["category"].as<decltype(dst.category)::value_type>();
     } else {
-        dst.category = std::nullopt;
+        dst.category.reset();
     }
     if (!src["timeOfLastChange"].isNull()) {
         dst.timeOfLastChange = src["timeOfLastChange"].as<decltype(dst.timeOfLastChange)::value_type>();
     } else {
-        dst.timeOfLastChange = std::nullopt;
+        dst.timeOfLastChange.reset();
     }
 
 }
 
 bool convertToJson(const StateInformationDataElementsType &src, JsonVariant &dst)
 {
-    if (src.stateInformationId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.stateInformationId.has_value()) {
         dst["stateInformationId"] = *src.stateInformationId;
     }
-    if (src.stateInformation) {
+    if (src.stateInformation.has_value()) {
         dst["stateInformation"] = *src.stateInformation;
     }
-    if (src.isActive) {
+    if (src.isActive.has_value()) {
         dst["isActive"] = *src.isActive;
     }
-    if (src.category) {
+    if (src.category.has_value()) {
         dst["category"] = *src.category;
     }
-    if (src.timeOfLastChange) {
+    if (src.timeOfLastChange.has_value()) {
         dst["timeOfLastChange"] = *src.timeOfLastChange;
     }
 
@@ -26275,34 +27697,37 @@ void convertFromJson(const JsonVariantConst &src, StateInformationDataElementsTy
     if (!src["stateInformationId"].isNull()) {
         dst.stateInformationId = src["stateInformationId"].as<decltype(dst.stateInformationId)::value_type>();
     } else {
-        dst.stateInformationId = std::nullopt;
+        dst.stateInformationId.reset();
     }
     if (!src["stateInformation"].isNull()) {
         dst.stateInformation = src["stateInformation"].as<decltype(dst.stateInformation)::value_type>();
     } else {
-        dst.stateInformation = std::nullopt;
+        dst.stateInformation.reset();
     }
     if (!src["isActive"].isNull()) {
         dst.isActive = src["isActive"].as<decltype(dst.isActive)::value_type>();
     } else {
-        dst.isActive = std::nullopt;
+        dst.isActive.reset();
     }
     if (!src["category"].isNull()) {
         dst.category = src["category"].as<decltype(dst.category)::value_type>();
     } else {
-        dst.category = std::nullopt;
+        dst.category.reset();
     }
     if (!src["timeOfLastChange"].isNull()) {
         dst.timeOfLastChange = src["timeOfLastChange"].as<decltype(dst.timeOfLastChange)::value_type>();
     } else {
-        dst.timeOfLastChange = std::nullopt;
+        dst.timeOfLastChange.reset();
     }
 
 }
 
 bool convertToJson(const StateInformationListDataType &src, JsonVariant &dst)
 {
-    if (src.stateInformationData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.stateInformationData.has_value()) {
         dst["stateInformationData"] = *src.stateInformationData;
     }
 
@@ -26315,23 +27740,26 @@ void convertFromJson(const JsonVariantConst &src, StateInformationListDataType &
     if (!src["stateInformationData"].isNull()) {
         dst.stateInformationData = src["stateInformationData"].as<decltype(dst.stateInformationData)::value_type>();
     } else {
-        dst.stateInformationData = std::nullopt;
+        dst.stateInformationData.reset();
     }
 
 }
 
 bool convertToJson(const StateInformationListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.stateInformationId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.stateInformationId.has_value()) {
         dst["stateInformationId"] = *src.stateInformationId;
     }
-    if (src.stateInformation) {
+    if (src.stateInformation.has_value()) {
         dst["stateInformation"] = *src.stateInformation;
     }
-    if (src.isActive) {
+    if (src.isActive.has_value()) {
         dst["isActive"] = *src.isActive;
     }
-    if (src.category) {
+    if (src.category.has_value()) {
         dst["category"] = *src.category;
     }
 
@@ -26344,62 +27772,65 @@ void convertFromJson(const JsonVariantConst &src, StateInformationListDataSelect
     if (!src["stateInformationId"].isNull()) {
         dst.stateInformationId = src["stateInformationId"].as<decltype(dst.stateInformationId)::value_type>();
     } else {
-        dst.stateInformationId = std::nullopt;
+        dst.stateInformationId.reset();
     }
     if (!src["stateInformation"].isNull()) {
         dst.stateInformation = src["stateInformation"].as<decltype(dst.stateInformation)::value_type>();
     } else {
-        dst.stateInformation = std::nullopt;
+        dst.stateInformation.reset();
     }
     if (!src["isActive"].isNull()) {
         dst.isActive = src["isActive"].as<decltype(dst.isActive)::value_type>();
     } else {
-        dst.isActive = std::nullopt;
+        dst.isActive.reset();
     }
     if (!src["category"].isNull()) {
         dst.category = src["category"].as<decltype(dst.category)::value_type>();
     } else {
-        dst.category = std::nullopt;
+        dst.category.reset();
     }
 
 }
 
 bool convertToJson(const ElectricalConnectionParameterDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.electricalConnectionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.electricalConnectionId.has_value()) {
         dst["electricalConnectionId"] = *src.electricalConnectionId;
     }
-    if (src.parameterId) {
+    if (src.parameterId.has_value()) {
         dst["parameterId"] = *src.parameterId;
     }
-    if (src.measurementId) {
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.voltageType) {
+    if (src.voltageType.has_value()) {
         dst["voltageType"] = *src.voltageType;
     }
-    if (src.acMeasuredPhases) {
+    if (src.acMeasuredPhases.has_value()) {
         dst["acMeasuredPhases"] = *src.acMeasuredPhases;
     }
-    if (src.acMeasuredInReferenceTo) {
+    if (src.acMeasuredInReferenceTo.has_value()) {
         dst["acMeasuredInReferenceTo"] = *src.acMeasuredInReferenceTo;
     }
-    if (src.acMeasurementType) {
+    if (src.acMeasurementType.has_value()) {
         dst["acMeasurementType"] = *src.acMeasurementType;
     }
-    if (src.acMeasurementVariant) {
+    if (src.acMeasurementVariant.has_value()) {
         dst["acMeasurementVariant"] = *src.acMeasurementVariant;
     }
-    if (src.acMeasuredHarmonic) {
+    if (src.acMeasuredHarmonic.has_value()) {
         dst["acMeasuredHarmonic"] = *src.acMeasuredHarmonic;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -26412,102 +27843,105 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
     if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
-        dst.electricalConnectionId = std::nullopt;
+        dst.electricalConnectionId.reset();
     }
     if (!src["parameterId"].isNull()) {
         dst.parameterId = src["parameterId"].as<decltype(dst.parameterId)::value_type>();
     } else {
-        dst.parameterId = std::nullopt;
+        dst.parameterId.reset();
     }
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["voltageType"].isNull()) {
         dst.voltageType = src["voltageType"].as<decltype(dst.voltageType)::value_type>();
     } else {
-        dst.voltageType = std::nullopt;
+        dst.voltageType.reset();
     }
     if (!src["acMeasuredPhases"].isNull()) {
         dst.acMeasuredPhases = src["acMeasuredPhases"].as<decltype(dst.acMeasuredPhases)::value_type>();
     } else {
-        dst.acMeasuredPhases = std::nullopt;
+        dst.acMeasuredPhases.reset();
     }
     if (!src["acMeasuredInReferenceTo"].isNull()) {
         dst.acMeasuredInReferenceTo = src["acMeasuredInReferenceTo"].as<decltype(dst.acMeasuredInReferenceTo)::value_type>();
     } else {
-        dst.acMeasuredInReferenceTo = std::nullopt;
+        dst.acMeasuredInReferenceTo.reset();
     }
     if (!src["acMeasurementType"].isNull()) {
         dst.acMeasurementType = src["acMeasurementType"].as<decltype(dst.acMeasurementType)::value_type>();
     } else {
-        dst.acMeasurementType = std::nullopt;
+        dst.acMeasurementType.reset();
     }
     if (!src["acMeasurementVariant"].isNull()) {
         dst.acMeasurementVariant = src["acMeasurementVariant"].as<decltype(dst.acMeasurementVariant)::value_type>();
     } else {
-        dst.acMeasurementVariant = std::nullopt;
+        dst.acMeasurementVariant.reset();
     }
     if (!src["acMeasuredHarmonic"].isNull()) {
         dst.acMeasuredHarmonic = src["acMeasuredHarmonic"].as<decltype(dst.acMeasuredHarmonic)::value_type>();
     } else {
-        dst.acMeasuredHarmonic = std::nullopt;
+        dst.acMeasuredHarmonic.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const ElectricalConnectionParameterDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.electricalConnectionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.electricalConnectionId.has_value()) {
         dst["electricalConnectionId"] = *src.electricalConnectionId;
     }
-    if (src.parameterId) {
+    if (src.parameterId.has_value()) {
         dst["parameterId"] = *src.parameterId;
     }
-    if (src.measurementId) {
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.voltageType) {
+    if (src.voltageType.has_value()) {
         dst["voltageType"] = *src.voltageType;
     }
-    if (src.acMeasuredPhases) {
+    if (src.acMeasuredPhases.has_value()) {
         dst["acMeasuredPhases"] = *src.acMeasuredPhases;
     }
-    if (src.acMeasuredInReferenceTo) {
+    if (src.acMeasuredInReferenceTo.has_value()) {
         dst["acMeasuredInReferenceTo"] = *src.acMeasuredInReferenceTo;
     }
-    if (src.acMeasurementType) {
+    if (src.acMeasurementType.has_value()) {
         dst["acMeasurementType"] = *src.acMeasurementType;
     }
-    if (src.acMeasurementVariant) {
+    if (src.acMeasurementVariant.has_value()) {
         dst["acMeasurementVariant"] = *src.acMeasurementVariant;
     }
-    if (src.acMeasuredHarmonic) {
+    if (src.acMeasuredHarmonic.has_value()) {
         dst["acMeasuredHarmonic"] = *src.acMeasuredHarmonic;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -26520,69 +27954,72 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
     if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
-        dst.electricalConnectionId = std::nullopt;
+        dst.electricalConnectionId.reset();
     }
     if (!src["parameterId"].isNull()) {
         dst.parameterId = src["parameterId"].as<decltype(dst.parameterId)::value_type>();
     } else {
-        dst.parameterId = std::nullopt;
+        dst.parameterId.reset();
     }
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["voltageType"].isNull()) {
         dst.voltageType = src["voltageType"].as<decltype(dst.voltageType)::value_type>();
     } else {
-        dst.voltageType = std::nullopt;
+        dst.voltageType.reset();
     }
     if (!src["acMeasuredPhases"].isNull()) {
         dst.acMeasuredPhases = src["acMeasuredPhases"].as<decltype(dst.acMeasuredPhases)::value_type>();
     } else {
-        dst.acMeasuredPhases = std::nullopt;
+        dst.acMeasuredPhases.reset();
     }
     if (!src["acMeasuredInReferenceTo"].isNull()) {
         dst.acMeasuredInReferenceTo = src["acMeasuredInReferenceTo"].as<decltype(dst.acMeasuredInReferenceTo)::value_type>();
     } else {
-        dst.acMeasuredInReferenceTo = std::nullopt;
+        dst.acMeasuredInReferenceTo.reset();
     }
     if (!src["acMeasurementType"].isNull()) {
         dst.acMeasurementType = src["acMeasurementType"].as<decltype(dst.acMeasurementType)::value_type>();
     } else {
-        dst.acMeasurementType = std::nullopt;
+        dst.acMeasurementType.reset();
     }
     if (!src["acMeasurementVariant"].isNull()) {
         dst.acMeasurementVariant = src["acMeasurementVariant"].as<decltype(dst.acMeasurementVariant)::value_type>();
     } else {
-        dst.acMeasurementVariant = std::nullopt;
+        dst.acMeasurementVariant.reset();
     }
     if (!src["acMeasuredHarmonic"].isNull()) {
         dst.acMeasuredHarmonic = src["acMeasuredHarmonic"].as<decltype(dst.acMeasuredHarmonic)::value_type>();
     } else {
-        dst.acMeasuredHarmonic = std::nullopt;
+        dst.acMeasuredHarmonic.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const ElectricalConnectionParameterDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.electricalConnectionParameterDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.electricalConnectionParameterDescriptionData.has_value()) {
         dst["electricalConnectionParameterDescriptionData"] = *src.electricalConnectionParameterDescriptionData;
     }
 
@@ -26595,23 +28032,26 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
     if (!src["electricalConnectionParameterDescriptionData"].isNull()) {
         dst.electricalConnectionParameterDescriptionData = src["electricalConnectionParameterDescriptionData"].as<decltype(dst.electricalConnectionParameterDescriptionData)::value_type>();
     } else {
-        dst.electricalConnectionParameterDescriptionData = std::nullopt;
+        dst.electricalConnectionParameterDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const ElectricalConnectionParameterDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.electricalConnectionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.electricalConnectionId.has_value()) {
         dst["electricalConnectionId"] = *src.electricalConnectionId;
     }
-    if (src.parameterId) {
+    if (src.parameterId.has_value()) {
         dst["parameterId"] = *src.parameterId;
     }
-    if (src.measurementId) {
+    if (src.measurementId.has_value()) {
         dst["measurementId"] = *src.measurementId;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
 
@@ -26624,35 +28064,38 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionParameterD
     if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
-        dst.electricalConnectionId = std::nullopt;
+        dst.electricalConnectionId.reset();
     }
     if (!src["parameterId"].isNull()) {
         dst.parameterId = src["parameterId"].as<decltype(dst.parameterId)::value_type>();
     } else {
-        dst.parameterId = std::nullopt;
+        dst.parameterId.reset();
     }
     if (!src["measurementId"].isNull()) {
         dst.measurementId = src["measurementId"].as<decltype(dst.measurementId)::value_type>();
     } else {
-        dst.measurementId = std::nullopt;
+        dst.measurementId.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
 
 }
 
 bool convertToJson(const ElectricalConnectionPermittedValueSetDataType &src, JsonVariant &dst)
 {
-    if (src.electricalConnectionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.electricalConnectionId.has_value()) {
         dst["electricalConnectionId"] = *src.electricalConnectionId;
     }
-    if (src.parameterId) {
+    if (src.parameterId.has_value()) {
         dst["parameterId"] = *src.parameterId;
     }
-    if (src.permittedValueSet) {
+    if (src.permittedValueSet.has_value()) {
         dst["permittedValueSet"] = *src.permittedValueSet;
     }
 
@@ -26665,30 +28108,33 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedV
     if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
-        dst.electricalConnectionId = std::nullopt;
+        dst.electricalConnectionId.reset();
     }
     if (!src["parameterId"].isNull()) {
         dst.parameterId = src["parameterId"].as<decltype(dst.parameterId)::value_type>();
     } else {
-        dst.parameterId = std::nullopt;
+        dst.parameterId.reset();
     }
     if (!src["permittedValueSet"].isNull()) {
         dst.permittedValueSet = src["permittedValueSet"].as<decltype(dst.permittedValueSet)::value_type>();
     } else {
-        dst.permittedValueSet = std::nullopt;
+        dst.permittedValueSet.reset();
     }
 
 }
 
 bool convertToJson(const ElectricalConnectionPermittedValueSetDataElementsType &src, JsonVariant &dst)
 {
-    if (src.electricalConnectionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.electricalConnectionId.has_value()) {
         dst["electricalConnectionId"] = *src.electricalConnectionId;
     }
-    if (src.parameterId) {
+    if (src.parameterId.has_value()) {
         dst["parameterId"] = *src.parameterId;
     }
-    if (src.permittedValueSet) {
+    if (src.permittedValueSet.has_value()) {
         dst["permittedValueSet"] = *src.permittedValueSet;
     }
 
@@ -26701,24 +28147,27 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedV
     if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
-        dst.electricalConnectionId = std::nullopt;
+        dst.electricalConnectionId.reset();
     }
     if (!src["parameterId"].isNull()) {
         dst.parameterId = src["parameterId"].as<decltype(dst.parameterId)::value_type>();
     } else {
-        dst.parameterId = std::nullopt;
+        dst.parameterId.reset();
     }
     if (!src["permittedValueSet"].isNull()) {
         dst.permittedValueSet = src["permittedValueSet"].as<decltype(dst.permittedValueSet)::value_type>();
     } else {
-        dst.permittedValueSet = std::nullopt;
+        dst.permittedValueSet.reset();
     }
 
 }
 
 bool convertToJson(const ElectricalConnectionPermittedValueSetListDataType &src, JsonVariant &dst)
 {
-    if (src.electricalConnectionPermittedValueSetData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.electricalConnectionPermittedValueSetData.has_value()) {
         dst["electricalConnectionPermittedValueSetData"] = *src.electricalConnectionPermittedValueSetData;
     }
 
@@ -26731,17 +28180,20 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedV
     if (!src["electricalConnectionPermittedValueSetData"].isNull()) {
         dst.electricalConnectionPermittedValueSetData = src["electricalConnectionPermittedValueSetData"].as<decltype(dst.electricalConnectionPermittedValueSetData)::value_type>();
     } else {
-        dst.electricalConnectionPermittedValueSetData = std::nullopt;
+        dst.electricalConnectionPermittedValueSetData.reset();
     }
 
 }
 
 bool convertToJson(const ElectricalConnectionPermittedValueSetListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.electricalConnectionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.electricalConnectionId.has_value()) {
         dst["electricalConnectionId"] = *src.electricalConnectionId;
     }
-    if (src.parameterId) {
+    if (src.parameterId.has_value()) {
         dst["parameterId"] = *src.parameterId;
     }
 
@@ -26754,37 +28206,40 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPermittedV
     if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
-        dst.electricalConnectionId = std::nullopt;
+        dst.electricalConnectionId.reset();
     }
     if (!src["parameterId"].isNull()) {
         dst.parameterId = src["parameterId"].as<decltype(dst.parameterId)::value_type>();
     } else {
-        dst.parameterId = std::nullopt;
+        dst.parameterId.reset();
     }
 
 }
 
 bool convertToJson(const ElectricalConnectionCharacteristicDataType &src, JsonVariant &dst)
 {
-    if (src.electricalConnectionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.electricalConnectionId.has_value()) {
         dst["electricalConnectionId"] = *src.electricalConnectionId;
     }
-    if (src.parameterId) {
+    if (src.parameterId.has_value()) {
         dst["parameterId"] = *src.parameterId;
     }
-    if (src.characteristicId) {
+    if (src.characteristicId.has_value()) {
         dst["characteristicId"] = *src.characteristicId;
     }
-    if (src.characteristicContext) {
+    if (src.characteristicContext.has_value()) {
         dst["characteristicContext"] = *src.characteristicContext;
     }
-    if (src.characteristicType) {
+    if (src.characteristicType.has_value()) {
         dst["characteristicType"] = *src.characteristicType;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
-    if (src.unit) {
+    if (src.unit.has_value()) {
         dst["unit"] = *src.unit;
     }
 
@@ -26797,62 +28252,65 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
     if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
-        dst.electricalConnectionId = std::nullopt;
+        dst.electricalConnectionId.reset();
     }
     if (!src["parameterId"].isNull()) {
         dst.parameterId = src["parameterId"].as<decltype(dst.parameterId)::value_type>();
     } else {
-        dst.parameterId = std::nullopt;
+        dst.parameterId.reset();
     }
     if (!src["characteristicId"].isNull()) {
         dst.characteristicId = src["characteristicId"].as<decltype(dst.characteristicId)::value_type>();
     } else {
-        dst.characteristicId = std::nullopt;
+        dst.characteristicId.reset();
     }
     if (!src["characteristicContext"].isNull()) {
         dst.characteristicContext = src["characteristicContext"].as<decltype(dst.characteristicContext)::value_type>();
     } else {
-        dst.characteristicContext = std::nullopt;
+        dst.characteristicContext.reset();
     }
     if (!src["characteristicType"].isNull()) {
         dst.characteristicType = src["characteristicType"].as<decltype(dst.characteristicType)::value_type>();
     } else {
-        dst.characteristicType = std::nullopt;
+        dst.characteristicType.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
     if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
-        dst.unit = std::nullopt;
+        dst.unit.reset();
     }
 
 }
 
 bool convertToJson(const ElectricalConnectionCharacteristicDataElementsType &src, JsonVariant &dst)
 {
-    if (src.electricalConnectionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.electricalConnectionId.has_value()) {
         dst["electricalConnectionId"] = *src.electricalConnectionId;
     }
-    if (src.parameterId) {
+    if (src.parameterId.has_value()) {
         dst["parameterId"] = *src.parameterId;
     }
-    if (src.characteristicId) {
+    if (src.characteristicId.has_value()) {
         dst["characteristicId"] = *src.characteristicId;
     }
-    if (src.characteristicContext) {
+    if (src.characteristicContext.has_value()) {
         dst["characteristicContext"] = *src.characteristicContext;
     }
-    if (src.characteristicType) {
+    if (src.characteristicType.has_value()) {
         dst["characteristicType"] = *src.characteristicType;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
-    if (src.unit) {
+    if (src.unit.has_value()) {
         dst["unit"] = *src.unit;
     }
 
@@ -26865,44 +28323,47 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
     if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
-        dst.electricalConnectionId = std::nullopt;
+        dst.electricalConnectionId.reset();
     }
     if (!src["parameterId"].isNull()) {
         dst.parameterId = src["parameterId"].as<decltype(dst.parameterId)::value_type>();
     } else {
-        dst.parameterId = std::nullopt;
+        dst.parameterId.reset();
     }
     if (!src["characteristicId"].isNull()) {
         dst.characteristicId = src["characteristicId"].as<decltype(dst.characteristicId)::value_type>();
     } else {
-        dst.characteristicId = std::nullopt;
+        dst.characteristicId.reset();
     }
     if (!src["characteristicContext"].isNull()) {
         dst.characteristicContext = src["characteristicContext"].as<decltype(dst.characteristicContext)::value_type>();
     } else {
-        dst.characteristicContext = std::nullopt;
+        dst.characteristicContext.reset();
     }
     if (!src["characteristicType"].isNull()) {
         dst.characteristicType = src["characteristicType"].as<decltype(dst.characteristicType)::value_type>();
     } else {
-        dst.characteristicType = std::nullopt;
+        dst.characteristicType.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
     if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
-        dst.unit = std::nullopt;
+        dst.unit.reset();
     }
 
 }
 
 bool convertToJson(const ElectricalConnectionCharacteristicListDataType &src, JsonVariant &dst)
 {
-    if (src.electricalConnectionCharacteristicData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.electricalConnectionCharacteristicData.has_value()) {
         dst["electricalConnectionCharacteristicData"] = *src.electricalConnectionCharacteristicData;
     }
 
@@ -26915,26 +28376,29 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
     if (!src["electricalConnectionCharacteristicData"].isNull()) {
         dst.electricalConnectionCharacteristicData = src["electricalConnectionCharacteristicData"].as<decltype(dst.electricalConnectionCharacteristicData)::value_type>();
     } else {
-        dst.electricalConnectionCharacteristicData = std::nullopt;
+        dst.electricalConnectionCharacteristicData.reset();
     }
 
 }
 
 bool convertToJson(const ElectricalConnectionCharacteristicListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.electricalConnectionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.electricalConnectionId.has_value()) {
         dst["electricalConnectionId"] = *src.electricalConnectionId;
     }
-    if (src.parameterId) {
+    if (src.parameterId.has_value()) {
         dst["parameterId"] = *src.parameterId;
     }
-    if (src.characteristicId) {
+    if (src.characteristicId.has_value()) {
         dst["characteristicId"] = *src.characteristicId;
     }
-    if (src.characteristicContext) {
+    if (src.characteristicContext.has_value()) {
         dst["characteristicContext"] = *src.characteristicContext;
     }
-    if (src.characteristicType) {
+    if (src.characteristicType.has_value()) {
         dst["characteristicType"] = *src.characteristicType;
     }
 
@@ -26947,52 +28411,55 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
     if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
-        dst.electricalConnectionId = std::nullopt;
+        dst.electricalConnectionId.reset();
     }
     if (!src["parameterId"].isNull()) {
         dst.parameterId = src["parameterId"].as<decltype(dst.parameterId)::value_type>();
     } else {
-        dst.parameterId = std::nullopt;
+        dst.parameterId.reset();
     }
     if (!src["characteristicId"].isNull()) {
         dst.characteristicId = src["characteristicId"].as<decltype(dst.characteristicId)::value_type>();
     } else {
-        dst.characteristicId = std::nullopt;
+        dst.characteristicId.reset();
     }
     if (!src["characteristicContext"].isNull()) {
         dst.characteristicContext = src["characteristicContext"].as<decltype(dst.characteristicContext)::value_type>();
     } else {
-        dst.characteristicContext = std::nullopt;
+        dst.characteristicContext.reset();
     }
     if (!src["characteristicType"].isNull()) {
         dst.characteristicType = src["characteristicType"].as<decltype(dst.characteristicType)::value_type>();
     } else {
-        dst.characteristicType = std::nullopt;
+        dst.characteristicType.reset();
     }
 
 }
 
 bool convertToJson(const ElectricalConnectionStateDataType &src, JsonVariant &dst)
 {
-    if (src.electricalConnectionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.electricalConnectionId.has_value()) {
         dst["electricalConnectionId"] = *src.electricalConnectionId;
     }
-    if (src.timestamp) {
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.currentEnergyMode) {
+    if (src.currentEnergyMode.has_value()) {
         dst["currentEnergyMode"] = *src.currentEnergyMode;
     }
-    if (src.consumptionTime) {
+    if (src.consumptionTime.has_value()) {
         dst["consumptionTime"] = *src.consumptionTime;
     }
-    if (src.productionTime) {
+    if (src.productionTime.has_value()) {
         dst["productionTime"] = *src.productionTime;
     }
-    if (src.totalConsumptionTime) {
+    if (src.totalConsumptionTime.has_value()) {
         dst["totalConsumptionTime"] = *src.totalConsumptionTime;
     }
-    if (src.totalProductionTime) {
+    if (src.totalProductionTime.has_value()) {
         dst["totalProductionTime"] = *src.totalProductionTime;
     }
 
@@ -27005,62 +28472,65 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateDataT
     if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
-        dst.electricalConnectionId = std::nullopt;
+        dst.electricalConnectionId.reset();
     }
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["currentEnergyMode"].isNull()) {
         dst.currentEnergyMode = src["currentEnergyMode"].as<decltype(dst.currentEnergyMode)::value_type>();
     } else {
-        dst.currentEnergyMode = std::nullopt;
+        dst.currentEnergyMode.reset();
     }
     if (!src["consumptionTime"].isNull()) {
         dst.consumptionTime = src["consumptionTime"].as<decltype(dst.consumptionTime)::value_type>();
     } else {
-        dst.consumptionTime = std::nullopt;
+        dst.consumptionTime.reset();
     }
     if (!src["productionTime"].isNull()) {
         dst.productionTime = src["productionTime"].as<decltype(dst.productionTime)::value_type>();
     } else {
-        dst.productionTime = std::nullopt;
+        dst.productionTime.reset();
     }
     if (!src["totalConsumptionTime"].isNull()) {
         dst.totalConsumptionTime = src["totalConsumptionTime"].as<decltype(dst.totalConsumptionTime)::value_type>();
     } else {
-        dst.totalConsumptionTime = std::nullopt;
+        dst.totalConsumptionTime.reset();
     }
     if (!src["totalProductionTime"].isNull()) {
         dst.totalProductionTime = src["totalProductionTime"].as<decltype(dst.totalProductionTime)::value_type>();
     } else {
-        dst.totalProductionTime = std::nullopt;
+        dst.totalProductionTime.reset();
     }
 
 }
 
 bool convertToJson(const ElectricalConnectionStateDataElementsType &src, JsonVariant &dst)
 {
-    if (src.electricalConnectionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.electricalConnectionId.has_value()) {
         dst["electricalConnectionId"] = *src.electricalConnectionId;
     }
-    if (src.timestamp) {
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.currentEnergyMode) {
+    if (src.currentEnergyMode.has_value()) {
         dst["currentEnergyMode"] = *src.currentEnergyMode;
     }
-    if (src.consumptionTime) {
+    if (src.consumptionTime.has_value()) {
         dst["consumptionTime"] = *src.consumptionTime;
     }
-    if (src.productionTime) {
+    if (src.productionTime.has_value()) {
         dst["productionTime"] = *src.productionTime;
     }
-    if (src.totalConsumptionTime) {
+    if (src.totalConsumptionTime.has_value()) {
         dst["totalConsumptionTime"] = *src.totalConsumptionTime;
     }
-    if (src.totalProductionTime) {
+    if (src.totalProductionTime.has_value()) {
         dst["totalProductionTime"] = *src.totalProductionTime;
     }
 
@@ -27073,44 +28543,47 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateDataE
     if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
-        dst.electricalConnectionId = std::nullopt;
+        dst.electricalConnectionId.reset();
     }
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["currentEnergyMode"].isNull()) {
         dst.currentEnergyMode = src["currentEnergyMode"].as<decltype(dst.currentEnergyMode)::value_type>();
     } else {
-        dst.currentEnergyMode = std::nullopt;
+        dst.currentEnergyMode.reset();
     }
     if (!src["consumptionTime"].isNull()) {
         dst.consumptionTime = src["consumptionTime"].as<decltype(dst.consumptionTime)::value_type>();
     } else {
-        dst.consumptionTime = std::nullopt;
+        dst.consumptionTime.reset();
     }
     if (!src["productionTime"].isNull()) {
         dst.productionTime = src["productionTime"].as<decltype(dst.productionTime)::value_type>();
     } else {
-        dst.productionTime = std::nullopt;
+        dst.productionTime.reset();
     }
     if (!src["totalConsumptionTime"].isNull()) {
         dst.totalConsumptionTime = src["totalConsumptionTime"].as<decltype(dst.totalConsumptionTime)::value_type>();
     } else {
-        dst.totalConsumptionTime = std::nullopt;
+        dst.totalConsumptionTime.reset();
     }
     if (!src["totalProductionTime"].isNull()) {
         dst.totalProductionTime = src["totalProductionTime"].as<decltype(dst.totalProductionTime)::value_type>();
     } else {
-        dst.totalProductionTime = std::nullopt;
+        dst.totalProductionTime.reset();
     }
 
 }
 
 bool convertToJson(const ElectricalConnectionStateListDataType &src, JsonVariant &dst)
 {
-    if (src.electricalConnectionStateData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.electricalConnectionStateData.has_value()) {
         dst["electricalConnectionStateData"] = *src.electricalConnectionStateData;
     }
 
@@ -27123,14 +28596,17 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateListD
     if (!src["electricalConnectionStateData"].isNull()) {
         dst.electricalConnectionStateData = src["electricalConnectionStateData"].as<decltype(dst.electricalConnectionStateData)::value_type>();
     } else {
-        dst.electricalConnectionStateData = std::nullopt;
+        dst.electricalConnectionStateData.reset();
     }
 
 }
 
 bool convertToJson(const ElectricalConnectionStateListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.electricalConnectionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.electricalConnectionId.has_value()) {
         dst["electricalConnectionId"] = *src.electricalConnectionId;
     }
 
@@ -27143,35 +28619,38 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateListD
     if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
-        dst.electricalConnectionId = std::nullopt;
+        dst.electricalConnectionId.reset();
     }
 
 }
 
 bool convertToJson(const ElectricalConnectionDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.electricalConnectionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.electricalConnectionId.has_value()) {
         dst["electricalConnectionId"] = *src.electricalConnectionId;
     }
-    if (src.powerSupplyType) {
+    if (src.powerSupplyType.has_value()) {
         dst["powerSupplyType"] = *src.powerSupplyType;
     }
-    if (src.acConnectedPhases) {
+    if (src.acConnectedPhases.has_value()) {
         dst["acConnectedPhases"] = *src.acConnectedPhases;
     }
-    if (src.acRmsPeriodDuration) {
+    if (src.acRmsPeriodDuration.has_value()) {
         dst["acRmsPeriodDuration"] = *src.acRmsPeriodDuration;
     }
-    if (src.positiveEnergyDirection) {
+    if (src.positiveEnergyDirection.has_value()) {
         dst["positiveEnergyDirection"] = *src.positiveEnergyDirection;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -27184,70 +28663,73 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptio
     if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
-        dst.electricalConnectionId = std::nullopt;
+        dst.electricalConnectionId.reset();
     }
     if (!src["powerSupplyType"].isNull()) {
         dst.powerSupplyType = src["powerSupplyType"].as<decltype(dst.powerSupplyType)::value_type>();
     } else {
-        dst.powerSupplyType = std::nullopt;
+        dst.powerSupplyType.reset();
     }
     if (!src["acConnectedPhases"].isNull()) {
         dst.acConnectedPhases = src["acConnectedPhases"].as<decltype(dst.acConnectedPhases)::value_type>();
     } else {
-        dst.acConnectedPhases = std::nullopt;
+        dst.acConnectedPhases.reset();
     }
     if (!src["acRmsPeriodDuration"].isNull()) {
         dst.acRmsPeriodDuration = src["acRmsPeriodDuration"].as<decltype(dst.acRmsPeriodDuration)::value_type>();
     } else {
-        dst.acRmsPeriodDuration = std::nullopt;
+        dst.acRmsPeriodDuration.reset();
     }
     if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
-        dst.positiveEnergyDirection = std::nullopt;
+        dst.positiveEnergyDirection.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const ElectricalConnectionDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.electricalConnectionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.electricalConnectionId.has_value()) {
         dst["electricalConnectionId"] = *src.electricalConnectionId;
     }
-    if (src.powerSupplyType) {
+    if (src.powerSupplyType.has_value()) {
         dst["powerSupplyType"] = *src.powerSupplyType;
     }
-    if (src.acConnectedPhases) {
+    if (src.acConnectedPhases.has_value()) {
         dst["acConnectedPhases"] = *src.acConnectedPhases;
     }
-    if (src.acRmsPeriodDuration) {
+    if (src.acRmsPeriodDuration.has_value()) {
         dst["acRmsPeriodDuration"] = *src.acRmsPeriodDuration;
     }
-    if (src.positiveEnergyDirection) {
+    if (src.positiveEnergyDirection.has_value()) {
         dst["positiveEnergyDirection"] = *src.positiveEnergyDirection;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -27260,49 +28742,52 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptio
     if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
-        dst.electricalConnectionId = std::nullopt;
+        dst.electricalConnectionId.reset();
     }
     if (!src["powerSupplyType"].isNull()) {
         dst.powerSupplyType = src["powerSupplyType"].as<decltype(dst.powerSupplyType)::value_type>();
     } else {
-        dst.powerSupplyType = std::nullopt;
+        dst.powerSupplyType.reset();
     }
     if (!src["acConnectedPhases"].isNull()) {
         dst.acConnectedPhases = src["acConnectedPhases"].as<decltype(dst.acConnectedPhases)::value_type>();
     } else {
-        dst.acConnectedPhases = std::nullopt;
+        dst.acConnectedPhases.reset();
     }
     if (!src["acRmsPeriodDuration"].isNull()) {
         dst.acRmsPeriodDuration = src["acRmsPeriodDuration"].as<decltype(dst.acRmsPeriodDuration)::value_type>();
     } else {
-        dst.acRmsPeriodDuration = std::nullopt;
+        dst.acRmsPeriodDuration.reset();
     }
     if (!src["positiveEnergyDirection"].isNull()) {
         dst.positiveEnergyDirection = src["positiveEnergyDirection"].as<decltype(dst.positiveEnergyDirection)::value_type>();
     } else {
-        dst.positiveEnergyDirection = std::nullopt;
+        dst.positiveEnergyDirection.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const ElectricalConnectionDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.electricalConnectionDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.electricalConnectionDescriptionData.has_value()) {
         dst["electricalConnectionDescriptionData"] = *src.electricalConnectionDescriptionData;
     }
 
@@ -27315,17 +28800,20 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptio
     if (!src["electricalConnectionDescriptionData"].isNull()) {
         dst.electricalConnectionDescriptionData = src["electricalConnectionDescriptionData"].as<decltype(dst.electricalConnectionDescriptionData)::value_type>();
     } else {
-        dst.electricalConnectionDescriptionData = std::nullopt;
+        dst.electricalConnectionDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const ElectricalConnectionDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.electricalConnectionId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.electricalConnectionId.has_value()) {
         dst["electricalConnectionId"] = *src.electricalConnectionId;
     }
-    if (src.scopeType) {
+    if (src.scopeType.has_value()) {
         dst["scopeType"] = *src.scopeType;
     }
 
@@ -27338,28 +28826,31 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptio
     if (!src["electricalConnectionId"].isNull()) {
         dst.electricalConnectionId = src["electricalConnectionId"].as<decltype(dst.electricalConnectionId)::value_type>();
     } else {
-        dst.electricalConnectionId = std::nullopt;
+        dst.electricalConnectionId.reset();
     }
     if (!src["scopeType"].isNull()) {
         dst.scopeType = src["scopeType"].as<decltype(dst.scopeType)::value_type>();
     } else {
-        dst.scopeType = std::nullopt;
+        dst.scopeType.reset();
     }
 
 }
 
 bool convertToJson(const TimeInformationDataType &src, JsonVariant &dst)
 {
-    if (src.utc) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.utc.has_value()) {
         dst["utc"] = *src.utc;
     }
-    if (src.utcOffset) {
+    if (src.utcOffset.has_value()) {
         dst["utcOffset"] = *src.utcOffset;
     }
-    if (src.dayOfWeek) {
+    if (src.dayOfWeek.has_value()) {
         dst["dayOfWeek"] = *src.dayOfWeek;
     }
-    if (src.calendarWeek) {
+    if (src.calendarWeek.has_value()) {
         dst["calendarWeek"] = *src.calendarWeek;
     }
 
@@ -27372,38 +28863,41 @@ void convertFromJson(const JsonVariantConst &src, TimeInformationDataType &dst)
     if (!src["utc"].isNull()) {
         dst.utc = src["utc"].as<decltype(dst.utc)::value_type>();
     } else {
-        dst.utc = std::nullopt;
+        dst.utc.reset();
     }
     if (!src["utcOffset"].isNull()) {
         dst.utcOffset = src["utcOffset"].as<decltype(dst.utcOffset)::value_type>();
     } else {
-        dst.utcOffset = std::nullopt;
+        dst.utcOffset.reset();
     }
     if (!src["dayOfWeek"].isNull()) {
         dst.dayOfWeek = src["dayOfWeek"].as<decltype(dst.dayOfWeek)::value_type>();
     } else {
-        dst.dayOfWeek = std::nullopt;
+        dst.dayOfWeek.reset();
     }
     if (!src["calendarWeek"].isNull()) {
         dst.calendarWeek = src["calendarWeek"].as<decltype(dst.calendarWeek)::value_type>();
     } else {
-        dst.calendarWeek = std::nullopt;
+        dst.calendarWeek.reset();
     }
 
 }
 
 bool convertToJson(const TimeInformationDataElementsType &src, JsonVariant &dst)
 {
-    if (src.utc) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.utc.has_value()) {
         dst["utc"] = *src.utc;
     }
-    if (src.utcOffset) {
+    if (src.utcOffset.has_value()) {
         dst["utcOffset"] = *src.utcOffset;
     }
-    if (src.dayOfWeek) {
+    if (src.dayOfWeek.has_value()) {
         dst["dayOfWeek"] = *src.dayOfWeek;
     }
-    if (src.calendarWeek) {
+    if (src.calendarWeek.has_value()) {
         dst["calendarWeek"] = *src.calendarWeek;
     }
 
@@ -27416,32 +28910,35 @@ void convertFromJson(const JsonVariantConst &src, TimeInformationDataElementsTyp
     if (!src["utc"].isNull()) {
         dst.utc = src["utc"].as<decltype(dst.utc)::value_type>();
     } else {
-        dst.utc = std::nullopt;
+        dst.utc.reset();
     }
     if (!src["utcOffset"].isNull()) {
         dst.utcOffset = src["utcOffset"].as<decltype(dst.utcOffset)::value_type>();
     } else {
-        dst.utcOffset = std::nullopt;
+        dst.utcOffset.reset();
     }
     if (!src["dayOfWeek"].isNull()) {
         dst.dayOfWeek = src["dayOfWeek"].as<decltype(dst.dayOfWeek)::value_type>();
     } else {
-        dst.dayOfWeek = std::nullopt;
+        dst.dayOfWeek.reset();
     }
     if (!src["calendarWeek"].isNull()) {
         dst.calendarWeek = src["calendarWeek"].as<decltype(dst.calendarWeek)::value_type>();
     } else {
-        dst.calendarWeek = std::nullopt;
+        dst.calendarWeek.reset();
     }
 
 }
 
 bool convertToJson(const TimeDistributorDataType &src, JsonVariant &dst)
 {
-    if (src.isTimeDistributor) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.isTimeDistributor.has_value()) {
         dst["isTimeDistributor"] = *src.isTimeDistributor;
     }
-    if (src.distributorPriority) {
+    if (src.distributorPriority.has_value()) {
         dst["distributorPriority"] = *src.distributorPriority;
     }
 
@@ -27454,22 +28951,25 @@ void convertFromJson(const JsonVariantConst &src, TimeDistributorDataType &dst)
     if (!src["isTimeDistributor"].isNull()) {
         dst.isTimeDistributor = src["isTimeDistributor"].as<decltype(dst.isTimeDistributor)::value_type>();
     } else {
-        dst.isTimeDistributor = std::nullopt;
+        dst.isTimeDistributor.reset();
     }
     if (!src["distributorPriority"].isNull()) {
         dst.distributorPriority = src["distributorPriority"].as<decltype(dst.distributorPriority)::value_type>();
     } else {
-        dst.distributorPriority = std::nullopt;
+        dst.distributorPriority.reset();
     }
 
 }
 
 bool convertToJson(const TimeDistributorDataElementsType &src, JsonVariant &dst)
 {
-    if (src.isTimeDistributor) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.isTimeDistributor.has_value()) {
         dst["isTimeDistributor"] = *src.isTimeDistributor;
     }
-    if (src.distributorPriority) {
+    if (src.distributorPriority.has_value()) {
         dst["distributorPriority"] = *src.distributorPriority;
     }
 
@@ -27482,25 +28982,28 @@ void convertFromJson(const JsonVariantConst &src, TimeDistributorDataElementsTyp
     if (!src["isTimeDistributor"].isNull()) {
         dst.isTimeDistributor = src["isTimeDistributor"].as<decltype(dst.isTimeDistributor)::value_type>();
     } else {
-        dst.isTimeDistributor = std::nullopt;
+        dst.isTimeDistributor.reset();
     }
     if (!src["distributorPriority"].isNull()) {
         dst.distributorPriority = src["distributorPriority"].as<decltype(dst.distributorPriority)::value_type>();
     } else {
-        dst.distributorPriority = std::nullopt;
+        dst.distributorPriority.reset();
     }
 
 }
 
 bool convertToJson(const TimePrecisionDataType &src, JsonVariant &dst)
 {
-    if (src.isSynchronised) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.isSynchronised.has_value()) {
         dst["isSynchronised"] = *src.isSynchronised;
     }
-    if (src.lastSyncAt) {
+    if (src.lastSyncAt.has_value()) {
         dst["lastSyncAt"] = *src.lastSyncAt;
     }
-    if (src.clockDrift) {
+    if (src.clockDrift.has_value()) {
         dst["clockDrift"] = *src.clockDrift;
     }
 
@@ -27513,30 +29016,33 @@ void convertFromJson(const JsonVariantConst &src, TimePrecisionDataType &dst)
     if (!src["isSynchronised"].isNull()) {
         dst.isSynchronised = src["isSynchronised"].as<decltype(dst.isSynchronised)::value_type>();
     } else {
-        dst.isSynchronised = std::nullopt;
+        dst.isSynchronised.reset();
     }
     if (!src["lastSyncAt"].isNull()) {
         dst.lastSyncAt = src["lastSyncAt"].as<decltype(dst.lastSyncAt)::value_type>();
     } else {
-        dst.lastSyncAt = std::nullopt;
+        dst.lastSyncAt.reset();
     }
     if (!src["clockDrift"].isNull()) {
         dst.clockDrift = src["clockDrift"].as<decltype(dst.clockDrift)::value_type>();
     } else {
-        dst.clockDrift = std::nullopt;
+        dst.clockDrift.reset();
     }
 
 }
 
 bool convertToJson(const TimePrecisionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.isSynchronised) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.isSynchronised.has_value()) {
         dst["isSynchronised"] = *src.isSynchronised;
     }
-    if (src.lastSyncAt) {
+    if (src.lastSyncAt.has_value()) {
         dst["lastSyncAt"] = *src.lastSyncAt;
     }
-    if (src.clockDrift) {
+    if (src.clockDrift.has_value()) {
         dst["clockDrift"] = *src.clockDrift;
     }
 
@@ -27549,17 +29055,17 @@ void convertFromJson(const JsonVariantConst &src, TimePrecisionDataElementsType 
     if (!src["isSynchronised"].isNull()) {
         dst.isSynchronised = src["isSynchronised"].as<decltype(dst.isSynchronised)::value_type>();
     } else {
-        dst.isSynchronised = std::nullopt;
+        dst.isSynchronised.reset();
     }
     if (!src["lastSyncAt"].isNull()) {
         dst.lastSyncAt = src["lastSyncAt"].as<decltype(dst.lastSyncAt)::value_type>();
     } else {
-        dst.lastSyncAt = std::nullopt;
+        dst.lastSyncAt.reset();
     }
     if (!src["clockDrift"].isNull()) {
         dst.clockDrift = src["clockDrift"].as<decltype(dst.clockDrift)::value_type>();
     } else {
-        dst.clockDrift = std::nullopt;
+        dst.clockDrift.reset();
     }
 
 }
@@ -27588,25 +29094,28 @@ void convertFromJson(const JsonVariantConst &src, TimeDistributorEnquiryCallElem
 
 bool convertToJson(const DeviceDiagnosisStateDataType &src, JsonVariant &dst)
 {
-    if (src.timestamp) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.operatingState) {
+    if (src.operatingState.has_value()) {
         dst["operatingState"] = *src.operatingState;
     }
-    if (src.vendorStateCode) {
+    if (src.vendorStateCode.has_value()) {
         dst["vendorStateCode"] = *src.vendorStateCode;
     }
-    if (src.lastErrorCode) {
+    if (src.lastErrorCode.has_value()) {
         dst["lastErrorCode"] = *src.lastErrorCode;
     }
-    if (src.upTime) {
+    if (src.upTime.has_value()) {
         dst["upTime"] = *src.upTime;
     }
-    if (src.totalUpTime) {
+    if (src.totalUpTime.has_value()) {
         dst["totalUpTime"] = *src.totalUpTime;
     }
-    if (src.powerSupplyCondition) {
+    if (src.powerSupplyCondition.has_value()) {
         dst["powerSupplyCondition"] = *src.powerSupplyCondition;
     }
 
@@ -27619,62 +29128,65 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisStateDataType &
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["operatingState"].isNull()) {
         dst.operatingState = src["operatingState"].as<decltype(dst.operatingState)::value_type>();
     } else {
-        dst.operatingState = std::nullopt;
+        dst.operatingState.reset();
     }
     if (!src["vendorStateCode"].isNull()) {
         dst.vendorStateCode = src["vendorStateCode"].as<decltype(dst.vendorStateCode)::value_type>();
     } else {
-        dst.vendorStateCode = std::nullopt;
+        dst.vendorStateCode.reset();
     }
     if (!src["lastErrorCode"].isNull()) {
         dst.lastErrorCode = src["lastErrorCode"].as<decltype(dst.lastErrorCode)::value_type>();
     } else {
-        dst.lastErrorCode = std::nullopt;
+        dst.lastErrorCode.reset();
     }
     if (!src["upTime"].isNull()) {
         dst.upTime = src["upTime"].as<decltype(dst.upTime)::value_type>();
     } else {
-        dst.upTime = std::nullopt;
+        dst.upTime.reset();
     }
     if (!src["totalUpTime"].isNull()) {
         dst.totalUpTime = src["totalUpTime"].as<decltype(dst.totalUpTime)::value_type>();
     } else {
-        dst.totalUpTime = std::nullopt;
+        dst.totalUpTime.reset();
     }
     if (!src["powerSupplyCondition"].isNull()) {
         dst.powerSupplyCondition = src["powerSupplyCondition"].as<decltype(dst.powerSupplyCondition)::value_type>();
     } else {
-        dst.powerSupplyCondition = std::nullopt;
+        dst.powerSupplyCondition.reset();
     }
 
 }
 
 bool convertToJson(const DeviceDiagnosisStateDataElementsType &src, JsonVariant &dst)
 {
-    if (src.timestamp) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.operatingState) {
+    if (src.operatingState.has_value()) {
         dst["operatingState"] = *src.operatingState;
     }
-    if (src.vendorStateCode) {
+    if (src.vendorStateCode.has_value()) {
         dst["vendorStateCode"] = *src.vendorStateCode;
     }
-    if (src.lastErrorCode) {
+    if (src.lastErrorCode.has_value()) {
         dst["lastErrorCode"] = *src.lastErrorCode;
     }
-    if (src.upTime) {
+    if (src.upTime.has_value()) {
         dst["upTime"] = *src.upTime;
     }
-    if (src.totalUpTime) {
+    if (src.totalUpTime.has_value()) {
         dst["totalUpTime"] = *src.totalUpTime;
     }
-    if (src.powerSupplyCondition) {
+    if (src.powerSupplyCondition.has_value()) {
         dst["powerSupplyCondition"] = *src.powerSupplyCondition;
     }
 
@@ -27687,50 +29199,53 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisStateDataElemen
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["operatingState"].isNull()) {
         dst.operatingState = src["operatingState"].as<decltype(dst.operatingState)::value_type>();
     } else {
-        dst.operatingState = std::nullopt;
+        dst.operatingState.reset();
     }
     if (!src["vendorStateCode"].isNull()) {
         dst.vendorStateCode = src["vendorStateCode"].as<decltype(dst.vendorStateCode)::value_type>();
     } else {
-        dst.vendorStateCode = std::nullopt;
+        dst.vendorStateCode.reset();
     }
     if (!src["lastErrorCode"].isNull()) {
         dst.lastErrorCode = src["lastErrorCode"].as<decltype(dst.lastErrorCode)::value_type>();
     } else {
-        dst.lastErrorCode = std::nullopt;
+        dst.lastErrorCode.reset();
     }
     if (!src["upTime"].isNull()) {
         dst.upTime = src["upTime"].as<decltype(dst.upTime)::value_type>();
     } else {
-        dst.upTime = std::nullopt;
+        dst.upTime.reset();
     }
     if (!src["totalUpTime"].isNull()) {
         dst.totalUpTime = src["totalUpTime"].as<decltype(dst.totalUpTime)::value_type>();
     } else {
-        dst.totalUpTime = std::nullopt;
+        dst.totalUpTime.reset();
     }
     if (!src["powerSupplyCondition"].isNull()) {
         dst.powerSupplyCondition = src["powerSupplyCondition"].as<decltype(dst.powerSupplyCondition)::value_type>();
     } else {
-        dst.powerSupplyCondition = std::nullopt;
+        dst.powerSupplyCondition.reset();
     }
 
 }
 
 bool convertToJson(const DeviceDiagnosisHeartbeatDataType &src, JsonVariant &dst)
 {
-    if (src.timestamp) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.heartbeatCounter) {
+    if (src.heartbeatCounter.has_value()) {
         dst["heartbeatCounter"] = *src.heartbeatCounter;
     }
-    if (src.heartbeatTimeout) {
+    if (src.heartbeatTimeout.has_value()) {
         dst["heartbeatTimeout"] = *src.heartbeatTimeout;
     }
 
@@ -27743,30 +29258,33 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisHeartbeatDataTy
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["heartbeatCounter"].isNull()) {
         dst.heartbeatCounter = src["heartbeatCounter"].as<decltype(dst.heartbeatCounter)::value_type>();
     } else {
-        dst.heartbeatCounter = std::nullopt;
+        dst.heartbeatCounter.reset();
     }
     if (!src["heartbeatTimeout"].isNull()) {
         dst.heartbeatTimeout = src["heartbeatTimeout"].as<decltype(dst.heartbeatTimeout)::value_type>();
     } else {
-        dst.heartbeatTimeout = std::nullopt;
+        dst.heartbeatTimeout.reset();
     }
 
 }
 
 bool convertToJson(const DeviceDiagnosisHeartbeatDataElementsType &src, JsonVariant &dst)
 {
-    if (src.timestamp) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.heartbeatCounter) {
+    if (src.heartbeatCounter.has_value()) {
         dst["heartbeatCounter"] = *src.heartbeatCounter;
     }
-    if (src.heartbeatTimeout) {
+    if (src.heartbeatTimeout.has_value()) {
         dst["heartbeatTimeout"] = *src.heartbeatTimeout;
     }
 
@@ -27779,33 +29297,36 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisHeartbeatDataEl
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["heartbeatCounter"].isNull()) {
         dst.heartbeatCounter = src["heartbeatCounter"].as<decltype(dst.heartbeatCounter)::value_type>();
     } else {
-        dst.heartbeatCounter = std::nullopt;
+        dst.heartbeatCounter.reset();
     }
     if (!src["heartbeatTimeout"].isNull()) {
         dst.heartbeatTimeout = src["heartbeatTimeout"].as<decltype(dst.heartbeatTimeout)::value_type>();
     } else {
-        dst.heartbeatTimeout = std::nullopt;
+        dst.heartbeatTimeout.reset();
     }
 
 }
 
 bool convertToJson(const DeviceDiagnosisServiceDataType &src, JsonVariant &dst)
 {
-    if (src.timestamp) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.installationTime) {
+    if (src.installationTime.has_value()) {
         dst["installationTime"] = *src.installationTime;
     }
-    if (src.bootCounter) {
+    if (src.bootCounter.has_value()) {
         dst["bootCounter"] = *src.bootCounter;
     }
-    if (src.nextService) {
+    if (src.nextService.has_value()) {
         dst["nextService"] = *src.nextService;
     }
 
@@ -27818,38 +29339,41 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisServiceDataType
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["installationTime"].isNull()) {
         dst.installationTime = src["installationTime"].as<decltype(dst.installationTime)::value_type>();
     } else {
-        dst.installationTime = std::nullopt;
+        dst.installationTime.reset();
     }
     if (!src["bootCounter"].isNull()) {
         dst.bootCounter = src["bootCounter"].as<decltype(dst.bootCounter)::value_type>();
     } else {
-        dst.bootCounter = std::nullopt;
+        dst.bootCounter.reset();
     }
     if (!src["nextService"].isNull()) {
         dst.nextService = src["nextService"].as<decltype(dst.nextService)::value_type>();
     } else {
-        dst.nextService = std::nullopt;
+        dst.nextService.reset();
     }
 
 }
 
 bool convertToJson(const DeviceDiagnosisServiceDataElementsType &src, JsonVariant &dst)
 {
-    if (src.timestamp) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
-    if (src.installationTime) {
+    if (src.installationTime.has_value()) {
         dst["installationTime"] = *src.installationTime;
     }
-    if (src.bootCounter) {
+    if (src.bootCounter.has_value()) {
         dst["bootCounter"] = *src.bootCounter;
     }
-    if (src.nextService) {
+    if (src.nextService.has_value()) {
         dst["nextService"] = *src.nextService;
     }
 
@@ -27862,50 +29386,53 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisServiceDataElem
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
     if (!src["installationTime"].isNull()) {
         dst.installationTime = src["installationTime"].as<decltype(dst.installationTime)::value_type>();
     } else {
-        dst.installationTime = std::nullopt;
+        dst.installationTime.reset();
     }
     if (!src["bootCounter"].isNull()) {
         dst.bootCounter = src["bootCounter"].as<decltype(dst.bootCounter)::value_type>();
     } else {
-        dst.bootCounter = std::nullopt;
+        dst.bootCounter.reset();
     }
     if (!src["nextService"].isNull()) {
         dst.nextService = src["nextService"].as<decltype(dst.nextService)::value_type>();
     } else {
-        dst.nextService = std::nullopt;
+        dst.nextService.reset();
     }
 
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueValueType &src, JsonVariant &dst)
 {
-    if (src.boolean) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.boolean.has_value()) {
         dst["boolean"] = *src.boolean;
     }
-    if (src.date) {
+    if (src.date.has_value()) {
         dst["date"] = *src.date;
     }
-    if (src.dateTime) {
+    if (src.dateTime.has_value()) {
         dst["dateTime"] = *src.dateTime;
     }
-    if (src.duration) {
+    if (src.duration.has_value()) {
         dst["duration"] = *src.duration;
     }
-    if (src.string) {
+    if (src.string.has_value()) {
         dst["string"] = *src.string;
     }
-    if (src.time) {
+    if (src.time.has_value()) {
         dst["time"] = *src.time;
     }
-    if (src.scaledNumber) {
+    if (src.scaledNumber.has_value()) {
         dst["scaledNumber"] = *src.scaledNumber;
     }
-    if (src.integer) {
+    if (src.integer.has_value()) {
         dst["integer"] = *src.integer;
     }
 
@@ -27918,67 +29445,70 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueVal
     if (!src["boolean"].isNull()) {
         dst.boolean = src["boolean"].as<decltype(dst.boolean)::value_type>();
     } else {
-        dst.boolean = std::nullopt;
+        dst.boolean.reset();
     }
     if (!src["date"].isNull()) {
         dst.date = src["date"].as<decltype(dst.date)::value_type>();
     } else {
-        dst.date = std::nullopt;
+        dst.date.reset();
     }
     if (!src["dateTime"].isNull()) {
         dst.dateTime = src["dateTime"].as<decltype(dst.dateTime)::value_type>();
     } else {
-        dst.dateTime = std::nullopt;
+        dst.dateTime.reset();
     }
     if (!src["duration"].isNull()) {
         dst.duration = src["duration"].as<decltype(dst.duration)::value_type>();
     } else {
-        dst.duration = std::nullopt;
+        dst.duration.reset();
     }
     if (!src["string"].isNull()) {
         dst.string = src["string"].as<decltype(dst.string)::value_type>();
     } else {
-        dst.string = std::nullopt;
+        dst.string.reset();
     }
     if (!src["time"].isNull()) {
         dst.time = src["time"].as<decltype(dst.time)::value_type>();
     } else {
-        dst.time = std::nullopt;
+        dst.time.reset();
     }
     if (!src["scaledNumber"].isNull()) {
         dst.scaledNumber = src["scaledNumber"].as<decltype(dst.scaledNumber)::value_type>();
     } else {
-        dst.scaledNumber = std::nullopt;
+        dst.scaledNumber.reset();
     }
     if (!src["integer"].isNull()) {
         dst.integer = src["integer"].as<decltype(dst.integer)::value_type>();
     } else {
-        dst.integer = std::nullopt;
+        dst.integer.reset();
     }
 
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueValueElementsType &src, JsonVariant &dst)
 {
-    if (src.boolean) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.boolean.has_value()) {
         dst["boolean"] = *src.boolean;
     }
-    if (src.date) {
+    if (src.date.has_value()) {
         dst["date"] = *src.date;
     }
-    if (src.dateTime) {
+    if (src.dateTime.has_value()) {
         dst["dateTime"] = *src.dateTime;
     }
-    if (src.duration) {
+    if (src.duration.has_value()) {
         dst["duration"] = *src.duration;
     }
-    if (src.string) {
+    if (src.string.has_value()) {
         dst["string"] = *src.string;
     }
-    if (src.time) {
+    if (src.time.has_value()) {
         dst["time"] = *src.time;
     }
-    if (src.scaledNumber) {
+    if (src.scaledNumber.has_value()) {
         dst["scaledNumber"] = *src.scaledNumber;
     }
 
@@ -27991,50 +29521,53 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueVal
     if (!src["boolean"].isNull()) {
         dst.boolean = src["boolean"].as<decltype(dst.boolean)::value_type>();
     } else {
-        dst.boolean = std::nullopt;
+        dst.boolean.reset();
     }
     if (!src["date"].isNull()) {
         dst.date = src["date"].as<decltype(dst.date)::value_type>();
     } else {
-        dst.date = std::nullopt;
+        dst.date.reset();
     }
     if (!src["dateTime"].isNull()) {
         dst.dateTime = src["dateTime"].as<decltype(dst.dateTime)::value_type>();
     } else {
-        dst.dateTime = std::nullopt;
+        dst.dateTime.reset();
     }
     if (!src["duration"].isNull()) {
         dst.duration = src["duration"].as<decltype(dst.duration)::value_type>();
     } else {
-        dst.duration = std::nullopt;
+        dst.duration.reset();
     }
     if (!src["string"].isNull()) {
         dst.string = src["string"].as<decltype(dst.string)::value_type>();
     } else {
-        dst.string = std::nullopt;
+        dst.string.reset();
     }
     if (!src["time"].isNull()) {
         dst.time = src["time"].as<decltype(dst.time)::value_type>();
     } else {
-        dst.time = std::nullopt;
+        dst.time.reset();
     }
     if (!src["scaledNumber"].isNull()) {
         dst.scaledNumber = src["scaledNumber"].as<decltype(dst.scaledNumber)::value_type>();
     } else {
-        dst.scaledNumber = std::nullopt;
+        dst.scaledNumber.reset();
     }
 
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueDataType &src, JsonVariant &dst)
 {
-    if (src.keyId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.keyId.has_value()) {
         dst["keyId"] = *src.keyId;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
-    if (src.isValueChangeable) {
+    if (src.isValueChangeable.has_value()) {
         dst["isValueChangeable"] = *src.isValueChangeable;
     }
 
@@ -28047,30 +29580,33 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDat
     if (!src["keyId"].isNull()) {
         dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
     } else {
-        dst.keyId = std::nullopt;
+        dst.keyId.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
     if (!src["isValueChangeable"].isNull()) {
         dst.isValueChangeable = src["isValueChangeable"].as<decltype(dst.isValueChangeable)::value_type>();
     } else {
-        dst.isValueChangeable = std::nullopt;
+        dst.isValueChangeable.reset();
     }
 
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueDataElementsType &src, JsonVariant &dst)
 {
-    if (src.keyId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.keyId.has_value()) {
         dst["keyId"] = *src.keyId;
     }
-    if (src.value) {
+    if (src.value.has_value()) {
         dst["value"] = *src.value;
     }
-    if (src.isValueChangeable) {
+    if (src.isValueChangeable.has_value()) {
         dst["isValueChangeable"] = *src.isValueChangeable;
     }
 
@@ -28083,24 +29619,27 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDat
     if (!src["keyId"].isNull()) {
         dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
     } else {
-        dst.keyId = std::nullopt;
+        dst.keyId.reset();
     }
     if (!src["value"].isNull()) {
         dst.value = src["value"].as<decltype(dst.value)::value_type>();
     } else {
-        dst.value = std::nullopt;
+        dst.value.reset();
     }
     if (!src["isValueChangeable"].isNull()) {
         dst.isValueChangeable = src["isValueChangeable"].as<decltype(dst.isValueChangeable)::value_type>();
     } else {
-        dst.isValueChangeable = std::nullopt;
+        dst.isValueChangeable.reset();
     }
 
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueListDataType &src, JsonVariant &dst)
 {
-    if (src.deviceConfigurationKeyValueData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.deviceConfigurationKeyValueData.has_value()) {
         dst["deviceConfigurationKeyValueData"] = *src.deviceConfigurationKeyValueData;
     }
 
@@ -28113,14 +29652,17 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueLis
     if (!src["deviceConfigurationKeyValueData"].isNull()) {
         dst.deviceConfigurationKeyValueData = src["deviceConfigurationKeyValueData"].as<decltype(dst.deviceConfigurationKeyValueData)::value_type>();
     } else {
-        dst.deviceConfigurationKeyValueData = std::nullopt;
+        dst.deviceConfigurationKeyValueData.reset();
     }
 
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.keyId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.keyId.has_value()) {
         dst["keyId"] = *src.keyId;
     }
 
@@ -28133,29 +29675,32 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueLis
     if (!src["keyId"].isNull()) {
         dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
     } else {
-        dst.keyId = std::nullopt;
+        dst.keyId.reset();
     }
 
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.keyId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.keyId.has_value()) {
         dst["keyId"] = *src.keyId;
     }
-    if (src.keyName) {
+    if (src.keyName.has_value()) {
         dst["keyName"] = *src.keyName;
     }
-    if (src.valueType) {
+    if (src.valueType.has_value()) {
         dst["valueType"] = *src.valueType;
     }
-    if (src.unit) {
+    if (src.unit.has_value()) {
         dst["unit"] = *src.unit;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -28168,54 +29713,57 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDes
     if (!src["keyId"].isNull()) {
         dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
     } else {
-        dst.keyId = std::nullopt;
+        dst.keyId.reset();
     }
     if (!src["keyName"].isNull()) {
         dst.keyName = src["keyName"].as<decltype(dst.keyName)::value_type>();
     } else {
-        dst.keyName = std::nullopt;
+        dst.keyName.reset();
     }
     if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
-        dst.valueType = std::nullopt;
+        dst.valueType.reset();
     }
     if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
-        dst.unit = std::nullopt;
+        dst.unit.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.keyId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.keyId.has_value()) {
         dst["keyId"] = *src.keyId;
     }
-    if (src.keyName) {
+    if (src.keyName.has_value()) {
         dst["keyName"] = *src.keyName;
     }
-    if (src.valueType) {
+    if (src.valueType.has_value()) {
         dst["valueType"] = *src.valueType;
     }
-    if (src.unit) {
+    if (src.unit.has_value()) {
         dst["unit"] = *src.unit;
     }
-    if (src.label) {
+    if (src.label.has_value()) {
         dst["label"] = *src.label;
     }
-    if (src.description) {
+    if (src.description.has_value()) {
         dst["description"] = *src.description;
     }
 
@@ -28228,39 +29776,42 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDes
     if (!src["keyId"].isNull()) {
         dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
     } else {
-        dst.keyId = std::nullopt;
+        dst.keyId.reset();
     }
     if (!src["keyName"].isNull()) {
         dst.keyName = src["keyName"].as<decltype(dst.keyName)::value_type>();
     } else {
-        dst.keyName = std::nullopt;
+        dst.keyName.reset();
     }
     if (!src["valueType"].isNull()) {
         dst.valueType = src["valueType"].as<decltype(dst.valueType)::value_type>();
     } else {
-        dst.valueType = std::nullopt;
+        dst.valueType.reset();
     }
     if (!src["unit"].isNull()) {
         dst.unit = src["unit"].as<decltype(dst.unit)::value_type>();
     } else {
-        dst.unit = std::nullopt;
+        dst.unit.reset();
     }
     if (!src["label"].isNull()) {
         dst.label = src["label"].as<decltype(dst.label)::value_type>();
     } else {
-        dst.label = std::nullopt;
+        dst.label.reset();
     }
     if (!src["description"].isNull()) {
         dst.description = src["description"].as<decltype(dst.description)::value_type>();
     } else {
-        dst.description = std::nullopt;
+        dst.description.reset();
     }
 
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueDescriptionListDataType &src, JsonVariant &dst)
 {
-    if (src.deviceConfigurationKeyValueDescriptionData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.deviceConfigurationKeyValueDescriptionData.has_value()) {
         dst["deviceConfigurationKeyValueDescriptionData"] = *src.deviceConfigurationKeyValueDescriptionData;
     }
 
@@ -28273,17 +29824,20 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDes
     if (!src["deviceConfigurationKeyValueDescriptionData"].isNull()) {
         dst.deviceConfigurationKeyValueDescriptionData = src["deviceConfigurationKeyValueDescriptionData"].as<decltype(dst.deviceConfigurationKeyValueDescriptionData)::value_type>();
     } else {
-        dst.deviceConfigurationKeyValueDescriptionData = std::nullopt;
+        dst.deviceConfigurationKeyValueDescriptionData.reset();
     }
 
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueDescriptionListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.keyId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.keyId.has_value()) {
         dst["keyId"] = *src.keyId;
     }
-    if (src.keyName) {
+    if (src.keyName.has_value()) {
         dst["keyName"] = *src.keyName;
     }
 
@@ -28296,28 +29850,31 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDes
     if (!src["keyId"].isNull()) {
         dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
     } else {
-        dst.keyId = std::nullopt;
+        dst.keyId.reset();
     }
     if (!src["keyName"].isNull()) {
         dst.keyName = src["keyName"].as<decltype(dst.keyName)::value_type>();
     } else {
-        dst.keyName = std::nullopt;
+        dst.keyName.reset();
     }
 
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueConstraintsDataType &src, JsonVariant &dst)
 {
-    if (src.keyId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.keyId.has_value()) {
         dst["keyId"] = *src.keyId;
     }
-    if (src.valueRangeMin) {
+    if (src.valueRangeMin.has_value()) {
         dst["valueRangeMin"] = *src.valueRangeMin;
     }
-    if (src.valueRangeMax) {
+    if (src.valueRangeMax.has_value()) {
         dst["valueRangeMax"] = *src.valueRangeMax;
     }
-    if (src.valueStepSize) {
+    if (src.valueStepSize.has_value()) {
         dst["valueStepSize"] = *src.valueStepSize;
     }
 
@@ -28330,38 +29887,41 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueCon
     if (!src["keyId"].isNull()) {
         dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
     } else {
-        dst.keyId = std::nullopt;
+        dst.keyId.reset();
     }
     if (!src["valueRangeMin"].isNull()) {
         dst.valueRangeMin = src["valueRangeMin"].as<decltype(dst.valueRangeMin)::value_type>();
     } else {
-        dst.valueRangeMin = std::nullopt;
+        dst.valueRangeMin.reset();
     }
     if (!src["valueRangeMax"].isNull()) {
         dst.valueRangeMax = src["valueRangeMax"].as<decltype(dst.valueRangeMax)::value_type>();
     } else {
-        dst.valueRangeMax = std::nullopt;
+        dst.valueRangeMax.reset();
     }
     if (!src["valueStepSize"].isNull()) {
         dst.valueStepSize = src["valueStepSize"].as<decltype(dst.valueStepSize)::value_type>();
     } else {
-        dst.valueStepSize = std::nullopt;
+        dst.valueStepSize.reset();
     }
 
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueConstraintsDataElementsType &src, JsonVariant &dst)
 {
-    if (src.keyId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.keyId.has_value()) {
         dst["keyId"] = *src.keyId;
     }
-    if (src.valueRangeMin) {
+    if (src.valueRangeMin.has_value()) {
         dst["valueRangeMin"] = *src.valueRangeMin;
     }
-    if (src.valueRangeMax) {
+    if (src.valueRangeMax.has_value()) {
         dst["valueRangeMax"] = *src.valueRangeMax;
     }
-    if (src.valueStepSize) {
+    if (src.valueStepSize.has_value()) {
         dst["valueStepSize"] = *src.valueStepSize;
     }
 
@@ -28374,29 +29934,32 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueCon
     if (!src["keyId"].isNull()) {
         dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
     } else {
-        dst.keyId = std::nullopt;
+        dst.keyId.reset();
     }
     if (!src["valueRangeMin"].isNull()) {
         dst.valueRangeMin = src["valueRangeMin"].as<decltype(dst.valueRangeMin)::value_type>();
     } else {
-        dst.valueRangeMin = std::nullopt;
+        dst.valueRangeMin.reset();
     }
     if (!src["valueRangeMax"].isNull()) {
         dst.valueRangeMax = src["valueRangeMax"].as<decltype(dst.valueRangeMax)::value_type>();
     } else {
-        dst.valueRangeMax = std::nullopt;
+        dst.valueRangeMax.reset();
     }
     if (!src["valueStepSize"].isNull()) {
         dst.valueStepSize = src["valueStepSize"].as<decltype(dst.valueStepSize)::value_type>();
     } else {
-        dst.valueStepSize = std::nullopt;
+        dst.valueStepSize.reset();
     }
 
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueConstraintsListDataType &src, JsonVariant &dst)
 {
-    if (src.deviceConfigurationKeyValueConstraintsData) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.deviceConfigurationKeyValueConstraintsData.has_value()) {
         dst["deviceConfigurationKeyValueConstraintsData"] = *src.deviceConfigurationKeyValueConstraintsData;
     }
 
@@ -28409,14 +29972,17 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueCon
     if (!src["deviceConfigurationKeyValueConstraintsData"].isNull()) {
         dst.deviceConfigurationKeyValueConstraintsData = src["deviceConfigurationKeyValueConstraintsData"].as<decltype(dst.deviceConfigurationKeyValueConstraintsData)::value_type>();
     } else {
-        dst.deviceConfigurationKeyValueConstraintsData = std::nullopt;
+        dst.deviceConfigurationKeyValueConstraintsData.reset();
     }
 
 }
 
 bool convertToJson(const DeviceConfigurationKeyValueConstraintsListDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.keyId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.keyId.has_value()) {
         dst["keyId"] = *src.keyId;
     }
 
@@ -28429,38 +29995,41 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueCon
     if (!src["keyId"].isNull()) {
         dst.keyId = src["keyId"].as<decltype(dst.keyId)::value_type>();
     } else {
-        dst.keyId = std::nullopt;
+        dst.keyId.reset();
     }
 
 }
 
 bool convertToJson(const HeaderType &src, JsonVariant &dst)
 {
-    if (src.specificationVersion) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.specificationVersion.has_value()) {
         dst["specificationVersion"] = *src.specificationVersion;
     }
-    if (src.addressSource) {
+    if (src.addressSource.has_value()) {
         dst["addressSource"] = *src.addressSource;
     }
-    if (src.addressDestination) {
+    if (src.addressDestination.has_value()) {
         dst["addressDestination"] = *src.addressDestination;
     }
-    if (src.addressOriginator) {
+    if (src.addressOriginator.has_value()) {
         dst["addressOriginator"] = *src.addressOriginator;
     }
-    if (src.msgCounter) {
+    if (src.msgCounter.has_value()) {
         dst["msgCounter"] = *src.msgCounter;
     }
-    if (src.msgCounterReference) {
+    if (src.msgCounterReference.has_value()) {
         dst["msgCounterReference"] = *src.msgCounterReference;
     }
-    if (src.cmdClassifier) {
+    if (src.cmdClassifier.has_value()) {
         dst["cmdClassifier"] = *src.cmdClassifier;
     }
-    if (src.ackRequest) {
+    if (src.ackRequest.has_value()) {
         dst["ackRequest"] = *src.ackRequest;
     }
-    if (src.timestamp) {
+    if (src.timestamp.has_value()) {
         dst["timestamp"] = *src.timestamp;
     }
 
@@ -28473,57 +30042,60 @@ void convertFromJson(const JsonVariantConst &src, HeaderType &dst)
     if (!src["specificationVersion"].isNull()) {
         dst.specificationVersion = src["specificationVersion"].as<decltype(dst.specificationVersion)::value_type>();
     } else {
-        dst.specificationVersion = std::nullopt;
+        dst.specificationVersion.reset();
     }
     if (!src["addressSource"].isNull()) {
         dst.addressSource = src["addressSource"].as<decltype(dst.addressSource)::value_type>();
     } else {
-        dst.addressSource = std::nullopt;
+        dst.addressSource.reset();
     }
     if (!src["addressDestination"].isNull()) {
         dst.addressDestination = src["addressDestination"].as<decltype(dst.addressDestination)::value_type>();
     } else {
-        dst.addressDestination = std::nullopt;
+        dst.addressDestination.reset();
     }
     if (!src["addressOriginator"].isNull()) {
         dst.addressOriginator = src["addressOriginator"].as<decltype(dst.addressOriginator)::value_type>();
     } else {
-        dst.addressOriginator = std::nullopt;
+        dst.addressOriginator.reset();
     }
     if (!src["msgCounter"].isNull()) {
         dst.msgCounter = src["msgCounter"].as<decltype(dst.msgCounter)::value_type>();
     } else {
-        dst.msgCounter = std::nullopt;
+        dst.msgCounter.reset();
     }
     if (!src["msgCounterReference"].isNull()) {
         dst.msgCounterReference = src["msgCounterReference"].as<decltype(dst.msgCounterReference)::value_type>();
     } else {
-        dst.msgCounterReference = std::nullopt;
+        dst.msgCounterReference.reset();
     }
     if (!src["cmdClassifier"].isNull()) {
         dst.cmdClassifier = src["cmdClassifier"].as<decltype(dst.cmdClassifier)::value_type>();
     } else {
-        dst.cmdClassifier = std::nullopt;
+        dst.cmdClassifier.reset();
     }
     if (!src["ackRequest"].isNull()) {
         dst.ackRequest = src["ackRequest"].as<decltype(dst.ackRequest)::value_type>();
     } else {
-        dst.ackRequest = std::nullopt;
+        dst.ackRequest.reset();
     }
     if (!src["timestamp"].isNull()) {
         dst.timestamp = src["timestamp"].as<decltype(dst.timestamp)::value_type>();
     } else {
-        dst.timestamp = std::nullopt;
+        dst.timestamp.reset();
     }
 
 }
 
 bool convertToJson(const CmdControlType &src, JsonVariant &dst)
 {
-    if (src.var_delete) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.var_delete.has_value()) {
         dst["delete"] = *src.var_delete;
     }
-    if (src.partial) {
+    if (src.partial.has_value()) {
         dst["partial"] = *src.partial;
     }
 
@@ -28536,25 +30108,28 @@ void convertFromJson(const JsonVariantConst &src, CmdControlType &dst)
     if (!src["delete"].isNull()) {
         dst.var_delete = src["delete"].as<decltype(dst.var_delete)::value_type>();
     } else {
-        dst.var_delete = std::nullopt;
+        dst.var_delete.reset();
     }
     if (!src["partial"].isNull()) {
         dst.partial = src["partial"].as<decltype(dst.partial)::value_type>();
     } else {
-        dst.partial = std::nullopt;
+        dst.partial.reset();
     }
 
 }
 
 bool convertToJson(const DataTunnelingHeaderType &src, JsonVariant &dst)
 {
-    if (src.purposeId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.purposeId.has_value()) {
         dst["purposeId"] = *src.purposeId;
     }
-    if (src.channelId) {
+    if (src.channelId.has_value()) {
         dst["channelId"] = *src.channelId;
     }
-    if (src.sequenceId) {
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -28567,30 +30142,33 @@ void convertFromJson(const JsonVariantConst &src, DataTunnelingHeaderType &dst)
     if (!src["purposeId"].isNull()) {
         dst.purposeId = src["purposeId"].as<decltype(dst.purposeId)::value_type>();
     } else {
-        dst.purposeId = std::nullopt;
+        dst.purposeId.reset();
     }
     if (!src["channelId"].isNull()) {
         dst.channelId = src["channelId"].as<decltype(dst.channelId)::value_type>();
     } else {
-        dst.channelId = std::nullopt;
+        dst.channelId.reset();
     }
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const DataTunnelingHeaderElementsType &src, JsonVariant &dst)
 {
-    if (src.purposeId) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.purposeId.has_value()) {
         dst["purposeId"] = *src.purposeId;
     }
-    if (src.channelId) {
+    if (src.channelId.has_value()) {
         dst["channelId"] = *src.channelId;
     }
-    if (src.sequenceId) {
+    if (src.sequenceId.has_value()) {
         dst["sequenceId"] = *src.sequenceId;
     }
 
@@ -28603,27 +30181,30 @@ void convertFromJson(const JsonVariantConst &src, DataTunnelingHeaderElementsTyp
     if (!src["purposeId"].isNull()) {
         dst.purposeId = src["purposeId"].as<decltype(dst.purposeId)::value_type>();
     } else {
-        dst.purposeId = std::nullopt;
+        dst.purposeId.reset();
     }
     if (!src["channelId"].isNull()) {
         dst.channelId = src["channelId"].as<decltype(dst.channelId)::value_type>();
     } else {
-        dst.channelId = std::nullopt;
+        dst.channelId.reset();
     }
     if (!src["sequenceId"].isNull()) {
         dst.sequenceId = src["sequenceId"].as<decltype(dst.sequenceId)::value_type>();
     } else {
-        dst.sequenceId = std::nullopt;
+        dst.sequenceId.reset();
     }
 
 }
 
 bool convertToJson(const DataTunnelingCallType &src, JsonVariant &dst)
 {
-    if (src.header) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.header.has_value()) {
         dst["header"] = *src.header;
     }
-    if (src.payload) {
+    if (src.payload.has_value()) {
         dst["payload"] = *src.payload;
     }
 
@@ -28636,22 +30217,25 @@ void convertFromJson(const JsonVariantConst &src, DataTunnelingCallType &dst)
     if (!src["header"].isNull()) {
         dst.header = src["header"].as<decltype(dst.header)::value_type>();
     } else {
-        dst.header = std::nullopt;
+        dst.header.reset();
     }
     if (!src["payload"].isNull()) {
         dst.payload = src["payload"].as<decltype(dst.payload)::value_type>();
     } else {
-        dst.payload = std::nullopt;
+        dst.payload.reset();
     }
 
 }
 
 bool convertToJson(const DataTunnelingCallElementsType &src, JsonVariant &dst)
 {
-    if (src.header) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.header.has_value()) {
         dst["header"] = *src.header;
     }
-    if (src.payload) {
+    if (src.payload.has_value()) {
         dst["payload"] = *src.payload;
     }
 
@@ -28664,25 +30248,28 @@ void convertFromJson(const JsonVariantConst &src, DataTunnelingCallElementsType 
     if (!src["header"].isNull()) {
         dst.header = src["header"].as<decltype(dst.header)::value_type>();
     } else {
-        dst.header = std::nullopt;
+        dst.header.reset();
     }
     if (!src["payload"].isNull()) {
         dst.payload = src["payload"].as<decltype(dst.payload)::value_type>();
     } else {
-        dst.payload = std::nullopt;
+        dst.payload.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveTableTierType &src, JsonVariant &dst)
 {
-    if (src.tier) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tier.has_value()) {
         dst["tier"] = *src.tier;
     }
-    if (src.boundary) {
+    if (src.boundary.has_value()) {
         dst["boundary"] = *src.boundary;
     }
-    if (src.incentive) {
+    if (src.incentive.has_value()) {
         dst["incentive"] = *src.incentive;
     }
 
@@ -28695,27 +30282,30 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableTierType &dst)
     if (!src["tier"].isNull()) {
         dst.tier = src["tier"].as<decltype(dst.tier)::value_type>();
     } else {
-        dst.tier = std::nullopt;
+        dst.tier.reset();
     }
     if (!src["boundary"].isNull()) {
         dst.boundary = src["boundary"].as<decltype(dst.boundary)::value_type>();
     } else {
-        dst.boundary = std::nullopt;
+        dst.boundary.reset();
     }
     if (!src["incentive"].isNull()) {
         dst.incentive = src["incentive"].as<decltype(dst.incentive)::value_type>();
     } else {
-        dst.incentive = std::nullopt;
+        dst.incentive.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveTableIncentiveSlotType &src, JsonVariant &dst)
 {
-    if (src.timeInterval) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeInterval.has_value()) {
         dst["timeInterval"] = *src.timeInterval;
     }
-    if (src.tier) {
+    if (src.tier.has_value()) {
         dst["tier"] = *src.tier;
     }
 
@@ -28728,22 +30318,25 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableIncentiveSlotTyp
     if (!src["timeInterval"].isNull()) {
         dst.timeInterval = src["timeInterval"].as<decltype(dst.timeInterval)::value_type>();
     } else {
-        dst.timeInterval = std::nullopt;
+        dst.timeInterval.reset();
     }
     if (!src["tier"].isNull()) {
         dst.tier = src["tier"].as<decltype(dst.tier)::value_type>();
     } else {
-        dst.tier = std::nullopt;
+        dst.tier.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveTableType &src, JsonVariant &dst)
 {
-    if (src.tariff) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariff.has_value()) {
         dst["tariff"] = *src.tariff;
     }
-    if (src.incentiveSlot) {
+    if (src.incentiveSlot.has_value()) {
         dst["incentiveSlot"] = *src.incentiveSlot;
     }
 
@@ -28756,19 +30349,22 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableType &dst)
     if (!src["tariff"].isNull()) {
         dst.tariff = src["tariff"].as<decltype(dst.tariff)::value_type>();
     } else {
-        dst.tariff = std::nullopt;
+        dst.tariff.reset();
     }
     if (!src["incentiveSlot"].isNull()) {
         dst.incentiveSlot = src["incentiveSlot"].as<decltype(dst.incentiveSlot)::value_type>();
     } else {
-        dst.incentiveSlot = std::nullopt;
+        dst.incentiveSlot.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveTableDataType &src, JsonVariant &dst)
 {
-    if (src.incentiveTable) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.incentiveTable.has_value()) {
         dst["incentiveTable"] = *src.incentiveTable;
     }
 
@@ -28781,20 +30377,23 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDataType &dst)
     if (!src["incentiveTable"].isNull()) {
         dst.incentiveTable = src["incentiveTable"].as<decltype(dst.incentiveTable)::value_type>();
     } else {
-        dst.incentiveTable = std::nullopt;
+        dst.incentiveTable.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveTableTierElementsType &src, JsonVariant &dst)
 {
-    if (src.tier) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tier.has_value()) {
         dst["tier"] = *src.tier;
     }
-    if (src.boundary) {
+    if (src.boundary.has_value()) {
         dst["boundary"] = *src.boundary;
     }
-    if (src.incentive) {
+    if (src.incentive.has_value()) {
         dst["incentive"] = *src.incentive;
     }
 
@@ -28807,27 +30406,30 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableTierElementsType
     if (!src["tier"].isNull()) {
         dst.tier = src["tier"].as<decltype(dst.tier)::value_type>();
     } else {
-        dst.tier = std::nullopt;
+        dst.tier.reset();
     }
     if (!src["boundary"].isNull()) {
         dst.boundary = src["boundary"].as<decltype(dst.boundary)::value_type>();
     } else {
-        dst.boundary = std::nullopt;
+        dst.boundary.reset();
     }
     if (!src["incentive"].isNull()) {
         dst.incentive = src["incentive"].as<decltype(dst.incentive)::value_type>();
     } else {
-        dst.incentive = std::nullopt;
+        dst.incentive.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveTableIncentiveSlotElementsType &src, JsonVariant &dst)
 {
-    if (src.timeInterval) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.timeInterval.has_value()) {
         dst["timeInterval"] = *src.timeInterval;
     }
-    if (src.tier) {
+    if (src.tier.has_value()) {
         dst["tier"] = *src.tier;
     }
 
@@ -28840,22 +30442,25 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableIncentiveSlotEle
     if (!src["timeInterval"].isNull()) {
         dst.timeInterval = src["timeInterval"].as<decltype(dst.timeInterval)::value_type>();
     } else {
-        dst.timeInterval = std::nullopt;
+        dst.timeInterval.reset();
     }
     if (!src["tier"].isNull()) {
         dst.tier = src["tier"].as<decltype(dst.tier)::value_type>();
     } else {
-        dst.tier = std::nullopt;
+        dst.tier.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveTableElementsType &src, JsonVariant &dst)
 {
-    if (src.tariff) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariff.has_value()) {
         dst["tariff"] = *src.tariff;
     }
-    if (src.incentiveSlot) {
+    if (src.incentiveSlot.has_value()) {
         dst["incentiveSlot"] = *src.incentiveSlot;
     }
 
@@ -28868,19 +30473,22 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableElementsType &ds
     if (!src["tariff"].isNull()) {
         dst.tariff = src["tariff"].as<decltype(dst.tariff)::value_type>();
     } else {
-        dst.tariff = std::nullopt;
+        dst.tariff.reset();
     }
     if (!src["incentiveSlot"].isNull()) {
         dst.incentiveSlot = src["incentiveSlot"].as<decltype(dst.incentiveSlot)::value_type>();
     } else {
-        dst.incentiveSlot = std::nullopt;
+        dst.incentiveSlot.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveTableDataElementsType &src, JsonVariant &dst)
 {
-    if (src.incentiveTable) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.incentiveTable.has_value()) {
         dst["incentiveTable"] = *src.incentiveTable;
     }
 
@@ -28893,14 +30501,17 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDataElementsType
     if (!src["incentiveTable"].isNull()) {
         dst.incentiveTable = src["incentiveTable"].as<decltype(dst.incentiveTable)::value_type>();
     } else {
-        dst.incentiveTable = std::nullopt;
+        dst.incentiveTable.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveTableDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.tariff) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariff.has_value()) {
         dst["tariff"] = *src.tariff;
     }
 
@@ -28913,20 +30524,23 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDataSelectorsTyp
     if (!src["tariff"].isNull()) {
         dst.tariff = src["tariff"].as<decltype(dst.tariff)::value_type>();
     } else {
-        dst.tariff = std::nullopt;
+        dst.tariff.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveTableDescriptionTierType &src, JsonVariant &dst)
 {
-    if (src.tierDescription) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tierDescription.has_value()) {
         dst["tierDescription"] = *src.tierDescription;
     }
-    if (src.boundaryDescription) {
+    if (src.boundaryDescription.has_value()) {
         dst["boundaryDescription"] = *src.boundaryDescription;
     }
-    if (src.incentiveDescription) {
+    if (src.incentiveDescription.has_value()) {
         dst["incentiveDescription"] = *src.incentiveDescription;
     }
 
@@ -28939,27 +30553,30 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionTierT
     if (!src["tierDescription"].isNull()) {
         dst.tierDescription = src["tierDescription"].as<decltype(dst.tierDescription)::value_type>();
     } else {
-        dst.tierDescription = std::nullopt;
+        dst.tierDescription.reset();
     }
     if (!src["boundaryDescription"].isNull()) {
         dst.boundaryDescription = src["boundaryDescription"].as<decltype(dst.boundaryDescription)::value_type>();
     } else {
-        dst.boundaryDescription = std::nullopt;
+        dst.boundaryDescription.reset();
     }
     if (!src["incentiveDescription"].isNull()) {
         dst.incentiveDescription = src["incentiveDescription"].as<decltype(dst.incentiveDescription)::value_type>();
     } else {
-        dst.incentiveDescription = std::nullopt;
+        dst.incentiveDescription.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveTableDescriptionType &src, JsonVariant &dst)
 {
-    if (src.tariffDescription) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariffDescription.has_value()) {
         dst["tariffDescription"] = *src.tariffDescription;
     }
-    if (src.tier) {
+    if (src.tier.has_value()) {
         dst["tier"] = *src.tier;
     }
 
@@ -28972,19 +30589,22 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionType 
     if (!src["tariffDescription"].isNull()) {
         dst.tariffDescription = src["tariffDescription"].as<decltype(dst.tariffDescription)::value_type>();
     } else {
-        dst.tariffDescription = std::nullopt;
+        dst.tariffDescription.reset();
     }
     if (!src["tier"].isNull()) {
         dst.tier = src["tier"].as<decltype(dst.tier)::value_type>();
     } else {
-        dst.tier = std::nullopt;
+        dst.tier.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveTableDescriptionDataType &src, JsonVariant &dst)
 {
-    if (src.incentiveTableDescription) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.incentiveTableDescription.has_value()) {
         dst["incentiveTableDescription"] = *src.incentiveTableDescription;
     }
 
@@ -28997,20 +30617,23 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionDataT
     if (!src["incentiveTableDescription"].isNull()) {
         dst.incentiveTableDescription = src["incentiveTableDescription"].as<decltype(dst.incentiveTableDescription)::value_type>();
     } else {
-        dst.incentiveTableDescription = std::nullopt;
+        dst.incentiveTableDescription.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveTableDescriptionTierElementsType &src, JsonVariant &dst)
 {
-    if (src.tierDescription) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tierDescription.has_value()) {
         dst["tierDescription"] = *src.tierDescription;
     }
-    if (src.boundaryDescription) {
+    if (src.boundaryDescription.has_value()) {
         dst["boundaryDescription"] = *src.boundaryDescription;
     }
-    if (src.incentiveDescription) {
+    if (src.incentiveDescription.has_value()) {
         dst["incentiveDescription"] = *src.incentiveDescription;
     }
 
@@ -29023,27 +30646,30 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionTierE
     if (!src["tierDescription"].isNull()) {
         dst.tierDescription = src["tierDescription"].as<decltype(dst.tierDescription)::value_type>();
     } else {
-        dst.tierDescription = std::nullopt;
+        dst.tierDescription.reset();
     }
     if (!src["boundaryDescription"].isNull()) {
         dst.boundaryDescription = src["boundaryDescription"].as<decltype(dst.boundaryDescription)::value_type>();
     } else {
-        dst.boundaryDescription = std::nullopt;
+        dst.boundaryDescription.reset();
     }
     if (!src["incentiveDescription"].isNull()) {
         dst.incentiveDescription = src["incentiveDescription"].as<decltype(dst.incentiveDescription)::value_type>();
     } else {
-        dst.incentiveDescription = std::nullopt;
+        dst.incentiveDescription.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveTableDescriptionElementsType &src, JsonVariant &dst)
 {
-    if (src.tariffDescription) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariffDescription.has_value()) {
         dst["tariffDescription"] = *src.tariffDescription;
     }
-    if (src.tier) {
+    if (src.tier.has_value()) {
         dst["tier"] = *src.tier;
     }
 
@@ -29056,19 +30682,22 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionEleme
     if (!src["tariffDescription"].isNull()) {
         dst.tariffDescription = src["tariffDescription"].as<decltype(dst.tariffDescription)::value_type>();
     } else {
-        dst.tariffDescription = std::nullopt;
+        dst.tariffDescription.reset();
     }
     if (!src["tier"].isNull()) {
         dst.tier = src["tier"].as<decltype(dst.tier)::value_type>();
     } else {
-        dst.tier = std::nullopt;
+        dst.tier.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveTableDescriptionDataElementsType &src, JsonVariant &dst)
 {
-    if (src.incentiveTableDescription) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.incentiveTableDescription.has_value()) {
         dst["incentiveTableDescription"] = *src.incentiveTableDescription;
     }
 
@@ -29081,14 +30710,17 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionDataE
     if (!src["incentiveTableDescription"].isNull()) {
         dst.incentiveTableDescription = src["incentiveTableDescription"].as<decltype(dst.incentiveTableDescription)::value_type>();
     } else {
-        dst.incentiveTableDescription = std::nullopt;
+        dst.incentiveTableDescription.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveTableDescriptionDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.tariffDescription) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariffDescription.has_value()) {
         dst["tariffDescription"] = *src.tariffDescription;
     }
 
@@ -29101,20 +30733,23 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableDescriptionDataS
     if (!src["tariffDescription"].isNull()) {
         dst.tariffDescription = src["tariffDescription"].as<decltype(dst.tariffDescription)::value_type>();
     } else {
-        dst.tariffDescription = std::nullopt;
+        dst.tariffDescription.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveTableConstraintsType &src, JsonVariant &dst)
 {
-    if (src.tariff) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariff.has_value()) {
         dst["tariff"] = *src.tariff;
     }
-    if (src.tariffConstraints) {
+    if (src.tariffConstraints.has_value()) {
         dst["tariffConstraints"] = *src.tariffConstraints;
     }
-    if (src.incentiveSlotConstraints) {
+    if (src.incentiveSlotConstraints.has_value()) {
         dst["incentiveSlotConstraints"] = *src.incentiveSlotConstraints;
     }
 
@@ -29127,24 +30762,27 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsType 
     if (!src["tariff"].isNull()) {
         dst.tariff = src["tariff"].as<decltype(dst.tariff)::value_type>();
     } else {
-        dst.tariff = std::nullopt;
+        dst.tariff.reset();
     }
     if (!src["tariffConstraints"].isNull()) {
         dst.tariffConstraints = src["tariffConstraints"].as<decltype(dst.tariffConstraints)::value_type>();
     } else {
-        dst.tariffConstraints = std::nullopt;
+        dst.tariffConstraints.reset();
     }
     if (!src["incentiveSlotConstraints"].isNull()) {
         dst.incentiveSlotConstraints = src["incentiveSlotConstraints"].as<decltype(dst.incentiveSlotConstraints)::value_type>();
     } else {
-        dst.incentiveSlotConstraints = std::nullopt;
+        dst.incentiveSlotConstraints.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveTableConstraintsDataType &src, JsonVariant &dst)
 {
-    if (src.incentiveTableConstraints) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.incentiveTableConstraints.has_value()) {
         dst["incentiveTableConstraints"] = *src.incentiveTableConstraints;
     }
 
@@ -29157,20 +30795,23 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsDataT
     if (!src["incentiveTableConstraints"].isNull()) {
         dst.incentiveTableConstraints = src["incentiveTableConstraints"].as<decltype(dst.incentiveTableConstraints)::value_type>();
     } else {
-        dst.incentiveTableConstraints = std::nullopt;
+        dst.incentiveTableConstraints.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveTableConstraintsElementsType &src, JsonVariant &dst)
 {
-    if (src.tariff) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariff.has_value()) {
         dst["tariff"] = *src.tariff;
     }
-    if (src.tariffConstraints) {
+    if (src.tariffConstraints.has_value()) {
         dst["tariffConstraints"] = *src.tariffConstraints;
     }
-    if (src.incentiveSlotConstraints) {
+    if (src.incentiveSlotConstraints.has_value()) {
         dst["incentiveSlotConstraints"] = *src.incentiveSlotConstraints;
     }
 
@@ -29183,24 +30824,27 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsEleme
     if (!src["tariff"].isNull()) {
         dst.tariff = src["tariff"].as<decltype(dst.tariff)::value_type>();
     } else {
-        dst.tariff = std::nullopt;
+        dst.tariff.reset();
     }
     if (!src["tariffConstraints"].isNull()) {
         dst.tariffConstraints = src["tariffConstraints"].as<decltype(dst.tariffConstraints)::value_type>();
     } else {
-        dst.tariffConstraints = std::nullopt;
+        dst.tariffConstraints.reset();
     }
     if (!src["incentiveSlotConstraints"].isNull()) {
         dst.incentiveSlotConstraints = src["incentiveSlotConstraints"].as<decltype(dst.incentiveSlotConstraints)::value_type>();
     } else {
-        dst.incentiveSlotConstraints = std::nullopt;
+        dst.incentiveSlotConstraints.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveTableConstraintsDataElementsType &src, JsonVariant &dst)
 {
-    if (src.incentiveTableConstraints) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.incentiveTableConstraints.has_value()) {
         dst["incentiveTableConstraints"] = *src.incentiveTableConstraints;
     }
 
@@ -29213,14 +30857,17 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsDataE
     if (!src["incentiveTableConstraints"].isNull()) {
         dst.incentiveTableConstraints = src["incentiveTableConstraints"].as<decltype(dst.incentiveTableConstraints)::value_type>();
     } else {
-        dst.incentiveTableConstraints = std::nullopt;
+        dst.incentiveTableConstraints.reset();
     }
 
 }
 
 bool convertToJson(const IncentiveTableConstraintsDataSelectorsType &src, JsonVariant &dst)
 {
-    if (src.tariff) {
+    if (!dst.to<JsonObject>()) {
+        return false;
+    }
+    if (src.tariff.has_value()) {
         dst["tariff"] = *src.tariff;
     }
 
@@ -29233,7 +30880,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTableConstraintsDataS
     if (!src["tariff"].isNull()) {
         dst.tariff = src["tariff"].as<decltype(dst.tariff)::value_type>();
     } else {
-        dst.tariff = std::nullopt;
+        dst.tariff.reset();
     }
 
 }
