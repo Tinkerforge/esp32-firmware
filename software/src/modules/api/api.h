@@ -165,7 +165,7 @@ public:
     std::vector<CommandRegistration, IRAMAlloc<CommandRegistration>> commands;
     std::vector<ResponseRegistration> responses;
 
-    std::vector<IAPIBackend *> backends;
+    FixedStackVector<IAPIBackend *, 8> backends;
 
     ConfigRoot features;
     ConfigRoot version;
