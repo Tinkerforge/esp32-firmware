@@ -326,7 +326,7 @@ def process_complex_type(complex_type):
         sequence_size = len(complex_type.content)
         elements = []
         new_type.code = f"/**\n * Datatype {struct_type_name} as defined in {complex_type.schema.name}\n*/\nstruct {struct_type_name} {{ \n"
-        new_type.to_json_code = f"""bool convertToJson(const {struct_type_name} &src, JsonVariant& dst) {{\n"""
+        new_type.to_json_code = f"""bool convertToJson(const {struct_type_name} &src, JsonVariant& dst) {{\n\tif (!dst.to<JsonObject>()) {{return false;}}\n"""
 
         #new_type.from_json_code = f"""void convertFromJson(const JsonVariantConst& src, {struct_type_name} &dst) {{\n"""
         for elem in complex_type.content:
