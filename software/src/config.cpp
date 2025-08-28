@@ -842,6 +842,21 @@ bool Config::updateUint53(uint64_t val)
     return update_value<uint64_t, ConfUint53>(val, "uint64_t");
 }
 
+void Config::replace(std::initializer_list<Config> tup) {
+    if (!this->is<ConfTuple>())
+        esp_system_abort("Can't replace tuple: Config is not a tuple");
+
+    this->value = ConfTuple{tup};
+}
+
+void Config::replace(size_t length, Config &&cfg) {
+    if (!this->is<ConfTuple>())
+        esp_system_abort("Can't replace tuple: Config is not a tuple");
+
+    this->value = ConfTuple{length, std::move(cfg)};
+}
+
+
 size_t Config::fillFloatArray(float *arr, size_t elements)
 {
     // Asserts checked in ::fillArray.

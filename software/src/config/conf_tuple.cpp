@@ -83,6 +83,9 @@ Config::ConfTuple::ConfTuple(std::initializer_list<Config> tup) : idx(nextSlot<C
     auto *slot = this->getSlot();
     const size_t len = tup.size();
 
+    if (len == 0)
+        esp_system_abort("Constructing ConfTuples of length 0 is not allowed (yet?)");
+
     Config *vals = new Config[len];
     slot->values.reset(vals);
     slot->length = len;
@@ -97,6 +100,9 @@ Config::ConfTuple::ConfTuple(std::initializer_list<Config> tup) : idx(nextSlot<C
 Config::ConfTuple::ConfTuple(size_t length, Config &&cfg) : idx(nextSlot<Config::ConfTuple>())
 {
     auto *slot = this->getSlot();
+
+    if (length == 0)
+        esp_system_abort("Constructing ConfTuples of length 0 is not allowed (yet?)");
 
     Config *vals = new Config[length];
     slot->values.reset(vals);
