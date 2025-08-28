@@ -64,9 +64,9 @@ function change_charge_mode(mode: number) {
     API.save('power_manager/charge_mode', {"mode": mode}, () => __("charge_manager.script.mode_change_failed"));
 }
 
-export function get_allowed_charge_modes(params: {with_default: boolean, pv_enabled_override?: boolean, eco_enabled_override?: boolean, add_pv_if_disabled?: boolean}) {
+export function get_allowed_charge_modes(params: {with_default: boolean, pv_enabled_override?: boolean, add_pv_if_disabled?: boolean}) {
     const pv_enabled = params.pv_enabled_override !== undefined ? params.pv_enabled_override : API.get('power_manager/config').excess_charging_enable;
-    const eco_enabled = params.eco_enabled_override !== undefined ? params.eco_enabled_override : API.get_unchecked('eco/config')?.enable ?? false;
+    const eco_enabled = API.get_unchecked('eco/config')?.enable ?? false;
 
     /*
         PV Eco  Buttons
