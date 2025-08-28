@@ -39,10 +39,9 @@ DeserializationResult ShipMessageDataType::json_to_type(uint8_t *incoming_data, 
     DeserializationError error = deserializeJson(doc,
                                                  incoming_data_str,
                                                  DeserializationOption::NestingLimit(nesting_limit));
-    eebus.trace_fmtln("Tried to deserialize: %s", incoming_data_str.c_str());
     if (error) {
-        eebus.trace_fmtln("J2T ShipMessageData Error during JSON deserialization : %s", error.c_str());
-
+        eebus.trace_fmtln("J2T ShipMessageData Error during JSON deserialization : %s; Error occurred when parsing JSON Doc: ", error.c_str());
+        eebus.trace_jsonln(doc);
         return DeserializationResult::ERROR;
     }
 
