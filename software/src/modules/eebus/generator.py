@@ -469,19 +469,26 @@ def process_schema(xml_schema):
                 new_type.from_json_code = f"""void convertFromJson(const JsonVariantConst& src, {enum_type_name} &dst) {{\n"""
 
                 enum_variable_name = ""
-                for enumeration in simple_type.enumeration:
+                enum_list = simple_type.enumeration
+                enum_undefined_name = "EnumUndefined"
+                enum_list.append(enum_undefined_name)
+                enum_list = list(dict.fromkeys(enum_list))
+
+                for enumeration in enum_list:
                     enum_string_name = str(enumeration)
                     enum_variable_name = make_variable_name(enum_string_name)
-                    new_type.code += "\t" + enum_variable_name + ",\n"
-                    # switch case for enum->json
-                    new_type.to_json_code += f"""\tcase {enum_type_name}::{enum_variable_name}:\n\t\t enumName = "{enum_string_name}";\n\t\tbreak;\n"""
-                    # if return for json->enum
-                    new_type.from_json_code += f"""\tif (src == "{enum_string_name}") {{\n\t\tdst = {enum_type_name}::{enum_variable_name};\n\t\treturn;\n\t}}\n"""
+                    if enum_string_name == enum_undefined_name:
+                        new_type.code += "\t" + enum_variable_name + ", // This is not part of the spec but its needed for error handling\n"
+                        new_type.to_json_code += f"""\tdefault:\n\t\t enumName = "{enum_string_name}";\n\t\tbreak;\n"""
+                        new_type.from_json_code += f"""\t\tdst = {enum_type_name}::{enum_variable_name};\n\t\treturn; \n\t}}\n"""
 
-                # return empty string if enum->json fails (shouldn't happen)
+                    else:
+                        new_type.code += "\t" + enum_variable_name + ",\n"
+                        new_type.to_json_code += f"""\tcase {enum_type_name}::{enum_variable_name}:\n\t\t enumName = "{enum_string_name}";\n\t\tbreak;\n"""
+                        new_type.from_json_code += f"""\tif (src == "{enum_string_name}") {{\n\t\tdst = {enum_type_name}::{enum_variable_name};\n\t\treturn;\n\t}}\n"""
+
                 new_type.to_json_code += "\t} \n\treturn dst.set(enumName);\n}\n"
-                # return last enum if json->enum fails
-                new_type.from_json_code += f"""\t return;\n}}\n"""
+                #new_type.from_json_code += f"""\t return;\n}}\n"""
                 new_type.code += "};\n"
                 new_type.code += f"""/**\n * Convert the enum {enum_type_name} to its String representation\n * @param src The source {enum_type_name} value to convert.\n * @param dst The destination JsonVariant where the string will be stored.\n * @return true if the conversion was successful, false otherwise.\n */\nbool convertToJson(const {enum_type_name} &src, JsonVariant& dst);\n"""
                 new_type.code += f"""/**\n * Convert a string to a {enum_type_name} \n * @param src The JSON variant containing the string.\n * @param dst The destination {enum_type_name}.\n */\nvoid convertFromJson(const JsonVariantConst& src, {enum_type_name} &dst);\n\n"""
