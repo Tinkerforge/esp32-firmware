@@ -48,6 +48,9 @@ bool convertToJson(const DirectControlActivityStateEnumType &src, JsonVariant &d
         case DirectControlActivityStateEnumType::inactive:
             enumName = "inactive";
             break;
+        default:
+            enumName = "EnumUndefined";
+            break;
     }
     return dst.set(enumName);
 }
@@ -66,6 +69,7 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityStateEnum
         dst = DirectControlActivityStateEnumType::inactive;
         return;
     }
+    dst = DirectControlActivityStateEnumType::EnumUndefined;
     return;
 }
 
@@ -93,6 +97,9 @@ bool convertToJson(const RecurringIntervalEnumType &src, JsonVariant &dst)
             break;
         case RecurringIntervalEnumType::everySecond:
             enumName = "everySecond";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -128,6 +135,7 @@ void convertFromJson(const JsonVariantConst &src, RecurringIntervalEnumType &dst
         dst = RecurringIntervalEnumType::everySecond;
         return;
     }
+    dst = RecurringIntervalEnumType::EnumUndefined;
     return;
 }
 
@@ -170,6 +178,9 @@ bool convertToJson(const MonthType &src, JsonVariant &dst)
             break;
         case MonthType::december:
             enumName = "december";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -225,6 +236,7 @@ void convertFromJson(const JsonVariantConst &src, MonthType &dst)
         dst = MonthType::december;
         return;
     }
+    dst = MonthType::EnumUndefined;
     return;
 }
 
@@ -252,6 +264,9 @@ bool convertToJson(const DayOfWeekType &src, JsonVariant &dst)
             break;
         case DayOfWeekType::sunday:
             enumName = "sunday";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -287,6 +302,7 @@ void convertFromJson(const JsonVariantConst &src, DayOfWeekType &dst)
         dst = DayOfWeekType::sunday;
         return;
     }
+    dst = DayOfWeekType::EnumUndefined;
     return;
 }
 
@@ -308,6 +324,9 @@ bool convertToJson(const OccurrenceEnumType &src, JsonVariant &dst)
             break;
         case OccurrenceEnumType::last:
             enumName = "last";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -335,6 +354,7 @@ void convertFromJson(const JsonVariantConst &src, OccurrenceEnumType &dst)
         dst = OccurrenceEnumType::last;
         return;
     }
+    dst = OccurrenceEnumType::EnumUndefined;
     return;
 }
 
@@ -374,6 +394,9 @@ bool convertToJson(const CommodityTypeEnumType &src, JsonVariant &dst)
             break;
         case CommodityTypeEnumType::air:
             enumName = "air";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -425,6 +448,7 @@ void convertFromJson(const JsonVariantConst &src, CommodityTypeEnumType &dst)
         dst = CommodityTypeEnumType::air;
         return;
     }
+    dst = CommodityTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -437,6 +461,9 @@ bool convertToJson(const EnergyDirectionEnumType &src, JsonVariant &dst)
             break;
         case EnergyDirectionEnumType::produce:
             enumName = "produce";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -452,6 +479,7 @@ void convertFromJson(const JsonVariantConst &src, EnergyDirectionEnumType &dst)
         dst = EnergyDirectionEnumType::produce;
         return;
     }
+    dst = EnergyDirectionEnumType::EnumUndefined;
     return;
 }
 
@@ -470,6 +498,9 @@ bool convertToJson(const EnergyModeEnumType &src, JsonVariant &dst)
             break;
         case EnergyModeEnumType::var_auto:
             enumName = "auto";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -493,6 +524,7 @@ void convertFromJson(const JsonVariantConst &src, EnergyModeEnumType &dst)
         dst = EnergyModeEnumType::var_auto;
         return;
     }
+    dst = EnergyModeEnumType::EnumUndefined;
     return;
 }
 
@@ -781,6 +813,9 @@ bool convertToJson(const UnitOfMeasurementEnumType &src, JsonVariant &dst)
             break;
         case UnitOfMeasurementEnumType::kg_Wh:
             enumName = "kg/Wh";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -1164,6 +1199,7 @@ void convertFromJson(const JsonVariantConst &src, UnitOfMeasurementEnumType &dst
         dst = UnitOfMeasurementEnumType::kg_Wh;
         return;
     }
+    dst = UnitOfMeasurementEnumType::EnumUndefined;
     return;
 }
 
@@ -1704,6 +1740,9 @@ bool convertToJson(const CurrencyEnumType &src, JsonVariant &dst)
             break;
         case CurrencyEnumType::ZWL:
             enumName = "ZWL";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -2423,6 +2462,7 @@ void convertFromJson(const JsonVariantConst &src, CurrencyEnumType &dst)
         dst = CurrencyEnumType::ZWL;
         return;
     }
+    dst = CurrencyEnumType::EnumUndefined;
     return;
 }
 
@@ -2687,6 +2727,9 @@ bool convertToJson(const ScopeTypeEnumType &src, JsonVariant &dst)
             break;
         case ScopeTypeEnumType::activePowerForecast:
             enumName = "activePowerForecast";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -3038,6 +3081,7 @@ void convertFromJson(const JsonVariantConst &src, ScopeTypeEnumType &dst)
         dst = ScopeTypeEnumType::activePowerForecast;
         return;
     }
+    dst = ScopeTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -3053,6 +3097,9 @@ bool convertToJson(const RoleType &src, JsonVariant &dst)
             break;
         case RoleType::special:
             enumName = "special";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -3072,6 +3119,7 @@ void convertFromJson(const JsonVariantConst &src, RoleType &dst)
         dst = RoleType::special;
         return;
     }
+    dst = RoleType::EnumUndefined;
     return;
 }
 
@@ -3120,6 +3168,9 @@ bool convertToJson(const DeviceTypeEnumType &src, JsonVariant &dst)
             break;
         case DeviceTypeEnumType::ChargingStation:
             enumName = "ChargingStation";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -3183,6 +3234,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceTypeEnumType &dst)
         dst = DeviceTypeEnumType::ChargingStation;
         return;
     }
+    dst = DeviceTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -3333,6 +3385,9 @@ bool convertToJson(const EntityTypeEnumType &src, JsonVariant &dst)
             break;
         case EntityTypeEnumType::ControllableSystem:
             enumName = "ControllableSystem";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -3532,6 +3587,7 @@ void convertFromJson(const JsonVariantConst &src, EntityTypeEnumType &dst)
         dst = EntityTypeEnumType::ControllableSystem;
         return;
     }
+    dst = EntityTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -3634,6 +3690,9 @@ bool convertToJson(const FeatureTypeEnumType &src, JsonVariant &dst)
             break;
         case FeatureTypeEnumType::StateInformation:
             enumName = "StateInformation";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -3769,6 +3828,7 @@ void convertFromJson(const JsonVariantConst &src, FeatureTypeEnumType &dst)
         dst = FeatureTypeEnumType::StateInformation;
         return;
     }
+    dst = FeatureTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -3781,6 +3841,9 @@ bool convertToJson(const FeatureDirectControlSpecificUsageEnumType &src, JsonVar
             break;
         case FeatureDirectControlSpecificUsageEnumType::RealTime:
             enumName = "RealTime";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -3796,6 +3859,7 @@ void convertFromJson(const JsonVariantConst &src, FeatureDirectControlSpecificUs
         dst = FeatureDirectControlSpecificUsageEnumType::RealTime;
         return;
     }
+    dst = FeatureDirectControlSpecificUsageEnumType::EnumUndefined;
     return;
 }
 
@@ -3808,6 +3872,9 @@ bool convertToJson(const FeatureHvacSpecificUsageEnumType &src, JsonVariant &dst
             break;
         case FeatureHvacSpecificUsageEnumType::Overrun:
             enumName = "Overrun";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -3823,6 +3890,7 @@ void convertFromJson(const JsonVariantConst &src, FeatureHvacSpecificUsageEnumTy
         dst = FeatureHvacSpecificUsageEnumType::Overrun;
         return;
     }
+    dst = FeatureHvacSpecificUsageEnumType::EnumUndefined;
     return;
 }
 
@@ -3847,6 +3915,9 @@ bool convertToJson(const FeatureMeasurementSpecificUsageEnumType &src, JsonVaria
             break;
         case FeatureMeasurementSpecificUsageEnumType::Temperature:
             enumName = "Temperature";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -3878,6 +3949,7 @@ void convertFromJson(const JsonVariantConst &src, FeatureMeasurementSpecificUsag
         dst = FeatureMeasurementSpecificUsageEnumType::Temperature;
         return;
     }
+    dst = FeatureMeasurementSpecificUsageEnumType::EnumUndefined;
     return;
 }
 
@@ -3902,6 +3974,9 @@ bool convertToJson(const FeatureSetpointSpecificUsageEnumType &src, JsonVariant 
             break;
         case FeatureSetpointSpecificUsageEnumType::Temperature:
             enumName = "Temperature";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -3933,6 +4008,7 @@ void convertFromJson(const JsonVariantConst &src, FeatureSetpointSpecificUsageEn
         dst = FeatureSetpointSpecificUsageEnumType::Temperature;
         return;
     }
+    dst = FeatureSetpointSpecificUsageEnumType::EnumUndefined;
     return;
 }
 
@@ -3951,6 +4027,9 @@ bool convertToJson(const FeatureSmartEnergyManagementPsSpecificUsageEnumType &sr
             break;
         case FeatureSmartEnergyManagementPsSpecificUsageEnumType::OptionalSequenceBasedImmediateControl:
             enumName = "OptionalSequenceBasedImmediateControl";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -3974,6 +4053,7 @@ void convertFromJson(const JsonVariantConst &src, FeatureSmartEnergyManagementPs
         dst = FeatureSmartEnergyManagementPsSpecificUsageEnumType::OptionalSequenceBasedImmediateControl;
         return;
     }
+    dst = FeatureSmartEnergyManagementPsSpecificUsageEnumType::EnumUndefined;
     return;
 }
 
@@ -4406,6 +4486,9 @@ bool convertToJson(const FunctionEnumType &src, JsonVariant &dst)
             break;
         case FunctionEnumType::stateInformationListData:
             enumName = "stateInformationListData";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -4981,6 +5064,7 @@ void convertFromJson(const JsonVariantConst &src, FunctionEnumType &dst)
         dst = FunctionEnumType::stateInformationListData;
         return;
     }
+    dst = FunctionEnumType::EnumUndefined;
     return;
 }
 
@@ -5023,6 +5107,9 @@ bool convertToJson(const PowerTimeSlotValueTypeEnumType &src, JsonVariant &dst)
             break;
         case PowerTimeSlotValueTypeEnumType::energySkewness:
             enumName = "energySkewness";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -5078,6 +5165,7 @@ void convertFromJson(const JsonVariantConst &src, PowerTimeSlotValueTypeEnumType
         dst = PowerTimeSlotValueTypeEnumType::energySkewness;
         return;
     }
+    dst = PowerTimeSlotValueTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -5093,6 +5181,9 @@ bool convertToJson(const PowerSequenceScopeEnumType &src, JsonVariant &dst)
             break;
         case PowerSequenceScopeEnumType::recommendation:
             enumName = "recommendation";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -5112,6 +5203,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceScopeEnumType &ds
         dst = PowerSequenceScopeEnumType::recommendation;
         return;
     }
+    dst = PowerSequenceScopeEnumType::EnumUndefined;
     return;
 }
 
@@ -5142,6 +5234,9 @@ bool convertToJson(const PowerSequenceStateEnumType &src, JsonVariant &dst)
             break;
         case PowerSequenceStateEnumType::invalid:
             enumName = "invalid";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -5181,6 +5276,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceStateEnumType &ds
         dst = PowerSequenceStateEnumType::invalid;
         return;
     }
+    dst = PowerSequenceStateEnumType::EnumUndefined;
     return;
 }
 
@@ -5313,6 +5409,9 @@ bool convertToJson(const MeasurementTypeEnumType &src, JsonVariant &dst)
             break;
         case MeasurementTypeEnumType::volumetricFlow:
             enumName = "volumetricFlow";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -5488,6 +5587,7 @@ void convertFromJson(const JsonVariantConst &src, MeasurementTypeEnumType &dst)
         dst = MeasurementTypeEnumType::volumetricFlow;
         return;
     }
+    dst = MeasurementTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -5509,6 +5609,9 @@ bool convertToJson(const MeasurementValueTypeEnumType &src, JsonVariant &dst)
             break;
         case MeasurementValueTypeEnumType::standardDeviation:
             enumName = "standardDeviation";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -5536,6 +5639,7 @@ void convertFromJson(const JsonVariantConst &src, MeasurementValueTypeEnumType &
         dst = MeasurementValueTypeEnumType::standardDeviation;
         return;
     }
+    dst = MeasurementValueTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -5551,6 +5655,9 @@ bool convertToJson(const MeasurementValueSourceEnumType &src, JsonVariant &dst)
             break;
         case MeasurementValueSourceEnumType::empiricalValue:
             enumName = "empiricalValue";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -5570,6 +5677,7 @@ void convertFromJson(const JsonVariantConst &src, MeasurementValueSourceEnumType
         dst = MeasurementValueSourceEnumType::empiricalValue;
         return;
     }
+    dst = MeasurementValueSourceEnumType::EnumUndefined;
     return;
 }
 
@@ -5585,6 +5693,9 @@ bool convertToJson(const MeasurementValueTendencyEnumType &src, JsonVariant &dst
             break;
         case MeasurementValueTendencyEnumType::falling:
             enumName = "falling";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -5604,6 +5715,7 @@ void convertFromJson(const JsonVariantConst &src, MeasurementValueTendencyEnumTy
         dst = MeasurementValueTendencyEnumType::falling;
         return;
     }
+    dst = MeasurementValueTendencyEnumType::EnumUndefined;
     return;
 }
 
@@ -5619,6 +5731,9 @@ bool convertToJson(const MeasurementValueStateEnumType &src, JsonVariant &dst)
             break;
         case MeasurementValueStateEnumType::error:
             enumName = "error";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -5638,6 +5753,7 @@ void convertFromJson(const JsonVariantConst &src, MeasurementValueStateEnumType 
         dst = MeasurementValueStateEnumType::error;
         return;
     }
+    dst = MeasurementValueStateEnumType::EnumUndefined;
     return;
 }
 
@@ -5674,6 +5790,9 @@ bool convertToJson(const ThresholdTypeEnumType &src, JsonVariant &dst)
             break;
         case ThresholdTypeEnumType::swellThreshold:
             enumName = "swellThreshold";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -5721,6 +5840,7 @@ void convertFromJson(const JsonVariantConst &src, ThresholdTypeEnumType &dst)
         dst = ThresholdTypeEnumType::swellThreshold;
         return;
     }
+    dst = ThresholdTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -5730,6 +5850,9 @@ bool convertToJson(const BillTypeEnumType &src, JsonVariant &dst)
     switch (src) {
         case BillTypeEnumType::chargingSummary:
             enumName = "chargingSummary";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -5741,6 +5864,7 @@ void convertFromJson(const JsonVariantConst &src, BillTypeEnumType &dst)
         dst = BillTypeEnumType::chargingSummary;
         return;
     }
+    dst = BillTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -5753,6 +5877,9 @@ bool convertToJson(const BillPositionTypeEnumType &src, JsonVariant &dst)
             break;
         case BillPositionTypeEnumType::selfProducedElectricEnergy:
             enumName = "selfProducedElectricEnergy";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -5768,6 +5895,7 @@ void convertFromJson(const JsonVariantConst &src, BillPositionTypeEnumType &dst)
         dst = BillPositionTypeEnumType::selfProducedElectricEnergy;
         return;
     }
+    dst = BillPositionTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -5789,6 +5917,9 @@ bool convertToJson(const BillCostTypeEnumType &src, JsonVariant &dst)
             break;
         case BillCostTypeEnumType::radioactiveWaste:
             enumName = "radioactiveWaste";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -5816,6 +5947,7 @@ void convertFromJson(const JsonVariantConst &src, BillCostTypeEnumType &dst)
         dst = BillCostTypeEnumType::radioactiveWaste;
         return;
     }
+    dst = BillCostTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -5831,6 +5963,9 @@ bool convertToJson(const IdentificationTypeEnumType &src, JsonVariant &dst)
             break;
         case IdentificationTypeEnumType::userRfidTag:
             enumName = "userRfidTag";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -5850,6 +5985,7 @@ void convertFromJson(const JsonVariantConst &src, IdentificationTypeEnumType &ds
         dst = IdentificationTypeEnumType::userRfidTag;
         return;
     }
+    dst = IdentificationTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -5862,6 +5998,9 @@ bool convertToJson(const SetpointTypeEnumType &src, JsonVariant &dst)
             break;
         case SetpointTypeEnumType::valueRelative:
             enumName = "valueRelative";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -5877,6 +6016,7 @@ void convertFromJson(const JsonVariantConst &src, SetpointTypeEnumType &dst)
         dst = SetpointTypeEnumType::valueRelative;
         return;
     }
+    dst = SetpointTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -5892,6 +6032,9 @@ bool convertToJson(const TimeSlotTimeModeEnumType &src, JsonVariant &dst)
             break;
         case TimeSlotTimeModeEnumType::both:
             enumName = "both";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -5911,6 +6054,7 @@ void convertFromJson(const JsonVariantConst &src, TimeSlotTimeModeEnumType &dst)
         dst = TimeSlotTimeModeEnumType::both;
         return;
     }
+    dst = TimeSlotTimeModeEnumType::EnumUndefined;
     return;
 }
 
@@ -6025,6 +6169,9 @@ bool convertToJson(const SensingStateEnumType &src, JsonVariant &dst)
             break;
         case SensingStateEnumType::notAlarmed:
             enumName = "notAlarmed";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -6176,6 +6323,7 @@ void convertFromJson(const JsonVariantConst &src, SensingStateEnumType &dst)
         dst = SensingStateEnumType::notAlarmed;
         return;
     }
+    dst = SensingStateEnumType::EnumUndefined;
     return;
 }
 
@@ -6230,6 +6378,9 @@ bool convertToJson(const SensingTypeEnumType &src, JsonVariant &dst)
             break;
         case SensingTypeEnumType::dayNightIndicator:
             enumName = "dayNightIndicator";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -6301,6 +6452,7 @@ void convertFromJson(const JsonVariantConst &src, SensingTypeEnumType &dst)
         dst = SensingTypeEnumType::dayNightIndicator;
         return;
     }
+    dst = SensingTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -6316,6 +6468,9 @@ bool convertToJson(const ActuatorSwitchFctEnumType &src, JsonVariant &dst)
             break;
         case ActuatorSwitchFctEnumType::toggle:
             enumName = "toggle";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -6335,6 +6490,7 @@ void convertFromJson(const JsonVariantConst &src, ActuatorSwitchFctEnumType &dst
         dst = ActuatorSwitchFctEnumType::toggle;
         return;
     }
+    dst = ActuatorSwitchFctEnumType::EnumUndefined;
     return;
 }
 
@@ -6353,6 +6509,9 @@ bool convertToJson(const NetworkManagementFeatureSetType &src, JsonVariant &dst)
             break;
         case NetworkManagementFeatureSetType::simple:
             enumName = "simple";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -6376,6 +6535,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureSetTyp
         dst = NetworkManagementFeatureSetType::simple;
         return;
     }
+    dst = NetworkManagementFeatureSetType::EnumUndefined;
     return;
 }
 
@@ -6391,6 +6551,9 @@ bool convertToJson(const NetworkManagementProcessStateStateType &src, JsonVarian
             break;
         case NetworkManagementProcessStateStateType::aborted:
             enumName = "aborted";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -6410,6 +6573,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementProcessStateS
         dst = NetworkManagementProcessStateStateType::aborted;
         return;
     }
+    dst = NetworkManagementProcessStateStateType::EnumUndefined;
     return;
 }
 
@@ -6425,6 +6589,9 @@ bool convertToJson(const NetworkManagementStateChangeType &src, JsonVariant &dst
             break;
         case NetworkManagementStateChangeType::modified:
             enumName = "modified";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -6444,6 +6611,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementStateChangeTy
         dst = NetworkManagementStateChangeType::modified;
         return;
     }
+    dst = NetworkManagementStateChangeType::EnumUndefined;
     return;
 }
 
@@ -6468,6 +6636,9 @@ bool convertToJson(const SupplyConditionEventTypeEnumType &src, JsonVariant &dst
             break;
         case SupplyConditionEventTypeEnumType::gridConditionUpdate:
             enumName = "gridConditionUpdate";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -6499,6 +6670,7 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionEventTypeEnumTy
         dst = SupplyConditionEventTypeEnumType::gridConditionUpdate;
         return;
     }
+    dst = SupplyConditionEventTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -6520,6 +6692,9 @@ bool convertToJson(const SupplyConditionOriginatorEnumType &src, JsonVariant &ds
             break;
         case SupplyConditionOriginatorEnumType::internalUser:
             enumName = "internalUser";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -6547,6 +6722,7 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionOriginatorEnumT
         dst = SupplyConditionOriginatorEnumType::internalUser;
         return;
     }
+    dst = SupplyConditionOriginatorEnumType::EnumUndefined;
     return;
 }
 
@@ -6568,6 +6744,9 @@ bool convertToJson(const GridConditionEnumType &src, JsonVariant &dst)
             break;
         case GridConditionEnumType::productionRed:
             enumName = "productionRed";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -6595,6 +6774,7 @@ void convertFromJson(const JsonVariantConst &src, GridConditionEnumType &dst)
         dst = GridConditionEnumType::productionRed;
         return;
     }
+    dst = GridConditionEnumType::EnumUndefined;
     return;
 }
 
@@ -6610,6 +6790,9 @@ bool convertToJson(const AlarmTypeEnumType &src, JsonVariant &dst)
             break;
         case AlarmTypeEnumType::overThreshold:
             enumName = "overThreshold";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -6629,6 +6812,7 @@ void convertFromJson(const JsonVariantConst &src, AlarmTypeEnumType &dst)
         dst = AlarmTypeEnumType::overThreshold;
         return;
     }
+    dst = AlarmTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -6647,6 +6831,9 @@ bool convertToJson(const HvacOverrunStatusEnumType &src, JsonVariant &dst)
             break;
         case HvacOverrunStatusEnumType::inactive:
             enumName = "inactive";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -6670,6 +6857,7 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunStatusEnumType &dst
         dst = HvacOverrunStatusEnumType::inactive;
         return;
     }
+    dst = HvacOverrunStatusEnumType::EnumUndefined;
     return;
 }
 
@@ -6694,6 +6882,9 @@ bool convertToJson(const LoadControlEventStateEnumType &src, JsonVariant &dst)
             break;
         case LoadControlEventStateEnumType::eventError:
             enumName = "eventError";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -6725,6 +6916,7 @@ void convertFromJson(const JsonVariantConst &src, LoadControlEventStateEnumType 
         dst = LoadControlEventStateEnumType::eventError;
         return;
     }
+    dst = LoadControlEventStateEnumType::EnumUndefined;
     return;
 }
 
@@ -6740,6 +6932,9 @@ bool convertToJson(const TaskManagementJobSourceEnumType &src, JsonVariant &dst)
             break;
         case TaskManagementJobSourceEnumType::externalConfiguration:
             enumName = "externalConfiguration";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -6759,6 +6954,7 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobSourceEnumTyp
         dst = TaskManagementJobSourceEnumType::externalConfiguration;
         return;
     }
+    dst = TaskManagementJobSourceEnumType::EnumUndefined;
     return;
 }
 
@@ -6777,6 +6973,9 @@ bool convertToJson(const HvacSystemFunctionTypeEnumType &src, JsonVariant &dst)
             break;
         case HvacSystemFunctionTypeEnumType::dhw:
             enumName = "dhw";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -6800,6 +6999,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionTypeEnumType
         dst = HvacSystemFunctionTypeEnumType::dhw;
         return;
     }
+    dst = HvacSystemFunctionTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -6818,6 +7018,9 @@ bool convertToJson(const HvacOperationModeTypeEnumType &src, JsonVariant &dst)
             break;
         case HvacOperationModeTypeEnumType::eco:
             enumName = "eco";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -6841,6 +7044,7 @@ void convertFromJson(const JsonVariantConst &src, HvacOperationModeTypeEnumType 
         dst = HvacOperationModeTypeEnumType::eco;
         return;
     }
+    dst = HvacOperationModeTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -6877,6 +7081,9 @@ bool convertToJson(const HvacOverrunTypeEnumType &src, JsonVariant &dst)
             break;
         case HvacOverrunTypeEnumType::valveKick:
             enumName = "valveKick";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -6924,6 +7131,7 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunTypeEnumType &dst)
         dst = HvacOverrunTypeEnumType::valveKick;
         return;
     }
+    dst = HvacOverrunTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -6948,6 +7156,9 @@ bool convertToJson(const LoadControlEventActionEnumType &src, JsonVariant &dst)
             break;
         case LoadControlEventActionEnumType::normal:
             enumName = "normal";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -6979,6 +7190,7 @@ void convertFromJson(const JsonVariantConst &src, LoadControlEventActionEnumType
         dst = LoadControlEventActionEnumType::normal;
         return;
     }
+    dst = LoadControlEventActionEnumType::EnumUndefined;
     return;
 }
 
@@ -6994,6 +7206,9 @@ bool convertToJson(const LoadControlLimitTypeEnumType &src, JsonVariant &dst)
             break;
         case LoadControlLimitTypeEnumType::signDependentAbsValueLimit:
             enumName = "signDependentAbsValueLimit";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -7013,6 +7228,7 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitTypeEnumType &
         dst = LoadControlLimitTypeEnumType::signDependentAbsValueLimit;
         return;
     }
+    dst = LoadControlLimitTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -7028,6 +7244,9 @@ bool convertToJson(const LoadControlCategoryEnumType &src, JsonVariant &dst)
             break;
         case LoadControlCategoryEnumType::optimization:
             enumName = "optimization";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -7047,6 +7266,7 @@ void convertFromJson(const JsonVariantConst &src, LoadControlCategoryEnumType &d
         dst = LoadControlCategoryEnumType::optimization;
         return;
     }
+    dst = LoadControlCategoryEnumType::EnumUndefined;
     return;
 }
 
@@ -7068,6 +7288,9 @@ bool convertToJson(const PowerSourceEnumType &src, JsonVariant &dst)
             break;
         case PowerSourceEnumType::dc:
             enumName = "dc";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -7095,6 +7318,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSourceEnumType &dst)
         dst = PowerSourceEnumType::dc;
         return;
     }
+    dst = PowerSourceEnumType::EnumUndefined;
     return;
 }
 
@@ -7125,6 +7349,9 @@ bool convertToJson(const ActuatorLevelFctEnumType &src, JsonVariant &dst)
             break;
         case ActuatorLevelFctEnumType::relative:
             enumName = "relative";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -7164,6 +7391,7 @@ void convertFromJson(const JsonVariantConst &src, ActuatorLevelFctEnumType &dst)
         dst = ActuatorLevelFctEnumType::relative;
         return;
     }
+    dst = ActuatorLevelFctEnumType::EnumUndefined;
     return;
 }
 
@@ -7191,6 +7419,9 @@ bool convertToJson(const TimeSeriesTypeEnumType &src, JsonVariant &dst)
             break;
         case TimeSeriesTypeEnumType::productionLimitCurve:
             enumName = "productionLimitCurve";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -7226,6 +7457,7 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesTypeEnumType &dst)
         dst = TimeSeriesTypeEnumType::productionLimitCurve;
         return;
     }
+    dst = TimeSeriesTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -7250,6 +7482,9 @@ bool convertToJson(const MessagingTypeEnumType &src, JsonVariant &dst)
             break;
         case MessagingTypeEnumType::obsolete:
             enumName = "obsolete";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -7281,6 +7516,7 @@ void convertFromJson(const JsonVariantConst &src, MessagingTypeEnumType &dst)
         dst = MessagingTypeEnumType::obsolete;
         return;
     }
+    dst = MessagingTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -7296,6 +7532,9 @@ bool convertToJson(const TierBoundaryTypeEnumType &src, JsonVariant &dst)
             break;
         case TierBoundaryTypeEnumType::countBoundary:
             enumName = "countBoundary";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -7315,6 +7554,7 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryTypeEnumType &dst)
         dst = TierBoundaryTypeEnumType::countBoundary;
         return;
     }
+    dst = TierBoundaryTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -7327,6 +7567,9 @@ bool convertToJson(const TierTypeEnumType &src, JsonVariant &dst)
             break;
         case TierTypeEnumType::dynamicCost:
             enumName = "dynamicCost";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -7342,6 +7585,7 @@ void convertFromJson(const JsonVariantConst &src, TierTypeEnumType &dst)
         dst = TierTypeEnumType::dynamicCost;
         return;
     }
+    dst = TierTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -7360,6 +7604,9 @@ bool convertToJson(const IncentiveTypeEnumType &src, JsonVariant &dst)
             break;
         case IncentiveTypeEnumType::co2Emission:
             enumName = "co2Emission";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -7383,6 +7630,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveTypeEnumType &dst)
         dst = IncentiveTypeEnumType::co2Emission;
         return;
     }
+    dst = IncentiveTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -7401,6 +7649,9 @@ bool convertToJson(const IncentiveValueTypeEnumType &src, JsonVariant &dst)
             break;
         case IncentiveValueTypeEnumType::maxValue:
             enumName = "maxValue";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -7424,6 +7675,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveValueTypeEnumType &ds
         dst = IncentiveValueTypeEnumType::maxValue;
         return;
     }
+    dst = IncentiveValueTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -7469,6 +7721,9 @@ bool convertToJson(const StateInformationFunctionalityEnumType &src, JsonVariant
             break;
         case StateInformationFunctionalityEnumType::manualShutdown:
             enumName = "manualShutdown";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -7528,6 +7783,7 @@ void convertFromJson(const JsonVariantConst &src, StateInformationFunctionalityE
         dst = StateInformationFunctionalityEnumType::manualShutdown;
         return;
     }
+    dst = StateInformationFunctionalityEnumType::EnumUndefined;
     return;
 }
 
@@ -7588,6 +7844,9 @@ bool convertToJson(const StateInformationFailureEnumType &src, JsonVariant &dst)
             break;
         case StateInformationFailureEnumType::genericInternalError:
             enumName = "genericInternalError";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -7667,6 +7926,7 @@ void convertFromJson(const JsonVariantConst &src, StateInformationFailureEnumTyp
         dst = StateInformationFailureEnumType::genericInternalError;
         return;
     }
+    dst = StateInformationFailureEnumType::EnumUndefined;
     return;
 }
 
@@ -7679,6 +7939,9 @@ bool convertToJson(const StateInformationCategoryEnumType &src, JsonVariant &dst
             break;
         case StateInformationCategoryEnumType::failure:
             enumName = "failure";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -7694,6 +7957,7 @@ void convertFromJson(const JsonVariantConst &src, StateInformationCategoryEnumTy
         dst = StateInformationCategoryEnumType::failure;
         return;
     }
+    dst = StateInformationCategoryEnumType::EnumUndefined;
     return;
 }
 
@@ -7715,6 +7979,9 @@ bool convertToJson(const ElectricalConnectionMeasurandVariantEnumType &src, Json
             break;
         case ElectricalConnectionMeasurandVariantEnumType::cosPhi:
             enumName = "cosPhi";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -7742,6 +8009,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionMeasurandV
         dst = ElectricalConnectionMeasurandVariantEnumType::cosPhi;
         return;
     }
+    dst = ElectricalConnectionMeasurandVariantEnumType::EnumUndefined;
     return;
 }
 
@@ -7754,6 +8022,9 @@ bool convertToJson(const ElectricalConnectionVoltageTypeEnumType &src, JsonVaria
             break;
         case ElectricalConnectionVoltageTypeEnumType::dc:
             enumName = "dc";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -7769,6 +8040,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionVoltageTyp
         dst = ElectricalConnectionVoltageTypeEnumType::dc;
         return;
     }
+    dst = ElectricalConnectionVoltageTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -7787,6 +8059,9 @@ bool convertToJson(const ElectricalConnectionAcMeasurementTypeEnumType &src, Jso
             break;
         case ElectricalConnectionAcMeasurementTypeEnumType::phase:
             enumName = "phase";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -7810,6 +8085,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionAcMeasurem
         dst = ElectricalConnectionAcMeasurementTypeEnumType::phase;
         return;
     }
+    dst = ElectricalConnectionAcMeasurementTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -7846,6 +8122,9 @@ bool convertToJson(const ElectricalConnectionPhaseNameEnumType &src, JsonVariant
             break;
         case ElectricalConnectionPhaseNameEnumType::none:
             enumName = "none";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -7893,6 +8172,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionPhaseNameE
         dst = ElectricalConnectionPhaseNameEnumType::none;
         return;
     }
+    dst = ElectricalConnectionPhaseNameEnumType::EnumUndefined;
     return;
 }
 
@@ -7914,6 +8194,9 @@ bool convertToJson(const ElectricalConnectionConnectionPointType &src, JsonVaria
             break;
         case ElectricalConnectionConnectionPointType::other:
             enumName = "other";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -7941,6 +8224,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionConnection
         dst = ElectricalConnectionConnectionPointType::other;
         return;
     }
+    dst = ElectricalConnectionConnectionPointType::EnumUndefined;
     return;
 }
 
@@ -7962,6 +8246,9 @@ bool convertToJson(const ElectricalConnectionCharacteristicContextEnumType &src,
             break;
         case ElectricalConnectionCharacteristicContextEnumType::battery:
             enumName = "battery";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -7989,6 +8276,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
         dst = ElectricalConnectionCharacteristicContextEnumType::battery;
         return;
     }
+    dst = ElectricalConnectionCharacteristicContextEnumType::EnumUndefined;
     return;
 }
 
@@ -8034,6 +8322,9 @@ bool convertToJson(const ElectricalConnectionCharacteristicTypeEnumType &src, Js
             break;
         case ElectricalConnectionCharacteristicTypeEnumType::apparentPowerConsumptionNominalMax:
             enumName = "apparentPowerConsumptionNominalMax";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -8093,6 +8384,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionCharacteri
         dst = ElectricalConnectionCharacteristicTypeEnumType::apparentPowerConsumptionNominalMax;
         return;
     }
+    dst = ElectricalConnectionCharacteristicTypeEnumType::EnumUndefined;
     return;
 }
 
@@ -8129,6 +8421,9 @@ bool convertToJson(const DeviceDiagnosisOperatingStateEnumType &src, JsonVariant
             break;
         case DeviceDiagnosisOperatingStateEnumType::off:
             enumName = "off";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -8176,6 +8471,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceDiagnosisOperatingStateE
         dst = DeviceDiagnosisOperatingStateEnumType::off;
         return;
     }
+    dst = DeviceDiagnosisOperatingStateEnumType::EnumUndefined;
     return;
 }
 
@@ -8197,6 +8493,9 @@ bool convertToJson(const PowerSupplyConditionEnumType &src, JsonVariant &dst)
             break;
         case PowerSupplyConditionEnumType::error:
             enumName = "error";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -8224,6 +8523,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSupplyConditionEnumType &
         dst = PowerSupplyConditionEnumType::error;
         return;
     }
+    dst = PowerSupplyConditionEnumType::EnumUndefined;
     return;
 }
 
@@ -8341,6 +8641,9 @@ bool convertToJson(const DeviceConfigurationKeyNameEnumType &src, JsonVariant &d
             break;
         case DeviceConfigurationKeyNameEnumType::incentivesWaitIncentiveWriteable:
             enumName = "incentivesWaitIncentiveWriteable";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -8496,6 +8799,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyNameEnum
         dst = DeviceConfigurationKeyNameEnumType::incentivesWaitIncentiveWriteable;
         return;
     }
+    dst = DeviceConfigurationKeyNameEnumType::EnumUndefined;
     return;
 }
 
@@ -8526,6 +8830,9 @@ bool convertToJson(const DeviceConfigurationKeyValueTypeType &src, JsonVariant &
             break;
         case DeviceConfigurationKeyValueTypeType::integer:
             enumName = "integer";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -8565,6 +8872,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueTyp
         dst = DeviceConfigurationKeyValueTypeType::integer;
         return;
     }
+    dst = DeviceConfigurationKeyValueTypeType::EnumUndefined;
     return;
 }
 
@@ -8589,6 +8897,9 @@ bool convertToJson(const CmdClassifierType &src, JsonVariant &dst)
             break;
         case CmdClassifierType::result:
             enumName = "result";
+            break;
+        default:
+            enumName = "EnumUndefined";
             break;
     }
     return dst.set(enumName);
@@ -8620,6 +8931,7 @@ void convertFromJson(const JsonVariantConst &src, CmdClassifierType &dst)
         dst = CmdClassifierType::result;
         return;
     }
+    dst = CmdClassifierType::EnumUndefined;
     return;
 }
 

@@ -299,6 +299,7 @@ enum class DirectControlActivityStateEnumType
     running,
     paused,
     inactive,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -327,6 +328,7 @@ enum class RecurringIntervalEnumType
     hourly,
     everyMinute,
     everySecond,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -360,6 +362,7 @@ enum class MonthType
     october,
     november,
     december,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -388,6 +391,7 @@ enum class DayOfWeekType
     friday,
     saturday,
     sunday,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -414,6 +418,7 @@ enum class OccurrenceEnumType
     third,
     fourth,
     last,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -446,6 +451,7 @@ enum class CommodityTypeEnumType
     heat,
     coolingLoad,
     air,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -469,6 +475,7 @@ enum class EnergyDirectionEnumType
 {
     consume,
     produce,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -494,6 +501,7 @@ enum class EnergyModeEnumType
     produce,
     idle,
     var_auto,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -609,6 +617,7 @@ enum class UnitOfMeasurementEnumType
     Btu_h,
     Ah,
     kg_Wh,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -808,6 +817,7 @@ enum class CurrencyEnumType
     ZAR,
     ZMW,
     ZWL,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -915,6 +925,7 @@ enum class ScopeTypeEnumType
     incentiveTableEnConsWithTF,
     incentiveTableEnProdWithTF,
     activePowerForecast,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -939,6 +950,7 @@ enum class RoleType
     client,
     server,
     special,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -974,6 +986,7 @@ enum class DeviceTypeEnumType
     EnergyManagementSystem,
     Inverter,
     ChargingStation,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1043,6 +1056,7 @@ enum class EntityTypeEnumType
     PVString,
     GridGuard,
     ControllableSystem,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1096,6 +1110,7 @@ enum class FeatureTypeEnumType
     Bill,
     Identification,
     StateInformation,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1119,6 +1134,7 @@ enum class FeatureDirectControlSpecificUsageEnumType
 {
     History,
     RealTime,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1142,6 +1158,7 @@ enum class FeatureHvacSpecificUsageEnumType
 {
     OperationMode,
     Overrun,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1169,6 +1186,7 @@ enum class FeatureMeasurementSpecificUsageEnumType
     Level,
     Pressure,
     Temperature,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1196,6 +1214,7 @@ enum class FeatureSetpointSpecificUsageEnumType
     Level,
     Pressure,
     Temperature,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1221,6 +1240,7 @@ enum class FeatureSmartEnergyManagementPsSpecificUsageEnumType
     FlexibleChosenForecast,
     FlexibleOptionalForecast,
     OptionalSequenceBasedImmediateControl,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1384,6 +1404,7 @@ enum class FunctionEnumType
     measurementSeriesListData,
     electricalConnectionCharacteristicListData,
     stateInformationListData,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1417,6 +1438,7 @@ enum class PowerTimeSlotValueTypeEnumType
     energyExpectedValue,
     energyStandardDeviation,
     energySkewness,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1441,6 +1463,7 @@ enum class PowerSequenceScopeEnumType
     forecast,
     measurement,
     recommendation,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1470,6 +1493,7 @@ enum class PowerSequenceStateEnumType
     inactive,
     completed,
     invalid,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1533,6 +1557,7 @@ enum class MeasurementTypeEnumType
     voltage,
     volume,
     volumetricFlow,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1559,6 +1584,7 @@ enum class MeasurementValueTypeEnumType
     minValue,
     maxValue,
     standardDeviation,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1583,6 +1609,7 @@ enum class MeasurementValueSourceEnumType
     measuredValue,
     calculatedValue,
     empiricalValue,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1607,6 +1634,7 @@ enum class MeasurementValueTendencyEnumType
     rising,
     stable,
     falling,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1631,6 +1659,7 @@ enum class MeasurementValueStateEnumType
     normal,
     outOfRange,
     error,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1662,6 +1691,7 @@ enum class ThresholdTypeEnumType
     maxValueThresholdExtreme,
     sagThreshold,
     swellThreshold,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1684,6 +1714,7 @@ void convertFromJson(const JsonVariantConst &src, ThresholdTypeEnumType &dst);
 enum class BillTypeEnumType
 {
     chargingSummary,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1707,6 +1738,7 @@ enum class BillPositionTypeEnumType
 {
     gridElectricEnergy,
     selfProducedElectricEnergy,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1733,6 +1765,7 @@ enum class BillCostTypeEnumType
     co2Emission,
     renewableEnergy,
     radioactiveWaste,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1757,6 +1790,7 @@ enum class IdentificationTypeEnumType
     eui48,
     eui64,
     userRfidTag,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1780,6 +1814,7 @@ enum class SetpointTypeEnumType
 {
     valueAbsolute,
     valueRelative,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1804,6 +1839,7 @@ enum class TimeSlotTimeModeEnumType
     absolute,
     recurring,
     both,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1861,6 +1897,7 @@ enum class SensingStateEnumType
     notDetected,
     alarmed,
     notAlarmed,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1898,6 +1935,7 @@ enum class SensingTypeEnumType
     alarmSensor,
     powerAlarmSensor,
     dayNightIndicator,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1922,6 +1960,7 @@ enum class ActuatorSwitchFctEnumType
     on,
     off,
     toggle,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1947,6 +1986,7 @@ enum class NetworkManagementFeatureSetType
     router,
     smart,
     simple,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1971,6 +2011,7 @@ enum class NetworkManagementProcessStateStateType
     succeeded,
     failed,
     aborted,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -1995,6 +2036,7 @@ enum class NetworkManagementStateChangeType
     added,
     removed,
     modified,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2022,6 +2064,7 @@ enum class SupplyConditionEventTypeEnumType
     releaseOfLimitations,
     otherProblem,
     gridConditionUpdate,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2048,6 +2091,7 @@ enum class SupplyConditionOriginatorEnumType
     internalLimit,
     internalService,
     internalUser,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2074,6 +2118,7 @@ enum class GridConditionEnumType
     good,
     productionYellow,
     productionRed,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2098,6 +2143,7 @@ enum class AlarmTypeEnumType
     alarmCancelled,
     underThreshold,
     overThreshold,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2123,6 +2169,7 @@ enum class HvacOverrunStatusEnumType
     running,
     finished,
     inactive,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2150,6 +2197,7 @@ enum class LoadControlEventStateEnumType
     eventRejected,
     eventCancelled,
     eventError,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2174,6 +2222,7 @@ enum class TaskManagementJobSourceEnumType
     internalMechanism,
     userInteraction,
     externalConfiguration,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2199,6 +2248,7 @@ enum class HvacSystemFunctionTypeEnumType
     cooling,
     ventilation,
     dhw,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2224,6 +2274,7 @@ enum class HvacOperationModeTypeEnumType
     on,
     off,
     eco,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2255,6 +2306,7 @@ enum class HvacOverrunTypeEnumType
     oneTimeVentilation,
     hvacSystemOff,
     valveKick,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2282,6 +2334,7 @@ enum class LoadControlEventActionEnumType
     increase,
     emergency,
     normal,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2306,6 +2359,7 @@ enum class LoadControlLimitTypeEnumType
     minValueLimit,
     maxValueLimit,
     signDependentAbsValueLimit,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2330,6 +2384,7 @@ enum class LoadControlCategoryEnumType
     obligation,
     recommendation,
     optimization,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2356,6 +2411,7 @@ enum class PowerSourceEnumType
     mains3Phase,
     battery,
     dc,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2385,6 +2441,7 @@ enum class ActuatorLevelFctEnumType
     percentageRelative,
     absolute,
     relative,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2413,6 +2470,7 @@ enum class TimeSeriesTypeEnumType
     dischargingEnergyRequest,
     consumptionLimitCurve,
     productionLimitCurve,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2440,6 +2498,7 @@ enum class MessagingTypeEnumType
     alarm,
     emergency,
     obsolete,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2464,6 +2523,7 @@ enum class TierBoundaryTypeEnumType
     powerBoundary,
     energyBoundary,
     countBoundary,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2487,6 +2547,7 @@ enum class TierTypeEnumType
 {
     fixedCost,
     dynamicCost,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2512,6 +2573,7 @@ enum class IncentiveTypeEnumType
     relativeCost,
     renewableEnergyPercentage,
     co2Emission,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2537,6 +2599,7 @@ enum class IncentiveValueTypeEnumType
     averageValue,
     minValue,
     maxValue,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2571,6 +2634,7 @@ enum class StateInformationFunctionalityEnumType
     throttled,
     shuttingDown,
     manualShutdown,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2610,6 +2674,7 @@ enum class StateInformationFailureEnumType
     dcVoltageBelowLimit,
     hardwareTestFailure,
     genericInternalError,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2633,6 +2698,7 @@ enum class StateInformationCategoryEnumType
 {
     functionality,
     failure,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2659,6 +2725,7 @@ enum class ElectricalConnectionMeasurandVariantEnumType
     instantaneous,
     angle,
     cosPhi,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2682,6 +2749,7 @@ enum class ElectricalConnectionVoltageTypeEnumType
 {
     ac,
     dc,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2707,6 +2775,7 @@ enum class ElectricalConnectionAcMeasurementTypeEnumType
     reactive,
     apparent,
     phase,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2738,6 +2807,7 @@ enum class ElectricalConnectionPhaseNameEnumType
     neutral,
     ground,
     none,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2764,6 +2834,7 @@ enum class ElectricalConnectionConnectionPointType
     pv,
     sd,
     other,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2790,6 +2861,7 @@ enum class ElectricalConnectionCharacteristicContextEnumType
     inverter,
     pvString,
     battery,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2824,6 +2896,7 @@ enum class ElectricalConnectionCharacteristicTypeEnumType
     contractualProductionNominalMax,
     apparentPowerProductionNominalMax,
     apparentPowerConsumptionNominalMax,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2855,6 +2928,7 @@ enum class DeviceDiagnosisOperatingStateEnumType
     finished,
     temporarilyNotReady,
     off,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2881,6 +2955,7 @@ enum class PowerSupplyConditionEnumType
     critical,
     unknown,
     error,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2939,6 +3014,7 @@ enum class DeviceConfigurationKeyNameEnumType
     incentivesSimulationConcurrent,
     incentivesTimeoutIncentiveRequest,
     incentivesWaitIncentiveWriteable,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2968,6 +3044,7 @@ enum class DeviceConfigurationKeyValueTypeType
     time,
     scaledNumber,
     integer,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
@@ -2995,6 +3072,7 @@ enum class CmdClassifierType
     write,
     call,
     result,
+    EnumUndefined, // This is not part of the spec but its needed for error handling
 };
 
 /**
