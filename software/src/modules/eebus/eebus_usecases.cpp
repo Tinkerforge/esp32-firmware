@@ -25,7 +25,7 @@
 #include "module_dependencies.h"
 #include "tools.h"
 
-bool NodeManagementUsecase::handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
+CmdClassifierType NodeManagementUsecase::handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     // Binding Request as defined in EEBus SPINE TS ProtocolSpecification 7.3.2
     if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingRequestCall) {
@@ -47,13 +47,13 @@ bool NodeManagementUsecase::handle_binding(HeaderType &header, SpineDataTypeHand
             EEBUS_USECASE_HELPERS::build_result_data(response,
                                                      EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError,
                                                      "Binding request was successful");
-            return true;
+            return CmdClassifierType::reply;
         }
         eebus.trace_fmtln("Binding requested but failed");
         EEBUS_USECASE_HELPERS::build_result_data(response,
                                                  EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected,
                                                  "Binding request failed");
-        return true;
+        return CmdClassifierType::reply;
     }
     // Binding Data as defined in EEBus SPINE TS ProtocolSpecification 7.3.3
     if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingData) {
@@ -61,7 +61,7 @@ bool NodeManagementUsecase::handle_binding(HeaderType &header, SpineDataTypeHand
         binding_data.bindingEntry = binding_management_entry_list_.bindingManagementEntryData;
         response["nodeManagementBindingData"] = binding_data;
         eebus.trace_fmtln("List of bindings was requested");
-        return true;
+        return CmdClassifierType::reply;
     }
     // Binding Release as defined in EEBus SPINE TS ProtocolSpecification 7.3.4
     if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingDeleteCall) {
@@ -72,7 +72,7 @@ bool NodeManagementUsecase::handle_binding(HeaderType &header, SpineDataTypeHand
             EEBUS_USECASE_HELPERS::build_result_data(response,
                                                      EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected,
                                                      "Binding release failed");
-            return true;
+            return CmdClassifierType::reply;
         };
 
         // Compares two optionals. If the one has no value, its considered a wildcard and matches anything in the second. If both have value, they are compared and the result returnd
@@ -124,10 +124,10 @@ bool NodeManagementUsecase::handle_binding(HeaderType &header, SpineDataTypeHand
         EEBUS_USECASE_HELPERS::build_result_data(response,
                                                  EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError,
                                                  "Removed bindings successfully");
-        return true;
+        return CmdClassifierType::reply;
     }
 
-    return false;
+    return CmdClassifierType::reply;
 }
 
 bool NodeManagementUsecase::check_is_bound(FeatureAddressType &client, FeatureAddressType &server) const
@@ -148,24 +148,30 @@ UseCaseInformationDataType NodeManagementUsecase::get_usecase_information()
     // This should never be used as the NodeManagementUsecase has no usecase information
 }
 
-bool NodeManagementUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType NodeManagementUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
     eebus.trace_fmtln("NodeManagementUsecase: Handling message with cmdClassifier %d and command %s",
                       static_cast<int>(header.cmdClassifier.get()),
                       data->function_to_string(data->last_cmd).c_str());
     if (header.cmdClassifier == CmdClassifierType::read && data->last_cmd == SpineDataTypeHandler::Function::nodeManagementUseCaseData) {
         eebus.trace_fmtln("NodeManagementUsecase: Command identified as NodeManagementUseCaseData");
-        return read_usecase_data(header, data, response);
+        if (read_usecase_data(header, data, response)) {
+            return CmdClassifierType::reply;
+        }
+        return CmdClassifierType::EnumUndefined;
+
     }
     if (header.cmdClassifier == CmdClassifierType::read && data->last_cmd == SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryData) {
         eebus.trace_fmtln("NodeManagementUsecase: Command identified as NodeManagementDetailedDiscoveryData");
-        return read_detailed_discovery_data(header, data, response);
+        if (read_detailed_discovery_data(header, data, response)) {
+            return CmdClassifierType::reply;
+        }
+        return CmdClassifierType::EnumUndefined;
     }
     if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionData || data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionRequestCall || data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionDeleteCall) {
         eebus.trace_fmtln("NodeManagementUsecase: Command identified as Subscription handling");
         return handle_subscription(header, data, response, connection);
     }
-
 
     // TODO: Add handling for subscription and binding functions
 
@@ -174,7 +180,7 @@ bool NodeManagementUsecase::handle_message(HeaderType &header, SpineDataTypeHand
                                              EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandNotSupported,
                                              "Unknown. Command not supported. Support may be pending.");
 
-    return false;
+    return CmdClassifierType::EnumUndefined;
 }
 
 bool NodeManagementUsecase::read_usecase_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) const
@@ -218,14 +224,14 @@ bool NodeManagementUsecase::read_detailed_discovery_data(HeaderType &header, Spi
 
 }
 
-bool NodeManagementUsecase::handle_subscription(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType NodeManagementUsecase::handle_subscription(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
     if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionRequestCall && header.cmdClassifier == CmdClassifierType::call) {
         if (!data->nodemanagementsubscriptionrequestcalltype || !data->nodemanagementsubscriptionrequestcalltype->subscriptionRequest || !data->nodemanagementsubscriptionrequestcalltype->subscriptionRequest->clientAddress || !data->nodemanagementsubscriptionrequestcalltype->subscriptionRequest->serverAddress) {
             EEBUS_USECASE_HELPERS::build_result_data(response,
                                                      EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected,
                                                      "Subscription request failed, no or invalid subscription request data provided");
-            return true;
+            return CmdClassifierType::result;
         }
         NodeManagementSubscriptionRequestCallType request = data->nodemanagementsubscriptionrequestcalltype.get();
         SubscriptionManagementEntryDataType entry = SubscriptionManagementEntryDataType();
@@ -236,11 +242,11 @@ bool NodeManagementUsecase::handle_subscription(HeaderType &header, SpineDataTyp
         EEBUS_USECASE_HELPERS::build_result_data(response,
                                                  EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError,
                                                  "Subscription request was successful");
-        return true;
+        return CmdClassifierType::EnumUndefined;
     }
     if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionData && header.cmdClassifier == CmdClassifierType::read) {
         response["nodeManagementSubscriptionData"] = subscription_data;
-        return true;
+        return CmdClassifierType::reply;;
     }
     if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionDeleteCall) {
         NodeManagementSubscriptionDeleteCallType subscription_delete_call = data->nodemanagementsubscriptiondeletecalltype.get();
@@ -294,10 +300,10 @@ bool NodeManagementUsecase::handle_subscription(HeaderType &header, SpineDataTyp
         EEBUS_USECASE_HELPERS::build_result_data(response,
                                                  EEBUS_USECASE_HELPERS::ResultErrorNumber::NoError,
                                                  "Removed Subscriptions successfully");
-        return true;
+        return CmdClassifierType::reply;
     }
 
-    return false;
+    return CmdClassifierType::reply;
 }
 
 NodeManagementDetailedDiscoveryEntityInformationType NodeManagementUsecase::get_detailed_discovery_entity_information() const
@@ -417,11 +423,11 @@ UseCaseInformationDataType ChargingSummaryUsecase::get_usecase_information()
     return evcs_usecase;
 }
 
-bool ChargingSummaryUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType ChargingSummaryUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
     // TODO: implement messagehandling for the ChargingSummary usecase
 
-    return false;
+    return CmdClassifierType::EnumUndefined;
 }
 
 NodeManagementDetailedDiscoveryEntityInformationType ChargingSummaryUsecase::get_detailed_discovery_entity_information() const
@@ -490,7 +496,7 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
     BasicJsonDocument<ArduinoJsonPsramAllocator> response_doc{8182};
     JsonObject responseObj = response_doc.to<JsonObject>();
     // TODO: Fix the addressing of the usecases. Maybe better address them by entity?
-    bool send_response = false;
+    CmdClassifierType send_response = CmdClassifierType::EnumUndefined;
     if (header.addressDestination->feature && header.addressDestination->feature.get() == feature_address_node_management) {
         eebus.trace_fmtln("Usecases: Received message for NodeManagementUsecase");
         send_response = node_management.handle_message(header, data, responseObj, connection);
@@ -502,12 +508,16 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
         EEBUS_USECASE_HELPERS::build_result_data(responseObj,
                                                  EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected,
                                                  "Unknown feature requested");
-        send_response = true; // We always send a response if we do not know the feature
+        send_response = CmdClassifierType::reply; // We always send a response if we do not know the feature
     }
-    if (send_response) {
+    if (send_response != CmdClassifierType::EnumUndefined) {
         eebus.trace_fmtln("Usecases: Sending response");
         // TODO: not everything is sent with a reply. Some things might be an error or a result
-        connection->send_datagram(response_doc, CmdClassifierType::reply, *header.addressSource, *header.addressDestination, false);
+        if (header.ackRequest.has_value() && header.ackRequest.get() && send_response != CmdClassifierType::result) {
+
+            eebus.trace_fmtln("Usecases: Header requested an ack, but sending a non-result response: %d", static_cast<int>(send_response));
+        }
+        connection->send_datagram(response_doc, send_response, *header.addressSource, *header.addressDestination, false);
     } else {
         eebus.trace_fmtln("Usecases: No response needed. Not sending anything");
     }
