@@ -209,7 +209,7 @@ bool NodeManagementUsecase::read_detailed_discovery_data(HeaderType &header, Spi
     node_management_detailed_data.specificationVersionList->specificationVersion->push_back(SUPPORTED_SPINE_VERSION);
 
     node_management_detailed_data.deviceInformation->description->description = api.getState("info/display_name")->get("display_name")->asEphemeralCStr(); // Optional. Shall not be longer than 4096 characters.
-    node_management_detailed_data.deviceInformation->description->label = "TEST_LABEL"; //api.getState("info/name")->get("display_type")->asEphemeralCStr();
+    node_management_detailed_data.deviceInformation->description->label = api.getState("info/name")->get("display_type")->asEphemeralCStr();
     // Optional. Shall not be longer than 256 characters.
     node_management_detailed_data.deviceInformation->description->networkFeatureSet = NetworkManagementFeatureSetType::simple;
     // Only simple operation is supported. We dont act as a SPINE router or anything like that.
@@ -312,7 +312,7 @@ NodeManagementDetailedDiscoveryEntityInformationType NodeManagementUsecase::get_
     entity.description->entityAddress->entity->push_back(0); // Entity 0 is the NodeManagement entity
     entity.description->entityType = "DeviceInformation";
     // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.7
-    entity.description->label = "Node_Management"; // The label of the entity. This is optional but recommended.
+    entity.description->label = "Node Management"; // The label of the entity. This is optional but recommended.
 
     // We focus on returning the mandatory fields.
     return entity;
@@ -349,13 +349,13 @@ NodeManagementDetailedDiscoveryFeatureInformationType NodeManagementUsecase::get
     // Binding delete calls
     FunctionPropertyType nodemanagementBindingDelete = {};
     nodemanagementBindingDelete.function = eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::nodeManagementBindingDeleteCall).c_str();
-    nodemanagementBindingDelete.possibleOperations->read = PossibleOperationsReadType{};
+    nodemanagementBindingDelete.possibleOperations.emplace();
     feature.description->supportedFunction->push_back(nodemanagementBindingDelete);
 
     // Binding request calls
     FunctionPropertyType nodemanagementBindingRequest = {};
     nodemanagementBindingRequest.function = eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::nodeManagementBindingRequestCall).c_str();
-    nodemanagementBindingRequest.possibleOperations->read = PossibleOperationsReadType{};
+    nodemanagementBindingRequest.possibleOperations.emplace();
     feature.description->supportedFunction->push_back(nodemanagementBindingRequest);
 
     // Information about current Subscriptions
@@ -367,13 +367,13 @@ NodeManagementDetailedDiscoveryFeatureInformationType NodeManagementUsecase::get
     // Subscription delete calls
     FunctionPropertyType nodemanagementSubscriptionDelete{};
     nodemanagementSubscriptionDelete.function = eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::nodeManagementSubscriptionDeleteCall).c_str();
-    nodemanagementSubscriptionDelete.possibleOperations->read = PossibleOperationsReadType{};
+    nodemanagementSubscriptionDelete.possibleOperations.emplace();
     feature.description->supportedFunction->push_back(nodemanagementSubscriptionDelete);
 
     // Subscription request calls
     FunctionPropertyType nodemanagementSubscriptionRequest{};
     nodemanagementSubscriptionRequest.function = eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::nodeManagementSubscriptionRequestCall).c_str();
-    nodemanagementSubscriptionRequest.possibleOperations->read = PossibleOperationsReadType{};
+    nodemanagementSubscriptionRequest.possibleOperations.emplace();
     feature.description->supportedFunction->push_back(nodemanagementSubscriptionRequest);
 
     return feature;
@@ -436,7 +436,7 @@ NodeManagementDetailedDiscoveryEntityInformationType ChargingSummaryUsecase::get
     entity.description->entityAddress->entity->push_back(entity_address);
     entity.description->entityType = "EVSE";
     // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.17
-    entity.description->label = "Charging_Summary"; // The label of the entity. This is optional but recommended.
+    entity.description->label = "Charging Summary"; // The label of the entity. This is optional but recommended.
 
     // We focus on returning the mandatory fields.
     return entity;
@@ -497,6 +497,7 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
     JsonObject responseObj = response_doc.to<JsonObject>();
     // TODO: Fix the addressing of the usecases. Maybe better address them by entity?
     CmdClassifierType send_response = CmdClassifierType::EnumUndefined;
+
     if (header.addressDestination->feature && header.addressDestination->feature.get() == feature_address_node_management) {
         eebus.trace_fmtln("Usecases: Received message for NodeManagementUsecase");
         send_response = node_management.handle_message(header, data, responseObj, connection);
@@ -512,13 +513,15 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
     }
     if (send_response != CmdClassifierType::EnumUndefined) {
         eebus.trace_fmtln("Usecases: Sending response");
-        // TODO: not everything is sent with a reply. Some things might be an error or a result
         if (header.ackRequest.has_value() && header.ackRequest.get() && send_response != CmdClassifierType::result) {
 
             eebus.trace_fmtln("Usecases: Header requested an ack, but sending a non-result response: %d", static_cast<int>(send_response));
         }
         connection->send_datagram(response_doc, send_response, *header.addressSource, *header.addressDestination, false);
     } else {
+        if (header.ackRequest.has_value() && header.ackRequest.get()) {
+            eebus.trace_fmtln("Usecases: Header requested an ack, but no response was generated");
+        }
         eebus.trace_fmtln("Usecases: No response needed. Not sending anything");
     }
 }
