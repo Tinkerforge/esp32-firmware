@@ -25,7 +25,7 @@
 #include "module_dependencies.h"
 #include "tools.h"
 
-CmdClassifierType NodeManagementUsecase::handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
+CmdClassifierType NodeManagementEntity::handle_binding(HeaderType &header, SpineDataTypeHandler *data, JsonObject response)
 {
     // Binding Request as defined in EEBus SPINE TS ProtocolSpecification 7.3.2
     if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingRequestCall) {
@@ -130,7 +130,7 @@ CmdClassifierType NodeManagementUsecase::handle_binding(HeaderType &header, Spin
     return CmdClassifierType::reply;
 }
 
-bool NodeManagementUsecase::check_is_bound(FeatureAddressType &client, FeatureAddressType &server) const
+bool NodeManagementEntity::check_is_bound(FeatureAddressType &client, FeatureAddressType &server) const
 {
     for (const BindingManagementEntryDataType &binding : binding_management_entry_list_.bindingManagementEntryData.get()) {
         if (binding.clientAddress && binding.serverAddress) {
@@ -142,13 +142,13 @@ bool NodeManagementUsecase::check_is_bound(FeatureAddressType &client, FeatureAd
     return false;
 }
 
-UseCaseInformationDataType NodeManagementUsecase::get_usecase_information()
+UseCaseInformationDataType NodeManagementEntity::get_usecase_information()
 {
     return UseCaseInformationDataType();
     // This should never be used as the NodeManagementUsecase has no usecase information
 }
 
-CmdClassifierType NodeManagementUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType NodeManagementEntity::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
     eebus.trace_fmtln("NodeManagementUsecase: Handling message with cmdClassifier %d and command %s",
                       static_cast<int>(header.cmdClassifier.get()),
@@ -183,10 +183,10 @@ CmdClassifierType NodeManagementUsecase::handle_message(HeaderType &header, Spin
     return CmdClassifierType::EnumUndefined;
 }
 
-bool NodeManagementUsecase::read_usecase_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) const
+bool NodeManagementEntity::read_usecase_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) const
 {
     NodeManagementUseCaseDataType node_management_usecase_data;
-    for (UseCase *uc : usecase_interface->usecase_list) {
+    for (EebusEntity *uc : usecase_interface->entity_list) {
         if (uc->get_usecase_type() != UseCaseType::NodeManagement) {
             node_management_usecase_data.useCaseInformation->push_back(uc->get_usecase_information());
         }
@@ -202,7 +202,7 @@ bool NodeManagementUsecase::read_usecase_data(HeaderType &header, SpineDataTypeH
     return false;
 }
 
-bool NodeManagementUsecase::read_detailed_discovery_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) const
+bool NodeManagementEntity::read_detailed_discovery_data(HeaderType &header, SpineDataTypeHandler *data, JsonObject response) const
 {
     // Detailed discovery as defined in EEBus SPINE TS ProtocolSpecification 7.1.2
     NodeManagementDetailedDiscoveryDataType node_management_detailed_data = {};
@@ -216,15 +216,16 @@ bool NodeManagementUsecase::read_detailed_discovery_data(HeaderType &header, Spi
     node_management_detailed_data.deviceInformation->description->deviceAddress->device = EEBUS_USECASE_HELPERS::get_spine_device_name();
     node_management_detailed_data.deviceInformation->description->deviceType = "ChargingStation"; // Mandatory. String defined in EEBUS SPINE TS ResourceSpecification 4.1
 
-    for (UseCase *uc : usecase_interface->usecase_list) {
+    for (EebusEntity *uc : usecase_interface->entity_list) {
         node_management_detailed_data.entityInformation->push_back(uc->get_detailed_discovery_entity_information());
-        node_management_detailed_data.featureInformation->push_back(uc->get_detailed_discovery_feature_information());
+        auto features = uc->get_detailed_discovery_feature_information();
+        node_management_detailed_data.featureInformation->insert(node_management_detailed_data.featureInformation->end(), features.begin(), features.end());
     }
     return response["nodeManagementDetailedDiscoveryData"].set(node_management_detailed_data);
 
 }
 
-CmdClassifierType NodeManagementUsecase::handle_subscription(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType NodeManagementEntity::handle_subscription(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
     if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementSubscriptionRequestCall && header.cmdClassifier == CmdClassifierType::call) {
         if (!data->nodemanagementsubscriptionrequestcalltype || !data->nodemanagementsubscriptionrequestcalltype->subscriptionRequest || !data->nodemanagementsubscriptionrequestcalltype->subscriptionRequest->clientAddress || !data->nodemanagementsubscriptionrequestcalltype->subscriptionRequest->serverAddress) {
@@ -306,7 +307,7 @@ CmdClassifierType NodeManagementUsecase::handle_subscription(HeaderType &header,
     return CmdClassifierType::reply;
 }
 
-NodeManagementDetailedDiscoveryEntityInformationType NodeManagementUsecase::get_detailed_discovery_entity_information() const
+NodeManagementDetailedDiscoveryEntityInformationType NodeManagementEntity::get_detailed_discovery_entity_information() const
 {
     NodeManagementDetailedDiscoveryEntityInformationType entity = {};
     entity.description->entityAddress->entity->push_back(0); // Entity 0 is the NodeManagement entity
@@ -318,7 +319,7 @@ NodeManagementDetailedDiscoveryEntityInformationType NodeManagementUsecase::get_
     return entity;
 }
 
-NodeManagementDetailedDiscoveryFeatureInformationType NodeManagementUsecase::get_detailed_discovery_feature_information() const
+std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> NodeManagementEntity::get_detailed_discovery_feature_information() const
 {
     NodeManagementDetailedDiscoveryFeatureInformationType feature = {};
     feature.description->featureAddress->entity->push_back(0); // Entity 0 is the NodeManagement entity
@@ -376,10 +377,12 @@ NodeManagementDetailedDiscoveryFeatureInformationType NodeManagementUsecase::get
     nodemanagementSubscriptionRequest.possibleOperations.emplace();
     feature.description->supportedFunction->push_back(nodemanagementSubscriptionRequest);
 
-    return feature;
+    std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> features;
+    features.push_back(feature);
+    return features;
 }
 
-void NodeManagementUsecase::inform_subscribers(int entity, int feature, SpineDataTypeHandler *data)
+void NodeManagementEntity::inform_subscribers(int entity, int feature, SpineDataTypeHandler *data)
 {
     std::optional<std::vector<int>> entities{};
     entities->push_back(entity);
@@ -397,12 +400,12 @@ void NodeManagementUsecase::inform_subscribers(int entity, int feature, SpineDat
     }
 };
 
-void NodeManagementUsecase::set_usecaseManager(EEBusUseCases *new_usecase_interface)
+void NodeManagementEntity::set_usecaseManager(EEBusUseCases *new_usecase_interface)
 {
     usecase_interface = new_usecase_interface;
 }
 
-UseCaseInformationDataType ChargingSummaryUsecase::get_usecase_information()
+UseCaseInformationDataType EvseEntity::get_usecase_information()
 {
     UseCaseInformationDataType evcs_usecase;
     evcs_usecase.actor = "EVSE"; // The actor can either be EVSE or Energy Broker but we support only EVSE
@@ -423,17 +426,17 @@ UseCaseInformationDataType ChargingSummaryUsecase::get_usecase_information()
     return evcs_usecase;
 }
 
-CmdClassifierType ChargingSummaryUsecase::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+CmdClassifierType EvseEntity::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
     // TODO: implement messagehandling for the ChargingSummary usecase
 
     return CmdClassifierType::EnumUndefined;
 }
 
-NodeManagementDetailedDiscoveryEntityInformationType ChargingSummaryUsecase::get_detailed_discovery_entity_information() const
+NodeManagementDetailedDiscoveryEntityInformationType EvseEntity::get_detailed_discovery_entity_information() const
 {
     NodeManagementDetailedDiscoveryEntityInformationType entity{};
-    entity.description->entityAddress->entity->push_back(entity_address);
+    entity.description->entityAddress->entity = entity_address;
     entity.description->entityType = "EVSE";
     // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.17
     entity.description->label = "Charging Summary"; // The label of the entity. This is optional but recommended.
@@ -442,11 +445,11 @@ NodeManagementDetailedDiscoveryEntityInformationType ChargingSummaryUsecase::get
     return entity;
 }
 
-NodeManagementDetailedDiscoveryFeatureInformationType ChargingSummaryUsecase::get_detailed_discovery_feature_information() const
+std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvseEntity::get_detailed_discovery_feature_information() const
 {
     NodeManagementDetailedDiscoveryFeatureInformationType feature{};
 
-    feature.description->featureAddress->entity->push_back(entity_address);
+    feature.description->featureAddress->entity = entity_address;
     feature.description->featureAddress->feature = 1; // Feature 1 is the Bill feature
 
     feature.description->featureType = "Bill";
@@ -472,19 +475,20 @@ NodeManagementDetailedDiscoveryFeatureInformationType ChargingSummaryUsecase::ge
     billListData.possibleOperations->read = PossibleOperationsReadType{};
     feature.description->supportedFunction->push_back(billListData);
 
-    return feature;
+    std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> features;
+    features.push_back(feature);
+    return features;
 }
 
 
 EEBusUseCases::EEBusUseCases()
 {
-    node_management = NodeManagementUsecase();
+    node_management = NodeManagementEntity();
     node_management.set_usecaseManager(this);
-    charging_summary = ChargingSummaryUsecase();
-
-    for (uint8_t i = 0; i < EEBUS_USECASES_ACTIVE; i++) {
-        usecase_list[i]->set_entity_address(i);
-    }
+    node_management.set_entity_address({0});
+    charging_summary = EvseEntity();
+    charging_summary.set_entity_address({1});
+    // TODO: Set entity address of entities
 }
 
 void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *data, SpineConnection *connection)
@@ -497,19 +501,24 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
     JsonObject responseObj = response_doc.to<JsonObject>();
     // TODO: Fix the addressing of the usecases. Maybe better address them by entity?
     CmdClassifierType send_response = CmdClassifierType::EnumUndefined;
+    String entity_name = "Unknown";
 
-    if (header.addressDestination->feature && header.addressDestination->feature.get() == feature_address_node_management) {
-        eebus.trace_fmtln("Usecases: Received message for NodeManagementUsecase");
-        send_response = node_management.handle_message(header, data, responseObj, connection);
-    } else if (header.addressDestination->feature && header.addressDestination->feature.get() == feature_address_charging_summary) {
-        eebus.trace_fmtln("Usecases: Received message for ChargingSummaryUsecase");
-        send_response = charging_summary.handle_message(header, data, responseObj, connection);
-    } else {
-        eebus.trace_fmtln("Usecases: Received message for unknown feature %d", header.addressDestination->feature.get());
+    bool found_dest_entity = false;
+    for (EebusEntity *entity : entity_list) {
+        if (header.addressDestination->entity.has_value() && entity->matches_entity_address(header.addressDestination->entity.get())) {
+            found_dest_entity = true;
+            eebus.trace_fmtln("Usecases: Found entity: %s", entity->get_entity_name().c_str());
+            send_response = entity->handle_message(header, data, responseObj, connection);
+            break;
+        }
+    }
+
+    if (!found_dest_entity) {
+        eebus.trace_fmtln("Usecases: Received message for unknown entity %d", entity_name.c_str());
         EEBUS_USECASE_HELPERS::build_result_data(responseObj,
                                                  EEBUS_USECASE_HELPERS::ResultErrorNumber::CommandRejected,
-                                                 "Unknown feature requested");
-        send_response = CmdClassifierType::reply; // We always send a response if we do not know the feature
+                                                 "Unknown entity requested");
+        send_response = CmdClassifierType::reply; // We always send a response if we do not know the entity
     }
     if (send_response != CmdClassifierType::EnumUndefined) {
         eebus.trace_fmtln("Usecases: Sending response");
