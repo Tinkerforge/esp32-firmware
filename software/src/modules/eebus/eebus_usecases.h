@@ -46,19 +46,30 @@ enum class UseCaseType : uint8_t
 };
 
 /**
- * The basic Framework of a EEBUS UseCase.
+ * The basic Framework of a EEBUS Entity.
+ * Each entity has one or multiple features. An entity
  */
-class UseCase
+class EebusEntity
 {
 public:
     // Usecase Handlers
-    virtual ~UseCase() = default;
+    virtual ~EebusEntity() = default;
 
     [[nodiscard]] virtual UseCaseType get_usecase_type() const = 0;
 
-    void set_entity_address(const uint8_t address)
+    void set_entity_address(const std::vector<int> &address)
     {
         entity_address = address;
+    }
+
+    bool matches_entity_address(const std::vector<int> &address) const
+    {
+        return entity_address == address;
+    }
+
+    String get_entity_name()
+    {
+        return entity_name;
     }
 
     /**
@@ -72,22 +83,23 @@ public:
     virtual CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) = 0;
 
     /**
-     * Returns the usecase information for this usecase.
+     * Returns the usecase information for this entity. This gives information about which usecases this entity belongs to. Multiple entities may belong to the same usecase.
      * @return The UseCaseInformationDataType that contains the information about the usecase.
      */
     virtual UseCaseInformationDataType get_usecase_information() = 0;
 
-    [[nodiscard]] virtual NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const;
-    [[nodiscard]] virtual NodeManagementDetailedDiscoveryFeatureInformationType get_detailed_discovery_feature_information() const;
+    [[nodiscard]] virtual NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const = 0; // An entity exists only once but can have multiple features
+    [[nodiscard]] virtual std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const = 0;
 
 protected:
-    uint8_t entity_address = 0; // The feature address of the usecase. This is used to identify the usecase in the NodeManagementUseCaseDataType.
+    std::vector<int> entity_address{}; // The feature address of the usecase. This is used to identify the usecase in the NodeManagementUseCaseDataType.
+    String entity_name = "undefined namew";
 };
 
 /**
  * The Default Nodemanagement UseCase. Needs to be supported by all EEBUS devices.
  */
-class NodeManagementUsecase final : public UseCase
+class NodeManagementEntity final : public EebusEntity
 {
 public:
     void set_usecaseManager(EEBusUseCases *usecases);
@@ -123,7 +135,11 @@ public:
     CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
 
     [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
-    [[nodiscard]] NodeManagementDetailedDiscoveryFeatureInformationType get_detailed_discovery_feature_information() const override;
+    /**
+     * The NodeManagement Usecase only has one features which is the NodeManagement feature itself.
+     * @return The lis of features supported by this entity.
+     */
+    [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
 
     [[nodiscard]] UseCaseType get_usecase_type() const override
     {
@@ -144,13 +160,13 @@ private:
 };
 
 /**
- * The EEBUSChargingSummary UseCase as defined in EEBus UC TS - EV Charging Summary V1.0.1.
+ * The EEBUSChargingSummary Entity as defined in EEBus UC TS - EV Charging Summary V1.0.1.
  */
-class ChargingSummaryUsecase final : public UseCase
+class EvseEntity final : public EebusEntity
 {
 public:
     // Usecase Management
-    ChargingSummaryUsecase() = default;
+    EvseEntity() = default;
 
     /**
     * Builds and returns the UseCaseInformationDataType as defined in EEBus UC TS - EV Charging Summary V1.0.1. 3.1.2.
@@ -174,10 +190,14 @@ public:
     }
 
     [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
-    [[nodiscard]] NodeManagementDetailedDiscoveryFeatureInformationType get_detailed_discovery_feature_information() const override;
+    /**
+     * Returns the supported features. EVSE supports only one feature which is the Bill feature.
+     * @return a list of the supported features.
+     */
+    [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
 
     // Binding
-    std::vector<uint32_t> bound_connections{}; // List of connections that have been bound successfully
+    //std::vector<uint32_t> bound_connections{}; // List of connections that have been bound successfully
 };
 
 /**
@@ -209,13 +229,10 @@ public:
     BasicJsonDocument<ArduinoJsonPsramAllocator> temporary_json_doc{SPINE_CONNECTION_MAX_JSON_SIZE}; // If a temporary doc is needed, use this one.
     BasicJsonDocument<ArduinoJsonPsramAllocator> response{SPINE_CONNECTION_MAX_JSON_SIZE}; // The response document to be filled with the response data
 
-    uint8_t feature_address_node_management = 0;
-    NodeManagementUsecase node_management{};
+    NodeManagementEntity node_management{};
+    EvseEntity charging_summary{};
 
-    uint8_t feature_address_charging_summary = 1;
-    ChargingSummaryUsecase charging_summary{};
-
-    UseCase *usecase_list[EEBUS_USECASES_ACTIVE] = {&node_management, &charging_summary};
+    EebusEntity *entity_list[EEBUS_USECASES_ACTIVE] = {&node_management, &charging_summary};
 };
 
 namespace EEBUS_USECASE_HELPERS
@@ -244,7 +261,6 @@ enum class ResultErrorNumber
 * @param response The JsonObject to write the result data to.
 * @param error_number The error number to set in the result data. Default is NoError.
 * @param description The description of the error set in the result data. Default is an empty string.
-* @param cmd_classifier The command classifier of the response. Default is reply.
 */
 void build_result_data(JsonObject &response, ResultErrorNumber error_number = ResultErrorNumber::NoError, const char *description = "");
 } // namespace EEBUS_USECASE_HELPERS
