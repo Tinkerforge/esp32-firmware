@@ -25,8 +25,13 @@
 #include "spine_connection.h"
 #include "spine_types.h"
 
-// Update this as new usecases are added
+// Update this as usecases are enabled. 1 is always active and the nodemanagement Usecase
 #define EEBUS_USECASES_ACTIVE 2
+//#define EEBUS_USECASE_EVCS_ENABLE // Enable the EV Charging Summary Usecase
+#define EEBUS_USECASE_LPC_ENABLE // Enable the Limitation of Power Consumption Usecase
+#define EEBUS_USECASE_CEVC_ENABLE // Enable the Coordinated EV Charging Usecase
+#define EEBUS_USECASE_EVSECC_ENABLE // Enable the EV Commissioning and Configuration Usecase
+
 
 class EEBusUseCases; // Forward declaration of EEBusUseCases
 
