@@ -27,7 +27,7 @@
 
 // Update this as usecases are enabled. 1 is always active and the nodemanagement Usecase
 #define EEBUS_USECASES_ACTIVE 2
-//#define EEBUS_USECASE_EVCS_ENABLE // Enable the EV Charging Summary Usecase
+#define EEBUS_USECASE_EVCS_ENABLE // Enable the EV Charging Summary Usecase
 #define EEBUS_USECASE_LPC_ENABLE // Enable the Limitation of Power Consumption Usecase
 #define EEBUS_USECASE_CEVC_ENABLE // Enable the Coordinated EV Charging Usecase
 #define EEBUS_USECASE_EVSECC_ENABLE // Enable the EV Commissioning and Configuration Usecase
@@ -184,6 +184,8 @@ public:
      */
     CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
 
+
+
     [[nodiscard]] UseCaseType get_usecase_type() const override
     {
         return UseCaseType::ChargingSummary;
@@ -196,8 +198,17 @@ public:
      */
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
 
-    // Binding
-    //std::vector<uint32_t> bound_connections{}; // List of connections that have been bound successfully
+private:
+    int bill_feature_address = 1;
+    /**
+     * Handle the Bill Feature.
+     * @param header
+     * @param data
+     * @param response
+     * @param connection
+     * @return
+     */
+    CmdClassifierType bill_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
 };
 
 /**

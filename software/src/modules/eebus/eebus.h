@@ -67,6 +67,7 @@ public:
 
     Config config_peers_prototype;
     Config state_connections_prototype;
+    Config charges_prototype;
     ConfigRoot add_peer;
     ConfigRoot remove_peer;
     ConfigRoot config;
