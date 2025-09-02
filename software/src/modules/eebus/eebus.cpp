@@ -115,10 +115,19 @@ void EEBus::pre_setup()
     };
     scan_command = ConfigRoot(Config::Object({}));
 
+    charges_prototype = Config::Object({
+        {"id", Config::Uint16(0)},
+        {"charged_kwh", Config::Float(0)},
+        {"start_time", Config::Uint32(0)},
+        {"duration", Config::Uint16(0)},
+        {"cost", Config::Float(0)}
+    });
+
     state = Config::Object({
         {"ski", Config::Str("", 0, 40)},
         {"discovery_state", Config::Enum(ShipDiscoveryState::Ready)},
         {
+            // TODO: Are these connections still neccessary? Or shall they just be in config
             "connections",
             Config::Array({
                               Config::Object({
@@ -131,6 +140,13 @@ void EEBus::pre_setup()
                           MAX_PEER_REMEMBERED,
                           Config::type_id<Config::ConfObject>())
         },
+        {"charge_state", Config::Array({
+                                           charges_prototype},
+                                       &charges_prototype,
+                                       0,
+                                       32,
+                                       Config::type_id<Config::ConfObject>())},
+
     });
 
     ship.pre_setup();
