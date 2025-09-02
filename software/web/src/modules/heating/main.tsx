@@ -655,11 +655,11 @@ export class HeatingStatus extends Component<{}, state & sgr_blocking_override &
                 override_remaining = this.get_override_remaining();
 
                 if (this.override_remaining_interval_id === undefined) {
-                    this.override_remaining_interval_id = setInterval(() => this.setState({override_remaining: this.get_override_remaining()}), 5000);
+                    this.override_remaining_interval_id = window.setInterval(() => this.setState({override_remaining: this.get_override_remaining()}), 5000);
                 }
             }
             else if (this.override_remaining_interval_id !== undefined) {
-                clearInterval(this.override_remaining_interval_id);
+                window.clearInterval(this.override_remaining_interval_id);
                 this.override_remaining_interval_id = undefined;
             }
 

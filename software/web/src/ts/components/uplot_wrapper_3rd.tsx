@@ -287,7 +287,7 @@ export class UplotFlagsWrapper extends Component<UplotFlagsWrapperProps, {}> {
 
             this.observer.observe(div);
         } catch (e) {
-            setInterval(() => {
+            window.setInterval(() => {
                 this.resize();
             }, 500);
 

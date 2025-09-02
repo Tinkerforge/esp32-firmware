@@ -291,7 +291,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
             return;
         }
 
-        this.scan_continue_timer = setTimeout(async () => {await this.scan_continue()}, SCAN_CONTINUE_INTERVAL);
+        this.scan_continue_timer = window.setTimeout(async () => {await this.scan_continue()}, SCAN_CONTINUE_INTERVAL);
     }
 
     render() {
@@ -366,7 +366,7 @@ class DeviceScanner extends Component<DeviceScannerProps, DeviceScannerState> {
                                     return;
                                 }
 
-                                this.scan_continue_timer = setTimeout(async () => {await this.scan_continue()}, SCAN_CONTINUE_INTERVAL);
+                                this.scan_continue_timer = window.setTimeout(async () => {await this.scan_continue()}, SCAN_CONTINUE_INTERVAL);
                             });
                         }}
                         disabled={this.props.host.trim().length == 0 || !util.hasValue(this.props.port) || this.state.scan_running}>

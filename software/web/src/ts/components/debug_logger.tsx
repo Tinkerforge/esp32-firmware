@@ -123,14 +123,14 @@ export class DebugLogger extends Component<DebugLoggerProps, DebugLoggerState>
             return;
         }
 
-        this.debugTimeout = setInterval(this.resetDebugWd, 60000);
+        this.debugTimeout = window.setInterval(this.resetDebugWd, 60000);
 
         this.setState({debug_status: __("component.debug_logger.debug_running")});
     }
 
     async debug_stop() {
         this.setState({debug_running: false});
-        clearInterval(this.debugTimeout);
+        window.clearInterval(this.debugTimeout);
 
         try {
             await util.download("/debug_protocol/stop");

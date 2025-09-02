@@ -467,7 +467,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                         onAddShow={async () => {
                             this.setState({addCharger: {name: "", host: "", rot: -1}});
                             this.scan_services();
-                            this.scan_interval_id = setInterval(this.scan_services, 3000);
+                            this.scan_interval_id = window.setInterval(this.scan_services, 3000);
                         }}
                         onAddGetChildren={() => [<>
                             <FormRow label={__("charge_manager.content.add_charger_name")}>
@@ -532,7 +532,7 @@ export class ChargeManagerChargers extends ConfigComponent<'charge_manager/confi
                             this.setDirty(true);
                         }}
                         onAddHide={async () => {
-                            clearInterval(this.scan_interval_id);
+                            window.clearInterval(this.scan_interval_id);
                         }} />
             </FormRow>
 

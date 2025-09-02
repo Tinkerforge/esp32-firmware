@@ -318,7 +318,7 @@ export class UplotWrapperA extends Component<UplotWrapperAProps, {}> {
 
             this.observer.observe(div);
         } catch (e) {
-            setInterval(() => {
+            window.setInterval(() => {
                 this.resize();
             }, 500);
 

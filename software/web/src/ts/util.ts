@@ -288,7 +288,7 @@ function iFrameSocketInit(first: boolean, keep_as_first: boolean, continuation: 
         add_alert("event_connection_lost", "warning",  () => __("util.event_connection_lost_title"),() =>  __("util.event_connection_lost"))
     }
     if (wsReconnectTimeout != null) {
-        clearTimeout(wsReconnectTimeout);
+        window.clearTimeout(wsReconnectTimeout);
     }
     wsReconnectCallback = () => setupEventSource(keep_as_first ? first : false, keep_as_first, continuation, true)
     wsReconnectTimeout = window.setTimeout(wsReconnectCallback, RECONNECT_TIME);
@@ -365,7 +365,7 @@ export function setupEventSource(first: boolean, keep_as_first: boolean, continu
     ws = new WebSocket((location.protocol == 'https:' ? 'wss://' : 'ws://') + location.host + '/ws');
 
     if (wsReconnectTimeout != null) {
-        clearTimeout(wsReconnectTimeout);
+        window.clearTimeout(wsReconnectTimeout);
     }
     wsReconnectCallback = () => setupEventSource(keep_as_first ? first : false, keep_as_first, continuation)
     wsReconnectTimeout = window.setTimeout(wsReconnectCallback, RECONNECT_TIME);
@@ -385,14 +385,14 @@ export function pauseWebSockets() {
     }
 
     if (wsReconnectTimeout != null) {
-        clearTimeout(wsReconnectTimeout);
+        window.clearTimeout(wsReconnectTimeout);
         wsReconnectTimeout = null;
     }
 }
 
 export function resumeWebSockets() {
     if (wsReconnectTimeout != null) {
-        clearTimeout(wsReconnectTimeout);
+        window.clearTimeout(wsReconnectTimeout);
     }
 
     wsReconnectTimeout = window.setTimeout(wsReconnectCallback, RECONNECT_TIME);
@@ -408,14 +408,14 @@ export function postReboot(alert_title: string, alert_text: string) {
     }
 
     if (wsReconnectTimeout != null) {
-        clearTimeout(wsReconnectTimeout);
+        window.clearTimeout(wsReconnectTimeout);
         wsReconnectTimeout = null;
     }
 
     add_alert("reboot", "success", () => alert_title, () => alert_text);
 
     if (reload_timeout != null) {
-        clearTimeout(reload_timeout);
+        window.clearTimeout(reload_timeout);
     }
 
     // Wait 5 seconds before starting the reload/reconnect logic, to make sure the reboot has actually started yet.
@@ -441,7 +441,7 @@ export function ifLoggedInElse(if_continuation: () => void, else_continuation: (
             .then(blob => blob.text())
             .then(text => text == "Logged in" ? if_continuation() : else_continuation());
     } else {
-        setTimeout(() => ifLoggedInElse(if_continuation, else_continuation));
+        window.setTimeout(() => ifLoggedInElse(if_continuation, else_continuation));
     }
 }
 
@@ -453,19 +453,19 @@ export function ifLoggedInElseReload(continuation: () => void) {
 
 export function whenLoggedInElseReload(continuation: () => void) {
     if (loginReconnectTimeout != null) {
-        clearTimeout(loginReconnectTimeout);
+        window.clearTimeout(loginReconnectTimeout);
         loginReconnectTimeout = null;
     }
     if (wsReconnectTimeout != null) {
-        clearTimeout(wsReconnectTimeout);
+        window.clearTimeout(wsReconnectTimeout);
         wsReconnectTimeout = null;
     }
     loginReconnectTimeout = window.setTimeout(
         () => ifLoggedInElseReload(
-            () => {clearTimeout(loginReconnectTimeout); continuation();}),
+            () => {window.clearTimeout(loginReconnectTimeout); continuation();}),
         RECONNECT_TIME);
 
-    ifLoggedInElseReload(() => {clearTimeout(loginReconnectTimeout); continuation();});
+    ifLoggedInElseReload(() => {window.clearTimeout(loginReconnectTimeout); continuation();});
 }
 
 export function iso8601ButLocal(date: Date) {
@@ -672,7 +672,7 @@ export function upload(data: Blob, url: string, progress: (i: number) => void = 
 
 export async function download(url: string, timeout_ms: number = 10*1000) {
     let abort = new AbortController();
-    let timeout = setTimeout(() => abort.abort(), timeout_ms);
+    let timeout = window.setTimeout(() => abort.abort(), timeout_ms);
 
     let response = null;
     try {
@@ -681,7 +681,7 @@ export async function download(url: string, timeout_ms: number = 10*1000) {
         }
         response = await fetch(url, {signal: abort.signal, headers: {"X-Connection-Id": connection_id}});
     } catch (e) {
-        clearTimeout(timeout);
+        window.clearTimeout(timeout);
         throw new Error(e.name == "AbortError" ? __("util.download_timeout") : (__("util.download_error") + ": " + e.message));
     }
     if (!response.ok) {
@@ -693,7 +693,7 @@ export async function download(url: string, timeout_ms: number = 10*1000) {
 
 export async function put(url: string, payload: any, timeout_ms: number = 10*1000) {
     let abort = new AbortController();
-    let timeout = setTimeout(() => abort.abort(), timeout_ms);
+    let timeout = window.setTimeout(() => abort.abort(), timeout_ms);
 
     let response = null;
     try {
@@ -710,7 +710,7 @@ export async function put(url: string, payload: any, timeout_ms: number = 10*100
             },
             body: JSON.stringify(payload)})
     } catch (e) {
-        clearTimeout(timeout);
+        window.clearTimeout(timeout);
         throw new Error(e.name == "AbortError" ? __("util.download_timeout") : (__("util.download_error") + ": " + e.message));
     }
 
@@ -747,7 +747,7 @@ export function range(stopOrStart: number, stop?: number) {
 }
 
 export async function wait(t: number) {
-    return new Promise(resolve => setTimeout(resolve, t));
+    return new Promise(resolve => window.setTimeout(resolve, t));
 }
 
 // From https://stackoverflow.com/questions/49580725/is-it-possible-to-restrict-typescript-object-to-contain-only-properties-defined

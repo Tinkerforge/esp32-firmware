@@ -1292,7 +1292,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
             return;
         }
 
-        this.power_sum_interval_id = setInterval(() => {
+        this.power_sum_interval_id = window.setInterval(() => {
             let history_length = 20;
             let unlock_timeout = 5;
             let power_sum_min_width = this.state.power_sum_min_width;
@@ -1315,7 +1315,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
                     }
                     else if (this.power_sum_min_width_locked[key]) {
                         if (this.power_sum_min_width_unlock_timeout_id[key] === null) {
-                            this.power_sum_min_width_unlock_timeout_id[key] = setTimeout(() => {
+                            this.power_sum_min_width_unlock_timeout_id[key] = window.setTimeout(() => {
                                 this.power_sum_min_width_unlock_timeout_id[key] = null;
                                 this.power_sum_min_width_locked[key] = false
                             }, unlock_timeout);
@@ -1342,7 +1342,7 @@ export class MetersStatus extends Component<{}, MetersStatusState> {
             return;
         }
 
-        clearInterval(this.power_sum_interval_id);
+        window.clearInterval(this.power_sum_interval_id);
         this.power_sum_interval_id = null;
     }
 
