@@ -303,7 +303,6 @@ void Wifi::apply_soft_ap_config_and_start()
 
     logger.printfln("Soft AP started");
     logger.printfln_continue("SSID: %s", runtime_ap->ip_ssid_passphrase + runtime_ap->ssid_offset);
-    logger.printfln_continue("MAC address: %s", bssid_str);
     logger.printfln_continue("IP address: %s", runtime_ap->ip_ssid_passphrase);
 }
 
@@ -672,7 +671,6 @@ void Wifi::setup()
                 } else {
                     char buf[128];
                     StringWriter sw(buf, ARRAY_SIZE(buf));
-                    sw.printf("'%s', ", reinterpret_cast<const char *>(wifi_info.ssid));
 
                     if (wifi_info.phy_11a)       sw.puts("a+");
                     if (wifi_info.phy_11b)       sw.puts("b+");
@@ -713,11 +711,11 @@ void Wifi::setup()
                             sw.printf("%u", oix);
                     }
 
-                    sw.printf("] %hhidBm, BSSID %02hhX:%02hhX:%02hhX:%02hhX:%02hhX:%02hhX",
+                    sw.printf("] %hhidBm, BSSID %02hhX:%02hhX:%02hhX:XX:XX:XX",
                             wifi_info.rssi,
-                            wifi_info.bssid[0], wifi_info.bssid[1], wifi_info.bssid[2], wifi_info.bssid[3], wifi_info.bssid[4], wifi_info.bssid[5]);
+                            wifi_info.bssid[0], wifi_info.bssid[1], wifi_info.bssid[2]);
 
-                    logger.printfln("Connected to %s", buf);
+                    logger.printfln("Connected to Wifi: %s", buf);
                 }
 
                 this->runtime_sta->was_connected = true;
@@ -1034,7 +1032,7 @@ void Wifi::start_scan()
 
 void Wifi::register_urls()
 {
-    api.addState("wifi/state", &state);
+    api.addState("wifi/state", &state, {}, {"sta_bssid", "ap_bssid"});
 
     api.addCommand("wifi/scan", Config::Null(), {}, [this](String &/*errmsg*/) {
         start_scan();
@@ -1062,7 +1060,7 @@ void Wifi::register_urls()
         return request.send_json(200, sb);
     });
 
-    api.addPersistentConfig("wifi/sta_config", &sta_config, {"passphrase", "password"});
+    api.addPersistentConfig("wifi/sta_config", &sta_config, {"passphrase", "password"}, {"ssid", "bssid"});
     api.addPersistentConfig("wifi/ap_config", &ap_config, {"passphrase"});
 }
 
