@@ -428,7 +428,9 @@ UseCaseInformationDataType EvseEntity::get_usecase_information()
 
 CmdClassifierType EvseEntity::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
-    // TODO: implement messagehandling for the ChargingSummary usecase
+    if (header.addressDestination->feature.has_value() && header.addressDestination->feature == bill_feature_address) {
+        return bill_feature(header,data,response,connection);
+    }
 
     return CmdClassifierType::EnumUndefined;
 }
@@ -480,6 +482,49 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvseEntity::g
     return features;
 }
 
+
+CmdClassifierType EvseEntity::bill_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+{
+    if (data->last_cmd == SpineDataTypeHandler::Function::billDescriptionListData) {
+        // TODO: Add function that builds the billdescriptionlistdata
+    } else if (data->last_cmd == SpineDataTypeHandler::Function::billConstraintsListData) {
+        // TODO: Add function that builds the billconstrainslistdata
+        // Also billconstrainslistdata is not required, only recommended so we
+    } else if (data->last_cmd == SpineDataTypeHandler::Function::billListData) {
+        //TODO: Add function that builds the billlistdata
+        BillListDataType billListData{};
+        billListData.billData.emplace();
+        size_t count_charges = eebus.state.get("charge_state")->count();
+
+        for (size_t i = 0; i < count_charges; i++) {
+            int id = eebus.state.get("charge_state")->get(i)->get("id")->asUint16();
+            float charged_kwh = eebus.state.get("charge_state")->get(i)->get("charged_kwh")->asFloat();
+            uint32_t start_time = eebus.state.get("charge_state")->get(i)->get("start_time")->asUint();
+            uint32_t duration = eebus.state.get("charge_state")->get(i)->get("duration")->asUint();
+            float cost = eebus.state.get("charge_state")->get(i)->get("cost")->asFloat();
+
+
+            BillDataType billData{};
+            billData.billId = id;
+            billData.billType = "chargingSummary";
+
+            BillCostType billCost{};
+            billCost.cost->number = static_cast<int>(cost / 100.0);
+            billCost.cost->scale = 2;
+            billCost.currency = "EUR";
+
+            billData.total->cost.emplace();
+            billData.total->cost.get().push_back(billCost);
+            // TODO: What the hell does this want
+
+
+            billListData.billData->push_back(billData);
+        }
+        response["billListData"] = billListData;
+        return  CmdClassifierType::reply;
+    }
+    return CmdClassifierType::EnumUndefined;
+}
 
 EEBusUseCases::EEBusUseCases()
 {

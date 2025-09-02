@@ -38,12 +38,19 @@ export interface config {
     peers: Peer[];
 }
 
-
+export interface ChargeProcesses {
+    id: number;
+    charged_kwh: number;
+    start_time: number;
+    duration: number;
+    cost: number;
+}
 
 export interface state {
     ski: string;
     discovery_state: number;
     connections: Connection[];
+    charge_state: ChargeProcesses[];
 
 }
 
