@@ -1,4 +1,13 @@
-#ifdef __GNUC__
+#if defined(__clang__)
+#pragma clang diagnostic error "-Weverything"
+
+// We use at least C++11
+#pragma clang diagnostic ignored "-Wc++98-compat"
+// https://clang.llvm.org/docs/SafeBuffers.html That's too much for now
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"
+#endif
+
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic error "-Wall"
 #pragma GCC diagnostic error "-Wextra"
 
@@ -72,7 +81,10 @@
 #pragma GCC diagnostic error "-Wformat-overflow=2"
 #pragma GCC diagnostic error "-Wold-style-cast"
 #pragma GCC diagnostic error "-Wshadow"
+#endif
 
+// Both gcc and clang understand GCC poison
+#if defined(__GNUC__)
 #pragma GCC poison millis
 #pragma GCC poison micros
 #endif
