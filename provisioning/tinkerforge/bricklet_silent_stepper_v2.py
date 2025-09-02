@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #############################################################
-# This file was automatically generated on 2024-02-27.      #
+# This file was automatically generated on 2025-08-28.      #
 #                                                           #
 # Python Bindings Version 2.1.31                            #
 #                                                           #
@@ -46,6 +46,7 @@ class BrickletSilentStepperV2(Device):
     CALLBACK_ALL_DATA = 53
     CALLBACK_NEW_STATE = 54
     CALLBACK_GPIO_STATE = 55
+    CALLBACK_MOTOR_STALLED = 58
 
 
     FUNCTION_SET_MAX_VELOCITY = 1
@@ -96,6 +97,8 @@ class BrickletSilentStepperV2(Device):
     FUNCTION_SET_GPIO_ACTION = 50
     FUNCTION_GET_GPIO_ACTION = 51
     FUNCTION_GET_GPIO_STATE = 52
+    FUNCTION_SET_MOTOR_STALLED_CALLBACK_CONFIGURATION = 56
+    FUNCTION_GET_MOTOR_STALLED_CALLBACK_CONFIGURATON = 57
     FUNCTION_GET_SPITFP_ERROR_COUNT = 234
     FUNCTION_SET_BOOTLOADER_MODE = 235
     FUNCTION_GET_BOOTLOADER_MODE = 236
@@ -237,6 +240,8 @@ class BrickletSilentStepperV2(Device):
         self.response_expected[BrickletSilentStepperV2.FUNCTION_SET_GPIO_ACTION] = BrickletSilentStepperV2.RESPONSE_EXPECTED_FALSE
         self.response_expected[BrickletSilentStepperV2.FUNCTION_GET_GPIO_ACTION] = BrickletSilentStepperV2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletSilentStepperV2.FUNCTION_GET_GPIO_STATE] = BrickletSilentStepperV2.RESPONSE_EXPECTED_ALWAYS_TRUE
+        self.response_expected[BrickletSilentStepperV2.FUNCTION_SET_MOTOR_STALLED_CALLBACK_CONFIGURATION] = BrickletSilentStepperV2.RESPONSE_EXPECTED_TRUE
+        self.response_expected[BrickletSilentStepperV2.FUNCTION_GET_MOTOR_STALLED_CALLBACK_CONFIGURATON] = BrickletSilentStepperV2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletSilentStepperV2.FUNCTION_GET_SPITFP_ERROR_COUNT] = BrickletSilentStepperV2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletSilentStepperV2.FUNCTION_SET_BOOTLOADER_MODE] = BrickletSilentStepperV2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletSilentStepperV2.FUNCTION_GET_BOOTLOADER_MODE] = BrickletSilentStepperV2.RESPONSE_EXPECTED_ALWAYS_TRUE
@@ -255,6 +260,7 @@ class BrickletSilentStepperV2(Device):
         self.callback_formats[BrickletSilentStepperV2.CALLBACK_ALL_DATA] = (22, 'H i i H H')
         self.callback_formats[BrickletSilentStepperV2.CALLBACK_NEW_STATE] = (10, 'B B')
         self.callback_formats[BrickletSilentStepperV2.CALLBACK_GPIO_STATE] = (9, '2!')
+        self.callback_formats[BrickletSilentStepperV2.CALLBACK_MOTOR_STALLED] = (12, 'i')
 
         ipcon.add_device(self)
 
@@ -999,6 +1005,25 @@ class BrickletSilentStepperV2(Device):
         self.check_validity()
 
         return self.ipcon.send_request(self, BrickletSilentStepperV2.FUNCTION_GET_GPIO_STATE, (), '', 9, '2!')
+
+    def set_motor_stalled_callback_configuration(self, enabled):
+        r"""
+        Sets the period with which the :cb:`All Data` callback is triggered
+        periodically. A value of 0 turns the callback off.
+        """
+        self.check_validity()
+
+        enabled = bool(enabled)
+
+        self.ipcon.send_request(self, BrickletSilentStepperV2.FUNCTION_SET_MOTOR_STALLED_CALLBACK_CONFIGURATION, (enabled,), '!', 0, '')
+
+    def get_motor_stalled_callback_configuraton(self):
+        r"""
+        Returns the period as set by :func:`Set All Callback Configuration`.
+        """
+        self.check_validity()
+
+        return self.ipcon.send_request(self, BrickletSilentStepperV2.FUNCTION_GET_MOTOR_STALLED_CALLBACK_CONFIGURATON, (), '', 9, '!')
 
     def get_spitfp_error_count(self):
         r"""

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #############################################################
-# This file was automatically generated on 2024-12-17.      #
+# This file was automatically generated on 2025-08-28.      #
 #                                                           #
 # Python Bindings Version 2.1.31                            #
 #                                                           #
@@ -35,6 +35,7 @@ GetButtonState = namedtuple('ButtonState', ['button_press_time', 'button_release
 GetAllData1 = namedtuple('AllData1', ['iec61851_state', 'charger_state', 'contactor_state', 'contactor_error', 'allowed_charging_current', 'error_state', 'lock_state', 'dc_fault_current_state', 'jumper_configuration', 'has_lock_switch', 'evse_version', 'energy_meter_type', 'power', 'current', 'phases_active', 'phases_connected', 'error_count'])
 GetAllData2 = namedtuple('AllData2', ['shutdown_input_configuration', 'input_configuration', 'output_configuration', 'indication', 'duration', 'color_h', 'color_s', 'color_v', 'button_configuration', 'button_press_time', 'button_release_time', 'button_pressed', 'ev_wakeup_enabled', 'control_pilot_disconnect', 'boost_mode_enabled', 'temperature', 'phases_current', 'phases_requested', 'phases_state', 'phases_info', 'phase_auto_switch_enabled', 'phases_connected'])
 GetPhaseControl = namedtuple('PhaseControl', ['phases_current', 'phases_requested', 'phases_state', 'phases_info'])
+GetChargingProtocol = namedtuple('ChargingProtocol', ['charging_protocol', 'cp_duty_cycle'])
 GetSPITFPErrorCount = namedtuple('SPITFPErrorCount', ['error_count_ack_checksum', 'error_count_message_checksum', 'error_count_frame', 'error_count_overflow'])
 GetIdentity = namedtuple('Identity', ['uid', 'connected_uid', 'position', 'hardware_version', 'firmware_version', 'device_identifier'])
 
@@ -94,6 +95,8 @@ class BrickletEVSEV2(Device):
     FUNCTION_GET_PHASE_AUTO_SWITCH = 42
     FUNCTION_SET_PHASES_CONNECTED = 43
     FUNCTION_GET_PHASES_CONNECTED = 44
+    FUNCTION_SET_CHARGING_PROTOCOL = 46
+    FUNCTION_GET_CHARGING_PROTOCOL = 47
     FUNCTION_GET_SPITFP_ERROR_COUNT = 234
     FUNCTION_SET_BOOTLOADER_MODE = 235
     FUNCTION_GET_BOOTLOADER_MODE = 236
@@ -175,6 +178,8 @@ class BrickletEVSEV2(Device):
     ENERGY_METER_TYPE_SDM630MCTV2 = 5
     ENERGY_METER_TYPE_DSZ15DZMOD = 6
     ENERGY_METER_TYPE_DEM4A = 7
+    ENERGY_METER_TYPE_DMED341MID7ER = 8
+    ENERGY_METER_TYPE_DSZ16DZE = 9
     INPUT_UNCONFIGURED = 0
     INPUT_ACTIVE_LOW_MAX_0A = 1
     INPUT_ACTIVE_LOW_MAX_6A = 2
@@ -192,6 +197,8 @@ class BrickletEVSEV2(Device):
     INPUT_ACTIVE_HIGH_MAX_16A = 14
     INPUT_ACTIVE_HIGH_MAX_20A = 15
     INPUT_ACTIVE_HIGH_MAX_25A = 16
+    CHARGING_PROTOCOL_IEC61851 = 0
+    CHARGING_PROTOCOL_ISO15118 = 1
     BOOTLOADER_MODE_BOOTLOADER = 0
     BOOTLOADER_MODE_FIRMWARE = 1
     BOOTLOADER_MODE_BOOTLOADER_WAIT_FOR_REBOOT = 2
@@ -261,6 +268,8 @@ class BrickletEVSEV2(Device):
         self.response_expected[BrickletEVSEV2.FUNCTION_GET_PHASE_AUTO_SWITCH] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletEVSEV2.FUNCTION_SET_PHASES_CONNECTED] = BrickletEVSEV2.RESPONSE_EXPECTED_FALSE
         self.response_expected[BrickletEVSEV2.FUNCTION_GET_PHASES_CONNECTED] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
+        self.response_expected[BrickletEVSEV2.FUNCTION_SET_CHARGING_PROTOCOL] = BrickletEVSEV2.RESPONSE_EXPECTED_FALSE
+        self.response_expected[BrickletEVSEV2.FUNCTION_GET_CHARGING_PROTOCOL] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletEVSEV2.FUNCTION_GET_SPITFP_ERROR_COUNT] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletEVSEV2.FUNCTION_SET_BOOTLOADER_MODE] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletEVSEV2.FUNCTION_GET_BOOTLOADER_MODE] = BrickletEVSEV2.RESPONSE_EXPECTED_ALWAYS_TRUE
@@ -700,6 +709,25 @@ class BrickletEVSEV2(Device):
         self.check_validity()
 
         return self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_PHASES_CONNECTED, (), '', 9, 'B')
+
+    def set_charging_protocol(self, charging_protocol, cp_duty_cycle):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        charging_protocol = int(charging_protocol)
+        cp_duty_cycle = int(cp_duty_cycle)
+
+        self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_SET_CHARGING_PROTOCOL, (charging_protocol, cp_duty_cycle), 'B H', 0, '')
+
+    def get_charging_protocol(self):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        return GetChargingProtocol(*self.ipcon.send_request(self, BrickletEVSEV2.FUNCTION_GET_CHARGING_PROTOCOL, (), '', 11, 'B H'))
 
     def get_spitfp_error_count(self):
         r"""

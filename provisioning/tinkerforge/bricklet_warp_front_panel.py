@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #############################################################
-# This file was automatically generated on 2024-11-14.      #
+# This file was automatically generated on 2025-08-28.      #
 #                                                           #
 # Python Bindings Version 2.1.31                            #
 #                                                           #
@@ -41,6 +41,7 @@ class BrickletWARPFrontPanel(Device):
     DEVICE_DISPLAY_NAME = 'WARP Front Panel Bricklet'
     DEVICE_URL_PART = 'warp_front_panel' # internal
 
+    CALLBACK_FLASH_DATA_DONE = 21
 
 
     FUNCTION_SET_FLASH_INDEX = 1
@@ -63,6 +64,7 @@ class BrickletWARPFrontPanel(Device):
     FUNCTION_SET_DISPLAY = 18
     FUNCTION_GET_DISPLAY = 19
     FUNCTION_GET_FLASH_METADATA = 20
+    FUNCTION_REDRAW_EVERYTHING = 22
     FUNCTION_GET_SPITFP_ERROR_COUNT = 234
     FUNCTION_SET_BOOTLOADER_MODE = 235
     FUNCTION_GET_BOOTLOADER_MODE = 236
@@ -132,6 +134,7 @@ class BrickletWARPFrontPanel(Device):
         self.response_expected[BrickletWARPFrontPanel.FUNCTION_SET_DISPLAY] = BrickletWARPFrontPanel.RESPONSE_EXPECTED_FALSE
         self.response_expected[BrickletWARPFrontPanel.FUNCTION_GET_DISPLAY] = BrickletWARPFrontPanel.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletWARPFrontPanel.FUNCTION_GET_FLASH_METADATA] = BrickletWARPFrontPanel.RESPONSE_EXPECTED_ALWAYS_TRUE
+        self.response_expected[BrickletWARPFrontPanel.FUNCTION_REDRAW_EVERYTHING] = BrickletWARPFrontPanel.RESPONSE_EXPECTED_FALSE
         self.response_expected[BrickletWARPFrontPanel.FUNCTION_GET_SPITFP_ERROR_COUNT] = BrickletWARPFrontPanel.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletWARPFrontPanel.FUNCTION_SET_BOOTLOADER_MODE] = BrickletWARPFrontPanel.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletWARPFrontPanel.FUNCTION_GET_BOOTLOADER_MODE] = BrickletWARPFrontPanel.RESPONSE_EXPECTED_ALWAYS_TRUE
@@ -145,6 +148,7 @@ class BrickletWARPFrontPanel(Device):
         self.response_expected[BrickletWARPFrontPanel.FUNCTION_READ_UID] = BrickletWARPFrontPanel.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletWARPFrontPanel.FUNCTION_GET_IDENTITY] = BrickletWARPFrontPanel.RESPONSE_EXPECTED_ALWAYS_TRUE
 
+        self.callback_formats[BrickletWARPFrontPanel.CALLBACK_FLASH_DATA_DONE] = (8, '')
 
         ipcon.add_device(self)
 
@@ -343,6 +347,14 @@ class BrickletWARPFrontPanel(Device):
 
         return GetFlashMetadata(*self.ipcon.send_request(self, BrickletWARPFrontPanel.FUNCTION_GET_FLASH_METADATA, (), '', 32, 'I I I I I I'))
 
+    def redraw_everything(self):
+        r"""
+        TODO
+        """
+        self.check_validity()
+
+        self.ipcon.send_request(self, BrickletWARPFrontPanel.FUNCTION_REDRAW_EVERYTHING, (), '', 0, '')
+
     def get_spitfp_error_count(self):
         r"""
         Returns the error count for the communication between Brick and Bricklet.
@@ -506,5 +518,14 @@ class BrickletWARPFrontPanel(Device):
         |device_identifier_constant|
         """
         return GetIdentity(*self.ipcon.send_request(self, BrickletWARPFrontPanel.FUNCTION_GET_IDENTITY, (), '', 33, '8s 8s c 3B 3B H'))
+
+    def register_callback(self, callback_id, function):
+        r"""
+        Registers the given *function* with the given *callback_id*.
+        """
+        if function is None:
+            self.registered_callbacks.pop(callback_id, None)
+        else:
+            self.registered_callbacks[callback_id] = function
 
 WARPFrontPanel = BrickletWARPFrontPanel # for backward compatibility

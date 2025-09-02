@@ -1,5 +1,5 @@
 /* ***********************************************************
- * This file was automatically generated on 2025-07-31.      *
+ * This file was automatically generated on 2025-09-02.      *
  *                                                           *
  * C/C++ for Microcontrollers Bindings Version 2.0.4         *
  *                                                           *
@@ -690,6 +690,11 @@ typedef struct TF_EVSEV2 {
  * \ingroup TF_EVSEV2
  */
 #define TF_EVSE_V2_ENERGY_METER_TYPE_DMED341MID7ER 8
+
+/**
+ * \ingroup TF_EVSEV2
+ */
+#define TF_EVSE_V2_ENERGY_METER_TYPE_DSZ16DZE 9
 
 /**
  * \ingroup TF_EVSEV2

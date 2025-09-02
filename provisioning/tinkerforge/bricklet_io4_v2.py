@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #############################################################
-# This file was automatically generated on 2024-02-27.      #
+# This file was automatically generated on 2025-08-28.      #
 #                                                           #
 # Python Bindings Version 2.1.31                            #
 #                                                           #
@@ -25,6 +25,7 @@ GetAllInputValueCallbackConfiguration = namedtuple('AllInputValueCallbackConfigu
 GetMonoflop = namedtuple('Monoflop', ['value', 'time', 'time_remaining'])
 GetEdgeCountConfiguration = namedtuple('EdgeCountConfiguration', ['edge_type', 'debounce'])
 GetPWMConfiguration = namedtuple('PWMConfiguration', ['frequency', 'duty_cycle'])
+GetCaptureInputCallbackConfiguration = namedtuple('CaptureInputCallbackConfiguration', ['enable', 'time_between_capture'])
 GetSPITFPErrorCount = namedtuple('SPITFPErrorCount', ['error_count_ack_checksum', 'error_count_message_checksum', 'error_count_frame', 'error_count_overflow'])
 GetIdentity = namedtuple('Identity', ['uid', 'connected_uid', 'position', 'hardware_version', 'firmware_version', 'device_identifier'])
 
@@ -40,6 +41,7 @@ class BrickletIO4V2(Device):
     CALLBACK_INPUT_VALUE = 17
     CALLBACK_ALL_INPUT_VALUE = 18
     CALLBACK_MONOFLOP_DONE = 19
+    CALLBACK_CAPTURE_INPUT = 22
 
 
     FUNCTION_SET_VALUE = 1
@@ -58,6 +60,8 @@ class BrickletIO4V2(Device):
     FUNCTION_GET_EDGE_COUNT_CONFIGURATION = 14
     FUNCTION_SET_PWM_CONFIGURATION = 15
     FUNCTION_GET_PWM_CONFIGURATION = 16
+    FUNCTION_SET_CAPTURE_INPUT_CALLBACK_CONFIGURATION = 20
+    FUNCTION_GET_CAPTURE_INPUT_CALLBACK_CONFIGURATION = 21
     FUNCTION_GET_SPITFP_ERROR_COUNT = 234
     FUNCTION_SET_BOOTLOADER_MODE = 235
     FUNCTION_GET_BOOTLOADER_MODE = 236
@@ -99,7 +103,7 @@ class BrickletIO4V2(Device):
         """
         Device.__init__(self, uid, ipcon, BrickletIO4V2.DEVICE_IDENTIFIER, BrickletIO4V2.DEVICE_DISPLAY_NAME)
 
-        self.api_version = (2, 0, 0)
+        self.api_version = (2, 0, 1)
 
         self.response_expected[BrickletIO4V2.FUNCTION_SET_VALUE] = BrickletIO4V2.RESPONSE_EXPECTED_FALSE
         self.response_expected[BrickletIO4V2.FUNCTION_GET_VALUE] = BrickletIO4V2.RESPONSE_EXPECTED_ALWAYS_TRUE
@@ -117,6 +121,8 @@ class BrickletIO4V2(Device):
         self.response_expected[BrickletIO4V2.FUNCTION_GET_EDGE_COUNT_CONFIGURATION] = BrickletIO4V2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletIO4V2.FUNCTION_SET_PWM_CONFIGURATION] = BrickletIO4V2.RESPONSE_EXPECTED_FALSE
         self.response_expected[BrickletIO4V2.FUNCTION_GET_PWM_CONFIGURATION] = BrickletIO4V2.RESPONSE_EXPECTED_ALWAYS_TRUE
+        self.response_expected[BrickletIO4V2.FUNCTION_SET_CAPTURE_INPUT_CALLBACK_CONFIGURATION] = BrickletIO4V2.RESPONSE_EXPECTED_TRUE
+        self.response_expected[BrickletIO4V2.FUNCTION_GET_CAPTURE_INPUT_CALLBACK_CONFIGURATION] = BrickletIO4V2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletIO4V2.FUNCTION_GET_SPITFP_ERROR_COUNT] = BrickletIO4V2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletIO4V2.FUNCTION_SET_BOOTLOADER_MODE] = BrickletIO4V2.RESPONSE_EXPECTED_ALWAYS_TRUE
         self.response_expected[BrickletIO4V2.FUNCTION_GET_BOOTLOADER_MODE] = BrickletIO4V2.RESPONSE_EXPECTED_ALWAYS_TRUE
@@ -133,6 +139,7 @@ class BrickletIO4V2(Device):
         self.callback_formats[BrickletIO4V2.CALLBACK_INPUT_VALUE] = (11, 'B ! !')
         self.callback_formats[BrickletIO4V2.CALLBACK_ALL_INPUT_VALUE] = (10, '4! 4!')
         self.callback_formats[BrickletIO4V2.CALLBACK_MONOFLOP_DONE] = (10, 'B !')
+        self.callback_formats[BrickletIO4V2.CALLBACK_CAPTURE_INPUT] = (72, '64B')
 
         ipcon.add_device(self)
 
@@ -412,6 +419,33 @@ class BrickletIO4V2(Device):
         channel = int(channel)
 
         return GetPWMConfiguration(*self.ipcon.send_request(self, BrickletIO4V2.FUNCTION_GET_PWM_CONFIGURATION, (channel,), 'B', 14, 'I H'))
+
+    def set_capture_input_callback_configuration(self, enable, time_between_capture):
+        r"""
+        If `enable` is set to true, the :cb:`Capture Input` callback is started. The sample frequency is given with the `time between capture` parameter (in us).
+        For example: A time between capture of 50us corresponds to a sampling frequency of 20kHz. The maximum sampling frquency is 50kHz.
+
+        Note: When the :cb:`Capture Input` callback is activated, all other functions of the IO-4 Bricklet 2.0 stop working.
+
+        .. versionadded:: 2.0.5$nbsp;(Plugin)
+        """
+        self.check_validity()
+
+        enable = bool(enable)
+        time_between_capture = int(time_between_capture)
+
+        self.ipcon.send_request(self, BrickletIO4V2.FUNCTION_SET_CAPTURE_INPUT_CALLBACK_CONFIGURATION, (enable, time_between_capture), '! H', 0, '')
+
+    def get_capture_input_callback_configuration(self):
+        r"""
+        Returns the callback configuration as set by
+        :func:`Set Capture Input Callback Configuration`.
+
+        .. versionadded:: 2.0.5$nbsp;(Plugin)
+        """
+        self.check_validity()
+
+        return GetCaptureInputCallbackConfiguration(*self.ipcon.send_request(self, BrickletIO4V2.FUNCTION_GET_CAPTURE_INPUT_CALLBACK_CONFIGURATION, (), '', 11, '! H'))
 
     def get_spitfp_error_count(self):
         r"""
