@@ -594,10 +594,10 @@ void WebSockets::triggerHttpThread()
 void WebSockets::pre_setup() {
     state = Config::Object({
         {"keep_alive_fds", Config::Tuple(MAX_WEB_SOCKET_CLIENTS, Config::Int32(-1))},
-        {"keep_alive_pongs", Config::Tuple(MAX_WEB_SOCKET_CLIENTS, Config::Uint32(0))},
+        {"keep_alive_pongs", Config::Tuple(MAX_WEB_SOCKET_CLIENTS, Config::Timestamp())},
         {"keep_alive_peers", Config::Tuple(MAX_WEB_SOCKET_CLIENTS, Config::Str("", 0, INET6_ADDRSTRLEN))},
         {"worker_active", Config::Uint8(WEBSOCKET_WORKER_DONE)},
-        {"last_worker_run", Config::Uint32(0)},
+        {"last_worker_run", Config::Timestamp()},
         {"queue_len", Config::Uint16(0)}
     });
 
@@ -613,7 +613,7 @@ void WebSockets::updateDebugState()
         std::lock_guard<std::recursive_mutex> lock{work_queue_mutex};
 
         state.get("worker_active"  )->updateUint(worker_active);
-        state.get("last_worker_run")->updateUint(last_worker_run.to<millis_t>().as<uint32_t>());
+        state.get("last_worker_run")->updateTimestamp(last_worker_run);
         state.get("queue_len"      )->updateUint(work_queue.size());
     }
 
@@ -626,7 +626,7 @@ void WebSockets::updateDebugState()
 
         for (size_t i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
             state_keep_alive_fds->get(i)->updateInt(keep_alive_fds[i]);
-            state_keep_alive_pongs->get(i)->updateUint(keep_alive_last_pong[i].to<millis_t>().as<uint32_t>());
+            state_keep_alive_pongs->get(i)->updateTimestamp(keep_alive_last_pong[i]);
 
             if (keep_alive_fds[i] == -1) {
                 state_keep_alive_peers->get(i)->updateString("not connected");

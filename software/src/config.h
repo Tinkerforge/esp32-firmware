@@ -702,6 +702,8 @@ struct Config {
     static Config Tuple(std::initializer_list<Config> tup);
     static Config Tuple(size_t length, Config &&cfg);
 
+    static Config Timestamp(millis_t ts = 0_ms) { return Config::Int52(ts.as<int64_t>()); }
+
     template<typename T>
     static Config Enum(T i, T min, T max) {
         if (min >= static_cast<T>(0) && max >= static_cast<T>(0))
@@ -895,6 +897,8 @@ public:
     uint16_t asUint16() const;
     int16_t asInt16() const;
 
+    millis_t asTimestamp() const { return millis_t{this->asInt52()}; }
+
     template<typename T>
     T asEnum() const {
         if (this->is<ConfUint>()) {
@@ -977,6 +981,9 @@ public:
     bool updateBool(bool value);
     bool updateInt52(int64_t value);
     bool updateUint53(uint64_t value);
+
+    bool updateTimestamp(millis_t value) { return this->updateInt52(value.as<int64_t>()); }
+    bool updateTimestamp(micros_t value) { return this->updateInt52(value.to<millis_t>().as<int64_t>()); }
 
     template<typename T>
     bool updateEnum(T value) {
@@ -1063,6 +1070,7 @@ public:
     [[gnu::const]] static const Config *get_prototype_int16_0();
     [[gnu::const]] static const Config *get_prototype_int32_0();
     [[gnu::const]] static const Config *get_prototype_int52_0();
+    [[gnu::const]] static const Config *get_prototype_timestamp_0() { return Config::get_prototype_int52_0(); }
     [[gnu::const]] static const Config *get_prototype_uint8_0();
     [[gnu::const]] static const Config *get_prototype_uint16_0();
     [[gnu::const]] static const Config *get_prototype_uint32_0();

@@ -140,7 +140,7 @@ void Debug::pre_setup()
     });
 
     state_fast = Config::Object({
-        {"uptime",     Config::Uint32(0)},
+        {"uptime",     Config::Timestamp()},
         {"free_dram",  Config::Uint32(0)},
         {"free_iram",  Config::Uint32(0)},
         {"free_psram", Config::Uint32(0)},
@@ -221,7 +221,7 @@ void Debug::setup()
         heap_caps_get_info(&iram_info,  MALLOC_CAP_IRAM);
         heap_caps_get_info(&psram_info, MALLOC_CAP_SPIRAM);
 
-        state_fast.get("uptime")->updateUint(now_us().to<millis_t>().as<uint32_t>());
+        state_fast.get("uptime")->updateTimestamp(now_us());
         state_fast.get("free_dram")->updateUint(dram_info.total_free_bytes);
         state_fast.get("free_iram")->updateUint(iram_info.total_free_bytes);
         state_fast.get("free_psram")->updateUint(psram_info.total_free_bytes);

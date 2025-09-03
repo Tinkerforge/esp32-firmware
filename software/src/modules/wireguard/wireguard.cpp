@@ -103,8 +103,8 @@ void Wireguard::pre_setup()
     }};
 
     state = Config::Object({
-        {"connection_start", Config::Uint32(0)},
-        {"connection_end", Config::Uint32(0)},
+        {"connection_start", Config::Timestamp()},
+        {"connection_end", Config::Timestamp()},
         {"state", Config::Uint8(0)} // 0 not configured, 1 waiting for time sync 2 not connected 3 connected
     });
 }
@@ -177,13 +177,13 @@ void Wireguard::connect_wireguard()
             if (up) {
                 logger.printfln("Wireguard connection established");
                 this->wg_data->last_connected = now_us();
-                state.get("connection_start")->updateUint(this->wg_data->last_connected.to<millis_t>().as<uint32_t>());
+                state.get("connection_start")->updateTimestamp(this->wg_data->last_connected);
             } else {
                 auto now = now_us();
-                state.get("connection_end")->updateUint(now.to<millis_t>().as<uint32_t>());
+                state.get("connection_end")->updateTimestamp(now);
 
                 auto connected_for = now - this->wg_data->last_connected;
-                logger.printfln("Wireguard connection lost. Was connected for %lu seconds.", connected_for.to<millis_t>().as<uint32_t>());
+                logger.printfln("Wireguard connection lost. Was connected for %llu seconds.", connected_for.to<millis_t>().as<uint64_t>());
             }
         }
     }, 1_s, 1_s);

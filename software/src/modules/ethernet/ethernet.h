@@ -41,6 +41,7 @@ public:
 private:
 
     struct eth_runtime {
+        micros_t last_connected;
         ip4_addr_t ip;
         ip4_addr_t gateway;
         ip4_addr_t dns;
@@ -49,7 +50,6 @@ private:
 
         EthernetState connection_state;
         bool was_connected;
-        uint32_t last_connected_s;
     };
 
     ConfigRoot config;

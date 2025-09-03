@@ -61,7 +61,7 @@ void Automation::pre_setup()
         {"registered_actions",  Config::Array({}, &state_actions_prototype,  0, AUTOMATION_ACTION_ID_COUNT,  Config::type_id<Config::ConfUint>())},
         {"enabled_triggers",    Config::Array({}, &state_triggers_prototype, 0, AUTOMATION_TRIGGER_ID_COUNT, Config::type_id<Config::ConfUint>())},
         {"enabled_actions",     Config::Array({}, &state_actions_prototype,  0, AUTOMATION_ACTION_ID_COUNT,  Config::type_id<Config::ConfUint>())},
-        {"last_run",            Config::Array({}, Config::get_prototype_uint32_0(), 0, OPTIONS_AUTOMATION_MAX_RULES(), Config::type_id<Config::ConfUint>())},
+        {"last_run",            Config::Array({}, Config::get_prototype_timestamp_0(), 0, OPTIONS_AUTOMATION_MAX_RULES(), Config::type_id<Config::ConfInt52>())},
     });
 }
 
@@ -293,7 +293,7 @@ bool Automation::trigger(AutomationTriggerID number, void *data, IAutomationBack
             auto delay = seconds_t{conf->get("delay")->asUint()};
             *last_run_timestamp = now_us() + delay;
             Config *last_run_cfg = static_cast<Config *>(state.get("last_run")->get(i));
-            last_run_cfg->updateUint(last_run_timestamp->to<seconds_t>().as<uint32_t>());
+            last_run_cfg->updateTimestamp(*last_run_timestamp);
 
             triggered = true;
             const Config *action = static_cast<const Config *>(conf->get("action"));

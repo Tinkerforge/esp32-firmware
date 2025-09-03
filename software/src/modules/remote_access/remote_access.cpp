@@ -183,7 +183,7 @@ void RemoteAccess::pre_setup()
     ping_state = Config::Object({
         {"packets_sent", Config::Uint32(0)},
         {"packets_received", Config::Uint32(0)},
-        {"time_elapsed_ms", Config::Uint32(0)},
+        {"time_elapsed_ms", Config::Timestamp()},
     });
 
     connection_state = Config::Tuple(MAX_USER_CONNECTIONS + 1, Config::Object({
@@ -1966,7 +1966,7 @@ static void on_ping_success(esp_ping_handle_t handle, void *args) {
 
             ping_state.get("packets_sent")->updateUint(ping_args->packets_sent);
             ping_state.get("packets_received")->updateUint(ping_args->packets_received);
-            ping_state.get("time_elapsed_ms")->updateUint((now_us() - remote_access.get_ping_start()).to<millis_t>().as<uint32_t>());
+            ping_state.get("time_elapsed_ms")->updateTimestamp(now_us() - remote_access.get_ping_start());
         },
     0_ms);
 }
@@ -1987,7 +1987,7 @@ static void on_ping_timeout(esp_ping_handle_t handle, void *args) {
 
             ping_state.get("packets_sent")->updateUint(ping_args->packets_sent);
             ping_state.get("packets_received")->updateUint(ping_args->packets_received);
-            ping_state.get("time_elapsed_ms")->updateUint((now_us() - remote_access.get_ping_start()).to<millis_t>().as<uint32_t>());
+            ping_state.get("time_elapsed_ms")->updateTimestamp(now_us() - remote_access.get_ping_start());
         },
     0_ms);
 }
@@ -2007,11 +2007,9 @@ static void on_ping_end(esp_ping_handle_t handle, void *args) {
         [ping_args, transmitted, received]() {
             Config &ping_state = remote_access.get_ping_state();
 
-            auto elapsed = (now_us() - remote_access.get_ping_start()).to<millis_t>().as<uint32_t>();
-
             ping_state.get("packets_sent")->updateUint(transmitted);
             ping_state.get("packets_received")->updateUint(received);
-            ping_state.get("time_elapsed_ms")->updateUint(elapsed);
+            ping_state.get("time_elapsed_ms")->updateTimestamp(now_us() - remote_access.get_ping_start());
 
             delete ping_args;
         },

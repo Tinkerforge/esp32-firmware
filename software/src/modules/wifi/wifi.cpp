@@ -82,8 +82,8 @@ void Wifi::pre_setup()
     }};
     state = Config::Object({
         {"connection_state", Config::Enum(WifiState::NotConfigured)},
-        {"connection_start", Config::Uint32(0)},
-        {"connection_end", Config::Uint32(0)},
+        {"connection_start", Config::Timestamp()},
+        {"connection_end", Config::Timestamp()},
         {"ap_state", Config::Uint8(0)},
         {"ap_bssid", Config::Str("", 0, 20)},
         {"ap_sta_count", Config::Uint8(0)},
@@ -557,7 +557,7 @@ void Wifi::setup()
             runtime_sta->passphrase_offset = static_cast<uint8_t>(ssid_len_term);
             memcpy(runtime_sta->ssid_passphrase + runtime_sta->passphrase_offset, pass.c_str(), pass_len_term);
 
-            runtime_sta->last_connected_s = 0;
+            runtime_sta->last_connected = 0_us;
             runtime_sta->connect_tries    = 0;
             runtime_sta->was_connected    = false;
 
@@ -645,12 +645,11 @@ void Wifi::setup()
                     logger.printfln("Failed to connect to '%s': %s (%u)", runtime_sta->ssid_passphrase, reason, reason_code);
                 } else {
                     const micros_t now = now_us();
-                    const uint32_t connected_for_s = now.to<seconds_t>().as<uint32_t>() - runtime_sta->last_connected_s;
-                    logger.printfln("Disconnected from '%s': %s (%u). Was connected for %lu seconds.", runtime_sta->ssid_passphrase, reason, reason_code, connected_for_s);
+                    const uint64_t connected_for_s = (now - runtime_sta->last_connected).to<seconds_t>().as<uint64_t>();
+                    logger.printfln("Disconnected from '%s': %s (%u). Was connected for %llu seconds.", runtime_sta->ssid_passphrase, reason, reason_code, connected_for_s);
 
-                    uint32_t now_ms = now.to<millis_t>().as<uint32_t>();
-                    task_scheduler.scheduleOnce([this, now_ms](){
-                        state.get("connection_end")->updateUint(now_ms);
+                    task_scheduler.scheduleOnce([this, now](){
+                        state.get("connection_end")->updateTimestamp(now);
                     });
                 }
 
@@ -721,11 +720,10 @@ void Wifi::setup()
                 this->runtime_sta->was_connected = true;
 
                 const micros_t now = now_us();
-                this->runtime_sta->last_connected_s = now.to<seconds_t>().as<uint32_t>();
+                this->runtime_sta->last_connected = now;
 
-                const uint32_t now_ms = now.to<millis_t>().as<uint32_t>();
-                task_scheduler.scheduleOnce([this, now_ms]() {
-                    state.get("connection_start")->updateUint(now_ms);
+                task_scheduler.scheduleOnce([this, now]() {
+                    state.get("connection_start")->updateTimestamp(now);
                 });
             },
             ARDUINO_EVENT_WIFI_STA_CONNECTED);

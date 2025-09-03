@@ -230,8 +230,8 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
     assembleTable() {
         let rows: TableRow[] = [];
 
-        let uptime_s = API.get("info/keep_alive").uptime / 1000;
-        let now_s = new Date().valueOf() / 1000;
+        let uptime = API.get("info/keep_alive").uptime;
+        let now = new Date().valueOf();
 
         this.state.tasks.forEach((task, idx) => {
             let trigger_id: number = task.trigger[0];
@@ -262,10 +262,10 @@ export class Automation extends ConfigComponent<"automation/config", {}, Automat
                 last_run_timestamp = __("automation.content.needs_reboot");
             } else if (last_run == 0) {
                 last_run_timestamp = __("automation.content.never")
-            } else if (last_run > uptime_s) {
-                last_run_timestamp =  util.format_timespan(last_run - uptime_s);
+            } else if (last_run > uptime) {
+                last_run_timestamp =  util.format_timespan((last_run - uptime) / 1000);
             } else {
-                last_run_timestamp =  util.timestamp_sec_to_date((now_s - (uptime_s - last_run)));
+                last_run_timestamp =  util.timestamp_sec_to_date((now - (uptime - last_run)) / 1000);
             }
 
             let row: TableRow = {

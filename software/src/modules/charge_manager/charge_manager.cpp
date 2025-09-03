@@ -154,7 +154,7 @@ void ChargeManager::pre_setup()
         {"ap", Config::Uint(0, 0, 3)},  // "allocated_phases" - last phase limit send to the charger
         {"sc", Config::Uint16(0)},      // "supported_current" - maximum current supported by the charger
         {"sp", Config::Uint(0, 0, 3)},  // "supported_phases" - maximum phases supported by the charger. Is 1 or 3 for a not phase-switchable charger. Bit 2 is set if it can be switched.
-        {"lu", Config::Uint32(0)},      // "last_update" - The last time we received a CM packet from this charger
+        {"lu", Config::Timestamp()},    // "last_update" - The last time we received a CM packet from this charger
         {"n",  Config::Str("", 0, 32)}, // "name" - Configured display name. Has to be duplicated in case the config was written but we didn't reboot.
         {"u",  Config::Uint32(0)}       // "uid" - The ESP's UID
     });
@@ -184,14 +184,14 @@ void ChargeManager::pre_setup()
                                                 3 phases (2)*/
         {"rc", Config::Uint16(0)},         // "requested_current" - either the supported current or (after requested_current_threshold is elapsed in state C) the max phase current + requested_current_margin
         {"ae", Config::Uint(0, 9, 99999)}, // "allocated_energy" in Wh, values > 99999 Wh are truncated to 99999.
-        {"ls", Config::Uint32(0)},         // "last_switch_on" in millis
-        {"lp", Config::Uint32(0)},         // "just_plugged_in_timestamp" in millis
-        {"lw", Config::Uint32(0)},         // "last_wakeup" in millis
-        {"ip", Config::Uint32(0)},         // "use_supported_current" in millis
+        {"ls", Config::Timestamp()},      // "last_switch_on"
+        {"lp", Config::Timestamp()},      // "just_plugged_in_timestamp"
+        {"lw", Config::Timestamp()},      // "last_wakeup"
+        {"ip", Config::Timestamp()},      // "use_supported_current"
     });
 
     low_level_state = Config::Object({
-        {"last_hyst_reset", Config::Uint32(0)},
+        {"last_hyst_reset", Config::Timestamp()},
         {"wnd_min", Config::Tuple(4, Config::Int32(0))},
         {"wnd_max", Config::Tuple(4, Config::Int32(0))},
         {"chargers", Config::Array(
@@ -541,7 +541,7 @@ void ChargeManager::setup()
                 this->low_level_state.get("wnd_max")->get(i)->updateInt(this->ca_state->control_window_max[i]);
             }
             this->state.get("l_max_pv")->updateInt(tmp_limits.max_pv);
-            this->low_level_state.get("last_hyst_reset")->updateUint(this->ca_state->last_hysteresis_reset.to<millis_t>().as<uint32_t>());
+            this->low_level_state.get("last_hyst_reset")->updateTimestamp(this->ca_state->last_hysteresis_reset);
 
             for (int i = 0; i < this->charger_count; ++i) {
                 update_charger_state_config(i);
@@ -708,17 +708,17 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     charger_cfg->get("ap")->updateUint(charger_alloc.allocated_phases);
     charger_cfg->get("sc")->updateUint(charger.supported_current);
     charger_cfg->get("sp")->updateUint((charger.phase_switch_supported ? 4 : 0) | (charger.phases));
-    charger_cfg->get("lu")->updateUint(charger.last_update.to<millis_t>().as<uint32_t>());
+    charger_cfg->get("lu")->updateTimestamp(charger.last_update);
     charger_cfg->get("u")->updateUint(charger.uid);
 
     uint8_t bits = (charger.phases << 3) | (charger.phase_switch_supported << 2) | (charger.cp_disconnect_state << 1) | charger.cp_disconnect_supported;
     ll_charger_cfg->get("b")->updateUint(bits);
     ll_charger_cfg->get("rc")->updateUint(charger.requested_current);
     ll_charger_cfg->get("ae")->updateUint(charger.allocated_energy * 1000);
-    ll_charger_cfg->get("ls")->updateUint(charger.last_switch_on.to<millis_t>().as<uint32_t>());
-    ll_charger_cfg->get("lp")->updateUint(charger.just_plugged_in_timestamp.to<millis_t>().as<uint32_t>());
-    ll_charger_cfg->get("lw")->updateUint(charger.last_wakeup.to<millis_t>().as<uint32_t>());
-    ll_charger_cfg->get("ip")->updateUint(charger.use_supported_current.to<millis_t>().as<uint32_t>());
+    ll_charger_cfg->get("ls")->updateTimestamp(charger.last_switch_on);
+    ll_charger_cfg->get("lp")->updateTimestamp(charger.just_plugged_in_timestamp);
+    ll_charger_cfg->get("lw")->updateTimestamp(charger.last_wakeup);
+    ll_charger_cfg->get("ip")->updateTimestamp(charger.use_supported_current);
 }
 
 uint32_t ChargeManager::get_maximum_available_current()

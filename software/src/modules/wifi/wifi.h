@@ -88,7 +88,7 @@ private:
     };
 
     struct sta_runtime {
-        uint32_t last_connected_s;
+        micros_t last_connected;
         eap_runtime *runtime_eap;
 
         ip4_addr_t ip;

@@ -84,8 +84,8 @@ void Ethernet::pre_setup()
 
     state = Config::Object({
         {"connection_state", Config::Enum(EthernetState::NotConfigured)},
-        {"connection_start", Config::Uint32(0)},
-        {"connection_end", Config::Uint32(0)},
+        {"connection_start", Config::Timestamp()},
+        {"connection_end", Config::Timestamp()},
         {"ip", Config::Str("0.0.0.0", 7, 15)},
         {"subnet", Config::Str("0.0.0.0", 7, 15)},
         {"full_duplex", Config::Bool(false)},
@@ -97,8 +97,8 @@ void Ethernet::print_con_duration()
 {
     if (runtime_data->was_connected) {
         runtime_data->was_connected = false;
-        const uint32_t connected_for = now_us().to<seconds_t>().as<uint32_t>() - runtime_data->last_connected_s;
-        logger.printfln("Was connected for %lu seconds.", connected_for);
+        const uint64_t connected_for_s = (now_us() - runtime_data->last_connected).to<seconds_t>().as<uint64_t>();
+        logger.printfln("Was connected for %llu seconds.", connected_for_s);
     }
 }
 
@@ -140,7 +140,7 @@ void Ethernet::setup()
     state.get("connection_state")->updateEnum(runtime_data->connection_state);
 
     runtime_data->was_connected = false;
-    runtime_data->last_connected_s = 0;
+    runtime_data->last_connected = 0_us;
 
     Network.begin();
 
@@ -223,20 +223,19 @@ void Ethernet::setup()
 
             const micros_t now = now_us();
             this->runtime_data->was_connected = true;
-            this->runtime_data->last_connected_s = now.to<seconds_t>().as<uint32_t>();
-            const uint32_t now_ms = now.to<millis_t>().as<uint32_t>();
+            this->runtime_data->last_connected = now;
 
             this->runtime_data->connection_state = EthernetState::Connected;
 
             const String ip_string{ip_str};
-            task_scheduler.scheduleOnce([this, now_ms, ip_string, subnet]() {
+            task_scheduler.scheduleOnce([this, now, ip_string, subnet]() {
                 char subnet_str[16];
                 tf_ip4addr_ntoa(&subnet, subnet_str, ARRAY_SIZE(subnet_str));
 
                 state.get("ip"    )->updateString(ip_string);
                 state.get("subnet")->updateString(subnet_str);
                 state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
-                state.get("connection_start")->updateUint(now_ms);
+                state.get("connection_start")->updateTimestamp(now);
             });
         },
         ARDUINO_EVENT_ETH_GOT_IP);
@@ -250,7 +249,7 @@ void Ethernet::setup()
             logger.printfln("Lost IP address.");
             this->print_con_duration();
 
-            uint32_t now_ms = now_us().to<millis_t>().as<uint32_t>();
+            auto now = now_us();
 
             // Restart DHCP, if it's enabled, to make sure that the GOT_IP event fires when receiving the same address as before.
             if (this->runtime_data->ip.addr == 0) {
@@ -259,11 +258,11 @@ void Ethernet::setup()
 
             this->runtime_data->connection_state = EthernetState::Connecting;
 
-            task_scheduler.scheduleOnce([this, now_ms]() {
+            task_scheduler.scheduleOnce([this, now]() {
                 state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
                 state.get("ip")->updateString("0.0.0.0");
                 state.get("subnet")->updateString("0.0.0.0");
-                state.get("connection_end")->updateUint(now_ms);
+                state.get("connection_end")->updateTimestamp(now);
             });
         },
         ARDUINO_EVENT_ETH_LOST_IP);
@@ -272,15 +271,15 @@ void Ethernet::setup()
             logger.printfln("Disconnected");
             this->print_con_duration();
 
-            uint32_t now_ms = now_us().to<millis_t>().as<uint32_t>();
+            auto now = now_us();
 
             this->runtime_data->connection_state = EthernetState::NotConnected;
 
-            task_scheduler.scheduleOnce([this, now_ms]() {
+            task_scheduler.scheduleOnce([this, now]() {
                 state.get("connection_state")->updateEnum(this->runtime_data->connection_state);
                 state.get("ip")->updateString("0.0.0.0");
                 state.get("subnet")->updateString("0.0.0.0");
-                state.get("connection_end")->updateUint(now_ms);
+                state.get("connection_end")->updateTimestamp(now);
             });
         },
         ARDUINO_EVENT_ETH_DISCONNECTED);
