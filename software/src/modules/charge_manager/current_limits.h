@@ -22,6 +22,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include "TFTools/Micros.h"
+
 #define PHASE_ROTATION(x, y, z) (0 << 6) | (((int)x << 4) | ((int)y << 2) | (int)z)
 
 enum class ChargerPhase {
@@ -155,6 +157,8 @@ struct Cost {
 static_assert(sizeof(Cost) == 4 * sizeof(int), "Unexpected size of Cost");
 
 struct CurrentLimits {
+    micros_t min_ts[4];
+    micros_t max_pv_ts;
     Cost raw;
     Cost min;
     Cost spread;

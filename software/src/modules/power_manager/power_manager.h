@@ -96,6 +96,8 @@ public:
     };
 
     struct minmax_filter {
+        micros_t min_ts          = 0_us;
+        micros_t max_ts          = 0_us;
         int32_t  min             = INT32_MAX;
         int32_t  max             = INT32_MAX;
         int32_t *history_values  = nullptr;
