@@ -1945,7 +1945,7 @@ void RemoteAccess::close_all_remote_connections() {
 
 static void on_ping_success(esp_ping_handle_t handle, void *args) {
     uint8_t ttl;
-    uint8_t seqno;
+    uint16_t seqno;
     uint32_t elapsed_time, recv_len;
     ip_addr_t target_addr;
 
@@ -1972,7 +1972,7 @@ static void on_ping_success(esp_ping_handle_t handle, void *args) {
 }
 
 static void on_ping_timeout(esp_ping_handle_t handle, void *args) {
-    uint8_t seqno;
+    uint16_t seqno;
     ip_addr_t target_addr;
 
     esp_ping_get_profile(handle, ESP_PING_PROF_SEQNO, &seqno, sizeof(seqno));
