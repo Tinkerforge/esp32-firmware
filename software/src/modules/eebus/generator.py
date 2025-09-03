@@ -21,6 +21,7 @@ Boston, MA 02111-1307, USA.
 import argparse
 import xmlschema
 import os
+import re
 
 
 GENERATE_DEFAULT_CONSTRUCTOR = False
@@ -392,6 +393,12 @@ def process_complex_type(complex_type):
                     print("Variable type is still none")
                     unprocessed_elements += 1
                     return
+                for enum_type in cpp_datatypes:
+                    hypothetical_enum_type = re.sub(r'Type$', 'EnumType', variable_type)
+                    if enum_type.type_name == "enum":
+                        if enum_type.name == hypothetical_enum_type:
+                            variable_type = hypothetical_enum_type
+
                 if elem.max_occurs is None:
                     is_vec = True
                 element = [variable_type, variable_name, is_vec]
