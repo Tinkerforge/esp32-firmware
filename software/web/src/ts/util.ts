@@ -331,8 +331,7 @@ const wsOnMessageCallback = (e: MessageEvent) => {
                 API.trigger(topic, eventTarget);
             }
         }
-
-        if (end_marker_found) {
+        else if (end_marker_found) {
             API.trigger_all(eventTarget);
             allow_render.value = true;
         }
