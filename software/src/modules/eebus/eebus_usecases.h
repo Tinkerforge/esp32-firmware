@@ -165,7 +165,7 @@ private:
 class EvseEntity final : public EebusEntity
 {
 public:
-    // Usecase Management
+    // TODO: Instead of pulling data from API, API pushes data to this usecases maybe? So we can trigger updates to subscribers?
     EvseEntity() = default;
 
     /**
