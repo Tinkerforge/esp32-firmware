@@ -69,7 +69,7 @@ private:
 
     ConfigRoot charger_config;
 
-    micros_t phase_switch_deadtime_us = 0_us;
+    micros_t phase_switch_deadtime = 0_us;
     micros_t last_state_packet = -1_h; // System boot is time 0. Timestamps must be initialized with old enough values for correct deadline calculation after start-up.
     micros_t next_state_change_after;
 

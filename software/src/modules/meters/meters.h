@@ -97,8 +97,8 @@ public:
     uint32_t get_meters(MeterClassID meter_class, IMeter **found_meters, uint32_t found_meters_capacity);
     MeterClassID get_meter_class(uint32_t slot);
     MeterLocation get_meter_location(uint32_t slot);
-    bool meter_is_fresh(uint32_t slot, micros_t max_age_us);
-    bool meter_has_value_changed(uint32_t slot, micros_t max_age_us);
+    bool meter_is_fresh(uint32_t slot, micros_t max_age);
+    bool meter_has_value_changed(uint32_t slot, micros_t max_age);
 
     MeterValueAvailability get_value_ids(uint32_t slot, const Config **value_ids);
     MeterValueAvailability get_value_ids_extended(uint32_t slot, MeterValueID *value_ids_out, size_t *value_ids_length);
@@ -159,7 +159,7 @@ private:
     IMeterGenerator *get_generator_for_class(MeterClassID meter_class);
     IMeter *new_meter_of_class(MeterClassID meter_class, uint32_t slot, Config *state, Config *errors);
 
-    MeterValueAvailability get_single_value(uint32_t slot, uint32_t kind, float *value, micros_t max_age_us);
+    MeterValueAvailability get_single_value(uint32_t slot, uint32_t kind, float *value, micros_t max_age);
     void apply_filters(MeterSlot &meter_slot, size_t base_value_count, const float *base_values);
 
     float live_samples_per_second();

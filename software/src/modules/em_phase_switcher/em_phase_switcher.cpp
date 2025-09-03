@@ -181,15 +181,15 @@ PhaseSwitcherBackend::SwitchingState EMPhaseSwitcher::get_phase_switching_state_
         return PhaseSwitcherBackend::SwitchingState::Error;
     }
 
-    if (phase_switch_deadtime_us == 0_us) {
+    if (phase_switch_deadtime == 0_us) {
         return PhaseSwitcherBackend::SwitchingState::Ready;
     }
 
-    if (!deadline_elapsed(phase_switch_deadtime_us)) {
+    if (!deadline_elapsed(phase_switch_deadtime)) {
         return PhaseSwitcherBackend::SwitchingState::Busy;
     }
 
-    phase_switch_deadtime_us = 0_us;
+    phase_switch_deadtime = 0_us;
 
     return PhaseSwitcherBackend::SwitchingState::Ready;
 }
@@ -207,7 +207,7 @@ bool EMPhaseSwitcher::switch_phases_internal(uint32_t phases_wanted)
     }
 
     em_v1.set_contactor_for_em_phase_switcher(phases_wanted > 1);
-    phase_switch_deadtime_us = now_us() + micros_t{2000000}; // 2s
+    phase_switch_deadtime = now_us() + 2_s;
 
     return true;
 }

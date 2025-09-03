@@ -614,14 +614,14 @@ MeterLocation Meters::get_meter_location(uint32_t slot)
     return meter_slots[slot].config_union.get()->get("location")->asEnum<MeterLocation>();
 }
 
-bool Meters::meter_is_fresh(uint32_t slot, micros_t max_age_us)
+bool Meters::meter_is_fresh(uint32_t slot, micros_t max_age)
 {
-    return max_age_us == 0_us || !deadline_elapsed(meter_slots[slot].values_last_updated_at + max_age_us);
+    return max_age == 0_us || !deadline_elapsed(meter_slots[slot].values_last_updated_at + max_age);
 }
 
-bool Meters::meter_has_value_changed(uint32_t slot, micros_t max_age_us)
+bool Meters::meter_has_value_changed(uint32_t slot, micros_t max_age)
 {
-    return max_age_us == 0_us || !deadline_elapsed(meter_slots[slot].values_last_changed_at + max_age_us);
+    return max_age == 0_us || !deadline_elapsed(meter_slots[slot].values_last_changed_at + max_age);
 }
 
 MeterValueAvailability Meters::get_value_ids(uint32_t slot, const Config **value_ids)

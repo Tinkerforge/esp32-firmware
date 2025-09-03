@@ -100,7 +100,7 @@ static bool is_nfc(EvseLed::Blink state)
 bool EvseLed::accepts_new_state(Blink new_state)
 {
     // Always accept new state if old state duration is elapsed
-    if (this->current_duration_end_us == 0_us || deadline_elapsed(this->current_duration_end_us))
+    if (this->current_duration_end == 0_us || deadline_elapsed(this->current_duration_end))
         return true;
 
     /*
@@ -147,7 +147,7 @@ bool EvseLed::set(Blink state, uint16_t duration_ms, uint16_t h, uint8_t s, uint
     if (!api_change && !accepts_new_state(state))
         return false;
 
-    micros_t new_duration_end_us = now_us() + micros_t{duration_ms * 1000};
+    micros_t new_duration_end = now_us() + millis_t{duration_ms};
 
     uint8_t error_code = 1;
 
@@ -155,7 +155,7 @@ bool EvseLed::set(Blink state, uint16_t duration_ms, uint16_t h, uint8_t s, uint
 
     if (error_code == 0) {
         current_state = state;
-        current_duration_end_us = new_duration_end_us;
+        current_duration_end = new_duration_end;
         current_state_via_api = via_api;
     }
     return error_code == 0;

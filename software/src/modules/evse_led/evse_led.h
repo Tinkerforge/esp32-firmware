@@ -61,6 +61,6 @@ private:
     ConfigRoot led;
 
     Blink current_state = Blink::None;
-    micros_t current_duration_end_us = 0_us;
+    micros_t current_duration_end = 0_us;
     bool current_state_via_api = false;
 };
