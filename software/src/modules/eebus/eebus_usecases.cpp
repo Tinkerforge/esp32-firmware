@@ -36,7 +36,7 @@ CmdClassifierType NodeManagementEntity::handle_binding(HeaderType &header, Spine
             binding_entry.clientAddress = data->nodemanagementbindingrequestcalltype->bindingRequest->clientAddress;
             binding_entry.serverAddress = data->nodemanagementbindingrequestcalltype->bindingRequest->serverAddress;
             // We are supposed consider the featuretype of the feature
-            SpineOptional<FeatureTypeEnumType> feature_type = data->nodemanagementbindingrequestcalltype->bindingRequest->serverFeatureType;
+            //SpineOptional<FeatureTypeEnumType> feature_type = data->nodemanagementbindingrequestcalltype->bindingRequest->serverFeatureType;
 
             if (check_is_bound(binding_entry.clientAddress.get(), binding_entry.serverAddress.get())) {
                 eebus.trace_fmtln("Binding requested but is already bound");
@@ -386,7 +386,7 @@ void NodeManagementEntity::inform_subscribers(int entity, int feature, SpineData
 {
     std::optional<std::vector<int>> entities{};
     entities->push_back(entity);
-    DynamicJsonDocument response(8192); // TODO: Change this to use less memory or move it PSRAM
+    BasicJsonDocument<ArduinoJsonPsramAllocator> response(SPINE_CONNECTION_MAX_JSON_SIZE);
     JsonVariant dst = response.createNestedObject(data->function_to_string(data->last_cmd));
     data->last_cmd_to_json(dst);
     for (SubscriptionManagementEntryDataType &subscription : subscription_data.subscriptionEntry.get()) {
@@ -486,26 +486,60 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvseEntity::g
 CmdClassifierType EvseEntity::bill_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
     if (data->last_cmd == SpineDataTypeHandler::Function::billDescriptionListData) {
-        // TODO: Add function that builds the billdescriptionlistdata
-    } else if (data->last_cmd == SpineDataTypeHandler::Function::billConstraintsListData) {
-        // TODO: Add function that builds the billconstrainslistdata
-        // Also billconstrainslistdata is not required, only recommended so we
-    } else if (data->last_cmd == SpineDataTypeHandler::Function::billListData) {
-        //TODO: Add function that builds the billlistdata
+        // EEBUS_UC_TS_EVCHargingSummary_v1.0.1.pdf 3.2.1.2.2.1 Function "billDescriptionListData"
+        BillDescriptionListDataType billDescriptionListData{};
+        billDescriptionListData.billDescriptionData.emplace();
+        size_t count_charges = eebus.state.get("charge_state")->count();
+
+        for (size_t i = 0; i < count_charges; i++) {
+            BillDescriptionDataType billDescriptionData{};
+            billDescriptionData.billWriteable = false;
+            int id = eebus.state.get("charge_state")->get(i)->get("id")->asUint16();
+            billDescriptionData.billId = id;
+            billDescriptionData.supportedBillType.emplace();
+            billDescriptionData.supportedBillType->push_back(BillTypeEnumType::chargingSummary);
+            billDescriptionListData.billDescriptionData->push_back(billDescriptionData);
+
+        }
+        response["billDescriptionListData"] = billDescriptionListData;
+        return CmdClassifierType::reply;
+    }
+    if (data->last_cmd == SpineDataTypeHandler::Function::billConstraintsListData) {
+        // EEBUS_UC_TS_EVCHargingSummary_v1.0.1.pdf 3.2.1.2.2.2 Function "billConstraintsListData"
+        BillConstraintsListDataType billConstraintsListData{};
+        billConstraintsListData.billConstraintsData.emplace();
+        size_t count_charges = eebus.state.get("charge_state")->count();
+        for (size_t i = 0; i < count_charges; i++) {
+            BillConstraintsDataType billConstraintsData{};
+            int id = eebus.state.get("charge_state")->get(i)->get("id")->asUint16();
+            billConstraintsData.billId = id;
+            billConstraintsData.positionCountMin = "0";
+            billConstraintsData.positionCountMax = "0";
+            billConstraintsListData.billConstraintsData->push_back(billConstraintsData);
+        }
+        response["billConstraintsListData"] = billConstraintsListData;
+        return CmdClassifierType::reply;
+
+    }
+    if (data->last_cmd == SpineDataTypeHandler::Function::billListData) {
+        // EEBUS_UC_TS_EVCHargingSummary_v1.0.1.pdf 3.2.1.2.2.3 Function "billListData"
         BillListDataType billListData{};
         billListData.billData.emplace();
         size_t count_charges = eebus.state.get("charge_state")->count();
 
         for (size_t i = 0; i < count_charges; i++) {
+            // TODO: Add more entries billlistdata. Maybe get them from charge tracker.
             int id = eebus.state.get("charge_state")->get(i)->get("id")->asUint16();
             float charged_kwh = eebus.state.get("charge_state")->get(i)->get("charged_kwh")->asFloat();
-            uint32_t start_time = eebus.state.get("charge_state")->get(i)->get("start_time")->asUint();
+            uint64_t start_time = eebus.state.get("charge_state")->get(i)->get("start_time")->asUint();
             uint32_t duration = eebus.state.get("charge_state")->get(i)->get("duration")->asUint();
             float cost = eebus.state.get("charge_state")->get(i)->get("cost")->asFloat();
 
             BillDataType billData{};
             billData.billId = id;
             billData.billType = BillTypeEnumType::chargingSummary;
+            billData.total->timePeriod->startTime = std::to_string(start_time); // TODO: maybe use iso time instead of timestamp
+            billData.total->timePeriod->endTime = std::to_string(start_time + duration);
 
             BillCostType billCost{};
             billCost.cost->number = static_cast<int>(cost / 100.0);
@@ -514,8 +548,6 @@ CmdClassifierType EvseEntity::bill_feature(HeaderType &header, SpineDataTypeHand
             BillValueType billValue{};
             billValue.unit = UnitOfMeasurementEnumType::Wh;
             billValue.value->number = static_cast<int>(charged_kwh * 1000.0);
-
-            BillPositionType billPosition{};
 
             billData.total->cost.emplace();
             billData.total->value.emplace();
