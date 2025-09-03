@@ -1842,7 +1842,7 @@ bool update_from_client_packet(
 
     target.is_charging = v1->charger_state == 3;
     if (v1->charger_state != 1 && v1->charger_state != 2)
-        target.last_wakeup = 0;
+        target.last_wakeup = 0_us;
 
     // Reset allocated energy if no car is connected
     if (v1->charger_state == 0) {

@@ -194,8 +194,8 @@ void Meters::pre_setup()
             0, OPTIONS_METERS_MAX_VALUES_PER_METER(), Config::type_id<Config::ConfFloat>()
         );
 
-        meter_slot.values_last_updated_at = INT64_MIN;
-        meter_slot.values_last_changed_at = INT64_MIN;
+        meter_slot.values_last_updated_at = micros_t{INT64_MIN};
+        meter_slot.values_last_changed_at = micros_t{INT64_MIN};
 
         init_uint32_array(meter_slot.index_cache_single_values, INDEX_CACHE_SINGLE_VALUES_COUNT, UINT32_MAX);
         init_uint32_array(meter_slot.index_cache_currents,      INDEX_CACHE_CURRENT_COUNT,       UINT32_MAX);
@@ -365,8 +365,8 @@ void Meters::setup()
             end_last_interval = end_this_interval;
 
             samples_this_interval = 0;
-            begin_this_interval = 0;
-            end_this_interval = 0;
+            begin_this_interval = 0_us;
+            end_this_interval = 0_us;
 
 #if MODULE_WS_AVAILABLE()
             if (sb.setCapacity(OPTIONS_METERS_MAX_SLOTS() * history_chars_per_value + 100)) {

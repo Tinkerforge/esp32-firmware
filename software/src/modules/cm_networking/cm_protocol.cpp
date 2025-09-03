@@ -214,7 +214,7 @@ void CMNetworking::register_manager(const char *const *const hosts,
         const char *hostname = hosts[i];
 
         device->hostname = hostname;
-        device->last_resolve_attempt = 0;
+        device->last_resolve_attempt = 0_us;
         device->device_index = i;
 
         device->addr.sin_len    = sizeof(device->addr);

@@ -2034,7 +2034,7 @@ int RemoteAccess::start_ping() {
         esp_ping_new_session(&ping_config, &cbs, &ping);
         esp_ping_start(ping);
 
-        ping_start = millis();
+        ping_start = now_us();
 
         char str[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &data->addr, str, sizeof(str));

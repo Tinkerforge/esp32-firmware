@@ -901,7 +901,7 @@ void FrontPanel::reflash_map_start()
     set_led(LEDPattern::Blinking, LEDColor::Yellow);
 
     flash_writer->start_time_us = now_us();
-    flash_writer->write_deadline_us = 0;
+    flash_writer->write_deadline_us = 0_us;
     flash_writer->fail_count = 0;
     flash_writer->last_page = false;
     flash_writer->first_cb = true;

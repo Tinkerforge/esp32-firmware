@@ -167,8 +167,8 @@ void ValueHistory::tick(micros_t now, bool update_history, int32_t *live_sample,
         sum_this_interval = 0;
         all_samples_this_interval = 0;
         valid_samples_this_interval = 0;
-        begin_this_interval = 0;
-        end_this_interval = 0;
+        begin_this_interval = 0_us;
+        end_this_interval = 0_us;
     }
 }
 

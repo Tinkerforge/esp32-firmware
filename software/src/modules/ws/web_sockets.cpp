@@ -603,7 +603,7 @@ void WebSockets::pre_setup() {
 
     for (int i = 0; i < MAX_WEB_SOCKET_CLIENTS; ++i) {
         keep_alive_fds[i] = -1;
-        keep_alive_last_pong[i] = 0;
+        keep_alive_last_pong[i] = 0_us;
     }
 }
 
