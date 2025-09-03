@@ -36,7 +36,7 @@ CmdClassifierType NodeManagementEntity::handle_binding(HeaderType &header, Spine
             binding_entry.clientAddress = data->nodemanagementbindingrequestcalltype->bindingRequest->clientAddress;
             binding_entry.serverAddress = data->nodemanagementbindingrequestcalltype->bindingRequest->serverAddress;
             // We are supposed consider the featuretype of the feature
-            SpineOptional<FeatureTypeType> feature_type = data->nodemanagementbindingrequestcalltype->bindingRequest->serverFeatureType;
+            SpineOptional<FeatureTypeEnumType> feature_type = data->nodemanagementbindingrequestcalltype->bindingRequest->serverFeatureType;
 
             if (check_is_bound(binding_entry.clientAddress.get(), binding_entry.serverAddress.get())) {
                 eebus.trace_fmtln("Binding requested but is already bound");
@@ -214,7 +214,7 @@ bool NodeManagementEntity::read_detailed_discovery_data(HeaderType &header, Spin
     node_management_detailed_data.deviceInformation->description->networkFeatureSet = NetworkManagementFeatureSetType::simple;
     // Only simple operation is supported. We dont act as a SPINE router or anything like that.
     node_management_detailed_data.deviceInformation->description->deviceAddress->device = EEBUS_USECASE_HELPERS::get_spine_device_name();
-    node_management_detailed_data.deviceInformation->description->deviceType = "ChargingStation"; // Mandatory. String defined in EEBUS SPINE TS ResourceSpecification 4.1
+    node_management_detailed_data.deviceInformation->description->deviceType = DeviceTypeEnumType::ChargingStation; // Mandatory. String defined in EEBUS SPINE TS ResourceSpecification 4.1
 
     for (EebusEntity *uc : usecase_interface->entity_list) {
         node_management_detailed_data.entityInformation->push_back(uc->get_detailed_discovery_entity_information());
@@ -311,7 +311,7 @@ NodeManagementDetailedDiscoveryEntityInformationType NodeManagementEntity::get_d
 {
     NodeManagementDetailedDiscoveryEntityInformationType entity = {};
     entity.description->entityAddress->entity->push_back(0); // Entity 0 is the NodeManagement entity
-    entity.description->entityType = "DeviceInformation";
+    entity.description->entityType = EntityTypeEnumType::DeviceInformation;
     // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.7
     entity.description->label = "Node Management"; // The label of the entity. This is optional but recommended.
 
@@ -324,56 +324,56 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> NodeManagemen
     NodeManagementDetailedDiscoveryFeatureInformationType feature = {};
     feature.description->featureAddress->entity->push_back(0); // Entity 0 is the NodeManagement entity
     feature.description->featureAddress->feature = 0; // Feature 0 is the NodeManagement feature
-    feature.description->featureType = "NodeManagement";
+    feature.description->featureType = FeatureTypeEnumType::NodeManagement;
     // The feature type as defined in EEBUS SPINE TS ResourceSpecification 4.3.19
     feature.description->role = RoleType::server;
 
     // The following functions are supported by the Nodemanagement feature
     // Basic Usecase information
     FunctionPropertyType useCaseData = {};
-    useCaseData.function = eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::nodeManagementUseCaseData).c_str();
+    useCaseData.function = FunctionEnumType::nodeManagementUseCaseData;
     useCaseData.possibleOperations->read = PossibleOperationsReadType{};
     feature.description->supportedFunction->push_back(useCaseData);
 
     // Detailed discovery information
     FunctionPropertyType detailedDiscoveryData = {};
-    detailedDiscoveryData.function = eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::nodeManagementDetailedDiscoveryData).c_str();
+    detailedDiscoveryData.function = FunctionEnumType::nodeManagementDetailedDiscoveryData;
     detailedDiscoveryData.possibleOperations->read = PossibleOperationsReadType{};
     feature.description->supportedFunction->push_back(detailedDiscoveryData);
 
     // Information about current bindings
     FunctionPropertyType nodemanagementBindingData = {};
-    nodemanagementBindingData.function = eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::nodeManagementBindingData).c_str();
+    nodemanagementBindingData.function = FunctionEnumType::nodeManagementBindingData;
     nodemanagementBindingData.possibleOperations->read = PossibleOperationsReadType{};
     feature.description->supportedFunction->push_back(nodemanagementBindingData);
 
     // Binding delete calls
     FunctionPropertyType nodemanagementBindingDelete = {};
-    nodemanagementBindingDelete.function = eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::nodeManagementBindingDeleteCall).c_str();
+    nodemanagementBindingDelete.function = FunctionEnumType::nodeManagementBindingDeleteCall;
     nodemanagementBindingDelete.possibleOperations.emplace();
     feature.description->supportedFunction->push_back(nodemanagementBindingDelete);
 
     // Binding request calls
     FunctionPropertyType nodemanagementBindingRequest = {};
-    nodemanagementBindingRequest.function = eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::nodeManagementBindingRequestCall).c_str();
+    nodemanagementBindingRequest.function = FunctionEnumType::nodeManagementBindingRequestCall;
     nodemanagementBindingRequest.possibleOperations.emplace();
     feature.description->supportedFunction->push_back(nodemanagementBindingRequest);
 
     // Information about current Subscriptions
     FunctionPropertyType nodemanagemntSubscriptionData{};
-    nodemanagemntSubscriptionData.function = eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::nodeManagementSubscriptionData).c_str();
+    nodemanagemntSubscriptionData.function = FunctionEnumType::nodeManagementSubscriptionData;
     nodemanagemntSubscriptionData.possibleOperations->read = PossibleOperationsReadType{};
     feature.description->supportedFunction->push_back(nodemanagemntSubscriptionData);
 
     // Subscription delete calls
     FunctionPropertyType nodemanagementSubscriptionDelete{};
-    nodemanagementSubscriptionDelete.function = eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::nodeManagementSubscriptionDeleteCall).c_str();
+    nodemanagementSubscriptionDelete.function = FunctionEnumType::nodeManagementSubscriptionDeleteCall;
     nodemanagementSubscriptionDelete.possibleOperations.emplace();
     feature.description->supportedFunction->push_back(nodemanagementSubscriptionDelete);
 
     // Subscription request calls
     FunctionPropertyType nodemanagementSubscriptionRequest{};
-    nodemanagementSubscriptionRequest.function = eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::nodeManagementSubscriptionRequestCall).c_str();
+    nodemanagementSubscriptionRequest.function = FunctionEnumType::nodeManagementSubscriptionRequestCall;
     nodemanagementSubscriptionRequest.possibleOperations.emplace();
     feature.description->supportedFunction->push_back(nodemanagementSubscriptionRequest);
 
@@ -429,7 +429,7 @@ UseCaseInformationDataType EvseEntity::get_usecase_information()
 CmdClassifierType EvseEntity::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
     if (header.addressDestination->feature.has_value() && header.addressDestination->feature == bill_feature_address) {
-        return bill_feature(header,data,response,connection);
+        return bill_feature(header, data, response, connection);
     }
 
     return CmdClassifierType::EnumUndefined;
@@ -439,7 +439,7 @@ NodeManagementDetailedDiscoveryEntityInformationType EvseEntity::get_detailed_di
 {
     NodeManagementDetailedDiscoveryEntityInformationType entity{};
     entity.description->entityAddress->entity = entity_address;
-    entity.description->entityType = "EVSE";
+    entity.description->entityType = EntityTypeEnumType::EVSE;
     // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.17
     entity.description->label = "Charging Summary"; // The label of the entity. This is optional but recommended.
 
@@ -454,26 +454,26 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> EvseEntity::g
     feature.description->featureAddress->entity = entity_address;
     feature.description->featureAddress->feature = 1; // Feature 1 is the Bill feature
 
-    feature.description->featureType = "Bill";
+    feature.description->featureType = FeatureTypeEnumType::Bill;
     // The feature type as defined in EEBUS SPINE TS ResourceSpecification 4.3.19
     feature.description->role = RoleType::server;
 
     // The following functions are needed by the ChargingSummary usecase
     // Bill description information
     FunctionPropertyType billDescriptionList{};
-    billDescriptionList.function = eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::billDescriptionListData).c_str();
+    billDescriptionList.function = FunctionEnumType::billDescriptionListData;
     billDescriptionList.possibleOperations->read = PossibleOperationsReadType{};
     feature.description->supportedFunction->push_back(billDescriptionList);
 
     // Bill constraints information
     FunctionPropertyType billconstraints{};
-    billconstraints.function = eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::billConstraintsListData).c_str();
+    billconstraints.function = FunctionEnumType::billConstraintsListData;
     billconstraints.possibleOperations->read = PossibleOperationsReadType{};
     feature.description->supportedFunction->push_back(billconstraints);
 
     // Bill list information
     FunctionPropertyType billListData{};
-    billListData.function = eebus.data_handler->function_to_string(SpineDataTypeHandler::Function::billListData).c_str();
+    billListData.function = FunctionEnumType::billListData;
     billListData.possibleOperations->read = PossibleOperationsReadType{};
     feature.description->supportedFunction->push_back(billListData);
 
@@ -503,25 +503,29 @@ CmdClassifierType EvseEntity::bill_feature(HeaderType &header, SpineDataTypeHand
             uint32_t duration = eebus.state.get("charge_state")->get(i)->get("duration")->asUint();
             float cost = eebus.state.get("charge_state")->get(i)->get("cost")->asFloat();
 
-
             BillDataType billData{};
             billData.billId = id;
-            billData.billType = "chargingSummary";
+            billData.billType = BillTypeEnumType::chargingSummary;
 
             BillCostType billCost{};
             billCost.cost->number = static_cast<int>(cost / 100.0);
-            billCost.cost->scale = 2;
-            billCost.currency = "EUR";
+            billCost.cost->scale = 2; // We send the cost in cents, so scale 2 means the number is divided by 10^2 to get EUR
+            billCost.currency = CurrencyEnumType::EUR;
+            BillValueType billValue{};
+            billValue.unit = UnitOfMeasurementEnumType::Wh;
+            billValue.value->number = static_cast<int>(charged_kwh * 1000.0);
+
+            BillPositionType billPosition{};
 
             billData.total->cost.emplace();
+            billData.total->value.emplace();
+            billData.total->value->push_back(billValue);
             billData.total->cost.get().push_back(billCost);
-            // TODO: What the hell does this want
-
 
             billListData.billData->push_back(billData);
         }
         response["billListData"] = billListData;
-        return  CmdClassifierType::reply;
+        return CmdClassifierType::reply;
     }
     return CmdClassifierType::EnumUndefined;
 }

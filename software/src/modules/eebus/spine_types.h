@@ -3120,9 +3120,9 @@ void convertFromJson(const JsonVariantConst &src, ScaledNumberType &dst);
 struct DirectControlActivityDataType
 {
     SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
-    SpineOptional<DirectControlActivityStateType> activityState;
+    SpineOptional<DirectControlActivityStateEnumType> activityState;
     SpineOptional<bool> isActivityStateChangeable;
-    SpineOptional<EnergyModeType> energyMode;
+    SpineOptional<EnergyModeEnumType> energyMode;
     SpineOptional<bool> isEnergyModeChangeable;
     SpineOptional<ScaledNumberType> power;
     SpineOptional<bool> isPowerChangeable;
@@ -3306,9 +3306,9 @@ void convertFromJson(const JsonVariantConst &src, DirectControlActivityListDataS
 */
 struct DirectControlDescriptionDataType
 {
-    SpineOptional<EnergyDirectionType> positiveEnergyDirection;
-    SpineOptional<UnitOfMeasurementType> powerUnit;
-    SpineOptional<UnitOfMeasurementType> energyUnit;
+    SpineOptional<EnergyDirectionEnumType> positiveEnergyDirection;
+    SpineOptional<UnitOfMeasurementEnumType> powerUnit;
+    SpineOptional<UnitOfMeasurementEnumType> energyUnit;
 
     DirectControlDescriptionDataType() = default;
 };
@@ -3442,7 +3442,7 @@ struct AbsoluteOrRecurringTimeType
     SpineOptional<MonthType> month;
     SpineOptional<DayOfMonthType> dayOfMonth;
     SpineOptional<CalendarWeekType> calendarWeek;
-    SpineOptional<OccurrenceType> dayOfWeekOccurrence;
+    SpineOptional<OccurrenceEnumType> dayOfWeekOccurrence;
     SpineOptional<DaysOfWeekType> daysOfWeek;
     SpineOptional<std::string> time;
     SpineOptional<std::string> relative;
@@ -3500,7 +3500,7 @@ void convertFromJson(const JsonVariantConst &src, AbsoluteOrRecurringTimeElement
 */
 struct RecurrenceInformationType
 {
-    SpineOptional<RecurringIntervalType> recurringInterval;
+    SpineOptional<RecurringIntervalEnumType> recurringInterval;
     SpineOptional<uint32_t> recurringIntervalStep;
     SpineOptional<std::string> firstExecution;
     SpineOptional<uint32_t> executionCount;
@@ -3928,7 +3928,7 @@ void convertFromJson(const JsonVariantConst &src, PossibleOperationsElementsType
 */
 struct FunctionPropertyType
 {
-    SpineOptional<FunctionType> function;
+    SpineOptional<FunctionEnumType> function;
     SpineOptional<PossibleOperationsType> possibleOperations;
 
     FunctionPropertyType() = default;
@@ -4089,7 +4089,7 @@ struct PowerTimeSlotValueDataType
 {
     SpineOptional<PowerSequenceIdType> sequenceId;
     SpineOptional<PowerTimeSlotNumberType> slotNumber;
-    SpineOptional<PowerTimeSlotValueTypeType> valueType;
+    SpineOptional<PowerTimeSlotValueTypeEnumType> valueType;
     SpineOptional<ScaledNumberType> value;
 
     PowerTimeSlotValueDataType() = default;
@@ -4167,7 +4167,7 @@ struct PowerTimeSlotValueListDataSelectorsType
 {
     SpineOptional<PowerSequenceIdType> sequenceId;
     SpineOptional<PowerTimeSlotNumberType> slotNumber;
-    SpineOptional<PowerTimeSlotValueTypeType> valueType;
+    SpineOptional<PowerTimeSlotValueTypeEnumType> valueType;
 
     PowerTimeSlotValueListDataSelectorsType() = default;
 };
@@ -4401,11 +4401,11 @@ struct PowerSequenceDescriptionDataType
 {
     SpineOptional<PowerSequenceIdType> sequenceId;
     SpineOptional<DescriptionType> description;
-    SpineOptional<EnergyDirectionType> positiveEnergyDirection;
-    SpineOptional<UnitOfMeasurementType> powerUnit;
-    SpineOptional<UnitOfMeasurementType> energyUnit;
-    SpineOptional<MeasurementValueSourceType> valueSource;
-    SpineOptional<PowerSequenceScopeType> scope;
+    SpineOptional<EnergyDirectionEnumType> positiveEnergyDirection;
+    SpineOptional<UnitOfMeasurementEnumType> powerUnit;
+    SpineOptional<UnitOfMeasurementEnumType> energyUnit;
+    SpineOptional<MeasurementValueSourceEnumType> valueSource;
+    SpineOptional<PowerSequenceScopeEnumType> scope;
     SpineOptional<uint32_t> taskIdentifier;
     SpineOptional<uint32_t> repetitionsTotal;
 
@@ -4512,7 +4512,7 @@ void convertFromJson(const JsonVariantConst &src, PowerSequenceDescriptionListDa
 struct PowerSequenceStateDataType
 {
     SpineOptional<PowerSequenceIdType> sequenceId;
-    SpineOptional<PowerSequenceStateType> state;
+    SpineOptional<PowerSequenceStateEnumType> state;
     SpineOptional<PowerTimeSlotNumberType> activeSlotNumber;
     SpineOptional<std::string> elapsedSlotTime;
     SpineOptional<std::string> remainingSlotTime;
@@ -4830,7 +4830,7 @@ struct PowerSequencePriceDataType
     SpineOptional<PowerSequenceIdType> sequenceId;
     SpineOptional<AbsoluteOrRelativeTimeType> potentialStartTime;
     SpineOptional<ScaledNumberType> price;
-    SpineOptional<CurrencyType> currency;
+    SpineOptional<CurrencyEnumType> currency;
 
     PowerSequencePriceDataType() = default;
 };
@@ -5185,13 +5185,13 @@ void convertFromJson(const JsonVariantConst &src, PowerSequencePriceCalculationR
 struct MeasurementDataType
 {
     SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<MeasurementValueTypeType> valueType;
+    SpineOptional<MeasurementValueTypeEnumType> valueType;
     SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
     SpineOptional<ScaledNumberType> value;
     SpineOptional<TimePeriodType> evaluationPeriod;
-    SpineOptional<MeasurementValueSourceType> valueSource;
-    SpineOptional<MeasurementValueTendencyType> valueTendency;
-    SpineOptional<MeasurementValueStateType> valueState;
+    SpineOptional<MeasurementValueSourceEnumType> valueSource;
+    SpineOptional<MeasurementValueTendencyEnumType> valueTendency;
+    SpineOptional<MeasurementValueStateEnumType> valueState;
 
     MeasurementDataType() = default;
 };
@@ -5271,7 +5271,7 @@ void convertFromJson(const JsonVariantConst &src, MeasurementListDataType &dst);
 struct MeasurementListDataSelectorsType
 {
     SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<MeasurementValueTypeType> valueType;
+    SpineOptional<MeasurementValueTypeEnumType> valueType;
     SpineOptional<TimestampIntervalType> timestampInterval;
 
     MeasurementListDataSelectorsType() = default;
@@ -5297,13 +5297,13 @@ void convertFromJson(const JsonVariantConst &src, MeasurementListDataSelectorsTy
 struct MeasurementSeriesDataType
 {
     SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<MeasurementValueTypeType> valueType;
+    SpineOptional<MeasurementValueTypeEnumType> valueType;
     SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
     SpineOptional<ScaledNumberType> value;
     SpineOptional<TimePeriodType> evaluationPeriod;
-    SpineOptional<MeasurementValueSourceType> valueSource;
-    SpineOptional<MeasurementValueTendencyType> valueTendency;
-    SpineOptional<MeasurementValueStateType> valueState;
+    SpineOptional<MeasurementValueSourceEnumType> valueSource;
+    SpineOptional<MeasurementValueTendencyEnumType> valueTendency;
+    SpineOptional<MeasurementValueStateEnumType> valueState;
 
     MeasurementSeriesDataType() = default;
 };
@@ -5383,7 +5383,7 @@ void convertFromJson(const JsonVariantConst &src, MeasurementSeriesListDataType 
 struct MeasurementSeriesListDataSelectorsType
 {
     SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<MeasurementValueTypeType> valueType;
+    SpineOptional<MeasurementValueTypeEnumType> valueType;
     SpineOptional<TimestampIntervalType> timestampInterval;
 
     MeasurementSeriesListDataSelectorsType() = default;
@@ -5511,11 +5511,11 @@ void convertFromJson(const JsonVariantConst &src, MeasurementConstraintsListData
 struct MeasurementDescriptionDataType
 {
     SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<MeasurementTypeType> measurementType;
-    SpineOptional<CommodityTypeType> commodityType;
-    SpineOptional<UnitOfMeasurementType> unit;
+    SpineOptional<MeasurementTypeEnumType> measurementType;
+    SpineOptional<CommodityTypeEnumType> commodityType;
+    SpineOptional<UnitOfMeasurementEnumType> unit;
     SpineOptional<ScaledNumberType> calibrationValue;
-    SpineOptional<ScopeTypeType> scopeType;
+    SpineOptional<ScopeTypeEnumType> scopeType;
     SpineOptional<LabelType> label;
     SpineOptional<DescriptionType> description;
 
@@ -5597,9 +5597,9 @@ void convertFromJson(const JsonVariantConst &src, MeasurementDescriptionListData
 struct MeasurementDescriptionListDataSelectorsType
 {
     SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<MeasurementTypeType> measurementType;
-    SpineOptional<CommodityTypeType> commodityType;
-    SpineOptional<ScopeTypeType> scopeType;
+    SpineOptional<MeasurementTypeEnumType> measurementType;
+    SpineOptional<CommodityTypeEnumType> commodityType;
+    SpineOptional<ScopeTypeEnumType> scopeType;
 
     MeasurementDescriptionListDataSelectorsType() = default;
 };
@@ -5923,9 +5923,9 @@ void convertFromJson(const JsonVariantConst &src, ThresholdConstraintsListDataSe
 struct ThresholdDescriptionDataType
 {
     SpineOptional<ThresholdIdType> thresholdId;
-    SpineOptional<ThresholdTypeType> thresholdType;
-    SpineOptional<UnitOfMeasurementType> unit;
-    SpineOptional<ScopeTypeType> scopeType;
+    SpineOptional<ThresholdTypeEnumType> thresholdType;
+    SpineOptional<UnitOfMeasurementEnumType> unit;
+    SpineOptional<ScopeTypeEnumType> scopeType;
     SpineOptional<LabelType> label;
     SpineOptional<DescriptionType> description;
 
@@ -6005,7 +6005,7 @@ void convertFromJson(const JsonVariantConst &src, ThresholdDescriptionListDataTy
 struct ThresholdDescriptionListDataSelectorsType
 {
     SpineOptional<ThresholdIdType> thresholdId;
-    SpineOptional<ScopeTypeType> scopeType;
+    SpineOptional<ScopeTypeEnumType> scopeType;
 
     ThresholdDescriptionListDataSelectorsType() = default;
 };
@@ -6242,9 +6242,9 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsDurationLi
 struct OperatingConstraintsPowerDescriptionDataType
 {
     SpineOptional<PowerSequenceIdType> sequenceId;
-    SpineOptional<EnergyDirectionType> positiveEnergyDirection;
-    SpineOptional<UnitOfMeasurementType> powerUnit;
-    SpineOptional<UnitOfMeasurementType> energyUnit;
+    SpineOptional<EnergyDirectionEnumType> positiveEnergyDirection;
+    SpineOptional<UnitOfMeasurementEnumType> powerUnit;
+    SpineOptional<UnitOfMeasurementEnumType> energyUnit;
     SpineOptional<DescriptionType> description;
 
     OperatingConstraintsPowerDescriptionDataType() = default;
@@ -6549,9 +6549,9 @@ struct OperatingConstraintsResumeImplicationDataType
 {
     SpineOptional<PowerSequenceIdType> sequenceId;
     SpineOptional<ScaledNumberType> resumeEnergyEstimated;
-    SpineOptional<UnitOfMeasurementType> energyUnit;
+    SpineOptional<UnitOfMeasurementEnumType> energyUnit;
     SpineOptional<ScaledNumberType> resumeCostEstimated;
-    SpineOptional<CurrencyType> currency;
+    SpineOptional<CurrencyEnumType> currency;
 
     OperatingConstraintsResumeImplicationDataType() = default;
 };
@@ -6652,7 +6652,7 @@ void convertFromJson(const JsonVariantConst &src, OperatingConstraintsResumeImpl
 struct BillValueType
 {
     SpineOptional<BillValueIdType> valueId;
-    SpineOptional<UnitOfMeasurementType> unit;
+    SpineOptional<UnitOfMeasurementEnumType> unit;
     SpineOptional<ScaledNumberType> value;
     SpineOptional<ScaledNumberType> valuePercentage;
 
@@ -6706,10 +6706,10 @@ void convertFromJson(const JsonVariantConst &src, BillValueElementsType &dst);
 struct BillCostType
 {
     SpineOptional<BillCostIdType> costId;
-    SpineOptional<BillCostTypeType> costType;
+    SpineOptional<BillCostTypeEnumType> costType;
     SpineOptional<BillValueIdType> valueId;
-    SpineOptional<UnitOfMeasurementType> unit;
-    SpineOptional<CurrencyType> currency;
+    SpineOptional<UnitOfMeasurementEnumType> unit;
+    SpineOptional<CurrencyEnumType> currency;
     SpineOptional<ScaledNumberType> cost;
     SpineOptional<ScaledNumberType> costPercentage;
 
@@ -6766,7 +6766,7 @@ void convertFromJson(const JsonVariantConst &src, BillCostElementsType &dst);
 struct BillPositionType
 {
     SpineOptional<BillPositionIdType> positionId;
-    SpineOptional<BillPositionTypeType> positionType;
+    SpineOptional<BillPositionTypeEnumType> positionType;
     SpineOptional<TimePeriodType> timePeriod;
     SpineOptional<std::vector<BillValueType>> value;
     SpineOptional<std::vector<BillCostType>> cost;
@@ -6826,8 +6826,8 @@ void convertFromJson(const JsonVariantConst &src, BillPositionElementsType &dst)
 struct BillDataType
 {
     SpineOptional<BillIdType> billId;
-    SpineOptional<BillTypeType> billType;
-    SpineOptional<ScopeTypeType> scopeType;
+    SpineOptional<BillTypeEnumType> billType;
+    SpineOptional<ScopeTypeEnumType> scopeType;
     SpineOptional<BillPositionType> total;
     SpineOptional<std::vector<BillPositionType>> position;
 
@@ -6906,7 +6906,7 @@ void convertFromJson(const JsonVariantConst &src, BillListDataType &dst);
 struct BillListDataSelectorsType
 {
     SpineOptional<BillIdType> billId;
-    SpineOptional<ScopeTypeType> scopeType;
+    SpineOptional<ScopeTypeEnumType> scopeType;
 
     BillListDataSelectorsType() = default;
 };
@@ -7033,7 +7033,7 @@ struct BillDescriptionDataType
     SpineOptional<BillIdType> billId;
     SpineOptional<bool> billWriteable;
     SpineOptional<bool> updateRequired;
-    SpineOptional<std::vector<BillTypeType>> supportedBillType;
+    SpineOptional<std::vector<BillTypeEnumType>> supportedBillType;
     SpineOptional<SessionIdType> sessionId;
 
     BillDescriptionDataType() = default;
@@ -7135,7 +7135,7 @@ void convertFromJson(const JsonVariantConst &src, BillDescriptionListDataSelecto
 struct IdentificationDataType
 {
     SpineOptional<IdentificationIdType> identificationId;
-    SpineOptional<IdentificationTypeType> identificationType;
+    SpineOptional<IdentificationTypeEnumType> identificationType;
     SpineOptional<IdentificationValueType> identificationValue;
     SpineOptional<bool> authorized;
 
@@ -7213,7 +7213,7 @@ void convertFromJson(const JsonVariantConst &src, IdentificationListDataType &ds
 struct IdentificationListDataSelectorsType
 {
     SpineOptional<IdentificationIdType> identificationId;
-    SpineOptional<IdentificationTypeType> identificationType;
+    SpineOptional<IdentificationTypeEnumType> identificationType;
 
     IdentificationListDataSelectorsType() = default;
 };
@@ -7658,9 +7658,9 @@ struct SetpointDescriptionDataType
     SpineOptional<SetpointIdType> setpointId;
     SpineOptional<MeasurementIdType> measurementId;
     SpineOptional<TimeTableIdType> timeTableId;
-    SpineOptional<SetpointTypeType> setpointType;
-    SpineOptional<UnitOfMeasurementType> unit;
-    SpineOptional<ScopeTypeType> scopeType;
+    SpineOptional<SetpointTypeEnumType> setpointType;
+    SpineOptional<UnitOfMeasurementEnumType> unit;
+    SpineOptional<ScopeTypeEnumType> scopeType;
     SpineOptional<LabelType> label;
     SpineOptional<DescriptionType> description;
 
@@ -7744,8 +7744,8 @@ struct SetpointDescriptionListDataSelectorsType
     SpineOptional<SetpointIdType> setpointId;
     SpineOptional<MeasurementIdType> measurementId;
     SpineOptional<TimeTableIdType> timeTableId;
-    SpineOptional<SetpointTypeType> setpointType;
-    SpineOptional<ScopeTypeType> scopeType;
+    SpineOptional<SetpointTypeEnumType> setpointType;
+    SpineOptional<ScopeTypeEnumType> scopeType;
 
     SetpointDescriptionListDataSelectorsType() = default;
 };
@@ -7987,7 +7987,7 @@ struct TimeTableDescriptionDataType
     SpineOptional<uint32_t> timeTableId;
     SpineOptional<bool> timeSlotCountChangeable;
     SpineOptional<bool> timeSlotTimesChangeable;
-    SpineOptional<TimeSlotTimeModeType> timeSlotTimeMode;
+    SpineOptional<TimeSlotTimeModeEnumType> timeSlotTimeMode;
     SpineOptional<LabelType> label;
     SpineOptional<DescriptionType> description;
 
@@ -8091,7 +8091,7 @@ void convertFromJson(const JsonVariantConst &src, TimeTableDescriptionListDataSe
 struct SensingDataType
 {
     SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
-    SpineOptional<SensingStateType> state;
+    SpineOptional<SensingStateEnumType> state;
     SpineOptional<ScaledNumberType> value;
 
     SensingDataType() = default;
@@ -8190,9 +8190,9 @@ void convertFromJson(const JsonVariantConst &src, SensingListDataSelectorsType &
 */
 struct SensingDescriptionDataType
 {
-    SpineOptional<SensingTypeType> sensingType;
-    SpineOptional<UnitOfMeasurementType> unit;
-    SpineOptional<ScopeTypeType> scopeType;
+    SpineOptional<SensingTypeEnumType> sensingType;
+    SpineOptional<UnitOfMeasurementEnumType> unit;
+    SpineOptional<ScopeTypeEnumType> scopeType;
     SpineOptional<LabelType> label;
     SpineOptional<DescriptionType> description;
 
@@ -8271,7 +8271,7 @@ void convertFromJson(const JsonVariantConst &src, ResultDataType &dst);
 */
 struct ActuatorSwitchDataType
 {
-    SpineOptional<ActuatorSwitchFctType> function;
+    SpineOptional<ActuatorSwitchFctEnumType> function;
 
     ActuatorSwitchDataType() = default;
 };
@@ -8828,7 +8828,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementReportCandida
 struct NetworkManagementDeviceDescriptionDataType
 {
     SpineOptional<DeviceAddressType> deviceAddress;
-    SpineOptional<DeviceTypeType> deviceType;
+    SpineOptional<DeviceTypeEnumType> deviceType;
     SpineOptional<FeatureAddressType> networkManagementResponsibleAddress;
     SpineOptional<NetworkManagementNativeSetupType> nativeSetup;
     SpineOptional<NetworkManagementTechnologyAddressType> technologyAddress;
@@ -8920,7 +8920,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
 struct NetworkManagementDeviceDescriptionListDataSelectorsType
 {
     SpineOptional<DeviceAddressType> deviceAddress;
-    SpineOptional<DeviceTypeType> deviceType;
+    SpineOptional<DeviceTypeEnumType> deviceType;
 
     NetworkManagementDeviceDescriptionListDataSelectorsType() = default;
 };
@@ -8945,7 +8945,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementDeviceDescrip
 struct NetworkManagementEntityDescriptionDataType
 {
     SpineOptional<EntityAddressType> entityAddress;
-    SpineOptional<EntityTypeType> entityType;
+    SpineOptional<EntityTypeEnumType> entityType;
     SpineOptional<NetworkManagementStateChangeType> lastStateChange;
     SpineOptional<NetworkManagementMinimumTrustLevelType> minimumTrustLevel;
     SpineOptional<LabelType> label;
@@ -9027,7 +9027,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescrip
 struct NetworkManagementEntityDescriptionListDataSelectorsType
 {
     SpineOptional<EntityAddressType> entityAddress;
-    SpineOptional<EntityTypeType> entityType;
+    SpineOptional<EntityTypeEnumType> entityType;
 
     NetworkManagementEntityDescriptionListDataSelectorsType() = default;
 };
@@ -9052,7 +9052,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementEntityDescrip
 struct NetworkManagementFeatureDescriptionDataType
 {
     SpineOptional<FeatureAddressType> featureAddress;
-    SpineOptional<FeatureTypeType> featureType;
+    SpineOptional<FeatureTypeEnumType> featureType;
     SpineOptional<std::vector<FeatureSpecificUsageType>> specificUsage;
     SpineOptional<FeatureGroupType> featureGroup;
     SpineOptional<RoleType> role;
@@ -9144,7 +9144,7 @@ void convertFromJson(const JsonVariantConst &src, NetworkManagementFeatureDescri
 struct NetworkManagementFeatureDescriptionListDataSelectorsType
 {
     SpineOptional<FeatureAddressType> featureAddress;
-    SpineOptional<FeatureTypeType> featureType;
+    SpineOptional<FeatureTypeEnumType> featureType;
 
     NetworkManagementFeatureDescriptionListDataSelectorsType() = default;
 };
@@ -9170,13 +9170,13 @@ struct SupplyConditionDataType
 {
     SpineOptional<ConditionIdType> conditionId;
     SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
-    SpineOptional<SupplyConditionEventTypeType> eventType;
-    SpineOptional<SupplyConditionOriginatorType> originator;
+    SpineOptional<SupplyConditionEventTypeEnumType> eventType;
+    SpineOptional<SupplyConditionOriginatorEnumType> originator;
     SpineOptional<ThresholdIdType> thresholdId;
     SpineOptional<ScaledNumberType> thresholdPercentage;
     SpineOptional<TimePeriodType> relevantPeriod;
     SpineOptional<DescriptionType> description;
-    SpineOptional<GridConditionType> gridCondition;
+    SpineOptional<GridConditionEnumType> gridCondition;
 
     SupplyConditionDataType() = default;
 };
@@ -9258,8 +9258,8 @@ struct SupplyConditionListDataSelectorsType
 {
     SpineOptional<ConditionIdType> conditionId;
     SpineOptional<TimestampIntervalType> timestampInterval;
-    SpineOptional<SupplyConditionEventTypeType> eventType;
-    SpineOptional<SupplyConditionOriginatorType> originator;
+    SpineOptional<SupplyConditionEventTypeEnumType> eventType;
+    SpineOptional<SupplyConditionOriginatorEnumType> originator;
 
     SupplyConditionListDataSelectorsType() = default;
 };
@@ -9284,8 +9284,8 @@ void convertFromJson(const JsonVariantConst &src, SupplyConditionListDataSelecto
 struct SupplyConditionDescriptionDataType
 {
     SpineOptional<ConditionIdType> conditionId;
-    SpineOptional<CommodityTypeType> commodityType;
-    SpineOptional<EnergyDirectionType> positiveEnergyDirection;
+    SpineOptional<CommodityTypeEnumType> commodityType;
+    SpineOptional<EnergyDirectionEnumType> positiveEnergyDirection;
     SpineOptional<LabelType> label;
     SpineOptional<DescriptionType> description;
 
@@ -9489,10 +9489,10 @@ struct AlarmDataType
     SpineOptional<AlarmIdType> alarmId;
     SpineOptional<ThresholdIdType> thresholdId;
     SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
-    SpineOptional<AlarmTypeType> alarmType;
+    SpineOptional<AlarmTypeEnumType> alarmType;
     SpineOptional<ScaledNumberType> measuredValue;
     SpineOptional<TimePeriodType> evaluationPeriod;
-    SpineOptional<ScopeTypeType> scopeType;
+    SpineOptional<ScopeTypeEnumType> scopeType;
     SpineOptional<LabelType> label;
     SpineOptional<DescriptionType> description;
 
@@ -9575,7 +9575,7 @@ void convertFromJson(const JsonVariantConst &src, AlarmListDataType &dst);
 struct AlarmListDataSelectorsType
 {
     SpineOptional<AlarmIdType> alarmId;
-    SpineOptional<ScopeTypeType> scopeType;
+    SpineOptional<ScopeTypeEnumType> scopeType;
 
     AlarmListDataSelectorsType() = default;
 };
@@ -10050,7 +10050,7 @@ struct BindingManagementRequestCallType
 {
     SpineOptional<FeatureAddressType> clientAddress;
     SpineOptional<FeatureAddressType> serverAddress;
-    SpineOptional<FeatureTypeType> serverFeatureType;
+    SpineOptional<FeatureTypeEnumType> serverFeatureType;
 
     BindingManagementRequestCallType() = default;
 };
@@ -10404,7 +10404,7 @@ struct SubscriptionManagementRequestCallType
 {
     SpineOptional<FeatureAddressType> clientAddress;
     SpineOptional<FeatureAddressType> serverAddress;
-    SpineOptional<FeatureTypeType> serverFeatureType;
+    SpineOptional<FeatureTypeEnumType> serverFeatureType;
 
     SubscriptionManagementRequestCallType() = default;
 };
@@ -11499,7 +11499,7 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobRelationListD
 struct TaskManagementJobDescriptionDataType
 {
     SpineOptional<TaskManagementJobIdType> jobId;
-    SpineOptional<TaskManagementJobSourceType> jobSource;
+    SpineOptional<TaskManagementJobSourceEnumType> jobSource;
     SpineOptional<LabelType> label;
     SpineOptional<DescriptionType> description;
 
@@ -11577,7 +11577,7 @@ void convertFromJson(const JsonVariantConst &src, TaskManagementJobDescriptionLi
 struct TaskManagementJobDescriptionListDataSelectorsType
 {
     SpineOptional<TaskManagementJobIdType> jobId;
-    SpineOptional<TaskManagementJobSourceType> jobSource;
+    SpineOptional<TaskManagementJobSourceEnumType> jobSource;
 
     TaskManagementJobDescriptionListDataSelectorsType() = default;
 };
@@ -12055,7 +12055,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionPowerSequenc
 struct HvacSystemFunctionDescriptionDataType
 {
     SpineOptional<HvacSystemFunctionIdType> systemFunctionId;
-    SpineOptional<HvacSystemFunctionTypeType> systemFunctionType;
+    SpineOptional<HvacSystemFunctionTypeEnumType> systemFunctionType;
     SpineOptional<LabelType> label;
     SpineOptional<DescriptionType> description;
 
@@ -12157,7 +12157,7 @@ void convertFromJson(const JsonVariantConst &src, HvacSystemFunctionDescriptionL
 struct HvacOperationModeDescriptionDataType
 {
     SpineOptional<HvacOperationModeIdType> operationModeId;
-    SpineOptional<HvacOperationModeTypeType> operationModeType;
+    SpineOptional<HvacOperationModeTypeEnumType> operationModeType;
     SpineOptional<LabelType> label;
     SpineOptional<DescriptionType> description;
 
@@ -12259,7 +12259,7 @@ void convertFromJson(const JsonVariantConst &src, HvacOperationModeDescriptionLi
 struct HvacOverrunDataType
 {
     SpineOptional<HvacOverrunIdType> overrunId;
-    SpineOptional<HvacOverrunStatusType> overrunStatus;
+    SpineOptional<HvacOverrunStatusEnumType> overrunStatus;
     SpineOptional<TimeTableIdType> timeTableId;
     SpineOptional<bool> isOverrunStatusChangeable;
 
@@ -12361,7 +12361,7 @@ void convertFromJson(const JsonVariantConst &src, HvacOverrunListDataSelectorsTy
 struct HvacOverrunDescriptionDataType
 {
     SpineOptional<HvacOverrunIdType> overrunId;
-    SpineOptional<HvacOverrunTypeType> overrunType;
+    SpineOptional<HvacOverrunTypeEnumType> overrunType;
     SpineOptional<std::vector<HvacSystemFunctionIdType>> affectedSystemFunctionId;
     SpineOptional<LabelType> label;
     SpineOptional<DescriptionType> description;
@@ -12514,8 +12514,8 @@ struct LoadControlEventDataType
 {
     SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
     SpineOptional<LoadControlEventIdType> eventId;
-    SpineOptional<LoadControlEventActionType> eventActionConsume;
-    SpineOptional<LoadControlEventActionType> eventActionProduce;
+    SpineOptional<LoadControlEventActionEnumType> eventActionConsume;
+    SpineOptional<LoadControlEventActionEnumType> eventActionProduce;
     SpineOptional<TimePeriodType> timePeriod;
 
     LoadControlEventDataType() = default;
@@ -12619,10 +12619,10 @@ struct LoadControlStateDataType
 {
     SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
     SpineOptional<LoadControlEventIdType> eventId;
-    SpineOptional<LoadControlEventStateType> eventStateConsume;
-    SpineOptional<LoadControlEventActionType> appliedEventActionConsume;
-    SpineOptional<LoadControlEventStateType> eventStateProduce;
-    SpineOptional<LoadControlEventActionType> appliedEventActionProduce;
+    SpineOptional<LoadControlEventStateEnumType> eventStateConsume;
+    SpineOptional<LoadControlEventActionEnumType> appliedEventActionConsume;
+    SpineOptional<LoadControlEventStateEnumType> eventStateProduce;
+    SpineOptional<LoadControlEventActionEnumType> appliedEventActionProduce;
 
     LoadControlStateDataType() = default;
 };
@@ -12931,12 +12931,12 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitConstraintsLis
 struct LoadControlLimitDescriptionDataType
 {
     SpineOptional<LoadControlLimitIdType> limitId;
-    SpineOptional<LoadControlLimitTypeType> limitType;
-    SpineOptional<LoadControlCategoryType> limitCategory;
-    SpineOptional<EnergyDirectionType> limitDirection;
+    SpineOptional<LoadControlLimitTypeEnumType> limitType;
+    SpineOptional<LoadControlCategoryEnumType> limitCategory;
+    SpineOptional<EnergyDirectionEnumType> limitDirection;
     SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<UnitOfMeasurementType> unit;
-    SpineOptional<ScopeTypeType> scopeType;
+    SpineOptional<UnitOfMeasurementEnumType> unit;
+    SpineOptional<ScopeTypeEnumType> scopeType;
     SpineOptional<LabelType> label;
     SpineOptional<DescriptionType> description;
 
@@ -13019,10 +13019,10 @@ void convertFromJson(const JsonVariantConst &src, LoadControlLimitDescriptionLis
 struct LoadControlLimitDescriptionListDataSelectorsType
 {
     SpineOptional<LoadControlLimitIdType> limitId;
-    SpineOptional<LoadControlLimitTypeType> limitType;
-    SpineOptional<EnergyDirectionType> limitDirection;
+    SpineOptional<LoadControlLimitTypeEnumType> limitType;
+    SpineOptional<EnergyDirectionEnumType> limitDirection;
     SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<ScopeTypeType> scopeType;
+    SpineOptional<ScopeTypeEnumType> scopeType;
 
     LoadControlLimitDescriptionListDataSelectorsType() = default;
 };
@@ -13054,7 +13054,7 @@ struct DeviceClassificationManufacturerDataType
     SpineOptional<DeviceClassificationStringType> vendorName;
     SpineOptional<DeviceClassificationStringType> vendorCode;
     SpineOptional<DeviceClassificationStringType> brandName;
-    SpineOptional<PowerSourceType> powerSource;
+    SpineOptional<PowerSourceEnumType> powerSource;
     SpineOptional<DeviceClassificationStringType> manufacturerNodeIdentification;
     SpineOptional<LabelType> manufacturerLabel;
     SpineOptional<DescriptionType> manufacturerDescription;
@@ -13168,7 +13168,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceClassificationUserDataEl
 */
 struct ActuatorLevelDataType
 {
-    SpineOptional<ActuatorLevelFctType> function;
+    SpineOptional<ActuatorLevelFctEnumType> function;
     SpineOptional<ScaledNumberType> value;
 
     ActuatorLevelDataType() = default;
@@ -13220,7 +13220,7 @@ struct ActuatorLevelDescriptionDataType
 {
     SpineOptional<LabelType> label;
     SpineOptional<DescriptionType> description;
-    SpineOptional<UnitOfMeasurementType> levelDefaultUnit;
+    SpineOptional<UnitOfMeasurementEnumType> levelDefaultUnit;
 
     ActuatorLevelDescriptionDataType() = default;
 };
@@ -13432,15 +13432,15 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesListDataSelectorsTyp
 struct TimeSeriesDescriptionDataType
 {
     SpineOptional<TimeSeriesIdType> timeSeriesId;
-    SpineOptional<TimeSeriesTypeType> timeSeriesType;
+    SpineOptional<TimeSeriesTypeEnumType> timeSeriesType;
     SpineOptional<bool> timeSeriesWriteable;
     SpineOptional<bool> updateRequired;
     SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<CurrencyType> currency;
-    SpineOptional<UnitOfMeasurementType> unit;
+    SpineOptional<CurrencyEnumType> currency;
+    SpineOptional<UnitOfMeasurementEnumType> unit;
     SpineOptional<LabelType> label;
     SpineOptional<DescriptionType> description;
-    SpineOptional<ScopeTypeType> scopeType;
+    SpineOptional<ScopeTypeEnumType> scopeType;
 
     TimeSeriesDescriptionDataType() = default;
 };
@@ -13522,9 +13522,9 @@ void convertFromJson(const JsonVariantConst &src, TimeSeriesDescriptionListDataT
 struct TimeSeriesDescriptionListDataSelectorsType
 {
     SpineOptional<TimeSeriesIdType> timeSeriesId;
-    SpineOptional<TimeSeriesTypeType> timeSeriesType;
+    SpineOptional<TimeSeriesTypeEnumType> timeSeriesType;
     SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<ScopeTypeType> scopeType;
+    SpineOptional<ScopeTypeEnumType> scopeType;
 
     TimeSeriesDescriptionListDataSelectorsType() = default;
 };
@@ -14173,7 +14173,7 @@ struct MessagingDataType
 {
     SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
     SpineOptional<MessagingNumberType> messagingNumber;
-    SpineOptional<MessagingTypeType> type;
+    SpineOptional<MessagingTypeEnumType> type;
     SpineOptional<MessagingDataTextType> text;
 
     MessagingDataType() = default;
@@ -14638,7 +14638,7 @@ struct TariffDescriptionDataType
     SpineOptional<MeasurementIdType> measurementId;
     SpineOptional<bool> tariffWriteable;
     SpineOptional<bool> updateRequired;
-    SpineOptional<ScopeTypeType> scopeType;
+    SpineOptional<ScopeTypeEnumType> scopeType;
     SpineOptional<LabelType> label;
     SpineOptional<DescriptionType> description;
     SpineOptional<bool> slotIdSupport;
@@ -14724,7 +14724,7 @@ struct TariffDescriptionListDataSelectorsType
     SpineOptional<TariffIdType> tariffId;
     SpineOptional<CommodityIdType> commodityId;
     SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<ScopeTypeType> scopeType;
+    SpineOptional<ScopeTypeEnumType> scopeType;
 
     TariffDescriptionListDataSelectorsType() = default;
 };
@@ -14853,11 +14853,11 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryListDataSelectorsT
 struct TierBoundaryDescriptionDataType
 {
     SpineOptional<TierBoundaryIdType> boundaryId;
-    SpineOptional<TierBoundaryTypeType> boundaryType;
+    SpineOptional<TierBoundaryTypeEnumType> boundaryType;
     SpineOptional<TierIdType> validForTierId;
     SpineOptional<TierIdType> switchToTierIdWhenLower;
     SpineOptional<TierIdType> switchToTierIdWhenHigher;
-    SpineOptional<UnitOfMeasurementType> boundaryUnit;
+    SpineOptional<UnitOfMeasurementEnumType> boundaryUnit;
     SpineOptional<LabelType> label;
     SpineOptional<DescriptionType> description;
 
@@ -14939,7 +14939,7 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionListDat
 struct TierBoundaryDescriptionListDataSelectorsType
 {
     SpineOptional<TierBoundaryIdType> boundaryId;
-    SpineOptional<TierBoundaryTypeType> boundaryType;
+    SpineOptional<TierBoundaryTypeEnumType> boundaryType;
 
     TierBoundaryDescriptionListDataSelectorsType() = default;
 };
@@ -14964,8 +14964,8 @@ void convertFromJson(const JsonVariantConst &src, TierBoundaryDescriptionListDat
 struct CommodityDataType
 {
     SpineOptional<CommodityIdType> commodityId;
-    SpineOptional<CommodityTypeType> commodityType;
-    SpineOptional<EnergyDirectionType> positiveEnergyDirection;
+    SpineOptional<CommodityTypeEnumType> commodityType;
+    SpineOptional<EnergyDirectionEnumType> positiveEnergyDirection;
     SpineOptional<LabelType> label;
     SpineOptional<DescriptionType> description;
 
@@ -15044,7 +15044,7 @@ void convertFromJson(const JsonVariantConst &src, CommodityListDataType &dst);
 struct CommodityListDataSelectorsType
 {
     SpineOptional<CommodityIdType> commodityId;
-    SpineOptional<CommodityTypeType> commodityType;
+    SpineOptional<CommodityTypeEnumType> commodityType;
 
     CommodityListDataSelectorsType() = default;
 };
@@ -15271,7 +15271,7 @@ void convertFromJson(const JsonVariantConst &src, TierIncentiveRelationListDataS
 struct TierDescriptionDataType
 {
     SpineOptional<TierIdType> tierId;
-    SpineOptional<TierTypeType> tierType;
+    SpineOptional<TierTypeEnumType> tierType;
     SpineOptional<LabelType> label;
     SpineOptional<DescriptionType> description;
 
@@ -15349,7 +15349,7 @@ void convertFromJson(const JsonVariantConst &src, TierDescriptionListDataType &d
 struct TierDescriptionListDataSelectorsType
 {
     SpineOptional<TierIdType> tierId;
-    SpineOptional<TierTypeType> tierType;
+    SpineOptional<TierTypeEnumType> tierType;
 
     TierDescriptionListDataSelectorsType() = default;
 };
@@ -15374,7 +15374,7 @@ void convertFromJson(const JsonVariantConst &src, TierDescriptionListDataSelecto
 struct IncentiveDataType
 {
     SpineOptional<IncentiveIdType> incentiveId;
-    SpineOptional<IncentiveValueTypeType> valueType;
+    SpineOptional<IncentiveValueTypeEnumType> valueType;
     SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
     SpineOptional<TimePeriodType> timePeriod;
     SpineOptional<TimeTableIdType> timeTableId;
@@ -15456,7 +15456,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveListDataType &dst);
 struct IncentiveListDataSelectorsType
 {
     SpineOptional<IncentiveIdType> incentiveId;
-    SpineOptional<IncentiveValueTypeType> valueType;
+    SpineOptional<IncentiveValueTypeEnumType> valueType;
     SpineOptional<TimestampIntervalType> timestampInterval;
 
     IncentiveListDataSelectorsType() = default;
@@ -15482,10 +15482,10 @@ void convertFromJson(const JsonVariantConst &src, IncentiveListDataSelectorsType
 struct IncentiveDescriptionDataType
 {
     SpineOptional<IncentiveIdType> incentiveId;
-    SpineOptional<IncentiveTypeType> incentiveType;
+    SpineOptional<IncentiveTypeEnumType> incentiveType;
     SpineOptional<IncentivePriorityType> incentivePriority;
-    SpineOptional<CurrencyType> currency;
-    SpineOptional<UnitOfMeasurementType> unit;
+    SpineOptional<CurrencyEnumType> currency;
+    SpineOptional<UnitOfMeasurementEnumType> unit;
     SpineOptional<LabelType> label;
     SpineOptional<DescriptionType> description;
 
@@ -15566,7 +15566,7 @@ void convertFromJson(const JsonVariantConst &src, IncentiveDescriptionListDataTy
 struct IncentiveDescriptionListDataSelectorsType
 {
     SpineOptional<IncentiveIdType> incentiveId;
-    SpineOptional<IncentiveTypeType> incentiveType;
+    SpineOptional<IncentiveTypeEnumType> incentiveType;
 
     IncentiveDescriptionListDataSelectorsType() = default;
 };
@@ -15593,7 +15593,7 @@ struct StateInformationDataType
     SpineOptional<stateInformationIdType> stateInformationId;
     SpineOptional<StateInformationType> stateInformation;
     SpineOptional<bool> isActive;
-    SpineOptional<StateInformationCategoryType> category;
+    SpineOptional<StateInformationCategoryEnumType> category;
     SpineOptional<AbsoluteOrRelativeTimeType> timeOfLastChange;
 
     StateInformationDataType() = default;
@@ -15673,7 +15673,7 @@ struct StateInformationListDataSelectorsType
     SpineOptional<stateInformationIdType> stateInformationId;
     SpineOptional<StateInformationType> stateInformation;
     SpineOptional<bool> isActive;
-    SpineOptional<StateInformationCategoryType> category;
+    SpineOptional<StateInformationCategoryEnumType> category;
 
     StateInformationListDataSelectorsType() = default;
 };
@@ -15700,13 +15700,13 @@ struct ElectricalConnectionParameterDescriptionDataType
     SpineOptional<ElectricalConnectionIdType> electricalConnectionId;
     SpineOptional<ElectricalConnectionParameterIdType> parameterId;
     SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<ElectricalConnectionVoltageTypeType> voltageType;
-    SpineOptional<ElectricalConnectionPhaseNameType> acMeasuredPhases;
-    SpineOptional<ElectricalConnectionPhaseNameType> acMeasuredInReferenceTo;
-    SpineOptional<ElectricalConnectionAcMeasurementTypeType> acMeasurementType;
-    SpineOptional<ElectricalConnectionMeasurandVariantType> acMeasurementVariant;
+    SpineOptional<ElectricalConnectionVoltageTypeEnumType> voltageType;
+    SpineOptional<ElectricalConnectionPhaseNameEnumType> acMeasuredPhases;
+    SpineOptional<ElectricalConnectionPhaseNameEnumType> acMeasuredInReferenceTo;
+    SpineOptional<ElectricalConnectionAcMeasurementTypeEnumType> acMeasurementType;
+    SpineOptional<ElectricalConnectionMeasurandVariantEnumType> acMeasurementVariant;
     SpineOptional<uint8_t> acMeasuredHarmonic;
-    SpineOptional<ScopeTypeType> scopeType;
+    SpineOptional<ScopeTypeEnumType> scopeType;
     SpineOptional<LabelType> label;
     SpineOptional<DescriptionType> description;
 
@@ -15794,7 +15794,7 @@ struct ElectricalConnectionParameterDescriptionListDataSelectorsType
     SpineOptional<ElectricalConnectionIdType> electricalConnectionId;
     SpineOptional<ElectricalConnectionParameterIdType> parameterId;
     SpineOptional<MeasurementIdType> measurementId;
-    SpineOptional<ScopeTypeType> scopeType;
+    SpineOptional<ScopeTypeEnumType> scopeType;
 
     ElectricalConnectionParameterDescriptionListDataSelectorsType() = default;
 };
@@ -15922,10 +15922,10 @@ struct ElectricalConnectionCharacteristicDataType
     SpineOptional<ElectricalConnectionIdType> electricalConnectionId;
     SpineOptional<ElectricalConnectionParameterIdType> parameterId;
     SpineOptional<ElectricalConnectionCharacteristicIdType> characteristicId;
-    SpineOptional<ElectricalConnectionCharacteristicContextType> characteristicContext;
-    SpineOptional<ElectricalConnectionCharacteristicTypeType> characteristicType;
+    SpineOptional<ElectricalConnectionCharacteristicContextEnumType> characteristicContext;
+    SpineOptional<ElectricalConnectionCharacteristicTypeEnumType> characteristicType;
     SpineOptional<ScaledNumberType> value;
-    SpineOptional<UnitOfMeasurementType> unit;
+    SpineOptional<UnitOfMeasurementEnumType> unit;
 
     ElectricalConnectionCharacteristicDataType() = default;
 };
@@ -16006,8 +16006,8 @@ struct ElectricalConnectionCharacteristicListDataSelectorsType
     SpineOptional<ElectricalConnectionIdType> electricalConnectionId;
     SpineOptional<ElectricalConnectionParameterIdType> parameterId;
     SpineOptional<ElectricalConnectionCharacteristicIdType> characteristicId;
-    SpineOptional<ElectricalConnectionCharacteristicContextType> characteristicContext;
-    SpineOptional<ElectricalConnectionCharacteristicTypeType> characteristicType;
+    SpineOptional<ElectricalConnectionCharacteristicContextEnumType> characteristicContext;
+    SpineOptional<ElectricalConnectionCharacteristicTypeEnumType> characteristicType;
 
     ElectricalConnectionCharacteristicListDataSelectorsType() = default;
 };
@@ -16033,7 +16033,7 @@ struct ElectricalConnectionStateDataType
 {
     SpineOptional<ElectricalConnectionIdType> electricalConnectionId;
     SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
-    SpineOptional<EnergyModeType> currentEnergyMode;
+    SpineOptional<EnergyModeEnumType> currentEnergyMode;
     SpineOptional<std::string> consumptionTime;
     SpineOptional<std::string> productionTime;
     SpineOptional<std::string> totalConsumptionTime;
@@ -16140,11 +16140,11 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionStateListD
 struct ElectricalConnectionDescriptionDataType
 {
     SpineOptional<ElectricalConnectionIdType> electricalConnectionId;
-    SpineOptional<ElectricalConnectionVoltageTypeType> powerSupplyType;
+    SpineOptional<ElectricalConnectionVoltageTypeEnumType> powerSupplyType;
     SpineOptional<uint32_t> acConnectedPhases;
     SpineOptional<std::string> acRmsPeriodDuration;
-    SpineOptional<EnergyDirectionType> positiveEnergyDirection;
-    SpineOptional<ScopeTypeType> scopeType;
+    SpineOptional<EnergyDirectionEnumType> positiveEnergyDirection;
+    SpineOptional<ScopeTypeEnumType> scopeType;
     SpineOptional<LabelType> label;
     SpineOptional<DescriptionType> description;
 
@@ -16226,7 +16226,7 @@ void convertFromJson(const JsonVariantConst &src, ElectricalConnectionDescriptio
 struct ElectricalConnectionDescriptionListDataSelectorsType
 {
     SpineOptional<ElectricalConnectionIdType> electricalConnectionId;
-    SpineOptional<ScopeTypeType> scopeType;
+    SpineOptional<ScopeTypeEnumType> scopeType;
 
     ElectricalConnectionDescriptionListDataSelectorsType() = default;
 };
@@ -16453,12 +16453,12 @@ void convertFromJson(const JsonVariantConst &src, TimeDistributorEnquiryCallElem
 struct DeviceDiagnosisStateDataType
 {
     SpineOptional<AbsoluteOrRelativeTimeType> timestamp;
-    SpineOptional<DeviceDiagnosisOperatingStateType> operatingState;
+    SpineOptional<DeviceDiagnosisOperatingStateEnumType> operatingState;
     SpineOptional<VendorStateCodeType> vendorStateCode;
     SpineOptional<LastErrorCodeType> lastErrorCode;
     SpineOptional<std::string> upTime;
     SpineOptional<std::string> totalUpTime;
-    SpineOptional<PowerSupplyConditionType> powerSupplyCondition;
+    SpineOptional<PowerSupplyConditionEnumType> powerSupplyCondition;
 
     DeviceDiagnosisStateDataType() = default;
 };
@@ -16780,9 +16780,9 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueLis
 struct DeviceConfigurationKeyValueDescriptionDataType
 {
     SpineOptional<DeviceConfigurationKeyIdType> keyId;
-    SpineOptional<DeviceConfigurationKeyNameType> keyName;
+    SpineOptional<DeviceConfigurationKeyNameEnumType> keyName;
     SpineOptional<DeviceConfigurationKeyValueTypeType> valueType;
-    SpineOptional<UnitOfMeasurementType> unit;
+    SpineOptional<UnitOfMeasurementEnumType> unit;
     SpineOptional<LabelType> label;
     SpineOptional<DescriptionType> description;
 
@@ -16862,7 +16862,7 @@ void convertFromJson(const JsonVariantConst &src, DeviceConfigurationKeyValueDes
 struct DeviceConfigurationKeyValueDescriptionListDataSelectorsType
 {
     SpineOptional<DeviceConfigurationKeyIdType> keyId;
-    SpineOptional<DeviceConfigurationKeyNameType> keyName;
+    SpineOptional<DeviceConfigurationKeyNameEnumType> keyName;
 
     DeviceConfigurationKeyValueDescriptionListDataSelectorsType() = default;
 };
