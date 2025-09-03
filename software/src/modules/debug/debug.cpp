@@ -209,8 +209,6 @@ void Debug::pre_setup()
     register_task("ipc1", IPC_STACK_SIZE);
 }
 
-extern size_t alloc_overhead;
-
 void Debug::setup()
 {
     task_scheduler.scheduleWithFixedDelay([this]() {
