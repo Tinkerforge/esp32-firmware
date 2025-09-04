@@ -48,9 +48,12 @@ void *leak_aligned(size_t alignment, size_t size, RAM r) {
             return dram_lin_alloc.aligned_alloc(alignment, size);
         case IRAM:
             return iram_lin_alloc.aligned_alloc(alignment, size);
-#if defined(BOARD_HAS_PSRAM)
+
         case PSRAM:
+#if defined(BOARD_HAS_PSRAM)
             return psram_lin_alloc.aligned_alloc(alignment, size);
+#else
+        break;
 #endif
         case _NONE:
             break;

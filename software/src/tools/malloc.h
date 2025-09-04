@@ -29,9 +29,7 @@ void tools_malloc_pre_setup();
 enum RAM {
     DRAM,
     IRAM,
-#if defined(BOARD_HAS_PSRAM)
     PSRAM,
-#endif
     _NONE
 };
 
