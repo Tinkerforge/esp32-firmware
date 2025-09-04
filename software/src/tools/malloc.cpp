@@ -37,8 +37,21 @@ static LinearAllocator psram_lin_alloc{
 #endif
 
 void tools_malloc_pre_setup() {
-    dram_lin_alloc.setup({});
-    iram_lin_alloc.setup({});
+    dram_lin_alloc.setup({
+#if defined(MANUALLY_RESERVED_6432B_AT_0x3FFAE6E0_DRAM)
+        {reinterpret_cast<void *>(0x3FFAE6E0),  6432},
+#endif
+#if defined(MANUALLY_RESERVED_15072B_AT_0x3FFE0440_DRAM)
+        {reinterpret_cast<void *>(0x3FFE0440), 15072},
+#endif
+    });
+
+    iram_lin_alloc.setup({
+#if defined(MANUALLY_RESERVED_8192B_AT_0x4009E000_IRAM)
+        {reinterpret_cast<void *>(0x4009E000),  8192},
+#endif
+    });
+
 #if defined(BOARD_HAS_PSRAM)
     psram_lin_alloc.setup({});
 #endif
