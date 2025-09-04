@@ -2215,8 +2215,5 @@ bool update_from_client_packet(
         target.phase_switch_supported = false;
     }
 
-    if (v4 != nullptr)
-        target.charge_mode = v4->requested_charge_mode;
-
     return true;
 }

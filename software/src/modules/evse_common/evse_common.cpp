@@ -386,7 +386,7 @@ void EvseCommon::send_cm_client_update() {
         backend->get_control_pilot_disconnect(),
         phases,
         backend->phase_switching_capable() && backend->can_switch_phases_now(4 - phases),
-        deadline_elapsed(request_charge_mode_until) ? this->last_assigned_charge_mode : this->request_charge_mode.get("mode")->asUint8()
+        deadline_elapsed(request_charge_mode_until) ? (uint8_t)ConfigChargeMode::Default : this->request_charge_mode.get("mode")->asUint8()
     );
 #endif
 }
@@ -413,6 +413,11 @@ void EvseCommon::register_urls()
         // If for some reason we receive manager packets faster than one every 300_ms,
         // we still have to send client updates.
         next_cm_send_deadline = std::min(now_us() + 300_ms, next_cm_send_deadline);
+
+        if (!deadline_elapsed(request_charge_mode_until) // We are currently requesting a charge mode change
+        && charge_mode == this->request_charge_mode.get("mode")->asUint8()) { // The manager accepted our request
+            request_charge_mode_until = 0_us; // Stop requesting a charge mode change
+        }
 
         this->last_assigned_charge_mode = charge_mode;
     });
