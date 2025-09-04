@@ -349,7 +349,7 @@ export class ChargeManagerStatus extends Component<{}, ChargeManagerStatusState>
                         <h5 class="card-header">
                             {name_link}
                             <InputSelect
-                                items={get_allowed_charge_modes({with_default: false, add_pv_if_disabled: true})
+                                items={API.get("charge_manager/supported_charge_modes")
                                        .map(x => [x.toString(), __("charge_manager.status.mode_by_index")(x, default_mode)])
                                 }
                                 value={charge_modes[i].toString()}
