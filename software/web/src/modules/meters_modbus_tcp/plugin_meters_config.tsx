@@ -1011,6 +1011,20 @@ export function init() {
                   || config[1].table[0] == MeterModbusTCPTableID.VARTAElement
                   || config[1].table[0] == MeterModbusTCPTableID.VARTAFlex
                   || config[1].table[0] == MeterModbusTCPTableID.ChisageESSHybridInverter)) {
+                    if (config[1].table[0] != MeterModbusTCPTableID.TinkerforgeWARPCharger) {
+                        edit_children.push(
+                            <FormRow label={__("meters_modbus_tcp.content.device_address")} label_muted={__("meters_modbus_tcp.content.device_address_muted")(get_default_device_address(config[1].table[0]))}>
+                                <InputNumber
+                                    required
+                                    min={0}
+                                    max={255}
+                                    value={config[1].table[1].device_address}
+                                    onValue={(v) => {
+                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {device_address: v})}));
+                                    }} />
+                            </FormRow>);
+                    }
+
                     let virtual_meter_items: [string, string][] = [];
                     let default_location: MeterLocation = undefined; // undefined: there is no default location, null: default location is not known yet
                     let get_default_location: (virtual_meter: number) => MeterLocation = undefined; // undefined: there is no default location
@@ -1558,20 +1572,6 @@ export function init() {
                                     switch_label_active={__("meters_modbus_tcp.content.location_different")}
                                     switch_label_inactive={__("meters_modbus_tcp.content.location_matching")}
                                     />
-                            </FormRow>);
-                    }
-
-                    if (config[1].table[0] != MeterModbusTCPTableID.TinkerforgeWARPCharger) {
-                        edit_children.push(
-                            <FormRow label={__("meters_modbus_tcp.content.device_address")} label_muted={__("meters_modbus_tcp.content.device_address_muted")(get_default_device_address(config[1].table[0]))}>
-                                <InputNumber
-                                    required
-                                    min={0}
-                                    max={255}
-                                    value={config[1].table[1].device_address}
-                                    onValue={(v) => {
-                                        on_config(util.get_updated_union(config, {table: util.get_updated_union(config[1].table, {device_address: v})}));
-                                    }} />
                             </FormRow>);
                     }
 
