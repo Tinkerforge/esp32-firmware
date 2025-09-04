@@ -861,3 +861,11 @@
 - SunSpec: Fix power and phase-to-phase voltage values for WattNode meters
 - Remote Access: Fix adding new user
 - Fix crash in the common config logic
+
+2025-09-04: 2.8.9 (<unknown>)
+- Support reading (HTTP-only) and writing (HTTP and MQTT) sub-APIs via URL/topic suffix
+- Add support for more Modbus TCP devices: VARTA Element/Flex battery, Chisage ESS hybrid inverter
+- SunSpec: Fix phase-to-phase voltage values for WattNode meters again
+- Fix firmware update progress bar
+- Fix controlled chargers erroneously being shown as unavailable after 49 days
+- Fix front button LED control via API not always being applied if last LED update was also set via API
