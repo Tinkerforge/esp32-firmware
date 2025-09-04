@@ -76,13 +76,6 @@ void FrontPanel::pre_setup()
     tile_prototypes[6] = {TileType::EnergyManagerStatus, *Config::Null()};
     tile_prototypes[7] = {TileType::HeatingStatus,       *Config::Null()};
 
-    config_tiles_prototype = Config::Union<TileType>(
-        *Config::Null(),
-        TileType::EmptyTile,
-        tile_prototypes,
-        TILE_TYPES
-    );
-
     config = ConfigRoot{Config::Object({
             {"enable", Config::Bool(true)},
             {"tiles", Config::Tuple(FRONT_PANEL_TILES, Config::Union<TileType>(

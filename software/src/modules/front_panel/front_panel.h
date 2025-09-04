@@ -125,7 +125,6 @@ private:
     String price_value_to_display_string(const int32_t price);
 
     ConfUnionPrototype<TileType> tile_prototypes[TILE_TYPES];
-    Config config_tiles_prototype;
     ConfigRoot config;
 
     flash_writer_data *flash_writer = nullptr;
