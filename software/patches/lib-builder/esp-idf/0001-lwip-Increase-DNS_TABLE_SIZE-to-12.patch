@@ -1,7 +1,7 @@
 From 6451a1df9f18c3ece6edd702d5e3605f0ed15f14 Mon Sep 17 00:00:00 2001
 From: Erik Fleckstein <erik@tinkerforge.com>
 Date: Mon, 12 Feb 2024 16:19:51 +0100
-Subject: [PATCH] lwip: Increase DNS_TABLE_SIZE to 16.
+Subject: [PATCH] lwip: Increase DNS_TABLE_SIZE to 12.
 
 ---
  components/lwip/port/include/lwipopts.h | 2 ++
@@ -15,7 +15,7 @@ index ef838b65a7..26685ee289 100644
   */
  #define DNS_FALLBACK_SERVER_INDEX       (DNS_MAX_SERVERS - 1)
  
-+#define DNS_TABLE_SIZE 16
++#define DNS_TABLE_SIZE 12
 +
  #ifdef CONFIG_LWIP_FALLBACK_DNS_SERVER_SUPPORT
  #define FALLBACK_DNS_SERVER_ADDRESS(address)                           \
