@@ -1,1 +1,0 @@
-../../src/modules/charge_manager/charge_manager_private.h
