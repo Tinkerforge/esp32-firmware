@@ -160,7 +160,7 @@ Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&va
     // -> leak_prefer will use 4 byte alignment.
     static_assert(sizeof(ConfObjectSchema) % 8 == 4);
     static_assert(sizeof(ConfObjectSchema::Key) % 8 == 0);
-    auto schema = static_cast<ConfObjectSchema *>(leak_prefer(sizeof(ConfObjectSchema) + len * sizeof(ConfObjectSchema::Key), IRAM, PSRAM, DRAM));
+    auto schema = static_cast<ConfObjectSchema *>(perm_alloc_prefer(sizeof(ConfObjectSchema) + len * sizeof(ConfObjectSchema::Key), IRAM, PSRAM, DRAM));
     schema->length = len;
 
     for (size_t i = 0; i < len; ++i) {
