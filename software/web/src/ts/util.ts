@@ -305,12 +305,11 @@ const wsOnMessageCallback = (e: MessageEvent) => {
 
     if (wsReconnectTimeout != null) {
         window.clearTimeout(wsReconnectTimeout);
-        wsReconnectTimeout = null;
     }
+
     wsReconnectTimeout = window.setTimeout(wsReconnectCallback, RECONNECT_TIME);
 
     let topics: any[] = [];
-
     let end_marker_found = (e.data as string).includes("\n\n");
     let messages = (e.data as string).trim();
 
@@ -390,11 +389,6 @@ export function pauseWebSockets() {
 }
 
 export function resumeWebSockets() {
-    if (wsReconnectTimeout != null) {
-        window.clearTimeout(wsReconnectTimeout);
-    }
-
-    wsReconnectTimeout = window.setTimeout(wsReconnectCallback, RECONNECT_TIME);
     wsReconnectCallback();
 }
 
