@@ -42,7 +42,6 @@ class CMNetworking final : public IModule
 {
 public:
     CMNetworking(){}
-    void setup() override;
     void register_urls() override;
     void register_events() override;
 
