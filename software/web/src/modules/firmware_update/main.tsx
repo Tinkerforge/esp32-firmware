@@ -74,10 +74,6 @@ export class FirmwareUpdate extends Component<FirmwareUpdateProps, FirmwareUpdat
         util.addApiEventListener('info/version', () => {
             let version = API.get('info/version');
 
-            if (this.state.current_firmware != null && this.state.current_firmware != version.firmware) {
-                window.location.reload();
-            }
-
             this.setState({current_firmware: version.firmware});
         });
 

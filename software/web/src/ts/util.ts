@@ -321,6 +321,15 @@ const wsOnMessageCallback = (e: MessageEvent) => {
                 return;
             }
 
+            if (obj["topic"] == "info/version") {
+                let version = API.get("info/version");
+
+                if (hasValue(version) && "firmware" in obj["payload"] && version.firmware !== obj["payload"].firmware) {
+                    window.location.reload();
+                    return;
+                }
+            }
+
             topics.push(obj["topic"]);
             API.update(obj["topic"], obj["payload"]);
         }
