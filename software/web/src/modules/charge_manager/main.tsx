@@ -164,7 +164,7 @@ function zero_phase_desc_to_text(d0: ZeroPhaseDecision): ComponentChild {
         case ZeroPhaseDecisionTag.YesChargeModeOff:
             return "Charge Mode Off";
         case ZeroPhaseDecisionTag.YesWaitingForRotation:
-            return "Waiting for rotation";
+            return with_timespan((timespan) => "Waiting for next rotation (" + timespan + ")", d0[1]);
         case ZeroPhaseDecisionTag.YesNotActive:
             return "Vehicle not active";
         case ZeroPhaseDecisionTag.YesRotatedForB1:
@@ -200,6 +200,8 @@ function one_phase_desc_to_text(d1: OnePhaseDecision): ComponentChild {
             return "Yes: Waking up vehicle";
         case OnePhaseDecisionTag.YesNormal:
             return "Yes";
+        case OnePhaseDecisionTag.NoHysteresisBlockedUntil:
+            return with_timespan((timespan) => "No: Hysteresis blocks phase switching until" + timespan, d1[1]);
     }
 }
 

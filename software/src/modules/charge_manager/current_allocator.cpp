@@ -411,6 +411,8 @@ static void stage_1(StageContext &sc) {
         }
     }
 
+    auto next_rot_sec = sc.ca_state->next_rotation.to<seconds_t>();
+
     for (int i = 0; i < sc.charger_count; ++i) {
         const auto *state = &sc.charger_state[i];
         if (state->off)
@@ -429,7 +431,7 @@ static void stage_1(StageContext &sc) {
         bool is_b1 = state->wants_to_charge && sc.phase_allocation[i] == 0 && deadline_elapsed(state->last_plug_in + sc.cfg->allocation_interval);
 
         if (is_b1 && have_active_chargers)
-            set_charger_decision(sc, i, ZeroPhaseDecision::YesWaitingForRotation());
+            set_charger_decision(sc, i, ZeroPhaseDecision::YesWaitingForRotation(next_rot_sec));
         else
             clear_charger_decision(sc, i, ZeroPhaseDecisionTag::YesWaitingForRotation);
 
@@ -469,11 +471,6 @@ static void stage_1(StageContext &sc) {
             if (offset_after_interval >= (2_us * sc.cfg->allocation_interval))
                 sc.ca_state->next_rotation += interval;
         }
-    }
-
-    if (have_b1 && have_active_chargers) {
-        auto rot_sec = sc.ca_state->next_rotation.to<seconds_t>();
-        set_global_decision(sc, GlobalDecision::NextRotationAt(rot_sec));
     }
 
     // Shut down a charger if it should be rotated or if it reports that it is not active anymore.
@@ -1075,17 +1072,6 @@ static void stage_4(StageContext &sc) {
     // A charger that was rotated has 0 allocated phases but is still charging.
     int matched = filter_chargers(ctx.allocated_phases == 0 && (ctx.state->wants_to_charge || ctx.state->is_charging) && (ctx.state->charge_mode & ctx.charge_mode_filter) != 0 && !ctx.state->off);
 
-    // TODO: run this stage without returning if the hysteresis is not elapsed yet
-    // to create a better status message. We would like to know which chargers
-    // are going to be enabled when.
-    if (!sc.ca_state->global_hysteresis_elapsed) {
-        if (matched > 0) {
-            auto hyst = (sc.ca_state->last_hysteresis_reset + sc.cfg->global_hysteresis).to<seconds_t>();
-            set_global_decision(sc, GlobalDecision::HysteresisElapsesAt(hyst));
-        }
-        return;
-    }
-
     sort_chargers(
         -get_highest_charge_mode_bit(ctx.state),
         ctx.left.state->allocated_average_power < ctx.right.state->allocated_average_power
@@ -1157,6 +1143,17 @@ static void stage_4(StageContext &sc) {
         bool try_3p = !force_1p && (force_3p || is_fixed_3p || is_unknown_rot_switchable);
         bool try_1p = !force_3p && !is_fixed_3p;
 
+        // Handle hysteresis last to only show the countdown when there are no other reasons to set a "No" decision.
+        if (!sc.ca_state->global_hysteresis_elapsed) {
+            auto hyst = (sc.ca_state->last_hysteresis_reset + sc.cfg->global_hysteresis).to<seconds_t>();
+            if (try_3p)
+                set_charger_decision(sc, sc.idx_array[i], ThreePhaseDecision::NoHysteresisBlockedUntil(hyst));
+            if (try_1p)
+                set_charger_decision(sc, sc.idx_array[i], OnePhaseDecision::NoHysteresisBlockedUntil(hyst));
+
+            continue;
+        }
+
         char buf[256];
         StringWriter sw{buf, ARRAY_SIZE(buf)};
 
@@ -1225,13 +1222,6 @@ static void stage_5(StageContext &sc) {
 
     int matched = filter_chargers(ctx.allocated_phases == 1 && ctx.state->phase_switch_supported && (ctx.state->charge_mode & ctx.charge_mode_filter) != 0);
 
-    if (!sc.ca_state->global_hysteresis_elapsed) {
-        if (matched > 0) {
-            auto hyst = (sc.ca_state->last_hysteresis_reset + sc.cfg->global_hysteresis).to<seconds_t>();
-            set_global_decision(sc, GlobalDecision::HysteresisElapsesAt(hyst));
-        }
-    }
-
     sort_chargers(
         -get_highest_charge_mode_bit(ctx.state),
         ctx.left.state->allocated_average_power < ctx.right.state->allocated_average_power
@@ -1242,19 +1232,25 @@ static void stage_5(StageContext &sc) {
     for (int i = 0; i < matched; ++i) {
         const auto *state = &sc.charger_state[sc.idx_array[i]];
 
-        // If the hysteresis is not elapsed yet, still allow 1p->3p switch for chargers
-        // that were activated in this iteration. Those ignored the hysteresis anyway
-        // and we can skip the phase switch by immediately allocating three phases.
-        // Note that this is **not** the same check as the one in stage 9 (waking up chargers)
-        if (!sc.ca_state->global_hysteresis_elapsed && sc.charger_allocation_state[sc.idx_array[i]].allocated_current != 0)
-            continue;
-
         auto phase_switch_hyst = state->last_phase_switch + sc.cfg->global_hysteresis;
 
         // The global hysteresis is not elapsed yet, but this charger was switched less than one hysteresis ago.
         // This could have been a phase switch, so don't switch again immediately.
         if (!deadline_elapsed(phase_switch_hyst)) {
             set_charger_decision(sc, sc.idx_array[i], ThreePhaseDecision::NoPhaseSwitchBlockedUntil(phase_switch_hyst.to<seconds_t>()));
+            continue;
+        }
+
+        // Handle hysteresis last to only show the countdown when there are no other reasons to set a "No" decision.
+        //
+        // If the hysteresis is not elapsed yet, still allow 1p->3p switch for chargers
+        // that were activated in this iteration. Those ignored the hysteresis anyway
+        // and we can skip the phase switch by immediately allocating three phases.
+        // Note that this is **not** the same check as the one in stage 9 (waking up chargers)
+        if (!sc.ca_state->global_hysteresis_elapsed && sc.charger_allocation_state[sc.idx_array[i]].allocated_current != 0) {
+            auto hyst = (sc.ca_state->last_hysteresis_reset + sc.cfg->global_hysteresis).to<seconds_t>();
+
+            set_charger_decision(sc, sc.idx_array[i], ThreePhaseDecision::NoHysteresisBlockedUntil(hyst));
             continue;
         }
 
