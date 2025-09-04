@@ -49,8 +49,15 @@ bool LinearAllocator::setup(std::initializer_list<std::pair<void *, size_t>> pre
         ptr = &((*ptr)->next);
     }
 
-    if (preallocd < this->first_block_capacity)
-        *ptr = this->alloc_next_block(this->first_block_capacity - preallocd);
+    if (preallocd < this->first_block_capacity) {
+        const size_t first_block_capacity_missing = this->first_block_capacity - preallocd;
+
+        // Avoid allocating a tiny block if the missing capacity is less than the block capacity.
+        // Instead, allocate a complete block whenever necessary.
+        if (first_block_capacity_missing >= this->block_capacity) {
+            *ptr = this->alloc_next_block(first_block_capacity_missing);
+        }
+    }
 
     return true;
 }
