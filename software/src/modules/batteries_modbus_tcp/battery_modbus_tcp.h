@@ -20,6 +20,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <TFModbusTCPClient.h>
 #include <TFModbusTCPClientPool.h>
 
 #include "config.h"
@@ -31,6 +32,22 @@
 class BatteryModbusTCP final : protected GenericTCPClientPoolConnector, public IBattery
 {
 public:
+    struct RegisterBlockSpec {
+        ModbusFunctionCode function_code;
+        uint16_t start_address;
+        void *values_buffer;
+        uint16_t values_count; // not bytes, but registers or coils
+    };
+
+    struct TableSpec {
+        uint8_t device_address;
+        RegisterBlockSpec *register_blocks;
+        size_t register_blocks_count;
+    };
+
+    static TableSpec *init_table(const Config *config);
+    static void free_table(TableSpec *table);
+
     BatteryModbusTCP(uint32_t slot_, Config *state_, Config *errors_, TFModbusTCPClientPool *pool_) :
         GenericTCPClientPoolConnector("batteries_mbtcp", format_battery_slot(slot_), pool_), slot(slot_), state(state_), errors(errors_) {}
 
@@ -42,6 +59,10 @@ public:
     bool supports_action(Action action) override;
     void start_action(Action action, std::function<void(bool)> &&callback = nullptr) override;
 
+    typedef std::function<void(const char *error)> ExecuteCallback;
+
+    static void execute(TFModbusTCPSharedClient *client, const TableSpec *table, ExecuteCallback &&callback);
+
 private:
     void connect_callback() override;
     void disconnect_callback() override;
@@ -51,5 +72,5 @@ private:
     Config *errors;
 
     BatteryModbusTCPTableID table_id;
-    const BatteriesModbusTCP::TableSpec *tables[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+    const TableSpec *tables[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 };

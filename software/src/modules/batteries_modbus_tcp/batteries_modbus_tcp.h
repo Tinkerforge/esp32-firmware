@@ -20,7 +20,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <TFModbusTCPClient.h>
 
 #include "config.h"
 #include "module.h"
@@ -37,22 +36,6 @@
 class BatteriesModbusTCP final : public IModule, public IBatteryGenerator
 {
 public:
-    struct RegisterBlockSpec {
-        ModbusFunctionCode function_code;
-        uint16_t start_address;
-        void *values_buffer;
-        uint16_t values_count; // not bytes, but registers or coils
-    };
-
-    struct TableSpec {
-        uint8_t device_address;
-        RegisterBlockSpec *register_blocks;
-        size_t register_blocks_count;
-    };
-
-    static TableSpec *init_table(const Config *config);
-    static void free_table(TableSpec *table);
-
     // for IModule
     void pre_setup() override;
     void register_urls() override;
@@ -64,10 +47,6 @@ public:
     [[gnu::const]] virtual const Config *get_state_prototype() override;
     [[gnu::const]] virtual const Config *get_errors_prototype() override;
     virtual String validate_config(Config &update, ConfigSource source) override;
-
-    typedef std::function<void(const char *error)> ExecuteCallback;
-
-    static void execute(TFModbusTCPSharedClient *client, const TableSpec *table, ExecuteCallback &&callback);
 
 private:
     Config config_prototype;
