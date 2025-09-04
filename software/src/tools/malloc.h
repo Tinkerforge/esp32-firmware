@@ -24,6 +24,24 @@
 #include <memory>
 //#include <stdio.h>
 
+void tools_malloc_pre_setup();
+
+enum RAM {
+    DRAM,
+    IRAM,
+#if defined(BOARD_HAS_PSRAM)
+    PSRAM,
+#endif
+    _NONE
+};
+
+void *leak(size_t size, RAM r);
+
+void *leak_aligned(size_t alignment, size_t size, RAM r);
+
+void *leak_prefer(size_t size, RAM r1, RAM r2, RAM r3 = RAM::_NONE);
+void *leak_aligned_prefer(size_t alignment, size_t size, RAM r1, RAM r2, RAM r3 = RAM::_NONE);
+
 // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/mem_alloc.html#bit-accessible-memory
 void *malloc_32bit_addressed(size_t size);
 

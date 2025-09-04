@@ -23,6 +23,7 @@
 #include "event_log_prefix.h"
 #include "main_dependencies.h"
 #include "tools/memory.h"
+#include "tools/malloc.h"
 
 #include "gcc_warnings.h"
 
@@ -155,7 +156,11 @@ Config::ConfObject::ConfObject(std::vector<std::pair<const char *, Config>> &&va
 {
     const size_t len = val.size();
 
-    auto schema = static_cast<ConfObjectSchema *>(malloc_iram_or_psram_or_dram(sizeof(ConfObjectSchema) + len * sizeof(ConfObjectSchema::Key)));
+    // No need to use leak_aligned_prefer here: 4 + n * 8 always has 4 as smallest power of two
+    // -> leak_prefer will use 4 byte alignment.
+    static_assert(sizeof(ConfObjectSchema) % 8 == 4);
+    static_assert(sizeof(ConfObjectSchema::Key) % 8 == 0);
+    auto schema = static_cast<ConfObjectSchema *>(leak_prefer(sizeof(ConfObjectSchema) + len * sizeof(ConfObjectSchema::Key), IRAM, PSRAM, DRAM));
     schema->length = len;
 
     for (size_t i = 0; i < len; ++i) {
