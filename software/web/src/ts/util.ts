@@ -445,7 +445,7 @@ export function ifLoggedInElse(if_continuation: () => void, else_continuation: (
 }
 
 export function ifLoggedInElseReload(continuation: () => void) {
-    ifLoggedInElse(continuation, function() {
+    ifLoggedInElse(continuation, () => {
         window.location.reload();
     });
 }
@@ -455,16 +455,26 @@ export function whenLoggedInElseReload(continuation: () => void) {
         window.clearTimeout(loginReconnectTimeout);
         loginReconnectTimeout = null;
     }
+
     if (wsReconnectTimeout != null) {
         window.clearTimeout(wsReconnectTimeout);
         wsReconnectTimeout = null;
     }
+
     loginReconnectTimeout = window.setTimeout(
         () => ifLoggedInElseReload(
-            () => {window.clearTimeout(loginReconnectTimeout); continuation();}),
+            () => {
+                window.clearTimeout(loginReconnectTimeout);
+                loginReconnectTimeout = null;
+                continuation();
+            }),
         RECONNECT_TIME);
 
-    ifLoggedInElseReload(() => {window.clearTimeout(loginReconnectTimeout); continuation();});
+    ifLoggedInElseReload(() => {
+        window.clearTimeout(loginReconnectTimeout);
+        loginReconnectTimeout = null;
+        continuation();
+    });
 }
 
 export function iso8601ButLocal(date: Date) {
