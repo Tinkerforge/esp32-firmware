@@ -237,6 +237,8 @@ void ChargeManager::pre_setup()
         {"mode", Config::Enum(ConfigChargeMode::Fast)},
     });
 
+    supported_charge_modes = Config::Tuple({Config::Enum(ConfigChargeMode::Off), Config::Enum(ConfigChargeMode::Fast)});
+
 #ifdef DEBUG_FS_ENABLE
     debug_limits_update = Config::Object({
         {"raw", Config::Tuple(4, Config::Int32(0))},
@@ -297,12 +299,15 @@ void ChargeManager::start_manager_task()
 {
     auto get_charger_name_fn = [this](uint8_t i){ return this->get_charger_name(i);};
 
-    cm_networking.register_manager(this->hosts.get(), charger_count, [this, get_charger_name_fn](uint8_t client_id, cm_state_v1 *v1, cm_state_v2 *v2, cm_state_v3 *v3) mutable {
+    cm_networking.register_manager(this->hosts.get(), charger_count, [this, get_charger_name_fn](uint8_t client_id, cm_state_v1 *v1, cm_state_v2 *v2, cm_state_v3 *v3, cm_state_v4 *v4) mutable {
+            if (v4 != nullptr)
+                v4->requested_charge_mode = this->config_cm_to_cm((ConfigChargeMode)v4->requested_charge_mode);
             if (update_from_client_packet(
                     client_id,
                     v1,
                     v2,
                     v3,
+                    v4,
                     this->ca_config,
                     this->charger_state,
                     this->charger_allocation_state,
@@ -327,7 +332,9 @@ void ChargeManager::start_manager_task()
             i = 0;
 
         auto &charger_alloc = this->charger_allocation_state[i];
-        if(cm_networking.send_manager_update(i, charger_alloc.allocated_current, charger_alloc.cp_disconnect, charger_alloc.allocated_phases))
+        auto charge_mode = this->cm_to_config_cm(this->charger_state[i].charge_mode);
+
+        if(cm_networking.send_manager_update(i, charger_alloc.allocated_current, charger_alloc.cp_disconnect, charger_alloc.allocated_phases, static_cast<uint8_t>(charge_mode), this->supported_charge_mode_bitmask))
             ++i;
 
     }, cm_send_delay);
@@ -671,6 +678,7 @@ void ChargeManager::register_urls()
 {
 #if MODULE_POWER_MANAGER_AVAILABLE()
     // PowerManager::setup() runs after ChargeManager::setup()
+    // TODO: #if MODULE_POWER_MANAGER_AVAILABLE()
     this->guaranteed_pv_current = (power_manager.get_guaranteed_power_w() * 1000) / 230;
     this->pm_default_charge_mode = power_manager.get_default_charge_mode();
 #else
@@ -737,6 +745,7 @@ void ChargeManager::register_urls()
             this->charge_mode.get(i)->updateEnum(this->cm_to_config_cm(new_mode));
         }
     }, false);
+    api.addState("charge_manager/supported_charge_modes", &supported_charge_modes);
 
     // This is power_manager API that is now handled by the charge manager.
     api.addState("power_manager/charge_mode", &pm_charge_mode);
@@ -761,6 +770,79 @@ void ChargeManager::register_urls()
     }
 }
 
+void ChargeManager::update_supported_charge_modes(bool pv, bool eco) {
+    /*
+        PV Eco  Buttons
+        0   0   (none)
+        0   1   Eco, Min+Eco
+        1   0   PV, Min+PV
+        1   1   PV, Eco+PV
+    */
+
+    if (!pv && eco) {
+        supported_charge_modes = Config::Tuple({
+            Config::Enum(ConfigChargeMode::Off),
+            Config::Enum(ConfigChargeMode::Eco),
+            Config::Enum(ConfigChargeMode::EcoMin),
+            Config::Enum(ConfigChargeMode::Fast),
+        });
+    } else if (pv && eco) {
+        supported_charge_modes = Config::Tuple({
+            Config::Enum(ConfigChargeMode::Off),
+            Config::Enum(ConfigChargeMode::PV),
+            Config::Enum(ConfigChargeMode::EcoPV),
+            Config::Enum(ConfigChargeMode::Fast),
+        });
+    } else if (pv) {
+        supported_charge_modes = Config::Tuple({
+            Config::Enum(ConfigChargeMode::Off),
+            Config::Enum(ConfigChargeMode::PV),
+            Config::Enum(ConfigChargeMode::MinPV),
+            Config::Enum(ConfigChargeMode::Fast),
+        });
+    } else {
+        supported_charge_modes = Config::Tuple({
+            Config::Enum(ConfigChargeMode::Off),
+            Config::Enum(ConfigChargeMode::Fast),
+        });
+    }
+
+    this->supported_charge_mode_bitmask.fill(0); // clear bitmask
+    for (size_t i = 0; i < supported_charge_modes.count(); ++i) {
+        size_t mode = (size_t) supported_charge_modes.get(i)->asEnum<ConfigChargeMode>();
+        this->supported_charge_mode_bitmask[mode / 8] |= 1 << (mode % 8);
+    }
+}
+
+void ChargeManager::register_events() {
+    {
+        bool pv = false;
+        bool eco = false;
+#if MODULE_POWER_MANAGER_AVAILABLE()
+        pv = api.getState("power_manager/config")->get("excess_charging_enable")->asBool();
+#endif
+#if MODULE_ECO_AVAILABLE()
+        eco = api.getState("eco/config")->get("enable")->asBool();
+#endif
+
+        this->update_supported_charge_modes(pv, eco);
+    }
+
+#if MODULE_ECO_AVAILABLE()
+    event.registerEvent("eco/config", {"enable"}, [this](const Config *eco_enabled) {
+        bool eco = eco_enabled->asBool();
+
+        bool pv = false;
+#if MODULE_POWER_MANAGER_AVAILABLE()
+        pv = api.getState("power_manager/config")->get("excess_charging_enable")->asBool();
+#endif
+
+        this->update_supported_charge_modes(pv, eco);
+        return EventResult::OK;
+    });
+#endif
+}
+
 void ChargeManager::update_charger_state_config(uint8_t idx) {
     auto &charger = charger_state[idx];
     auto &charger_alloc = charger_allocation_state[idx];
@@ -783,6 +865,8 @@ void ChargeManager::update_charger_state_config(uint8_t idx) {
     ll_charger_cfg->get("lp")->updateUptime(charger.just_plugged_in_timestamp);
     ll_charger_cfg->get("lw")->updateUptime(charger.last_wakeup);
     ll_charger_cfg->get("ip")->updateUptime(charger.use_supported_current);
+
+    charge_mode.get(idx)->updateEnum(this->cm_to_config_cm(charger.charge_mode));
 }
 
 uint32_t ChargeManager::get_maximum_available_current()
