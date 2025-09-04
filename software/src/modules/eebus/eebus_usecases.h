@@ -26,7 +26,7 @@
 #include "spine_types.h"
 
 // Update this as usecases are enabled. 1 is always active and the nodemanagement Usecase
-#define EEBUS_USECASES_ACTIVE 2
+#define EEBUS_USECASES_ACTIVE 3
 #define EEBUS_USECASE_EVCS_ENABLE // Enable the EV Charging Summary Usecase
 #define EEBUS_USECASE_LPC_ENABLE // Enable the Limitation of Power Consumption Usecase
 #define EEBUS_USECASE_CEVC_ENABLE // Enable the Coordinated EV Charging Usecase
@@ -185,7 +185,6 @@ public:
     CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
 
 
-
     [[nodiscard]] UseCaseType get_usecase_type() const override
     {
         return UseCaseType::ChargingSummary;
@@ -200,6 +199,55 @@ public:
 
 private:
     int bill_feature_address = 1;
+    /**
+     * Handle the Bill Feature.
+     * @param header
+     * @param data
+     * @param response
+     * @param connection
+     * @return
+     */
+    CmdClassifierType bill_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
+};
+
+/**
+ * The Controllable System Entity as defined in EEBus UC TS - EV Limitation Of Power Consumption V1.0.0.
+ */
+class ControllableSystemEntity : public EebusEntity
+{
+public:
+    ControllableSystemEntity() = default;
+
+    /**
+    * Builds and returns the UseCaseInformationDataType as defined in EEBus UC TS - EV Charging Summary V1.0.1. 3.1.2.
+    * @return
+    */
+    UseCaseInformationDataType get_usecase_information() override;
+
+    /**
+     * \brief Handles a message for a usecase.
+     * @param header SPINE header of the message. Contains information about the commandclassifier and the targeted entitiy.
+     * @param data The actual Function call and data of the message.
+     * @param response Where to write the response to. This is a JsonObject that should be filled with the response data.
+     * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
+     * @return true if a response was generated and needs to be sent, false if no response is needed.
+     */
+    CmdClassifierType handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection) override;
+
+
+    [[nodiscard]] UseCaseType get_usecase_type() const override
+    {
+        return UseCaseType::LimitationOfActivePowerConsumption;
+    }
+
+    [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
+    /**
+     * Returns the supported features. EVSE supports only one feature which is the Bill feature.
+     * @return a list of the supported features.
+     */
+    [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
+
+private:
     /**
      * Handle the Bill Feature.
      * @param header
@@ -242,8 +290,9 @@ public:
 
     NodeManagementEntity node_management{};
     EvseEntity charging_summary{};
+    ControllableSystemEntity limitation_of_power_consumption{};
 
-    EebusEntity *entity_list[EEBUS_USECASES_ACTIVE] = {&node_management, &charging_summary};
+    EebusEntity *entity_list[EEBUS_USECASES_ACTIVE] = {&node_management, &charging_summary, &limitation_of_power_consumption};
 };
 
 namespace EEBUS_USECASE_HELPERS
