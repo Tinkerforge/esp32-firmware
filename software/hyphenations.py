@@ -969,6 +969,7 @@ de_hyph = [
     "ge-wünsch-ter",
     "Pro-gno-se-ser-ver",
     "Un-gül-ti-ger",
+    "Über-tra-gung"
 ]
 
 en_hyph = [
@@ -1344,4 +1345,5 @@ allowed_missing = set([
     "installed_version",
     'meter_all_values',
     "chargemanagement",
+    "DMED341MID7ER"
 ])
