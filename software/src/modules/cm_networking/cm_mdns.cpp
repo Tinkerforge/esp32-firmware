@@ -31,10 +31,6 @@
 #include "tools/net.h"
 #include "cool_string.h"
 
-void CMNetworking::setup()
-{
-    initialized = true;
-}
 
 [[gnu::noinline]] [[gnu::unused]]
 static void add_mdns_service_base()
