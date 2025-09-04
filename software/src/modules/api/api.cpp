@@ -31,6 +31,7 @@
 #include "config_migrations.h"
 #include "tools.h"
 #include "tools/fs.h"
+#include "tools/malloc.h"
 #include "tools/memory.h"
 
 #include "gcc_warnings.h"
@@ -321,7 +322,7 @@ bool API::addPersistentConfig(const String &path, ConfigRoot *config, const std:
 
     // It is okay to leak this: Configs cannot be deregistered.
     // The [path]_modified config has to live forever
-    ConfigRoot *conf_modified = new ConfigRoot{modified_prototype};
+    ConfigRoot *conf_modified = perm_new<ConfigRoot>(RAM::DRAM, modified_prototype);
 
     {
         // If the config is written to flash, we assume that it is not the default configuration.
