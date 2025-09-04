@@ -39,7 +39,9 @@ static LinearAllocator psram_lin_alloc{
 void tools_malloc_pre_setup() {
     dram_lin_alloc.setup({});
     iram_lin_alloc.setup({});
+#if defined(BOARD_HAS_PSRAM)
     psram_lin_alloc.setup({});
+#endif
 }
 
 void *perm_alloc_aligned(size_t alignment, size_t size, RAM r) {
