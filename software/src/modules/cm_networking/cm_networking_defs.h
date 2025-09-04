@@ -32,8 +32,8 @@
 #define CHARGE_MANAGEMENT_PORT (CHARGE_MANAGER_PORT + 1)
 
 // Increment when changing packet structs
-#define CM_COMMAND_VERSION 2
-#define CM_STATE_VERSION 3
+#define CM_COMMAND_VERSION 3
+#define CM_STATE_VERSION 4
 
 // Minimum protocol version supported
 #define CM_COMMAND_VERSION_MIN 1
@@ -67,14 +67,23 @@ struct cm_command_v1 {
     bit 6    - control pilot permanently disconnected
     */
     uint8_t command_flags;
-    uint8_t _padding;
+    uint8_t _padding; // In use for cm_command_v2 allocated phases
 };
 
 struct cm_command_v2 {
-    uint16_t _padding_0;
-    uint8_t _padding_1;
+    uint16_t _padding_0; // In use for cm_command_v1 allocated_current
+    uint8_t _padding_1;  // In use for cm_command_v1 command_flags
     int8_t allocated_phases; // Was padding in CM_COMMAND_VERSION 1
 };
+
+struct cm_command_v3 {
+    uint8_t charge_mode;
+    // This layout allows us to add more supported charge modes with cm_command_v4 if necessary
+    uint8_t supported_charge_modes[2]; // Bitmask of ConfigChargeModes
+    uint8_t _padding;
+};
+
+// Before adding cm_command_v4: Check whether more (supported) charge modes are to be added in the foreseeable future!
 
 #define CM_COMMAND_V1_LENGTH (sizeof(cm_command_v1))
 static_assert(CM_COMMAND_V1_LENGTH == 4, "Unexpected CM_COMMAND_V1_LENGTH");
@@ -84,16 +93,20 @@ static_assert(CM_COMMAND_V2_LENGTH == 4, "Unexpected CM_COMMAND_V2_LENGTH");
 static_assert(sizeof(cm_command_v1::_padding) == sizeof(cm_command_v2::allocated_phases), "Unexpected size of cm_command_v2.phases");
 static_assert(offsetof(cm_command_v1, _padding) == offsetof(cm_command_v2, allocated_phases), "Unexpected offset of cm_command_v2.phases");
 
+#define CM_COMMAND_V3_LENGTH (sizeof(cm_command_v3))
+static_assert(CM_COMMAND_V3_LENGTH == 4, "Unexpected CM_COMMAND_V3_LENGTH");
+
 struct cm_command_packet {
     cm_packet_header header;
     union {
         cm_command_v1 v1;
         cm_command_v2 v2;
     };
+    cm_command_v3 v3;
 };
 
 #define CM_COMMAND_PACKET_LENGTH (sizeof(cm_command_packet))
-static_assert(CM_COMMAND_PACKET_LENGTH == 12, "Unexpected CM_COMMAND_PACKET_LENGTH");
+static_assert(CM_COMMAND_PACKET_LENGTH == 16, "Unexpected CM_COMMAND_PACKET_LENGTH");
 
 #define CM_FEATURE_FLAGS_PHASE_SWITCH_BIT_POS 7
 #define CM_FEATURE_FLAGS_PHASE_SWITCH_MASK (1u << CM_FEATURE_FLAGS_PHASE_SWITCH_BIT_POS)
@@ -218,12 +231,21 @@ struct cm_state_v3 {
 #define CM_STATE_V3_LENGTH (sizeof(cm_state_v3))
 static_assert(CM_STATE_V3_LENGTH == 4, "Unexpected CM_STATE_V3_LENGTH");
 
+struct cm_state_v4 {
+    uint8_t requested_charge_mode;
+};
+
+#define CM_STATE_V4_LENGTH (sizeof(cm_state_v4))
+static_assert(CM_STATE_V4_LENGTH == 1, "Unexpected CM_STATE_V4_LENGTH");
+
 struct cm_state_packet {
     cm_packet_header header;
     cm_state_v1 v1;
     cm_state_v2 v2;
     cm_state_v3 v3;
+    cm_state_v4 v4;
+    uint8_t _padding[3];
 };
 
 #define CM_STATE_PACKET_LENGTH (sizeof(cm_state_packet))
-static_assert(CM_STATE_PACKET_LENGTH == 88, "Unexpected CM_STATE_PACKET_LENGTH");
+static_assert(CM_STATE_PACKET_LENGTH == 92, "Unexpected CM_STATE_PACKET_LENGTH");
