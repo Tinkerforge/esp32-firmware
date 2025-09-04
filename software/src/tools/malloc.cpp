@@ -42,7 +42,7 @@ void tools_malloc_pre_setup() {
     psram_lin_alloc.setup({});
 }
 
-void *leak_aligned(size_t alignment, size_t size, RAM r) {
+void *perm_alloc_aligned(size_t alignment, size_t size, RAM r) {
     switch (r) {
         case DRAM:
             return dram_lin_alloc.aligned_alloc(alignment, size);
@@ -72,21 +72,21 @@ static size_t align(size_t size) {
 }
 
 void *leak(size_t size, RAM r) {
-    return leak_aligned(align(size), size, r);
+    return perm_alloc_aligned(align(size), size, r);
 }
 
-void *leak_aligned_prefer(size_t alignment, size_t size, RAM r1, RAM r2, RAM r3) {
-    void *result = leak_aligned(alignment, size, r1);
+void *perm_alloc_aligned_prefer(size_t alignment, size_t size, RAM r1, RAM r2, RAM r3) {
+    void *result = perm_alloc_aligned(alignment, size, r1);
     if (result == nullptr)
-        result = leak_aligned(alignment, size, r2);
+        result = perm_alloc_aligned(alignment, size, r2);
     if (result == nullptr)
-        result = leak_aligned(alignment, size, r3);
+        result = perm_alloc_aligned(alignment, size, r3);
 
     return result;
 }
 
-void *leak_prefer(size_t size, RAM r1, RAM r2, RAM r3) {
-    return leak_aligned_prefer(align(size), size, r1, r2, r3);
+void *perm_alloc_prefer(size_t size, RAM r1, RAM r2, RAM r3) {
+    return perm_alloc_aligned_prefer(align(size), size, r1, r2, r3);
 }
 
 void *malloc_32bit_addressed(size_t size)
