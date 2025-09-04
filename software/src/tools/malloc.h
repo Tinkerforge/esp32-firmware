@@ -51,7 +51,30 @@ void *perm_alloc_prefer(size_t size, RAM r1, RAM r2, RAM r3 = RAM::_NONE);
 [[gnu::malloc, gnu::alloc_align(1)]]
 void *perm_alloc_aligned_prefer(size_t alignment, size_t size, RAM r1, RAM r2, RAM r3 = RAM::_NONE);
 
+template<typename T, class... Args>
+[[gnu::malloc]]
+T *perm_new(RAM r, Args&&... args) {
+    static_assert(alignof(T) <= LinearAllocator::MAX_ALIGNMENT);
 
+    void *mem = perm_alloc_aligned(alignof(T), sizeof(T), r);
+    if (mem == nullptr)
+        return nullptr;
+
+    return std::construct_at(static_cast<T *>(mem), std::forward<Args>(args)...);
+}
+
+template<typename T, class... Args>
+[[gnu::malloc]]
+T *perm_new_prefer(RAM r1, RAM r2, RAM r3, Args&&... args) {
+    static_assert(alignof(T) <= LinearAllocator::MAX_ALIGNMENT);
+
+    void *mem = perm_alloc_aligned_prefer(alignof(T), sizeof(T), r1, r2, r3);
+    if (mem == nullptr)
+        return nullptr;
+
+
+    return std::construct_at(static_cast<T *>(mem), std::forward<Args>(args)...);
+}
 
 // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/mem_alloc.html#bit-accessible-memory
 void *malloc_32bit_addressed(size_t size);
