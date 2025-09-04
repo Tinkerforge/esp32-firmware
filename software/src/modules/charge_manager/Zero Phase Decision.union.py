@@ -4,10 +4,12 @@ from software.util import *
 
 #from ....util import *
 
-spec = Union("Zero Phase Decision", 8, variants=[
+spec = Union("Zero Phase Decision", 12, variants=[
     Variant('None'),
     Variant('Yes Charge Mode Off'),
-    Variant('Yes Waiting For Rotation'),
+    Variant('Yes Waiting For Rotation', [
+        Member('Next Rotation', Types.Seconds)
+    ]),
     Variant('Yes Not Active'),
     Variant('Yes Rotated For B1'),
     Variant('Yes Rotated For Higher Prio'),
