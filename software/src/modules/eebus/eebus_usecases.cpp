@@ -313,7 +313,7 @@ CmdClassifierType NodeManagementEntity::handle_subscription(HeaderType &header, 
 NodeManagementDetailedDiscoveryEntityInformationType NodeManagementEntity::get_detailed_discovery_entity_information() const
 {
     NodeManagementDetailedDiscoveryEntityInformationType entity = {};
-    entity.description->entityAddress->entity->push_back(0); // Entity 0 is the NodeManagement entity
+    entity.description->entityAddress->entity = entity_address;
     entity.description->entityType = EntityTypeEnumType::DeviceInformation;
     // The entity type as defined in EEBUS SPINE TS ResourceSpecification 4.2.7
     entity.description->label = "Node Management"; // The label of the entity. This is optional but recommended.
@@ -325,11 +325,11 @@ NodeManagementDetailedDiscoveryEntityInformationType NodeManagementEntity::get_d
 std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> NodeManagementEntity::get_detailed_discovery_feature_information() const
 {
     NodeManagementDetailedDiscoveryFeatureInformationType feature = {};
-    feature.description->featureAddress->entity->push_back(0); // Entity 0 is the NodeManagement entity
+    feature.description->featureAddress->entity = entity_address;
     feature.description->featureAddress->feature = 0; // Feature 0 is the NodeManagement feature
     feature.description->featureType = FeatureTypeEnumType::NodeManagement;
     // The feature type as defined in EEBUS SPINE TS ResourceSpecification 4.3.19
-    feature.description->role = RoleType::server;
+    feature.description->role = RoleType::special;
 
     // The following functions are supported by the Nodemanagement feature
     // Basic Usecase information
@@ -423,7 +423,7 @@ UseCaseInformationDataType EvseEntity::get_usecase_information()
 
     FeatureAddressType evcs_usecase_feature_address;
     evcs_usecase_feature_address.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
-    evcs_usecase_feature_address.entity->push_back(1);
+    evcs_usecase_feature_address.entity = entity_address;
     evcs_usecase_feature_address.feature = 1;
     evcs_usecase.address = evcs_usecase_feature_address;
     return evcs_usecase;
@@ -572,7 +572,6 @@ EEBusUseCases::EEBusUseCases()
     node_management.set_entity_address({0});
     charging_summary = EvseEntity();
     charging_summary.set_entity_address({1});
-    // TODO: Set entity address of entities
 }
 
 void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *data, SpineConnection *connection)
@@ -583,7 +582,6 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
     //connection->ship_connection->outgoing_json_doc.clear();
     BasicJsonDocument<ArduinoJsonPsramAllocator> response_doc{8182};
     JsonObject responseObj = response_doc.to<JsonObject>();
-    // TODO: Fix the addressing of the usecases. Maybe better address them by entity?
     CmdClassifierType send_response = CmdClassifierType::EnumUndefined;
     String entity_name = "Unknown";
 
