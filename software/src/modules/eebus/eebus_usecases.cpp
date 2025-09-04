@@ -173,7 +173,10 @@ CmdClassifierType NodeManagementEntity::handle_message(HeaderType &header, Spine
         return handle_subscription(header, data, response, connection);
     }
 
-    // TODO: Add handling for subscription and binding functions
+    if (data->last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingData || data->last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingRequestCall || data->last_cmd == SpineDataTypeHandler::Function::nodeManagementBindingDeleteCall) {
+        eebus.trace_fmtln("NodeManagementUsecase: Command identified as Binding handling");
+        return handle_binding(header, data, response);
+    }
 
     eebus.trace_fmtln("NodeManagementUsecase: Unknown. Command not handled");
     EEBUS_USECASE_HELPERS::build_result_data(response,
