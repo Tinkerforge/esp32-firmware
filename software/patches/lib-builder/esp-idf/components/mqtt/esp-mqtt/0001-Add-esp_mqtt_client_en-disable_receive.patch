@@ -54,7 +54,7 @@ diff --git a/mqtt_client.c b/mqtt_client.c
 index bcd1a74..e2c7890 100644
 --- a/mqtt_client.c
 +++ b/mqtt_client.c
-@@ -1573,6 +1573,7 @@ static void esp_mqtt_task(void *pv)
+@@ -1642,6 +1642,7 @@ static void esp_mqtt_task(void *pv)
      uint64_t last_retransmit = 0;
      outbox_tick_t msg_tick = 0;
      client->run = true;
@@ -62,7 +62,7 @@ index bcd1a74..e2c7890 100644
  
      client->state = MQTT_STATE_INIT;
      xEventGroupClearBits(client->status_bits, STOPPED_BIT);
-@@ -1650,9 +1651,15 @@ static void esp_mqtt_task(void *pv)
+@@ -1723,9 +1724,15 @@ static void esp_mqtt_task(void *pv)
                  break;
              }
              // receive and process data
@@ -81,9 +81,9 @@ index bcd1a74..e2c7890 100644
              }
  
              if (last_retransmit == 0) {
-@@ -2285,3 +2292,17 @@ int esp_mqtt_client_get_outbox_size(esp_mqtt_client_handle_t client)
- 
-     return outbox_size;
+@@ -2378,3 +2385,17 @@ esp_transport_handle_t esp_mqtt_client_get_transport(esp_mqtt_client_handle_t client, char *transport_scheme){
+     }
+     return esp_transport_list_get_transport(client->transport_list, transport_scheme);
  }
 +
 +void esp_mqtt_client_disable_receive(esp_mqtt_client_handle_t client, int delay_ms) {
