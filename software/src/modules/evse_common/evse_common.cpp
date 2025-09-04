@@ -156,6 +156,12 @@ void EvseCommon::pre_setup()
         }
     );
 #endif
+
+#if MODULE_CM_NETWORKING_AVAILABLE()
+    request_charge_mode = Config::Object({
+        {"mode", Config::Uint8(0)}
+    });
+#endif
 }
 
 bool EvseCommon::apply_slot_default(uint8_t slot, uint16_t current, bool enabled, bool clear)
@@ -379,7 +385,8 @@ void EvseCommon::send_cm_client_update() {
         management_enabled.get("enabled")->asBool(),
         backend->get_control_pilot_disconnect(),
         phases,
-        backend->phase_switching_capable() && backend->can_switch_phases_now(4 - phases)
+        backend->phase_switching_capable() && backend->can_switch_phases_now(4 - phases),
+        deadline_elapsed(request_charge_mode_until) ? this->last_assigned_charge_mode : this->request_charge_mode.get("mode")->asUint8()
     );
 #endif
 }
@@ -387,7 +394,7 @@ void EvseCommon::send_cm_client_update() {
 void EvseCommon::register_urls()
 {
 #if MODULE_CM_NETWORKING_AVAILABLE()
-    cm_networking.register_client([this](uint16_t current, bool cp_disconnect_requested, int8_t phases_requested) {
+    cm_networking.register_client([this](uint16_t current, bool cp_disconnect_requested, int8_t phases_requested, uint8_t charge_mode, uint8_t *supported_charge_mode, size_t supported_charge_mode_len) {
         if (!this->management_enabled.get("enabled")->asBool())
             return;
 
@@ -406,6 +413,8 @@ void EvseCommon::register_urls()
         // If for some reason we receive manager packets faster than one every 300_ms,
         // we still have to send client updates.
         next_cm_send_deadline = std::min(now_us() + 300_ms, next_cm_send_deadline);
+
+        this->last_assigned_charge_mode = charge_mode;
     });
 
     task_scheduler.scheduleWithFixedDelay([this](){
@@ -415,6 +424,10 @@ void EvseCommon::register_urls()
         send_cm_client_update();
         next_cm_send_deadline = now_us() + 2500_ms;
     }, 100_ms, 100_ms);
+
+    api.addCommand("evse/request_charge_mode", &request_charge_mode, {}, [this](String &/*errmsg*/) {
+        this->request_charge_mode_until = now_us() + 10_s;
+    }, false);
 
     task_scheduler.scheduleWithFixedDelay([this]() {
         if (!deadline_elapsed(last_current_update + 30_s))

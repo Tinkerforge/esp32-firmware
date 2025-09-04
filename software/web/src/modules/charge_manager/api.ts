@@ -98,6 +98,7 @@ export interface low_level_config {
 }
 
 export type charge_modes = ConfigChargeMode[];
+export type supported_charge_modes = ConfigChargeMode[];
 
 //APIPath:power_manager/
 export interface charge_mode {

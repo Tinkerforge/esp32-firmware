@@ -220,6 +220,9 @@ private:
     ConfigRoot require_meter_enabled_update;
     ConfigRoot automation_current;
     ConfigRoot automation_current_update;
+    ConfigRoot request_charge_mode;
+    micros_t request_charge_mode_until = 0_us;
+    uint8_t last_assigned_charge_mode = 0;
 
     // Stored on ESP
     ConfigRoot meter_config;

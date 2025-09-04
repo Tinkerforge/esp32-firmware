@@ -20,6 +20,7 @@
 #pragma once
 
 #include <FS.h> // FIXME: without this include here there is a problem with the IPADDR_NONE define in <lwip/ip4_addr.h>
+#include <array>
 #include <functional>
 #include <lwip/err.h>
 #include <lwip/sockets.h>
@@ -47,12 +48,12 @@ public:
 
     void register_manager(const char *const *const hosts,
                           size_t device_count,
-                          const std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *, cm_state_v3 *)> &manager_callback,
+                          const std::function<void(uint8_t /* client_id */, cm_state_v1 *, cm_state_v2 *, cm_state_v3 *, cm_state_v4 *)> &manager_callback,
                           const std::function<void(uint8_t, uint8_t)> &manager_error_callback);
 
-    bool send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_disconnect_requested, int8_t allocated_phases);
+    bool send_manager_update(uint8_t client_id, uint16_t allocated_current, bool cp_disconnect_requested, int8_t allocated_phases, uint8_t charge_mode, std::array<uint8_t, 2> supported_charge_mode_bitmask);
 
-    void register_client(const std::function<void(uint16_t, bool, int8_t)> &client_callback);
+    void register_client(const std::function<void(uint16_t, bool, int8_t, uint8_t, uint8_t *, size_t)> &client_callback);
     bool send_client_update(uint32_t esp32_uid,
                             uint8_t iec61851_state,
                             uint8_t charger_state,
@@ -65,7 +66,8 @@ public:
                             bool managed,
                             bool cp_disconnected_state,
                             int8_t phases,
-                            bool can_switch_phases_now);
+                            bool can_switch_phases_now,
+                            uint8_t requested_charge_mode);
 
     void notify_charger_unresponsive(uint8_t charger_idx);
 

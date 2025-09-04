@@ -69,6 +69,7 @@ public:
     void pre_setup() override;
     void setup() override;
     void register_urls() override;
+    void register_events() override;
 
 #if MODULE_AUTOMATION_AVAILABLE()
     bool has_triggered(const Config *conf, void *data) override;
@@ -109,6 +110,8 @@ private:
     void update_charger_state_config(uint8_t idx);
     void update_charger_state_from_mode(ChargerState *state, int charger_idx);
 
+    void update_supported_charge_modes(bool pv, bool eco);
+
     size_t charger_count = 0;
 
     micros_t last_available_current_update = 0_us;
@@ -132,6 +135,7 @@ private:
 
     ConfigRoot charge_mode;
     ConfigRoot pm_charge_mode;
+    ConfigRoot supported_charge_modes;
 
 #ifdef DEBUG_FS_ENABLE
     ConfigRoot debug_limits_update;
@@ -160,6 +164,8 @@ private:
 
     ChargerDecision *charger_decisions = nullptr;
     GlobalDecision *global_decision = nullptr;
+
+    std::array<uint8_t, 2> supported_charge_mode_bitmask;
 };
 
 #include "module_available_end.h"
