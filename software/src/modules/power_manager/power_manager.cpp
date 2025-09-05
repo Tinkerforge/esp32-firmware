@@ -587,17 +587,17 @@ static void abort_on_invalid_history_length(int32_t history_length)
     esp_system_abort(msg);
 }
 
-static micros_t calculate_minmax_filter_timestamp(int32_t value_pos, int32_t current_pos, int32_t history_length)
+static micros_t calculate_minmax_filter_expiration_timestamp(int32_t value_pos, int32_t current_pos, int32_t history_length)
 {
-    int32_t samples_ago = current_pos - value_pos;
+    int32_t expiration_in_samples = value_pos - current_pos;
 
-    if (samples_ago < 0) {
-        samples_ago += history_length;
+    if (expiration_in_samples < 0) {
+        expiration_in_samples += history_length;
     }
 
-    const millis_t millis_ago{samples_ago * PM_TASK_DELAY_MS}; // Would overflow for samples older than ~24 days, which is far beyond the capacity of this filter.
+    const millis_t expiration_in_ms{expiration_in_samples * PM_TASK_DELAY_MS}; // Would overflow for durations of about 24 days, which is far beyond the capacity of this filter.
 
-    return now_us() - micros_t{millis_ago};
+    return now_us() + micros_t{expiration_in_ms};
 }
 
 static void update_minmax_filter(int32_t new_value, PowerManager::minmax_filter *filter)
@@ -617,9 +617,9 @@ static void update_minmax_filter(int32_t new_value, PowerManager::minmax_filter 
         filter->history_min_pos = 0;
         filter->history_max_pos = 0;
 
-        const micros_t now = now_us();
-        filter->min_ts = now;
-        filter->max_ts = now;
+        const micros_t expiration = now_us() + millis_t{filter->history_length * PM_TASK_DELAY_MS};
+        filter->min_expiration_ts = expiration;
+        filter->max_expiration_ts = expiration;
 
         filter->history_values[0] = new_value;
         // Other values don't need to be initialized because they won't be read before the first value is removed,
@@ -636,7 +636,7 @@ static void update_minmax_filter(int32_t new_value, PowerManager::minmax_filter 
         if (new_value <= filter->min) {
             filter->min = new_value;
             filter->history_min_pos = history_pos;
-            filter->min_ts = now_us();
+            filter->min_expiration_ts = now_us() + millis_t{filter->history_length * PM_TASK_DELAY_MS};
         } else {
             if (filter->history_min_pos == history_pos) {
                 // Current minimum was just replaced, need to find new minimum.
@@ -661,7 +661,7 @@ static void update_minmax_filter(int32_t new_value, PowerManager::minmax_filter 
 
                 filter->min = min;
                 filter->history_min_pos = min_pos;
-                filter->min_ts = calculate_minmax_filter_timestamp(min_pos, history_pos, filter->history_length);
+                filter->min_expiration_ts = calculate_minmax_filter_expiration_timestamp(min_pos, history_pos, filter->history_length);
             }
         }
     }
@@ -670,7 +670,7 @@ static void update_minmax_filter(int32_t new_value, PowerManager::minmax_filter 
         if (new_value >= filter->max) {
             filter->max = new_value;
             filter->history_max_pos = history_pos;
-            filter->max_ts = now_us();
+            filter->max_expiration_ts = now_us() + millis_t{filter->history_length * PM_TASK_DELAY_MS};
         } else {
             if (filter->history_max_pos == history_pos) {
                 // Current maximum was just replaced, need to find new maximum.
@@ -695,7 +695,7 @@ static void update_minmax_filter(int32_t new_value, PowerManager::minmax_filter 
 
                 filter->max = max;
                 filter->history_max_pos = max_pos;
-                filter->max_ts = calculate_minmax_filter_timestamp(max_pos, history_pos, filter->history_length);
+                filter->max_expiration_ts = calculate_minmax_filter_expiration_timestamp(max_pos, history_pos, filter->history_length);
             }
         }
     }
@@ -946,8 +946,8 @@ void PowerManager::update_energy()
         cm_limits->spread.pv = 0;
         cm_limits->max_pv = 0;
 
-        cm_limits->min_ts[0] = 0_us;
-        cm_limits->max_pv_ts = 0_us;
+        cm_limits->min_expiration_ts[0] = 0_us;
+        cm_limits->max_pv_expiration_ts = 0_us;
     } else {
         int32_t pv_raw_ma = power_available_w * 1000 / 230;
         update_minmax_filter(pv_raw_ma, &current_pv_minmax_ma);
@@ -969,8 +969,8 @@ void PowerManager::update_energy()
         cm_limits->max_pv = current_pv_minmax_ma.max;
         cm_limits->spread.pv = pv_long_min_ma;
 
-        cm_limits->min_ts[0] = current_pv_minmax_ma.min_ts;
-        cm_limits->max_pv_ts = current_pv_minmax_ma.max_ts;
+        cm_limits->min_expiration_ts[0] = current_pv_minmax_ma.min_expiration_ts;
+        cm_limits->max_pv_expiration_ts = current_pv_minmax_ma.max_expiration_ts;
 
 #if ENABLE_PM_TRACE
         // Casting NaN to integer is undefined behaviour.
@@ -997,7 +997,7 @@ void PowerManager::update_energy()
             cm_limits->min[cm_phase]    = max_current_limited_ma;
             cm_limits->spread[cm_phase] = max_current_limited_ma;
 
-            cm_limits->min_ts[cm_phase] = 0_us;
+            cm_limits->min_expiration_ts[cm_phase] = 0_us;
         } else {
             size_t pm_phase = cm_phase - 1; // PM is 0-based but CM is 1-based because of PV@0
 
@@ -1013,7 +1013,7 @@ void PowerManager::update_energy()
                 cm_limits->min[cm_phase] = 0;
                 cm_limits->spread[cm_phase] = 0;
 
-                cm_limits->min_ts[cm_phase] = 0_us;
+                cm_limits->min_expiration_ts[cm_phase] = 0_us;
             } else {
                 if (printed_skipping_currents_update && cm_phase == 1) {
                     logger.printfln("Dynamic load management available because current values are now available.");
@@ -1110,7 +1110,7 @@ void PowerManager::update_energy()
                 cm_limits->min[cm_phase] = phase_min_ma->min;
                 cm_limits->spread[cm_phase] = phase_long_min_ma;
 
-                cm_limits->min_ts[cm_phase] = phase_min_ma->min_ts;
+                cm_limits->min_expiration_ts[cm_phase] = phase_min_ma->min_expiration_ts;
 
 #if ENABLE_PM_TRACE
                 // Only add rule before first phase if PV is active.

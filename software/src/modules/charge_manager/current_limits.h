@@ -157,8 +157,8 @@ struct Cost {
 static_assert(sizeof(Cost) == 4 * sizeof(int), "Unexpected size of Cost");
 
 struct CurrentLimits {
-    micros_t min_ts[4];
-    micros_t max_pv_ts;
+    micros_t min_expiration_ts[4];
+    micros_t max_pv_expiration_ts;
     Cost raw;
     Cost min;
     Cost spread;

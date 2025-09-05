@@ -96,16 +96,16 @@ public:
     };
 
     struct minmax_filter {
-        micros_t min_ts          = 0_us;
-        micros_t max_ts          = 0_us;
-        int32_t  min             = INT32_MAX;
-        int32_t  max             = INT32_MAX;
-        int32_t *history_values  = nullptr;
-        int32_t  history_length  = 0;
-        int32_t  history_pos     = 0;
-        int32_t  history_min_pos = 0;
-        int32_t  history_max_pos = 0;
-        FilterType type          = FilterType::MinOnly;
+        micros_t min_expiration_ts = 0_us;
+        micros_t max_expiration_ts = 0_us;
+        int32_t  min               = INT32_MAX;
+        int32_t  max               = INT32_MAX;
+        int32_t *history_values    = nullptr;
+        int32_t  history_length    = 0;
+        int32_t  history_pos       = 0;
+        int32_t  history_min_pos   = 0;
+        int32_t  history_max_pos   = 0;
+        FilterType type            = FilterType::MinOnly;
     };
 
     struct mavg_filter {

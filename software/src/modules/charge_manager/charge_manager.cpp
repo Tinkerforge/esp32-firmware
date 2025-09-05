@@ -476,10 +476,10 @@ void ChargeManager::setup()
     this->limits.spread = {0, def_cur, def_cur, def_cur};
     this->limits.max_pv = 0;
 
-    for (size_t i = 0; i < ARRAY_SIZE(this->limits.min_ts); i++) {
-        this->limits.min_ts[i] = 0_us;
+    for (size_t i = 0; i < ARRAY_SIZE(this->limits.min_expiration_ts); i++) {
+        this->limits.min_expiration_ts[i] = 0_us;
     }
-    this->limits.max_pv_ts = 0_us;
+    this->limits.max_pv_expiration_ts = 0_us;
 
     start_manager_task();
 
@@ -503,10 +503,10 @@ void ChargeManager::setup()
                 tmp_limits.min = Cost{0, 0, 0, 0};
                 tmp_limits.max_pv = 0;
 
-                for (size_t i = 0; i < ARRAY_SIZE(tmp_limits.min_ts); i++) {
-                    tmp_limits.min_ts[i] = 0_us;
+                for (size_t i = 0; i < ARRAY_SIZE(tmp_limits.min_expiration_ts); i++) {
+                    tmp_limits.min_expiration_ts[i] = 0_us;
                 }
-                tmp_limits.max_pv_ts = 0_us;
+                tmp_limits.max_pv_expiration_ts = 0_us;
             } else {
                 tmp_limits = this->limits;
             }
