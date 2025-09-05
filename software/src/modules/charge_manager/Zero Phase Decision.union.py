@@ -4,7 +4,7 @@ from software.util import *
 
 #from ....util import *
 
-spec = Union("Zero Phase Decision", 12, variants=[
+spec = Union("Zero Phase Decision", 20, variants=[
     Variant('None'),
     Variant('Yes Charge Mode Off'),
     Variant('Yes Waiting For Rotation', [
@@ -14,6 +14,7 @@ spec = Union("Zero Phase Decision", 12, variants=[
     Variant('Yes Rotated For B1'),
     Variant('Yes Rotated For Higher Prio'),
     Variant('Yes Phase Overload', [
+        Member('Timestamp', Types.Timestamp),
         Member('Overload mA', Types.U32),
         Member('Phase', Types.U8)
     ]),
