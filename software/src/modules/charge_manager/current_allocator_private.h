@@ -30,6 +30,7 @@ struct StageContext {
     CurrentLimits *limits;
     const ChargerState *charger_state;
     size_t charger_count;
+    size_t unfiltered_charger_count;
     const CurrentAllocatorConfig *cfg;
     CurrentAllocatorState *ca_state;
     const ChargerAllocationState *charger_allocation_state;
@@ -68,18 +69,21 @@ struct CompareContext {
 
 typedef bool(*filter_fn)(const FilterContext &ctx);
 
-int filter_chargers_impl(filter_fn filter, StageContext &sc);
+int filter_chargers_impl(filter_fn filter, StageContext &sc, int matched);
 
 typedef int(*group_fn)(const GroupContext &ctx);
 
 typedef bool(*compare_fn)(const CompareContext &ctx);
 
-void sort_chargers_impl(group_fn group, compare_fn compare, StageContext &sc);
+void sort_chargers_impl(group_fn group, compare_fn compare, StageContext &sc, int matched);
 
-#define filter_chargers(x) filter_chargers_impl([](const FilterContext &ctx) { \
-            return (x); \
+#define filter_n_chargers(n, predicate) filter_chargers_impl([](const FilterContext &ctx) { \
+            return (predicate); \
         }, \
-        sc)
+        sc, \
+        n)
+
+#define filter_chargers(predicate) filter_n_chargers(-1, predicate)
 
 #define sort_chargers(group, filter) do {\
     sort_chargers_impl( \
