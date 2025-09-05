@@ -39,7 +39,7 @@ struct HttpResponse {
     uint64_t data_read = 0;
 };
 
-struct Connections {
+struct Connection {
     uint8_t id;
     std::unique_ptr<WireGuard> conn = nullptr;
 };
@@ -65,19 +65,19 @@ public:
 private:
     void resolve_management();
     void connect_management();
-    uint8_t get_connection(uint8_t conn_id);
+    uint8_t get_connection(int32_t conn_id);
     void connect_remote_access(uint8_t i, uint16_t local_port);
     void close_all_remote_connections();
     void run_management();
     void handle_response_chunk(const AsyncHTTPSClientEvent *event);
-    void run_request_with_next_stage(const char *url, esp_http_client_method_t method, const char *body, int body_size, const Config &config, std::function<void(const Config &config)> &&next_stage);
-    void get_login_salt(const Config &config);
+    void run_request_with_next_stage(const char *url, esp_http_client_method_t method, const char *body, size_t body_size, const Config &next_config, std::function<void(const Config &config)> &&next_stage);
+    void get_login_salt(const Config &user_config);
     void parse_login_salt();
-    void get_secret(const Config &config);
+    void get_secret(const Config &user_config);
     void parse_secret();
-    void parse_registration(const Config &config, std::queue<WgKey> keys, const String &public_key);
-    void parse_add_user(std::queue<WgKey> key_cache, const String &pub_key, const String &email, uint32_t next_user_id);
-    void login(const Config &config, const String &login_key);
+    void parse_registration(const Config &user_config, std::queue<WgKey> keys, const String &public_key);
+    void parse_add_user(std::queue<WgKey> key_cache, const String &pub_key, const String &email, uint8_t next_user_id);
+    void login(const Config &user_config, const String &login_key);
     void request_cleanup();
     void cleanup_after();
     bool user_already_registered(const String &email);
@@ -85,7 +85,7 @@ private:
     int start_ping();
     int stop_ping();
     std::unique_ptr<WireGuard> management = nullptr;
-    Connections remote_connections[MAX_USER_CONNECTIONS] = {};
+    Connection remote_connections[MAX_USER_CONNECTIONS] = {};
 
     String jwt;
     int inner_socket = -1;

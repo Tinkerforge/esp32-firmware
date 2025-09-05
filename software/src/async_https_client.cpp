@@ -155,7 +155,7 @@ esp_err_t AsyncHTTPSClient::event_handler(esp_http_client_event_t *event)
 static const char *https_prefix = "https://";
 static const size_t https_prefix_len = strlen(https_prefix);
 
-void AsyncHTTPSClient::fetch(const char *url, int cert_id, esp_http_client_method_t method, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback) {
+void AsyncHTTPSClient::fetch(const char *url, int cert_id, esp_http_client_method_t method, const char *body, size_t body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback) {
     if (strncmp(url, https_prefix, https_prefix_len) != 0) {
         error_abort(AsyncHTTPSClientError::NoHTTPSURL);
         return;
@@ -296,17 +296,17 @@ void AsyncHTTPSClient::download_async(const char *url, int cert_id, std::functio
     fetch(url, cert_id, HTTP_METHOD_GET, nullptr, 0, std::move(callback));
 }
 
-void AsyncHTTPSClient::post_async(const char *url, int cert_id, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback)
+void AsyncHTTPSClient::post_async(const char *url, int cert_id, const char *body, size_t body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback)
 {
     fetch(url, cert_id, HTTP_METHOD_POST, body, body_size, std::move(callback));
 }
 
-void AsyncHTTPSClient::put_async(const char *url, int cert_id, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback)
+void AsyncHTTPSClient::put_async(const char *url, int cert_id, const char *body, size_t body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback)
 {
     fetch(url, cert_id, HTTP_METHOD_PUT, body, body_size, std::move(callback));
 }
 
-void AsyncHTTPSClient::delete_async(const char *url, int cert_id, const char *body, int body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback)
+void AsyncHTTPSClient::delete_async(const char *url, int cert_id, const char *body, size_t body_size, std::function<void(AsyncHTTPSClientEvent *event)> &&callback)
 {
     fetch(url, cert_id, HTTP_METHOD_DELETE, body, body_size, std::move(callback));
 }
