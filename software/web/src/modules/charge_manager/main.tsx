@@ -151,10 +151,10 @@ interface ChargeManagerStatusState {
 }
 
 function with_timespan(fn: (timespan: string) => string, ts: number) {
-    const now = API.get('info/keep_alive').uptime / 1000;
+    const now = API.get('info/keep_alive').uptime;
     if (ts < now)
         return ""
-    return fn(util.format_timespan(ts - now));
+    return fn(util.format_timespan_ms(ts - now));
 }
 
 function zero_phase_desc_to_text(d0: ZeroPhaseDecision): ComponentChild {
