@@ -122,12 +122,12 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
 
     int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
     if (sock < 0) {
-        logger.printfln("Remote Access: failed to send management frame");
+        logger.printfln("Failed to create socket: %s (%i)", strerror(errno), errno);
         return sock;
     }
     int ret = fcntl(sock, F_SETFL, O_NONBLOCK);
     if (ret == -1) {
-        logger.printfln("Setting socket to non_blocking caused and error: %s (%i)", strerror(errno), errno);
+        logger.printfln("Setting socket to non-blocking caused an error: %s (%i)", strerror(errno), errno);
         close(sock);
         return -1;
     }
@@ -140,7 +140,7 @@ static int create_sock_and_send_to(const void *payload, size_t payload_len, cons
     local_addr.sin_port = htons(local_port);
     ret = bind(sock, (struct sockaddr *)&local_addr, sizeof(local_addr));
     if (ret == -1) {
-        logger.printfln("Binding socket to port %u caused and error: %s (%i)", local_port, strerror(errno), errno);
+        logger.printfln("Binding socket to port %u caused an error: %s (%i)", local_port, strerror(errno), errno);
         close(sock);
         return -1;
     }
@@ -1748,7 +1748,7 @@ void RemoteAccess::connect_remote_access(uint8_t i, uint16_t local_port)
 
     uint8_t conn_idx = get_connection(i);
     if (conn_idx == 255) {
-        logger.printfln("No free conn found");
+        logger.printfln("No free connection found");
         return;
     }
     remote_connections[conn_idx].id = i;
@@ -1792,7 +1792,7 @@ void RemoteAccess::setup_inner_socket()
     local_addr.sin_port = htons(12345);
     int ret = bind(inner_socket, (struct sockaddr *)&local_addr, sizeof(local_addr));
     if (ret == -1) {
-        logger.printfln("Binding socket to port 12345 caused and error: %s (%i)", strerror(errno), errno);
+        logger.printfln("Binding socket to port 12345 caused an error: %s (%i)", strerror(errno), errno);
         close(inner_socket);
         inner_socket = -1;
         return;
@@ -1800,7 +1800,7 @@ void RemoteAccess::setup_inner_socket()
 
     ret = fcntl(inner_socket, F_SETFL, O_NONBLOCK);
     if (ret == -1) {
-        logger.printfln("Setting socket to non_blocking caused and error: %s (%i)", strerror(errno), errno);
+        logger.printfln("Setting socket to non-blocking caused an error: %s (%i)", strerror(errno), errno);
         close(inner_socket);
         inner_socket = -1;
     }
