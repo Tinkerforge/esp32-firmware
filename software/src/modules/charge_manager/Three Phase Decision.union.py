@@ -4,18 +4,23 @@ from software.util import *
 
 #from ....util import *
 
-spec = Union("Three Phase Decision", 12, variants=[
+spec = Union("Three Phase Decision", 20, variants=[
     Variant('None'),
     Variant('Yes Welcome Charge Until', [
         Member('Timestamp', Types.Timestamp)
     ]),
     Variant('No Phase Minimum', [
+        Member('Timestamp', Types.Timestamp),
         Member('Required mA', Types.U32),
         Member('Min mA', Types.U32),
-        Member('Phase', Types.U8)
+        Member('Phase', Types.U8),
     ]),
-    Variant('No PV Improvement'),
-    Variant('No Phase Improvement'),
+    Variant('No Phase Improvement', [
+        Member('Timestamp', Types.Timestamp),
+        Member('Allocable mA', Types.U32),
+        Member('Available mA', Types.U32),
+        Member('Phase', Types.U8),
+    ]),
     Variant('Yes Improves Spread'),
     Variant('No Forced 1p Until', [
         Member('Timestamp', Types.Timestamp)

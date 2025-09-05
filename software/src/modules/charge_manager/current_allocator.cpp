@@ -799,7 +799,7 @@ static void stage_3(StageContext &sc) {
 
             trace("3: wnd_min %d > p%d raw %d", wnd_min[p], p, sc.limits->raw[p]);
 
-            set_charger_decision(sc, sc.idx_array[i], ZeroPhaseDecision::YesPhaseOverload(wnd_min[p] - sc.limits->raw[p], p));
+            set_charger_decision(sc, sc.idx_array[i], ZeroPhaseDecision::YesPhaseOverload(sc.limits->min_expiration_ts[p], wnd_min[p] - sc.limits->raw[p], p));
 
             // We don't have to recalculate the window but instead can just change the minimum.
             // The window minimum does not have dependencies between chargers.
@@ -851,7 +851,7 @@ static void stage_3(StageContext &sc) {
 
         trace("3: wnd_min %d > max_pv %d", wnd_min.pv, sc.limits->max_pv);
 
-        set_charger_decision(sc, sc.idx_array[i], ZeroPhaseDecision::YesPhaseOverload(wnd_min.pv - sc.limits->max_pv, 0));
+        set_charger_decision(sc, sc.idx_array[i], ZeroPhaseDecision::YesPhaseOverload(sc.limits->min_expiration_ts[0], wnd_min.pv - sc.limits->max_pv, 0));
 
         // We don't have to recalculate the window but instead can just change the minimum.
         // The window minimum does not have dependencies between chargers.
@@ -908,9 +908,9 @@ static bool can_activate(StageContext &sc, int charger_idx, StringWriter &sw, co
         bool improves_pv = (check_phase.pv & (CHECK_IMPROVEMENT | CHECK_IMPROVEMENT_ALL_PHASE)) == 0 || (new_cost.pv > 0 && (wnd_max.pv < limits->min.pv || new_cost.pv <= guaranteed_pv_current));
         if (!improves_pv) {
             if (is_3p_activation)
-                set_charger_decision(sc, charger_idx, ThreePhaseDecision::NoPVImprovement());
+                set_charger_decision(sc, charger_idx, ThreePhaseDecision::NoPhaseImprovement(limits->min_expiration_ts[0], wnd_max.pv, limits->min.pv, 0));
             else
-                set_charger_decision(sc, charger_idx, OnePhaseDecision::NoPVImprovement());
+                set_charger_decision(sc, charger_idx, OnePhaseDecision::NoPhaseImprovement(limits->min_expiration_ts[0], wnd_max.pv, limits->min.pv, 0));
 
             sw.printf(" No: !impr_pv");
             // Don't set charger status line here: This charger probably has the status line "waiting for other chargers to be rotated", which is fine.
@@ -921,14 +921,25 @@ static bool can_activate(StageContext &sc, int charger_idx, StringWriter &sw, co
         bool improves_any_phase = false;
         bool improves_all_phases = true;
 
+        auto max_diff = 0;
+        auto max_diff_phase = 0;
+
         for (size_t p = 1; p < 4; ++p) {
             if ((check_phase[p] & (CHECK_IMPROVEMENT | CHECK_IMPROVEMENT_ALL_PHASE)) == 0 || new_cost[p] <= 0)
                 continue;
 
+            auto available = limits->min[p];
+            auto allocable = wnd_max[p];
+
             // More efficient than |= or &= on the Xtensa.
-            if (wnd_max[p] < limits->min[p]) {
+            if (allocable < available) {
                 improves_any_phase = true;
             } else {
+                auto diff = available - allocable;
+                if (diff > max_diff) {
+                    max_diff = diff;
+                    max_diff_phase = p;
+                }
                 improves_all_phases = false;
             }
         }
@@ -936,9 +947,9 @@ static bool can_activate(StageContext &sc, int charger_idx, StringWriter &sw, co
             // PV is already checked above.
             if (!is_unknown_rotated_1p_3p_switch) {
                 if (is_3p_activation)
-                    set_charger_decision(sc, charger_idx, ThreePhaseDecision::NoPhaseImprovement());
+                    set_charger_decision(sc, charger_idx, ThreePhaseDecision::NoPhaseImprovement(limits->min_expiration_ts[max_diff_phase], wnd_max[max_diff_phase], limits->min[max_diff_phase], max_diff_phase));
                 else
-                    set_charger_decision(sc, charger_idx, OnePhaseDecision::NoPhaseImprovement());
+                    set_charger_decision(sc, charger_idx, OnePhaseDecision::NoPhaseImprovement(limits->min_expiration_ts[max_diff_phase], wnd_max[max_diff_phase], limits->min[max_diff_phase], max_diff_phase));
 
                 sw.printf(" No: %d %d %d",
                             check_all_phases,
@@ -977,9 +988,9 @@ static bool can_activate(StageContext &sc, int charger_idx, StringWriter &sw, co
         if (limits->min[p] < required) {
             sw.printf(" No: p%zu min %d < req %d ", p, limits->min[p], required);
             if (is_3p_activation)
-                set_charger_decision(sc, charger_idx, ThreePhaseDecision::NoPhaseMinimum(required, limits->min[p], p));
+                set_charger_decision(sc, charger_idx, ThreePhaseDecision::NoPhaseMinimum(limits->min_expiration_ts[p], required, limits->min[p], p));
             else
-                set_charger_decision(sc, charger_idx, OnePhaseDecision::NoPhaseMinimum(required, limits->min[p], p));
+                set_charger_decision(sc, charger_idx, OnePhaseDecision::NoPhaseMinimum(limits->min_expiration_ts[p], required, limits->min[p], p));
 
             return false;
         }
