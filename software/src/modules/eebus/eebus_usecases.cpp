@@ -19,7 +19,6 @@
 
 #include "eebus_usecases.h"
 
-#include "build.h"
 #include "eebus.h"
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
@@ -587,6 +586,19 @@ UseCaseInformationDataType ControllableSystemEntity::get_usecase_information()
 
 CmdClassifierType ControllableSystemEntity::handle_message(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
 {
+    if (header.addressDestination->feature.has_value() && header.addressDestination->feature == loadControl_feature_address) {
+        return load_control_feature(header, data, response, connection);
+    }
+    if (header.addressDestination->feature.has_value() && header.addressDestination->feature == deviceConfiguration_feature_address) {
+        return deviceConfiguration_feature(header, data, response, connection);
+    }
+    if (header.addressDestination->feature.has_value() && header.addressDestination->feature == deviceDiagnosis_feature_address) {
+        return device_diagnosis_feature(header, data, response, connection);
+    }
+    if (header.addressDestination->feature.has_value() && header.addressDestination->feature == electricalConnection_feature_address) {
+        return electricalConnection_feature(header, data, response, connection);
+    }
+
     return CmdClassifierType::EnumUndefined;
 }
 
@@ -612,7 +624,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> ControllableS
     // The following functions are needed by the LoadControl Feature Type
     NodeManagementDetailedDiscoveryFeatureInformationType loadControlFeature{};
     loadControlFeature.description->featureAddress->entity = entity_address;
-    loadControlFeature.description->featureAddress->feature = 10; // Feature IDs are just arbitrary numbers. Just have to be unique within the entity
+    loadControlFeature.description->featureAddress->feature = loadControl_feature_address; // Feature IDs are just arbitrary numbers. Just have to be unique within the entity
     loadControlFeature.description->featureType = FeatureTypeEnumType::LoadControl;
     loadControlFeature.description->role = RoleType::server;
 
@@ -634,7 +646,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> ControllableS
     // The following functions are needed by the DeviceConfiguration Feature Type
     NodeManagementDetailedDiscoveryFeatureInformationType deviceConfigurationFeature{};
     deviceConfigurationFeature.description->featureAddress->entity = entity_address;
-    deviceConfigurationFeature.description->featureAddress->feature = 20;
+    deviceConfigurationFeature.description->featureAddress->feature = deviceConfiguration_feature_address;
     deviceConfigurationFeature.description->featureType = FeatureTypeEnumType::DeviceConfiguration;
     deviceConfigurationFeature.description->role = RoleType::server;
 
@@ -654,7 +666,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> ControllableS
     // The following functions are needed by the DeviceDiagnosis Feature Type
     NodeManagementDetailedDiscoveryFeatureInformationType deviceDiagnosisFeature{};
     deviceDiagnosisFeature.description->featureAddress->entity = entity_address;
-    deviceDiagnosisFeature.description->featureAddress->feature = 30;
+    deviceDiagnosisFeature.description->featureAddress->feature = deviceDiagnosis_feature_address;
     deviceDiagnosisFeature.description->featureType = FeatureTypeEnumType::DeviceDiagnosis;
     deviceDiagnosisFeature.description->role = RoleType::server;
 
@@ -668,7 +680,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> ControllableS
     // The following functions are needed by the ElectricalConnection Feature Type
     NodeManagementDetailedDiscoveryFeatureInformationType electricalConnectionFeature{};
     electricalConnectionFeature.description->featureAddress->entity = entity_address;
-    electricalConnectionFeature.description->featureAddress->feature = 40;
+    electricalConnectionFeature.description->featureAddress->feature = electricalConnection_feature_address;
     electricalConnectionFeature.description->featureType = FeatureTypeEnumType::ElectricalConnection;
     electricalConnectionFeature.description->role = RoleType::server;
 
@@ -680,6 +692,50 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> ControllableS
     features.push_back(electricalConnectionFeature);
 
     return features;
+}
+
+CmdClassifierType ControllableSystemEntity::load_control_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+{
+    //TODO: Implement
+    return CmdClassifierType::EnumUndefined;
+}
+
+CmdClassifierType ControllableSystemEntity::deviceConfiguration_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+{
+    //TODO: Implement
+    return CmdClassifierType::EnumUndefined;
+}
+
+CmdClassifierType ControllableSystemEntity::device_diagnosis_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+{
+    //TODO: Implement
+    return CmdClassifierType::EnumUndefined;
+}
+
+CmdClassifierType ControllableSystemEntity::electricalConnection_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection)
+{
+    if (data->last_cmd == SpineDataTypeHandler::Function::deviceDiagnosisHeartbeatData && data->devicediagnosisheartbeatdatatype.has_value()) {
+        DeviceDiagnosisHeartbeatDataType incoming_heartbeatData = data->devicediagnosisheartbeatdatatype.get();
+        if (header.cmdClassifier == CmdClassifierType::read) {
+            DeviceDiagnosisHeartbeatDataType outgoing_heartbeatData{};
+            outgoing_heartbeatData.heartbeatCounter = heartbeatCounter;
+                outgoing_heartbeatData.heartbeatTimeout = "PT1M";
+            outgoing_heartbeatData.timestamp = "111111111"; // TODO: Get some kind of timestamp
+            // TODO:
+            // - Return heartbeatdata
+            // - Initialize a read of their heartbeat
+            // - If the other side is subscribed to us, we have to subscribe to them as well
+                response["deviceDiagnosisHeartbeatData"] = outgoing_heartbeatData;
+            return CmdClassifierType::reply;
+        }
+        if (header.cmdClassifier == CmdClassifierType::reply || header.cmdClassifier == CmdClassifierType::notify) {
+            // TODO: just reset timeout in this case
+        }
+
+
+    }
+    //TODO: Implement
+    return CmdClassifierType::EnumUndefined;
 }
 
 EEBusUseCases::EEBusUseCases()
@@ -738,7 +794,7 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
     }
 }
 
-void EEBusUseCases::inform_subscribers(int entity, int feature, SpineDataTypeHandler *data)
+void EEBusUseCases::inform_subscribers(const std::vector<AddressEntityType> &entity, const AddressFeatureType feature, SpineDataTypeHandler *data)
 {
     node_management.inform_subscribers(entity, feature, data);
 }
