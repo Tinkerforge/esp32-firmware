@@ -263,11 +263,33 @@ function current_desc_to_text(dc: CurrentDecision): ComponentChild {
 }
 
 function alloc_decision_to_text(x: API.getType['charge_manager/state']['chargers'][0]): ComponentChild {
+    let descs = [<>Off: {zero_phase_desc_to_text(x.d0)}</>,
+                 <>1p: {one_phase_desc_to_text(x.d1)}</>,
+                 <>3p: {three_phase_desc_to_text(x.d3)}</>,
+                 <>Current: {current_desc_to_text(x.dc)}</>]
+
+    switch (x.ap) {
+        case 0:
+            descs[0] = <strong>{descs[0]}</strong>;
+            break;
+        case 1:
+            descs[1] = <strong>{descs[1]}</strong>;
+            descs[3] = <strong>{descs[3]}</strong>;
+            break
+        case 3:
+            descs[2] = <strong>{descs[2]}</strong>;
+            descs[3] = <strong>{descs[3]}</strong>;
+            break;
+        default:
+            break;
+    }
+
+
     return <>
-        <div>Off: {zero_phase_desc_to_text(x.d0)}</div>
-        <div>1p: {one_phase_desc_to_text(x.d1)}</div>
-        <div>3p: {three_phase_desc_to_text(x.d3)}</div>
-        <div>Current: {current_desc_to_text(x.dc)}</div>
+        <div>{descs[0]}</div>
+        <div>{descs[1]}</div>
+        <div>{descs[2]}</div>
+        <div>{descs[3]}</div>
     </>
 }
 
