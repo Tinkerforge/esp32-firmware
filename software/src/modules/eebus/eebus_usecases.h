@@ -219,7 +219,7 @@ public:
     ControllableSystemEntity() = default;
 
     /**
-    * Builds and returns the UseCaseInformationDataType as defined in EEBus UC TS - EV Charging Summary V1.0.1. 3.1.2.
+    * Builds and returns the UseCaseInformationDataType as defined in EEBus UC TS - EV Limitation Of Power Consumption V1.0.0. 3.1.2.
     * @return
     */
     UseCaseInformationDataType get_usecase_information() override;
@@ -240,23 +240,32 @@ public:
         return UseCaseType::LimitationOfActivePowerConsumption;
     }
 
+    /**
+     * The entity information as defined in EEBus UC TS - EV Limitation Of Power Consumption V1.0.0. 3.2.2.
+     * @return The entity information.
+     */
     [[nodiscard]] NodeManagementDetailedDiscoveryEntityInformationType get_detailed_discovery_entity_information() const override;
     /**
-     * Returns the supported features. EVSE supports only one feature which is the Bill feature.
+     * Returns the supported features. As defined in EEBus UC TS - EV Limitation Of Power Consumption V1.0.0. 3.2.2.2.1.
      * @return a list of the supported features.
      */
     [[nodiscard]] std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> get_detailed_discovery_feature_information() const override;
 
 private:
-    /**
-     * Handle the Bill Feature.
-     * @param header
-     * @param data
-     * @param response
-     * @param connection
-     * @return
-     */
-    CmdClassifierType bill_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
+    CmdClassifierType load_control_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
+    CmdClassifierType deviceConfiguration_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
+    CmdClassifierType device_diagnosis_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
+    CmdClassifierType electricalConnection_feature(HeaderType &header, SpineDataTypeHandler *data, JsonObject response, SpineConnection *connection);
+
+
+    int loadControl_feature_address = 10;
+    int deviceConfiguration_feature_address = 20;
+    int deviceDiagnosis_feature_address = 30;
+    int electricalConnection_feature_address = 40;
+
+
+    // Heartbeat Data as required for Scenario 3 - Hearbeat
+    uint64_t heartbeatCounter = 0;
 };
 
 /**
@@ -268,10 +277,9 @@ public:
     EEBusUseCases();
 
     /**
-     * Main interface for the EEBUS UseCases.
+     * Main interface for the EEBUS UseCases. All EEBUS Messages are passed here and forwarded to the correct usecase entity.
      * @param header Spine Header
      * @param data Payload of the message.
-     * @param response The response object to fill with the response data.
      * @param connection The SPINE Connection that sent the message. This is used to send the response back to the correct connection and to identify the connection which bound or subscribed to a function.
      * @return true if a response was generated and needs to be sent, false if no response is needed.
      */
