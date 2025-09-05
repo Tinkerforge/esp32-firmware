@@ -7,7 +7,7 @@ from software.util import *
 spec = Union("Three Phase Decision", 12, variants=[
     Variant('None'),
     Variant('Yes Welcome Charge Until', [
-        Member('Timestamp', Types.Seconds)
+        Member('Timestamp', Types.Timestamp)
     ]),
     Variant('No Phase Minimum', [
         Member('Required mA', Types.U32),
@@ -18,15 +18,15 @@ spec = Union("Three Phase Decision", 12, variants=[
     Variant('No Phase Improvement'),
     Variant('Yes Improves Spread'),
     Variant('No Forced 1p Until', [
-        Member('Timestamp', Types.Seconds)
+        Member('Timestamp', Types.Timestamp)
     ]),
     Variant('No Fixed 1p'),
     Variant('Yes Unknown Rot Switchable'),
     Variant('No Hysteresis Blocked Until', [
-        Member('Timestamp', Types.Seconds)
+        Member('Timestamp', Types.Timestamp)
     ]),
     Variant('No Phase Switch Blocked Until', [
-        Member('Timestamp', Types.Seconds)
+        Member('Timestamp', Types.Timestamp)
     ]),
     Variant('Yes Waking Up'),
     Variant('Yes Normal'),

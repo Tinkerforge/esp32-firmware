@@ -529,9 +529,7 @@ class Types:
     S32 = Type('int32_t', 4, "Config::Int32(0)", lambda x: f"updateInt({x})", "number")
     S64 = Type('int64_t', 8, "Config::Int52(0)", lambda x: f"updateInt52({x})", "number")
 
-    Micros  = Type('micros_t',  8, "Config::Int52(0)", lambda x: f"updateInt52({x}.as<int64_t>())", "number")
-    Millis  = Type('millis_t',  8, "Config::Int52(0)", lambda x: f"updateInt52({x}.as<int64_t>())", "number")
-    Seconds = Type('seconds_t', 8, "Config::Int52(0)", lambda x: f"updateInt52({x}.as<int64_t>())", "number")
+    Timestamp = Type('micros_t', 8, 'Config::Timestamp()', lambda x: f"updateTimestamp({x})", "number")
 
 @dataclass
 class Member:
@@ -542,8 +540,8 @@ class Member:
     def __post_init__(self, _name_str):
         self.name = FlavoredName(_name_str).get()
 
-    def get_decl(self):
-        return f"{self.type.name} {self.name.under}"
+    def get_decl(self, const=False):
+        return f"{'const ' if const else ''}{self.type.name} {self.name.under}"
 
     def get_config(self):
         return f'{self.type.config}'
@@ -574,7 +572,7 @@ class Variant:
         return f"struct {{{" ".join(("[[gnu::packed]] " if m.type.size > 1 else "") + m.get_decl() + ";" for m in self.members)} }} {self.name.under};"
 
     def get_factory_fn_signature(self, union_name):
-        return f"static {union_name.camel} {self.name.camel}({", ".join(m.get_decl() for m in self.members)});"
+        return f"static {union_name.camel} {self.name.camel}({", ".join(m.get_decl(const=True) for m in self.members)});"
 
     def get_factory_fn_impl(self, union_name):
         if len(self.members) == 0:
@@ -584,7 +582,7 @@ class Variant:
                  ", ".join(f".{m.name.under} = {m.name.under}" for m in self.members) + \
                  "}"
 
-        return f"{union_name.camel} {union_name.camel}::{self.name.camel}({", ".join(m.get_decl() for m in self.members)}) {{ return {union_name.camel}{{{init}, .tag = {union_name.camel}Tag::{self.name.camel}}}; }}"
+        return f"{union_name.camel} {union_name.camel}::{self.name.camel}({", ".join(m.get_decl(const=True) for m in self.members)}) {{ return {union_name.camel}{{{init}, .tag = {union_name.camel}Tag::{self.name.camel}}}; }}"
 
     def get_conf_union_prototype(self, union_name):
         if len(self.members) == 0:

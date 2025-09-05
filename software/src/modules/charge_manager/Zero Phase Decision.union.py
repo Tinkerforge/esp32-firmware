@@ -8,7 +8,7 @@ spec = Union("Zero Phase Decision", 12, variants=[
     Variant('None'),
     Variant('Yes Charge Mode Off'),
     Variant('Yes Waiting For Rotation', [
-        Member('Next Rotation', Types.Seconds)
+        Member('Next Rotation', Types.Timestamp)
     ]),
     Variant('Yes Not Active'),
     Variant('Yes Rotated For B1'),
