@@ -86,7 +86,7 @@ cd ~/esp32-arduino-lib-builder
 ### Test built libs:
 
 ```bash
-# Update platformio.ini's platform_packages entry (of env:base_esp32 for WARP1, env.base_esp32_ethernet for WARP2/3/WEM)
+# Update platformio.ini's platform_packages entry (of base_esp32 for WARP1, base_esp32_ethernet for WARP2/3/WEM)
 # to point to the output directory of the lib builder:
 # Change
 platform_packages = platformio/framework-arduinoespressif32-libs @ symlink://packages/esp32-arduino-libs#warp-x.y.z_commit_id
