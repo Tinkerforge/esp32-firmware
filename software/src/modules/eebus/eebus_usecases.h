@@ -146,7 +146,7 @@ public:
         return UseCaseType::NodeManagement;
     }
 
-    void inform_subscribers(int entity, int feature, SpineDataTypeHandler *data);
+    void inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature,SpineDataTypeHandler *data);
 
 private:
     EEBusUseCases *usecase_interface{};
@@ -283,7 +283,17 @@ public:
      * @param feature the feature address
      * @param data The Data the subscribers should be informed about. This is a SpineDataTypeHandler that contains the data.
      */
-    void inform_subscribers(int entity, int feature, SpineDataTypeHandler *data);
+    void inform_subscribers(const std::vector<AddressEntityType> &entity, AddressFeatureType feature, SpineDataTypeHandler *data);
+
+    /**
+     * Send a message to a spine destination.
+     * @param destination Spine FeatureAddressType of the destination. A message from the destination has to have been received before.
+     * @param sender Sender FeatureAddressType of the sender. The entity and feature must be set. The device can be empty and will be filled automatically if so.
+     * @param payload The payload to be sent.
+     * @param cmd_classifier The command classifier of the message.
+     * @param want_ack If we want an acknowledgement for the message. This is used to ensure that the peer received the message and can be used to detect if the peer is still alive.
+     */
+    bool send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, JsonVariantConst payload, CmdClassifierType cmd_classifier, bool want_ack = false);
 
     BasicJsonDocument<ArduinoJsonPsramAllocator> temporary_json_doc{SPINE_CONNECTION_MAX_JSON_SIZE}; // If a temporary doc is needed, use this one.
     BasicJsonDocument<ArduinoJsonPsramAllocator> response{SPINE_CONNECTION_MAX_JSON_SIZE}; // The response document to be filled with the response data
