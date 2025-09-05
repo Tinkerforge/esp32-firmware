@@ -75,12 +75,12 @@ static void print_alloc(int stage, const StageContext &sc) {
 
     char *ptr = buf;
     ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "  ALLOC");
-    for(size_t i = 0; i < sc.charger_count; ++i) {
+    for(size_t i = 0; i < sc.unfiltered_charger_count; ++i) {
         if (sc.phase_allocation[i] == 0 && sc.current_allocation[i] == 0 && stage != 0)
             ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "|        %zu        |", i);
         else
             ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), " %6.3f@%dp", sc.current_allocation[i] / 1000.0f, sc.phase_allocation[i]);
-        if (i % 8 == 7 && i != sc.charger_count - 1) {
+        if (i % 8 == 7 && i != sc.unfiltered_charger_count - 1) {
             logger.printfln("%s", buf);
             ptr = buf;
             ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "   ");
@@ -113,7 +113,7 @@ static void trace_alloc(int stage, const StageContext &sc) {
 
     char *ptr = buf;
     ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "%d: ", stage);
-    for(size_t i = 0; i < sc.charger_count; ++i) {
+    for(size_t i = 0; i < sc.unfiltered_charger_count; ++i) {
         if (stage == 0) {
             ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "[%2zu %dp %11s ]", i, sc.phase_allocation[i], ChargeMode::Strings[sc.charger_state[i].charge_mode]);
         } else {
@@ -123,7 +123,7 @@ static void trace_alloc(int stage, const StageContext &sc) {
                 ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "[%2zu %5d@%dp       ]", i, sc.current_allocation[i], sc.phase_allocation[i]);
         }
 
-        if (i % 8 == 7 && i != sc.charger_count - 1) {
+        if (i % 8 == 7 && i != sc.unfiltered_charger_count - 1) {
             trace("%s", buf);
             ptr = buf;
             ptr += snprintf(ptr, sizeof(buf) - (ptr - buf), "   ");
@@ -138,10 +138,10 @@ static void trace_sort_fn(int stage, int matched, const StageContext &sc) {
     char buf[200];
     memset(buf, 0, sizeof(buf));
     char *ptr = buf;
-    ptr += snprintf(ptr, ARRAY_SIZE(buf) - (ptr - buf), "%d: filtered %d to %d%s", stage, sc.charger_count, matched, matched > 0 ? ", sorted to " : ".");
+    ptr += snprintf(ptr, ARRAY_SIZE(buf) - (ptr - buf), "%d: filtered %d to %d%s", stage, sc.unfiltered_charger_count, matched, matched > 0 ? ", sorted to " : ".");
     if (matched > 0) {
         for(int i = 0; i < matched; ++i)
-            ptr += snprintf(ptr, ARRAY_SIZE(buf) - (ptr - buf), "%d %s", sc.idx_array[i], (matched < sc.charger_count) && (i == matched - 1) ? "|..." : "");
+            ptr += snprintf(ptr, ARRAY_SIZE(buf) - (ptr - buf), "%d %s", sc.idx_array[i], (matched < sc.unfiltered_charger_count) && (i == matched - 1) ? "|..." : "");
     }
     trace("%s", buf);
 #endif
@@ -150,9 +150,10 @@ static void trace_sort_fn(int stage, int matched, const StageContext &sc) {
 #define trace_sort(x) trace_sort_fn(x, matched, sc)
 
 // Sorts the indices of chargers that match the filter to the front of idx_array and returns the number of matches.
-int filter_chargers_impl(filter_fn filter_, StageContext &sc) {
+int filter_chargers_impl(filter_fn filter_, StageContext &sc, int matched = -1) {
     int matches = 0;
-    for(int i = 0; i < sc.charger_count; ++i) {
+    int limit = matched == -1 ? sc.charger_count : matched;
+    for(int i = 0; i < limit; ++i) {
         if (!filter_({sc.current_allocation[sc.idx_array[i]], sc.phase_allocation[sc.idx_array[i]], sc.cfg, &sc.charger_state[sc.idx_array[i]], sc.charge_mode_filter}))
             continue;
 
@@ -561,7 +562,7 @@ static void stage_2(StageContext &sc) {
     clear_charger_decision_all(sc, OnePhaseDecisionTag::YesWelcomeChargeUntil);
     clear_charger_decision_all(sc, ThreePhaseDecisionTag::YesWelcomeChargeUntil);
 
-    int matched = filter_chargers(was_just_plugged_in(ctx.state) && (ctx.state->charge_mode & ctx.charge_mode_filter) != 0 && !ctx.state->off);
+    int matched = filter_chargers(was_just_plugged_in(ctx.state));
 
     // Charger that is plugged in for the longest time first.
     sort_chargers(0,
@@ -1070,7 +1071,7 @@ static void stage_4(StageContext &sc) {
 
 
     // A charger that was rotated has 0 allocated phases but is still charging.
-    int matched = filter_chargers(ctx.allocated_phases == 0 && (ctx.state->wants_to_charge || ctx.state->is_charging) && (ctx.state->charge_mode & ctx.charge_mode_filter) != 0 && !ctx.state->off);
+    int matched = filter_chargers(ctx.allocated_phases == 0 && (ctx.state->wants_to_charge || ctx.state->is_charging));
 
     sort_chargers(
         -get_highest_charge_mode_bit(ctx.state),
@@ -1083,7 +1084,7 @@ static void stage_4(StageContext &sc) {
     // instead of the enable current. This is especially relevant for a setup
     // with only one charger.
     bool have_active_chargers = false;
-    for (size_t i = 0; i < sc.cfg->charger_count; ++i) {
+    for (size_t i = 0; i < sc.unfiltered_charger_count; ++i) {
         if (sc.phase_allocation[i] > 0) {
             have_active_chargers = true;
             break;
@@ -1203,7 +1204,7 @@ static void stage_5(StageContext &sc) {
     auto min_3p = sc.cfg->minimum_current_3p;
 
     int active_chargers = 0;
-    for (size_t i = 0; i < sc.cfg->charger_count; ++i) {
+    for (size_t i = 0; i < sc.unfiltered_charger_count; ++i) {
         if (sc.phase_allocation[i] != 0) {
             ++active_chargers;
         }
@@ -1220,7 +1221,7 @@ static void stage_5(StageContext &sc) {
 
     trace(check_pv_min ? "5: <2 active. pv reqs min" : "5: >1 active. pv reqs ena");
 
-    int matched = filter_chargers(ctx.allocated_phases == 1 && ctx.state->phase_switch_supported && (ctx.state->charge_mode & ctx.charge_mode_filter) != 0);
+    int matched = filter_chargers(ctx.allocated_phases == 1 && ctx.state->phase_switch_supported);
 
     sort_chargers(
         -get_highest_charge_mode_bit(ctx.state),
@@ -1303,7 +1304,7 @@ static void stage_5(StageContext &sc) {
 
 // Stage 6: Allocate minimum current to chargers with at least one allocated phase
 static void stage_6(StageContext &sc) {
-    int matched = filter_chargers(ctx.allocated_phases > 0 && ctx.allocated_current == 0 && (ctx.state->charge_mode & ctx.charge_mode_filter) != 0);
+    int matched = filter_chargers(ctx.allocated_phases > 0 && ctx.allocated_current == 0);
 
     // No need to sort here: We know that we have enough current to give each charger its minimum current.
     // A charger that can't be activated has 0 phases allocated.
@@ -1409,7 +1410,7 @@ struct MinWithDecision {
 //   On the PV "phase" include a charger n times were n is the number of phases this charger uses.
 //   A three-phase charger will use 18 A of PV current if it is allocated 6 A to each phase.
 static void stage_7(StageContext &sc) {
-    int matched = filter_chargers(ctx.allocated_current > 0 && (ctx.state->charge_mode & ctx.charge_mode_filter) != 0);
+    int matched = filter_chargers(ctx.allocated_current > 0);
 
     if (matched == 0)
         return;
@@ -1493,7 +1494,7 @@ static void stage_7(StageContext &sc) {
 // - Sort by current_capacity ascending. This makes sure that one pass is enough to allocate the possible maximum.
 static void stage_8(StageContext &sc) {
     // Chargers that are currently not charging already have the enable current allocated (if available) by stage 7.
-    int matched = filter_chargers(ctx.allocated_current > 0 && ctx.state->is_charging && (ctx.state->charge_mode & ctx.charge_mode_filter) != 0);
+    int matched = filter_chargers(ctx.allocated_current > 0 && ctx.state->is_charging);
 
     sort_chargers(
         3 - ctx.allocated_phases,
@@ -1825,6 +1826,7 @@ int allocate_current(
         limits,
         charger_state,
         cfg->charger_count,
+        cfg->charger_count,
         cfg,
         ca_state,
         charger_allocation_state,
@@ -1837,6 +1839,9 @@ int allocate_current(
     trace_alloc(0, sc);
     trace("__all__");
     stage_1(sc);
+    trace("__all except Off__");
+    auto not_off_count = filter_chargers(!ctx.state->off);
+    sc.charger_count = not_off_count;
     stage_2(sc);
     stage_3(sc);
     stage_6(sc);
@@ -1851,6 +1856,8 @@ int allocate_current(
             trace("__only %s__", ChargeMode::Strings[(size_t)mode]);
         }
 
+        sc.charger_count = filter_n_chargers(not_off_count, (ctx.state->charge_mode & ctx.charge_mode_filter) != 0);
+
         stage_4(sc);
         stage_5(sc);
         stage_6(sc);
@@ -1858,7 +1865,8 @@ int allocate_current(
         stage_8(sc);
     }
 
-    trace("__all__");
+    trace("__all except Off__");
+    sc.charger_count = not_off_count;
     stage_9(sc);
     trace_alloc(9, sc);
     //logger.printfln("Took %u µs", end - start);
