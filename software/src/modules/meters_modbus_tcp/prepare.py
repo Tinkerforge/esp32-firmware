@@ -130,6 +130,8 @@ for spec in specs:
         specs_h.append(f'enum {{\n{"\n".join(value_addresses)}\n}};')
         specs_h.append('}')
 
+        specs_h.append(f'extern const MeterModbusTCP::TableSpec {spec_name.under}_table;')
+
         specs_cpp.append(f'static const MeterModbusTCP::ValueSpec {spec_name.under}_specs[] = {{\n' + '\n'.join(value_specs) + '\n};')
 
         if len(value_ids) > 0:
@@ -137,12 +139,10 @@ for spec in specs:
 
         specs_cpp.append(f'static const uint32_t {spec_name.under}_index[] = {{\n' + '\n'.join(value_index) + '\n};')
 
-        specs_cpp.append(f'static const MeterModbusTCP::TableSpec {spec_name.under}_table_ = {{\n'
+        specs_cpp.append(f'extern const MeterModbusTCP::TableSpec {spec_name.under}_table = {{\n'
                          f'    MeterLocation::{spec['default_location']},\n'
                          f'    {spec_name.under}_specs,\n'
                          f'    ARRAY_SIZE({spec_name.under}_specs),\r')
-
-        specs_h.append(f'extern const MeterModbusTCP::TableSpec *{spec_name.under}_table;')
 
         if len(value_ids) > 0:
             specs_cpp.append(f'    {spec_name.under}_ids,\n'
@@ -154,8 +154,6 @@ for spec in specs:
         specs_cpp.append(f'    {spec_name.under}_index,\n'
                          f'    {f32_negative_max_as_nan},\n'
                          '};')
-
-        specs_cpp.append(f'const MeterModbusTCP::TableSpec *{spec_name.under}_table = &{spec_name.under}_table_;')
 
 ts = '// WARNING: This file is generated.\n\n'
 ts += 'import { MeterModbusTCPTableID } from "./meter_modbus_tcp_table_id.enum";\n\n'

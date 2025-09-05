@@ -143,23 +143,23 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case SungrowHybridInverterVirtualMeter::Inverter:
-            table = sungrow_inverter_output_type_table;
+            table = &sungrow_inverter_output_type_table;
             break;
 
         case SungrowHybridInverterVirtualMeter::Grid:
-            table = sungrow_hybrid_inverter_grid_table;
+            table = &sungrow_hybrid_inverter_grid_table;
             break;
 
         case SungrowHybridInverterVirtualMeter::Battery:
-            table = sungrow_hybrid_inverter_battery_table;
+            table = &sungrow_hybrid_inverter_battery_table;
             break;
 
         case SungrowHybridInverterVirtualMeter::Load:
-            table = sungrow_hybrid_inverter_load_table;
+            table = &sungrow_hybrid_inverter_load_table;
             break;
 
         case SungrowHybridInverterVirtualMeter::PV:
-            table = sungrow_hybrid_inverter_pv_table;
+            table = &sungrow_hybrid_inverter_pv_table;
             break;
 
         default:
@@ -180,19 +180,19 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case SungrowStringInverterVirtualMeter::Inverter:
-            table = sungrow_inverter_output_type_table;
+            table = &sungrow_inverter_output_type_table;
             break;
 
         case SungrowStringInverterVirtualMeter::Grid:
-            table = sungrow_string_inverter_grid_table;
+            table = &sungrow_string_inverter_grid_table;
             break;
 
         case SungrowStringInverterVirtualMeter::Load:
-            table = sungrow_string_inverter_load_table;
+            table = &sungrow_string_inverter_load_table;
             break;
 
         case SungrowStringInverterVirtualMeter::PV:
-            table = sungrow_string_inverter_pv_table;
+            table = &sungrow_string_inverter_pv_table;
             break;
 
         default:
@@ -212,15 +212,15 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case SolarmaxMaxStorageVirtualMeter::Inverter:
-            table = solarmax_max_storage_inverter_table;
+            table = &solarmax_max_storage_inverter_table;
             break;
 
         case SolarmaxMaxStorageVirtualMeter::Grid:
-            table = solarmax_max_storage_grid_table;
+            table = &solarmax_max_storage_grid_table;
             break;
 
         case SolarmaxMaxStorageVirtualMeter::Battery:
-            table = solarmax_max_storage_battery_table;
+            table = &solarmax_max_storage_battery_table;
             break;
 
         default:
@@ -244,19 +244,19 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case VictronEnergyGXVirtualMeter::Grid:
-            table = victron_energy_gx_grid_table;
+            table = &victron_energy_gx_grid_table;
             break;
 
         case VictronEnergyGXVirtualMeter::Battery:
-            table = victron_energy_gx_battery_table;
+            table = &victron_energy_gx_battery_table;
             break;
 
         case VictronEnergyGXVirtualMeter::Load:
-            table = victron_energy_gx_load_table;
+            table = &victron_energy_gx_load_table;
             break;
 
         case VictronEnergyGXVirtualMeter::PV:
-            table = victron_energy_gx_pv_table;
+            table = &victron_energy_gx_pv_table;
             break;
 
         default:
@@ -277,23 +277,23 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case DeyeHybridInverterVirtualMeter::Inverter:
-            table = deye_hybrid_inverter_table;
+            table = &deye_hybrid_inverter_table;
             break;
 
         case DeyeHybridInverterVirtualMeter::Grid:
-            table = deye_hybrid_inverter_grid_table;
+            table = &deye_hybrid_inverter_grid_table;
             break;
 
         case DeyeHybridInverterVirtualMeter::Battery:
-            table = deye_hybrid_inverter_battery_device_type_table;
+            table = &deye_hybrid_inverter_battery_device_type_table;
             break;
 
         case DeyeHybridInverterVirtualMeter::Load:
-            table = deye_hybrid_inverter_load_table;
+            table = &deye_hybrid_inverter_load_table;
             break;
 
         case DeyeHybridInverterVirtualMeter::PV:
-            table = deye_hybrid_inverter_pv_device_type_table;
+            table = &deye_hybrid_inverter_pv_device_type_table;
             break;
 
         default:
@@ -313,19 +313,19 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case AlphaESSHybridInverterVirtualMeter::Inverter:
-            table = alpha_ess_hybrid_inverter_table;
+            table = &alpha_ess_hybrid_inverter_table;
             break;
 
         case AlphaESSHybridInverterVirtualMeter::Grid:
-            table = alpha_ess_hybrid_inverter_grid_table;
+            table = &alpha_ess_hybrid_inverter_grid_table;
             break;
 
         case AlphaESSHybridInverterVirtualMeter::Battery:
-            table = alpha_ess_hybrid_inverter_battery_table;
+            table = &alpha_ess_hybrid_inverter_battery_table;
             break;
 
         case AlphaESSHybridInverterVirtualMeter::PV:
-            table = alpha_ess_hybrid_inverter_pv_table;
+            table = &alpha_ess_hybrid_inverter_pv_table;
             break;
 
         default:
@@ -352,15 +352,15 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
                 break;
 
             case ShellyEMMonophaseMapping::L1:
-                table = shelly_em_monophase_channel_1_as_l1_table;
+                table = &shelly_em_monophase_channel_1_as_l1_table;
                 break;
 
             case ShellyEMMonophaseMapping::L2:
-                table = shelly_em_monophase_channel_1_as_l2_table;
+                table = &shelly_em_monophase_channel_1_as_l2_table;
                 break;
 
             case ShellyEMMonophaseMapping::L3:
-                table = shelly_em_monophase_channel_1_as_l3_table;
+                table = &shelly_em_monophase_channel_1_as_l3_table;
                 break;
 
             default:
@@ -377,15 +377,15 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
                 break;
 
             case ShellyEMMonophaseMapping::L1:
-                table = shelly_em_monophase_channel_2_as_l1_table;
+                table = &shelly_em_monophase_channel_2_as_l1_table;
                 break;
 
             case ShellyEMMonophaseMapping::L2:
-                table = shelly_em_monophase_channel_2_as_l2_table;
+                table = &shelly_em_monophase_channel_2_as_l2_table;
                 break;
 
             case ShellyEMMonophaseMapping::L3:
-                table = shelly_em_monophase_channel_2_as_l3_table;
+                table = &shelly_em_monophase_channel_2_as_l3_table;
                 break;
 
             default:
@@ -414,7 +414,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
         switch (shelly_pro_3em.device_profile) {
         case ShellyPro3EMDeviceProfile::Triphase:
-            table = shelly_em_triphase_table;
+            table = &shelly_em_triphase_table;
             break;
 
         case ShellyPro3EMDeviceProfile::Monophase:
@@ -430,15 +430,15 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
                     break;
 
                 case ShellyEMMonophaseMapping::L1:
-                    table = shelly_em_monophase_channel_1_as_l1_table;
+                    table = &shelly_em_monophase_channel_1_as_l1_table;
                     break;
 
                 case ShellyEMMonophaseMapping::L2:
-                    table = shelly_em_monophase_channel_1_as_l2_table;
+                    table = &shelly_em_monophase_channel_1_as_l2_table;
                     break;
 
                 case ShellyEMMonophaseMapping::L3:
-                    table = shelly_em_monophase_channel_1_as_l3_table;
+                    table = &shelly_em_monophase_channel_1_as_l3_table;
                     break;
 
                 default:
@@ -455,15 +455,15 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
                     break;
 
                 case ShellyEMMonophaseMapping::L1:
-                    table = shelly_em_monophase_channel_2_as_l1_table;
+                    table = &shelly_em_monophase_channel_2_as_l1_table;
                     break;
 
                 case ShellyEMMonophaseMapping::L2:
-                    table = shelly_em_monophase_channel_2_as_l2_table;
+                    table = &shelly_em_monophase_channel_2_as_l2_table;
                     break;
 
                 case ShellyEMMonophaseMapping::L3:
-                    table = shelly_em_monophase_channel_2_as_l3_table;
+                    table = &shelly_em_monophase_channel_2_as_l3_table;
                     break;
 
                 default:
@@ -480,15 +480,15 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
                     break;
 
                 case ShellyEMMonophaseMapping::L1:
-                    table = shelly_em_monophase_channel_3_as_l1_table;
+                    table = &shelly_em_monophase_channel_3_as_l1_table;
                     break;
 
                 case ShellyEMMonophaseMapping::L2:
-                    table = shelly_em_monophase_channel_3_as_l2_table;
+                    table = &shelly_em_monophase_channel_3_as_l2_table;
                     break;
 
                 case ShellyEMMonophaseMapping::L3:
-                    table = shelly_em_monophase_channel_3_as_l3_table;
+                    table = &shelly_em_monophase_channel_3_as_l3_table;
                     break;
 
                 default:
@@ -524,31 +524,31 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case GoodweHybridInverterVirtualMeter::Inverter:
-            table = goodwe_hybrid_inverter_table;
+            table = &goodwe_hybrid_inverter_table;
             break;
 
         case GoodweHybridInverterVirtualMeter::Grid:
-            table = goodwe_hybrid_inverter_grid_table;
+            table = &goodwe_hybrid_inverter_grid_table;
             break;
 
         case GoodweHybridInverterVirtualMeter::Battery:
-            table = goodwe_hybrid_inverter_battery_modes_table;
+            table = &goodwe_hybrid_inverter_battery_modes_table;
             break;
 
         case GoodweHybridInverterVirtualMeter::Load:
-            table = goodwe_hybrid_inverter_load_table;
+            table = &goodwe_hybrid_inverter_load_table;
             break;
 
         case GoodweHybridInverterVirtualMeter::BackupLoad:
-            table = goodwe_hybrid_inverter_backup_load_table;
+            table = &goodwe_hybrid_inverter_backup_load_table;
             break;
 
         case GoodweHybridInverterVirtualMeter::Meter:
-            table = goodwe_hybrid_inverter_meter_table;
+            table = &goodwe_hybrid_inverter_meter_table;
             break;
 
         case GoodweHybridInverterVirtualMeter::PV:
-            table = goodwe_hybrid_inverter_pv_table;
+            table = &goodwe_hybrid_inverter_pv_table;
             break;
 
         default:
@@ -568,19 +568,19 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case SolaxHybridInverterVirtualMeter::Inverter:
-            table = solax_hybrid_inverter_table;
+            table = &solax_hybrid_inverter_table;
             break;
 
         case SolaxHybridInverterVirtualMeter::Grid:
-            table = solax_hybrid_inverter_grid_table;
+            table = &solax_hybrid_inverter_grid_table;
             break;
 
         case SolaxHybridInverterVirtualMeter::Battery:
-            table = solax_hybrid_inverter_battery_table;
+            table = &solax_hybrid_inverter_battery_table;
             break;
 
         case SolaxHybridInverterVirtualMeter::PV:
-            table = solax_hybrid_inverter_pv_table;
+            table = &solax_hybrid_inverter_pv_table;
             break;
 
         default:
@@ -609,7 +609,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case FroniusGEN24PlusVirtualMeter::Battery:
-            table = fronius_gen24_plus_battery_type_table;
+            table = &fronius_gen24_plus_battery_type_table;
             break;
 
         default:
@@ -629,19 +629,19 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case HaileiHybridInverterVirtualMeter::Inverter:
-            table = hailei_hybrid_inverter_table;
+            table = &hailei_hybrid_inverter_table;
             break;
 
         case HaileiHybridInverterVirtualMeter::Grid:
-            table = hailei_hybrid_inverter_grid_table;
+            table = &hailei_hybrid_inverter_grid_table;
             break;
 
         case HaileiHybridInverterVirtualMeter::Battery:
-            table = hailei_hybrid_inverter_battery_table;
+            table = &hailei_hybrid_inverter_battery_table;
             break;
 
         case HaileiHybridInverterVirtualMeter::PV:
-            table = hailei_hybrid_inverter_pv_table;
+            table = &hailei_hybrid_inverter_pv_table;
             break;
 
         default:
@@ -661,23 +661,23 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case FoxESSH3HybridInverterVirtualMeter::Inverter:
-            table = fox_ess_h3_hybrid_inverter_table;
+            table = &fox_ess_h3_hybrid_inverter_table;
             break;
 
         case FoxESSH3HybridInverterVirtualMeter::Grid:
-            table = fox_ess_h3_hybrid_inverter_grid_table;
+            table = &fox_ess_h3_hybrid_inverter_grid_table;
             break;
 
         case FoxESSH3HybridInverterVirtualMeter::Battery:
-            table = fox_ess_h3_hybrid_inverter_battery_table;
+            table = &fox_ess_h3_hybrid_inverter_battery_table;
             break;
 
         case FoxESSH3HybridInverterVirtualMeter::Load:
-            table = fox_ess_h3_hybrid_inverter_load_table;
+            table = &fox_ess_h3_hybrid_inverter_load_table;
             break;
 
         case FoxESSH3HybridInverterVirtualMeter::PV:
-            table = fox_ess_h3_hybrid_inverter_pv_table;
+            table = &fox_ess_h3_hybrid_inverter_pv_table;
             break;
 
         default:
@@ -689,43 +689,43 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
     case MeterModbusTCPTableID::SiemensPAC2200:
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-        table = siemens_pac2200_table;
+        table = &siemens_pac2200_table;
         break;
 
     case MeterModbusTCPTableID::SiemensPAC3120:
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-        table = siemens_pac3120_and_pac3220_table;
+        table = &siemens_pac3120_and_pac3220_table;
         break;
 
     case MeterModbusTCPTableID::SiemensPAC3200:
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-        table = siemens_pac3200_table;
+        table = &siemens_pac3200_table;
         break;
 
     case MeterModbusTCPTableID::SiemensPAC3220:
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-        table = siemens_pac3120_and_pac3220_table;
+        table = &siemens_pac3120_and_pac3220_table;
         break;
 
     case MeterModbusTCPTableID::SiemensPAC4200:
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-        table = siemens_pac4200_table;
+        table = &siemens_pac4200_table;
         break;
 
     case MeterModbusTCPTableID::SiemensPAC4220:
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-        table = siemens_pac4220_table;
+        table = &siemens_pac4220_table;
         break;
 
     case MeterModbusTCPTableID::CarloGavazziEM24DIN:
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
         max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 11));
-        table = carlo_gavazzi_em24_din_table;
+        table = &carlo_gavazzi_em24_din_table;
         break;
 
     case MeterModbusTCPTableID::CarloGavazziEM24E1:
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-        table = carlo_gavazzi_em24_e1_table;
+        table = &carlo_gavazzi_em24_e1_table;
         break;
 
     case MeterModbusTCPTableID::CarloGavazziEM100:
@@ -739,15 +739,15 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case CarloGavazziPhase::L1:
-            table = carlo_gavazzi_em100_and_et100_at_l1_table;
+            table = &carlo_gavazzi_em100_and_et100_at_l1_table;
             break;
 
         case CarloGavazziPhase::L2:
-            table = carlo_gavazzi_em100_and_et100_at_l2_table;
+            table = &carlo_gavazzi_em100_and_et100_at_l2_table;
             break;
 
         case CarloGavazziPhase::L3:
-            table = carlo_gavazzi_em100_and_et100_at_l3_table;
+            table = &carlo_gavazzi_em100_and_et100_at_l3_table;
             break;
 
         default:
@@ -768,15 +768,15 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case CarloGavazziPhase::L1:
-            table = carlo_gavazzi_em100_and_et100_at_l1_table;
+            table = &carlo_gavazzi_em100_and_et100_at_l1_table;
             break;
 
         case CarloGavazziPhase::L2:
-            table = carlo_gavazzi_em100_and_et100_at_l2_table;
+            table = &carlo_gavazzi_em100_and_et100_at_l2_table;
             break;
 
         case CarloGavazziPhase::L3:
-            table = carlo_gavazzi_em100_and_et100_at_l3_table;
+            table = &carlo_gavazzi_em100_and_et100_at_l3_table;
             break;
 
         default:
@@ -789,7 +789,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
     case MeterModbusTCPTableID::CarloGavazziEM210:
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
         max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 61));
-        table = carlo_gavazzi_em210_table;
+        table = &carlo_gavazzi_em210_table;
         break;
 
     case MeterModbusTCPTableID::CarloGavazziEM270:
@@ -803,15 +803,15 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case CarloGavazziEM270VirtualMeter::Meter:
-            table = carlo_gavazzi_em270_and_em280_meter_table;
+            table = &carlo_gavazzi_em270_and_em280_meter_table;
             break;
 
         case CarloGavazziEM270VirtualMeter::CurrentTransformer1:
-            table = carlo_gavazzi_em270_and_em280_current_transformer_1_table;
+            table = &carlo_gavazzi_em270_and_em280_current_transformer_1_table;
             break;
 
         case CarloGavazziEM270VirtualMeter::CurrentTransformer2:
-            table = carlo_gavazzi_em270_and_em280_current_transformer_2_table;
+            table = &carlo_gavazzi_em270_and_em280_current_transformer_2_table;
             break;
 
         default:
@@ -832,15 +832,15 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case CarloGavazziEM280VirtualMeter::Meter:
-            table = carlo_gavazzi_em270_and_em280_meter_table;
+            table = &carlo_gavazzi_em270_and_em280_meter_table;
             break;
 
         case CarloGavazziEM280VirtualMeter::CurrentTransformer1:
-            table = carlo_gavazzi_em270_and_em280_current_transformer_1_table;
+            table = &carlo_gavazzi_em270_and_em280_current_transformer_1_table;
             break;
 
         case CarloGavazziEM280VirtualMeter::CurrentTransformer2:
-            table = carlo_gavazzi_em270_and_em280_current_transformer_2_table;
+            table = &carlo_gavazzi_em270_and_em280_current_transformer_2_table;
             break;
 
         default:
@@ -853,13 +853,13 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
     case MeterModbusTCPTableID::CarloGavazziEM300:
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
         max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 50));
-        table = carlo_gavazzi_em300_table;
+        table = &carlo_gavazzi_em300_table;
         break;
 
     case MeterModbusTCPTableID::CarloGavazziET300:
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
         max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 50));
-        table = carlo_gavazzi_et300_table;
+        table = &carlo_gavazzi_et300_table;
         break;
 
     case MeterModbusTCPTableID::CarloGavazziEM510:
@@ -873,15 +873,15 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case CarloGavazziPhase::L1:
-            table = carlo_gavazzi_em510_at_l1_table;
+            table = &carlo_gavazzi_em510_at_l1_table;
             break;
 
         case CarloGavazziPhase::L2:
-            table = carlo_gavazzi_em510_at_l2_table;
+            table = &carlo_gavazzi_em510_at_l2_table;
             break;
 
         case CarloGavazziPhase::L3:
-            table = carlo_gavazzi_em510_at_l3_table;
+            table = &carlo_gavazzi_em510_at_l3_table;
             break;
 
         default:
@@ -893,12 +893,12 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
     case MeterModbusTCPTableID::CarloGavazziEM530:
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-        table = carlo_gavazzi_em530_and_em540_table;
+        table = &carlo_gavazzi_em530_and_em540_table;
         break;
 
     case MeterModbusTCPTableID::CarloGavazziEM540:
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-        table = carlo_gavazzi_em530_and_em540_table;
+        table = &carlo_gavazzi_em530_and_em540_table;
         break;
 
     case MeterModbusTCPTableID::Solaredge:
@@ -919,7 +919,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case SolaredgeVirtualMeter::Battery:
-            table = solaredge_battery_table;
+            table = &solaredge_battery_table;
             break;
 
         default:
@@ -932,12 +932,12 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
     case MeterModbusTCPTableID::EastronSDM630TCP:
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
         max_register_count = static_cast<size_t>(std::min(METER_MODBUS_TCP_REGISTER_BUFFER_SIZE, 50));
-        table = eastron_sdm630_tcp_table;
+        table = &eastron_sdm630_tcp_table;
         break;
 
     case MeterModbusTCPTableID::TinkerforgeWARPCharger:
         device_address = 1;
-        table = tinkerforge_warp_charger_table;
+        table = &tinkerforge_warp_charger_table;
         break;
 
     case MeterModbusTCPTableID::SAXPowerHomeBasicMode:
@@ -954,11 +954,11 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case SAXPowerVirtualMeter::Grid:
-            table = sax_power_home_basic_mode_grid_table;
+            table = &sax_power_home_basic_mode_grid_table;
             break;
 
         case SAXPowerVirtualMeter::Battery:
-            table = sax_power_home_basic_mode_battery_table;
+            table = &sax_power_home_basic_mode_battery_table;
             break;
 
         default:
@@ -982,11 +982,11 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case SAXPowerVirtualMeter::Grid:
-            table = sax_power_home_extended_mode_grid_table;
+            table = &sax_power_home_extended_mode_grid_table;
             break;
 
         case SAXPowerVirtualMeter::Battery:
-            table = sax_power_home_extended_mode_battery_table;
+            table = &sax_power_home_extended_mode_battery_table;
             break;
 
         default:
@@ -1010,23 +1010,23 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case E3DCVirtualMeter::Grid:
-            table = e3dc_grid_table;
+            table = &e3dc_grid_table;
             break;
 
         case E3DCVirtualMeter::Battery:
-            table = e3dc_battery_table;
+            table = &e3dc_battery_table;
             break;
 
         case E3DCVirtualMeter::Load:
-            table = e3dc_load_table;
+            table = &e3dc_load_table;
             break;
 
         case E3DCVirtualMeter::PV:
-            table = e3dc_pv_table;
+            table = &e3dc_pv_table;
             break;
 
         case E3DCVirtualMeter::AdditionalGeneration:
-            table = e3dc_additional_generation_table;
+            table = &e3dc_additional_generation_table;
             break;
 
         default:
@@ -1048,19 +1048,19 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case HuaweiSUN2000VirtualMeter::Inverter:
-            table = huawei_sun2000_inverter_table;
+            table = &huawei_sun2000_inverter_table;
             break;
 
         case HuaweiSUN2000VirtualMeter::Grid:
-            table = huawei_sun2000_grid_table;
+            table = &huawei_sun2000_grid_table;
             break;
 
         case HuaweiSUN2000VirtualMeter::Battery:
-            table = huawei_sun2000_battery_product_model_table;
+            table = &huawei_sun2000_battery_product_model_table;
             break;
 
         case HuaweiSUN2000VirtualMeter::PV:
-            table = huawei_sun2000_pv_string_count_table;
+            table = &huawei_sun2000_pv_string_count_table;
             break;
 
         default:
@@ -1085,15 +1085,15 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case HuaweiSUN2000SmartDongleVirtualMeter::Grid:
-            table = huawei_sun2000_smart_dongle_grid_table;
+            table = &huawei_sun2000_smart_dongle_grid_table;
             break;
 
         case HuaweiSUN2000SmartDongleVirtualMeter::Battery:
-            table = huawei_sun2000_battery_product_model_table;
+            table = &huawei_sun2000_battery_product_model_table;
             break;
 
         case HuaweiSUN2000SmartDongleVirtualMeter::PV:
-            table = huawei_sun2000_smart_dongle_pv_table;
+            table = &huawei_sun2000_smart_dongle_pv_table;
             break;
 
         default:
@@ -1113,27 +1113,27 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case HuaweiEMMAVirtualMeter::Inverter:
-            table = huawei_emma_inverter_table;
+            table = &huawei_emma_inverter_table;
             break;
 
         case HuaweiEMMAVirtualMeter::GridInternalSensor:
-            table = huawei_emma_grid_internal_sensor_table;
+            table = &huawei_emma_grid_internal_sensor_table;
             break;
 
         case HuaweiEMMAVirtualMeter::Battery:
-            table = huawei_emma_battery_table;
+            table = &huawei_emma_battery_table;
             break;
 
         case HuaweiEMMAVirtualMeter::Load:
-            table = huawei_emma_load_table;
+            table = &huawei_emma_load_table;
             break;
 
         case HuaweiEMMAVirtualMeter::PV:
-            table = huawei_emma_pv_table;
+            table = &huawei_emma_pv_table;
             break;
 
         case HuaweiEMMAVirtualMeter::GridExternalSensor:
-            table = huawei_emma_grid_external_sensor_table;
+            table = &huawei_emma_grid_external_sensor_table;
             break;
 
         default:
@@ -1145,7 +1145,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
 
     case MeterModbusTCPTableID::CarloGavazziEM580:
         device_address = static_cast<uint8_t>(ephemeral_config->get("table")->get()->get("device_address")->asUint());
-        table = carlo_gavazzi_em580_table;
+        table = &carlo_gavazzi_em580_table;
         break;
 
     case MeterModbusTCPTableID::SolaxStringInverter:
@@ -1158,15 +1158,15 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case SolaxStringInverterVirtualMeter::Inverter:
-            table = solax_string_inverter_table;
+            table = &solax_string_inverter_table;
             break;
 
         case SolaxStringInverterVirtualMeter::Grid:
-            table = solax_string_inverter_grid_table;
+            table = &solax_string_inverter_grid_table;
             break;
 
         case SolaxStringInverterVirtualMeter::PV:
-            table = solax_string_inverter_pv_table;
+            table = &solax_string_inverter_pv_table;
             break;
 
         default:
@@ -1186,23 +1186,23 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             return;
 
         case FoxESSH3SmartHybridInverterVirtualMeter::Inverter:
-            table = fox_ess_h3_smart_hybrid_inverter_table;
+            table = &fox_ess_h3_smart_hybrid_inverter_table;
             break;
 
         case FoxESSH3SmartHybridInverterVirtualMeter::Grid:
-            table = fox_ess_h3_smart_hybrid_inverter_grid_table;
+            table = &fox_ess_h3_smart_hybrid_inverter_grid_table;
             break;
 
         case FoxESSH3SmartHybridInverterVirtualMeter::Battery:
-            table = fox_ess_h3_smart_hybrid_inverter_battery_table;
+            table = &fox_ess_h3_smart_hybrid_inverter_battery_table;
             break;
 
         case FoxESSH3SmartHybridInverterVirtualMeter::Load:
-            table = fox_ess_h3_smart_hybrid_inverter_load_table;
+            table = &fox_ess_h3_smart_hybrid_inverter_load_table;
             break;
 
         case FoxESSH3SmartHybridInverterVirtualMeter::PV:
-            table = fox_ess_h3_smart_hybrid_inverter_pv_table;
+            table = &fox_ess_h3_smart_hybrid_inverter_pv_table;
             break;
 
         default:
@@ -1222,23 +1222,23 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             return;
 
         case FoxESSH3ProHybridInverterVirtualMeter::Inverter:
-            table = fox_ess_h3_pro_hybrid_inverter_table;
+            table = &fox_ess_h3_pro_hybrid_inverter_table;
             break;
 
         case FoxESSH3ProHybridInverterVirtualMeter::Grid:
-            table = fox_ess_h3_pro_hybrid_inverter_grid_table;
+            table = &fox_ess_h3_pro_hybrid_inverter_grid_table;
             break;
 
         case FoxESSH3ProHybridInverterVirtualMeter::Battery:
-            table = fox_ess_h3_pro_hybrid_inverter_battery_table;
+            table = &fox_ess_h3_pro_hybrid_inverter_battery_table;
             break;
 
         case FoxESSH3ProHybridInverterVirtualMeter::Load:
-            table = fox_ess_h3_pro_hybrid_inverter_load_table;
+            table = &fox_ess_h3_pro_hybrid_inverter_load_table;
             break;
 
         case FoxESSH3ProHybridInverterVirtualMeter::PV:
-            table = fox_ess_h3_pro_hybrid_inverter_pv_table;
+            table = &fox_ess_h3_pro_hybrid_inverter_pv_table;
             break;
 
         default:
@@ -1266,7 +1266,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case SMAHybridInverterVirtualMeter::Battery:
-            table = sma_hybrid_inverter_battery_table;
+            table = &sma_hybrid_inverter_battery_table;
             break;
 
         case SMAHybridInverterVirtualMeter::LoadUnused:
@@ -1298,11 +1298,11 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case VARTAVirtualMeter::Grid:
-            table = varta_element_grid_table;
+            table = &varta_element_grid_table;
             break;
 
         case VARTAVirtualMeter::Battery:
-            table = varta_element_battery_table;
+            table = &varta_element_battery_table;
             break;
 
         default:
@@ -1326,11 +1326,11 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             break;
 
         case VARTAVirtualMeter::Grid:
-            table = varta_flex_grid_table;
+            table = &varta_flex_grid_table;
             break;
 
         case VARTAVirtualMeter::Battery:
-            table = varta_flex_battery_table;
+            table = &varta_flex_battery_table;
             break;
 
         default:
@@ -1350,23 +1350,23 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
             return;
 
         case ChisageESSHybridInverterVirtualMeter::Inverter:
-            table = chisage_ess_hybrid_inverter_table;
+            table = &chisage_ess_hybrid_inverter_table;
             break;
 
         case ChisageESSHybridInverterVirtualMeter::Grid:
-            table = chisage_ess_hybrid_inverter_grid_table;
+            table = &chisage_ess_hybrid_inverter_grid_table;
             break;
 
         case ChisageESSHybridInverterVirtualMeter::Battery:
-            table = chisage_ess_hybrid_inverter_battery_table;
+            table = &chisage_ess_hybrid_inverter_battery_table;
             break;
 
         case ChisageESSHybridInverterVirtualMeter::Load:
-            table = chisage_ess_hybrid_inverter_load_table;
+            table = &chisage_ess_hybrid_inverter_load_table;
             break;
 
         case ChisageESSHybridInverterVirtualMeter::PV:
-            table = chisage_ess_hybrid_inverter_pv_table;
+            table = &chisage_ess_hybrid_inverter_pv_table;
             break;
 
         default:
@@ -1978,10 +1978,10 @@ void MeterModbusTCP::parse_next()
             switch (c16.u) {
             case 0:
                 if (table_id == MeterModbusTCPTableID::SungrowHybridInverter) {
-                    table = sungrow_hybrid_inverter_1p2l_table;
+                    table = &sungrow_hybrid_inverter_1p2l_table;
                 }
                 else { // MeterModbusTCPTableID::SungrowStringInverter
-                    table = sungrow_string_inverter_1p2l_table;
+                    table = &sungrow_string_inverter_1p2l_table;
                 }
 
                 logger.printfln_meter("Sungrow 1P2L inverter detected");
@@ -1989,10 +1989,10 @@ void MeterModbusTCP::parse_next()
 
             case 1:
                 if (table_id == MeterModbusTCPTableID::SungrowHybridInverter) {
-                    table = sungrow_hybrid_inverter_3p4l_table;
+                    table = &sungrow_hybrid_inverter_3p4l_table;
                 }
                 else { // MeterModbusTCPTableID::SungrowStringInverter
-                    table = sungrow_string_inverter_3p4l_table;
+                    table = &sungrow_string_inverter_3p4l_table;
                 }
 
                 logger.printfln_meter("Sungrow 3P4L inverter detected");
@@ -2000,10 +2000,10 @@ void MeterModbusTCP::parse_next()
 
             case 2:
                 if (table_id == MeterModbusTCPTableID::SungrowHybridInverter) {
-                    table = sungrow_hybrid_inverter_3p3l_table;
+                    table = &sungrow_hybrid_inverter_3p3l_table;
                 }
                 else { // MeterModbusTCPTableID::SungrowStringInverter
-                    table = sungrow_string_inverter_3p3l_table;
+                    table = &sungrow_string_inverter_3p3l_table;
                 }
 
                 logger.printfln_meter("Sungrow 3P3L inverter detected");
@@ -2044,10 +2044,10 @@ void MeterModbusTCP::parse_next()
 
             case 0x0005:
                 if (is_deye_hybrid_inverter_battery_meter()) {
-                    table = deye_hybrid_inverter_low_voltage_battery_table;
+                    table = &deye_hybrid_inverter_low_voltage_battery_table;
                 }
                 else {
-                    table = deye_hybrid_inverter_low_voltage_pv_table;
+                    table = &deye_hybrid_inverter_low_voltage_pv_table;
                 }
 
                 logger.printfln_meter("Deye hybrid inverter with low-voltage battery detected");
@@ -2056,10 +2056,10 @@ void MeterModbusTCP::parse_next()
             case 0x0006:
             case 0x0106:
                 if (is_deye_hybrid_inverter_battery_meter()) {
-                    table = deye_hybrid_inverter_high_voltage_battery_table;
+                    table = &deye_hybrid_inverter_high_voltage_battery_table;
                 }
                 else {
-                    table = deye_hybrid_inverter_high_voltage_pv_table;
+                    table = &deye_hybrid_inverter_high_voltage_pv_table;
                 }
 
                 logger.printfln_meter("Deye hybrid inverter with high-voltage battery detected: 0x%04x", c16.u);
@@ -2099,15 +2099,15 @@ void MeterModbusTCP::parse_next()
                 bool success = true;
 
                 if (goodwe_hybrid_inverter.battery_1_mode != 0 && goodwe_hybrid_inverter.battery_2_mode != 0) {
-                    table = goodwe_hybrid_inverter_battery_1_and_2_table;
+                    table = &goodwe_hybrid_inverter_battery_1_and_2_table;
                     logger.printfln_meter("Goodwe hybrid inverter with battery 1 and 2 detected");
                 }
                 else if (goodwe_hybrid_inverter.battery_1_mode != 0 && goodwe_hybrid_inverter.battery_2_mode == 0) {
-                    table = goodwe_hybrid_inverter_battery_1_table;
+                    table = &goodwe_hybrid_inverter_battery_1_table;
                     logger.printfln_meter("Goodwe hybrid inverter with battery 1 detected");
                 }
                 else if (goodwe_hybrid_inverter.battery_1_mode == 0 && goodwe_hybrid_inverter.battery_2_mode != 0) {
-                    table = goodwe_hybrid_inverter_battery_2_table;
+                    table = &goodwe_hybrid_inverter_battery_2_table;
                     logger.printfln_meter("Goodwe hybrid inverter with battery 2 detected");
                 }
                 else {
@@ -2140,13 +2140,13 @@ void MeterModbusTCP::parse_next()
 
             switch (c16.u) {
             case 1: // module/1/ID: Input ID
-                table = fronius_gen24_plus_battery_integer_table;
+                table = &fronius_gen24_plus_battery_integer_table;
                 fronius_gen24_plus.start_address_shift = 0;
                 logger.printfln_meter("Fronius GEN24 Plus inverter with integer MPPT model detected");
                 break;
 
             case 160: // ID: SunSpec Model ID
-                table = fronius_gen24_plus_battery_float_table;
+                table = &fronius_gen24_plus_battery_float_table;
                 fronius_gen24_plus.start_address_shift = 10;
                 logger.printfln_meter("Fronius GEN24 Plus inverter with float MPPT model detected");
                 break;
@@ -2184,12 +2184,12 @@ void MeterModbusTCP::parse_next()
                 return;
 
             case 1: // LG RESU
-                table = huawei_sun2000_battery_lg_resu_table;
+                table = &huawei_sun2000_battery_lg_resu_table;
                 logger.printfln_meter("Huawei SUN2000 inverter with LG RESU battery detected");
                 break;
 
             case 2: // Huawei LUNA2000
-                table = huawei_sun2000_battery_huawei_luna2000_table;
+                table = &huawei_sun2000_battery_huawei_luna2000_table;
                 logger.printfln_meter("Huawei SUN2000 inverter with Huawei LUNA2000 battery detected");
                 break;
 
@@ -2219,44 +2219,44 @@ void MeterModbusTCP::parse_next()
         if (huawei_sun2000.number_of_pv_strings < 0) {
             switch (c16.u) {
             case 0:
-                table = huawei_sun2000_pv_no_strings_table;
+                table = &huawei_sun2000_pv_no_strings_table;
                 break;
 
             case 1:
-                table = huawei_sun2000_pv_1_string_table;
+                table = &huawei_sun2000_pv_1_string_table;
                 break;
 
             case 2:
-                table = huawei_sun2000_pv_2_strings_table;
+                table = &huawei_sun2000_pv_2_strings_table;
                 break;
 
             case 3:
-                table = huawei_sun2000_pv_3_strings_table;
+                table = &huawei_sun2000_pv_3_strings_table;
                 break;
 
             case 4:
-                table = huawei_sun2000_pv_4_strings_table;
+                table = &huawei_sun2000_pv_4_strings_table;
                 break;
 
             case 5:
-                table = huawei_sun2000_pv_5_strings_table;
+                table = &huawei_sun2000_pv_5_strings_table;
                 break;
 
             case 6:
-                table = huawei_sun2000_pv_6_strings_table;
+                table = &huawei_sun2000_pv_6_strings_table;
                 break;
 
             case 7:
-                table = huawei_sun2000_pv_7_strings_table;
+                table = &huawei_sun2000_pv_7_strings_table;
                 break;
 
             case 8:
-                table = huawei_sun2000_pv_8_strings_table;
+                table = &huawei_sun2000_pv_8_strings_table;
                 break;
 
             case 9:
             default:
-                table = huawei_sun2000_pv_9_strings_table;
+                table = &huawei_sun2000_pv_9_strings_table;
                 break;
             }
 
@@ -2287,12 +2287,12 @@ void MeterModbusTCP::parse_next()
                 return;
 
             case 1: // LG RESU
-                table = huawei_sun2000_smart_dongle_battery_lg_resu_table;
+                table = &huawei_sun2000_smart_dongle_battery_lg_resu_table;
                 logger.printfln_meter("Huawei SUN2000 inverter with LG RESU battery detected");
                 break;
 
             case 2: // Huawei LUNA2000
-                table = huawei_sun2000_smart_dongle_battery_huawei_luna2000_table;
+                table = &huawei_sun2000_smart_dongle_battery_huawei_luna2000_table;
                 logger.printfln_meter("Huawei SUN2000 inverter with Huawei LUNA2000 battery detected");
                 break;
 
