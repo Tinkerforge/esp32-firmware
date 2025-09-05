@@ -385,20 +385,15 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> NodeManagemen
     return features;
 }
 
-void NodeManagementEntity::inform_subscribers(int entity, int feature, SpineDataTypeHandler *data)
+void NodeManagementEntity::inform_subscribers(const std::vector<AddressEntityType> &entity, const AddressFeatureType feature, SpineDataTypeHandler *data)
 {
-    std::optional<std::vector<int>> entities{};
-    entities->push_back(entity);
     BasicJsonDocument<ArduinoJsonPsramAllocator> response(SPINE_CONNECTION_MAX_JSON_SIZE);
     JsonVariant dst = response.createNestedObject(data->function_to_string(data->last_cmd));
     data->last_cmd_to_json(dst);
     for (SubscriptionManagementEntryDataType &subscription : subscription_data.subscriptionEntry.get()) {
-        if (subscription.serverAddress->entity == entities && subscription.serverAddress->feature == feature) {
-            for (auto &ship_connection : eebus.ship.ship_connections) {
-                if (ship_connection && ship_connection->spine->check_known_address(subscription.clientAddress.get())) {
-                    ship_connection->spine->send_datagram(response.as<JsonObject>(), CmdClassifierType::notify, subscription.serverAddress.get(), subscription.clientAddress.get(), false);
-                }
-            }
+        if (subscription.serverAddress->entity == entity && subscription.serverAddress->feature == feature) {
+            eebus.usecases->send_spine_message(subscription.clientAddress.get(), subscription.serverAddress.get(), response.as<JsonObject>(), CmdClassifierType::notify, false);
+
         }
     }
 };
@@ -689,6 +684,7 @@ std::vector<NodeManagementDetailedDiscoveryFeatureInformationType> ControllableS
 
 EEBusUseCases::EEBusUseCases()
 {
+    // Entity Addresses have to be unique
     node_management = NodeManagementEntity();
     node_management.set_usecaseManager(this);
     node_management.set_entity_address({0});
@@ -745,6 +741,25 @@ void EEBusUseCases::handle_message(HeaderType &header, SpineDataTypeHandler *dat
 void EEBusUseCases::inform_subscribers(int entity, int feature, SpineDataTypeHandler *data)
 {
     node_management.inform_subscribers(entity, feature, data);
+}
+
+bool EEBusUseCases::send_spine_message(const FeatureAddressType &destination, FeatureAddressType &sender, const JsonVariantConst payload, CmdClassifierType cmd_classifier, const bool want_ack)
+{
+    if (sender.feature.isNull() || sender.entity.isNull()) {
+        eebus.trace_fmtln("Usecases: Cannot send spine message, sender entity or feature is null");
+        return false;
+    }
+    if (sender.device.isNull()) {
+        sender.device = EEBUS_USECASE_HELPERS::get_spine_device_name();
+    }
+    bool message_sent = false;
+    for (auto &ship_connection : eebus.ship.ship_connections) {
+        if (ship_connection && ship_connection->spine->check_known_address(destination)) {
+            ship_connection->spine->send_datagram(payload, cmd_classifier, sender, destination, want_ack);
+            message_sent = true;
+        }
+    }
+    return message_sent;
 }
 
 namespace EEBUS_USECASE_HELPERS
