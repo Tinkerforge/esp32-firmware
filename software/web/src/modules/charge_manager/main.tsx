@@ -150,11 +150,11 @@ interface ChargeManagerStatusState {
     uptime: number
 }
 
-function with_timespan(fn: (timespan: string) => string, ts: number) {
+function with_timespan(fn: (timespan: string) => string, timestamp: number) {
     const now = API.get('info/keep_alive').uptime;
-    if (ts < now)
+    if (timestamp < now)
         return ""
-    return fn(util.format_timespan_ms(ts - now));
+    return fn(util.format_timespan_ms(timestamp - now));
 }
 
 function phase_to_string(phase: number) {
@@ -178,7 +178,7 @@ function zero_phase_desc_to_text(d0: ZeroPhaseDecision): ComponentChild {
         case ZeroPhaseDecisionTag.YesRotatedForHigherPrio:
             return "Rotated for charger of higher priority";
         case ZeroPhaseDecisionTag.YesPhaseOverload:
-            return "Phase overload: " + d0[1][0] + " mA on phase " + phase_to_string(d0[1][1]);
+            return with_timespan((timespan) => "Phase overload: " + d0[1][1] + " mA on phase " + phase_to_string(d0[1][2]) + ": " + timespan, d0[1][0]);
         case ZeroPhaseDecisionTag.YesUnknown:
             return "Unknown";
     }
@@ -191,11 +191,9 @@ function one_phase_desc_to_text(d1: OnePhaseDecision): ComponentChild {
         case OnePhaseDecisionTag.YesWelcomeChargeUntil:
             return with_timespan((timespan) => "Yes: Welcome charge until " + timespan, d1[1]);
         case OnePhaseDecisionTag.NoPhaseMinimum:
-            return `No: Phase minimum (todo Cloud filter?) on phase ${d1[1][2]} too low: required ${d1[1][0]} mA, available minimum ${d1[1][1]} mA`;
-        case OnePhaseDecisionTag.NoPVImprovement:
-            return "No: Available PV excess can already be distributed without this charger";
+            return with_timespan((timespan) => `No: Minimum on phase ${phase_to_string(d1[1][3])} too low: required ${d1[1][1]} mA, seen minimum ${d1[1][2]} mA (${timespan})`, API.get('info/keep_alive').uptime - d1[1][0]);
         case OnePhaseDecisionTag.NoPhaseImprovement:
-            return "No: Available Phase current can already be distributed without this charger";
+            return with_timespan((timespan) => `No: Available current can already be distributed without this charger: allocable ${d1[1][1]} mA, seen minimum ${d1[1][2]} mA (${timespan})`, d1[1][0]);
         case OnePhaseDecisionTag.YesImprovesSpread:
             return "Yes: Improves spread";
         case OnePhaseDecisionTag.NoForced3pUntil:
@@ -218,11 +216,9 @@ function three_phase_desc_to_text(d3: ThreePhaseDecision): ComponentChild {
         case ThreePhaseDecisionTag.YesWelcomeChargeUntil:
             return with_timespan((timespan) => "Yes: Welcome charge until " + timespan, d3[1]);
         case ThreePhaseDecisionTag.NoPhaseMinimum:
-            return "No: Phase minimum (todo Cloud filter?) too low";
-        case ThreePhaseDecisionTag.NoPVImprovement:
-            return "No: Available PV excess can already be distributed without this charger";
+            return with_timespan((timespan) => `No: Minimum on phase ${phase_to_string(d3[1][3])} too low: required ${d3[1][1]} mA, seen minimum ${d3[1][2]} mA (${timespan})`, API.get('info/keep_alive').uptime - d3[1][0]);
         case ThreePhaseDecisionTag.NoPhaseImprovement:
-            return "No: Available Phase current can already be distributed without this charger";
+            return with_timespan((timespan) => `No: Available current can already be distributed without this charger: allocable ${d3[1][1]} mA, seen minimum ${d3[1][2]} mA (${timespan})`, d3[1][0]);
         case ThreePhaseDecisionTag.YesImprovesSpread:
             return "Yes: Improves spread";
         case ThreePhaseDecisionTag.NoForced1pUntil:
