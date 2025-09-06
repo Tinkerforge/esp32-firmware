@@ -229,7 +229,7 @@ void Meters::setup()
 
     // Create config prototypes, depending on available generators.
     uint8_t class_count = static_cast<uint8_t>(generators.size());
-    ConfUnionPrototype<MeterClassID> *config_prototypes = new ConfUnionPrototype<MeterClassID>[class_count];
+    ConfUnionPrototype<MeterClassID> *config_prototypes = perm_new_array<ConfUnionPrototype<MeterClassID>>(class_count, DRAM);
 
     for (uint32_t i = 0; i < class_count; i++) {
         const auto &generator_tuple = generators[i];
