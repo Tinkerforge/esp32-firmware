@@ -22,11 +22,13 @@
 
 #include "gcc_warnings.h"
 
+#include "tools/malloc.h"
+
 ConfigRoot::ConfigRoot() : validator(nullptr) {}
 
 ConfigRoot::ConfigRoot(Config cfg) : Config(cfg), validator(nullptr) {}
 
-ConfigRoot::ConfigRoot(Config cfg, Validator &&validator_) : Config(cfg), validator(new Validator(std::move(validator_))) {}
+ConfigRoot::ConfigRoot(Config cfg, Validator &&validator_) : Config(cfg), validator(perm_new<Validator>(DRAM, std::move(validator_))) {}
 
 String ConfigRoot::update_from_file(File &&file)
 {
