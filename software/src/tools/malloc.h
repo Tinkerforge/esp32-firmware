@@ -60,7 +60,9 @@ T *perm_new(RAM r, Args&&... args) {
     if (mem == nullptr)
         return nullptr;
 
-    return std::construct_at(static_cast<T *>(mem), std::forward<Args>(args)...);
+    T *ptr = static_cast<T *>(mem);
+    new (ptr) T{std::forward<Args>(args)...};
+    return ptr;
 }
 
 template<typename T, class... Args>
@@ -72,8 +74,9 @@ T *perm_new_prefer(RAM r1, RAM r2, RAM r3, Args&&... args) {
     if (mem == nullptr)
         return nullptr;
 
-
-    return std::construct_at(static_cast<T *>(mem), std::forward<Args>(args)...);
+    T *ptr = static_cast<T *>(mem);
+    new (ptr) T{std::forward<Args>(args)...};
+    return ptr;
 }
 
 // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/mem_alloc.html#bit-accessible-memory
