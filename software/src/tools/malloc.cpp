@@ -86,7 +86,7 @@ static size_t align(size_t size) {
     return std::min(align, alignof(max_align_t));
 }
 
-void *leak(size_t size, RAM r) {
+void *perm_alloc(size_t size, RAM r) {
     return perm_alloc_aligned(align(size), size, r);
 }
 
