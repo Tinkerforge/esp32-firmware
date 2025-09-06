@@ -79,6 +79,34 @@ T *perm_new_prefer(RAM r1, RAM r2, RAM r3, Args&&... args) {
     return ptr;
 }
 
+template<typename T, class... Args>
+[[gnu::malloc]]
+T *perm_new_array(size_t count, RAM r) {
+    static_assert(alignof(T) <= LinearAllocator::MAX_ALIGNMENT);
+
+    void *mem = perm_alloc_aligned(alignof(T), sizeof(T) * count, r);
+    if (mem == nullptr)
+        return nullptr;
+
+    T *ptr = static_cast<T *>(mem);
+    new (ptr) T[count];
+    return ptr;
+}
+
+template<typename T, class... Args>
+[[gnu::malloc]]
+T *perm_new_array_prefer(size_t count, RAM r1, RAM r2, RAM r3) {
+    static_assert(alignof(T) <= LinearAllocator::MAX_ALIGNMENT);
+
+    void *mem = perm_alloc_aligned_prefer(alignof(T), sizeof(T) * count, r1, r2, r3);
+    if (mem == nullptr)
+        return nullptr;
+
+    T *ptr = static_cast<T *>(mem);
+    new (ptr) T[count];
+    return ptr;
+}
+
 // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/mem_alloc.html#bit-accessible-memory
 void *malloc_32bit_addressed(size_t size);
 
