@@ -284,7 +284,7 @@ void setup()
 
     // Add all overridden loop functions to an array for round-robin execution.
     if (loop_array_size > 0) {
-        loop_array = static_cast<IModule **>(malloc(sizeof(IModule *) * loop_array_size));
+        loop_array = static_cast<IModule **>(perm_alloc(sizeof(IModule *) * loop_array_size, DRAM));
 
         size_t loop_array_used = 0;
         for (size_t i = 0; i < imodules_count; i++) {
