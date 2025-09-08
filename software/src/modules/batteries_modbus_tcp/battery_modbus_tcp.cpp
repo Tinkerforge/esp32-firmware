@@ -25,7 +25,6 @@
 
 #include "event_log_prefix.h"
 #include "module_dependencies.h"
-#include "battery_modbus_tcp_specs.h"
 
 #include "gcc_warnings.h"
 
