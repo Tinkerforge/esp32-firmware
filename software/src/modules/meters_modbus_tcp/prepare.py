@@ -135,9 +135,9 @@ for spec in specs:
         specs_cpp.append(f'static const MeterModbusTCP::ValueSpec {spec_name.under}_specs[] = {{\n{"\n".join(value_specs)}\n}};')
 
         if len(value_ids) > 0:
-            specs_cpp.append(f'static const MeterValueID {spec_name.under}_ids[] = {{\n{"\n".join(value_ids)}"\n}};')
+            specs_cpp.append(f'static const MeterValueID {spec_name.under}_ids[] = {{\n{"\n".join(value_ids)}\n}};')
 
-        specs_cpp.append(f'static const uint32_t {spec_name.under}_index[] = {{\n{"\n".join(value_index)}"\n}};')
+        specs_cpp.append(f'static const uint32_t {spec_name.under}_index[] = {{\n{"\n".join(value_index)}\n}};')
 
         specs_cpp.append(f'extern const MeterModbusTCP::TableSpec {spec_name.under}_table = {{\n'
                          f'    MeterLocation::{spec['default_location']},\n'
