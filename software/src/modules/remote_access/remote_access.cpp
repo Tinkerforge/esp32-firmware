@@ -51,6 +51,21 @@ extern uint32_t local_uid_num;
 #define WG_KEY_LENGTH 44
 #define KEY_SIZE (3 * WG_KEY_LENGTH)
 #define KEY_DIRECTORY "/remote-access-keys"
+// Maximum accepted HTTP request body size for endpoints in this module (5 KiB)
+#define MAX_HTTP_BODY_BYTES 5120
+
+// Validate HTTP request body length and provide the length to callers.
+// Returns 0 on success, or an HTTP status code (400 for empty, 413 for too large).
+static inline uint16_t validate_http_body(WebServerRequest &request, size_t &out_len) {
+    out_len = request.contentLength();
+    if (out_len == 0) {
+        return 400; // Empty request body
+    }
+    if (out_len > MAX_HTTP_BODY_BYTES) {
+        return 413; // Payload Too Large
+    }
+    return 0;
+}
 
 static inline String get_key_path(uint8_t user_id, uint8_t key_id)
 {
@@ -323,7 +338,11 @@ void RemoteAccess::register_urls()
 
     server.on("/remote_access/get_login_salt", HTTP_PUT, [this](WebServerRequest request) {
         this->management_request_allowed = false;
-        size_t content_len = request.contentLength();
+        size_t content_len = 0;
+        if (uint16_t s = validate_http_body(request, content_len)) {
+            this->request_cleanup();
+            return request.send_plain(s, s == 400 ? "Empty request body" : "Request body too large");
+        }
         std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
         if (req_body == nullptr) {
             this->request_cleanup();
@@ -347,7 +366,11 @@ void RemoteAccess::register_urls()
     });
 
     server.on("/remote_access/get_secret_salt", HTTP_PUT, [this](WebServerRequest request) {
-        size_t content_len = request.contentLength();
+        size_t content_len = 0;
+        if (uint16_t s = validate_http_body(request, content_len)) {
+            this->request_cleanup();
+            return request.send_plain(s, s == 400 ? "Empty request body" : "Request body too large");
+        }
         std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
         if (req_body == nullptr) {
             this->request_cleanup();
@@ -372,7 +395,11 @@ void RemoteAccess::register_urls()
     });
 
     server.on("/remote_access/login", HTTP_PUT, [this](WebServerRequest request) {
-        auto content_len = request.contentLength();
+        size_t content_len = 0;
+        if (uint16_t s = validate_http_body(request, content_len)) {
+            this->request_cleanup();
+            return request.send_plain(s, s == 400 ? "Empty request body" : "Request body too large");
+        }
         std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
         if (req_body == nullptr) {
             this->request_cleanup();
@@ -417,7 +444,11 @@ void RemoteAccess::register_urls()
         }
 
         // TODO: Maybe don't run the registration in the request handler. Start a task instead?
-        auto content_len = request.contentLength();
+        size_t content_len = 0;
+        if (uint16_t s = validate_http_body(request, content_len)) {
+            this->request_cleanup();
+            return request.send_plain(s, s == 400 ? "Empty request body" : "Request body too large");
+        }
         std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
 
         if (req_body == nullptr) {
@@ -662,7 +693,11 @@ void RemoteAccess::register_urls()
     });
 
     server.on("/remote_access/add_user", HTTP_PUT, [this](WebServerRequest request) {
-        size_t content_len = request.contentLength();
+        size_t content_len = 0;
+        if (uint16_t s = validate_http_body(request, content_len)) {
+            this->request_cleanup();
+            return request.send_plain(s, s == 400 ? "Empty request body" : "Request body too large");
+        }
         std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
 
         if (req_body == nullptr) {
@@ -902,7 +937,11 @@ void RemoteAccess::register_urls()
     });
 
     server.on("/remote_access/remove_user", HTTP_PUT, [this](WebServerRequest request) {
-        size_t content_len = request.contentLength();
+        size_t content_len = 0;
+        if (uint16_t s = validate_http_body(request, content_len)) {
+            // Intentionally no request_cleanup() here, preserving previous behavior
+            return request.send_plain(s, s == 400 ? "Empty request body" : "Request body too large");
+        }
         std::unique_ptr<char[]> req_body = heap_alloc_array<char>(content_len);
         if (req_body == nullptr) {
             return request.send_plain(500, "Low memory");
