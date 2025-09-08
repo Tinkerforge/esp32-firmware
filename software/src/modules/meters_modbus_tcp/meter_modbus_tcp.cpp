@@ -120,7 +120,7 @@ void MeterModbusTCP::setup(Config *ephemeral_config)
                 custom_index[i] = i;
             }
 
-            // FIXME: leaking this, because as of right now meter instances don't get destroyed
+            custom_table->default_location = MeterLocation::Unknown;
             custom_table->specs = custom_specs;
             custom_table->specs_length = registers_count;
             custom_table->ids = custom_ids;
