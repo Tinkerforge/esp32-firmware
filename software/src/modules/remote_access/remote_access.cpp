@@ -1093,6 +1093,18 @@ bool RemoteAccess::user_already_registered(const String &email)
     return false;
 }
 
+template<size_t N>
+static bool parse_array_from_json(const JsonArrayConst& json_array, uint8_t (&output)[N]) {
+    if (json_array.size() != N) {
+        return false;
+    }
+
+    for (size_t i = 0; i < N; i++) {
+        output[i] = json_array[i];
+    }
+    return true;
+}
+
 
 void RemoteAccess::run_request_with_next_stage(const String url,
                                                esp_http_client_method_t method,
@@ -1222,8 +1234,11 @@ void RemoteAccess::parse_login_salt()
             this->request_cleanup();
             return;
         }
-        for (size_t i = 0; i < 48; i++) {
-            login_salt[i] = doc[i].as<uint8_t>();
+        if (!parse_array_from_json(doc.as<JsonArrayConst>(), login_salt)) {
+            registration_state.get("message")->updateString("Invalid login-salt array");
+            registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
+            this->request_cleanup();
+            return;
         }
         response_body.clear();
     }
@@ -1306,9 +1321,15 @@ void RemoteAccess::parse_secret()
         this->request_cleanup();
         return;
     }
-
-    for (size_t i = 0; i < crypto_box_SECRETKEYBYTES + crypto_secretbox_MACBYTES; i++) {
-        encrypted_secret[i] = doc["secret"][i];
+    {
+        uint8_t secret_buf[crypto_box_SECRETKEYBYTES + crypto_secretbox_MACBYTES];
+        if (!parse_array_from_json(doc["secret"].as<JsonArrayConst>(), secret_buf)) {
+            registration_state.get("message")->updateString("Invalid secret array");
+            registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
+            this->request_cleanup();
+            return;
+        }
+        memcpy(encrypted_secret.get(), secret_buf, sizeof(secret_buf));
     }
 
     secret_nonce = heap_alloc_array<uint8_t>(crypto_secretbox_NONCEBYTES);
@@ -1318,13 +1339,23 @@ void RemoteAccess::parse_secret()
         this->request_cleanup();
         return;
     }
-    for (size_t i = 0; i < crypto_secretbox_NONCEBYTES; i++) {
-        secret_nonce[i] = doc["secret_nonce"][i];
+    {
+        uint8_t nonce_buf[crypto_secretbox_NONCEBYTES];
+        if (!parse_array_from_json(doc["secret_nonce"].as<JsonArrayConst>(), nonce_buf)) {
+            registration_state.get("message")->updateString("Invalid secret_nonce array");
+            registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
+            this->request_cleanup();
+            return;
+        }
+        memcpy(secret_nonce.get(), nonce_buf, sizeof(nonce_buf));
     }
 
     uint8_t secret_salt[48];
-    for (size_t i = 0; i < 48; i++) {
-        secret_salt[i] = doc["secret_salt"][i];
+    if (!parse_array_from_json(doc["secret_salt"].as<JsonArrayConst>(), secret_salt)) {
+        registration_state.get("message")->updateString("Invalid secret_salt array");
+        registration_state.get("state")->updateEnum<RegistrationState>(RegistrationState::Error);
+        this->request_cleanup();
+        return;
     }
     uint8_t encoded_secret_salt[65] = {};
     size_t olen = 0;
